@@ -39,7 +39,7 @@ public final class SpellChecker {
             "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
             "back", "after", "use", "two", "how", "our", "work", "first", "well", "way",
             "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
-            "swift", "editor", "nano", "pico", "file", "text", "line", "code", "buffer"
+            "hello", "world", "swift", "editor", "nano", "pico", "file", "text", "line", "code", "buffer"
         ]
         self.dictionary = Set(fallbackWords)
         self.isDictionaryLoaded = true

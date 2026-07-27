@@ -24,6 +24,15 @@
 - **Operating Systems**: macOS 14.0+ or Linux (Ubuntu, Debian, Fedora, Arch Linux).
 - **Swift Toolchain**: Swift 6.0 or higher.
 - **Terminal Emulator**: Any VT100 / ANSI-compatible terminal emulator (e.g., Terminal.app, iTerm2, Ghostty, Alacritty, Kitty, Windows Terminal / WSL).
+- **Optional Dependencies (Linux Spell Checker)**:
+  - For full system dictionary lookup in `^T` Spell Checker on Linux, install a dictionary package:
+    ```bash
+    # Ubuntu / Debian
+    sudo apt-get install -y wamerican
+
+    # Fedora / RHEL
+    sudo dnf install -y words
+    ```
 
 ---
 
