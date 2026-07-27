@@ -11,7 +11,7 @@ extension Editor {
 
     /// Generates full screen ANSI output string for given terminal rows and cols dimensions.
     func generateScreenOutput(rows: Int, cols: Int) -> String {
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4)) // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
+        let mainAreaHeight = max(1, rows - (displayConfig.showRuler ? 5 : 4)) // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let textWidth = max(10, cols - 5) // 5 columns reserved for line number gutter ("1234 ")
 
         // Compute Virtual Lines (wrapped visual sub-lines)
@@ -60,7 +60,7 @@ extension Editor {
 
         // 1.5 Optional WordStar Ruler Bar
         let gutterWidth = 5
-        if showRuler {
+        if displayConfig.showRuler {
             let rulerStr = generateWordStarRuler(width: textWidth)
             output += "\u{1B}[K\u{1B}[90m     \(rulerStr)\u{1B}[0m\r\n"
         }
@@ -83,7 +83,7 @@ extension Editor {
                 }
 
                 output += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
-                let currentLanguage = enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
+                let currentLanguage = displayConfig.enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
                 if let lang = currentLanguage, selectionMark == nil {
                     output += syntaxHighlighter.highlight(line: vLine.text, syntax: lang)
                 } else {
@@ -140,7 +140,7 @@ extension Editor {
         let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
         let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
 
-        let screenRow = (cursorVLineIdx - topVLineIndex) + (showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
+        let screenRow = (cursorVLineIdx - topVLineIndex) + (displayConfig.showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
         let screenCol = gutterWidth + cursorDisplayWidth + 1
         output += "\u{1B}[\(screenRow);\(screenCol)H"
         output += "\u{1B}[?25h" // Show cursor

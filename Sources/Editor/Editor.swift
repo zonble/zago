@@ -30,8 +30,18 @@ public final class Editor {
 
     let syntaxHighlighter = SyntaxHighlighter()
     public let commandRegistry = CommandRegistry()
-    public var showRuler: Bool = false
-    public var enableSyntaxHighlight: Bool = true
+
+    public struct DisplayConfig: Sendable, Equatable {
+        public var showRuler: Bool
+        public var enableSyntaxHighlight: Bool
+
+        public init(showRuler: Bool = false, enableSyntaxHighlight: Bool = true) {
+            self.showRuler = showRuler
+            self.enableSyntaxHighlight = enableSyntaxHighlight
+        }
+    }
+
+    public var displayConfig: DisplayConfig
 
     public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, language: Language? = nil) {
         self.terminal = Terminal()
@@ -47,8 +57,7 @@ public final class Editor {
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
-        self.showRuler = finalRuler
-        self.enableSyntaxHighlight = finalSyntax
+        self.displayConfig = DisplayConfig(showRuler: finalRuler, enableSyntaxHighlight: finalSyntax)
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)

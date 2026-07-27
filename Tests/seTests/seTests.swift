@@ -277,7 +277,8 @@ import Foundation
 
 @Test func testWordStarRuler() throws {
     let editor = Editor(showRuler: true)
-    #expect(editor.showRuler == true)
+    #expect(editor.displayConfig.showRuler == true)
+    #expect(editor.displayConfig.enableSyntaxHighlight == true)
 
     let ruler20 = editor.generateWordStarRuler(width: 20)
     #expect(ruler20 == "----!----1----!----2")
@@ -432,7 +433,7 @@ import Foundation
     #expect(linesNoRuler.count == 24)
 
     // Test with ruler (1 title + 1 ruler + 19 main + 1 status + 2 help = 24 rows)
-    editor.showRuler = true
+    editor.displayConfig.showRuler = true
     let outputWithRuler = editor.generateScreenOutput(rows: screenRows, cols: screenCols)
     let cleanWithRuler = outputWithRuler.hasPrefix("\u{1B}[H") ? String(outputWithRuler.dropFirst(3)) : outputWithRuler
     let linesWithRuler = cleanWithRuler.components(separatedBy: "\r\n")

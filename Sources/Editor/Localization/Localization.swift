@@ -7,23 +7,20 @@ public enum Language: String, CaseIterable, Sendable {
 
     /// Detects current system language from LC_ALL, LC_MESSAGES, LANG, LANGUAGE, or Locale.
     public static func detectSystemLanguage() -> Language {
-        let envs = [
+        let candidates = [
             ProcessInfo.processInfo.environment["LC_ALL"],
             ProcessInfo.processInfo.environment["LC_MESSAGES"],
             ProcessInfo.processInfo.environment["LANG"],
-            ProcessInfo.processInfo.environment["LANGUAGE"]
+            ProcessInfo.processInfo.environment["LANGUAGE"],
+            Locale.current.identifier
         ].compactMap { $0 }
 
-        for env in envs {
-            let lower = env.lowercased()
-            if lower.contains("zh") || lower.contains("tw") || lower.contains("hant") || lower.contains("hk") {
+        let keywords = ["zh", "tw", "hant", "hk"]
+        for candidate in candidates {
+            let lower = candidate.lowercased()
+            if keywords.contains(where: { lower.contains($0) }) {
                 return .zh_TW
             }
-        }
-
-        let localeID = Locale.current.identifier.lowercased()
-        if localeID.contains("zh") || localeID.contains("tw") || localeID.contains("hant") {
-            return .zh_TW
         }
 
         return .en

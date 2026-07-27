@@ -43,13 +43,13 @@ extension Editor {
 
         commandRegistry.register(Command(id: "move.pgdn", name: "Next Page", description: "Move forward one page", keys: [.ctrl("V"), .f8, .pageDown]) { editor in
             let (rows, _) = editor.terminal.getWindowSize()
-            let mainAreaHeight = max(1, rows - (editor.showRuler ? 4 : 3))
+            let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
             editor.moveCursorVirtual(deltaRow: mainAreaHeight)
         })
 
         commandRegistry.register(Command(id: "move.pgup", name: "Previous Page", description: "Move backward one page", keys: [.ctrl("Y"), .f7, .pageUp]) { editor in
             let (rows, _) = editor.terminal.getWindowSize()
-            let mainAreaHeight = max(1, rows - (editor.showRuler ? 4 : 3))
+            let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
             editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
         })
 
