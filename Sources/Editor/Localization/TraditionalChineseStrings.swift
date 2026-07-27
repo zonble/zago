@@ -73,13 +73,16 @@ public struct TraditionalChineseStrings {
         "helpview.search_4": "    ^C / F11           顯示當前游標與行列位置資訊",
         "helpview.search_5": "    ^T / F12           啟動拼字檢查工具",
 
-        "helpview.sec_file": "  檔案寫入與離開：",
-        "helpview.file_1": "    ^O / ^S / F3       寫出檔案（儲存當前 Buffer）",
-        "helpview.file_2": "    ^R / F5            讀取檔案（插入外部檔案內容）",
-        "helpview.file_3": "    ^X / F2            離開編輯器（未儲存時會詢問）",
-        "helpview.file_4": "    ^G / F1            顯示此全螢幕說明頁面",
+        "helpview.sec_file": "  檔案與 Buffer 操作指令：",
+        "helpview.file_1": "    ^O / ^S / F3       WriteOut (將 Buffer 儲存至檔案)",
+        "helpview.file_2": "    ^R / F5            Read file (插入外部檔案內容至當前 Buffer)",
+        "helpview.file_3": "    ^N                 New Buffer (開啟新的空白 Buffer)",
+        "helpview.file_4": "    M-. / M-> / F11    Next Buffer (切換至下一個 Buffer)",
+        "helpview.file_5": "    M-, / M-< / F12    Previous Buffer (切換至上一個 Buffer)",
+        "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
+        "helpview.file_7": "    ^G / F1            顯示本完整幫助說明頁面",
 
-        "helpview.footer": "  [ 按任意鍵返回編輯模式 ]",
+        "helpview.footer": "  [ ↑/↓/PgUp/PgDn: 捲動頁面 | 按任意鍵返回編輯器 ]",
 
         // Common Messages
         "msg.cancelled": "[ 已取消 ]",

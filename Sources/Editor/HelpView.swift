@@ -1,38 +1,54 @@
 import Foundation
 
-/// Full-screen Help Viewer (^G / F1) displaying all editor keybindings.
+/// Full-screen Help Viewer (^G / F1) displaying all editor keybindings with interactive scrolling.
 public final class HelpView {
     private let terminal: Terminal
+    private var topIndex: Int = 0
 
     public init(terminal: Terminal) {
         self.terminal = terminal
     }
 
-    /// Displays full-screen help viewer and waits for key input to dismiss.
+    /// Displays full-screen help viewer and waits for key input to scroll or dismiss.
     public func show() {
         render()
-        // Wait for an actual non-timeout key press to return to editor
         while true {
             let key = terminal.readKey()
-            if key != .unknown {
-                break
+            let (rows, _) = terminal.getWindowSize()
+            let availableHeight = max(1, rows - 2)
+            let maxTop = max(0, getContentLines().count - availableHeight)
+
+            switch key {
+            case .arrowDown, .char("j"), .char("J"):
+                topIndex = min(topIndex + 1, maxTop)
+                render()
+            case .arrowUp, .char("k"), .char("K"):
+                topIndex = max(0, topIndex - 1)
+                render()
+            case .pageDown, .char(" "):
+                topIndex = min(topIndex + availableHeight, maxTop)
+                render()
+            case .pageUp:
+                topIndex = max(0, topIndex - availableHeight)
+                render()
+            case .home:
+                topIndex = 0
+                render()
+            case .end:
+                topIndex = maxTop
+                render()
+            case .unknown:
+                render()
+            default:
+                // Any other key (Esc, Enter, ^G, F1, q, Q, etc.) dismisses HelpView
+                return
             }
-            render()
         }
     }
 
-    /// Renders full-screen help page displaying all command bindings.
-    private func render() {
-        let (rows, cols) = terminal.getWindowSize()
-        var output = ""
-        output += "\u{1B}[H" // Move cursor to top-left (1, 1)
-
-        // 1. Title Bar (Inverted colors)
-        let titleText = L10n["helpview.title"]
-        output += "\u{1B}[7m\(titleText.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
-
-        // 2. Help Content Lines
-        let contentLines: [String] = [
+    /// Returns all formatted help lines.
+    private func getContentLines() -> [String] {
+        [
             L10n["helpview.header"],
             "  ================================================================",
             L10n["helpview.sec_nav"],
@@ -63,27 +79,45 @@ public final class HelpView {
             L10n["helpview.file_1"],
             L10n["helpview.file_2"],
             L10n["helpview.file_3"],
-            L10n["helpview.file_4"]
+            L10n["helpview.file_4"],
+            L10n["helpview.file_5"],
+            L10n["helpview.file_6"],
+            L10n["helpview.file_7"]
         ]
+    }
 
+    /// Renders full-screen help page displaying all command bindings.
+    private func render() {
+        let (rows, cols) = terminal.getWindowSize()
+        var output = ""
+        output += "\u{1B}[H" // Move cursor to top-left (1, 1)
+
+        // 1. Title Bar (Inverted colors)
+        let titleText = L10n["helpview.title"]
+        output += "\u{1B}[7m\(titleText.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
+
+        // 2. Help Content Lines (Scrollable Viewport)
+        let contentLines = getContentLines()
         let availableHeight = max(1, rows - 2) // Reserve 1 line for header and 1 for footer
+        topIndex = max(0, min(topIndex, max(0, contentLines.count - availableHeight)))
+
         for i in 0..<availableHeight {
+            let lineIdx = topIndex + i
             let lineStr: String
-            if i < contentLines.count {
-                lineStr = contentLines[i].paddedToDisplayWidth(cols)
+            if lineIdx < contentLines.count {
+                lineStr = contentLines[lineIdx].paddedToDisplayWidth(cols)
             } else {
                 lineStr = String(repeating: " ", count: cols)
             }
             output += "\u{1B}[K\(lineStr)\r\n"
         }
 
-        // 3. Footer Bar (Bold Cyan text, no inverted background)
+        // 3. Footer Bar (Bold Cyan text)
         let footerRaw = L10n["helpview.footer"]
         let paddedFooter = footerRaw.paddedToDisplayWidth(cols)
         output += "\u{1B}[1;36m\(paddedFooter)\u{1B}[0m"
 
         print(output, terminator: "")
-        // Safely flush output buffer without referencing C global mutable 'stdout'
         fflush(nil)
     }
 }

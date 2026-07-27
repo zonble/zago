@@ -73,13 +73,16 @@ public struct EnglishStrings {
         "helpview.search_4": "    ^C / F11           Display current cursor position info",
         "helpview.search_5": "    ^T / F12           Spell checker status",
 
-        "helpview.sec_file": "  FILE OPERATIONS & EXIT:",
+        "helpview.sec_file": "  FILE & BUFFER OPERATIONS:",
         "helpview.file_1": "    ^O / ^S / F3       WriteOut (save buffer to file)",
         "helpview.file_2": "    ^R / F5            Read file (insert external file into buffer)",
-        "helpview.file_3": "    ^X / F2            Exit editor (prompts to save modified buffer)",
-        "helpview.file_4": "    ^G / F1            Display this full-screen help page",
+        "helpview.file_3": "    ^N                 New Buffer (open a new empty buffer)",
+        "helpview.file_4": "    M-. / M-> / F11    Next Buffer (switch to next open buffer)",
+        "helpview.file_5": "    M-, / M-< / F12    Previous Buffer (switch to previous buffer)",
+        "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
+        "helpview.file_7": "    ^G / F1            Display this help reference page",
 
-        "helpview.footer": "  [ Press any key to return to editor ]",
+        "helpview.footer": "  [ Up/Dn/PgUp/PgDn: Scroll | Press any key to return ]",
 
         // Common Messages
         "msg.cancelled": "[ Cancelled ]",
