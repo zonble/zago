@@ -68,8 +68,62 @@ extension Editor {
         buffer.clampCursor()
     }
 
+    /// Helper for prompt inline character insertion at promptCursorIndex.
+    private func insertPromptChar(_ ch: Character) {
+        let clamped = max(0, min(promptCursorIndex, promptInputText.count))
+        let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
+        promptInputText.insert(ch, at: idx)
+        promptCursorIndex = clamped + 1
+    }
+
+    /// Helper for prompt inline backspace deletion.
+    private func deletePromptBackspace() {
+        if promptCursorIndex > 0 && !promptInputText.isEmpty {
+            let clamped = max(1, min(promptCursorIndex, promptInputText.count))
+            let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped - 1)
+            promptInputText.remove(at: idx)
+            promptCursorIndex = clamped - 1
+        }
+    }
+
+    /// Helper for prompt inline delete key deletion.
+    private func deletePromptDelete() {
+        if promptCursorIndex < promptInputText.count && !promptInputText.isEmpty {
+            let clamped = max(0, min(promptCursorIndex, promptInputText.count - 1))
+            let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
+            promptInputText.remove(at: idx)
+        }
+    }
+
+    /// Handles common prompt navigation keys (Left, Right, Home, End, Delete, Ctrl+A/E/B/F/D).
+    private func handlePromptNavigationKeys(_ key: Key) -> Bool {
+        switch key {
+        case .arrowLeft, .ctrl("B"):
+            promptCursorIndex = max(0, promptCursorIndex - 1)
+            return true
+        case .arrowRight, .ctrl("F"):
+            promptCursorIndex = min(promptInputText.count, promptCursorIndex + 1)
+            return true
+        case .home, .ctrl("A"):
+            promptCursorIndex = 0
+            return true
+        case .end, .ctrl("E"):
+            promptCursorIndex = promptInputText.count
+            return true
+        case .delete, .ctrl("D"):
+            deletePromptDelete()
+            return true
+        default:
+            return false
+        }
+    }
+
     /// Processes keyboard input when in prompt mode.
     func processPromptKey(_ key: Key) {
+        if handlePromptNavigationKeys(key) {
+            return
+        }
+
         switch currentPromptMode {
         case .saveFilePath(let completion):
             switch key {
@@ -81,11 +135,9 @@ extension Editor {
                 cancelPrompt()
                 setStatusMessage(L10n["status.cancelled"])
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }
@@ -189,24 +241,25 @@ extension Editor {
                 if logoHistoryIndex > 0 {
                     logoHistoryIndex -= 1
                     promptInputText = logoPromptHistory[logoHistoryIndex]
+                    promptCursorIndex = promptInputText.count
                 }
             case .arrowDown:
                 if logoHistoryIndex < logoPromptHistory.count - 1 {
                     logoHistoryIndex += 1
                     promptInputText = logoPromptHistory[logoHistoryIndex]
+                    promptCursorIndex = promptInputText.count
                 } else {
                     logoHistoryIndex = logoPromptHistory.count
                     promptInputText = ""
+                    promptCursorIndex = 0
                 }
             case .esc, .ctrl("C"):
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }

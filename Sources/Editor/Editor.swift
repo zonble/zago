@@ -41,6 +41,7 @@ public final class Editor {
     // Prompt state
     var currentPromptMode: PromptMode = .none
     var promptInputText: String = ""
+    var promptCursorIndex: Int = 0
     var lastSearchQuery: String = ""
     var logoPromptHistory: [String] = []
     var logoHistoryIndex: Int = 0

@@ -171,7 +171,9 @@ extension Editor {
             case .none: promptPrefix = ""
             }
             let promptRow = rows - 2
-            let promptCol = promptPrefix.displayWidth + promptInputText.displayWidth + 1
+            let clampedIdx = max(0, min(promptCursorIndex, promptInputText.count))
+            let inputPrefix = String(promptInputText.prefix(clampedIdx))
+            let promptCol = promptPrefix.displayWidth + inputPrefix.displayWidth + 1
             output += "\u{1B}[\(promptRow);\(promptCol)H"
         }
         output += "\u{1B}[?25h" // Show cursor
