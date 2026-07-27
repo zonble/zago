@@ -103,3 +103,15 @@ import Foundation
     editor.processKey(.backspace)
     #expect(editor.buffer.lines[1] == "")
 }
+
+@Test func testCtrlBackspaceDeleteLineCommand() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["First Line", "Second Line", "Third Line"]
+    editor.buffer.lineIndex = 1
+
+    editor.processKey(.ctrlBackspace)
+    #expect(editor.buffer.lines == ["First Line", "Third Line"])
+
+    editor.performUndo()
+    #expect(editor.buffer.lines == ["First Line", "Second Line", "Third Line"])
+}

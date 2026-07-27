@@ -98,6 +98,11 @@ extension Editor {
         })
 
         // Editing Commands
+        commandRegistry.register(Command(id: "edit.delete_line", name: "Delete Line", description: "Delete current line", keys: [.ctrlBackspace, .ctrl("H"), .ctrl("h")]) { editor in
+            editor.saveUndoSnapshot()
+            editor.deleteCurrentLine()
+        })
+
         commandRegistry.register(Command(id: "edit.delete", name: "Delete", description: "Delete character under cursor", keys: [.ctrl("D"), .delete]) { editor in
             editor.saveUndoSnapshot()
             editor.buffer.delete()

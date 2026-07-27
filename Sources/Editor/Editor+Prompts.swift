@@ -76,6 +76,12 @@ extension Editor {
         promptCursorIndex = clamped + 1
     }
 
+    /// Helper to clear the entire prompt input line (Ctrl+Backspace).
+    private func clearPromptLine() {
+        promptInputText = ""
+        promptCursorIndex = 0
+    }
+
     /// Helper for prompt inline backspace deletion.
     private func deletePromptBackspace() {
         if promptCursorIndex > 0 && !promptInputText.isEmpty {
@@ -104,11 +110,16 @@ extension Editor {
         case .arrowRight, .ctrl("F"):
             promptCursorIndex = min(promptInputText.count, promptCursorIndex + 1)
             return true
-        case .home, .ctrl("A"):
+        case .ctrl("A"), .home:
             promptCursorIndex = 0
             return true
-        case .end, .ctrl("E"):
+
+        case .ctrl("E"), .end:
             promptCursorIndex = promptInputText.count
+            return true
+
+        case .ctrlBackspace, .ctrl("U"):
+            clearPromptLine()
             return true
         case .delete, .ctrl("D"):
             deletePromptDelete()

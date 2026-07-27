@@ -23,6 +23,7 @@ public enum Key: Equatable, Hashable {
     case pageUp
     case pageDown
     case backspace
+    case ctrlBackspace
     case delete
     case enter
     case tab
@@ -50,42 +51,30 @@ public final class Terminal {
     /// Enables terminal raw mode.
     public func enableRawMode() {
         guard !rawModeEnabled else { return }
-        
         tcgetattr(STDIN_FILENO, &originalTermios)
+
         var raw = originalTermios
-
-        // Disable Echo, Canonical Mode, Extended Input, Signals (SIGINT, SIGTSTP)
-        raw.c_lflag &= ~tcflag_t(ECHO | ICANON | IEXTEN | ISIG)
-        // Disable Software Flow Control (Ctrl+S, Ctrl+Q), CR-to-NL conversion
-        raw.c_iflag &= ~tcflag_t(IXON | ICRNL | BRKINT | INPCK | ISTRIP)
-        // Disable Post-processing (NL to CR+NL)
-        raw.c_oflag &= ~tcflag_t(OPOST)
-        // Set 8-bit characters
-        raw.c_cflag |= tcflag_t(CS8)
-
-        // Read timeout & minimum characters (VMIN, VTIME cross-platform safety)
-        withUnsafeMutableBytes(of: &raw.c_cc) { ptr in
-            ptr[Int(VMIN)] = 0
-            ptr[Int(VTIME)] = 1
-        }
+        // Input flags: disable IXON (Ctrl+S/Ctrl+Q), ICRNL (map CR to NL)
+        raw.c_iflag &= ~UInt(IXON | ICRNL)
+        // Local flags: disable ECHO, ICANON (canonical mode), ISIG (Ctrl+C/Ctrl+Z), IEXTEN (Ctrl+V)
+        raw.c_lflag &= ~UInt(ECHO | ICANON | ISIG | IEXTEN)
 
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
         rawModeEnabled = true
     }
 
-    /// Restores original terminal settings.
+    /// Disables raw mode and restores original termios settings.
     public func disableRawMode() {
         guard rawModeEnabled else { return }
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &originalTermios)
         rawModeEnabled = false
     }
 
-    /// Gets terminal window size (rows, cols).
+    /// Returns terminal window dimensions (rows, cols).
     public func getWindowSize() -> (rows: Int, cols: Int) {
-        var w = winsize()
-        // Explicitly cast TIOCGWINSZ to UInt for Linux Glibc / Darwin cross-platform compatibility
-        if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &w) == 0 && w.ws_col > 0 {
-            return (rows: Int(w.ws_row), cols: Int(w.ws_col))
+        var ws = winsize()
+        if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &ws) == 0 && ws.ws_col > 0 {
+            return (rows: Int(ws.ws_row), cols: Int(ws.ws_col))
         }
         return (rows: 24, cols: 80) // Fallback default
     }
@@ -110,8 +99,12 @@ public final class Terminal {
             // Tab (ASCII 9)
             return .tab
 
-        case 8, 127:
-            // Backspace (ASCII 8 or 127)
+        case 8:
+            // Ctrl+Backspace / Ctrl+H (ASCII 8)
+            return .ctrlBackspace
+
+        case 127:
+            // Backspace (ASCII 127)
             return .backspace
 
         case 30:
@@ -130,6 +123,10 @@ public final class Terminal {
         case 27:
             // Escape Sequences
             guard let b2 = readByte() else { return .esc }
+            if b2 == 8 || b2 == 127 {
+                // ESC + Backspace / Alt+Backspace / Ctrl+Backspace
+                return .ctrlBackspace
+            }
             switch b2 {
             case UInt8(ascii: "["):
                 guard let b3 = readByte() else { return .esc }

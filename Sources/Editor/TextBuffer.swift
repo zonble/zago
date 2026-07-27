@@ -205,6 +205,24 @@ public final class TextBuffer {
         }
     }
 
+    /// Deletes the current line entirely (Ctrl+Backspace).
+    public func deleteLine() {
+        ensureBounds()
+        if lines.count > 1 {
+            lines.remove(at: lineIndex)
+            if lineIndex >= lines.count {
+                lineIndex = lines.count - 1
+            }
+            columnIndex = 0
+            clampCursor()
+        } else {
+            lines[0] = ""
+            lineIndex = 0
+            columnIndex = 0
+        }
+        isModified = true
+    }
+
     /// Deletes the character at the cursor position (Delete).
     public func delete() {
         ensureBounds()

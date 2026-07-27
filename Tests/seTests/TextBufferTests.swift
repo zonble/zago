@@ -118,3 +118,21 @@ import Foundation
     buffer.clampCursor()
     #expect(buffer.columnIndex == 2)
 }
+
+@Test func testDeleteLine() throws {
+    let buffer = TextBuffer()
+    buffer.lines = ["Line 1", "Line 2", "Line 3"]
+    buffer.lineIndex = 1
+
+    buffer.deleteLine()
+    #expect(buffer.lines == ["Line 1", "Line 3"])
+    #expect(buffer.lineIndex == 1)
+
+    buffer.deleteLine()
+    #expect(buffer.lines == ["Line 1"])
+    #expect(buffer.lineIndex == 0)
+
+    buffer.deleteLine()
+    #expect(buffer.lines == [""])
+    #expect(buffer.lineIndex == 0)
+}

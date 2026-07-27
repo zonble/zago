@@ -162,6 +162,11 @@ public final class Editor {
         }
     }
 
+    /// Deletes current line with Undo snapshot tracking.
+    public func deleteCurrentLine() {
+        buffer.deleteLine()
+    }
+
     /// Handles external file system modifications detected by FileWatcher.
     public func handleExternalFileChange() {
         guard displayConfig.autoReload, buffer.filePath != nil else { return }

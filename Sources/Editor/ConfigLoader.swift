@@ -51,6 +51,7 @@ public enum KeyParser {
         case "pageup", "page-up", "pgup": return .pageUp
         case "pagedown", "page-down", "pgdn": return .pageDown
         case "backspace", "bs": return .backspace
+        case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs": return .ctrlBackspace
         case "delete", "del": return .delete
         case "enter", "return": return .enter
         case "tab": return .tab
