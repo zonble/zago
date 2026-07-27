@@ -364,11 +364,31 @@ import Foundation
     #expect(L10n.helpGetHelp == "Get Help")
     #expect(L10n.helpExit == "Exit")
     #expect(L10n.readLines(10) == "[ Read 10 line(s) ]")
+    #expect(L10n.wroteToFile("test.txt") == "[ Wrote to test.txt ]")
+    #expect(L10n.configLoadedWithErrors(2) == "[ Config loaded with 2 syntax error(s) ]")
+    #expect(L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10) == "line 5/20 (25%), col 3/10")
+    #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "Found \"foo\" at line 12")
+    #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "Search wrapped, found \"foo\" at line 12")
+    #expect(L10n.notFound(query: "bar") == "\"bar\" not found")
+    #expect(L10n.insertedLines(5) == "[ Inserted 5 lines ]")
+    #expect(L10n.errorInsertingFile(error: "Access denied") == "Error inserting file: Access denied")
+    #expect(L10n.errorSavingFile(error: "Disk full") == "Error saving file: Disk full")
+    #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "Replaced 'helo' with 'hello'")
 
     L10n.currentLanguage = .zh_TW
     #expect(L10n.helpGetHelp == "輔助說明")
     #expect(L10n.helpExit == "離開")
     #expect(L10n.readLines(10) == "[ 已讀取 10 行 ]")
+    #expect(L10n.wroteToFile("test.txt") == "[ 已儲存至 test.txt ]")
+    #expect(L10n.configLoadedWithErrors(2) == "[ 已載入設定檔（含有 2 個語法錯誤）]")
+    #expect(L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10) == "第 5/20 行 (25%), 第 3/10 欄")
+    #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "於第 12 行找到 \"foo\"")
+    #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "搜尋回到開頭，於第 12 行找到 \"foo\"")
+    #expect(L10n.notFound(query: "bar") == "找不到 \"bar\"")
+    #expect(L10n.insertedLines(5) == "[ 已插入 5 行內容 ]")
+    #expect(L10n.errorInsertingFile(error: "Access denied") == "插入檔案錯誤：Access denied")
+    #expect(L10n.errorSavingFile(error: "Disk full") == "儲存檔案錯誤：Disk full")
+    #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "已將 'helo' 替換為 'hello'")
 }
 
 @Test func testEditorProcessKeyInput() throws {

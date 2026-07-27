@@ -64,56 +64,48 @@ public enum L10n {
 
     // MARK: - Format String Helpers
     public static func readLines(_ count: Int) -> String {
-        currentLanguage == .zh_TW ? "[ 已讀取 \(count) 行 ]" : "[ Read \(count) line(s) ]"
+        String(format: self["msg.read_lines"], count)
     }
 
     public static func wroteToFile(_ filename: String) -> String {
-        currentLanguage == .zh_TW ? "[ 已儲存至 \(filename) ]" : "[ Wrote to \(filename) ]"
+        String(format: self["msg.wrote_to_file"], filename)
     }
 
     public static var cancelled: String { self["msg.cancelled"] }
 
     public static func configLoadedWithErrors(_ count: Int) -> String {
-        currentLanguage == .zh_TW ? "[ 已載入設定檔（含有 \(count) 個語法錯誤）]" : "[ Config loaded with \(count) syntax error(s) ]"
+        String(format: self["msg.config_loaded_with_errors"], count)
     }
 
     public static func cursorInfo(currentLine: Int, totalLines: Int, percent: Int, currentCol: Int, totalCol: Int) -> String {
-        currentLanguage == .zh_TW
-            ? "第 \(currentLine)/\(totalLines) 行 (\(percent)%), 第 \(currentCol)/\(totalCol) 欄"
-            : "line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)"
+        String(format: self["msg.cursor_info"], currentLine, totalLines, percent, currentCol, totalCol)
     }
 
     public static func foundQueryAtLine(query: String, line: Int) -> String {
-        currentLanguage == .zh_TW
-            ? "於第 \(line) 行找到 \"\(query)\""
-            : "Found \"\(query)\" at line \(line)"
+        String(format: self["msg.found_query_at_line"], query, line)
     }
 
     public static func searchWrappedFound(query: String, line: Int) -> String {
-        currentLanguage == .zh_TW
-            ? "搜尋回到開頭，於第 \(line) 行找到 \"\(query)\""
-            : "Search wrapped, found \"\(query)\" at line \(line)"
+        String(format: self["msg.search_wrapped_found"], query, line)
     }
 
     public static func notFound(query: String) -> String {
-        currentLanguage == .zh_TW ? "找不到 \"\(query)\"" : "\"\(query)\" not found"
+        String(format: self["msg.not_found"], query)
     }
 
-    public static func insertedLines(count: Int) -> String {
-        currentLanguage == .zh_TW ? "[ 已插入 \(count) 行內容 ]" : "[ Inserted \(count) lines ]"
+    public static func insertedLines(_ count: Int) -> String {
+        String(format: self["msg.inserted_lines"], count)
     }
 
     public static func errorInsertingFile(error: String) -> String {
-        currentLanguage == .zh_TW ? "插入檔案錯誤：\(error)" : "Error inserting file: \(error)"
+        String(format: self["msg.error_inserting_file"], error)
     }
 
     public static func errorSavingFile(error: String) -> String {
-        currentLanguage == .zh_TW ? "儲存檔案錯誤：\(error)" : "Error saving file: \(error)"
+        String(format: self["msg.error_saving_file"], error)
     }
 
     public static func replacedWord(target: String, newWord: String) -> String {
-        currentLanguage == .zh_TW
-            ? "已將 '\(target)' 替換為 '\(newWord)'"
-            : "Replaced '\(target)' with '\(newWord)'"
+        String(format: self["msg.replaced_word"], target, newWord)
     }
 }

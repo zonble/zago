@@ -269,7 +269,7 @@ extension Editor {
             do {
                 self.saveUndoSnapshot()
                 let count = try self.buffer.insertFile(at: path)
-                self.setStatusMessage(L10n.insertedLines(count: count))
+                self.setStatusMessage(L10n.insertedLines(count))
             } catch {
                 self.setStatusMessage(L10n.errorInsertingFile(error: error.localizedDescription))
             }

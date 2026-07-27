@@ -81,6 +81,19 @@ public struct EnglishStrings {
         // Common Messages
         "msg.cancelled": "[ Cancelled ]",
         "buffer.new_buffer": "New Buffer",
-        "buffer.modified": "Modified"
+        "buffer.modified": "Modified",
+
+        // Format Messages
+        "msg.read_lines": "[ Read %d line(s) ]",
+        "msg.wrote_to_file": "[ Wrote to %@ ]",
+        "msg.config_loaded_with_errors": "[ Config loaded with %d syntax error(s) ]",
+        "msg.cursor_info": "line %d/%d (%d%%), col %d/%d",
+        "msg.found_query_at_line": "Found \"%1$@\" at line %2$d",
+        "msg.search_wrapped_found": "Search wrapped, found \"%1$@\" at line %2$d",
+        "msg.not_found": "\"%@\" not found",
+        "msg.inserted_lines": "[ Inserted %d lines ]",
+        "msg.error_inserting_file": "Error inserting file: %@",
+        "msg.error_saving_file": "Error saving file: %@",
+        "msg.replaced_word": "Replaced '%@' with '%@'"
     ]
 }

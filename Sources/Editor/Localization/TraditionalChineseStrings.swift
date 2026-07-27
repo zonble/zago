@@ -81,6 +81,19 @@ public struct TraditionalChineseStrings {
         // Common Messages
         "msg.cancelled": "[ 已取消 ]",
         "buffer.new_buffer": "新 Buffer",
-        "buffer.modified": "已修改"
+        "buffer.modified": "已修改",
+
+        // Format Messages
+        "msg.read_lines": "[ 已讀取 %d 行 ]",
+        "msg.wrote_to_file": "[ 已儲存至 %@ ]",
+        "msg.config_loaded_with_errors": "[ 已載入設定檔（含有 %d 個語法錯誤）]",
+        "msg.cursor_info": "第 %d/%d 行 (%d%%), 第 %d/%d 欄",
+        "msg.found_query_at_line": "於第 %2$d 行找到 \"%1$@\"",
+        "msg.search_wrapped_found": "搜尋回到開頭，於第 %2$d 行找到 \"%1$@\"",
+        "msg.not_found": "找不到 \"%@\"",
+        "msg.inserted_lines": "[ 已插入 %d 行內容 ]",
+        "msg.error_inserting_file": "插入檔案錯誤：%@",
+        "msg.error_saving_file": "儲存檔案錯誤：%@",
+        "msg.replaced_word": "已將 '%@' 替換為 '%@'"
     ]
 }
