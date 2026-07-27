@@ -39,7 +39,7 @@ public final class LayoutEngine {
         self.wrapColumn = wrapColumn
     }
 
-    /// Computes virtual display lines from raw buffer lines given available terminal view width.
+    /// Computes virtual display lines from raw buffer lines given available terminal view width, respecting word boundaries for Latin text.
     public func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
         let effectiveWrap = max(2, min(wrapColumn ?? viewWidth, viewWidth))
         var virtualLines: [VirtualLine] = []
@@ -61,19 +61,55 @@ public final class LayoutEngine {
             let chars = Array(line)
             let totalChars = chars.count
 
+            // Core Softwrap Loop: Iteratively slice a raw buffer line into one or more VirtualLines
             while currentCharIndex < totalChars {
                 var currentWidth = 0
                 var endIndex = currentCharIndex
+                var lastWordBoundary = -1
 
+                // Inner Scan Loop: Accumulate displayWidth starting from
+                // currentCharIndex
                 while endIndex < totalChars {
-                    let w = chars[endIndex].displayWidth
+                    let ch = chars[endIndex]
+                    let w = ch.displayWidth
+
+                    // 1. Column Limit Guard: If adding the current character's
+                    //    displayWidth (ASCII=1, CJK/Emoji=2) exceeds
+                    //    effectiveWrap and the current sub-line already has at
+                    //    least one character, terminate the inner scan loop.
                     if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
                         break
                     }
+
+                    // 2. Track Word Boundary: Record the last safe word
+                    //    boundary position (whitespace ' ', CJK wide character
+                    //    displayWidth >= 2, or punctuation). This allows
+                    //    trailing Latin words to be wrapped as a whole to the
+                    //    next line.
+                    if ch.isWhitespace || ch.displayWidth >= 2 || ch.isPunctuation {
+                        lastWordBoundary = endIndex
+                    }
+
                     currentWidth += w
                     endIndex += 1
                 }
 
+                // 3. Smart Word-Wrap Backtracking Adjustment: If the scan
+                //    didn't reach line end (endIndex < totalChars) and a valid
+                //    word boundary was found (lastWordBoundary >
+                //    currentCharIndex), backtrack the break point to right
+                //    after the last boundary character to avoid breaking
+                //    English words in the middle.
+                if endIndex < totalChars && lastWordBoundary > currentCharIndex {
+                    endIndex = lastWordBoundary + 1
+                } else if endIndex == currentCharIndex {
+                    // Fallback Guard: If a single character's displayWidth
+                    // exceeds effectiveWrap, force advance by 1 char to avoid
+                    // infinite loop
+                    endIndex = currentCharIndex + 1
+                }
+
+                // Slice substring and character range for this virtual display chunk
                 let chunkText = String(chars[currentCharIndex..<endIndex])
                 
                 virtualLines.append(VirtualLine(
@@ -84,6 +120,7 @@ public final class LayoutEngine {
                     endCol: endIndex
                 ))
 
+                // Advance starting index for the next virtual line chunk
                 currentCharIndex = endIndex
                 subIndex += 1
             }
