@@ -169,3 +169,9 @@ import Foundation
     buffer.clampCursor()
     #expect(buffer.columnIndex == 2)
 }
+
+@Test func testHelpViewInstantiation() throws {
+    let terminal = Terminal()
+    let helpView = HelpView(terminal: terminal)
+    _ = helpView
+}

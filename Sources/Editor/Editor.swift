@@ -213,7 +213,8 @@ public final class Editor {
             setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
 
         case .ctrl("G"), .f1:
-            setStatusMessage("se: Swift TUI Nano/Pico Editor [F2:Exit F3:Save F5:Insert F6:Search F9:Cut F10:Uncut]")
+            let helpView = HelpView(terminal: terminal)
+            helpView.show()
 
         case .backspace:
             buffer.backspace()
