@@ -591,6 +591,7 @@ public final class Editor {
         output += "\u{1B}[?25h" // Show cursor
 
         print(output, terminator: "")
+        // Safely flush stdout buffer using fflush(nil) without referencing C global mutable 'stdout' in Swift 6 concurrency mode
         fflush(nil)
     }
 

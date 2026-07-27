@@ -78,6 +78,7 @@ public final class Terminal {
     /// Gets terminal window size (rows, cols).
     public func getWindowSize() -> (rows: Int, cols: Int) {
         var w = winsize()
+        // Explicitly cast TIOCGWINSZ to UInt for Linux Glibc / Darwin cross-platform compatibility
         if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &w) == 0 && w.ws_col > 0 {
             return (rows: Int(w.ws_row), cols: Int(w.ws_col))
         }
@@ -175,8 +176,7 @@ public final class Terminal {
             }
 
         default:
-            // Process UTF-8 multi-byte sequence (determining required byte
-            // count based on UTF-8 leading byte header)
+            // Process UTF-8 multi-byte sequence (determining required byte count based on UTF-8 leading byte header)
             var bytes: [UInt8] = [b]
             let neededBytes: Int
             switch b {
@@ -213,6 +213,8 @@ public final class Terminal {
     }
 
     /// ANSI cursor hiding and movement helper functions.
+    /// Note: Uses `fflush(nil)` instead of `fflush(stdout)` to safely flush all output streams
+    /// without referencing the C global mutable variable `stdout` in Swift 6 concurrency mode.
     public static func hideCursor() {
         print("\u{1B}[?25l", terminator: "")
         fflush(nil)
