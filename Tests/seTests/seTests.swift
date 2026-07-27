@@ -258,3 +258,19 @@ import Foundation
     editor.performUndo()
     #expect(editor.buffer.lines[0] == "")
 }
+
+@Test func testCommandRegistry() throws {
+    let editor = Editor()
+    #expect(editor.commandRegistry.commands.count > 20)
+
+    var executed = false
+    let testCmd = Command(id: "test.cmd", name: "Test", description: "Test command", keys: [.ctrl("T")]) { _ in
+        executed = true
+    }
+    let registry = CommandRegistry()
+    registry.register(testCmd)
+
+    let handled = registry.dispatch(key: .ctrl("T"), editor: editor)
+    #expect(handled == true)
+    #expect(executed == true)
+}

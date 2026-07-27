@@ -43,10 +43,236 @@ public final class Editor {
     private var lastMutationTime: Date?
     private var lastIsPaste: Bool = false
 
+    public let commandRegistry = CommandRegistry()
+
     public init(filePath: String? = nil, wrapColumn: Int? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
         self.layoutEngine = LayoutEngine(wrapColumn: wrapColumn)
+        setupDefaultCommands()
+    }
+
+    /// Registers default editor commands and keybindings.
+    private func setupDefaultCommands() {
+        // Navigation Commands
+        commandRegistry.register(Command(id: "move.right", name: "Forward", description: "Move forward a character", keys: [.ctrl("F"), .arrowRight]) { editor in
+            let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
+            if editor.buffer.columnIndex < currentLineLength {
+                editor.buffer.columnIndex += 1
+            } else if editor.buffer.lineIndex < editor.buffer.lines.count - 1 {
+                editor.buffer.lineIndex += 1
+                editor.buffer.columnIndex = 0
+            }
+        })
+
+        commandRegistry.register(Command(id: "move.left", name: "Backward", description: "Move backward a character", keys: [.ctrl("B"), .arrowLeft]) { editor in
+            if editor.buffer.columnIndex > 0 {
+                editor.buffer.columnIndex -= 1
+            } else if editor.buffer.lineIndex > 0 {
+                editor.buffer.lineIndex -= 1
+                editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
+            }
+        })
+
+        commandRegistry.register(Command(id: "move.up", name: "Prev Line", description: "Move up a visual line", keys: [.ctrl("P"), .arrowUp]) { editor in
+            editor.moveCursorVirtual(deltaRow: -1)
+        })
+
+        commandRegistry.register(Command(id: "move.down", name: "Next Line", description: "Move down a visual line", keys: [.ctrl("N"), .arrowDown]) { editor in
+            editor.moveCursorVirtual(deltaRow: 1)
+        })
+
+        commandRegistry.register(Command(id: "select.left", name: "Select Left", description: "Extend selection left", keys: [.shiftArrowLeft]) { editor in
+            if editor.selectionMark == nil {
+                editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                editor.setStatusMessage("Mark Set")
+            }
+            if editor.buffer.columnIndex > 0 {
+                editor.buffer.columnIndex -= 1
+            } else if editor.buffer.lineIndex > 0 {
+                editor.buffer.lineIndex -= 1
+                editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
+            }
+        })
+
+        commandRegistry.register(Command(id: "select.right", name: "Select Right", description: "Extend selection right", keys: [.shiftArrowRight]) { editor in
+            if editor.selectionMark == nil {
+                editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                editor.setStatusMessage("Mark Set")
+            }
+            let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
+            if editor.buffer.columnIndex < currentLineLength {
+                editor.buffer.columnIndex += 1
+            } else if editor.buffer.lineIndex < editor.buffer.lines.count - 1 {
+                editor.buffer.lineIndex += 1
+                editor.buffer.columnIndex = 0
+            }
+        })
+
+        commandRegistry.register(Command(id: "select.up", name: "Select Up", description: "Extend selection up", keys: [.shiftArrowUp]) { editor in
+            if editor.selectionMark == nil {
+                editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                editor.setStatusMessage("Mark Set")
+            }
+            editor.moveCursorVirtual(deltaRow: -1)
+        })
+
+        commandRegistry.register(Command(id: "select.down", name: "Select Down", description: "Extend selection down", keys: [.shiftArrowDown]) { editor in
+            if editor.selectionMark == nil {
+                editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                editor.setStatusMessage("Mark Set")
+            }
+            editor.moveCursorVirtual(deltaRow: 1)
+        })
+
+        commandRegistry.register(Command(id: "move.home", name: "Line Home", description: "Move to start of visual line", keys: [.ctrl("A"), .home]) { editor in
+            let vLine = editor.getVirtualLineForCursor()
+            editor.buffer.columnIndex = vLine.startCol
+        })
+
+        commandRegistry.register(Command(id: "move.end", name: "Line End", description: "Move to end of visual line", keys: [.ctrl("E"), .end]) { editor in
+            let vLine = editor.getVirtualLineForCursor()
+            let realLineLen = editor.buffer.lines[vLine.bufferLineIndex].count
+            if vLine.endCol > vLine.startCol && vLine.endCol < realLineLen {
+                editor.buffer.columnIndex = vLine.endCol - 1
+            } else {
+                editor.buffer.columnIndex = vLine.endCol
+            }
+        })
+
+        commandRegistry.register(Command(id: "move.pageUp", name: "Prev Page", description: "Move up one page", keys: [.ctrl("Y"), .f7, .pageUp]) { editor in
+            let (rows, _) = editor.terminal.getWindowSize()
+            editor.moveCursorVirtual(deltaRow: -(rows - 4))
+        })
+
+        commandRegistry.register(Command(id: "move.pageDown", name: "Next Page", description: "Move down one page", keys: [.ctrl("V"), .f8, .pageDown]) { editor in
+            let (rows, _) = editor.terminal.getWindowSize()
+            editor.moveCursorVirtual(deltaRow: (rows - 4))
+        })
+
+        // File & Exit Commands
+        commandRegistry.register(Command(id: "file.exit", name: "Exit", description: "Exit editor", keys: [.ctrl("X"), .f2]) { editor in
+            if editor.buffer.isModified {
+                editor.promptExitSaveConfirm()
+            } else {
+                editor.isRunning = false
+            }
+        })
+
+        commandRegistry.register(Command(id: "file.save", name: "Write Out", description: "Save buffer to file", keys: [.ctrl("O"), .ctrl("S"), .f3]) { editor in
+            if let currentPath = editor.buffer.filePath, !currentPath.isEmpty {
+                editor.doSave(to: currentPath)
+            } else {
+                editor.promptSaveFilePath()
+            }
+        })
+
+        commandRegistry.register(Command(id: "file.insert", name: "Read File", description: "Insert file content", keys: [.ctrl("R"), .f5]) { editor in
+            editor.promptInsertFilePath()
+        })
+
+        // Search & Edit & Undo Commands
+        commandRegistry.register(Command(id: "edit.search", name: "Where Is", description: "Search text", keys: [.ctrl("W"), .f6]) { editor in
+            editor.promptSearch()
+        })
+
+        commandRegistry.register(Command(id: "screen.refresh", name: "Refresh", description: "Refresh screen", keys: [.ctrl("L")]) { _ in
+            Terminal.clearScreen()
+        })
+
+        commandRegistry.register(Command(id: "edit.undo", name: "Undo", description: "Undo last edit", keys: [.ctrl("Z")]) { editor in
+            editor.performUndo()
+        })
+
+        commandRegistry.register(Command(id: "edit.delete", name: "Delete", description: "Delete character", keys: [.ctrl("D"), .delete]) { editor in
+            editor.saveUndoSnapshot()
+            editor.buffer.delete()
+        })
+
+        commandRegistry.register(Command(id: "edit.mark", name: "Mark", description: "Set or unset selection mark", keys: [.mark]) { editor in
+            if editor.selectionMark == nil {
+                editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                editor.setStatusMessage("Mark Set")
+            } else {
+                editor.selectionMark = nil
+                editor.setStatusMessage("Mark Unset")
+            }
+        })
+
+        commandRegistry.register(Command(id: "edit.cut", name: "Cut Text", description: "Cut selected text or line", keys: [.ctrl("K"), .f9]) { editor in
+            editor.saveUndoSnapshot()
+            editor.buffer.clampCursor()
+            if let mark = editor.selectionMark {
+                let cursor = (line: editor.buffer.lineIndex, col: editor.buffer.columnIndex)
+                let start: (line: Int, col: Int)
+                let end: (line: Int, col: Int)
+
+                if (cursor.line < mark.line) || (cursor.line == mark.line && cursor.col < mark.column) {
+                    start = cursor
+                    end = (line: mark.line, col: mark.column)
+                } else {
+                    start = (line: mark.line, col: mark.column)
+                    end = cursor
+                }
+
+                editor.clipboardText = editor.buffer.cutRange(start: start, end: end)
+                editor.selectionMark = nil
+                editor.setStatusMessage("Cut text")
+            } else {
+                let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
+                editor.clipboardText = currentLine + "\n"
+                if editor.buffer.lines.count > 1 {
+                    editor.buffer.lines.remove(at: editor.buffer.lineIndex)
+                } else {
+                    editor.buffer.lines[0] = ""
+                }
+                editor.buffer.isModified = true
+                editor.setStatusMessage("Cut 1 line")
+            }
+        })
+
+        commandRegistry.register(Command(id: "edit.uncut", name: "UnCut Text", description: "Paste cut text", keys: [.ctrl("U"), .f10]) { editor in
+            if let text = editor.clipboardText, !text.isEmpty {
+                editor.saveUndoSnapshot()
+                editor.buffer.insertString(text)
+                editor.setStatusMessage("Uncut text")
+            } else {
+                editor.setStatusMessage("Clipboard is empty")
+            }
+        })
+
+        commandRegistry.register(Command(id: "edit.tab", name: "Tab", description: "Insert 4 spaces", keys: [.tab, .ctrl("I")]) { editor in
+            editor.saveUndoSnapshot()
+            for _ in 0..<4 {
+                editor.buffer.insert(character: " ")
+            }
+        })
+
+        commandRegistry.register(Command(id: "edit.justify", name: "Justify", description: "Format paragraph width", keys: [.ctrl("J"), .f4]) { editor in
+            editor.saveUndoSnapshot()
+            let (_, cols) = editor.terminal.getWindowSize()
+            let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
+            editor.buffer.justifyParagraph(targetWidth: targetWidth)
+            editor.setStatusMessage("Justified paragraph")
+        })
+
+        commandRegistry.register(Command(id: "edit.spell", name: "To Spell", description: "Check spelling", keys: [.ctrl("T"), .f12]) { editor in
+            editor.promptSpellCheck()
+        })
+
+        commandRegistry.register(Command(id: "status.curpos", name: "Cur Pos", description: "Report cursor position", keys: [.ctrl("C"), .f11]) { editor in
+            let totalLines = editor.buffer.lines.count
+            let currentLine = editor.buffer.lineIndex + 1
+            let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
+            let currentCol = editor.buffer.columnIndex + 1
+            let totalCol = editor.buffer.lines[editor.buffer.lineIndex].count + 1
+            editor.setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
+        })
+
+        commandRegistry.register(Command(id: "help.show", name: "Get Help", description: "Show full-screen help", keys: [.ctrl("G"), .f1]) { editor in
+            let helpView = HelpView(terminal: editor.terminal)
+            helpView.show()
+        })
     }
 
     /// Starts the editor event loop.
@@ -113,208 +339,20 @@ public final class Editor {
             return
         }
 
-        switch key {
-        // Navigation Shortcuts
-        case .ctrl("F"), .arrowRight:
-            let currentLineLength = buffer.lines[buffer.lineIndex].count
-            if buffer.columnIndex < currentLineLength {
-                buffer.columnIndex += 1
-            } else if buffer.lineIndex < buffer.lines.count - 1 {
-                buffer.lineIndex += 1
-                buffer.columnIndex = 0
-            }
-
-        case .ctrl("B"), .arrowLeft:
-            if buffer.columnIndex > 0 {
-                buffer.columnIndex -= 1
-            } else if buffer.lineIndex > 0 {
-                buffer.lineIndex -= 1
-                buffer.columnIndex = buffer.lines[buffer.lineIndex].count
-            }
-
-        case .ctrl("P"), .arrowUp:
-            moveCursorVirtual(deltaRow: -1)
-
-        case .ctrl("N"), .arrowDown:
-            moveCursorVirtual(deltaRow: 1)
-
-        case .shiftArrowLeft:
-            if selectionMark == nil {
-                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                setStatusMessage("Mark Set")
-            }
-            if buffer.columnIndex > 0 {
-                buffer.columnIndex -= 1
-            } else if buffer.lineIndex > 0 {
-                buffer.lineIndex -= 1
-                buffer.columnIndex = buffer.lines[buffer.lineIndex].count
-            }
-
-        case .shiftArrowRight:
-            if selectionMark == nil {
-                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                setStatusMessage("Mark Set")
-            }
-            let currentLineLength = buffer.lines[buffer.lineIndex].count
-            if buffer.columnIndex < currentLineLength {
-                buffer.columnIndex += 1
-            } else if buffer.lineIndex < buffer.lines.count - 1 {
-                buffer.lineIndex += 1
-                buffer.columnIndex = 0
-            }
-
-        case .shiftArrowUp:
-            if selectionMark == nil {
-                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                setStatusMessage("Mark Set")
-            }
-            moveCursorVirtual(deltaRow: -1)
-
-        case .shiftArrowDown:
-            if selectionMark == nil {
-                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                setStatusMessage("Mark Set")
-            }
-            moveCursorVirtual(deltaRow: 1)
-
-        case .ctrl("A"), .home:
-            let vLine = getVirtualLineForCursor()
-            buffer.columnIndex = vLine.startCol
-
-        case .ctrl("E"), .end:
-            let vLine = getVirtualLineForCursor()
-            let realLineLen = buffer.lines[vLine.bufferLineIndex].count
-            if vLine.endCol > vLine.startCol && vLine.endCol < realLineLen {
-                buffer.columnIndex = vLine.endCol - 1
-            } else {
-                buffer.columnIndex = vLine.endCol
-            }
-
-        case .ctrl("Y"), .f7, .pageUp:
-            let (rows, _) = terminal.getWindowSize()
-            moveCursorVirtual(deltaRow: -(rows - 4))
-
-        case .ctrl("V"), .f8, .pageDown:
-            let (rows, _) = terminal.getWindowSize()
-            moveCursorVirtual(deltaRow: (rows - 4))
-
-        // File & Exit Shortcuts
-        case .ctrl("X"), .f2:
-            if buffer.isModified {
-                promptExitSaveConfirm()
-            } else {
-                isRunning = false
-            }
-
-        case .ctrl("O"), .ctrl("S"), .f3:
-            if let currentPath = buffer.filePath, !currentPath.isEmpty {
-                doSave(to: currentPath)
-            } else {
-                promptSaveFilePath()
-            }
-
-        case .ctrl("R"), .f5:
-            promptInsertFilePath()
-
-        // Search & Refresh Shortcuts
-        case .ctrl("W"), .f6:
-            promptSearch()
-
-        case .ctrl("L"):
-            Terminal.clearScreen()
-
-        // Editing & Selection Shortcuts
-        case .ctrl("Z"):
-            performUndo()
-
-        case .ctrl("D"), .delete:
-            saveUndoSnapshot()
-            buffer.delete()
-
-        case .mark:
-            if selectionMark == nil {
-                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                setStatusMessage("Mark Set")
-            } else {
-                selectionMark = nil
-                setStatusMessage("Mark Unset")
-            }
-
-        case .ctrl("K"), .f9:
-            saveUndoSnapshot()
+        if commandRegistry.dispatch(key: key, editor: self) {
             buffer.clampCursor()
-            if let mark = selectionMark {
-                let cursor = (line: buffer.lineIndex, col: buffer.columnIndex)
-                let start: (line: Int, col: Int)
-                let end: (line: Int, col: Int)
+            return
+        }
 
-                if (cursor.line < mark.line) || (cursor.line == mark.line && cursor.col < mark.column) {
-                    start = cursor
-                    end = (line: mark.line, col: mark.column)
-                } else {
-                    start = (line: mark.line, col: mark.column)
-                    end = cursor
-                }
-
-                clipboardText = buffer.cutRange(start: start, end: end)
-                selectionMark = nil
-                setStatusMessage("Cut text")
-            } else {
-                let currentLine = buffer.lines[buffer.lineIndex]
-                clipboardText = currentLine + "\n"
-                if buffer.lines.count > 1 {
-                    buffer.lines.remove(at: buffer.lineIndex)
-                } else {
-                    buffer.lines[0] = ""
-                }
-                buffer.isModified = true
-                setStatusMessage("Cut 1 line")
-            }
-
-        case .ctrl("U"), .f10:
-            if let text = clipboardText, !text.isEmpty {
-                saveUndoSnapshot()
-                buffer.insertString(text)
-                setStatusMessage("Uncut text")
-            } else {
-                setStatusMessage("Clipboard is empty")
-            }
-
-        case .tab, .ctrl("I"):
-            saveUndoSnapshot()
-            for _ in 0..<4 {
-                buffer.insert(character: " ")
-            }
-
-        // Formatting & Status Shortcuts
-        case .ctrl("J"), .f4:
-            saveUndoSnapshot()
-            let (_, cols) = terminal.getWindowSize()
-            let targetWidth = layoutEngine.wrapColumn ?? max(20, cols - 5)
-            buffer.justifyParagraph(targetWidth: targetWidth)
-            setStatusMessage("Justified paragraph")
-
-        case .ctrl("T"), .f12:
-            promptSpellCheck()
-
-        case .ctrl("C"), .f11:
-            let totalLines = buffer.lines.count
-            let currentLine = buffer.lineIndex + 1
-            let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
-            let currentCol = buffer.columnIndex + 1
-            let totalCol = buffer.lines[buffer.lineIndex].count + 1
-            setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
-
-        case .ctrl("G"), .f1:
-            let helpView = HelpView(terminal: terminal)
-            helpView.show()
-
+        switch key {
         case .backspace:
             saveUndoSnapshot()
             buffer.backspace()
+
         case .enter:
             saveUndoSnapshot()
             buffer.insertNewline()
+
         case .char(let ch):
             let pastedText = terminal.readPendingText(firstChar: ch)
             let isMultiChar = (pastedText.count > 1)
@@ -334,8 +372,10 @@ public final class Editor {
             } else {
                 buffer.insertString(pastedText)
             }
+
         case .unknown:
             break
+
         default:
             setStatusMessage("Unknown command")
         }
