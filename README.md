@@ -6,9 +6,13 @@
 
 ## Features & Purpose
 
-- **Modeless Keybindings**: Intuitive Nano/Pico control shortcuts (`^O` Save, `^X` Exit, `^W` Search, `^K` Cut, `^U` Paste, `^J` Justify).
+- **Modeless Keybindings**: Intuitive Nano/Pico control shortcuts (`^O` Save, `^X` Exit, `^W` Search, `^K` Cut, `^U` Uncut/Paste, `^J` Justify, `^Z` Undo, `^T` Spell Check, `^G` Help).
+- **Undo Capability (`^Z`)**: Revert edit operations up to 100 snapshot levels.
+- **Interactive Spell Checker (`^T` / `F12`)**: System dictionary lookup with CJK filtering and interactive TUI word replacement.
+- **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
+- **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
+- **Non-Blocking Batch Paste**: Sub-millisecond clipboard paste processing via POSIX non-blocking I/O.
 - **Function Keys Support**: Native mapping for function keys `F1` through `F12`.
-- **Text Selection & Inverse Rendering**: Mark selection start points (`^^`) and highlight selected text ranges with inverse video.
 - **CJK & Multi-byte UTF-8 Support**: Seamless Chinese, Japanese, Korean, and multi-byte UTF-8 character input with accurate `wcwidth` display column alignment.
 - **Dynamic Softwrap**: Automatic line wrapping at viewport boundary or configurable column width (`-w` / `--wrap`) without altering raw line buffer data.
 - **Visual Reflow Engine**: Paragraph justification (`^J`) powered by a visual column display width algorithm for mixed CJK and Latin text.
@@ -41,7 +45,21 @@ The compiled binary will be located at:
 .build/release/se
 ```
 
-### 2. Install Executable System-Wide
+### 2. Install via Mint
+
+If you use [Mint](https://github.com/yonaskolb/Mint), a package manager for Swift command line tools, you can install `se` directly:
+
+```bash
+mint install zonble/se
+```
+
+Or run `se` without installing:
+
+```bash
+mint run zonble/se filename.txt
+```
+
+### 3. Install Executable System-Wide
 
 Copy the built executable into a folder in your `$PATH` (e.g., `/usr/local/bin`):
 
@@ -49,7 +67,7 @@ Copy the built executable into a folder in your `$PATH` (e.g., `/usr/local/bin`)
 cp .build/release/se /usr/local/bin/
 ```
 
-### 3. Usage
+### 4. Usage
 
 ```bash
 # Open or create a file for editing
