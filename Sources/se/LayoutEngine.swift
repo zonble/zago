@@ -1,6 +1,6 @@
 import Foundation
 
-/// 虛擬顯示行資料結構
+/// Data structure representing a virtual display line (softwrap chunk).
 public struct VirtualLine {
     public let bufferLineIndex: Int
     public let subLineIndex: Int
@@ -9,15 +9,15 @@ public struct VirtualLine {
     public let endCol: Int
 }
 
-/// 負責處理 Softwrap (軟折行) 計算與真實/虛擬座標轉換
+/// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor coordinate conversions.
 public final class LayoutEngine {
-    public var wrapColumn: Int? // nil 表示依 Terminal 視窗寬度自適應
+    public var wrapColumn: Int? // nil means adapt dynamically to terminal view width
     
     public init(wrapColumn: Int? = nil) {
         self.wrapColumn = wrapColumn
     }
 
-    /// 根據傳入的可用寬度 (availableWidth)，計算所有虛擬顯示行
+    /// Computes virtual display lines from raw buffer lines given available terminal view width.
     public func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
         let effectiveWrap = max(2, min(wrapColumn ?? viewWidth, viewWidth))
         var virtualLines: [VirtualLine] = []
@@ -70,13 +70,13 @@ public final class LayoutEngine {
         return virtualLines
     }
 
-    /// 將 Buffer Real Cursor (lineIndex, columnIndex) 轉為 Virtual Line Index 與 Virtual Column
+    /// Maps buffer real cursor position (lineIndex, columnIndex) to virtual line index and virtual column.
     public func getVirtualCursor(
         lineIndex: Int,
         columnIndex: Int,
         virtualLines: [VirtualLine]
     ) -> (vLineIndex: Int, vColIndex: Int) {
-        // 尋找對應 bufferLineIndex 的所有虛擬行
+        // Find all virtual lines corresponding to bufferLineIndex
         let matching = virtualLines.enumerated().filter { $0.element.bufferLineIndex == lineIndex }
         
         if matching.isEmpty {
@@ -85,7 +85,7 @@ public final class LayoutEngine {
 
         for (vIdx, vLine) in matching {
             if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
-                // 如果恰好在行末折行點，且非最後一區塊，歸類在該區塊內
+                // If cursor is at wrap boundary and not last chunk, continue to next subline
                 if columnIndex == vLine.endCol && vLine.endCol < vLine.startCol + vLine.text.count && vIdx < virtualLines.count - 1 {
                     let nextVLine = virtualLines[vIdx + 1]
                     if nextVLine.bufferLineIndex == lineIndex {
@@ -97,7 +97,7 @@ public final class LayoutEngine {
             }
         }
 
-        // 預設為該 buffer line 的最後一個虛擬行
+        // Default to last virtual line of the buffer line
         if let lastMatch = matching.last {
             return (lastMatch.offset, lastMatch.element.text.count)
         }
@@ -105,7 +105,7 @@ public final class LayoutEngine {
         return (0, 0)
     }
 
-    /// 根據畫面虛擬行座標 (vLineIndex, vColIndex) 換回 Buffer Real Cursor (lineIndex, columnIndex)
+    /// Maps virtual screen cursor position (vLineIndex, vColIndex) back to real buffer cursor (lineIndex, columnIndex).
     public func getBufferCursor(
         vLineIndex: Int,
         vColIndex: Int,

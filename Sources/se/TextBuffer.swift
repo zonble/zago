@@ -1,14 +1,14 @@
 import Foundation
 
-/// 文字資料與游標狀態管理
+/// Manages text buffer lines, file I/O, and cursor operations.
 public final class TextBuffer {
     public var lines: [String] = [""]
     public var filePath: String?
     public var isModified: Bool = false
 
-    /// 游標真實位置 (以字元 Character/Grapheme Cluster 為單位)
-    /// lineIndex: 0-indexed 行號
-    /// columnIndex: 0-indexed 欄號
+    /// Real buffer cursor position (measured in Character / Grapheme Clusters).
+    /// lineIndex: 0-indexed line number
+    /// columnIndex: 0-indexed column offset
     public var lineIndex: Int = 0
     public var columnIndex: Int = 0
 
@@ -19,7 +19,7 @@ public final class TextBuffer {
         }
     }
 
-    /// 從檔案載入文字
+    /// Loads text from a file path.
     public func loadFile(at path: String) {
         let expandedPath = NSString(string: path).expandingTildeInPath
         if let content = try? String(contentsOfFile: expandedPath, encoding: .utf8) {
@@ -30,14 +30,14 @@ public final class TextBuffer {
             self.lineIndex = 0
             self.columnIndex = 0
         } else {
-            // 如果檔案不存在，則創立空文件，留給使用者儲存
+            // Create an empty buffer if file does not exist yet
             self.lines = [""]
             self.filePath = expandedPath
             self.isModified = false
         }
     }
 
-    /// 儲存檔案
+    /// Saves buffer text to file.
     public func saveFile(to path: String? = nil) throws {
         let targetPath = path ?? filePath
         guard let savePath = targetPath, !savePath.isEmpty else {
@@ -52,7 +52,99 @@ public final class TextBuffer {
         self.isModified = false
     }
 
-    /// 插入字元
+    /// Inserts external file content at current cursor position.
+    public func insertFile(at path: String) throws -> Int {
+        let expandedPath = NSString(string: path).expandingTildeInPath
+        let content = try String(contentsOfFile: expandedPath, encoding: .utf8)
+        let insertedLines = content.components(separatedBy: .newlines)
+        insertString(content)
+        return insertedLines.count
+    }
+
+    /// Inserts multi-line or single-line string content at current cursor position.
+    public func insertString(_ text: String) {
+        ensureBounds()
+        let textLines = text.components(separatedBy: .newlines)
+        if textLines.isEmpty { return }
+
+        if textLines.count == 1 {
+            let singleLine = textLines[0]
+            var currentLine = lines[lineIndex]
+            let idx = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+            currentLine.insert(contentsOf: singleLine, at: idx)
+            lines[lineIndex] = currentLine
+            columnIndex += singleLine.count
+        } else {
+            let currentLine = lines[lineIndex]
+            let idx = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+
+            let leftPart = String(currentLine[..<idx])
+            let rightPart = String(currentLine[idx...])
+
+            var newMiddleLines: [String] = []
+            newMiddleLines.append(leftPart + textLines[0])
+            if textLines.count > 2 {
+                for l in textLines[1..<(textLines.count - 1)] {
+                    newMiddleLines.append(l)
+                }
+            }
+            let lastLine = textLines.last!
+            newMiddleLines.append(lastLine + rightPart)
+
+            lines.replaceSubrange(lineIndex...lineIndex, with: newMiddleLines)
+            lineIndex = lineIndex + textLines.count - 1
+            columnIndex = lastLine.count
+        }
+        isModified = true
+    }
+
+    /// Cuts text range from start (line, col) to end (line, col) and returns cut text.
+    public func cutRange(
+        start: (line: Int, col: Int),
+        end: (line: Int, col: Int)
+    ) -> String {
+        ensureBounds()
+        guard start.line <= end.line else { return "" }
+
+        if start.line == end.line {
+            var line = lines[start.line]
+            let sIdx = line.index(line.startIndex, offsetBy: min(start.col, line.count))
+            let eIdx = line.index(line.startIndex, offsetBy: min(end.col, line.count))
+            let cutText = String(line[sIdx..<eIdx])
+            line.removeSubrange(sIdx..<eIdx)
+            lines[start.line] = line
+            lineIndex = start.line
+            columnIndex = min(start.col, line.count)
+            isModified = true
+            return cutText
+        } else {
+            let startLineStr = lines[start.line]
+            let endLineStr = lines[end.line]
+
+            let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: min(start.col, startLineStr.count))
+            let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: min(end.col, endLineStr.count))
+
+            let firstLineCut = String(startLineStr[sIdx...])
+            let lastLineCut = String(endLineStr[..<eIdx])
+
+            var cutLines: [String] = [firstLineCut]
+            if start.line + 1 < end.line {
+                cutLines.append(contentsOf: lines[(start.line + 1)..<end.line])
+            }
+            cutLines.append(lastLineCut)
+
+            let remainingStart = String(startLineStr[..<sIdx])
+            let remainingEnd = String(endLineStr[eIdx...])
+
+            lines.replaceSubrange(start.line...end.line, with: [remainingStart + remainingEnd])
+            lineIndex = start.line
+            columnIndex = min(start.col, remainingStart.count)
+            isModified = true
+            return cutLines.joined(separator: "\n")
+        }
+    }
+
+    /// Inserts a character at the current cursor position.
     public func insert(character ch: Character) {
         ensureBounds()
         var currentLine = lines[lineIndex]
@@ -63,7 +155,7 @@ public final class TextBuffer {
         isModified = true
     }
 
-    /// 按 Enter 換行
+    /// Inserts a newline at the current cursor position.
     public func insertNewline() {
         ensureBounds()
         let currentLine = lines[lineIndex]
@@ -80,7 +172,7 @@ public final class TextBuffer {
         isModified = true
     }
 
-    /// Backspace 刪除字元
+    /// Deletes the character preceding the cursor (Backspace).
     public func backspace() {
         ensureBounds()
         if columnIndex > 0 {
@@ -91,7 +183,7 @@ public final class TextBuffer {
             columnIndex -= 1
             isModified = true
         } else if lineIndex > 0 {
-            // 合併至上一行末尾
+            // Merge with end of previous line
             let currentLine = lines.remove(at: lineIndex)
             lineIndex -= 1
             let prevLineLength = lines[lineIndex].count
@@ -101,7 +193,7 @@ public final class TextBuffer {
         }
     }
 
-    /// Delete 鍵刪除右側字元
+    /// Deletes the character at the cursor position (Delete).
     public func delete() {
         ensureBounds()
         let currentLine = lines[lineIndex]
@@ -112,14 +204,14 @@ public final class TextBuffer {
             lines[lineIndex] = lineCopy
             isModified = true
         } else if lineIndex < lines.count - 1 {
-            // 合併下一行
+            // Merge next line into current line
             let nextLine = lines.remove(at: lineIndex + 1)
             lines[lineIndex].append(nextLine)
             isModified = true
         }
     }
 
-    /// 確保游標在合法範圍內
+    /// Clamps cursor position to valid buffer line and column bounds.
     public func clampCursor() {
         if lines.isEmpty {
             lines = [""]
@@ -129,7 +221,101 @@ public final class TextBuffer {
         columnIndex = max(0, min(columnIndex, currentLineCount))
     }
 
-    /// 執行 ^J (Justify Paragraph) 對齊重排段落文字
+    /// Visual Token representation for paragraph reflow.
+    private enum VisualToken: Equatable {
+        case cjk(Character)
+        case latin(String)
+        case space
+    }
+
+    /// Tokenizes paragraph text into a stream of CJK characters, Latin words, and spaces.
+    private static func tokenizeForReflow(_ text: String) -> [VisualToken] {
+        var tokens: [VisualToken] = []
+        var currentLatin = ""
+
+        for ch in text {
+            if ch.isWhitespace {
+                if !currentLatin.isEmpty {
+                    tokens.append(.latin(currentLatin))
+                    currentLatin = ""
+                }
+                if tokens.last != .space {
+                    tokens.append(.space)
+                }
+            } else if ch.displayWidth >= 2 {
+                if !currentLatin.isEmpty {
+                    tokens.append(.latin(currentLatin))
+                    currentLatin = ""
+                }
+                tokens.append(.cjk(ch))
+            } else {
+                currentLatin.append(ch)
+            }
+        }
+
+        if !currentLatin.isEmpty {
+            tokens.append(.latin(currentLatin))
+        }
+
+        if tokens.first == .space { tokens.removeFirst() }
+        if tokens.last == .space { tokens.removeLast() }
+
+        return tokens
+    }
+
+    /// Reflows visual tokens into lines bounded by targetWidth display columns.
+    private static func reflowVisualTokens(_ tokens: [VisualToken], targetWidth: Int) -> [String] {
+        var resultLines: [String] = []
+        var currentLine = ""
+
+        for token in tokens {
+            switch token {
+            case .cjk(let ch):
+                let w = ch.displayWidth
+                if currentLine.displayWidth + w > targetWidth && !currentLine.isEmpty {
+                    resultLines.append(currentLine.trimmingCharacters(in: .whitespaces))
+                    currentLine = String(ch)
+                } else {
+                    currentLine.append(ch)
+                }
+
+            case .latin(let word):
+                let w = word.displayWidth
+                let needsSpace: Bool
+                if let lastChar = currentLine.last, !lastChar.isWhitespace && lastChar.displayWidth == 1 {
+                    needsSpace = true
+                } else {
+                    needsSpace = false
+                }
+
+                let spaceWidth = needsSpace ? 1 : 0
+                if currentLine.displayWidth + spaceWidth + w > targetWidth && !currentLine.isEmpty {
+                    resultLines.append(currentLine.trimmingCharacters(in: .whitespaces))
+                    currentLine = word
+                } else {
+                    if needsSpace {
+                        currentLine.append(" ")
+                    }
+                    currentLine.append(word)
+                }
+
+            case .space:
+                if !currentLine.isEmpty && !currentLine.hasSuffix(" ") {
+                    if currentLine.displayWidth + 1 <= targetWidth {
+                        currentLine.append(" ")
+                    }
+                }
+            }
+        }
+
+        if !currentLine.trimmingCharacters(in: .whitespaces).isEmpty {
+            resultLines.append(currentLine.trimmingCharacters(in: .whitespaces))
+        }
+
+        return resultLines.isEmpty ? [""] : resultLines
+    }
+
+    /// Justifies (reflows) the paragraph at current cursor position (^J) using visual column display widths.
     public func justifyParagraph(targetWidth: Int = 72) {
         guard !lines.isEmpty else { return }
         clampCursor()
@@ -139,7 +325,7 @@ public final class TextBuffer {
             return
         }
 
-        // 1. 尋找當前段落的起點 line 與終點 line (以空行分界)
+        // 1. Find paragraph start and end line boundaries (separated by empty lines)
         var startLine = lineIndex
         while startLine > 0 && !lines[startLine - 1].trimmingCharacters(in: .whitespaces).isEmpty {
             startLine -= 1
@@ -150,36 +336,16 @@ public final class TextBuffer {
             endLine += 1
         }
 
-        // 2. 提取段落所有文字並以單一空格組合
+        // 2. Extract paragraph text
         let paragraphText = lines[startLine...endLine]
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .joined(separator: " ")
 
-        // 3. 依據 targetWidth 進行段落重新分行
-        let words = paragraphText.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        guard !words.isEmpty else { return }
+        // 3. Tokenize and reflow using visual display width
+        let tokens = TextBuffer.tokenizeForReflow(paragraphText)
+        let newParagraphLines = TextBuffer.reflowVisualTokens(tokens, targetWidth: targetWidth)
 
-        var newParagraphLines: [String] = []
-        var currentFormattedLine = ""
-
-        for word in words {
-            if currentFormattedLine.isEmpty {
-                currentFormattedLine = word
-            } else {
-                let candidate = currentFormattedLine + " " + word
-                if candidate.displayWidth <= targetWidth {
-                    currentFormattedLine = candidate
-                } else {
-                    newParagraphLines.append(currentFormattedLine)
-                    currentFormattedLine = word
-                }
-            }
-        }
-        if !currentFormattedLine.isEmpty {
-            newParagraphLines.append(currentFormattedLine)
-        }
-
-        // 4. 替換舊段落列
+        // 4. Replace original paragraph lines with reflowed lines
         lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
         lineIndex = min(startLine, lines.count - 1)
         columnIndex = 0

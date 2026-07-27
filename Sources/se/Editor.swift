@@ -1,6 +1,6 @@
 import Foundation
 
-/// Nano 介面狀態機與編輯器核心
+/// Nano-style UI state machine and core editor engine.
 public final class Editor {
     private let terminal: Terminal
     public let buffer: TextBuffer
@@ -10,17 +10,19 @@ public final class Editor {
     private var statusMessage: String = ""
     private var statusMessageTime: Date?
 
-    private var clipboardLine: String? = nil
+    private var clipboardText: String? = nil
+    private var selectionMark: (line: Int, column: Int)? = nil
 
-    // UI Viewport Scrolling Offset (以 虛擬行 VirtualLineIndex 為單位)
+    // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
     private var topVLineIndex: Int = 0
 
-    // Prompt 狀態 (處理 Ctrl+O 檔名輸入、Ctrl+X 儲存確認)
+    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit confirmation, Ctrl+W search, Ctrl+R insert file)
     private enum PromptMode {
         case none
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)
         case search(completion: (String?) -> Void)
+        case insertFilePath(completion: (String?) -> Void)
     }
     private var currentPromptMode: PromptMode = .none
     private var promptInputText: String = ""
@@ -38,7 +40,7 @@ public final class Editor {
         }
     }
 
-    /// 啟動編輯器主循環 (Event Loop)
+    /// Starts the editor event loop.
     public func run() {
         terminal.enableRawMode()
         Terminal.hideCursor()
@@ -56,112 +58,25 @@ public final class Editor {
         }
     }
 
-    /// 設定底部狀態列訊息
+    /// Sets status message to display in the bottom status line.
     private func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
     }
 
-    /// 處理輸入按鍵
+    /// Processes key input events.
     private func processKey(_ key: Key) {
-        // 如果目前處於底部 Prompt 輸入模式
+        // Handle input if currently in bottom prompt mode
         if case .none = currentPromptMode {
-            // normal mode
+            // Normal mode
         } else {
             processPromptKey(key)
             return
         }
 
         switch key {
-        // Nano 快捷鍵: Ctrl+X (Exit)
-        case .ctrl("X"), .ctrl("Q"):
-            if buffer.isModified {
-                promptExitSaveConfirm()
-            } else {
-                isRunning = false
-            }
-
-        // Nano 快捷鍵: Ctrl+O 或 Ctrl+S (WriteOut / Save)
-        case .ctrl("O"), .ctrl("S"):
-            if let currentPath = buffer.filePath, !currentPath.isEmpty {
-                doSave(to: currentPath)
-            } else {
-                promptSaveFilePath()
-            }
-
-        // Nano 快捷鍵: Ctrl+K (Cut Line)
-        case .ctrl("K"):
-            buffer.clampCursor()
-            clipboardLine = buffer.lines[buffer.lineIndex]
-            if buffer.lines.count > 1 {
-                buffer.lines.remove(at: buffer.lineIndex)
-            } else {
-                buffer.lines[0] = ""
-            }
-            buffer.isModified = true
-            setStatusMessage("Cut 1 line")
-
-        // Nano 快捷鍵: Ctrl+U (Uncut / Paste Line)
-        case .ctrl("U"):
-            if let clip = clipboardLine {
-                buffer.lines.insert(clip, at: buffer.lineIndex)
-                buffer.isModified = true
-                setStatusMessage("Pasted 1 line")
-            } else {
-                setStatusMessage("Clipboard is empty")
-            }
-
-        // Nano 快捷鍵: Ctrl+J (Justify Paragraph)
-        case .ctrl("J"):
-            let (_, cols) = terminal.getWindowSize()
-            let targetWidth = layoutEngine.wrapColumn ?? max(20, cols - 5)
-            buffer.justifyParagraph(targetWidth: targetWidth)
-            setStatusMessage("Justified paragraph")
-
-        // Nano 快捷鍵: Ctrl+W (Where Is / Search)
-        case .ctrl("W"), .ctrl("F"):
-            promptSearch()
-
-        // Nano 快捷鍵: Ctrl+C (Cur Pos)
-        case .ctrl("C"):
-            let totalLines = buffer.lines.count
-            let currentLine = buffer.lineIndex + 1
-            let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
-            let currentCol = buffer.columnIndex + 1
-            let totalCol = buffer.lines[buffer.lineIndex].count + 1
-            setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
-
-        // Nano 快捷鍵: Ctrl+Y (Prev Pg)
-        case .ctrl("Y"):
-            let (rows, _) = terminal.getWindowSize()
-            moveCursorVirtual(deltaRow: -(rows - 4))
-
-        // Nano 快捷鍵: Ctrl+V (Next Pg)
-        case .ctrl("V"):
-            let (rows, _) = terminal.getWindowSize()
-            moveCursorVirtual(deltaRow: (rows - 4))
-
-        // Nano 快捷鍵: Ctrl+G (Get Help)
-        case .ctrl("G"):
-            setStatusMessage("se: Swift TUI Nano Editor [Ctrl+O: Save, Ctrl+X: Exit, Ctrl+K: Cut, Ctrl+U: Uncut]")
-
-        // Nano 快捷鍵: Ctrl+L (Refresh)
-        case .ctrl("L"):
-            Terminal.clearScreen()
-
-        // 游標移動與編輯
-        case .arrowUp:
-            moveCursorVirtual(deltaRow: -1)
-        case .arrowDown:
-            moveCursorVirtual(deltaRow: 1)
-        case .arrowLeft:
-            if buffer.columnIndex > 0 {
-                buffer.columnIndex -= 1
-            } else if buffer.lineIndex > 0 {
-                buffer.lineIndex -= 1
-                buffer.columnIndex = buffer.lines[buffer.lineIndex].count
-            }
-        case .arrowRight:
+        // Navigation Shortcuts
+        case .ctrl("F"), .arrowRight:
             let currentLineLength = buffer.lines[buffer.lineIndex].count
             if buffer.columnIndex < currentLineLength {
                 buffer.columnIndex += 1
@@ -169,20 +84,139 @@ public final class Editor {
                 buffer.lineIndex += 1
                 buffer.columnIndex = 0
             }
-        case .home:
+
+        case .ctrl("B"), .arrowLeft:
+            if buffer.columnIndex > 0 {
+                buffer.columnIndex -= 1
+            } else if buffer.lineIndex > 0 {
+                buffer.lineIndex -= 1
+                buffer.columnIndex = buffer.lines[buffer.lineIndex].count
+            }
+
+        case .ctrl("P"), .arrowUp:
+            moveCursorVirtual(deltaRow: -1)
+
+        case .ctrl("N"), .arrowDown:
+            moveCursorVirtual(deltaRow: 1)
+
+        case .ctrl("A"), .home:
             buffer.columnIndex = 0
-        case .end:
+
+        case .ctrl("E"), .end:
             buffer.columnIndex = buffer.lines[buffer.lineIndex].count
-        case .pageUp:
+
+        case .ctrl("Y"), .f7, .pageUp:
             let (rows, _) = terminal.getWindowSize()
             moveCursorVirtual(deltaRow: -(rows - 4))
-        case .pageDown:
+
+        case .ctrl("V"), .f8, .pageDown:
             let (rows, _) = terminal.getWindowSize()
             moveCursorVirtual(deltaRow: (rows - 4))
+
+        // File & Exit Shortcuts
+        case .ctrl("X"), .f2:
+            if buffer.isModified {
+                promptExitSaveConfirm()
+            } else {
+                isRunning = false
+            }
+
+        case .ctrl("O"), .ctrl("S"), .f3:
+            if let currentPath = buffer.filePath, !currentPath.isEmpty {
+                doSave(to: currentPath)
+            } else {
+                promptSaveFilePath()
+            }
+
+        case .ctrl("R"), .f5:
+            promptInsertFilePath()
+
+        // Search & Refresh Shortcuts
+        case .ctrl("W"), .f6:
+            promptSearch()
+
+        case .ctrl("L"):
+            Terminal.clearScreen()
+
+        // Editing & Selection Shortcuts
+        case .ctrl("D"), .delete:
+            buffer.delete()
+
+        case .mark:
+            if selectionMark == nil {
+                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                setStatusMessage("Mark Set")
+            } else {
+                selectionMark = nil
+                setStatusMessage("Mark Unset")
+            }
+
+        case .ctrl("K"), .f9:
+            buffer.clampCursor()
+            if let mark = selectionMark {
+                let cursor = (line: buffer.lineIndex, col: buffer.columnIndex)
+                let start: (line: Int, col: Int)
+                let end: (line: Int, col: Int)
+
+                if (cursor.line < mark.line) || (cursor.line == mark.line && cursor.col < mark.column) {
+                    start = cursor
+                    end = (line: mark.line, col: mark.column)
+                } else {
+                    start = (line: mark.line, col: mark.column)
+                    end = cursor
+                }
+
+                clipboardText = buffer.cutRange(start: start, end: end)
+                selectionMark = nil
+                setStatusMessage("Cut text")
+            } else {
+                let currentLine = buffer.lines[buffer.lineIndex]
+                clipboardText = currentLine + "\n"
+                if buffer.lines.count > 1 {
+                    buffer.lines.remove(at: buffer.lineIndex)
+                } else {
+                    buffer.lines[0] = ""
+                }
+                buffer.isModified = true
+                setStatusMessage("Cut 1 line")
+            }
+
+        case .ctrl("U"), .f10:
+            if let text = clipboardText, !text.isEmpty {
+                buffer.insertString(text)
+                setStatusMessage("Uncut text")
+            } else {
+                setStatusMessage("Clipboard is empty")
+            }
+
+        case .tab, .ctrl("I"):
+            for _ in 0..<4 {
+                buffer.insert(character: " ")
+            }
+
+        // Formatting & Status Shortcuts
+        case .ctrl("J"), .f4:
+            let (_, cols) = terminal.getWindowSize()
+            let targetWidth = layoutEngine.wrapColumn ?? max(20, cols - 5)
+            buffer.justifyParagraph(targetWidth: targetWidth)
+            setStatusMessage("Justified paragraph")
+
+        case .ctrl("T"), .f12:
+            setStatusMessage("Spell checker not available")
+
+        case .ctrl("C"), .f11:
+            let totalLines = buffer.lines.count
+            let currentLine = buffer.lineIndex + 1
+            let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
+            let currentCol = buffer.columnIndex + 1
+            let totalCol = buffer.lines[buffer.lineIndex].count + 1
+            setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
+
+        case .ctrl("G"), .f1:
+            setStatusMessage("se: Swift TUI Nano/Pico Editor [F2:Exit F3:Save F5:Insert F6:Search F9:Cut F10:Uncut]")
+
         case .backspace:
             buffer.backspace()
-        case .delete:
-            buffer.delete()
         case .enter:
             buffer.insertNewline()
         case .char(let ch):
@@ -194,7 +228,7 @@ public final class Editor {
         buffer.clampCursor()
     }
 
-    /// 在虛擬顯示行之間進行上下移動
+    /// Moves cursor vertically across virtual display lines.
     private func moveCursorVirtual(deltaRow: Int) {
         let (_, cols) = terminal.getWindowSize()
         let gutterWidth = 5
@@ -218,7 +252,7 @@ public final class Editor {
         buffer.columnIndex = newCol
     }
 
-    /// 提示儲存檔案路徑
+    /// Prompts user to input file path for saving.
     private func promptSaveFilePath() {
         promptInputText = buffer.filePath ?? ""
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
@@ -230,7 +264,7 @@ public final class Editor {
         })
     }
 
-    /// 提示退出前確認儲存
+    /// Prompts user to confirm saving changes before exiting.
     private func promptExitSaveConfirm() {
         currentPromptMode = .confirmExitSave(completion: { [weak self] save in
             guard let self = self, let save = save else {
@@ -250,7 +284,7 @@ public final class Editor {
         })
     }
 
-    /// 執行儲存動作
+    /// Saves buffer to specified file path.
     private func doSave(to path: String) {
         do {
             try buffer.saveFile(to: path)
@@ -260,7 +294,7 @@ public final class Editor {
         }
     }
 
-    /// 處理 Prompt 模式下的鍵盤輸入
+    /// Processes keyboard input when in prompt mode.
     private func processPromptKey(_ key: Key) {
         switch currentPromptMode {
         case .saveFilePath(let completion):
@@ -316,12 +350,31 @@ public final class Editor {
                 break
             }
 
+        case .insertFilePath(let completion):
+            switch key {
+            case .enter:
+                let result = promptInputText
+                currentPromptMode = .none
+                completion(result)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
         case .none:
             break
         }
     }
 
-    /// 提示搜尋 (Where Is / ^W)
+    /// Prompts user to input search query (Where Is / ^W).
     private func promptSearch() {
         promptInputText = ""
         currentPromptMode = .search(completion: { [weak self] query in
@@ -339,7 +392,7 @@ public final class Editor {
         })
     }
 
-    /// 執行文字搜尋
+    /// Performs text search for target query string.
     private func performSearch(query: String) {
         guard !query.isEmpty else { return }
         self.lastSearchQuery = query
@@ -348,7 +401,7 @@ public final class Editor {
         let startLine = buffer.lineIndex
         let startCol = buffer.columnIndex + 1
 
-        // 1. 從目前游標位置向後搜尋
+        // 1. Search forward from current cursor position
         for lIdx in startLine..<totalLines {
             let line = buffer.lines[lIdx]
             let fromCol = (lIdx == startLine) ? startCol : 0
@@ -364,7 +417,7 @@ public final class Editor {
             }
         }
 
-        // 2. Wrap 繞回檔案開頭搜尋
+        // 2. Wrap search around from line 0
         for lIdx in 0...startLine {
             let line = buffer.lines[lIdx]
             let toCol = (lIdx == startLine) ? startCol : line.count
@@ -381,7 +434,47 @@ public final class Editor {
         setStatusMessage("\"\(query)\" not found")
     }
 
-    /// 雙重緩衝畫面繪製
+    /// Prompts user to input file path to insert into buffer (^R / F5).
+    private func promptInsertFilePath() {
+        promptInputText = ""
+        currentPromptMode = .insertFilePath(completion: { [weak self] path in
+            guard let self = self, let path = path, !path.isEmpty else {
+                self?.setStatusMessage("Cancelled insert")
+                return
+            }
+            do {
+                let count = try self.buffer.insertFile(at: path)
+                self.setStatusMessage("[ Inserted \(count) lines ]")
+            } catch {
+                self.setStatusMessage("Error inserting file: \(error.localizedDescription)")
+            }
+        })
+    }
+
+    /// Checks if a buffer character (line, col) is within the current selection mark range.
+    private func isCharacterSelected(line: Int, col: Int) -> Bool {
+        guard let mark = selectionMark else { return false }
+        let cursor = (line: buffer.lineIndex, col: buffer.columnIndex)
+
+        let start: (line: Int, col: Int)
+        let end: (line: Int, col: Int)
+
+        if (cursor.line < mark.line) || (cursor.line == mark.line && cursor.col < mark.column) {
+            start = cursor
+            end = (line: mark.line, col: mark.column)
+        } else {
+            start = (line: mark.line, col: mark.column)
+            end = cursor
+        }
+
+        if line < start.line || line > end.line { return false }
+        if line == start.line && col < start.col { return false }
+        if line == end.line && col >= end.col { return false }
+
+        return true
+    }
+
+    /// Double-buffered screen rendering logic.
     private func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
         let gutterWidth = 5
@@ -394,7 +487,7 @@ public final class Editor {
             virtualLines: virtualLines
         )
 
-        // 計算 Viewport Scroll
+        // Calculate Viewport Scrolling
         let mainAreaHeight = max(1, rows - 4) // 1 top title, 1 status, 2 key help
         if cursorVLineIdx < topVLineIndex {
             topVLineIndex = cursorVLineIdx
@@ -403,7 +496,7 @@ public final class Editor {
         }
 
         var output = ""
-        output += "\u{1B}[H" // 游標歸位到 (1, 1)
+        output += "\u{1B}[H" // Reset cursor to (1, 1)
 
         // 1. Title Bar (Inverted Colors)
         let titleName = buffer.filePath ?? "New Buffer"
@@ -430,7 +523,15 @@ public final class Editor {
                 }
 
                 output += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
-                output += vLine.text
+                let chars = Array(vLine.text)
+                for (cIdxInVLine, ch) in chars.enumerated() {
+                    let realCol = vLine.startCol + cIdxInVLine
+                    if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                        output += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
+                    } else {
+                        output += String(ch)
+                    }
+                }
             }
             output += "\r\n"
         }
@@ -445,6 +546,8 @@ public final class Editor {
         case .search:
             let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
             output += "\u{1B}[1mSearch\(defaultHint): \(promptInputText)_\u{1B}[0m"
+        case .insertFilePath:
+            output += "\u{1B}[1mFile to insert: \(promptInputText)_\u{1B}[0m"
         case .none:
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
                 output += "  \(statusMessage)"
@@ -452,14 +555,14 @@ public final class Editor {
         }
         output += "\r\n"
 
-        // 4. Nano Key Help Bar (2 lines) - 限制在 80 欄以內，不使用白色反白背景 (\u{1B}[7m)
+        // 4. Nano Key Help Bar (2 lines) - Constrained within 80 columns without inverted background
         let helpWidth = min(cols, 80)
         let helpLine1 = " ^G Get Help   ^O WriteOut   ^R Read File  ^Y Prev Pg    ^K Cut Text   ^C Cur Pos"
         let helpLine2 = " ^X Exit       ^J Justify    ^W Where Is   ^V Next Pg    ^U UnCut Text ^T To Spell"
         output += formatHelpLine(helpLine1, width: helpWidth) + "\r\n"
         output += formatHelpLine(helpLine2, width: helpWidth)
 
-        // 5. Position Terminal Cursor (考量全形/中文顯示寬度)
+        // 5. Position Terminal Cursor (accounting for CJK/wide character display width)
         let vLineText = virtualLines[cursorVLineIdx].text
         let vLineChars = Array(vLineText)
         let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
@@ -474,7 +577,7 @@ public final class Editor {
         fflush(stdout)
     }
 
-    /// 格式化 Nano 幫助列 (標題青色粗體，無反白背景，縮在指定寬度內)
+    /// Formats Nano help bar lines (Bold Cyan for key tags, no inverted background, constrained to width).
     private func formatHelpLine(_ rawText: String, width: Int) -> String {
         let trimmed = rawText.paddedToDisplayWidth(width)
         var result = ""
