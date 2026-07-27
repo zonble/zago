@@ -3,7 +3,27 @@ import Foundation
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {
     let terminal: Terminal
-    public let buffer: TextBuffer
+    public var buffers: [TextBuffer] = []
+    public var currentBufferIndex: Int = 0
+
+    /// Active text buffer.
+    public var buffer: TextBuffer {
+        get {
+            if buffers.isEmpty {
+                buffers.append(TextBuffer())
+            }
+            let idx = max(0, min(currentBufferIndex, buffers.count - 1))
+            return buffers[idx]
+        }
+        set {
+            if buffers.isEmpty {
+                buffers.append(newValue)
+            } else {
+                let idx = max(0, min(currentBufferIndex, buffers.count - 1))
+                buffers[idx] = newValue
+            }
+        }
+    }
     public let layoutEngine: LayoutEngine
 
     var isRunning = true
@@ -46,9 +66,15 @@ public final class Editor {
 
     public var displayConfig: DisplayConfig
 
-    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
+    public init(filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
         self.terminal = Terminal()
-        self.buffer = TextBuffer(filePath: filePath)
+
+        if filePaths.isEmpty {
+            self.buffers = [TextBuffer()]
+        } else {
+            self.buffers = filePaths.map { TextBuffer(filePath: $0) }
+        }
+        self.currentBufferIndex = 0
 
         let loadedConfig = ConfigLoader().loadConfig()
 
@@ -66,13 +92,70 @@ public final class Editor {
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)
 
-        if let path = buffer.filePath {
-            fileWatcher.start(path: path)
-        }
+        startFileWatcherForCurrentBuffer()
 
         fileWatcher.onChange = { [weak self] in
             guard let self = self, self.displayConfig.autoReload else { return }
             self.handleExternalFileChange()
+        }
+    }
+
+    public convenience init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
+        let paths = filePath != nil ? [filePath!] : []
+        self.init(filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, enableSyntax: enableSyntax, autoReload: autoReload, language: language)
+    }
+
+    private func startFileWatcherForCurrentBuffer() {
+        if let path = buffer.filePath {
+            fileWatcher.start(path: path)
+        } else {
+            fileWatcher.stop()
+        }
+    }
+
+    /// Switches to next open buffer in sequence.
+    public func nextBuffer() {
+        guard buffers.count > 1 else { return }
+        currentBufferIndex = (currentBufferIndex + 1) % buffers.count
+        topVLineIndex = 0
+        selectionMark = nil
+        startFileWatcherForCurrentBuffer()
+    }
+
+    /// Switches to previous open buffer in sequence.
+    public func prevBuffer() {
+        guard buffers.count > 1 else { return }
+        currentBufferIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
+        topVLineIndex = 0
+        selectionMark = nil
+        startFileWatcherForCurrentBuffer()
+    }
+
+    /// Opens a new buffer for given file path or empty buffer.
+    public func openNewBuffer(filePath: String? = nil) {
+        let newBuf = TextBuffer(filePath: filePath)
+        buffers.append(newBuf)
+        currentBufferIndex = buffers.count - 1
+        topVLineIndex = 0
+        selectionMark = nil
+        startFileWatcherForCurrentBuffer()
+    }
+
+    /// Closes current active buffer. If no buffers remain, exits editor.
+    public func closeCurrentBuffer() {
+        guard !buffers.isEmpty else {
+            isRunning = false
+            return
+        }
+
+        buffers.remove(at: currentBufferIndex)
+        if buffers.isEmpty {
+            isRunning = false
+        } else {
+            currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
+            topVLineIndex = 0
+            selectionMark = nil
+            startFileWatcherForCurrentBuffer()
         }
     }
 

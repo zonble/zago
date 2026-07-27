@@ -291,6 +291,12 @@ import Foundation
     let parsedCtrlF = KeyParser.parse("ctrl-f")
     #expect(parsedCtrlF == .ctrl("f"))
 
+    let parsedAltDot = KeyParser.parse("alt-.")
+    #expect(parsedAltDot == .alt("."))
+
+    let parsedMetaComma = KeyParser.parse("m-,")
+    #expect(parsedMetaComma == .alt(","))
+
     let parsedF1 = KeyParser.parse("f1")
     #expect(parsedF1 == .f1)
 
@@ -336,6 +342,41 @@ import Foundation
     // Trigger reload
     editor.handleExternalFileChange()
     #expect(editor.buffer.lines.first == "Modified externally")
+}
+
+@Test func testMultiBufferOperations() throws {
+    let editor = Editor(filePaths: ["file1.txt", "file2.txt"])
+    #expect(editor.buffers.count == 2)
+    #expect(editor.currentBufferIndex == 0)
+    #expect(editor.buffer.filePath?.contains("file1.txt") == true)
+
+    // Test next buffer
+    editor.nextBuffer()
+    #expect(editor.currentBufferIndex == 1)
+    #expect(editor.buffer.filePath?.contains("file2.txt") == true)
+
+    // Test next buffer wrapping back to 0
+    editor.nextBuffer()
+    #expect(editor.currentBufferIndex == 0)
+
+    // Test prev buffer wrapping to last
+    editor.prevBuffer()
+    #expect(editor.currentBufferIndex == 1)
+
+    // Test opening a new buffer
+    editor.openNewBuffer(filePath: "file3.txt")
+    #expect(editor.buffers.count == 3)
+    #expect(editor.currentBufferIndex == 2)
+    #expect(editor.buffer.filePath?.contains("file3.txt") == true)
+
+    // Test screen render Title Bar format includes [3/3]
+    let output = editor.generateScreenOutput(rows: 24, cols: 80)
+    #expect(output.contains("[3/3]"))
+
+    // Test close current buffer
+    editor.closeCurrentBuffer()
+    #expect(editor.buffers.count == 2)
+    #expect(editor.currentBufferIndex == 1)
 }
 
 @Test func testSyntaxHighlighter() throws {

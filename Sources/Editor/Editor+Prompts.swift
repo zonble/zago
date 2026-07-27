@@ -199,12 +199,12 @@ extension Editor {
             if save {
                 if let path = self.buffer.filePath, !path.isEmpty {
                     self.doSave(to: path)
-                    self.isRunning = false
+                    self.closeCurrentBuffer()
                 } else {
                     self.promptWriteFilePath()
                 }
             } else {
-                self.isRunning = false
+                self.closeCurrentBuffer()
             }
         })
     }

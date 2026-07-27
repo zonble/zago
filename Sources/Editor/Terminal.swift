@@ -13,6 +13,7 @@ import WinSDK
 public enum Key: Equatable, Hashable {
     case char(Character)
     case ctrl(Character)
+    case alt(Character)
     case arrowUp
     case arrowDown
     case arrowLeft
@@ -187,6 +188,13 @@ public final class Terminal {
                 case UInt8(ascii: "S"): return .f4
                 default: return .esc
                 }
+
+            case UInt8(ascii: "9"): return .ctrl("9")
+            case UInt8(ascii: "0"): return .ctrl("0")
+            case UInt8(ascii: ","): return .alt(",")
+            case UInt8(ascii: "."): return .alt(".")
+            case UInt8(ascii: "<"): return .alt("<")
+            case UInt8(ascii: ">"): return .alt(">")
 
             default:
                 return .esc

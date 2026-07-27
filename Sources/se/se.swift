@@ -9,8 +9,8 @@ struct SE: ParsableCommand {
         abstract: "A Swift TUI Text Editor with Nano keybindings and softwrap support."
     )
 
-    @Argument(help: "The file to edit.")
-    var file: String?
+    @Argument(help: "The file(s) to edit.")
+    var files: [String] = []
 
     @Option(name: [.customShort("w"), .long], help: "Specify softwrap column width (e.g. 80). If omitted, softwrap adapts to terminal width.")
     var wrap: Int?
@@ -45,7 +45,7 @@ struct SE: ParsableCommand {
             selectedLang = nil
         }
 
-        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax, language: selectedLang)
+        let editor = Editor(filePaths: files, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax, language: selectedLang)
         editor.run()
     }
 }

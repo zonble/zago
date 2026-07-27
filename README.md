@@ -12,6 +12,7 @@
 - **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
 - **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
 - **Syntax Highlighting & GNU Nano `.nanorc` Compatibility**: Built-in 5-token ANSI color rules for **Swift**, **Python**, **C/C++**, **JSON**, **Markdown**, and **Shell** with native GNU Nano `.nanorc` configuration parsing (`~/.nanorc`, `/opt/homebrew/share/nano/*.nanorc`, `/usr/share/nano/*.nanorc`).
+- **Multi-Buffer / Multi-Tab Editing**: Open multiple files simultaneously (`se file1.swift file2.swift`), switch between open buffers using standard GNU Nano shortcuts `M-,` / `M-.` (`Alt+,` / `Alt+.`) or `F12` / `F11`, create new buffers with `^N`, and view active buffer index status `[1/3]` directly in the Title Bar.
 - **File System Auto-Reload (`FileWatcher`)**: Real-time event monitoring (`DispatchSourceFileSystemObject`) for external file modifications. Automatically reloads buffer if unmodified (`isModified == false`), or prompts `[Y/N]` to confirm reloading if unsaved local changes exist.
 - **Internationalization (i18n)**: Dual English and Traditional Chinese (`zh_TW`) support with automatic POSIX locale detection (`$LC_ALL`, `$LANG`), `~/.serc` (`set lang zh_TW`), and CLI `--lang zh_TW`.
 - **User Configuration File (`~/.serc`)**: Nano/Vim-style directives for `set wrap`, `set ruler`, `set syntax`, `set autoreload`, `set lang`, `bind <key> <cmd_id>`, and `unbind <key>`.

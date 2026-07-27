@@ -183,6 +183,18 @@ extension Editor {
         })
 
         // File Operations & Exit
+        commandRegistry.register(Command(id: "buffer.prev", name: "Previous Buffer", description: "Switch to previous open buffer", keys: [.alt(","), .alt("<"), .f12]) { editor in
+            editor.prevBuffer()
+        })
+
+        commandRegistry.register(Command(id: "buffer.next", name: "Next Buffer", description: "Switch to next open buffer", keys: [.alt("."), .alt(">"), .f11]) { editor in
+            editor.nextBuffer()
+        })
+
+        commandRegistry.register(Command(id: "buffer.new", name: "New Buffer", description: "Open a new buffer", keys: [.ctrl("N")]) { editor in
+            editor.openNewBuffer()
+        })
+
         commandRegistry.register(Command(id: "file.save", name: "WriteOut", description: "Save file", keys: [.ctrl("O"), .ctrl("S"), .f3]) { editor in
             editor.promptWriteFilePath()
         })
@@ -191,11 +203,11 @@ extension Editor {
             editor.promptInsertFilePath()
         })
 
-        commandRegistry.register(Command(id: "file.exit", name: "Exit", description: "Exit editor", keys: [.ctrl("X"), .f2]) { editor in
+        commandRegistry.register(Command(id: "file.exit", name: "Exit", description: "Exit editor or close current buffer", keys: [.ctrl("X"), .f2]) { editor in
             if editor.buffer.isModified {
                 editor.promptExitSaveConfirm()
             } else {
-                editor.isRunning = false
+                editor.closeCurrentBuffer()
             }
         })
 

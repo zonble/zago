@@ -29,6 +29,18 @@ public enum KeyParser {
             }
         }
 
+        if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-") {
+            let prefixLen: Int
+            if normalized.hasPrefix("alt-") { prefixLen = 4 }
+            else if normalized.hasPrefix("meta-") { prefixLen = 5 }
+            else { prefixLen = 2 }
+
+            let charStr = String(normalized.dropFirst(prefixLen))
+            if let first = charStr.first {
+                return .alt(first)
+            }
+        }
+
         switch normalized {
         case "up", "arrow-up", "arrowup": return .arrowUp
         case "down", "arrow-down", "arrowdown": return .arrowDown

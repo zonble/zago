@@ -35,7 +35,8 @@ extension Editor {
         output += "\u{1B}[H" // Reset cursor to (1, 1)
 
         // 1. Title Bar (Inverted Colors, centered filename)
-        let leftText = "  se"
+        let bufIndexStr = buffers.count > 1 ? " [\(currentBufferIndex + 1)/\(buffers.count)]" : ""
+        let leftText = "  se\(bufIndexStr)"
         let centerText = buffer.filePath ?? L10n.newBuffer
         let rightText = buffer.isModified ? "\(L10n.modified)  " : "  "
 
