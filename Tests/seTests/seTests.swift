@@ -1,5 +1,5 @@
 import Testing
-@testable import se
+@testable import Editor
 
 @Test func testTextBufferBasicEditing() throws {
     let buffer = TextBuffer()

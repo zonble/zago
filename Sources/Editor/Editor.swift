@@ -498,11 +498,28 @@ public final class Editor {
         var output = ""
         output += "\u{1B}[H" // Reset cursor to (1, 1)
 
-        // 1. Title Bar (Inverted Colors)
-        let titleName = buffer.filePath ?? "New Buffer"
-        let modStr = buffer.isModified ? " Modified" : ""
-        let rawTitle = "  se |  File: \(titleName)\(modStr)"
-        let paddedTitle = rawTitle.paddedToDisplayWidth(cols)
+        // 1. Title Bar (Inverted Colors, centered filename)
+        let leftText = "  se"
+        let centerText = buffer.filePath ?? "New Buffer"
+        let rightText = buffer.isModified ? "Modified  " : "  "
+
+        let leftW = leftText.displayWidth
+        let centerW = centerText.displayWidth
+        let rightW = rightText.displayWidth
+
+        let targetCenterStart = max(leftW + 1, (cols - centerW) / 2)
+        let leftPaddingCount = max(0, targetCenterStart - leftW)
+        let leftSideWidth = leftW + leftPaddingCount
+
+        let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
+
+        let titleStr = leftText
+            + String(repeating: " ", count: leftPaddingCount)
+            + centerText
+            + String(repeating: " ", count: rightPaddingCount)
+            + rightText
+
+        let paddedTitle = titleStr.paddedToDisplayWidth(cols)
         output += "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
 
         // 2. Main Edit Area (Virtual Lines Rendering)
