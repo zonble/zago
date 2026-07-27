@@ -5,6 +5,7 @@ public struct EditorConfig {
     public var wrapColumn: Int? = nil
     public var showRuler: Bool = false
     public var tabSize: Int = 4
+    public var enableSyntaxHighlight: Bool = true
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
     public var syntaxErrorCount: Int = 0
@@ -136,6 +137,15 @@ public final class ConfigLoader {
                     case "tabsize":
                         if let ts = Int(value), ts > 0 {
                             config.tabSize = ts
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "syntax":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.enableSyntaxHighlight = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.enableSyntaxHighlight = false
                         } else {
                             config.syntaxErrorCount += 1
                         }

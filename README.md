@@ -11,7 +11,9 @@
 - **Interactive Spell Checker (`^T` / `F12`)**: System dictionary lookup with CJK filtering and interactive TUI word replacement.
 - **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
 - **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
-- **Non-Blocking Batch Paste**: Sub-millisecond clipboard paste processing via POSIX non-blocking I/O.
+- **Syntax Highlighting Engine**: Built-in ANSI color rules for **Swift**, **Python**, **C/C++**, **JSON**, **Markdown**, and **Shell** (`.swift`, `.py`, `.c`, `.json`, `.md`, `.sh`) with full **GNU Nano `.nanorc` file compatibility** (`~/.nanorc`, `/opt/homebrew/share/nano/*.nanorc`).
+- **User Configuration File (`~/.serc`)**: Nano/Vim-style configuration support for `set wrap`, `set ruler`, `set syntax`, `bind <key> <cmd_id>`, and `unbind <key>`.
+- **Classic WordStar Ruler (`-r` / `--ruler`)**: Retro `----!----1----!----2` ruler bar for precise character column alignment.
 - **Function Keys Support**: Native mapping for function keys `F1` through `F12`.
 - **CJK & Multi-byte UTF-8 Support**: Seamless Chinese, Japanese, Korean, and multi-byte UTF-8 character input with accurate `wcwidth` display column alignment.
 - **Dynamic Softwrap**: Automatic line wrapping at viewport boundary or configurable column width (`-w` / `--wrap`) without altering raw line buffer data.

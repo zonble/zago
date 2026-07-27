@@ -18,8 +18,17 @@ struct SE: ParsableCommand {
     @Flag(name: [.customShort("r"), .long], help: "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
     var ruler: Bool = false
 
+    @Option(name: [.customLong("syntax")], help: "Enable or disable syntax highlighting (true/false).")
+    var syntax: String?
+
     func run() throws {
-        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler)
+        let enableSyntax: Bool?
+        if let s = syntax?.lowercased() {
+            enableSyntax = (s == "true" || s == "1" || s == "on" || s == "yes")
+        } else {
+            enableSyntax = nil
+        }
+        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax)
         editor.run()
     }
 }

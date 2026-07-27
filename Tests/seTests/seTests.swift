@@ -318,3 +318,43 @@ import Foundation
     #expect(config.unbindKeys.contains(.f1))
     #expect(config.syntaxErrorCount == 1)
 }
+
+@Test func testSyntaxHighlighter() throws {
+    let highlighter = SyntaxHighlighter()
+
+    let swiftLang = highlighter.detectLanguage(for: "main.swift")
+    #expect(swiftLang != nil)
+    #expect(swiftLang?.name == "Swift")
+
+    let pythonLang = highlighter.detectLanguage(for: "script.py")
+    #expect(pythonLang != nil)
+    #expect(pythonLang?.name == "Python")
+
+    let jsonLang = highlighter.detectLanguage(for: "package.json")
+    #expect(jsonLang != nil)
+    #expect(jsonLang?.name == "JSON")
+
+    if let lang = swiftLang {
+        let highlighted = highlighter.highlight(line: "func hello() { return }", syntax: lang)
+        #expect(highlighted.contains("\u{1B}[1;36m"))
+    }
+}
+
+@Test func testNanoRCParser() throws {
+    let tmpNanoRC = FileManager.default.temporaryDirectory.appendingPathComponent("test.nanorc").path
+    let content = """
+    # Sample nanorc file
+    syntax "customlang" "\\.custom$"
+    color cyan "\\b(foo|bar)\\b"
+    color green "\"([^\"]*)\""
+    """
+    try content.write(toFile: tmpNanoRC, atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tmpNanoRC) }
+
+    let highlighter = SyntaxHighlighter()
+    highlighter.parseNanoRCFile(at: tmpNanoRC)
+
+    let customLang = highlighter.detectLanguage(for: "file.custom")
+    #expect(customLang != nil)
+    #expect(customLang?.name == "customlang")
+}

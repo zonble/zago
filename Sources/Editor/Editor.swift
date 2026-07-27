@@ -43,10 +43,12 @@ public final class Editor {
     private var lastMutationTime: Date?
     private var lastIsPaste: Bool = false
 
+    private let syntaxHighlighter = SyntaxHighlighter()
     public let commandRegistry = CommandRegistry()
     public var showRuler: Bool = false
+    public var enableSyntaxHighlight: Bool = true
 
-    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil) {
+    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
 
@@ -55,9 +57,11 @@ public final class Editor {
         // CLI argument priority > .serc config > default
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
+        let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
 
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.showRuler = finalRuler
+        self.enableSyntaxHighlight = finalSyntax
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)
@@ -852,13 +856,18 @@ public final class Editor {
                 }
 
                 output += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
-                let chars = Array(vLine.text)
-                for (cIdxInVLine, ch) in chars.enumerated() {
-                    let realCol = vLine.startCol + cIdxInVLine
-                    if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
-                        output += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
-                    } else {
-                        output += String(ch)
+                let currentLanguage = enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
+                if let lang = currentLanguage, selectionMark == nil {
+                    output += syntaxHighlighter.highlight(line: vLine.text, syntax: lang)
+                } else {
+                    let chars = Array(vLine.text)
+                    for (cIdxInVLine, ch) in chars.enumerated() {
+                        let realCol = vLine.startCol + cIdxInVLine
+                        if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                            output += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
+                        } else {
+                            output += String(ch)
+                        }
                     }
                 }
             }
