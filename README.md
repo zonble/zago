@@ -12,6 +12,7 @@
 - **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
 - **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
 - **Syntax Highlighting & GNU Nano `.nanorc` Compatibility**: Built-in 5-token ANSI color rules for **Swift**, **Python**, **C/C++**, **JSON**, **Markdown**, and **Shell** with native GNU Nano `.nanorc` configuration parsing (`~/.nanorc`, `/opt/homebrew/share/nano/*.nanorc`, `/usr/share/nano/*.nanorc`).
+- **LOGO-style Macro Engine (`M-l` / `F8` / `:logo`)**: Clean, human-readable LOGO syntax flavor for text buffer automation (`TYPE "text"`, `DEL 5`, `MOVE HOME/END/UP/DOWN`, `MARK`, `CUT`, `PASTE`, `JUSTIFY`, `MAKE "var" val`, `:var`, `+ - * / %`, `REPEAT expr [ ... ]`, `TO proc ... END`). Supports single atomic `^Z` Undo and `~/.serc` keybindings (`bind ctrl-b "macro: MAKE 'i' 1 REPEAT 3 [ TYPE :i MOVE DOWN MAKE 'i' (:i + 1) ]"`).
 - **Multi-Buffer / Multi-Tab Editing**: Open multiple files simultaneously (`se file1.swift file2.swift`), switch between open buffers using standard GNU Nano shortcuts `M-,` / `M-.` (`Alt+,` / `Alt+.`) or `F12` / `F11`, create new buffers with `^N`, and view active buffer index status `[1/3]` directly in the Title Bar.
 - **File System Auto-Reload (`FileWatcher`)**: Real-time event monitoring (`DispatchSourceFileSystemObject`) for external file modifications. Automatically reloads buffer if unmodified (`isModified == false`), or prompts `[Y/N]` to confirm reloading if unsaved local changes exist.
 - **Internationalization (i18n)**: Dual English and Traditional Chinese (`zh_TW`) support with automatic POSIX locale detection (`$LC_ALL`, `$LANG`), `~/.serc` (`set lang zh_TW`), and CLI `--lang zh_TW`.
@@ -21,6 +22,22 @@
 - **CJK & Multi-byte UTF-8 Support**: Seamless Chinese, Japanese, Korean, and multi-byte UTF-8 character input with accurate `displayWidth` column alignment.
 - **Dynamic Softwrap**: Automatic line wrapping at viewport boundary or configurable column width (`-w` / `--wrap`) without altering raw line buffer data.
 - **Visual Reflow Engine**: Paragraph justification (`^J`) powered by a visual column display width algorithm for mixed CJK and Latin text.
+
+---
+
+## 🐢 LOGO Macro Language & Automation
+
+`se` introduces a unique **LOGO-style Macro Language Engine**, providing an intuitive, human-readable DSL for text editing automation.
+
+- **Triggering Prompt**: Press **`M-l` (`Alt+L` / `Option+L`)**, **`M-:` (`Alt+:` / `Option+:`)**, or **`F8`** to open the interactive LOGO macro prompt.
+- **Input History**: Press **`Up` / `Down` Arrow keys** inside the prompt to cycle through previously executed LOGO commands.
+- **Atomic Undo**: Pressing **`^Z`** once after running a macro will revert all changes made by the script in a single step.
+- **Full Guide & Specifications**: See [README.Logo.md](README.Logo.md) for full language specifications, command references, and practical script examples.
+
+```logo
+# Example: Generate 5 numbered list items dynamically
+MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:i + 1) ]
+```
 
 ---
 

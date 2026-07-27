@@ -24,6 +24,8 @@ public struct TraditionalChineseStrings {
         "prompt.search": "搜尋",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
+        "prompt.logo": "LOGO 巨集指令：",
+        "prompt.goto_line": "請輸入列號與欄號：",
 
         // Status Messages
         "status.mark_set": "標記已設定",
@@ -45,6 +47,7 @@ public struct TraditionalChineseStrings {
         "status.no_misspelled": "[ 未發現拼錯字詞 ]",
         "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
         "status.kept_local": "[ 已保留本地修改 ]",
+        "status.logo_executed": "[ 已執行 LOGO 巨集腳本 ]",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - 完整指令與快速鍵說明手冊",

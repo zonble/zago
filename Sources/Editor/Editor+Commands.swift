@@ -171,6 +171,10 @@ extension Editor {
             editor.promptSearch()
         })
 
+        commandRegistry.register(Command(id: "cursor.goto_line", name: "Go To Line", description: "Jump to line and column number", keys: [.ctrl("/"), .ctrl("_"), .alt("g"), .alt("G"), .alt("/")]) { editor in
+            editor.promptGotoLine()
+        })
+
         commandRegistry.register(Command(id: "screen.refresh", name: "Refresh", description: "Refresh screen", keys: [.ctrl("L")]) { _ in })
 
         commandRegistry.register(Command(id: "cursor.pos", name: "Cur Pos", description: "Display cursor position", keys: [.ctrl("C"), .f11]) { editor in
@@ -209,6 +213,10 @@ extension Editor {
             } else {
                 editor.closeCurrentBuffer()
             }
+        })
+
+        commandRegistry.register(Command(id: "macro.logo", name: "LOGO Macro", description: "Execute LOGO macro script", keys: [.alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .f8]) { editor in
+            editor.promptLogoMacro()
         })
 
         commandRegistry.register(Command(id: "help.show", name: "Get Help", description: "Show full-screen help", keys: [.ctrl("G"), .f1]) { editor in

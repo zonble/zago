@@ -42,6 +42,16 @@ public final class CommandRegistry {
         keyMap.removeValue(forKey: key)
     }
 
+    /// Dispatches a command by its ID string.
+    /// Returns `true` if a command was found and executed.
+    public func dispatch(id: String, editor: Editor) -> Bool {
+        if let command = commands.first(where: { $0.id == id }) {
+            command.action(editor)
+            return true
+        }
+        return false
+    }
+
     /// Dispatches a key input to its registered command action.
     /// Returns `true` if a command was found and executed.
     public func dispatch(key: Key, editor: Editor) -> Bool {

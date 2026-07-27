@@ -10,6 +10,8 @@ extension Editor {
         case search(completion: (String?) -> Void)
         case insertFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
+        case logoMacro(completion: (String?) -> Void)
+        case gotoLine(completion: (String?) -> Void)
     }
 
     /// Processes key input events.
@@ -159,6 +161,62 @@ extension Editor {
                 let replacement = promptInputText.trimmingCharacters(in: .whitespacesAndNewlines)
                 currentPromptMode = .none
                 completion(replacement)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .logoMacro(let completion):
+            switch key {
+            case .enter:
+                let script = promptInputText
+                if !script.isEmpty {
+                    if logoPromptHistory.last != script {
+                        logoPromptHistory.append(script)
+                    }
+                }
+                currentPromptMode = .none
+                completion(script)
+            case .arrowUp:
+                if logoHistoryIndex > 0 {
+                    logoHistoryIndex -= 1
+                    promptInputText = logoPromptHistory[logoHistoryIndex]
+                }
+            case .arrowDown:
+                if logoHistoryIndex < logoPromptHistory.count - 1 {
+                    logoHistoryIndex += 1
+                    promptInputText = logoPromptHistory[logoHistoryIndex]
+                } else {
+                    logoHistoryIndex = logoPromptHistory.count
+                    promptInputText = ""
+                }
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .gotoLine(let completion):
+            switch key {
+            case .enter:
+                let lineStr = promptInputText
+                currentPromptMode = .none
+                completion(lineStr)
             case .esc, .ctrl("C"):
                 currentPromptMode = .none
                 completion(nil)
@@ -322,6 +380,56 @@ extension Editor {
     func cancelPrompt() {
         currentPromptMode = .none
         promptInputText = ""
+    }
+
+    /// Prompts user for LOGO macro script input (:logo / ^L).
+    func promptLogoMacro() {
+        promptInputText = ""
+        logoHistoryIndex = logoPromptHistory.count
+        currentPromptMode = .logoMacro(completion: { [weak self] script in
+            guard let self = self, let script = script, !script.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled"])
+                return
+            }
+            let logoEngine = LogoEngine()
+            logoEngine.execute(script, on: self)
+            if !logoEngine.hasSetStatusMessage {
+                self.setStatusMessage(L10n["status.logo_executed"])
+            }
+        })
+    }
+
+    /// Prompts user for target line/column number input (^/ / M-g).
+    func promptGotoLine() {
+        promptInputText = ""
+        currentPromptMode = .gotoLine(completion: { [weak self] input in
+            guard let self = self, let input = input, !input.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled"])
+                return
+            }
+            self.performGotoLine(input)
+        })
+    }
+
+    func performGotoLine(_ input: String) {
+        let parts = input.components(separatedBy: CharacterSet(charactersIn: ", "))
+            .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+        if parts.isEmpty { return }
+
+        let targetLine = max(1, min(parts[0], buffer.lines.count)) - 1
+        buffer.lineIndex = targetLine
+
+        if parts.count > 1 {
+            let targetCol = max(1, min(parts[1], buffer.lines[targetLine].count + 1)) - 1
+            buffer.columnIndex = targetCol
+        } else {
+            buffer.columnIndex = 0
+        }
+
+        buffer.clampCursor()
+        let currentLine = buffer.lineIndex + 1
+        let currentCol = buffer.columnIndex + 1
+        setStatusMessage(L10n.cursorInfo(currentLine: currentLine, totalLines: buffer.lines.count, percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol, totalCol: buffer.lines[buffer.lineIndex].count + 1))
     }
 
     /// Saves buffer to specified file path.

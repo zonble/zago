@@ -125,6 +125,12 @@ extension Editor {
             let promptTemplate = L10n["prompt.edit_spelled_word"]
             let prompt = String(format: promptTemplate, word)
             output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
+        case .logoMacro:
+            let prompt = L10n["prompt.logo"]
+            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
+        case .gotoLine:
+            let prompt = L10n["prompt.goto_line"]
+            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
         case .none:
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
                 let msgWidth = statusMessage.displayWidth
@@ -138,15 +144,36 @@ extension Editor {
         // 4. Nano Key Help Bar (2 lines) - 2D column-aligned, dynamic gap spacing, no leading space
         output += formatHelpBar(cols: cols)
 
-        // 5. Position Terminal Cursor (accounting for CJK/wide character display width)
-        let vLineText = virtualLines[cursorVLineIdx].text
-        let vLineChars = Array(vLineText)
-        let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
-        let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
+        // 5. Position Terminal Cursor (accounting for CJK/wide character display width and Prompt mode)
+        if case .none = currentPromptMode {
+            let vLineText = virtualLines[cursorVLineIdx].text
+            let vLineChars = Array(vLineText)
+            let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
+            let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
 
-        let screenRow = (cursorVLineIdx - topVLineIndex) + (displayConfig.showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
-        let screenCol = gutterWidth + cursorDisplayWidth + 1
-        output += "\u{1B}[\(screenRow);\(screenCol)H"
+            let screenRow = (cursorVLineIdx - topVLineIndex) + (displayConfig.showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
+            let screenCol = gutterWidth + cursorDisplayWidth + 1
+            output += "\u{1B}[\(screenRow);\(screenCol)H"
+        } else {
+            let promptPrefix: String
+            switch currentPromptMode {
+            case .saveFilePath: promptPrefix = L10n["prompt.write_name"]
+            case .confirmExitSave: promptPrefix = L10n["prompt.confirm_exit_save"]
+            case .confirmExternalReload: promptPrefix = L10n["prompt.confirm_reload"]
+            case .search:
+                let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
+                promptPrefix = "\(L10n["prompt.search"])\(defaultHint): "
+            case .insertFilePath: promptPrefix = L10n["prompt.insert_file"]
+            case .spellCheck(let word, _, _, _):
+                promptPrefix = String(format: L10n["prompt.edit_spelled_word"], word)
+            case .logoMacro: promptPrefix = L10n["prompt.logo"]
+            case .gotoLine: promptPrefix = L10n["prompt.goto_line"]
+            case .none: promptPrefix = ""
+            }
+            let promptRow = rows - 2
+            let promptCol = promptPrefix.displayWidth + promptInputText.displayWidth + 1
+            output += "\u{1B}[\(promptRow);\(promptCol)H"
+        }
         output += "\u{1B}[?25h" // Show cursor
 
         return output

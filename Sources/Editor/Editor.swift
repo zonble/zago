@@ -42,6 +42,8 @@ public final class Editor {
     var currentPromptMode: PromptMode = .none
     var promptInputText: String = ""
     var lastSearchQuery: String = ""
+    var logoPromptHistory: [String] = []
+    var logoHistoryIndex: Int = 0
 
     var undoStack: [UndoSnapshot] = []
     let maxUndoStackSize = 100
@@ -196,7 +198,21 @@ public final class Editor {
         }
 
         for (key, cmdId) in config.customKeyBinds {
-            if let cmd = commandRegistry.commands.first(where: { $0.id == cmdId }) {
+            if cmdId.lowercased().hasPrefix("macro:") || cmdId.lowercased().hasPrefix("logo:") {
+                let script: String
+                if cmdId.lowercased().hasPrefix("macro:") {
+                    script = String(cmdId.dropFirst(6))
+                } else {
+                    script = String(cmdId.dropFirst(5))
+                }
+                let customCmd = Command(id: "custom.macro.\(key)", name: "Macro", description: "Custom LOGO macro", keys: [key]) { [weak self] editor in
+                    guard let self = self else { return }
+                    let engine = LogoEngine()
+                    engine.execute(script, on: self)
+                    self.setStatusMessage(L10n["status.logo_executed"])
+                }
+                commandRegistry.bind(key: key, command: customCmd)
+            } else if let cmd = commandRegistry.commands.first(where: { $0.id == cmdId }) {
                 commandRegistry.bind(key: key, command: cmd)
             }
         }

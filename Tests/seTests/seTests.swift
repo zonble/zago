@@ -379,6 +379,81 @@ import Foundation
     #expect(editor.currentBufferIndex == 1)
 }
 
+@Test func testLogoMacroEngine() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // 1. Basic TYPE and MOVE
+    logoEngine.execute("TYPE \"Hello\" MOVE END TYPE \" World\"", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World")
+
+    // 2. REPEAT loop
+    logoEngine.execute("REPEAT 3 [ TYPE \"!\" ]", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!!")
+
+    // 3. TO ... END Procedure definition & EXEC
+    logoEngine.execute("TO BULLET MOVE END TYPE \" - item\" END EXEC BULLET", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!! - item")
+
+    // 4. Variables and Arithmetic test
+    logoEngine.execute("MAKE \"i\" 1 MAKE \"x\" :i + 5 TYPE :x", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!! - item6")
+
+    // 5. Direct Arithmetic TYPE output & Multiplication
+    logoEngine.execute("TYPE \" calc: \" TYPE ( 10 + 20 ) TYPE \" mul: \" TYPE ( 4 * 5 )", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!! - item6 calc: 30 mul: 20")
+
+    // 6. Unspaced and Chained Arithmetic (10+20, 1+2+3)
+    logoEngine.execute("TYPE \" nospace: \" TYPE 10+20 TYPE \" chained: \" MAKE \"c\" 1 + 2 + 3 TYPE :c", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!! - item6 calc: 30 mul: 20 nospace: 30 chained: 6")
+
+    // 7. DEL and BS
+    logoEngine.execute("BS 3 TYPE \"25\"", on: editor)
+    #expect(editor.buffer.lines[0] == "Hello World!!! - item6 calc: 30 mul: 20 nospace: 30 chained25")
+
+    // 8. Prompt History & Active Hardware Cursor position test
+    editor.promptLogoMacro()
+    let promptOutput = editor.generateScreenOutput(rows: 24, cols: 80)
+    #expect(promptOutput.contains("\u{1B}[22;")) // Verify hardware cursor placed on row 22 (24-2) for active prompt
+
+    editor.processKey(.char("T"))
+    editor.processKey(.char("Y"))
+    editor.processKey(.enter)
+    #expect(editor.logoPromptHistory.last == "TY")
+
+    // 10. SET Editor Configuration Settings test
+    editor.displayConfig.showRuler = false
+    logoEngine.execute("SET RULER ON", on: editor)
+    #expect(editor.displayConfig.showRuler == true)
+
+    // 11. MSG Command Status Bar Output test
+    logoEngine.execute("MAKE \"msg_val\" 42 MSG \"Current Val: \" + :msg_val", on: editor)
+    #expect(editor.statusMessage == "Current Val: 42")
+
+    // Prompt mode execution of MSG should preserve custom message
+    editor.promptLogoMacro()
+    editor.processKey(.char("M"))
+    editor.processKey(.char("S"))
+    editor.processKey(.char("G"))
+    editor.processKey(.char(" "))
+    editor.processKey(.char("\""))
+    editor.processKey(.char("H"))
+    editor.processKey(.char("i"))
+    editor.processKey(.char("\""))
+    editor.processKey(.enter)
+    #expect(editor.statusMessage == "Hi")
+
+    // 12. LOGO GOTO Command & Perform Goto Line test
+    editor.buffer.insertString("Line1\nLine2\nLine3")
+    logoEngine.execute("GOTO 2 3", on: editor)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 2)
+
+    editor.performGotoLine("3,1")
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 0)
+}
+
 @Test func testSyntaxHighlighter() throws {
     let highlighter = SyntaxHighlighter()
 

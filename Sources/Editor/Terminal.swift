@@ -118,6 +118,10 @@ public final class Terminal {
             // Mark key: Ctrl+^ (ASCII 30 / 0x1E)
             return .mark
 
+        case 31:
+            // Goto Line key: Ctrl+/ or Ctrl+_ (ASCII 31 / 0x1F)
+            return .ctrl("/")
+
         case 1...26:
             // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
             let scalar = UnicodeScalar(UInt32(b) + 64)! // 1 -> 'A', 15 -> 'O'

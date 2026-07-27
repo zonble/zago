@@ -24,6 +24,8 @@ public struct EnglishStrings {
         "prompt.search": "Search",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
+        "prompt.logo": "LOGO Macro Command: ",
+        "prompt.goto_line": "Enter line number, column number: ",
 
         // Status Messages
         "status.mark_set": "Mark Set",
@@ -45,6 +47,7 @@ public struct EnglishStrings {
         "status.no_misspelled": "[ No misspelled words found ]",
         "status.file_reloaded": "[ File reloaded from disk ]",
         "status.kept_local": "[ Kept local modifications ]",
+        "status.logo_executed": "[ LOGO script executed ]",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - Full Help & Command Reference",
