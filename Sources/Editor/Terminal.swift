@@ -50,17 +50,19 @@ public final class Terminal {
         var raw = originalTermios
 
         // Disable Echo, Canonical Mode, Extended Input, Signals (SIGINT, SIGTSTP)
-        raw.c_lflag &= ~UInt(ECHO | ICANON | IEXTEN | ISIG)
+        raw.c_lflag &= ~tcflag_t(ECHO | ICANON | IEXTEN | ISIG)
         // Disable Software Flow Control (Ctrl+S, Ctrl+Q), CR-to-NL conversion
-        raw.c_iflag &= ~UInt(IXON | ICRNL | BRKINT | INPCK | ISTRIP)
+        raw.c_iflag &= ~tcflag_t(IXON | ICRNL | BRKINT | INPCK | ISTRIP)
         // Disable Post-processing (NL to CR+NL)
-        raw.c_oflag &= ~UInt(OPOST)
+        raw.c_oflag &= ~tcflag_t(OPOST)
         // Set 8-bit characters
-        raw.c_cflag |= UInt(CS8)
+        raw.c_cflag |= tcflag_t(CS8)
 
-        // Read timeout & minimum characters
-        raw.c_cc.16 = 0 // VMIN
-        raw.c_cc.17 = 1 // VTIME (100ms timeout for non-blocking read)
+        // Read timeout & minimum characters (VMIN, VTIME cross-platform safety)
+        withUnsafeMutableBytes(of: &raw.c_cc) { ptr in
+            ptr[Int(VMIN)] = 0
+            ptr[Int(VTIME)] = 1
+        }
 
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
         rawModeEnabled = true

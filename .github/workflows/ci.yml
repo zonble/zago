@@ -31,8 +31,8 @@ jobs:
       - name: Build Package (Debug)
         run: swift build
 
-      - name: Run Automated Tests
-        run: swift test
+      - name: Run Automated Tests & Code Coverage
+        run: swift test --enable-code-coverage
 
       - name: Build Package (Release)
         run: swift build -c release

@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import Editor
 
 @Test func testTextBufferBasicEditing() throws {
@@ -126,4 +127,45 @@ import Testing
     buffer.columnIndex = 6
     buffer.insertString("Swift ")
     #expect(buffer.lines[0] == "Hello Swift !")
+}
+
+@Test func testTerminalDisplayWidthHelpers() throws {
+    #expect(Character("A").displayWidth == 1)
+    #expect(Character("中").displayWidth == 2)
+    #expect("Hello".displayWidth == 5)
+    #expect("中文".displayWidth == 4)
+    #expect("Hello".paddedToDisplayWidth(10) == "Hello     ")
+}
+
+@Test func testTextBufferFileOperations() throws {
+    let tempDir = FileManager.default.temporaryDirectory
+    let tempFile = tempDir.appendingPathComponent("test_se_\(UUID().uuidString).txt").path
+
+    let buffer = TextBuffer()
+    buffer.lines = ["Line 1", "Line 2", "Line 3"]
+    try buffer.saveFile(to: tempFile)
+    #expect(FileManager.default.fileExists(atPath: tempFile))
+
+    let newBuffer = TextBuffer()
+    let count = try newBuffer.insertFile(at: tempFile)
+    #expect(count == 3)
+    #expect(newBuffer.lines[0] == "Line 1")
+    #expect(newBuffer.lines[1] == "Line 2")
+    #expect(newBuffer.lines[2] == "Line 3")
+
+    try? FileManager.default.removeItem(atPath: tempFile)
+}
+
+@Test func testTextBufferDeleteAndClamp() throws {
+    let buffer = TextBuffer()
+    buffer.lines = ["ABC"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 1
+
+    buffer.delete() // Deletes 'B'
+    #expect(buffer.lines[0] == "AC")
+
+    buffer.columnIndex = 100
+    buffer.clampCursor()
+    #expect(buffer.columnIndex == 2)
 }
