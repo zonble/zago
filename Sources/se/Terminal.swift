@@ -85,36 +85,33 @@ public final class Terminal {
     public func readKey() -> Key {
         guard let b = readByte() else { return .unknown }
 
-        // Enter (CR: ASCII 13)
-        if b == 13 {
+        switch b {
+        case 13:
+            // Enter (CR: ASCII 13)
             return .enter
-        }
 
-        // Tab (ASCII 9)
-        if b == 9 {
+        case 9:
+            // Tab (ASCII 9)
             return .tab
-        }
 
-        // Backspace (ASCII 127 or 8)
-        if b == 127 || b == 8 {
+        case 8, 127:
+            // Backspace (ASCII 8 or 127)
             return .backspace
-        }
 
-        // Mark key: Ctrl+^ (ASCII 30 / 0x1E)
-        if b == 30 {
+        case 30:
+            // Mark key: Ctrl+^ (ASCII 30 / 0x1E)
             return .mark
-        }
 
-        // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
-        if b >= 1 && b <= 26 {
+        case 1...26:
+            // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
             let scalar = UnicodeScalar(UInt32(b) + 64)! // 1 -> 'A', 15 -> 'O'
             return .ctrl(Character(scalar))
-        }
 
-        // Escape Sequences
-        if b == 27 { // ESC
+        case 27:
+            // Escape Sequences
             guard let b2 = readByte() else { return .esc }
-            if b2 == UInt8(ascii: "[") {
+            switch b2 {
+            case UInt8(ascii: "["):
                 guard let b3 = readByte() else { return .esc }
                 switch b3 {
                 case UInt8(ascii: "A"): return .arrowUp
@@ -150,7 +147,8 @@ public final class Terminal {
                 default:
                     return .esc
                 }
-            } else if b2 == UInt8(ascii: "O") {
+
+            case UInt8(ascii: "O"):
                 guard let b3 = readByte() else { return .esc }
                 switch b3 {
                 case UInt8(ascii: "H"): return .home
@@ -161,38 +159,47 @@ public final class Terminal {
                 case UInt8(ascii: "S"): return .f4
                 default: return .esc
                 }
+
+            default:
+                return .esc
             }
-            return .esc
-        }
 
-        // UTF-8 multi-byte characters (1 ~ 4 Bytes, e.g. CJK, Emoji)
-        var bytes: [UInt8] = [b]
-        let neededBytes: Int
-        if (b & 0x80) == 0 {
-            neededBytes = 1
-        } else if (b & 0xE0) == 0xC0 {
-            neededBytes = 2
-        } else if (b & 0xF0) == 0xE0 {
-            neededBytes = 3
-        } else if (b & 0xF8) == 0xF0 {
-            neededBytes = 4
-        } else {
-            neededBytes = 1
-        }
-
-        while bytes.count < neededBytes {
-            if let nb = readByte() {
-                bytes.append(nb)
-            } else {
-                break
+        default:
+            // Process UTF-8 multi-byte sequence (determining required byte
+            // count based on UTF-8 leading byte header)
+            var bytes: [UInt8] = [b]
+            let neededBytes: Int
+            switch b {
+            case 0..<0x80:
+                // 1-byte ASCII character (0xxxxxxx)
+                neededBytes = 1
+            case 0xC0..<0xE0:
+                // 2-byte UTF-8 character (110xxxxx 10xxxxxx)
+                neededBytes = 2
+            case 0xE0..<0xF0:
+                // 3-byte UTF-8 character (1110xxxx 10xxxxxx 10xxxxxx, e.g. CJK Chinese)
+                neededBytes = 3
+            case 0xF0..<0xF8:
+                // 4-byte UTF-8 character (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx, e.g. Emoji)
+                neededBytes = 4
+            default:
+                neededBytes = 1
             }
-        }
 
-        if let str = String(bytes: bytes, encoding: .utf8), let ch = str.first {
-            return .char(ch)
-        }
+            while bytes.count < neededBytes {
+                if let nb = readByte() {
+                    bytes.append(nb)
+                } else {
+                    break
+                }
+            }
 
-        return .unknown
+            if let str = String(bytes: bytes, encoding: .utf8), let ch = str.first {
+                return .char(ch)
+            }
+
+            return .unknown
+        }
     }
 
     /// ANSI cursor hiding and movement helper functions.

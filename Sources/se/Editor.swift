@@ -501,7 +501,7 @@ public final class Editor {
         // 1. Title Bar (Inverted Colors)
         let titleName = buffer.filePath ?? "New Buffer"
         let modStr = buffer.isModified ? " Modified" : ""
-        let rawTitle = "  se (Swift TUI Nano)  |  File: \(titleName)\(modStr)"
+        let rawTitle = "  se |  File: \(titleName)\(modStr)"
         let paddedTitle = rawTitle.paddedToDisplayWidth(cols)
         output += "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
 
