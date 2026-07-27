@@ -37,6 +37,18 @@ public final class TextBuffer {
         }
     }
 
+    /// Reloads buffer content from current file path.
+    public func reloadFile() throws {
+        guard let path = filePath, !path.isEmpty else {
+            throw NSError(domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
+        }
+        let content = try String(contentsOfFile: path, encoding: .utf8)
+        let fileLines = content.components(separatedBy: .newlines)
+        self.lines = fileLines.isEmpty ? [""] : fileLines
+        self.isModified = false
+        clampCursor()
+    }
+
     /// Saves buffer text to file.
     public func saveFile(to path: String? = nil) throws {
         let targetPath = path ?? filePath

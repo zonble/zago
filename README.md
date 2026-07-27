@@ -12,8 +12,9 @@
 - **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
 - **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
 - **Syntax Highlighting & GNU Nano `.nanorc` Compatibility**: Built-in 5-token ANSI color rules for **Swift**, **Python**, **C/C++**, **JSON**, **Markdown**, and **Shell** with native GNU Nano `.nanorc` configuration parsing (`~/.nanorc`, `/opt/homebrew/share/nano/*.nanorc`, `/usr/share/nano/*.nanorc`).
+- **File System Auto-Reload (`FileWatcher`)**: Real-time event monitoring (`DispatchSourceFileSystemObject`) for external file modifications. Automatically reloads buffer if unmodified (`isModified == false`), or prompts `[Y/N]` to confirm reloading if unsaved local changes exist.
 - **Internationalization (i18n)**: Dual English and Traditional Chinese (`zh_TW`) support with automatic POSIX locale detection (`$LC_ALL`, `$LANG`), `~/.serc` (`set lang zh_TW`), and CLI `--lang zh_TW`.
-- **User Configuration File (`~/.serc`)**: Nano/Vim-style directives for `set wrap`, `set ruler`, `set syntax`, `set lang`, `bind <key> <cmd_id>`, and `unbind <key>`.
+- **User Configuration File (`~/.serc`)**: Nano/Vim-style directives for `set wrap`, `set ruler`, `set syntax`, `set autoreload`, `set lang`, `bind <key> <cmd_id>`, and `unbind <key>`.
 - **Classic WordStar Ruler (`-r` / `--ruler`)**: Retro `----!----1----!----2` ruler bar for precise character column alignment.
 - **Function Keys Support**: Native mapping for function keys `F1` through `F12`.
 - **CJK & Multi-byte UTF-8 Support**: Seamless Chinese, Japanese, Korean, and multi-byte UTF-8 character input with accurate `displayWidth` column alignment.
@@ -67,6 +68,8 @@
 | `set ruler` | Enables classic WordStar-style ruler bar | `set ruler` |
 | `unset ruler` | Hides WordStar ruler bar | `unset ruler` |
 | `set syntax [on\|off]` | Enables or disables syntax highlighting engine | `set syntax off` |
+| `set autoreload` | Enables real-time file system modification auto-reload | `set autoreload` |
+| `unset autoreload` | Disables file system modification auto-reload | `unset autoreload` |
 | `set lang [zh_TW\|en]` | Sets UI language explicitly | `set lang zh_TW` |
 | `bind <key> <command_id>` | Binds custom key to editor command | `bind ctrl-f move.right` |
 | `unbind <key>` | Unbinds existing key | `unbind f1` |

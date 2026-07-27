@@ -20,6 +20,7 @@ public struct TraditionalChineseStrings {
         // Prompts
         "prompt.write_name": "寫出檔案名稱：",
         "prompt.confirm_exit_save": "是否儲存已修改的內容？(回答 \"N\" 將捨棄修改) [Y/N]：",
+        "prompt.confirm_reload": "檔案已於外部變更，是否重新載入？(回答 \"N\" 將保留當前修改) [Y/N]：",
         "prompt.search": "搜尋",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
@@ -42,6 +43,8 @@ public struct TraditionalChineseStrings {
         "status.spell_check_skipped": "跳過拼字檢查",
         "status.word_kept": "保留原字詞",
         "status.no_misspelled": "[ 未發現拼錯字詞 ]",
+        "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
+        "status.kept_local": "[ 已保留本地修改 ]",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - 完整指令與快速鍵說明手冊",

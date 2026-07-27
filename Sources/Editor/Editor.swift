@@ -30,20 +30,23 @@ public final class Editor {
 
     let syntaxHighlighter = SyntaxHighlighter()
     public let commandRegistry = CommandRegistry()
+    public let fileWatcher = FileWatcher()
 
     public struct DisplayConfig: Sendable, Equatable {
         public var showRuler: Bool
         public var enableSyntaxHighlight: Bool
+        public var autoReload: Bool
 
-        public init(showRuler: Bool = false, enableSyntaxHighlight: Bool = true) {
+        public init(showRuler: Bool = false, enableSyntaxHighlight: Bool = true, autoReload: Bool = true) {
             self.showRuler = showRuler
             self.enableSyntaxHighlight = enableSyntaxHighlight
+            self.autoReload = autoReload
         }
     }
 
     public var displayConfig: DisplayConfig
 
-    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, language: Language? = nil) {
+    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
 
@@ -53,14 +56,54 @@ public final class Editor {
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
+        let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
-        self.displayConfig = DisplayConfig(showRuler: finalRuler, enableSyntaxHighlight: finalSyntax)
+        self.displayConfig = DisplayConfig(showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload)
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)
+
+        if let path = buffer.filePath {
+            fileWatcher.start(path: path)
+        }
+
+        fileWatcher.onChange = { [weak self] in
+            guard let self = self, self.displayConfig.autoReload else { return }
+            self.handleExternalFileChange()
+        }
+    }
+
+    /// Handles external file system modifications detected by FileWatcher.
+    public func handleExternalFileChange() {
+        guard displayConfig.autoReload, buffer.filePath != nil else { return }
+
+        if buffer.isModified {
+            currentPromptMode = .confirmExternalReload(completion: { [weak self] reload in
+                guard let self = self else { return }
+                if reload {
+                    do {
+                        try self.buffer.reloadFile()
+                        self.buffer.isModified = false
+                        self.setStatusMessage(L10n["status.file_reloaded"])
+                    } catch {
+                        self.setStatusMessage(error.localizedDescription)
+                    }
+                } else {
+                    self.setStatusMessage(L10n["status.kept_local"])
+                }
+            })
+            setStatusMessage(L10n["prompt.confirm_reload"])
+        } else {
+            do {
+                try buffer.reloadFile()
+                setStatusMessage(L10n["status.file_reloaded"])
+            } catch {
+                setStatusMessage(error.localizedDescription)
+            }
+        }
     }
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.

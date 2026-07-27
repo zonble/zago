@@ -6,6 +6,7 @@ public struct EditorConfig {
     public var showRuler: Bool = false
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
+    public var autoReload: Bool = true
     public var language: Language? = nil
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
@@ -142,11 +143,33 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "unset":
+                        if value == "wrap" {
+                            config.wrapColumn = nil
+                        } else if value == "ruler" {
+                            config.showRuler = false
+                        } else if value == "syntax" {
+                            config.enableSyntaxHighlight = false
+                        } else if value == "autoreload" {
+                            config.autoReload = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "syntax":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.enableSyntaxHighlight = true
                         } else if value == "false" || value == "off" || value == "0" {
                             config.enableSyntaxHighlight = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "autoreload":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.autoReload = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.autoReload = false
                         } else {
                             config.syntaxErrorCount += 1
                         }

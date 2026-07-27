@@ -6,6 +6,7 @@ extension Editor {
         case none
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)
+        case confirmExternalReload(completion: (Bool) -> Void)
         case search(completion: (String?) -> Void)
         case insertFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
@@ -46,14 +47,14 @@ extension Editor {
                 saveUndoSnapshot()
             }
 
-            lastIsPaste = isMultiChar
-            lastMutationTime = now
-
             if !isMultiChar {
                 buffer.insert(character: ch)
             } else {
                 buffer.insertString(pastedText)
             }
+
+            lastIsPaste = isMultiChar
+            lastMutationTime = now
 
         case .unknown:
             break
@@ -98,6 +99,18 @@ extension Editor {
             case .esc, .ctrl("C"):
                 currentPromptMode = .none
                 completion(nil)
+            default:
+                break
+            }
+
+        case .confirmExternalReload(let completion):
+            switch key {
+            case .char("y"), .char("Y"), .enter:
+                currentPromptMode = .none
+                completion(true)
+            case .char("n"), .char("N"), .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(false)
             default:
                 break
             }

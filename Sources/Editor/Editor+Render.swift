@@ -110,6 +110,9 @@ extension Editor {
         case .confirmExitSave:
             let prompt = L10n["prompt.confirm_exit_save"]
             output += "\u{1B}[1;33m\(prompt)\u{1B}[0m"
+        case .confirmExternalReload:
+            let prompt = L10n["prompt.confirm_reload"]
+            output += "\u{1B}[1;33m\(prompt)\u{1B}[0m"
         case .search:
             let searchStr = L10n["prompt.search"]
             let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"

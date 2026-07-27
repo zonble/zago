@@ -20,6 +20,7 @@ public struct EnglishStrings {
         // Prompts
         "prompt.write_name": "File Name to Write: ",
         "prompt.confirm_exit_save": "Save modified buffer? (Answering \"N\" will discard changes) [Y/N]: ",
+        "prompt.confirm_reload": "File changed on disk. Reload? (Answering \"N\" will keep local buffer) [Y/N]: ",
         "prompt.search": "Search",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
@@ -42,6 +43,8 @@ public struct EnglishStrings {
         "status.spell_check_skipped": "Spell check skipped",
         "status.word_kept": "Word kept",
         "status.no_misspelled": "[ No misspelled words found ]",
+        "status.file_reloaded": "[ File reloaded from disk ]",
+        "status.kept_local": "[ Kept local modifications ]",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - Full Help & Command Reference",

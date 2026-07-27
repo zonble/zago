@@ -302,6 +302,7 @@ import Foundation
     # Sample serc configuration
     set wrap 80
     set ruler true
+    set autoreload true
     bind ctrl-f move.left
     unbind f1
     invalid syntax line
@@ -315,9 +316,26 @@ import Foundation
 
     #expect(config.wrapColumn == 80)
     #expect(config.showRuler == true)
+    #expect(config.autoReload == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
     #expect(config.unbindKeys.contains(.f1))
     #expect(config.syntaxErrorCount == 1)
+}
+
+@Test func testFileWatcherAndAutoReload() throws {
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_fs_watcher.txt").path
+    try "Initial line\n".write(toFile: tmpFile, atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tmpFile) }
+
+    let editor = Editor(filePath: tmpFile, autoReload: true)
+    #expect(editor.displayConfig.autoReload == true)
+
+    // Test external change reloading when unmodified
+    try "Modified externally\n".write(toFile: tmpFile, atomically: true, encoding: .utf8)
+
+    // Trigger reload
+    editor.handleExternalFileChange()
+    #expect(editor.buffer.lines.first == "Modified externally")
 }
 
 @Test func testSyntaxHighlighter() throws {
