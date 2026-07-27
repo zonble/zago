@@ -21,7 +21,44 @@ extension Editor {
             return
         }
 
-        if !commandRegistry.dispatch(key: key, editor: self) {
+        if commandRegistry.dispatch(key: key, editor: self) {
+            buffer.clampCursor()
+            return
+        }
+
+        switch key {
+        case .backspace:
+            saveUndoSnapshot()
+            buffer.backspace()
+
+        case .enter:
+            saveUndoSnapshot()
+            buffer.insertNewline()
+
+        case .char(let ch):
+            let pastedText = terminal.readPendingText(firstChar: ch)
+            let isMultiChar = (pastedText.count > 1)
+            let now = Date()
+
+            let isCoalescedPaste = isMultiChar && lastIsPaste && (lastMutationTime != nil && now.timeIntervalSince(lastMutationTime!) < 0.5)
+
+            if !isCoalescedPaste {
+                saveUndoSnapshot()
+            }
+
+            lastIsPaste = isMultiChar
+            lastMutationTime = now
+
+            if !isMultiChar {
+                buffer.insert(character: ch)
+            } else {
+                buffer.insertString(pastedText)
+            }
+
+        case .unknown:
+            break
+
+        default:
             setStatusMessage(L10n["status.unknown_command"])
         }
 

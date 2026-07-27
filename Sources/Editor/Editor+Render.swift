@@ -4,8 +4,14 @@ extension Editor {
     /// Refreshes screen rendering (Title bar, WordStar ruler, Virtual lines, Prompt/Status line, Help bar, Cursor position).
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
+        let output = generateScreenOutput(rows: rows, cols: cols)
+        print(output, terminator: "")
+        fflush(nil)
+    }
 
-        let mainAreaHeight = max(1, rows - (showRuler ? 4 : 3)) // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
+    /// Generates full screen ANSI output string for given terminal rows and cols dimensions.
+    func generateScreenOutput(rows: Int, cols: Int) -> String {
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4)) // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let textWidth = max(10, cols - 5) // 5 columns reserved for line number gutter ("1234 ")
 
         // Compute Virtual Lines (wrapped visual sub-lines)
@@ -139,8 +145,7 @@ extension Editor {
         output += "\u{1B}[\(screenRow);\(screenCol)H"
         output += "\u{1B}[?25h" // Show cursor
 
-        print(output, terminator: "")
-        fflush(nil)
+        return output
     }
 
     /// Formats Nano help bar lines with 2D column alignment and dynamic gap spacing (Bold Cyan keys, no leading space).

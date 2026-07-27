@@ -370,3 +370,56 @@ import Foundation
     #expect(L10n.helpExit == "離開")
     #expect(L10n.readLines(10) == "[ 已讀取 10 行 ]")
 }
+
+@Test func testEditorProcessKeyInput() throws {
+    let editor = Editor()
+    #expect(editor.buffer.lines.count == 1)
+    #expect(editor.buffer.lines[0] == "")
+
+    // Test typing characters
+    editor.processKey(.char("H"))
+    editor.processKey(.char("i"))
+    #expect(editor.buffer.lines[0] == "Hi")
+
+    // Test Enter
+    editor.processKey(.enter)
+    #expect(editor.buffer.lines.count == 2)
+
+    // Test typing on second line
+    editor.processKey(.char("W"))
+    #expect(editor.buffer.lines[1] == "W")
+
+    // Test Backspace
+    editor.processKey(.backspace)
+    #expect(editor.buffer.lines[1] == "")
+}
+
+@Test func testScreenRenderLayoutAndHeight() throws {
+    let editor = Editor()
+    let screenRows = 24
+    let screenCols = 80
+
+    // Test without ruler (1 title + 20 main + 1 status + 2 help = 24 rows)
+    let outputNoRuler = editor.generateScreenOutput(rows: screenRows, cols: screenCols)
+    let cleanNoRuler = outputNoRuler.hasPrefix("\u{1B}[H") ? String(outputNoRuler.dropFirst(3)) : outputNoRuler
+    let linesNoRuler = cleanNoRuler.components(separatedBy: "\r\n")
+
+    // Verify title bar on line 0 (with inverted video ANSI)
+    #expect(linesNoRuler[0].contains("se"))
+    #expect(linesNoRuler[0].contains("\u{1B}[7m"))
+
+    // Output must consist of exactly 24 screen line chunks (23 \r\n separators)
+    #expect(linesNoRuler.count == 24)
+
+    // Test with ruler (1 title + 1 ruler + 19 main + 1 status + 2 help = 24 rows)
+    editor.showRuler = true
+    let outputWithRuler = editor.generateScreenOutput(rows: screenRows, cols: screenCols)
+    let cleanWithRuler = outputWithRuler.hasPrefix("\u{1B}[H") ? String(outputWithRuler.dropFirst(3)) : outputWithRuler
+    let linesWithRuler = cleanWithRuler.components(separatedBy: "\r\n")
+
+    #expect(linesWithRuler[0].contains("se"))
+    #expect(linesWithRuler[0].contains("\u{1B}[7m"))
+    #expect(linesWithRuler[1].contains("!")) // Ruler line
+
+    #expect(linesWithRuler.count == 24)
+}
