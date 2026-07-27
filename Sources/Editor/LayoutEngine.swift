@@ -83,17 +83,21 @@ public final class LayoutEngine {
             return (0, 0)
         }
 
-        for (vIdx, vLine) in matching {
-            if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
-                // If cursor is at wrap boundary and not last chunk, continue to next subline
-                if columnIndex == vLine.endCol && vLine.endCol < vLine.startCol + vLine.text.count && vIdx < virtualLines.count - 1 {
-                    let nextVLine = virtualLines[vIdx + 1]
-                    if nextVLine.bufferLineIndex == lineIndex {
-                        continue
-                    }
+        for (i, item) in matching.enumerated() {
+            let vIdx = item.offset
+            let vLine = item.element
+            let isLastSubline = (i == matching.count - 1)
+
+            if isLastSubline {
+                if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
+                    let colInVLine = columnIndex - vLine.startCol
+                    return (vIdx, colInVLine)
                 }
-                let colInVLine = columnIndex - vLine.startCol
-                return (vIdx, colInVLine)
+            } else {
+                if columnIndex >= vLine.startCol && columnIndex < vLine.endCol {
+                    let colInVLine = columnIndex - vLine.startCol
+                    return (vIdx, colInVLine)
+                }
             }
         }
 

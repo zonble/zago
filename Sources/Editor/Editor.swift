@@ -97,10 +97,17 @@ public final class Editor {
             moveCursorVirtual(deltaRow: 1)
 
         case .ctrl("A"), .home:
-            buffer.columnIndex = 0
+            let vLine = getVirtualLineForCursor()
+            buffer.columnIndex = vLine.startCol
 
         case .ctrl("E"), .end:
-            buffer.columnIndex = buffer.lines[buffer.lineIndex].count
+            let vLine = getVirtualLineForCursor()
+            let realLineLen = buffer.lines[vLine.bufferLineIndex].count
+            if vLine.endCol > vLine.startCol && vLine.endCol < realLineLen {
+                buffer.columnIndex = vLine.endCol - 1
+            } else {
+                buffer.columnIndex = vLine.endCol
+            }
 
         case .ctrl("Y"), .f7, .pageUp:
             let (rows, _) = terminal.getWindowSize()
@@ -228,23 +235,81 @@ public final class Editor {
         buffer.clampCursor()
     }
 
-    /// Moves cursor vertically across virtual display lines.
+    /// Returns the VirtualLine structure containing current cursor.
+    private func getVirtualLineForCursor() -> VirtualLine {
+        let (_, cols) = terminal.getWindowSize()
+        let textWidth = max(10, cols - 5)
+        let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
+
+        let (cursorVLineIdx, _) = layoutEngine.getVirtualCursor(
+            lineIndex: buffer.lineIndex,
+            columnIndex: buffer.columnIndex,
+            virtualLines: virtualLines
+        )
+
+        if cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count {
+            return virtualLines[cursorVLineIdx]
+        }
+
+        return VirtualLine(
+            bufferLineIndex: buffer.lineIndex,
+            subLineIndex: 0,
+            text: buffer.lines[buffer.lineIndex],
+            startCol: 0,
+            endCol: buffer.lines[buffer.lineIndex].count
+        )
+    }
+
+    /// Maps virtual line index and target visual display column width to real buffer cursor.
+    private func getBufferCursorForVisualColumn(
+        vLineIndex: Int,
+        targetDisplayCol: Int,
+        virtualLines: [VirtualLine]
+    ) -> (lineIndex: Int, columnIndex: Int) {
+        guard !virtualLines.isEmpty else { return (0, 0) }
+        let clampedVLineIndex = max(0, min(vLineIndex, virtualLines.count - 1))
+        let vLine = virtualLines[clampedVLineIndex]
+
+        var currentWidth = 0
+        var charIndex = 0
+
+        for ch in vLine.text {
+            let w = ch.displayWidth
+            if currentWidth + w > targetDisplayCol {
+                break
+            }
+            currentWidth += w
+            charIndex += 1
+        }
+
+        let realCol = vLine.startCol + charIndex
+        return (vLine.bufferLineIndex, realCol)
+    }
+
+    /// Moves cursor vertically across virtual display lines, maintaining visual display column alignment.
     private func moveCursorVirtual(deltaRow: Int) {
         let (_, cols) = terminal.getWindowSize()
         let gutterWidth = 5
         let textWidth = max(10, cols - gutterWidth)
 
         let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
-        let (currentVLineIdx, currentVCol) = layoutEngine.getVirtualCursor(
+        let (currentVLineIdx, _) = layoutEngine.getVirtualCursor(
             lineIndex: buffer.lineIndex,
             columnIndex: buffer.columnIndex,
             virtualLines: virtualLines
         )
 
-        let newVLineIdx = currentVLineIdx + deltaRow
-        let (newLine, newCol) = layoutEngine.getBufferCursor(
+        guard currentVLineIdx >= 0 && currentVLineIdx < virtualLines.count else { return }
+
+        let currentVLine = virtualLines[currentVLineIdx]
+        let colInSubLine = max(0, min(buffer.columnIndex - currentVLine.startCol, currentVLine.text.count))
+        let subLineChars = Array(currentVLine.text)
+        let currentDisplayCol = subLineChars[..<colInSubLine].reduce(0) { $0 + $1.displayWidth }
+
+        let newVLineIdx = max(0, min(currentVLineIdx + deltaRow, virtualLines.count - 1))
+        let (newLine, newCol) = getBufferCursorForVisualColumn(
             vLineIndex: newVLineIdx,
-            vColIndex: currentVCol,
+            targetDisplayCol: currentDisplayCol,
             virtualLines: virtualLines
         )
 
