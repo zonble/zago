@@ -36,7 +36,18 @@
 | `DEL` / `DELETE` | `DEL [n]` | Deletes $n$ characters forward (Delete key) | `DEL 5` |
 | `BS` / `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward (Backspace key) | `BS 3` |
 
-### 2. Cursor Navigation, Selection & Box Framing
+### 2. Classical Turtle Graphics & Motion
+
+| Command | Syntax | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `PD` / `PENDOWN` | `PD` | Pen Down: activates drawing mode while moving turtle | `PD` |
+| `PU` / `PENUP` | `PU` | Pen Up: deactivates drawing mode (moves without drawing) | `PU` |
+| `FD` / `FORWARD` | `FD [dist]` | Move turtle forward $n$ steps in current heading | `FD 5`, `FD 10` |
+| `BK` / `BACK` | `BK [dist]` | Move turtle backward $n$ steps in opposite heading | `BK 3` |
+| `RT` / `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
+| `LT` / `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
+
+### 3. Cursor Navigation, Selection & Box Framing
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
@@ -190,6 +201,22 @@ BOX 6 3 GOTO 1 3 VLINE 3
 ┌─┬──┐
 │ │  │
 └─┴──┘
+```
+
+### 10. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)
+Draws a 5x5 square frame using classic LOGO Turtle Graphics with Pen Down and 90° right turns:
+
+```logo
+PD REPEAT 4 [ FD 5 RT 90 ]
+```
+
+*Output (automatically fused corner junctions):*
+```text
+┌────┐
+│    │
+│    │
+│    │
+└────┘
 ```
 
 ---

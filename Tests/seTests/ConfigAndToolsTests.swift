@@ -133,6 +133,8 @@ import Foundation
     #expect(L10n.errorInsertingFile(error: "Access denied") == "Error inserting file: Access denied")
     #expect(L10n.errorSavingFile(error: "Disk full") == "Error saving file: Disk full")
     #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "Replaced 'helo' with 'hello'")
+    #expect(L10n["helpview.sec_logo"] == "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:")
+    #expect(L10n["helpview.logo_6"].contains("Turtle Graphics"))
 
     L10n.currentLanguage = .zh_TW
     #expect(L10n.helpGetHelp == "輔助說明")
@@ -148,4 +150,6 @@ import Foundation
     #expect(L10n.errorInsertingFile(error: "Access denied") == "插入檔案錯誤：Access denied")
     #expect(L10n.errorSavingFile(error: "Disk full") == "儲存檔案錯誤：Disk full")
     #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "已將 'helo' 替換為 'hello'")
+    #expect(L10n["helpview.sec_logo"] == "  LOGO 巨集語言與海龜繪圖指令：")
+    #expect(L10n["helpview.logo_6"].contains("海龜繪圖"))
 }

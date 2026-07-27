@@ -112,10 +112,110 @@ import Foundation
     #expect(outputText.contains("-"))
     #expect(outputText.contains(":"))
 
+    // Test MAKE "i" DATE "YYYY/MM/DD" BOX :i
+    let dateBoxEditor = Editor()
+    logoEngine.execute("MAKE \"i\" DATE \"YYYY/MM/DD\" BOX :i", on: dateBoxEditor)
+    #expect(dateBoxEditor.buffer.lines.count >= 3)
+    #expect(dateBoxEditor.buffer.lines[1].contains("/"))
+    #expect(dateBoxEditor.buffer.lines[0].hasPrefix("┌"))
+
     // 17. Smart Line Junction Fusion (BOX + VLINE cross fusion)
     let fuseEditor = Editor()
     logoEngine.execute("BOX 6 3 GOTO 1 3 VLINE 3", on: fuseEditor)
     #expect(fuseEditor.buffer.lines[0] == "┌─┬──┐")
     #expect(fuseEditor.buffer.lines[1] == "│ │  │")
     #expect(fuseEditor.buffer.lines[2] == "└─┴──┘")
+
+    // 18. LOGO Turtle Graphics (PD, PU, FD, BK, RT, LT) test
+    let turtleEditor = Editor()
+    logoEngine.execute("PU FD 3 PD FD 3", on: turtleEditor)
+    #expect(turtleEditor.buffer.lines[0] == "  ───")
+}
+
+@Test func testTurtleSquareBoxDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Test drawing a complete 4x4 square using Turtle Graphics (4 cells per side)
+    logoEngine.execute("PD REPEAT 4 [ FD 4 RT 90 ]", on: editor)
+    #expect(editor.buffer.lines.count >= 4)
+    #expect(editor.buffer.lines[0] == "┌──┐")
+    #expect(editor.buffer.lines[1] == "│  │")
+    #expect(editor.buffer.lines[2] == "│  │")
+    #expect(editor.buffer.lines[3] == "└──┘")
+}
+
+@Test func testTurtleLeftTurnAndBackward() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Test LT 90 (facing UP) and BK 3 (moving DOWN while facing UP)
+    logoEngine.execute("LT 90 BK 3", on: editor)
+    #expect(editor.buffer.lines.count == 3)
+    #expect(editor.buffer.lines[0] == "│")
+    #expect(editor.buffer.lines[1] == "│")
+    #expect(editor.buffer.lines[2] == "│")
+}
+
+@Test func testDoubleLineSmartJunctionFusion() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Test double line box fused with double line VLINE
+    logoEngine.execute("BOX 6 3 \"double\" GOTO 1 3 VLINE 3 \"double\"", on: editor)
+    #expect(editor.buffer.lines[0] == "╔═╦══╗")
+    #expect(editor.buffer.lines[1] == "║ ║  ║")
+    #expect(editor.buffer.lines[2] == "╚═╩══╝")
+}
+
+@Test func testTurtleVariableLoopCombo() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Test variable dereferencing inside turtle drawing loop
+    logoEngine.execute("MAKE \"dist\" 3 PD REPEAT 2 [ FD :dist RT 90 ]", on: editor)
+    #expect(editor.buffer.lines[0] == "──┐")
+    #expect(editor.buffer.lines[1] == "  │")
+    #expect(editor.buffer.lines[2] == "  │")
+}
+
+@Test func testAtomicUndoForTurtleScript() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+    editor.buffer.lines = ["Original Text"]
+
+    // Execute complex turtle script
+    logoEngine.execute("GOTO 1 1 PD REPEAT 4 [ FD 5 RT 90 ]", on: editor)
+    #expect(editor.buffer.lines[0] != "Original Text")
+
+    // Single ^Z Undo should revert the entire script in one step
+    editor.performUndo()
+    #expect(editor.buffer.lines == ["Original Text"])
+}
+
+@Test func testTurtleSpiralDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Draw an expanding spiral using LOGO turtle loop and variable incrementing
+    logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT 90 MAKE \"d\" ( :d + 2 ) ]", on: editor)
+    #expect(editor.buffer.lines.count >= 4)
+    #expect(editor.buffer.lines[0] == "├┐")
+    #expect(editor.buffer.lines[1] == "││")
+    #expect(editor.buffer.lines[2] == "││")
+    #expect(editor.buffer.lines[3] == "└┘")
+}
+
+@Test func testTurtleDirectTableDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine()
+
+    // Directly draw a 2x2 grid table with outer box, inner vertical & horizontal dividers using turtle moves & fusion
+    logoEngine.execute("PD REPEAT 4 [ FD 5 RT 90 ] PU GOTO 1 3 PD RT 90 FD 5 PU GOTO 3 1 PD LT 90 FD 5", on: editor)
+    #expect(editor.buffer.lines.count >= 5)
+    #expect(editor.buffer.lines[0] == "┌─┬─┐")
+    #expect(editor.buffer.lines[1] == "│ │ │")
+    #expect(editor.buffer.lines[2] == "├─┼─┤")
+    #expect(editor.buffer.lines[3] == "│ │ │")
+    #expect(editor.buffer.lines[4] == "└─┴─┘")
 }

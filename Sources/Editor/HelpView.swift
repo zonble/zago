@@ -82,7 +82,17 @@ public final class HelpView {
             L10n["helpview.file_4"],
             L10n["helpview.file_5"],
             L10n["helpview.file_6"],
-            L10n["helpview.file_7"]
+            L10n["helpview.file_7"],
+            "",
+            L10n["helpview.sec_logo"],
+            L10n["helpview.logo_1"],
+            L10n["helpview.logo_2"],
+            L10n["helpview.logo_3"],
+            L10n["helpview.logo_4"],
+            L10n["helpview.logo_5"],
+            L10n["helpview.logo_6"],
+            L10n["helpview.logo_7"],
+            L10n["helpview.logo_8"]
         ]
     }
 

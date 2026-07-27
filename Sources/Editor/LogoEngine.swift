@@ -26,13 +26,18 @@ struct BoxStyle {
 
 /// LOGO-style Macro Language Engine for se text editor.
 /// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE, JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME),
-/// variables (MAKE "var" val / :var), editor settings (SET ruler/wrap/syntax/autoreload/lang),
-/// arithmetic (+, -, *, /, %), loops (REPEAT expr [ ... ]), procedure definitions (TO proc ... END),
-/// and Smart Line Junction Fusion (auto-fusing crossing lines/boxes into ┼, ┬, ┴, ├, ┤).
+/// classical Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT, LT/LEFT with 90-degree cardinal turns & drawing),
+/// expressions with DATE/TIME evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
+/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -, *, /, %), loops (REPEAT expr [ ... ]),
+/// procedure definitions (TO proc ... END), and Smart Line Junction Fusion (neighbor-aware 4-directional mask fusion into ┌, ┐, └, ┘, ┼, ┬, ┴, ├, ┤).
 public final class LogoEngine {
     public var customProcedures: [String: [String]] = [:]
     public var variables: [String: String] = [:]
     public var hasSetStatusMessage: Bool = false
+
+    // Turtle graphics state
+    public var isPenDown: Bool = true
+    public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
     private static let singleMasks: [Character: Int] = [
         "│": 5, "─": 10, "┌": 6, "┐": 12, "└": 3, "┘": 9,
@@ -104,7 +109,7 @@ public final class LogoEngine {
     }
 
     private func executeTokens(_ tokens: [String], index: inout Int, on editor: Editor) {
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         while index < tokens.count {
             let token = tokens[index]
@@ -221,12 +226,81 @@ public final class LogoEngine {
                 executeNewlineCommand(tokens, index: &index, on: editor)
 
             case "DATE":
-                index += 1
                 executeDateCommand(tokens, index: &index, on: editor)
 
             case "TIME":
-                index += 1
                 executeTimeCommand(tokens, index: &index, on: editor)
+
+            // Turtle Graphics Commands
+            case "PD", "PENDOWN":
+                isPenDown = true
+
+            case "PU", "PENUP":
+                isPenDown = false
+
+            case "RT", "RIGHT":
+                index += 1
+                var angle = 90
+                if index < tokens.count {
+                    let nextUpper = tokens[index].uppercased()
+                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                        let valStr = evaluateExpression(tokens, index: &index)
+                        angle = Int(valStr) ?? 90
+                    } else {
+                        index -= 1
+                    }
+                } else {
+                    index -= 1
+                }
+                heading = (heading + angle) % 360
+
+            case "LT", "LEFT":
+                index += 1
+                var angle = 90
+                if index < tokens.count {
+                    let nextUpper = tokens[index].uppercased()
+                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                        let valStr = evaluateExpression(tokens, index: &index)
+                        angle = Int(valStr) ?? 90
+                    } else {
+                        index -= 1
+                    }
+                } else {
+                    index -= 1
+                }
+                heading = ((heading - angle) % 360 + 360) % 360
+
+            case "FD", "FORWARD":
+                index += 1
+                var dist = 1
+                if index < tokens.count {
+                    let nextUpper = tokens[index].uppercased()
+                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                        let valStr = evaluateExpression(tokens, index: &index)
+                        dist = max(1, min(Int(valStr) ?? 1, 200))
+                    } else {
+                        index -= 1
+                    }
+                } else {
+                    index -= 1
+                }
+                executeTurtleMove(steps: dist, directionHeading: heading, on: editor)
+
+            case "BK", "BACK", "BACKWARD":
+                index += 1
+                var dist = 1
+                if index < tokens.count {
+                    let nextUpper = tokens[index].uppercased()
+                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                        let valStr = evaluateExpression(tokens, index: &index)
+                        dist = max(1, min(Int(valStr) ?? 1, 200))
+                    } else {
+                        index -= 1
+                    }
+                } else {
+                    index -= 1
+                }
+                executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360, on: editor)
 
             case "MARK":
                 _ = editor.commandRegistry.dispatch(id: "edit.mark", editor: editor)
@@ -298,9 +372,106 @@ public final class LogoEngine {
         }
     }
 
-    private func fuseCharacter(existing: Character, newMask: Int, defaultNewChar: Character) -> Character {
+    private func executeTurtleMove(steps: Int, directionHeading: Int, on editor: Editor) {
+        let normHeading = ((directionHeading % 360) + 360) % 360
+
+        let deltaRow: Int
+        let deltaCol: Int
+        let lineChar: Character
+
+        switch normHeading {
+        case 0, 360: // UP
+            deltaRow = -1; deltaCol = 0; lineChar = "│"
+        case 180: // DOWN
+            deltaRow = 1; deltaCol = 0; lineChar = "│"
+        case 270: // LEFT
+            deltaRow = 0; deltaCol = -1; lineChar = "─"
+        default: // 90 (RIGHT)
+            deltaRow = 0; deltaCol = 1; lineChar = "─"
+        }
+
+        for s in 0..<steps {
+            let currLine = editor.buffer.lineIndex
+            let currCol = editor.buffer.columnIndex
+
+            if isPenDown {
+                while editor.buffer.lines.count <= currLine {
+                    editor.buffer.lines.append("")
+                }
+
+                var lineChars = Array(editor.buffer.lines[currLine])
+                while lineChars.count <= currCol {
+                    lineChars.append(" ")
+                }
+
+                let stepMask: Int
+                if normHeading == 90 { // RIGHT
+                    stepMask = (steps == 1) ? 10 : ((s == 0) ? 2 : (s == steps - 1 ? 8 : 10))
+                } else if normHeading == 270 { // LEFT
+                    stepMask = (steps == 1) ? 10 : ((s == 0) ? 8 : (s == steps - 1 ? 2 : 10))
+                } else if normHeading == 180 { // DOWN
+                    stepMask = (steps == 1) ? 5 : ((s == 0) ? 4 : (s == steps - 1 ? 1 : 5))
+                } else { // UP (0)
+                    stepMask = (steps == 1) ? 5 : ((s == 0) ? 1 : (s == steps - 1 ? 4 : 5))
+                }
+
+                let existing = lineChars[currCol]
+                lineChars[currCol] = fuseCharacter(existing: existing, newMask: stepMask, defaultNewChar: lineChar, line: currLine, col: currCol, on: editor)
+                editor.buffer.lines[currLine] = String(lineChars)
+                editor.buffer.isModified = true
+            }
+
+            if s < steps - 1 {
+                let nextLine = max(0, currLine + deltaRow)
+                let nextCol = max(0, currCol + deltaCol)
+
+                while editor.buffer.lines.count <= nextLine {
+                    editor.buffer.lines.append("")
+                }
+                editor.buffer.lineIndex = nextLine
+                editor.buffer.columnIndex = nextCol
+            }
+        }
+    }
+
+    private func getEffectiveMask(existing: Character, line: Int, col: Int, on editor: Editor) -> Int {
+        if existing == "─" || existing == "═" {
+            let hasLeft = col > 0 && isLineChar(getChar(atLine: line, col: col - 1, on: editor))
+            let hasRight = isLineChar(getChar(atLine: line, col: col + 1, on: editor))
+
+            if hasLeft && hasRight { return 10 } // RIGHT + LEFT
+            if hasLeft { return 8 } // LEFT
+            if hasRight { return 2 } // RIGHT
+            return 10
+        }
+
+        if existing == "│" || existing == "║" {
+            let hasTop = line > 0 && isLineChar(getChar(atLine: line - 1, col: col, on: editor))
+            let hasBottom = isLineChar(getChar(atLine: line + 1, col: col, on: editor))
+
+            if hasTop && hasBottom { return 5 } // TOP + BOTTOM
+            if hasTop { return 1 } // TOP
+            if hasBottom { return 4 } // BOTTOM
+            return 5
+        }
+
+        return LogoEngine.singleMasks[existing] ?? LogoEngine.doubleMasks[existing] ?? 0
+    }
+
+    private func isLineChar(_ ch: Character) -> Bool {
+        return LogoEngine.singleMasks[ch] != nil || LogoEngine.doubleMasks[ch] != nil
+    }
+
+    private func getChar(atLine line: Int, col: Int, on editor: Editor) -> Character {
+        guard line >= 0 && line < editor.buffer.lines.count else { return " " }
+        let lineChars = Array(editor.buffer.lines[line])
+        guard col >= 0 && col < lineChars.count else { return " " }
+        return lineChars[col]
+    }
+
+    private func fuseCharacter(existing: Character, newMask: Int, defaultNewChar: Character, line: Int, col: Int, on editor: Editor) -> Character {
         let isDouble = LogoEngine.doubleMasks[existing] != nil || LogoEngine.doubleMasks[defaultNewChar] != nil
-        let mask1 = LogoEngine.singleMasks[existing] ?? LogoEngine.doubleMasks[existing] ?? 0
+        let mask1 = getEffectiveMask(existing: existing, line: line, col: col, on: editor)
 
         guard mask1 != 0 else { return defaultNewChar }
 
@@ -312,62 +483,48 @@ public final class LogoEngine {
         }
     }
 
-    private func executeDateCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
-        var format = "yyyy-MM-dd"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
-
-        if index < tokens.count {
-            let firstToken = tokens[index]
-            let upperFirst = firstToken.uppercased()
-
-            if !keywords.contains(upperFirst) && firstToken != "]" {
-                let customFmt = unquote(evaluateExpression(tokens, index: &index))
-                if !customFmt.isEmpty {
-                    format = customFmt
-                }
-            } else {
-                index -= 1
-            }
-        } else {
-            index -= 1
+    private func normalizeDateFormat(_ format: String) -> String {
+        var fmt = format
+            .replacingOccurrences(of: "YYYY", with: "yyyy")
+            .replacingOccurrences(of: "DD", with: "dd")
+        if fmt.contains("yyyy") && fmt.contains("mm") {
+            fmt = fmt.replacingOccurrences(of: "mm", with: "MM")
         }
+        return fmt
+    }
 
+    private func normalizeTimeFormat(_ format: String) -> String {
+        return format
+            .replacingOccurrences(of: "hh", with: "HH")
+            .replacingOccurrences(of: "SS", with: "ss")
+    }
+
+    private func formatDate(format: String) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = format
-        let dateStr = formatter.string(from: Date())
+        formatter.dateFormat = normalizeDateFormat(format)
+        return formatter.string(from: Date())
+    }
+
+    private func formatTime(format: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = normalizeTimeFormat(format)
+        return formatter.string(from: Date())
+    }
+
+    private func executeDateCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
+        let dateStr = evaluateTokenOrCommand(tokens, index: &index)
         editor.buffer.insertString(dateStr)
     }
 
     private func executeTimeCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
-        var format = "HH:mm:ss"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
-
-        if index < tokens.count {
-            let firstToken = tokens[index]
-            let upperFirst = firstToken.uppercased()
-
-            if !keywords.contains(upperFirst) && firstToken != "]" {
-                let customFmt = unquote(evaluateExpression(tokens, index: &index))
-                if !customFmt.isEmpty {
-                    format = customFmt
-                }
-            } else {
-                index -= 1
-            }
-        } else {
-            index -= 1
-        }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = format
-        let timeStr = formatter.string(from: Date())
+        let timeStr = evaluateTokenOrCommand(tokens, index: &index)
         editor.buffer.insertString(timeStr)
     }
 
     private func executeLineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var length = 40
         var styleChar: Character = "─"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -424,7 +581,7 @@ public final class LogoEngine {
 
             if c < currentChars.count {
                 let existing = currentChars[c]
-                currentChars[c] = fuseCharacter(existing: existing, newMask: newMask, defaultNewChar: styleChar)
+                currentChars[c] = fuseCharacter(existing: existing, newMask: newMask, defaultNewChar: styleChar, line: startLine, col: c, on: editor)
             } else {
                 currentChars.append(styleChar)
             }
@@ -449,7 +606,7 @@ public final class LogoEngine {
     private func executeVlineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var height = 5
         var styleChar: Character = "│"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -506,7 +663,7 @@ public final class LogoEngine {
 
             if startCol < lineChars.count {
                 let existing = lineChars[startCol]
-                lineChars[startCol] = fuseCharacter(existing: existing, newMask: newMask, defaultNewChar: styleChar)
+                lineChars[startCol] = fuseCharacter(existing: existing, newMask: newMask, defaultNewChar: styleChar, line: targetLine, col: startCol, on: editor)
             } else {
                 lineChars.append(styleChar)
             }
@@ -532,7 +689,7 @@ public final class LogoEngine {
 
     private func executeNewlineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var count = 1
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -554,7 +711,7 @@ public final class LogoEngine {
     }
 
     private func executeBoxCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME"]
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         guard index < tokens.count else {
             drawBoxAroundSelection(style: .single, on: editor)
@@ -732,7 +889,7 @@ public final class LogoEngine {
         }
     }
 
-    /// Evaluates value or binary arithmetic expression (+, -, *, /, %) with parentheses and operator chaining.
+    /// Evaluates token value or command (DATE, TIME) or binary arithmetic expression (+, -, *, /, %) with parentheses.
     private func evaluateExpression(_ tokens: [String], index: inout Int) -> String {
         guard index < tokens.count else { return "" }
 
@@ -741,8 +898,7 @@ public final class LogoEngine {
         }
         guard index < tokens.count else { return "" }
 
-        let leftToken = tokens[index]
-        var leftVal = resolveTokenValue(leftToken)
+        var leftVal = evaluateTokenOrCommand(tokens, index: &index)
 
         // Peek next operator if present
         while index + 1 < tokens.count {
@@ -756,8 +912,7 @@ public final class LogoEngine {
             if op == "+" || op == "-" || op == "*" || op == "/" || op == "%" {
                 index += 2
                 guard index < tokens.count else { break }
-                let rightToken = tokens[index]
-                let rightVal = resolveTokenValue(rightToken)
+                let rightVal = evaluateTokenOrCommand(tokens, index: &index)
 
                 if let num1 = Int(leftVal), let num2 = Int(rightVal) {
                     let resNum: Int
@@ -784,6 +939,48 @@ public final class LogoEngine {
         }
 
         return leftVal
+    }
+
+    private func evaluateTokenOrCommand(_ tokens: [String], index: inout Int) -> String {
+        guard index < tokens.count else { return "" }
+        let token = tokens[index]
+        let upper = token.uppercased()
+
+        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
+
+        if upper == "DATE" {
+            var format = "yyyy-MM-dd"
+            if index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                let nextUpper = nextToken.uppercased()
+                if !keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                    index += 1
+                    let customFmt = unquote(nextToken)
+                    if !customFmt.isEmpty {
+                        format = customFmt
+                    }
+                }
+            }
+            return formatDate(format: format)
+        }
+
+        if upper == "TIME" {
+            var format = "HH:mm:ss"
+            if index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                let nextUpper = nextToken.uppercased()
+                if !keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                    index += 1
+                    let customFmt = unquote(nextToken)
+                    if !customFmt.isEmpty {
+                        format = customFmt
+                    }
+                }
+            }
+            return formatTime(format: format)
+        }
+
+        return resolveTokenValue(token)
     }
 
     private func resolveTokenValue(_ token: String) -> String {
