@@ -21,6 +21,9 @@ struct SE: ParsableCommand {
     @Option(name: [.customLong("syntax")], help: "Enable or disable syntax highlighting (true/false).")
     var syntax: String?
 
+    @Option(name: [.customLong("lang"), .customLong("language")], help: "Set interface language (en/zh_TW).")
+    var lang: String?
+
     func run() throws {
         let enableSyntax: Bool?
         if let s = syntax?.lowercased() {
@@ -28,7 +31,21 @@ struct SE: ParsableCommand {
         } else {
             enableSyntax = nil
         }
-        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax)
+
+        let selectedLang: Language?
+        if let l = lang?.lowercased() {
+            if l == "zh_tw" || l == "zh-hant" || l == "zh" || l == "tw" {
+                selectedLang = .zh_TW
+            } else if l == "en" || l == "english" {
+                selectedLang = .en
+            } else {
+                selectedLang = nil
+            }
+        } else {
+            selectedLang = nil
+        }
+
+        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax, language: selectedLang)
         editor.run()
     }
 }

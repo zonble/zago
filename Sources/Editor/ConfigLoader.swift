@@ -6,6 +6,7 @@ public struct EditorConfig {
     public var showRuler: Bool = false
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
+    public var language: Language? = nil
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
     public var syntaxErrorCount: Int = 0
@@ -146,6 +147,15 @@ public final class ConfigLoader {
                             config.enableSyntaxHighlight = true
                         } else if value == "false" || value == "off" || value == "0" {
                             config.enableSyntaxHighlight = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "lang", "language":
+                        if value == "zh_tw" || value == "zh-hant" || value == "zh" || value == "tw" {
+                            config.language = .zh_TW
+                        } else if value == "en" || value == "english" {
+                            config.language = .en
                         } else {
                             config.syntaxErrorCount += 1
                         }

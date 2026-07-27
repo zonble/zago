@@ -48,7 +48,7 @@ public final class Editor {
     public var showRuler: Bool = false
     public var enableSyntaxHighlight: Bool = true
 
-    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil) {
+    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, language: Language? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
 
@@ -58,7 +58,9 @@ public final class Editor {
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
+        let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
 
+        L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.showRuler = finalRuler
         self.enableSyntaxHighlight = finalSyntax
@@ -80,7 +82,7 @@ public final class Editor {
         }
 
         if config.syntaxErrorCount > 0 {
-            setStatusMessage("[ Config loaded with \(config.syntaxErrorCount) syntax error(s) ]")
+            setStatusMessage(L10n.configLoadedWithErrors(config.syntaxErrorCount))
         }
     }
 
@@ -117,7 +119,7 @@ public final class Editor {
         commandRegistry.register(Command(id: "select.left", name: "Select Left", description: "Extend selection left", keys: [.shiftArrowLeft]) { editor in
             if editor.selectionMark == nil {
                 editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-                editor.setStatusMessage("Mark Set")
+                editor.setStatusMessage(L10n["status.mark_set"])
             }
             if editor.buffer.columnIndex > 0 {
                 editor.buffer.columnIndex -= 1
@@ -130,7 +132,7 @@ public final class Editor {
         commandRegistry.register(Command(id: "select.right", name: "Select Right", description: "Extend selection right", keys: [.shiftArrowRight]) { editor in
             if editor.selectionMark == nil {
                 editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-                editor.setStatusMessage("Mark Set")
+                editor.setStatusMessage(L10n["status.mark_set"])
             }
             let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
             if editor.buffer.columnIndex < currentLineLength {
@@ -144,7 +146,7 @@ public final class Editor {
         commandRegistry.register(Command(id: "select.up", name: "Select Up", description: "Extend selection up", keys: [.shiftArrowUp]) { editor in
             if editor.selectionMark == nil {
                 editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-                editor.setStatusMessage("Mark Set")
+                editor.setStatusMessage(L10n["status.mark_set"])
             }
             editor.moveCursorVirtual(deltaRow: -1)
         })
@@ -152,7 +154,7 @@ public final class Editor {
         commandRegistry.register(Command(id: "select.down", name: "Select Down", description: "Extend selection down", keys: [.shiftArrowDown]) { editor in
             if editor.selectionMark == nil {
                 editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-                editor.setStatusMessage("Mark Set")
+                editor.setStatusMessage(L10n["status.mark_set"])
             }
             editor.moveCursorVirtual(deltaRow: 1)
         })
@@ -224,14 +226,14 @@ public final class Editor {
         commandRegistry.register(Command(id: "edit.mark", name: "Mark", description: "Set or unset selection mark", keys: [.mark]) { editor in
             if editor.selectionMark == nil {
                 editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-                editor.setStatusMessage("Mark Set")
+                editor.setStatusMessage(L10n["status.mark_set"])
             } else {
                 editor.selectionMark = nil
-                editor.setStatusMessage("Mark Unset")
+                editor.setStatusMessage(L10n["status.mark_unset"])
             }
         })
 
-        commandRegistry.register(Command(id: "edit.cut", name: "Cut Text", description: "Cut selected text or line", keys: [.ctrl("K"), .f9]) { editor in
+        commandRegistry.register(Command(id: "edit.cut", name: "Cut Text", description: "Cut selected text or current line", keys: [.ctrl("K"), .f9]) { editor in
             editor.saveUndoSnapshot()
             editor.buffer.clampCursor()
             if let mark = editor.selectionMark {
@@ -249,7 +251,7 @@ public final class Editor {
 
                 editor.clipboardText = editor.buffer.cutRange(start: start, end: end)
                 editor.selectionMark = nil
-                editor.setStatusMessage("Cut text")
+                editor.setStatusMessage(L10n["status.cut_text"])
             } else {
                 let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
                 editor.clipboardText = currentLine + "\n"
@@ -259,7 +261,7 @@ public final class Editor {
                     editor.buffer.lines[0] = ""
                 }
                 editor.buffer.isModified = true
-                editor.setStatusMessage("Cut 1 line")
+                editor.setStatusMessage(L10n["status.cut_one_line"])
             }
         })
 
@@ -267,9 +269,9 @@ public final class Editor {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.saveUndoSnapshot()
                 editor.buffer.insertString(text)
-                editor.setStatusMessage("Uncut text")
+                editor.setStatusMessage(L10n["status.uncut_text"])
             } else {
-                editor.setStatusMessage("Clipboard is empty")
+                editor.setStatusMessage(L10n["status.clipboard_empty"])
             }
         })
 
@@ -280,12 +282,12 @@ public final class Editor {
             }
         })
 
-        commandRegistry.register(Command(id: "edit.justify", name: "Justify", description: "Format paragraph width", keys: [.ctrl("J"), .f4]) { editor in
+        commandRegistry.register(Command(id: "edit.justify", name: "Justify", description: "Format current paragraph", keys: [.ctrl("J"), .f4]) { editor in
             editor.saveUndoSnapshot()
             let (_, cols) = editor.terminal.getWindowSize()
             let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
             editor.buffer.justifyParagraph(targetWidth: targetWidth)
-            editor.setStatusMessage("Justified paragraph")
+            editor.setStatusMessage(L10n["status.justified_paragraph"])
         })
 
         commandRegistry.register(Command(id: "edit.spell", name: "To Spell", description: "Check spelling", keys: [.ctrl("T"), .f12]) { editor in
@@ -298,7 +300,7 @@ public final class Editor {
             let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
             let currentCol = editor.buffer.columnIndex + 1
             let totalCol = editor.buffer.lines[editor.buffer.lineIndex].count + 1
-            editor.setStatusMessage("line \(currentLine)/\(totalLines) (\(percent)%), col \(currentCol)/\(totalCol)")
+            editor.setStatusMessage(L10n.cursorInfo(currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol, totalCol: totalCol))
         })
 
         commandRegistry.register(Command(id: "help.show", name: "Get Help", description: "Show full-screen help", keys: [.ctrl("G"), .f1]) { editor in
@@ -351,14 +353,14 @@ public final class Editor {
     /// Performs Undo (^Z).
     public func performUndo() {
         guard let snapshot = undoStack.popLast() else {
-            setStatusMessage("Already at oldest change")
+            setStatusMessage(L10n["status.already_oldest"])
             return
         }
         buffer.lines = snapshot.lines
         buffer.lineIndex = max(0, min(snapshot.lineIndex, buffer.lines.count - 1))
         buffer.columnIndex = max(0, min(snapshot.columnIndex, buffer.lines[buffer.lineIndex].count))
         buffer.isModified = snapshot.isModified
-        setStatusMessage("Undo performed")
+        setStatusMessage(L10n["status.undo_performed"])
     }
 
     /// Processes key input events.
@@ -409,7 +411,7 @@ public final class Editor {
             break
 
         default:
-            setStatusMessage("Unknown command")
+            setStatusMessage(L10n["status.unknown_command"])
         }
 
         buffer.clampCursor()
@@ -502,7 +504,7 @@ public final class Editor {
         promptInputText = buffer.filePath ?? ""
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage("Cancelled")
+                self?.setStatusMessage(L10n["status.cancelled"])
                 return
             }
             self.doSave(to: path)
@@ -513,7 +515,7 @@ public final class Editor {
     private func promptExitSaveConfirm() {
         currentPromptMode = .confirmExitSave(completion: { [weak self] save in
             guard let self = self, let save = save else {
-                self?.setStatusMessage("Cancelled exit")
+                self?.setStatusMessage(L10n["status.cancelled_exit"])
                 return
             }
             if save {
@@ -533,9 +535,9 @@ public final class Editor {
     private func doSave(to path: String) {
         do {
             try buffer.saveFile(to: path)
-            setStatusMessage("[ Wrote \(buffer.lines.count) lines to \(path) ]")
+            setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
         } catch {
-            setStatusMessage("Error saving file: \(error.localizedDescription)")
+            setStatusMessage(L10n.errorSavingFile(error: error.localizedDescription))
         }
     }
 
@@ -649,7 +651,7 @@ public final class Editor {
             } else if !self.lastSearchQuery.isEmpty {
                 targetQuery = self.lastSearchQuery
             } else {
-                self.setStatusMessage("Cancelled search")
+                self.setStatusMessage(L10n["status.cancelled_search"])
                 return
             }
             self.performSearch(query: targetQuery)
@@ -675,7 +677,7 @@ public final class Editor {
                     let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
                     buffer.lineIndex = lIdx
                     buffer.columnIndex = fromCol + colOffset
-                    setStatusMessage("Found \"\(query)\" at line \(lIdx + 1)")
+                    setStatusMessage(L10n.foundQueryAtLine(query: query, line: lIdx + 1))
                     return
                 }
             }
@@ -690,12 +692,12 @@ public final class Editor {
                 let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
                 buffer.lineIndex = lIdx
                 buffer.columnIndex = colOffset
-                setStatusMessage("Search wrapped, found \"\(query)\" at line \(lIdx + 1)")
+                setStatusMessage(L10n.searchWrappedFound(query: query, line: lIdx + 1))
                 return
             }
         }
 
-        setStatusMessage("\"\(query)\" not found")
+        setStatusMessage(L10n.notFound(query: query))
     }
 
     /// Prompts user to input file path to insert into buffer (^R / F5).
@@ -703,15 +705,15 @@ public final class Editor {
         promptInputText = ""
         currentPromptMode = .insertFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage("Cancelled insert")
+                self?.setStatusMessage(L10n["status.cancelled_insert"])
                 return
             }
             do {
                 self.saveUndoSnapshot()
                 let count = try self.buffer.insertFile(at: path)
-                self.setStatusMessage("[ Inserted \(count) lines ]")
+                self.setStatusMessage(L10n.insertedLines(count: count))
             } catch {
-                self.setStatusMessage("Error inserting file: \(error.localizedDescription)")
+                self.setStatusMessage(L10n.errorInsertingFile(error: error.localizedDescription))
             }
         })
     }
@@ -724,7 +726,7 @@ public final class Editor {
             promptInputText = target.word
             currentPromptMode = .spellCheck(word: target.word, line: target.line, col: target.col, completion: { [weak self] replacement in
                 guard let self = self, let newWord = replacement, !newWord.isEmpty else {
-                    self?.setStatusMessage("Spell check skipped")
+                    self?.setStatusMessage(L10n["status.spell_check_skipped"])
                     return
                 }
                 if newWord != target.word {
@@ -735,13 +737,13 @@ public final class Editor {
                     lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
                     self.buffer.lines[target.line] = lineStr
                     self.buffer.isModified = true
-                    self.setStatusMessage("Replaced '\(target.word)' with '\(newWord)'")
+                    self.setStatusMessage(L10n.replacedWord(target: target.word, newWord: newWord))
                 } else {
-                    self.setStatusMessage("Word kept")
+                    self.setStatusMessage(L10n["status.word_kept"])
                 }
             })
         } else {
-            setStatusMessage("[ No misspelled words found ]")
+            setStatusMessage(L10n["status.no_misspelled"])
         }
     }
 
@@ -810,8 +812,8 @@ public final class Editor {
 
         // 1. Title Bar (Inverted Colors, centered filename)
         let leftText = "  se"
-        let centerText = buffer.filePath ?? "New Buffer"
-        let rightText = buffer.isModified ? "Modified  " : "  "
+        let centerText = buffer.filePath ?? L10n.newBuffer
+        let rightText = buffer.isModified ? "\(L10n.modified)  " : "  "
 
         let leftW = leftText.displayWidth
         let centerW = centerText.displayWidth
@@ -878,16 +880,22 @@ public final class Editor {
         output += "\u{1B}[K" // Clear line
         switch currentPromptMode {
         case .saveFilePath:
-            output += "\u{1B}[1mFile Name to Write: \(promptInputText)_\u{1B}[0m"
+            let prompt = L10n["prompt.write_name"]
+            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
         case .confirmExitSave:
-            output += "\u{1B}[1;33mSave modified buffer? (Answering \"N\" will discard changes) [Y/N]: \u{1B}[0m"
+            let prompt = L10n["prompt.confirm_exit_save"]
+            output += "\u{1B}[1;33m\(prompt)\u{1B}[0m"
         case .search:
+            let searchStr = L10n["prompt.search"]
             let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
-            output += "\u{1B}[1mSearch\(defaultHint): \(promptInputText)_\u{1B}[0m"
+            output += "\u{1B}[1m\(searchStr)\(defaultHint): \(promptInputText)_\u{1B}[0m"
         case .insertFilePath:
-            output += "\u{1B}[1mFile to insert: \(promptInputText)_\u{1B}[0m"
+            let prompt = L10n["prompt.insert_file"]
+            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
         case .spellCheck(let word, _, _, _):
-            output += "\u{1B}[1mEdit misspelled word \"\(word)\": \(promptInputText)_\u{1B}[0m"
+            let promptTemplate = L10n["prompt.edit_spelled_word"]
+            let prompt = String(format: promptTemplate, word)
+            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
         case .none:
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
                 let msgWidth = statusMessage.displayWidth
@@ -921,19 +929,19 @@ public final class Editor {
     private func formatHelpBar(cols: Int) -> String {
         let helpWidth = min(cols, 80)
         let helpItems1: [(key: String, label: String)] = [
-            ("^G", "Get Help"), ("^O", "WriteOut"), ("^R", "Read File"),
-            ("^Y", "Prev Pg"),  ("^K", "Cut Text"), ("^C", "Cur Pos")
+            ("^G", L10n.helpGetHelp), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
+            ("^Y", L10n.helpPrevPg),  ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos)
         ]
         let helpItems2: [(key: String, label: String)] = [
-            ("^X", "Exit"),     ("^J", "Justify"),  ("^W", "Where Is"),
-            ("^V", "Next Pg"),  ("^U", "UnCut Text"), ("^T", "To Spell")
+            ("^X", L10n.helpExit),     ("^J", L10n.helpJustify),  ("^W", L10n.helpWhereIs),
+            ("^V", L10n.helpNextPg),  ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell)
         ]
 
         let numCols = min(helpItems1.count, helpItems2.count)
         var maxColWidths: [Int] = []
         for i in 0..<numCols {
-            let w1 = helpItems1[i].key.count + 1 + helpItems1[i].label.count
-            let w2 = helpItems2[i].key.count + 1 + helpItems2[i].label.count
+            let w1 = helpItems1[i].key.count + 1 + helpItems1[i].label.displayWidth
+            let w2 = helpItems2[i].key.count + 1 + helpItems2[i].label.displayWidth
             maxColWidths.append(max(w1, w2))
         }
 
@@ -949,9 +957,9 @@ public final class Editor {
             var currentDisplayWidth = 0
 
             for i in 0..<items.count {
-                let targetColWidth = (i < maxColWidths.count) ? maxColWidths[i] : (items[i].key.count + 1 + items[i].label.count)
+                let rawWidth = items[i].key.count + 1 + items[i].label.displayWidth
+                let targetColWidth = (i < maxColWidths.count) ? maxColWidths[i] : rawWidth
                 let itemStr = "\u{1B}[1;36m\(items[i].key)\u{1B}[0m \(items[i].label)"
-                let rawWidth = items[i].key.count + 1 + items[i].label.count
                 let padCount = max(0, targetColWidth - rawWidth)
                 let paddedItem = itemStr + String(repeating: " ", count: padCount)
 

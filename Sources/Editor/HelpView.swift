@@ -28,42 +28,42 @@ public final class HelpView {
         output += "\u{1B}[H" // Move cursor to top-left (1, 1)
 
         // 1. Title Bar (Inverted colors)
-        let titleText = "  se - Full Help & Command Reference"
+        let titleText = L10n["helpview.title"]
         output += "\u{1B}[7m\(titleText.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
 
         // 2. Help Content Lines
         let contentLines: [String] = [
-            "  KEYBINDINGS & COMMANDS REFERENCE",
+            L10n["helpview.header"],
             "  ================================================================",
-            "  NAVIGATION & CURSOR MOVEMENT:",
-            "    ^F / Right Arrow   Move forward one character",
-            "    ^B / Left Arrow    Move backward one character",
-            "    ^P / Up Arrow      Move to previous line",
-            "    ^N / Down Arrow    Move to next line",
-            "    ^A / Home          Move to beginning of current line",
-            "    ^E / End           Move to end of current line",
-            "    ^V / F8 / PgDn     Move forward one page of text",
-            "    ^Y / F7 / PgUp     Move backward one page of text",
+            L10n["helpview.sec_nav"],
+            L10n["helpview.nav_1"],
+            L10n["helpview.nav_2"],
+            L10n["helpview.nav_3"],
+            L10n["helpview.nav_4"],
+            L10n["helpview.nav_5"],
+            L10n["helpview.nav_6"],
+            L10n["helpview.nav_7"],
+            L10n["helpview.nav_8"],
             "",
-            "  EDITING & SELECTION:",
-            "    ^D / Delete        Delete character at cursor position",
-            "    ^^ (Ctrl+^)        Set / Unset selection mark (starts text selection)",
-            "    ^K / F9            Cut selected text (or current line if no mark set)",
-            "    ^U / F10           Uncut (paste) last cut text at cursor position",
-            "    ^I / Tab           Insert tab (4 spaces) at cursor position",
+            L10n["helpview.sec_edit"],
+            L10n["helpview.edit_1"],
+            L10n["helpview.edit_2"],
+            L10n["helpview.edit_3"],
+            L10n["helpview.edit_4"],
+            L10n["helpview.edit_5"],
             "",
-            "  SEARCH & PARAGRAPH FORMATTING:",
-            "    ^W / F6            Where Is (case-insensitive text search)",
-            "    ^J / F4            Justify (format) current paragraph (CJK/Latin reflow)",
-            "    ^L                 Refresh screen display",
-            "    ^C / F11           Display current cursor position info",
-            "    ^T / F12           Spell checker status",
+            L10n["helpview.sec_search"],
+            L10n["helpview.search_1"],
+            L10n["helpview.search_2"],
+            L10n["helpview.search_3"],
+            L10n["helpview.search_4"],
+            L10n["helpview.search_5"],
             "",
-            "  FILE OPERATIONS & EXIT:",
-            "    ^O / ^S / F3       WriteOut (save buffer to file)",
-            "    ^R / F5            Read file (insert external file into buffer)",
-            "    ^X / F2            Exit editor (prompts to save modified buffer)",
-            "    ^G / F1            Display this full-screen help page"
+            L10n["helpview.sec_file"],
+            L10n["helpview.file_1"],
+            L10n["helpview.file_2"],
+            L10n["helpview.file_3"],
+            L10n["helpview.file_4"]
         ]
 
         let availableHeight = max(1, rows - 2) // Reserve 1 line for header and 1 for footer
@@ -78,7 +78,7 @@ public final class HelpView {
         }
 
         // 3. Footer Bar (Bold Cyan text, no inverted background)
-        let footerRaw = "  [ Press any key to return to editor ]"
+        let footerRaw = L10n["helpview.footer"]
         let paddedFooter = footerRaw.paddedToDisplayWidth(cols)
         output += "\u{1B}[1;36m\(paddedFooter)\u{1B}[0m"
 

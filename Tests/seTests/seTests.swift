@@ -358,3 +358,15 @@ import Foundation
     #expect(customLang != nil)
     #expect(customLang?.name == "customlang")
 }
+
+@Test func testLocalization() throws {
+    L10n.currentLanguage = .en
+    #expect(L10n.helpGetHelp == "Get Help")
+    #expect(L10n.helpExit == "Exit")
+    #expect(L10n.readLines(10) == "[ Read 10 line(s) ]")
+
+    L10n.currentLanguage = .zh_TW
+    #expect(L10n.helpGetHelp == "輔助說明")
+    #expect(L10n.helpExit == "離開")
+    #expect(L10n.readLines(10) == "[ 已讀取 10 行 ]")
+}

@@ -1,0 +1,86 @@
+import Foundation
+
+/// Traditional Chinese (zh_TW) translation table for se text editor.
+public struct TraditionalChineseStrings {
+    public static let table: [String: String] = [
+        // Help Bar Labels
+        "help.get_help":   "輔助說明",
+        "help.write_out":  "寫入檔案",
+        "help.read_file":  "讀入檔案",
+        "help.prev_pg":    "前往上頁",
+        "help.cut_text":   "剪下文字",
+        "help.cur_pos":    "游標位置",
+        "help.exit":       "離開",
+        "help.justify":    "重排文字",
+        "help.where_is":   "搜尋",
+        "help.next_pg":    "前往下頁",
+        "help.uncut_text": "貼上文字",
+        "help.to_spell":   "拼字檢查",
+
+        // Prompts
+        "prompt.write_name": "寫出檔案名稱：",
+        "prompt.confirm_exit_save": "是否儲存已修改的內容？(回答 \"N\" 將捨棄修改) [Y/N]：",
+        "prompt.search": "搜尋",
+        "prompt.insert_file": "欲插入之檔案：",
+        "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
+
+        // Status Messages
+        "status.mark_set": "標記已設定",
+        "status.mark_unset": "標記已取消",
+        "status.cut_text": "已剪下文字",
+        "status.cut_one_line": "已剪下 1 行",
+        "status.uncut_text": "已貼上文字",
+        "status.clipboard_empty": "剪貼簿為空",
+        "status.justified_paragraph": "已完成段落重排",
+        "status.already_oldest": "已至最舊復原紀錄",
+        "status.undo_performed": "已完成復原",
+        "status.unknown_command": "未知指令",
+        "status.cancelled": "已取消",
+        "status.cancelled_exit": "已取消離開",
+        "status.cancelled_search": "已取消搜尋",
+        "status.cancelled_insert": "已取消插入檔案",
+        "status.spell_check_skipped": "跳過拼字檢查",
+        "status.word_kept": "保留原字詞",
+        "status.no_misspelled": "[ 未發現拼錯字詞 ]",
+
+        // Help Viewer (HelpView.swift)
+        "helpview.title": "  se - 完整指令與快速鍵說明手冊",
+        "helpview.header": "  快捷鍵與指令對照表",
+        "helpview.sec_nav": "  游標移動與導航：",
+        "helpview.nav_1": "    ^F / 右方向鍵      游標向前移動一個字元",
+        "helpview.nav_2": "    ^B / 左方向鍵      游標向後移動一個字元",
+        "helpview.nav_3": "    ^P / 上方向鍵      游標移動至上一行",
+        "helpview.nav_4": "    ^N / 下方向鍵      游標移動至下一行",
+        "helpview.nav_5": "    ^A / Home          游標移動至當前行行首",
+        "helpview.nav_6": "    ^E / End           游標移動至當前行行尾",
+        "helpview.nav_7": "    ^V / F8 / PgDn     向下捲動一頁文字",
+        "helpview.nav_8": "    ^Y / F7 / PgUp     向上捲動一頁文字",
+
+        "helpview.sec_edit": "  編輯、剪貼與選取：",
+        "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
+        "helpview.edit_2": "    ^^ (Ctrl+^)        設定/取消選取標記（啟動範圍選取）",
+        "helpview.edit_3": "    ^K / F9            剪下選取文字（無標記時剪下整行）",
+        "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
+        "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
+
+        "helpview.sec_search": "  搜尋與段落重排對齊：",
+        "helpview.search_1": "    ^W / F6            文字搜尋（不區分大小寫）",
+        "helpview.search_2": "    ^J / F4            重排與自動對齊當前段落（中英文混排）",
+        "helpview.search_3": "    ^L                 重新繪製 Terminal 畫面",
+        "helpview.search_4": "    ^C / F11           顯示當前游標與行列位置資訊",
+        "helpview.search_5": "    ^T / F12           啟動拼字檢查工具",
+
+        "helpview.sec_file": "  檔案寫入與離開：",
+        "helpview.file_1": "    ^O / ^S / F3       寫出檔案（儲存當前 Buffer）",
+        "helpview.file_2": "    ^R / F5            讀取檔案（插入外部檔案內容）",
+        "helpview.file_3": "    ^X / F2            離開編輯器（未儲存時會詢問）",
+        "helpview.file_4": "    ^G / F1            顯示此全螢幕說明頁面",
+
+        "helpview.footer": "  [ 按任意鍵返回編輯模式 ]",
+
+        // Common Messages
+        "msg.cancelled": "[ 已取消 ]",
+        "buffer.new_buffer": "新 Buffer",
+        "buffer.modified": "已修改"
+    ]
+}
