@@ -78,7 +78,7 @@ public final class Terminal {
     /// Gets terminal window size (rows, cols).
     public func getWindowSize() -> (rows: Int, cols: Int) {
         var w = winsize()
-        if ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0 && w.ws_col > 0 {
+        if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &w) == 0 && w.ws_col > 0 {
             return (rows: Int(w.ws_row), cols: Int(w.ws_col))
         }
         return (rows: 24, cols: 80) // Fallback default
@@ -215,22 +215,22 @@ public final class Terminal {
     /// ANSI cursor hiding and movement helper functions.
     public static func hideCursor() {
         print("\u{1B}[?25l", terminator: "")
-        fflush(stdout)
+        fflush(nil)
     }
 
     public static func showCursor() {
         print("\u{1B}[?25h", terminator: "")
-        fflush(stdout)
+        fflush(nil)
     }
 
     public static func moveCursor(row: Int, col: Int) {
         print("\u{1B}[\(row);\(col)H", terminator: "")
-        fflush(stdout)
+        fflush(nil)
     }
 
     public static func clearScreen() {
         print("\u{1B}[2J\u{1B}[H", terminator: "")
-        fflush(stdout)
+        fflush(nil)
     }
 }
 
@@ -238,12 +238,24 @@ private let _localeInit: Void = {
     setlocale(LC_ALL, "")
 }()
 
+#if canImport(Glibc)
+@_silgen_name("wcwidth")
+private func sys_wcwidth(_ c: Int32) -> Int32
+#elseif canImport(Musl)
+@_silgen_name("wcwidth")
+private func sys_wcwidth(_ c: Int32) -> Int32
+#endif
+
 extension Character {
     /// Returns the character display width in terminal columns (ASCII=1, CJK/Emoji=2).
     public var displayWidth: Int {
         _ = _localeInit
         for scalar in self.unicodeScalars {
+            #if canImport(Darwin)
             let w = wcwidth(wchar_t(scalar.value))
+            #else
+            let w = sys_wcwidth(Int32(scalar.value))
+            #endif
             if w > 0 { return Int(w) }
         }
         return 1

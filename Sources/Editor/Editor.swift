@@ -591,7 +591,7 @@ public final class Editor {
         output += "\u{1B}[?25h" // Show cursor
 
         print(output, terminator: "")
-        fflush(stdout)
+        fflush(nil)
     }
 
     /// Formats Nano help bar lines (Bold Cyan for key tags, no inverted background, constrained to width).
