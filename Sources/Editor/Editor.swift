@@ -150,11 +150,15 @@ public final class Editor {
     /// Returns ordered start and end coordinates for selection range.
     func getOrderedRange(mark1: (line: Int, column: Int), mark2: (line: Int, column: Int)) -> (start: (line: Int, column: Int), end: (line: Int, column: Int)) {
         if mark1.line < mark2.line {
-            return (mark1, mark2)
+            return (start: mark1, end: mark2)
         } else if mark1.line > mark2.line {
-            return (mark2, mark1)
+            return (start: mark2, end: mark1)
         } else {
-            return mark1.column <= mark2.column ? (mark1, mark2) : (mark2, mark1)
+            if mark1.column <= mark2.column {
+                return (start: mark1, end: mark2)
+            } else {
+                return (start: mark2, end: mark1)
+            }
         }
     }
 
