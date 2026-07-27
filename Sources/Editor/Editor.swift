@@ -31,6 +31,18 @@ public final class Editor {
     private var promptInputText: String = ""
     private var lastSearchQuery: String = ""
 
+    public struct UndoSnapshot: Equatable {
+        public let lines: [String]
+        public let lineIndex: Int
+        public let columnIndex: Int
+        public let isModified: Bool
+    }
+
+    private var undoStack: [UndoSnapshot] = []
+    private let maxUndoStackSize = 100
+    private var lastMutationTime: Date?
+    private var lastIsPaste: Bool = false
+
     public init(filePath: String? = nil, wrapColumn: Int? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
@@ -59,6 +71,36 @@ public final class Editor {
     private func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
+    }
+
+    /// Saves a snapshot of the buffer and cursor position to the undo stack before mutation.
+    public func saveUndoSnapshot() {
+        lastIsPaste = false
+        let snapshot = UndoSnapshot(
+            lines: buffer.lines,
+            lineIndex: buffer.lineIndex,
+            columnIndex: buffer.columnIndex,
+            isModified: buffer.isModified
+        )
+        if undoStack.last != snapshot {
+            undoStack.append(snapshot)
+            if undoStack.count > maxUndoStackSize {
+                undoStack.removeFirst()
+            }
+        }
+    }
+
+    /// Performs Undo (^Z).
+    public func performUndo() {
+        guard let snapshot = undoStack.popLast() else {
+            setStatusMessage("Already at oldest change")
+            return
+        }
+        buffer.lines = snapshot.lines
+        buffer.lineIndex = max(0, min(snapshot.lineIndex, buffer.lines.count - 1))
+        buffer.columnIndex = max(0, min(snapshot.columnIndex, buffer.lines[buffer.lineIndex].count))
+        buffer.isModified = snapshot.isModified
+        setStatusMessage("Undo performed")
     }
 
     /// Processes key input events.
@@ -182,7 +224,11 @@ public final class Editor {
             Terminal.clearScreen()
 
         // Editing & Selection Shortcuts
+        case .ctrl("Z"):
+            performUndo()
+
         case .ctrl("D"), .delete:
+            saveUndoSnapshot()
             buffer.delete()
 
         case .mark:
@@ -195,6 +241,7 @@ public final class Editor {
             }
 
         case .ctrl("K"), .f9:
+            saveUndoSnapshot()
             buffer.clampCursor()
             if let mark = selectionMark {
                 let cursor = (line: buffer.lineIndex, col: buffer.columnIndex)
@@ -226,6 +273,7 @@ public final class Editor {
 
         case .ctrl("U"), .f10:
             if let text = clipboardText, !text.isEmpty {
+                saveUndoSnapshot()
                 buffer.insertString(text)
                 setStatusMessage("Uncut text")
             } else {
@@ -233,12 +281,14 @@ public final class Editor {
             }
 
         case .tab, .ctrl("I"):
+            saveUndoSnapshot()
             for _ in 0..<4 {
                 buffer.insert(character: " ")
             }
 
         // Formatting & Status Shortcuts
         case .ctrl("J"), .f4:
+            saveUndoSnapshot()
             let (_, cols) = terminal.getWindowSize()
             let targetWidth = layoutEngine.wrapColumn ?? max(20, cols - 5)
             buffer.justifyParagraph(targetWidth: targetWidth)
@@ -260,12 +310,26 @@ public final class Editor {
             helpView.show()
 
         case .backspace:
+            saveUndoSnapshot()
             buffer.backspace()
         case .enter:
+            saveUndoSnapshot()
             buffer.insertNewline()
         case .char(let ch):
             let pastedText = terminal.readPendingText(firstChar: ch)
-            if pastedText.count == 1 {
+            let isMultiChar = (pastedText.count > 1)
+            let now = Date()
+
+            let isCoalescedPaste = isMultiChar && lastIsPaste && (lastMutationTime != nil && now.timeIntervalSince(lastMutationTime!) < 0.5)
+
+            if !isCoalescedPaste {
+                saveUndoSnapshot()
+            }
+
+            lastIsPaste = isMultiChar
+            lastMutationTime = now
+
+            if !isMultiChar {
                 buffer.insert(character: ch)
             } else {
                 buffer.insertString(pastedText)
@@ -571,6 +635,7 @@ public final class Editor {
                 return
             }
             do {
+                self.saveUndoSnapshot()
                 let count = try self.buffer.insertFile(at: path)
                 self.setStatusMessage("[ Inserted \(count) lines ]")
             } catch {
@@ -591,6 +656,7 @@ public final class Editor {
                     return
                 }
                 if newWord != target.word {
+                    self.saveUndoSnapshot()
                     var lineStr = self.buffer.lines[target.line]
                     let sIdx = lineStr.index(lineStr.startIndex, offsetBy: target.col)
                     let eIdx = lineStr.index(sIdx, offsetBy: target.word.count)

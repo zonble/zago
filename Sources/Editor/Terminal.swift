@@ -236,7 +236,7 @@ public final class Terminal {
         defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }
 
         var result = String(firstChar)
-        var rawBuffer = [UInt8](repeating: 0, count: 4096)
+        var rawBuffer = [UInt8](repeating: 0, count: 65536)
 
         while true {
             let n = read(STDIN_FILENO, &rawBuffer, rawBuffer.count)

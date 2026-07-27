@@ -239,3 +239,22 @@ import Foundation
     #expect(keyLeft != keyRight)
     #expect(keyUp != keyDown)
 }
+
+@Test func testEditorUndoStack() throws {
+    let editor = Editor()
+    #expect(editor.buffer.lines[0] == "")
+
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString("Hello World")
+    #expect(editor.buffer.lines[0] == "Hello World")
+
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString(" - Swift TUI")
+    #expect(editor.buffer.lines[0] == "Hello World - Swift TUI")
+
+    editor.performUndo()
+    #expect(editor.buffer.lines[0] == "Hello World")
+
+    editor.performUndo()
+    #expect(editor.buffer.lines[0] == "")
+}

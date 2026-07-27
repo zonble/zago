@@ -1,15 +1,37 @@
 import Foundation
 
-/// Data structure representing a virtual display line (softwrap chunk).
+/// Data structure representing a single virtual display line (softwrap chunk)
+/// rendered on the terminal screen.
+///
+/// When a raw line in the editor buffer exceeds the terminal viewport or wrap
+/// column, the `LayoutEngine` splits it into one or more `VirtualLine` chunks.
+/// Each `VirtualLine` tracks its relationship to the original buffer line, its
+/// sub-line sequence index, the displayed substring text, and the character
+/// index boundaries.
 public struct VirtualLine {
+    /// The 0-based index of the original raw line in the `TextBuffer`.
     public let bufferLineIndex: Int
+
+    /// The 0-based sub-line sequence index within the parent `TextBuffer` line.
+    /// - `0`: The first visual sub-line of the raw buffer line.
+    /// - `1+`: Subsequent softwrapped sub-lines (rendered with a `↳` softwrap
+    ///   continuation indicator in the gutter).
     public let subLineIndex: Int
+
+    /// The text content substring displayed on this virtual line chunk.
     public let text: String
+
+    /// The 0-based starting character index in the parent `TextBuffer` line for
+    /// this virtual chunk.
     public let startCol: Int
+
+    /// The 0-based ending character index in the parent `TextBuffer` line for
+    /// this virtual chunk.
     public let endCol: Int
 }
 
-/// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor coordinate conversions.
+/// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
+/// coordinate conversions.
 public final class LayoutEngine {
     public var wrapColumn: Int? // nil means adapt dynamically to terminal view width
     
@@ -70,7 +92,8 @@ public final class LayoutEngine {
         return virtualLines
     }
 
-    /// Maps buffer real cursor position (lineIndex, columnIndex) to virtual line index and virtual column.
+    /// Maps buffer real cursor position (lineIndex, columnIndex) to virtual
+    /// line index and virtual column.
     public func getVirtualCursor(
         lineIndex: Int,
         columnIndex: Int,
@@ -109,7 +132,8 @@ public final class LayoutEngine {
         return (0, 0)
     }
 
-    /// Maps virtual screen cursor position (vLineIndex, vColIndex) back to real buffer cursor (lineIndex, columnIndex).
+    /// Maps virtual screen cursor position (vLineIndex, vColIndex) back to real
+    /// buffer cursor (lineIndex, columnIndex).
     public func getBufferCursor(
         vLineIndex: Int,
         vColIndex: Int,
