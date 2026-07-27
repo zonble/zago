@@ -28,7 +28,7 @@ public final class HelpView {
         output += "\u{1B}[H" // Move cursor to top-left (1, 1)
 
         // 1. Title Bar (Inverted colors)
-        let titleText = "  se Text Editor - Full Help & Command Reference"
+        let titleText = "  se - Full Help & Command Reference"
         output += "\u{1B}[7m\(titleText.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
 
         // 2. Help Content Lines
@@ -78,7 +78,7 @@ public final class HelpView {
         }
 
         // 3. Footer Bar (Bold Cyan text, no inverted background)
-        let footerRaw = "  [ Press any key or ESC to return to editor ]"
+        let footerRaw = "  [ Press any key to return to editor ]"
         let paddedFooter = footerRaw.paddedToDisplayWidth(cols)
         output += "\u{1B}[1;36m\(paddedFooter)\u{1B}[0m"
 

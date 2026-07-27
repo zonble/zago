@@ -28,6 +28,10 @@ public enum Key: Equatable {
     case mark
     case esc
     case f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12
+    case shiftArrowLeft
+    case shiftArrowRight
+    case shiftArrowUp
+    case shiftArrowDown
     case unknown
 }
 
@@ -129,30 +133,43 @@ public final class Terminal {
                 case UInt8(ascii: "B"): return .arrowDown
                 case UInt8(ascii: "C"): return .arrowRight
                 case UInt8(ascii: "D"): return .arrowLeft
+                case UInt8(ascii: "a"): return .shiftArrowUp
+                case UInt8(ascii: "b"): return .shiftArrowDown
+                case UInt8(ascii: "c"): return .shiftArrowRight
+                case UInt8(ascii: "d"): return .shiftArrowLeft
                 case UInt8(ascii: "H"): return .home
                 case UInt8(ascii: "F"): return .end
                 case UInt8(ascii: "1")...UInt8(ascii: "9"):
                     var seqString = String(UnicodeScalar(b3))
                     while let nb = readByte() {
-                        if nb == UInt8(ascii: "~") { break }
+                        if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z")) || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z")) {
+                            seqString.append(Character(UnicodeScalar(nb)))
+                            break
+                        }
                         seqString.append(Character(UnicodeScalar(nb)))
                     }
                     switch seqString {
-                    case "3": return .delete
-                    case "5": return .pageUp
-                    case "6": return .pageDown
-                    case "11": return .f1
-                    case "12": return .f2
-                    case "13": return .f3
-                    case "14": return .f4
-                    case "15": return .f5
-                    case "17": return .f6
-                    case "18": return .f7
-                    case "19": return .f8
-                    case "20": return .f9
-                    case "21": return .f10
-                    case "23": return .f11
-                    case "24": return .f12
+                    case "3", "3~": return .delete
+                    case "5", "5~": return .pageUp
+                    case "6", "6~": return .pageDown
+                    case "11", "11~": return .f1
+                    case "12", "12~": return .f2
+                    case "13", "13~": return .f3
+                    case "14", "14~": return .f4
+                    case "15", "15~": return .f5
+                    case "17", "17~": return .f6
+                    case "18", "18~": return .f7
+                    case "19", "19~": return .f8
+                    case "20", "20~": return .f9
+                    case "21", "21~": return .f10
+                    case "23", "23~": return .f11
+                    case "24", "24~": return .f12
+                    case "1;2D", "2D": return .shiftArrowLeft
+                    case "1;2C", "2C": return .shiftArrowRight
+                    case "1;2A", "2A": return .shiftArrowUp
+                    case "1;2B", "2B": return .shiftArrowDown
+                    case "1;5D", "5D": return .ctrl("B")
+                    case "1;5C", "5C": return .ctrl("F")
                     default: return .unknown
                     }
                 default:

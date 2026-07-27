@@ -230,3 +230,12 @@ import Foundation
     #expect(target != nil)
     #expect(target?.word == "qxzywkwk")
 }
+
+@Test func testShiftArrowKeyEnum() throws {
+    let keyLeft: Key = .shiftArrowLeft
+    let keyRight: Key = .shiftArrowRight
+    let keyUp: Key = .shiftArrowUp
+    let keyDown: Key = .shiftArrowDown
+    #expect(keyLeft != keyRight)
+    #expect(keyUp != keyDown)
+}

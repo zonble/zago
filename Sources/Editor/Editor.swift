@@ -96,6 +96,45 @@ public final class Editor {
         case .ctrl("N"), .arrowDown:
             moveCursorVirtual(deltaRow: 1)
 
+        case .shiftArrowLeft:
+            if selectionMark == nil {
+                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                setStatusMessage("Mark Set")
+            }
+            if buffer.columnIndex > 0 {
+                buffer.columnIndex -= 1
+            } else if buffer.lineIndex > 0 {
+                buffer.lineIndex -= 1
+                buffer.columnIndex = buffer.lines[buffer.lineIndex].count
+            }
+
+        case .shiftArrowRight:
+            if selectionMark == nil {
+                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                setStatusMessage("Mark Set")
+            }
+            let currentLineLength = buffer.lines[buffer.lineIndex].count
+            if buffer.columnIndex < currentLineLength {
+                buffer.columnIndex += 1
+            } else if buffer.lineIndex < buffer.lines.count - 1 {
+                buffer.lineIndex += 1
+                buffer.columnIndex = 0
+            }
+
+        case .shiftArrowUp:
+            if selectionMark == nil {
+                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                setStatusMessage("Mark Set")
+            }
+            moveCursorVirtual(deltaRow: -1)
+
+        case .shiftArrowDown:
+            if selectionMark == nil {
+                selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                setStatusMessage("Mark Set")
+            }
+            moveCursorVirtual(deltaRow: 1)
+
         case .ctrl("A"), .home:
             let vLine = getVirtualLineForCursor()
             buffer.columnIndex = vLine.startCol
