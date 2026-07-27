@@ -1,0 +1,286 @@
+import Foundation
+
+extension Editor {
+    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
+    enum PromptMode {
+        case none
+        case saveFilePath(completion: (String?) -> Void)
+        case confirmExitSave(completion: (Bool?) -> Void)
+        case search(completion: (String?) -> Void)
+        case insertFilePath(completion: (String?) -> Void)
+        case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
+    }
+
+    /// Processes key input events.
+    func processKey(_ key: Key) {
+        // Handle input if currently in bottom prompt mode
+        if case .none = currentPromptMode {
+            // Normal mode
+        } else {
+            processPromptKey(key)
+            return
+        }
+
+        if !commandRegistry.dispatch(key: key, editor: self) {
+            setStatusMessage(L10n["status.unknown_command"])
+        }
+
+        buffer.clampCursor()
+    }
+
+    /// Processes keyboard input when in prompt mode.
+    func processPromptKey(_ key: Key) {
+        switch currentPromptMode {
+        case .saveFilePath(let completion):
+            switch key {
+            case .enter:
+                let path = promptInputText.trimmingCharacters(in: .whitespacesAndNewlines)
+                currentPromptMode = .none
+                completion(path.isEmpty ? nil : path)
+            case .esc, .ctrl("C"):
+                cancelPrompt()
+                setStatusMessage(L10n["status.cancelled"])
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .confirmExitSave(let completion):
+            switch key {
+            case .char("y"), .char("Y"):
+                currentPromptMode = .none
+                completion(true)
+            case .char("n"), .char("N"):
+                currentPromptMode = .none
+                completion(false)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            default:
+                break
+            }
+
+        case .search(let completion):
+            switch key {
+            case .enter:
+                let result = promptInputText
+                currentPromptMode = .none
+                completion(result)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .insertFilePath(let completion):
+            switch key {
+            case .enter:
+                let result = promptInputText
+                currentPromptMode = .none
+                completion(result)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .spellCheck(_, _, _, let completion):
+            switch key {
+            case .enter:
+                let replacement = promptInputText.trimmingCharacters(in: .whitespacesAndNewlines)
+                currentPromptMode = .none
+                completion(replacement)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
+        case .none:
+            break
+        }
+    }
+
+    /// Prompts user to input file path for saving (^O / ^S / F3).
+    func promptWriteFilePath() {
+        promptInputText = buffer.filePath ?? ""
+        currentPromptMode = .saveFilePath(completion: { [weak self] path in
+            guard let self = self, let path = path, !path.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled"])
+                return
+            }
+            self.doSave(to: path)
+        })
+    }
+
+    /// Prompts user to save modified buffer before exiting (^X / F2).
+    func promptExitSaveConfirm() {
+        currentPromptMode = .confirmExitSave(completion: { [weak self] save in
+            guard let self = self, let save = save else {
+                self?.setStatusMessage(L10n["status.cancelled_exit"])
+                return
+            }
+            if save {
+                if let path = self.buffer.filePath, !path.isEmpty {
+                    self.doSave(to: path)
+                    self.isRunning = false
+                } else {
+                    self.promptWriteFilePath()
+                }
+            } else {
+                self.isRunning = false
+            }
+        })
+    }
+
+    /// Prompts user for search string (^W / F6).
+    func promptSearch() {
+        promptInputText = ""
+        currentPromptMode = .search(completion: { [weak self] query in
+            guard let self = self, let query = query else {
+                self?.setStatusMessage(L10n["status.cancelled_search"])
+                return
+            }
+            let targetQuery: String
+            if !query.isEmpty {
+                targetQuery = query
+                self.lastSearchQuery = query
+            } else if !self.lastSearchQuery.isEmpty {
+                targetQuery = self.lastSearchQuery
+            } else {
+                self.setStatusMessage(L10n["status.cancelled_search"])
+                return
+            }
+            self.performSearch(query: targetQuery)
+        })
+    }
+
+    /// Performs search operation for target query string.
+    func performSearch(query: String) {
+        guard !query.isEmpty else { return }
+
+        let startLine = buffer.lineIndex
+        let startCol = buffer.columnIndex
+
+        // 1. Search forward from current position
+        for lIdx in startLine..<buffer.lines.count {
+            let line = buffer.lines[lIdx]
+            let fromCol = (lIdx == startLine) ? min(startCol + 1, line.count) : 0
+            if fromCol < line.count {
+                let searchStr = String(line.suffix(line.count - fromCol))
+                if let range = searchStr.range(of: query, options: .caseInsensitive) {
+                    let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
+                    buffer.lineIndex = lIdx
+                    buffer.columnIndex = fromCol + colOffset
+                    setStatusMessage(L10n.foundQueryAtLine(query: query, line: lIdx + 1))
+                    return
+                }
+            }
+        }
+
+        // 2. Wrap search around from line 0
+        for lIdx in 0...startLine {
+            let line = buffer.lines[lIdx]
+            let toCol = (lIdx == startLine) ? startCol : line.count
+            let searchStr = String(line.prefix(toCol))
+            if let range = searchStr.range(of: query, options: .caseInsensitive) {
+                let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
+                buffer.lineIndex = lIdx
+                buffer.columnIndex = colOffset
+                setStatusMessage(L10n.searchWrappedFound(query: query, line: lIdx + 1))
+                return
+            }
+        }
+
+        setStatusMessage(L10n.notFound(query: query))
+    }
+
+    /// Prompts user to input file path to insert into buffer (^R / F5).
+    func promptInsertFilePath() {
+        promptInputText = ""
+        currentPromptMode = .insertFilePath(completion: { [weak self] path in
+            guard let self = self, let path = path, !path.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled_insert"])
+                return
+            }
+            do {
+                self.saveUndoSnapshot()
+                let count = try self.buffer.insertFile(at: path)
+                self.setStatusMessage(L10n.insertedLines(count: count))
+            } catch {
+                self.setStatusMessage(L10n.errorInsertingFile(error: error.localizedDescription))
+            }
+        })
+    }
+
+    /// Prompts user to check and replace misspelled words (^T / F12).
+    func promptSpellCheck() {
+        if let target = spellChecker.findNextMisspelled(in: buffer) {
+            buffer.lineIndex = target.line
+            buffer.columnIndex = target.col
+            promptInputText = target.word
+            currentPromptMode = .spellCheck(word: target.word, line: target.line, col: target.col, completion: { [weak self] replacement in
+                guard let self = self, let newWord = replacement, !newWord.isEmpty else {
+                    self?.setStatusMessage(L10n["status.spell_check_skipped"])
+                    return
+                }
+                if newWord != target.word {
+                    self.saveUndoSnapshot()
+                    var lineStr = self.buffer.lines[target.line]
+                    let sIdx = lineStr.index(lineStr.startIndex, offsetBy: target.col)
+                    let eIdx = lineStr.index(sIdx, offsetBy: target.word.count)
+                    lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
+                    self.buffer.lines[target.line] = lineStr
+                    self.buffer.isModified = true
+                    self.setStatusMessage(L10n.replacedWord(target: target.word, newWord: newWord))
+                } else {
+                    self.setStatusMessage(L10n["status.word_kept"])
+                }
+            })
+        } else {
+            setStatusMessage(L10n["status.no_misspelled"])
+        }
+    }
+
+    /// Cancels active prompt mode.
+    func cancelPrompt() {
+        currentPromptMode = .none
+        promptInputText = ""
+    }
+
+    /// Saves buffer to specified file path.
+    func doSave(to path: String) {
+        do {
+            try buffer.saveFile(to: path)
+            setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
+        } catch {
+            setStatusMessage(L10n.errorSavingFile(error: error.localizedDescription))
+        }
+    }
+}
