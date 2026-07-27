@@ -16,13 +16,16 @@ public final class Editor {
     // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
     private var topVLineIndex: Int = 0
 
-    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit confirmation, Ctrl+W search, Ctrl+R insert file)
+    private let spellChecker = SpellChecker()
+
+    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
     private enum PromptMode {
         case none
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)
         case search(completion: (String?) -> Void)
         case insertFilePath(completion: (String?) -> Void)
+        case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
     }
     private var currentPromptMode: PromptMode = .none
     private var promptInputText: String = ""
@@ -32,12 +35,6 @@ public final class Editor {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
         self.layoutEngine = LayoutEngine(wrapColumn: wrapColumn)
-        
-        if let path = buffer.filePath {
-            setStatusMessage("File loaded: \(path)")
-        } else {
-            setStatusMessage("New File")
-        }
     }
 
     /// Starts the editor event loop.
@@ -202,7 +199,7 @@ public final class Editor {
             setStatusMessage("Justified paragraph")
 
         case .ctrl("T"), .f12:
-            setStatusMessage("Spell checker not available")
+            promptSpellCheck()
 
         case .ctrl("C"), .f11:
             let totalLines = buffer.lines.count
@@ -222,8 +219,10 @@ public final class Editor {
             buffer.insertNewline()
         case .char(let ch):
             buffer.insert(character: ch)
-        default:
+        case .unknown:
             break
+        default:
+            setStatusMessage("Unknown command")
         }
 
         buffer.clampCursor()
@@ -370,6 +369,25 @@ public final class Editor {
                 break
             }
 
+        case .spellCheck(_, _, _, let completion):
+            switch key {
+            case .enter:
+                let result = promptInputText
+                currentPromptMode = .none
+                completion(result)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                if !promptInputText.isEmpty {
+                    promptInputText.removeLast()
+                }
+            case .char(let ch):
+                promptInputText.append(ch)
+            default:
+                break
+            }
+
         case .none:
             break
         }
@@ -450,6 +468,34 @@ public final class Editor {
                 self.setStatusMessage("Error inserting file: \(error.localizedDescription)")
             }
         })
+    }
+
+    /// Prompts user to check and replace misspelled words (^T / F12).
+    private func promptSpellCheck() {
+        if let target = spellChecker.findNextMisspelled(in: buffer) {
+            buffer.lineIndex = target.line
+            buffer.columnIndex = target.col
+            promptInputText = target.word
+            currentPromptMode = .spellCheck(word: target.word, line: target.line, col: target.col, completion: { [weak self] replacement in
+                guard let self = self, let newWord = replacement, !newWord.isEmpty else {
+                    self?.setStatusMessage("Spell check skipped")
+                    return
+                }
+                if newWord != target.word {
+                    var lineStr = self.buffer.lines[target.line]
+                    let sIdx = lineStr.index(lineStr.startIndex, offsetBy: target.col)
+                    let eIdx = lineStr.index(sIdx, offsetBy: target.word.count)
+                    lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
+                    self.buffer.lines[target.line] = lineStr
+                    self.buffer.isModified = true
+                    self.setStatusMessage("Replaced '\(target.word)' with '\(newWord)'")
+                } else {
+                    self.setStatusMessage("Word kept")
+                }
+            })
+        } else {
+            setStatusMessage("[ No misspelled words found ]")
+        }
     }
 
     /// Checks if a buffer character (line, col) is within the current selection mark range.
@@ -566,19 +612,20 @@ public final class Editor {
             output += "\u{1B}[1mSearch\(defaultHint): \(promptInputText)_\u{1B}[0m"
         case .insertFilePath:
             output += "\u{1B}[1mFile to insert: \(promptInputText)_\u{1B}[0m"
+        case .spellCheck(let word, _, _, _):
+            output += "\u{1B}[1mEdit misspelled word \"\(word)\": \(promptInputText)_\u{1B}[0m"
         case .none:
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
-                output += "  \(statusMessage)"
+                let msgWidth = statusMessage.displayWidth
+                let leftPaddingCount = max(0, (cols - msgWidth) / 2)
+                let centeredMsg = String(repeating: " ", count: leftPaddingCount) + statusMessage
+                output += centeredMsg.paddedToDisplayWidth(cols)
             }
         }
         output += "\r\n"
 
-        // 4. Nano Key Help Bar (2 lines) - Constrained within 80 columns without inverted background
-        let helpWidth = min(cols, 80)
-        let helpLine1 = " ^G Get Help   ^O WriteOut   ^R Read File  ^Y Prev Pg    ^K Cut Text   ^C Cur Pos"
-        let helpLine2 = " ^X Exit       ^J Justify    ^W Where Is   ^V Next Pg    ^U UnCut Text ^T To Spell"
-        output += formatHelpLine(helpLine1, width: helpWidth) + "\r\n"
-        output += formatHelpLine(helpLine2, width: helpWidth)
+        // 4. Nano Key Help Bar (2 lines) - 2D column-aligned, dynamic gap spacing, no leading space
+        output += formatHelpBar(cols: cols)
 
         // 5. Position Terminal Cursor (accounting for CJK/wide character display width)
         let vLineText = virtualLines[cursorVLineIdx].text
@@ -596,21 +643,68 @@ public final class Editor {
         fflush(nil)
     }
 
-    /// Formats Nano help bar lines (Bold Cyan for key tags, no inverted background, constrained to width).
-    private func formatHelpLine(_ rawText: String, width: Int) -> String {
-        let trimmed = rawText.paddedToDisplayWidth(width)
-        var result = ""
-        let parts = trimmed.components(separatedBy: " ")
-        for (idx, part) in parts.enumerated() {
-            if part.hasPrefix("^") {
-                result += "\u{1B}[1;36m\(part)\u{1B}[0m"
-            } else {
-                result += part
-            }
-            if idx < parts.count - 1 {
-                result += " "
-            }
+    /// Formats Nano help bar lines with 2D column alignment and dynamic gap spacing (Bold Cyan keys, no leading space).
+    private func formatHelpBar(cols: Int) -> String {
+        let helpWidth = min(cols, 80)
+        let helpItems1: [(key: String, label: String)] = [
+            ("^G", "Get Help"), ("^O", "WriteOut"), ("^R", "Read File"),
+            ("^Y", "Prev Pg"),  ("^K", "Cut Text"), ("^C", "Cur Pos")
+        ]
+        let helpItems2: [(key: String, label: String)] = [
+            ("^X", "Exit"),     ("^J", "Justify"),  ("^W", "Where Is"),
+            ("^V", "Next Pg"),  ("^U", "UnCut Text"), ("^T", "To Spell")
+        ]
+
+        let numCols = min(helpItems1.count, helpItems2.count)
+        var maxColWidths: [Int] = []
+        for i in 0..<numCols {
+            let w1 = helpItems1[i].key.count + 1 + helpItems1[i].label.count
+            let w2 = helpItems2[i].key.count + 1 + helpItems2[i].label.count
+            maxColWidths.append(max(w1, w2))
         }
-        return result
+
+        let totalItemsWidth = maxColWidths.reduce(0, +)
+        let gapCount = max(1, numCols - 1)
+        let availableGapSpace = helpWidth - totalItemsWidth
+
+        let gapSize = max(1, min(2, availableGapSpace / gapCount))
+        let gapStr = String(repeating: " ", count: gapSize)
+
+        func renderLine(_ items: [(key: String, label: String)]) -> String {
+            var result = ""
+            var currentDisplayWidth = 0
+
+            for i in 0..<items.count {
+                let targetColWidth = (i < maxColWidths.count) ? maxColWidths[i] : (items[i].key.count + 1 + items[i].label.count)
+                let itemStr = "\u{1B}[1;36m\(items[i].key)\u{1B}[0m \(items[i].label)"
+                let rawWidth = items[i].key.count + 1 + items[i].label.count
+                let padCount = max(0, targetColWidth - rawWidth)
+                let paddedItem = itemStr + String(repeating: " ", count: padCount)
+
+                if i > 0 {
+                    if currentDisplayWidth + gapSize + targetColWidth > helpWidth {
+                        break
+                    }
+                    result += gapStr
+                    currentDisplayWidth += gapSize
+                }
+
+                if currentDisplayWidth + targetColWidth > helpWidth {
+                    break
+                }
+
+                result += paddedItem
+                currentDisplayWidth += targetColWidth
+            }
+
+            if currentDisplayWidth < helpWidth {
+                result += String(repeating: " ", count: helpWidth - currentDisplayWidth)
+            }
+            return result
+        }
+
+        let line1 = renderLine(helpItems1)
+        let line2 = renderLine(helpItems2)
+        return line1 + "\r\n" + line2
     }
 }
