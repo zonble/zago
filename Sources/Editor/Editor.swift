@@ -44,12 +44,40 @@ public final class Editor {
     private var lastIsPaste: Bool = false
 
     public let commandRegistry = CommandRegistry()
+    public var showRuler: Bool = false
 
-    public init(filePath: String? = nil, wrapColumn: Int? = nil) {
+    public init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil) {
         self.terminal = Terminal()
         self.buffer = TextBuffer(filePath: filePath)
-        self.layoutEngine = LayoutEngine(wrapColumn: wrapColumn)
+
+        let loadedConfig = ConfigLoader().loadConfig()
+
+        // CLI argument priority > .serc config > default
+        let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
+        let finalRuler = showRuler ?? loadedConfig.showRuler
+
+        self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
+        self.showRuler = finalRuler
+
         setupDefaultCommands()
+        applyCustomConfig(loadedConfig)
+    }
+
+    /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
+    private func applyCustomConfig(_ config: EditorConfig) {
+        for key in config.unbindKeys {
+            commandRegistry.unbind(key: key)
+        }
+
+        for (key, cmdId) in config.customKeyBinds {
+            if let cmd = commandRegistry.commands.first(where: { $0.id == cmdId }) {
+                commandRegistry.bind(key: key, command: cmd)
+            }
+        }
+
+        if config.syntaxErrorCount > 0 {
+            setStatusMessage("[ Config loaded with \(config.syntaxErrorCount) syntax error(s) ]")
+        }
     }
 
     /// Registers default editor commands and keybindings.
@@ -736,6 +764,22 @@ public final class Editor {
         return true
     }
 
+    /// Generates a classic WordStar-style ruler bar string (e.g. "----!----1----!----2----!----3").
+    public func generateWordStarRuler(width: Int) -> String {
+        var ruler = ""
+        for col in 1...width {
+            if col % 10 == 0 {
+                let digit = (col / 10) % 10
+                ruler.append(String(digit))
+            } else if col % 5 == 0 {
+                ruler.append("!")
+            } else {
+                ruler.append("-")
+            }
+        }
+        return ruler
+    }
+
     /// Double-buffered screen rendering logic.
     private func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
@@ -750,7 +794,7 @@ public final class Editor {
         )
 
         // Calculate Viewport Scrolling
-        let mainAreaHeight = max(1, rows - 4) // 1 top title, 1 status, 2 key help
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4)) // 1 top title, 1 optional ruler, 1 status, 2 key help
         if cursorVLineIdx < topVLineIndex {
             topVLineIndex = cursorVLineIdx
         } else if cursorVLineIdx >= topVLineIndex + mainAreaHeight {
@@ -783,6 +827,12 @@ public final class Editor {
 
         let paddedTitle = titleStr.paddedToDisplayWidth(cols)
         output += "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
+
+        // 1.5 Optional WordStar Ruler Bar
+        if showRuler {
+            let rulerStr = generateWordStarRuler(width: textWidth)
+            output += "\u{1B}[K\u{1B}[90m     \(rulerStr)\u{1B}[0m\r\n"
+        }
 
         // 2. Main Edit Area (Virtual Lines Rendering)
         for i in 0..<mainAreaHeight {
@@ -848,7 +898,7 @@ public final class Editor {
         let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
         let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
 
-        let screenRow = (cursorVLineIdx - topVLineIndex) + 2 // +2 for title bar
+        let screenRow = (cursorVLineIdx - topVLineIndex) + (showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
         let screenCol = gutterWidth + cursorDisplayWidth + 1
         output += "\u{1B}[\(screenRow);\(screenCol)H"
         output += "\u{1B}[?25h" // Show cursor
@@ -912,14 +962,14 @@ public final class Editor {
                 currentDisplayWidth += targetColWidth
             }
 
-            if currentDisplayWidth < helpWidth {
-                result += String(repeating: " ", count: helpWidth - currentDisplayWidth)
+            if currentDisplayWidth < cols {
+                result += String(repeating: " ", count: cols - currentDisplayWidth)
             }
             return result
         }
 
-        let line1 = renderLine(helpItems1)
-        let line2 = renderLine(helpItems2)
+        let line1 = "\u{1B}[K" + renderLine(helpItems1)
+        let line2 = "\u{1B}[K" + renderLine(helpItems2)
         return line1 + "\r\n" + line2
     }
 }

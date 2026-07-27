@@ -15,8 +15,11 @@ struct SE: ParsableCommand {
     @Option(name: [.customShort("w"), .long], help: "Specify softwrap column width (e.g. 80). If omitted, softwrap adapts to terminal width.")
     var wrap: Int?
 
+    @Flag(name: [.customShort("r"), .long], help: "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
+    var ruler: Bool = false
+
     func run() throws {
-        let editor = Editor(filePath: file, wrapColumn: wrap)
+        let editor = Editor(filePath: file, wrapColumn: wrap, showRuler: ruler)
         editor.run()
     }
 }

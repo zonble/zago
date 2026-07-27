@@ -85,6 +85,11 @@ se filename.txt
 # Specify custom softwrap column width (e.g., 80 columns)
 se filename.txt --wrap 80
 
+# Display classic WordStar-style ruler bar (----!----1----!----2) above viewport
+se filename.txt -r
+# or
+se filename.txt --ruler
+
 # Display CLI options and help
 se --help
 ```

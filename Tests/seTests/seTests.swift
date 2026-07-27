@@ -274,3 +274,47 @@ import Foundation
     #expect(handled == true)
     #expect(executed == true)
 }
+
+@Test func testWordStarRuler() throws {
+    let editor = Editor(showRuler: true)
+    #expect(editor.showRuler == true)
+
+    let ruler20 = editor.generateWordStarRuler(width: 20)
+    #expect(ruler20 == "----!----1----!----2")
+
+    let ruler30 = editor.generateWordStarRuler(width: 30)
+    #expect(ruler30 == "----!----1----!----2----!----3")
+}
+
+@Test func testConfigLoaderAndKeyParser() throws {
+    let parsedCtrlF = KeyParser.parse("ctrl-f")
+    #expect(parsedCtrlF == .ctrl("f"))
+
+    let parsedF1 = KeyParser.parse("f1")
+    #expect(parsedF1 == .f1)
+
+    let parsedUp = KeyParser.parse("up")
+    #expect(parsedUp == .arrowUp)
+
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_.serc").path
+    let sampleConfig = """
+    # Sample serc configuration
+    set wrap 80
+    set ruler true
+    bind ctrl-f move.left
+    unbind f1
+    invalid syntax line
+    """
+    try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    let loader = ConfigLoader()
+    var config = EditorConfig()
+    loader.parseConfigFile(at: tmpPath, into: &config)
+
+    #expect(config.wrapColumn == 80)
+    #expect(config.showRuler == true)
+    #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
+    #expect(config.unbindKeys.contains(.f1))
+    #expect(config.syntaxErrorCount == 1)
+}

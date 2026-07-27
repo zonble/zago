@@ -32,6 +32,16 @@ public final class CommandRegistry {
         }
     }
 
+    /// Binds a specific key to a command.
+    public func bind(key: Key, command: Command) {
+        keyMap[key] = command
+    }
+
+    /// Unbinds a specific key mapping.
+    public func unbind(key: Key) {
+        keyMap.removeValue(forKey: key)
+    }
+
     /// Dispatches a key input to its registered command action.
     /// Returns `true` if a command was found and executed.
     public func dispatch(key: Key, editor: Editor) -> Bool {
