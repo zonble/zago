@@ -264,7 +264,12 @@ public final class Editor {
         case .enter:
             buffer.insertNewline()
         case .char(let ch):
-            buffer.insert(character: ch)
+            let pastedText = terminal.readPendingText(firstChar: ch)
+            if pastedText.count == 1 {
+                buffer.insert(character: ch)
+            } else {
+                buffer.insertString(pastedText)
+            }
         case .unknown:
             break
         default:

@@ -229,6 +229,65 @@ public final class Terminal {
         }
     }
 
+    /// Reads all currently queued pending text bytes from stdin without blocking (accelerates clipboard paste).
+    public func readPendingText(firstChar: Character) -> String {
+        let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
+        _ = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK)
+        defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }
+
+        var result = String(firstChar)
+        var rawBuffer = [UInt8](repeating: 0, count: 4096)
+
+        while true {
+            let n = read(STDIN_FILENO, &rawBuffer, rawBuffer.count)
+            if n <= 0 { break }
+
+            let bytes = Array(rawBuffer[..<n])
+            var idx = 0
+            while idx < bytes.count {
+                let b = bytes[idx]
+                if b == 13 || b == 10 { // CR or LF
+                    if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                        idx += 1
+                    }
+                    result.append("\n")
+                    idx += 1
+                } else if b == 27 { // ESC sequence skip
+                    idx += 1
+                    if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
+                        idx += 1
+                        while idx < bytes.count && (bytes[idx] < 64 || bytes[idx] > 126) {
+                            idx += 1
+                        }
+                        if idx < bytes.count { idx += 1 }
+                    }
+                } else if b >= 32 || b == 9 { // Printable character or Tab
+                    let charLen: Int
+                    switch b {
+                    case 0..<0x80: charLen = 1
+                    case 0xC0..<0xE0: charLen = 2
+                    case 0xE0..<0xF0: charLen = 3
+                    case 0xF0..<0xF8: charLen = 4
+                    default: charLen = 1
+                    }
+
+                    if idx + charLen <= bytes.count {
+                        let charBytes = bytes[idx..<(idx + charLen)]
+                        if let str = String(bytes: charBytes, encoding: .utf8) {
+                            result.append(str)
+                        }
+                        idx += charLen
+                    } else {
+                        idx += 1
+                    }
+                } else {
+                    idx += 1
+                }
+            }
+        }
+        return result
+    }
+
     /// ANSI cursor hiding and movement helper functions.
     /// Note: Uses `fflush(nil)` instead of `fflush(stdout)` to safely flush all output streams
     /// without referencing the C global mutable variable `stdout` in Swift 6 concurrency mode.
