@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Editor
 
 @Test func testHelpViewInstantiation() throws {
@@ -83,14 +84,14 @@ import Foundation
 
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_.serc").path
     let sampleConfig = """
-    # Sample serc configuration
-    set wrap 80
-    set ruler true
-    set autoreload true
-    bind ctrl-f move.left
-    unbind f1
-    invalid syntax line
-    """
+        # Sample serc configuration
+        set wrap 80
+        set ruler true
+        set autoreload true
+        bind ctrl-f move.left
+        unbind f1
+        invalid syntax line
+        """
     try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
@@ -154,7 +155,8 @@ import Foundation
     #expect(sercLang?.name == "LOGO")
 
     if let lang = logoLang {
-        let highlighted = highlighter.highlight(line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT 90 ] [ BOX 5 3 ]", syntax: lang)
+        let highlighted = highlighter.highlight(
+            line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT 90 ] [ BOX 5 3 ]", syntax: lang)
         #expect(highlighted.contains("\u{1B}[1;36m"))
         #expect(highlighted.contains("\u{1B}[94m"))
     }
@@ -168,11 +170,11 @@ import Foundation
 @Test func testNanoRCParser() throws {
     let tmpNanoRC = FileManager.default.temporaryDirectory.appendingPathComponent("test.nanorc").path
     let content = """
-    # Sample nanorc file
-    syntax "customlang" "\\.custom$"
-    color cyan "\\b(foo|bar)\\b"
-    color green "\"([^\"]*)\""
-    """
+        # Sample nanorc file
+        syntax "customlang" "\\.custom$"
+        color cyan "\\b(foo|bar)\\b"
+        color green "\"([^\"]*)\""
+        """
     try content.write(toFile: tmpNanoRC, atomically: true, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpNanoRC) }
 
@@ -191,7 +193,9 @@ import Foundation
     #expect(L10n.readLines(10) == "[ Read 10 line(s) ]")
     #expect(L10n.wroteToFile("test.txt") == "[ Wrote to test.txt ]")
     #expect(L10n.configLoadedWithErrors(2) == "[ Config loaded with 2 syntax error(s) ]")
-    #expect(L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10) == "line 5/20 (25%), col 3/10")
+    #expect(
+        L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10)
+            == "line 5/20 (25%), col 3/10")
     #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "Found \"foo\" at line 12")
     #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "Search wrapped, found \"foo\" at line 12")
     #expect(L10n.notFound(query: "bar") == "\"bar\" not found")
@@ -208,7 +212,9 @@ import Foundation
     #expect(L10n.readLines(10) == "[ 已讀取 10 行 ]")
     #expect(L10n.wroteToFile("test.txt") == "[ 已儲存至 test.txt ]")
     #expect(L10n.configLoadedWithErrors(2) == "[ 已載入設定檔（含有 2 個語法錯誤）]")
-    #expect(L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10) == "第 5/20 行 (25%), 第 3/10 欄")
+    #expect(
+        L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10)
+            == "第 5/20 行 (25%), 第 3/10 欄")
     #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "於第 12 行找到 \"foo\"")
     #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "搜尋回到開頭，於第 12 行找到 \"foo\"")
     #expect(L10n.notFound(query: "bar") == "找不到 \"bar\"")

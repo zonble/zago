@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Editor
 
 @Test func testShiftArrowKeyEnum() throws {
@@ -207,10 +208,10 @@ import Foundation
     #expect(editor.isMenuBarActive == false)
 
     // 7. Test executing menu item via Enter
-    editor.processKey(.f1) // Activate menu
-    editor.menuBar.categoryIndex = 4 // Tools category
-    editor.menuBar.itemIndex = 0 // LOGO Macro
-    editor.processKey(.enter) // Execute
+    editor.processKey(.f1)  // Activate menu
+    editor.menuBar.categoryIndex = 4  // Tools category
+    editor.menuBar.itemIndex = 0  // LOGO Macro
+    editor.processKey(.enter)  // Execute
     #expect(editor.isMenuBarActive == false)
     if case .logoMacro = editor.currentPromptMode {
         #expect(Bool(true))
@@ -221,8 +222,8 @@ import Foundation
     // 8. Test Goto Line from Search menu (category 2, item 2)
     editor.currentPromptMode = .none
     editor.processKey(.f1)
-    editor.menuBar.categoryIndex = 2 // Search category
-    editor.menuBar.itemIndex = 2 // Goto Line
+    editor.menuBar.categoryIndex = 2  // Search category
+    editor.menuBar.itemIndex = 2  // Goto Line
     editor.processKey(.enter)
     #expect(editor.isMenuBarActive == false)
     if case .gotoLine = editor.currentPromptMode {
@@ -261,11 +262,11 @@ import Foundation
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 0 // At start of "Last Line"
+    editor.buffer.columnIndex = 0  // At start of "Last Line"
 
     editor.processKey(.arrowDown)
     #expect(editor.buffer.lineIndex == 1)
-    #expect(editor.buffer.columnIndex == 9) // EOL of "Last Line"
+    #expect(editor.buffer.columnIndex == 9)  // EOL of "Last Line"
 }
 
 @Test func testCtrlQEvalLogoCode() throws {
@@ -289,4 +290,3 @@ import Foundation
     editor.processKey(.ctrl("Q"))
     #expect(editor.statusMessage == "[Eval] 50")
 }
-

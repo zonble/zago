@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Editor
 
 @Test func testTableCellDetectorSingleUnicode() throws {
@@ -9,7 +10,7 @@ import Foundation
         "│ Cell 1         │ Cell 2         │",
         "├────────────────┼────────────────┤",
         "│ Cell 3         │ Cell 4         │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
 
     // Detect cell around cursor at line 1, col 5 ("Cell 1")
@@ -35,7 +36,7 @@ import Foundation
     let lines = [
         "| Header 1       | Header 2       |",
         "| -------------- | -------------- |",
-        "| Data 1         | Data 2         |"
+        "| Data 1         | Data 2         |",
     ]
 
     // Detect markdown cell at line 2, col 5 ("Data 1")
@@ -51,7 +52,7 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┬────────────────┐",
         "│ Hello          │ World          │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 3
@@ -69,7 +70,7 @@ import Foundation
 
     // 3. Test Tab navigation to next cell
     editor.processKey(.tab)
-    #expect(editor.currentTableCell?.minCol == 17) // Moved to cell 2
+    #expect(editor.currentTableCell?.minCol == 17)  // Moved to cell 2
 
     // 4. Toggle Table Mode OFF (Alt+T)
     editor.processKey(.alt("t"))
@@ -103,17 +104,17 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┬────────────────┐",
         "│                │                │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 1 // First position inside Cell 1
+    editor.buffer.columnIndex = 1  // First position inside Cell 1
 
     // 1. Toggle Table Mode ON (Alt+T)
     editor.toggleTableMode()
     #expect(editor.isTableModeActive == true)
     let initialLine = editor.buffer.lines[1]
     #expect(initialLine.count == 35)
-    #expect(initialLine[initialLine.index(initialLine.startIndex, offsetBy: 17)] == "│") // Right border of cell 1
+    #expect(initialLine[initialLine.index(initialLine.startIndex, offsetBy: 17)] == "│")  // Right border of cell 1
 
     // 2. Type "Hello"
     for ch in "Hello" {
@@ -148,7 +149,7 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┬────────────────┐",
         "│                │                │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
@@ -174,13 +175,13 @@ import Foundation
         "│ Row1 Cell1     │ Row1 Cell2     │",
         "├────────────────┼────────────────┤",
         "│ Row2 Cell1     │ Row2 Cell2     │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 20 // Inside Row1 Cell2 (last cell of row 1)
+    editor.buffer.columnIndex = 20  // Inside Row1 Cell2 (last cell of row 1)
 
     editor.toggleTableMode()
-    #expect(editor.currentTableCell?.minCol == 17) // Locked to Row1 Cell2
+    #expect(editor.currentTableCell?.minCol == 17)  // Locked to Row1 Cell2
 
     // Press Tab from last cell of Row 1
     editor.processKey(.tab)
@@ -188,7 +189,7 @@ import Foundation
     // Must jump to Row 2 Cell 1!
     #expect(editor.isTableModeActive == true)
     #expect(editor.currentTableCell?.minLine == 2)
-    #expect(editor.currentTableCell?.minCol == 0) // First cell of Row 2
+    #expect(editor.currentTableCell?.minCol == 0)  // First cell of Row 2
 }
 
 @Test func testTableModeGreenBackgroundRendering() throws {
@@ -196,7 +197,7 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┐",
         "│ Active Cell    │",
-        "└────────────────┘"
+        "└────────────────┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
@@ -214,10 +215,10 @@ import Foundation
     editor.buffer.lines = [
         "┌────┐",
         "│    │",
-        "└────┘"
+        "└────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 1 // 4 spaces inside cell (cols 1..4)
+    editor.buffer.columnIndex = 1  // 4 spaces inside cell (cols 1..4)
 
     editor.toggleTableMode()
     #expect(editor.isTableModeActive == true)
@@ -239,10 +240,10 @@ import Foundation
         "│ Row1 Cell1     │ Row1 Cell2     │",
         "├────────────────┼────────────────┤",
         "│ Row2 Cell1     │ Row2 Cell2     │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 2 // Row 1 Cell 1
+    editor.buffer.columnIndex = 2  // Row 1 Cell 1
 
     editor.toggleTableMode()
     #expect(editor.currentTableCell?.minLine == 0)
@@ -265,10 +266,10 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┬────────────────┐",
         "│ Row1 Cell1     │ Row1 Cell2     │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 16 // Rightmost col of Cell 1 (cell.innerMaxCol = 16)
+    editor.buffer.columnIndex = 16  // Rightmost col of Cell 1 (cell.innerMaxCol = 16)
 
     editor.toggleTableMode()
     #expect(editor.currentTableCell?.minCol == 0)
@@ -297,10 +298,10 @@ import Foundation
         "│ Row1 Cell1     │ Row1 Cell2     │",
         "├────────────────┼────────────────┤",
         "│ Row2 Cell1     │ Row2 Cell2     │",
-        "└────────────────┴────────────────┘"
+        "└────────────────┴────────────────┘",
     ]
     editor.buffer.lineIndex = 3
-    editor.buffer.columnIndex = 2 // Row 2 Cell 1
+    editor.buffer.columnIndex = 2  // Row 2 Cell 1
 
     editor.toggleTableMode()
     #expect(editor.currentTableCell?.minLine == 2)
@@ -336,7 +337,7 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┐",
         "│ Hello          │",
-        "└────────────────┘"
+        "└────────────────┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
@@ -358,10 +359,10 @@ import Foundation
     editor.buffer.lines = [
         "┌────────────────┐",
         "│ Hello World    │",
-        "└────────────────┘"
+        "└────────────────┘",
     ]
     editor.buffer.lineIndex = 1
-    editor.buffer.columnIndex = 1 // At left inner boundary 'H'
+    editor.buffer.columnIndex = 1  // At left inner boundary 'H'
 
     editor.toggleTableMode()
     #expect(editor.isTableModeActive == true)

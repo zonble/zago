@@ -1,10 +1,11 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Editor
 
 @Test func testSoftwrapLayoutEngine() throws {
     let engine = LayoutEngine(wrapColumn: 10)
-    let lines = ["1234567890ABCDEFGHIJ12345"] // 25 characters
+    let lines = ["1234567890ABCDEFGHIJ12345"]  // 25 characters
 
     let virtualLines = engine.computeVirtualLines(from: lines, viewWidth: 80)
     #expect(virtualLines.count == 3)
@@ -37,7 +38,7 @@ import Foundation
 
     // Test CJK softwrap: wrapColumn = 6 (accommodates 3 CJK characters per line)
     let engine = LayoutEngine(wrapColumn: 6)
-    let lines = ["一二三四五六"] // 6 CJK characters, total display width 12
+    let lines = ["一二三四五六"]  // 6 CJK characters, total display width 12
     let virtualLines = engine.computeVirtualLines(from: lines, viewWidth: 80)
 
     #expect(virtualLines.count == 2)
@@ -52,7 +53,7 @@ import Foundation
         "programming language created by Apple",
         "for building apps.",
         "",
-        "Second paragraph."
+        "Second paragraph.",
     ]
     buffer.lineIndex = 0
 
@@ -71,7 +72,7 @@ import Foundation
     let buffer = TextBuffer()
     buffer.lines = [
         "這是一段很長的中文字段落，用來測試視覺對齊演算法",
-        "是否能在指定寬度內正確折行。"
+        "是否能在指定寬度內正確折行。",
     ]
     buffer.lineIndex = 0
 
@@ -132,7 +133,7 @@ import Foundation
 
     #expect(linesWithRuler[0].contains("se"))
     #expect(linesWithRuler[0].contains("\u{1B}[7m"))
-    #expect(linesWithRuler[1].contains("!")) // Ruler line
+    #expect(linesWithRuler[1].contains("!"))  // Ruler line
 
     #expect(linesWithRuler.count == 24)
 }
@@ -147,7 +148,7 @@ import Foundation
 
     // Line 1 is the Ruler Bar line
     let rulerLine = lines[1]
-    #expect(rulerLine.contains("\u{1B}[90m")) // Dim Gray ANSI code MUST be present in Ruler line!
+    #expect(rulerLine.contains("\u{1B}[90m"))  // Dim Gray ANSI code MUST be present in Ruler line!
 }
 
 @Test func testPromptHorizontalScrolling() throws {
@@ -162,7 +163,7 @@ import Foundation
 
     // Line at index 7 is status/prompt line
     #expect(lines.count >= 10)
-    let promptLine = lines[7] // status/prompt line
+    let promptLine = lines[7]  // status/prompt line
 
     // Verify prompt line contains '$' horizontal scroll indicator
     #expect(promptLine.contains("$"))

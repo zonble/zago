@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Editor
 @testable import LogoEngine
 
@@ -38,7 +39,7 @@ import Foundation
     // 8. Prompt History & Active Hardware Cursor position test
     editor.promptLogoMacro()
     let promptOutput = editor.generateScreenOutput(rows: 24, cols: 80)
-    #expect(promptOutput.contains("\u{1B}[22;")) // Verify hardware cursor placed on row 22 (24-2) for active prompt
+    #expect(promptOutput.contains("\u{1B}[22;"))  // Verify hardware cursor placed on row 22 (24-2) for active prompt
 
     editor.processKey(.char("T"))
     editor.processKey(.char("Y"))
@@ -369,7 +370,9 @@ import Foundation
     // 2. Selectors: FIRST, LAST, BUTFIRST (BF), BUTLAST (BL), ITEM, REMDUP
     let ed3 = Editor()
     logoEngine.delegate = ed3
-    logoEngine.execute("TYPE FIRST [10 20] TYPE \" \" TYPE LAST \"abc\" TYPE \" \" TYPE BF [10 20 30] TYPE \" \" TYPE BL \"abc\" TYPE \" \" TYPE ITEM 2 [10 20 30]")
+    logoEngine.execute(
+        "TYPE FIRST [10 20] TYPE \" \" TYPE LAST \"abc\" TYPE \" \" TYPE BF [10 20 30] TYPE \" \" TYPE BL \"abc\" TYPE \" \" TYPE ITEM 2 [10 20 30]"
+    )
     #expect(ed3.buffer.lines[0] == "10 c [20 30] ab 20")
 
     let ed4 = Editor()
@@ -380,23 +383,29 @@ import Foundation
     // 3. Mutators & Stack / Queue: PUSH, POP, QUEUE, DEQUEUE, SETITEM
     let ed5 = Editor()
     logoEngine.delegate = ed5
-    logoEngine.execute("MAKE \"s\" [2 1] PUSH \"s\" 3 TYPE :s TYPE \" pop: \" TYPE POP \"s\" TYPE \" remaining: \" TYPE :s")
+    logoEngine.execute(
+        "MAKE \"s\" [2 1] PUSH \"s\" 3 TYPE :s TYPE \" pop: \" TYPE POP \"s\" TYPE \" remaining: \" TYPE :s")
     #expect(ed5.buffer.lines[0] == "[3 2 1] pop: 3 remaining: [2 1]")
 
     let ed6 = Editor()
     logoEngine.delegate = ed6
-    logoEngine.execute("MAKE \"q\" [1 2] QUEUE \"q\" 3 TYPE :q TYPE \" deq: \" TYPE DEQUEUE \"q\" TYPE \" remaining: \" TYPE :q")
+    logoEngine.execute(
+        "MAKE \"q\" [1 2] QUEUE \"q\" 3 TYPE :q TYPE \" deq: \" TYPE DEQUEUE \"q\" TYPE \" remaining: \" TYPE :q")
     #expect(ed6.buffer.lines[0] == "[1 2 3] deq: 1 remaining: [2 3]")
 
     // 4. Predicates & Queries: WORD?, LIST?, NUMBER?, EMPTY?, MEMBER?, COUNT, ASCII, CHAR, UPPERCASE, LOWERCASE
     let ed7 = Editor()
     logoEngine.delegate = ed7
-    logoEngine.execute("TYPE LIST? [1 2] TYPE \" \" TYPE NUMBER? 123 TYPE \" \" TYPE EMPTY? \"\" TYPE \" \" TYPE MEMBER? \"b\" [a b c]")
+    logoEngine.execute(
+        "TYPE LIST? [1 2] TYPE \" \" TYPE NUMBER? 123 TYPE \" \" TYPE EMPTY? \"\" TYPE \" \" TYPE MEMBER? \"b\" [a b c]"
+    )
     #expect(ed7.buffer.lines[0] == "1 1 1 1")
 
     let ed8 = Editor()
     logoEngine.delegate = ed8
-    logoEngine.execute("TYPE COUNT [1 2 3] TYPE \" \" TYPE ASCII \"a\" TYPE \" \" TYPE CHAR 97 TYPE \" \" TYPE UPPERCASE \"abc\" TYPE \" \" TYPE LOWERCASE \"XYZ\"")
+    logoEngine.execute(
+        "TYPE COUNT [1 2 3] TYPE \" \" TYPE ASCII \"a\" TYPE \" \" TYPE CHAR 97 TYPE \" \" TYPE UPPERCASE \"abc\" TYPE \" \" TYPE LOWERCASE \"XYZ\""
+    )
     #expect(ed8.buffer.lines[0] == "3 97 a ABC xyz")
 }
 
@@ -655,11 +664,12 @@ import Foundation
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("""
-    TO FIB :N
-      IFELSE :N <= 1 [ OUTPUT :N ] [ OUTPUT (FIB :N - 1) + (FIB :N - 2) ]
-    END
-    """)
+    logoEngine.execute(
+        """
+        TO FIB :N
+          IFELSE :N <= 1 [ OUTPUT :N ] [ OUTPUT (FIB :N - 1) + (FIB :N - 2) ]
+        END
+        """)
 
     logoEngine.execute("FIB 1")
     #expect(logoEngine.lastResult == "1", "FIB 1 failed: \(logoEngine.lastResult ?? "nil")")
@@ -696,16 +706,17 @@ import Foundation
     #expect(logoEngine.variables["sum2"] == "10", "variables['sum2'] was \(logoEngine.variables["sum2"] ?? "nil")")
 
     // FOREVER & STOP
-    logoEngine.execute("""
-    TO TESTFOREVER
-      MAKE "N 0
-      FOREVER [
-        MAKE "N :N + 1
-        IF :N == 3 [ STOP ]
-      ]
-    END
-    TESTFOREVER
-    """)
+    logoEngine.execute(
+        """
+        TO TESTFOREVER
+          MAKE "N 0
+          FOREVER [
+            MAKE "N :N + 1
+            IF :N == 3 [ STOP ]
+          ]
+        END
+        TESTFOREVER
+        """)
     #expect(logoEngine.variables["n"] == "3", "variables['n'] was \(logoEngine.variables["n"] ?? "nil")")
 
     // TEST, IFTRUE, IFFALSE
@@ -717,11 +728,13 @@ import Foundation
 
     // FOR loop
     logoEngine.execute("MAKE \"FORSUM 0 FOR [ I 1 5 1 ] [ MAKE \"FORSUM :FORSUM + :I ]")
-    #expect(logoEngine.variables["forsum"] == "15", "variables['forsum'] was \(logoEngine.variables["forsum"] ?? "nil")")
+    #expect(
+        logoEngine.variables["forsum"] == "15", "variables['forsum'] was \(logoEngine.variables["forsum"] ?? "nil")")
 
     // DOTIMES loop
     logoEngine.execute("MAKE \"DOTSUM 0 DOTIMES [ I 5 ] [ MAKE \"DOTSUM :DOTSUM + :I ]")
-    #expect(logoEngine.variables["dotsum"] == "10", "variables['dotsum'] was \(logoEngine.variables["dotsum"] ?? "nil")")
+    #expect(
+        logoEngine.variables["dotsum"] == "10", "variables['dotsum'] was \(logoEngine.variables["dotsum"] ?? "nil")")
 
     // WHILE loop
     logoEngine.execute("MAKE \"W 0 WHILE :W < 5 [ MAKE \"W :W + 1 ]")
@@ -807,8 +820,8 @@ import Foundation
 
     // 1. Buffer Queries (1-indexed)
     editor.buffer.lines = ["First Line", "Second Line", "Third Line"]
-    editor.buffer.lineIndex = 1 // 2nd line
-    editor.buffer.columnIndex = 4 // 5th col
+    editor.buffer.lineIndex = 1  // 2nd line
+    editor.buffer.columnIndex = 4  // 5th col
 
     logoEngine.execute("ROW")
     #expect(logoEngine.lastResult == "2")
@@ -865,9 +878,3 @@ import Foundation
     logoEngine.execute("CLEARBUFFER")
     #expect(editor.buffer.lines == [""])
 }
-
-
-
-
-
-
