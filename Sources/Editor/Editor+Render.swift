@@ -32,38 +32,78 @@ extension Editor {
         }
 
         var output = ""
-        output += "\u{1B}[H" // Reset cursor to (1, 1)
+        output += "\u{1B}[?7l\u{1B}[H" // Disable terminal auto-wrap (DECAWM Reset) & Reset cursor to (1, 1)
 
-        // 1. Title Bar (Inverted Colors, centered filename)
-        let bufIndexStr = buffers.count > 1 ? " [\(currentBufferIndex + 1)/\(buffers.count)]" : ""
-        let leftText = "  se\(bufIndexStr)"
-        let centerText = buffer.filePath ?? L10n.newBuffer
-        let rightText = buffer.isModified ? "\(L10n.modified)  " : "  "
+        // 1. Title Bar (Inverted Colors, centered filename) or Top Menu Bar
+        if isMenuBarActive {
+            var rawMenuStr = " "
+            for (idx, cat) in menuBar.categories.enumerated() {
+                let catTitle = L10n[cat.titleKey]
+                if idx == menuBar.categoryIndex {
+                    rawMenuStr += " [ \(catTitle) ] "
+                } else {
+                    rawMenuStr += "  \(catTitle)   "
+                }
+            }
 
-        let leftW = leftText.displayWidth
-        let centerW = centerText.displayWidth
-        let rightW = rightText.displayWidth
+            var formattedMenu = "\u{1B}[47;30m "
+            for (idx, cat) in menuBar.categories.enumerated() {
+                let catTitle = L10n[cat.titleKey]
+                if idx == menuBar.categoryIndex {
+                    formattedMenu += "\u{1B}[1;37;44m [ \(catTitle) ] \u{1B}[0;47;30m "
+                } else {
+                    formattedMenu += "  \(catTitle)   "
+                }
+            }
+            let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
+            formattedMenu += String(repeating: " ", count: remainingSpaces) + "\u{1B}[0m\r\n"
+            output += formattedMenu
+        } else {
+            let bufIndexStr = buffers.count > 1 ? " [\(currentBufferIndex + 1)/\(buffers.count)]" : ""
+            let leftText = "  se\(bufIndexStr)"
+            let centerText = buffer.filePath ?? L10n.newBuffer
+            let rightText = buffer.isModified ? "\(L10n.modified)  " : "  "
 
-        let targetCenterStart = max(leftW + 1, (cols - centerW) / 2)
-        let leftPaddingCount = max(0, targetCenterStart - leftW)
-        let leftSideWidth = leftW + leftPaddingCount
+            let leftW = leftText.displayWidth
+            let centerW = centerText.displayWidth
+            let rightW = rightText.displayWidth
 
-        let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
+            let targetCenterStart = max(leftW + 1, (cols - centerW) / 2)
+            let leftPaddingCount = max(0, targetCenterStart - leftW)
+            let leftSideWidth = leftW + leftPaddingCount
 
-        let titleStr = leftText
-            + String(repeating: " ", count: leftPaddingCount)
-            + centerText
-            + String(repeating: " ", count: rightPaddingCount)
-            + rightText
+            let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
 
-        let paddedTitle = titleStr.paddedToDisplayWidth(cols)
-        output += "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
+            let titleStr = leftText
+                + String(repeating: " ", count: leftPaddingCount)
+                + centerText
+                + String(repeating: " ", count: rightPaddingCount)
+                + rightText
+
+            let paddedTitle = titleStr.paddedToDisplayWidth(cols)
+            output += "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
+        }
+
+        let (dropdownStartCol, dropdownBoxWidth, dropdownBoxLines) = generateDropdownOverlayLines(cols: cols)
 
         // 1.5 Optional WordStar Ruler Bar
         let gutterWidth = 5
         if displayConfig.showRuler {
             let rulerStr = generateWordStarRuler(width: textWidth)
-            output += "\u{1B}[K\u{1B}[90m     \(rulerStr)\u{1B}[0m\r\n"
+            output += "\u{1B}[K"
+            if isMenuBarActive && dropdownBoxLines.count > 0 {
+                let plainRulerLine = "     " + rulerStr
+                let sliced = sliceOverlayLine(
+                    baseFullLineStr: plainRulerLine,
+                    boxLine: dropdownBoxLines[0],
+                    dropdownStartCol: dropdownStartCol,
+                    dropdownBoxWidth: dropdownBoxWidth,
+                    cols: cols
+                )
+                output += sliced + "\r\n"
+            } else {
+                output += "\u{1B}[90m     \(rulerStr)\u{1B}[0m\r\n"
+            }
         }
 
         // 2. Main Edit Area (Virtual Lines Rendering)
@@ -71,35 +111,62 @@ extension Editor {
             let vIndex = topVLineIndex + i
             output += "\u{1B}[K" // Clear line
 
-            if vIndex < virtualLines.count {
-                let vLine = virtualLines[vIndex]
-                let isFirstSubLine = (vLine.subLineIndex == 0)
+            let boxIdx = displayConfig.showRuler ? (i + 1) : i
 
-                // Gutter (Line Number or Softwrap Indicator ↳)
+            if isMenuBarActive && boxIdx < dropdownBoxLines.count {
+                // Slice vLine text cleanly around dropdown box width
+                let vLineText = (vIndex < virtualLines.count) ? virtualLines[vIndex].text : ""
+                let isFirstSubLine = (vIndex < virtualLines.count) ? (virtualLines[vIndex].subLineIndex == 0) : true
+                let lineNumVal = (vIndex < virtualLines.count) ? virtualLines[vIndex].bufferLineIndex + 1 : 0
+
                 let lineNumStr: String
-                if isFirstSubLine {
-                    lineNumStr = String(format: "%4d ", vLine.bufferLineIndex + 1)
+                if lineNumVal > 0 {
+                    lineNumStr = isFirstSubLine ? String(format: "%4d ", lineNumVal) : "   ↳ "
                 } else {
-                    lineNumStr = "   ↳ "
+                    lineNumStr = "     "
                 }
 
-                output += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
-                let currentLanguage = displayConfig.enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
-                if let lang = currentLanguage, selectionMark == nil {
-                    output += syntaxHighlighter.highlight(line: vLine.text, syntax: lang)
-                } else {
-                    let chars = Array(vLine.text)
-                    for (cIdxInVLine, ch) in chars.enumerated() {
-                        let realCol = vLine.startCol + cIdxInVLine
-                        if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
-                            output += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
-                        } else {
-                            output += String(ch)
+                let fullLineStr = lineNumStr + vLineText
+                let sliced = sliceOverlayLine(
+                    baseFullLineStr: fullLineStr,
+                    boxLine: dropdownBoxLines[boxIdx],
+                    dropdownStartCol: dropdownStartCol,
+                    dropdownBoxWidth: dropdownBoxWidth,
+                    cols: cols
+                )
+                output += sliced + "\r\n"
+            } else {
+                var lineOutput = ""
+                if vIndex < virtualLines.count {
+                    let vLine = virtualLines[vIndex]
+                    let isFirstSubLine = (vLine.subLineIndex == 0)
+
+                    // Gutter (Line Number or Softwrap Indicator ↳)
+                    let lineNumStr: String
+                    if isFirstSubLine {
+                        lineNumStr = String(format: "%4d ", vLine.bufferLineIndex + 1)
+                    } else {
+                        lineNumStr = "   ↳ "
+                    }
+
+                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
+                    let currentLanguage = displayConfig.enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
+                    if let lang = currentLanguage, selectionMark == nil {
+                        lineOutput += syntaxHighlighter.highlight(line: vLine.text, syntax: lang)
+                    } else {
+                        let chars = Array(vLine.text)
+                        for (cIdxInVLine, ch) in chars.enumerated() {
+                            let realCol = vLine.startCol + cIdxInVLine
+                            if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                                lineOutput += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
+                            } else {
+                                lineOutput += String(ch)
+                            }
                         }
                     }
                 }
+                output += lineOutput + "\r\n"
             }
-            output += "\r\n"
         }
 
         // 3. Status / Prompt Line
@@ -307,8 +374,9 @@ extension Editor {
                 currentDisplayWidth += targetColWidth
             }
 
-            if currentDisplayWidth < cols {
-                result += String(repeating: " ", count: cols - currentDisplayWidth)
+            let targetCols = max(1, cols - 1)
+            if currentDisplayWidth < targetCols {
+                result += String(repeating: " ", count: targetCols - currentDisplayWidth)
             }
             return result
         }
@@ -417,5 +485,102 @@ extension Editor {
 
         buffer.lineIndex = newLineIdx
         buffer.columnIndex = newColIdx
+    }
+
+    /// Slices plain line text cleanly to insert a 2D dropdown box segment at specified start column and width.
+    func sliceOverlayLine(
+        baseFullLineStr: String,
+        boxLine: String,
+        dropdownStartCol: Int,
+        dropdownBoxWidth: Int,
+        cols: Int
+    ) -> String {
+        let chars = Array(baseFullLineStr)
+
+        var leftStr = ""
+        var w = 0
+        var cIdx = 0
+        while cIdx < chars.count && w < dropdownStartCol {
+            let chW = chars[cIdx].displayWidth
+            if w + chW > dropdownStartCol { break }
+            leftStr.append(chars[cIdx])
+            w += chW
+            cIdx += 1
+        }
+        if w < dropdownStartCol {
+            leftStr += String(repeating: " ", count: dropdownStartCol - w)
+        }
+
+        let rightStartCol = dropdownStartCol + dropdownBoxWidth
+        var rightStr = ""
+        var w2 = 0
+        var cIdx2 = 0
+        while cIdx2 < chars.count {
+            let chW = chars[cIdx2].displayWidth
+            if w2 >= rightStartCol {
+                rightStr.append(chars[cIdx2])
+            }
+            w2 += chW
+            cIdx2 += 1
+        }
+        let remainingRight = max(0, cols - rightStartCol - rightStr.displayWidth)
+        if remainingRight > 0 {
+            rightStr += String(repeating: " ", count: remainingRight)
+        }
+
+        return leftStr + boxLine + rightStr
+    }
+
+    /// Generates 2D dropdown box overlay lines, box width, and starting column offset for active menu category.
+    func generateDropdownOverlayLines(cols: Int) -> (startCol: Int, boxWidth: Int, boxLines: [String]) {
+        guard isMenuBarActive else { return (0, 0, []) }
+
+        var colOffset = 0
+        for idx in 0..<menuBar.categoryIndex {
+            let title = L10n[menuBar.categories[idx].titleKey]
+            colOffset += title.displayWidth + 4
+        }
+
+        let cat = menuBar.currentCategory
+        let items = cat.items
+        guard !items.isEmpty else { return (colOffset, 0, []) }
+
+        var formattedItems: [String] = []
+        for item in items {
+            let rawStr = L10n[item.titleKey]
+            let parts = rawStr.components(separatedBy: "\t")
+            let label = parts[0]
+            let shortcut = parts.count > 1 ? parts[1] : ""
+            formattedItems.append("\(label)\t\(shortcut)")
+        }
+
+        let maxLabelW = formattedItems.map { $0.components(separatedBy: "\t")[0].displayWidth }.max() ?? 10
+        let maxShortW = formattedItems.map { $0.components(separatedBy: "\t")[1].displayWidth }.max() ?? 0
+        let innerWidth = max(20, maxLabelW + maxShortW + 4)
+        let boxWidth = innerWidth + 2
+
+        let topBorder = "\u{1B}[47;30m┌" + String(repeating: "─", count: innerWidth) + "┐\u{1B}[0m"
+        let bottomBorder = "\u{1B}[47;30m└" + String(repeating: "─", count: innerWidth) + "┘\u{1B}[0m"
+
+        var boxLines: [String] = [topBorder]
+        for (iIdx, item) in items.enumerated() {
+            let rawStr = L10n[item.titleKey]
+            let parts = rawStr.components(separatedBy: "\t")
+            let label = parts[0]
+            let shortcut = parts.count > 1 ? parts[1] : ""
+
+            let spaceCount = max(1, innerWidth - label.displayWidth - shortcut.displayWidth - 2)
+            let itemLine = " " + label + String(repeating: " ", count: spaceCount) + shortcut + " "
+
+            if iIdx == menuBar.itemIndex {
+                boxLines.append("\u{1B}[47;30m│\u{1B}[1;37;44m\(itemLine)\u{1B}[0;47;30m│\u{1B}[0m")
+            } else {
+                boxLines.append("\u{1B}[47;30m│\(itemLine)│\u{1B}[0m")
+            }
+        }
+        boxLines.append(bottomBorder)
+
+        let clampedStartCol = max(0, min(colOffset, cols - boxWidth))
+        return (clampedStartCol, boxWidth, boxLines)
     }
 }

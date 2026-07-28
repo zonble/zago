@@ -228,7 +228,11 @@ extension Editor {
             editor.promptLogoMacro()
         })
 
-        commandRegistry.register(Command(id: "help.show", name: "Get Help", description: "Show full-screen help", keys: [.ctrl("G"), .f1]) { editor in
+        commandRegistry.register(Command(id: "menu.show", name: "Menu Bar", description: "Show top menu bar", keys: [.f1, .ctrl("M")]) { editor in
+            editor.toggleMenuBar()
+        })
+
+        commandRegistry.register(Command(id: "help.show", name: "Get Help", description: "Show full-screen help", keys: [.ctrl("G")]) { editor in
             let helpView = HelpView(terminal: editor.terminal)
             helpView.show()
         })

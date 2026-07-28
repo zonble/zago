@@ -170,3 +170,64 @@ import Foundation
     editor.processKey(.ctrl("I"))
     #expect(editor.buffer.lines[0] == "    ")
 }
+
+@Test func testMenuBarActivationAndNavigation() throws {
+    let editor = Editor()
+    #expect(editor.isMenuBarActive == false)
+
+    // Press ESC in normal mode (should NOT activate Menu Bar)
+    editor.processKey(.esc)
+    #expect(editor.isMenuBarActive == false)
+
+    // 1. Press F1 to activate Menu Bar
+    editor.processKey(.f1)
+    #expect(editor.isMenuBarActive == true)
+    #expect(editor.menuBar.categoryIndex == 0)
+
+    // 2. Press Right Arrow to switch to Edit category (index 1)
+    editor.processKey(.arrowRight)
+    #expect(editor.menuBar.categoryIndex == 1)
+
+    // 3. Press Down Arrow to navigate items in Edit menu
+    editor.processKey(.arrowDown)
+    #expect(editor.menuBar.itemIndex == 1)
+
+    // 4. Press letter 's' to jump to Search menu (index 2)
+    editor.processKey(.char("s"))
+    #expect(editor.menuBar.categoryIndex == 2)
+
+    // 5. Press ESC to close Menu Bar
+    editor.processKey(.esc)
+    #expect(editor.isMenuBarActive == false)
+
+    // 6. Press Ctrl+M to activate Menu Bar
+    editor.processKey(.ctrl("M"))
+    #expect(editor.isMenuBarActive == true)
+    editor.processKey(.esc)
+    #expect(editor.isMenuBarActive == false)
+
+    // 7. Test executing menu item via Enter
+    editor.processKey(.f1) // Activate menu
+    editor.menuBar.categoryIndex = 4 // Tools category
+    editor.menuBar.itemIndex = 0 // LOGO Macro
+    editor.processKey(.enter) // Execute
+    #expect(editor.isMenuBarActive == false)
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Enter on LOGO item should trigger LOGO prompt mode")
+    }
+
+    // 8. Test Goto Line from Search menu (category 2, item 2)
+    editor.currentPromptMode = .none
+    editor.processKey(.f1)
+    editor.menuBar.categoryIndex = 2 // Search category
+    editor.menuBar.itemIndex = 2 // Goto Line
+    editor.processKey(.enter)
+    #expect(editor.isMenuBarActive == false)
+    if case .gotoLine = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Enter on Goto Line item should trigger gotoLine prompt mode")
+    }
+}

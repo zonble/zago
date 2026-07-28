@@ -46,6 +46,10 @@ public final class Editor {
     var logoPromptHistory: [String] = []
     var logoHistoryIndex: Int = 0
 
+    // Menu Bar state
+    public var isMenuBarActive: Bool = false
+    public let menuBar = MenuBar()
+
     var undoStack: [UndoSnapshot] = []
     let maxUndoStackSize = 100
     var lastMutationTime: Date?

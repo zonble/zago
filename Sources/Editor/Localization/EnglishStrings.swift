@@ -84,7 +84,8 @@ public struct EnglishStrings {
         "helpview.file_5": "    M-, / M-<          Previous Buffer (switch to previous buffer)",
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
         "helpview.file_7": "    F4                 Save & Exit (save buffer and close/exit)",
-        "helpview.file_8": "    ^G / F1            Display this help reference page",
+        "helpview.file_8": "    ^G                 Display this help reference page",
+        "helpview.file_9": "    F1 / ^M            Toggle top Menu Bar",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 Prompt LOGO macro command line",
@@ -115,6 +116,40 @@ public struct EnglishStrings {
         "msg.inserted_lines": "[ Inserted %d lines ]",
         "msg.error_inserting_file": "Error inserting file: %@",
         "msg.error_saving_file": "Error saving file: %@",
-        "msg.replaced_word": "Replaced '%@' with '%@'"
+        "msg.replaced_word": "Replaced '%@' with '%@'",
+
+        // Menu Bar Titles
+        "menu.file": "File",
+        "menu.edit": "Edit",
+        "menu.search": "Search",
+        "menu.buffer": "Buffer",
+        "menu.tools": "Tools",
+        "menu.help": "Help",
+
+        // Menu Bar Items
+        "menu.file.new": "New Buffer\t^N",
+        "menu.file.open": "Read File...\t^R",
+        "menu.file.save": "Save File\t^O",
+        "menu.file.save_exit": "Save & Exit\tF4",
+        "menu.file.exit": "Exit Buffer / Editor\t^X",
+
+        "menu.edit.undo": "Undo\t^Z",
+        "menu.edit.mark": "Toggle Mark\t^M",
+        "menu.edit.cut": "Cut Text\t^K",
+        "menu.edit.paste": "UnCut (Paste)\t^U",
+        "menu.edit.delete_line": "Delete Line\tCtrl+BS",
+        "menu.edit.justify": "Justify Paragraph\t^J",
+
+        "menu.search.whereis": "WhereIs (Search)...\t^W",
+        "menu.search.spell": "Spell Checker...\t^T",
+        "menu.search.goto_line": "Goto Line...\t^/",
+
+        "menu.buffer.next": "Next Buffer\tM-.",
+        "menu.buffer.prev": "Previous Buffer\tM-,",
+
+        "menu.tools.logo": "LOGO Macro Prompt...\tAlt+L",
+        "menu.tools.ruler": "Toggle Ruler Bar",
+
+        "menu.help.show": "Show Help Reference\t^G"
     ]
 }

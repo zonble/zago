@@ -84,7 +84,8 @@ public struct TraditionalChineseStrings {
         "helpview.file_5": "    M-, / M-<          Previous Buffer (切換至上一個 Buffer)",
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
         "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
-        "helpview.file_8": "    ^G / F1            顯示本完整幫助說明頁面",
+        "helpview.file_8": "    ^G                 顯示本完整幫助說明頁面",
+        "helpview.file_9": "    F1 / ^M            開啟頂部主選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 呼叫 LOGO 巨集指令 Prompt",
@@ -115,6 +116,40 @@ public struct TraditionalChineseStrings {
         "msg.inserted_lines": "[ 已插入 %d 行內容 ]",
         "msg.error_inserting_file": "插入檔案錯誤：%@",
         "msg.error_saving_file": "儲存檔案錯誤：%@",
-        "msg.replaced_word": "已將 '%@' 替換為 '%@'"
+        "msg.replaced_word": "已將 '%@' 替換為 '%@'",
+
+        // Menu Bar Titles
+        "menu.file": "檔案(F)",
+        "menu.edit": "編輯(E)",
+        "menu.search": "搜尋(S)",
+        "menu.buffer": "Buffer(B)",
+        "menu.tools": "工具(T)",
+        "menu.help": "說明(H)",
+
+        // Menu Bar Items
+        "menu.file.new": "新建空白頁 (New)\t^N",
+        "menu.file.open": "讀取外部檔案 (Read)...\t^R",
+        "menu.file.save": "儲存檔案 (Save)\t^O",
+        "menu.file.save_exit": "儲存並關閉 (Save & Exit)\tF4",
+        "menu.file.exit": "關閉頁面 / 退出 (Exit)\t^X",
+
+        "menu.edit.undo": "復原 (Undo)\t^Z",
+        "menu.edit.mark": "標記選取區 (Mark)\t^M",
+        "menu.edit.cut": "剪下 (Cut)\t^K",
+        "menu.edit.paste": "貼上 (Paste/UnCut)\t^U",
+        "menu.edit.delete_line": "刪除整行 (Delete Line)\tCtrl+BS",
+        "menu.edit.justify": "重排與對齊段落 (Justify)\t^J",
+
+        "menu.search.whereis": "搜尋文字 (WhereIs)...\t^W",
+        "menu.search.spell": "拼字檢查 (Spell Check)...\t^T",
+        "menu.search.goto_line": "跳轉至指定行 (Goto Line)...\t^/",
+
+        "menu.buffer.next": "下一個 Buffer (Next)\tM-.",
+        "menu.buffer.prev": "上一個 Buffer (Prev)\tM-,",
+
+        "menu.tools.logo": "LOGO 巨集指令...\tAlt+L",
+        "menu.tools.ruler": "切換 WordStar 標尺規列",
+
+        "menu.help.show": "顯示完整說明手冊 (Help)\t^G"
     ]
 }
