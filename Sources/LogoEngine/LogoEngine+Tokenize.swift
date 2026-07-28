@@ -27,7 +27,26 @@ extension LogoEngine {
                     }
                     tokens.append(current)
                     current = ""
+                } else {
+                    i = script.index(after: i)
+                    while i < script.endIndex && !script[i].isWhitespace && !delims.contains(script[i]) {
+                        current.append(script[i])
+                        i = script.index(after: i)
+                    }
+                    tokens.append(current)
+                    current = ""
+                    continue
                 }
+            } else if ch == ";" {
+                if !current.isEmpty {
+                    tokens.append(current)
+                    current = ""
+                }
+                i = script.index(after: i)
+                while i < script.endIndex && !script[i].isNewline {
+                    i = script.index(after: i)
+                }
+                continue
             } else if delims.contains(ch) {
                 if ch == "-" && current.isEmpty {
                     let nextIdx = script.index(after: i)
@@ -150,7 +169,35 @@ extension LogoEngine {
         var leftVal: String
         if tokens[index] == "(" {
             index += 1
-            leftVal = evaluateExpression(tokens, index: &index)
+            if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
+               variadicPrim == .sum || variadicPrim == .min || variadicPrim == .max {
+                index += 1
+                var values: [Double] = []
+                while index < tokens.count && tokens[index] != ")" {
+                    let value = evaluateExpression(tokens, index: &index)
+                    values.append(contentsOf: numericValues(in: LogoValue.parse(value)))
+                    if index + 1 < tokens.count && tokens[index + 1] != ")" {
+                        index += 1
+                    } else {
+                        break
+                    }
+                }
+                if index + 1 < tokens.count && tokens[index + 1] == ")" {
+                    index += 1
+                }
+                switch variadicPrim {
+                case .sum:
+                    leftVal = formatNum(values.reduce(0, +))
+                case .min:
+                    leftVal = formatNum(values.min() ?? 0)
+                case .max:
+                    leftVal = formatNum(values.max() ?? 0)
+                default:
+                    leftVal = "0"
+                }
+            } else {
+                leftVal = evaluateExpression(tokens, index: &index)
+            }
             if index + 1 < tokens.count && tokens[index + 1] == ")" {
                 index += 1
             }

@@ -162,6 +162,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
 
     // Math & Bitwise Primitives
     case sum
+    case min
+    case max
     case difference
     case product
     case quotient
@@ -363,6 +365,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
 
         // Math
         (["SUM"], .sum),
+        (["MIN"], .min),
+        (["MAX"], .max),
         (["DIFFERENCE"], .difference),
         (["PRODUCT"], .product),
         (["QUOTIENT"], .quotient),

@@ -556,6 +556,36 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("SUM 10 20")
     #expect(logoEngine.lastResult == "30")
 
+    logoEngine.execute("SUM [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("SUM {1 2 3 4 5}")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("(SUM 1 2 3 4 5)")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("(SUM [1 2] 3 [4 5])")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("MIN 10 20")
+    #expect(logoEngine.lastResult == "10")
+
+    logoEngine.execute("MAX 10 20")
+    #expect(logoEngine.lastResult == "20")
+
+    logoEngine.execute("MIN [3 1 4 1 5]")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("MAX {3 1 4 1 5}")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("(MIN 3 1 4 1 5)")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("(MAX [3 1] 4 [1 5])")
+    #expect(logoEngine.lastResult == "5")
+
     logoEngine.execute("DIFFERENCE 20 5")
     #expect(logoEngine.lastResult == "15")
 
@@ -1182,6 +1212,39 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("CLEARBUFFER TYPE \"open area\" GOTO 1 1 FILL \".\"")
     #expect(editor.buffer.lines == ["open area"])
     #expect(editor.statusMessage == "[ Fill requires an enclosed region or explicit size ]")
+}
+
+@Test func testLogoSemicolonComments() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    #expect(logoEngine.tokenize("; whole line comment").isEmpty)
+    #expect(logoEngine.tokenize("TYPE \"A\" ; inline comment") == ["TYPE", "\"A\""])
+    #expect(logoEngine.tokenize("TYPE \"A;B\" ; inline comment") == ["TYPE", "\"A;B\""])
+    #expect(logoEngine.tokenize("TYPE \";") == ["TYPE", "\";"])
+    #expect(logoEngine.tokenize("REPEAT 2 [ TYPE # ; comment inside block\n ]") == [
+        "REPEAT", "2", "[", "TYPE", "#", "]"
+    ])
+
+    logoEngine.execute("""
+    ; setup comment
+    TYPE "A
+    ; skipped command: TYPE "x
+    TYPE "B ; inline comment
+    """)
+    #expect(editor.buffer.lines[0] == "AB")
+
+    logoEngine.execute("CLEARBUFFER TYPE \";")
+    #expect(editor.buffer.lines[0] == ";")
+
+    logoEngine.execute("CLEARBUFFER TYPE \"hello;world\" ; inline comment")
+    #expect(editor.buffer.lines[0] == "hello;world")
+
+    logoEngine.execute("CLEARBUFFER REPEAT 3 [ TYPE # ; keep loop counter, drop comment\n ]")
+    #expect(editor.buffer.lines[0] == "123")
+
+    logoEngine.execute("CLEARBUFFER TYPE \"#\"")
+    #expect(editor.buffer.lines[0] == "#")
 }
 
 @Test func testUnknownOrExpressionCommandDoesNotHang() {

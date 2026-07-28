@@ -461,10 +461,48 @@ extension LogoEngine {
         // ---------------------------------------------------------------------
         case .sum:
             index += 1
-            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            let first = evaluateExpression(tokens, index: &index)
+            let parsedFirst = LogoValue.parse(first)
+            if case .list = parsedFirst {
+                return formatNum(numericSum(of: parsedFirst))
+            }
+            if case .array = parsedFirst {
+                return formatNum(numericSum(of: parsedFirst))
+            }
+            let a = Double(first) ?? 0
             index += 1
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(a + b)
+
+        case .min:
+            index += 1
+            let first = evaluateExpression(tokens, index: &index)
+            let parsedFirst = LogoValue.parse(first)
+            if case .list = parsedFirst {
+                return formatNum(numericExtremum(of: parsedFirst, preferMaximum: false) ?? 0)
+            }
+            if case .array = parsedFirst {
+                return formatNum(numericExtremum(of: parsedFirst, preferMaximum: false) ?? 0)
+            }
+            let a = Double(first) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(Swift.min(a, b))
+
+        case .max:
+            index += 1
+            let first = evaluateExpression(tokens, index: &index)
+            let parsedFirst = LogoValue.parse(first)
+            if case .list = parsedFirst {
+                return formatNum(numericExtremum(of: parsedFirst, preferMaximum: true) ?? 0)
+            }
+            if case .array = parsedFirst {
+                return formatNum(numericExtremum(of: parsedFirst, preferMaximum: true) ?? 0)
+            }
+            let a = Double(first) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(Swift.max(a, b))
 
         case .difference:
             index += 1
@@ -1033,6 +1071,33 @@ extension LogoEngine {
             return "\(Int(val))"
         }
         return "\(val)"
+    }
+
+    internal func numericSum(of value: LogoValue) -> Double {
+        switch value {
+        case .string(let string):
+            return Double(string) ?? 0
+        case .list(let items), .array(let items):
+            return items.reduce(0) { $0 + numericSum(of: $1) }
+        }
+    }
+
+    internal func numericValues(in value: LogoValue) -> [Double] {
+        switch value {
+        case .string(let string):
+            return Double(string).map { [$0] } ?? []
+        case .list(let items), .array(let items):
+            return items.flatMap { numericValues(in: $0) }
+        }
+    }
+
+    internal func numericExtremum(of value: LogoValue, preferMaximum: Bool) -> Double? {
+        let values = numericValues(in: value)
+        guard var result = values.first else { return nil }
+        for value in values.dropFirst() {
+            result = preferMaximum ? Swift.max(result, value) : Swift.min(result, value)
+        }
+        return result
     }
 
     internal func logoIsTrue(_ val: String) -> Bool {

@@ -25,6 +25,20 @@
 
 ## 📖 Complete Command Reference & Vocabulary
 
+### Comments
+
+Use `;` for LOGO comments. A semicolon outside quoted text ignores the rest of the line:
+
+```logo
+; setup
+MAKE "n" 3
+REPEAT :n [ TYPE # ] ; prints 123
+TYPE ";"
+TYPE "hello;world"
+```
+
+`#` is not a comment marker in LOGO. It remains available as the `REPEAT` counter and as ordinary text.
+
 ### 1. Text Insertion, Deletion & Line Formatting
 
 | Command | Aliases | Syntax | Description | Example |
@@ -424,7 +438,9 @@ TYPE ITEM 2 :cells
 | :--- | :--- | :--- | :--- | :--- |
 | `TRUE`, `FALSE` | - | `TRUE`, `FALSE` | Constant values `1` and `0` | `TRUE` |
 | `AND`, `OR`, `XOR`, `NOT` | - | `AND a b`, `NOT a` | Boolean logical operations | `AND (LESS? 1 2) (GREATER? 5 3)` |
-| `SUM` | - | `SUM a b` | Addition ($a + b$) | `SUM 10 20` |
+| `SUM` | - | `SUM expr expr`, `(SUM expr ...)`, or `SUM list` | Addition; parenthesized form accepts multiple values | `SUM 10 20`, `(SUM 1 2 3)`, `SUM [1 2 3]` |
+| `MIN` | - | `MIN expr expr`, `(MIN expr ...)`, or `MIN list` | Minimum numeric value | `MIN 10 20`, `(MIN 3 1 4)`, `MIN [3 1 4]` |
+| `MAX` | - | `MAX expr expr`, `(MAX expr ...)`, or `MAX list` | Maximum numeric value | `MAX 10 20`, `(MAX 3 1 4)`, `MAX [3 1 4]` |
 | `DIFFERENCE` | - | `DIFFERENCE a b` | Subtraction ($a - b$) | `DIFFERENCE 50 20` |
 | `PRODUCT` | - | `PRODUCT a b` | Multiplication ($a \times b$) | `PRODUCT 4 5` |
 | `QUOTIENT` | `QUOTED` | `QUOTIENT a b` | Division ($a / b$) | `QUOTIENT 20 4` |
