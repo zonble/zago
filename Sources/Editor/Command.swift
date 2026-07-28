@@ -50,6 +50,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case macroLogo = "macro.logo"
     case menuShow = "menu.show"
     case helpShow = "help.show"
+    case tableToggle = "table.toggle"
 
     // Test & Custom
     case testCmd = "test.cmd"

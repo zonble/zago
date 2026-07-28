@@ -154,3 +154,23 @@ import Foundation
     // Verify prompt line contains '$' horizontal scroll indicator
     #expect(promptLine.contains("$"))
 }
+
+@Test func testMermaidAndDotSyntaxHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // Test Mermaid language detection & highlighting
+    let mermaidLang = highlighter.detectLanguage(for: "diagram.mmd")
+    #expect(mermaidLang != nil)
+    #expect(mermaidLang?.name == "Mermaid")
+
+    let mermaidHighlighted = highlighter.highlight(line: "flowchart TD", syntax: mermaidLang!)
+    #expect(mermaidHighlighted.contains("\u{1B}["))
+
+    // Test DOT language detection & highlighting
+    let dotLang = highlighter.detectLanguage(for: "graph.dot")
+    #expect(dotLang != nil)
+    #expect(dotLang?.name == "DOT")
+
+    let dotHighlighted = highlighter.highlight(line: "digraph G {", syntax: dotLang!)
+    #expect(dotHighlighted.contains("\u{1B}["))
+}

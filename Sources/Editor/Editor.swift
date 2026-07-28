@@ -50,6 +50,11 @@ public final class Editor {
     public var isMenuBarActive: Bool = false
     public let menuBar = MenuBar()
 
+    // Table Mode state
+    public var isTableModeActive: Bool = false
+    public var currentTableCell: TableCell? = nil
+    public var defaultTableBorderStyle: TableBorderStyle = .single
+
     var undoStack: [UndoSnapshot] = []
     let maxUndoStackSize = 100
     var lastMutationTime: Date?

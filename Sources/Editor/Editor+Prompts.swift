@@ -13,6 +13,7 @@ extension Editor {
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
         case logoMacro(completion: (String?) -> Void)
         case gotoLine(completion: (String?) -> Void)
+        case confirmCreateTable(completion: (Bool?) -> Void)
     }
 
     /// Processes key input events.
@@ -36,8 +37,12 @@ extension Editor {
             return
         }
 
+        if processTableModeKey(key) {
+            return
+        }
+
         if commandRegistry.dispatch(key: key, editor: self) {
-            buffer.clampCursor()
+            if isTableModeActive { clampTableModeCursor() } else { buffer.clampCursor() }
             return
         }
 
@@ -181,6 +186,18 @@ extension Editor {
             }
 
         case .confirmExternalReload(let completion):
+            switch key {
+            case .char("y"), .char("Y"), .enter:
+                currentPromptMode = .none
+                completion(true)
+            case .char("n"), .char("N"), .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(false)
+            default:
+                break
+            }
+
+        case .confirmCreateTable(let completion):
             switch key {
             case .char("y"), .char("Y"), .enter:
                 currentPromptMode = .none

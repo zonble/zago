@@ -151,17 +151,21 @@ extension Editor {
 
                     lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
                     let currentLanguage = displayConfig.enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
-                    if let lang = currentLanguage, selectionMark == nil {
-                        lineOutput += syntaxHighlighter.highlight(line: vLine.text, syntax: lang)
-                    } else {
-                        let chars = Array(vLine.text)
-                        for (cIdxInVLine, ch) in chars.enumerated() {
-                            let realCol = vLine.startCol + cIdxInVLine
-                            if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
-                                lineOutput += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
-                            } else {
-                                lineOutput += String(ch)
-                            }
+                    let chars = Array(vLine.text)
+                    for (cIdxInVLine, ch) in chars.enumerated() {
+                        let realCol = vLine.startCol + cIdxInVLine
+                        let isCellActive = isTableModeActive && currentTableCell != nil &&
+                            (vLine.bufferLineIndex >= currentTableCell!.innerMinLine && vLine.bufferLineIndex <= currentTableCell!.innerMaxLine) &&
+                            (realCol >= currentTableCell!.innerMinCol && realCol <= currentTableCell!.innerMaxCol)
+
+                        if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                            lineOutput += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
+                        } else if isCellActive {
+                            lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m" // Green background white text for active cell
+                        } else if let lang = currentLanguage, selectionMark == nil {
+                            lineOutput += syntaxHighlighter.highlight(line: String(ch), syntax: lang)
+                        } else {
+                            lineOutput += String(ch)
                         }
                     }
                 }
@@ -226,6 +230,9 @@ extension Editor {
             isConfirmation = true
         case .confirmExternalReload:
             promptPrefix = L10n["prompt.confirm_reload"]
+            isConfirmation = true
+        case .confirmCreateTable:
+            promptPrefix = "Create 3x3 table at cursor? (y/n): "
             isConfirmation = true
         case .search:
             let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"

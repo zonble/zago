@@ -51,5 +51,6 @@ extension Editor {
         commandRegistry.register(LogoMacroCommand())
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
+        commandRegistry.register(ToggleTableModeCommand())
     }
 }

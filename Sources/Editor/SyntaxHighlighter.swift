@@ -67,7 +67,9 @@ public final class SyntaxHighlighter {
             ShellSyntaxDefinition(),
             ReSTSyntaxDefinition(),
             OrgModeSyntaxDefinition(),
-            LogoSyntaxDefinition()
+            LogoSyntaxDefinition(),
+            MermaidSyntaxDefinition(),
+            DotSyntaxDefinition()
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
