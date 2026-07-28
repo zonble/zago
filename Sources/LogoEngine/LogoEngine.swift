@@ -39,6 +39,7 @@ public final class LogoEngine {
     internal static let keywords: Set<String> = [
         "MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW",
         "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND",
+        "DELETELINE", "DELLINE", "KILLLINE", "DL",
         "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
         "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP",
         "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT",
@@ -218,6 +219,25 @@ public final class LogoEngine {
                 let count = Int(valStr) ?? 1
                 for _ in 0..<count {
                     delegate.logoEngineDidRequestBackspace(self)
+                }
+
+            case "DELETELINE", "DELLINE", "KILLLINE", "DL":
+                index += 1
+                var count = 1
+                if index < tokens.count {
+                    let nextToken = tokens[index]
+                    let nextUpper = nextToken.uppercased()
+                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" {
+                        let valStr = evaluateExpression(tokens, index: &index)
+                        count = max(1, min(Int(valStr) ?? 1, 1000))
+                    } else {
+                        index -= 1
+                    }
+                } else {
+                    index -= 1
+                }
+                for _ in 0..<count {
+                    delegate.logoEngineDidRequestDeleteLine(self)
                 }
 
             case "MOVE":

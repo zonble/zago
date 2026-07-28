@@ -22,6 +22,7 @@ public protocol LogoEngineDelegate: AnyObject {
     func logoEngine(_ engine: LogoEngine, didRequestSetStatusMessage message: String)
     func logoEngineDidRequestDelete(_ engine: LogoEngine)
     func logoEngineDidRequestBackspace(_ engine: LogoEngine)
+    func logoEngineDidRequestDeleteLine(_ engine: LogoEngine)
     func logoEngine(_ engine: LogoEngine, didRequestMoveCursorVirtual deltaRow: Int)
     func logoEngine(_ engine: LogoEngine, didRequestDispatchCommand command: LogoEditorCommand)
     func logoEngine(_ engine: LogoEngine, didRequestSearch query: String)

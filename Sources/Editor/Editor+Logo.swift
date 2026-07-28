@@ -67,6 +67,10 @@ extension Editor: LogoEngineDelegate {
         buffer.backspace()
     }
 
+    public func logoEngineDidRequestDeleteLine(_ engine: LogoEngine) {
+        buffer.deleteLine()
+    }
+
     public func logoEngine(_ engine: LogoEngine, didRequestMoveCursorVirtual deltaRow: Int) {
         moveCursorVirtual(deltaRow: deltaRow)
     }

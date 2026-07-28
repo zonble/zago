@@ -116,7 +116,7 @@ import Foundation
     // 14. LOGO LINE and NEWLINE Command test
     let lineEditor = Editor()
     logoEngine.delegate = lineEditor
-    logoEngine.execute("TYPE \"Header\" NL 2 LINE 10 TYPE \"Footer\"")
+    logoEngine.execute("TYPE \"Header\" NL 2 LINE 10 NL TYPE \"Footer\"")
     #expect(lineEditor.buffer.lines.count == 4)
     #expect(lineEditor.buffer.lines[0] == "Header")
     #expect(lineEditor.buffer.lines[1] == "")
@@ -425,5 +425,19 @@ import Foundation
     let currentYear = String(Calendar.current.component(.year, from: Date()))
     #expect(logoEngine.lastResult == currentYear)
 }
+
+@Test func testDeleteLineLogoCommand() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["Line 1", "Line 2", "Line 3", "Line 4"]
+    editor.buffer.lineIndex = 1
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("DELETELINE")
+    #expect(editor.buffer.lines == ["Line 1", "Line 3", "Line 4"])
+
+    logoEngine.execute("DL 2")
+    #expect(editor.buffer.lines == ["Line 1"])
+}
+
 
 

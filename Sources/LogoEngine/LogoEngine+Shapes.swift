@@ -54,7 +54,6 @@ extension LogoEngine {
 
         editor.logoEngine(self, setLineAt: startLine, text: String(currentChars))
         editor.logoEngine(self, didUpdateColumnIndex: startCol + length)
-        editor.logoEngineDidRequestInsertNewline(self)
     }
 
     internal func executeVlineCommand(_ tokens: [String], index: inout Int) {
