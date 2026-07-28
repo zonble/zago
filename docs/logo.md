@@ -436,7 +436,7 @@ TYPE ITEM 2 :cells
 | `SQRT`, `EXP` | - | `SQRT a`, `EXP a` | Square root and exponential $e^a$ | `SQRT 16` |
 | `LOG10`, `LN` | - | `LOG10 a`, `LN a` | Logarithm base 10 and natural log | `LOG10 100` |
 | `SIN`, `COS`, `TAN` | - | `SIN deg`, `COS deg` | Trigonometric functions (degrees) | `SIN 90` |
-| `ISEQ` | - | `ISEQ start end` | Generates integer sequence list | `ISEQ 1 5` $\rightarrow$ `[1 2 3 4 5]` |
+| `RANGE` | `ISEQ` | `RANGE start end [step]` | Generates inclusive integer sequence list | `RANGE 1 5` $\rightarrow$ `[1 2 3 4 5]`, `RANGE 1 10 2` |
 | `RSEQ` | - | `RSEQ start end count` | Generates real number sequence list | `RSEQ 0 1 5` |
 | `RANDOM` | - | `RANDOM max [min]` | Generates random integer in range | `RANDOM 100`, `RANDOM 10 20` |
 | `BITAND`, `BITOR`, `BITXOR`, `BITNOT` | - | `BITAND a b` | Bitwise logic operations | `BITAND 5 3` |
@@ -512,6 +512,23 @@ FOREACH ["alpha "beta "gamma] [
 - alpha
 - beta
 - gamma
+```
+
+Use `RANGE` when you want to iterate over numbers:
+
+```logo
+FOREACH RANGE 1 3 [
+  TYPE ?
+  NL
+]
+```
+
+*Output:*
+
+```text
+1
+2
+3
 ```
 
 `MAP` is for transformations. It returns a new list:

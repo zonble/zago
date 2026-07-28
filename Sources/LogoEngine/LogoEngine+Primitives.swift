@@ -598,7 +598,15 @@ extension LogoEngine {
             let start = Int(evaluateExpression(tokens, index: &index)) ?? 1
             index += 1
             let end = Int(evaluateExpression(tokens, index: &index)) ?? start
-            let seq = (start <= end) ? Array(start...end) : Array(stride(from: start, through: end, by: -1))
+            var step = start <= end ? 1 : -1
+            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
+                index += 1
+                let parsedStep = Int(evaluateExpression(tokens, index: &index)) ?? step
+                if parsedStep != 0 {
+                    step = parsedStep
+                }
+            }
+            let seq = Array(stride(from: start, through: end, by: step))
             return LogoValue.list(seq.map { LogoValue.string("\($0)") }).description
 
         case .rseq:

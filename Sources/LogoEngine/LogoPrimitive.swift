@@ -385,7 +385,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["RADSIN"], .radSin),
         (["RADCOS"], .radCos),
         (["RADTAN"], .radTan),
-        (["ISEQ"], .iseq),
+        (["RANGE", "ISEQ"], .iseq),
         (["RSEQ"], .rseq),
         (["RANDOM"], .random),
         (["RERANDOM"], .rerandom),

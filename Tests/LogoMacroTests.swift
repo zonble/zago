@@ -650,6 +650,15 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("ISEQ 1 5")
     #expect(logoEngine.lastResult == "[1 2 3 4 5]")
 
+    logoEngine.execute("RANGE 1 5")
+    #expect(logoEngine.lastResult == "[1 2 3 4 5]")
+
+    logoEngine.execute("RANGE 5 1")
+    #expect(logoEngine.lastResult == "[5 4 3 2 1]")
+
+    logoEngine.execute("RANGE 1 10 2")
+    #expect(logoEngine.lastResult == "[1 3 5 7 9]")
+
     logoEngine.execute("RSEQ 0 10 3")
     #expect(logoEngine.lastResult == "[0 5 10]")
 
