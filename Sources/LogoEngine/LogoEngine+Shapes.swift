@@ -9,15 +9,15 @@ extension LogoEngine {
 
         if index < tokens.count {
             let firstToken = tokens[index]
-            let upperFirst = firstToken.uppercased()
 
-            if (!LogoEngine.keywords.contains(upperFirst) || firstToken.hasPrefix("\"")) && firstToken != "]" {
+            if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 length = max(1, min(Int(valStr) ?? 40, 200))
 
                 if index + 1 < tokens.count {
-                    let nextUpper = tokens[index + 1].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
+                    let nextToken = tokens[index + 1]
+                    let nextUpper = nextToken.uppercased()
+                    if !LogoEngine.isKeyword(nextToken) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
                         index += 1
                         let sStr = evaluateExpression(tokens, index: &index)
                         if sStr == "double" { styleChar = "═" }
@@ -64,15 +64,15 @@ extension LogoEngine {
 
         if index < tokens.count {
             let firstToken = tokens[index]
-            let upperFirst = firstToken.uppercased()
 
-            if (!LogoEngine.keywords.contains(upperFirst) || firstToken.hasPrefix("\"")) && firstToken != "]" {
+            if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 height = max(1, min(Int(valStr) ?? 5, 100))
 
                 if index + 1 < tokens.count {
-                    let nextUpper = tokens[index + 1].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
+                    let nextToken = tokens[index + 1]
+                    let nextUpper = nextToken.uppercased()
+                    if !LogoEngine.isKeyword(nextToken) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
                         index += 1
                         let sStr = evaluateExpression(tokens, index: &index)
                         if sStr == "double" { styleChar = "║" }
@@ -115,9 +115,8 @@ extension LogoEngine {
         var count = 1
         if index < tokens.count {
             let firstToken = tokens[index]
-            let upperFirst = firstToken.uppercased()
 
-            if !LogoEngine.keywords.contains(upperFirst) && firstToken != "]" {
+            if !LogoEngine.isKeyword(firstToken) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 count = max(1, min(Int(valStr) ?? 1, 50))
             } else {
@@ -161,7 +160,7 @@ extension LogoEngine {
             while index + 1 < tokens.count {
                 let nextToken = tokens[index + 1]
                 let nextUpper = nextToken.uppercased()
-                if nextToken == "]" || nextToken == ")" || (LogoEngine.keywords.contains(nextUpper) && !boxSubKeywords.contains(nextUpper)) { break }
+                if nextToken == "]" || nextToken == ")" || (LogoEngine.isKeyword(nextToken) && !boxSubKeywords.contains(nextUpper)) { break }
                 index += 1
                 let val = unquote(tokens[index])
                 let valLower = val.lowercased()
@@ -191,7 +190,7 @@ extension LogoEngine {
         while index + 1 < tokens.count {
             let nextToken = tokens[index + 1]
             let nextUpper = nextToken.uppercased()
-            if nextToken == "]" || nextToken == ")" || (LogoEngine.keywords.contains(nextUpper) && !boxSubKeywords.contains(nextUpper)) { break }
+            if nextToken == "]" || nextToken == ")" || (LogoEngine.isKeyword(nextToken) && !boxSubKeywords.contains(nextUpper)) { break }
             index += 1
             let val = unquote(tokens[index])
             let valLower = val.lowercased()

@@ -48,42 +48,46 @@ public final class LogoEngine {
     public var isPenDown: Bool = true
     public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
-    internal static let statementCommands: Set<String> = [
-        "MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW",
-        "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY",
-        "DELETELINE", "DELLINE", "KILLLINE", "DL",
-        "REPEAT", "TO", "END", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
-        "NEWLINE", "NL", "ENTER", "PD", "PENDOWN", "PU", "PENUP",
-        "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT",
-        "NEXTBUFFER", "PREVBUFFER", "OPENBUFFER", "CLOSEBUFFER", "SETLINE", "GOTOLINE", "SETROW",
-        "GOTOCOL", "SETCOL", "CLEARBUFFER", "ERASEBUFFER",
-        "IF", "IFELSE", "OUTPUT", "OP", "RUN", "RUNRESULT", "FOREVER",
-        "TEST", "IFTRUE", "IFT", "IFFALSE", "IFF", "STOP", "CATCH", "THROW",
-        "WAIT", "BYE", "IGNORE", "FOR", "DOTIMES", "DO.WHILE", "WHILE", "DO.UNTIL",
-        "UNTIL", "CASE", "COND", "APPLY", "INVOKE", "FOREACH", "MAP", "MAP.SE",
-        "FILTER", "REDUCE", "CROSSMAP", "SEARCH"
+    internal static let statementCommands: Set<LogoPrimitive> = [
+        .make, .set, .type, .show, .delete, .backspace, .deleteLine,
+        .move, .mark, .cut, .uncut, .justify, .goto, .box, .line, .hr, .vline, .vhr,
+        .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
+        .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .setline, .gotoline,
+        .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
+        .runResult, .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
+        .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
+        .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
+        .bye, .ignore, .apply, .invoke, .foreach, .map, .mapSe, .filter, .reduce,
+        .crossmap, .to, .exec, .search
     ]
 
-    internal static let expressionPrimitives: Set<String> = [
-        "DATE", "TIME", "WORD", "LIST", "SENTENCE", "SE", "FPUT", "LPUT", "ARRAY",
-        "LISTTOARRAY", "ARRAYTOLIST", "COMBINE", "REVERSE", "GENSYM", "FIRST",
-        "LAST", "FIRSTS", "BUTFIRST", "BF", "BUTLAST", "BL", "BUTFIRSTS", "BFS",
-        "ITEM", "PICK", "REMOVE", "REMDUP", "QUOTED", "SPLIT", "SETITEM",
-        ".SETFIRST", ".SETBF", "PUSH", "POP", "QUEUE", "DEQUEUE", "WORD?", "WORDP",
-        "LIST?", "LISTP", "ARRAY?", "ARRAYP", "NUMBER?", "NUMBERP", "EMPTY?", "EMPTYP",
-        "EQUAL?", "EQUALP", "NOTEQUAL?", "NOTEQUALP", "BEFORE?", "BEFOREP", ".EQ",
-        "MEMBER?", "MEMBERP", "SUBSTRING?", "SUBSTRINGP", "COUNT", "ASCII", "CHAR", "MEMBER", "UPPERCASE", "LOWERCASE",
-        "STANDOUT", "PARSE", "RUNPARSE",
-        "LESSP", "LESS?", "GREATERP", "GREATER?", "LESSEQUALP", "LESSEQUAL?", "GREATEREQUALP", "GREATEREQUAL?",
-        "SUM", "DIFFERENCE", "PRODUCT", "QUOTIENT", "POWER", "REMAINDER", "MODULO", "MINUS", "ABS", "INT", "ROUND",
-        "SQRT", "EXP", "LOG10", "LN", "ARCTAN", "SIN", "COS", "TAN", "RADARCTAN", "RADSIN", "RADCOS", "RADTAN",
-        "ISEQ", "RSEQ", "RANDOM", "RERANDOM", "FORM", "BITAND", "BITOR", "BITXOR", "BITNOT", "ASHIFT", "LSHIFT",
-        "TRUE", "FALSE", "AND", "OR", "XOR", "NOT", "REPCOUNT", "#", "ERROR", ".MAYBEOUTPUT", "FIND",
-        "BUFFERS", "BUFFERLIST", "BUFFER", "SETBUFFER", "LINE", "GETLINE", "ROW", "LINE.NO", "COL", "COL.NO",
-        "LINECOUNT", "LINES", "BUFFERTEXT", "SELECTION", "SELECTEDTEXT", "MODIFIED?", "CHANGED?", "FILENAME", "BUFFERNAME"
+    internal static let expressionPrimitives: Set<LogoPrimitive> = [
+        .date, .time, .word, .list, .sentence, .fput, .lput, .array,
+        .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
+        .last, .firsts, .butFirst, .butLast, .butFirsts, .item,
+        .pick, .remove, .remdup, .quoted, .split, .setItem,
+        .push, .pop, .dequeue, .isWord, .isList, .isArray,
+        .isNumber, .isEmpty, .isEqual, .isNotEqual, .isBefore,
+        .isMember, .isSubstring, .count, .ascii, .char, .member, .uppercase, .lowercase,
+        .standout, .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
+        .sum, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
+        .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
+        .iseq, .rseq, .random, .rerandom, .form, .bitAnd, .bitOr, .bitXor, .bitNot, .ashift, .lshift,
+        .trueVal, .falseVal, .andLogic, .orLogic, .xorLogic, .notLogic,
+        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find
     ]
 
-    internal static let keywords: Set<String> = statementCommands.union(expressionPrimitives)
+    internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
+
+    internal static func isKeyword(_ token: String) -> Bool {
+        guard let prim = LogoPrimitive.from(token) else { return false }
+        return keywords.contains(prim)
+    }
+
+    internal static func isStatementCommand(_ token: String) -> Bool {
+        guard let prim = LogoPrimitive.from(token) else { return false }
+        return statementCommands.contains(prim)
+    }
 
     public var lastResult: String? = nil
     public var repCount: Int = 0
@@ -124,7 +128,6 @@ public final class LogoEngine {
         guard let delegate = self.delegate else { return }
         while index < tokens.count && frameReturn == nil {
             let token = tokens[index]
-            let upper = token.uppercased()
 
             if token == "]" {
                 return
@@ -239,8 +242,7 @@ public final class LogoEngine {
                     let setting = unquote(tokens[index]).lowercased()
                     var arg = ""
                     if index + 1 < tokens.count {
-                        let nextUpper = tokens[index + 1].uppercased()
-                        if !LogoEngine.keywords.contains(nextUpper) {
+                        if !LogoEngine.isKeyword(tokens[index + 1]) {
                             index += 1
                             arg = evaluateExpression(tokens, index: &index).lowercased()
                         }
@@ -251,16 +253,14 @@ public final class LogoEngine {
             case .type:
                 index += 1
                 while index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if LogoEngine.statementCommands.contains(nextUpper) || tokens[index] == "]" || tokens[index] == ")" {
+                    if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
                         index -= 1
                         break
                     }
                     let text = evaluateExpression(tokens, index: &index)
                     delegate.logoEngine(self, performAction: .insertText(text))
                     if index + 1 < tokens.count {
-                        let peekUpper = tokens[index + 1].uppercased()
-                        if LogoEngine.statementCommands.contains(peekUpper) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
+                        if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
                             break
                         }
                     }
@@ -271,16 +271,14 @@ public final class LogoEngine {
                 index += 1
                 var parts: [String] = []
                 while index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if LogoEngine.statementCommands.contains(nextUpper) || tokens[index] == "]" || tokens[index] == ")" {
+                    if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
                         index -= 1
                         break
                     }
                     let text = evaluateExpression(tokens, index: &index)
                     parts.append(text)
                     if index + 1 < tokens.count {
-                        let peekUpper = tokens[index + 1].uppercased()
-                        if LogoEngine.statementCommands.contains(peekUpper) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
+                        if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
                             break
                         }
                     }
@@ -311,8 +309,7 @@ public final class LogoEngine {
                 var count = 1
                 if index < tokens.count {
                     let nextToken = tokens[index]
-                    let nextUpper = nextToken.uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" {
+                    if !LogoEngine.isKeyword(nextToken) && nextToken != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         count = max(1, min(Int(valStr) ?? 1, 1000))
                     } else {
@@ -350,8 +347,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .updateColumnIndex(0))
 
                     if index + 1 < tokens.count {
-                        let nextUpper = tokens[index + 1].uppercased()
-                        if !LogoEngine.keywords.contains(nextUpper) {
+                        if !LogoEngine.isKeyword(tokens[index + 1]) {
                             index += 1
                             let colStr = evaluateExpression(tokens, index: &index)
                             let lineText = (delegate.logoEngine(self, queryState: .lineAt(lineNum)) as? String) ?? ""
@@ -400,7 +396,7 @@ public final class LogoEngine {
                 index += 1
                 if index < tokens.count {
                     let firstVal = evaluateExpression(tokens, index: &index)
-                    if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                    if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                         let line1Based = Int(firstVal) ?? 1
                         index += 1
                         let textVal = unquote(evaluateExpression(tokens, index: &index))
@@ -510,8 +506,7 @@ public final class LogoEngine {
                 index += 1
                 var angle = 90
                 if index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         angle = Int(valStr) ?? 90
                     } else {
@@ -526,8 +521,7 @@ public final class LogoEngine {
                 index += 1
                 var angle = 90
                 if index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         angle = Int(valStr) ?? 90
                     } else {
@@ -542,8 +536,7 @@ public final class LogoEngine {
                 index += 1
                 var dist = 1
                 if index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         dist = max(1, min(Int(valStr) ?? 1, 200))
                     } else {
@@ -558,8 +551,7 @@ public final class LogoEngine {
                 index += 1
                 var dist = 1
                 if index < tokens.count {
-                    let nextUpper = tokens[index].uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         dist = max(1, min(Int(valStr) ?? 1, 200))
                     } else {
@@ -1057,7 +1049,7 @@ public final class LogoEngine {
                     }
                     if !inner.isEmpty {
                         let firstUpper = inner[0].uppercased()
-                        if LogoEngine.keywords.contains(firstUpper) && firstUpper != "DATE" && firstUpper != "TIME" {
+                        if LogoEngine.isKeyword(inner[0]) && firstUpper != "DATE" && firstUpper != "TIME" {
                             var subReturn: String? = nil
                             var sIdx = 0
                             executeTokens(inner, index: &sIdx, frameReturn: &subReturn)

@@ -240,8 +240,7 @@ extension LogoEngine {
                 var format = "yyyy-MM-dd"
                 if index + 1 < tokens.count {
                     let nextToken = tokens[index + 1]
-                    let nextUpper = nextToken.uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                    if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
                         index += 1
                         let customFmt = unquote(nextToken)
                         if !customFmt.isEmpty {
@@ -255,8 +254,7 @@ extension LogoEngine {
                 var format = "HH:mm:ss"
                 if index + 1 < tokens.count {
                     let nextToken = tokens[index + 1]
-                    let nextUpper = nextToken.uppercased()
-                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                    if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
                         index += 1
                         let customFmt = unquote(nextToken)
                         if !customFmt.isEmpty {

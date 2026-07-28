@@ -410,7 +410,7 @@ extension LogoEngine {
             return "[]"
 
         case .buffer:
-            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                 index += 1
                 let targetVal = evaluateExpression(tokens, index: &index)
                 if let idx1Based = Int(targetVal) {
@@ -434,7 +434,7 @@ extension LogoEngine {
 
         case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
-            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                 index += 1
                 let nStr = evaluateExpression(tokens, index: &index)
                 if let n1Based = Int(nStr) {
@@ -483,7 +483,7 @@ extension LogoEngine {
         case .quotient, .quoted:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                 index += 1
                 let b = Double(evaluateExpression(tokens, index: &index)) ?? 1
                 return formatNum(b != 0 ? a / b : 0)
@@ -619,7 +619,7 @@ extension LogoEngine {
         case .random:
             index += 1
             let firstVal = Int(evaluateExpression(tokens, index: &index)) ?? 10
-            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                 index += 1
                 let secondVal = Int(evaluateExpression(tokens, index: &index)) ?? firstVal
                 let low = min(firstVal, secondVal)
@@ -961,8 +961,6 @@ extension LogoEngine {
         default:
             return nil
         }
-
-        return nil
     }
 
     internal func formatNum(_ val: Double) -> String {
