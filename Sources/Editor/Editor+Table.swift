@@ -55,6 +55,10 @@ extension Editor {
             clampTableModeCursor()
             return true
 
+        case .ctrl("j"), .ctrl("J"):
+            centerCellText()
+            return true
+
         case .enter:
             if buffer.lineIndex < cell.innerMaxLine {
                 buffer.lineIndex += 1
@@ -70,17 +74,28 @@ extension Editor {
                 saveUndoSnapshot()
                 var lineChars = Array(buffer.lines[buffer.lineIndex])
                 let deleteIdx = buffer.columnIndex - 1
-                if deleteIdx >= 0 && deleteIdx < lineChars.count {
+                if deleteIdx >= cell.innerMinCol && deleteIdx < lineChars.count {
                     lineChars.remove(at: deleteIdx)
                     let insertSpaceIdx = min(cell.innerMaxCol, lineChars.count)
                     lineChars.insert(" ", at: insertSpaceIdx)
                     buffer.lines[buffer.lineIndex] = String(lineChars)
                     buffer.columnIndex = max(cell.innerMinCol, deleteIdx)
                 }
-            } else if buffer.lineIndex > cell.innerMinLine {
-                buffer.lineIndex -= 1
-                let line = buffer.lines[buffer.lineIndex]
-                buffer.columnIndex = min(cell.innerMaxCol, line.count)
+            }
+            clampTableModeCursor()
+            return true
+
+        case .delete:
+            if buffer.columnIndex <= cell.innerMaxCol {
+                saveUndoSnapshot()
+                var lineChars = Array(buffer.lines[buffer.lineIndex])
+                let deleteIdx = buffer.columnIndex
+                if deleteIdx >= cell.innerMinCol && deleteIdx <= cell.innerMaxCol && deleteIdx < lineChars.count {
+                    lineChars.remove(at: deleteIdx)
+                    let insertSpaceIdx = min(cell.innerMaxCol, lineChars.count)
+                    lineChars.insert(" ", at: insertSpaceIdx)
+                    buffer.lines[buffer.lineIndex] = String(lineChars)
+                }
             }
             clampTableModeCursor()
             return true
@@ -346,5 +361,38 @@ extension Editor {
                 }
             }
         }
+    }
+
+    /// Centers text inside each line of the current table cell.
+    public func centerCellText() {
+        guard let cell = currentTableCell else { return }
+        saveUndoSnapshot()
+
+        for lineIdx in cell.innerMinLine...cell.innerMaxLine {
+            guard lineIdx < buffer.lines.count else { continue }
+            let fullLine = buffer.lines[lineIdx]
+            let lineChars = Array(fullLine)
+
+            guard cell.innerMinCol <= cell.innerMaxCol && cell.innerMaxCol < lineChars.count else { continue }
+
+            let cellContent = String(lineChars[cell.innerMinCol...cell.innerMaxCol])
+            let trimmed = cellContent.trimmingCharacters(in: .whitespaces)
+
+            let innerWidth = cell.innerMaxCol - cell.innerMinCol + 1
+            let contentWidth = trimmed.displayWidth
+
+            if contentWidth <= innerWidth {
+                let totalPadding = innerWidth - contentWidth
+                let leftPadding = totalPadding / 2
+                let rightPadding = totalPadding - leftPadding
+
+                let newCellText = String(repeating: " ", count: leftPadding) + trimmed + String(repeating: " ", count: rightPadding)
+                let prefix = String(lineChars[0..<cell.innerMinCol])
+                let suffix = String(lineChars[(cell.innerMaxCol + 1)..<lineChars.count])
+
+                buffer.lines[lineIdx] = prefix + newCellText + suffix
+            }
+        }
+        setStatusMessage("[ Cell Text Centered (^J) ]")
     }
 }

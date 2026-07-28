@@ -52,5 +52,6 @@ extension Editor {
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(ToggleTableModeCommand())
+        commandRegistry.register(CycleTableStyleCommand())
     }
 }

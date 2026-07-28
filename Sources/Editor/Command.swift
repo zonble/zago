@@ -51,6 +51,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case tableToggle = "table.toggle"
+    case tableStyle = "table.style"
 
     // Test & Custom
     case testCmd = "test.cmd"

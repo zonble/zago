@@ -148,6 +148,8 @@ public struct EnglishStrings {
         "menu.buffer.prev": "Previous Buffer\tM-,",
 
         "menu.tools.logo": "LOGO Macro Prompt...\tAlt+L",
+        "menu.tools.table_mode": "Toggle Table Mode\tAlt+T",
+        "menu.tools.table_style": "Cycle Table Style\tAlt+S",
         "menu.tools.ruler": "Toggle Ruler Bar",
 
         "menu.help.show": "Show Help Reference\t^G"

@@ -148,6 +148,8 @@ public struct TraditionalChineseStrings {
         "menu.buffer.prev": "上一個 Buffer (Prev)\tM-,",
 
         "menu.tools.logo": "LOGO 巨集指令...\tAlt+L",
+        "menu.tools.table_mode": "切換表格隔離模式 (Table Mode)\tAlt+T",
+        "menu.tools.table_style": "切換預設表格風格 (Table Style)\tAlt+S",
         "menu.tools.ruler": "切換 WordStar 標尺規列",
 
         "menu.help.show": "顯示完整說明手冊 (Help)\t^G"

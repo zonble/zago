@@ -312,3 +312,71 @@ import Foundation
     #expect(editor.currentTableCell?.minLine == 0)
     #expect(editor.currentTableCell?.minCol == 17)
 }
+
+@Test func testCycleTableStyleCommand() throws {
+    let editor = Editor()
+    #expect(editor.defaultTableBorderStyle == .single)
+
+    // Press Alt+S to cycle table style
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultTableBorderStyle == .double)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultTableBorderStyle == .ascii)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultTableBorderStyle == .markdown)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultTableBorderStyle == .single)
+}
+
+@Test func testTableModeCtrlJCenterCellText() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┐",
+        "│ Hello          │",
+        "└────────────────┘"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // Press Ctrl+J (^J) inside Table Mode to center text in cell
+    editor.processKey(.ctrl("J"))
+
+    // Line 1 inner width is 16 spaces. "Hello" has width 5.
+    // Padding needed = 11. Left padding = 5, Right padding = 6.
+    let line = editor.buffer.lines[1]
+    #expect(line == "│     Hello      │")
+}
+
+@Test func testTableModeDeleteAndBackspaceDoNotCorruptBorders() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┐",
+        "│ Hello World    │",
+        "└────────────────┘"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1 // At left inner boundary 'H'
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // 1. Press Backspace at left inner boundary
+    editor.processKey(.backspace)
+    // Line MUST NOT be modified or corrupted, border at index 0 MUST still be '┌' or '│'
+    #expect(editor.buffer.lines[1] == "│ Hello World    │")
+    #expect(editor.buffer.columnIndex == 1)
+
+    // 2. Move cursor to 'H' (col 2) and press Delete
+    editor.buffer.columnIndex = 2
+    editor.processKey(.delete)
+    // 'H' deleted, padded with space at right, border MUST NOT move!
+    #expect(editor.buffer.lines[1] == "│ ello World     │")
+    #expect(editor.buffer.lines[1].count == 18)
+    #expect(editor.buffer.lines[1].hasPrefix("│") && editor.buffer.lines[1].hasSuffix("│"))
+}
