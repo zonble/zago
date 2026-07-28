@@ -55,9 +55,9 @@ public final class Terminal {
 
         var raw = originalTermios
         // Input flags: disable IXON (Ctrl+S/Ctrl+Q), ICRNL (map CR to NL)
-        raw.c_iflag &= ~UInt(IXON | ICRNL)
+        raw.c_iflag &= ~tcflag_t(IXON | ICRNL)
         // Local flags: disable ECHO, ICANON (canonical mode), ISIG (Ctrl+C/Ctrl+Z), IEXTEN (Ctrl+V)
-        raw.c_lflag &= ~UInt(ECHO | ICANON | ISIG | IEXTEN)
+        raw.c_lflag &= ~tcflag_t(ECHO | ICANON | ISIG | IEXTEN)
 
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
         rawModeEnabled = true
