@@ -84,10 +84,10 @@ public final class LogoEngine {
     public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
     internal static let statementCommands: Set<LogoPrimitive> = [
-        .make, .set, .type, .show, .delete, .backspace, .deleteLine,
+        .make, .name, .set, .type, .show, .delete, .backspace, .deleteLine,
         .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
         .joinLine, .splitLine, .indentLines, .outdentLines,
-        .move, .mark, .cut, .uncut, .justify, .goto, .box, .line, .hr, .vline, .vhr, .table,
+        .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .line, .hr, .vline, .vhr, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .saveBuffer, .fileSaveAndQuit,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
@@ -99,7 +99,7 @@ public final class LogoEngine {
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
-        .date, .time, .word, .list, .sentence, .fput, .lput, .array,
+        .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array,
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
@@ -204,10 +204,21 @@ public final class LogoEngine {
             case .make:
                 index += 1
                 if index < tokens.count {
-                    let varName = unquote(tokens[index]).lowercased()
+                    let varName = normalizeVariableName(tokens[index])
                     index += 1
                     let val = evaluateExpression(tokens, index: &index)
                     variables[varName] = val
+                }
+
+            case .name:
+                index += 1
+                if index < tokens.count {
+                    let val = evaluateExpression(tokens, index: &index)
+                    index += 1
+                    if index < tokens.count {
+                        let varName = normalizeVariableName(evaluateExpression(tokens, index: &index))
+                        variables[varName] = val
+                    }
                 }
 
             case .setItem:
@@ -586,7 +597,11 @@ public final class LogoEngine {
 
             case .box:
                 index += 1
-                executeBoxCommand(tokens, index: &index)
+                executeBoxCommand(tokens, index: &index, mode: .insert)
+
+            case .drawBox:
+                index += 1
+                executeBoxCommand(tokens, index: &index, mode: .overlay)
 
             case .line, .hr:
                 index += 1

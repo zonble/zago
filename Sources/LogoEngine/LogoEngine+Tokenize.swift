@@ -333,7 +333,7 @@ extension LogoEngine {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "()"))
         let lower = clean.lowercased()
         if clean.hasPrefix(":") {
-            let varName = String(clean.dropFirst()).lowercased()
+            let varName = normalizeVariableName(clean)
             return variables[varName] ?? ""
         }
         if clean.hasPrefix("?") || clean == "#" || variables[lower] != nil {
@@ -342,6 +342,14 @@ extension LogoEngine {
             }
         }
         return unquote(clean)
+    }
+
+    internal func normalizeVariableName(_ raw: String) -> String {
+        var name = unquote(raw.trimmingCharacters(in: CharacterSet(charactersIn: "()")))
+        if name.hasPrefix(":") {
+            name.removeFirst()
+        }
+        return name.lowercased()
     }
 
     internal func unquote(_ str: String) -> String {

@@ -9,6 +9,11 @@ extension LogoEngine {
         // ---------------------------------------------------------------------
         // 2.1 Constructors
         // ---------------------------------------------------------------------
+        case .thing:
+            index += 1
+            let name = evaluateExpression(tokens, index: &index)
+            return variables[normalizeVariableName(name)] ?? ""
+
         case .word:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)

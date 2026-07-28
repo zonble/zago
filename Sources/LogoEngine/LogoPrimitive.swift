@@ -4,6 +4,7 @@ import Foundation
 public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     // Statement / Control Primitives
     case make
+    case name
     case set
     case type
     case show
@@ -28,6 +29,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case justify
     case goto
     case box
+    case drawBox
     case line
     case hr
     case vline
@@ -99,6 +101,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case fileName
 
     // Expression & Data Primitives
+    case thing
     case word
     case list
     case sentence
@@ -209,6 +212,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FILL"], .fill),
         (["SORT"], .sort),
         (["MAKE", "VAR"], .make),
+        (["NAME"], .name),
+        (["THING"], .thing),
         (["SET"], .set),
         (["TYPE", "PRINT", "INSERT"], .type),
         (["MSG", "MESSAGE", "SHOW"], .show),
@@ -233,6 +238,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["JUSTIFY"], .justify),
         (["GOTO"], .goto),
         (["BOX"], .box),
+        (["DRAWBOX"], .drawBox),
         (["LINE", "HR"], .line),
         (["VLINE", "VR", "VHR"], .vline),
         (["TABLE"], .table),

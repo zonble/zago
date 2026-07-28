@@ -282,7 +282,7 @@ extension Editor {
             for _ in 0..<max(1, rowCount - 1) {
                 tableLines.append("| " + Array(repeating: String(repeating: " ", count: cellWidth), count: colCount).joined(separator: " | ") + " |")
             }
-            writeTableLines(tableLines, at: origLine)
+            insertTableLines(tableLines, at: origLine, column: origCol)
         } else {
             let chars = tableBorderCharacters(for: style)
             let h = String(repeating: chars.horizontal, count: cellWidth)
@@ -296,7 +296,7 @@ extension Editor {
                 }
             }
             tableLines.append(chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin) + chars.bottomRight)
-            writeTableLines(tableLines, at: origLine)
+            insertTableLines(tableLines, at: origLine, column: origCol)
         }
 
         buffer.lineIndex = origLine + 1
@@ -310,7 +310,7 @@ extension Editor {
                 enterTableMode(with: cell)
             } else {
                 let cell = TableCell(
-                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: 0, maxCol: 16,
+                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: origCol, maxCol: origCol + 16,
                     style: style)
                 enterTableMode(with: cell)
             }
@@ -319,14 +319,28 @@ extension Editor {
         }
     }
 
-    private func writeTableLines(_ tableLines: [String], at startLine: Int) {
-        for (idx, line) in tableLines.enumerated() {
-            if startLine + idx < buffer.lines.count {
-                buffer.lines[startLine + idx] = line
-            } else {
-                buffer.lines.append(line)
-            }
+    private func insertTableLines(_ tableLines: [String], at startLine: Int, column: Int) {
+        guard !tableLines.isEmpty else { return }
+        while buffer.lines.count <= startLine {
+            buffer.lines.append("")
         }
+
+        let currentLine = buffer.lines[startLine]
+        let splitColumn = max(0, min(column, currentLine.count))
+        let splitIndex = currentLine.index(currentLine.startIndex, offsetBy: splitColumn)
+        let prefix = String(currentLine[..<splitIndex])
+        let suffix = String(currentLine[splitIndex...])
+        let indent = String(repeating: " ", count: splitColumn)
+
+        var insertedLines: [String] = []
+        for (idx, line) in tableLines.enumerated() {
+            insertedLines.append(idx == 0 ? prefix + line : indent + line)
+        }
+        if !suffix.isEmpty {
+            insertedLines.append(suffix)
+        }
+
+        buffer.lines.replaceSubrange(startLine...startLine, with: insertedLines)
     }
 
     private func tableBorderCharacters(for style: TableBorderStyle) -> (

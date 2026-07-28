@@ -133,16 +133,46 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(indentEditor.buffer.lines[1] == "    |            |")
     #expect(indentEditor.buffer.lines[2] == "    +------------+")
 
-    // TDD Test Example 2: BOX overlay in middle of background text
+    // TDD Test Example 2: BOX inserts into each affected line and pushes trailing text right.
     let bgTextEditor = Editor()
     bgTextEditor.buffer.lines = ["AAAAAAAAAAA", "BBBBBBBBBBB", "CCCCCCCCCCC"]
     bgTextEditor.buffer.lineIndex = 0
     bgTextEditor.buffer.columnIndex = 3
     logoEngine.delegate = bgTextEditor
     logoEngine.execute("BOX 5 3 \"ascii\"")
-    #expect(bgTextEditor.buffer.lines[0] == "AAA+---+AAA")
-    #expect(bgTextEditor.buffer.lines[1] == "BBB|   |BBB")
-    #expect(bgTextEditor.buffer.lines[2] == "CCC+---+CCC")
+    #expect(bgTextEditor.buffer.lines[0] == "AAA+---+AAAAAAAA")
+    #expect(bgTextEditor.buffer.lines[1] == "BBB|   |BBBBBBBB")
+    #expect(bgTextEditor.buffer.lines[2] == "CCC+---+CCCCCCCC")
+
+    let overlayBoxEditor = Editor()
+    overlayBoxEditor.buffer.lines = ["AAAAAAAAAAA", "BBBBBBBBBBB", "CCCCCCCCCCC"]
+    overlayBoxEditor.buffer.lineIndex = 0
+    overlayBoxEditor.buffer.columnIndex = 3
+    logoEngine.delegate = overlayBoxEditor
+    logoEngine.execute("DRAWBOX 5 3 \"ascii\"")
+    #expect(overlayBoxEditor.buffer.lines[0] == "AAA+---+AAA")
+    #expect(overlayBoxEditor.buffer.lines[1] == "BBB|   |BBB")
+    #expect(overlayBoxEditor.buffer.lines[2] == "CCC+---+CCC")
+
+    let suffixEditor = Editor()
+    suffixEditor.buffer.lines = [
+        "AAAAAAAAAA",
+        "AAAAAAAAAA",
+        "AAAAAAAAAA",
+        "AAAAAAAAAA",
+        "",
+        "AAAAAAAAAA",
+        "AAAAAAAAAAAAAAAAAA",
+        "AAAAAAAAAAAAAAAAAA",
+        "AAAAAAAAAAAAAAAAAA",
+    ]
+    suffixEditor.buffer.lineIndex = 6
+    suffixEditor.buffer.columnIndex = 2
+    logoEngine.delegate = suffixEditor
+    logoEngine.execute("BOX 8 3 \"ascii\"")
+    #expect(suffixEditor.buffer.lines[6] == "AA+------+AAAAAAAAAAAAAAAA")
+    #expect(suffixEditor.buffer.lines[7] == "AA|      |AAAAAAAAAAAAAAAA")
+    #expect(suffixEditor.buffer.lines[8] == "AA+------+AAAAAAAAAAAAAAAA")
 
     // 14. LOGO LINE and NEWLINE Command test
     let lineEditor = Editor()
@@ -789,6 +819,19 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("RUN [ MAKE \"A 42 ]")
     #expect(logoEngine.variables["a"] == "42", "variables['a'] was \(logoEngine.variables["a"] ?? "nil")")
 
+    // NAME & THING
+    logoEngine.execute("MAKE \"X 10 THING \"X")
+    #expect(logoEngine.lastResult == "10", "THING \"X was \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("MAKE \"VARNAME \"X THING :VARNAME")
+    #expect(logoEngine.lastResult == "10", "THING :VARNAME was \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("NAME 42 \"ANSWER THING \"ANSWER")
+    #expect(logoEngine.lastResult == "42", "NAME/THING answer was \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("MAKE \"SLOT \"NAME NAME \"Ada :SLOT THING \"NAME")
+    #expect(logoEngine.lastResult == "Ada", "dynamic NAME/THING was \(logoEngine.lastResult ?? "nil")")
+
     logoEngine.execute("RUNRESULT [ OUTPUT 1 + 2 ]")
     #expect(logoEngine.lastResult == "[3]", "RUNRESULT output was \(logoEngine.lastResult ?? "nil")")
 
@@ -1087,6 +1130,25 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("TABLE NEXTSTYLE")
     #expect(editor.defaultTableBorderStyle == .markdown)
+
+    editor.defaultTableBorderStyle = .single
+    editor.buffer.lines = ["before", "after"]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE 1 1")
+    #expect(editor.buffer.lines[1] == "┌────────────────┐")
+    #expect(editor.buffer.lines[2] == "│                │")
+    #expect(editor.buffer.lines[3] == "└────────────────┘")
+    #expect(editor.buffer.lines[4] == "after")
+
+    editor.buffer.lines = ["    tail"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 4
+    logoEngine.execute("TABLE 1 1")
+    #expect(editor.buffer.lines[0] == "    ┌────────────────┐")
+    #expect(editor.buffer.lines[1] == "    │                │")
+    #expect(editor.buffer.lines[2] == "    └────────────────┘")
+    #expect(editor.buffer.lines[3] == "tail")
 }
 
 @Test func testLogoSortPrimitive() {

@@ -322,6 +322,18 @@ import Testing
     ])
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
 
+    editor.buffer.lines[1] = "│DRAWBOX 8 3 │"
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 12
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────┐",
+        "│DRAWBOX 8 3 │",
+        "└────────────┘",
+    ])
+    #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
+
     editor.buffer.lines[1] = "│TABLE       │"
     editor.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 6
@@ -337,10 +349,10 @@ import Testing
 
 @Test func testTableModeBlocksProcedureContainingLogoDrawingCommand() throws {
     let editor = Editor()
-    editor.logoEngine.execute("TO DRAWBOX BOX 8 3 END")
+    editor.logoEngine.execute("TO MAKEBOX BOX 8 3 END")
     editor.buffer.lines = [
         "┌────────────┐",
-        "│DRAWBOX     │",
+        "│MAKEBOX     │",
         "└────────────┘",
     ]
     editor.buffer.lineIndex = 1
@@ -353,10 +365,23 @@ import Testing
 
     #expect(editor.buffer.lines == [
         "┌────────────┐",
-        "│DRAWBOX     │",
+        "│MAKEBOX     │",
         "└────────────┘",
     ])
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
+
+    editor.logoEngine.execute("TO PAINTBOX DRAWBOX 8 3 END")
+    editor.buffer.lines[1] = "│PAINTBOX    │"
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 9
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────┐",
+        "│PAINTBOX    │",
+        "└────────────┘",
+    ])
+    #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
 }
 
 @Test func testTableModeUpDownArrowNavigation() throws {

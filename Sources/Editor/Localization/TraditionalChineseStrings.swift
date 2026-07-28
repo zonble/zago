@@ -94,7 +94,7 @@ public struct TraditionalChineseStrings {
         "helpview.logo_2": "    TYPE / PRINT       於游標位置輸出/插入指定文字",
         "helpview.logo_3": "    MAKE / VAR / :var  宣告變數與進行四則運算求值",
         "helpview.logo_4": "    REPEAT / TO / EXEC 迴圈執行與自訂程序定義呼叫",
-        "helpview.logo_5": "    BOX / LINE / VLINE 畫框與橫豎分隔線（支援自動交點融合）",
+        "helpview.logo_5": "    BOX / DRAWBOX / LINE / VLINE 畫框與橫豎分隔線（支援自動交點融合）",
         "helpview.logo_6": "    PD / PU / FD / BK  海龜繪圖：落筆、提筆、前進、後退",
         "helpview.logo_7": "    RT / LT / GOTO     海龜繪圖：右轉/左轉 90 度、指定行列跳轉",
         "helpview.logo_8": "    DATE / TIME / SET  插入當前日期時間、設定編輯器選項",

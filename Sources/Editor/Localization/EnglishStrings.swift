@@ -94,7 +94,7 @@ public struct EnglishStrings {
         "helpview.logo_2": "    TYPE / PRINT       Insert text into buffer at cursor",
         "helpview.logo_3": "    MAKE / VAR / :var  Declare variables and arithmetic expressions",
         "helpview.logo_4": "    REPEAT / TO / EXEC Loop execution and custom procedure calls",
-        "helpview.logo_5": "    BOX / LINE / VLINE Draw box frame and separator lines with smart fusion",
+        "helpview.logo_5": "    BOX / DRAWBOX / LINE / VLINE Draw box frames and separator lines with smart fusion",
         "helpview.logo_6": "    PD / PU / FD / BK  Turtle Graphics: Pen Down, Pen Up, Forward, Back",
         "helpview.logo_7": "    RT / LT / GOTO     Turtle Graphics: Turn Right/Left 90°, Jump line/col",
         "helpview.logo_8": "    DATE / TIME / SET  Insert date/time, configure editor settings",

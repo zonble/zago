@@ -75,10 +75,10 @@ END
 TITLE "Release Notes"
 ```
 
-Draw and fill a box:
+Draw and fill a canvas box:
 
 ```logo
-BOX 30 4 ROUND
+DRAWBOX 30 4 ROUND
 GOTO 2 2
 FILL "hi
 ```

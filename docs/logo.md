@@ -64,13 +64,13 @@ TYPE "hello;world"
 
 ---
 
-### 2. Common Drawing Commands: `BOX`, `LINE`, and `VLINE`
+### 2. Common Drawing Commands: `BOX`, `DRAWBOX`, `LINE`, and `VLINE`
 
 `BOX` and line drawing are the most useful LOGO commands for turning a plain text buffer into a structured terminal canvas. They are intended for fast notes, diagrams, forms, and lightweight layouts.
 
 #### `BOX`
 
-`BOX` draws a frame at the current cursor position. It supports three common forms:
+`BOX` draws a frame at the current cursor position by inserting box characters into each affected line. Existing text after the cursor on those lines is pushed to the right. It supports three common forms:
 
 ```logo
 BOX "Hello"
@@ -90,10 +90,25 @@ BOX "Status" "center" "round"
 ╰────────╯
 ```
 
-Empty boxes use explicit visual dimensions:
+Empty boxes use explicit visual dimensions. `BOX` is an editing command: it inserts the frame into each affected line and pushes existing trailing text to the right.
 
 ```logo
 BOX 30 4 ROUND
+```
+
+```text
+╭────────────────────────────╮
+│                            │
+│                            │
+╰────────────────────────────╯
+```
+
+#### `DRAWBOX`
+
+`DRAWBOX` accepts the same arguments as `BOX`, but draws as a canvas overlay. Existing text in the target region can be replaced by the frame. Use it when you are composing a diagram and want later drawing commands such as `FILL`, `LINE`, and `VLINE` to work against fixed coordinates.
+
+```logo
+DRAWBOX 30 4 ROUND
 GOTO 2 2
 FILL "hi
 ```
@@ -127,7 +142,7 @@ Supported styles:
 - `double-round`: rounded corners with double horizontal and vertical strokes where possible
 - `ascii`: `+ - |`
 
-Box drawing is overlay-oriented: existing text at the target coordinates can be replaced by the frame. Use `GOTO` first when positioning matters.
+`BOX` is line-oriented: it does not push later lines down, but it does push trailing text on each affected line to the right. `DRAWBOX` is overlay-oriented: it preserves the surrounding prefix and suffix, and replaces the target region.
 
 #### `LINE` and `VLINE`
 
@@ -189,7 +204,7 @@ Use explicit lengths when you want deterministic drawing. Use no-argument auto-c
 
 ### 3. Table Creation
 
-`TABLE` creates table structures. It does not enter Table Mode; use `Alt+T` for table editing mode.
+`TABLE` inserts table structures at the cursor. It shifts existing text down instead of overwriting it. It does not enter Table Mode; use `Alt+T` for table editing mode.
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
@@ -256,6 +271,7 @@ Allowed behavior:
 Disabled while Table Mode is active:
 
 - `BOX`
+- `DRAWBOX`
 - `LINE` / `HR`
 - `VLINE` / `VR` / `VHR`
 - `FILL`
@@ -278,9 +294,11 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 | `GOTO` | - | `GOTO line [column]` | Jumps directly to 1-indexed line and optional column | `GOTO 10`, `GOTO 42 5` |
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
-| `BOX` | - | `BOX "text" [align] [style]` | Draws 2D overlay box around text (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
-| `BOX` | - | `BOX width height [style]` | Draws empty 2D overlay box frame (`single`, `double`, `ascii`, `round`, `double-round`) | `BOX 20 5 "round"` |
+| `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
+| `BOX` | - | `BOX width height [style]` | Inserts an empty box frame (`single`, `double`, `ascii`, `round`, `double-round`) | `BOX 20 5 "round"` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
+| `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
+| `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame | `DRAWBOX 20 5 "round"` |
 | `MARK` | - | `MARK` | Toggles text selection mark anchor | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
@@ -466,6 +484,8 @@ TYPE ITEM 2 :cells
 | :--- | :--- | :--- | :--- | :--- |
 | `MAKE` | `VAR` | `MAKE "var" expr` | Assigns value to variable | `MAKE "i" 1` |
 | `:var` | - | `:var_name` | Dereferences variable value | `TYPE :i` |
+| `NAME` | - | `NAME value name` | LOGO-compatible variable assignment, with value first | `NAME 30 "width` |
+| `THING` | - | `THING name` | LOGO-compatible variable lookup; useful for dynamic names | `THING "width`, `THING :varname` |
 | `IF` | - | `IF cond [ block ]` | Executes block if condition is true | `IF :i > 5 [ TYPE "OK" ]` |
 | `IFELSE` | - | `IFELSE cond [ t_block ] [ f_block ]` | Branching if-else execution | `IFELSE :i == 2 [ TYPE "TWO" ] [ TYPE :i ]` |
 | `TEST` | - | `TEST cond` | Sets internal test flag for `IFTRUE`/`IFFALSE` | `TEST :i == 1` |
