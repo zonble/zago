@@ -196,15 +196,15 @@ extension Editor {
 
         // If total text fits within available width:
         if totalInputDisplayWidth < maxInputWidth {
-            let styledText = "\u{1B}[1m\(promptPrefix)\(promptInputText)_\u{1B}[0m"
+            let styledText = "\u{1B}[1m\(promptPrefix)\(promptInputText)\u{1B}[0m"
             let cursorCol = prefixWidth + cursorDisplayWidth + 1
-            return RenderedPrompt(text: styledText, cursorCol: cursorCol)
+            return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
         }
 
         // Horizontal scrolling needed
         var windowStartCol = 0
-        if cursorDisplayWidth >= maxInputWidth - 1 {
-            windowStartCol = cursorDisplayWidth - maxInputWidth + 2
+        if cursorDisplayWidth >= maxInputWidth {
+            windowStartCol = cursorDisplayWidth - maxInputWidth + 1
         }
 
         var visibleChars: [Character] = []
@@ -247,7 +247,7 @@ extension Editor {
         }
 
         let visibleString = String(visibleChars)
-        let styledText = "\u{1B}[1m\(promptPrefix)\(visibleString)_\u{1B}[0m"
+        let styledText = "\u{1B}[1m\(promptPrefix)\(visibleString)\u{1B}[0m"
         let cursorCol = prefixWidth + cursorColInWindow + 1
 
         return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))

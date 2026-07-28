@@ -190,12 +190,9 @@ public final class Terminal {
                 default: return .esc
                 }
 
-            case UInt8(ascii: "9"): return .ctrl("9")
-            case UInt8(ascii: "0"): return .ctrl("0")
-            case UInt8(ascii: ","): return .alt(",")
-            case UInt8(ascii: "."): return .alt(".")
-            case UInt8(ascii: "<"): return .alt("<")
-            case UInt8(ascii: ">"): return .alt(">")
+            case 32...126:
+                let ch = Character(UnicodeScalar(b2))
+                return .alt(ch)
 
             default:
                 return .esc

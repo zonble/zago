@@ -71,7 +71,7 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
         "helpview.search_1": "    ^W / F6            文字搜尋（不區分大小寫）",
-        "helpview.search_2": "    ^J / F4            重排與自動對齊當前段落（中英文混排）",
+        "helpview.search_2": "    ^J                 重排與自動對齊當前段落（中英文混排）",
         "helpview.search_3": "    ^L                 重新繪製 Terminal 畫面",
         "helpview.search_4": "    ^C / F11           顯示當前游標與行列位置資訊",
         "helpview.search_5": "    ^T / F12           啟動拼字檢查工具",
@@ -83,7 +83,8 @@ public struct TraditionalChineseStrings {
         "helpview.file_4": "    M-. / M->          Next Buffer (切換至下一個 Buffer)",
         "helpview.file_5": "    M-, / M-<          Previous Buffer (切換至上一個 Buffer)",
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
-        "helpview.file_7": "    ^G / F1            顯示本完整幫助說明頁面",
+        "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
+        "helpview.file_8": "    ^G / F1            顯示本完整幫助說明頁面",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 呼叫 LOGO 巨集指令 Prompt",

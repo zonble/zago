@@ -93,6 +93,28 @@ import Foundation
     #expect(jsonLang != nil)
     #expect(jsonLang?.name == "JSON")
 
+    let rstLang = highlighter.detectLanguage(for: "docs.rst")
+    #expect(rstLang != nil)
+    #expect(rstLang?.name == "reStructuredText")
+
+    let orgLang = highlighter.detectLanguage(for: "todo.org")
+    #expect(orgLang != nil)
+    #expect(orgLang?.name == "Org-mode")
+
+    let logoLang = highlighter.detectLanguage(for: "script.logo")
+    #expect(logoLang != nil)
+    #expect(logoLang?.name == "LOGO")
+
+    let sercLang = highlighter.detectLanguage(for: ".serc")
+    #expect(sercLang != nil)
+    #expect(sercLang?.name == "LOGO")
+
+    if let lang = logoLang {
+        let highlighted = highlighter.highlight(line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT 90 ] [ BOX 5 3 ]", syntax: lang)
+        #expect(highlighted.contains("\u{1B}[1;36m"))
+        #expect(highlighted.contains("\u{1B}[94m"))
+    }
+
     if let lang = swiftLang {
         let highlighted = highlighter.highlight(line: "func hello() { return }", syntax: lang)
         #expect(highlighted.contains("\u{1B}[1;36m"))

@@ -25,12 +25,29 @@ struct BoxStyle {
 }
 
 /// LOGO-style Macro Language Engine for se text editor.
-/// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE, JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME),
-/// classical Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT, LT/LEFT with 90-degree cardinal turns & drawing),
-/// conditionals (IF condition [ ... ], IFELSE condition [ true_block ] [ false_block ]),
-/// expressions with DATE/TIME evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
-/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -, *, /, %), loops (REPEAT expr [ ... ]),
-/// procedure definitions (TO proc ... END), 2D Canvas Overlay BOX drawing, and Smart Line Junction Fusion.
+///
+/// Features and Capabilities:
+/// - **Text Editing Commands**: `TYPE`, `DEL`, `BS`, `MOVE`, `MARK`, `CUT`,
+///   `PASTE`, `JUSTIFY`, `FIND`, `GOTO`, `BOX`, `LINE`, `VLINE`, `NEWLINE`,
+///   `DATE`, `TIME`.
+/// - **Classical Turtle Graphics**: `PD`/`PENDOWN`, `PU`/`PENUP`,
+///   `FD`/`FORWARD`, `BK`/`BACK`, `RT`/`RIGHT`, `LT`/`LEFT` with 90° cardinal
+///   turns & drawing.
+/// - **Conditionals**: `IF condition [ ... ]`, `IFELSE condition [ true_block ]
+///   [ false_block ]`.
+/// - **Expressions & Variables**: Date/time evaluation (`MAKE "i" DATE
+///   "YYYY/MM/DD"`), variable assignment and dereferencing (`MAKE "var" val` /
+///   `:var`).
+/// - **Editor Configuration**: `SET` (`ruler`, `wrap`, `syntax`, `autoreload`,
+///   `lang`).
+/// - **Arithmetic**: Operators (`+`, `-`, `*`, `/`, `%`) and parenthesized
+///   expressions.
+/// - **Control Flow & Loops**: `REPEAT expr [ ... ]`.
+/// - **Procedure Definitions**: Custom macro procedures (`TO proc ... END`).
+/// - **2D Canvas Overlay Box Drawing**: Preserves line indents and background
+///   text.
+/// - **Smart Line Junction Fusion**: Neighbor-aware 4-directional mask fusion
+///   (`┌`, `┐`, `└`, `┘`, `┼`, `┬`, `┴`, `├`, `┤`, `╬`, `╦`, `╩`, `╠`, `╣`).
 public final class LogoEngine {
     public var customProcedures: [String: [String]] = [:]
     public var variables: [String: String] = [:]
@@ -151,7 +168,7 @@ public final class LogoEngine {
 
             let op = conditionTokens[idx]
 
-            if let num1 = Int(leftValStr), let num2 = Int(rightValStr) {
+            if let num1 = Double(leftValStr), let num2 = Double(rightValStr) {
                 switch op {
                 case "==", "=": return num1 == num2
                 case "!=", "<>": return num1 != num2
@@ -1108,17 +1125,35 @@ public final class LogoEngine {
                 guard index < tokens.count else { break }
                 let rightVal = evaluateTokenOrCommand(tokens, index: &index)
 
-                if let num1 = Int(leftVal), let num2 = Int(rightVal) {
-                    let resNum: Int
-                    switch op {
-                    case "+": resNum = num1 + num2
-                    case "-": resNum = num1 - num2
-                    case "*": resNum = num1 * num2
-                    case "/": resNum = (num2 != 0) ? num1 / num2 : 0
-                    case "%": resNum = (num2 != 0) ? num1 % num2 : 0
-                    default: resNum = 0
+                if let num1 = Double(leftVal), let num2 = Double(rightVal) {
+                    let isIntegerMath = !leftVal.contains(".") && !rightVal.contains(".") && Int(leftVal) != nil && Int(rightVal) != nil
+                    if isIntegerMath, let n1 = Int(leftVal), let n2 = Int(rightVal) {
+                        let resNum: Int
+                        switch op {
+                        case "+": resNum = n1 + n2
+                        case "-": resNum = n1 - n2
+                        case "*": resNum = n1 * n2
+                        case "/": resNum = (n2 != 0) ? n1 / n2 : 0
+                        case "%": resNum = (n2 != 0) ? n1 % n2 : 0
+                        default: resNum = 0
+                        }
+                        leftVal = "\(resNum)"
+                    } else {
+                        let resDouble: Double
+                        switch op {
+                        case "+": resDouble = num1 + num2
+                        case "-": resDouble = num1 - num2
+                        case "*": resDouble = num1 * num2
+                        case "/": resDouble = (num2 != 0) ? num1 / num2 : 0.0
+                        case "%": resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
+                        default: resDouble = 0.0
+                        }
+                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 {
+                            leftVal = "\(Int(resDouble))"
+                        } else {
+                            leftVal = "\(resDouble)"
+                        }
                     }
-                    leftVal = "\(resNum)"
                 } else if op == "+" {
                     // String concatenation
                     leftVal = leftVal + rightVal

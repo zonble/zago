@@ -268,3 +268,27 @@ import Foundation
     logoEngine.execute("MAKE \"i\" 1 REPEAT 3 [ IFELSE :i == 2 [ TYPE \"TWO\" ] [ TYPE :i ] MAKE \"i\" ( :i + 1 ) ]", on: loopEditor)
     #expect(loopEditor.buffer.lines[0] == "1TWO3")
 }
+
+@Test func testLogoFloatingPointArithmetic() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. Double multiplication (3.5 * 10 = 35)
+    let ed1 = Editor()
+    logoEngine.execute("TYPE ( 3.5 * 10 )", on: ed1)
+    #expect(ed1.buffer.lines[0] == "35")
+
+    // 2. Double addition (3.5 + 2.3 = 5.8)
+    let ed2 = Editor()
+    logoEngine.execute("TYPE ( 3.5 + 2.3 )", on: ed2)
+    #expect(ed2.buffer.lines[0] == "5.8")
+
+    // 3. Variable with double arithmetic
+    let ed3 = Editor()
+    logoEngine.execute("MAKE \"x\" 3.5 TYPE ( :x * 2 )", on: ed3)
+    #expect(ed3.buffer.lines[0] == "7")
+
+    // 4. Floating point condition
+    let ed4 = Editor()
+    logoEngine.execute("IF 3.5 > 2.0 [ TYPE \"YES\" ]", on: ed4)
+    #expect(ed4.buffer.lines[0] == "YES")
+}

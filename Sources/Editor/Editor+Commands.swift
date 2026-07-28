@@ -160,7 +160,7 @@ extension Editor {
         })
 
         // Formatting & Search
-        commandRegistry.register(Command(id: "edit.justify", name: "Justify", description: "Format paragraph width", keys: [.ctrl("J"), .f4]) { editor in
+        commandRegistry.register(Command(id: "edit.justify", name: "Justify", description: "Format paragraph width", keys: [.ctrl("J")]) { editor in
             editor.saveUndoSnapshot()
             let (_, cols) = editor.terminal.getWindowSize()
             let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
@@ -212,6 +212,10 @@ extension Editor {
             editor.promptInsertFilePath()
         })
 
+        commandRegistry.register(Command(id: "file.save_exit", name: "Save & Exit", description: "Save file and exit buffer", keys: [.f4]) { editor in
+            editor.promptSaveAndExit()
+        })
+
         commandRegistry.register(Command(id: "file.exit", name: "Exit", description: "Exit editor or close current buffer", keys: [.ctrl("X"), .f2]) { editor in
             if editor.buffer.isModified {
                 editor.promptExitSaveConfirm()
@@ -220,7 +224,7 @@ extension Editor {
             }
         })
 
-        commandRegistry.register(Command(id: "macro.logo", name: "LOGO Macro", description: "Execute LOGO macro script", keys: [.alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .f8]) { editor in
+        commandRegistry.register(Command(id: "macro.logo", name: "LOGO Macro", description: "Execute LOGO macro script", keys: [.alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .char("…"), .f8]) { editor in
             editor.promptLogoMacro()
         })
 

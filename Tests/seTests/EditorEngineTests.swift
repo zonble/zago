@@ -104,6 +104,38 @@ import Foundation
     #expect(editor.buffer.lines[1] == "")
 }
 
+@Test func testAltLTriggersLogoPrompt() throws {
+    let editor = Editor()
+
+    // Test Alt+l (.alt("l"))
+    editor.processKey(.alt("l"))
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Alt+l should trigger LOGO prompt mode")
+    }
+
+    editor.currentPromptMode = .none
+
+    // Test Alt+L (.alt("L"))
+    editor.processKey(.alt("L"))
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Alt+L should trigger LOGO prompt mode")
+    }
+
+    editor.currentPromptMode = .none
+
+    // Test macOS Option+L character '¬'
+    editor.processKey(.char("¬"))
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Option+L character ¬ should trigger LOGO prompt mode")
+    }
+}
+
 @Test func testCtrlBackspaceDeleteLineCommand() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Second Line", "Third Line"]
@@ -114,6 +146,23 @@ import Foundation
 
     editor.performUndo()
     #expect(editor.buffer.lines == ["First Line", "Second Line", "Third Line"])
+}
+
+@Test func testF4SaveAndExitCommand() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_f4_save_exit.txt").path
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    let editor = Editor(filePath: tmpPath)
+    editor.buffer.lines = ["Line 1 for F4 test"]
+    editor.buffer.isModified = true
+
+    // Trigger F4 (file.save_exit)
+    let handled = editor.commandRegistry.dispatch(key: .f4, editor: editor)
+    #expect(handled == true)
+
+    // File should be saved to disk
+    let savedContent = try String(contentsOfFile: tmpPath, encoding: .utf8)
+    #expect(savedContent == "Line 1 for F4 test")
 }
 
 @Test func testCtrlITabInsertion() throws {

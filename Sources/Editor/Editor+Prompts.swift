@@ -311,6 +311,24 @@ extension Editor {
         })
     }
 
+    /// Saves current buffer to disk and closes current buffer / exits editor (F4).
+    func promptSaveAndExit() {
+        if let path = buffer.filePath, !path.isEmpty {
+            doSave(to: path)
+            closeCurrentBuffer()
+        } else {
+            promptInputText = ""
+            currentPromptMode = .saveFilePath(completion: { [weak self] path in
+                guard let self = self, let path = path, !path.isEmpty else {
+                    self?.setStatusMessage(L10n["status.cancelled"])
+                    return
+                }
+                self.doSave(to: path)
+                self.closeCurrentBuffer()
+            })
+        }
+    }
+
     /// Prompts user to save modified buffer before exiting (^X / F2).
     func promptExitSaveConfirm() {
         currentPromptMode = .confirmExitSave(completion: { [weak self] save in

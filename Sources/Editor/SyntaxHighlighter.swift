@@ -64,7 +64,10 @@ public final class SyntaxHighlighter {
             CSyntaxDefinition(),
             JSONSyntaxDefinition(),
             MarkdownSyntaxDefinition(),
-            ShellSyntaxDefinition()
+            ShellSyntaxDefinition(),
+            ReSTSyntaxDefinition(),
+            OrgModeSyntaxDefinition(),
+            LogoSyntaxDefinition()
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())

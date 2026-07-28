@@ -71,7 +71,7 @@ public struct EnglishStrings {
 
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
         "helpview.search_1": "    ^W / F6            Where Is (case-insensitive text search)",
-        "helpview.search_2": "    ^J / F4            Justify (format) current paragraph (CJK/Latin reflow)",
+        "helpview.search_2": "    ^J                 Justify (format) current paragraph (CJK/Latin reflow)",
         "helpview.search_3": "    ^L                 Refresh screen display",
         "helpview.search_4": "    ^C / F11           Display current cursor position info",
         "helpview.search_5": "    ^T / F12           Spell checker status",
@@ -83,7 +83,8 @@ public struct EnglishStrings {
         "helpview.file_4": "    M-. / M->          Next Buffer (switch to next open buffer)",
         "helpview.file_5": "    M-, / M-<          Previous Buffer (switch to previous buffer)",
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
-        "helpview.file_7": "    ^G / F1            Display this help reference page",
+        "helpview.file_7": "    F4                 Save & Exit (save buffer and close/exit)",
+        "helpview.file_8": "    ^G / F1            Display this help reference page",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 Prompt LOGO macro command line",
