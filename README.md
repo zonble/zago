@@ -4,6 +4,8 @@
 
 It keeps Pico/Nano-style editing simple, but adds first-class commands for boxes, connector lines, fills, tables, and repeatable layout work. Press `Esc`, type a command, and shape structured text directly in the buffer.
 
+Create diagrams without leaving your Markdown, notes, or terminal workflow.
+
 ## Features
 
 - Plain-text diagramming: draw boxes, connector lines, fills, and table layouts directly in the buffer.
@@ -73,6 +75,21 @@ TO TITLE :text
 END
 
 TITLE "Release Notes"
+```
+
+Draw and fill a canvas box:
+
+```logo
+DRAWBOX 30 4 ROUND
+GOTO 2 2
+FILL "hi
+```
+
+```text
+╭────────────────────────────╮
+│hihihihihihihihihihihihihihi│
+│hihihihihihihihihihihihihihi│
+╰────────────────────────────╯
 ```
 
 Draw a small plain-text architecture diagram:
