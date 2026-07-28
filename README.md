@@ -1,15 +1,15 @@
 # `se`
 
-`se` is a LOGO-powered lightweight terminal text editor.
+`se` is a lightweight terminal text editor with powerful plain-text diagramming.
 
-It keeps the directness of Pico/Nano-style editing, then adds a small command language for the work that is awkward to repeat by hand: inserting structured text, drawing boxes and lines, filling regions, moving through buffers, and shaping plain text into terminal-native layouts.
+It keeps Pico/Nano-style editing simple, but adds first-class commands for boxes, connector lines, fills, tables, and repeatable layout work. Press `Esc`, type a command, and shape structured text directly in the buffer.
 
 ## Features
 
-- LOGO-style editor commands: `TYPE`, `MOVE`, `MARK`, `CUT`, `PASTE`, `JUSTIFY`, `BOX`, `LINE`, `VLINE`, `FILL`, `REPEAT`, `MAKE`, and `TO ... END`.
-- Natural command prompt: press `Esc` and enter an editor command.
+- Plain-text diagramming: draw boxes, connector lines, fills, and table layouts directly in the buffer.
+- Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
+- Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
 - Nano/Pico-like modeless editing: `^O` save, `^X` exit, `^W` search, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` help.
-- Terminal drawing tools for boxes, connector lines, fills, and table-oriented editing.
 - Correct CJK and multi-byte UTF-8 display-width handling through a shared text metrics module.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload, English and Traditional Chinese UI.
@@ -49,7 +49,7 @@ swift build -c release
 
 ## Command Examples
 
-LOGO is intentionally simple. Commands read like actions:
+The command language is LOGO-like because LOGO has a useful property: it often does not feel like programming. Commands read like direct editing actions, but they can still be combined with variables, loops, and procedures when the work becomes repetitive.
 
 ```logo
 MOVE HOME
@@ -103,4 +103,4 @@ Run `swift test`.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT License. Copyright (c) 2026 Weizhong Yang a.k.a. zonble.

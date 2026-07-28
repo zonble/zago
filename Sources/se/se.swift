@@ -6,7 +6,7 @@ import Foundation
 struct SE: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "se",
-        abstract: "A LOGO-powered lightweight terminal text editor."
+        abstract: "A lightweight terminal text editor with powerful plain-text diagramming."
     )
 
     @Argument(help: "The file(s) to edit.")
