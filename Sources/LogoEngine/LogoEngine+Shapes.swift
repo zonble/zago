@@ -7,6 +7,7 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         var length = 40
         var styleChar: Character = "─"
+        var hasExplicitLength = false
 
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -14,6 +15,7 @@ extension LogoEngine {
             if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 length = max(1, min(Int(valStr) ?? 40, 200))
+                hasExplicitLength = true
 
                 if index + 1 < tokens.count {
                     let nextToken = tokens[index + 1]
@@ -34,6 +36,11 @@ extension LogoEngine {
 
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+
+        if !hasExplicitLength {
+            executeAutoLineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar)
+            return
+        }
 
         editor.logoEngine(self, performAction: .ensureLineExists(index:startLine))
 
@@ -62,6 +69,7 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         var height = 5
         var styleChar: Character = "│"
+        var hasExplicitHeight = false
 
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -69,6 +77,7 @@ extension LogoEngine {
             if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 height = max(1, min(Int(valStr) ?? 5, 100))
+                hasExplicitHeight = true
 
                 if index + 1 < tokens.count {
                     let nextToken = tokens[index + 1]
@@ -90,6 +99,11 @@ extension LogoEngine {
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
+        if !hasExplicitHeight {
+            executeAutoVlineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar)
+            return
+        }
+
         for r in 0..<height {
             let line = startLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index:line))
@@ -109,6 +123,115 @@ extension LogoEngine {
 
         editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
+    }
+
+    private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character) {
+        guard let editor = self.delegate else { return }
+        let maxLength = 10
+        var drawableOffsets: [Int] = []
+
+        for offset in 0..<maxLength {
+            let col = startCol + offset
+            let existing = getLineCharAt(line: startLine, col: col)
+
+            if existing == " " {
+                drawableOffsets.append(offset)
+                continue
+            }
+
+            if isMaskChar(existing) {
+                drawableOffsets.append(offset)
+                if offset > 0 { break }
+                continue
+            }
+
+            break
+        }
+
+        guard !drawableOffsets.isEmpty else { return }
+
+        editor.logoEngine(self, performAction: .ensureLineExists(index:startLine))
+        let startLineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        var currentChars = Array(startLineStr)
+        while currentChars.count < startCol {
+            currentChars.append(" ")
+        }
+
+        let lastOffset = drawableOffsets[drawableOffsets.count - 1]
+        for offset in drawableOffsets {
+            let col = startCol + offset
+            while currentChars.count <= col {
+                currentChars.append(" ")
+            }
+
+            let moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
+            let existing = currentChars[col]
+            currentChars[col] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+        }
+
+        editor.logoEngine(self, performAction: .setLine(index: startLine, text: String(currentChars)))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
+    }
+
+    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character) {
+        guard let editor = self.delegate else { return }
+        let maxHeight = 10
+        var drawableOffsets: [Int] = []
+
+        for offset in 0..<maxHeight {
+            let line = startLine + offset
+            let existing = getLineCharAt(line: line, col: startCol)
+
+            if existing == " " {
+                drawableOffsets.append(offset)
+                continue
+            }
+
+            if isMaskChar(existing) {
+                drawableOffsets.append(offset)
+                if offset > 0 { break }
+                continue
+            }
+
+            break
+        }
+
+        guard !drawableOffsets.isEmpty else { return }
+
+        let lastOffset = drawableOffsets[drawableOffsets.count - 1]
+        for offset in drawableOffsets {
+            let line = startLine + offset
+            editor.logoEngine(self, performAction: .ensureLineExists(index:line))
+
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+            var currentChars = Array(lineStr)
+            while currentChars.count <= startCol {
+                currentChars.append(" ")
+            }
+
+            let moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
+            let existing = currentChars[startCol]
+            currentChars[startCol] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+
+            editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
+        }
+
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + drawableOffsets.count))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
+    }
+
+    private func horizontalMoveMask(offset: Int, lastOffset: Int) -> Int {
+        if lastOffset == 0 { return 10 }
+        if offset == 0 { return 2 }
+        if offset == lastOffset { return 8 }
+        return 10
+    }
+
+    private func verticalMoveMask(offset: Int, lastOffset: Int) -> Int {
+        if lastOffset == 0 { return 5 }
+        if offset == 0 { return 4 }
+        if offset == lastOffset { return 1 }
+        return 5
     }
 
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {

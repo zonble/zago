@@ -220,30 +220,28 @@ public final class Editor {
     }
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
-    private func applyCustomConfig(_ config: EditorConfig) {
+    func applyCustomConfig(_ config: EditorConfig) {
+        let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !prelude.isEmpty {
+            logoEngine.execute(prelude)
+        }
+
         for key in config.unbindKeys {
             commandRegistry.unbind(key: key)
         }
 
         for (key, cmdId) in config.customKeyBinds {
-            if cmdId.lowercased().hasPrefix("macro:") || cmdId.lowercased().hasPrefix("logo:") {
-                let script: String
-                if cmdId.lowercased().hasPrefix("macro:") {
-                    script = String(cmdId.dropFirst(6))
-                } else {
-                    script = String(cmdId.dropFirst(5))
-                }
+            if let script = resolveLogoScript(for: cmdId, using: config) {
                 let customCmd = BlockCommand(
                     id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]
-                ) { [weak self] editor in
-                    guard let self = self else { return }
-                    let engine = LogoEngine(delegate: self)
+                ) { editor in
+                    let engine = editor.logoEngine
                     engine.execute(script)
                     if !engine.hasSetStatusMessage {
                         if let result = engine.lastResult, !result.isEmpty {
-                            self.setStatusMessage(result)
+                            editor.setStatusMessage(result)
                         } else {
-                            self.setStatusMessage("")
+                            editor.setStatusMessage("")
                         }
                     }
                 }
@@ -258,6 +256,21 @@ public final class Editor {
         if config.syntaxErrorCount > 0 {
             setStatusMessage(L10n.configLoadedWithErrors(config.syntaxErrorCount))
         }
+    }
+
+    private func resolveLogoScript(for cmdId: String, using config: EditorConfig) -> String? {
+        let lowercased = cmdId.lowercased()
+        let payload: String
+
+        if lowercased.hasPrefix("macro:") {
+            payload = String(cmdId.dropFirst(6)).trimmingCharacters(in: .whitespacesAndNewlines)
+        } else if lowercased.hasPrefix("logo:") {
+            payload = String(cmdId.dropFirst(5)).trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            return nil
+        }
+
+        return config.logoScripts[payload] ?? payload
     }
 
     /// Starts the editor event loop.

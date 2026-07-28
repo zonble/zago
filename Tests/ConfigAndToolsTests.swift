@@ -89,6 +89,20 @@ import Testing
         set ruler true
         set autoreload true
         bind ctrl-f move.left
+        bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
+        logo-prelude
+          MAKE "boxWidth 30
+          TO FILLBOX :text
+            BOX :boxWidth 4
+            GOTO 2 2
+            FILL :text
+          END
+        endlogo
+        logo-script insert-title
+          BOX 40 3 ROUND
+          GOTO 2 2
+          FILL "-
+        endlogo
         unbind f1
         invalid syntax line
         """
@@ -103,7 +117,11 @@ import Testing
     #expect(config.showRuler == true)
     #expect(config.autoReload == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
+    #expect(config.customKeyBinds[.alt("h")] == "logo: MOVE HOME TYPE '# ' MOVE END")
     #expect(config.unbindKeys.contains(.f1))
+    #expect(config.logoPrelude.contains("MAKE \"boxWidth 30"))
+    #expect(config.logoPrelude.contains("TO FILLBOX :text"))
+    #expect(config.logoScripts["insert-title"]?.contains("BOX 40 3 ROUND") == true)
     #expect(config.syntaxErrorCount == 1)
 }
 

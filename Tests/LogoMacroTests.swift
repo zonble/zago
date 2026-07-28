@@ -163,6 +163,29 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(vlineEditor.buffer.lines[1] == "║")
     #expect(vlineEditor.buffer.lines[2] == "║")
 
+    let autoLineEditor = Editor()
+    logoEngine.delegate = autoLineEditor
+    logoEngine.execute("LINE")
+    #expect(autoLineEditor.buffer.lines[0] == "──────────")
+
+    let autoLineStopEditor = Editor()
+    autoLineStopEditor.buffer.lines = ["   X"]
+    logoEngine.delegate = autoLineStopEditor
+    logoEngine.execute("GOTO 1 1 LINE")
+    #expect(autoLineStopEditor.buffer.lines[0] == "───X")
+
+    let autoLineFuseEditor = Editor()
+    logoEngine.delegate = autoLineFuseEditor
+    logoEngine.execute("BOX 6 3 GOTO 2 1 LINE")
+    #expect(autoLineFuseEditor.buffer.lines[1] == "├────┤")
+
+    let autoVlineFuseEditor = Editor()
+    logoEngine.delegate = autoVlineFuseEditor
+    logoEngine.execute("BOX 6 3 GOTO 1 3 VLINE")
+    #expect(autoVlineFuseEditor.buffer.lines[0] == "┌─┬──┐")
+    #expect(autoVlineFuseEditor.buffer.lines[1] == "│ │  │")
+    #expect(autoVlineFuseEditor.buffer.lines[2] == "└─┴──┘")
+
     // 16. LOGO DATE and TIME Command test
     let dateTimeEditor = Editor()
     logoEngine.delegate = dateTimeEditor
@@ -944,6 +967,38 @@ final class LogoTestResultBox: @unchecked Sendable {
     // Execution 2: Use previously defined variable and procedure on the persistent editor.logoEngine
     editor.logoEngine.execute("TYPE :val GREET")
     #expect(editor.buffer.lines[0] == "42Hi")
+}
+
+@Test func testCustomLogoBindingUsesPersistentEditorEngine() {
+    let editor = Editor()
+    var config = EditorConfig()
+    config.customKeyBinds[.alt("y")] = "logo: MAKE \"val 7 TO GREET TYPE \"Hi END"
+    config.customKeyBinds[.alt("z")] = "logo: TYPE :val GREET"
+    editor.applyCustomConfig(config)
+
+    #expect(editor.commandRegistry.dispatch(key: .alt("y"), editor: editor))
+    #expect(editor.commandRegistry.dispatch(key: .alt("z"), editor: editor))
+    #expect(editor.buffer.lines[0] == "7Hi")
+}
+
+@Test func testSercLogoPreludeAndNamedScriptRunOnPersistentEngine() {
+    let editor = Editor()
+    var config = EditorConfig()
+    config.logoPrelude = """
+        MAKE "name "Ada
+        TO GREET
+          TYPE :name
+        END
+        """
+    config.logoScripts["run-greet"] = """
+        GREET
+        TYPE "!
+        """
+    config.customKeyBinds[.alt("g")] = "logo:run-greet"
+    editor.applyCustomConfig(config)
+
+    #expect(editor.commandRegistry.dispatch(key: .alt("g"), editor: editor))
+    #expect(editor.buffer.lines[0] == "Ada!")
 }
 
 @Test func testLogoFillPrimitive() {

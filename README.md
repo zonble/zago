@@ -1,22 +1,33 @@
-# `se` - Swift TUI Text Editor
+# `se` - LOGO-Powered Lightweight TUI Text Editor
 
-`se` is a lightweight, high-performance Terminal User Interface (TUI) text editor written in pure Swift 6. Designed with classic Pico/Nano-style keybindings, `se` provides modeless text editing, full UTF-8 / CJK multi-byte character support, dynamic softwrap, visual paragraph justification, syntax highlighting, GNU Nano `.nanorc` compatibility, and multi-platform support across macOS and Linux.
+`se` is a lightweight Terminal User Interface (TUI) text editor powered by a LOGO-style automation language. LOGO is a small command language best known for readable instructions like `FORWARD 10` and `REPEAT 4 [ ... ]`; in `se`, the same idea is applied to text editing. It keeps the directness of classic Pico/Nano editing while adding a readable programming layer for text manipulation, document layout, boxes, fills, tables, and repeatable editor workflows.
+
+The goal is not to become a plugin-heavy IDE. `se` treats automation as something you can type, read, bind, and remember:
+
+```logo
+MOVE HOME
+TYPE "# "
+MOVE END
+```
+
+Written in pure Swift 6, `se` provides modeless editing, full UTF-8 / CJK display-width correctness, dynamic softwrap, visual paragraph justification, syntax highlighting, GNU Nano `.nanorc` compatibility, and multi-platform support across macOS and Linux.
 
 ---
 
 ## Features & Purpose
 
+- **LOGO-Powered Editing**: Automate editor actions with a compact LOGO dialect (`TYPE`, `MOVE`, `MARK`, `CUT`, `PASTE`, `JUSTIFY`, `BOX`, `FILL`, `REPEAT`, `MAKE`, `:var`, `TO ... END`) instead of a heavyweight plugin API.
+- **Persistent Editor Runtime**: Each editor instance owns one `LogoEngine`, so prompt commands and key-bound macros share LOGO variables and procedures for the lifetime of the editor.
 - **Modeless Keybindings**: Intuitive Nano/Pico control shortcuts (`^O` Save, `^X` Exit, `^W` Search, `^K` Cut, `^U` Uncut/Paste, `^J` Justify, `^Z` Undo, `^T` Spell Check, `^G` Help).
 - **Undo Capability (`^Z`)**: Revert edit operations up to 100 snapshot levels.
 - **Interactive Spell Checker (`^T` / `F12`)**: System dictionary lookup with CJK filtering and interactive TUI word replacement.
 - **Full-Screen Help Viewer (`^G` / `F1`)**: Dedicated full-page TUI command reference.
 - **Shift-Selection**: Automatically start and adjust selection mark using `Shift + Arrow Keys` or `^^`.
 - **Syntax Highlighting & GNU Nano `.nanorc` Compatibility**: Built-in 5-token ANSI color rules for **Swift**, **Python**, **C/C++**, **JSON**, **Markdown**, and **Shell** with native GNU Nano `.nanorc` configuration parsing (`~/.nanorc`, `/opt/homebrew/share/nano/*.nanorc`, `/usr/share/nano/*.nanorc`).
-- **LOGO-style Macro Engine (`M-l` / `F8` / `:logo`)**: Clean, human-readable LOGO syntax flavor for text buffer automation (`TYPE "text"`, `DEL 5`, `MOVE HOME/END/UP/DOWN`, `MARK`, `CUT`, `PASTE`, `JUSTIFY`, `MAKE "var" val`, `:var`, `+ - * / %`, `REPEAT expr [ ... ]`, `TO proc ... END`). Supports single atomic `^Z` Undo and `~/.serc` keybindings (`bind ctrl-b "macro: MAKE 'i' 1 REPEAT 3 [ TYPE :i MOVE DOWN MAKE 'i' (:i + 1) ]"`).
 - **Multi-Buffer / Multi-Tab Editing**: Open multiple files simultaneously (`se file1.swift file2.swift`), switch between open buffers using standard GNU Nano shortcuts `M-,` / `M-.` (`Alt+,` / `Alt+.`) or `F12` / `F11`, create new buffers with `^N`, and view active buffer index status `[1/3]` directly in the Title Bar.
 - **File System Auto-Reload (`FileWatcher`)**: Real-time event monitoring (`DispatchSourceFileSystemObject`) for external file modifications. Automatically reloads buffer if unmodified (`isModified == false`), or prompts `[Y/N]` to confirm reloading if unsaved local changes exist.
 - **Internationalization (i18n)**: Dual English and Traditional Chinese (`zh_TW`) support with automatic POSIX locale detection (`$LC_ALL`, `$LANG`), `~/.serc` (`set lang zh_TW`), and CLI `--lang zh_TW`.
-- **User Configuration File (`~/.serc`)**: Nano/Vim-style directives for `set wrap`, `set ruler`, `set syntax`, `set autoreload`, `set lang`, `bind <key> <cmd_id>`, and `unbind <key>`.
+- **User Configuration File (`~/.serc`)**: Nano/Vim-style directives for `set wrap`, `set ruler`, `set syntax`, `set autoreload`, `set lang`, `bind <key> <cmd_id>`, `bind <key> logo:<script>`, and `unbind <key>`.
 - **Classic WordStar Ruler (`-r` / `--ruler`)**: Retro `----!----1----!----2` ruler bar for precise character column alignment.
 - **Function Keys Support**: Native mapping for function keys `F1` through `F12`.
 - **CJK & Multi-byte UTF-8 Support**: Seamless Chinese, Japanese, Korean, and multi-byte UTF-8 character input with accurate `displayWidth` column alignment.
@@ -25,18 +36,26 @@
 
 ---
 
-## 🐢 LOGO Macro Language & Automation
+## 🐢 LOGO-Powered Automation
 
-`se` introduces a unique **LOGO-style Macro Language Engine**, providing an intuitive, human-readable DSL for text editing automation.
+LOGO is the lightweight programming surface of `se`: commands read like actions, blocks are written in brackets, variables use names such as `:count`, and reusable procedures are defined with `TO ... END`. A macro should feel like naming the editing steps you would have performed by hand, not like writing an extension package.
 
 - **Triggering Prompt**: Press **`M-l` (`Alt+L` / `Option+L`)**, **`M-:` (`Alt+:` / `Option+:`)**, or **`F8`** to open the interactive LOGO macro prompt.
 - **Input History**: Press **`Up` / `Down` Arrow keys** inside the prompt to cycle through previously executed LOGO commands.
 - **Atomic Undo**: Pressing **`^Z`** once after running a macro will revert all changes made by the script in a single step.
+- **Reusable Procedures**: Define editor-local LOGO procedures with `TO ... END`, then call them from the prompt or from `.serc` keybindings.
 - **Full Guide & Specifications**: See [README.Logo.md](README.Logo.md) for full language specifications, command references, and practical script examples.
 
 ```logo
 # Example: Generate 5 numbered list items dynamically
 MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:i + 1) ]
+```
+
+```logo
+# Example: Draw and fill a lightweight text box
+BOX 30 4 ROUND
+GOTO 2 2
+FILL "hi
 ```
 
 ---
@@ -77,6 +96,8 @@ MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:
 
 `se` reads configuration settings from **`~/.serc`** (global settings) and **`./.serc`** (directory-specific local settings). Local configurations override global settings.
 
+`.serc` stays line-oriented and Nano-like, but it can bind LOGO snippets directly to keys. This keeps configuration small while still allowing real editor automation.
+
 ### Configuration Directives
 
 | Directive | Description | Example |
@@ -90,6 +111,9 @@ MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:
 | `unset autoreload` | Disables file system modification auto-reload | `unset autoreload` |
 | `set lang [zh_TW\|en]` | Sets UI language explicitly | `set lang zh_TW` |
 | `bind <key> <command_id>` | Binds custom key to editor command | `bind ctrl-f move.right` |
+| `bind <key> logo:<script>` | Binds a LOGO script to a key | `bind alt-h logo: MOVE HOME TYPE "# " MOVE END` |
+| `logo-prelude ... endlogo` | Loads editor-local LOGO variables and procedures at startup | `logo-prelude` |
+| `logo-script <name> ... endlogo` | Defines a named LOGO script for key bindings | `logo-script insert-title` |
 | `unbind <key>` | Unbinds existing key | `unbind f1` |
 
 ### Sample `~/.serc` File

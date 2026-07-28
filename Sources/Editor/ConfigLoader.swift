@@ -10,6 +10,8 @@ public struct EditorConfig {
     public var language: Language? = nil
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
+    public var logoPrelude: String = ""
+    public var logoScripts: [String: String] = [:]
     public var syntaxErrorCount: Int = 0
     public var loadedFilePath: String? = nil
 
@@ -89,6 +91,11 @@ public enum KeyParser {
 
 /// Loads and parses Nano/Vim-style directives from ~/.serc and ./.serc configuration files.
 public final class ConfigLoader {
+    private enum LogoBlock {
+        case prelude(lines: [String])
+        case script(name: String, lines: [String])
+    }
+
     public init() {}
 
     /// Loads configuration with cascading priority (~/.serc -> ./.serc).
@@ -117,8 +124,21 @@ public final class ConfigLoader {
         config.loadedFilePath = path
 
         let lines = content.components(separatedBy: .newlines)
+        var logoBlock: LogoBlock? = nil
+
         for rawLine in lines {
             let line = rawLine.trimmingCharacters(in: .whitespaces)
+
+            if let activeBlock = logoBlock {
+                if line.lowercased() == "endlogo" {
+                    commitLogoBlock(activeBlock, into: &config)
+                    logoBlock = nil
+                } else {
+                    logoBlock = Self.append(rawLine: rawLine, to: activeBlock)
+                }
+                continue
+            }
+
             if line.isEmpty || line.hasPrefix("#") { continue }
 
             let tokens = line.split(separator: " ", maxSplits: 2).map { String($0) }
@@ -211,7 +231,7 @@ public final class ConfigLoader {
             case "bind":
                 if tokens.count >= 3 {
                     let keyStr = tokens[1]
-                    let cmdId = tokens[2]
+                    let cmdId = Self.unquote(tokens[2])
                     if let key = KeyParser.parse(keyStr) {
                         config.customKeyBinds[key] = cmdId
                     } else {
@@ -233,10 +253,81 @@ public final class ConfigLoader {
                     config.syntaxErrorCount += 1
                 }
 
+            case "logo-prelude":
+                if tokens.count == 1 {
+                    logoBlock = .prelude(lines: [])
+                } else {
+                    config.syntaxErrorCount += 1
+                }
+
+            case "logo-script":
+                if tokens.count == 2 {
+                    let name = tokens[1].trimmingCharacters(in: .whitespacesAndNewlines)
+                    if name.isEmpty {
+                        config.syntaxErrorCount += 1
+                    } else {
+                        logoBlock = .script(name: name, lines: [])
+                    }
+                } else {
+                    config.syntaxErrorCount += 1
+                }
+
             default:
                 config.syntaxErrorCount += 1
             }
         }
+
+        if logoBlock != nil {
+            config.syntaxErrorCount += 1
+        }
+    }
+
+    private static func append(rawLine: String, to block: LogoBlock) -> LogoBlock {
+        let trimmed = rawLine.trimmingCharacters(in: .whitespaces)
+        if trimmed.hasPrefix("#") {
+            return block
+        }
+
+        switch block {
+        case .prelude(var lines):
+            lines.append(rawLine)
+            return .prelude(lines: lines)
+        case let .script(name, lines):
+            var updatedLines = lines
+            updatedLines.append(rawLine)
+            return .script(name: name, lines: updatedLines)
+        }
+    }
+
+    private func commitLogoBlock(_ block: LogoBlock, into config: inout EditorConfig) {
+        switch block {
+        case let .prelude(lines):
+            appendLogoPrelude(lines.joined(separator: "\n"), into: &config)
+        case let .script(name, lines):
+            config.logoScripts[name] = lines.joined(separator: "\n")
+        }
+    }
+
+    private func appendLogoPrelude(_ script: String, into config: inout EditorConfig) {
+        let trimmedScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedScript.isEmpty else { return }
+
+        if config.logoPrelude.isEmpty {
+            config.logoPrelude = trimmedScript
+        } else {
+            config.logoPrelude += "\n" + trimmedScript
+        }
+    }
+
+    private static func unquote(_ value: String) -> String {
+        guard value.count >= 2 else { return value }
+
+        let first = value.first
+        let last = value.last
+        if (first == "\"" && last == "\"") || (first == "'" && last == "'") {
+            return String(value.dropFirst().dropLast())
+        }
+        return value
     }
 
     /// Generates a clean default .serc configuration file with detailed comments and sample keybindings.
@@ -283,7 +374,32 @@ set autoReload on
 # Syntax: bind <key> <command_id>
 # Example: bind ctrl-f search.find
 # Example: bind alt-t table.toggle
+# Example: bind alt-h logo: MOVE HOME TYPE "# " MOVE END
 # Example: unbind ctrl-k
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# LOGO Prelude & Named Scripts
+# Prelude code runs once on the editor's persistent LOGO engine.
+# Named scripts can be triggered with bind <key> logo:<script-name>.
+#
+# logo-prelude
+#   MAKE "boxWidth 30
+#   TO FILLBOX :text
+#     BOX :boxWidth 4
+#     GOTO 2 2
+#     FILL :text
+#   END
+# endlogo
+#
+# logo-script insert-title
+#   BOX 40 3 ROUND
+#   GOTO 2 2
+#   FILL "-
+# endlogo
+#
+# bind alt-b logo:FILLBOX "hi
+# bind alt-t logo:insert-title
 # ------------------------------------------------------------------------------
 """
 }

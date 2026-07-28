@@ -33,8 +33,8 @@
 | `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
 | `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
 | `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE 2` |
-| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`) | `LINE 40`, `LINE 80 "double"` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`) | `VLINE 10`, `VLINE 5 "double"` |
+| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without `len`, draws up to 10 columns, stopping at text and fusing into borders. | `LINE`, `LINE 80 "double"` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without `height`, draws up to 10 rows, stopping at text and fusing into borders. | `VLINE`, `VLINE 5 "double"` |
 | `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL 5` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
 | `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL 3` |
@@ -230,11 +230,81 @@ You can bind LOGO macro scripts directly to custom keyboard shortcuts in `~/.ser
 # ~/.serc configuration file
 
 # Bind Alt+B to generate 5 numbered list items automatically
-bind alt-b "macro: MAKE 'i' 1 REPEAT 5 [ TYPE :i TYPE '. Item\n' MAKE 'i' (:i + 1) ]"
+bind alt-b macro: MAKE "i 1 REPEAT 5 [ TYPE :i TYPE ". Item\n" MAKE "i (:i + 1) ]
 
 # Bind Alt+H to insert Markdown Level 1 header prefix
-bind alt-h "macro: MOVE HOME TYPE '# ' MOVE END"
+bind alt-h macro: MOVE HOME TYPE "# " MOVE END
 ```
+
+### `.serc` LOGO Runtime Design
+
+The current `.serc` format is intentionally Nano-like: it is line-oriented, readable, and centered on simple directives such as `set`, `bind`, and `unbind`. LOGO support should extend that style without turning `.serc` into a general plugin system.
+
+Short LOGO macros can be written inline through key bindings:
+
+```nanorc
+bind alt-h logo: MOVE HOME TYPE "# " MOVE END
+bind alt-b logo: BOX 30 4 GOTO 2 2 FILL "hi
+```
+
+For longer automation, `.serc` supports named LOGO scripts:
+
+```nanorc
+logo-script insert-title
+  BOX 40 3 ROUND
+  GOTO 2 2
+  FILL "-
+endlogo
+
+bind alt-t logo:insert-title
+```
+
+The block is a `.serc` container, not a LOGO procedure. LOGO keeps its own procedure syntax inside the script:
+
+```nanorc
+logo-script fib-demo
+  TO FIB :n
+    IF (:n < 2) [ OUTPUT :n ]
+    OUTPUT (FIB (:n - 1) + FIB (:n - 2))
+  END
+
+  TYPE FIB 10
+endlogo
+
+bind alt-f logo:fib-demo
+```
+
+Editor startup also supports a LOGO prelude. The prelude is evaluated once when the editor's persistent LOGO engine is initialized, and the resulting variables and procedures remain available for later prompt commands and key-bound macros:
+
+```nanorc
+logo-prelude
+  MAKE "boxWidth 30
+
+  TO FILLBOX :text
+    BOX :boxWidth 4
+    GOTO 2 2
+    FILL :text
+  END
+endlogo
+
+bind alt-b logo: FILLBOX "hi
+bind alt-n logo: MAKE "boxWidth (:boxWidth + 2)
+```
+
+Runtime lifecycle rules:
+
+- Each editor instance owns one persistent `LogoEngine`.
+- `.serc` prelude code is evaluated into that engine when the editor initializes LOGO support.
+- Prompt-entered LOGO, inline key-bound LOGO, and named `.serc` scripts all execute on the same engine.
+- Variables and procedures are editor-local and live until the editor is closed.
+- `.serc` must not introduce a second function syntax; reusable LOGO logic belongs in `TO ... END` procedures.
+
+Compatibility policy:
+
+- Existing Nano-compatible directives should keep their current shape.
+- LOGO-specific directives are explicit and easy to identify: `logo-prelude`, `logo-script`, and `endlogo`.
+- `bind <key> logo:<script>` is supported for short one-line macros.
+- `bind <key> logo:<name>` resolves a named `logo-script` first, then falls back to inline execution for backward compatibility.
 
 ---
 
