@@ -71,6 +71,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case prevBuffer
     case openBuffer
     case closeBuffer
+    case saveBuffer
+    case fileSaveAndQuit
     case clearBuffer
     case getline
     case setline
@@ -256,8 +258,10 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BUFFER", "SETBUFFER"], .buffer),
         (["NEXTBUFFER"], .nextBuffer),
         (["PREVBUFFER"], .prevBuffer),
-        (["OPENBUFFER"], .openBuffer),
+        (["OPENBUFFER", "EDIT"], .openBuffer),
         (["CLOSEBUFFER"], .closeBuffer),
+        (["SAVE"], .saveBuffer),
+        (["FILE"], .fileSaveAndQuit),
         (["CLEARBUFFER", "ERASEBUFFER"], .clearBuffer),
         (["GETLINE"], .getline),
         (["SETLINE"], .setline),
@@ -381,6 +385,16 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
             }
         }
         return map
+    }()
+
+    /// All public command aliases accepted by the LOGO parser.
+    public static let keywordAliases: [String] = {
+        rawMappings
+            .flatMap { aliases, _ in aliases }
+            .sorted { lhs, rhs in
+                if lhs.count == rhs.count { return lhs < rhs }
+                return lhs.count > rhs.count
+            }
     }()
 
     /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum.

@@ -230,7 +230,9 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 | `BUFFER` | `SETBUFFER` | `BUFFER [idx]` | Switches to buffer by index or returns active index | `BUFFER 2` |
 | `NEXTBUFFER` | - | `NEXTBUFFER` | Switches to next open buffer tab | `NEXTBUFFER` |
 | `PREVBUFFER` | - | `PREVBUFFER` | Switches to previous open buffer tab | `PREVBUFFER` |
-| `OPENBUFFER` | - | `OPENBUFFER "path"` | Opens file path into a new buffer tab | `OPENBUFFER "main.swift"` |
+| `OPENBUFFER` | `EDIT` | `EDIT "path"` | Opens file path into a new buffer tab | `EDIT "main.swift"` |
+| `SAVE` | - | `SAVE ["path"]` | Saves the active buffer, optionally to a new path | `SAVE`, `SAVE "notes.txt"` |
+| `FILE` | - | `FILE ["path"]` | Saves the active buffer, then closes it | `FILE`, `FILE "notes.txt"` |
 | `CLOSEBUFFER` | - | `CLOSEBUFFER` | Closes active buffer tab | `CLOSEBUFFER` |
 | `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
 | `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE 1` |

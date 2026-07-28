@@ -34,6 +34,8 @@ public enum LogoEditorAction {
     case gotoLine(Int)
     case gotoCol(Int)
     case clearBuffer
+    case saveBuffer(path: String?)
+    case saveAndCloseBuffer(path: String?)
     case switchBuffer(index: Int)
     case openBuffer(path: String)
     case closeBuffer

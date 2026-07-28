@@ -66,6 +66,10 @@ extension Editor: LogoEngineDelegate {
             buffer.lineIndex = 0
             buffer.columnIndex = 0
             buffer.isModified = true
+        case .saveBuffer(let path):
+            saveCurrentBuffer(path: path)
+        case .saveAndCloseBuffer(let path):
+            saveAndCloseCurrentBuffer(path: path)
         case .switchBuffer(let idx):
             if idx >= 0 && idx < buffers.count {
                 currentBufferIndex = idx
@@ -118,6 +122,28 @@ extension Editor: LogoEngineDelegate {
             return buffer.isModified
         case .fileName:
             return buffer.filePath ?? "Untitled"
+        }
+    }
+
+    private func saveCurrentBuffer(path: String?) {
+        if let path, !path.isEmpty {
+            doSave(to: path)
+        } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
+            doSave(to: currentPath)
+        } else {
+            promptWriteFilePath()
+        }
+    }
+
+    private func saveAndCloseCurrentBuffer(path: String?) {
+        if let path, !path.isEmpty {
+            doSave(to: path)
+            closeCurrentBuffer()
+        } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
+            doSave(to: currentPath)
+            closeCurrentBuffer()
+        } else {
+            promptSaveAndExit()
         }
     }
 

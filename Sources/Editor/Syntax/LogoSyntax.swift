@@ -1,15 +1,20 @@
 import Foundation
+import LogoEngine
 
 public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let name = "LOGO"
     public let fileExtensions = ["logo", "lg", ".serc"]
 
+    private static let keywordPattern: String = {
+        let aliases = LogoPrimitive.keywordAliases
+            .map { NSRegularExpression.escapedPattern(for: $0) }
+            .joined(separator: "|")
+        return "(?<![A-Za-z0-9_.?])(\(aliases))(?![A-Za-z0-9_.?])"
+    }()
+
     public var rules: [SyntaxRule] {
         [
-            // LOGO Keywords (Built-in commands, editor controls, turtle graphics, conditionals)
-            makeRule(
-                "\\b(MAKE|VAR|SET|TYPE|PRINT|MSG|MESSAGE|SHOW|DEL|DELETE|BS|BACKSPACE|MOVE|MARK|CUT|PASTE|UNCUT|JUSTIFY|FIND|SEARCH|GOTO|BOX|LINE|HR|VLINE|VR|VHR|SORT|FILL|NEWLINE|NL|ENTER|DATE|TIME|PD|PENDOWN|PU|PENUP|FD|FORWARD|BK|BACK|BACKWARD|RT|RIGHT|LT|LEFT|IF|IFELSE|REPEAT|TO|END|EXEC)\\b",
-                .keyword),
+            makeRule(Self.keywordPattern, .keyword),
             // Variables (:var_name)
             makeRule(":[a-zA-Z0-9_]+", .typeOrAttribute),
             // Strings in double or single quotes

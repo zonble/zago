@@ -87,8 +87,8 @@ public final class LogoEngine {
         .make, .set, .type, .show, .delete, .backspace, .deleteLine,
         .move, .mark, .cut, .uncut, .justify, .goto, .box, .line, .hr, .vline, .vhr,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
-        .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .setline, .gotoline,
-        .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
+        .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .saveBuffer, .fileSaveAndQuit,
+        .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
         .runResult, .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
@@ -122,6 +122,16 @@ public final class LogoEngine {
     internal static func isStatementCommand(_ token: String) -> Bool {
         guard let prim = LogoPrimitive.from(token) else { return false }
         return statementCommands.contains(prim)
+    }
+
+    internal func optionalCommandArgument(_ tokens: [String], index: inout Int) -> String? {
+        guard index + 1 < tokens.count else { return nil }
+        let nextToken = tokens[index + 1]
+        guard !LogoEngine.isStatementCommand(nextToken), nextToken != "]", nextToken != ")" else {
+            return nil
+        }
+        index += 1
+        return unquote(evaluateExpression(tokens, index: &index))
     }
 
     public var lastResult: String? = nil
@@ -418,6 +428,16 @@ public final class LogoEngine {
 
             case .clearBuffer:
                 delegate.logoEngine(self, performAction: .clearBuffer)
+
+            case .saveBuffer:
+                let path = optionalCommandArgument(tokens, index: &index)
+                delegate.logoEngine(self, performAction: .saveBuffer(path: path))
+                hasSetStatusMessage = true
+
+            case .fileSaveAndQuit:
+                let path = optionalCommandArgument(tokens, index: &index)
+                delegate.logoEngine(self, performAction: .saveAndCloseBuffer(path: path))
+                hasSetStatusMessage = true
 
             case .gotoline:
                 index += 1
