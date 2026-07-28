@@ -231,3 +231,28 @@ import Foundation
         #expect(Bool(false), "Enter on Goto Line item should trigger gotoLine prompt mode")
     }
 }
+
+@Test func testSearchPromptMiddleSpaceInsertion() throws {
+    let editor = Editor()
+    editor.promptSearch()
+
+    // Type "hello"
+    for ch in "hello" {
+        editor.processPromptKey(.char(ch))
+    }
+    #expect(editor.promptInputText == "hello")
+    #expect(editor.promptCursorIndex == 5)
+
+    // Move cursor left 3 times (between 'e' and 'l')
+    editor.processPromptKey(.arrowLeft)
+    editor.processPromptKey(.arrowLeft)
+    editor.processPromptKey(.arrowLeft)
+    #expect(editor.promptCursorIndex == 2)
+
+    // Type space ' '
+    editor.processPromptKey(.char(" "))
+
+    // Expect "he llo", NOT "hello "!
+    #expect(editor.promptInputText == "he llo")
+    #expect(editor.promptCursorIndex == 3)
+}

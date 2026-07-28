@@ -85,7 +85,7 @@ public struct TraditionalChineseStrings {
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
         "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
         "helpview.file_8": "    ^G                 顯示本完整幫助說明頁面",
-        "helpview.file_9": "    F1 / ^M            開啟頂部主選單列 (Menu Bar)",
+        "helpview.file_9": "    F1 / Alt+M / ^M    開啟/關閉頂端選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 呼叫 LOGO 巨集指令 Prompt",

@@ -79,8 +79,15 @@ public final class Terminal {
         return (rows: 24, cols: 80) // Fallback default
     }
 
-    /// Reads a single byte from standard input.
-    private func readByte() -> UInt8? {
+    /// Reads a single byte from standard input with optional timeout in milliseconds.
+    private func readByte(timeoutMs: Int = 0) -> UInt8? {
+        if timeoutMs > 0 {
+            var fds = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+            let ret = poll(&fds, 1, Int32(timeoutMs))
+            guard ret > 0 && (fds.revents & Int16(POLLIN)) != 0 else {
+                return nil
+            }
+        }
         var byte: UInt8 = 0
         let n = read(STDIN_FILENO, &byte, 1)
         return n == 1 ? byte : nil
@@ -121,15 +128,15 @@ public final class Terminal {
             return .ctrl(Character(scalar))
 
         case 27:
-            // Escape Sequences
-            guard let b2 = readByte() else { return .esc }
+            // Escape Sequences (50ms timeout to detect standalone ESC key vs ANSI sequence)
+            guard let b2 = readByte(timeoutMs: 50) else { return .esc }
             if b2 == 8 || b2 == 127 {
                 // ESC + Backspace / Alt+Backspace / Ctrl+Backspace
                 return .ctrlBackspace
             }
             switch b2 {
             case UInt8(ascii: "["):
-                guard let b3 = readByte() else { return .esc }
+                guard let b3 = readByte(timeoutMs: 50) else { return .esc }
                 switch b3 {
                 case UInt8(ascii: "A"): return .arrowUp
                 case UInt8(ascii: "B"): return .arrowDown
@@ -143,7 +150,7 @@ public final class Terminal {
                 case UInt8(ascii: "F"): return .end
                 case UInt8(ascii: "1")...UInt8(ascii: "9"):
                     var seqString = String(UnicodeScalar(b3))
-                    while let nb = readByte() {
+                    while let nb = readByte(timeoutMs: 50) {
                         if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z")) || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z")) {
                             seqString.append(Character(UnicodeScalar(nb)))
                             break
@@ -179,7 +186,7 @@ public final class Terminal {
                 }
 
             case UInt8(ascii: "O"):
-                guard let b3 = readByte() else { return .esc }
+                guard let b3 = readByte(timeoutMs: 50) else { return .esc }
                 switch b3 {
                 case UInt8(ascii: "H"): return .home
                 case UInt8(ascii: "F"): return .end

@@ -17,7 +17,7 @@ public struct ToggleMenuBarCommand: Command {
     public let id: CommandID = .menuShow
     public let name = "Menu Bar"
     public let description = "Show top menu bar"
-    public let keys: [Key] = [.f1, .ctrl("M")]
+    public let keys: [Key] = [.f1, .ctrl("M"), .alt("m"), .alt("M")]
 
     public init() {}
 

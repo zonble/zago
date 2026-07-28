@@ -85,7 +85,7 @@ public struct EnglishStrings {
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
         "helpview.file_7": "    F4                 Save & Exit (save buffer and close/exit)",
         "helpview.file_8": "    ^G                 Display this help reference page",
-        "helpview.file_9": "    F1 / ^M            Toggle top Menu Bar",
+        "helpview.file_9": "    F1 / Alt+M / ^M    Toggle top Menu Bar",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Alt+L / Alt+: / F8 Prompt LOGO macro command line",

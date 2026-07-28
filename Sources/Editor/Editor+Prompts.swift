@@ -1,7 +1,8 @@
 import Foundation
 
 extension Editor {
-    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
+    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
+    // confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
     enum PromptMode {
         case none
         case saveFilePath(completion: (String?) -> Void)
@@ -201,11 +202,9 @@ extension Editor {
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }
@@ -220,11 +219,9 @@ extension Editor {
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }
@@ -239,11 +236,9 @@ extension Editor {
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }
@@ -296,11 +291,9 @@ extension Editor {
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
-                if !promptInputText.isEmpty {
-                    promptInputText.removeLast()
-                }
+                deletePromptBackspace()
             case .char(let ch):
-                promptInputText.append(ch)
+                insertPromptChar(ch)
             default:
                 break
             }
