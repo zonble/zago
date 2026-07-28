@@ -878,3 +878,35 @@ import Testing
     logoEngine.execute("CLEARBUFFER")
     #expect(editor.buffer.lines == [""])
 }
+
+@Test func testLogoSortPrimitive() {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    // 1. Basic numeric sorting
+    logoEngine.execute("MAKE \"a SORT [3 12 2]")
+    #expect(logoEngine.variables["a"] == "[2 3 12]")
+
+    // 2. String/Word sorting
+    logoEngine.execute("MAKE \"b SORT \"cba")
+    #expect(logoEngine.variables["b"] == "abc")
+
+    // 3. Descending keyword
+    logoEngine.execute("MAKE \"c SORT \"DESC [1 5 2]")
+    #expect(logoEngine.variables["c"] == "[5 2 1]")
+
+    // 4. Custom template predicate comparator
+    logoEngine.execute("MAKE \"d SORT [10 3 5] [?1 > ?2]")
+    #expect(logoEngine.variables["d"] == "[10 5 3]")
+}
+
+@Test func testPersistentLogoEngineState() {
+    let editor = Editor()
+
+    // Execution 1: Define variable and procedure on editor.logoEngine
+    editor.logoEngine.execute("MAKE \"val 42 TO GREET TYPE \"Hi END")
+
+    // Execution 2: Use previously defined variable and procedure on the persistent editor.logoEngine
+    editor.logoEngine.execute("TYPE :val GREET")
+    #expect(editor.buffer.lines[0] == "42Hi")
+}

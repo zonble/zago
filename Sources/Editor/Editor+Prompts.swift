@@ -499,10 +499,9 @@ extension Editor {
                 self?.setStatusMessage(L10n["status.cancelled"])
                 return
             }
-            let logoEngine = LogoEngine(delegate: self)
-            logoEngine.execute(script)
-            if !logoEngine.hasSetStatusMessage {
-                if let result = logoEngine.lastResult, !result.isEmpty {
+            self.logoEngine.execute(script)
+            if !self.logoEngine.hasSetStatusMessage {
+                if let result = self.logoEngine.lastResult, !result.isEmpty {
                     self.setStatusMessage(result)
                 } else {
                     self.setStatusMessage("")

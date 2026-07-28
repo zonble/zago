@@ -48,6 +48,8 @@ extension Editor: LogoEngineDelegate {
             while buffer.lines.count <= index {
                 buffer.lines.append("")
             }
+        case .refreshScreen:
+            refreshScreen()
         case .gotoLine(let row):
             buffer.lineIndex = max(0, min(row, buffer.lines.count - 1))
             buffer.clampCursor()
@@ -187,7 +189,6 @@ extension Editor {
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
-        let logoEngine = LogoEngine(delegate: self)
         logoEngine.execute(cleanScript)
 
         if !logoEngine.hasSetStatusMessage {

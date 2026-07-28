@@ -429,8 +429,12 @@ extension LogoEngine {
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+@_silgen_name("wcwidth")
+private func sys_wcwidth(_ c: Int32) -> Int32
 #elseif canImport(Musl)
 import Musl
+@_silgen_name("wcwidth")
+private func sys_wcwidth(_ c: Int32) -> Int32
 #endif
 
 extension Character {
@@ -438,9 +442,7 @@ extension Character {
         for scalar in self.unicodeScalars {
             #if canImport(Darwin)
             let w = wcwidth(wchar_t(scalar.value))
-            #elseif canImport(Glibc)
-            let w = wcwidth(Int32(scalar.value))
-            #elseif canImport(Musl)
+            #elseif canImport(Glibc) || canImport(Musl)
             let w = sys_wcwidth(Int32(scalar.value))
             #else
             let w = 1

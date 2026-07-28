@@ -39,6 +39,9 @@ public final class Editor {
 
     let spellChecker = SpellChecker()
 
+    // Persistent LOGO Macro Engine
+    public lazy var logoEngine: LogoEngine = LogoEngine(delegate: self)
+
     // Prompt state
     var currentPromptMode: PromptMode = .none
     var promptInputText: String = ""

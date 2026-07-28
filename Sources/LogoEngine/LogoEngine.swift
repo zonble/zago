@@ -58,7 +58,7 @@ public final class LogoEngine {
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .apply, .invoke, .foreach, .map, .mapSe, .filter, .reduce,
-        .crossmap, .to, .exec, .search
+        .crossmap, .to, .exec, .search, .sort
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
@@ -74,7 +74,7 @@ public final class LogoEngine {
         .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
         .iseq, .rseq, .random, .rerandom, .form, .bitAnd, .bitOr, .bitXor, .bitNot, .ashift, .lshift,
         .trueVal, .falseVal, .andLogic, .orLogic, .xorLogic, .notLogic,
-        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find
+        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find, .sort
     ]
 
     internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
@@ -668,6 +668,7 @@ public final class LogoEngine {
                 if index < tokens.count {
                     let timeStr = evaluateExpression(tokens, index: &index)
                     if let val = Double(timeStr), val > 0 {
+                        delegate.logoEngine(self, performAction: .refreshScreen)
                         let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || ProcessInfo.processInfo.processName.contains("XCTest") || ProcessInfo.processInfo.processName.contains("swiftpm-testing-helper")
                         let delay = isTesting ? min(val / 60000.0, 0.001) : val / 60.0
                         Thread.sleep(forTimeInterval: delay)

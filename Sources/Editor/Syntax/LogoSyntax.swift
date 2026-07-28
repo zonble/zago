@@ -8,7 +8,7 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
         [
             // LOGO Keywords (Built-in commands, editor controls, turtle graphics, conditionals)
             makeRule(
-                "\\b(MAKE|VAR|SET|TYPE|PRINT|MSG|MESSAGE|SHOW|DEL|DELETE|BS|BACKSPACE|MOVE|MARK|CUT|PASTE|UNCUT|JUSTIFY|FIND|SEARCH|GOTO|BOX|LINE|HR|VLINE|VHR|NEWLINE|NL|ENTER|DATE|TIME|PD|PENDOWN|PU|PENUP|FD|FORWARD|BK|BACK|BACKWARD|RT|RIGHT|LT|LEFT|IF|IFELSE|REPEAT|TO|END|EXEC)\\b",
+                "\\b(MAKE|VAR|SET|TYPE|PRINT|MSG|MESSAGE|SHOW|DEL|DELETE|BS|BACKSPACE|MOVE|MARK|CUT|PASTE|UNCUT|JUSTIFY|FIND|SEARCH|GOTO|BOX|LINE|HR|VLINE|VR|VHR|SORT|NEWLINE|NL|ENTER|DATE|TIME|PD|PENDOWN|PU|PENUP|FD|FORWARD|BK|BACK|BACKWARD|RT|RIGHT|LT|LEFT|IF|IFELSE|REPEAT|TO|END|EXEC)\\b",
                 .keyword),
             // Variables (:var_name)
             makeRule(":[a-zA-Z0-9_]+", .typeOrAttribute),

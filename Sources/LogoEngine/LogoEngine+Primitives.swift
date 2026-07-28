@@ -948,6 +948,63 @@ extension LogoEngine {
             }
             return "[" + results.joined(separator: " ") + "]"
 
+        case .sort:
+            index += 1
+            guard index < tokens.count else { return "[]" }
+            var isDesc = false
+            var customTemplate: String? = nil
+
+            let firstToken = tokens[index]
+            let firstUpper = unquote(firstToken).uppercased()
+
+            if firstUpper == "DESC" {
+                isDesc = true
+                index += 1
+            } else if firstUpper == "ASC" {
+                isDesc = false
+                index += 1
+            }
+
+            guard index < tokens.count else { return "[]" }
+            let targetValStr = evaluateExpression(tokens, index: &index)
+
+            if index + 1 < tokens.count && (tokens[index + 1].hasPrefix("[") || customProcedures[tokens[index + 1].uppercased()] != nil) {
+                index += 1
+                customTemplate = evaluateExpression(tokens, index: &index)
+            }
+
+            let parsed = LogoValue.parse(targetValStr)
+
+            func isLessThan(_ aStr: String, _ bStr: String) -> Bool {
+                if let t = customTemplate, !t.isEmpty {
+                    let res = applyTemplate(templateStr: t, args: [aStr, bStr])
+                    return logoIsTrue(res)
+                }
+                if let n1 = Double(aStr), let n2 = Double(bStr) {
+                    return isDesc ? n1 > n2 : n1 < n2
+                }
+                return isDesc ? aStr > bStr : aStr < bStr
+            }
+
+            switch parsed {
+            case .list(let items):
+                let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
+                return LogoValue.list(sortedItems).description
+
+            case .array(let items):
+                let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
+                return LogoValue.array(sortedItems).description
+
+            case .string(let s):
+                if customTemplate == nil {
+                    let sortedChars = isDesc ? Array(s).sorted(by: >) : Array(s).sorted(by: <)
+                    return String(sortedChars)
+                } else {
+                    let sortedChars = Array(s).map { String($0) }.sorted { isLessThan($0, $1) }
+                    return sortedChars.joined()
+                }
+            }
+
         case .date:
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"

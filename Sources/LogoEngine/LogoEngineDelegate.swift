@@ -18,6 +18,7 @@ public enum LogoEditorAction {
     case updateColumnIndex(Int)
     case setLine(index: Int, text: String)
     case ensureLineExists(index: Int)
+    case refreshScreen
 
     // Navigation & Editing Actions
     case moveLeft

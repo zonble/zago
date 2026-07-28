@@ -89,9 +89,9 @@ swift test
 
 ## 4. Key Subsystem Specifications
 
-### A. Command & Key Dispatch System ([`Command.swift`](file:///Users/zonble/Work/se/Sources/Editor/Command.swift))
+### A. Command & Key Dispatch System ([`Command.swift`](Sources/Editor/Command.swift))
 - Every key sequence (including Ctrl keys, Function keys F1–F12, Arrow keys, Shift+Arrows, Alt/Esc sequences) maps to a `Key` enum.
-- To add a new editor feature, register a new `Command` instance in [`Editor+Commands.swift`](file:///Users/zonble/Work/se/Sources/Editor/Editor+Commands.swift):
+- To add a new editor feature, register a new `Command` instance in [`Editor+Commands.swift`](Sources/Editor/Editor+Commands.swift):
   ```swift
   commandRegistry.register(Command(
       id: "feature.id",
@@ -103,9 +103,9 @@ swift test
   })
   ```
 
-### B. Softwrap Layout & CJK Display Width ([`LayoutEngine.swift`](file:///Users/zonble/Work/se/Sources/Editor/LayoutEngine.swift))
+### B. Softwrap Layout & CJK Display Width ([`LayoutEngine.swift`](Sources/Editor/LayoutEngine.swift))
 - Standard ASCII characters have a display width of `1`. Full-width CJK characters (Kanji/Hanzi, Hiragana, Katakana, Full-width Punctuation, Emoji) have a display width of `2`.
-- Terminal positioning and line padding MUST calculate column width via `String.displayWidth` / `Character.displayWidth` extensions in [`Terminal.swift`](file:///Users/zonble/Work/se/Sources/Editor/Terminal.swift).
+- Terminal positioning and line padding MUST calculate column width via `String.displayWidth` / `Character.displayWidth` extensions in [`Terminal.swift`](Sources/Editor/Terminal.swift).
 - Never use `String.count` for calculating visual layout bounds in the UI title bar, help bar, or screen cursor placement.
 
 ### C. Editor File Modularization Guidelines
@@ -115,12 +115,12 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 - **`Editor+Prompts.swift`**: Adding new prompt modes, dialog inputs, or interactive queries.
 - **`Editor+Undo.swift`**: Modifying snapshot capture, undo/redo stacks, or buffer state restoration.
 
-### D. Localization (i18n) Engine ([`Localization/`](file:///Users/zonble/Work/se/Sources/Editor/Localization/))
+### D. Localization (i18n) Engine ([`Localization/`](Sources/Editor/Localization/))
 - All user-facing strings (status bar messages, prompts, title bar labels, help bar items, full-screen help view lines) MUST be localized through `L10n`.
 - To add a new string key:
-  1. Add the string key to [`EnglishStrings.swift`](file:///Users/zonble/Work/se/Sources/Editor/Localization/EnglishStrings.swift).
-  2. Add the corresponding translation to [`TraditionalChineseStrings.swift`](file:///Users/zonble/Work/se/Sources/Editor/Localization/TraditionalChineseStrings.swift).
-  3. Reference it via `L10n["your.key"]` or a strongly typed accessor in [`Localization.swift`](file:///Users/zonble/Work/se/Sources/Editor/Localization/Localization.swift).
+  1. Add the string key to [`EnglishStrings.swift`](Sources/Editor/Localization/EnglishStrings.swift).
+  2. Add the corresponding translation to [`TraditionalChineseStrings.swift`](Sources/Editor/Localization/TraditionalChineseStrings.swift).
+  3. Reference it via `L10n["your.key"]` or a strongly typed accessor in [`Localization.swift`](Sources/Editor/Localization/Localization.swift).
 
 ---
 
