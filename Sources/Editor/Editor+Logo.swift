@@ -9,7 +9,11 @@ extension Editor: LogoEngineDelegate {
         case .clampCursor:
             buffer.clampCursor()
         case .insertText(let text):
-            buffer.insertString(text)
+            if isTableModeActive, currentTableCell != nil {
+                insertTextInCurrentTableCell(text)
+            } else {
+                buffer.insertString(text)
+            }
         case .insertNewline:
             buffer.insertNewline()
         case .setStatusMessage(let msg):
@@ -164,6 +168,70 @@ extension Editor: LogoEngineDelegate {
 }
 
 extension Editor {
+    private static let tableModeBlockedLogoPrimitives: Set<LogoPrimitive> = [
+        .box, .line, .hr, .vline, .vhr, .fill,
+        .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
+    ]
+
+    @discardableResult
+    func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
+        if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
+            setStatusMessage("[ \(blockedToken) disabled in Table Mode ]")
+            return false
+        }
+
+        logoEngine.execute(script)
+
+        if !logoEngine.hasSetStatusMessage {
+            if let result = logoEngine.lastResult, !result.isEmpty {
+                if let resultPrefix {
+                    setStatusMessage("\(resultPrefix)\(result)")
+                } else {
+                    setStatusMessage(result)
+                }
+            } else if let successStatus {
+                setStatusMessage(successStatus)
+            } else {
+                setStatusMessage("")
+            }
+        }
+
+        return true
+    }
+
+    private func firstTableModeBlockedLogoToken(in script: String) -> String? {
+        firstTableModeBlockedLogoToken(in: logoEngine.tokenize(script), visitedProcedures: [])
+    }
+
+    private func firstTableModeBlockedLogoToken(
+        in tokens: [String], visitedProcedures: Set<String>
+    ) -> String? {
+        for token in tokens {
+            if let primitive = LogoPrimitive.from(token),
+                Self.tableModeBlockedLogoPrimitives.contains(primitive)
+            {
+                return token.uppercased()
+            }
+
+            let procedureName = token.uppercased()
+            guard !visitedProcedures.contains(procedureName),
+                let procedure = logoEngine.customProcedures[procedureName]
+            else {
+                continue
+            }
+
+            var nextVisited = visitedProcedures
+            nextVisited.insert(procedureName)
+            if let blockedToken = firstTableModeBlockedLogoToken(
+                in: procedure.bodyTokens, visitedProcedures: nextVisited)
+            {
+                return blockedToken
+            }
+        }
+
+        return nil
+    }
+
     /// Evaluates LOGO code from selection mark, Markdown ```logo code fence, or current line/block.
     public func evalLogoCode() {
         let script: String
@@ -189,15 +257,7 @@ extension Editor {
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
-        logoEngine.execute(cleanScript)
-
-        if !logoEngine.hasSetStatusMessage {
-            if let result = logoEngine.lastResult, !result.isEmpty {
-                setStatusMessage("[Eval] \(result)")
-            } else {
-                setStatusMessage(L10n["status.logo_evaluated"])
-            }
-        }
+        runLogoScript(cleanScript, resultPrefix: "[Eval] ", successStatus: L10n["status.logo_evaluated"])
     }
 
     private func extractMarkdownLogoFence() -> String? {

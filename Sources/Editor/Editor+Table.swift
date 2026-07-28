@@ -179,6 +179,65 @@ extension Editor {
         buffer.columnIndex = max(cell.innerMinCol, min(buffer.columnIndex, maxCol))
     }
 
+    /// Inserts LOGO output into the active table cell without shifting or overwriting borders.
+    func insertTextInCurrentTableCell(_ text: String) {
+        guard isTableModeActive, let cell = currentTableCell else {
+            buffer.insertString(text)
+            return
+        }
+
+        for ch in text {
+            if ch.isNewline {
+                guard buffer.lineIndex < cell.innerMaxLine else { break }
+                buffer.lineIndex += 1
+                buffer.columnIndex = cell.innerMinCol
+                continue
+            }
+
+            if buffer.lineIndex < cell.innerMinLine || buffer.lineIndex > cell.innerMaxLine {
+                break
+            }
+
+            if buffer.columnIndex > cell.innerMaxCol {
+                guard buffer.lineIndex < cell.innerMaxLine else { break }
+                buffer.lineIndex += 1
+                buffer.columnIndex = cell.innerMinCol
+            }
+
+            guard insertCharacterInCurrentTableCell(ch, cell: cell) else { break }
+        }
+
+        clampTableModeCursor()
+    }
+
+    private func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell) -> Bool {
+        guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return false }
+        guard buffer.columnIndex >= cell.innerMinCol && buffer.columnIndex <= cell.innerMaxCol else { return false }
+
+        let displayWidth = ch.displayWidth
+        var lineChars = Array(buffer.lines[buffer.lineIndex])
+        guard cell.innerMaxCol < lineChars.count else { return false }
+
+        var spaceIndices: [Int] = []
+        for idx in stride(from: cell.innerMaxCol, through: cell.innerMinCol, by: -1) {
+            if idx < lineChars.count && lineChars[idx] == " " {
+                spaceIndices.append(idx)
+                if spaceIndices.count == displayWidth { break }
+            }
+        }
+
+        guard spaceIndices.count == displayWidth else { return false }
+
+        for spaceIdx in spaceIndices {
+            lineChars.remove(at: spaceIdx)
+        }
+        lineChars.insert(ch, at: buffer.columnIndex)
+        buffer.lines[buffer.lineIndex] = String(lineChars)
+        buffer.columnIndex += 1
+        buffer.isModified = true
+        return true
+    }
+
     /// Prompts user to confirm creating a 3x3 table when no cell is found.
     public func promptCreateTableConfirm() {
         currentPromptMode = .confirmCreateTable(completion: { [weak self] confirm in
@@ -287,9 +346,9 @@ extension Editor {
     /// Navigates to next table cell to the right or next row (Tab).
     public func navigateNextTableCell() {
         guard let cell = currentTableCell else { return }
-        let nextCol = cell.maxCol + 2
         let detector = TableCellDetector()
-        if let nextCell = detector.detectCell(in: buffer.lines, line: cell.innerMinLine, col: nextCol) {
+
+        if let nextCell = findNextCellToRight(of: cell, on: buffer.lineIndex, detector: detector) {
             enterTableMode(with: nextCell)
             return
         }
@@ -306,6 +365,26 @@ extension Editor {
                 }
             }
         }
+    }
+
+    private func findNextCellToRight(
+        of cell: TableCell, on targetLine: Int, detector: TableCellDetector
+    ) -> TableCell? {
+        guard targetLine >= 0 && targetLine < buffer.lines.count else { return nil }
+
+        let chars = Array(buffer.lines[targetLine])
+        guard cell.maxCol + 1 < chars.count else { return nil }
+
+        for col in (cell.maxCol + 1)..<chars.count {
+            guard let candidate = detector.detectCell(in: buffer.lines, line: targetLine, col: col) else {
+                continue
+            }
+            if candidate.minCol >= cell.maxCol && candidate.maxCol > cell.maxCol {
+                return candidate
+            }
+        }
+
+        return nil
     }
 
     /// Navigates to table cell above (Up Arrow at top row of cell).

@@ -31,6 +31,23 @@ import Testing
     #expect(cell4?.maxCol == 34)
 }
 
+@Test func testTableCellDetectorTreatsJunctionAsVerticalBoundary() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌────────────────┬─",
+        "│ Cell           ├─",
+        "└────────────────┴─",
+    ]
+
+    let cell = detector.detectCell(in: lines, line: 1, col: 5)
+    #expect(cell != nil)
+    #expect(cell?.minLine == 0)
+    #expect(cell?.maxLine == 2)
+    #expect(cell?.minCol == 0)
+    #expect(cell?.maxCol == 17)
+    #expect(cell?.style == .single)
+}
+
 @Test func testTableCellDetectorMarkdownTable() throws {
     let detector = TableCellDetector()
     let lines = [
@@ -192,6 +209,36 @@ import Testing
     #expect(editor.currentTableCell?.minCol == 0)  // First cell of Row 2
 }
 
+@Test func testTableModeTabNavigatesAcrossConnectorToRightBox() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐   ┌────────────────────────────┐",
+        "│        │   │            zzzz            │",
+        "│ aaaaa  ├───┤            zzzz            │",
+        "└─┬──────┘   └────────────────────────────┘",
+        "  │",
+        "┌─┴────────────────────────────────────┐",
+        "│                                      │",
+        "│                                      │",
+        "│                                      │",
+        "└──────────────────────────────────────┘",
+    ]
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 3
+
+    editor.toggleTableMode()
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.currentTableCell?.maxCol == 9)
+
+    editor.processKey(.tab)
+
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell?.minCol == 13)
+    #expect(editor.currentTableCell?.maxCol == 42)
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 14)
+}
+
 @Test func testTableModeGreenBackgroundRendering() throws {
     let editor = Editor()
     editor.buffer.lines = [
@@ -231,6 +278,73 @@ import Testing
     // 5th character MUST be blocked! Line MUST remain "│1234│"
     let line = editor.buffer.lines[1]
     #expect(line == "│1234│")
+}
+
+@Test func testTableModeCtrlQLogoPrintDoesNotOverflowCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────────────┐",
+        "│TYPE \"ABCDEFGHIJ        │",
+        "└────────────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 17
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines[1] == "│TYPE \"ABCDEFGHIJABCDEFGH│")
+    #expect(editor.buffer.lines[1].count == 26)
+    #expect(editor.buffer.lines[1].last == "│")
+}
+
+@Test func testTableModeCtrlQBlocksLogoDrawingCommands() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────┐",
+        "│BOX 8 3     │",
+        "└────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 8
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────┐",
+        "│BOX 8 3     │",
+        "└────────────┘",
+    ])
+    #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
+}
+
+@Test func testTableModeBlocksProcedureContainingLogoDrawingCommand() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("TO DRAWBOX BOX 8 3 END")
+    editor.buffer.lines = [
+        "┌────────────┐",
+        "│DRAWBOX     │",
+        "└────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 8
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────┐",
+        "│DRAWBOX     │",
+        "└────────────┘",
+    ])
+    #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
 }
 
 @Test func testTableModeUpDownArrowNavigation() throws {

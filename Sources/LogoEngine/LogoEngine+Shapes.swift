@@ -710,6 +710,7 @@ extension LogoEngine {
         }
 
         var cellsToFill: [[Int]] = []
+        var escapedRegion = false
 
         while !queue.isEmpty && cellsToFill.count < 10000 {
             let curr = queue.removeFirst()
@@ -727,13 +728,24 @@ extension LogoEngine {
             for n in neighbors {
                 let nr = n[0]
                 let nc = n[1]
-                if nr >= 0 && nr < maxRows && nc >= 0 && nc < maxCols {
-                    if !visited.contains([nr, nc]) {
-                        visited.insert([nr, nc])
-                        queue.append([nr, nc])
-                    }
+                if nr < 0 || nr >= maxRows || nc < 0 || nc >= maxCols {
+                    escapedRegion = true
+                    continue
+                }
+
+                if !visited.contains([nr, nc]) {
+                    visited.insert([nr, nc])
+                    queue.append([nr, nc])
                 }
             }
+        }
+
+        if escapedRegion || cellsToFill.count >= 10000 {
+            editor.logoEngine(
+                self,
+                performAction: .setStatusMessage("[ Fill requires an enclosed region or explicit size ]"))
+            hasSetStatusMessage = true
+            return
         }
 
         let cellsByRow = Dictionary(grouping: cellsToFill) { $0[0] }

@@ -1055,6 +1055,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines[1] == "│hihihihihihihihihihihihihihi│")
     #expect(editor.buffer.lines[2] == "│hihihihihihihihihihihihihihi│")
     #expect(editor.buffer.lines[1].displayWidth == 30)
+
+    // 10. Flood fill without an enclosed region is rejected instead of filling the open buffer.
+    logoEngine.execute("CLEARBUFFER TYPE \"open area\" GOTO 1 1 FILL \".\"")
+    #expect(editor.buffer.lines == ["open area"])
+    #expect(editor.statusMessage == "[ Fill requires an enclosed region or explicit size ]")
 }
 
 @Test func testUnknownOrExpressionCommandDoesNotHang() {

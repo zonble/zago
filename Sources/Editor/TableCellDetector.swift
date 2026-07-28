@@ -40,7 +40,9 @@ public final class TableCellDetector {
     public init() {}
 
     private static let verticalBorderChars: Set<Character> = [
-        "│", "║", "|", "+",
+        "│", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
+        "║", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
+        "|", "+",
     ]
 
     private static let horizontalBorderChars: Set<Character> = [

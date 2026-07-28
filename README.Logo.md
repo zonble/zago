@@ -42,7 +42,130 @@
 
 ---
 
-### 2. Classical Turtle Graphics & ASCII Diagram Pen Mode
+### 2. Common Drawing Commands: `BOX`, `LINE`, and `VLINE`
+
+`BOX` and line drawing are the most useful LOGO commands for turning a plain text buffer into a structured terminal canvas. They are intended for fast notes, diagrams, forms, and lightweight layouts.
+
+#### `BOX`
+
+`BOX` draws a frame at the current cursor position. It supports three common forms:
+
+```logo
+BOX "Hello"
+BOX 30 4
+BOX SELECTION
+```
+
+Text boxes size themselves from the text:
+
+```logo
+BOX "Status" "center" "round"
+```
+
+```text
+╭────────╮
+│ Status │
+╰────────╯
+```
+
+Empty boxes use explicit visual dimensions:
+
+```logo
+BOX 30 4 ROUND
+GOTO 2 2
+FILL "hi
+```
+
+```text
+╭────────────────────────────╮
+│hihihihihihihihihihihihihihi│
+│hihihihihihihihihihihihihihi│
+╰────────────────────────────╯
+```
+
+`BOX SELECTION` frames the current selected region:
+
+```logo
+MARK
+MOVE DOWN
+BOX SELECTION DOUBLE
+```
+
+Supported alignments for text boxes:
+
+- `left`
+- `center` / `centre`
+- `right`
+
+Supported styles:
+
+- `single`: `┌ ┐ └ ┘ ─ │`
+- `double`: `╔ ╗ ╚ ╝ ═ ║`
+- `round` / `rounded`: `╭ ╮ ╰ ╯ ─ │`
+- `double-round`: rounded corners with double horizontal and vertical strokes where possible
+- `ascii`: `+ - |`
+
+Box drawing is overlay-oriented: existing text at the target coordinates can be replaced by the frame. Use `GOTO` first when positioning matters.
+
+#### `LINE` and `VLINE`
+
+`LINE` draws horizontally from the cursor. `VLINE` draws vertically from the cursor.
+
+```logo
+LINE 20
+VLINE 5
+LINE 30 DOUBLE
+VLINE 4 ASCII
+```
+
+With an explicit length or height, the command draws exactly that distance, up to the implementation limits:
+
+- `LINE`: 1 to 200 columns
+- `VLINE`: 1 to 100 rows
+
+Without an explicit length, the command uses auto-connect mode:
+
+```logo
+LINE
+VLINE
+```
+
+Auto-connect mode:
+
+- scans up to 10 columns for `LINE`, or 10 rows for `VLINE`
+- draws through empty space
+- stops before regular text
+- fuses into an existing border or junction, then stops
+
+This makes it practical to connect boxes without counting exact distances:
+
+```logo
+BOX 10 4
+GOTO 3 10
+LINE
+```
+
+If the line reaches another border within 10 columns, the endpoint becomes a junction instead of overwriting the border.
+
+`LINE` and `VLINE` use smart junction fusion with existing single-line and double-line box characters. For example:
+
+```logo
+BOX 6 3
+GOTO 1 3
+VLINE 3
+```
+
+```text
+┌─┬──┐
+│ │  │
+└─┴──┘
+```
+
+Use explicit lengths when you want deterministic drawing. Use no-argument auto-connect mode when you are drawing connectors between nearby boxes.
+
+---
+
+### 3. Classical Turtle Graphics & ASCII Diagram Pen Mode
 
 > For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [docs/logo_pen_mode.md](docs/logo_pen_mode.md).
 
@@ -57,7 +180,30 @@
 
 ---
 
-### 3. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
+### 4. Table Mode Safety
+
+When Table Mode is active, LOGO execution is constrained to protect the current table cell structure.
+
+Allowed behavior:
+
+- `TYPE` / `PRINT` may insert text into the active cell.
+- Text output is clipped to the editable cell area and will not shift, overwrite, or pass the right border.
+- Newlines move within the active cell; output stops when it would leave the cell.
+- Non-drawing expressions, variables, procedures, status messages, and data operations remain available.
+
+Disabled while Table Mode is active:
+
+- `BOX`
+- `LINE` / `HR`
+- `VLINE` / `VR` / `VHR`
+- `FILL`
+- Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
+
+This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prompt, and `.serc` key-bound macros. It also applies when a called `TO ... END` procedure contains one of the disabled drawing commands.
+
+---
+
+### 5. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -75,7 +221,7 @@
 
 ---
 
-### 4. Multi-Buffer & Buffer Operations
+### 6. Multi-Buffer & Buffer Operations
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -98,7 +244,7 @@
 
 ---
 
-### 5. Data Structures: Lists, Arrays, Words & Sorting
+### 7. Data Structures: Lists, Arrays, Words & Sorting
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -135,7 +281,7 @@
 
 ---
 
-### 6. Predicates & Type Checking
+### 8. Predicates & Type Checking
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -156,7 +302,7 @@
 
 ---
 
-### 7. Logical, Math & Bitwise Operations
+### 9. Logical, Math & Bitwise Operations
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -182,7 +328,7 @@
 
 ---
 
-### 8. Conditionals, Loops & Higher-Order Functions
+### 10. Conditionals, Loops & Higher-Order Functions
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -211,7 +357,7 @@
 
 ---
 
-### 9. Editor Configuration Settings (`SET`)
+### 11. Editor Configuration Settings (`SET`)
 
 | Setting Command | Description | Example |
 | :--- | :--- | :--- |

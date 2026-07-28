@@ -235,15 +235,7 @@ public final class Editor {
                 let customCmd = BlockCommand(
                     id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]
                 ) { editor in
-                    let engine = editor.logoEngine
-                    engine.execute(script)
-                    if !engine.hasSetStatusMessage {
-                        if let result = engine.lastResult, !result.isEmpty {
-                            editor.setStatusMessage(result)
-                        } else {
-                            editor.setStatusMessage("")
-                        }
-                    }
+                    editor.runLogoScript(script)
                 }
                 commandRegistry.bind(key: key, command: customCmd)
             } else if let targetId = CommandID(rawValue: cmdId) {

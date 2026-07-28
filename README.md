@@ -44,6 +44,7 @@ LOGO is the lightweight programming surface of `se`: commands read like actions,
 - **Input History**: Press **`Up` / `Down` Arrow keys** inside the prompt to cycle through previously executed LOGO commands.
 - **Atomic Undo**: Pressing **`^Z`** once after running a macro will revert all changes made by the script in a single step.
 - **Reusable Procedures**: Define editor-local LOGO procedures with `TO ... END`, then call them from the prompt or from `.serc` keybindings.
+- **Table Mode Safety**: While Table Mode is active, LOGO text output is clipped to the active cell and drawing primitives such as `BOX`, `LINE`, `VLINE`, `FILL`, and turtle pen commands are disabled to protect table borders.
 - **Full Guide & Specifications**: See [README.Logo.md](README.Logo.md) for full language specifications, command references, and practical script examples.
 
 ```logo
