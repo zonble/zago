@@ -225,7 +225,13 @@ public final class Editor {
                     guard let self = self else { return }
                     let engine = LogoEngine(delegate: self)
                     engine.execute(script)
-                    self.setStatusMessage(L10n["status.logo_executed"])
+                    if !engine.hasSetStatusMessage {
+                        if let result = engine.lastResult, !result.isEmpty {
+                            self.setStatusMessage(result)
+                        } else {
+                            self.setStatusMessage("")
+                        }
+                    }
                 }
                 commandRegistry.bind(key: key, command: customCmd)
             } else if let targetId = CommandID(rawValue: cmdId) {

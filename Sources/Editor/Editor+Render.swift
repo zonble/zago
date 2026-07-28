@@ -480,6 +480,12 @@ extension Editor {
             virtualLines: virtualLines
         )
 
+        if deltaRow > 0 && cursorVLineIdx == virtualLines.count - 1 {
+            let lastLineText = buffer.lines[buffer.lineIndex]
+            buffer.columnIndex = lastLineText.count
+            return
+        }
+
         let targetVLineIdx = max(0, min(cursorVLineIdx + deltaRow, virtualLines.count - 1))
         let currentVLine = virtualLines[cursorVLineIdx]
         let vLineChars = Array(currentVLine.text)

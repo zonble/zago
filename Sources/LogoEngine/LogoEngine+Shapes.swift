@@ -1,17 +1,6 @@
 import Foundation
 
 extension LogoEngine {
-    internal func executeDateCommand(_ tokens: [String], index: inout Int) {
-        guard let editor = self.delegate else { return }
-        let dateStr = evaluateTokenOrCommand(tokens, index: &index)
-        editor.logoEngine(self, didRequestInsertText: dateStr)
-    }
-
-    internal func executeTimeCommand(_ tokens: [String], index: inout Int) {
-        guard let editor = self.delegate else { return }
-        let timeStr = evaluateTokenOrCommand(tokens, index: &index)
-        editor.logoEngine(self, didRequestInsertText: timeStr)
-    }
 
     internal func executeLineCommand(_ tokens: [String], index: inout Int) {
         guard let editor = self.delegate else { return }

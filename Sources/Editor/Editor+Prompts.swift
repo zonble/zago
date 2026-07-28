@@ -498,7 +498,11 @@ extension Editor {
             let logoEngine = LogoEngine(delegate: self)
             logoEngine.execute(script)
             if !logoEngine.hasSetStatusMessage {
-                self.setStatusMessage(L10n["status.logo_executed"])
+                if let result = logoEngine.lastResult, !result.isEmpty {
+                    self.setStatusMessage(result)
+                } else {
+                    self.setStatusMessage("")
+                }
             }
         })
     }

@@ -52,6 +52,8 @@ public final class LogoEngine {
         "SUBSTRINGP", "COUNT", "ASCII", "CHAR", "MEMBER", "UPPERCASE", "LOWERCASE"
     ]
 
+    public var lastResult: String? = nil
+
     public weak var delegate: LogoEngineDelegate?
 
     public init(delegate: LogoEngineDelegate? = nil) {
@@ -61,6 +63,8 @@ public final class LogoEngine {
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
     public func execute(_ script: String) {
         guard let delegate = self.delegate else { return }
+        lastResult = nil
+        hasSetStatusMessage = false
 
         let tokens = tokenize(script)
         guard !tokens.isEmpty else { return }
@@ -267,12 +271,6 @@ public final class LogoEngine {
                 index += 1
                 executeNewlineCommand(tokens, index: &index)
 
-            case "DATE":
-                executeDateCommand(tokens, index: &index)
-
-            case "TIME":
-                executeTimeCommand(tokens, index: &index)
-
             // Conditional Logic Commands
             case "IF":
                 index += 1
@@ -474,6 +472,11 @@ public final class LogoEngine {
                 if let procTokens = customProcedures[upper] {
                     var procIndex = 0
                     executeTokens(procTokens, index: &procIndex)
+                } else {
+                    let exprResult = evaluateExpression(tokens, index: &index)
+                    if !exprResult.isEmpty {
+                        lastResult = exprResult
+                    }
                 }
             }
 

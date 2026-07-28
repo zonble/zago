@@ -256,3 +256,15 @@ import Foundation
     #expect(editor.promptInputText == "he llo")
     #expect(editor.promptCursorIndex == 3)
 }
+
+@Test func testLastLineDownKeyMovesToEOL() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["First Line", "Last Line"]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 0 // At start of "Last Line"
+
+    editor.processKey(.arrowDown)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 9) // EOL of "Last Line"
+}
+

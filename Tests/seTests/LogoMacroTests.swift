@@ -135,7 +135,7 @@ import Foundation
     // 16. LOGO DATE and TIME Command test
     let dateTimeEditor = Editor()
     logoEngine.delegate = dateTimeEditor
-    logoEngine.execute("DATE \"yyyy-MM-dd\" TYPE \" \" TIME \"HH:mm\"")
+    logoEngine.execute("TYPE DATE \"yyyy-MM-dd\" TYPE \" \" TYPE TIME \"HH:mm\"")
     let outputText = dateTimeEditor.buffer.lines[0]
     #expect(outputText.contains("-"))
     #expect(outputText.contains(":"))
@@ -401,3 +401,29 @@ import Foundation
     #expect(editor.buffer.lines[2] == "│ Delegate Text │")
     #expect(editor.buffer.lines[3] == "└───────────────┘")
 }
+
+@Test func testBoxDateExpression() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+    logoEngine.execute("BOX DATE \"YYYY\"")
+    let currentYear = String(Calendar.current.component(.year, from: Date()))
+    #expect(editor.buffer.lines.count >= 3)
+    #expect(editor.buffer.lines[1].contains(currentYear))
+}
+
+@Test func testLastResultEvaluation() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("1 + 2")
+    #expect(logoEngine.lastResult == "3")
+
+    logoEngine.execute("WORD \"Hello\" \"World\"")
+    #expect(logoEngine.lastResult == "HelloWorld")
+
+    logoEngine.execute("DATE \"yyyy\"")
+    let currentYear = String(Calendar.current.component(.year, from: Date()))
+    #expect(logoEngine.lastResult == currentYear)
+}
+
+
