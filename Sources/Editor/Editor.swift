@@ -223,8 +223,8 @@ public final class Editor {
                 }
                 let customCmd = BlockCommand(id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]) { [weak self] editor in
                     guard let self = self else { return }
-                    let engine = LogoEngine()
-                    engine.execute(script, on: self)
+                    let engine = LogoEngine(delegate: self)
+                    engine.execute(script)
                     self.setStatusMessage(L10n["status.logo_executed"])
                 }
                 commandRegistry.bind(key: key, command: customCmd)

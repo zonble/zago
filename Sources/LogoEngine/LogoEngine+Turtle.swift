@@ -22,8 +22,8 @@ extension LogoEngine {
         8: "═", 9: "╝", 10: "═", 11: "╩", 12: "╗", 13: "╣", 14: "╦", 15: "╬"
     ]
 
-    internal func executeTurtleMove(steps: Int, directionHeading: Int, on editor: LogoEditorContext) {
-        guard steps > 0 else { return }
+    internal func executeTurtleMove(steps: Int, directionHeading: Int) {
+        guard steps > 0, let editor = self.delegate else { return }
         let (dRow, dCol, exitBit, entryBit): (Int, Int, Int, Int) = {
             switch directionHeading {
             case 0: return (-1, 0, 1, 4)   // UP: exit UP (1), entry DOWN (4)
@@ -37,49 +37,51 @@ extension LogoEngine {
         guard exitBit != 0 else { return }
 
         for step in 0..<steps {
-            let currLine = editor.lineIndex
-            let currCol = editor.columnIndex
+            let currLine = editor.logoEngineCurrentLineIndex(self)
+            let currCol = editor.logoEngineCurrentColumnIndex(self)
 
             if isPenDown {
-                editor.ensureLineExists(at: currLine)
-                var lineChars = Array(editor.getLine(at: currLine))
+                editor.logoEngine(self, ensureLineExistsAt: currLine)
+                var lineChars = Array(editor.logoEngine(self, lineAt: currLine))
                 while lineChars.count <= currCol {
                     lineChars.append(" ")
                 }
                 let existingChar = lineChars[currCol]
                 let defaultNewChar: Character = (dRow != 0) ? "│" : "─"
                 let maskToApply = (step == 0) ? exitBit : ((step == steps - 1) ? entryBit : (exitBit | entryBit))
-                let fusedChar = fuseCharContextual(editor: editor, line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar, moveMask: maskToApply)
+                let fusedChar = fuseCharContextual(line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar, moveMask: maskToApply)
                 lineChars[currCol] = fusedChar
-                editor.setLine(at: currLine, text: String(lineChars))
-                editor.markBufferModified()
+                editor.logoEngine(self, setLineAt: currLine, text: String(lineChars))
+                editor.logoEngineDidMarkBufferModified(self)
             }
 
             if step < steps - 1 {
                 let nextLine = max(0, currLine + dRow)
                 let nextCol = max(0, currCol + dCol)
-                editor.lineIndex = nextLine
-                editor.columnIndex = nextCol
+                editor.logoEngine(self, didUpdateLineIndex: nextLine)
+                editor.logoEngine(self, didUpdateColumnIndex: nextCol)
             }
         }
     }
 
-    internal func getLineCharAt(_ editor: LogoEditorContext, line: Int, col: Int) -> Character {
-        guard line >= 0 && line < editor.lineCount else { return " " }
-        let lineChars = Array(editor.getLine(at: line))
+    internal func getLineCharAt(line: Int, col: Int) -> Character {
+        guard let editor = self.delegate else { return " " }
+        guard line >= 0 && line < editor.logoEngineLineCount(self) else { return " " }
+        let lineChars = Array(editor.logoEngine(self, lineAt: line))
         guard col >= 0 && col < lineChars.count else { return " " }
         return lineChars[col]
     }
 
-    internal func setLineCharAt(_ editor: LogoEditorContext, line: Int, col: Int, char: Character) {
-        editor.ensureLineExists(at: line)
-        var lineChars = Array(editor.getLine(at: line))
+    internal func setLineCharAt(line: Int, col: Int, char: Character) {
+        guard let editor = self.delegate else { return }
+        editor.logoEngine(self, ensureLineExistsAt: line)
+        var lineChars = Array(editor.logoEngine(self, lineAt: line))
         while lineChars.count <= col {
             lineChars.append(" ")
         }
         lineChars[col] = char
-        editor.setLine(at: line, text: String(lineChars))
-        editor.markBufferModified()
+        editor.logoEngine(self, setLineAt: line, text: String(lineChars))
+        editor.logoEngineDidMarkBufferModified(self)
     }
 
     internal func getMaskForChar(_ ch: Character) -> Int {
@@ -90,18 +92,18 @@ extension LogoEngine {
         return LogoEngine.singleMasks[ch] != nil || LogoEngine.doubleMasks[ch] != nil
     }
 
-    internal func getEffectiveMask(editor: LogoEditorContext, line: Int, col: Int, existingChar: Character) -> Int {
+    internal func getEffectiveMask(line: Int, col: Int, existingChar: Character) -> Int {
         var mask = getMaskForChar(existingChar)
         guard mask != 0 else { return 0 }
 
         if mask == 10 {
-            let rightCh = getLineCharAt(editor, line: line, col: col + 1)
-            let leftCh = getLineCharAt(editor, line: line, col: col - 1)
+            let rightCh = getLineCharAt(line: line, col: col + 1)
+            let leftCh = getLineCharAt(line: line, col: col - 1)
             if !isMaskChar(rightCh) { mask &= ~2 }
             if !isMaskChar(leftCh) { mask &= ~8 }
         } else if mask == 5 {
-            let downCh = getLineCharAt(editor, line: line + 1, col: col)
-            let upCh = getLineCharAt(editor, line: line - 1, col: col)
+            let downCh = getLineCharAt(line: line + 1, col: col)
+            let upCh = getLineCharAt(line: line - 1, col: col)
             if !isMaskChar(downCh) { mask &= ~4 }
             if !isMaskChar(upCh) { mask &= ~1 }
         }
@@ -109,8 +111,8 @@ extension LogoEngine {
         return mask
     }
 
-    internal func fuseCharContextual(editor: LogoEditorContext, line: Int, col: Int, existing: Character, defaultNewChar: Character, moveMask: Int) -> Character {
-        let existingMask = getEffectiveMask(editor: editor, line: line, col: col, existingChar: existing)
+    internal func fuseCharContextual(line: Int, col: Int, existing: Character, defaultNewChar: Character, moveMask: Int) -> Character {
+        let existingMask = getEffectiveMask(line: line, col: col, existingChar: existing)
         guard existingMask != 0 else { return defaultNewChar }
 
         let isDouble = LogoEngine.doubleMasks[existing] != nil || LogoEngine.doubleMasks[defaultNewChar] != nil

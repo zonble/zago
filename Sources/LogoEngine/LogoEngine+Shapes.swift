@@ -1,17 +1,20 @@
 import Foundation
 
 extension LogoEngine {
-    internal func executeDateCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeDateCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
         let dateStr = evaluateTokenOrCommand(tokens, index: &index)
-        editor.insertString(dateStr)
+        editor.logoEngine(self, didRequestInsertText: dateStr)
     }
 
-    internal func executeTimeCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeTimeCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
         let timeStr = evaluateTokenOrCommand(tokens, index: &index)
-        editor.insertString(timeStr)
+        editor.logoEngine(self, didRequestInsertText: timeStr)
     }
 
-    internal func executeLineCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeLineCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
         var length = 40
         var styleChar: Character = "─"
 
@@ -39,12 +42,12 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = editor.columnIndex
-        let startLine = editor.lineIndex
+        let startCol = editor.logoEngineCurrentColumnIndex(self)
+        let startLine = editor.logoEngineCurrentLineIndex(self)
 
-        editor.ensureLineExists(at: startLine)
+        editor.logoEngine(self, ensureLineExistsAt: startLine)
 
-        var currentChars = Array(editor.getLine(at: startLine))
+        var currentChars = Array(editor.logoEngine(self, lineAt: startLine))
         while currentChars.count < startCol {
             currentChars.append(" ")
         }
@@ -60,12 +63,13 @@ extension LogoEngine {
             }
         }
 
-        editor.setLine(at: startLine, text: String(currentChars))
-        editor.columnIndex = startCol + length
-        editor.insertNewline()
+        editor.logoEngine(self, setLineAt: startLine, text: String(currentChars))
+        editor.logoEngine(self, didUpdateColumnIndex: startCol + length)
+        editor.logoEngineDidRequestInsertNewline(self)
     }
 
-    internal func executeVlineCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeVlineCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
         var height = 5
         var styleChar: Character = "│"
 
@@ -93,14 +97,14 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = editor.columnIndex
-        let startLine = editor.lineIndex
+        let startCol = editor.logoEngineCurrentColumnIndex(self)
+        let startLine = editor.logoEngineCurrentLineIndex(self)
 
         for r in 0..<height {
             let line = startLine + r
-            editor.ensureLineExists(at: line)
+            editor.logoEngine(self, ensureLineExistsAt: line)
 
-            var currentChars = Array(editor.getLine(at: startLine + r))
+            var currentChars = Array(editor.logoEngine(self, lineAt: startLine + r))
             while currentChars.count <= startCol {
                 currentChars.append(" ")
             }
@@ -109,14 +113,15 @@ extension LogoEngine {
             let existing = currentChars[startCol]
             currentChars[startCol] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
 
-            editor.setLine(at: line, text: String(currentChars))
+            editor.logoEngine(self, setLineAt: line, text: String(currentChars))
         }
 
-        editor.lineIndex = startLine + height
-        editor.columnIndex = startCol
+        editor.logoEngine(self, didUpdateLineIndex: startLine + height)
+        editor.logoEngine(self, didUpdateColumnIndex: startCol)
     }
 
-    internal func executeNewlineCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
         var count = 1
         if index < tokens.count {
             let firstToken = tokens[index]
@@ -133,15 +138,15 @@ extension LogoEngine {
         }
 
         for _ in 0..<count {
-            editor.insertNewline()
+            editor.logoEngineDidRequestInsertNewline(self)
         }
     }
 
-    internal func executeBoxCommand(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeBoxCommand(_ tokens: [String], index: inout Int) {
         let boxSubKeywords: Set<String> = ["ASCII", "SINGLE", "DOUBLE", "ROUND", "LEFT", "CENTER", "CENTRE", "RIGHT"]
 
         guard index < tokens.count else {
-            drawBoxFrame(width: 20, height: 5, style: .single, on: editor)
+            drawBoxFrame(width: 20, height: 5, style: .single)
             return
         }
 
@@ -181,9 +186,9 @@ extension LogoEngine {
             }
 
             if let text = textContent {
-                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: BoxStyle.from(styleName), on: editor)
+                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: BoxStyle.from(styleName))
             } else {
-                drawBoxFrame(width: width, height: height ?? 5, style: BoxStyle.from(styleName), on: editor)
+                drawBoxFrame(width: width, height: height ?? 5, style: BoxStyle.from(styleName))
             }
             return
         }
@@ -208,18 +213,19 @@ extension LogoEngine {
             }
         }
 
-        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: BoxStyle.from(styleName), on: editor)
+        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: BoxStyle.from(styleName))
     }
 
-    private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, on editor: LogoEditorContext) {
-        let startCol = editor.columnIndex
-        let startLine = editor.lineIndex
+    private func drawBoxFrame(width: Int, height: Int, style: BoxStyle) {
+        guard let editor = self.delegate else { return }
+        let startCol = editor.logoEngineCurrentColumnIndex(self)
+        let startLine = editor.logoEngineCurrentLineIndex(self)
 
         for r in 0..<height {
             let currentLineIndex = startLine + r
-            editor.ensureLineExists(at: currentLineIndex)
+            editor.logoEngine(self, ensureLineExistsAt: currentLineIndex)
 
-            var lineChars = Array(editor.getLine(at: currentLineIndex))
+            var lineChars = Array(editor.logoEngine(self, lineAt: currentLineIndex))
             while lineChars.count < startCol + width {
                 lineChars.append(" ")
             }
@@ -251,14 +257,15 @@ extension LogoEngine {
                 }
             }
 
-            editor.setLine(at: currentLineIndex, text: String(lineChars))
+            editor.logoEngine(self, setLineAt: currentLineIndex, text: String(lineChars))
         }
 
-        editor.lineIndex = startLine + height - 1
-        editor.columnIndex = startCol + width
+        editor.logoEngine(self, didUpdateLineIndex: startLine + height - 1)
+        editor.logoEngine(self, didUpdateColumnIndex: startCol + width)
     }
 
-    private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, on editor: LogoEditorContext) {
+    private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle) {
+        guard let editor = self.delegate else { return }
         let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
         let calcWidth = targetWidth ?? ((rawLines.map { $0.count }.max() ?? 0) + 4)
         let innerWidth = max(1, calcWidth - 2)
@@ -270,14 +277,14 @@ extension LogoEngine {
 
         let calcHeight = max(targetHeight ?? 0, textLines.count + 2)
 
-        let startCol = editor.columnIndex
-        let startLine = editor.lineIndex
+        let startCol = editor.logoEngineCurrentColumnIndex(self)
+        let startLine = editor.logoEngineCurrentLineIndex(self)
 
         for r in 0..<calcHeight {
             let currentLineIndex = startLine + r
-            editor.ensureLineExists(at: currentLineIndex)
+            editor.logoEngine(self, ensureLineExistsAt: currentLineIndex)
 
-            var lineChars = Array(editor.getLine(at: currentLineIndex))
+            var lineChars = Array(editor.logoEngine(self, lineAt: currentLineIndex))
             while lineChars.count < startCol + calcWidth {
                 lineChars.append(" ")
             }
@@ -335,11 +342,11 @@ extension LogoEngine {
                 }
             }
 
-            editor.setLine(at: currentLineIndex, text: String(lineChars))
+            editor.logoEngine(self, setLineAt: currentLineIndex, text: String(lineChars))
         }
 
-        editor.lineIndex = startLine + calcHeight - 1
-        editor.columnIndex = startCol + calcWidth
+        editor.logoEngine(self, didUpdateLineIndex: startLine + calcHeight - 1)
+        editor.logoEngine(self, didUpdateColumnIndex: startCol + calcWidth)
     }
 
     private func wrapTextLine(_ text: String, maxWidth: Int) -> [String] {

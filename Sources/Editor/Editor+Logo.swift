@@ -1,63 +1,98 @@
 import Foundation
 import LogoEngine
 
-extension Editor: LogoEditorContext {
-    public var lineIndex: Int {
-        get { buffer.lineIndex }
-        set { buffer.lineIndex = newValue }
+extension Editor: LogoEngineDelegate {
+    public func logoEngineCurrentLineIndex(_ engine: LogoEngine) -> Int {
+        buffer.lineIndex
     }
 
-    public var columnIndex: Int {
-        get { buffer.columnIndex }
-        set { buffer.columnIndex = newValue }
+    public func logoEngine(_ engine: LogoEngine, didUpdateLineIndex lineIndex: Int) {
+        buffer.lineIndex = lineIndex
     }
 
-    public var lineCount: Int {
+    public func logoEngineCurrentColumnIndex(_ engine: LogoEngine) -> Int {
+        buffer.columnIndex
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didUpdateColumnIndex columnIndex: Int) {
+        buffer.columnIndex = columnIndex
+    }
+
+    public func logoEngineLineCount(_ engine: LogoEngine) -> Int {
         buffer.lines.count
     }
 
-    public func clampCursor() {
-        buffer.clampCursor()
-    }
-
-    public func insertString(_ text: String) {
-        buffer.insertString(text)
-    }
-
-    public func insertNewline() {
-        buffer.insertNewline()
-    }
-
-    public func delete() {
-        buffer.delete()
-    }
-
-    public func backspace() {
-        buffer.backspace()
-    }
-
-    public func getLine(at index: Int) -> String {
+    public func logoEngine(_ engine: LogoEngine, lineAt index: Int) -> String {
         guard index >= 0 && index < buffer.lines.count else { return "" }
         return buffer.lines[index]
     }
 
-    public func setLine(at index: Int, text: String) {
+    public func logoEngine(_ engine: LogoEngine, setLineAt index: Int, text: String) {
         if index >= 0 && index < buffer.lines.count {
             buffer.lines[index] = text
         }
     }
 
-    public func ensureLineExists(at index: Int) {
+    public func logoEngine(_ engine: LogoEngine, ensureLineExistsAt index: Int) {
         while buffer.lines.count <= index {
             buffer.lines.append("")
         }
     }
 
-    public func markBufferModified() {
+    public func logoEngineDidRequestSaveUndoSnapshot(_ engine: LogoEngine) {
+        saveUndoSnapshot()
+    }
+
+    public func logoEngineDidRequestClampCursor(_ engine: LogoEngine) {
+        buffer.clampCursor()
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didRequestInsertText text: String) {
+        buffer.insertString(text)
+    }
+
+    public func logoEngineDidRequestInsertNewline(_ engine: LogoEngine) {
+        buffer.insertNewline()
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didRequestSetStatusMessage message: String) {
+        setStatusMessage(message)
+    }
+
+    public func logoEngineDidRequestDelete(_ engine: LogoEngine) {
+        buffer.delete()
+    }
+
+    public func logoEngineDidRequestBackspace(_ engine: LogoEngine) {
+        buffer.backspace()
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didRequestMoveCursorVirtual deltaRow: Int) {
+        moveCursorVirtual(deltaRow: deltaRow)
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didRequestDispatchCommand command: LogoEditorCommand) {
+        switch command {
+        case .moveLeft: _ = commandRegistry.dispatch(id: .moveLeft, editor: self)
+        case .moveRight: _ = commandRegistry.dispatch(id: .moveRight, editor: self)
+        case .moveHome: _ = commandRegistry.dispatch(id: .moveHome, editor: self)
+        case .moveEnd: _ = commandRegistry.dispatch(id: .moveEnd, editor: self)
+        case .editMark: _ = commandRegistry.dispatch(id: .editMark, editor: self)
+        case .editCut: _ = commandRegistry.dispatch(id: .editCut, editor: self)
+        case .editUncut: _ = commandRegistry.dispatch(id: .editUncut, editor: self)
+        case .editJustify: _ = commandRegistry.dispatch(id: .editJustify, editor: self)
+        }
+    }
+
+    public func logoEngine(_ engine: LogoEngine, didRequestSearch query: String) {
+        performSearch(query: query)
+    }
+
+    public func logoEngineDidMarkBufferModified(_ engine: LogoEngine) {
         buffer.isModified = true
     }
 
-    public func applySetting(_ setting: String, arg: String) {
+    public func logoEngine(_ engine: LogoEngine, didApplySetting setting: String, arg: String) {
         switch setting.lowercased() {
         case "wrap", "wrapcolumn":
             if arg == "off" || arg == "false" || arg == "none" {
@@ -99,19 +134,6 @@ extension Editor: LogoEditorContext {
             }
         default:
             break
-        }
-    }
-
-    public func dispatchCommand(_ command: LogoEditorCommand) {
-        switch command {
-        case .moveLeft: _ = commandRegistry.dispatch(id: .moveLeft, editor: self)
-        case .moveRight: _ = commandRegistry.dispatch(id: .moveRight, editor: self)
-        case .moveHome: _ = commandRegistry.dispatch(id: .moveHome, editor: self)
-        case .moveEnd: _ = commandRegistry.dispatch(id: .moveEnd, editor: self)
-        case .editMark: _ = commandRegistry.dispatch(id: .editMark, editor: self)
-        case .editCut: _ = commandRegistry.dispatch(id: .editCut, editor: self)
-        case .editUncut: _ = commandRegistry.dispatch(id: .editUncut, editor: self)
-        case .editJustify: _ = commandRegistry.dispatch(id: .editJustify, editor: self)
         }
     }
 }

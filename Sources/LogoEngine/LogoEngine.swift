@@ -52,22 +52,29 @@ public final class LogoEngine {
         "SUBSTRINGP", "COUNT", "ASCII", "CHAR", "MEMBER", "UPPERCASE", "LOWERCASE"
     ]
 
-    public init() {}
+    public weak var delegate: LogoEngineDelegate?
 
-    /// Executes LOGO macro script on the editor context, creating a single atomic Undo snapshot.
-    public func execute(_ script: String, on editor: LogoEditorContext) {
+    public init(delegate: LogoEngineDelegate? = nil) {
+        self.delegate = delegate
+    }
+
+    /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
+    public func execute(_ script: String) {
+        guard let delegate = self.delegate else { return }
+
         let tokens = tokenize(script)
         guard !tokens.isEmpty else { return }
 
         // Save a single atomic Undo snapshot for the entire macro execution
-        editor.saveUndoSnapshot()
+        delegate.logoEngineDidRequestSaveUndoSnapshot(self)
 
         var index = 0
-        executeTokens(tokens, index: &index, on: editor)
-        editor.clampCursor()
+        executeTokens(tokens, index: &index)
+        delegate.logoEngineDidRequestClampCursor(self)
     }
 
-    internal func executeTokens(_ tokens: [String], index: inout Int, on editor: LogoEditorContext) {
+    internal func executeTokens(_ tokens: [String], index: inout Int) {
+        guard let delegate = self.delegate else { return }
         while index < tokens.count {
             let token = tokens[index]
             let upper = token.uppercased()
@@ -175,21 +182,21 @@ public final class LogoEngine {
                             arg = evaluateExpression(tokens, index: &index).lowercased()
                         }
                     }
-                    editor.applySetting(setting, arg: arg)
+                    delegate.logoEngine(self, didApplySetting: setting, arg: arg)
                 }
 
             case "TYPE", "PRINT":
                 index += 1
                 if index < tokens.count {
                     let text = evaluateExpression(tokens, index: &index)
-                    editor.insertString(text)
+                    delegate.logoEngine(self, didRequestInsertText: text)
                 }
 
             case "MSG", "MESSAGE", "SHOW":
                 index += 1
                 if index < tokens.count {
                     let msgText = evaluateExpression(tokens, index: &index)
-                    editor.setStatusMessage(msgText)
+                    delegate.logoEngine(self, didRequestSetStatusMessage: msgText)
                     hasSetStatusMessage = true
                 }
 
@@ -198,7 +205,7 @@ public final class LogoEngine {
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
                 for _ in 0..<count {
-                    editor.delete()
+                    delegate.logoEngineDidRequestDelete(self)
                 }
 
             case "BS", "BACKSPACE":
@@ -206,7 +213,7 @@ public final class LogoEngine {
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
                 for _ in 0..<count {
-                    editor.backspace()
+                    delegate.logoEngineDidRequestBackspace(self)
                 }
 
             case "MOVE":
@@ -214,12 +221,12 @@ public final class LogoEngine {
                 if index < tokens.count {
                     let dir = tokens[index].uppercased()
                     switch dir {
-                    case "UP": editor.moveCursorVirtual(deltaRow: -1)
-                    case "DOWN": editor.moveCursorVirtual(deltaRow: 1)
-                    case "LEFT": editor.dispatchCommand(.moveLeft)
-                    case "RIGHT": editor.dispatchCommand(.moveRight)
-                    case "HOME": editor.dispatchCommand(.moveHome)
-                    case "END": editor.dispatchCommand(.moveEnd)
+                    case "UP": delegate.logoEngine(self, didRequestMoveCursorVirtual: -1)
+                    case "DOWN": delegate.logoEngine(self, didRequestMoveCursorVirtual: 1)
+                    case "LEFT": delegate.logoEngine(self, didRequestDispatchCommand: .moveLeft)
+                    case "RIGHT": delegate.logoEngine(self, didRequestDispatchCommand: .moveRight)
+                    case "HOME": delegate.logoEngine(self, didRequestDispatchCommand: .moveHome)
+                    case "END": delegate.logoEngine(self, didRequestDispatchCommand: .moveEnd)
                     default: break
                     }
                 }
@@ -228,43 +235,43 @@ public final class LogoEngine {
                 index += 1
                 if index < tokens.count {
                     let lineStr = evaluateExpression(tokens, index: &index)
-                    let lineNum = max(1, min(Int(lineStr) ?? 1, editor.lineCount)) - 1
-                    editor.lineIndex = lineNum
-                    editor.columnIndex = 0
+                    let lineNum = max(1, min(Int(lineStr) ?? 1, delegate.logoEngineLineCount(self))) - 1
+                    delegate.logoEngine(self, didUpdateLineIndex: lineNum)
+                    delegate.logoEngine(self, didUpdateColumnIndex: 0)
 
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
                         if !LogoEngine.keywords.contains(nextUpper) {
                             index += 1
                             let colStr = evaluateExpression(tokens, index: &index)
-                            let lineText = editor.getLine(at: lineNum)
+                            let lineText = delegate.logoEngine(self, lineAt: lineNum)
                             let colNum = max(1, min(Int(colStr) ?? 1, lineText.count + 1)) - 1
-                            editor.columnIndex = colNum
+                            delegate.logoEngine(self, didUpdateColumnIndex: colNum)
                         }
                     }
                 }
 
             case "BOX":
                 index += 1
-                executeBoxCommand(tokens, index: &index, on: editor)
+                executeBoxCommand(tokens, index: &index)
 
             case "LINE", "HR":
                 index += 1
-                executeLineCommand(tokens, index: &index, on: editor)
+                executeLineCommand(tokens, index: &index)
 
             case "VLINE", "VHR":
                 index += 1
-                executeVlineCommand(tokens, index: &index, on: editor)
+                executeVlineCommand(tokens, index: &index)
 
             case "NEWLINE", "NL", "ENTER":
                 index += 1
-                executeNewlineCommand(tokens, index: &index, on: editor)
+                executeNewlineCommand(tokens, index: &index)
 
             case "DATE":
-                executeDateCommand(tokens, index: &index, on: editor)
+                executeDateCommand(tokens, index: &index)
 
             case "TIME":
-                executeTimeCommand(tokens, index: &index, on: editor)
+                executeTimeCommand(tokens, index: &index)
 
             // Conditional Logic Commands
             case "IF":
@@ -280,7 +287,7 @@ public final class LogoEngine {
                 if index < tokens.count && tokens[index] == "[" {
                     index += 1
                     if isTrue {
-                        executeTokens(tokens, index: &index, on: editor)
+                        executeTokens(tokens, index: &index)
                     } else {
                         var depth = 1
                         while index < tokens.count && depth > 0 {
@@ -305,7 +312,7 @@ public final class LogoEngine {
                 if index < tokens.count && tokens[index] == "[" {
                     index += 1 // Advance past first "["
                     if isTrue {
-                        executeTokens(tokens, index: &index, on: editor)
+                        executeTokens(tokens, index: &index)
                         index += 1 // Advance past first "]"
                         if index < tokens.count && tokens[index] == "[" {
                             var depth = 1
@@ -328,7 +335,7 @@ public final class LogoEngine {
                         index += 1 // Advance past first "]"
                         if index < tokens.count && tokens[index] == "[" {
                             index += 1 // Advance past second "["
-                            executeTokens(tokens, index: &index, on: editor)
+                            executeTokens(tokens, index: &index)
                         }
                     }
                 }
@@ -386,7 +393,7 @@ public final class LogoEngine {
                 } else {
                     index -= 1
                 }
-                executeTurtleMove(steps: dist, directionHeading: heading, on: editor)
+                executeTurtleMove(steps: dist, directionHeading: heading)
 
             case "BK", "BACK", "BACKWARD":
                 index += 1
@@ -402,25 +409,25 @@ public final class LogoEngine {
                 } else {
                     index -= 1
                 }
-                executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360, on: editor)
+                executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360)
 
             case "MARK":
-                editor.dispatchCommand(.editMark)
+                delegate.logoEngine(self, didRequestDispatchCommand: .editMark)
 
             case "CUT":
-                editor.dispatchCommand(.editCut)
+                delegate.logoEngine(self, didRequestDispatchCommand: .editCut)
 
             case "PASTE", "UNCUT":
-                editor.dispatchCommand(.editUncut)
+                delegate.logoEngine(self, didRequestDispatchCommand: .editUncut)
 
             case "JUSTIFY":
-                editor.dispatchCommand(.editJustify)
+                delegate.logoEngine(self, didRequestDispatchCommand: .editJustify)
 
             case "FIND", "SEARCH":
                 index += 1
                 if index < tokens.count {
                     let query = evaluateExpression(tokens, index: &index)
-                    editor.performSearch(query: query)
+                    delegate.logoEngine(self, didRequestSearch: query)
                 }
 
             case "REPEAT":
@@ -433,7 +440,7 @@ public final class LogoEngine {
                     let bodyStartIndex = index
                     for r in 0..<count {
                         var bodyIndex = bodyStartIndex
-                        executeTokens(tokens, index: &bodyIndex, on: editor)
+                        executeTokens(tokens, index: &bodyIndex)
                         if r == count - 1 {
                             index = bodyIndex
                         }
@@ -459,14 +466,14 @@ public final class LogoEngine {
                     let procName = tokens[index].uppercased()
                     if let procTokens = customProcedures[procName] {
                         var procIndex = 0
-                        executeTokens(procTokens, index: &procIndex, on: editor)
+                        executeTokens(procTokens, index: &procIndex)
                     }
                 }
 
             default:
                 if let procTokens = customProcedures[upper] {
                     var procIndex = 0
-                    executeTokens(procTokens, index: &procIndex, on: editor)
+                    executeTokens(procTokens, index: &procIndex)
                 }
             }
 
