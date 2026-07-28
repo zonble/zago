@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 @testable import Editor
+@testable import LogoEngine
 
 @Test func testLogoMacroEngine() throws {
     let editor = Editor()
@@ -100,7 +101,7 @@ import Foundation
 
     // TDD Test Example 2: BOX overlay in middle of background text
     let bgTextEditor = Editor()
-    bgTextEditor.buffer.lines = ["AAAAAA", "BBBBBB", "CCCCCC"]
+    bgTextEditor.buffer.lines = ["AAAAAAAAAAA", "BBBBBBBBBBB", "CCCCCCCCCCC"]
     bgTextEditor.buffer.lineIndex = 0
     bgTextEditor.buffer.columnIndex = 3
     logoEngine.execute("BOX 5 3 \"ascii\"", on: bgTextEditor)
@@ -319,4 +320,44 @@ import Foundation
     #expect(ed3.buffer.lines[1] == "│ Hello    │")
     #expect(ed3.buffer.lines[2] == "│ World    │")
     #expect(ed3.buffer.lines[3] == "└──────────┘")
+}
+
+@Test func testLogoDataStructurePrimitives() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. Constructors: WORD, LIST, SENTENCE, FPUT, LPUT, REVERSE, GENSYM
+    let ed1 = Editor()
+    logoEngine.execute("TYPE WORD \"hello\" \"world\" TYPE \" \" TYPE LIST 1 2 TYPE \" \" TYPE SE [1 2] [3 4]", on: ed1)
+    #expect(ed1.buffer.lines[0] == "helloworld [1 2] [1 2 3 4]")
+
+    let ed2 = Editor()
+    logoEngine.execute("TYPE FPUT 0 [1 2] TYPE \" \" TYPE LPUT 3 [1 2] TYPE \" \" TYPE REVERSE \"abc\"", on: ed2)
+    #expect(ed2.buffer.lines[0] == "[0 1 2] [1 2 3] cba")
+
+    // 2. Selectors: FIRST, LAST, BUTFIRST (BF), BUTLAST (BL), ITEM, REMDUP
+    let ed3 = Editor()
+    logoEngine.execute("TYPE FIRST [10 20] TYPE \" \" TYPE LAST \"abc\" TYPE \" \" TYPE BF [10 20 30] TYPE \" \" TYPE BL \"abc\" TYPE \" \" TYPE ITEM 2 [10 20 30]", on: ed3)
+    #expect(ed3.buffer.lines[0] == "10 c [20 30] ab 20")
+
+    let ed4 = Editor()
+    logoEngine.execute("TYPE REMDUP \"banana\" TYPE \" \" TYPE REMDUP [1 2 2 3 1]", on: ed4)
+    #expect(ed4.buffer.lines[0] == "ban [1 2 3]")
+
+    // 3. Mutators & Stack / Queue: PUSH, POP, QUEUE, DEQUEUE, SETITEM
+    let ed5 = Editor()
+    logoEngine.execute("MAKE \"s\" [2 1] PUSH \"s\" 3 TYPE :s TYPE \" pop: \" TYPE POP \"s\" TYPE \" remaining: \" TYPE :s", on: ed5)
+    #expect(ed5.buffer.lines[0] == "[3 2 1] pop: 3 remaining: [2 1]")
+
+    let ed6 = Editor()
+    logoEngine.execute("MAKE \"q\" [1 2] QUEUE \"q\" 3 TYPE :q TYPE \" deq: \" TYPE DEQUEUE \"q\" TYPE \" remaining: \" TYPE :q", on: ed6)
+    #expect(ed6.buffer.lines[0] == "[1 2 3] deq: 1 remaining: [2 3]")
+
+    // 4. Predicates & Queries: WORD?, LIST?, NUMBER?, EMPTY?, MEMBER?, COUNT, ASCII, CHAR, UPPERCASE, LOWERCASE
+    let ed7 = Editor()
+    logoEngine.execute("TYPE LIST? [1 2] TYPE \" \" TYPE NUMBER? 123 TYPE \" \" TYPE EMPTY? \"\" TYPE \" \" TYPE MEMBER? \"b\" [a b c]", on: ed7)
+    #expect(ed7.buffer.lines[0] == "1 1 1 1")
+
+    let ed8 = Editor()
+    logoEngine.execute("TYPE COUNT [1 2 3] TYPE \" \" TYPE ASCII \"a\" TYPE \" \" TYPE CHAR 97 TYPE \" \" TYPE UPPERCASE \"abc\" TYPE \" \" TYPE LOWERCASE \"XYZ\"", on: ed8)
+    #expect(ed8.buffer.lines[0] == "3 97 a ABC xyz")
 }

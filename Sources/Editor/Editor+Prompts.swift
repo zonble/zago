@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 
 extension Editor {
     // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
@@ -393,7 +394,7 @@ extension Editor {
     }
 
     /// Performs search operation for target query string.
-    func performSearch(query: String) {
+    public func performSearch(query: String) {
         guard !query.isEmpty else { return }
 
         let startLine = buffer.lineIndex

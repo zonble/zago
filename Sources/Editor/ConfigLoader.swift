@@ -233,4 +233,52 @@ public final class ConfigLoader {
             }
         }
     }
+
+    /// Generates a clean default .serc configuration file with detailed comments and sample keybindings.
+    public static func generateDefaultConfigFile(targetPath: String? = nil) throws -> String {
+        let path: String
+        if let targetPath = targetPath {
+            path = (targetPath as NSString).expandingTildeInPath
+        } else {
+            let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+            path = (homeDir as NSString).appendingPathComponent(".serc")
+        }
+
+        let content = defaultConfigTemplate
+        try content.write(toFile: path, atomically: true, encoding: .utf8)
+        return path
+    }
+
+    /// Complete default .serc configuration file template content.
+    public static let defaultConfigTemplate = """
+# ==============================================================================
+#  se Text Editor Configuration File (~/.serc)
+# ==============================================================================
+
+# Softwrap Column Width (uncomment to fix width, e.g. 80; omit for dynamic width)
+# set wrapColumn 80
+
+# Show WordStar-style ruler bar (on / off)
+set showRuler off
+
+# Tab Stop Width (default: 4)
+set tabSize 4
+
+# Enable Syntax Highlighting (on / off)
+set enableSyntax on
+
+# Auto Reload modified files from disk (on / off)
+set autoReload on
+
+# Interface Language (en / zh_TW)
+# set language zh_TW
+
+# ------------------------------------------------------------------------------
+# Custom Keybindings & Unbinds
+# Syntax: bind <key> <command_id>
+# Example: bind ctrl-f search.find
+# Example: bind alt-t table.toggle
+# Example: unbind ctrl-k
+# ------------------------------------------------------------------------------
+"""
 }

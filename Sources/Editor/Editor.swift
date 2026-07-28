@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {
@@ -258,7 +259,7 @@ public final class Editor {
     }
 
     /// Sets status message to display in the bottom status line.
-    func setStatusMessage(_ msg: String) {
+    public func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
     }

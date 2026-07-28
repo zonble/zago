@@ -24,7 +24,16 @@ struct SE: ParsableCommand {
     @Option(name: [.customLong("lang"), .customLong("language")], help: "Set interface language (en/zh_TW).")
     var lang: String?
 
+    @Flag(name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")], help: "Generate a default ~/.serc configuration file.")
+    var initConfig: Bool = false
+
     func run() throws {
+        if initConfig {
+            let targetPath = files.first
+            let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath)
+            print("Successfully generated default configuration file at: \(generatedPath)")
+            return
+        }
         let enableSyntax: Bool?
         if let s = syntax?.lowercased() {
             enableSyntax = (s == "true" || s == "1" || s == "on" || s == "yes")

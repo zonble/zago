@@ -469,7 +469,7 @@ extension Editor {
     }
 
     /// Moves cursor by virtual line rows (sub-lines), supporting Home/End/Arrow key navigation.
-    func moveCursorVirtual(deltaRow: Int) {
+    public func moveCursorVirtual(deltaRow: Int) {
         let (_, cols) = terminal.getWindowSize()
         let textWidth = max(10, cols - 5)
         let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)

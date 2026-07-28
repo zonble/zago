@@ -49,6 +49,22 @@ import Foundation
     #expect(target?.word == "qxzywkwk")
 }
 
+@Test func testGenerateDefaultConfigFile() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_gen_.serc").path
+    if FileManager.default.fileExists(atPath: tmpPath) {
+        try? FileManager.default.removeItem(atPath: tmpPath)
+    }
+
+    let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: tmpPath)
+    #expect(FileManager.default.fileExists(atPath: generatedPath) == true)
+
+    let content = try String(contentsOfFile: generatedPath, encoding: .utf8)
+    #expect(content.contains("set showRuler off"))
+    #expect(content.contains("set tabSize 4"))
+
+    try? FileManager.default.removeItem(atPath: tmpPath)
+}
+
 @Test func testConfigLoaderAndKeyParser() throws {
     let parsedCtrlF = KeyParser.parse("ctrl-f")
     #expect(parsedCtrlF == .ctrl("f"))
