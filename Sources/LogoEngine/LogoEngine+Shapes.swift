@@ -255,7 +255,8 @@ extension LogoEngine {
     private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle) {
         guard let editor = self.delegate else { return }
         let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
-        let calcWidth = targetWidth ?? ((rawLines.map { $0.count }.max() ?? 0) + 4)
+        let maxVisualWidth = rawLines.map { $0.displayWidth }.max() ?? 0
+        let calcWidth = targetWidth ?? (maxVisualWidth + 4)
         let innerWidth = max(1, calcWidth - 2)
 
         var textLines: [String] = []
@@ -272,81 +273,143 @@ extension LogoEngine {
             let currentLineIndex = startLine + r
             editor.logoEngine(self, ensureLineExistsAt: currentLineIndex)
 
-            var lineChars = Array(editor.logoEngine(self, lineAt: currentLineIndex))
-            while lineChars.count < startCol + calcWidth {
-                lineChars.append(" ")
-            }
-
             let isTop = (r == 0)
             let isBottom = (r == calcHeight - 1)
 
-            for c in 0..<calcWidth {
-                let targetCol = startCol + c
-                let isLeft = (c == 0)
-                let isRight = (c == calcWidth - 1)
-
-                var ch: Character = " "
-                var moveMask = 0
-
-                if isTop && isLeft { ch = style.topLeft; moveMask = 6 }
-                else if isTop && isRight { ch = style.topRight; moveMask = 12 }
-                else if isBottom && isLeft { ch = style.bottomLeft; moveMask = 3 }
-                else if isBottom && isRight { ch = style.bottomRight; moveMask = 9 }
-                else if isTop { ch = style.topChar; moveMask = 10 }
-                else if isBottom { ch = style.bottomChar; moveMask = 10 }
-                else if isLeft || isRight { ch = style.sideChar; moveMask = 5 }
-                else if r >= 1 && (r - 1) < textLines.count {
-                    let lineStr = textLines[r - 1]
-                    let textWidth = lineStr.count
-                    let textCol: Int
-                    if align == "center" || align == "centre" {
-                        let textOffset = max(0, (innerWidth - textWidth) / 2)
-                        textCol = c - 1 - textOffset
-                    } else if align == "right" {
-                        let textOffset = max(0, innerWidth - textWidth)
-                        textCol = c - 1 - textOffset
-                    } else {
-                        let textOffset = (innerWidth > textWidth) ? 1 : 0
-                        textCol = c - 1 - textOffset
-                    }
-
-                    if textCol >= 0 && textCol < textWidth {
-                        let textChars = Array(lineStr)
-                        ch = textChars[textCol]
-                    } else {
-                        ch = " "
-                    }
-                    moveMask = 0
+            let rowStr: String
+            if isTop {
+                rowStr = String(style.topLeft) + String(repeating: style.topChar, count: innerWidth) + String(style.topRight)
+            } else if isBottom {
+                rowStr = String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth) + String(style.bottomRight)
+            } else {
+                let lineStr = (r >= 1 && (r - 1) < textLines.count) ? textLines[r - 1] : ""
+                let textWidth = lineStr.displayWidth
+                let textOffset: Int
+                if align == "center" || align == "centre" {
+                    textOffset = max(0, (innerWidth - textWidth) / 2)
+                } else if align == "right" {
+                    textOffset = max(0, innerWidth - textWidth)
                 } else {
-                    ch = " "
-                    moveMask = 0
+                    textOffset = (innerWidth > textWidth) ? 1 : 0
                 }
 
-                if moveMask != 0 {
-                    let existing = (targetCol < lineChars.count) ? lineChars[targetCol] : " "
-                    lineChars[targetCol] = fuseChar(existing: existing, defaultNewChar: ch, moveMask: moveMask)
-                } else {
-                    lineChars[targetCol] = ch
-                }
+                let leftSpaces = String(repeating: " ", count: textOffset)
+                let rightSpacesCount = max(0, innerWidth - textOffset - textWidth)
+                let rightSpaces = String(repeating: " ", count: rightSpacesCount)
+                rowStr = String(style.sideChar) + leftSpaces + lineStr + rightSpaces + String(style.sideChar)
             }
 
-            editor.logoEngine(self, setLineAt: currentLineIndex, text: String(lineChars))
+            let existingLine = editor.logoEngine(self, lineAt: currentLineIndex)
+            let newLineText: String
+            if existingLine.trimmingCharacters(in: .whitespaces).isEmpty {
+                let leadingSpaces = String(repeating: " ", count: startCol)
+                newLineText = leadingSpaces + rowStr
+            } else {
+                newLineText = buildFusedRowText(existingLine: existingLine, startCol: startCol, calcWidth: calcWidth, rowStr: rowStr, isTop: isTop, isBottom: isBottom, style: style)
+            }
+
+            editor.logoEngine(self, setLineAt: currentLineIndex, text: newLineText)
         }
 
         editor.logoEngine(self, didUpdateLineIndex: startLine + calcHeight - 1)
         editor.logoEngine(self, didUpdateColumnIndex: startCol + calcWidth)
     }
 
+    private func buildFusedRowText(existingLine: String, startCol: Int, calcWidth: Int, rowStr: String, isTop: Bool, isBottom: Bool, style: BoxStyle) -> String {
+        var prefix = ""
+        var suffix = ""
+        var existingBoxRegion: [Character] = []
+        
+        var currentW = 0
+        for ch in existingLine {
+            let w = ch.displayWidth
+            if currentW + w <= startCol {
+                prefix.append(ch)
+            } else if currentW < startCol + calcWidth {
+                existingBoxRegion.append(ch)
+            } else {
+                suffix.append(ch)
+            }
+            currentW += w
+        }
+        
+        if prefix.displayWidth < startCol {
+            prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
+        }
+
+        var resultRow = ""
+        var currentVisualCol = 0
+        
+        for ch in rowStr {
+            let w = ch.displayWidth
+            let isLeft = (currentVisualCol == 0)
+            let isRight = (currentVisualCol + w == calcWidth)
+
+            var moveMask = 0
+            if isTop && isLeft { moveMask = 6 }
+            else if isTop && isRight { moveMask = 12 }
+            else if isBottom && isLeft { moveMask = 3 }
+            else if isBottom && isRight { moveMask = 9 }
+            else if isTop { moveMask = 10 }
+            else if isBottom { moveMask = 10 }
+            else if isLeft || isRight { moveMask = 5 }
+
+            if moveMask != 0 && !existingBoxRegion.isEmpty {
+                var regionW = 0
+                var matchChar: Character? = nil
+                for eCh in existingBoxRegion {
+                    let eW = eCh.displayWidth
+                    if regionW == currentVisualCol {
+                        matchChar = eCh
+                        break
+                    }
+                    regionW += eW
+                }
+                if let existingCh = matchChar {
+                    let fused = fuseChar(existing: existingCh, defaultNewChar: ch, moveMask: moveMask)
+                    resultRow.append(fused)
+                } else {
+                    resultRow.append(ch)
+                }
+            } else {
+                resultRow.append(ch)
+            }
+
+            currentVisualCol += w
+        }
+
+        return prefix + resultRow + suffix
+    }
+
     private func wrapTextLine(_ text: String, maxWidth: Int) -> [String] {
-        guard text.count > maxWidth && maxWidth > 0 else { return [text] }
+        guard text.displayWidth > maxWidth && maxWidth > 0 else { return [text] }
         var result: [String] = []
         let words = text.components(separatedBy: " ")
         var currentLine = ""
 
         for word in words {
-            if currentLine.isEmpty {
+            let wordWidth = word.displayWidth
+            if wordWidth > maxWidth {
+                if !currentLine.isEmpty {
+                    result.append(currentLine)
+                    currentLine = ""
+                }
+                var temp = ""
+                for ch in word {
+                    let chW = ch.displayWidth
+                    if temp.displayWidth + chW > maxWidth && !temp.isEmpty {
+                        result.append(temp)
+                        temp = String(ch)
+                    } else {
+                        temp.append(ch)
+                    }
+                }
+                if !temp.isEmpty {
+                    currentLine = temp
+                }
+            } else if currentLine.isEmpty {
                 currentLine = word
-            } else if currentLine.count + 1 + word.count <= maxWidth {
+            } else if currentLine.displayWidth + 1 + wordWidth <= maxWidth {
                 currentLine += " " + word
             } else {
                 result.append(currentLine)
@@ -357,5 +420,37 @@ extension LogoEngine {
             result.append(currentLine)
         }
         return result
+    }
+}
+
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#endif
+
+extension Character {
+    internal var displayWidth: Int {
+        for scalar in self.unicodeScalars {
+            #if canImport(Darwin)
+            let w = wcwidth(wchar_t(scalar.value))
+            #elseif canImport(Glibc)
+            let w = wcwidth(Int32(scalar.value))
+            #elseif canImport(Musl)
+            let w = sys_wcwidth(Int32(scalar.value))
+            #else
+            let w = 1
+            #endif
+            if w > 0 { return Int(w) }
+        }
+        return 1
+    }
+}
+
+extension String {
+    internal var displayWidth: Int {
+        return self.reduce(0) { $0 + $1.displayWidth }
     }
 }

@@ -91,6 +91,14 @@ import Foundation
     #expect(boxEditor2.buffer.lines[1] == "║    ║")
     #expect(boxEditor2.buffer.lines[2] == "╚════╝")
 
+    let cjkBoxEditor = Editor()
+    logoEngine.delegate = cjkBoxEditor
+    logoEngine.execute("BOX \"中文\"")
+    #expect(cjkBoxEditor.buffer.lines.count >= 3)
+    #expect(cjkBoxEditor.buffer.lines[0] == "┌──────┐")
+    #expect(cjkBoxEditor.buffer.lines[1] == "│ 中文 │")
+    #expect(cjkBoxEditor.buffer.lines[2] == "└──────┘")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]
@@ -230,7 +238,7 @@ import Foundation
 
     // Draw an expanding spiral using LOGO turtle loop and variable incrementing
     logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT 90 MAKE \"d\" ( :d + 2 ) ]")
-    #expect(editor.buffer.lines.count >= 4)
+    #expect(editor.buffer.lines.count >= 4, "lines were: \(editor.buffer.lines)")
     #expect(editor.buffer.lines[0] == "├┐")
     #expect(editor.buffer.lines[1] == "││")
     #expect(editor.buffer.lines[2] == "││")
@@ -490,28 +498,133 @@ import Foundation
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
+    // Basic Operations
     logoEngine.execute("SUM 10 20")
     #expect(logoEngine.lastResult == "30")
+
+    logoEngine.execute("DIFFERENCE 20 5")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("PRODUCT 4 5")
+    #expect(logoEngine.lastResult == "20")
+
+    logoEngine.execute("QUOTIENT 20 4")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("QUOTIENT 4")
+    #expect(logoEngine.lastResult == "0.25")
 
     logoEngine.execute("POWER 2 3")
     #expect(logoEngine.lastResult == "8")
 
+    logoEngine.execute("REMAINDER 10 3")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("MODULO -10 3")
+    #expect(logoEngine.lastResult == "2")
+
+    logoEngine.execute("MINUS 42")
+    #expect(logoEngine.lastResult == "-42")
+
+    logoEngine.execute("ABS -15")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("INT 3.7")
+    #expect(logoEngine.lastResult == "3")
+
+    logoEngine.execute("ROUND 3.7")
+    #expect(logoEngine.lastResult == "4")
+
+    // Infix Operators
+    logoEngine.execute("10 + 5")
+    #expect(logoEngine.lastResult == "15")
+
+    logoEngine.execute("20 - 4")
+    #expect(logoEngine.lastResult == "16")
+
+    logoEngine.execute("3 * 7")
+    #expect(logoEngine.lastResult == "21")
+
+    logoEngine.execute("15 / 3")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("2 ^ 4")
+    #expect(logoEngine.lastResult == "16")
+
+    logoEngine.execute("10 % 3")
+    #expect(logoEngine.lastResult == "1")
+
+    // Exponential & Logarithm
     logoEngine.execute("SQRT 16")
     #expect(logoEngine.lastResult == "4")
 
+    logoEngine.execute("EXP 0")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("LOG10 100")
+    #expect(logoEngine.lastResult == "2")
+
+    logoEngine.execute("LN 1")
+    #expect(logoEngine.lastResult == "0")
+
+    // Trigonometry (Degree & Radian)
+    logoEngine.execute("SIN 90")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("COS 0")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("TAN 0")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("ARCTAN 1")
+    #expect(logoEngine.lastResult == "45")
+
+    logoEngine.execute("RADSIN 0")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("RADCOS 0")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("RADTAN 0")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("RADARCTAN 0")
+    #expect(logoEngine.lastResult == "0")
+
+    // Sequences & Random & Formatting
     logoEngine.execute("ISEQ 1 5")
     #expect(logoEngine.lastResult == "[1 2 3 4 5]")
+
+    logoEngine.execute("RSEQ 0 10 3")
+    #expect(logoEngine.lastResult == "[0 5 10]")
+
+    logoEngine.execute("RANDOM 10")
+    #expect(logoEngine.lastResult != nil)
+
+    logoEngine.execute("RERANDOM")
+    #expect(logoEngine.lastResult == "1")
 
     logoEngine.execute("FORM (1.0 / 3.0) 10 3")
     #expect(logoEngine.lastResult == "     0.333")
 
+    // Bitwise Operations
     logoEngine.execute("BITAND 6 3")
     #expect(logoEngine.lastResult == "2")
 
     logoEngine.execute("BITOR 6 3")
     #expect(logoEngine.lastResult == "7")
 
+    logoEngine.execute("BITXOR 6 3")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("BITNOT 0")
+    #expect(logoEngine.lastResult == "-1")
+
     logoEngine.execute("ASHIFT 1 3")
+    #expect(logoEngine.lastResult == "8")
+
+    logoEngine.execute("LSHIFT 1 3")
     #expect(logoEngine.lastResult == "8")
 }
 
@@ -559,6 +672,133 @@ import Foundation
 
     logoEngine.execute("FIB 10")
     #expect(logoEngine.lastResult == "55", "FIB 10 failed: \(logoEngine.lastResult ?? "nil")")
+}
+
+@Test func testSection81ControlStructures() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    // RUN & RUNRESULT
+    logoEngine.execute("RUN [ MAKE \"A 42 ]")
+    #expect(logoEngine.variables["a"] == "42", "variables['a'] was \(logoEngine.variables["a"] ?? "nil")")
+
+    logoEngine.execute("RUNRESULT [ OUTPUT 1 + 2 ]")
+    #expect(logoEngine.lastResult == "[3]", "RUNRESULT output was \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("RUNRESULT [ MAKE \"B 10 ]")
+    #expect(logoEngine.lastResult == "[]", "RUNRESULT empty was \(logoEngine.lastResult ?? "nil")")
+
+    // REPEAT & REPCOUNT / #
+    logoEngine.execute("MAKE \"SUM 0 REPEAT 5 [ MAKE \"SUM :SUM + # ]")
+    #expect(logoEngine.variables["sum"] == "15", "all variables: \(logoEngine.variables)")
+
+    logoEngine.execute("MAKE \"SUM2 0 REPEAT 4 [ MAKE \"SUM2 :SUM2 + REPCOUNT ]")
+    #expect(logoEngine.variables["sum2"] == "10", "variables['sum2'] was \(logoEngine.variables["sum2"] ?? "nil")")
+
+    // FOREVER & STOP
+    logoEngine.execute("""
+    TO TESTFOREVER
+      MAKE "N 0
+      FOREVER [
+        MAKE "N :N + 1
+        IF :N == 3 [ STOP ]
+      ]
+    END
+    TESTFOREVER
+    """)
+    #expect(logoEngine.variables["n"] == "3", "variables['n'] was \(logoEngine.variables["n"] ?? "nil")")
+
+    // TEST, IFTRUE, IFFALSE
+    logoEngine.execute("TEST 2 > 1  IFTRUE [ MAKE \"ANS \"yep ] IFFALSE [ MAKE \"ANS \"nope ]")
+    #expect(logoEngine.variables["ans"] == "yep", "variables['ans'] was \(logoEngine.variables["ans"] ?? "nil")")
+
+    logoEngine.execute("TEST 1 > 2  IFTRUE [ MAKE \"ANS \"yep ] IFFALSE [ MAKE \"ANS \"nope ]")
+    #expect(logoEngine.variables["ans"] == "nope", "variables['ans'] was \(logoEngine.variables["ans"] ?? "nil")")
+
+    // FOR loop
+    logoEngine.execute("MAKE \"FORSUM 0 FOR [ I 1 5 1 ] [ MAKE \"FORSUM :FORSUM + :I ]")
+    #expect(logoEngine.variables["forsum"] == "15", "variables['forsum'] was \(logoEngine.variables["forsum"] ?? "nil")")
+
+    // DOTIMES loop
+    logoEngine.execute("MAKE \"DOTSUM 0 DOTIMES [ I 5 ] [ MAKE \"DOTSUM :DOTSUM + :I ]")
+    #expect(logoEngine.variables["dotsum"] == "10", "variables['dotsum'] was \(logoEngine.variables["dotsum"] ?? "nil")")
+
+    // WHILE loop
+    logoEngine.execute("MAKE \"W 0 WHILE :W < 5 [ MAKE \"W :W + 1 ]")
+    #expect(logoEngine.variables["w"] == "5", "variables['w'] was \(logoEngine.variables["w"] ?? "nil")")
+
+    // UNTIL loop
+    logoEngine.execute("MAKE \"U 0 UNTIL :U == 5 [ MAKE \"U :U + 1 ]")
+    #expect(logoEngine.variables["u"] == "5", "variables['u'] was \(logoEngine.variables["u"] ?? "nil")")
+
+    // DO.WHILE loop
+    logoEngine.execute("MAKE \"DW 0 DO.WHILE [ MAKE \"DW :DW + 1 ] :DW < 3")
+    #expect(logoEngine.variables["dw"] == "3", "variables['dw'] was \(logoEngine.variables["dw"] ?? "nil")")
+
+    // DO.UNTIL loop
+    logoEngine.execute("MAKE \"DU 0 DO.UNTIL [ MAKE \"DU :DU + 1 ] :DU == 3")
+    #expect(logoEngine.variables["du"] == "3", "variables['du'] was \(logoEngine.variables["du"] ?? "nil")")
+
+    // CASE
+    logoEngine.execute("CASE \"B [ [ [\"A] \"first ] [ [\"B] \"second ] [ ELSE \"other ] ]")
+    #expect(logoEngine.lastResult == "second", "CASE lastResult was \(logoEngine.lastResult ?? "nil")")
+
+    // COND
+    logoEngine.execute("COND [ [ [1 > 2] \"no ] [ [2 > 1] \"yes ] [ ELSE \"other ] ]")
+    #expect(logoEngine.lastResult == "yes", "COND lastResult was \(logoEngine.lastResult ?? "nil")")
+
+    // IGNORE
+    logoEngine.execute("IGNORE 1 + 2")
+
+    // CATCH & THROW & ERROR
+    logoEngine.execute("CATCH \"T [ THROW \"T \"hello ]")
+    #expect(logoEngine.lastResult == "hello", "CATCH lastResult was \(logoEngine.lastResult ?? "nil")")
+}
+
+@Test func testSection82TemplateIteration() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    // APPLY
+    logoEngine.execute("APPLY [? * ?] [5]")
+    #expect(logoEngine.lastResult == "25")
+
+    logoEngine.execute("APPLY [?1 + ?2] [3 4]")
+    #expect(logoEngine.lastResult == "7")
+
+    logoEngine.execute("APPLY [[X Y] :X * :Y] [3 4]")
+    #expect(logoEngine.lastResult == "12")
+
+    logoEngine.execute("APPLY [[X Y] [OUTPUT :X + :Y]] [3 4]")
+    #expect(logoEngine.lastResult == "7")
+
+    // FOREACH
+    logoEngine.execute("MAKE \"ACC \" FOREACH [A B C] [ MAKE \"ACC WORD :ACC ? ]")
+    #expect(logoEngine.variables["acc"] == "ABC")
+
+    // MAP
+    logoEngine.execute("MAP [? * ?] [1 2 3]")
+    #expect(logoEngine.lastResult == "[1 4 9]")
+
+    // MAP.SE
+    logoEngine.execute("MAP.SE [?REST] [1 2 3 4]")
+    #expect(logoEngine.lastResult == "[2 3 4 3 4 4]")
+
+    // FILTER
+    logoEngine.execute("FILTER [? % 2 == 1] [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "[1 3 5]")
+
+    // FIND
+    logoEngine.execute("FIND [? % 2 == 0] [1 3 4 7]")
+    #expect(logoEngine.lastResult == "4")
+
+    // REDUCE
+    logoEngine.execute("REDUCE [?1 + ?2] [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "15")
+
+    // CROSSMAP
+    logoEngine.execute("CROSSMAP [WORD ?1 ?2] [[A B] [X Y]]")
+    #expect(logoEngine.lastResult == "[AX AY BX BY]")
 }
 
 

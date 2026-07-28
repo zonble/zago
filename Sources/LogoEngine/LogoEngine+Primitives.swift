@@ -657,7 +657,7 @@ extension LogoEngine {
             return "\( ~a )"
         }
 
-        if upper == "ASHIFT" {
+        if upper == "ASHIFT" || upper == "LSHIFT" {
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
@@ -854,6 +854,163 @@ extension LogoEngine {
             return "[" + toks.joined(separator: " ") + "]"
         }
 
+        // ---------------------------------------------------------------------
+        // 8.1 & 8.2 Control & Template-based Iteration Primitives
+        // ---------------------------------------------------------------------
+        if upper == "ERROR" {
+            return lastError
+        }
+
+        if upper == "APPLY" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            return applyTemplate(templateStr: templateStr, args: items)
+        }
+
+        if upper == "INVOKE" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            var args: [String] = []
+            while index + 1 < tokens.count && !tokens[index + 1].hasPrefix("]") && tokens[index + 1] != ")" {
+                index += 1
+                let arg = evaluateExpression(tokens, index: &index)
+                args.append(arg)
+            }
+            return applyTemplate(templateStr: templateStr, args: args)
+        }
+
+        if upper == "FOREACH" {
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            for (i, item) in items.enumerated() {
+                let rest = Array(items[(i + 1)...])
+                _ = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
+            }
+            return ""
+        }
+
+        if upper == "MAP" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            var results: [String] = []
+            for (i, item) in items.enumerated() {
+                let rest = Array(items[(i + 1)...])
+                let res = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
+                results.append(res)
+            }
+            return "[" + results.joined(separator: " ") + "]"
+        }
+
+        if upper == "MAP.SE" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            var results: [String] = []
+            for (i, item) in items.enumerated() {
+                let rest = Array(items[(i + 1)...])
+                let res = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
+                let resItems = LogoValue.parse(res).toListItems().map { $0.description }.filter { !$0.isEmpty }
+                results.append(contentsOf: resItems)
+            }
+            return "[" + results.joined(separator: " ") + "]"
+        }
+
+        if upper == "FILTER" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            var filtered: [String] = []
+            for (i, item) in items.enumerated() {
+                let rest = Array(items[(i + 1)...])
+                let condRes = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
+                if logoIsTrue(condRes) {
+                    filtered.append(item)
+                }
+            }
+            return "[" + filtered.joined(separator: " ") + "]"
+        }
+
+        if upper == "FIND" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            if index + 1 < tokens.count { index += 1 }
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            for (i, item) in items.enumerated() {
+                let rest = Array(items[(i + 1)...])
+                let condRes = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
+                if logoIsTrue(condRes) {
+                    return item
+                }
+            }
+            return "[]"
+        }
+
+        if upper == "REDUCE" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            guard !items.isEmpty else { return "[]" }
+            var acc = items[0]
+            for (i, item) in items.dropFirst().enumerated() {
+                let rest = Array(items[(i + 2)...])
+                acc = applyTemplate(templateStr: templateStr, args: [acc, item], indexInLoop: i + 2, restList: rest)
+            }
+            return acc
+        }
+
+        if upper == "CROSSMAP" {
+            index += 1
+            let templateStr = evaluateExpression(tokens, index: &index)
+            index += 1
+            let listListStr = evaluateExpression(tokens, index: &index)
+            let parsed = LogoValue.parse(listListStr)
+            var listsOfItems: [[String]] = []
+            switch parsed {
+            case .list(let subLists):
+                for sub in subLists {
+                    listsOfItems.append(sub.toListItems().map { $0.description })
+                }
+            default:
+                listsOfItems.append(parsed.toListItems().map { $0.description })
+            }
+
+            func cartesianProduct(_ arrays: [[String]]) -> [[String]] {
+                guard let first = arrays.first else { return [[]] }
+                let subProduct = cartesianProduct(Array(arrays.dropFirst()))
+                var res: [[String]] = []
+                for f in first {
+                    for sub in subProduct {
+                        res.append([f] + sub)
+                    }
+                }
+                return res
+            }
+
+            let combos = cartesianProduct(listsOfItems)
+            var results: [String] = []
+            for (i, combo) in combos.enumerated() {
+                let res = applyTemplate(templateStr: templateStr, args: combo, indexInLoop: i + 1)
+                results.append(res)
+            }
+            return "[" + results.joined(separator: " ") + "]"
+        }
+
         return nil
     }
 
@@ -870,5 +1027,14 @@ extension LogoEngine {
         if clean == "0" || clean == "false" || clean.isEmpty { return false }
         if let d = Double(clean) { return d != 0 }
         return true
+    }
+}
+
+extension LogoValue {
+    internal func toListItems() -> [LogoValue] {
+        switch self {
+        case .list(let items), .array(let items): return items
+        case .string(let s): return [.string(s)]
+        }
     }
 }

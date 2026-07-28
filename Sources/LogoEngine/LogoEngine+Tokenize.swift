@@ -5,23 +5,44 @@ extension LogoEngine {
     public func tokenize(_ script: String) -> [String] {
         var tokens: [String] = []
         var current = ""
-        var inQuote = false
-
-        let delims: Set<Character> = ["[", "]", "{", "}", "(", ")", "+", "-", "*", "/", "%"]
+        let delims: Set<Character> = ["[", "]", "{", "}", "(", ")", "+", "-", "*", "/", "%", "^"]
 
         var i = script.startIndex
         while i < script.endIndex {
             let ch = script[i]
             if ch == "\"" {
-                inQuote.toggle()
+                if !current.isEmpty {
+                    tokens.append(current)
+                    current = ""
+                }
                 current.append(ch)
-            } else if delims.contains(ch) && !inQuote {
+
+                if hasClosingQuoteOnSameLine(script: script, fromIndex: script.index(after: i)) {
+                    i = script.index(after: i)
+                    while i < script.endIndex {
+                        let innerCh = script[i]
+                        current.append(innerCh)
+                        if innerCh == "\"" { break }
+                        i = script.index(after: i)
+                    }
+                    tokens.append(current)
+                    current = ""
+                }
+            } else if delims.contains(ch) {
+                if ch == "-" && current.isEmpty {
+                    let nextIdx = script.index(after: i)
+                    if nextIdx < script.endIndex && script[nextIdx].isNumber {
+                        current.append(ch)
+                        i = script.index(after: i)
+                        continue
+                    }
+                }
                 if !current.isEmpty {
                     tokens.append(current)
                     current = ""
                 }
                 tokens.append(String(ch))
-            } else if !inQuote && (ch == "=" || ch == "!" || ch == ">" || ch == "<") {
+            } else if ch == "=" || ch == "!" || ch == ">" || ch == "<" {
                 if !current.isEmpty {
                     tokens.append(current)
                     current = ""
@@ -36,7 +57,7 @@ extension LogoEngine {
                     }
                 }
                 tokens.append(op)
-            } else if ch.isWhitespace && !inQuote {
+            } else if ch.isWhitespace {
                 if !current.isEmpty {
                     tokens.append(current)
                     current = ""
@@ -52,11 +73,39 @@ extension LogoEngine {
         return tokens
     }
 
+    private func hasClosingQuoteOnSameLine(script: String, fromIndex: String.Index) -> Bool {
+        var idx = fromIndex
+        guard idx > script.startIndex else { return false }
+        var prev: Character = script[script.index(before: fromIndex)]
+        while idx < script.endIndex {
+            let c = script[idx]
+            if c == "\"" {
+                let nextIdx = script.index(after: idx)
+                let nextChar: Character = nextIdx < script.endIndex ? script[nextIdx] : "\n"
+                let isNextOpeningQuote = (prev.isWhitespace || prev == "[" || prev == "(") && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
+                if !isNextOpeningQuote {
+                    return true
+                }
+            }
+            if c == "[" || c == "]" || c.isNewline { return false }
+            prev = c
+            idx = script.index(after: idx)
+        }
+        return false
+    }
+
     internal func evaluateCondition(_ conditionTokens: [String]) -> Bool {
         guard !conditionTokens.isEmpty else { return false }
 
-        // Find comparison operator if present
-        let opIndex = conditionTokens.firstIndex { $0 == "==" || $0 == "=" || $0 == "!=" || $0 == "<>" || $0 == "<" || $0 == "<=" || $0 == ">" || $0 == ">=" }
+        var opIndex: Int? = nil
+        let compOps: Set<String> = ["==", "=", "!=", "<>", "<", "<=", ">", ">="]
+
+        for (idx, tok) in conditionTokens.enumerated() {
+            if compOps.contains(tok) {
+                opIndex = idx
+                break
+            }
+        }
 
         if let idx = opIndex {
             var leftIdx = 0
@@ -88,14 +137,10 @@ extension LogoEngine {
                 default: return false
                 }
             }
-        } else {
-            var exprIdx = 0
-            let val = evaluateExpression(conditionTokens, index: &exprIdx).lowercased()
-            if val == "true" || val == "1" {
-                return true
-            }
-            return false
         }
+
+        let valStr = conditionTokens.joined(separator: " ")
+        return logoIsTrue(valStr)
     }
 
     /// Evaluates token value or command (DATE, TIME) or binary arithmetic expression (+, -, *, /, %) with parentheses.
@@ -119,20 +164,19 @@ extension LogoEngine {
             if nextOp == ")" || nextOp == "]" {
                 break
             }
-            if nextOp == "+" || nextOp == "-" || nextOp == "*" || nextOp == "/" || nextOp == "%" {
+            if nextOp == "+" || nextOp == "-" || nextOp == "*" || nextOp == "/" || nextOp == "%" || nextOp == "^" {
                 let op = nextOp
                 index += 2
                 guard index < tokens.count else { break }
                 let rightVal = evaluateExpression(tokens, index: &index)
 
                 if let num1 = Double(leftVal), let num2 = Double(rightVal) {
-                    if let n1 = Int(leftVal), let n2 = Int(rightVal) {
+                    if let n1 = Int(leftVal), let n2 = Int(rightVal), op != "^" && op != "/" {
                         let resNum: Int
                         switch op {
                         case "+": resNum = n1 + n2
                         case "-": resNum = n1 - n2
                         case "*": resNum = n1 * n2
-                        case "/": resNum = (n2 != 0) ? n1 / n2 : 0
                         case "%": resNum = (n2 != 0) ? n1 % n2 : 0
                         default: resNum = 0
                         }
@@ -145,9 +189,10 @@ extension LogoEngine {
                         case "*": resDouble = num1 * num2
                         case "/": resDouble = (num2 != 0) ? num1 / num2 : 0.0
                         case "%": resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
+                        case "^": resDouble = pow(num1, num2)
                         default: resDouble = 0.0
                         }
-                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 {
+                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min) && resDouble <= Double(Int.max) {
                             leftVal = "\(Int(resDouble))"
                         } else {
                             leftVal = "\(resDouble)"
@@ -156,6 +201,8 @@ extension LogoEngine {
                 } else if op == "+" {
                     // String concatenation
                     leftVal = leftVal + rightVal
+                } else {
+                    break
                 }
             } else {
                 break
@@ -230,9 +277,15 @@ extension LogoEngine {
 
     internal func resolveTokenValue(_ token: String) -> String {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+        let lower = clean.lowercased()
         if clean.hasPrefix(":") {
             let varName = String(clean.dropFirst()).lowercased()
             return variables[varName] ?? ""
+        }
+        if clean.hasPrefix("?") || clean == "#" || variables[lower] != nil {
+            if let val = variables[lower] {
+                return val
+            }
         }
         return unquote(clean)
     }
