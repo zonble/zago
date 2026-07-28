@@ -4,31 +4,6 @@
 
 It keeps the directness of Pico/Nano-style editing, then adds a small command language for the work that is awkward to repeat by hand: inserting structured text, drawing boxes and lines, filling regions, moving through buffers, and shaping plain text into terminal-native layouts.
 
-LOGO is intentionally simple. Commands read like actions:
-
-```logo
-MOVE HOME
-TYPE "# "
-MOVE END
-```
-
-That same language is available from the editor command prompt, from key bindings, and from startup configuration. Each editor instance owns one persistent LOGO runtime, so variables and procedures can live for the lifetime of the buffer session.
-
-`se` treats automation as an editing gesture, not as a plugin system. You can open a command prompt, type a readable command, bind it later, and eventually turn it into a reusable procedure.
-
-```logo
-BOX 30 4 ROUND
-GOTO 2 2
-FILL "hi
-```
-
-```text
-╭────────────────────────────╮
-│hihihihihihihihihihihihihihi│
-│hihihihihihihihihihihihihihi│
-╰────────────────────────────╯
-```
-
 ## Features
 
 - LOGO-style editor commands: `TYPE`, `MOVE`, `MARK`, `CUT`, `PASTE`, `JUSTIFY`, `BOX`, `LINE`, `VLINE`, `FILL`, `REPEAT`, `MAKE`, and `TO ... END`.
@@ -39,7 +14,28 @@ FILL "hi
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload, English and Traditional Chinese UI.
 
+## Requirements
+
+- macOS 14.0+ or Linux
+- Swift 6.0+
+- VT100 / ANSI-compatible terminal
+
 ## Quick Start
+
+Install with [Mint](https://github.com/yonaskolb/Mint):
+
+```bash
+mint install zonble/se
+se notes.txt
+```
+
+Or run without installing:
+
+```bash
+mint run zonble/se notes.txt
+```
+
+Build from source:
 
 ```bash
 git clone https://github.com/zonble/se.git
@@ -52,6 +48,16 @@ swift build -c release
 ```
 
 ## Command Examples
+
+LOGO is intentionally simple. Commands read like actions:
+
+```logo
+MOVE HOME
+TYPE "# "
+MOVE END
+```
+
+The same language is available from the command prompt, key bindings, and startup configuration. Each editor instance owns one persistent LOGO runtime, so variables and procedures can live for the lifetime of the buffer session.
 
 Create a numbered list:
 
@@ -69,18 +75,27 @@ END
 TITLE "Release Notes"
 ```
 
+Draw and fill a box:
+
+```logo
+BOX 30 4 ROUND
+GOTO 2 2
+FILL "hi
+```
+
+```text
+╭────────────────────────────╮
+│hihihihihihihihihihihihihihi│
+│hihihihihihihihihihihihihihi│
+╰────────────────────────────╯
+```
+
 ## Documentation
 
 - [Editor basics](docs/editor.md)
 - [LOGO command language](docs/logo.md)
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
-
-## Requirements
-
-- macOS 14.0+ or Linux
-- Swift 6.0+
-- VT100 / ANSI-compatible terminal
 
 ## Tests
 
