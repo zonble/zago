@@ -292,3 +292,31 @@ import Foundation
     logoEngine.execute("IF 3.5 > 2.0 [ TYPE \"YES\" ]", on: ed4)
     #expect(ed4.buffer.lines[0] == "YES")
 }
+
+@Test func testLogoBoxMultiLineTextWrapping() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. Escaped \n line break inside BOX "Line 1\nLine 2"
+    let ed1 = Editor()
+    logoEngine.execute("BOX \"Line 1\\nLine 2\"", on: ed1)
+    #expect(ed1.buffer.lines[0] == "┌────────┐")
+    #expect(ed1.buffer.lines[1] == "│ Line 1 │")
+    #expect(ed1.buffer.lines[2] == "│ Line 2 │")
+    #expect(ed1.buffer.lines[3] == "└────────┘")
+
+    // 2. BOX width height "text" with center alignment
+    let ed2 = Editor()
+    logoEngine.execute("BOX 16 4 \"Hello\\nWorld\" \"center\"", on: ed2)
+    #expect(ed2.buffer.lines[0] == "┌──────────────┐")
+    #expect(ed2.buffer.lines[1] == "│    Hello     │")
+    #expect(ed2.buffer.lines[2] == "│    World     │")
+    #expect(ed2.buffer.lines[3] == "└──────────────┘")
+
+    // 3. Auto word wrapping when text length exceeds width
+    let ed3 = Editor()
+    logoEngine.execute("BOX 12 3 \"Hello World\"", on: ed3)
+    #expect(ed3.buffer.lines[0] == "┌──────────┐")
+    #expect(ed3.buffer.lines[1] == "│ Hello    │")
+    #expect(ed3.buffer.lines[2] == "│ World    │")
+    #expect(ed3.buffer.lines[3] == "└──────────┘")
+}

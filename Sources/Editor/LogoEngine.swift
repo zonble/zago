@@ -893,42 +893,69 @@ public final class LogoEngine {
             return
         }
 
-        // Mode 2: BOX width height [style]
+        // Mode 2: BOX width [height] ["text"] [align] [style]
         if let w = Int(resolveTokenValue(firstToken)) {
             let width = max(3, min(w, 200))
-            var height = 3
+            var height: Int? = nil
+            var textContent: String? = nil
+            var align: TextAlignment = .left
             var styleName = ""
 
+            // Check if next token is height
             if index + 1 < tokens.count {
-                index += 1
-                let hStr = evaluateExpression(tokens, index: &index)
-                height = max(2, min(Int(hStr) ?? 3, 100))
-            }
-
-            if index + 1 < tokens.count {
-                let nextUpper = tokens[index + 1].uppercased()
-                if !LogoEngine.keywords.contains(nextUpper) {
+                let secondUpper = tokens[index + 1].uppercased()
+                if let h = Int(resolveTokenValue(secondUpper)) {
                     index += 1
-                    styleName = unquote(tokens[index])
+                    height = max(2, min(h, 100))
                 }
             }
 
-            drawBoxFrame(width: width, height: height, style: BoxStyle.from(styleName), on: editor)
+            // Check if next token is text or style/align
+            while index + 1 < tokens.count {
+                let nextUpper = tokens[index + 1].uppercased()
+                if LogoEngine.keywords.contains(nextUpper) { break }
+                index += 1
+                let rawVal = tokens[index]
+                let val = unquote(rawVal)
+                let valUpper = val.lowercased()
+
+                if valUpper == "left" || valUpper == "center" || valUpper == "centre" || valUpper == "right" {
+                    align = TextAlignment.from(val)
+                } else if valUpper == "single" || valUpper == "double" || valUpper == "ascii" {
+                    styleName = val
+                } else if textContent == nil {
+                    textContent = val
+                }
+            }
+
+            if let text = textContent {
+                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: BoxStyle.from(styleName), on: editor)
+            } else {
+                drawBoxFrame(width: width, height: height ?? 3, style: BoxStyle.from(styleName), on: editor)
+            }
             return
         }
 
-        // Mode 3: BOX "text" [style]
+        // Mode 3: BOX "text" [align/style] [style/align]
         let textContent = evaluateExpression(tokens, index: &index)
+        var align: TextAlignment = .left
         var styleName = ""
-        if index + 1 < tokens.count {
+
+        while index + 1 < tokens.count {
             let nextUpper = tokens[index + 1].uppercased()
-            if !LogoEngine.keywords.contains(nextUpper) {
-                index += 1
-                styleName = unquote(tokens[index])
+            if LogoEngine.keywords.contains(nextUpper) { break }
+            index += 1
+            let val = unquote(tokens[index])
+            let valUpper = val.lowercased()
+
+            if valUpper == "left" || valUpper == "center" || valUpper == "centre" || valUpper == "right" {
+                align = TextAlignment.from(val)
+            } else {
+                styleName = val
             }
         }
 
-        drawBoxAroundText(textContent, style: BoxStyle.from(styleName), on: editor)
+        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: BoxStyle.from(styleName), on: editor)
     }
 
     private func overlayBoxLines(_ boxLines: [String], on editor: Editor) {
@@ -989,22 +1016,126 @@ public final class LogoEngine {
         editor.buffer.isModified = true
     }
 
-    private func drawBoxAroundText(_ text: String, style: BoxStyle, on editor: Editor) {
-        let textLines = text.components(separatedBy: .newlines)
-        let maxDisplayWidth = textLines.map { $0.displayWidth }.max() ?? 0
-        let innerWidth = max(1, maxDisplayWidth)
+    public enum TextAlignment {
+        case left, center, right
 
-        let topBorder = String(style.topLeft) + String(repeating: style.topChar, count: innerWidth + 2) + String(style.topRight)
-        let bottomBorder = String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth + 2) + String(style.bottomRight)
+        public static func from(_ str: String) -> TextAlignment {
+            switch str.lowercased() {
+            case "center", "centre", "middle": return .center
+            case "right": return .right
+            default: return .left
+            }
+        }
+    }
+
+    private func drawBoxAroundText(
+        _ text: String,
+        targetWidth: Int? = nil,
+        targetHeight: Int? = nil,
+        align: TextAlignment = .left,
+        style: BoxStyle = .single,
+        on editor: Editor
+    ) {
+        let unescapedText = text.replacingOccurrences(of: "\\n", with: "\n")
+        let rawLines = unescapedText.components(separatedBy: "\n")
+
+        // Determine effective inner content width
+        var innerWidth: Int
+        if let tw = targetWidth {
+            innerWidth = max(1, tw - 4) // Reserve 2 border chars + 2 padding spaces
+        } else {
+            let maxRawWidth = rawLines.map { $0.displayWidth }.max() ?? 1
+            innerWidth = max(1, maxRawWidth)
+        }
+
+        // Word-wrap each raw line to fit innerWidth
+        var wrappedLines: [String] = []
+        for line in rawLines {
+            wrappedLines.append(contentsOf: wrapTextLine(line, maxWidth: innerWidth))
+        }
+
+        let contentWidth = max(innerWidth, wrappedLines.map { $0.displayWidth }.max() ?? 1)
+
+        // Determine effective height (auto-expand if wrappedLines exceed targetHeight)
+        let minMiddleCount = (targetHeight != nil) ? max(1, targetHeight! - 2) : 1
+        let middleCount = max(minMiddleCount, wrappedLines.count)
+
+        let topBorder = String(style.topLeft) + String(repeating: style.topChar, count: contentWidth + 2) + String(style.topRight)
+        let bottomBorder = String(style.bottomLeft) + String(repeating: style.bottomChar, count: contentWidth + 2) + String(style.bottomRight)
 
         var boxLines: [String] = [topBorder]
-        for line in textLines {
-            let padding = String(repeating: " ", count: max(0, innerWidth - line.displayWidth))
-            boxLines.append("\(style.sideChar) \(line)\(padding) \(style.sideChar)")
+
+        for k in 0..<middleCount {
+            let lineText = (k < wrappedLines.count) ? wrappedLines[k] : ""
+            let textW = lineText.displayWidth
+            let totalPadding = max(0, contentWidth - textW)
+
+            let leftPadCount: Int
+            let rightPadCount: Int
+            switch align {
+            case .center:
+                leftPadCount = totalPadding / 2
+                rightPadCount = totalPadding - leftPadCount
+            case .right:
+                leftPadCount = totalPadding
+                rightPadCount = 0
+            case .left:
+                leftPadCount = 0
+                rightPadCount = totalPadding
+            }
+
+            let paddedText = String(repeating: " ", count: leftPadCount) + lineText + String(repeating: " ", count: rightPadCount)
+            boxLines.append("\(style.sideChar) \(paddedText) \(style.sideChar)")
         }
+
         boxLines.append(bottomBorder)
 
         overlayBoxLines(boxLines, on: editor)
+    }
+
+    private func wrapTextLine(_ line: String, maxWidth: Int) -> [String] {
+        guard maxWidth > 0 else { return [line] }
+        if line.displayWidth <= maxWidth { return [line] }
+
+        var result: [String] = []
+        let words = line.components(separatedBy: " ")
+        var currentChunk = ""
+
+        for word in words {
+            let candidate = currentChunk.isEmpty ? word : "\(currentChunk) \(word)"
+            if candidate.displayWidth <= maxWidth {
+                currentChunk = candidate
+            } else {
+                if !currentChunk.isEmpty {
+                    result.append(currentChunk)
+                    currentChunk = ""
+                }
+                if word.displayWidth > maxWidth {
+                    var subChunk = ""
+                    var subW = 0
+                    for ch in word {
+                        let dw = ch.displayWidth
+                        if subW + dw > maxWidth && !subChunk.isEmpty {
+                            result.append(subChunk)
+                            subChunk = ""
+                            subW = 0
+                        }
+                        subChunk.append(ch)
+                        subW += dw
+                    }
+                    if !subChunk.isEmpty {
+                        currentChunk = subChunk
+                    }
+                } else {
+                    currentChunk = word
+                }
+            }
+        }
+        if !currentChunk.isEmpty {
+            result.append(currentChunk)
+        }
+
+        return result.isEmpty ? [""] : result
     }
 
     private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, on editor: Editor) {
