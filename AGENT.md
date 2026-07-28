@@ -30,6 +30,8 @@ se/
 ├── Sources/
 │   ├── se/
 │   │   └── se.swift                           # Main CLI entry point (swift-argument-parser)
+│   ├── TextMetrics/
+│   │   └── DisplayWidth.swift                  # Single source of truth for terminal display width
 │   └── Editor/
 │       ├── Terminal.swift                     # POSIX termios raw mode & ANSI escape sequences
 │       ├── TextBuffer.swift                   # Core line buffer, string insertion, range cutting
@@ -103,9 +105,11 @@ swift test
   })
   ```
 
-### B. Softwrap Layout & CJK Display Width ([`LayoutEngine.swift`](Sources/Editor/LayoutEngine.swift))
+### B. Softwrap Layout & Terminal Display Width ([`DisplayWidth.swift`](Sources/TextMetrics/DisplayWidth.swift))
 - Standard ASCII characters have a display width of `1`. Full-width CJK characters (Kanji/Hanzi, Hiragana, Katakana, Full-width Punctuation, Emoji) have a display width of `2`.
-- Terminal positioning and line padding MUST calculate column width via `String.displayWidth` / `Character.displayWidth` extensions in [`Terminal.swift`](Sources/Editor/Terminal.swift).
+- [`TextMetrics`](Sources/TextMetrics) is the single source of truth for terminal column width. Terminal positioning, line padding, softwrap, table layout, LOGO box/fill rendering, and tests MUST use `String.displayWidth`, `Character.displayWidth`, or `paddedToDisplayWidth(_:)` from this module.
+- Do **not** add new `wcwidth`, Unicode scalar range checks, `logoDisplayWidth`, CJK width helpers, or local display-width extensions in `Editor`, `LogoEngine`, tests, or feature files. If display width behavior must change, update [`Sources/TextMetrics/DisplayWidth.swift`](Sources/TextMetrics/DisplayWidth.swift) and its focused tests.
+- Tokenization helpers may classify text for reflow, but they must derive wide-character decisions from `Character.displayWidth >= 2`; they must not maintain independent CJK/wide Unicode tables.
 - Never use `String.count` for calculating visual layout bounds in the UI title bar, help bar, or screen cursor placement.
 
 ### C. Editor File Modularization Guidelines

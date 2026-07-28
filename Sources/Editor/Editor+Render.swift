@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 extension Editor {
     /// Refreshes screen rendering (Title bar, WordStar ruler, Virtual lines, Prompt/Status line, Help bar, Cursor position).

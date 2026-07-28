@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 /// Manages text buffer lines, file I/O, and cursor operations.
 public final class TextBuffer {
@@ -263,12 +264,12 @@ public final class TextBuffer {
 
     /// Visual Token representation for paragraph reflow.
     private enum VisualToken: Equatable {
-        case cjk(Character)
+        case wide(Character)
         case latin(String)
         case space
     }
 
-    /// Tokenizes paragraph text into a stream of CJK characters, Latin words, and spaces.
+    /// Tokenizes paragraph text into wide characters, Latin words, and spaces.
     private static func tokenizeForReflow(_ text: String) -> [VisualToken] {
         var tokens: [VisualToken] = []
         var currentLatin = ""
@@ -287,7 +288,7 @@ public final class TextBuffer {
                     tokens.append(.latin(currentLatin))
                     currentLatin = ""
                 }
-                tokens.append(.cjk(ch))
+                tokens.append(.wide(ch))
             } else {
                 currentLatin.append(ch)
             }
@@ -310,7 +311,7 @@ public final class TextBuffer {
 
         for token in tokens {
             switch token {
-            case .cjk(let ch):
+            case .wide(let ch):
                 let w = ch.displayWidth
                 if currentLine.displayWidth + w > targetWidth && !currentLine.isEmpty {
                     resultLines.append(currentLine.trimmingCharacters(in: .whitespaces))

@@ -1,8 +1,16 @@
 import Foundation
+import Dispatch
 import Testing
+import TextMetrics
 
 @testable import Editor
 @testable import LogoEngine
+
+final class LogoTestResultBox: @unchecked Sendable {
+    var value: String?
+    var error: String?
+    var status: String?
+}
 
 @Test func testLogoMacroEngine() throws {
     let editor = Editor()
@@ -664,12 +672,13 @@ import Testing
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute(
-        """
+    let fibProcedure = """
         TO FIB :N
           IFELSE :N <= 1 [ OUTPUT :N ] [ OUTPUT (FIB :N - 1) + (FIB :N - 2) ]
         END
-        """)
+        """
+
+    logoEngine.execute(fibProcedure)
 
     logoEngine.execute("FIB 1")
     #expect(logoEngine.lastResult == "1", "FIB 1 failed: \(logoEngine.lastResult ?? "nil")")
@@ -680,8 +689,20 @@ import Testing
     logoEngine.execute("FIB 3")
     #expect(logoEngine.lastResult == "2", "FIB 3 failed: \(logoEngine.lastResult ?? "nil")")
 
-    logoEngine.execute("FIB 10")
-    #expect(logoEngine.lastResult == "55", "FIB 10 failed: \(logoEngine.lastResult ?? "nil")")
+    let semaphore = DispatchSemaphore(value: 0)
+    let fib10Result = LogoTestResultBox()
+    let fib10Thread = Thread {
+        let threadEditor = Editor()
+        let threadEngine = LogoEngine(delegate: threadEditor)
+        threadEngine.execute(fibProcedure)
+        threadEngine.execute("FIB 10")
+        fib10Result.value = threadEngine.lastResult
+        semaphore.signal()
+    }
+    fib10Thread.stackSize = 8 * 1024 * 1024
+    fib10Thread.start()
+    semaphore.wait()
+    #expect(fib10Result.value == "55", "FIB 10 failed: \(fib10Result.value ?? "nil")")
 }
 
 @Test func testSection81ControlStructures() throws {
@@ -909,4 +930,96 @@ import Testing
     // Execution 2: Use previously defined variable and procedure on the persistent editor.logoEngine
     editor.logoEngine.execute("TYPE :val GREET")
     #expect(editor.buffer.lines[0] == "42Hi")
+}
+
+@Test func testLogoFillPrimitive() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    // 1. Line Fill with ASCII & CJK (Width = 10, CJK character "測" has displayWidth = 2)
+    logoEngine.execute("CLEARBUFFER FILL 10 \"測\"")
+    #expect(editor.buffer.lines[0] == "測測測測測")
+    #expect(editor.buffer.lines[0].displayWidth == 10)
+
+    // 2. Line Fill with Odd width (Width = 9, 4 CJK "測" + 1 space = 9)
+    logoEngine.execute("CLEARBUFFER FILL 9 \"測\"")
+    #expect(editor.buffer.lines[0] == "測測測測 ")
+    #expect(editor.buffer.lines[0].displayWidth == 9)
+
+    // 3. Mode 3: Box Fill width height
+    logoEngine.execute("CLEARBUFFER GOTO 1 1 FILL 5 3 \"*\"")
+    #expect(editor.buffer.lines[0] == "*****")
+    #expect(editor.buffer.lines[1] == "*****")
+    #expect(editor.buffer.lines[2] == "*****")
+
+    // 4. Mode 1: Flood Fill enclosed region
+    logoEngine.execute("CLEARBUFFER BOX 5 5 \"single\" GOTO 2 2 FILL \".\"")
+    #expect(editor.buffer.lines[1] == "│...│")
+    #expect(editor.buffer.lines[2] == "│...│")
+    #expect(editor.buffer.lines[3] == "│...│")
+
+    // 5. Overlay fill uses visual columns when the existing line contains CJK text.
+    logoEngine.execute("CLEARBUFFER TYPE \"中ab尾\" GOTO 1 3 FILL 2 \"*\"")
+    #expect(editor.buffer.lines[0] == "中**尾")
+    #expect(editor.buffer.lines[0].displayWidth == 6)
+
+    // 6. Overlay fill keeps visual width when the fill pattern is CJK.
+    logoEngine.execute("CLEARBUFFER TYPE \"abcdef\" GOTO 1 2 FILL 4 \"測\"")
+    #expect(editor.buffer.lines[0] == "a測測f")
+    #expect(editor.buffer.lines[0].displayWidth == 6)
+
+    // 7. Overlay fill pads when the replaced region cuts through a CJK character.
+    logoEngine.execute("CLEARBUFFER TYPE \"A測B\" GOTO 1 2 FILL 1 \"*\"")
+    #expect(editor.buffer.lines[0] == "A* B")
+    #expect(editor.buffer.lines[0].displayWidth == 4)
+
+    // 8. Flood fill with CJK pattern fills display columns, not character count.
+    logoEngine.execute("CLEARBUFFER BOX 30 4 GOTO 2 2 FILL \"你\"")
+    #expect(editor.buffer.lines[0] == "┌────────────────────────────┐")
+    #expect(editor.buffer.lines[1] == "│你你你你你你你你你你你你你你│")
+    #expect(editor.buffer.lines[2] == "│你你你你你你你你你你你你你你│")
+    #expect(editor.buffer.lines[3] == "└────────────────────────────┘")
+    #expect(editor.buffer.lines[1].displayWidth == 30)
+
+    // 9. Flood fill supports multi-character patterns.
+    logoEngine.execute("CLEARBUFFER BOX 30 4 GOTO 2 2 FILL \"hi\"")
+    #expect(editor.buffer.lines[1] == "│hihihihihihihihihihihihihihi│")
+    #expect(editor.buffer.lines[2] == "│hihihihihihihihihihihihihihi│")
+    #expect(editor.buffer.lines[1].displayWidth == 30)
+}
+
+@Test func testUnknownOrExpressionCommandDoesNotHang() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    // Executing numbers, unknown keywords, or standalone expressions should return safely without hanging
+    logoEngine.execute("123")
+    #expect(logoEngine.lastResult == "123")
+
+    logoEngine.execute("UNKNOWN_COMMAND_ABC 456")
+    #expect(logoEngine.lastResult == "456")
+}
+
+@Test func testRecursiveProcedureLimitFailsSafely() {
+    let semaphore = DispatchSemaphore(value: 0)
+    let result = LogoTestResultBox()
+    let thread = Thread {
+        let editor = Editor()
+        let logoEngine = editor.logoEngine
+        logoEngine.execute("""
+        TO LOOP
+          OUTPUT LOOP
+        END
+        LOOP
+        """)
+        result.error = logoEngine.lastError
+        result.status = editor.statusMessage
+        semaphore.signal()
+    }
+    thread.stackSize = 8 * 1024 * 1024
+    thread.start()
+    semaphore.wait()
+
+    #expect(result.error == "[Procedure recursion limit exceeded: LOOP]")
+    #expect(result.status == "[Procedure recursion limit exceeded: LOOP]")
 }

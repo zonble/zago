@@ -145,6 +145,7 @@ extension LogoEngine {
     /// Evaluates token value or command (DATE, TIME) or binary arithmetic expression (+, -, *, /, %) with parentheses.
     internal func evaluateExpression(_ tokens: [String], index: inout Int) -> String {
         guard index < tokens.count else { return "" }
+        guard lastError == "[]" else { return "" }
 
         var leftVal: String
         if tokens[index] == "(" {
@@ -159,6 +160,7 @@ extension LogoEngine {
 
         // Peek next operator if present
         while index + 1 < tokens.count {
+            guard lastError == "[]" else { return "" }
             let nextToken = tokens[index + 1]
             if nextToken == ")" || nextToken == "]" {
                 break
@@ -267,6 +269,10 @@ extension LogoEngine {
             default:
                 break
             }
+        } else if let proc = customProcedures[upper] {
+            return invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
+        } else {
+            return resolveTokenValue(token)
         }
 
         if let proc = customProcedures[upper] {

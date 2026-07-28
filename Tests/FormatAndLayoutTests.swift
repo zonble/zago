@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TextMetrics
 
 @testable import Editor
 

@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 /// Data structure representing a single virtual display line (softwrap chunk)
 /// rendered on the terminal screen.

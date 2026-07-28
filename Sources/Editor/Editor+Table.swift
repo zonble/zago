@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 extension Editor {
     /// Intercepts and processes keyboard events when Table Mode is active.

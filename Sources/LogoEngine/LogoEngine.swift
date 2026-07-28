@@ -58,7 +58,7 @@ public final class LogoEngine {
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .apply, .invoke, .foreach, .map, .mapSe, .filter, .reduce,
-        .crossmap, .to, .exec, .search, .sort
+        .crossmap, .to, .exec, .search, .sort, .fill, .end
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
@@ -96,6 +96,8 @@ public final class LogoEngine {
     public var byeFlag: Bool = false
     public var currentThrowTag: String? = nil
     public var currentThrowValue: String? = nil
+    internal var procedureCallDepth: Int = 0
+    internal let maxProcedureCallDepth: Int = 32
 
     public weak var delegate: LogoEngineDelegate?
 
@@ -107,6 +109,7 @@ public final class LogoEngine {
     public func execute(_ script: String) {
         guard let delegate = self.delegate else { return }
         lastResult = nil
+        lastError = "[]"
         hasSetStatusMessage = false
 
         let tokens = tokenize(script)
@@ -126,7 +129,7 @@ public final class LogoEngine {
 
     internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
         guard let delegate = self.delegate else { return }
-        while index < tokens.count && frameReturn == nil {
+        while index < tokens.count && frameReturn == nil && lastError == "[]" {
             let token = tokens[index]
 
             if token == "]" {
@@ -138,6 +141,7 @@ public final class LogoEngine {
                 if !exprResult.isEmpty {
                     lastResult = exprResult
                 }
+                index += 1
                 continue
             }
 
@@ -249,6 +253,10 @@ public final class LogoEngine {
                     }
                     delegate.logoEngine(self, performAction: .applySetting(setting: setting, arg: arg))
                 }
+
+            case .fill:
+                index += 1
+                executeFillCommand(tokens, index: &index)
 
             case .type:
                 index += 1
@@ -914,6 +922,9 @@ public final class LogoEngine {
                     }
                 }
 
+            case .end:
+                return
+
             default:
                 if let proc = customProcedures[token.uppercased()] {
                     let ret = invokeProcedure(proc, tokens: tokens, index: &index)
@@ -1084,8 +1095,17 @@ public final class LogoEngine {
     }
 
     internal func invokeProcedure(_ proc: LogoProcedure, tokens: [String], index: inout Int) -> String? {
+        guard procedureCallDepth < maxProcedureCallDepth else {
+            let message = "[Procedure recursion limit exceeded: \(proc.name)]"
+            lastError = message
+            delegate?.logoEngine(self, performAction: .setStatusMessage(message))
+            hasSetStatusMessage = true
+            return nil
+        }
+
         var args: [String] = []
         for _ in 0..<proc.parameters.count {
+            guard lastError == "[]" else { return nil }
             index += 1
             let arg = evaluateExpression(tokens, index: &index)
             args.append(arg)
@@ -1096,7 +1116,9 @@ public final class LogoEngine {
             previousParamValues[param] = variables[param]
             variables[param] = args[i]
         }
+        procedureCallDepth += 1
         defer {
+            procedureCallDepth -= 1
             for (param, prev) in previousParamValues {
                 if let old = prev {
                     variables[param] = old

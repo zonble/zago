@@ -5,6 +5,7 @@ let package = Package(
     name: "se",
     products: [
         .executable(name: "se", targets: ["se"]),
+        .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
@@ -13,11 +14,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "LogoEngine"
+            name: "TextMetrics"
+        ),
+        .target(
+            name: "LogoEngine",
+            dependencies: ["TextMetrics"]
         ),
         .target(
             name: "Editor",
-            dependencies: ["LogoEngine"]
+            dependencies: ["LogoEngine", "TextMetrics"]
         ),
         .executableTarget(
             name: "se",
@@ -29,7 +34,7 @@ let package = Package(
         ),
         .testTarget(
             name: "seTests",
-            dependencies: ["Editor", "LogoEngine"]
+            dependencies: ["Editor", "LogoEngine", "TextMetrics"]
         ),
     ],
     swiftLanguageModes: [.v6]

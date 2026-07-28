@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 extension LogoEngine {
 
@@ -423,38 +424,216 @@ extension LogoEngine {
         }
         return result
     }
-}
 
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-@_silgen_name("wcwidth")
-private func sys_wcwidth(_ c: Int32) -> Int32
-#elseif canImport(Musl)
-import Musl
-@_silgen_name("wcwidth")
-private func sys_wcwidth(_ c: Int32) -> Int32
-#endif
+    internal func executeFillCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
+        guard index < tokens.count else { return }
 
-extension Character {
-    internal var displayWidth: Int {
-        for scalar in self.unicodeScalars {
-            #if canImport(Darwin)
-            let w = wcwidth(wchar_t(scalar.value))
-            #elseif canImport(Glibc) || canImport(Musl)
-            let w = sys_wcwidth(Int32(scalar.value))
-            #else
-            let w = 1
-            #endif
-            if w > 0 { return Int(w) }
+        let firstValStr = unquote(tokens[index])
+
+        var widthVal: Int? = nil
+        var heightVal: Int? = nil
+        var fillPattern = ""
+
+        if let w = Int(firstValStr) {
+            widthVal = w
+            if index + 1 < tokens.count {
+                let secondValStr = unquote(tokens[index + 1])
+                if let h = Int(secondValStr) {
+                    index += 1
+                    heightVal = h
+                }
+            }
+            if index + 1 < tokens.count {
+                index += 1
+                fillPattern = unquote(evaluateExpression(tokens, index: &index))
+            }
+        } else {
+            fillPattern = unquote(evaluateExpression(tokens, index: &index))
         }
-        return 1
-    }
-}
 
-extension String {
-    internal var displayWidth: Int {
-        return self.reduce(0) { $0 + $1.displayWidth }
+        if fillPattern.isEmpty { fillPattern = " " }
+
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+
+        // Mode 2: Line Fill (1 number)
+        if let width = widthVal, heightVal == nil {
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let filledLine = fillStringWithPattern(pattern: fillPattern, targetWidth: width)
+            let newText = replaceDisplayColumns(
+                in: lineStr, startCol: startCol, width: width, replacement: filledLine)
+
+            editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
+            editor.logoEngine(self, performAction: .setLine(index: startLine, text: newText))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + filledLine.displayWidth))
+            return
+        }
+
+        // Mode 3: 2D Box Overlay Fill (2 numbers)
+        if let width = widthVal, let height = heightVal {
+            let filledLine = fillStringWithPattern(pattern: fillPattern, targetWidth: width)
+            let boxWidth = filledLine.displayWidth
+            for r in 0..<height {
+                let lineIdx = startLine + r
+                editor.logoEngine(self, performAction: .ensureLineExists(index: lineIdx))
+                let lineStr = (editor.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+                let newText = replaceDisplayColumns(
+                    in: lineStr, startCol: startCol, width: width, replacement: filledLine)
+                editor.logoEngine(self, performAction: .setLine(index: lineIdx, text: newText))
+            }
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + boxWidth))
+            return
+        }
+
+        // Mode 1: Flood Fill enclosed region (No numbers)
+        performFloodFill(startLine: startLine, startCol: startCol, fillPattern: fillPattern)
+    }
+
+    private func fillStringWithPattern(pattern: String, targetWidth: Int) -> String {
+        guard targetWidth > 0 else { return "" }
+        var result = ""
+        var currentWidth = 0
+
+        while currentWidth < targetWidth {
+            let patWidth = pattern.displayWidth
+            if patWidth == 0 { break }
+
+            if currentWidth + patWidth <= targetWidth {
+                result += pattern
+                currentWidth += patWidth
+            } else {
+                let gap = targetWidth - currentWidth
+                result += String(repeating: " ", count: gap)
+                currentWidth += gap
+            }
+        }
+        return result
+    }
+
+    private func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
+        let prefix = displayPrefix(in: line, before: startCol)
+        let suffix = displaySuffix(in: line, after: startCol + width)
+        let paddedPrefix = prefix + String(repeating: " ", count: max(0, startCol - prefix.displayWidth))
+        return paddedPrefix + replacement + suffix
+    }
+
+    private func displayPrefix(in line: String, before targetCol: Int) -> String {
+        var result = ""
+        var col = 0
+        for ch in line {
+            let nextCol = col + ch.displayWidth
+            if nextCol <= targetCol {
+                result.append(ch)
+            } else {
+                break
+            }
+            col = nextCol
+        }
+        return result
+    }
+
+    private func displaySuffix(in line: String, after targetCol: Int) -> String {
+        var result = ""
+        var col = 0
+        for ch in line {
+            let nextCol = col + ch.displayWidth
+            if col >= targetCol {
+                result.append(ch)
+            } else if nextCol > targetCol {
+                let overflow = nextCol - targetCol
+                result += String(repeating: " ", count: overflow)
+            }
+            col = nextCol
+        }
+        return result
+    }
+
+    private func performFloodFill(startLine: Int, startCol: Int, fillPattern: String) {
+        guard let editor = self.delegate else { return }
+
+        let boxBorderChars: Set<Character> = [
+            "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
+            "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
+            "+", "-", "|", "│"
+        ]
+
+        let totalLines = max(startLine + 1, (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0)
+
+        var visited: Set<[Int]> = []
+        var queue: [[Int]] = [[startLine, startCol]]
+        visited.insert([startLine, startCol])
+
+        let maxRows = min(totalLines + 20, 200)
+        let maxCols = 200
+
+        var lineMap: [Int: [Character]] = [:]
+
+        func getCharAt(r: Int, c: Int) -> Character {
+            if lineMap[r] == nil {
+                let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+                lineMap[r] = Array(lineStr)
+            }
+            let chars = lineMap[r]!
+            if c >= 0 && c < chars.count {
+                return chars[c]
+            }
+            return " "
+        }
+
+        func isBoundary(ch: Character) -> Bool {
+            return boxBorderChars.contains(ch)
+        }
+
+        var cellsToFill: [[Int]] = []
+
+        while !queue.isEmpty && cellsToFill.count < 10000 {
+            let curr = queue.removeFirst()
+            let r = curr[0]
+            let c = curr[1]
+
+            let ch = getCharAt(r: r, c: c)
+            if isBoundary(ch: ch) {
+                continue
+            }
+
+            cellsToFill.append([r, c])
+
+            let neighbors = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]
+            for n in neighbors {
+                let nr = n[0]
+                let nc = n[1]
+                if nr >= 0 && nr < maxRows && nc >= 0 && nc < maxCols {
+                    if !visited.contains([nr, nc]) {
+                        visited.insert([nr, nc])
+                        queue.append([nr, nc])
+                    }
+                }
+            }
+        }
+
+        let cellsByRow = Dictionary(grouping: cellsToFill) { $0[0] }
+        for (r, rowCells) in cellsByRow {
+            let columns = rowCells.map { $0[1] }.sorted()
+            var spans: [(start: Int, end: Int)] = []
+            for col in columns {
+                if let last = spans.last, last.end + 1 == col {
+                    spans[spans.count - 1].end = col
+                } else {
+                    spans.append((start: col, end: col))
+                }
+            }
+
+            editor.logoEngine(self, performAction: .ensureLineExists(index: r))
+            var lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            for span in spans.reversed() {
+                let width = span.end - span.start + 1
+                let replacement = fillStringWithPattern(pattern: fillPattern, targetWidth: width)
+                lineStr = replaceDisplayColumns(
+                    in: lineStr, startCol: span.start, width: width, replacement: replacement)
+            }
+            editor.logoEngine(self, performAction: .setLine(index: r, text: lineStr))
+        }
     }
 }
