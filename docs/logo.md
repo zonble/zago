@@ -1,4 +1,4 @@
-# 🐢 `se` LOGO Macro Language Guide & Specification
+# `se` LOGO Command Language
 
 `se` features an innovative **LOGO-style Macro Language Engine**, bringing the clean, readable, human-friendly syntax paradigm of LOGO (`MAKE`, `:var`, `REPEAT`, `IF`, `IFELSE`, `TO...END`, `SORT`, `MAP`, `FILTER`) to TUI text buffer editing, 2D canvas box drawing, multi-buffer management, and macro automation.
 
@@ -8,16 +8,17 @@
 
 | Trigger Shortcut | Context / Input Mode | Description |
 | :--- | :--- | :--- |
-| **`M-l` (`Alt+L` / `Option+L`)** | Normal Edit Mode | Opens bottom LOGO Macro Prompt |
-| **`M-:` (`Alt+:`)** | Normal Edit Mode | Opens bottom LOGO Macro Prompt (Vim-style `:`) |
-| **`F8`** | Normal Edit Mode | Function Key shortcut to open LOGO Macro Prompt |
-| **`Left / Right` (`^B` / `^F`)** | LOGO Prompt Active | Moves input cursor left / right inside the prompt |
-| **`Home / End` (`^A` / `^E`)** | LOGO Prompt Active | Moves input cursor directly to prompt line start / end |
-| **`Delete` / `Backspace` (`^D`)**| LOGO Prompt Active | Deletes character at / before input cursor |
-| **`Ctrl+Backspace` (`Ctrl+BS`)**| LOGO Prompt Active | Clears entire prompt input line |
-| **`Up / Down` Arrows** | LOGO Prompt Active | Navigate through previously executed LOGO command history |
-| **`Enter`** | LOGO Prompt Active | Execute LOGO script and save to command history |
-| **`Esc` / `^C`** | LOGO Prompt Active | Cancel prompt mode |
+| **`Esc`** | Normal Edit Mode | Opens the bottom command prompt |
+| **`M-l` (`Alt+L` / `Option+L`)** | Normal Edit Mode | Alternate shortcut for the command prompt |
+| **`M-:` (`Alt+:`)** | Normal Edit Mode | Alternate Vim-style shortcut for the command prompt |
+| **`F8`** | Normal Edit Mode | Function key shortcut for the command prompt |
+| **`Left / Right` (`^B` / `^F`)** | Command Prompt Active | Moves input cursor left / right inside the prompt |
+| **`Home / End` (`^A` / `^E`)** | Command Prompt Active | Moves input cursor directly to prompt line start / end |
+| **`Delete` / `Backspace` (`^D`)**| Command Prompt Active | Deletes character at / before input cursor |
+| **`Ctrl+Backspace` (`Ctrl+BS`)**| Command Prompt Active | Clears entire prompt input line |
+| **`Up / Down` Arrows** | Command Prompt Active | Navigate through previously executed commands |
+| **`Enter`** | Command Prompt Active | Execute the command and save it to history |
+| **`Esc` / `^C`** | Command Prompt Active | Cancel prompt mode |
 | **`^Z`** | Normal Edit Mode | Atomic Undo: Reverts the entire LOGO macro execution in 1 step |
 
 ---
@@ -167,7 +168,7 @@ Use explicit lengths when you want deterministic drawing. Use no-argument auto-c
 
 ### 3. Classical Turtle Graphics & ASCII Diagram Pen Mode
 
-> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [docs/logo_pen_mode.md](docs/logo_pen_mode.md).
+> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](logo_pen_mode.md).
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -368,89 +369,11 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-## 🛠️ `~/.serc` Keybinding Integration
+## `.serc` Integration
 
-You can bind LOGO macro scripts directly to custom keyboard shortcuts in `~/.serc`:
+LOGO commands can be entered from the command prompt, evaluated from the editor, or loaded through `.serc` key bindings and startup blocks.
 
-```nanorc
-# ~/.serc configuration file
-
-# Bind Alt+B to generate 5 numbered list items automatically
-bind alt-b macro: MAKE "i 1 REPEAT 5 [ TYPE :i TYPE ". Item\n" MAKE "i (:i + 1) ]
-
-# Bind Alt+H to insert Markdown Level 1 header prefix
-bind alt-h macro: MOVE HOME TYPE "# " MOVE END
-```
-
-### `.serc` LOGO Runtime Design
-
-The current `.serc` format is intentionally Nano-like: it is line-oriented, readable, and centered on simple directives such as `set`, `bind`, and `unbind`. LOGO support should extend that style without turning `.serc` into a general plugin system.
-
-Short LOGO macros can be written inline through key bindings:
-
-```nanorc
-bind alt-h logo: MOVE HOME TYPE "# " MOVE END
-bind alt-b logo: BOX 30 4 GOTO 2 2 FILL "hi
-```
-
-For longer automation, `.serc` supports named LOGO scripts:
-
-```nanorc
-logo-script insert-title
-  BOX 40 3 ROUND
-  GOTO 2 2
-  FILL "-
-endlogo
-
-bind alt-t logo:insert-title
-```
-
-The block is a `.serc` container, not a LOGO procedure. LOGO keeps its own procedure syntax inside the script:
-
-```nanorc
-logo-script fib-demo
-  TO FIB :n
-    IF (:n < 2) [ OUTPUT :n ]
-    OUTPUT (FIB (:n - 1) + FIB (:n - 2))
-  END
-
-  TYPE FIB 10
-endlogo
-
-bind alt-f logo:fib-demo
-```
-
-Editor startup also supports a LOGO prelude. The prelude is evaluated once when the editor's persistent LOGO engine is initialized, and the resulting variables and procedures remain available for later prompt commands and key-bound macros:
-
-```nanorc
-logo-prelude
-  MAKE "boxWidth 30
-
-  TO FILLBOX :text
-    BOX :boxWidth 4
-    GOTO 2 2
-    FILL :text
-  END
-endlogo
-
-bind alt-b logo: FILLBOX "hi
-bind alt-n logo: MAKE "boxWidth (:boxWidth + 2)
-```
-
-Runtime lifecycle rules:
-
-- Each editor instance owns one persistent `LogoEngine`.
-- `.serc` prelude code is evaluated into that engine when the editor initializes LOGO support.
-- Prompt-entered LOGO, inline key-bound LOGO, and named `.serc` scripts all execute on the same engine.
-- Variables and procedures are editor-local and live until the editor is closed.
-- `.serc` must not introduce a second function syntax; reusable LOGO logic belongs in `TO ... END` procedures.
-
-Compatibility policy:
-
-- Existing Nano-compatible directives should keep their current shape.
-- LOGO-specific directives are explicit and easy to identify: `logo-prelude`, `logo-script`, and `endlogo`.
-- `bind <key> logo:<script>` is supported for short one-line macros.
-- `bind <key> logo:<name>` resolves a named `logo-script` first, then falls back to inline execution for backward compatibility.
+For configuration syntax, named scripts, startup preludes, and command ids, see [Configuration](configuration.md).
 
 ---
 

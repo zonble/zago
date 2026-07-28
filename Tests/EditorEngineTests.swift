@@ -108,6 +108,16 @@ import Testing
 @Test func testAltLTriggersLogoPrompt() throws {
     let editor = Editor()
 
+    // Test Esc
+    editor.processKey(.esc)
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Esc should trigger command prompt mode")
+    }
+
+    editor.currentPromptMode = .none
+
     // Test Alt+l (.alt("l"))
     editor.processKey(.alt("l"))
     if case .logoMacro = editor.currentPromptMode {
@@ -176,9 +186,15 @@ import Testing
     let editor = Editor()
     #expect(editor.isMenuBarActive == false)
 
-    // Press ESC in normal mode (should NOT activate Menu Bar)
+    // Press ESC in normal mode to open command prompt, not Menu Bar.
     editor.processKey(.esc)
     #expect(editor.isMenuBarActive == false)
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Esc should trigger command prompt mode")
+    }
+    editor.currentPromptMode = .none
 
     // 1. Press F1 to activate Menu Bar
     editor.processKey(.f1)

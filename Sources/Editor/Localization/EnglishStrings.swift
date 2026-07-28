@@ -24,7 +24,7 @@ public struct EnglishStrings {
         "prompt.search": "Search",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
-        "prompt.logo": "LOGO Macro Command: ",
+        "prompt.logo": "Command: ",
         "prompt.goto_line": "Enter line number, column number: ",
 
         // Status Messages
@@ -90,7 +90,7 @@ public struct EnglishStrings {
         "helpview.file_9": "    F1 / Alt+M / ^M    Toggle top Menu Bar",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
-        "helpview.logo_1": "    Alt+L / Alt+: / F8 Prompt LOGO macro command line",
+        "helpview.logo_1": "    Esc / Alt+L / Alt+: Command prompt",
         "helpview.logo_2": "    TYPE / PRINT       Insert text into buffer at cursor",
         "helpview.logo_3": "    MAKE / VAR / :var  Declare variables and arithmetic expressions",
         "helpview.logo_4": "    REPEAT / TO / EXEC Loop execution and custom procedure calls",
@@ -149,7 +149,7 @@ public struct EnglishStrings {
         "menu.buffer.next": "Next Buffer\tM-.",
         "menu.buffer.prev": "Previous Buffer\tM-,",
 
-        "menu.tools.logo": "LOGO Macro Prompt...\tAlt+L",
+        "menu.tools.logo": "Command Prompt...\tEsc",
         "menu.tools.table_mode": "Toggle Table Mode\tAlt+T",
         "menu.tools.table_style": "Cycle Table Style\tAlt+S",
         "menu.tools.ruler": "Toggle Ruler Bar",

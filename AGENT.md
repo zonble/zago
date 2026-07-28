@@ -25,8 +25,13 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 ```text
 se/
 ├── Package.swift                             # Swift Package Manager manifest
-├── README.md                                  # User documentation & keybindings guide
+├── README.md                                  # Short user-facing project entry point
 ├── AGENT.md                                   # AI Agent technical specification (this file)
+├── docs/
+│   ├── README.md                              # Documentation index
+│   ├── logo.md                                # LOGO command language guide
+│   ├── configuration.md                       # .serc, key bindings, and Nano syntax loading
+│   └── logo_pen_mode.md                       # Turtle/pen mode drawing guide
 ├── Sources/
 │   ├── se/
 │   │   └── se.swift                           # Main CLI entry point (swift-argument-parser)

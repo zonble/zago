@@ -24,7 +24,7 @@ public struct TraditionalChineseStrings {
         "prompt.search": "搜尋",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
-        "prompt.logo": "LOGO 巨集指令：",
+        "prompt.logo": "指令：",
         "prompt.goto_line": "請輸入列號與欄號：",
 
         // Status Messages
@@ -90,7 +90,7 @@ public struct TraditionalChineseStrings {
         "helpview.file_9": "    F1 / Alt+M / ^M    開啟/關閉頂端選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
-        "helpview.logo_1": "    Alt+L / Alt+: / F8 呼叫 LOGO 巨集指令 Prompt",
+        "helpview.logo_1": "    Esc / Alt+L / Alt+: 呼叫指令 Prompt",
         "helpview.logo_2": "    TYPE / PRINT       於游標位置輸出/插入指定文字",
         "helpview.logo_3": "    MAKE / VAR / :var  宣告變數與進行四則運算求值",
         "helpview.logo_4": "    REPEAT / TO / EXEC 迴圈執行與自訂程序定義呼叫",
@@ -149,7 +149,7 @@ public struct TraditionalChineseStrings {
         "menu.buffer.next": "下一個 Buffer\tM-.",
         "menu.buffer.prev": "上一個 Buffer\tM-,",
 
-        "menu.tools.logo": "LOGO 巨集指令...\tAlt+L",
+        "menu.tools.logo": "指令 Prompt...\tEsc",
         "menu.tools.table_mode": "切換表格隔離模式\tAlt+T",
         "menu.tools.table_style": "切換預設表格風格\tAlt+S",
         "menu.tools.ruler": "切換 WordStar 標尺規列",

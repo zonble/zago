@@ -2,9 +2,9 @@ import Foundation
 
 public struct LogoMacroCommand: Command {
     public let id: CommandID = .macroLogo
-    public let name = "LOGO Macro"
-    public let description = "Execute LOGO macro script"
-    public let keys: [Key] = [.alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .char("…"), .f8]
+    public let name = "Command"
+    public let description = "Run an editor command"
+    public let keys: [Key] = [.esc, .alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .char("…"), .f8]
 
     public init() {}
 
