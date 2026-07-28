@@ -11,8 +11,8 @@ extension Editor {
 
     /// Generates full screen ANSI output string for given terminal rows and cols dimensions.
     func generateScreenOutput(rows: Int, cols: Int) -> String {
-        let mainAreaHeight = max(1, rows - (displayConfig.showRuler ? 5 : 4)) // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
-        let textWidth = max(10, cols - 5) // 5 columns reserved for line number gutter ("1234 ")
+        let mainAreaHeight = max(1, rows - (displayConfig.showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
+        let textWidth = max(10, cols - 5)  // 5 columns reserved for line number gutter ("1234 ")
 
         // Compute Virtual Lines (wrapped visual sub-lines)
         let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
@@ -32,7 +32,7 @@ extension Editor {
         }
 
         var output = ""
-        output += "\u{1B}[?7l\u{1B}[H" // Disable terminal auto-wrap (DECAWM Reset) & Reset cursor to (1, 1)
+        output += "\u{1B}[?7l\u{1B}[H"  // Disable terminal auto-wrap (DECAWM Reset) & Reset cursor to (1, 1)
 
         // 1. Title Bar (Inverted Colors, centered filename) or Top Menu Bar
         if isMenuBarActive {
@@ -74,7 +74,8 @@ extension Editor {
 
             let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
 
-            let titleStr = leftText
+            let titleStr =
+                leftText
                 + String(repeating: " ", count: leftPaddingCount)
                 + centerText
                 + String(repeating: " ", count: rightPaddingCount)
@@ -110,7 +111,7 @@ extension Editor {
         // 2. Main Edit Area (Virtual Lines Rendering)
         for i in 0..<mainAreaHeight {
             let vIndex = topVLineIndex + i
-            output += "\u{1B}[K" // Clear line
+            output += "\u{1B}[K"  // Clear line
 
             let boxIdx = displayConfig.showRuler ? (i + 1) : i
 
@@ -150,19 +151,23 @@ extension Editor {
                         lineNumStr = "   ↳ "
                     }
 
-                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m" // Dim gray gutter
-                    let currentLanguage = displayConfig.enableSyntaxHighlight ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
+                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
+                    let currentLanguage =
+                        displayConfig.enableSyntaxHighlight
+                        ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
                     let chars = Array(vLine.text)
                     for (cIdxInVLine, ch) in chars.enumerated() {
                         let realCol = vLine.startCol + cIdxInVLine
-                        let isCellActive = isTableModeActive && currentTableCell != nil &&
-                            (vLine.bufferLineIndex >= currentTableCell!.innerMinLine && vLine.bufferLineIndex <= currentTableCell!.innerMaxLine) &&
-                            (realCol >= currentTableCell!.innerMinCol && realCol <= currentTableCell!.innerMaxCol)
+                        let isCellActive =
+                            isTableModeActive && currentTableCell != nil
+                            && (vLine.bufferLineIndex >= currentTableCell!.innerMinLine
+                                && vLine.bufferLineIndex <= currentTableCell!.innerMaxLine)
+                            && (realCol >= currentTableCell!.innerMinCol && realCol <= currentTableCell!.innerMaxCol)
 
                         if isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
-                            lineOutput += "\u{1B}[7m\(ch)\u{1B}[m" // Inverse video for selected characters
+                            lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selected characters
                         } else if isCellActive {
-                            lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m" // Green background white text for active cell
+                            lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green background white text for active cell
                         } else if let lang = currentLanguage, selectionMark == nil {
                             lineOutput += syntaxHighlighter.highlight(line: String(ch), syntax: lang)
                         } else {
@@ -175,7 +180,7 @@ extension Editor {
         }
 
         // 3. Status / Prompt Line
-        output += "\u{1B}[K" // Clear line
+        output += "\u{1B}[K"  // Clear line
         let renderedPrompt = formatPromptLine(cols: cols)
         if case .none = currentPromptMode {
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
@@ -199,7 +204,7 @@ extension Editor {
             let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
             let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
 
-            let screenRow = (cursorVLineIdx - topVLineIndex) + (displayConfig.showRuler ? 3 : 2) // +3 if ruler, +2 for title bar
+            let screenRow = (cursorVLineIdx - topVLineIndex) + (displayConfig.showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
             let screenCol = gutterWidth + cursorDisplayWidth + 1
             output += "\u{1B}[\(screenRow);\(screenCol)H"
         } else {
@@ -207,7 +212,7 @@ extension Editor {
             let promptCol = max(1, min(cols, renderedPrompt.cursorCol))
             output += "\u{1B}[\(promptRow);\(promptCol)H"
         }
-        output += "\u{1B}[?25h" // Show cursor
+        output += "\u{1B}[?25h"  // Show cursor
 
         return output
     }
@@ -333,11 +338,11 @@ extension Editor {
         let helpWidth = min(cols, 80)
         let helpItems1: [(key: String, label: String)] = [
             ("^G", L10n.helpGetHelp), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
-            ("^Y", L10n.helpPrevPg),  ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos)
+            ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
         ]
         let helpItems2: [(key: String, label: String)] = [
-            ("^X", L10n.helpExit),     ("^J", L10n.helpJustify),  ("^W", L10n.helpWhereIs),
-            ("^V", L10n.helpNextPg),  ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell)
+            ("^X", L10n.helpExit), ("^J", L10n.helpJustify), ("^W", L10n.helpWhereIs),
+            ("^V", L10n.helpNextPg), ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell),
         ]
 
         let numCols = min(helpItems1.count, helpItems2.count)

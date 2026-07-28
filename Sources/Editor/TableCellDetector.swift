@@ -2,9 +2,9 @@ import Foundation
 
 /// Border style configuration for table detection and generation.
 public enum TableBorderStyle: String, CaseIterable, Sendable {
-    case single = "single"      // ┌ ─ ┐ │ └ ┘ ├ ┤ ┬ ┴ ┼
-    case double = "double"      // ╔ ═ ╗ ║ ╚ ╝ ╠ ╣ ╦ ╩ ╬
-    case ascii = "ascii"        // + - |
+    case single = "single"  // ┌ ─ ┐ │ └ ┘ ├ ┤ ┬ ┴ ┼
+    case double = "double"  // ╔ ═ ╗ ║ ╚ ╝ ╠ ╣ ╦ ╩ ╬
+    case ascii = "ascii"  // + - |
     case markdown = "markdown"  // | --- |
 }
 
@@ -40,12 +40,12 @@ public final class TableCellDetector {
     public init() {}
 
     private static let verticalBorderChars: Set<Character> = [
-        "│", "║", "|", "+"
+        "│", "║", "|", "+",
     ]
 
     private static let horizontalBorderChars: Set<Character> = [
         "─", "═", "-", "+", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
-        "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬"
+        "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
     ]
 
     /// Detects enclosing table cell around (line, col) in lines buffer.

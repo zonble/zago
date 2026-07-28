@@ -9,7 +9,7 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             makeRule("^#{1,6}\\s+.*$", .keyword),
             makeRule("`[^`]+`", .string),
             makeRule("\\[[^\\]]+\\]\\([^\\)]+\\)", .typeOrAttribute),
-            makeRule("^>.*|^\\s*[*+-]\\s+", .number)
+            makeRule("^>.*|^\\s*[*+-]\\s+", .number),
         ].compactMap { $0 }
     }
 }

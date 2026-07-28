@@ -8,8 +8,10 @@ public struct ShellSyntaxDefinition: SyntaxDefinition {
         [
             makeRule("#.*$", .comment),
             makeRule("\"[^\"]*\"|'[^']*'", .string),
-            makeRule("\\b(if|then|else|elif|fi|case|esac|for|while|until|do|done|in|function|return|exit|export|local|echo|set|unset)\\b", .keyword),
-            makeRule("\\$[A-Za-z0-9_]+|\\$\\{[^\\}]+\\}", .typeOrAttribute)
+            makeRule(
+                "\\b(if|then|else|elif|fi|case|esac|for|while|until|do|done|in|function|return|exit|export|local|echo|set|unset)\\b",
+                .keyword),
+            makeRule("\\$[A-Za-z0-9_]+|\\$\\{[^\\}]+\\}", .typeOrAttribute),
         ].compactMap { $0 }
     }
 }

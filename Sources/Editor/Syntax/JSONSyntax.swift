@@ -8,7 +8,7 @@ public struct JSONSyntaxDefinition: SyntaxDefinition {
         [
             makeRule("\"[^\"]*\"(?=\\s*:)", .keyword),
             makeRule(":\\s*\"[^\"]*\"", .string),
-            makeRule("\\b(true|false|null|[0-9]+(\\.[0-9]+)?)\\b", .number)
+            makeRule("\\b(true|false|null|[0-9]+(\\.[0-9]+)?)\\b", .number),
         ].compactMap { $0 }
     }
 }

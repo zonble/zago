@@ -17,7 +17,7 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
             // Links / Targets
             makeRule("`[^`]+`_|https?://[^\\s]+|\\[[^\\]]+\\]_", .typeOrAttribute),
             // Field lists / Bullet lists
-            makeRule("^\\s*:[a-zA-Z0-9_-]+:|^\\s*[*+-]\\s+", .number)
+            makeRule("^\\s*:[a-zA-Z0-9_-]+:|^\\s*[*+-]\\s+", .number),
         ].compactMap { $0 }
     }
 }

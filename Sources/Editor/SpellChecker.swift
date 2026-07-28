@@ -14,12 +14,13 @@ public final class SpellChecker {
         let candidatePaths = [
             "/usr/share/dict/words",
             "/usr/dict/words",
-            "/usr/share/dict/web2"
+            "/usr/share/dict/web2",
         ]
 
         for path in candidatePaths {
             if FileManager.default.fileExists(atPath: path),
-               let content = try? String(contentsOfFile: path, encoding: .utf8) {
+                let content = try? String(contentsOfFile: path, encoding: .utf8)
+            {
                 let words = content.components(separatedBy: .newlines)
                 self.dictionary = Set(words.map { $0.lowercased() })
                 self.isDictionaryLoaded = true
@@ -39,7 +40,7 @@ public final class SpellChecker {
             "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
             "back", "after", "use", "two", "how", "our", "work", "first", "well", "way",
             "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
-            "hello", "world", "swift", "editor", "nano", "pico", "file", "text", "line", "code", "buffer"
+            "hello", "world", "swift", "editor", "nano", "pico", "file", "text", "line", "code", "buffer",
         ]
         self.dictionary = Set(fallbackWords)
         self.isDictionaryLoaded = true

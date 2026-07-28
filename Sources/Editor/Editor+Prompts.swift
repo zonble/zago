@@ -61,7 +61,9 @@ extension Editor {
             let isMultiChar = (pastedText.count > 1)
             let now = Date()
 
-            let isCoalescedPaste = isMultiChar && lastIsPaste && (lastMutationTime != nil && now.timeIntervalSince(lastMutationTime!) < 0.5)
+            let isCoalescedPaste =
+                isMultiChar && lastIsPaste
+                && (lastMutationTime != nil && now.timeIntervalSince(lastMutationTime!) < 0.5)
 
             if !isCoalescedPaste {
                 saveUndoSnapshot()
@@ -457,24 +459,26 @@ extension Editor {
             buffer.lineIndex = target.line
             buffer.columnIndex = target.col
             promptInputText = target.word
-            currentPromptMode = .spellCheck(word: target.word, line: target.line, col: target.col, completion: { [weak self] replacement in
-                guard let self = self, let newWord = replacement, !newWord.isEmpty else {
-                    self?.setStatusMessage(L10n["status.spell_check_skipped"])
-                    return
-                }
-                if newWord != target.word {
-                    self.saveUndoSnapshot()
-                    var lineStr = self.buffer.lines[target.line]
-                    let sIdx = lineStr.index(lineStr.startIndex, offsetBy: target.col)
-                    let eIdx = lineStr.index(sIdx, offsetBy: target.word.count)
-                    lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
-                    self.buffer.lines[target.line] = lineStr
-                    self.buffer.isModified = true
-                    self.setStatusMessage(L10n.replacedWord(target: target.word, newWord: newWord))
-                } else {
-                    self.setStatusMessage(L10n["status.word_kept"])
-                }
-            })
+            currentPromptMode = .spellCheck(
+                word: target.word, line: target.line, col: target.col,
+                completion: { [weak self] replacement in
+                    guard let self = self, let newWord = replacement, !newWord.isEmpty else {
+                        self?.setStatusMessage(L10n["status.spell_check_skipped"])
+                        return
+                    }
+                    if newWord != target.word {
+                        self.saveUndoSnapshot()
+                        var lineStr = self.buffer.lines[target.line]
+                        let sIdx = lineStr.index(lineStr.startIndex, offsetBy: target.col)
+                        let eIdx = lineStr.index(sIdx, offsetBy: target.word.count)
+                        lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
+                        self.buffer.lines[target.line] = lineStr
+                        self.buffer.isModified = true
+                        self.setStatusMessage(L10n.replacedWord(target: target.word, newWord: newWord))
+                    } else {
+                        self.setStatusMessage(L10n["status.word_kept"])
+                    }
+                })
         } else {
             setStatusMessage(L10n["status.no_misspelled"])
         }
@@ -537,7 +541,11 @@ extension Editor {
         buffer.clampCursor()
         let currentLine = buffer.lineIndex + 1
         let currentCol = buffer.columnIndex + 1
-        setStatusMessage(L10n.cursorInfo(currentLine: currentLine, totalLines: buffer.lines.count, percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol, totalCol: buffer.lines[buffer.lineIndex].count + 1))
+        setStatusMessage(
+            L10n.cursorInfo(
+                currentLine: currentLine, totalLines: buffer.lines.count,
+                percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
+                totalCol: buffer.lines[buffer.lineIndex].count + 1))
     }
 
     /// Toggles Menu Bar mode on ESC key in normal edit mode.

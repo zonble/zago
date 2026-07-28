@@ -95,7 +95,7 @@ public final class HelpView {
             L10n["helpview.logo_6"],
             L10n["helpview.logo_7"],
             L10n["helpview.logo_8"],
-            L10n["helpview.logo_9"]
+            L10n["helpview.logo_9"],
         ]
     }
 
@@ -103,7 +103,7 @@ public final class HelpView {
     private func render() {
         let (rows, cols) = terminal.getWindowSize()
         var output = ""
-        output += "\u{1B}[H" // Move cursor to top-left (1, 1)
+        output += "\u{1B}[H"  // Move cursor to top-left (1, 1)
 
         // 1. Title Bar (Inverted colors)
         let titleText = L10n["helpview.title"]
@@ -111,7 +111,7 @@ public final class HelpView {
 
         // 2. Help Content Lines (Scrollable Viewport)
         let contentLines = getContentLines()
-        let availableHeight = max(1, rows - 2) // Reserve 1 line for header and 1 for footer
+        let availableHeight = max(1, rows - 2)  // Reserve 1 line for header and 1 for footer
         topIndex = max(0, min(topIndex, max(0, contentLines.count - availableHeight)))
 
         for i in 0..<availableHeight {

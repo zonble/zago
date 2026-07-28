@@ -205,7 +205,7 @@ extension Editor {
                 "| Header 1       | Header 2       | Header 3       |",
                 "| -------------- | -------------- | -------------- |",
                 "|                |                |                |",
-                "|                |                |                |"
+                "|                |                |                |",
             ]
             for (idx, line) in mdLines.enumerated() {
                 if origLine + idx < buffer.lines.count {
@@ -222,7 +222,7 @@ extension Editor {
                 "|                |                |                |",
                 "+----------------+----------------+----------------+",
                 "|                |                |                |",
-                "+----------------+----------------+----------------+"
+                "+----------------+----------------+----------------+",
             ]
             for (idx, line) in asciiLines.enumerated() {
                 if origLine + idx < buffer.lines.count {
@@ -239,7 +239,7 @@ extension Editor {
                 "║                ║                ║                ║",
                 "╠════════════════╬════════════════╬════════════════╣",
                 "║                ║                ║                ║",
-                "╚════════════════╩════════════════╩════════════════╝"
+                "╚════════════════╩════════════════╩════════════════╝",
             ]
             for (idx, line) in doubleLines.enumerated() {
                 if origLine + idx < buffer.lines.count {
@@ -256,7 +256,7 @@ extension Editor {
                 "│                │                │                │",
                 "├────────────────┼────────────────┼────────────────┤",
                 "│                │                │                │",
-                "└────────────────┴────────────────┴────────────────┘"
+                "└────────────────┴────────────────┴────────────────┘",
             ]
             for (idx, line) in singleLines.enumerated() {
                 if origLine + idx < buffer.lines.count {
@@ -276,7 +276,9 @@ extension Editor {
             enterTableMode(with: cell)
         } else {
             // Fallback cell
-            let cell = TableCell(minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: 0, maxCol: 16, style: style)
+            let cell = TableCell(
+                minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: 0, maxCol: 16,
+                style: style)
             enterTableMode(with: cell)
         }
     }
@@ -386,7 +388,8 @@ extension Editor {
                 let leftPadding = totalPadding / 2
                 let rightPadding = totalPadding - leftPadding
 
-                let newCellText = String(repeating: " ", count: leftPadding) + trimmed + String(repeating: " ", count: rightPadding)
+                let newCellText =
+                    String(repeating: " ", count: leftPadding) + trimmed + String(repeating: " ", count: rightPadding)
                 let prefix = String(lineChars[0..<cell.innerMinCol])
                 let suffix = String(lineChars[(cell.innerMaxCol + 1)..<lineChars.count])
 

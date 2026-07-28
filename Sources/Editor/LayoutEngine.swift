@@ -33,8 +33,8 @@ public struct VirtualLine {
 /// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
 /// coordinate conversions.
 public final class LayoutEngine {
-    public var wrapColumn: Int? // nil means adapt dynamically to terminal view width
-    
+    public var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
+
     public init(wrapColumn: Int? = nil) {
         self.wrapColumn = wrapColumn
     }
@@ -46,13 +46,14 @@ public final class LayoutEngine {
 
         for (bIndex, line) in lines.enumerated() {
             if line.isEmpty {
-                virtualLines.append(VirtualLine(
-                    bufferLineIndex: bIndex,
-                    subLineIndex: 0,
-                    text: "",
-                    startCol: 0,
-                    endCol: 0
-                ))
+                virtualLines.append(
+                    VirtualLine(
+                        bufferLineIndex: bIndex,
+                        subLineIndex: 0,
+                        text: "",
+                        startCol: 0,
+                        endCol: 0
+                    ))
                 continue
             }
 
@@ -111,14 +112,15 @@ public final class LayoutEngine {
 
                 // Slice substring and character range for this virtual display chunk
                 let chunkText = String(chars[currentCharIndex..<endIndex])
-                
-                virtualLines.append(VirtualLine(
-                    bufferLineIndex: bIndex,
-                    subLineIndex: subIndex,
-                    text: chunkText,
-                    startCol: currentCharIndex,
-                    endCol: endIndex
-                ))
+
+                virtualLines.append(
+                    VirtualLine(
+                        bufferLineIndex: bIndex,
+                        subLineIndex: subIndex,
+                        text: chunkText,
+                        startCol: currentCharIndex,
+                        endCol: endIndex
+                    ))
 
                 // Advance starting index for the next virtual line chunk
                 currentCharIndex = endIndex
@@ -138,7 +140,7 @@ public final class LayoutEngine {
     ) -> (vLineIndex: Int, vColIndex: Int) {
         // Find all virtual lines corresponding to bufferLineIndex
         let matching = virtualLines.enumerated().filter { $0.element.bufferLineIndex == lineIndex }
-        
+
         if matching.isEmpty {
             return (0, 0)
         }

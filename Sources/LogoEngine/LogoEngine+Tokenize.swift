@@ -98,42 +98,41 @@ extension LogoEngine {
         guard !conditionTokens.isEmpty else { return false }
 
         var opIndex: Int? = nil
-        let compOps: Set<String> = ["==", "=", "!=", "<>", "<", "<=", ">", ">="]
+        var targetOp: LogoOperator? = nil
 
         for (idx, tok) in conditionTokens.enumerated() {
-            if compOps.contains(tok) {
+            if let op = LogoOperator.from(tok), op.isComparison {
                 opIndex = idx
+                targetOp = op
                 break
             }
         }
 
-        if let idx = opIndex {
+        if let idx = opIndex, let op = targetOp {
             var leftIdx = 0
             let leftValStr = evaluateExpression(Array(conditionTokens[..<idx]), index: &leftIdx)
 
             var rightIdx = 0
             let rightValStr = evaluateExpression(Array(conditionTokens[(idx + 1)...]), index: &rightIdx)
 
-            let op = conditionTokens[idx]
-
             if let num1 = Double(leftValStr), let num2 = Double(rightValStr) {
                 switch op {
-                case "==", "=": return num1 == num2
-                case "!=", "<>": return num1 != num2
-                case "<": return num1 < num2
-                case "<=": return num1 <= num2
-                case ">": return num1 > num2
-                case ">=": return num1 >= num2
+                case .equal, .aliasEqual: return num1 == num2
+                case .notEqual, .aliasNotEqual: return num1 != num2
+                case .lessThan: return num1 < num2
+                case .lessOrEqual: return num1 <= num2
+                case .greaterThan: return num1 > num2
+                case .greaterOrEqual: return num1 >= num2
                 default: return false
                 }
             } else {
                 switch op {
-                case "==", "=": return leftValStr == rightValStr
-                case "!=", "<>": return leftValStr != rightValStr
-                case "<": return leftValStr < rightValStr
-                case "<=": return leftValStr <= rightValStr
-                case ">": return leftValStr > rightValStr
-                case ">=": return leftValStr >= rightValStr
+                case .equal, .aliasEqual: return leftValStr == rightValStr
+                case .notEqual, .aliasNotEqual: return leftValStr != rightValStr
+                case .lessThan: return leftValStr < rightValStr
+                case .lessOrEqual: return leftValStr <= rightValStr
+                case .greaterThan: return leftValStr > rightValStr
+                case .greaterOrEqual: return leftValStr >= rightValStr
                 default: return false
                 }
             }
@@ -160,36 +159,35 @@ extension LogoEngine {
 
         // Peek next operator if present
         while index + 1 < tokens.count {
-            let nextOp = tokens[index + 1]
-            if nextOp == ")" || nextOp == "]" {
+            let nextToken = tokens[index + 1]
+            if nextToken == ")" || nextToken == "]" {
                 break
             }
-            if nextOp == "+" || nextOp == "-" || nextOp == "*" || nextOp == "/" || nextOp == "%" || nextOp == "^" {
-                let op = nextOp
+            if let op = LogoOperator.from(nextToken), op.isArithmetic {
                 index += 2
                 guard index < tokens.count else { break }
                 let rightVal = evaluateExpression(tokens, index: &index)
 
                 if let num1 = Double(leftVal), let num2 = Double(rightVal) {
-                    if let n1 = Int(leftVal), let n2 = Int(rightVal), op != "^" && op != "/" {
+                    if let n1 = Int(leftVal), let n2 = Int(rightVal), op != .power && op != .divide {
                         let resNum: Int
                         switch op {
-                        case "+": resNum = n1 + n2
-                        case "-": resNum = n1 - n2
-                        case "*": resNum = n1 * n2
-                        case "%": resNum = (n2 != 0) ? n1 % n2 : 0
+                        case .add: resNum = n1 + n2
+                        case .subtract: resNum = n1 - n2
+                        case .multiply: resNum = n1 * n2
+                        case .modulo: resNum = (n2 != 0) ? n1 % n2 : 0
                         default: resNum = 0
                         }
                         leftVal = "\(resNum)"
                     } else {
                         let resDouble: Double
                         switch op {
-                        case "+": resDouble = num1 + num2
-                        case "-": resDouble = num1 - num2
-                        case "*": resDouble = num1 * num2
-                        case "/": resDouble = (num2 != 0) ? num1 / num2 : 0.0
-                        case "%": resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
-                        case "^": resDouble = pow(num1, num2)
+                        case .add: resDouble = num1 + num2
+                        case .subtract: resDouble = num1 - num2
+                        case .multiply: resDouble = num1 * num2
+                        case .divide: resDouble = (num2 != 0) ? num1 / num2 : 0.0
+                        case .modulo: resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
+                        case .power: resDouble = pow(num1, num2)
                         default: resDouble = 0.0
                         }
                         if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min) && resDouble <= Double(Int.max) {
@@ -198,7 +196,7 @@ extension LogoEngine {
                             leftVal = "\(resDouble)"
                         }
                     }
-                } else if op == "+" {
+                } else if op == .add {
                     // String concatenation
                     leftVal = leftVal + rightVal
                 } else {

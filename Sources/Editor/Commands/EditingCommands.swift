@@ -59,9 +59,11 @@ public struct CutTextCommand: Command {
         editor.saveUndoSnapshot()
         editor.buffer.clampCursor()
         if let mark = editor.selectionMark {
-            let (start, end) = editor.getOrderedRange(mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
+            let (start, end) = editor.getOrderedRange(
+                mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
 
-            editor.clipboardText = editor.buffer.cutRange(start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+            editor.clipboardText = editor.buffer.cutRange(
+                start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             editor.selectionMark = nil
             editor.setStatusMessage(L10n["status.cut_text"])
         } else {

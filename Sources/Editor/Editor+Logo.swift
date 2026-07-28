@@ -52,7 +52,8 @@ extension Editor: LogoEngineDelegate {
             buffer.lineIndex = max(0, min(row, buffer.lines.count - 1))
             buffer.clampCursor()
         case .gotoCol(let col):
-            let lineText = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+            let lineText =
+                (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
             buffer.columnIndex = max(0, min(col, lineText.count))
         case .clearBuffer:
             buffer.lines = [""]
@@ -93,13 +94,15 @@ extension Editor: LogoEngineDelegate {
             return buffer.lines.joined(separator: "\n")
         case .selectionText:
             if let mark = selectionMark {
-                let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+                let (start, end) = getOrderedRange(
+                    mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
                 let lines = buffer.lines
                 if start.line == end.line && start.line < lines.count {
                     let line = lines[start.line]
                     let sCol = max(0, min(start.column, line.count))
                     let eCol = max(0, min(end.column, line.count))
-                    return String(line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)])
+                    return String(
+                        line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)])
                 } else if start.line < lines.count && end.line < lines.count {
                     return lines[start.line...end.line].joined(separator: "\n")
                 }
@@ -166,7 +169,8 @@ extension Editor {
         // Priority 1: Selection Range
         if let mark = selectionMark {
             let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
-            script = buffer.cutRange(start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+            script = buffer.cutRange(
+                start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             // Restore selection text back into buffer
             buffer.insertString(script)
             selectionMark = mark

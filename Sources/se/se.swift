@@ -12,19 +12,29 @@ struct SE: ParsableCommand {
     @Argument(help: "The file(s) to edit.")
     var files: [String] = []
 
-    @Option(name: [.customShort("w"), .long], help: "Specify softwrap column width (e.g. 80). If omitted, softwrap adapts to terminal width.")
+    @Option(
+        name: [.customShort("w"), .long],
+        help: "Specify softwrap column width (e.g. 80). If omitted, softwrap adapts to terminal width.")
     var wrap: Int?
 
-    @Flag(name: [.customShort("r"), .long], help: "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
+    @Flag(
+        name: [.customShort("r"), .long],
+        help:
+            "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
     var ruler: Bool = false
 
-    @Option(name: [.customLong("syntax")], help: "Enable or disable syntax highlighting (true/false).")
+    @Option(
+        name: [.customLong("syntax")], help: "Enable or disable syntax highlighting (true/false).")
     var syntax: String?
 
-    @Option(name: [.customLong("lang"), .customLong("language")], help: "Set interface language (en/zh_TW).")
+    @Option(
+        name: [.customLong("lang"), .customLong("language")], help: "Set interface language (en/zh_TW)."
+    )
     var lang: String?
 
-    @Flag(name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")], help: "Generate a default ~/.serc configuration file.")
+    @Flag(
+        name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
+        help: "Generate a default ~/.serc configuration file.")
     var initConfig: Bool = false
 
     func run() throws {
@@ -54,7 +64,9 @@ struct SE: ParsableCommand {
             selectedLang = nil
         }
 
-        let editor = Editor(filePaths: files, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax, language: selectedLang)
+        let editor = Editor(
+            filePaths: files, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax,
+            language: selectedLang)
         editor.run()
     }
 }

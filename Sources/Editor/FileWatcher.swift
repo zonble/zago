@@ -1,10 +1,10 @@
-import Foundation
 import Dispatch
+import Foundation
 
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #endif
 
 /// Monitors a file path for external file system modifications using DispatchSource on macOS,
@@ -12,16 +12,16 @@ import Glibc
 public final class FileWatcher: @unchecked Sendable {
     public var onChange: (() -> Void)? = nil
 
-#if canImport(Darwin)
-    private var fileDescriptor: Int32 = -1
-    private var source: (any DispatchSourceFileSystemObject)? = nil
-    private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
-#else
-    private var timerSource: (any DispatchSourceTimer)? = nil
-    private var watchedPath: String? = nil
-    private var lastModificationDate: Date? = nil
-    private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
-#endif
+    #if canImport(Darwin)
+        private var fileDescriptor: Int32 = -1
+        private var source: (any DispatchSourceFileSystemObject)? = nil
+        private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
+    #else
+        private var timerSource: (any DispatchSourceTimer)? = nil
+        private var watchedPath: String? = nil
+        private var lastModificationDate: Date? = nil
+        private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
+    #endif
 
     public init() {}
 
@@ -31,68 +31,68 @@ public final class FileWatcher: @unchecked Sendable {
 
         guard !path.isEmpty, FileManager.default.fileExists(atPath: path) else { return }
 
-#if canImport(Darwin)
-        fileDescriptor = open(path, O_EVTONLY)
-        guard fileDescriptor >= 0 else { return }
+        #if canImport(Darwin)
+            fileDescriptor = open(path, O_EVTONLY)
+            guard fileDescriptor >= 0 else { return }
 
-        let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
-        let src = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: fileDescriptor,
-            eventMask: eventMask,
-            queue: queue
-        )
+            let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
+            let src = DispatchSource.makeFileSystemObjectSource(
+                fileDescriptor: fileDescriptor,
+                eventMask: eventMask,
+                queue: queue
+            )
 
-        src.setEventHandler { [weak self] in
-            DispatchQueue.main.async {
-                self?.onChange?()
-            }
-        }
-
-        src.setCancelHandler { [fd = fileDescriptor] in
-            if fd >= 0 {
-                close(fd)
-            }
-        }
-
-        self.source = src
-        src.resume()
-#else
-        self.watchedPath = path
-        self.lastModificationDate = getModificationDate(for: path)
-
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
-        timer.setEventHandler { [weak self] in
-            guard let self = self, let p = self.watchedPath else { return }
-            let currentMTime = self.getModificationDate(for: p)
-            if currentMTime != self.lastModificationDate {
-                self.lastModificationDate = currentMTime
+            src.setEventHandler { [weak self] in
                 DispatchQueue.main.async {
-                    self.onChange?()
+                    self?.onChange?()
                 }
             }
-        }
-        self.timerSource = timer
-        timer.resume()
-#endif
+
+            src.setCancelHandler { [fd = fileDescriptor] in
+                if fd >= 0 {
+                    close(fd)
+                }
+            }
+
+            self.source = src
+            src.resume()
+        #else
+            self.watchedPath = path
+            self.lastModificationDate = getModificationDate(for: path)
+
+            let timer = DispatchSource.makeTimerSource(queue: queue)
+            timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
+            timer.setEventHandler { [weak self] in
+                guard let self = self, let p = self.watchedPath else { return }
+                let currentMTime = self.getModificationDate(for: p)
+                if currentMTime != self.lastModificationDate {
+                    self.lastModificationDate = currentMTime
+                    DispatchQueue.main.async {
+                        self.onChange?()
+                    }
+                }
+            }
+            self.timerSource = timer
+            timer.resume()
+        #endif
     }
 
     /// Stops watching the current file.
     public func stop() {
-#if canImport(Darwin)
-        if let src = source {
-            src.cancel()
-            source = nil
-        }
-        fileDescriptor = -1
-#else
-        if let timer = timerSource {
-            timer.cancel()
-            timerSource = nil
-        }
-        watchedPath = nil
-        lastModificationDate = nil
-#endif
+        #if canImport(Darwin)
+            if let src = source {
+                src.cancel()
+                source = nil
+            }
+            fileDescriptor = -1
+        #else
+            if let timer = timerSource {
+                timer.cancel()
+                timerSource = nil
+            }
+            watchedPath = nil
+            lastModificationDate = nil
+        #endif
     }
 
     private func getModificationDate(for path: String) -> Date? {

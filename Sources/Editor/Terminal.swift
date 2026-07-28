@@ -1,12 +1,13 @@
 import Foundation
+
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #elseif canImport(Musl)
-import Musl
+    import Musl
 #elseif canImport(WinSDK)
-import WinSDK
+    import WinSDK
 #endif
 
 /// Represents key input events.
@@ -76,7 +77,7 @@ public final class Terminal {
         if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &ws) == 0 && ws.ws_col > 0 {
             return (rows: Int(ws.ws_row), cols: Int(ws.ws_col))
         }
-        return (rows: 24, cols: 80) // Fallback default
+        return (rows: 24, cols: 80)  // Fallback default
     }
 
     /// Reads a single byte from standard input with optional timeout in milliseconds.
@@ -124,7 +125,7 @@ public final class Terminal {
 
         case 1...26:
             // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
-            let scalar = UnicodeScalar(UInt32(b) + 64)! // 1 -> 'A', 15 -> 'O'
+            let scalar = UnicodeScalar(UInt32(b) + 64)!  // 1 -> 'A', 15 -> 'O'
             return .ctrl(Character(scalar))
 
         case 27:
@@ -151,7 +152,9 @@ public final class Terminal {
                 case UInt8(ascii: "1")...UInt8(ascii: "9"):
                     var seqString = String(UnicodeScalar(b3))
                     while let nb = readByte(timeoutMs: 50) {
-                        if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z")) || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z")) {
+                        if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z"))
+                            || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z"))
+                        {
                             seqString.append(Character(UnicodeScalar(nb)))
                             break
                         }
@@ -259,13 +262,13 @@ public final class Terminal {
             var idx = 0
             while idx < bytes.count {
                 let b = bytes[idx]
-                if b == 13 || b == 10 { // CR or LF
+                if b == 13 || b == 10 {  // CR or LF
                     if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
                         idx += 1
                     }
                     result.append("\n")
                     idx += 1
-                } else if b == 27 { // ESC sequence skip
+                } else if b == 27 {  // ESC sequence skip
                     idx += 1
                     if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
                         idx += 1
@@ -274,7 +277,7 @@ public final class Terminal {
                         }
                         if idx < bytes.count { idx += 1 }
                     }
-                } else if b >= 32 || b == 9 { // Printable character or Tab
+                } else if b >= 32 || b == 9 {  // Printable character or Tab
                     let charLen: Int
                     switch b {
                     case 0..<0x80: charLen = 1
@@ -330,11 +333,11 @@ private let _localeInit: Void = {
 }()
 
 #if canImport(Glibc)
-@_silgen_name("wcwidth")
-private func sys_wcwidth(_ c: Int32) -> Int32
+    @_silgen_name("wcwidth")
+    private func sys_wcwidth(_ c: Int32) -> Int32
 #elseif canImport(Musl)
-@_silgen_name("wcwidth")
-private func sys_wcwidth(_ c: Int32) -> Int32
+    @_silgen_name("wcwidth")
+    private func sys_wcwidth(_ c: Int32) -> Int32
 #endif
 
 extension Character {
@@ -343,9 +346,9 @@ extension Character {
         _ = _localeInit
         for scalar in self.unicodeScalars {
             #if canImport(Darwin)
-            let w = wcwidth(wchar_t(scalar.value))
+                let w = wcwidth(wchar_t(scalar.value))
             #else
-            let w = sys_wcwidth(Int32(scalar.value))
+                let w = sys_wcwidth(Int32(scalar.value))
             #endif
             if w > 0 { return Int(w) }
         }

@@ -79,7 +79,10 @@ public final class Editor {
 
     public var displayConfig: DisplayConfig
 
-    public init(filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
+    public init(
+        filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil,
+        autoReload: Bool? = nil, language: Language? = nil
+    ) {
         self.terminal = Terminal()
 
         if filePaths.isEmpty {
@@ -100,7 +103,8 @@ public final class Editor {
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
-        self.displayConfig = DisplayConfig(showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload)
+        self.displayConfig = DisplayConfig(
+            showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload)
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)
@@ -113,9 +117,14 @@ public final class Editor {
         }
     }
 
-    public convenience init(filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil) {
+    public convenience init(
+        filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil,
+        autoReload: Bool? = nil, language: Language? = nil
+    ) {
         let paths = filePath != nil ? [filePath!] : []
-        self.init(filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, enableSyntax: enableSyntax, autoReload: autoReload, language: language)
+        self.init(
+            filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, enableSyntax: enableSyntax,
+            autoReload: autoReload, language: language)
     }
 
     private func startFileWatcherForCurrentBuffer() {
@@ -221,7 +230,9 @@ public final class Editor {
                 } else {
                     script = String(cmdId.dropFirst(5))
                 }
-                let customCmd = BlockCommand(id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]) { [weak self] editor in
+                let customCmd = BlockCommand(
+                    id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]
+                ) { [weak self] editor in
                     guard let self = self else { return }
                     let engine = LogoEngine(delegate: self)
                     engine.execute(script)
@@ -271,7 +282,9 @@ public final class Editor {
     }
 
     /// Returns ordered start and end coordinates for selection range.
-    func getOrderedRange(mark1: (line: Int, column: Int), mark2: (line: Int, column: Int)) -> (start: (line: Int, column: Int), end: (line: Int, column: Int)) {
+    func getOrderedRange(mark1: (line: Int, column: Int), mark2: (line: Int, column: Int)) -> (
+        start: (line: Int, column: Int), end: (line: Int, column: Int)
+    ) {
         if mark1.line < mark2.line {
             return (start: mark1, end: mark2)
         } else if mark1.line > mark2.line {

@@ -40,7 +40,8 @@ public final class TextBuffer {
     /// Reloads buffer content from current file path.
     public func reloadFile() throws {
         guard let path = filePath, !path.isEmpty else {
-            throw NSError(domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
+            throw NSError(
+                domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
         }
         let content = try String(contentsOfFile: path, encoding: .utf8)
         let fileLines = content.components(separatedBy: .newlines)
@@ -53,7 +54,8 @@ public final class TextBuffer {
     public func saveFile(to path: String? = nil) throws {
         let targetPath = path ?? filePath
         guard let savePath = targetPath, !savePath.isEmpty else {
-            throw NSError(domain: "TextBuffer", code: 1, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
+            throw NSError(
+                domain: "TextBuffer", code: 1, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
         }
 
         let expandedPath = NSString(string: savePath).expandingTildeInPath
@@ -82,13 +84,17 @@ public final class TextBuffer {
         if textLines.count == 1 {
             let singleLine = textLines[0]
             var currentLine = lines[lineIndex]
-            let idx = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+            let idx =
+                currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex)
+                ?? currentLine.endIndex
             currentLine.insert(contentsOf: singleLine, at: idx)
             lines[lineIndex] = currentLine
             columnIndex += singleLine.count
         } else {
             let currentLine = lines[lineIndex]
-            let idx = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+            let idx =
+                currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex)
+                ?? currentLine.endIndex
 
             let leftPart = String(currentLine[..<idx])
             let rightPart = String(currentLine[idx...])
@@ -160,7 +166,9 @@ public final class TextBuffer {
     public func insert(character ch: Character) {
         ensureBounds()
         var currentLine = lines[lineIndex]
-        let index = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+        let index =
+            currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex)
+            ?? currentLine.endIndex
         currentLine.insert(ch, at: index)
         lines[lineIndex] = currentLine
         columnIndex += 1
@@ -171,7 +179,9 @@ public final class TextBuffer {
     public func insertNewline() {
         ensureBounds()
         let currentLine = lines[lineIndex]
-        let index = currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex) ?? currentLine.endIndex
+        let index =
+            currentLine.index(currentLine.startIndex, offsetBy: columnIndex, limitedBy: currentLine.endIndex)
+            ?? currentLine.endIndex
 
         let leftPart = String(currentLine[..<index])
         let rightPart = String(currentLine[index...])

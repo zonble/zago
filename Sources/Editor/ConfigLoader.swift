@@ -23,7 +23,8 @@ public enum KeyParser {
         if normalized.isEmpty { return nil }
 
         if normalized.hasPrefix("ctrl-") || normalized.hasPrefix("^") {
-            let charStr = normalized.hasPrefix("ctrl-") ? String(normalized.dropFirst(5)) : String(normalized.dropFirst(1))
+            let charStr =
+                normalized.hasPrefix("ctrl-") ? String(normalized.dropFirst(5)) : String(normalized.dropFirst(1))
             if let first = charStr.first {
                 return .ctrl(Character(first.lowercased()))
             }
@@ -31,9 +32,13 @@ public enum KeyParser {
 
         if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-") {
             let prefixLen: Int
-            if normalized.hasPrefix("alt-") { prefixLen = 4 }
-            else if normalized.hasPrefix("meta-") { prefixLen = 5 }
-            else { prefixLen = 2 }
+            if normalized.hasPrefix("alt-") {
+                prefixLen = 4
+            } else if normalized.hasPrefix("meta-") {
+                prefixLen = 5
+            } else {
+                prefixLen = 2
+            }
 
             let charStr = String(normalized.dropFirst(prefixLen))
             if let first = charStr.first {

@@ -12,11 +12,11 @@ public enum SyntaxTokenType {
     /// Returns ANSI color escape sequence for token type.
     public var ansiColor: String {
         switch self {
-        case .keyword: return "\u{1B}[1;36m"        // Bold Cyan
-        case .string: return "\u{1B}[32m"          // Green
-        case .comment: return "\u{1B}[90m"         // Dim Gray
-        case .number: return "\u{1B}[33m"          // Yellow
-        case .typeOrAttribute: return "\u{1B}[94m" // Bright Blue
+        case .keyword: return "\u{1B}[1;36m"  // Bold Cyan
+        case .string: return "\u{1B}[32m"  // Green
+        case .comment: return "\u{1B}[90m"  // Dim Gray
+        case .number: return "\u{1B}[33m"  // Yellow
+        case .typeOrAttribute: return "\u{1B}[94m"  // Bright Blue
         case .normal: return "\u{1B}[0m"
         }
     }
@@ -69,7 +69,7 @@ public final class SyntaxHighlighter {
             OrgModeSyntaxDefinition(),
             LogoSyntaxDefinition(),
             MermaidSyntaxDefinition(),
-            DotSyntaxDefinition()
+            DotSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
@@ -84,7 +84,7 @@ public final class SyntaxHighlighter {
             "/opt/homebrew/share/nanorc",
             "/opt/homebrew/share/nano",
             "/usr/share/nano",
-            "/usr/local/share/nano"
+            "/usr/local/share/nano",
         ]
 
         for path in candidatePaths {
@@ -135,9 +135,9 @@ public final class SyntaxHighlighter {
                     for idx in 1..<parts.count {
                         let pat = parts[idx]
                         let ext = pat.replacingOccurrences(of: "\\.", with: "")
-                                     .replacingOccurrences(of: "$", with: "")
-                                     .replacingOccurrences(of: "^", with: "")
-                                     .replacingOccurrences(of: "\\", with: "")
+                            .replacingOccurrences(of: "$", with: "")
+                            .replacingOccurrences(of: "^", with: "")
+                            .replacingOccurrences(of: "\\", with: "")
                         if !ext.isEmpty {
                             currentExtensions.append(ext)
                         }
@@ -180,7 +180,8 @@ public final class SyntaxHighlighter {
             let suffix = pattern.replacingOccurrences(of: "*", with: "")
 
             if FileManager.default.fileExists(atPath: dirPath),
-               let files = try? FileManager.default.contentsOfDirectory(atPath: dirPath) {
+                let files = try? FileManager.default.contentsOfDirectory(atPath: dirPath)
+            {
                 for f in files where f.hasSuffix(suffix) {
                     let fullPath = (dirPath as NSString).appendingPathComponent(f)
                     parseNanoRCFile(at: fullPath)
@@ -216,7 +217,7 @@ public final class SyntaxHighlighter {
         var quoteChar: Character? = nil
 
         for ch in str {
-            if (ch == "\"" || ch == "'") {
+            if ch == "\"" || ch == "'" {
                 if !inQuote {
                     inQuote = true
                     quoteChar = ch
@@ -262,7 +263,8 @@ public final class SyntaxHighlighter {
         let nsLine = line as NSString
 
         for rule in syntax.rules {
-            let matches = rule.pattern.matches(in: line, options: [], range: NSRange(location: 0, length: nsLine.length))
+            let matches = rule.pattern.matches(
+                in: line, options: [], range: NSRange(location: 0, length: nsLine.length))
             for match in matches {
                 let range = match.range
                 for idx in range.location..<(range.location + range.length) {
