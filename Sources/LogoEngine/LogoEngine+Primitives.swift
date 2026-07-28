@@ -415,6 +415,72 @@ extension LogoEngine {
         }
 
         // ---------------------------------------------------------------------
+        // Editor Buffer Query Primitives
+        // ---------------------------------------------------------------------
+        if upper == "BUFFERS" || upper == "BUFFERLIST" {
+            if let list = delegate?.logoEngine(self, queryState: .bufferList) as? [String] {
+                return LogoValue.list(list.map { LogoValue.string($0) }).description
+            }
+            return "[]"
+        }
+
+        if upper == "BUFFER" {
+            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                index += 1
+                let targetVal = evaluateExpression(tokens, index: &index)
+                if let idx1Based = Int(targetVal) {
+                    delegate?.logoEngine(self, performAction: .switchBuffer(index: max(0, idx1Based - 1)))
+                }
+            }
+            let curIdx = (delegate?.logoEngine(self, queryState: .currentBufferIndex) as? Int) ?? 0
+            return "\(curIdx + 1)"
+        }
+
+        if upper == "ROW" || upper == "LINE.NO" {
+            let row = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+            return "\(row + 1)"
+        }
+
+        if upper == "COL" || upper == "COL.NO" {
+            let col = (delegate?.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+            return "\(col + 1)"
+        }
+
+        if upper == "LINECOUNT" || upper == "LINES" {
+            let count = (delegate?.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+            return "\(count)"
+        }
+
+        if upper == "LINE" || upper == "GETLINE" {
+            var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                index += 1
+                let nStr = evaluateExpression(tokens, index: &index)
+                if let n1Based = Int(nStr) {
+                    lineIdx = max(0, n1Based - 1)
+                }
+            }
+            return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+        }
+
+        if upper == "BUFFERTEXT" {
+            return (delegate?.logoEngine(self, queryState: .bufferText) as? String) ?? ""
+        }
+
+        if upper == "SELECTION" || upper == "SELECTEDTEXT" {
+            return (delegate?.logoEngine(self, queryState: .selectionText) as? String) ?? ""
+        }
+
+        if upper == "MODIFIED?" || upper == "CHANGED?" {
+            let mod = (delegate?.logoEngine(self, queryState: .isModified) as? Bool) ?? false
+            return mod ? "1" : "0"
+        }
+
+        if upper == "FILENAME" || upper == "BUFFERNAME" {
+            return (delegate?.logoEngine(self, queryState: .fileName) as? String) ?? "Untitled"
+        }
+
+        // ---------------------------------------------------------------------
         // 4.1 & 4.3 - 4.5 Numeric, Math, Bitwise, Formatting
         // ---------------------------------------------------------------------
         if upper == "SUM" {

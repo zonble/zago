@@ -2,81 +2,26 @@ import Foundation
 import LogoEngine
 
 extension Editor: LogoEngineDelegate {
-    public func logoEngineCurrentLineIndex(_ engine: LogoEngine) -> Int {
-        buffer.lineIndex
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didUpdateLineIndex lineIndex: Int) {
-        buffer.lineIndex = lineIndex
-    }
-
-    public func logoEngineCurrentColumnIndex(_ engine: LogoEngine) -> Int {
-        buffer.columnIndex
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didUpdateColumnIndex columnIndex: Int) {
-        buffer.columnIndex = columnIndex
-    }
-
-    public func logoEngineLineCount(_ engine: LogoEngine) -> Int {
-        buffer.lines.count
-    }
-
-    public func logoEngine(_ engine: LogoEngine, lineAt index: Int) -> String {
-        guard index >= 0 && index < buffer.lines.count else { return "" }
-        return buffer.lines[index]
-    }
-
-    public func logoEngine(_ engine: LogoEngine, setLineAt index: Int, text: String) {
-        if index >= 0 && index < buffer.lines.count {
-            buffer.lines[index] = text
-        }
-    }
-
-    public func logoEngine(_ engine: LogoEngine, ensureLineExistsAt index: Int) {
-        while buffer.lines.count <= index {
-            buffer.lines.append("")
-        }
-    }
-
-    public func logoEngineDidRequestSaveUndoSnapshot(_ engine: LogoEngine) {
-        saveUndoSnapshot()
-    }
-
-    public func logoEngineDidRequestClampCursor(_ engine: LogoEngine) {
-        buffer.clampCursor()
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didRequestInsertText text: String) {
-        buffer.insertString(text)
-    }
-
-    public func logoEngineDidRequestInsertNewline(_ engine: LogoEngine) {
-        buffer.insertNewline()
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didRequestSetStatusMessage message: String) {
-        setStatusMessage(message)
-    }
-
-    public func logoEngineDidRequestDelete(_ engine: LogoEngine) {
-        buffer.delete()
-    }
-
-    public func logoEngineDidRequestBackspace(_ engine: LogoEngine) {
-        buffer.backspace()
-    }
-
-    public func logoEngineDidRequestDeleteLine(_ engine: LogoEngine) {
-        buffer.deleteLine()
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didRequestMoveCursorVirtual deltaRow: Int) {
-        moveCursorVirtual(deltaRow: deltaRow)
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didRequestDispatchCommand command: LogoEditorCommand) {
-        switch command {
+    public func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {
+        switch action {
+        case .saveUndoSnapshot:
+            saveUndoSnapshot()
+        case .clampCursor:
+            buffer.clampCursor()
+        case .insertText(let text):
+            buffer.insertString(text)
+        case .insertNewline:
+            buffer.insertNewline()
+        case .setStatusMessage(let msg):
+            setStatusMessage(msg)
+        case .deleteChar:
+            buffer.delete()
+        case .backspaceChar:
+            buffer.backspace()
+        case .deleteLine:
+            buffer.deleteLine()
+        case .moveCursorVirtual(let delta):
+            moveCursorVirtual(deltaRow: delta)
         case .moveLeft: _ = commandRegistry.dispatch(id: .moveLeft, editor: self)
         case .moveRight: _ = commandRegistry.dispatch(id: .moveRight, editor: self)
         case .moveHome: _ = commandRegistry.dispatch(id: .moveHome, editor: self)
@@ -85,18 +30,89 @@ extension Editor: LogoEngineDelegate {
         case .editCut: _ = commandRegistry.dispatch(id: .editCut, editor: self)
         case .editUncut: _ = commandRegistry.dispatch(id: .editUncut, editor: self)
         case .editJustify: _ = commandRegistry.dispatch(id: .editJustify, editor: self)
+        case .search(let query):
+            performSearch(query: query)
+        case .markModified:
+            buffer.isModified = true
+        case .applySetting(let setting, let arg):
+            applySetting(setting: setting, arg: arg)
+        case .updateLineIndex(let lineIndex):
+            buffer.lineIndex = lineIndex
+        case .updateColumnIndex(let columnIndex):
+            buffer.columnIndex = columnIndex
+        case .setLine(let index, let text):
+            if index >= 0 && index < buffer.lines.count {
+                buffer.lines[index] = text
+            }
+        case .ensureLineExists(let index):
+            while buffer.lines.count <= index {
+                buffer.lines.append("")
+            }
+        case .gotoLine(let row):
+            buffer.lineIndex = max(0, min(row, buffer.lines.count - 1))
+            buffer.clampCursor()
+        case .gotoCol(let col):
+            let lineText = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+            buffer.columnIndex = max(0, min(col, lineText.count))
+        case .clearBuffer:
+            buffer.lines = [""]
+            buffer.lineIndex = 0
+            buffer.columnIndex = 0
+            buffer.isModified = true
+        case .switchBuffer(let idx):
+            if idx >= 0 && idx < buffers.count {
+                currentBufferIndex = idx
+            }
+        case .openBuffer(let path):
+            openNewBuffer(filePath: path)
+        case .closeBuffer:
+            closeCurrentBuffer()
+        case .nextBuffer:
+            nextBuffer()
+        case .prevBuffer:
+            prevBuffer()
         }
     }
 
-    public func logoEngine(_ engine: LogoEngine, didRequestSearch query: String) {
-        performSearch(query: query)
+    public func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? {
+        switch query {
+        case .currentLineIndex:
+            return buffer.lineIndex
+        case .currentColumnIndex:
+            return buffer.columnIndex
+        case .lineCount:
+            return buffer.lines.count
+        case .lineAt(let index):
+            guard index >= 0 && index < buffer.lines.count else { return "" }
+            return buffer.lines[index]
+        case .bufferList:
+            return buffers.map { $0.filePath ?? "Untitled" }
+        case .currentBufferIndex:
+            return currentBufferIndex
+        case .bufferText:
+            return buffer.lines.joined(separator: "\n")
+        case .selectionText:
+            if let mark = selectionMark {
+                let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+                let lines = buffer.lines
+                if start.line == end.line && start.line < lines.count {
+                    let line = lines[start.line]
+                    let sCol = max(0, min(start.column, line.count))
+                    let eCol = max(0, min(end.column, line.count))
+                    return String(line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)])
+                } else if start.line < lines.count && end.line < lines.count {
+                    return lines[start.line...end.line].joined(separator: "\n")
+                }
+            }
+            return ""
+        case .isModified:
+            return buffer.isModified
+        case .fileName:
+            return buffer.filePath ?? "Untitled"
+        }
     }
 
-    public func logoEngineDidMarkBufferModified(_ engine: LogoEngine) {
-        buffer.isModified = true
-    }
-
-    public func logoEngine(_ engine: LogoEngine, didApplySetting setting: String, arg: String) {
+    private func applySetting(setting: String, arg: String) {
         switch setting.lowercased() {
         case "wrap", "wrapcolumn":
             if arg == "off" || arg == "false" || arg == "none" {

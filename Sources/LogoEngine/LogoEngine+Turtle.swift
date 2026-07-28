@@ -37,12 +37,13 @@ extension LogoEngine {
         guard exitBit != 0 else { return }
 
         for step in 0..<steps {
-            let currLine = editor.logoEngineCurrentLineIndex(self)
-            let currCol = editor.logoEngineCurrentColumnIndex(self)
+            let currLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+            let currCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
 
             if isPenDown {
-                editor.logoEngine(self, ensureLineExistsAt: currLine)
-                var lineChars = Array(editor.logoEngine(self, lineAt: currLine))
+                editor.logoEngine(self, performAction: .ensureLineExists(index: currLine))
+                let lineStr = (editor.logoEngine(self, queryState: .lineAt(currLine)) as? String) ?? ""
+                var lineChars = Array(lineStr)
                 while lineChars.count <= currCol {
                     lineChars.append(" ")
                 }
@@ -51,37 +52,40 @@ extension LogoEngine {
                 let maskToApply = (step == 0) ? exitBit : ((step == steps - 1) ? entryBit : (exitBit | entryBit))
                 let fusedChar = fuseCharContextual(line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar, moveMask: maskToApply)
                 lineChars[currCol] = fusedChar
-                editor.logoEngine(self, setLineAt: currLine, text: String(lineChars))
-                editor.logoEngineDidMarkBufferModified(self)
+                editor.logoEngine(self, performAction: .setLine(index: currLine, text: String(lineChars)))
+                editor.logoEngine(self, performAction: .markModified)
             }
 
             if step < steps - 1 {
                 let nextLine = max(0, currLine + dRow)
                 let nextCol = max(0, currCol + dCol)
-                editor.logoEngine(self, didUpdateLineIndex: nextLine)
-                editor.logoEngine(self, didUpdateColumnIndex: nextCol)
+                editor.logoEngine(self, performAction: .updateLineIndex(nextLine))
+                editor.logoEngine(self, performAction: .updateColumnIndex(nextCol))
             }
         }
     }
 
     internal func getLineCharAt(line: Int, col: Int) -> Character {
         guard let editor = self.delegate else { return " " }
-        guard line >= 0 && line < editor.logoEngineLineCount(self) else { return " " }
-        let lineChars = Array(editor.logoEngine(self, lineAt: line))
+        let totalLines = (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+        guard line >= 0 && line < totalLines else { return " " }
+        let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+        let lineChars = Array(lineStr)
         guard col >= 0 && col < lineChars.count else { return " " }
         return lineChars[col]
     }
 
     internal func setLineCharAt(line: Int, col: Int, char: Character) {
         guard let editor = self.delegate else { return }
-        editor.logoEngine(self, ensureLineExistsAt: line)
-        var lineChars = Array(editor.logoEngine(self, lineAt: line))
+        editor.logoEngine(self, performAction: .ensureLineExists(index: line))
+        let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+        var lineChars = Array(lineStr)
         while lineChars.count <= col {
             lineChars.append(" ")
         }
         lineChars[col] = char
-        editor.logoEngine(self, setLineAt: line, text: String(lineChars))
-        editor.logoEngineDidMarkBufferModified(self)
+        editor.logoEngine(self, performAction: .setLine(index: line, text: String(lineChars)))
+        editor.logoEngine(self, performAction: .markModified)
     }
 
     internal func getMaskForChar(_ ch: Character) -> Int {

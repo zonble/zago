@@ -31,12 +31,13 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = editor.logoEngineCurrentColumnIndex(self)
-        let startLine = editor.logoEngineCurrentLineIndex(self)
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
-        editor.logoEngine(self, ensureLineExistsAt: startLine)
+        editor.logoEngine(self, performAction: .ensureLineExists(index:startLine))
 
-        var currentChars = Array(editor.logoEngine(self, lineAt: startLine))
+        let startLineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        var currentChars = Array(startLineStr)
         while currentChars.count < startCol {
             currentChars.append(" ")
         }
@@ -52,8 +53,8 @@ extension LogoEngine {
             }
         }
 
-        editor.logoEngine(self, setLineAt: startLine, text: String(currentChars))
-        editor.logoEngine(self, didUpdateColumnIndex: startCol + length)
+        editor.logoEngine(self, performAction: .setLine(index: startLine, text: String(currentChars)))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + length))
     }
 
     internal func executeVlineCommand(_ tokens: [String], index: inout Int) {
@@ -85,14 +86,15 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = editor.logoEngineCurrentColumnIndex(self)
-        let startLine = editor.logoEngineCurrentLineIndex(self)
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         for r in 0..<height {
             let line = startLine + r
-            editor.logoEngine(self, ensureLineExistsAt: line)
+            editor.logoEngine(self, performAction: .ensureLineExists(index:line))
 
-            var currentChars = Array(editor.logoEngine(self, lineAt: startLine + r))
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+            var currentChars = Array(lineStr)
             while currentChars.count <= startCol {
                 currentChars.append(" ")
             }
@@ -101,11 +103,11 @@ extension LogoEngine {
             let existing = currentChars[startCol]
             currentChars[startCol] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
 
-            editor.logoEngine(self, setLineAt: line, text: String(currentChars))
+            editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
         }
 
-        editor.logoEngine(self, didUpdateLineIndex: startLine + height)
-        editor.logoEngine(self, didUpdateColumnIndex: startCol)
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {
@@ -126,7 +128,7 @@ extension LogoEngine {
         }
 
         for _ in 0..<count {
-            editor.logoEngineDidRequestInsertNewline(self)
+            editor.logoEngine(self, performAction: .insertNewline)
         }
     }
 
@@ -206,14 +208,15 @@ extension LogoEngine {
 
     private func drawBoxFrame(width: Int, height: Int, style: BoxStyle) {
         guard let editor = self.delegate else { return }
-        let startCol = editor.logoEngineCurrentColumnIndex(self)
-        let startLine = editor.logoEngineCurrentLineIndex(self)
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         for r in 0..<height {
             let currentLineIndex = startLine + r
-            editor.logoEngine(self, ensureLineExistsAt: currentLineIndex)
+            editor.logoEngine(self, performAction: .ensureLineExists(index:currentLineIndex))
 
-            var lineChars = Array(editor.logoEngine(self, lineAt: currentLineIndex))
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(currentLineIndex)) as? String) ?? ""
+            var lineChars = Array(lineStr)
             while lineChars.count < startCol + width {
                 lineChars.append(" ")
             }
@@ -245,11 +248,11 @@ extension LogoEngine {
                 }
             }
 
-            editor.logoEngine(self, setLineAt: currentLineIndex, text: String(lineChars))
+            editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: String(lineChars)))
         }
 
-        editor.logoEngine(self, didUpdateLineIndex: startLine + height - 1)
-        editor.logoEngine(self, didUpdateColumnIndex: startCol + width)
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + height - 1))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
     }
 
     private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle) {
@@ -266,12 +269,12 @@ extension LogoEngine {
 
         let calcHeight = max(targetHeight ?? 0, textLines.count + 2)
 
-        let startCol = editor.logoEngineCurrentColumnIndex(self)
-        let startLine = editor.logoEngineCurrentLineIndex(self)
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         for r in 0..<calcHeight {
             let currentLineIndex = startLine + r
-            editor.logoEngine(self, ensureLineExistsAt: currentLineIndex)
+            editor.logoEngine(self, performAction: .ensureLineExists(index:currentLineIndex))
 
             let isTop = (r == 0)
             let isBottom = (r == calcHeight - 1)
@@ -299,7 +302,7 @@ extension LogoEngine {
                 rowStr = String(style.sideChar) + leftSpaces + lineStr + rightSpaces + String(style.sideChar)
             }
 
-            let existingLine = editor.logoEngine(self, lineAt: currentLineIndex)
+            let existingLine = (editor.logoEngine(self, queryState: .lineAt(currentLineIndex)) as? String) ?? ""
             let newLineText: String
             if existingLine.trimmingCharacters(in: .whitespaces).isEmpty {
                 let leadingSpaces = String(repeating: " ", count: startCol)
@@ -308,11 +311,11 @@ extension LogoEngine {
                 newLineText = buildFusedRowText(existingLine: existingLine, startCol: startCol, calcWidth: calcWidth, rowStr: rowStr, isTop: isTop, isBottom: isBottom, style: style)
             }
 
-            editor.logoEngine(self, setLineAt: currentLineIndex, text: newLineText)
+            editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        editor.logoEngine(self, didUpdateLineIndex: startLine + calcHeight - 1)
-        editor.logoEngine(self, didUpdateColumnIndex: startCol + calcWidth)
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + calcHeight - 1))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + calcWidth))
     }
 
     private func buildFusedRowText(existingLine: String, startCol: Int, calcWidth: Int, rowStr: String, isTop: Bool, isBottom: Bool, style: BoxStyle) -> String {

@@ -73,7 +73,11 @@ public final class LogoEngine {
         "IFFALSE", "IFF", "STOP", "CATCH", "THROW", "ERROR", "WAIT", "BYE",
         ".MAYBEOUTPUT", "IGNORE", "FOR", "DOTIMES", "DO.WHILE", "WHILE", "DO.UNTIL",
         "UNTIL", "CASE", "COND", "APPLY", "INVOKE", "FOREACH", "MAP", "MAP.SE",
-        "FILTER", "FIND", "REDUCE", "CROSSMAP"
+        "FILTER", "FIND", "REDUCE", "CROSSMAP",
+        "BUFFERS", "BUFFERLIST", "BUFFER", "SETBUFFER", "NEXTBUFFER", "PREVBUFFER", "OPENBUFFER", "CLOSEBUFFER",
+        "LINE", "GETLINE", "ROW", "LINE.NO", "COL", "COL.NO", "LINECOUNT", "LINES", "BUFFERTEXT",
+        "SELECTION", "SELECTEDTEXT", "MODIFIED?", "CHANGED?", "FILENAME", "BUFFERNAME", "SETLINE",
+        "GOTOLINE", "SETROW", "GOTOCOL", "SETCOL", "CLEARBUFFER", "ERASEBUFFER"
     ]
 
     internal static let statementCommands: Set<String> = [
@@ -83,6 +87,8 @@ public final class LogoEngine {
         "REPEAT", "TO", "END", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
         "NEWLINE", "NL", "ENTER", "PD", "PENDOWN", "PU", "PENUP",
         "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT",
+        "NEXTBUFFER", "PREVBUFFER", "OPENBUFFER", "CLOSEBUFFER", "SETLINE", "GOTOLINE", "SETROW",
+        "GOTOCOL", "SETCOL", "CLEARBUFFER", "ERASEBUFFER",
         "IF", "IFELSE", "OUTPUT", "OP", "RUN", "RUNRESULT", "FOREVER",
         "TEST", "IFTRUE", "IFT", "IFFALSE", "IFF", "STOP", "CATCH", "THROW",
         "WAIT", "BYE", "IGNORE", "FOR", "DOTIMES", "DO.WHILE", "WHILE", "DO.UNTIL",
@@ -114,7 +120,7 @@ public final class LogoEngine {
         guard !tokens.isEmpty else { return }
 
         // Save a single atomic Undo snapshot for the entire macro execution
-        delegate.logoEngineDidRequestSaveUndoSnapshot(self)
+        delegate.logoEngine(self, performAction: .saveUndoSnapshot)
 
         var index = 0
         var frameReturn: String? = nil
@@ -122,7 +128,7 @@ public final class LogoEngine {
         if let ret = frameReturn, !ret.isEmpty {
             lastResult = ret
         }
-        delegate.logoEngineDidRequestClampCursor(self)
+        delegate.logoEngine(self, performAction: .clampCursor)
     }
 
     internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
@@ -298,7 +304,7 @@ public final class LogoEngine {
                             arg = evaluateExpression(tokens, index: &index).lowercased()
                         }
                     }
-                    delegate.logoEngine(self, didApplySetting: setting, arg: arg)
+                    delegate.logoEngine(self, performAction: .applySetting(setting: setting, arg: arg))
                 }
 
             case "TYPE", "PRINT":
@@ -310,7 +316,7 @@ public final class LogoEngine {
                         break
                     }
                     let text = evaluateExpression(tokens, index: &index)
-                    delegate.logoEngine(self, didRequestInsertText: text)
+                    delegate.logoEngine(self, performAction: .insertText(text))
                     if index + 1 < tokens.count {
                         let peekUpper = tokens[index + 1].uppercased()
                         if LogoEngine.statementCommands.contains(peekUpper) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
@@ -340,7 +346,7 @@ public final class LogoEngine {
                     index += 1
                 }
                 let msgText = parts.joined(separator: " ")
-                delegate.logoEngine(self, didRequestSetStatusMessage: msgText)
+                delegate.logoEngine(self, performAction: .setStatusMessage(msgText))
                 hasSetStatusMessage = true
 
             case "DEL", "DELETE":
@@ -348,7 +354,7 @@ public final class LogoEngine {
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
                 for _ in 0..<count {
-                    delegate.logoEngineDidRequestDelete(self)
+                    delegate.logoEngine(self, performAction: .deleteChar)
                 }
 
             case "BS", "BACKSPACE":
@@ -356,7 +362,7 @@ public final class LogoEngine {
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
                 for _ in 0..<count {
-                    delegate.logoEngineDidRequestBackspace(self)
+                    delegate.logoEngine(self, performAction: .backspaceChar)
                 }
 
             case "DELETELINE", "DELLINE", "KILLLINE", "DL":
@@ -375,7 +381,7 @@ public final class LogoEngine {
                     index -= 1
                 }
                 for _ in 0..<count {
-                    delegate.logoEngineDidRequestDeleteLine(self)
+                    delegate.logoEngine(self, performAction: .deleteLine)
                 }
 
             case "MOVE":
@@ -383,12 +389,12 @@ public final class LogoEngine {
                 if index < tokens.count {
                     let dir = tokens[index].uppercased()
                     switch dir {
-                    case "UP": delegate.logoEngine(self, didRequestMoveCursorVirtual: -1)
-                    case "DOWN": delegate.logoEngine(self, didRequestMoveCursorVirtual: 1)
-                    case "LEFT": delegate.logoEngine(self, didRequestDispatchCommand: .moveLeft)
-                    case "RIGHT": delegate.logoEngine(self, didRequestDispatchCommand: .moveRight)
-                    case "HOME": delegate.logoEngine(self, didRequestDispatchCommand: .moveHome)
-                    case "END": delegate.logoEngine(self, didRequestDispatchCommand: .moveEnd)
+                    case "UP": delegate.logoEngine(self, performAction: .moveCursorVirtual(-1))
+                    case "DOWN": delegate.logoEngine(self, performAction: .moveCursorVirtual(1))
+                    case "LEFT": delegate.logoEngine(self, performAction: .moveLeft)
+                    case "RIGHT": delegate.logoEngine(self, performAction: .moveRight)
+                    case "HOME": delegate.logoEngine(self, performAction: .moveHome)
+                    case "END": delegate.logoEngine(self, performAction: .moveEnd)
                     default: break
                     }
                 }
@@ -397,19 +403,71 @@ public final class LogoEngine {
                 index += 1
                 if index < tokens.count {
                     let lineStr = evaluateExpression(tokens, index: &index)
-                    let lineNum = max(1, min(Int(lineStr) ?? 1, delegate.logoEngineLineCount(self))) - 1
-                    delegate.logoEngine(self, didUpdateLineIndex: lineNum)
-                    delegate.logoEngine(self, didUpdateColumnIndex: 0)
+                    let totalLines = (delegate.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+                    let lineNum = max(1, min(Int(lineStr) ?? 1, totalLines)) - 1
+                    delegate.logoEngine(self, performAction: .updateLineIndex(lineNum))
+                    delegate.logoEngine(self, performAction: .updateColumnIndex(0))
 
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
                         if !LogoEngine.keywords.contains(nextUpper) {
                             index += 1
                             let colStr = evaluateExpression(tokens, index: &index)
-                            let lineText = delegate.logoEngine(self, lineAt: lineNum)
+                            let lineText = (delegate.logoEngine(self, queryState: .lineAt(lineNum)) as? String) ?? ""
                             let colNum = max(1, min(Int(colStr) ?? 1, lineText.count + 1)) - 1
-                            delegate.logoEngine(self, didUpdateColumnIndex: colNum)
+                            delegate.logoEngine(self, performAction: .updateColumnIndex(colNum))
                         }
+                    }
+                }
+
+            case "NEXTBUFFER":
+                delegate.logoEngine(self, performAction: .nextBuffer)
+
+            case "PREVBUFFER":
+                delegate.logoEngine(self, performAction: .prevBuffer)
+
+            case "CLOSEBUFFER":
+                delegate.logoEngine(self, performAction: .closeBuffer)
+
+            case "OPENBUFFER":
+                index += 1
+                if index < tokens.count {
+                    let path = unquote(evaluateExpression(tokens, index: &index))
+                    delegate.logoEngine(self, performAction: .openBuffer(path: path))
+                }
+
+            case "CLEARBUFFER", "ERASEBUFFER":
+                delegate.logoEngine(self, performAction: .clearBuffer)
+
+            case "GOTOLINE", "SETROW":
+                index += 1
+                if index < tokens.count {
+                    let lineStr = evaluateExpression(tokens, index: &index)
+                    let row1Based = Int(lineStr) ?? 1
+                    delegate.logoEngine(self, performAction: .gotoLine(max(0, row1Based - 1)))
+                }
+
+            case "GOTOCOL", "SETCOL":
+                index += 1
+                if index < tokens.count {
+                    let colStr = evaluateExpression(tokens, index: &index)
+                    let col1Based = Int(colStr) ?? 1
+                    delegate.logoEngine(self, performAction: .gotoCol(max(0, col1Based - 1)))
+                }
+
+            case "SETLINE":
+                index += 1
+                if index < tokens.count {
+                    let firstVal = evaluateExpression(tokens, index: &index)
+                    if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                        let line1Based = Int(firstVal) ?? 1
+                        index += 1
+                        let textVal = unquote(evaluateExpression(tokens, index: &index))
+                        delegate.logoEngine(self, performAction: .setLine(index: max(0, line1Based - 1), text: textVal))
+                    } else {
+                        let curRow = (delegate.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+                        let textVal = unquote(firstVal)
+                        delegate.logoEngine(self, performAction: .setLine(index: curRow, text: textVal))
                     }
                 }
 
@@ -572,16 +630,16 @@ public final class LogoEngine {
                 executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360)
 
             case "MARK":
-                delegate.logoEngine(self, didRequestDispatchCommand: .editMark)
+                delegate.logoEngine(self, performAction: .editMark)
 
             case "CUT":
-                delegate.logoEngine(self, didRequestDispatchCommand: .editCut)
+                delegate.logoEngine(self, performAction: .editCut)
 
             case "PASTE", "UNCUT":
-                delegate.logoEngine(self, didRequestDispatchCommand: .editUncut)
+                delegate.logoEngine(self, performAction: .editUncut)
 
             case "JUSTIFY":
-                delegate.logoEngine(self, didRequestDispatchCommand: .editJustify)
+                delegate.logoEngine(self, performAction: .editJustify)
 
             case "FIND", "SEARCH":
                 index += 1
@@ -593,7 +651,7 @@ public final class LogoEngine {
                         lastResult = val
                     } else {
                         let query = evaluateExpression(tokens, index: &index)
-                        delegate.logoEngine(self, didRequestSearch: query)
+                        delegate.logoEngine(self, performAction: .search(query))
                     }
                 }
 

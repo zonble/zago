@@ -801,6 +801,71 @@ import Foundation
     #expect(logoEngine.lastResult == "[AX AY BX BY]")
 }
 
+@Test func testLogoEditorBufferPrimitives() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    // 1. Buffer Queries (1-indexed)
+    editor.buffer.lines = ["First Line", "Second Line", "Third Line"]
+    editor.buffer.lineIndex = 1 // 2nd line
+    editor.buffer.columnIndex = 4 // 5th col
+
+    logoEngine.execute("ROW")
+    #expect(logoEngine.lastResult == "2")
+
+    logoEngine.execute("COL")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("LINECOUNT")
+    #expect(logoEngine.lastResult == "3")
+
+    logoEngine.execute("GETLINE 1")
+    #expect(logoEngine.lastResult == "First Line")
+
+    logoEngine.execute("GETLINE 2")
+    #expect(logoEngine.lastResult == "Second Line")
+
+    logoEngine.execute("BUFFERTEXT")
+    #expect(logoEngine.lastResult == "First Line\nSecond Line\nThird Line")
+
+    logoEngine.execute("MODIFIED?")
+    #expect(logoEngine.lastResult == "0")
+
+    // 2. Buffer Mutations & Cursor Positioning
+    logoEngine.execute("GOTOLINE 1")
+    #expect(editor.buffer.lineIndex == 0)
+
+    logoEngine.execute("GOTOCOL 1")
+    #expect(editor.buffer.columnIndex == 0)
+
+    logoEngine.execute("SETLINE 1 \"New First Line\"")
+    #expect(editor.buffer.lines[0] == "New First Line")
+
+    // 3. Multi-Buffer Commands
+    logoEngine.execute("BUFFERS")
+    #expect(logoEngine.lastResult != nil)
+
+    logoEngine.execute("BUFFER")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("OPENBUFFER \"test_buffer.txt\"")
+    #expect(editor.buffers.count == 2)
+    #expect(editor.currentBufferIndex == 1)
+
+    logoEngine.execute("PREVBUFFER")
+    #expect(editor.currentBufferIndex == 0)
+
+    logoEngine.execute("NEXTBUFFER")
+    #expect(editor.currentBufferIndex == 1)
+
+    logoEngine.execute("CLOSEBUFFER")
+    #expect(editor.buffers.count == 1)
+    #expect(editor.currentBufferIndex == 0)
+
+    logoEngine.execute("CLEARBUFFER")
+    #expect(editor.buffer.lines == [""])
+}
+
 
 
 
