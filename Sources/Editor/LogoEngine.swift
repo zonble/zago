@@ -25,11 +25,16 @@ struct BoxStyle {
 }
 
 /// LOGO-style Macro Language Engine for se text editor.
-/// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE, JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME),
-/// classical Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT, LT/LEFT with 90-degree cardinal turns & drawing),
-/// expressions with DATE/TIME evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
-/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -, *, /, %), loops (REPEAT expr [ ... ]),
-/// procedure definitions (TO proc ... END), and Smart Line Junction Fusion (neighbor-aware 4-directional mask fusion into ┌, ┐, └, ┘, ┼, ┬, ┴, ├, ┤).
+///
+/// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE,
+/// JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME), classical
+/// Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT,
+/// LT/LEFT with 90-degree cardinal turns & drawing), expressions with DATE/TIME
+/// evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
+/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -,
+/// *, /, %), loops (REPEAT expr [ ... ]), procedure definitions (TO proc ...
+/// END), 2D Canvas Overlay BOX drawing, and Smart Line Junction Fusion
+/// (neighbor-aware 4-directional mask fusion into ┌, ┐, └, ┘, ┼, ┬, ┴, ├, ┤).
 public final class LogoEngine {
     public var customProcedures: [String: [String]] = [:]
     public var variables: [String: String] = [:]
@@ -38,6 +43,14 @@ public final class LogoEngine {
     // Turtle graphics state
     public var isPenDown: Bool = true
     public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
+
+    private static let keywords: Set<String> = [
+        "MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW",
+        "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND",
+        "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
+        "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP",
+        "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"
+    ]
 
     private static let singleMasks: [Character: Int] = [
         "│": 5, "─": 10, "┌": 6, "┐": 12, "└": 3, "┘": 9,
@@ -109,8 +122,6 @@ public final class LogoEngine {
     }
 
     private func executeTokens(_ tokens: [String], index: inout Int, on editor: Editor) {
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
-
         while index < tokens.count {
             let token = tokens[index]
             let upper = token.uppercased()
@@ -136,7 +147,7 @@ public final class LogoEngine {
                     var arg = ""
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
-                        if !keywords.contains(nextUpper) {
+                        if !LogoEngine.keywords.contains(nextUpper) {
                             index += 1
                             arg = evaluateExpression(tokens, index: &index).lowercased()
                         }
@@ -200,7 +211,7 @@ public final class LogoEngine {
 
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
-                        if !keywords.contains(nextUpper) {
+                        if !LogoEngine.keywords.contains(nextUpper) {
                             index += 1
                             let colStr = evaluateExpression(tokens, index: &index)
                             let colNum = max(1, min(Int(colStr) ?? 1, editor.buffer.lines[lineNum].count + 1)) - 1
@@ -243,7 +254,7 @@ public final class LogoEngine {
                 var angle = 90
                 if index < tokens.count {
                     let nextUpper = tokens[index].uppercased()
-                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         angle = Int(valStr) ?? 90
                     } else {
@@ -259,7 +270,7 @@ public final class LogoEngine {
                 var angle = 90
                 if index < tokens.count {
                     let nextUpper = tokens[index].uppercased()
-                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         angle = Int(valStr) ?? 90
                     } else {
@@ -275,7 +286,7 @@ public final class LogoEngine {
                 var dist = 1
                 if index < tokens.count {
                     let nextUpper = tokens[index].uppercased()
-                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         dist = max(1, min(Int(valStr) ?? 1, 200))
                     } else {
@@ -291,7 +302,7 @@ public final class LogoEngine {
                 var dist = 1
                 if index < tokens.count {
                     let nextUpper = tokens[index].uppercased()
-                    if !keywords.contains(nextUpper) && tokens[index] != "]" {
+                    if !LogoEngine.keywords.contains(nextUpper) && tokens[index] != "]" {
                         let valStr = evaluateExpression(tokens, index: &index)
                         dist = max(1, min(Int(valStr) ?? 1, 200))
                     } else {
@@ -524,20 +535,19 @@ public final class LogoEngine {
     private func executeLineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var length = 40
         var styleChar: Character = "─"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
             let upperFirst = firstToken.uppercased()
 
-            if !keywords.contains(upperFirst) && firstToken != "]" {
+            if !LogoEngine.keywords.contains(upperFirst) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 if let len = Int(valStr) {
                     length = max(1, min(len, 200))
 
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
-                        if !keywords.contains(nextUpper) && tokens[index + 1] != "]" {
+                        if !LogoEngine.keywords.contains(nextUpper) && tokens[index + 1] != "]" {
                             index += 1
                             let styleStr = unquote(tokens[index]).lowercased()
                             styleChar = getLineStyleChar(styleStr)
@@ -606,20 +616,19 @@ public final class LogoEngine {
     private func executeVlineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var height = 5
         var styleChar: Character = "│"
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
             let upperFirst = firstToken.uppercased()
 
-            if !keywords.contains(upperFirst) && firstToken != "]" {
+            if !LogoEngine.keywords.contains(upperFirst) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 if let h = Int(valStr) {
                     height = max(1, min(h, 100))
 
                     if index + 1 < tokens.count {
                         let nextUpper = tokens[index + 1].uppercased()
-                        if !keywords.contains(nextUpper) && tokens[index + 1] != "]" {
+                        if !LogoEngine.keywords.contains(nextUpper) && tokens[index + 1] != "]" {
                             index += 1
                             let styleStr = unquote(tokens[index]).lowercased()
                             styleChar = getVlineStyleChar(styleStr)
@@ -689,13 +698,12 @@ public final class LogoEngine {
 
     private func executeNewlineCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
         var count = 1
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
 
         if index < tokens.count {
             let firstToken = tokens[index]
             let upperFirst = firstToken.uppercased()
 
-            if !keywords.contains(upperFirst) && firstToken != "]" {
+            if !LogoEngine.keywords.contains(upperFirst) && firstToken != "]" {
                 let valStr = evaluateExpression(tokens, index: &index)
                 count = max(1, min(Int(valStr) ?? 1, 50))
             } else {
@@ -711,8 +719,6 @@ public final class LogoEngine {
     }
 
     private func executeBoxCommand(_ tokens: [String], index: inout Int, on editor: Editor) {
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
-
         guard index < tokens.count else {
             drawBoxAroundSelection(style: .single, on: editor)
             return
@@ -727,7 +733,7 @@ public final class LogoEngine {
             if upperFirst == "SELECTION" {
                 if index + 1 < tokens.count {
                     let nextUpper = tokens[index + 1].uppercased()
-                    if !keywords.contains(nextUpper) {
+                    if !LogoEngine.keywords.contains(nextUpper) {
                         index += 1
                         styleName = unquote(tokens[index])
                     }
@@ -753,7 +759,7 @@ public final class LogoEngine {
 
             if index + 1 < tokens.count {
                 let nextUpper = tokens[index + 1].uppercased()
-                if !keywords.contains(nextUpper) {
+                if !LogoEngine.keywords.contains(nextUpper) {
                     index += 1
                     styleName = unquote(tokens[index])
                 }
@@ -768,13 +774,71 @@ public final class LogoEngine {
         var styleName = ""
         if index + 1 < tokens.count {
             let nextUpper = tokens[index + 1].uppercased()
-            if !keywords.contains(nextUpper) {
+            if !LogoEngine.keywords.contains(nextUpper) {
                 index += 1
                 styleName = unquote(tokens[index])
             }
         }
 
         drawBoxAroundText(textContent, style: BoxStyle.from(styleName), on: editor)
+    }
+
+    private func overlayBoxLines(_ boxLines: [String], on editor: Editor) {
+        let startLine = editor.buffer.lineIndex
+        let startCol = editor.buffer.columnIndex
+
+        for (k, boxLine) in boxLines.enumerated() {
+            let targetLine = startLine + k
+            while editor.buffer.lines.count <= targetLine {
+                editor.buffer.lines.append("")
+            }
+
+            let origLineChars = Array(editor.buffer.lines[targetLine])
+
+            // 1. Prefix: characters before startCol (or spaces if orig line is shorter)
+            var prefixChars: [Character] = []
+            if origLineChars.count >= startCol {
+                prefixChars = Array(origLineChars[0..<startCol])
+            } else {
+                prefixChars = origLineChars
+                while prefixChars.count < startCol {
+                    prefixChars.append(" ")
+                }
+            }
+
+            // 2. Box segment characters with Smart Junction Fusion
+            var segmentChars = Array(boxLine)
+            for i in 0..<segmentChars.count {
+                let c = startCol + i
+                if c < origLineChars.count {
+                    let existing = origLineChars[c]
+                    let stepMask: Int
+                    if k == 0 {
+                        stepMask = (i == 0) ? 6 : (i == segmentChars.count - 1 ? 12 : 10)
+                    } else if k == boxLines.count - 1 {
+                        stepMask = (i == 0) ? 3 : (i == segmentChars.count - 1 ? 9 : 10)
+                    } else {
+                        stepMask = (i == 0 || i == segmentChars.count - 1) ? 5 : 0
+                    }
+                    if stepMask != 0 {
+                        segmentChars[i] = fuseCharacter(existing: existing, newMask: stepMask, defaultNewChar: segmentChars[i], line: targetLine, col: c, on: editor)
+                    }
+                }
+            }
+
+            // 3. Suffix: characters at or after startCol (pushed to the right of box)
+            var suffixChars: [Character] = []
+            if origLineChars.count > startCol {
+                suffixChars = Array(origLineChars[startCol..<origLineChars.count])
+            }
+
+            let newLineStr = String(prefixChars) + String(segmentChars) + String(suffixChars)
+            editor.buffer.lines[targetLine] = newLineStr
+        }
+
+        editor.buffer.lineIndex = startLine + boxLines.count
+        editor.buffer.columnIndex = startCol
+        editor.buffer.isModified = true
     }
 
     private func drawBoxAroundText(_ text: String, style: BoxStyle, on editor: Editor) {
@@ -785,14 +849,14 @@ public final class LogoEngine {
         let topBorder = String(style.topLeft) + String(repeating: style.topChar, count: innerWidth + 2) + String(style.topRight)
         let bottomBorder = String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth + 2) + String(style.bottomRight)
 
-        var boxString = topBorder + "\n"
+        var boxLines: [String] = [topBorder]
         for line in textLines {
             let padding = String(repeating: " ", count: max(0, innerWidth - line.displayWidth))
-            boxString += "\(style.sideChar) \(line)\(padding) \(style.sideChar)\n"
+            boxLines.append("\(style.sideChar) \(line)\(padding) \(style.sideChar)")
         }
-        boxString += bottomBorder
+        boxLines.append(bottomBorder)
 
-        editor.buffer.insertString(boxString)
+        overlayBoxLines(boxLines, on: editor)
     }
 
     private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, on editor: Editor) {
@@ -801,14 +865,14 @@ public final class LogoEngine {
         let bottomBorder = String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth) + String(style.bottomRight)
         let emptyLine = String(style.sideChar) + String(repeating: " ", count: innerWidth) + String(style.sideChar)
 
-        var boxString = topBorder + "\n"
+        var boxLines: [String] = [topBorder]
         let middleCount = max(0, height - 2)
         for _ in 0..<middleCount {
-            boxString += emptyLine + "\n"
+            boxLines.append(emptyLine)
         }
-        boxString += bottomBorder
+        boxLines.append(bottomBorder)
 
-        editor.buffer.insertString(boxString)
+        overlayBoxLines(boxLines, on: editor)
     }
 
     private func drawBoxAroundSelection(style: BoxStyle, on editor: Editor) {
@@ -836,12 +900,11 @@ public final class LogoEngine {
         }
         boxLines.append(bottomBorder)
 
-        // Replace selected lines in buffer
-        editor.buffer.lines.replaceSubrange(startLine...endLine, with: boxLines)
+        // Set lineIndex & columnIndex to start position for overlay
+        editor.buffer.lineIndex = startLine
+        editor.buffer.columnIndex = min(mark.column, editor.buffer.columnIndex)
+        overlayBoxLines(boxLines, on: editor)
         editor.selectionMark = nil
-        editor.buffer.lineIndex = startLine + boxLines.count
-        editor.buffer.columnIndex = 0
-        editor.buffer.isModified = true
     }
 
     private func applySetting(_ setting: String, arg: String, editor: Editor) {
@@ -946,14 +1009,12 @@ public final class LogoEngine {
         let token = tokens[index]
         let upper = token.uppercased()
 
-        let keywords: Set<String> = ["MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW", "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND", "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR", "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP", "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"]
-
         if upper == "DATE" {
             var format = "yyyy-MM-dd"
             if index + 1 < tokens.count {
                 let nextToken = tokens[index + 1]
                 let nextUpper = nextToken.uppercased()
-                if !keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
                     index += 1
                     let customFmt = unquote(nextToken)
                     if !customFmt.isEmpty {
@@ -969,7 +1030,7 @@ public final class LogoEngine {
             if index + 1 < tokens.count {
                 let nextToken = tokens[index + 1]
                 let nextUpper = nextToken.uppercased()
-                if !keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
                     index += 1
                     let customFmt = unquote(nextToken)
                     if !customFmt.isEmpty {

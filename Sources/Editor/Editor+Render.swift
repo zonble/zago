@@ -104,40 +104,16 @@ extension Editor {
 
         // 3. Status / Prompt Line
         output += "\u{1B}[K" // Clear line
-        switch currentPromptMode {
-        case .saveFilePath:
-            let prompt = L10n["prompt.write_name"]
-            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
-        case .confirmExitSave:
-            let prompt = L10n["prompt.confirm_exit_save"]
-            output += "\u{1B}[1;33m\(prompt)\u{1B}[0m"
-        case .confirmExternalReload:
-            let prompt = L10n["prompt.confirm_reload"]
-            output += "\u{1B}[1;33m\(prompt)\u{1B}[0m"
-        case .search:
-            let searchStr = L10n["prompt.search"]
-            let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
-            output += "\u{1B}[1m\(searchStr)\(defaultHint): \(promptInputText)_\u{1B}[0m"
-        case .insertFilePath:
-            let prompt = L10n["prompt.insert_file"]
-            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
-        case .spellCheck(let word, _, _, _):
-            let promptTemplate = L10n["prompt.edit_spelled_word"]
-            let prompt = String(format: promptTemplate, word)
-            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
-        case .logoMacro:
-            let prompt = L10n["prompt.logo"]
-            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
-        case .gotoLine:
-            let prompt = L10n["prompt.goto_line"]
-            output += "\u{1B}[1m\(prompt)\(promptInputText)_\u{1B}[0m"
-        case .none:
+        let renderedPrompt = formatPromptLine(cols: cols)
+        if case .none = currentPromptMode {
             if let time = statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
                 let msgWidth = statusMessage.displayWidth
                 let leftPaddingCount = max(0, (cols - msgWidth) / 2)
                 let centeredMsg = String(repeating: " ", count: leftPaddingCount) + statusMessage
                 output += centeredMsg.paddedToDisplayWidth(cols)
             }
+        } else {
+            output += renderedPrompt.text
         }
         output += "\r\n"
 
@@ -155,30 +131,126 @@ extension Editor {
             let screenCol = gutterWidth + cursorDisplayWidth + 1
             output += "\u{1B}[\(screenRow);\(screenCol)H"
         } else {
-            let promptPrefix: String
-            switch currentPromptMode {
-            case .saveFilePath: promptPrefix = L10n["prompt.write_name"]
-            case .confirmExitSave: promptPrefix = L10n["prompt.confirm_exit_save"]
-            case .confirmExternalReload: promptPrefix = L10n["prompt.confirm_reload"]
-            case .search:
-                let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
-                promptPrefix = "\(L10n["prompt.search"])\(defaultHint): "
-            case .insertFilePath: promptPrefix = L10n["prompt.insert_file"]
-            case .spellCheck(let word, _, _, _):
-                promptPrefix = String(format: L10n["prompt.edit_spelled_word"], word)
-            case .logoMacro: promptPrefix = L10n["prompt.logo"]
-            case .gotoLine: promptPrefix = L10n["prompt.goto_line"]
-            case .none: promptPrefix = ""
-            }
             let promptRow = rows - 2
-            let clampedIdx = max(0, min(promptCursorIndex, promptInputText.count))
-            let inputPrefix = String(promptInputText.prefix(clampedIdx))
-            let promptCol = promptPrefix.displayWidth + inputPrefix.displayWidth + 1
+            let promptCol = max(1, min(cols, renderedPrompt.cursorCol))
             output += "\u{1B}[\(promptRow);\(promptCol)H"
         }
         output += "\u{1B}[?25h" // Show cursor
 
         return output
+    }
+
+    struct RenderedPrompt {
+        let text: String
+        let cursorCol: Int
+    }
+
+    /// Computes horizontally scrolled prompt text and terminal cursor column for any prompt mode.
+    func formatPromptLine(cols: Int) -> RenderedPrompt {
+        let promptPrefix: String
+        let isConfirmation: Bool
+
+        switch currentPromptMode {
+        case .saveFilePath:
+            promptPrefix = L10n["prompt.write_name"]
+            isConfirmation = false
+        case .confirmExitSave:
+            promptPrefix = L10n["prompt.confirm_exit_save"]
+            isConfirmation = true
+        case .confirmExternalReload:
+            promptPrefix = L10n["prompt.confirm_reload"]
+            isConfirmation = true
+        case .search:
+            let defaultHint = lastSearchQuery.isEmpty ? "" : " [default: \(lastSearchQuery)]"
+            promptPrefix = "\(L10n["prompt.search"])\(defaultHint): "
+            isConfirmation = false
+        case .insertFilePath:
+            promptPrefix = L10n["prompt.insert_file"]
+            isConfirmation = false
+        case .spellCheck(let word, _, _, _):
+            promptPrefix = String(format: L10n["prompt.edit_spelled_word"], word)
+            isConfirmation = false
+        case .logoMacro:
+            promptPrefix = L10n["prompt.logo"]
+            isConfirmation = false
+        case .gotoLine:
+            promptPrefix = L10n["prompt.goto_line"]
+            isConfirmation = false
+        case .none:
+            return RenderedPrompt(text: "", cursorCol: 1)
+        }
+
+        if isConfirmation {
+            let boldText = "\u{1B}[1;33m\(promptPrefix)\u{1B}[0m"
+            return RenderedPrompt(text: boldText, cursorCol: promptPrefix.displayWidth + 1)
+        }
+
+        let prefixWidth = promptPrefix.displayWidth
+        let maxInputWidth = max(1, cols - prefixWidth)
+
+        let clampedCursorIdx = max(0, min(promptCursorIndex, promptInputText.count))
+
+        let inputChars = Array(promptInputText)
+        let cursorDisplayWidth = inputChars[..<clampedCursorIdx].reduce(0) { $0 + $1.displayWidth }
+        let totalInputDisplayWidth = inputChars.reduce(0) { $0 + $1.displayWidth }
+
+        // If total text fits within available width:
+        if totalInputDisplayWidth < maxInputWidth {
+            let styledText = "\u{1B}[1m\(promptPrefix)\(promptInputText)_\u{1B}[0m"
+            let cursorCol = prefixWidth + cursorDisplayWidth + 1
+            return RenderedPrompt(text: styledText, cursorCol: cursorCol)
+        }
+
+        // Horizontal scrolling needed
+        var windowStartCol = 0
+        if cursorDisplayWidth >= maxInputWidth - 1 {
+            windowStartCol = cursorDisplayWidth - maxInputWidth + 2
+        }
+
+        var visibleChars: [Character] = []
+        var currentWidth = 0
+        var cursorColInWindow = 0
+
+        for (idx, ch) in inputChars.enumerated() {
+            let chWidth = ch.displayWidth
+            let charStart = inputChars[..<idx].reduce(0) { $0 + $1.displayWidth }
+
+            if charStart + chWidth <= windowStartCol {
+                continue
+            }
+
+            if idx == clampedCursorIdx {
+                cursorColInWindow = visibleChars.reduce(0) { $0 + $1.displayWidth }
+            }
+
+            if currentWidth + chWidth > maxInputWidth {
+                break
+            }
+
+            visibleChars.append(ch)
+            currentWidth += chWidth
+        }
+
+        if clampedCursorIdx == inputChars.count {
+            cursorColInWindow = visibleChars.reduce(0) { $0 + $1.displayWidth }
+        }
+
+        // Apply '$' indicator at left if window is scrolled
+        if windowStartCol > 0 && !visibleChars.isEmpty {
+            visibleChars[0] = "$"
+        }
+
+        // Apply '$' indicator at right if content extends past visible window
+        let visibleWidth = visibleChars.reduce(0) { $0 + $1.displayWidth }
+        if windowStartCol + visibleWidth < totalInputDisplayWidth && visibleChars.count > 1 {
+            visibleChars[visibleChars.count - 1] = "$"
+        }
+
+        let visibleString = String(visibleChars)
+        let styledText = "\u{1B}[1m\(promptPrefix)\(visibleString)_\u{1B}[0m"
+        let cursorCol = prefixWidth + cursorColInWindow + 1
+
+        return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
     }
 
     /// Formats Nano help bar lines with 2D column alignment and dynamic gap spacing (Bold Cyan keys, no leading space).

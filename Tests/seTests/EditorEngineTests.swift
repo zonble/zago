@@ -115,3 +115,9 @@ import Foundation
     editor.performUndo()
     #expect(editor.buffer.lines == ["First Line", "Second Line", "Third Line"])
 }
+
+@Test func testCtrlITabInsertion() throws {
+    let editor = Editor()
+    editor.processKey(.ctrl("I"))
+    #expect(editor.buffer.lines[0] == "    ")
+}

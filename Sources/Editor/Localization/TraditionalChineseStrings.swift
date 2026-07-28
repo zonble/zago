@@ -80,8 +80,8 @@ public struct TraditionalChineseStrings {
         "helpview.file_1": "    ^O / ^S / F3       WriteOut (將 Buffer 儲存至檔案)",
         "helpview.file_2": "    ^R / F5            Read file (插入外部檔案內容至當前 Buffer)",
         "helpview.file_3": "    ^N                 New Buffer (開啟新的空白 Buffer)",
-        "helpview.file_4": "    M-. / M-> / F11    Next Buffer (切換至下一個 Buffer)",
-        "helpview.file_5": "    M-, / M-< / F12    Previous Buffer (切換至上一個 Buffer)",
+        "helpview.file_4": "    M-. / M->          Next Buffer (切換至下一個 Buffer)",
+        "helpview.file_5": "    M-, / M-<          Previous Buffer (切換至上一個 Buffer)",
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
         "helpview.file_7": "    ^G / F1            顯示本完整幫助說明頁面",
 

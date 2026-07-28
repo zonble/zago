@@ -150,7 +150,7 @@ extension Editor {
             }
         })
 
-        commandRegistry.register(Command(id: "edit.tab", name: "Insert Tab", description: "Insert tab spaces", keys: [.tab]) { editor in
+        commandRegistry.register(Command(id: "edit.tab", name: "Insert Tab", description: "Insert tab spaces", keys: [.tab, .ctrl("I"), .ctrl("i")]) { editor in
             editor.saveUndoSnapshot()
             editor.buffer.insertString("    ")
         })
@@ -192,11 +192,11 @@ extension Editor {
         })
 
         // File Operations & Exit
-        commandRegistry.register(Command(id: "buffer.prev", name: "Previous Buffer", description: "Switch to previous open buffer", keys: [.alt(","), .alt("<"), .f12]) { editor in
+        commandRegistry.register(Command(id: "buffer.prev", name: "Previous Buffer", description: "Switch to previous open buffer", keys: [.alt(","), .alt("<")]) { editor in
             editor.prevBuffer()
         })
 
-        commandRegistry.register(Command(id: "buffer.next", name: "Next Buffer", description: "Switch to next open buffer", keys: [.alt("."), .alt(">"), .f11]) { editor in
+        commandRegistry.register(Command(id: "buffer.next", name: "Next Buffer", description: "Switch to next open buffer", keys: [.alt("."), .alt(">")]) { editor in
             editor.nextBuffer()
         })
 

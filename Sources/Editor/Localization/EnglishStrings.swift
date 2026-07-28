@@ -80,8 +80,8 @@ public struct EnglishStrings {
         "helpview.file_1": "    ^O / ^S / F3       WriteOut (save buffer to file)",
         "helpview.file_2": "    ^R / F5            Read file (insert external file into buffer)",
         "helpview.file_3": "    ^N                 New Buffer (open a new empty buffer)",
-        "helpview.file_4": "    M-. / M-> / F11    Next Buffer (switch to next open buffer)",
-        "helpview.file_5": "    M-, / M-< / F12    Previous Buffer (switch to previous buffer)",
+        "helpview.file_4": "    M-. / M->          Next Buffer (switch to next open buffer)",
+        "helpview.file_5": "    M-, / M-<          Previous Buffer (switch to previous buffer)",
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
         "helpview.file_7": "    ^G / F1            Display this help reference page",
 

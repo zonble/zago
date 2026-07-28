@@ -88,6 +88,26 @@ import Foundation
     #expect(boxEditor2.buffer.lines[1] == "║    ║")
     #expect(boxEditor2.buffer.lines[2] == "╚════╝")
 
+    // TDD Test Example 1: BOX with leading indent
+    let indentEditor = Editor()
+    indentEditor.buffer.lines = ["    ", "    ", "    "]
+    indentEditor.buffer.lineIndex = 0
+    indentEditor.buffer.columnIndex = 4
+    logoEngine.execute("BOX 14 3 \"ascii\"", on: indentEditor)
+    #expect(indentEditor.buffer.lines[0] == "    +------------+")
+    #expect(indentEditor.buffer.lines[1] == "    |            |")
+    #expect(indentEditor.buffer.lines[2] == "    +------------+")
+
+    // TDD Test Example 2: BOX overlay in middle of background text
+    let bgTextEditor = Editor()
+    bgTextEditor.buffer.lines = ["AAAAAA", "BBBBBB", "CCCCCC"]
+    bgTextEditor.buffer.lineIndex = 0
+    bgTextEditor.buffer.columnIndex = 3
+    logoEngine.execute("BOX 5 3 \"ascii\"", on: bgTextEditor)
+    #expect(bgTextEditor.buffer.lines[0] == "AAA+---+AAA")
+    #expect(bgTextEditor.buffer.lines[1] == "BBB|   |BBB")
+    #expect(bgTextEditor.buffer.lines[2] == "CCC+---+CCC")
+
     // 14. LOGO LINE and NEWLINE Command test
     let lineEditor = Editor()
     logoEngine.execute("TYPE \"Header\" NL 2 LINE 10 TYPE \"Footer\"", on: lineEditor)

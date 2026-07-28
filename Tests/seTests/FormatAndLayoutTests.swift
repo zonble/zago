@@ -136,3 +136,21 @@ import Foundation
 
     #expect(linesWithRuler.count == 24)
 }
+
+@Test func testPromptHorizontalScrolling() throws {
+    let editor = Editor()
+    editor.currentPromptMode = .logoMacro(completion: { _ in })
+    editor.promptInputText = "TYPE \"THIS IS A VERY LONG LOGO MACRO COMMAND THAT EXCEEDS SCREEN WIDTH\""
+    editor.promptCursorIndex = editor.promptInputText.count
+
+    // Render screen with 40 columns
+    let renderedScreen = editor.generateScreenOutput(rows: 10, cols: 40)
+    let lines = renderedScreen.components(separatedBy: "\r\n")
+
+    // Line at index 7 is status/prompt line
+    #expect(lines.count >= 10)
+    let promptLine = lines[7] // status/prompt line
+
+    // Verify prompt line contains '$' horizontal scroll indicator
+    #expect(promptLine.contains("$"))
+}
