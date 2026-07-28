@@ -195,3 +195,9 @@ Run the automated unit test suite with SwiftPM:
 ```bash
 swift test
 ```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
