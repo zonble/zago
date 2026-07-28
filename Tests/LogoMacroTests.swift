@@ -108,6 +108,20 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(cjkBoxEditor.buffer.lines[1] == "│ 中文 │")
     #expect(cjkBoxEditor.buffer.lines[2] == "└──────┘")
 
+    let roundBoxEditor = Editor()
+    logoEngine.delegate = roundBoxEditor
+    logoEngine.execute("BOX 6 3 \"round\"")
+    #expect(roundBoxEditor.buffer.lines[0] == "╭────╮")
+    #expect(roundBoxEditor.buffer.lines[1] == "│    │")
+    #expect(roundBoxEditor.buffer.lines[2] == "╰────╯")
+
+    let doubleRoundBoxEditor = Editor()
+    logoEngine.delegate = doubleRoundBoxEditor
+    logoEngine.execute("BOX 6 3 \"double-round\"")
+    #expect(doubleRoundBoxEditor.buffer.lines[0] == "╭════╮")
+    #expect(doubleRoundBoxEditor.buffer.lines[1] == "║    ║")
+    #expect(doubleRoundBoxEditor.buffer.lines[2] == "╰════╯")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]

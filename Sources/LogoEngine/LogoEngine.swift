@@ -12,15 +12,50 @@ public struct BoxStyle: Sendable {
     static let single = BoxStyle(topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
     static let double = BoxStyle(topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
     static let round  = BoxStyle(topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
+    static let doubleRound = BoxStyle(topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
     static let ascii  = BoxStyle(topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
 
     static func from(_ str: String) -> BoxStyle {
-        let clean = str.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
-        switch clean {
-        case "double": return .double
-        case "round": return .round
-        case "ascii": return .ascii
-        default: return .single
+        parse(str) ?? .single
+    }
+
+    static func isStyleToken(_ token: String) -> Bool {
+        parse(token) != nil
+    }
+
+    private static func parse(_ token: String) -> BoxStyle? {
+        switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
+        case "single":
+            .single
+        case "double":
+            .double
+        case "round", "rounded":
+            .round
+        case "doubleround", "double-round", "double_round", "rounddouble", "round-double", "round_double":
+            .doubleRound
+        case "ascii":
+            .ascii
+        default:
+            nil
+        }
+    }
+}
+
+enum BoxAlignment: String, Sendable {
+    case left
+    case center
+    case right
+
+    init?(_ token: String) {
+        switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
+        case "left":
+            self = .left
+        case "center", "centre":
+            self = .center
+        case "right":
+            self = .right
+        default:
+            return nil
         }
     }
 }

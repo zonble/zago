@@ -66,7 +66,7 @@
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
 | `BOX` | - | `BOX "text" [align] [style]` | Draws 2D overlay box around text (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
-| `BOX` | - | `BOX width height [style]` | Draws empty 2D overlay box frame (`single`, `double`, `ascii`, `round`) | `BOX 20 5 "round"` |
+| `BOX` | - | `BOX width height [style]` | Draws empty 2D overlay box frame (`single`, `double`, `ascii`, `round`, `double-round`) | `BOX 20 5 "round"` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `MARK` | - | `MARK` | Toggles text selection mark anchor | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |

@@ -133,8 +133,6 @@ extension LogoEngine {
     }
 
     internal func executeBoxCommand(_ tokens: [String], index: inout Int) {
-        let boxSubKeywords: Set<String> = ["ASCII", "SINGLE", "DOUBLE", "ROUND", "LEFT", "CENTER", "CENTRE", "RIGHT"]
-
         guard index < tokens.count else {
             drawBoxFrame(width: 20, height: 5, style: .single)
             return
@@ -160,15 +158,13 @@ extension LogoEngine {
 
             while index + 1 < tokens.count {
                 let nextToken = tokens[index + 1]
-                let nextUpper = nextToken.uppercased()
-                if nextToken == "]" || nextToken == ")" || (LogoEngine.isKeyword(nextToken) && !boxSubKeywords.contains(nextUpper)) { break }
+                if shouldStopBoxArgumentScan(at: nextToken) { break }
                 index += 1
                 let val = unquote(tokens[index])
-                let valLower = val.lowercased()
 
-                if valLower == "left" || valLower == "center" || valLower == "centre" || valLower == "right" {
-                    align = valLower
-                } else if valLower == "single" || valLower == "double" || valLower == "ascii" || valLower == "round" {
+                if let parsedAlign = BoxAlignment(val) {
+                    align = parsedAlign.rawValue
+                } else if BoxStyle.isStyleToken(val) {
                     styleName = val
                 } else if textContent == nil {
                     textContent = val
@@ -190,20 +186,24 @@ extension LogoEngine {
 
         while index + 1 < tokens.count {
             let nextToken = tokens[index + 1]
-            let nextUpper = nextToken.uppercased()
-            if nextToken == "]" || nextToken == ")" || (LogoEngine.isKeyword(nextToken) && !boxSubKeywords.contains(nextUpper)) { break }
+            if shouldStopBoxArgumentScan(at: nextToken) { break }
             index += 1
             let val = unquote(tokens[index])
-            let valLower = val.lowercased()
 
-            if valLower == "left" || valLower == "center" || valLower == "centre" || valLower == "right" {
-                align = valLower
-            } else if valLower == "single" || valLower == "double" || valLower == "ascii" || valLower == "round" {
+            if let parsedAlign = BoxAlignment(val) {
+                align = parsedAlign.rawValue
+            } else if BoxStyle.isStyleToken(val) {
                 styleName = val
             }
         }
 
         drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: BoxStyle.from(styleName))
+    }
+
+    private func shouldStopBoxArgumentScan(at token: String) -> Bool {
+        if token == "]" || token == ")" { return true }
+        if BoxAlignment(token) != nil || BoxStyle.isStyleToken(token) { return false }
+        return LogoEngine.isKeyword(token)
     }
 
     private func drawBoxFrame(width: Int, height: Int, style: BoxStyle) {
