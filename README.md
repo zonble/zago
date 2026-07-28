@@ -75,19 +75,32 @@ END
 TITLE "Release Notes"
 ```
 
-Draw and fill a canvas box:
+Draw a small plain-text architecture diagram:
 
 ```logo
-DRAWBOX 30 4 ROUND
-GOTO 2 2
-FILL "hi
+DRAWBOX 18 3 "client" CENTER
+GOTO 3 11
+VLINE 3
+GOTO 5 1
+DRAWBOX 18 5
+GOTO 6 2
+TYPE "     server     "
+GOTO 7 1
+LINE 18
+GOTO 8 2
+TYPE "    database    "
 ```
 
 ```text
-╭────────────────────────────╮
-│hihihihihihihihihihihihihihi│
-│hihihihihihihihihihihihihihi│
-╰────────────────────────────╯
+┌────────────────┐
+│     client     │
+└─────────┬──────┘
+          │
+┌─────────┴──────┐
+│     server     │
+├────────────────┤
+│    database    │
+└────────────────┘
 ```
 
 ## Documentation

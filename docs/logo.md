@@ -1,6 +1,8 @@
 # `se` LOGO Command Language
 
-`se` features an innovative **LOGO-style Macro Language Engine**, bringing the clean, readable, human-friendly syntax paradigm of LOGO (`MAKE`, `:var`, `REPEAT`, `IF`, `IFELSE`, `TO...END`, `SORT`, `MAP`, `FILTER`) to TUI text buffer editing, 2D canvas box drawing, multi-buffer management, and macro automation.
+`se` includes a LOGO-inspired command language designed specifically for text editing. It borrows LOGO's readable command style (`MAKE`, `:var`, `REPEAT`, `IF`, `IFELSE`, `TO...END`) because it works well for short, direct editing gestures, but it is not a complete traditional LOGO implementation.
+
+This dialect treats the editor buffer as the main workspace. Commands can move the cursor, insert and reshape text, draw boxes and connector lines, create tables, manage buffers, and automate repeated layout work. Some traditional LOGO ideas are adapted when they help editing; other parts are intentionally different or omitted.
 
 ---
 
