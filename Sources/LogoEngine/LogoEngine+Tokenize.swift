@@ -102,20 +102,28 @@ extension LogoEngine {
     internal func evaluateExpression(_ tokens: [String], index: inout Int) -> String {
         guard index < tokens.count else { return "" }
 
+        var leftVal: String
         if tokens[index] == "(" {
             index += 1
+            leftVal = evaluateExpression(tokens, index: &index)
+            if index + 1 < tokens.count && tokens[index + 1] == ")" {
+                index += 1
+            }
+        } else {
+            leftVal = evaluateTokenOrCommand(tokens, index: &index)
         }
-
-        var leftVal = evaluateTokenOrCommand(tokens, index: &index)
 
         // Peek next operator if present
         while index + 1 < tokens.count {
             let nextOp = tokens[index + 1]
+            if nextOp == ")" || nextOp == "]" {
+                break
+            }
             if nextOp == "+" || nextOp == "-" || nextOp == "*" || nextOp == "/" || nextOp == "%" {
                 let op = nextOp
                 index += 2
                 guard index < tokens.count else { break }
-                let rightVal = evaluateTokenOrCommand(tokens, index: &index)
+                let rightVal = evaluateExpression(tokens, index: &index)
 
                 if let num1 = Double(leftVal), let num2 = Double(rightVal) {
                     if let n1 = Int(leftVal), let n2 = Int(rightVal) {
@@ -152,10 +160,6 @@ extension LogoEngine {
             } else {
                 break
             }
-        }
-
-        if index + 1 < tokens.count && tokens[index + 1] == ")" {
-            index += 1
         }
 
         return leftVal
@@ -215,6 +219,10 @@ extension LogoEngine {
                 }
             }
             return formatTime(format: format)
+        }
+
+        if let proc = customProcedures[upper] {
+            return invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
         }
 
         return evaluateDataPrimitives(tokens, index: &index) ?? resolveTokenValue(token)

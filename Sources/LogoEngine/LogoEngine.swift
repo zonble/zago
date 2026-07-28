@@ -25,9 +25,21 @@ public struct BoxStyle: Sendable {
     }
 }
 
+public struct LogoProcedure: Sendable {
+    public let name: String
+    public let parameters: [String]
+    public let bodyTokens: [String]
+
+    public init(name: String, parameters: [String], bodyTokens: [String]) {
+        self.name = name
+        self.parameters = parameters
+        self.bodyTokens = bodyTokens
+    }
+}
+
 /// LOGO-style Macro Language Engine for text editors.
 public final class LogoEngine {
-    public var customProcedures: [String: [String]] = [:]
+    public var customProcedures: [String: LogoProcedure] = [:]
     public var variables: [String: String] = [:]
     public var hasSetStatusMessage: Bool = false
     internal var gensymCounter: Int = 0
@@ -56,7 +68,7 @@ public final class LogoEngine {
         "SUM", "DIFFERENCE", "PRODUCT", "QUOTIENT", "POWER", "REMAINDER", "MODULO", "MINUS", "ABS", "INT", "ROUND",
         "SQRT", "EXP", "LOG10", "LN", "ARCTAN", "SIN", "COS", "TAN", "RADARCTAN", "RADSIN", "RADCOS", "RADTAN",
         "ISEQ", "RSEQ", "RANDOM", "RERANDOM", "FORM", "BITAND", "BITOR", "BITXOR", "BITNOT", "ASHIFT", "LSHIFT",
-        "TRUE", "FALSE", "AND", "OR", "XOR", "NOT"
+        "TRUE", "FALSE", "AND", "OR", "XOR", "NOT", "OUTPUT", "OP"
     ]
 
     public var lastResult: String? = nil
@@ -80,13 +92,17 @@ public final class LogoEngine {
         delegate.logoEngineDidRequestSaveUndoSnapshot(self)
 
         var index = 0
-        executeTokens(tokens, index: &index)
+        var frameReturn: String? = nil
+        executeTokens(tokens, index: &index, frameReturn: &frameReturn)
+        if let ret = frameReturn, !ret.isEmpty {
+            lastResult = ret
+        }
         delegate.logoEngineDidRequestClampCursor(self)
     }
 
-    internal func executeTokens(_ tokens: [String], index: inout Int) {
+    internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
         guard let delegate = self.delegate else { return }
-        while index < tokens.count {
+        while index < tokens.count && frameReturn == nil {
             let token = tokens[index]
             let upper = token.uppercased()
 
@@ -95,6 +111,14 @@ public final class LogoEngine {
             }
 
             switch upper {
+            case "OUTPUT", "OP":
+                index += 1
+                if index < tokens.count {
+                    let val = evaluateExpression(tokens, index: &index)
+                    frameReturn = val
+                    return
+                }
+
             case "MAKE", "VAR":
                 index += 1
                 if index < tokens.count {
@@ -128,16 +152,72 @@ public final class LogoEngine {
                             items[zeroIdx] = LogoValue.parse(newVal)
                             variables[varName] = LogoValue.array(items).description
                         }
-                    case .string(let s):
-                        var chars = Array(s)
-                        if zeroIdx >= 0 && zeroIdx < chars.count, let firstCh = newVal.first {
-                            chars[zeroIdx] = firstCh
-                            variables[varName] = String(chars)
+                    case .string(var s):
+                        if zeroIdx >= 0 && zeroIdx < s.count {
+                            let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
+                            s.replaceSubrange(strIdx...strIdx, with: newVal)
+                            variables[varName] = s
                         }
                     }
                 }
 
-            case "PUSH":
+            case ".SETFIRST":
+                index += 1
+                if index < tokens.count {
+                    let varToken = tokens[index]
+                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                    index += 1
+                    let newVal = evaluateExpression(tokens, index: &index)
+
+                    let currentVal = variables[varName] ?? ""
+                    let parsed = LogoValue.parse(currentVal)
+                    switch parsed {
+                    case .list(var items):
+                        if !items.isEmpty {
+                            items[0] = LogoValue.parse(newVal)
+                            variables[varName] = LogoValue.list(items).description
+                        }
+                    case .array(var items):
+                        if !items.isEmpty {
+                            items[0] = LogoValue.parse(newVal)
+                            variables[varName] = LogoValue.array(items).description
+                        }
+                    case .string(var s):
+                        if !s.isEmpty {
+                            s.replaceSubrange(s.startIndex...s.startIndex, with: newVal)
+                            variables[varName] = s
+                        }
+                    }
+                }
+
+            case ".SETBF":
+                index += 1
+                if index < tokens.count {
+                    let varToken = tokens[index]
+                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                    index += 1
+                    let newVal = evaluateExpression(tokens, index: &index)
+
+                    let currentVal = variables[varName] ?? ""
+                    let parsed = LogoValue.parse(currentVal)
+                    let newParsed = LogoValue.parse(newVal)
+                    switch (parsed, newParsed) {
+                    case (.list(let items), .list(let newTail)):
+                        if !items.isEmpty {
+                            let head = items[0]
+                            variables[varName] = LogoValue.list([head] + newTail).description
+                        }
+                    case (.array(let items), .array(let newTail)):
+                        if !items.isEmpty {
+                            let head = items[0]
+                            variables[varName] = LogoValue.array([head] + newTail).description
+                        }
+                    default:
+                        break
+                    }
+                }
+
+            case "PUSH", "FPUT":
                 index += 1
                 if index < tokens.count {
                     let varToken = tokens[index]
@@ -159,7 +239,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "QUEUE":
+            case "QUEUE", "LPUT":
                 index += 1
                 if index < tokens.count {
                     let varToken = tokens[index]
@@ -311,7 +391,8 @@ public final class LogoEngine {
                 if index < tokens.count && tokens[index] == "[" {
                     index += 1
                     if isTrue {
-                        executeTokens(tokens, index: &index)
+                        executeTokens(tokens, index: &index, frameReturn: &frameReturn)
+                        if frameReturn != nil { return }
                     } else {
                         var depth = 1
                         while index < tokens.count && depth > 0 {
@@ -334,9 +415,10 @@ public final class LogoEngine {
                 let isTrue = evaluateCondition(condTokens)
 
                 if index < tokens.count && tokens[index] == "[" {
-                    index += 1 // Advance past first "["
                     if isTrue {
-                        executeTokens(tokens, index: &index)
+                        index += 1 // Advance past first "["
+                        executeTokens(tokens, index: &index, frameReturn: &frameReturn)
+                        if frameReturn != nil { return }
                         index += 1 // Advance past first "]"
                         if index < tokens.count && tokens[index] == "[" {
                             var depth = 1
@@ -350,6 +432,7 @@ public final class LogoEngine {
                         }
                     } else {
                         var depth = 1
+                        index += 1 // Advance past first "["
                         while index < tokens.count && depth > 0 {
                             if tokens[index] == "[" { depth += 1 }
                             else if tokens[index] == "]" { depth -= 1 }
@@ -359,7 +442,8 @@ public final class LogoEngine {
                         index += 1 // Advance past first "]"
                         if index < tokens.count && tokens[index] == "[" {
                             index += 1 // Advance past second "["
-                            executeTokens(tokens, index: &index)
+                            executeTokens(tokens, index: &index, frameReturn: &frameReturn)
+                            if frameReturn != nil { return }
                         }
                     }
                 }
@@ -464,7 +548,8 @@ public final class LogoEngine {
                     let bodyStartIndex = index
                     for r in 0..<count {
                         var bodyIndex = bodyStartIndex
-                        executeTokens(tokens, index: &bodyIndex)
+                        executeTokens(tokens, index: &bodyIndex, frameReturn: &frameReturn)
+                        if frameReturn != nil { return }
                         if r == count - 1 {
                             index = bodyIndex
                         }
@@ -476,28 +561,38 @@ public final class LogoEngine {
                 if index < tokens.count {
                     let procName = tokens[index].uppercased()
                     index += 1
+                    var params: [String] = []
+                    while index < tokens.count && tokens[index].hasPrefix(":") {
+                        let paramName = String(tokens[index].dropFirst()).lowercased()
+                        params.append(paramName)
+                        index += 1
+                    }
                     var procTokens: [String] = []
                     while index < tokens.count && tokens[index].uppercased() != "END" {
                         procTokens.append(tokens[index])
                         index += 1
                     }
-                    customProcedures[procName] = procTokens
+                    customProcedures[procName] = LogoProcedure(name: procName, parameters: params, bodyTokens: procTokens)
                 }
 
             case "EXEC":
                 index += 1
                 if index < tokens.count {
                     let procName = tokens[index].uppercased()
-                    if let procTokens = customProcedures[procName] {
-                        var procIndex = 0
-                        executeTokens(procTokens, index: &procIndex)
+                    if let proc = customProcedures[procName] {
+                        let ret = invokeProcedure(proc, tokens: tokens, index: &index)
+                        if let r = ret, !r.isEmpty {
+                            lastResult = r
+                        }
                     }
                 }
 
             default:
-                if let procTokens = customProcedures[upper] {
-                    var procIndex = 0
-                    executeTokens(procTokens, index: &procIndex)
+                if let proc = customProcedures[upper] {
+                    let ret = invokeProcedure(proc, tokens: tokens, index: &index)
+                    if let r = ret, !r.isEmpty {
+                        lastResult = r
+                    }
                 } else {
                     let exprResult = evaluateExpression(tokens, index: &index)
                     if !exprResult.isEmpty {
@@ -508,5 +603,29 @@ public final class LogoEngine {
 
             index += 1
         }
+    }
+
+    internal func invokeProcedure(_ proc: LogoProcedure, tokens: [String], index: inout Int) -> String? {
+        var args: [String] = []
+        for _ in 0..<proc.parameters.count {
+            index += 1
+            let arg = evaluateExpression(tokens, index: &index)
+            args.append(arg)
+        }
+
+        let oldVars = variables
+        defer { variables = oldVars }
+
+        for (i, param) in proc.parameters.enumerated() {
+            variables[param] = args[i]
+        }
+
+        var procIndex = 0
+        var procReturn: String? = nil
+        executeTokens(proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
+        if let ret = procReturn, !ret.isEmpty {
+            lastResult = ret
+        }
+        return procReturn
     }
 }

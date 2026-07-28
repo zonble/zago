@@ -1,0 +1,23 @@
+
+```logo
+make "i" 1 repeat 10 [fd :i make "i" (:i + 1) lt]
+```
+
+```logo
+make "i" 1 repeat 10 [fd 3 ifelse :i%2 == 0 [left] [right] :i make "i" (:i + 1)]
+```
+
+```logo
+BOX "hi hi"
+```
+
+```logo
+BOX DATE "YYYY/MM/DD" "double"
+```
+
+```logo
+TO FIB :N
+      IFELSE :N <= 1 [ OUTPUT :N ] [ OUTPUT (FIB :N - 1) + (FIB :N - 2) ]
+END
+
+```

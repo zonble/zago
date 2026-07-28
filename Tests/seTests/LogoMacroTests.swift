@@ -538,6 +538,29 @@ import Foundation
     #expect(logoEngine.lastResult == "1")
 }
 
+@Test func testRecursiveProcedureWithParameters() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("""
+    TO FIB :N
+      IFELSE :N <= 1 [ OUTPUT :N ] [ OUTPUT (FIB :N - 1) + (FIB :N - 2) ]
+    END
+    """)
+
+    logoEngine.execute("FIB 1")
+    #expect(logoEngine.lastResult == "1", "FIB 1 failed: \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("FIB 2")
+    #expect(logoEngine.lastResult == "1", "FIB 2 failed: \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("FIB 3")
+    #expect(logoEngine.lastResult == "2", "FIB 3 failed: \(logoEngine.lastResult ?? "nil")")
+
+    logoEngine.execute("FIB 10")
+    #expect(logoEngine.lastResult == "55", "FIB 10 failed: \(logoEngine.lastResult ?? "nil")")
+}
+
 
 
 
