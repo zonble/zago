@@ -274,10 +274,10 @@ public final class LogoEngine {
                     switch dir {
                     case "UP": editor.moveCursorVirtual(deltaRow: -1)
                     case "DOWN": editor.moveCursorVirtual(deltaRow: 1)
-                    case "LEFT": _ = editor.commandRegistry.dispatch(id: "move.left", editor: editor)
-                    case "RIGHT": _ = editor.commandRegistry.dispatch(id: "move.right", editor: editor)
-                    case "HOME": _ = editor.commandRegistry.dispatch(id: "move.home", editor: editor)
-                    case "END": _ = editor.commandRegistry.dispatch(id: "move.end", editor: editor)
+                    case "LEFT": _ = editor.commandRegistry.dispatch(id: .moveLeft, editor: editor)
+                    case "RIGHT": _ = editor.commandRegistry.dispatch(id: .moveRight, editor: editor)
+                    case "HOME": _ = editor.commandRegistry.dispatch(id: .moveHome, editor: editor)
+                    case "END": _ = editor.commandRegistry.dispatch(id: .moveEnd, editor: editor)
                     default: break
                     }
                 }
@@ -462,16 +462,16 @@ public final class LogoEngine {
                 executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360, on: editor)
 
             case "MARK":
-                _ = editor.commandRegistry.dispatch(id: "edit.mark", editor: editor)
+                _ = editor.commandRegistry.dispatch(id: .editMark, editor: editor)
 
             case "CUT":
-                _ = editor.commandRegistry.dispatch(id: "edit.cut", editor: editor)
+                _ = editor.commandRegistry.dispatch(id: .editCut, editor: editor)
 
             case "PASTE", "UNCUT":
-                _ = editor.commandRegistry.dispatch(id: "edit.uncut", editor: editor)
+                _ = editor.commandRegistry.dispatch(id: .editUncut, editor: editor)
 
             case "JUSTIFY":
-                _ = editor.commandRegistry.dispatch(id: "edit.justify", editor: editor)
+                _ = editor.commandRegistry.dispatch(id: .editJustify, editor: editor)
 
             case "FIND", "SEARCH":
                 index += 1

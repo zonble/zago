@@ -215,15 +215,17 @@ public final class Editor {
                 } else {
                     script = String(cmdId.dropFirst(5))
                 }
-                let customCmd = Command(id: "custom.macro.\(key)", name: "Macro", description: "Custom LOGO macro", keys: [key]) { [weak self] editor in
+                let customCmd = BlockCommand(id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]) { [weak self] editor in
                     guard let self = self else { return }
                     let engine = LogoEngine()
                     engine.execute(script, on: self)
                     self.setStatusMessage(L10n["status.logo_executed"])
                 }
                 commandRegistry.bind(key: key, command: customCmd)
-            } else if let cmd = commandRegistry.commands.first(where: { $0.id == cmdId }) {
-                commandRegistry.bind(key: key, command: cmd)
+            } else if let targetId = CommandID(rawValue: cmdId) {
+                if let cmd = commandRegistry.commands.first(where: { $0.id == targetId }) {
+                    commandRegistry.bind(key: key, command: cmd)
+                }
             }
         }
 

@@ -35,7 +35,7 @@ import Foundation
     #expect(editor.commandRegistry.commands.count > 20)
 
     var executed = false
-    let testCmd = Command(id: "test.cmd", name: "Test", description: "Test command", keys: [.ctrl("T")]) { _ in
+    let testCmd = BlockCommand(id: .testCmd, name: "Test", description: "Test command", keys: [.ctrl("T")]) { _ in
         executed = true
     }
     let registry = CommandRegistry()

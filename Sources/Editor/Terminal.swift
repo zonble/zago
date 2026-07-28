@@ -10,7 +10,7 @@ import WinSDK
 #endif
 
 /// Represents key input events.
-public enum Key: Equatable, Hashable {
+public enum Key: Equatable, Hashable, Sendable {
     case char(Character)
     case ctrl(Character)
     case alt(Character)
