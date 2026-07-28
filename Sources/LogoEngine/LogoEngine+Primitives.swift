@@ -3,29 +3,27 @@ import Foundation
 extension LogoEngine {
     /// Evaluates UCB LOGO Data Structure Primitives (constructors, selectors, mutators, predicates, queries).
     internal func evaluateDataPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count else { return nil }
-        let upper = tokens[index].uppercased()
+        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
 
+        switch prim {
         // ---------------------------------------------------------------------
         // 2.1 Constructors
         // ---------------------------------------------------------------------
-        if upper == "WORD" {
+        case .word:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return v1 + v2
-        }
 
-        if upper == "LIST" {
+        case .list:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return "[\(v1) \(v2)]"
-        }
 
-        if upper == "SENTENCE" || upper == "SE" {
+        case .sentence:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
@@ -44,9 +42,8 @@ extension LogoEngine {
             case .string(let s): items.append(.string(s))
             }
             return LogoValue.list(items).description
-        }
 
-        if upper == "FPUT" {
+        case .fput:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
@@ -65,9 +62,8 @@ extension LogoEngine {
             case .string(let s):
                 return v1 + s
             }
-        }
 
-        if upper == "LPUT" {
+        case .lput:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
@@ -86,16 +82,14 @@ extension LogoEngine {
             case .string(let s):
                 return s + v1
             }
-        }
 
-        if upper == "ARRAY" {
+        case .array:
             index += 1
             let count = Int(evaluateExpression(tokens, index: &index)) ?? 1
             let items = Array(repeating: LogoValue.string(""), count: max(1, count))
             return LogoValue.array(items).description
-        }
 
-        if upper == "LISTTOARRAY" {
+        case .listToArray:
             index += 1
             let val = evaluateExpression(tokens, index: &index)
             let parsed = LogoValue.parse(val)
@@ -103,9 +97,8 @@ extension LogoEngine {
             case .list(let items): return LogoValue.array(items).description
             default: return LogoValue.array([parsed]).description
             }
-        }
 
-        if upper == "ARRAYTOLIST" {
+        case .arrayToList:
             index += 1
             let val = evaluateExpression(tokens, index: &index)
             let parsed = LogoValue.parse(val)
@@ -113,9 +106,8 @@ extension LogoEngine {
             case .array(let items): return LogoValue.list(items).description
             default: return LogoValue.list([parsed]).description
             }
-        }
 
-        if upper == "COMBINE" {
+        case .combine:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
@@ -127,9 +119,9 @@ extension LogoEngine {
                 items.insert(LogoValue.parse(v1), at: 0)
                 return LogoValue.list(items).description
             }
-        }
+            return ""
 
-        if upper == "REVERSE" {
+        case .reverse:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -138,17 +130,15 @@ extension LogoEngine {
             case .array(let items): return LogoValue.array(items.reversed()).description
             case .string(let s): return String(s.reversed())
             }
-        }
 
-        if upper == "GENSYM" {
+        case .gensym:
             gensymCounter += 1
             return "G\(gensymCounter)"
-        }
 
         // ---------------------------------------------------------------------
         // 2.2 Data Selectors
         // ---------------------------------------------------------------------
-        if upper == "FIRST" {
+        case .first:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -158,9 +148,8 @@ extension LogoEngine {
             case .string(let s):
                 return s.first != nil ? String(s.first!) : ""
             }
-        }
 
-        if upper == "LAST" {
+        case .last:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -170,9 +159,8 @@ extension LogoEngine {
             case .string(let s):
                 return s.last != nil ? String(s.last!) : ""
             }
-        }
 
-        if upper == "BUTFIRST" || upper == "BF" {
+        case .butFirst:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -186,9 +174,8 @@ extension LogoEngine {
             case .string(let s):
                 return String(s.dropFirst())
             }
-        }
 
-        if upper == "BUTLAST" || upper == "BL" {
+        case .butLast:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -202,9 +189,8 @@ extension LogoEngine {
             case .string(let s):
                 return String(s.dropLast())
             }
-        }
 
-        if upper == "ITEM" {
+        case .item:
             index += 1
             let idxVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
             index += 1
@@ -224,9 +210,8 @@ extension LogoEngine {
                 }
                 return ""
             }
-        }
 
-        if upper == "POP" {
+        case .pop:
             index += 1
             let varToken = tokens[index]
             let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
@@ -255,9 +240,8 @@ extension LogoEngine {
                 }
                 return ""
             }
-        }
 
-        if upper == "DEQUEUE" {
+        case .dequeue:
             index += 1
             let varToken = tokens[index]
             let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
@@ -286,9 +270,8 @@ extension LogoEngine {
                 }
                 return ""
             }
-        }
 
-        if upper == "REMDUP" {
+        case .remdup:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -299,132 +282,134 @@ extension LogoEngine {
                     if !unique.contains(item) { unique.append(item) }
                 }
                 return LogoValue.list(unique).description
-            case .string(let s):
-                var uniqueChars: [Character] = []
-                for ch in s {
-                    if !uniqueChars.contains(ch) { uniqueChars.append(ch) }
-                }
-                return String(uniqueChars)
             case .array(let items):
                 var unique: [LogoValue] = []
                 for item in items {
                     if !unique.contains(item) { unique.append(item) }
                 }
                 return LogoValue.array(unique).description
+            case .string(let s):
+                var unique = ""
+                for ch in s {
+                    if !unique.contains(ch) { unique.append(ch) }
+                }
+                return unique
             }
-        }
 
-        // ---------------------------------------------------------------------
-        // 2.4 Predicates
-        // ---------------------------------------------------------------------
-        if upper == "WORD?" || upper == "WORDP" {
+        case .isWord:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            return p.isWord ? "1" : "0"
-        }
+            if case .string = p { return "1" }
+            return "0"
 
-        if upper == "LIST?" || upper == "LISTP" {
+        case .isList:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            return p.isList ? "1" : "0"
-        }
+            if case .list = p { return "1" }
+            return "0"
 
-        if upper == "ARRAY?" || upper == "ARRAYP" {
+        case .isArray:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            return p.isArray ? "1" : "0"
-        }
+            if case .array = p { return "1" }
+            return "0"
 
-        if upper == "NUMBER?" || upper == "NUMBERP" {
+        case .isNumber:
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            return Double(v) != nil ? "1" : "0"
+
+        case .isEmpty:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            return p.isNumber ? "1" : "0"
-        }
+            switch p {
+            case .list(let items), .array(let items): return items.isEmpty ? "1" : "0"
+            case .string(let s): return s.isEmpty ? "1" : "0"
+            }
 
-        if upper == "EMPTY?" || upper == "EMPTYP" {
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
-            let p = LogoValue.parse(v)
-            return p.isEmpty ? "1" : "0"
-        }
-
-        if upper == "EQUAL?" || upper == "EQUALP" {
+        case .isEqual:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            if let n1 = Double(v1), let n2 = Double(v2) {
-                return n1 == n2 ? "1" : "0"
-            }
-            return LogoValue.parse(v1) == LogoValue.parse(v2) ? "1" : "0"
-        }
+            return v1 == v2 ? "1" : "0"
 
-        if upper == "NOTEQUAL?" || upper == "NOTEQUALP" {
+        case .isNotEqual:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            if let n1 = Double(v1), let n2 = Double(v2) {
-                return n1 != n2 ? "1" : "0"
-            }
-            return LogoValue.parse(v1) != LogoValue.parse(v2) ? "1" : "0"
-        }
+            return v1 != v2 ? "1" : "0"
 
-        if upper == "BEFORE?" || upper == "BEFOREP" {
+        case .isBefore:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return v1 < v2 ? "1" : "0"
-        }
 
-        if upper == "LESSP" || upper == "LESS?" {
+        case .isMember:
+            index += 1
+            let needle = evaluateExpression(tokens, index: &index)
+            index += 1
+            let haystack = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(haystack)
+            switch p {
+            case .list(let items), .array(let items):
+                return items.map { $0.description }.contains(needle) ? "1" : "0"
+            case .string(let s):
+                return s.contains(needle) ? "1" : "0"
+            }
+
+        case .isSubstring:
+            index += 1
+            let needle = evaluateExpression(tokens, index: &index)
+            index += 1
+            let haystack = evaluateExpression(tokens, index: &index)
+            return haystack.contains(needle) ? "1" : "0"
+
+        case .less:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return n1 < n2 ? "1" : "0"
-        }
 
-        if upper == "GREATERP" || upper == "GREATER?" {
+        case .greater:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return n1 > n2 ? "1" : "0"
-        }
 
-        if upper == "LESSEQUALP" || upper == "LESSEQUAL?" {
+        case .lessOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return n1 <= n2 ? "1" : "0"
-        }
 
-        if upper == "GREATEREQUALP" || upper == "GREATEREQUAL?" {
+        case .greaterOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return n1 >= n2 ? "1" : "0"
-        }
 
         // ---------------------------------------------------------------------
         // Editor Buffer Query Primitives
         // ---------------------------------------------------------------------
-        if upper == "BUFFERS" || upper == "BUFFERLIST" {
+        case .buffers:
             if let list = delegate?.logoEngine(self, queryState: .bufferList) as? [String] {
                 return LogoValue.list(list.map { LogoValue.string($0) }).description
             }
             return "[]"
-        }
 
-        if upper == "BUFFER" {
+        case .buffer:
             if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
                 index += 1
                 let targetVal = evaluateExpression(tokens, index: &index)
@@ -434,24 +419,20 @@ extension LogoEngine {
             }
             let curIdx = (delegate?.logoEngine(self, queryState: .currentBufferIndex) as? Int) ?? 0
             return "\(curIdx + 1)"
-        }
 
-        if upper == "ROW" || upper == "LINE.NO" {
+        case .row:
             let row = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
             return "\(row + 1)"
-        }
 
-        if upper == "COL" || upper == "COL.NO" {
+        case .col:
             let col = (delegate?.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
             return "\(col + 1)"
-        }
 
-        if upper == "LINECOUNT" || upper == "LINES" {
+        case .lineCount:
             let count = (delegate?.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
             return "\(count)"
-        }
 
-        if upper == "LINE" || upper == "GETLINE" {
+        case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
             if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
                 index += 1
@@ -461,53 +442,45 @@ extension LogoEngine {
                 }
             }
             return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
-        }
 
-        if upper == "BUFFERTEXT" {
+        case .bufferText:
             return (delegate?.logoEngine(self, queryState: .bufferText) as? String) ?? ""
-        }
 
-        if upper == "SELECTION" || upper == "SELECTEDTEXT" {
+        case .selection:
             return (delegate?.logoEngine(self, queryState: .selectionText) as? String) ?? ""
-        }
 
-        if upper == "MODIFIED?" || upper == "CHANGED?" {
+        case .isModified:
             let mod = (delegate?.logoEngine(self, queryState: .isModified) as? Bool) ?? false
             return mod ? "1" : "0"
-        }
 
-        if upper == "FILENAME" || upper == "BUFFERNAME" {
+        case .fileName:
             return (delegate?.logoEngine(self, queryState: .fileName) as? String) ?? "Untitled"
-        }
 
         // ---------------------------------------------------------------------
         // 4.1 & 4.3 - 4.5 Numeric, Math, Bitwise, Formatting
         // ---------------------------------------------------------------------
-        if upper == "SUM" {
+        case .sum:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(a + b)
-        }
 
-        if upper == "DIFFERENCE" {
+        case .difference:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(a - b)
-        }
 
-        if upper == "PRODUCT" {
+        case .product:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(a * b)
-        }
 
-        if upper == "QUOTED" || upper == "QUOTIENT" {
+        case .quotient, .quoted:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
@@ -516,25 +489,22 @@ extension LogoEngine {
                 return formatNum(b != 0 ? a / b : 0)
             }
             return formatNum(a != 0 ? 1.0 / a : 0)
-        }
 
-        if upper == "POWER" {
+        case .power:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(pow(a, b))
-        }
 
-        if upper == "REMAINDER" {
+        case .remainder:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Int(evaluateExpression(tokens, index: &index)) ?? 1
             return "\(b != 0 ? a % b : 0)"
-        }
 
-        if upper == "MODULO" {
+        case .modulo:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
@@ -542,114 +512,96 @@ extension LogoEngine {
             if b == 0 { return "0" }
             let r = a % b
             return "\(r >= 0 ? r : r + abs(b))"
-        }
 
-        if upper == "MINUS" {
+        case .minus:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(-a)
-        }
 
-        if upper == "ABS" {
+        case .abs:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(abs(a))
-        }
 
-        if upper == "INT" {
+        case .int:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return "\(Int(a))"
-        }
 
-        if upper == "ROUND" {
+        case .round:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return "\(Int(round(a)))"
-        }
 
-        if upper == "SQRT" {
+        case .sqrt:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(sqrt(max(0, a)))
-        }
 
-        if upper == "EXP" {
+        case .exp:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(exp(a))
-        }
 
-        if upper == "LOG10" {
+        case .log10:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 1
             return formatNum(log10(max(0.00001, a)))
-        }
 
-        if upper == "LN" {
+        case .ln:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 1
             return formatNum(log(max(0.00001, a)))
-        }
 
-        if upper == "ARCTAN" {
+        case .arctan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(atan(a) * 180.0 / .pi)
-        }
 
-        if upper == "SIN" {
+        case .sin:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(sin(a * .pi / 180.0))
-        }
 
-        if upper == "COS" {
+        case .cos:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(cos(a * .pi / 180.0))
-        }
 
-        if upper == "TAN" {
+        case .tan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(tan(a * .pi / 180.0))
-        }
 
-        if upper == "RADARCTAN" {
+        case .radArctan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(atan(a))
-        }
 
-        if upper == "RADSIN" {
+        case .radSin:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(sin(a))
-        }
 
-        if upper == "RADCOS" {
+        case .radCos:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(cos(a))
-        }
 
-        if upper == "RADTAN" {
+        case .radTan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(tan(a))
-        }
 
-        if upper == "ISEQ" {
+        case .iseq:
             index += 1
             let start = Int(evaluateExpression(tokens, index: &index)) ?? 1
             index += 1
             let end = Int(evaluateExpression(tokens, index: &index)) ?? start
             let seq = (start <= end) ? Array(start...end) : Array(stride(from: start, through: end, by: -1))
             return LogoValue.list(seq.map { LogoValue.string("\($0)") }).description
-        }
 
-        if upper == "RSEQ" {
+        case .rseq:
             index += 1
             let start = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
@@ -663,9 +615,8 @@ extension LogoEngine {
                 res.append(LogoValue.string(formatNum(start + Double(i) * step)))
             }
             return LogoValue.list(res).description
-        }
 
-        if upper == "RANDOM" {
+        case .random:
             index += 1
             let firstVal = Int(evaluateExpression(tokens, index: &index)) ?? 10
             if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
@@ -677,13 +628,11 @@ extension LogoEngine {
             }
             let upperLimit = max(1, firstVal)
             return "\(Int.random(in: 0..<upperLimit))"
-        }
 
-        if upper == "RERANDOM" {
+        case .rerandom:
             return "1"
-        }
 
-        if upper == "FORM" {
+        case .form:
             index += 1
             let val = Double(evaluateExpression(tokens, index: &index)) ?? 0.0
             index += 1
@@ -691,39 +640,34 @@ extension LogoEngine {
             index += 1
             let prec = Int(evaluateExpression(tokens, index: &index)) ?? 0
             return String(format: "%*.*f", width, prec, val)
-        }
 
-        if upper == "BITAND" {
+        case .bitAnd:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
             return "\(a & b)"
-        }
 
-        if upper == "BITOR" {
+        case .bitOr:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
             return "\(a | b)"
-        }
 
-        if upper == "BITXOR" {
+        case .bitXor:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
             return "\(a ^ b)"
-        }
 
-        if upper == "BITNOT" {
+        case .bitNot:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             return "\( ~a )"
-        }
 
-        if upper == "ASHIFT" || upper == "LSHIFT" {
+        case .ashift, .lshift:
             index += 1
             let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
@@ -733,95 +677,43 @@ extension LogoEngine {
             } else {
                 return "\(a >> (-shift))"
             }
-        }
 
-        if upper == "LSHIFT" {
-            index += 1
-            let a = UInt64(bitPattern: Int64(Int(evaluateExpression(tokens, index: &index)) ?? 0))
-            index += 1
-            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
-            if shift >= 0 {
-                return "\(Int64(bitPattern: a << shift))"
-            } else {
-                return "\(Int64(bitPattern: a >> (-shift)))"
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 5. Logical Operations
-        // ---------------------------------------------------------------------
-        if upper == "TRUE" {
+        case .trueVal:
             return "1"
-        }
 
-        if upper == "FALSE" {
+        case .falseVal:
             return "0"
-        }
 
-        if upper == "AND" {
+        case .andLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return (logoIsTrue(v1) && logoIsTrue(v2)) ? "1" : "0"
-        }
 
-        if upper == "OR" {
+        case .orLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return (logoIsTrue(v1) || logoIsTrue(v2)) ? "1" : "0"
-        }
 
-        if upper == "XOR" {
+        case .xorLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
             return (logoIsTrue(v1) != logoIsTrue(v2)) ? "1" : "0"
-        }
 
-        if upper == "NOT" {
+        case .notLogic:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             return logoIsTrue(v) ? "0" : "1"
-        }
-
-        if upper == ".EQ" {
-            index += 1
-            let v1 = evaluateExpression(tokens, index: &index)
-            index += 1
-            let v2 = evaluateExpression(tokens, index: &index)
-            return v1 == v2 ? "1" : "0"
-        }
-
-        if upper == "SUBSTRING?" || upper == "SUBSTRINGP" {
-            index += 1
-            let needle = evaluateExpression(tokens, index: &index)
-            index += 1
-            let haystack = evaluateExpression(tokens, index: &index)
-            return haystack.contains(needle) ? "1" : "0"
-        }
-
-        if upper == "MEMBER?" || upper == "MEMBERP" {
-            index += 1
-            let needle = evaluateExpression(tokens, index: &index)
-            index += 1
-            let haystack = evaluateExpression(tokens, index: &index)
-            let p = LogoValue.parse(haystack)
-            switch p {
-            case .list(let items), .array(let items):
-                return items.map { $0.description }.contains(needle) ? "1" : "0"
-            case .string(let s):
-                return s.contains(needle) ? "1" : "0"
-            }
-        }
 
         // ---------------------------------------------------------------------
-        // 2.5 Queries
+        // 2.5 Queries & Misc
         // ---------------------------------------------------------------------
-        if upper == "COUNT" {
+        case .count:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
@@ -829,39 +721,34 @@ extension LogoEngine {
             case .list(let items), .array(let items): return "\(items.count)"
             case .string(let s): return "\(s.count)"
             }
-        }
 
-        if upper == "ASCII" {
+        case .ascii:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             if let first = v.utf8.first {
                 return "\(first)"
             }
             return "0"
-        }
 
-        if upper == "CHAR" {
+        case .char:
             index += 1
             let code = Int(evaluateExpression(tokens, index: &index)) ?? 0
             if let scalar = UnicodeScalar(code) {
                 return String(Character(scalar))
             }
             return ""
-        }
 
-        if upper == "UPPERCASE" {
+        case .uppercase:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             return v.uppercased()
-        }
 
-        if upper == "LOWERCASE" {
+        case .lowercase:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             return v.lowercased()
-        }
 
-        if upper == "MEMBER" {
+        case .member:
             index += 1
             let needle = evaluateExpression(tokens, index: &index)
             index += 1
@@ -886,9 +773,8 @@ extension LogoEngine {
                 }
                 return ""
             }
-        }
 
-        if upper == "STANDOUT" {
+        case .standout:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             var result = ""
@@ -911,32 +797,25 @@ extension LogoEngine {
                 }
             }
             return result
-        }
 
-        if upper == "PARSE" || upper == "RUNPARSE" {
+        case .parse, .runparse:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let toks = tokenize(v)
             return "[" + toks.joined(separator: " ") + "]"
-        }
 
         // ---------------------------------------------------------------------
         // 8.1 & 8.2 Control & Template-based Iteration Primitives
         // ---------------------------------------------------------------------
-        if upper == "ERROR" {
-            return lastError
-        }
-
-        if upper == "APPLY" {
+        case .apply:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
             let listStr = evaluateExpression(tokens, index: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             return applyTemplate(templateStr: templateStr, args: items)
-        }
 
-        if upper == "INVOKE" {
+        case .invoke:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             var args: [String] = []
@@ -946,9 +825,8 @@ extension LogoEngine {
                 args.append(arg)
             }
             return applyTemplate(templateStr: templateStr, args: args)
-        }
 
-        if upper == "FOREACH" {
+        case .foreach:
             index += 1
             let listStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -959,9 +837,8 @@ extension LogoEngine {
                 _ = applyTemplate(templateStr: templateStr, args: [item], indexInLoop: i + 1, restList: rest)
             }
             return ""
-        }
 
-        if upper == "MAP" {
+        case .map:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -974,9 +851,8 @@ extension LogoEngine {
                 results.append(res)
             }
             return "[" + results.joined(separator: " ") + "]"
-        }
 
-        if upper == "MAP.SE" {
+        case .mapSe:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -990,9 +866,8 @@ extension LogoEngine {
                 results.append(contentsOf: resItems)
             }
             return "[" + results.joined(separator: " ") + "]"
-        }
 
-        if upper == "FILTER" {
+        case .filter:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -1007,9 +882,8 @@ extension LogoEngine {
                 }
             }
             return "[" + filtered.joined(separator: " ") + "]"
-        }
 
-        if upper == "FIND" {
+        case .find:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             if index + 1 < tokens.count { index += 1 }
@@ -1023,9 +897,8 @@ extension LogoEngine {
                 }
             }
             return "[]"
-        }
 
-        if upper == "REDUCE" {
+        case .reduce:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -1038,9 +911,8 @@ extension LogoEngine {
                 acc = applyTemplate(templateStr: templateStr, args: [acc, item], indexInLoop: i + 2, restList: rest)
             }
             return acc
-        }
 
-        if upper == "CROSSMAP" {
+        case .crossmap:
             index += 1
             let templateStr = evaluateExpression(tokens, index: &index)
             index += 1
@@ -1075,6 +947,19 @@ extension LogoEngine {
                 results.append(res)
             }
             return "[" + results.joined(separator: " ") + "]"
+
+        case .date:
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.string(from: Date())
+
+        case .time:
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm:ss"
+            return formatter.string(from: Date())
+
+        default:
+            return nil
         }
 
         return nil

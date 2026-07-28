@@ -48,38 +48,6 @@ public final class LogoEngine {
     public var isPenDown: Bool = true
     public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
-    internal static let keywords: Set<String> = [
-        "MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW",
-        "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND",
-        "DELETELINE", "DELLINE", "KILLLINE", "DL",
-        "REPEAT", "TO", "END", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
-        "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP",
-        "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT",
-        "IF", "IFELSE", "WORD", "LIST", "SENTENCE", "SE", "FPUT", "LPUT", "ARRAY",
-        "LISTTOARRAY", "ARRAYTOLIST", "COMBINE", "REVERSE", "GENSYM", "FIRST",
-        "LAST", "FIRSTS", "BUTFIRST", "BF", "BUTLAST", "BL", "BUTFIRSTS", "BFS",
-        "ITEM", "PICK", "REMOVE", "REMDUP", "QUOTED", "SPLIT", "SETITEM",
-        ".SETFIRST", ".SETBF", "PUSH", "POP", "QUEUE", "DEQUEUE", "WORD?", "WORDP",
-        "LIST?", "LISTP", "ARRAY?", "ARRAYP", "NUMBER?", "NUMBERP", "EMPTY?", "EMPTYP",
-        "EQUAL?", "EQUALP", "NOTEQUAL?", "NOTEQUALP", "BEFORE?", "BEFOREP", ".EQ",
-        "MEMBER?", "MEMBERP", "SUBSTRING?", "SUBSTRINGP", "COUNT", "ASCII", "CHAR", "MEMBER", "UPPERCASE", "LOWERCASE",
-        "STANDOUT", "PARSE", "RUNPARSE",
-        "LESSP", "LESS?", "GREATERP", "GREATER?", "LESSEQUALP", "LESSEQUAL?", "GREATEREQUALP", "GREATEREQUAL?",
-        "SUM", "DIFFERENCE", "PRODUCT", "QUOTIENT", "POWER", "REMAINDER", "MODULO", "MINUS", "ABS", "INT", "ROUND",
-        "SQRT", "EXP", "LOG10", "LN", "ARCTAN", "SIN", "COS", "TAN", "RADARCTAN", "RADSIN", "RADCOS", "RADTAN",
-        "ISEQ", "RSEQ", "RANDOM", "RERANDOM", "FORM", "BITAND", "BITOR", "BITXOR", "BITNOT", "ASHIFT", "LSHIFT",
-        "TRUE", "FALSE", "AND", "OR", "XOR", "NOT", "OUTPUT", "OP",
-        "RUN", "RUNRESULT", "FOREVER", "REPCOUNT", "#", "TEST", "IFTRUE", "IFT",
-        "IFFALSE", "IFF", "STOP", "CATCH", "THROW", "ERROR", "WAIT", "BYE",
-        ".MAYBEOUTPUT", "IGNORE", "FOR", "DOTIMES", "DO.WHILE", "WHILE", "DO.UNTIL",
-        "UNTIL", "CASE", "COND", "APPLY", "INVOKE", "FOREACH", "MAP", "MAP.SE",
-        "FILTER", "FIND", "REDUCE", "CROSSMAP",
-        "BUFFERS", "BUFFERLIST", "BUFFER", "SETBUFFER", "NEXTBUFFER", "PREVBUFFER", "OPENBUFFER", "CLOSEBUFFER",
-        "LINE", "GETLINE", "ROW", "LINE.NO", "COL", "COL.NO", "LINECOUNT", "LINES", "BUFFERTEXT",
-        "SELECTION", "SELECTEDTEXT", "MODIFIED?", "CHANGED?", "FILENAME", "BUFFERNAME", "SETLINE",
-        "GOTOLINE", "SETROW", "GOTOCOL", "SETCOL", "CLEARBUFFER", "ERASEBUFFER"
-    ]
-
     internal static let statementCommands: Set<String> = [
         "MAKE", "VAR", "SET", "TYPE", "PRINT", "MSG", "MESSAGE", "SHOW",
         "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY",
@@ -95,6 +63,27 @@ public final class LogoEngine {
         "UNTIL", "CASE", "COND", "APPLY", "INVOKE", "FOREACH", "MAP", "MAP.SE",
         "FILTER", "REDUCE", "CROSSMAP", "SEARCH"
     ]
+
+    internal static let expressionPrimitives: Set<String> = [
+        "DATE", "TIME", "WORD", "LIST", "SENTENCE", "SE", "FPUT", "LPUT", "ARRAY",
+        "LISTTOARRAY", "ARRAYTOLIST", "COMBINE", "REVERSE", "GENSYM", "FIRST",
+        "LAST", "FIRSTS", "BUTFIRST", "BF", "BUTLAST", "BL", "BUTFIRSTS", "BFS",
+        "ITEM", "PICK", "REMOVE", "REMDUP", "QUOTED", "SPLIT", "SETITEM",
+        ".SETFIRST", ".SETBF", "PUSH", "POP", "QUEUE", "DEQUEUE", "WORD?", "WORDP",
+        "LIST?", "LISTP", "ARRAY?", "ARRAYP", "NUMBER?", "NUMBERP", "EMPTY?", "EMPTYP",
+        "EQUAL?", "EQUALP", "NOTEQUAL?", "NOTEQUALP", "BEFORE?", "BEFOREP", ".EQ",
+        "MEMBER?", "MEMBERP", "SUBSTRING?", "SUBSTRINGP", "COUNT", "ASCII", "CHAR", "MEMBER", "UPPERCASE", "LOWERCASE",
+        "STANDOUT", "PARSE", "RUNPARSE",
+        "LESSP", "LESS?", "GREATERP", "GREATER?", "LESSEQUALP", "LESSEQUAL?", "GREATEREQUALP", "GREATEREQUAL?",
+        "SUM", "DIFFERENCE", "PRODUCT", "QUOTIENT", "POWER", "REMAINDER", "MODULO", "MINUS", "ABS", "INT", "ROUND",
+        "SQRT", "EXP", "LOG10", "LN", "ARCTAN", "SIN", "COS", "TAN", "RADARCTAN", "RADSIN", "RADCOS", "RADTAN",
+        "ISEQ", "RSEQ", "RANDOM", "RERANDOM", "FORM", "BITAND", "BITOR", "BITXOR", "BITNOT", "ASHIFT", "LSHIFT",
+        "TRUE", "FALSE", "AND", "OR", "XOR", "NOT", "REPCOUNT", "#", "ERROR", ".MAYBEOUTPUT", "FIND",
+        "BUFFERS", "BUFFERLIST", "BUFFER", "SETBUFFER", "LINE", "GETLINE", "ROW", "LINE.NO", "COL", "COL.NO",
+        "LINECOUNT", "LINES", "BUFFERTEXT", "SELECTION", "SELECTEDTEXT", "MODIFIED?", "CHANGED?", "FILENAME", "BUFFERNAME"
+    ]
+
+    internal static let keywords: Set<String> = statementCommands.union(expressionPrimitives)
 
     public var lastResult: String? = nil
     public var repCount: Int = 0
@@ -141,8 +130,16 @@ public final class LogoEngine {
                 return
             }
 
-            switch upper {
-            case "OUTPUT", "OP":
+            guard let prim = LogoPrimitive.from(token) else {
+                let exprResult = evaluateExpression(tokens, index: &index)
+                if !exprResult.isEmpty {
+                    lastResult = exprResult
+                }
+                continue
+            }
+
+            switch prim {
+            case .output:
                 index += 1
                 if index < tokens.count {
                     let val = evaluateExpression(tokens, index: &index)
@@ -150,7 +147,7 @@ public final class LogoEngine {
                     return
                 }
 
-            case "MAKE", "VAR":
+            case .make:
                 index += 1
                 if index < tokens.count {
                     let varName = unquote(tokens[index]).lowercased()
@@ -159,7 +156,7 @@ public final class LogoEngine {
                     variables[varName] = val
                 }
 
-            case "SETITEM":
+            case .setItem:
                 index += 1
                 let idxVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
                 if index + 1 < tokens.count {
@@ -192,63 +189,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case ".SETFIRST":
-                index += 1
-                if index < tokens.count {
-                    let varToken = tokens[index]
-                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                    index += 1
-                    let newVal = evaluateExpression(tokens, index: &index)
-
-                    let currentVal = variables[varName] ?? ""
-                    let parsed = LogoValue.parse(currentVal)
-                    switch parsed {
-                    case .list(var items):
-                        if !items.isEmpty {
-                            items[0] = LogoValue.parse(newVal)
-                            variables[varName] = LogoValue.list(items).description
-                        }
-                    case .array(var items):
-                        if !items.isEmpty {
-                            items[0] = LogoValue.parse(newVal)
-                            variables[varName] = LogoValue.array(items).description
-                        }
-                    case .string(var s):
-                        if !s.isEmpty {
-                            s.replaceSubrange(s.startIndex...s.startIndex, with: newVal)
-                            variables[varName] = s
-                        }
-                    }
-                }
-
-            case ".SETBF":
-                index += 1
-                if index < tokens.count {
-                    let varToken = tokens[index]
-                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                    index += 1
-                    let newVal = evaluateExpression(tokens, index: &index)
-
-                    let currentVal = variables[varName] ?? ""
-                    let parsed = LogoValue.parse(currentVal)
-                    let newParsed = LogoValue.parse(newVal)
-                    switch (parsed, newParsed) {
-                    case (.list(let items), .list(let newTail)):
-                        if !items.isEmpty {
-                            let head = items[0]
-                            variables[varName] = LogoValue.list([head] + newTail).description
-                        }
-                    case (.array(let items), .array(let newTail)):
-                        if !items.isEmpty {
-                            let head = items[0]
-                            variables[varName] = LogoValue.array([head] + newTail).description
-                        }
-                    default:
-                        break
-                    }
-                }
-
-            case "PUSH", "FPUT":
+            case .fput, .push:
                 index += 1
                 if index < tokens.count {
                     let varToken = tokens[index]
@@ -270,7 +211,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "QUEUE", "LPUT":
+            case .lput, .dequeue:
                 index += 1
                 if index < tokens.count {
                     let varToken = tokens[index]
@@ -292,7 +233,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "SET":
+            case .set:
                 index += 1
                 if index < tokens.count {
                     let setting = unquote(tokens[index]).lowercased()
@@ -307,7 +248,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .applySetting(setting: setting, arg: arg))
                 }
 
-            case "TYPE", "PRINT":
+            case .type:
                 index += 1
                 while index < tokens.count {
                     let nextUpper = tokens[index].uppercased()
@@ -326,7 +267,7 @@ public final class LogoEngine {
                     index += 1
                 }
 
-            case "MSG", "MESSAGE", "SHOW":
+            case .show:
                 index += 1
                 var parts: [String] = []
                 while index < tokens.count {
@@ -349,7 +290,7 @@ public final class LogoEngine {
                 delegate.logoEngine(self, performAction: .setStatusMessage(msgText))
                 hasSetStatusMessage = true
 
-            case "DEL", "DELETE":
+            case .delete:
                 index += 1
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
@@ -357,7 +298,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .deleteChar)
                 }
 
-            case "BS", "BACKSPACE":
+            case .backspace:
                 index += 1
                 let valStr = evaluateExpression(tokens, index: &index)
                 let count = Int(valStr) ?? 1
@@ -365,7 +306,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .backspaceChar)
                 }
 
-            case "DELETELINE", "DELLINE", "KILLLINE", "DL":
+            case .deleteLine:
                 index += 1
                 var count = 1
                 if index < tokens.count {
@@ -384,7 +325,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .deleteLine)
                 }
 
-            case "MOVE":
+            case .move:
                 index += 1
                 if index < tokens.count {
                     let dir = tokens[index].uppercased()
@@ -399,7 +340,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "GOTO":
+            case .goto:
                 index += 1
                 if index < tokens.count {
                     let lineStr = evaluateExpression(tokens, index: &index)
@@ -420,26 +361,26 @@ public final class LogoEngine {
                     }
                 }
 
-            case "NEXTBUFFER":
+            case .nextBuffer:
                 delegate.logoEngine(self, performAction: .nextBuffer)
 
-            case "PREVBUFFER":
+            case .prevBuffer:
                 delegate.logoEngine(self, performAction: .prevBuffer)
 
-            case "CLOSEBUFFER":
+            case .closeBuffer:
                 delegate.logoEngine(self, performAction: .closeBuffer)
 
-            case "OPENBUFFER":
+            case .openBuffer:
                 index += 1
                 if index < tokens.count {
                     let path = unquote(evaluateExpression(tokens, index: &index))
                     delegate.logoEngine(self, performAction: .openBuffer(path: path))
                 }
 
-            case "CLEARBUFFER", "ERASEBUFFER":
+            case .clearBuffer:
                 delegate.logoEngine(self, performAction: .clearBuffer)
 
-            case "GOTOLINE", "SETROW":
+            case .gotoline:
                 index += 1
                 if index < tokens.count {
                     let lineStr = evaluateExpression(tokens, index: &index)
@@ -447,7 +388,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .gotoLine(max(0, row1Based - 1)))
                 }
 
-            case "GOTOCOL", "SETCOL":
+            case .gotocol:
                 index += 1
                 if index < tokens.count {
                     let colStr = evaluateExpression(tokens, index: &index)
@@ -455,7 +396,7 @@ public final class LogoEngine {
                     delegate.logoEngine(self, performAction: .gotoCol(max(0, col1Based - 1)))
                 }
 
-            case "SETLINE":
+            case .setline:
                 index += 1
                 if index < tokens.count {
                     let firstVal = evaluateExpression(tokens, index: &index)
@@ -471,24 +412,24 @@ public final class LogoEngine {
                     }
                 }
 
-            case "BOX":
+            case .box:
                 index += 1
                 executeBoxCommand(tokens, index: &index)
 
-            case "LINE", "HR":
+            case .line, .hr:
                 index += 1
                 executeLineCommand(tokens, index: &index)
 
-            case "VLINE", "VHR":
+            case .vline, .vhr:
                 index += 1
                 executeVlineCommand(tokens, index: &index)
 
-            case "NEWLINE", "NL", "ENTER":
+            case .newline:
                 index += 1
                 executeNewlineCommand(tokens, index: &index)
 
             // Conditional Logic Commands
-            case "IF":
+            case .ifCondition:
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count && tokens[index] != "[" {
@@ -514,7 +455,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "IFELSE":
+            case .ifElseCondition:
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count && tokens[index] != "[" {
@@ -559,13 +500,13 @@ public final class LogoEngine {
                 }
 
             // Turtle Graphics Commands
-            case "PD", "PENDOWN":
+            case .penDown:
                 isPenDown = true
 
-            case "PU", "PENUP":
+            case .penUp:
                 isPenDown = false
 
-            case "RT", "RIGHT":
+            case .turnRight:
                 index += 1
                 var angle = 90
                 if index < tokens.count {
@@ -581,7 +522,7 @@ public final class LogoEngine {
                 }
                 heading = (heading + angle) % 360
 
-            case "LT", "LEFT":
+            case .turnLeft:
                 index += 1
                 var angle = 90
                 if index < tokens.count {
@@ -597,7 +538,7 @@ public final class LogoEngine {
                 }
                 heading = ((heading - angle) % 360 + 360) % 360
 
-            case "FD", "FORWARD":
+            case .forward:
                 index += 1
                 var dist = 1
                 if index < tokens.count {
@@ -613,7 +554,7 @@ public final class LogoEngine {
                 }
                 executeTurtleMove(steps: dist, directionHeading: heading)
 
-            case "BK", "BACK", "BACKWARD":
+            case .back:
                 index += 1
                 var dist = 1
                 if index < tokens.count {
@@ -629,19 +570,19 @@ public final class LogoEngine {
                 }
                 executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360)
 
-            case "MARK":
+            case .mark:
                 delegate.logoEngine(self, performAction: .editMark)
 
-            case "CUT":
+            case .cut:
                 delegate.logoEngine(self, performAction: .editCut)
 
-            case "PASTE", "UNCUT":
+            case .uncut:
                 delegate.logoEngine(self, performAction: .editUncut)
 
-            case "JUSTIFY":
+            case .justify:
                 delegate.logoEngine(self, performAction: .editJustify)
 
-            case "FIND", "SEARCH":
+            case .find, .search:
                 index += 1
                 if index < tokens.count {
                     let nextToken = tokens[index]
@@ -655,7 +596,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "RUN":
+            case .run:
                 index += 1
                 if index < tokens.count {
                     if tokens[index] == "[" {
@@ -670,7 +611,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "RUNRESULT":
+            case .runResult:
                 index += 1
                 if index < tokens.count {
                     var block: [String] = []
@@ -690,7 +631,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "REPEAT":
+            case .repeatLoop:
                 index += 1
                 let countStr = evaluateExpression(tokens, index: &index)
                 let count = Int(countStr) ?? 1
@@ -707,7 +648,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "FOREVER":
+            case .foreverLoop:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let block = extractBlockTokens(tokens: tokens, index: &index)
@@ -722,15 +663,15 @@ public final class LogoEngine {
                     }
                 }
 
-            case "STOP":
+            case .stop:
                 frameReturn = ""
                 return
 
-            case "BYE":
+            case .bye:
                 byeFlag = true
                 return
 
-            case "WAIT":
+            case .wait:
                 index += 1
                 if index < tokens.count {
                     let timeStr = evaluateExpression(tokens, index: &index)
@@ -741,7 +682,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "TEST":
+            case .testCondition:
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count {
@@ -755,7 +696,7 @@ public final class LogoEngine {
                 testResult = evaluateCondition(condTokens)
                 index -= 1
 
-            case "IFTRUE", "IFT":
+            case .ifTrue:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let block = extractBlockTokens(tokens: tokens, index: &index)
@@ -765,7 +706,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "IFFALSE", "IFF":
+            case .ifFalse:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let block = extractBlockTokens(tokens: tokens, index: &index)
@@ -775,13 +716,13 @@ public final class LogoEngine {
                     }
                 }
 
-            case "IGNORE":
+            case .ignore:
                 index += 1
                 if index < tokens.count {
                     _ = evaluateExpression(tokens, index: &index)
                 }
 
-            case "CATCH":
+            case .catchTag:
                 index += 1
                 if index < tokens.count {
                     let tag = unquote(evaluateExpression(tokens, index: &index)).lowercased()
@@ -801,7 +742,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "THROW":
+            case .throwTag:
                 index += 1
                 if index < tokens.count {
                     let tag = unquote(evaluateExpression(tokens, index: &index)).lowercased()
@@ -815,7 +756,7 @@ public final class LogoEngine {
                     return
                 }
 
-            case "FOR":
+            case .forLoop:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let ctrlBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -844,7 +785,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "DOTIMES":
+            case .dotimesLoop:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let ctrlBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -865,7 +806,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "WHILE":
+            case .whileLoop:
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count && tokens[index] != "[" {
@@ -880,7 +821,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "UNTIL":
+            case .untilLoop:
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count && tokens[index] != "[" {
@@ -895,7 +836,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "DO.WHILE":
+            case .doWhileLoop:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -911,7 +852,7 @@ public final class LogoEngine {
                     } while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                 }
 
-            case "DO.UNTIL":
+            case .doUntilLoop:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -927,7 +868,7 @@ public final class LogoEngine {
                     } while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                 }
 
-            case "CASE":
+            case .caseSwitch:
                 index += 1
                 let targetVal = unquote(evaluateExpression(tokens, index: &index))
                 index += 1
@@ -939,7 +880,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "COND":
+            case .condSwitch:
                 index += 1
                 if index < tokens.count && tokens[index] == "[" {
                     let clausesBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -949,7 +890,7 @@ public final class LogoEngine {
                     }
                 }
 
-            case "TO":
+            case .to:
                 index += 1
                 if index < tokens.count {
                     let procName = tokens[index].uppercased()
@@ -968,7 +909,7 @@ public final class LogoEngine {
                     customProcedures[procName] = LogoProcedure(name: procName, parameters: params, bodyTokens: procTokens)
                 }
 
-            case "EXEC":
+            case .exec:
                 index += 1
                 if index < tokens.count {
                     let procName = tokens[index].uppercased()
@@ -981,7 +922,7 @@ public final class LogoEngine {
                 }
 
             default:
-                if let proc = customProcedures[upper] {
+                if let proc = customProcedures[token.uppercased()] {
                     let ret = invokeProcedure(proc, tokens: tokens, index: &index)
                     if let r = ret, !r.isEmpty {
                         lastResult = r

@@ -1,0 +1,265 @@
+import Foundation
+
+/// Strongly-typed enum representing all UCB LOGO primitives and editor commands.
+public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
+    // Statement / Control Primitives
+    case make
+    case set
+    case type
+    case show
+    case delete
+    case backspace
+    case deleteLine
+    case move
+    case mark
+    case cut
+    case uncut
+    case justify
+    case goto
+    case box
+    case line
+    case hr
+    case vline
+    case vhr
+    case newline
+    case penDown
+    case penUp
+    case forward
+    case back
+    case turnRight
+    case turnLeft
+    case ifCondition
+    case ifElseCondition
+    case output
+    case repeatLoop
+    case foreverLoop
+    case forLoop
+    case dotimesLoop
+    case whileLoop
+    case doWhileLoop
+    case untilLoop
+    case doUntilLoop
+    case caseSwitch
+    case condSwitch
+    case testCondition
+    case ifTrue
+    case ifFalse
+    case stop
+    case catchTag
+    case throwTag
+    case wait
+    case bye
+    case apply
+    case invoke
+    case foreach
+    case map
+    case mapSe
+    case filter
+    case find
+    case reduce
+    case crossmap
+    case run
+    case runResult
+    case ignore
+    case to
+    case exec
+
+    // Multi-Buffer & Buffer Primitives
+    case buffers
+    case buffer
+    case nextBuffer
+    case prevBuffer
+    case openBuffer
+    case closeBuffer
+    case clearBuffer
+    case getline
+    case setline
+    case gotoline
+    case gotocol
+    case row
+    case col
+    case lineCount
+    case bufferText
+    case selection
+    case isModified
+    case fileName
+
+    // Expression & Data Primitives
+    case word
+    case list
+    case sentence
+    case fput
+    case lput
+    case array
+    case listToArray
+    case arrayToList
+    case combine
+    case reverse
+    case gensym
+    case first
+    case last
+    case firsts
+    case butFirst
+    case butLast
+    case butFirsts
+    case item
+    case pick
+    case remove
+    case remdup
+    case quoted
+    case split
+    case setItem
+    case push
+    case pop
+    case dequeue
+    case isWord
+    case isList
+    case isArray
+    case isNumber
+    case isEmpty
+    case isEqual
+    case isNotEqual
+    case isBefore
+    case isMember
+    case isSubstring
+    case count
+    case ascii
+    case char
+    case member
+    case uppercase
+    case lowercase
+    case standout
+    case parse
+    case runparse
+
+    // Comparison Primitives
+    case less
+    case greater
+    case lessOrEqual
+    case greaterOrEqual
+
+    // Logical Primitives
+    case trueVal
+    case falseVal
+    case andLogic
+    case orLogic
+    case xorLogic
+    case notLogic
+
+    // Math & Bitwise Primitives
+    case sum
+    case difference
+    case product
+    case quotient
+    case power
+    case remainder
+    case modulo
+    case minus
+    case abs
+    case int
+    case round
+    case sqrt
+    case exp
+    case log10
+    case ln
+    case arctan
+    case sin
+    case cos
+    case tan
+    case radArctan
+    case radSin
+    case radCos
+    case radTan
+    case iseq
+    case rseq
+    case random
+    case rerandom
+    case form
+    case bitAnd
+    case bitOr
+    case bitXor
+    case bitNot
+    case ashift
+    case lshift
+    case date
+    case time
+    case search
+
+    private static let primitiveMap: [String: LogoPrimitive] = [
+        "MAKE": .make, "VAR": .make,
+        "SET": .set,
+        "TYPE": .type, "PRINT": .type,
+        "MSG": .show, "MESSAGE": .show, "SHOW": .show,
+        "DEL": .delete, "DELETE": .delete,
+        "BS": .backspace, "BACKSPACE": .backspace,
+        "DELETELINE": .deleteLine, "DELLINE": .deleteLine, "KILLLINE": .deleteLine, "DL": .deleteLine,
+        "MOVE": .move, "MARK": .mark, "CUT": .cut, "PASTE": .uncut, "UNCUT": .uncut, "JUSTIFY": .justify,
+        "GOTO": .goto, "BOX": .box, "LINE": .line, "HR": .hr, "VLINE": .vline, "VHR": .vhr,
+        "NEWLINE": .newline, "NL": .newline, "ENTER": .newline,
+        "PD": .penDown, "PENDOWN": .penDown, "PU": .penUp, "PENUP": .penUp,
+        "FD": .forward, "FORWARD": .forward, "BK": .back, "BACK": .back, "BACKWARD": .back,
+        "RT": .turnRight, "RIGHT": .turnRight, "LT": .turnLeft, "LEFT": .turnLeft,
+        "IF": .ifCondition, "IFELSE": .ifElseCondition, "OUTPUT": .output, "OP": .output,
+        "REPEAT": .repeatLoop, "FOREVER": .foreverLoop, "FOR": .forLoop, "DOTIMES": .dotimesLoop,
+        "WHILE": .whileLoop, "DO.WHILE": .doWhileLoop, "UNTIL": .untilLoop, "DO.UNTIL": .doUntilLoop,
+        "CASE": .caseSwitch, "COND": .condSwitch, "TEST": .testCondition,
+        "IFTRUE": .ifTrue, "IFT": .ifTrue, "IFFALSE": .ifFalse, "IFF": .ifFalse,
+        "STOP": .stop, "CATCH": .catchTag, "THROW": .throwTag, "WAIT": .wait, "BYE": .bye,
+        "APPLY": .apply, "INVOKE": .invoke, "FOREACH": .foreach, "MAP": .map, "MAP.SE": .mapSe,
+        "FILTER": .filter, "FIND": .find, "REDUCE": .reduce, "CROSSMAP": .crossmap,
+        "RUN": .run, "RUNRESULT": .runResult, "IGNORE": .ignore,
+        "TO": .to, "EXEC": .exec,
+
+        // Buffer Primitives
+        "BUFFERS": .buffers, "BUFFERLIST": .buffers,
+        "BUFFER": .buffer, "SETBUFFER": .buffer,
+        "NEXTBUFFER": .nextBuffer, "PREVBUFFER": .prevBuffer,
+        "OPENBUFFER": .openBuffer, "CLOSEBUFFER": .closeBuffer, "CLEARBUFFER": .clearBuffer, "ERASEBUFFER": .clearBuffer,
+        "GETLINE": .getline, "SETLINE": .setline,
+        "GOTOLINE": .gotoline, "SETROW": .gotoline, "GOTOCOL": .gotocol, "SETCOL": .gotocol,
+        "ROW": .row, "LINE.NO": .row, "COL": .col, "COL.NO": .col,
+        "LINECOUNT": .lineCount, "LINES": .lineCount,
+        "BUFFERTEXT": .bufferText, "SELECTION": .selection, "SELECTEDTEXT": .selection,
+        "MODIFIED?": .isModified, "CHANGED?": .isModified, "FILENAME": .fileName, "BUFFERNAME": .fileName,
+
+        // Data & Array Primitives
+        "WORD": .word, "LIST": .list, "SENTENCE": .sentence, "SE": .sentence,
+        "FPUT": .fput, "LPUT": .lput, "QUEUE": .lput, "ARRAY": .array,
+        "LISTTOARRAY": .listToArray, "ARRAYTOLIST": .arrayToList, "COMBINE": .combine, "REVERSE": .reverse,
+        "GENSYM": .gensym, "FIRST": .first, "LAST": .last, "FIRSTS": .firsts,
+        "BUTFIRST": .butFirst, "BF": .butFirst, "BUTLAST": .butLast, "BL": .butLast, "BUTFIRSTS": .butFirsts, "BFS": .butFirsts,
+        "ITEM": .item, "PICK": .pick, "REMOVE": .remove, "REMDUP": .remdup, "QUOTED": .quoted,
+        "SPLIT": .split, "SETITEM": .setItem, "PUSH": .push, "POP": .pop, "DEQUEUE": .dequeue,
+
+        // Predicates & Comparisons
+        "WORD?": .isWord, "WORDP": .isWord, "LIST?": .isList, "LISTP": .isList,
+        "ARRAY?": .isArray, "ARRAYP": .isArray, "NUMBER?": .isNumber, "NUMBERP": .isNumber,
+        "EMPTY?": .isEmpty, "EMPTYP": .isEmpty, "EQUAL?": .isEqual, "EQUALP": .isEqual,
+        "NOTEQUAL?": .isNotEqual, "NOTEQUALP": .isNotEqual, "BEFORE?": .isBefore, "BEFOREP": .isBefore,
+        "MEMBER?": .isMember, "MEMBERP": .isMember, "SUBSTRING?": .isSubstring, "SUBSTRINGP": .isSubstring,
+        "LESSP": .less, "LESS?": .less, "GREATERP": .greater, "GREATER?": .greater,
+        "LESSEQUALP": .lessOrEqual, "LESSEQUAL?": .lessOrEqual,
+        "GREATEREQUALP": .greaterOrEqual, "GREATEREQUAL?": .greaterOrEqual,
+        "COUNT": .count, "ASCII": .ascii, "CHAR": .char, "MEMBER": .member, "UPPERCASE": .uppercase,
+        "LOWERCASE": .lowercase, "STANDOUT": .standout, "PARSE": .parse, "RUNPARSE": .runparse,
+
+        // Logical
+        "TRUE": .trueVal, "FALSE": .falseVal, "AND": .andLogic, "OR": .orLogic,
+        "XOR": .xorLogic, "NOT": .notLogic, ".EQ": .isEqual,
+
+        // Math
+        "SUM": .sum, "DIFFERENCE": .difference, "PRODUCT": .product, "QUOTIENT": .quotient,
+        "POWER": .power, "REMAINDER": .remainder, "MODULO": .modulo, "MINUS": .minus,
+        "ABS": .abs, "INT": .int, "ROUND": .round, "SQRT": .sqrt, "EXP": .exp,
+        "LOG10": .log10, "LN": .ln, "ARCTAN": .arctan, "SIN": .sin, "COS": .cos, "TAN": .tan,
+        "RADARCTAN": .radArctan, "RADSIN": .radSin, "RADCOS": .radCos, "RADTAN": .radTan,
+        "ISEQ": .iseq, "RSEQ": .rseq, "RANDOM": .random, "RERANDOM": .rerandom, "FORM": .form,
+        "BITAND": .bitAnd, "BITOR": .bitOr, "BITXOR": .bitXor, "BITNOT": .bitNot, "ASHIFT": .ashift, "LSHIFT": .lshift,
+        "DATE": .date, "TIME": .time, "SEARCH": .search
+    ]
+
+    /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum.
+    public static func from(_ token: String) -> LogoPrimitive? {
+        primitiveMap[token.uppercased()]
+    }
+}

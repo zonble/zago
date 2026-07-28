@@ -236,36 +236,41 @@ extension LogoEngine {
             return listTokens.joined(separator: " ")
         }
 
-        if upper == "DATE" {
-            var format = "yyyy-MM-dd"
-            if index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
-                let nextUpper = nextToken.uppercased()
-                if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
-                    index += 1
-                    let customFmt = unquote(nextToken)
-                    if !customFmt.isEmpty {
-                        format = customFmt
+        if let prim = LogoPrimitive.from(token) {
+            switch prim {
+            case .date:
+                var format = "yyyy-MM-dd"
+                if index + 1 < tokens.count {
+                    let nextToken = tokens[index + 1]
+                    let nextUpper = nextToken.uppercased()
+                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                        index += 1
+                        let customFmt = unquote(nextToken)
+                        if !customFmt.isEmpty {
+                            format = customFmt
+                        }
                     }
                 }
-            }
-            return formatDate(format: format)
-        }
+                return formatDate(format: format)
 
-        if upper == "TIME" {
-            var format = "HH:mm:ss"
-            if index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
-                let nextUpper = nextToken.uppercased()
-                if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
-                    index += 1
-                    let customFmt = unquote(nextToken)
-                    if !customFmt.isEmpty {
-                        format = customFmt
+            case .time:
+                var format = "HH:mm:ss"
+                if index + 1 < tokens.count {
+                    let nextToken = tokens[index + 1]
+                    let nextUpper = nextToken.uppercased()
+                    if !LogoEngine.keywords.contains(nextUpper) && nextToken != "]" && nextToken != ")" {
+                        index += 1
+                        let customFmt = unquote(nextToken)
+                        if !customFmt.isEmpty {
+                            format = customFmt
+                        }
                     }
                 }
+                return formatTime(format: format)
+
+            default:
+                break
             }
-            return formatTime(format: format)
         }
 
         if let proc = customProcedures[upper] {
