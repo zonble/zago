@@ -24,6 +24,20 @@ extension Editor: LogoEngineDelegate {
             buffer.backspace()
         case .deleteLine:
             buffer.deleteLine()
+        case .joinLine(let separator):
+            joinCurrentLine(separator: separator)
+        case .replaceText(let old, let new):
+            replaceText(old: old, new: new)
+        case .indentLines(let levels):
+            indentSelectedOrCurrentLines(levels: levels)
+        case .outdentLines(let levels):
+            outdentSelectedOrCurrentLines(levels: levels)
+        case .createTable(let rows, let cols):
+            createTable(rows: rows, cols: cols, enterMode: false, saveSnapshot: false)
+        case .setTableBorderStyle(let style):
+            setTableBorderStyle(style)
+        case .nextTableBorderStyle:
+            _ = commandRegistry.dispatch(id: .tableStyle, editor: self)
         case .moveCursorVirtual(let delta):
             moveCursorVirtual(deltaRow: delta)
         case .moveLeft: _ = commandRegistry.dispatch(id: .moveLeft, editor: self)
@@ -147,6 +161,93 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
+    private func selectedOrCurrentLineRange() -> ClosedRange<Int> {
+        if let mark = selectionMark {
+            let (start, end) = getOrderedRange(
+                mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            let startLine = max(0, min(start.line, buffer.lines.count - 1))
+            let endLine = max(0, min(end.line, buffer.lines.count - 1))
+            return startLine...endLine
+        }
+        let line = max(0, min(buffer.lineIndex, buffer.lines.count - 1))
+        return line...line
+    }
+
+    private func joinCurrentLine(separator: String) {
+        guard buffer.lineIndex + 1 < buffer.lines.count else { return }
+        let currentLine = buffer.lines[buffer.lineIndex]
+        let nextLine = buffer.lines.remove(at: buffer.lineIndex + 1)
+        buffer.lines[buffer.lineIndex] = currentLine + separator + nextLine
+        buffer.columnIndex = currentLine.count + separator.count
+        buffer.isModified = true
+    }
+
+    private func replaceText(old: String, new: String) {
+        guard !old.isEmpty else { return }
+        var didReplace = false
+        let range = selectedOrCurrentLineRange()
+        for lineIndex in range {
+            let replaced = buffer.lines[lineIndex].replacingOccurrences(of: old, with: new)
+            if replaced != buffer.lines[lineIndex] {
+                buffer.lines[lineIndex] = replaced
+                didReplace = true
+            }
+        }
+        if didReplace {
+            buffer.isModified = true
+            selectionMark = nil
+        }
+    }
+
+    private func indentSelectedOrCurrentLines(levels: Int) {
+        let count = max(1, levels)
+        let prefix = String(repeating: " ", count: max(1, displayConfig.tabSize) * count)
+        for lineIndex in selectedOrCurrentLineRange() {
+            buffer.lines[lineIndex] = prefix + buffer.lines[lineIndex]
+        }
+        buffer.columnIndex += prefix.count
+        buffer.isModified = true
+    }
+
+    private func outdentSelectedOrCurrentLines(levels: Int) {
+        let targetCount = max(1, displayConfig.tabSize) * max(1, levels)
+        for lineIndex in selectedOrCurrentLineRange() {
+            var line = buffer.lines[lineIndex]
+            var removed = 0
+            while removed < targetCount, line.first == " " {
+                line.removeFirst()
+                removed += 1
+            }
+            buffer.lines[lineIndex] = line
+            if lineIndex == buffer.lineIndex {
+                buffer.columnIndex = max(0, buffer.columnIndex - removed)
+            }
+        }
+        buffer.isModified = true
+    }
+
+    private func setTableBorderStyle(_ style: String) {
+        switch style.lowercased() {
+        case "single":
+            defaultTableBorderStyle = .single
+            setStatusMessage("[ Default Table Border: Single ]")
+        case "double":
+            defaultTableBorderStyle = .double
+            setStatusMessage("[ Default Table Border: Double ]")
+        case "round", "rounded":
+            defaultTableBorderStyle = .round
+            setStatusMessage("[ Default Table Border: Round ]")
+        case "ascii":
+            defaultTableBorderStyle = .ascii
+            setStatusMessage("[ Default Table Border: ASCII ]")
+        case "markdown":
+            defaultTableBorderStyle = .markdown
+            setStatusMessage("[ Default Table Border: Markdown ]")
+        default:
+            setStatusMessage("[ Unknown table border: \(style) ]")
+        }
+    }
+
     private func applySetting(setting: String, arg: String) {
         switch setting.lowercased() {
         case "wrap", "wrapcolumn":
@@ -181,6 +282,10 @@ extension Editor: LogoEngineDelegate {
             } else {
                 displayConfig.autoReload.toggle()
             }
+        case "tab", "tabsize":
+            if let size = Int(arg), size > 0 {
+                displayConfig.tabSize = size
+            }
         case "lang":
             if arg == "zh_tw" || arg == "zh" {
                 L10n.currentLanguage = .zh_TW
@@ -195,7 +300,7 @@ extension Editor: LogoEngineDelegate {
 
 extension Editor {
     private static let tableModeBlockedLogoPrimitives: Set<LogoPrimitive> = [
-        .box, .line, .hr, .vline, .vhr, .fill,
+        .box, .line, .hr, .vline, .vhr, .fill, .table,
         .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
     ]
 

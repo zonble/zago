@@ -321,6 +321,18 @@ import Testing
         "└────────────┘",
     ])
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
+
+    editor.buffer.lines[1] = "│TABLE       │"
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 6
+    editor.processKey(.ctrl("Q"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────┐",
+        "│TABLE       │",
+        "└────────────┘",
+    ])
+    #expect(editor.statusMessage == "[ TABLE disabled in Table Mode ]")
 }
 
 @Test func testTableModeBlocksProcedureContainingLogoDrawingCommand() throws {
@@ -435,6 +447,9 @@ import Testing
     // Press Alt+S to cycle table style
     editor.processKey(.alt("s"))
     #expect(editor.defaultTableBorderStyle == .double)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultTableBorderStyle == .round)
 
     editor.processKey(.alt("s"))
     #expect(editor.defaultTableBorderStyle == .ascii)

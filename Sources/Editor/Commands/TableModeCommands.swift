@@ -16,7 +16,7 @@ public struct ToggleTableModeCommand: Command {
 public struct CycleTableStyleCommand: Command {
     public let id: CommandID = .tableStyle
     public let name = "Cycle Table Style"
-    public let description = "Switch default table style (Single -> Double -> ASCII -> Markdown)"
+    public let description = "Switch default table style (Single -> Double -> Round -> ASCII -> Markdown)"
     public let keys: [Key] = [.alt("s"), .alt("S")]
 
     public init() {}
@@ -27,6 +27,9 @@ public struct CycleTableStyleCommand: Command {
             editor.defaultTableBorderStyle = .double
             editor.setStatusMessage("[ Default Table Style: Double Unicode (╔═║) ]")
         case .double:
+            editor.defaultTableBorderStyle = .round
+            editor.setStatusMessage("[ Default Table Style: Round Unicode (╭─│) ]")
+        case .round:
             editor.defaultTableBorderStyle = .ascii
             editor.setStatusMessage("[ Default Table Style: ASCII (+-|) ]")
         case .ascii:

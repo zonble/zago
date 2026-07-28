@@ -72,11 +72,18 @@ public final class Editor {
         public var showRuler: Bool
         public var enableSyntaxHighlight: Bool
         public var autoReload: Bool
+        public var tabSize: Int
 
-        public init(showRuler: Bool = false, enableSyntaxHighlight: Bool = true, autoReload: Bool = true) {
+        public init(
+            showRuler: Bool = false,
+            enableSyntaxHighlight: Bool = true,
+            autoReload: Bool = true,
+            tabSize: Int = 4
+        ) {
             self.showRuler = showRuler
             self.enableSyntaxHighlight = enableSyntaxHighlight
             self.autoReload = autoReload
+            self.tabSize = tabSize
         }
     }
 
@@ -103,11 +110,12 @@ public final class Editor {
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
+        let finalTabSize = loadedConfig.tabSize
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.displayConfig = DisplayConfig(
-            showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload)
+            showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload, tabSize: finalTabSize)
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)

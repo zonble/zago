@@ -85,7 +85,9 @@ public final class LogoEngine {
 
     internal static let statementCommands: Set<LogoPrimitive> = [
         .make, .set, .type, .show, .delete, .backspace, .deleteLine,
-        .move, .mark, .cut, .uncut, .justify, .goto, .box, .line, .hr, .vline, .vhr,
+        .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
+        .joinLine, .splitLine, .indentLines, .outdentLines,
+        .move, .mark, .cut, .uncut, .justify, .goto, .box, .line, .hr, .vline, .vhr, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .saveBuffer, .fileSaveAndQuit,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
@@ -373,6 +375,117 @@ public final class LogoEngine {
                 }
                 for _ in 0..<count {
                     delegate.logoEngine(self, performAction: .deleteLine)
+                }
+
+            case .top:
+                delegate.logoEngine(self, performAction: .updateLineIndex(0))
+                delegate.logoEngine(self, performAction: .updateColumnIndex(0))
+
+            case .bottom:
+                let totalLines = (delegate.logoEngine(self, queryState: .lineCount) as? Int) ?? 1
+                let lastLine = max(0, totalLines - 1)
+                delegate.logoEngine(self, performAction: .updateLineIndex(lastLine))
+                delegate.logoEngine(self, performAction: .moveEnd)
+
+            case .lineStart:
+                delegate.logoEngine(self, performAction: .moveHome)
+
+            case .lineEnd:
+                delegate.logoEngine(self, performAction: .moveEnd)
+
+            case .appendText:
+                index += 1
+                delegate.logoEngine(self, performAction: .moveEnd)
+                while index < tokens.count {
+                    if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
+                        index -= 1
+                        break
+                    }
+                    let text = evaluateExpression(tokens, index: &index)
+                    delegate.logoEngine(self, performAction: .insertText(text))
+                    if index + 1 < tokens.count {
+                        if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
+                            break
+                        }
+                    }
+                    index += 1
+                }
+
+            case .prependText:
+                index += 1
+                delegate.logoEngine(self, performAction: .moveHome)
+                while index < tokens.count {
+                    if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
+                        index -= 1
+                        break
+                    }
+                    let text = evaluateExpression(tokens, index: &index)
+                    delegate.logoEngine(self, performAction: .insertText(text))
+                    if index + 1 < tokens.count {
+                        if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
+                            break
+                        }
+                    }
+                    index += 1
+                }
+
+            case .changeText:
+                index += 1
+                if index < tokens.count {
+                    let oldText = evaluateExpression(tokens, index: &index)
+                    if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+                        index += 1
+                        let newText = evaluateExpression(tokens, index: &index)
+                        delegate.logoEngine(self, performAction: .replaceText(old: oldText, new: newText))
+                    }
+                }
+
+            case .joinLine:
+                let separator = optionalCommandArgument(tokens, index: &index) ?? ""
+                delegate.logoEngine(self, performAction: .joinLine(separator: separator))
+
+            case .splitLine:
+                delegate.logoEngine(self, performAction: .insertNewline)
+
+            case .indentLines:
+                let levels = Int(optionalCommandArgument(tokens, index: &index) ?? "") ?? 1
+                delegate.logoEngine(self, performAction: .indentLines(levels: levels))
+
+            case .outdentLines:
+                let levels = Int(optionalCommandArgument(tokens, index: &index) ?? "") ?? 1
+                delegate.logoEngine(self, performAction: .outdentLines(levels: levels))
+
+            case .table:
+                index += 1
+                if index < tokens.count {
+                    let subcommand = tokens[index].uppercased()
+                    if subcommand == "BORDER" {
+                        if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+                            index += 1
+                            let style = unquote(tokens[index])
+                            delegate.logoEngine(self, performAction: .setTableBorderStyle(style))
+                            hasSetStatusMessage = true
+                        }
+                    } else if subcommand == "NEXTSTYLE" {
+                        delegate.logoEngine(self, performAction: .nextTableBorderStyle)
+                        hasSetStatusMessage = true
+                    } else if !LogoEngine.isStatementCommand(tokens[index]), let rows = Int(evaluateExpression(tokens, index: &index)) {
+                        var cols = 3
+                        if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+                            index += 1
+                            cols = Int(evaluateExpression(tokens, index: &index)) ?? 3
+                        }
+                        delegate.logoEngine(self, performAction: .createTable(rows: rows, cols: cols))
+                        hasSetStatusMessage = true
+                    } else {
+                        index -= 1
+                        delegate.logoEngine(self, performAction: .createTable(rows: 3, cols: 3))
+                        hasSetStatusMessage = true
+                    }
+                } else {
+                    index -= 1
+                    delegate.logoEngine(self, performAction: .createTable(rows: 3, cols: 3))
+                    hasSetStatusMessage = true
                 }
 
             case .move:

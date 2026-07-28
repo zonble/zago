@@ -29,7 +29,9 @@
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `TYPE` | `PRINT` | `TYPE "text"` or `TYPE expr` | Inserts string or calculated expression at cursor | `TYPE "Hello World"` |
+| `TYPE` | `PRINT`, `INSERT` | `TYPE "text"` or `INSERT "text"` | Inserts string or calculated expression at cursor | `INSERT "Hello World"` |
+| `APPEND` | - | `APPEND "text"` | Moves to current line end, then inserts text | `APPEND "."` |
+| `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
 | `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
@@ -39,6 +41,11 @@
 | `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL 5` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
 | `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL 3` |
+| `CHANGE` | - | `CHANGE old new` | Replaces text in current line, or selected lines when a selection is active | `CHANGE "foo" "bar"` |
+| `JOIN` | - | `JOIN [separator]` | Joins the next line into the current line | `JOIN " "` |
+| `SPLITLINE` | - | `SPLITLINE` | Splits the current line at the cursor | `SPLITLINE` |
+| `INDENT` | - | `INDENT [n]` | Indents current line or selected lines by n tab units | `INDENT`, `INDENT 2` |
+| `OUTDENT` | - | `OUTDENT [n]` | Outdents current line or selected lines by n tab units | `OUTDENT` |
 | `JUSTIFY` | - | `JUSTIFY` | Reflows and justifies current paragraph | `JUSTIFY` |
 
 ---
@@ -166,7 +173,47 @@ Use explicit lengths when you want deterministic drawing. Use no-argument auto-c
 
 ---
 
-### 3. Classical Turtle Graphics & ASCII Diagram Pen Mode
+### 3. Table Creation
+
+`TABLE` creates table structures. It does not enter Table Mode; use `Alt+T` for table editing mode.
+
+| Command | Syntax | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `TABLE` | `TABLE` | Creates a default 3x3 table at the cursor | `TABLE` |
+| `TABLE` | `TABLE rows cols` | Creates a table with explicit row and column counts | `TABLE 4 2` |
+| `TABLE BORDER` | `TABLE BORDER SINGLE` | Sets the default table border style | `TABLE BORDER ROUND` |
+| `TABLE NEXTSTYLE` | `TABLE NEXTSTYLE` | Cycles the default table border style, matching `Alt+S` | `TABLE NEXTSTYLE` |
+
+Supported table border styles:
+
+- `SINGLE`
+- `DOUBLE`
+- `ROUND`
+- `ASCII`
+- `MARKDOWN`
+
+Example:
+
+```logo
+TABLE BORDER ROUND
+TABLE 2 2
+```
+
+```text
+╭────────────────┬────────────────╮
+│                │                │
+├────────────────┼────────────────┤
+│                │                │
+╰────────────────┴────────────────╯
+```
+
+`TABLE` is useful when you want a structure first, then ordinary editing later. After creating a table, move the cursor into it and press `Alt+T` to edit cells.
+
+When Table Mode is active, `TABLE` is disabled to protect the current table structure.
+
+---
+
+### 4. Classical Turtle Graphics & ASCII Diagram Pen Mode
 
 > For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](logo_pen_mode.md).
 
@@ -181,7 +228,7 @@ Use explicit lengths when you want deterministic drawing. Use no-argument auto-c
 
 ---
 
-### 4. Table Mode Safety
+### 5. Table Mode Safety
 
 When Table Mode is active, LOGO execution is constrained to protect the current table cell structure.
 
@@ -198,17 +245,22 @@ Disabled while Table Mode is active:
 - `LINE` / `HR`
 - `VLINE` / `VR` / `VHR`
 - `FILL`
+- `TABLE`
 - Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
 
 This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prompt, and `.serc` key-bound macros. It also applies when a called `TO ... END` procedure contains one of the disabled drawing commands.
 
 ---
 
-### 5. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
+### 6. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
 | `MOVE` | - | `MOVE UP / DOWN / LEFT / RIGHT / HOME / END` | Moves cursor in 2D text canvas | `MOVE DOWN`, `MOVE END` |
+| `TOP` | - | `TOP` | Moves cursor to the start of the file | `TOP` |
+| `BOTTOM` | - | `BOTTOM` | Moves cursor to the end of the file | `BOTTOM` |
+| `LINESTART` | - | `LINESTART` | Moves cursor to current line start | `LINESTART` |
+| `LINEEND` | - | `LINEEND` | Moves cursor to current line end | `LINEEND` |
 | `GOTO` | - | `GOTO line [column]` | Jumps directly to 1-indexed line and optional column | `GOTO 10`, `GOTO 42 5` |
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
@@ -222,7 +274,7 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 6. Multi-Buffer & Buffer Operations
+### 7. Multi-Buffer & Buffer Operations
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -247,7 +299,68 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 7. Data Structures: Lists, Arrays, Words & Sorting
+### 8. Data Structures: Lists, Arrays, Words & Sorting
+
+LOGO values are intentionally small and visible. The common types are words, numbers, lists, and arrays.
+
+#### Words / Strings
+
+A quoted word starts with `"`. It is the most common way to pass text to commands:
+
+```logo
+TYPE "hello
+SHOW "Saved
+MAKE "name" "se
+TYPE :name
+```
+
+Use `WORD` to combine words:
+
+```logo
+MAKE "prefix" "# "
+MAKE "title" "TODO
+TYPE WORD :prefix :title
+```
+
+#### Numbers
+
+Numbers can be used directly in movement, drawing, loops, and expressions:
+
+```logo
+MAKE "width" 30
+BOX :width 4 ROUND
+GOTO 2 2
+TYPE PRODUCT 6 7
+```
+
+In infix-style expressions, variables use the `:name` form:
+
+```logo
+MAKE "i" 3
+IF :i > 2 [ SHOW "large ]
+```
+
+#### Lists
+
+Lists use square brackets. They are convenient for repeated commands and data transformations:
+
+```logo
+MAKE "items" ["alpha "beta "gamma]
+FOREACH :items [ TYPE ? NL ]
+MAKE "long" FILTER [COUNT ? > 4] :items
+```
+
+#### Arrays
+
+Arrays are mutable indexed storage. Indexes are 1-based:
+
+```logo
+MAKE "cells" ARRAY 3
+SETITEM 1 :cells "name
+SETITEM 2 :cells "status
+SETITEM 3 :cells "owner
+TYPE ITEM 2 :cells
+```
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -284,7 +397,7 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 8. Predicates & Type Checking
+### 9. Predicates & Type Checking
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -305,7 +418,7 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 9. Logical, Math & Bitwise Operations
+### 10. Logical, Math & Bitwise Operations
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -331,7 +444,7 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 10. Conditionals, Loops & Higher-Order Functions
+### 11. Conditionals, Loops & Higher-Order Functions
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -360,7 +473,7 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 11. Editor Configuration Settings (`SET`)
+### 12. Editor Configuration Settings (`SET`)
 
 | Setting Command | Description | Example |
 | :--- | :--- | :--- |
@@ -381,12 +494,66 @@ For configuration syntax, named scripts, startup preludes, and command ids, see 
 
 ## 💡 Practical Real-World Macro Examples
 
-### 1. Higher-Order Functional Data Transformation (`MAP`, `FILTER`, `SORT`)
+### 1. Iterating and Transforming Data (`FOREACH`, `MAP`, `REDUCE`, `SORT`)
 
-Doubles list elements, filters elements greater than 5, and sorts them descending:
+`FOREACH` is for actions. It runs a template once for each item:
 
 ```logo
-MAKE "nums" [3 1 4 1 5 9 2 6] MAKE "doubled" MAP [? * 2] :nums MAKE "filtered" FILTER [? > 5] :doubled MAKE "res" SORT "DESC :filtered
+FOREACH ["alpha "beta "gamma] [
+  TYPE "- "
+  TYPE ?
+  NL
+]
+```
+
+*Output:*
+
+```text
+- alpha
+- beta
+- gamma
+```
+
+`MAP` is for transformations. It returns a new list:
+
+```logo
+MAKE "nums" [1 2 3 4]
+MAKE "squares" MAP [? * ?] :nums
+SHOW :squares
+```
+
+*Result:*
+
+```text
+[1 4 9 16]
+```
+
+`REDUCE` combines a list into one value. Use `?1` for the accumulated value and `?2` for the next item:
+
+```logo
+MAKE "nums" [1 2 3 4 5]
+MAKE "total" REDUCE [?1 + ?2] :nums
+SHOW :total
+```
+
+*Result:*
+
+```text
+15
+```
+
+`SORT` orders words, numbers, lists, or arrays. It can also take `ASC` or `DESC`:
+
+```logo
+MAKE "nums" [3 1 4 1 5 9 2 6]
+MAKE "ordered" SORT "DESC :nums
+SHOW :ordered
+```
+
+*Result:*
+
+```text
+[9 6 5 4 3 2 1 1]
 ```
 
 ### 2. Variable Date Assignment & Box Framing (`DATE` & `BOX`)
@@ -439,6 +606,36 @@ PD REPEAT 4 [ FD 5 RT 90 ] PU
 │    │
 │    │
 └────┘
+```
+
+### 5. Loop Drawing: Christmas Tree
+
+Loops are useful for small generated diagrams. This example draws a centered tree with stars and a trunk:
+
+```logo
+MAKE "height" 6
+FOR [row 1 :height 1] [
+  MAKE "spaces" :height - :row
+  MAKE "stars" :row * 2 - 1
+  REPEAT :spaces [ TYPE " " ]
+  REPEAT :stars [ TYPE "*" ]
+  NL
+]
+MAKE "trunkSpaces" :height - 1
+REPEAT :trunkSpaces [ TYPE " " ]
+TYPE "|"
+```
+
+*Output:*
+
+```text
+     *
+    ***
+   *****
+  *******
+ *********
+***********
+     |
 ```
 
 ---

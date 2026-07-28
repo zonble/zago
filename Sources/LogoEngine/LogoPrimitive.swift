@@ -10,6 +10,17 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case delete
     case backspace
     case deleteLine
+    case top
+    case bottom
+    case lineStart
+    case lineEnd
+    case appendText
+    case prependText
+    case changeText
+    case joinLine
+    case splitLine
+    case indentLines
+    case outdentLines
     case move
     case mark
     case cut
@@ -21,6 +32,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case hr
     case vline
     case vhr
+    case table
     case newline
     case penDown
     case penUp
@@ -196,11 +208,22 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["SORT"], .sort),
         (["MAKE", "VAR"], .make),
         (["SET"], .set),
-        (["TYPE", "PRINT"], .type),
+        (["TYPE", "PRINT", "INSERT"], .type),
         (["MSG", "MESSAGE", "SHOW"], .show),
         (["DEL", "DELETE"], .delete),
         (["BS", "BACKSPACE"], .backspace),
         (["DELETELINE", "DELLINE", "KILLLINE", "DL"], .deleteLine),
+        (["TOP"], .top),
+        (["BOTTOM"], .bottom),
+        (["LINESTART"], .lineStart),
+        (["LINEEND"], .lineEnd),
+        (["APPEND"], .appendText),
+        (["PREPEND"], .prependText),
+        (["CHANGE"], .changeText),
+        (["JOIN"], .joinLine),
+        (["SPLITLINE"], .splitLine),
+        (["INDENT"], .indentLines),
+        (["OUTDENT"], .outdentLines),
         (["MOVE"], .move),
         (["MARK"], .mark),
         (["CUT"], .cut),
@@ -210,6 +233,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BOX"], .box),
         (["LINE", "HR"], .line),
         (["VLINE", "VR", "VHR"], .vline),
+        (["TABLE"], .table),
         (["NEWLINE", "NL", "ENTER"], .newline),
         (["PD", "PENDOWN"], .penDown),
         (["PU", "PENUP"], .penUp),

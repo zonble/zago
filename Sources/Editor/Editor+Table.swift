@@ -255,91 +255,95 @@ extension Editor {
 
     /// Generates a default 3x3 table at cursor position and enters Table Mode.
     public func createDefaultTable() {
-        saveUndoSnapshot()
+        createTable(rows: 3, cols: 3, enterMode: true, saveSnapshot: true)
+    }
+
+    /// Generates a table at cursor position.
+    public func createTable(
+        rows: Int = 3,
+        cols: Int = 3,
+        enterMode: Bool = false,
+        saveSnapshot: Bool = true
+    ) {
+        if saveSnapshot {
+            saveUndoSnapshot()
+        }
         let origLine = buffer.lineIndex
         let origCol = buffer.columnIndex
         let style = defaultTableBorderStyle
+        let rowCount = max(1, min(rows, 50))
+        let colCount = max(1, min(cols, 20))
+        let cellWidth = 16
 
         if style == .markdown {
-            let mdLines = [
-                "| Header 1       | Header 2       | Header 3       |",
-                "| -------------- | -------------- | -------------- |",
-                "|                |                |                |",
-                "|                |                |                |",
-            ]
-            for (idx, line) in mdLines.enumerated() {
-                if origLine + idx < buffer.lines.count {
-                    buffer.lines[origLine + idx] = line
-                } else {
-                    buffer.lines.append(line)
-                }
+            let headerCells = (1...colCount).map { "Header \($0)".padding(toLength: cellWidth, withPad: " ", startingAt: 0) }
+            var tableLines = ["| " + headerCells.joined(separator: " | ") + " |"]
+            tableLines.append("|" + Array(repeating: String(repeating: "-", count: cellWidth + 2), count: colCount).joined(separator: "|") + "|")
+            for _ in 0..<max(1, rowCount - 1) {
+                tableLines.append("| " + Array(repeating: String(repeating: " ", count: cellWidth), count: colCount).joined(separator: " | ") + " |")
             }
-        } else if style == .ascii {
-            let asciiLines = [
-                "+----------------+----------------+----------------+",
-                "|                |                |                |",
-                "+----------------+----------------+----------------+",
-                "|                |                |                |",
-                "+----------------+----------------+----------------+",
-                "|                |                |                |",
-                "+----------------+----------------+----------------+",
-            ]
-            for (idx, line) in asciiLines.enumerated() {
-                if origLine + idx < buffer.lines.count {
-                    buffer.lines[origLine + idx] = line
-                } else {
-                    buffer.lines.append(line)
-                }
-            }
-        } else if style == .double {
-            let doubleLines = [
-                "╔════════════════╦════════════════╦════════════════╗",
-                "║                ║                ║                ║",
-                "╠════════════════╬════════════════╬════════════════╣",
-                "║                ║                ║                ║",
-                "╠════════════════╬════════════════╬════════════════╣",
-                "║                ║                ║                ║",
-                "╚════════════════╩════════════════╩════════════════╝",
-            ]
-            for (idx, line) in doubleLines.enumerated() {
-                if origLine + idx < buffer.lines.count {
-                    buffer.lines[origLine + idx] = line
-                } else {
-                    buffer.lines.append(line)
-                }
-            }
+            writeTableLines(tableLines, at: origLine)
         } else {
-            let singleLines = [
-                "┌────────────────┬────────────────┬────────────────┐",
-                "│                │                │                │",
-                "├────────────────┼────────────────┼────────────────┤",
-                "│                │                │                │",
-                "├────────────────┼────────────────┼────────────────┤",
-                "│                │                │                │",
-                "└────────────────┴────────────────┴────────────────┘",
-            ]
-            for (idx, line) in singleLines.enumerated() {
-                if origLine + idx < buffer.lines.count {
-                    buffer.lines[origLine + idx] = line
-                } else {
-                    buffer.lines.append(line)
+            let chars = tableBorderCharacters(for: style)
+            let h = String(repeating: chars.horizontal, count: cellWidth)
+            let content = String(repeating: " ", count: cellWidth)
+            var tableLines: [String] = []
+            tableLines.append(chars.topLeft + Array(repeating: h, count: colCount).joined(separator: chars.topJoin) + chars.topRight)
+            for row in 0..<rowCount {
+                tableLines.append(chars.vertical + Array(repeating: content, count: colCount).joined(separator: chars.vertical) + chars.vertical)
+                if row < rowCount - 1 {
+                    tableLines.append(chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin) + chars.midRight)
                 }
             }
+            tableLines.append(chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin) + chars.bottomRight)
+            writeTableLines(tableLines, at: origLine)
         }
 
         buffer.lineIndex = origLine + 1
         buffer.columnIndex = origCol + 1
         buffer.clampCursor()
+        buffer.isModified = true
 
-        let detector = TableCellDetector()
-        if let cell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: buffer.columnIndex) {
-            enterTableMode(with: cell)
+        if enterMode {
+            let detector = TableCellDetector()
+            if let cell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: buffer.columnIndex) {
+                enterTableMode(with: cell)
+            } else {
+                let cell = TableCell(
+                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: 0, maxCol: 16,
+                    style: style)
+                enterTableMode(with: cell)
+            }
         } else {
-            // Fallback cell
-            let cell = TableCell(
-                minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: 0, maxCol: 16,
-                style: style)
-            enterTableMode(with: cell)
+            setStatusMessage("[ Table created ]")
+        }
+    }
+
+    private func writeTableLines(_ tableLines: [String], at startLine: Int) {
+        for (idx, line) in tableLines.enumerated() {
+            if startLine + idx < buffer.lines.count {
+                buffer.lines[startLine + idx] = line
+            } else {
+                buffer.lines.append(line)
+            }
+        }
+    }
+
+    private func tableBorderCharacters(for style: TableBorderStyle) -> (
+        topLeft: String, topJoin: String, topRight: String,
+        midLeft: String, midJoin: String, midRight: String,
+        bottomLeft: String, bottomJoin: String, bottomRight: String,
+        horizontal: String, vertical: String
+    ) {
+        switch style {
+        case .double:
+            return ("╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║")
+        case .round:
+            return ("╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│")
+        case .ascii:
+            return ("+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|")
+        case .single, .markdown:
+            return ("┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│")
         }
     }
 

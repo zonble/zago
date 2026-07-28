@@ -968,6 +968,88 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.currentBufferIndex == 0)
 }
 
+@Test func testEditorCommandLineTextCommands() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+    editor.buffer.lines = ["alpha", "beta", "gamma"]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+
+    logoEngine.execute("TOP")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 0)
+
+    logoEngine.execute("BOTTOM")
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 5)
+
+    logoEngine.execute("LINESTART")
+    #expect(editor.buffer.columnIndex == 0)
+    logoEngine.execute("LINEEND")
+    #expect(editor.buffer.columnIndex == 5)
+
+    logoEngine.execute("PREPEND \"<\" APPEND \">\"")
+    #expect(editor.buffer.lines[2] == "<gamma>")
+
+    logoEngine.execute("INSERT \"!")
+    #expect(editor.buffer.lines[2] == "<gamma>!")
+
+    logoEngine.execute("CHANGE \"gamma\" \"delta\"")
+    #expect(editor.buffer.lines[2] == "<delta>!")
+
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = editor.buffer.lines[0].count
+    logoEngine.execute("JOIN \" \"")
+    #expect(editor.buffer.lines == ["alpha beta", "<delta>!"])
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == "alpha ".count)
+
+    editor.buffer.columnIndex = 5
+    logoEngine.execute("SPLITLINE")
+    #expect(editor.buffer.lines == ["alpha", " beta", "<delta>!"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 0)
+
+    logoEngine.execute("SET TAB 2")
+    editor.selectionMark = (line: 0, column: 0)
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("INDENT 2")
+    #expect(editor.buffer.lines[0] == "    alpha")
+    #expect(editor.buffer.lines[1] == "     beta")
+
+    logoEngine.execute("OUTDENT")
+    #expect(editor.buffer.lines[0] == "  alpha")
+    #expect(editor.buffer.lines[1] == "   beta")
+}
+
+@Test func testLogoTableCommandCreatesAndConfiguresTables() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TABLE 2 2")
+    #expect(editor.isTableModeActive == false)
+    #expect(editor.buffer.lines[0] == "┌────────────────┬────────────────┐")
+    #expect(editor.buffer.lines[1] == "│                │                │")
+    #expect(editor.buffer.lines[2] == "├────────────────┼────────────────┤")
+    #expect(editor.buffer.lines[4] == "└────────────────┴────────────────┘")
+
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE BORDER ROUND TABLE")
+    #expect(editor.defaultTableBorderStyle == .round)
+    #expect(editor.buffer.lines[0].hasPrefix("╭"))
+    #expect(editor.buffer.lines[0].hasSuffix("╮"))
+    #expect(editor.isTableModeActive == false)
+
+    logoEngine.execute("TABLE BORDER ASCII")
+    #expect(editor.defaultTableBorderStyle == .ascii)
+
+    logoEngine.execute("TABLE NEXTSTYLE")
+    #expect(editor.defaultTableBorderStyle == .markdown)
+}
+
 @Test func testLogoSortPrimitive() {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

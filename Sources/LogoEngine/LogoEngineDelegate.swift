@@ -10,6 +10,13 @@ public enum LogoEditorAction {
     case deleteChar
     case backspaceChar
     case deleteLine
+    case joinLine(separator: String)
+    case replaceText(old: String, new: String)
+    case indentLines(levels: Int)
+    case outdentLines(levels: Int)
+    case createTable(rows: Int, cols: Int)
+    case setTableBorderStyle(String)
+    case nextTableBorderStyle
     case moveCursorVirtual(Int)
     case search(String)
     case markModified

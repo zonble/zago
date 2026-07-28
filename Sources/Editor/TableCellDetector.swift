@@ -4,6 +4,7 @@ import Foundation
 public enum TableBorderStyle: String, CaseIterable, Sendable {
     case single = "single"  // ┌ ─ ┐ │ └ ┘ ├ ┤ ┬ ┴ ┼
     case double = "double"  // ╔ ═ ╗ ║ ╚ ╝ ╠ ╣ ╦ ╩ ╬
+    case round = "round"  // ╭ ─ ╮ │ ╰ ╯ ├ ┤ ┬ ┴ ┼
     case ascii = "ascii"  // + - |
     case markdown = "markdown"  // | --- |
 }
@@ -41,12 +42,14 @@ public final class TableCellDetector {
 
     private static let verticalBorderChars: Set<Character> = [
         "│", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
+        "╭", "╮", "╰", "╯",
         "║", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
         "|", "+",
     ]
 
     private static let horizontalBorderChars: Set<Character> = [
         "─", "═", "-", "+", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
+        "╭", "╮", "╰", "╯",
         "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
     ]
 
