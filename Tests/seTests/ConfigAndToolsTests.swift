@@ -8,6 +8,34 @@ import Foundation
     _ = helpView
 }
 
+@Test func testWrapColumnMenuActions() throws {
+    let editor = Editor()
+    #expect(editor.layoutEngine.wrapColumn == nil)
+
+    let menuBar = MenuBar()
+    let toolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory != nil)
+
+    let wrap80Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_80" })
+    let wrap60Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_60" })
+    let wrap40Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_40" })
+    let wrapResetItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_reset" })
+
+    #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
+
+    wrap80Item?.action?(editor)
+    #expect(editor.layoutEngine.wrapColumn == 80)
+
+    wrap60Item?.action?(editor)
+    #expect(editor.layoutEngine.wrapColumn == 60)
+
+    wrap40Item?.action?(editor)
+    #expect(editor.layoutEngine.wrapColumn == 40)
+
+    wrapResetItem?.action?(editor)
+    #expect(editor.layoutEngine.wrapColumn == nil)
+}
+
 @Test func testSpellChecker() throws {
     let checker = SpellChecker()
     #expect(checker.isCorrect("hello") == true)

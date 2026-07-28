@@ -151,6 +151,10 @@ public struct EnglishStrings {
         "menu.tools.table_mode": "Toggle Table Mode\tAlt+T",
         "menu.tools.table_style": "Cycle Table Style\tAlt+S",
         "menu.tools.ruler": "Toggle Ruler Bar",
+        "menu.tools.wrap_80": "Wrap Column: 80",
+        "menu.tools.wrap_60": "Wrap Column: 60",
+        "menu.tools.wrap_40": "Wrap Column: 40",
+        "menu.tools.wrap_reset": "Wrap Column: Dynamic",
 
         "menu.help.show": "Show Help Reference\t^G"
     ]

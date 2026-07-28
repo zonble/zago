@@ -102,7 +102,7 @@ public struct TraditionalChineseStrings {
 
         // Common Messages
         "msg.cancelled": "[ 已取消 ]",
-        "buffer.new_buffer": "新 Buffer",
+        "buffer.new_buffer": "空白頁",
         "buffer.modified": "已修改",
 
         // Format Messages
@@ -127,30 +127,34 @@ public struct TraditionalChineseStrings {
         "menu.help": "說明(H)",
 
         // Menu Bar Items
-        "menu.file.new": "新建空白頁 (New)\t^N",
-        "menu.file.open": "讀取外部檔案 (Read)...\t^R",
-        "menu.file.save": "儲存檔案 (Save)\t^O",
-        "menu.file.save_exit": "儲存並關閉 (Save & Exit)\tF4",
-        "menu.file.exit": "關閉頁面 / 退出 (Exit)\t^X",
+        "menu.file.new": "新建空白頁\t^N",
+        "menu.file.open": "讀取外部檔案…\t^R",
+        "menu.file.save": "儲存檔案\t^O",
+        "menu.file.save_exit": "儲存並關閉\tF4",
+        "menu.file.exit": "關閉頁面 / 退出\t^X",
 
-        "menu.edit.undo": "復原 (Undo)\t^Z",
-        "menu.edit.mark": "標記選取區 (Mark)\t^M",
-        "menu.edit.cut": "剪下 (Cut)\t^K",
-        "menu.edit.paste": "貼上 (Paste/UnCut)\t^U",
-        "menu.edit.delete_line": "刪除整行 (Delete Line)\tCtrl+BS",
-        "menu.edit.justify": "重排與對齊段落 (Justify)\t^J",
+        "menu.edit.undo": "復原\t^Z",
+        "menu.edit.mark": "標記選取區\t^M",
+        "menu.edit.cut": "剪下\t^K",
+        "menu.edit.paste": "貼上\t^U",
+        "menu.edit.delete_line": "刪除整行\tCtrl+BS",
+        "menu.edit.justify": "重排與對齊段落\t^J",
 
-        "menu.search.whereis": "搜尋文字 (WhereIs)...\t^W",
-        "menu.search.spell": "拼字檢查 (Spell Check)...\t^T",
-        "menu.search.goto_line": "跳轉至指定行 (Goto Line)...\t^/",
+        "menu.search.whereis": "搜尋文字…\t^W",
+        "menu.search.spell": "拼字檢查…\t^T",
+        "menu.search.goto_line": "跳轉至指定行…\t^/",
 
-        "menu.buffer.next": "下一個 Buffer (Next)\tM-.",
-        "menu.buffer.prev": "上一個 Buffer (Prev)\tM-,",
+        "menu.buffer.next": "下一個 Buffer\tM-.",
+        "menu.buffer.prev": "上一個 Buffer\tM-,",
 
         "menu.tools.logo": "LOGO 巨集指令...\tAlt+L",
-        "menu.tools.table_mode": "切換表格隔離模式 (Table Mode)\tAlt+T",
-        "menu.tools.table_style": "切換預設表格風格 (Table Style)\tAlt+S",
+        "menu.tools.table_mode": "切換表格隔離模式\tAlt+T",
+        "menu.tools.table_style": "切換預設表格風格\tAlt+S",
         "menu.tools.ruler": "切換 WordStar 標尺規列",
+        "menu.tools.wrap_80": "自動換行：80",
+        "menu.tools.wrap_60": "自動換行：60",
+        "menu.tools.wrap_40": "自動換行：40",
+        "menu.tools.wrap_reset": "自動換行：動態",
 
         "menu.help.show": "顯示完整說明手冊 (Help)\t^G"
     ]

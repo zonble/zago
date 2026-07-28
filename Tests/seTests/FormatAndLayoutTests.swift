@@ -137,6 +137,19 @@ import Foundation
     #expect(linesWithRuler.count == 24)
 }
 
+@Test func testRulerBarDimColorWhenMenuBarActive() throws {
+    let editor = Editor()
+    editor.displayConfig.showRuler = true
+    editor.isMenuBarActive = true
+
+    let output = editor.generateScreenOutput(rows: 24, cols: 80)
+    let lines = output.components(separatedBy: "\r\n")
+
+    // Line 1 is the Ruler Bar line
+    let rulerLine = lines[1]
+    #expect(rulerLine.contains("\u{1B}[90m")) // Dim Gray ANSI code MUST be present in Ruler line!
+}
+
 @Test func testPromptHorizontalScrolling() throws {
     let editor = Editor()
     editor.currentPromptMode = .logoMacro(completion: { _ in })

@@ -98,7 +98,8 @@ extension Editor {
                     boxLine: dropdownBoxLines[0],
                     dropdownStartCol: dropdownStartCol,
                     dropdownBoxWidth: dropdownBoxWidth,
-                    cols: cols
+                    cols: cols,
+                    isDim: true
                 )
                 output += sliced + "\r\n"
             } else {
@@ -500,7 +501,8 @@ extension Editor {
         boxLine: String,
         dropdownStartCol: Int,
         dropdownBoxWidth: Int,
-        cols: Int
+        cols: Int,
+        isDim: Bool = false
     ) -> String {
         let chars = Array(baseFullLineStr)
 
@@ -535,6 +537,9 @@ extension Editor {
             rightStr += String(repeating: " ", count: remainingRight)
         }
 
+        if isDim {
+            return "\u{1B}[90m\(leftStr)\u{1B}[0m\(boxLine)\u{1B}[90m\(rightStr)\u{1B}[0m"
+        }
         return leftStr + boxLine + rightStr
     }
 
