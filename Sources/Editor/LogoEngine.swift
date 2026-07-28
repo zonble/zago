@@ -25,16 +25,12 @@ struct BoxStyle {
 }
 
 /// LOGO-style Macro Language Engine for se text editor.
-///
-/// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE,
-/// JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME), classical
-/// Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT,
-/// LT/LEFT with 90-degree cardinal turns & drawing), expressions with DATE/TIME
-/// evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
-/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -,
-/// *, /, %), loops (REPEAT expr [ ... ]), procedure definitions (TO proc ...
-/// END), 2D Canvas Overlay BOX drawing, and Smart Line Junction Fusion
-/// (neighbor-aware 4-directional mask fusion into ┌, ┐, └, ┘, ┼, ┬, ┴, ├, ┤).
+/// Supports text editing commands (TYPE, DEL, BS, MOVE, MARK, CUT, PASTE, JUSTIFY, FIND, GOTO, BOX, LINE, VLINE, NEWLINE, DATE, TIME),
+/// classical Turtle Graphics (PD/PENDOWN, PU/PENUP, FD/FORWARD, BK/BACK, RT/RIGHT, LT/LEFT with 90-degree cardinal turns & drawing),
+/// conditionals (IF condition [ ... ], IFELSE condition [ true_block ] [ false_block ]),
+/// expressions with DATE/TIME evaluation (MAKE "i" DATE "YYYY/MM/DD"), variables (MAKE "var" val / :var),
+/// editor settings (SET ruler/wrap/syntax/autoreload/lang), arithmetic (+, -, *, /, %), loops (REPEAT expr [ ... ]),
+/// procedure definitions (TO proc ... END), 2D Canvas Overlay BOX drawing, and Smart Line Junction Fusion.
 public final class LogoEngine {
     public var customProcedures: [String: [String]] = [:]
     public var variables: [String: String] = [:]
@@ -49,7 +45,8 @@ public final class LogoEngine {
         "DEL", "BS", "MOVE", "MARK", "CUT", "PASTE", "JUSTIFY", "FIND",
         "REPEAT", "TO", "EXEC", "GOTO", "BOX", "LINE", "HR", "VLINE", "VHR",
         "NEWLINE", "NL", "ENTER", "DATE", "TIME", "PD", "PENDOWN", "PU", "PENUP",
-        "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT"
+        "FD", "FORWARD", "BK", "BACK", "BACKWARD", "RT", "RIGHT", "LT", "LEFT",
+        "IF", "IFELSE"
     ]
 
     private static let singleMasks: [Character: Int] = [
@@ -88,7 +85,7 @@ public final class LogoEngine {
         editor.buffer.clampCursor()
     }
 
-    /// Tokenizes macro script handling string literals in quotes, math operators (+, -, *, /, %), and brackets.
+    /// Tokenizes macro script handling string literals in quotes, comparison operators (==, !=, <=, >=), math operators (+, -, *, /, %), and brackets.
     public func tokenize(_ script: String) -> [String] {
         var tokens: [String] = []
         var current = ""
@@ -96,10 +93,27 @@ public final class LogoEngine {
 
         let delims: Set<Character> = ["[", "]", "(", ")", "+", "-", "*", "/", "%"]
 
-        for ch in script {
+        var i = script.startIndex
+        while i < script.endIndex {
+            let ch = script[i]
             if ch == "\"" {
                 inQuote.toggle()
                 current.append(ch)
+            } else if !inQuote && (ch == "=" || ch == "!" || ch == ">" || ch == "<") {
+                if !current.isEmpty {
+                    tokens.append(current)
+                    current = ""
+                }
+                var op = String(ch)
+                let nextIdx = script.index(after: i)
+                if nextIdx < script.endIndex {
+                    let nextCh = script[nextIdx]
+                    if nextCh == "=" || nextCh == ">" {
+                        op.append(nextCh)
+                        i = nextIdx
+                    }
+                }
+                tokens.append(op)
             } else if delims.contains(ch) && !inQuote {
                 if !current.isEmpty {
                     tokens.append(current)
@@ -114,11 +128,61 @@ public final class LogoEngine {
             } else {
                 current.append(ch)
             }
+            i = script.index(after: i)
         }
         if !current.isEmpty {
             tokens.append(current)
         }
         return tokens
+    }
+
+    private func evaluateCondition(_ conditionTokens: [String]) -> Bool {
+        guard !conditionTokens.isEmpty else { return false }
+
+        // Find comparison operator if present
+        let opIndex = conditionTokens.firstIndex { $0 == "==" || $0 == "=" || $0 == "!=" || $0 == "<>" || $0 == "<" || $0 == "<=" || $0 == ">" || $0 == ">=" }
+
+        if let idx = opIndex {
+            var leftIdx = 0
+            let leftValStr = evaluateExpression(Array(conditionTokens[..<idx]), index: &leftIdx)
+
+            var rightIdx = 0
+            let rightValStr = evaluateExpression(Array(conditionTokens[(idx + 1)...]), index: &rightIdx)
+
+            let op = conditionTokens[idx]
+
+            if let num1 = Int(leftValStr), let num2 = Int(rightValStr) {
+                switch op {
+                case "==", "=": return num1 == num2
+                case "!=", "<>": return num1 != num2
+                case "<": return num1 < num2
+                case "<=": return num1 <= num2
+                case ">": return num1 > num2
+                case ">=": return num1 >= num2
+                default: return false
+                }
+            } else {
+                switch op {
+                case "==", "=": return leftValStr == rightValStr
+                case "!=", "<>": return leftValStr != rightValStr
+                case "<": return leftValStr < rightValStr
+                case "<=": return leftValStr <= rightValStr
+                case ">": return leftValStr > rightValStr
+                case ">=": return leftValStr >= rightValStr
+                default: return false
+                }
+            }
+        } else {
+            var exprIdx = 0
+            let val = evaluateExpression(conditionTokens, index: &exprIdx).lowercased()
+            if val == "true" || val == "1" {
+                return true
+            }
+            if let n = Int(val), n != 0 {
+                return true
+            }
+            return false
+        }
     }
 
     private func executeTokens(_ tokens: [String], index: inout Int, on editor: Editor) {
@@ -241,6 +305,73 @@ public final class LogoEngine {
 
             case "TIME":
                 executeTimeCommand(tokens, index: &index, on: editor)
+
+            // Conditional Logic Commands
+            case "IF":
+                index += 1
+                var condTokens: [String] = []
+                while index < tokens.count && tokens[index] != "[" {
+                    condTokens.append(tokens[index])
+                    index += 1
+                }
+
+                let isTrue = evaluateCondition(condTokens)
+
+                if index < tokens.count && tokens[index] == "[" {
+                    index += 1
+                    if isTrue {
+                        executeTokens(tokens, index: &index, on: editor)
+                    } else {
+                        var depth = 1
+                        while index < tokens.count && depth > 0 {
+                            if tokens[index] == "[" { depth += 1 }
+                            else if tokens[index] == "]" { depth -= 1 }
+                            if depth == 0 { break }
+                            index += 1
+                        }
+                    }
+                }
+
+            case "IFELSE":
+                index += 1
+                var condTokens: [String] = []
+                while index < tokens.count && tokens[index] != "[" {
+                    condTokens.append(tokens[index])
+                    index += 1
+                }
+
+                let isTrue = evaluateCondition(condTokens)
+
+                if index < tokens.count && tokens[index] == "[" {
+                    index += 1 // Advance past first "["
+                    if isTrue {
+                        executeTokens(tokens, index: &index, on: editor)
+                        index += 1
+                        if index < tokens.count && tokens[index] == "[" {
+                            var depth = 1
+                            index += 1
+                            while index < tokens.count && depth > 0 {
+                                if tokens[index] == "[" { depth += 1 }
+                                else if tokens[index] == "]" { depth -= 1 }
+                                if depth == 0 { break }
+                                index += 1
+                            }
+                        }
+                    } else {
+                        var depth = 1
+                        while index < tokens.count && depth > 0 {
+                            if tokens[index] == "[" { depth += 1 }
+                            else if tokens[index] == "]" { depth -= 1 }
+                            if depth == 0 { break }
+                            index += 1
+                        }
+                        index += 1 // Advance past first "]"
+                        if index < tokens.count && tokens[index] == "[" {
+                            index += 1 // Advance past second "["
+                            executeTokens(tokens, index: &index, on: editor)
+                        }
+                    }
+                }
 
             // Turtle Graphics Commands
             case "PD", "PENDOWN":

@@ -94,6 +94,7 @@ public struct EnglishStrings {
         "helpview.logo_6": "    PD / PU / FD / BK  Turtle Graphics: Pen Down, Pen Up, Forward, Back",
         "helpview.logo_7": "    RT / LT / GOTO     Turtle Graphics: Turn Right/Left 90°, Jump line/col",
         "helpview.logo_8": "    DATE / TIME / SET  Insert date/time, configure editor settings",
+        "helpview.logo_9": "    IF / IFELSE        Conditional logic (IF cond [...] / IFELSE cond [...] [...])",
 
         "helpview.footer": "  [ Up/Dn/PgUp/PgDn: Scroll | Press any key to return ]",
 

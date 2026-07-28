@@ -239,3 +239,32 @@ import Foundation
     #expect(editor.buffer.lines[3] == "│ │ │")
     #expect(editor.buffer.lines[4] == "└─┴─┘")
 }
+
+@Test func testLogoIfAndIfElseConditionals() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. IF true
+    let ifEditor1 = Editor()
+    logoEngine.execute("MAKE \"i\" 10 IF :i > 5 [ TYPE \"GREATER\" ]", on: ifEditor1)
+    #expect(ifEditor1.buffer.lines[0] == "GREATER")
+
+    // 2. IF false
+    let ifEditor2 = Editor()
+    logoEngine.execute("MAKE \"i\" 2 IF :i > 5 [ TYPE \"GREATER\" ]", on: ifEditor2)
+    #expect(ifEditor2.buffer.lines[0] == "")
+
+    // 3. IFELSE true branch
+    let ifElseEditor1 = Editor()
+    logoEngine.execute("MAKE \"i\" 10 IFELSE :i > 5 [ TYPE \"YES\" ] [ TYPE \"NO\" ]", on: ifElseEditor1)
+    #expect(ifElseEditor1.buffer.lines[0] == "YES")
+
+    // 4. IFELSE false branch
+    let ifElseEditor2 = Editor()
+    logoEngine.execute("MAKE \"i\" 2 IFELSE :i > 5 [ TYPE \"YES\" ] [ TYPE \"NO\" ]", on: ifElseEditor2)
+    #expect(ifElseEditor2.buffer.lines[0] == "NO")
+
+    // 5. IFELSE in REPEAT loop with equality comparison ==
+    let loopEditor = Editor()
+    logoEngine.execute("MAKE \"i\" 1 REPEAT 3 [ IFELSE :i == 2 [ TYPE \"TWO\" ] [ TYPE :i ] MAKE \"i\" ( :i + 1 ) ]", on: loopEditor)
+    #expect(loopEditor.buffer.lines[0] == "1TWO3")
+}

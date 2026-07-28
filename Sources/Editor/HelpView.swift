@@ -92,7 +92,8 @@ public final class HelpView {
             L10n["helpview.logo_5"],
             L10n["helpview.logo_6"],
             L10n["helpview.logo_7"],
-            L10n["helpview.logo_8"]
+            L10n["helpview.logo_8"],
+            L10n["helpview.logo_9"]
         ]
     }
 

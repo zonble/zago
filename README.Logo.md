@@ -1,6 +1,6 @@
 # 🐢 `se` LOGO Macro Language Guide & Specification
 
-`se` features an innovative **LOGO-style Macro Language Engine**, bringing the clean, readable, human-friendly syntax paradigm of LOGO (`MAKE`, `:var`, `REPEAT`, `TO...END`) to TUI text buffer editing and automation.
+`se` features an innovative **LOGO-style Macro Language Engine**, bringing the clean, readable, human-friendly syntax paradigm of LOGO (`MAKE`, `:var`, `REPEAT`, `IF`, `IFELSE`, `TO...END`) to TUI text buffer editing and automation.
 
 ---
 
@@ -14,6 +14,7 @@
 | **`Left / Right` (`^B` / `^F`)** | LOGO Prompt Active | Moves input cursor left / right inside the prompt |
 | **`Home / End` (`^A` / `^E`)** | LOGO Prompt Active | Moves input cursor directly to prompt line start / end |
 | **`Delete` / `Backspace` (`^D`)**| LOGO Prompt Active | Deletes character at / before input cursor |
+| **`Ctrl+Backspace` (`Ctrl+BS`)**| LOGO Prompt Active | Clears entire prompt input line |
 | **`Up / Down` Arrows** | LOGO Prompt Active | Navigate through previously executed LOGO command history |
 | **`Enter`** | LOGO Prompt Active | Execute LOGO script and save to command history |
 | **`Esc` / `^C`** | LOGO Prompt Active | Cancel prompt mode |
@@ -28,11 +29,11 @@
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
 | `TYPE` / `PRINT` | `TYPE "string"` or `TYPE expr` | Inserts string or calculated expression at cursor | `TYPE "Hello World"` |
-| `DATE` | `DATE [format]` | Inserts current date (default: `yyyy-MM-dd`) | `DATE`, `DATE "yyyy/MM/dd"` |
-| `TIME` | `TIME [format]` | Inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
+| `DATE` | `DATE [format]` | Evaluates/inserts current date (format: `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
+| `TIME` | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
 | `NEWLINE` / `NL` | `NL [count]` or `ENTER [count]` | Inserts one or $n$ newlines at current cursor | `NL`, `NEWLINE 2` |
-| `LINE` / `HR` | `LINE [len] [style]` | Draws a horizontal separator line of length $n$ | `LINE 40`, `LINE 80 "double"` |
-| `VLINE` / `VHR` | `VLINE [height] [style]` | Draws a vertical separator line of specified height | `VLINE 10`, `VLINE 5 "double"` |
+| `LINE` / `HR` | `LINE [len] [style]` | Draws a horizontal separator line with Smart Junction Fusion | `LINE 40`, `LINE 80 "double"` |
+| `VLINE` / `VHR` | `VLINE [height] [style]` | Draws a vertical separator line with Smart Junction Fusion | `VLINE 10`, `VLINE 5 "double"` |
 | `DEL` / `DELETE` | `DEL [n]` | Deletes $n$ characters forward (Delete key) | `DEL 5` |
 | `BS` / `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward (Backspace key) | `BS 3` |
 
@@ -47,14 +48,14 @@
 | `RT` / `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
 | `LT` / `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
 
-### 3. Cursor Navigation, Selection & Box Framing
+### 3. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
 | `MOVE` | `MOVE UP / DOWN / LEFT / RIGHT / HOME / END` | Moves cursor in 2D virtual lines | `MOVE DOWN` |
 | `GOTO` | `GOTO line [column]` | Jumps directly to specified 1-indexed line and column | `GOTO 10`, `GOTO 42 5`, `GOTO :line` |
-| `BOX` | `BOX "text" [style]` | Draws box frame around specified multi-line text | `BOX "Hello World"`, `BOX "Hi" "double"` |
-| `BOX` | `BOX width height [style]` | Draws empty box frame of specified width and height | `BOX 20 5 "round"`, `BOX 10 4 "ascii"` |
+| `BOX` | `BOX "text" [style]` | 2D Canvas Overlay box around text (preserves line indents) | `BOX "Hello World"`, `BOX DATE "YYYY/MM/DD"` |
+| `BOX` | `BOX width height [style]` | 2D Canvas Overlay empty box (preserves background text) | `BOX 20 5 "round"`, `BOX 10 4 "ascii"` |
 | `BOX` | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `MARK` | `MARK` | Toggles text selection mark | `MARK` |
 | `CUT` | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
@@ -62,20 +63,22 @@
 | `JUSTIFY` | `JUSTIFY` | Reflows and justifies current paragraph | `JUSTIFY` |
 | `FIND` / `SEARCH` | `FIND "query"` | Case-insensitive forward text search | `FIND "func"` |
 
-### 3. Variables, Arithmetic & Editor Settings
+### 4. Variables, Arithmetic Expressions & Settings
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
-| `MAKE` / `VAR` | `MAKE "var" expr` | Assigns calculated expression or string to variable | `MAKE "i" 1` |
-| `:var` | `:var_name` | Dereferences variable value | `TYPE :i` |
-| `MSG` / `SHOW` | `MSG expr` | Displays text, variable, or calculation in status bar | `MSG "Total: " + :total` |
+| `MAKE` / `VAR` | `MAKE "var" expr` | Assigns expression, date, or calculation to variable | `MAKE "i" 1`, `MAKE "d" DATE "YYYY/MM/DD"` |
+| `:var` | `:var_name` | Dereferences variable value | `TYPE :i`, `BOX :d` |
+| `MSG` / `SHOW` | `MSG expr` | Displays text, variable, or calculation in status bar | `MSG "Today: " + DATE "YYYY/MM/DD"` |
 | Math Operators | `+ - * / %` | Evaluates arithmetic expressions and parentheses | `TYPE ( 10 + 20 )` |
 | `SET` | `SET setting [arg]` | Dynamically updates editor configuration settings | `SET RULER ON`, `SET WRAP 80` |
 
-### 4. Control Flow & Procedures
+### 5. Conditionals, Control Flow & Procedures
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
+| `IF` | `IF condition [ ... ]` | Executes block if condition (`==`, `!=`, `<`, `<=`, `>`, `>=`) is true | `IF :i > 5 [ TYPE "OK" ]` |
+| `IFELSE` | `IFELSE cond [ true_block ] [ false_block ]` | Executes first block if true, second block if false | `IFELSE :i == 2 [ TYPE "TWO" ] [ TYPE :i ]` |
 | `REPEAT` | `REPEAT expr [ ... ]` | Loops enclosed code block $n$ times | `REPEAT 3 [ TYPE "! " ]` |
 | `TO ... END` | `TO name ... END` | Defines custom reusable macro procedure | `TO HDR TYPE "# " END` |
 | `EXEC` / Proc Call | `EXEC name` or `name` | Executes defined procedure | `EXEC HDR` |
@@ -100,7 +103,37 @@ bind alt-h "macro: MOVE HOME TYPE '# ' MOVE END"
 
 ## 💡 Practical Real-World Macro Examples
 
-### 1. Automatic Numbered List Generator
+### 1. Conditional Formatting & Loop (`IFELSE` & `REPEAT`)
+
+Iterates 3 times, checking if loop counter `:i == 2` to output `"TWO"` or the number itself:
+
+```logo
+MAKE "i" 1 REPEAT 3 [ IFELSE :i == 2 [ TYPE "TWO " ] [ TYPE :i TYPE " " ] MAKE "i" ( :i + 1 ) ]
+```
+
+*Output:*
+
+```text
+1 TWO 3 
+```
+
+### 2. Variable Date Assignment & Box Framing (`DATE` & `BOX`)
+
+Stores formatted current date into variable `:d` and wraps it inside a framed box:
+
+```logo
+MAKE "d" DATE "YYYY/MM/DD" BOX :d "double"
+```
+
+*Output:*
+
+```text
+╔════════════╗
+║ 2026/07/28 ║
+╚════════════╝
+```
+
+### 3. Automatic Numbered List Generator
 
 Generates `1.`, `2.`, `3.`, `4.`, `5.` lines automatically:
 
@@ -108,47 +141,23 @@ Generates `1.`, `2.`, `3.`, `4.`, `5.` lines automatically:
 MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:i + 1) ]
 ```
 
-### 2. Batch Commenting Code Block
+### 4. 2D Canvas Overlay Box Framing (`BOX`)
 
-Adds `// TODO:` prefix to 3 consecutive lines:
-
-```logo
-REPEAT 3 [ MOVE HOME TYPE "// TODO: " MOVE DOWN ]
-```
-
-### 3. Multiplication Calculation & Insertion
-
-Calculates $4 \times 25$ and inserts result directly into the buffer:
+Inserts a box frame over existing background text starting at column 3, preserving leading text before column 3 and pushing trailing text to the right:
 
 ```logo
-TYPE "Total: $" TYPE ( 4 * 25 )
+BOX 5 3 "ascii"
 ```
 
-### 4. Framed Announcement Box Generator (`BOX`)
-
-Generates a double-line framed warning box automatically around text:
-
-```logo
-BOX "WARNING: Disk Space Low" "double"
-```
-
-*Output:*
+*Output on background text `AAAAAA` / `BBBBBB` / `CCCCCC`:*
 
 ```text
-╔═════════════════════════╗
-║ WARNING: Disk Space Low ║
-╚═════════════════════════╝
+AAA+---+AAA
+BBB|   |BBB
+CCC+---+CCC
 ```
 
-### 5. Document Section Separator Line (`LINE` & `NEWLINE`)
-
-Inserts section title, blank lines, and an 80-column double separator line:
-
-```logo
-TYPE "SECTION 1: INTRODUCTION" NL 2 LINE 80 "double" NL TYPE "Body content starts here..."
-```
-
-### 6. Multi-Column Layout Generator (`VLINE` & `GOTO`)
+### 5. Multi-Column Layout Generator (`VLINE` & `GOTO`)
 
 Draws a 2-column layout with vertical separator line (`║`) and header line:
 
@@ -166,44 +175,8 @@ Col A   ║ Col B
         ║
 ```
 
-### 7. Selection Enclosing Box (`BOX SELECTION`)
+### 6. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)
 
-Highlight any block of code or text in `se` using `Shift+Arrows` and execute:
-
-```logo
-BOX SELECTION "round"
-```
-
-### 8. Automatic Timestamped Log Header (`DATE`, `TIME` & `LINE`)
-
-Generates an automatic timestamped log header with current date and time:
-
-```logo
-TYPE "LOG ENTRY - " DATE "yyyy/MM/dd" TYPE " " TIME "HH:mm:ss" NL LINE 50 "double"
-```
-
-*Output:*
-
-```text
-LOG ENTRY - 2026/07/28 02:24:45
-══════════════════════════════════════════════════
-```
-
-### 9. Smart Line Junction Fusion (`BOX` + `VLINE` / `LINE`)
-When drawing horizontal (`LINE`) or vertical (`VLINE`) lines that cross existing boxes or lines, `se` automatically calculates 4-directional connection masks ($\uparrow\rightarrow\downarrow\leftarrow$) and fuses intersections into seamless T-junctions (`┬`, `┴`, `├`, `┤`) or 4-way Crosses (`┼`, `╬`):
-
-```logo
-BOX 6 3 GOTO 1 3 VLINE 3
-```
-
-*Output (automatically fused T-junctions at top and bottom borders):*
-```text
-┌─┬──┐
-│ │  │
-└─┴──┘
-```
-
-### 10. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)
 Draws a 5x5 square frame using classic LOGO Turtle Graphics with Pen Down and 90° right turns:
 
 ```logo
@@ -211,6 +184,7 @@ PD REPEAT 4 [ FD 5 RT 90 ]
 ```
 
 *Output (automatically fused corner junctions):*
+
 ```text
 ┌────┐
 │    │
