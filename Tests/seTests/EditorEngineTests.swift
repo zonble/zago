@@ -268,3 +268,25 @@ import Foundation
     #expect(editor.buffer.columnIndex == 9) // EOL of "Last Line"
 }
 
+@Test func testCtrlQEvalLogoCode() throws {
+    let editor = Editor()
+
+    // Test 1: Single Line Expression Eval
+    editor.buffer.lines = ["SUM 1 6"]
+    editor.buffer.lineIndex = 0
+    editor.processKey(.ctrl("Q"))
+    #expect(editor.statusMessage == "[Eval] 7")
+
+    // Test 2: Drawing Line Eval
+    editor.buffer.lines = ["BOX \"Test\""]
+    editor.buffer.lineIndex = 0
+    editor.processKey(.ctrl("Q"))
+    #expect(editor.buffer.lines[1] == "│ Test │")
+
+    // Test 3: Markdown Code Fence Eval
+    editor.buffer.lines = ["# Title", "```logo", "MAKE \"x\" 10", ":x * 5", "```"]
+    editor.buffer.lineIndex = 3
+    editor.processKey(.ctrl("Q"))
+    #expect(editor.statusMessage == "[Eval] 50")
+}
+

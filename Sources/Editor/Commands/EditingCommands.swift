@@ -153,3 +153,16 @@ public struct SpellCheckCommand: Command {
         editor.promptSpellCheck()
     }
 }
+
+public struct EvalLogoCommand: Command {
+    public let id: CommandID = .editEvalLogo
+    public let name = "Eval LOGO Code"
+    public let description = "Evaluate LOGO code at current line, selection, or code block"
+    public let keys: [Key] = [.ctrl("Q"), .ctrl("q")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.evalLogoCode()
+    }
+}

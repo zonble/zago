@@ -65,6 +65,7 @@ public final class MenuBar {
             ]),
             MenuCategory(titleKey: "menu.tools", hotkeyChar: "t", items: [
                 MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo),
+                MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo),
                 MenuItem(titleKey: "menu.tools.table_mode", hotkeyChar: "t", commandId: .tableToggle),
                 MenuItem(titleKey: "menu.tools.table_style", hotkeyChar: "s", commandId: .tableStyle),
                 MenuItem(titleKey: "menu.tools.ruler", hotkeyChar: "r", action: { editor in

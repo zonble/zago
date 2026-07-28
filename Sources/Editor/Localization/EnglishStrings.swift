@@ -48,6 +48,8 @@ public struct EnglishStrings {
         "status.file_reloaded": "[ File reloaded from disk ]",
         "status.kept_local": "[ Kept local modifications ]",
         "status.logo_executed": "[ LOGO script executed ]",
+        "status.logo_evaluated": "[ LOGO script evaluated ]",
+        "menu.tools.eval_logo": "Eval LOGO Code (Ctrl+Q)",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - Full Help & Command Reference",

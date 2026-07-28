@@ -141,3 +141,125 @@ extension Editor: LogoEngineDelegate {
         }
     }
 }
+
+extension Editor {
+    /// Evaluates LOGO code from selection mark, Markdown ```logo code fence, or current line/block.
+    public func evalLogoCode() {
+        let script: String
+
+        // Priority 1: Selection Range
+        if let mark = selectionMark {
+            let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            script = buffer.cutRange(start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+            // Restore selection text back into buffer
+            buffer.insertString(script)
+            selectionMark = mark
+        }
+        // Priority 2: Markdown ```logo ... ``` code fence
+        else if let fenceScript = extractMarkdownLogoFence() {
+            script = fenceScript
+        }
+        // Priority 3: Current line or multi-line block (balanced [ ... ] or TO ... END)
+        else {
+            script = extractCurrentLineOrBlock()
+        }
+
+        let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanScript.isEmpty else { return }
+
+        let logoEngine = LogoEngine(delegate: self)
+        logoEngine.execute(cleanScript)
+
+        if !logoEngine.hasSetStatusMessage {
+            if let result = logoEngine.lastResult, !result.isEmpty {
+                setStatusMessage("[Eval] \(result)")
+            } else {
+                setStatusMessage(L10n["status.logo_evaluated"])
+            }
+        }
+    }
+
+    private func extractMarkdownLogoFence() -> String? {
+        let currentLine = buffer.lineIndex
+        var fenceStart: Int? = nil
+
+        // Scan upwards to find ```logo
+        for r in (0...currentLine).reversed() {
+            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
+            if line.lowercased().hasPrefix("```logo") {
+                fenceStart = r
+                break
+            }
+            if line.hasPrefix("```") && r < currentLine {
+                break
+            }
+        }
+
+        guard let start = fenceStart else { return nil }
+
+        // Scan downwards to find closing ```
+        var fenceEnd: Int? = nil
+        for r in (start + 1)..<buffer.lines.count {
+            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
+            if line.hasPrefix("```") {
+                fenceEnd = r
+                break
+            }
+        }
+
+        guard let end = fenceEnd, currentLine >= start && currentLine <= end else { return nil }
+        guard start + 1 < end else { return "" }
+
+        return buffer.lines[(start + 1)..<end].joined(separator: "\n")
+    }
+
+    private func extractCurrentLineOrBlock() -> String {
+        let currentLine = buffer.lineIndex
+        guard currentLine < buffer.lines.count else { return "" }
+
+        // Check if inside TO ... END procedure definition
+        var toStart: Int? = nil
+        for r in (0...currentLine).reversed() {
+            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
+            let upper = line.uppercased()
+            if upper.hasPrefix("TO ") || upper == "TO" {
+                toStart = r
+                break
+            }
+            if upper == "END" && r < currentLine {
+                break
+            }
+        }
+
+        if let start = toStart {
+            var end = currentLine
+            for r in start..<buffer.lines.count {
+                let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
+                if line.uppercased() == "END" {
+                    end = r
+                    break
+                }
+            }
+            return buffer.lines[start...end].joined(separator: "\n")
+        }
+
+        // Multi-line balanced bracket check: if current line opens '[' without closing, scan down
+        let lineText = buffer.lines[currentLine]
+        var openCount = lineText.filter { $0 == "[" }.count
+        var closeCount = lineText.filter { $0 == "]" }.count
+        var endLine = currentLine
+
+        while openCount > closeCount && endLine + 1 < buffer.lines.count {
+            endLine += 1
+            let nextLine = buffer.lines[endLine]
+            openCount += nextLine.filter { $0 == "[" }.count
+            closeCount += nextLine.filter { $0 == "]" }.count
+        }
+
+        if endLine > currentLine {
+            return buffer.lines[currentLine...endLine].joined(separator: "\n")
+        }
+
+        return lineText
+    }
+}

@@ -352,6 +352,392 @@ extension LogoEngine {
             return p.isEmpty ? "1" : "0"
         }
 
+        if upper == "EQUAL?" || upper == "EQUALP" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            if let n1 = Double(v1), let n2 = Double(v2) {
+                return n1 == n2 ? "1" : "0"
+            }
+            return LogoValue.parse(v1) == LogoValue.parse(v2) ? "1" : "0"
+        }
+
+        if upper == "NOTEQUAL?" || upper == "NOTEQUALP" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            if let n1 = Double(v1), let n2 = Double(v2) {
+                return n1 != n2 ? "1" : "0"
+            }
+            return LogoValue.parse(v1) != LogoValue.parse(v2) ? "1" : "0"
+        }
+
+        if upper == "BEFORE?" || upper == "BEFOREP" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return v1 < v2 ? "1" : "0"
+        }
+
+        if upper == "LESSP" || upper == "LESS?" {
+            index += 1
+            let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return n1 < n2 ? "1" : "0"
+        }
+
+        if upper == "GREATERP" || upper == "GREATER?" {
+            index += 1
+            let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return n1 > n2 ? "1" : "0"
+        }
+
+        if upper == "LESSEQUALP" || upper == "LESSEQUAL?" {
+            index += 1
+            let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return n1 <= n2 ? "1" : "0"
+        }
+
+        if upper == "GREATEREQUALP" || upper == "GREATEREQUAL?" {
+            index += 1
+            let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return n1 >= n2 ? "1" : "0"
+        }
+
+        // ---------------------------------------------------------------------
+        // 4.1 & 4.3 - 4.5 Numeric, Math, Bitwise, Formatting
+        // ---------------------------------------------------------------------
+        if upper == "SUM" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(a + b)
+        }
+
+        if upper == "DIFFERENCE" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(a - b)
+        }
+
+        if upper == "PRODUCT" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(a * b)
+        }
+
+        if upper == "QUOTED" || upper == "QUOTIENT" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                index += 1
+                let b = Double(evaluateExpression(tokens, index: &index)) ?? 1
+                return formatNum(b != 0 ? a / b : 0)
+            }
+            return formatNum(a != 0 ? 1.0 / a : 0)
+        }
+
+        if upper == "POWER" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(pow(a, b))
+        }
+
+        if upper == "REMAINDER" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Int(evaluateExpression(tokens, index: &index)) ?? 1
+            return "\(b != 0 ? a % b : 0)"
+        }
+
+        if upper == "MODULO" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Int(evaluateExpression(tokens, index: &index)) ?? 1
+            if b == 0 { return "0" }
+            let r = a % b
+            return "\(r >= 0 ? r : r + abs(b))"
+        }
+
+        if upper == "MINUS" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(-a)
+        }
+
+        if upper == "ABS" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(abs(a))
+        }
+
+        if upper == "INT" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\(Int(a))"
+        }
+
+        if upper == "ROUND" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\(Int(round(a)))"
+        }
+
+        if upper == "SQRT" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(sqrt(max(0, a)))
+        }
+
+        if upper == "EXP" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(exp(a))
+        }
+
+        if upper == "LOG10" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 1
+            return formatNum(log10(max(0.00001, a)))
+        }
+
+        if upper == "LN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 1
+            return formatNum(log(max(0.00001, a)))
+        }
+
+        if upper == "ARCTAN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(atan(a) * 180.0 / .pi)
+        }
+
+        if upper == "SIN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(sin(a * .pi / 180.0))
+        }
+
+        if upper == "COS" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(cos(a * .pi / 180.0))
+        }
+
+        if upper == "TAN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(tan(a * .pi / 180.0))
+        }
+
+        if upper == "RADARCTAN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(atan(a))
+        }
+
+        if upper == "RADSIN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(sin(a))
+        }
+
+        if upper == "RADCOS" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(cos(a))
+        }
+
+        if upper == "RADTAN" {
+            index += 1
+            let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            return formatNum(tan(a))
+        }
+
+        if upper == "ISEQ" {
+            index += 1
+            let start = Int(evaluateExpression(tokens, index: &index)) ?? 1
+            index += 1
+            let end = Int(evaluateExpression(tokens, index: &index)) ?? start
+            let seq = (start <= end) ? Array(start...end) : Array(stride(from: start, through: end, by: -1))
+            return LogoValue.list(seq.map { LogoValue.string("\($0)") }).description
+        }
+
+        if upper == "RSEQ" {
+            index += 1
+            let start = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let end = Double(evaluateExpression(tokens, index: &index)) ?? start
+            index += 1
+            let count = max(1, Int(evaluateExpression(tokens, index: &index)) ?? 1)
+            if count == 1 { return LogoValue.list([LogoValue.string(formatNum(start))]).description }
+            let step = (end - start) / Double(count - 1)
+            var res: [LogoValue] = []
+            for i in 0..<count {
+                res.append(LogoValue.string(formatNum(start + Double(i) * step)))
+            }
+            return LogoValue.list(res).description
+        }
+
+        if upper == "RANDOM" {
+            index += 1
+            let firstVal = Int(evaluateExpression(tokens, index: &index)) ?? 10
+            if index + 1 < tokens.count && !LogoEngine.keywords.contains(tokens[index + 1].uppercased()) && tokens[index + 1] != "]" {
+                index += 1
+                let secondVal = Int(evaluateExpression(tokens, index: &index)) ?? firstVal
+                let low = min(firstVal, secondVal)
+                let high = max(firstVal, secondVal)
+                return "\(Int.random(in: low...high))"
+            }
+            let upperLimit = max(1, firstVal)
+            return "\(Int.random(in: 0..<upperLimit))"
+        }
+
+        if upper == "RERANDOM" {
+            return "1"
+        }
+
+        if upper == "FORM" {
+            index += 1
+            let val = Double(evaluateExpression(tokens, index: &index)) ?? 0.0
+            index += 1
+            let width = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let prec = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            return String(format: "%*.*f", width, prec, val)
+        }
+
+        if upper == "BITAND" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\(a & b)"
+        }
+
+        if upper == "BITOR" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\(a | b)"
+        }
+
+        if upper == "BITXOR" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\(a ^ b)"
+        }
+
+        if upper == "BITNOT" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            return "\( ~a )"
+        }
+
+        if upper == "ASHIFT" {
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            if shift >= 0 {
+                return "\(a << shift)"
+            } else {
+                return "\(a >> (-shift))"
+            }
+        }
+
+        if upper == "LSHIFT" {
+            index += 1
+            let a = UInt64(bitPattern: Int64(Int(evaluateExpression(tokens, index: &index)) ?? 0))
+            index += 1
+            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            if shift >= 0 {
+                return "\(Int64(bitPattern: a << shift))"
+            } else {
+                return "\(Int64(bitPattern: a >> (-shift)))"
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // 5. Logical Operations
+        // ---------------------------------------------------------------------
+        if upper == "TRUE" {
+            return "1"
+        }
+
+        if upper == "FALSE" {
+            return "0"
+        }
+
+        if upper == "AND" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return (logoIsTrue(v1) && logoIsTrue(v2)) ? "1" : "0"
+        }
+
+        if upper == "OR" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return (logoIsTrue(v1) || logoIsTrue(v2)) ? "1" : "0"
+        }
+
+        if upper == "XOR" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return (logoIsTrue(v1) != logoIsTrue(v2)) ? "1" : "0"
+        }
+
+        if upper == "NOT" {
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            return logoIsTrue(v) ? "0" : "1"
+        }
+
+        if upper == ".EQ" {
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return v1 == v2 ? "1" : "0"
+        }
+
+        if upper == "SUBSTRING?" || upper == "SUBSTRINGP" {
+            index += 1
+            let needle = evaluateExpression(tokens, index: &index)
+            index += 1
+            let haystack = evaluateExpression(tokens, index: &index)
+            return haystack.contains(needle) ? "1" : "0"
+        }
+
         if upper == "MEMBER?" || upper == "MEMBERP" {
             index += 1
             let needle = evaluateExpression(tokens, index: &index)
@@ -409,6 +795,80 @@ extension LogoEngine {
             return v.lowercased()
         }
 
+        if upper == "MEMBER" {
+            index += 1
+            let needle = evaluateExpression(tokens, index: &index)
+            index += 1
+            let haystack = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(haystack)
+            switch p {
+            case .list(let items):
+                if let pos = items.firstIndex(where: { $0.description == needle }) {
+                    let tail = Array(items[pos...])
+                    return LogoValue.list(tail).description
+                }
+                return "[]"
+            case .array(let items):
+                if let pos = items.firstIndex(where: { $0.description == needle }) {
+                    let tail = Array(items[pos...])
+                    return LogoValue.array(tail).description
+                }
+                return "{}"
+            case .string(let s):
+                if let range = s.range(of: needle) {
+                    return String(s[range.lowerBound...])
+                }
+                return ""
+            }
+        }
+
+        if upper == "STANDOUT" {
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            var result = ""
+            for ch in v {
+                if let asciiVal = ch.asciiValue {
+                    if asciiVal >= 65 && asciiVal <= 90 { // A-Z
+                        let boldScalar = UnicodeScalar(0x1D400 + Int(asciiVal - 65))!
+                        result.append(Character(boldScalar))
+                    } else if asciiVal >= 97 && asciiVal <= 122 { // a-z
+                        let boldScalar = UnicodeScalar(0x1D41A + Int(asciiVal - 97))!
+                        result.append(Character(boldScalar))
+                    } else if asciiVal >= 48 && asciiVal <= 57 { // 0-9
+                        let boldScalar = UnicodeScalar(0x1D7CE + Int(asciiVal - 48))!
+                        result.append(Character(boldScalar))
+                    } else {
+                        result.append(ch)
+                    }
+                } else {
+                    result.append(ch)
+                }
+            }
+            return result
+        }
+
+        if upper == "PARSE" || upper == "RUNPARSE" {
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            let toks = tokenize(v)
+            return "[" + toks.joined(separator: " ") + "]"
+        }
+
         return nil
+    }
+
+    internal func formatNum(_ val: Double) -> String {
+        if val.truncatingRemainder(dividingBy: 1) == 0 && val >= Double(Int.min) && val <= Double(Int.max) {
+            return "\(Int(val))"
+        }
+        return "\(val)"
+    }
+
+    internal func logoIsTrue(_ val: String) -> Bool {
+        let clean = val.lowercased().trimmingCharacters(in: .whitespaces)
+        if clean == "1" || clean == "true" { return true }
+        if clean == "0" || clean == "false" || clean.isEmpty { return false }
+        if let d = Double(clean) { return d != 0 }
+        return true
     }
 }

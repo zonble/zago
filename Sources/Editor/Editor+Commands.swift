@@ -29,6 +29,7 @@ extension Editor {
         commandRegistry.register(UndoCommand())
         commandRegistry.register(JustifyParagraphCommand())
         commandRegistry.register(SpellCheckCommand())
+        commandRegistry.register(EvalLogoCommand())
 
         // Search & Cursor Commands
         commandRegistry.register(WhereIsCommand())

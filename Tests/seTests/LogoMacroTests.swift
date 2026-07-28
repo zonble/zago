@@ -439,5 +439,107 @@ import Foundation
     #expect(editor.buffer.lines == ["Line 1"])
 }
 
+@Test func testLogoPredicates() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("WORD? \"abc\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("LIST? [1 2 3]")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("ARRAY? {1 2}")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("NUMBER? 123.45")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("EMPTY? \"\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("EQUAL? [1 2] [1 2]")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("NOTEQUAL? \"a\" \"b\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("BEFORE? \"apple\" \"banana\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute(".EQ \"test\" \"test\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("SUBSTRING? \"cat\" \"caterpillar\"")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("MEMBER? \"b\" [a b c]")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("MEMBER \"a\" \"banana\"")
+    #expect(logoEngine.lastResult == "anana")
+
+    logoEngine.execute("MEMBER 2 [1 2 3 4]")
+    #expect(logoEngine.lastResult == "[2 3 4]")
+
+    logoEngine.execute("PARSE \"1+2\"")
+    #expect(logoEngine.lastResult == "[1 + 2]")
+}
+
+@Test func testSection4ArithmeticPrimitives() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SUM 10 20")
+    #expect(logoEngine.lastResult == "30")
+
+    logoEngine.execute("POWER 2 3")
+    #expect(logoEngine.lastResult == "8")
+
+    logoEngine.execute("SQRT 16")
+    #expect(logoEngine.lastResult == "4")
+
+    logoEngine.execute("ISEQ 1 5")
+    #expect(logoEngine.lastResult == "[1 2 3 4 5]")
+
+    logoEngine.execute("FORM (1.0 / 3.0) 10 3")
+    #expect(logoEngine.lastResult == "     0.333")
+
+    logoEngine.execute("BITAND 6 3")
+    #expect(logoEngine.lastResult == "2")
+
+    logoEngine.execute("BITOR 6 3")
+    #expect(logoEngine.lastResult == "7")
+
+    logoEngine.execute("ASHIFT 1 3")
+    #expect(logoEngine.lastResult == "8")
+}
+
+@Test func testSection5LogicalOperations() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TRUE")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("FALSE")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("AND TRUE FALSE")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("OR TRUE FALSE")
+    #expect(logoEngine.lastResult == "1")
+
+    logoEngine.execute("XOR TRUE TRUE")
+    #expect(logoEngine.lastResult == "0")
+
+    logoEngine.execute("NOT FALSE")
+    #expect(logoEngine.lastResult == "1")
+}
+
+
+
+
 
 

@@ -48,6 +48,8 @@ public struct TraditionalChineseStrings {
         "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
         "status.kept_local": "[ 已保留本地修改 ]",
         "status.logo_executed": "[ 已執行 LOGO 巨集腳本 ]",
+        "status.logo_evaluated": "[ LOGO 腳本求值成功 ]",
+        "menu.tools.eval_logo": "Eval LOGO 腳本 (Ctrl+Q)",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  se - 完整指令與快速鍵說明手冊",
