@@ -73,7 +73,7 @@ import Testing
     #expect(editor.buffer.filePath?.contains("file3.txt") == true)
 
     // Test screen render Title Bar format includes [3/3]
-    let output = editor.generateScreenOutput(rows: 24, cols: 80)
+    let output = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(output.contains("[3/3]"))
 
     // Test close current buffer

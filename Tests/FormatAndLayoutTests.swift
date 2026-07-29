@@ -102,10 +102,10 @@ import TextMetrics
     #expect(editor.displayConfig.showRuler == true)
     #expect(editor.displayConfig.enableSyntaxHighlight == true)
 
-    let ruler20 = editor.generateWordStarRuler(width: 20)
+    let ruler20 = editor.renderer.generateWordStarRuler(width: 20)
     #expect(ruler20 == "----!----1----!----2")
 
-    let ruler30 = editor.generateWordStarRuler(width: 30)
+    let ruler30 = editor.renderer.generateWordStarRuler(width: 30)
     #expect(ruler30 == "----!----1----!----2----!----3")
 }
 
@@ -115,7 +115,7 @@ import TextMetrics
     let screenCols = 80
 
     // Test without ruler (1 title + 20 main + 1 status + 2 help = 24 rows)
-    let outputNoRuler = editor.generateScreenOutput(rows: screenRows, cols: screenCols)
+    let outputNoRuler = editor.renderer.render(editor: editor, rows: screenRows, cols: screenCols)
     let cleanNoRuler = outputNoRuler.hasPrefix("\u{1B}[H") ? String(outputNoRuler.dropFirst(3)) : outputNoRuler
     let linesNoRuler = cleanNoRuler.components(separatedBy: "\r\n")
 
@@ -128,7 +128,7 @@ import TextMetrics
 
     // Test with ruler (1 title + 1 ruler + 19 main + 1 status + 2 help = 24 rows)
     editor.displayConfig.showRuler = true
-    let outputWithRuler = editor.generateScreenOutput(rows: screenRows, cols: screenCols)
+    let outputWithRuler = editor.renderer.render(editor: editor, rows: screenRows, cols: screenCols)
     let cleanWithRuler = outputWithRuler.hasPrefix("\u{1B}[H") ? String(outputWithRuler.dropFirst(3)) : outputWithRuler
     let linesWithRuler = cleanWithRuler.components(separatedBy: "\r\n")
 
@@ -143,13 +143,13 @@ import TextMetrics
     let editor = Editor()
     editor.buffer.lines = ["alpha", "beta"]
 
-    let outputWithLineNumbers = editor.generateScreenOutput(rows: 10, cols: 40)
+    let outputWithLineNumbers = editor.renderer.render(editor: editor, rows: 10, cols: 40)
     let linesWithLineNumbers = outputWithLineNumbers.components(separatedBy: "\r\n")
     #expect(linesWithLineNumbers[1].contains("\u{1B}[90m   1 \u{1B}[0malpha"))
     #expect(outputWithLineNumbers.contains("\u{1B}[2;6H"))
 
     editor.displayConfig.showLineNumbers = false
-    let outputWithoutLineNumbers = editor.generateScreenOutput(rows: 10, cols: 40)
+    let outputWithoutLineNumbers = editor.renderer.render(editor: editor, rows: 10, cols: 40)
     let linesWithoutLineNumbers = outputWithoutLineNumbers.components(separatedBy: "\r\n")
     #expect(linesWithoutLineNumbers[1].contains("\u{1B}[Kalpha"))
     #expect(!linesWithoutLineNumbers[1].contains("   1 "))
@@ -161,7 +161,7 @@ import TextMetrics
     editor.displayConfig.showRuler = true
     editor.isMenuBarActive = true
 
-    let output = editor.generateScreenOutput(rows: 24, cols: 80)
+    let output = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     let lines = output.components(separatedBy: "\r\n")
 
     // Line 1 is the Ruler Bar line
@@ -176,7 +176,7 @@ import TextMetrics
     editor.promptCursorIndex = editor.promptInputText.count
 
     // Render screen with 40 columns
-    let renderedScreen = editor.generateScreenOutput(rows: 10, cols: 40)
+    let renderedScreen = editor.renderer.render(editor: editor, rows: 10, cols: 40)
     let lines = renderedScreen.components(separatedBy: "\r\n")
 
     // Line at index 7 is status/prompt line
@@ -214,3 +214,57 @@ import TextMetrics
     let plantUMLHighlighted = highlighter.highlight(line: "User -> Server", syntax: plantUMLLang!)
     #expect(plantUMLHighlighted.contains("\u{1B}["))
 }
+
+@Test func testDynamicHelpBarByPromptMode() throws {
+    let renderer = Renderer()
+
+    // 1. LOGO macro prompt help bar
+    let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }))
+    #expect(logoHelp.contains("BOX."))
+    #expect(logoHelp.contains("DRAWBOX."))
+    #expect(logoHelp.contains("TABLE.."))
+    #expect(logoHelp.contains("VLINE."))
+    #expect(logoHelp.contains("TYPE"))
+
+    // 2. Exit Confirmation prompt help bar
+    let exitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    #expect(exitHelp.contains("Yes"))
+    #expect(exitHelp.contains("No"))
+    #expect(exitHelp.contains("Cancel"))
+
+    // 3. Search input prompt help bar
+    let searchHelp = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
+    #expect(searchHelp.contains("Help"))
+    #expect(searchHelp.contains("Cancel"))
+    #expect(searchHelp.contains("Confirm"))
+    #expect(searchHelp.contains("Clear"))
+
+    // 4. Default Nano help bar
+    let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none)
+    #expect(defaultHelp.contains("^G"))
+    #expect(defaultHelp.contains(L10n.helpGetHelp))
+    #expect(defaultHelp.contains("^O"))
+    #expect(defaultHelp.contains(L10n.helpWriteOut))
+}
+
+@Test func testRendererModularComponents() throws {
+    let editor = Editor()
+    let renderer = editor.renderer
+
+    // Test Title Bar component
+    let titleBarOutput = renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
+    #expect(titleBarOutput.contains("se"))
+
+    // Test Ruler Bar component
+    let rulerOutput = renderer.generateWordStarRuler(width: 30)
+    #expect(rulerOutput == "----!----1----!----2----!----3")
+
+    // Test Line Number Gutter component
+    let gutterOutput = renderer.renderLineNumberGutter(lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
+    #expect(gutterOutput == "   5 ")
+
+    // Test full screen render
+    let fullOutput = renderer.render(editor: editor, rows: 24, cols: 80)
+    #expect(fullOutput.hasPrefix("\u{1B}[?7l\u{1B}[H"))
+}
+

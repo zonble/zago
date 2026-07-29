@@ -24,7 +24,7 @@ public struct TraditionalChineseStrings {
         "prompt.search": "搜尋",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
-        "prompt.logo": "指令：",
+        "prompt.logo": "❯ ",
         "prompt.goto_line": "請輸入列號與欄號：",
 
         // Status Messages

@@ -24,7 +24,7 @@ public struct EnglishStrings {
         "prompt.search": "Search",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
-        "prompt.logo": "Command: ",
+        "prompt.logo": "❯ ",
         "prompt.goto_line": "Enter line number, column number: ",
 
         // Status Messages

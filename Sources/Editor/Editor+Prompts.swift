@@ -4,7 +4,7 @@ import LogoEngine
 extension Editor {
     // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
     // confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
-    enum PromptMode {
+    public enum PromptMode {
         case none
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)

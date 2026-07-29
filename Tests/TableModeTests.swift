@@ -252,7 +252,7 @@ import Testing
     editor.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
-    let screenOutput = editor.generateScreenOutput(rows: 10, cols: 40)
+    let screenOutput = editor.renderer.render(editor: editor, rows: 10, cols: 40)
     // Verify output contains green background ANSI code "\u{1B}[42;" or "\u{1B}[42m"
     #expect(screenOutput.contains("\u{1B}[42;"))
 }

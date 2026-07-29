@@ -26,6 +26,7 @@ public final class Editor {
         }
     }
     public let layoutEngine: LayoutEngine
+    public let renderer = Renderer()
 
     var isRunning = true
     var statusMessage: String = ""

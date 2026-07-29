@@ -46,7 +46,7 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     // 8. Prompt History & Active Hardware Cursor position test
     editor.promptLogoMacro()
-    let promptOutput = editor.generateScreenOutput(rows: 24, cols: 80)
+    let promptOutput = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(promptOutput.contains("\u{1B}[22;"))  // Verify hardware cursor placed on row 22 (24-2) for active prompt
 
     editor.processKey(.char("T"))
