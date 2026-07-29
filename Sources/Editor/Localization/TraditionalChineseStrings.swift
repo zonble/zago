@@ -1,6 +1,6 @@
 import Foundation
 
-/// Traditional Chinese (zh_TW) translation table for se text editor.
+/// Traditional Chinese (zh_TW) translation table for zago text editor.
 public struct TraditionalChineseStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
@@ -25,6 +25,8 @@ public struct TraditionalChineseStrings {
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
         "prompt.logo": "❯ ",
+        "prompt.fill_text": "填滿文字：",
+        "prompt.table_dimensions": "表格列 欄 寬：",
         "prompt.goto_line": "請輸入列號與欄號：",
 
         // Status Messages
@@ -52,7 +54,7 @@ public struct TraditionalChineseStrings {
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
 
         // Help Viewer (HelpView.swift)
-        "helpview.title": "  se - 完整指令與快速鍵說明手冊",
+        "helpview.title": "  zago - 完整指令與快速鍵說明手冊",
         "helpview.header": "  快捷鍵與指令對照表",
         "helpview.sec_nav": "  游標移動與導航：",
         "helpview.nav_1": "    ^F / 右方向鍵      游標向前移動一個字元",
@@ -79,7 +81,7 @@ public struct TraditionalChineseStrings {
         "helpview.search_5": "    ^T / F12           啟動拼字檢查工具",
 
         "helpview.sec_file": "  檔案與 Buffer 操作指令：",
-        "helpview.file_1": "    ^O / ^S / F3       WriteOut (將 Buffer 儲存至檔案)",
+        "helpview.file_1": "    ^S                 儲存目前檔案；^O / F3 WriteOut (選擇路徑)",
         "helpview.file_2": "    ^R / F5            Read file (插入外部檔案內容至當前 Buffer)",
         "helpview.file_3": "    ^N                 New Buffer (開啟新的空白 Buffer)",
         "helpview.file_4": "    M+. / M+>          Next Buffer (切換至下一個 Buffer)",
@@ -123,15 +125,17 @@ public struct TraditionalChineseStrings {
         // Menu Bar Titles
         "menu.file": "檔案(F)",
         "menu.edit": "編輯(E)",
-        "menu.search": "搜尋(S)",
         "menu.buffer": "Buffer(B)",
+        "menu.shapes": "形狀(S)",
+        "menu.borders": "框線(O)",
         "menu.tools": "工具(T)",
         "menu.help": "說明(H)",
 
         // Menu Bar Items
         "menu.file.new": "新建空白頁\t^N",
         "menu.file.open": "讀取外部檔案…\t^R",
-        "menu.file.save": "儲存檔案\t^O",
+        "menu.file.save": "儲存檔案\t^S",
+        "menu.file.write_out": "另存寫出…\t^O",
         "menu.file.save_exit": "儲存並關閉\tF4",
         "menu.file.exit": "關閉頁面 / 退出\t^X",
         "menu.file.edit_config": "編輯設定檔(C)",
@@ -142,19 +146,32 @@ public struct TraditionalChineseStrings {
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^BS",
+        "menu.edit.search": "搜尋文字…\t^W",
+        "menu.edit.spell": "拼字檢查…\t^T",
+        "menu.edit.goto_line": "跳轉至指定行…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",
-
-        "menu.search.whereis": "搜尋文字…\t^W",
-        "menu.search.spell": "拼字檢查…\t^T",
-        "menu.search.goto_line": "跳轉至指定行…\t^/",
+        "menu.edit.table_editing_mode": "表格編輯模式\tM+T",
 
         "menu.buffer.next": "下一個 Buffer\tM+.",
         "menu.buffer.prev": "上一個 Buffer\tM+,",
 
+        "menu.shapes.box": "方框",
+        "menu.shapes.draw_box": "繪製方框",
+        "menu.shapes.line": "水平線",
+        "menu.shapes.vline": "垂直線",
+        "menu.shapes.table": "表格",
+        "menu.shapes.fill": "填滿區域",
+
+        "menu.borders.single": "單線",
+        "menu.borders.double": "雙線",
+        "menu.borders.round": "圓角",
+        "menu.borders.double_round": "雙線圓角",
+        "menu.borders.ascii": "ASCII",
+        "menu.borders.markdown": "Markdown",
+        "menu.borders.next_style": "下一個風格\tM+S",
+
         "menu.tools.logo": "指令 Prompt...\tEsc",
-        "menu.tools.table_mode": "切換表格隔離模式\tM+T",
         "menu.tools.line_numbers": "切換行號顯示",
-        "menu.tools.table_style": "切換預設表格風格\tM+S",
         "menu.tools.ruler": "切換 WordStar 標尺規列",
         "menu.tools.wrap_80": "自動換行：80",
         "menu.tools.wrap_60": "自動換行：60",

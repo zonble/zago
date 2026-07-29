@@ -58,7 +58,7 @@ public final class Editor {
     // Table Mode state
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil
-    public var defaultTableBorderStyle: TableBorderStyle = .single
+    public var defaultBorderStyle: BorderStyle = .single
 
     var undoStack: [UndoSnapshot] = []
     let maxUndoStackSize = 100

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Supported language options for se editor.
+/// Supported language options for zago editor.
 public enum Language: String, CaseIterable, Sendable {
     case en = "en"
     case zh_TW = "zh_TW"

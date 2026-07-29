@@ -5,13 +5,21 @@ public struct MenuItem {
     public let hotkeyChar: Character
     public let commandId: CommandID?
     public let action: ((Editor) -> Void)?
+    public let isChecked: ((Editor) -> Bool)?
 
-    public init(titleKey: String, hotkeyChar: Character, commandId: CommandID? = nil, action: ((Editor) -> Void)? = nil)
+    public init(
+        titleKey: String,
+        hotkeyChar: Character,
+        commandId: CommandID? = nil,
+        action: ((Editor) -> Void)? = nil,
+        isChecked: ((Editor) -> Bool)? = nil
+    )
     {
         self.titleKey = titleKey
         self.hotkeyChar = hotkeyChar
         self.commandId = commandId
         self.action = action
+        self.isChecked = isChecked
     }
 }
 
@@ -46,6 +54,7 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.file.new", hotkeyChar: "n", commandId: .bufferNew),
                     MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileInsert),
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
+                    MenuItem(titleKey: "menu.file.write_out", hotkeyChar: "w", commandId: .fileWriteOut),
                     MenuItem(titleKey: "menu.file.save_exit", hotkeyChar: "e", commandId: .fileSaveExit),
                     MenuItem(titleKey: "menu.file.exit", hotkeyChar: "x", commandId: .fileExit),
                     MenuItem(titleKey: "menu.file.edit_config", hotkeyChar: "c", commandId: .fileEditConfig),
@@ -59,14 +68,11 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.cut", hotkeyChar: "c", commandId: .editCut),
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),
                     MenuItem(titleKey: "menu.edit.delete_line", hotkeyChar: "d", commandId: .editDeleteLine),
+                    MenuItem(titleKey: "menu.edit.search", hotkeyChar: "s", commandId: .searchWhereIs),
+                    MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
+                    MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
-                ]),
-            MenuCategory(
-                titleKey: "menu.search", hotkeyChar: "s",
-                items: [
-                    MenuItem(titleKey: "menu.search.whereis", hotkeyChar: "w", commandId: .searchWhereIs),
-                    MenuItem(titleKey: "menu.search.spell", hotkeyChar: "t", commandId: .editSpell),
-                    MenuItem(titleKey: "menu.search.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
+                    MenuItem(titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle, isChecked: { $0.isTableModeActive }),
                 ]),
             MenuCategory(
                 titleKey: "menu.buffer", hotkeyChar: "b",
@@ -75,11 +81,67 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
                 ]),
             MenuCategory(
+                titleKey: "menu.shapes", hotkeyChar: "s",
+                items: [
+                    MenuItem(titleKey: "menu.shapes.box", hotkeyChar: "b", action: { $0.runLogoScript("BOX") }),
+                    MenuItem(titleKey: "menu.shapes.draw_box", hotkeyChar: "d", action: { $0.runLogoScript("DRAWBOX") }),
+                    MenuItem(titleKey: "menu.shapes.line", hotkeyChar: "l", action: { $0.runLogoScript("LINE") }),
+                    MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
+                    MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
+                    MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
+                ]),
+            MenuCategory(
+                titleKey: "menu.borders", hotkeyChar: "o",
+                items: [
+                    MenuItem(
+                        titleKey: "menu.borders.single", hotkeyChar: "s",
+                        action: { editor in
+                            editor.defaultBorderStyle = .single
+                            editor.setStatusMessage("[ Default Border: Single ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .single }),
+                    MenuItem(
+                        titleKey: "menu.borders.double", hotkeyChar: "d",
+                        action: { editor in
+                            editor.defaultBorderStyle = .double
+                            editor.setStatusMessage("[ Default Border: Double ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .double }),
+                    MenuItem(
+                        titleKey: "menu.borders.round", hotkeyChar: "r",
+                        action: { editor in
+                            editor.defaultBorderStyle = .round
+                            editor.setStatusMessage("[ Default Border: Round ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .round }),
+                    MenuItem(
+                        titleKey: "menu.borders.double_round", hotkeyChar: "u",
+                        action: { editor in
+                            editor.defaultBorderStyle = .doubleRound
+                            editor.setStatusMessage("[ Default Border: Double Round ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .doubleRound }),
+                    MenuItem(
+                        titleKey: "menu.borders.ascii", hotkeyChar: "a",
+                        action: { editor in
+                            editor.defaultBorderStyle = .ascii
+                            editor.setStatusMessage("[ Default Border: ASCII ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .ascii }),
+                    MenuItem(
+                        titleKey: "menu.borders.markdown", hotkeyChar: "m",
+                        action: { editor in
+                            editor.defaultBorderStyle = .markdown
+                            editor.setStatusMessage("[ Default Border: Markdown ]")
+                        },
+                        isChecked: { $0.defaultBorderStyle == .markdown }),
+                    MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                ]),
+            MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",
                 items: [
                     MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo),
                     MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo),
-                    MenuItem(titleKey: "menu.tools.table_mode", hotkeyChar: "t", commandId: .tableToggle),
                     MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in
@@ -87,7 +149,6 @@ public final class MenuBar {
                             let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
                             editor.setStatusMessage("[ Line Numbers \(state) ]")
                         }),
-                    MenuItem(titleKey: "menu.tools.table_style", hotkeyChar: "s", commandId: .tableStyle),
                     MenuItem(
                         titleKey: "menu.tools.ruler", hotkeyChar: "r",
                         action: { editor in

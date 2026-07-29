@@ -385,7 +385,7 @@ extension Editor {
         }
         let origLine = buffer.lineIndex
         let origCol = buffer.columnIndex
-        let style = defaultTableBorderStyle
+        let style = defaultBorderStyle
         let rowCount = max(TableLimits.minRows, min(rows, TableLimits.maxRows))
         let colCount = max(TableLimits.minCols, min(cols, TableLimits.maxCols))
         let cellWidth = max(
@@ -402,7 +402,7 @@ extension Editor {
             }
             insertTableLines(tableLines, at: origLine, column: origCol)
         } else {
-            let chars = tableBorderCharacters(for: style)
+            let chars = style.tableCharacters
             let h = String(repeating: chars.horizontal, count: cellWidth)
             let content = String(repeating: " ", count: cellWidth)
             var tableLines: [String] = []
@@ -459,24 +459,6 @@ extension Editor {
         }
 
         buffer.lines.replaceSubrange(startLine...startLine, with: insertedLines)
-    }
-
-    private func tableBorderCharacters(for style: TableBorderStyle) -> (
-        topLeft: String, topJoin: String, topRight: String,
-        midLeft: String, midJoin: String, midRight: String,
-        bottomLeft: String, bottomJoin: String, bottomRight: String,
-        horizontal: String, vertical: String
-    ) {
-        switch style {
-        case .double:
-            return ("╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║")
-        case .round:
-            return ("╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│")
-        case .ascii:
-            return ("+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|")
-        case .single, .markdown:
-            return ("┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│")
-        }
     }
 
     /// Navigates to next table cell to the right or next row (Tab).

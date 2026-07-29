@@ -43,6 +43,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 
     // File Operations
     case fileSave = "file.save"
+    case fileWriteOut = "file.write_out"
     case fileInsert = "file.insert"
     case fileSaveExit = "file.save_exit"
     case fileExit = "file.exit"
@@ -54,7 +55,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case tableToggle = "table.toggle"
-    case tableStyle = "table.style"
+    case borderStyle = "border.style"
 
     // Test & Custom
     case testCmd = "test.cmd"

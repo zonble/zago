@@ -34,10 +34,10 @@ extension Editor: LogoEngineDelegate {
             outdentSelectedOrCurrentLines(levels: levels)
         case .createTable(let rows, let cols, let cellWidth):
             createTable(rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
-        case .setTableBorderStyle(let style):
-            setTableBorderStyle(style)
-        case .nextTableBorderStyle:
-            _ = commandRegistry.dispatch(id: .tableStyle, editor: self)
+        case .setBorderStyle(let style):
+            setBorderStyle(style)
+        case .nextBorderStyle:
+            _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
         case .moveCursorVirtual(let delta):
             moveCursorVirtual(deltaRow: delta)
         case .moveLeft: _ = commandRegistry.dispatch(id: .moveLeft, editor: self)
@@ -110,6 +110,8 @@ extension Editor: LogoEngineDelegate {
         case .lineAt(let index):
             guard index >= 0 && index < buffer.lines.count else { return "" }
             return buffer.lines[index]
+        case .defaultBorderStyle:
+            return defaultBorderStyle
         case .bufferList:
             return buffers.map { $0.filePath ?? "Untitled" }
         case .currentBufferIndex:
@@ -226,25 +228,26 @@ extension Editor: LogoEngineDelegate {
         buffer.isModified = true
     }
 
-    private func setTableBorderStyle(_ style: String) {
-        switch style.lowercased() {
-        case "single":
-            defaultTableBorderStyle = .single
-            setStatusMessage("[ Default Table Border: Single ]")
-        case "double":
-            defaultTableBorderStyle = .double
-            setStatusMessage("[ Default Table Border: Double ]")
-        case "round", "rounded":
-            defaultTableBorderStyle = .round
-            setStatusMessage("[ Default Table Border: Round ]")
-        case "ascii":
-            defaultTableBorderStyle = .ascii
-            setStatusMessage("[ Default Table Border: ASCII ]")
-        case "markdown":
-            defaultTableBorderStyle = .markdown
-            setStatusMessage("[ Default Table Border: Markdown ]")
-        default:
+    private func setBorderStyle(_ style: String) {
+        guard let borderStyle = BorderStyle(style) else {
             setStatusMessage("[ Unknown table border: \(style) ]")
+            return
+        }
+
+        defaultBorderStyle = borderStyle
+        switch borderStyle {
+        case .single:
+            setStatusMessage("[ Default Border: Single ]")
+        case .double:
+            setStatusMessage("[ Default Border: Double ]")
+        case .round:
+            setStatusMessage("[ Default Border: Round ]")
+        case .doubleRound:
+            setStatusMessage("[ Default Border: Double Round ]")
+        case .ascii:
+            setStatusMessage("[ Default Border: ASCII ]")
+        case .markdown:
+            setStatusMessage("[ Default Border: Markdown ]")
         }
     }
 

@@ -47,6 +47,41 @@ import Testing
     #expect(executed == true)
 }
 
+@Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test.txt").path
+    defer {
+        try? FileManager.default.removeItem(atPath: tmpPath)
+    }
+
+    let editor = Editor(filePath: tmpPath)
+    editor.buffer.lines = ["saved without prompt"]
+    editor.buffer.isModified = true
+
+    let handled = editor.commandRegistry.dispatch(key: .ctrl("S"), editor: editor)
+
+    #expect(handled == true)
+    #expect(editor.buffer.isModified == false)
+    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "saved without prompt")
+    if case .none = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "^S should not prompt when the buffer already has a file path")
+    }
+}
+
+@Test func testWriteOutStillPromptsForPath() throws {
+    let editor = Editor()
+
+    let handled = editor.commandRegistry.dispatch(key: .ctrl("O"), editor: editor)
+
+    #expect(handled == true)
+    if case .saveFilePath = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "^O should keep WriteOut behavior and ask for a path")
+    }
+}
+
 @Test func testMultiBufferOperations() throws {
     let editor = Editor(filePaths: ["file1.txt", "file2.txt"])
     #expect(editor.buffers.count == 2)
@@ -189,9 +224,9 @@ import Testing
     editor.processKey(.arrowDown)
     #expect(editor.menuBar.itemIndex == 1)
 
-    // 4. Press letter 's' to jump to Search menu (index 2)
+    // 4. Press letter 's' to jump to Shapes menu
     editor.processKey(.char("s"))
-    #expect(editor.menuBar.categoryIndex == 2)
+    #expect(editor.menuBar.currentCategory.titleKey == "menu.shapes")
 
     // 5. Press ESC to close Menu Bar
     editor.processKey(.esc)
@@ -205,8 +240,8 @@ import Testing
 
     // 7. Test executing menu item via Enter
     editor.processKey(.f1)  // Activate menu
-    editor.menuBar.categoryIndex = 4  // Tools category
-    editor.menuBar.itemIndex = 0  // LOGO Macro
+    editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.tools" })!
+    editor.menuBar.itemIndex = 0  // Command Prompt
     editor.processKey(.enter)  // Execute
     #expect(editor.isMenuBarActive == false)
     if case .logoMacro = editor.currentPromptMode {
@@ -215,11 +250,11 @@ import Testing
         #expect(Bool(false), "Enter on LOGO item should trigger LOGO prompt mode")
     }
 
-    // 8. Test Goto Line from Search menu (category 2, item 2)
+    // 8. Test Goto Line from Edit menu
     editor.currentPromptMode = .none
     editor.processKey(.f1)
-    editor.menuBar.categoryIndex = 2  // Search category
-    editor.menuBar.itemIndex = 2  // Goto Line
+    editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.edit" })!
+    editor.menuBar.itemIndex = editor.menuBar.currentCategory.items.firstIndex(where: { $0.titleKey == "menu.edit.goto_line" })!
     editor.processKey(.enter)
     #expect(editor.isMenuBarActive == false)
     if case .gotoLine = editor.currentPromptMode {

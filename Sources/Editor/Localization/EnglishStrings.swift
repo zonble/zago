@@ -1,6 +1,6 @@
 import Foundation
 
-/// English translation table for se text editor.
+/// English translation table for zago text editor.
 public struct EnglishStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
@@ -25,6 +25,8 @@ public struct EnglishStrings {
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
         "prompt.logo": "❯ ",
+        "prompt.fill_text": "Fill with: ",
+        "prompt.table_dimensions": "Table rows cols width: ",
         "prompt.goto_line": "Enter line number, column number: ",
 
         // Status Messages
@@ -52,7 +54,7 @@ public struct EnglishStrings {
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
 
         // Help Viewer (HelpView.swift)
-        "helpview.title": "  se - Full Help & Command Reference",
+        "helpview.title": "  zago - Full Help & Command Reference",
         "helpview.header": "  KEYBINDINGS & COMMANDS REFERENCE",
         "helpview.sec_nav": "  NAVIGATION & CURSOR MOVEMENT:",
         "helpview.nav_1": "    ^F / Right Arrow   Move forward one character",
@@ -79,7 +81,7 @@ public struct EnglishStrings {
         "helpview.search_5": "    ^T / F12           Spell checker status",
 
         "helpview.sec_file": "  FILE & BUFFER OPERATIONS:",
-        "helpview.file_1": "    ^O / ^S / F3       WriteOut (save buffer to file)",
+        "helpview.file_1": "    ^S                 Save current file; ^O / F3 WriteOut (choose path)",
         "helpview.file_2": "    ^R / F5            Read file (insert external file into buffer)",
         "helpview.file_3": "    ^N                 New Buffer (open a new empty buffer)",
         "helpview.file_4": "    M+. / M+>          Next Buffer (switch to next open buffer)",
@@ -123,15 +125,17 @@ public struct EnglishStrings {
         // Menu Bar Titles
         "menu.file": "File",
         "menu.edit": "Edit",
-        "menu.search": "Search",
         "menu.buffer": "Buffer",
+        "menu.shapes": "Shapes",
+        "menu.borders": "Borders",
         "menu.tools": "Tools",
         "menu.help": "Help",
 
         // Menu Bar Items
         "menu.file.new": "New Buffer\t^N",
         "menu.file.open": "Read File...\t^R",
-        "menu.file.save": "Save File\t^O",
+        "menu.file.save": "Save File\t^S",
+        "menu.file.write_out": "Write Out...\t^O",
         "menu.file.save_exit": "Save & Exit\tF4",
         "menu.file.exit": "Exit Buffer / Editor\t^X",
         "menu.file.edit_config": "Edit Config",
@@ -142,19 +146,32 @@ public struct EnglishStrings {
         "menu.edit.cut": "Cut Text\t^K",
         "menu.edit.paste": "UnCut (Paste)\t^U",
         "menu.edit.delete_line": "Delete Line\t^BS",
+        "menu.edit.search": "WhereIs (Search)...\t^W",
+        "menu.edit.spell": "Spell Checker...\t^T",
+        "menu.edit.goto_line": "Goto Line...\t^/",
         "menu.edit.justify": "Justify Paragraph\t^J",
-
-        "menu.search.whereis": "WhereIs (Search)...\t^W",
-        "menu.search.spell": "Spell Checker...\t^T",
-        "menu.search.goto_line": "Goto Line...\t^/",
+        "menu.edit.table_editing_mode": "Table Editing Mode\tM+T",
 
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",
 
+        "menu.shapes.box": "Box",
+        "menu.shapes.draw_box": "Draw Box",
+        "menu.shapes.line": "Line",
+        "menu.shapes.vline": "Vertical Line",
+        "menu.shapes.table": "Table",
+        "menu.shapes.fill": "Fill Region",
+
+        "menu.borders.single": "Single",
+        "menu.borders.double": "Double",
+        "menu.borders.round": "Round",
+        "menu.borders.double_round": "Double Round",
+        "menu.borders.ascii": "ASCII",
+        "menu.borders.markdown": "Markdown",
+        "menu.borders.next_style": "Next Style\tM+S",
+
         "menu.tools.logo": "Command Prompt...\tEsc",
-        "menu.tools.table_mode": "Toggle Table Mode\tM+T",
         "menu.tools.line_numbers": "Toggle Line Numbers",
-        "menu.tools.table_style": "Cycle Table Style\tM+S",
         "menu.tools.ruler": "Toggle Ruler Bar",
         "menu.tools.wrap_80": "Wrap Column: 80",
         "menu.tools.wrap_60": "Wrap Column: 60",

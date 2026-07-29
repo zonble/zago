@@ -1,10 +1,27 @@
 import Foundation
 
-public struct WriteOutCommand: Command {
+public struct SaveFileCommand: Command {
     public let id: CommandID = .fileSave
+    public let name = "Save File"
+    public let description = "Save current file"
+    public let keys: [Key] = [.ctrl("S")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        if let path = editor.buffer.filePath, !path.isEmpty {
+            editor.doSave(to: path)
+        } else {
+            editor.promptWriteFilePath()
+        }
+    }
+}
+
+public struct WriteOutCommand: Command {
+    public let id: CommandID = .fileWriteOut
     public let name = "WriteOut"
-    public let description = "Save file"
-    public let keys: [Key] = [.ctrl("O"), .ctrl("S"), .f3]
+    public let description = "Save file to a chosen path"
+    public let keys: [Key] = [.ctrl("O"), .f3]
 
     public init() {}
 

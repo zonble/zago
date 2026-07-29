@@ -43,6 +43,7 @@ extension Editor {
         commandRegistry.register(NewBufferCommand())
 
         // File Commands
+        commandRegistry.register(SaveFileCommand())
         commandRegistry.register(WriteOutCommand())
         commandRegistry.register(ReadFileCommand())
         commandRegistry.register(SaveAndExitCommand())
@@ -55,6 +56,6 @@ extension Editor {
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(ToggleTableModeCommand())
-        commandRegistry.register(CycleTableStyleCommand())
+        commandRegistry.register(CycleBorderStyleCommand())
     }
 }

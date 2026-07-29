@@ -101,23 +101,23 @@ public final class Renderer {
     /// Renders the top Title Bar (or active Menu Bar categories).
     public func renderTitleOrMenuBar(editor: Editor, cols: Int) -> String {
         if editor.isMenuBarActive {
+            func menuSegment(title: String, isSelected: Bool) -> String {
+                isSelected ? "[ \(title) ]" : "  \(title)  "
+            }
+
             var rawMenuStr = " "
             for (idx, cat) in editor.menuBar.categories.enumerated() {
                 let catTitle = L10n[cat.titleKey]
-                if idx == editor.menuBar.categoryIndex {
-                    rawMenuStr += " [ \(catTitle) ] "
-                } else {
-                    rawMenuStr += "  \(catTitle)  "
-                }
+                rawMenuStr += menuSegment(title: catTitle, isSelected: idx == editor.menuBar.categoryIndex)
             }
 
             var formattedMenu = "\u{1B}[47;30m "
             for (idx, cat) in editor.menuBar.categories.enumerated() {
                 let catTitle = L10n[cat.titleKey]
                 if idx == editor.menuBar.categoryIndex {
-                    formattedMenu += "\u{1B}[1;37;44m [ \(catTitle) ] \u{1B}[0;47;30m "
+                    formattedMenu += "\u{1B}[1;37;44m\(menuSegment(title: catTitle, isSelected: true))\u{1B}[0;47;30m"
                 } else {
-                    formattedMenu += "  \(catTitle)  "
+                    formattedMenu += menuSegment(title: catTitle, isSelected: false)
                 }
             }
             let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
@@ -350,7 +350,7 @@ public final class Renderer {
                 ("N", "No")
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .gotoLine, .spellCheck:
+        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
             // Text & File Path Input prompt help bar
             helpItems1 = [
                 ("^G", "Help"), ("^C", "Cancel")
@@ -522,6 +522,12 @@ public final class Renderer {
         case .logoMacro:
             promptPrefix = L10n["prompt.logo"]
             isConfirmation = false
+        case .fillText:
+            promptPrefix = L10n["prompt.fill_text"]
+            isConfirmation = false
+        case .tableDimensions:
+            promptPrefix = L10n["prompt.table_dimensions"]
+            isConfirmation = false
         case .gotoLine:
             promptPrefix = L10n["prompt.goto_line"]
             isConfirmation = false
@@ -692,7 +698,8 @@ public final class Renderer {
         for item in items {
             let rawStr = L10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
-            let label = parts[0]
+            let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
+            let label = labelPrefix + parts[0]
             let shortcut = parts.count > 1 ? parts[1] : ""
             formattedItems.append("\(label)\t\(shortcut)")
         }
@@ -709,7 +716,8 @@ public final class Renderer {
         for (iIdx, item) in items.enumerated() {
             let rawStr = L10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
-            let label = parts[0]
+            let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
+            let label = labelPrefix + parts[0]
             let shortcut = parts.count > 1 ? parts[1] : ""
 
             let spaceCount = max(1, innerWidth - label.displayWidth - shortcut.displayWidth - 2)

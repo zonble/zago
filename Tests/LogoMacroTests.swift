@@ -127,6 +127,22 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(doubleRoundBoxEditor.buffer.lines[1] == "║    ║")
     #expect(doubleRoundBoxEditor.buffer.lines[2] == "╰════╯")
 
+    let defaultDoubleBoxEditor = Editor()
+    defaultDoubleBoxEditor.defaultBorderStyle = .double
+    logoEngine.delegate = defaultDoubleBoxEditor
+    logoEngine.execute("BOX 6 3")
+    #expect(defaultDoubleBoxEditor.buffer.lines[0] == "╔════╗")
+    #expect(defaultDoubleBoxEditor.buffer.lines[1] == "║    ║")
+    #expect(defaultDoubleBoxEditor.buffer.lines[2] == "╚════╝")
+
+    let defaultRoundDrawBoxEditor = Editor()
+    defaultRoundDrawBoxEditor.defaultBorderStyle = .round
+    logoEngine.delegate = defaultRoundDrawBoxEditor
+    logoEngine.execute("DRAWBOX 6 3")
+    #expect(defaultRoundDrawBoxEditor.buffer.lines[0] == "╭────╮")
+    #expect(defaultRoundDrawBoxEditor.buffer.lines[1] == "│    │")
+    #expect(defaultRoundDrawBoxEditor.buffer.lines[2] == "╰────╯")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]
@@ -1505,18 +1521,27 @@ final class LogoTestResultBox: @unchecked Sendable {
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 0
     logoEngine.execute("TABLE BORDER ROUND TABLE")
-    #expect(editor.defaultTableBorderStyle == .round)
+    #expect(editor.defaultBorderStyle == .round)
     #expect(editor.buffer.lines[0].hasPrefix("╭"))
     #expect(editor.buffer.lines[0].hasSuffix("╮"))
     #expect(editor.isTableModeActive == false)
 
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE BORDER DOUBLE-ROUND TABLE 1 1 4")
+    #expect(editor.defaultBorderStyle == .doubleRound)
+    #expect(editor.buffer.lines[0] == "╭════╮")
+    #expect(editor.buffer.lines[1] == "║    ║")
+    #expect(editor.buffer.lines[2] == "╰════╯")
+
     logoEngine.execute("TABLE BORDER ASCII")
-    #expect(editor.defaultTableBorderStyle == .ascii)
+    #expect(editor.defaultBorderStyle == .ascii)
 
     logoEngine.execute("TABLE NEXTSTYLE")
-    #expect(editor.defaultTableBorderStyle == .markdown)
+    #expect(editor.defaultBorderStyle == .markdown)
 
-    editor.defaultTableBorderStyle = .single
+    editor.defaultBorderStyle = .single
     editor.buffer.lines = ["before", "after"]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 0

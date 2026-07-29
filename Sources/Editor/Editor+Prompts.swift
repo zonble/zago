@@ -13,6 +13,8 @@ extension Editor {
         case insertFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
         case logoMacro(completion: (String?) -> Void)
+        case fillText(completion: (String?) -> Void)
+        case tableDimensions(completion: (String?) -> Void)
         case gotoLine(completion: (String?) -> Void)
         case confirmCreateTable(completion: (Bool?) -> Void)
     }
@@ -301,6 +303,23 @@ extension Editor {
                 break
             }
 
+        case .fillText(let completion), .tableDimensions(let completion):
+            switch key {
+            case .enter:
+                let text = promptInputText
+                currentPromptMode = .none
+                completion(text)
+            case .esc, .ctrl("C"):
+                currentPromptMode = .none
+                completion(nil)
+            case .backspace:
+                deletePromptBackspace()
+            case .char(let ch):
+                insertPromptChar(ch)
+            default:
+                break
+            }
+
         case .gotoLine(let completion):
             switch key {
             case .enter:
@@ -501,6 +520,33 @@ extension Editor {
             }
             self.runLogoScript(script)
         })
+    }
+
+    func promptFillText() {
+        promptInputText = ""
+        currentPromptMode = .fillText(completion: { [weak self] text in
+            guard let self = self, let text = text, !text.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled"])
+                return
+            }
+            self.runLogoScript("FILL \(self.logoStringLiteral(text))")
+        })
+    }
+
+    func promptTableDimensions() {
+        promptInputText = "3 3 16"
+        promptCursorIndex = promptInputText.count
+        currentPromptMode = .tableDimensions(completion: { [weak self] input in
+            guard let self = self, let input = input?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty else {
+                self?.setStatusMessage(L10n["status.cancelled"])
+                return
+            }
+            self.runLogoScript("TABLE \(input)")
+        })
+    }
+
+    private func logoStringLiteral(_ text: String) -> String {
+        "\"\(text.replacingOccurrences(of: "\"", with: "'"))\""
     }
 
     /// Prompts user for target line/column number input (^/ / M-g).

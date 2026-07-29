@@ -35,6 +35,21 @@ Most of the time in `se`, you only need a handful of essential commands to shape
 
 ---
 
+### How Editor LOGO Differs from Turtle Graphics
+
+Classic LOGO turtle graphics draws into a graphics window: the turtle has a heading, moves through a coordinate plane, and leaves a geometric trail when the pen is down.
+
+`zago` uses LOGO as an editor macro language. Commands act on the current text buffer, cursor, selection, and status bar. Some commands are turtle-like (`PD`, `PU`, `FD`, `BK`, `RT`, `LT`), but their output is plain text: lines, corners, arrows, boxes, and tables made from terminal characters.
+
+This means:
+
+- The canvas is the editor buffer, not a separate graphics screen.
+- Positions are text rows and columns, starting from the cursor.
+- Drawing commands modify text and participate in editor undo.
+- Automation features such as variables, loops, expressions, and procedures are used to repeat editing operations, not only to move a turtle.
+
+---
+
 ### Step 1: Drawing Framed Boxes (`BOX` and `DRAWBOX`)
 
 `BOX` draws framed text containers. It turns a plain text buffer into a structured terminal canvas.

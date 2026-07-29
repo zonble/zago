@@ -584,25 +584,28 @@ import Testing
     #expect(editor.currentTableCell?.minCol == 17)
 }
 
-@Test func testCycleTableStyleCommand() throws {
+@Test func testCycleBorderStyleCommand() throws {
     let editor = Editor()
-    #expect(editor.defaultTableBorderStyle == .single)
+    #expect(editor.defaultBorderStyle == .single)
 
-    // Press Alt+S to cycle table style
+    // Press Alt+S to cycle border style
     editor.processKey(.alt("s"))
-    #expect(editor.defaultTableBorderStyle == .double)
-
-    editor.processKey(.alt("s"))
-    #expect(editor.defaultTableBorderStyle == .round)
+    #expect(editor.defaultBorderStyle == .double)
 
     editor.processKey(.alt("s"))
-    #expect(editor.defaultTableBorderStyle == .ascii)
+    #expect(editor.defaultBorderStyle == .round)
 
     editor.processKey(.alt("s"))
-    #expect(editor.defaultTableBorderStyle == .markdown)
+    #expect(editor.defaultBorderStyle == .doubleRound)
 
     editor.processKey(.alt("s"))
-    #expect(editor.defaultTableBorderStyle == .single)
+    #expect(editor.defaultBorderStyle == .ascii)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .markdown)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .single)
 }
 
 @Test func testTableModeCtrlJCenterCellText() throws {

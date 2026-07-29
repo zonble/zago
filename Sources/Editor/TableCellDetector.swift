@@ -1,13 +1,5 @@
 import Foundation
-
-/// Border style configuration for table detection and generation.
-public enum TableBorderStyle: String, CaseIterable, Sendable {
-    case single = "single"  // ┌ ─ ┐ │ └ ┘ ├ ┤ ┬ ┴ ┼
-    case double = "double"  // ╔ ═ ╗ ║ ╚ ╝ ╠ ╣ ╦ ╩ ╬
-    case round = "round"  // ╭ ─ ╮ │ ╰ ╯ ├ ┤ ┬ ┴ ┼
-    case ascii = "ascii"  // + - |
-    case markdown = "markdown"  // | --- |
-}
+import LogoEngine
 
 /// Represents a detected rectangular cell boundary within a table.
 public struct TableCell: Equatable, Sendable {
@@ -15,9 +7,9 @@ public struct TableCell: Equatable, Sendable {
     public let maxLine: Int
     public let minCol: Int
     public let maxCol: Int
-    public let style: TableBorderStyle
+    public let style: BorderStyle
 
-    public init(minLine: Int, maxLine: Int, minCol: Int, maxCol: Int, style: TableBorderStyle = .single) {
+    public init(minLine: Int, maxLine: Int, minCol: Int, maxCol: Int, style: BorderStyle = .single) {
         self.minLine = minLine
         self.maxLine = maxLine
         self.minCol = minCol
@@ -154,12 +146,14 @@ public final class TableCellDetector {
         return Self.verticalBorderChars.contains(chars[col])
     }
 
-    private func detectStyle(lines: [String], topLine: Int, leftCol: Int) -> TableBorderStyle {
+    private func detectStyle(lines: [String], topLine: Int, leftCol: Int) -> BorderStyle {
         guard topLine < lines.count else { return .single }
         let chars = Array(lines[topLine])
         guard leftCol < chars.count else { return .single }
         let ch = chars[leftCol]
-        if ch == "║" || ch == "═" || ch == "╔" || ch == "╦" {
+        if ch == "╭" {
+            return chars.contains("═") || chars.contains("╦") ? .doubleRound : .round
+        } else if ch == "║" || ch == "═" || ch == "╔" || ch == "╦" {
             return .double
         } else if ch == "+" {
             return .ascii

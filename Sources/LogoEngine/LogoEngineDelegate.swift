@@ -15,8 +15,8 @@ public enum LogoEditorAction {
     case indentLines(levels: Int)
     case outdentLines(levels: Int)
     case createTable(rows: Int, cols: Int, cellWidth: Int?)
-    case setTableBorderStyle(String)
-    case nextTableBorderStyle
+    case setBorderStyle(String)
+    case nextBorderStyle
     case moveCursorVirtual(Int)
     case search(String)
     case markModified
@@ -56,6 +56,7 @@ public enum LogoEditorQuery {
     case currentColumnIndex
     case lineCount
     case lineAt(Int)
+    case defaultBorderStyle
 
     // Buffer Queries
     case bufferList

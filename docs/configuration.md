@@ -147,7 +147,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
 | `help.show` | Full-screen help | `^G` |
 | `table.toggle` | Toggle table mode | `M+T` |
-| `table.style` | Cycle table style | `M+S` |
+| `border.style` | Cycle border style | `M+S` |
 
 ## Nano Syntax Files
 

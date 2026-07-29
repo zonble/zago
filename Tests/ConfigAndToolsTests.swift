@@ -18,11 +18,8 @@ import Testing
     let toolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
     #expect(toolsCategory != nil)
 
-    let tableModeIndex = toolsCategory?.items.firstIndex(where: { $0.titleKey == "menu.tools.table_mode" })
     let lineNumbersIndex = toolsCategory?.items.firstIndex(where: { $0.titleKey == "menu.tools.line_numbers" })
-    #expect(tableModeIndex != nil)
     #expect(lineNumbersIndex != nil)
-    #expect(lineNumbersIndex == tableModeIndex! + 1)
 
     let lineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.line_numbers" })
     let wrap80Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_80" })
@@ -32,6 +29,31 @@ import Testing
 
     #expect(lineNumbersItem != nil)
     #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
+
+    let editCategory = menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    let cutIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.cut" })
+    let searchIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.search" })
+    let justifyIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.justify" })
+    let tableEditingModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.table_editing_mode" })
+    #expect(cutIndex != nil && searchIndex != nil && justifyIndex != nil)
+    #expect(cutIndex! < searchIndex! && searchIndex! < justifyIndex!)
+    #expect(tableEditingModeItem?.commandId == .tableToggle)
+    #expect(tableEditingModeItem?.isChecked?(editor) == false)
+
+    editor.isTableModeActive = true
+    #expect(tableEditingModeItem?.isChecked?(editor) == true)
+    editor.isTableModeActive = false
+
+    let bordersCategory = menuBar.categories.first(where: { $0.titleKey == "menu.borders" })
+    let singleItem = bordersCategory?.items.first(where: { $0.titleKey == "menu.borders.single" })
+    let doubleItem = bordersCategory?.items.first(where: { $0.titleKey == "menu.borders.double" })
+    #expect(singleItem?.isChecked?(editor) == true)
+    #expect(doubleItem?.isChecked?(editor) == false)
+
+    doubleItem?.action?(editor)
+    #expect(editor.defaultBorderStyle == .double)
+    #expect(singleItem?.isChecked?(editor) == false)
+    #expect(doubleItem?.isChecked?(editor) == true)
 
     lineNumbersItem?.action?(editor)
     #expect(editor.displayConfig.showLineNumbers == false)
@@ -52,6 +74,55 @@ import Testing
 
     wrapResetItem?.action?(editor)
     #expect(editor.layoutEngine.wrapColumn == nil)
+}
+
+@Test func testShapeFillMenuPromptsForFillText() throws {
+    let editor = Editor()
+    editor.runLogoScript("CLEARBUFFER BOX 5 5 GOTO 2 2")
+
+    let shapesCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.shapes" })
+    let fillItem = shapesCategory?.items.first(where: { $0.titleKey == "menu.shapes.fill" })
+    #expect(fillItem != nil)
+
+    fillItem?.action?(editor)
+    if case .fillText = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Fill menu item should ask for fill text before running FILL")
+    }
+
+    editor.processPromptKey(.char("."))
+    editor.processPromptKey(.enter)
+
+    #expect(editor.buffer.lines[1] == "│...│")
+    #expect(editor.buffer.lines[2] == "│...│")
+    #expect(editor.buffer.lines[3] == "│...│")
+}
+
+@Test func testShapeTableMenuPromptsForDimensions() throws {
+    let editor = Editor()
+
+    let shapesCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.shapes" })
+    let tableItem = shapesCategory?.items.first(where: { $0.titleKey == "menu.shapes.table" })
+    #expect(tableItem != nil)
+
+    tableItem?.action?(editor)
+    if case .tableDimensions = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Table menu item should ask for rows, cols, and width before creating a table")
+    }
+    #expect(editor.promptInputText == "3 3 16")
+    #expect(editor.buffer.lines == [""])
+
+    editor.promptInputText = "2 2 4"
+    editor.promptCursorIndex = editor.promptInputText.count
+    editor.processPromptKey(.enter)
+
+    #expect(editor.buffer.lines[0] == "┌────┬────┐")
+    #expect(editor.buffer.lines[1] == "│    │    │")
+    #expect(editor.buffer.lines[2] == "├────┼────┤")
+    #expect(editor.buffer.lines[4] == "└────┴────┘")
 }
 
 @Test func testEditConfigAndReloadConfigMenuItems() throws {

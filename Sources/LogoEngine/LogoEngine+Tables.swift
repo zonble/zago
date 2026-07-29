@@ -12,11 +12,28 @@ extension LogoEngine {
         return evaluateExpression(tokens, index: &index)
     }
 
-    private func consumeNextRawTableArgument(_ tokens: [String], index: inout Int) -> String? {
+    private func consumeNextTableBorderStyle(_ tokens: [String], index: inout Int) -> String? {
         guard index + 1 < tokens.count else { return nil }
         guard !isTableArgumentBoundary(tokens[index + 1]) else { return nil }
-        index += 1
-        return tokens[index]
+
+        let start = index + 1
+        let singleToken = unquote(tokens[start])
+
+        if start + 2 < tokens.count, tokens[start + 1] == "-" {
+            let hyphenated = "\(singleToken)-\(unquote(tokens[start + 2]))"
+            if BorderStyle.isStyleToken(hyphenated) {
+                index = start + 2
+                return hyphenated
+            }
+        }
+
+        if BorderStyle.isStyleToken(singleToken) {
+            index = start
+            return singleToken
+        }
+
+        index = start
+        return singleToken
     }
 
     internal func executeTableCommand(_ tokens: [String], index: inout Int) {
@@ -35,12 +52,12 @@ extension LogoEngine {
 
         let subcommand = tokens[index].uppercased()
         if subcommand == "BORDER" {
-            if let style = consumeNextRawTableArgument(tokens, index: &index).map(unquote) {
-                delegate.logoEngine(self, performAction: .setTableBorderStyle(style))
+            if let style = consumeNextTableBorderStyle(tokens, index: &index) {
+                delegate.logoEngine(self, performAction: .setBorderStyle(style))
                 hasSetStatusMessage = true
             }
         } else if subcommand == "NEXTSTYLE" {
-            delegate.logoEngine(self, performAction: .nextTableBorderStyle)
+            delegate.logoEngine(self, performAction: .nextBorderStyle)
             hasSetStatusMessage = true
         } else if !LogoEngine.isStatementCommand(tokens[index]), let rows = Int(evaluateExpression(tokens, index: &index)) {
             let cols = consumeNextTableArgument(tokens, index: &index).flatMap(Int.init) ?? 3

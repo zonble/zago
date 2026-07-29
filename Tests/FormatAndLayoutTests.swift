@@ -377,6 +377,28 @@ import TextMetrics
     let (startCol1, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
     let title0Width = L10n[editor.menuBar.categories[0].titleKey].displayWidth
     #expect(startCol1 == 1 + title0Width + 4)
+
+    editor.menuBar.categoryIndex = 2
+    let (startCol2, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
+    let title1Width = L10n[editor.menuBar.categories[1].titleKey].displayWidth
+    #expect(startCol2 == 1 + title0Width + 4 + title1Width + 4)
+}
+
+@Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {
+    let editor = Editor()
+    editor.isMenuBarActive = true
+    editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.borders" })!
+
+    var (_, _, lines) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
+    let cleanChecked = lines[1].replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    let cleanUnchecked = lines[2].replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    #expect(cleanChecked.contains("│ ✓ Single"))
+    #expect(cleanUnchecked.contains("│   Double"))
+
+    editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.shapes" })!
+    (_, _, lines) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
+    let cleanPlain = lines[1].replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    #expect(cleanPlain.contains("│   Box"))
 }
 
 @Test func testMenuBarCursorPositioningBottomRight() throws {

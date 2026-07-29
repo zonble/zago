@@ -7,9 +7,20 @@ extension LogoEngine {
         case overlay
     }
 
+    private func defaultBoxStyle() -> BoxStyle {
+        guard let style = delegate?.logoEngine(self, queryState: .defaultBorderStyle) as? BorderStyle else {
+            return .single
+        }
+        return style.boxStyle
+    }
+
+    private func boxStyle(named styleName: String) -> BoxStyle {
+        styleName.isEmpty ? defaultBoxStyle() : BorderStyle.from(styleName).boxStyle
+    }
+
     internal func executeBoxCommand(_ tokens: [String], index: inout Int, mode: BoxDrawMode = .insert) {
         guard index < tokens.count else {
-            drawBoxFrame(width: 20, height: 5, style: .single, mode: mode)
+            drawBoxFrame(width: 20, height: 5, style: defaultBoxStyle(), mode: mode)
             return
         }
 
@@ -39,7 +50,7 @@ extension LogoEngine {
 
                 if let parsedAlign = BoxAlignment(val) {
                     align = parsedAlign.rawValue
-                } else if BoxStyle.isStyleToken(val) {
+                } else if BorderStyle.isStyleToken(val) {
                     styleName = val
                 } else if textContent == nil {
                     textContent = val
@@ -47,9 +58,9 @@ extension LogoEngine {
             }
 
             if let text = textContent {
-                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: BoxStyle.from(styleName), mode: mode)
+                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName), mode: mode)
             } else {
-                drawBoxFrame(width: width, height: height ?? 5, style: BoxStyle.from(styleName), mode: mode)
+                drawBoxFrame(width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode)
             }
             return
         }
@@ -67,17 +78,17 @@ extension LogoEngine {
 
             if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign.rawValue
-            } else if BoxStyle.isStyleToken(val) {
+            } else if BorderStyle.isStyleToken(val) {
                 styleName = val
             }
         }
 
-        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: BoxStyle.from(styleName), mode: mode)
+        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode)
     }
 
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
         if token == "]" || token == ")" { return true }
-        if BoxAlignment(token) != nil || BoxStyle.isStyleToken(token) { return false }
+        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) { return false }
         return LogoEngine.isKeyword(token)
     }
 
