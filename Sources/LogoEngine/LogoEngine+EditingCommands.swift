@@ -1,6 +1,33 @@
 import Foundation
 
 extension LogoEngine {
+    private func isExpressionArgumentBoundary(_ token: String) -> Bool {
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+    }
+
+    private func consumeExpressionArguments(
+        _ tokens: [String],
+        index: inout Int,
+        consume: (String) -> Void
+    ) {
+        var consumedAny = false
+
+        while index < tokens.count {
+            if isExpressionArgumentBoundary(tokens[index]) {
+                if !consumedAny { index -= 1 }
+                break
+            }
+
+            let value = evaluateExpression(tokens, index: &index)
+            consume(value)
+            consumedAny = true
+
+            guard index + 1 < tokens.count else { break }
+            guard !isExpressionArgumentBoundary(tokens[index + 1]) else { break }
+            index += 1
+        }
+    }
+
     /// Executes Logo editor text manipulation and buffer management statement commands (.type, .show, .move, .cut, etc.).
     /// Returns `true` if the primitive was handled by this module, `false` otherwise.
     internal func executeEditingCommand(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> Bool {
@@ -24,42 +51,16 @@ extension LogoEngine {
 
         case .type:
             index += 1
-            while index < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
-                    index -= 1
-                    break
-                }
-                let text = evaluateExpression(tokens, index: &index)
+            consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
-                if index + 1 < tokens.count {
-                    if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
-                        break
-                    }
-                    index += 1
-                } else {
-                    break
-                }
             }
             return true
 
         case .show:
             index += 1
             var parts: [String] = []
-            while index < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
-                    index -= 1
-                    break
-                }
-                let text = evaluateExpression(tokens, index: &index)
+            consumeExpressionArguments(tokens, index: &index) { text in
                 parts.append(text)
-                if index + 1 < tokens.count {
-                    if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
-                        break
-                    }
-                    index += 1
-                } else {
-                    break
-                }
             }
             let msgText = parts.joined(separator: " ")
             delegate.logoEngine(self, performAction: .setStatusMessage(msgText))
@@ -126,38 +127,16 @@ extension LogoEngine {
         case .appendText:
             index += 1
             delegate.logoEngine(self, performAction: .moveEnd)
-            while index < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
-                    index -= 1
-                    break
-                }
-                let text = evaluateExpression(tokens, index: &index)
+            consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
-                if index + 1 < tokens.count {
-                    if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
-                        break
-                    }
-                }
-                index += 1
             }
             return true
 
         case .prependText:
             index += 1
             delegate.logoEngine(self, performAction: .moveHome)
-            while index < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index]) || tokens[index] == "]" || tokens[index] == ")" {
-                    index -= 1
-                    break
-                }
-                let text = evaluateExpression(tokens, index: &index)
+            consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
-                if index + 1 < tokens.count {
-                    if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
-                        break
-                    }
-                }
-                index += 1
             }
             return true
 

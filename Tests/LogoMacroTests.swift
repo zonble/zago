@@ -1605,6 +1605,26 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(logoEngine.lastResult == "456")
 }
 
+@Test func testLogoEditingCommandArgumentBoundaries() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    logoEngine.execute("TYPE \"x\"")
+    #expect(editor.buffer.lines[0] == "x")
+
+    logoEngine.execute("CLEARBUFFER TYPE \"a\" TYPE \"b\"")
+    #expect(editor.buffer.lines[0] == "ab")
+
+    logoEngine.execute("CLEARBUFFER TYPE \"Hello\" MOVE END TYPE \" World\"")
+    #expect(editor.buffer.lines[0] == "Hello World")
+
+    logoEngine.execute("SHOW \"done\"")
+    #expect(editor.statusMessage == "done")
+
+    logoEngine.execute("CLEARBUFFER TYPE \"mid\" PREPEND \"<\" APPEND \">\"")
+    #expect(editor.buffer.lines[0] == "<mid>")
+}
+
 @Test func testRecursiveProcedureLimitFailsSafely() {
     let semaphore = DispatchSemaphore(value: 0)
     let result = LogoTestResultBox()

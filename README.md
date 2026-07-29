@@ -1,12 +1,12 @@
-# `zago`
+# `zago`: zonble's nano + LOGO
 
-`zago` (zonble's nano + LOGO) is a lightweight terminal text editor with powerful plain-text diagramming.
+`zago` is
+
+- a lightweight terminal text editor.
+- a powerful plain-text diagramming app without leaving your Markdown file.
+- a tool that keeps the CJK/emoji aligned in text boxes.
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](se.png)
-
-It keeps Pico/Nano-style editing simple, but adds first-class commands for boxes, connector lines, fills, tables, and repeatable layout work. Press `Esc`, type a command, and shape structured text directly in the buffer.
-
-Create diagrams without leaving your Markdown, notes, or terminal workflow.
 
 ## Features
 
