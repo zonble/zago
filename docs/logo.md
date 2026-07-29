@@ -7,6 +7,7 @@ Commands read like natural editing gestures: press `Esc`, type `BOX "Title"`, `L
 You do not need any programming background to use these commands—ordinary drawing and layout actions work right out of the box. As your editing tasks grow, optional variables, loops, and macro procedures are available whenever you want to automate repetitive work.
 
 This document is divided into two main parts:
+
 1. **The Step-by-Step Guide**: From basic box diagramming to optional automation like variables, loops, and procedures.
 2. **The Complete Command Reference**: An exhaustive dictionary of all commands, math operations, data structures, and buffer settings.
 
@@ -39,6 +40,7 @@ Most of the time in `se`, you only need a handful of essential commands to shape
 `BOX` draws framed text containers. It turns a plain text buffer into a structured terminal canvas.
 
 #### `BOX` (Line-Oriented Frame)
+
 Inserts a frame into each affected line and pushes trailing text to the right.
 
 ```logo
@@ -71,6 +73,7 @@ BOX 30 4 ROUND
 ```
 
 #### `DRAWBOX` (Canvas Overlay Frame)
+
 `DRAWBOX` accepts the same arguments as `BOX`, but draws as a canvas overlay without pushing surrounding text. Use it when composing multi-box diagrams against fixed coordinates:
 
 ```logo
@@ -97,11 +100,13 @@ BOX SELECTION DOUBLE
 #### Supported Alignments & Styles
 
 Supported text alignments:
+
 - `left`
 - `center` / `centre`
 - `right`
 
 Supported border styles:
+
 - `single`: `┌ ┐ └ ┘ ─ │`
 - `double`: `╔ ╗ ╚ ╝ ═ ║`
 - `round` / `rounded`: `╭ ╮ ╰ ╯ ─ │`
@@ -122,7 +127,9 @@ VLINE 4 ASCII
 ```
 
 #### Auto-Connect Mode (No Length Specified)
+
 When no length or height is specified (e.g., `LINE`, `VLINE`, `LINE ARROW`, `VLINE ARROW`):
+
 - Scans forward through empty space.
 - **Without `ARROW`**: Scans until it reaches an existing box border or line, then fuses into a junction (e.g., `├`, `┬`, `┼`).
 - **With `ARROW`**: Scans until it reaches an existing box border, stops 1 cell before it, and places an arrowhead (`→` or `↓`) touching the border without altering the border.
@@ -148,6 +155,7 @@ Arrow modifiers:
 | `BOTHARROW` | arrows at both ends: `←──→` | arrows at both ends: `↑` ... `↓` |
 
 Aliases:
+
 - `RIGHTARROW` / `DOWNARROW`: same as `ARROW`
 - `LEFTARROW` / `UPARROW`: same as `BACKARROW`
 - `BOTH` / `BIDIR`: same as `BOTHARROW`
@@ -211,6 +219,7 @@ BOX :title CENTER ROUND
 ### 2. Loops (`REPEAT`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)
 
 #### `REPEAT`
+
 Repeats a block $n$ times. `REPEAT` automatically provides built-in loop counter variables `:#` and `:repcount` (1-indexed):
 
 ```logo
@@ -226,6 +235,7 @@ REPEAT 5 [ TYPE :# TYPE ". Item" MOVE DOWN MOVE HOME ]
 ```
 
 #### `FOREACH` and `ISEQ` (`RANGE`)
+
 `ISEQ 1 5` (or `RANGE 1 5`) generates a sequence list `[1 2 3 4 5]`. Use `FOREACH` to iterate over lists with `?` as the current item:
 
 ```logo
@@ -591,12 +601,14 @@ TYPE ITEM 2 :cells
 When Table Mode is active, LOGO execution is constrained to protect the current table cell structure.
 
 Allowed behavior:
+
 - `TYPE` / `PRINT` may insert text into the active cell.
 - Text output is clipped to the editable cell area and will not shift, overwrite, or pass the right border.
 - Newlines move within the active cell; output stops when it would leave the cell.
 - Non-drawing expressions, variables, procedures, status messages, and data operations remain available.
 
 Disabled while Table Mode is active:
+
 - `BOX`
 - `DRAWBOX`
 - `LINE` / `HR`
