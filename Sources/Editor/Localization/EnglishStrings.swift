@@ -19,8 +19,8 @@ public struct EnglishStrings {
 
         // Prompts
         "prompt.write_name": "File Name to Write: ",
-        "prompt.confirm_exit_save": "Save modified buffer? (Answering \"N\" will discard changes) [Y/N]: ",
-        "prompt.confirm_reload": "File changed on disk. Reload? (Answering \"N\" will keep local buffer) [Y/N]: ",
+        "prompt.confirm_exit_save": "Save modified buffer? (Answering \"N\" will discard changes) : ",
+        "prompt.confirm_reload": "File changed on disk. Reload? (Answering \"N\" will keep local buffer): ",
         "prompt.search": "Search",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
