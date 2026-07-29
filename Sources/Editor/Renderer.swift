@@ -205,12 +205,13 @@ public final class Renderer {
                 let isFirstSubLine = (vIndex < virtualLines.count) ? (virtualLines[vIndex].subLineIndex == 0) : true
                 let lineNumVal = (vIndex < virtualLines.count) ? virtualLines[vIndex].bufferLineIndex + 1 : 0
 
-                let lineNumStr = renderLineNumberGutter(
+                let rawLineNumStr = renderLineNumberGutter(
                     lineNumber: lineNumVal,
                     isFirstSubLine: isFirstSubLine,
                     showLineNumbers: editor.displayConfig.showLineNumbers,
                     isMenuOverlay: true
                 )
+                let lineNumStr = editor.displayConfig.showLineNumbers ? "\u{1B}[90m\(rawLineNumStr)\u{1B}[0m" : ""
 
                 let fullLineStr = lineNumStr + vLineText
                 let sliced = sliceOverlayLine(

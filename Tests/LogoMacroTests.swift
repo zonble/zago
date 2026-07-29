@@ -1068,6 +1068,17 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines == ["abc"])
 }
 
+@Test func testTypeApplyExpressionWithoutParentheses() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("TYPE APPLY [?1 + ?2] [1 2]")
+    #expect(editor.buffer.lines == ["3"])
+
+    editor.buffer.lines = [""]
+    editor.buffer.columnIndex = 0
+    editor.logoEngine.execute("PRINT APPLY [?1 + ?2] [1 2]")
+    #expect(editor.buffer.lines == ["3"])
+}
+
 @Test func testLogoEditorBufferPrimitives() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

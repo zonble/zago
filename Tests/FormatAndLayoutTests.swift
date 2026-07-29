@@ -329,4 +329,20 @@ import TextMetrics
     #expect(!menuClosedOutput.contains("\u{1B}[\(rows);\(cols)H"))
 }
 
+@Test func testLineNumberColorPreservedWhenMenuBarActive() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7"]
+
+    // 1. Menu inactive -> Line numbers have \u{1B}[90m (dim gray)
+    editor.isMenuBarActive = false
+    let outputInactive = editor.renderer.render(editor: editor, rows: 24, cols: 80)
+    #expect(outputInactive.contains("\u{1B}[90m   1 \u{1B}[0m"))
+
+    // 2. Menu active with category 3 (dropdown offset at col > 20) -> Line numbers MUST STILL have \u{1B}[90m (dim gray)
+    editor.isMenuBarActive = true
+    editor.menuBar.categoryIndex = 3
+    let outputActive = editor.renderer.render(editor: editor, rows: 24, cols: 80)
+    #expect(outputActive.contains("\u{1B}[90m   1 \u{1B}[0m"))
+}
+
 

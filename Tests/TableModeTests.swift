@@ -654,3 +654,105 @@ import Testing
     #expect(editor.buffer.lines[1].count == 18)
     #expect(editor.buffer.lines[1].hasPrefix("│") && editor.buffer.lines[1].hasSuffix("│"))
 }
+
+@Test func testTableModeTypingAtCellEndDoesNotShiftBorders() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┐",
+        "│                │",
+        "└────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    let initialWidth = editor.buffer.lines[1].displayWidth
+
+    // Move to end of cell (col 16)
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 16)
+
+    // Type character 'X' at end of cell
+    editor.processKey(.char("X"))
+
+    let line = editor.buffer.lines[1]
+    #expect(line.displayWidth == initialWidth)
+    #expect(line.count == 18)
+    #expect(line.hasPrefix("│") && line.hasSuffix("│"))
+    #expect(line == "│               X│")
+
+    // Type when cell is completely filled
+    editor.buffer.lines[1] = "│1234567890123456│"
+    editor.buffer.columnIndex = 16
+    editor.processKey(.char("Z"))
+
+    // Cell MUST NOT absorb 'Z' or expand line
+    #expect(editor.buffer.lines[1] == "│1234567890123456│")
+    #expect(editor.buffer.lines[1].displayWidth == initialWidth)
+}
+
+@Test func testTableModeCJKMultiCharTypingSequenceOrder() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌──────────────────┐",
+        "│                  │",
+        "└──────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    let initialWidth = editor.buffer.lines[1].displayWidth
+
+    // Move to end of cell (.end)
+    editor.processKey(.end)
+
+    // Type "中文輸入法" sequentially at end of cell
+    for ch in "中文輸入法" {
+        editor.processKey(.char(ch))
+    }
+
+    let line = editor.buffer.lines[1]
+    #expect(line.displayWidth == initialWidth)
+    #expect(line.hasPrefix("│") && line.hasSuffix("│"))
+    #expect(line.contains("中文輸入法"))
+    #expect(line == "│        中文輸入法│")
+}
+
+@Test func testTableModeVisualColumnUpDownNavigationWithCJK() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│   文輸入法中   │    asdadsad    │",
+        "├────────────────┼────────────────┤",
+        "│     asdasd     │                │",
+        "├────────────────┼────────────────┤",
+        "│     asdasd     │     asdads     │",
+        "└────────────────┴────────────────┘",
+    ]
+    // Cursor on Line 4 (index 3), inside "asdasd" at 'a' (col 6)
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 6
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // Press Up Arrow (.arrowUp)
+    editor.processKey(.arrowUp)
+
+    // MUST move to Line 2 (index 1), inside cell 1 ("文輸入法中")!
+    #expect(editor.buffer.lineIndex == 1)
+    let line1Text = editor.buffer.lines[1]
+    #expect(line1Text.contains("文輸入法中"))
+    #expect(editor.buffer.columnIndex >= 1 && editor.buffer.columnIndex <= 8)
+
+    // Press Down Arrow (.arrowDown)
+    editor.processKey(.arrowDown)
+
+    // MUST move back down to Line 4 (index 3), inside cell 1 ("asdasd")!
+    #expect(editor.buffer.lineIndex == 3)
+}

@@ -91,14 +91,14 @@ public final class LogoEngine {
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .saveBuffer, .fileSaveAndQuit,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
-        .runResult, .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
+        .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
-        .bye, .ignore, .apply, .invoke, .foreach, .map, .mapSe, .filter, .reduce,
-        .crossmap, .to, .exec, .search, .sort, .fill, .end
+        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
+        .apply, .invoke, .map, .mapSe, .filter, .reduce, .crossmap, .runResult,
         .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array,
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item,

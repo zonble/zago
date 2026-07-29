@@ -24,7 +24,9 @@ extension Editor {
             if buffer.lineIndex == cell.innerMinLine {
                 navigateUpTableCell()
             } else {
+                let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
                 buffer.lineIndex -= 1
+                buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
             }
             clampTableModeCursor()
             return true
@@ -33,7 +35,9 @@ extension Editor {
             if buffer.lineIndex == cell.innerMaxLine {
                 navigateDownTableCell()
             } else {
+                let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
                 buffer.lineIndex += 1
+                buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
             }
             clampTableModeCursor()
             return true
@@ -137,42 +141,46 @@ extension Editor {
             let innerMinCol = leftBorder + 1
             let innerMaxCol = rightBorder - 1
 
-            if buffer.columnIndex >= innerMinCol && buffer.columnIndex <= rightBorder {
-                let dw = ch.displayWidth
-                var lineChars = Array(line)
+            let targetCol = max(innerMinCol, min(buffer.columnIndex, rightBorder))
+            let dw = ch.displayWidth
+            var lineChars = Array(line)
 
-                // Check if cell has enough trailing spaces (each space is display width 1) to absorb `dw` columns
-                var spaceIndices: [Int] = []
-                for idx in stride(from: innerMaxCol, through: innerMinCol, by: -1) {
-                    if idx < lineChars.count && lineChars[idx] == " " {
-                        spaceIndices.append(idx)
-                        if spaceIndices.count == dw { break }
-                    }
-                }
-
-                // If not enough trailing spaces, BLOCK TYPING!
-                if spaceIndices.count < dw {
-                    return true
-                }
-
-                saveUndoSnapshot()
-                for spaceIdx in spaceIndices {
-                    if spaceIdx < lineChars.count {
-                        lineChars.remove(at: spaceIdx)
-                    }
-                }
-                let insertIdx = max(innerMinCol, min(buffer.columnIndex, lineChars.count))
-                lineChars.insert(ch, at: insertIdx)
-                buffer.lines[buffer.lineIndex] = String(lineChars)
-                buffer.columnIndex = insertIdx + 1
-
-                let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
-                if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
-                    buffer.lineIndex += 1
-                    let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
-                    buffer.columnIndex = nextLineLeft + 1
+            // Check if cell has enough trailing spaces (each space is display width 1) to absorb `dw` columns
+            var spaceIndices: [Int] = []
+            for idx in stride(from: innerMaxCol, through: innerMinCol, by: -1) {
+                if idx < lineChars.count && lineChars[idx] == " " {
+                    spaceIndices.append(idx)
+                    if spaceIndices.count == dw { break }
                 }
             }
+
+            // If not enough trailing spaces, BLOCK TYPING!
+            guard spaceIndices.count == dw else {
+                clampTableModeCursor()
+                return true
+            }
+
+            saveUndoSnapshot()
+            var insertIdx = min(targetCol, lineChars.count)
+            for spaceIdx in spaceIndices.sorted(by: >) {
+                if spaceIdx < lineChars.count {
+                    lineChars.remove(at: spaceIdx)
+                    if spaceIdx < insertIdx {
+                        insertIdx = max(innerMinCol, insertIdx - 1)
+                    }
+                }
+            }
+            lineChars.insert(ch, at: insertIdx)
+            buffer.lines[buffer.lineIndex] = String(lineChars)
+            buffer.columnIndex = insertIdx + 1
+
+            let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
+            if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
+                buffer.lineIndex += 1
+                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
+                buffer.columnIndex = nextLineLeft + 1
+            }
+
             clampTableModeCursor()
             return true
 
@@ -304,6 +312,7 @@ extension Editor {
 
         guard buffer.columnIndex >= innerMinCol && buffer.columnIndex <= rightBorder else { return false }
 
+        let targetCol = max(innerMinCol, min(buffer.columnIndex, rightBorder))
         let dw = ch.displayWidth
         var lineChars = Array(line)
 
@@ -317,12 +326,15 @@ extension Editor {
 
         guard spaceIndices.count == dw else { return false }
 
-        for spaceIdx in spaceIndices {
+        var insertIdx = min(targetCol, lineChars.count)
+        for spaceIdx in spaceIndices.sorted(by: >) {
             if spaceIdx < lineChars.count {
                 lineChars.remove(at: spaceIdx)
+                if spaceIdx < insertIdx {
+                    insertIdx = max(innerMinCol, insertIdx - 1)
+                }
             }
         }
-        let insertIdx = max(innerMinCol, min(buffer.columnIndex, lineChars.count))
         lineChars.insert(ch, at: insertIdx)
         buffer.lines[buffer.lineIndex] = String(lineChars)
         buffer.columnIndex = insertIdx + 1
@@ -497,17 +509,58 @@ extension Editor {
         return nil
     }
 
+    /// Returns visual display column width for a given character index in a line string.
+    public func getVisualColumn(in line: String, col: Int) -> Int {
+        let chars = Array(line)
+        let limit = max(0, min(col, chars.count))
+        var vCol = 0
+        for i in 0..<limit {
+            vCol += chars[i].displayWidth
+        }
+        return vCol
+    }
+
+    /// Returns Character array index in line string corresponding to target visual display column width.
+    public func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
+        let chars = Array(line)
+        var curW = 0
+        for (idx, ch) in chars.enumerated() {
+            let w = ch.displayWidth
+            if curW + w > targetVisualCol {
+                return idx
+            }
+            curW += w
+        }
+        return chars.count
+    }
+
     /// Navigates to table cell above (Up Arrow at top row of cell).
     public func navigateUpTableCell() {
         guard let cell = currentTableCell else { return }
+        let currentLineText = buffer.lines[buffer.lineIndex]
+        let currentVCol = getVisualColumn(in: currentLineText, col: buffer.columnIndex)
         let detector = TableCellDetector()
-        let targetCol = buffer.columnIndex
+
         for lineOffset in 1...3 {
             let targetLine = cell.minLine - lineOffset
             guard targetLine >= 0 else { break }
-            if let cellAbove = detector.detectCell(in: buffer.lines, line: targetLine, col: targetCol) {
+            let lineText = buffer.lines[targetLine]
+            let charIdx = getCharIndexForVisualColumn(in: lineText, targetVisualCol: currentVCol)
+            let safeCol = max(0, min(charIdx, lineText.count))
+
+            var targetCell: TableCell? = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol)
+            if targetCell == nil && safeCol > 0 {
+                targetCell = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol - 1)
+            }
+            if targetCell == nil && safeCol + 1 < lineText.count {
+                targetCell = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol + 1)
+            }
+
+            if let cellAbove = targetCell {
                 enterTableMode(with: cellAbove)
                 buffer.lineIndex = cellAbove.innerMaxLine
+                let targetLineText = buffer.lines[buffer.lineIndex]
+                buffer.columnIndex = getCharIndexForVisualColumn(in: targetLineText, targetVisualCol: currentVCol)
                 clampTableModeCursor()
                 return
             }
@@ -517,14 +570,30 @@ extension Editor {
     /// Navigates to table cell below (Down Arrow at bottom row of cell).
     public func navigateDownTableCell() {
         guard let cell = currentTableCell else { return }
+        let currentLineText = buffer.lines[buffer.lineIndex]
+        let currentVCol = getVisualColumn(in: currentLineText, col: buffer.columnIndex)
         let detector = TableCellDetector()
-        let targetCol = buffer.columnIndex
+
         for lineOffset in 1...3 {
             let targetLine = cell.maxLine + lineOffset
             guard targetLine < buffer.lines.count else { break }
-            if let cellBelow = detector.detectCell(in: buffer.lines, line: targetLine, col: targetCol) {
+            let lineText = buffer.lines[targetLine]
+            let charIdx = getCharIndexForVisualColumn(in: lineText, targetVisualCol: currentVCol)
+            let safeCol = max(0, min(charIdx, lineText.count))
+
+            var targetCell: TableCell? = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol)
+            if targetCell == nil && safeCol > 0 {
+                targetCell = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol - 1)
+            }
+            if targetCell == nil && safeCol + 1 < lineText.count {
+                targetCell = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol + 1)
+            }
+
+            if let cellBelow = targetCell {
                 enterTableMode(with: cellBelow)
                 buffer.lineIndex = cellBelow.innerMinLine
+                let targetLineText = buffer.lines[buffer.lineIndex]
+                buffer.columnIndex = getCharIndexForVisualColumn(in: targetLineText, targetVisualCol: currentVCol)
                 clampTableModeCursor()
                 return
             }
