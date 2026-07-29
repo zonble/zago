@@ -35,8 +35,8 @@ extension LogoEngine {
                     if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
                         break
                     }
+                    index += 1
                 }
-                index += 1
             }
             return true
 
@@ -54,8 +54,8 @@ extension LogoEngine {
                     if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
                         break
                     }
+                    index += 1
                 }
-                index += 1
             }
             let msgText = parts.joined(separator: " ")
             delegate.logoEngine(self, performAction: .setStatusMessage(msgText))
