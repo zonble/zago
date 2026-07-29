@@ -215,6 +215,81 @@ import TextMetrics
     #expect(plantUMLHighlighted.contains("\u{1B}["))
 }
 
+@Test func testEmbeddedCodeBlockSyntaxHighlighting() throws {
+    let editor = Editor()
+    editor.displayConfig.enableSyntaxHighlight = true
+
+    // 1. Markdown embedded LOGO code block
+    editor.buffer.filePath = "document.md"
+    editor.buffer.lines = [
+        "# Title",
+        "```logo",
+        "; comment inside logo block",
+        "MAKE \"A 10",
+        "```",
+        "Normal markdown text",
+    ]
+
+    let syntaxMdLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    #expect(syntaxMdLogo?.name == "LOGO")
+
+    let syntaxMdText = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 5)
+    #expect(syntaxMdText?.name == "Markdown")
+
+    // 2. Org-mode embedded LOGO code block
+    editor.buffer.filePath = "notes.org"
+    editor.buffer.lines = [
+        "* Section Title",
+        "#+BEGIN_SRC logo",
+        "; comment inside logo org block",
+        "#+END_SRC",
+    ]
+    let syntaxOrgLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    #expect(syntaxOrgLogo?.name == "LOGO")
+
+    // 3. RST embedded LOGO code block
+    editor.buffer.filePath = "docs.rst"
+    editor.buffer.lines = [
+        "Header",
+        ".. code-block:: logo",
+        "",
+        "   ; comment inside logo rst block",
+        "Unindented text",
+    ]
+    let syntaxRstLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 3)
+    #expect(syntaxRstLogo?.name == "LOGO")
+
+    // 4. Markdown with multiple spaces after backticks (```   logo   )
+    editor.buffer.filePath = "document.md"
+    editor.buffer.lines = [
+        "```   logo   ",
+        "; comment inside multi-space logo block",
+        "```",
+    ]
+    let syntaxMultiSpaceLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 1)
+    #expect(syntaxMultiSpaceLogo?.name == "LOGO")
+
+    // 5. Org-mode with multiple spaces (#+BEGIN_SRC   logo  )
+    editor.buffer.filePath = "notes.org"
+    editor.buffer.lines = [
+        "#+BEGIN_SRC   logo  ",
+        "; comment inside multi-space org logo block",
+        "#+END_SRC",
+    ]
+    let syntaxMultiSpaceOrg = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 1)
+    #expect(syntaxMultiSpaceOrg?.name == "LOGO")
+
+    // 6. RST with multiple spaces (.. code-block::   logo  )
+    editor.buffer.filePath = "docs.rst"
+    editor.buffer.lines = [
+        ".. code-block::   logo  ",
+        "",
+        "   ; comment inside multi-space rst logo block",
+    ]
+    let syntaxMultiSpaceRst = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    #expect(syntaxMultiSpaceRst?.name == "LOGO")
+}
+
 @Test func testDynamicHelpBarByPromptMode() throws {
     let renderer = Renderer()
 

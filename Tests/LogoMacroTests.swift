@@ -1114,6 +1114,22 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.statusMessage == "X")
 }
 
+@Test func testPickPrimitive() throws {
+    let editor = Editor()
+
+    // 1. Pick from List
+    editor.logoEngine.execute("SHOW PICK [ 1 2 3 ]")
+    #expect(["1", "2", "3"].contains(editor.statusMessage))
+
+    // 2. Pick from Word
+    editor.logoEngine.execute("SHOW PICK \"abc")
+    #expect(["a", "b", "c"].contains(editor.statusMessage))
+
+    // 3. Pick from Array
+    editor.logoEngine.execute("SHOW PICK { \"x \"y \"z }")
+    #expect(["x", "y", "z"].contains(editor.statusMessage))
+}
+
 @Test func testFirstsAndButFirstsPrimitives() throws {
     let editor = Editor()
     editor.logoEngine.execute("SHOW FIRSTS [ [1 2 3] [a b c] ]")

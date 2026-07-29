@@ -1,8 +1,10 @@
 import Foundation
 import TextMetrics
 
-/// Centralized Renderer class responsible for composing and formatting all screen ANSI UI components
-/// (Title Bar, Menu Bar, WordStar Ruler, Main Text Area, Line Numbers Gutter, Status/Prompt Line, Dynamic Help Bar, Cursor Positioning).
+/// Centralized Renderer class responsible for composing and formatting all
+/// screen ANSI UI components (Title Bar, Menu Bar, WordStar Ruler, Main Text
+/// Area, Line Numbers Gutter, Status/Prompt Line, Dynamic Help Bar, Cursor
+/// Positioning).
 public final class Renderer {
     public struct RenderedPrompt {
         public let text: String
@@ -241,7 +243,11 @@ public final class Renderer {
 
                     let currentLanguage =
                         editor.displayConfig.enableSyntaxHighlight
-                        ? editor.syntaxHighlighter.detectLanguage(for: editor.buffer.filePath) : nil
+                        ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
+                    let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil)
+                        ? editor.syntaxHighlighter.tokenTypes(for: vLine.text, syntax: currentLanguage!)
+                        : []
+
                     var activeCellBounds: (left: Int, right: Int)? = nil
                     if editor.isTableModeActive, let cell = editor.currentTableCell,
                        vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
@@ -264,8 +270,9 @@ public final class Renderer {
                             lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
                         } else if isCellActive {
                             lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
-                        } else if let lang = currentLanguage, editor.selectionMark == nil {
-                            lineOutput += editor.syntaxHighlighter.highlight(line: String(ch), syntax: lang)
+                        } else if cIdxInVLine < tokenTypes.count && tokenTypes[cIdxInVLine] != .normal {
+                            let tok = tokenTypes[cIdxInVLine]
+                            lineOutput += tok.ansiColor + String(ch) + "\u{1B}[0m"
                         } else {
                             lineOutput += String(ch)
                         }

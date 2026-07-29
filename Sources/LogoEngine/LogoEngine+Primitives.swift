@@ -288,6 +288,22 @@ extension LogoEngine {
                 return ""
             }
 
+        case .pick:
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(v)
+            switch p {
+            case .list(let items), .array(let items):
+                guard !items.isEmpty else { return "" }
+                let randomIdx = Int.random(in: 0..<items.count)
+                return items[randomIdx].description
+            case .string(let s):
+                guard !s.isEmpty else { return "" }
+                let randomIdx = Int.random(in: 0..<s.count)
+                let strIdx = s.index(s.startIndex, offsetBy: randomIdx)
+                return String(s[strIdx])
+            }
+
         case .mditem:
             index += 1
             let idxVal = evaluateExpression(tokens, index: &index)

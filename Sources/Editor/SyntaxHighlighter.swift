@@ -256,10 +256,131 @@ public final class SyntaxHighlighter {
         }
     }
 
-    /// Highlights a line of text by applying matching syntax color ANSI codes.
-    public func highlight(line: String, syntax: LanguageSyntax) -> String {
-        guard !line.isEmpty else { return line }
+    /// Finds matching LanguageSyntax by language name or file extension.
+    public func findLanguage(named langName: String) -> LanguageSyntax? {
+        let clean = langName.lowercased().trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        guard !clean.isEmpty else { return nil }
 
+        let normalized: String
+        switch clean {
+        case "logo": normalized = "logo"
+        case "py", "python": normalized = "py"
+        case "swift": normalized = "swift"
+        case "c", "cpp", "c++", "h", "hpp": normalized = "c"
+        case "json": normalized = "json"
+        case "sh", "bash", "shell", "zsh": normalized = "sh"
+        case "mermaid": normalized = "mermaid"
+        case "dot": normalized = "dot"
+        case "plantuml", "puml": normalized = "puml"
+        case "md", "markdown": normalized = "md"
+        case "rst", "rest": normalized = "rst"
+        case "org": normalized = "org"
+        default: normalized = clean
+        }
+
+        return languages.first { lang in
+            lang.name.lowercased() == normalized || lang.extensions.contains(normalized)
+        }
+    }
+
+    /// Determines LanguageSyntax for a specific buffer line, accounting for Markdown/RST/Org-mode embedded code blocks.
+    public func getSyntaxForLine(editor: Editor, bufferLineIndex: Int) -> LanguageSyntax? {
+        guard editor.displayConfig.enableSyntaxHighlight else { return nil }
+        let filePath = editor.buffer.filePath
+        let defaultSyntax = detectLanguage(for: filePath)
+
+        let ext = (filePath as NSString? ?? "").pathExtension.lowercased()
+        let isMarkup = ["md", "markdown", "mdown", "mkd", "rst", "rest", "org"].contains(ext)
+        guard isMarkup else { return defaultSyntax }
+
+        let lines = editor.buffer.lines
+        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return defaultSyntax }
+
+        if let embedded = detectEmbeddedLanguage(in: lines, bufferLineIndex: bufferLineIndex, fileExtension: ext) {
+            return embedded
+        }
+        return defaultSyntax
+    }
+
+    /// Detects embedded code block language in Markdown, RST, or Org-mode buffer up to bufferLineIndex.
+    public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String) -> LanguageSyntax? {
+        var activeLangName: String? = nil
+        var inBlock = false
+
+        if fileExtension == "org" {
+            for i in 0...bufferLineIndex {
+                let line = lines[i].trimmingCharacters(in: .whitespaces)
+                let upper = line.uppercased()
+                if upper.hasPrefix("#+BEGIN_SRC") {
+                    inBlock = true
+                    let langStr = String(line.dropFirst("#+BEGIN_SRC".count)).trimmingCharacters(in: .whitespaces)
+                    activeLangName = langStr.isEmpty ? nil : langStr
+                } else if upper.hasPrefix("#+END_SRC") {
+                    inBlock = false
+                    activeLangName = nil
+                }
+            }
+            if inBlock, let langName = activeLangName {
+                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).uppercased()
+                if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC") {
+                    return nil
+                }
+                return findLanguage(named: langName)
+            }
+        } else if fileExtension == "rst" || fileExtension == "rest" {
+            for i in 0...bufferLineIndex {
+                let line = lines[i]
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix(".. code-block::") || trimmed.hasPrefix(".. code::") || trimmed.hasPrefix(".. highlight::") {
+                    inBlock = true
+                    if let range = trimmed.range(of: "::") {
+                        let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                        activeLangName = langStr.isEmpty ? nil : langStr
+                    }
+                } else if inBlock {
+                    if !trimmed.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("\t") && !trimmed.hasPrefix("..") {
+                        inBlock = false
+                        activeLangName = nil
+                    }
+                }
+            }
+            if inBlock, let langName = activeLangName {
+                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
+                if currentLine.hasPrefix("..") {
+                    return nil
+                }
+                return findLanguage(named: langName)
+            }
+        } else {
+            // Markdown (md, markdown, mdown, mkd)
+            for i in 0...bufferLineIndex {
+                let line = lines[i].trimmingCharacters(in: .whitespaces)
+                if line.hasPrefix("```") || line.hasPrefix("~~~") {
+                    if inBlock {
+                        inBlock = false
+                        activeLangName = nil
+                    } else {
+                        inBlock = true
+                        let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(in: .whitespaces)
+                        activeLangName = langStr.isEmpty ? nil : langStr
+                    }
+                }
+            }
+            if inBlock, let langName = activeLangName {
+                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
+                if currentLine.hasPrefix("```") || currentLine.hasPrefix("~~~") {
+                    return nil
+                }
+                return findLanguage(named: langName)
+            }
+        }
+
+        return nil
+    }
+
+    /// Returns token type map for each character in line based on syntax rules.
+    public func tokenTypes(for line: String, syntax: LanguageSyntax) -> [SyntaxTokenType] {
+        guard !line.isEmpty else { return [] }
         var tokenMap = [SyntaxTokenType](repeating: .normal, count: line.count)
         let nsLine = line as NSString
 
@@ -275,7 +396,14 @@ public final class SyntaxHighlighter {
                 }
             }
         }
+        return tokenMap
+    }
 
+    /// Highlights a line of text by applying matching syntax color ANSI codes.
+    public func highlight(line: String, syntax: LanguageSyntax) -> String {
+        guard !line.isEmpty else { return line }
+
+        let tokenMap = tokenTypes(for: line, syntax: syntax)
         var result = ""
         var currentToken = SyntaxTokenType.normal
         let chars = Array(line)
