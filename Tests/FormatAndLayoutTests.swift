@@ -304,4 +304,29 @@ import TextMetrics
     #expect(startCol1 == 1 + title0Width + 4)
 }
 
+@Test func testMenuBarCursorPositioningBottomRight() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["Hello World"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    let rows = 24
+    let cols = 80
+
+    // 1. When menu bar is inactive (isMenuBarActive == false)
+    editor.isMenuBarActive = false
+    let normalOutput = editor.renderer.render(editor: editor, rows: rows, cols: cols)
+    #expect(!normalOutput.contains("\u{1B}[\(rows);\(cols)H"))
+
+    // 2. When menu bar is active (isMenuBarActive == true)
+    editor.isMenuBarActive = true
+    let menuActiveOutput = editor.renderer.render(editor: editor, rows: rows, cols: cols)
+    #expect(menuActiveOutput.contains("\u{1B}[\(rows);\(cols)H"))
+
+    // 3. When menu bar is toggled back off (isMenuBarActive == false)
+    editor.isMenuBarActive = false
+    let menuClosedOutput = editor.renderer.render(editor: editor, rows: rows, cols: cols)
+    #expect(!menuClosedOutput.contains("\u{1B}[\(rows);\(cols)H"))
+}
+
 

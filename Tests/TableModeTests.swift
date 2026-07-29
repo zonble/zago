@@ -306,6 +306,34 @@ import Testing
     #expect(screenOutput.contains("\u{1B}[42;"))
 }
 
+@Test func testTableModeCJKGreenBackgroundDoesNotOverflowBorders() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│                │                │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // Type CJK Chinese characters ("測試")
+    for ch in "測試" {
+        editor.processKey(.char(ch))
+    }
+
+    let screenOutput = editor.renderer.render(editor: editor, rows: 10, cols: 50)
+
+    // Green background code is "\u{1B}[42;97;1m"
+    // Border character '│' MUST NOT be wrapped in green background ANSI code!
+    #expect(!screenOutput.contains("\u{1B}[42;97;1m│"))
+    // Green background MUST be applied to CJK characters inside the active cell
+    #expect(screenOutput.contains("\u{1B}[42;97;1m測"))
+    #expect(screenOutput.contains("\u{1B}[42;97;1m試"))
+}
+
 @Test func testTableModeCellOverflowBlocked() throws {
     let editor = Editor()
     editor.buffer.lines = [
@@ -431,6 +459,48 @@ import Testing
         "└────────────┘",
     ])
     #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
+}
+
+@Test func testTableModeHomeAndEndNavigation() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ Hello World    │                │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 5  // Inside Cell 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // Press Home (.home)
+    editor.processKey(.home)
+    #expect(editor.buffer.columnIndex == 1)  // Front of cell
+
+    // Press End (.end)
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 16) // End of cell
+
+    // Press Ctrl+A (^A)
+    editor.processKey(.ctrl("a"))
+    #expect(editor.buffer.columnIndex == 1)  // Front of cell
+
+    // Press Ctrl+E (^E)
+    editor.processKey(.ctrl("e"))
+    #expect(editor.buffer.columnIndex == 16) // End of cell
+
+    // Test CJK cell
+    editor.buffer.lines[1] = "│ 測試中文表格   │                │"
+    editor.buffer.columnIndex = 4
+
+    // Press Home
+    editor.processKey(.home)
+    #expect(editor.buffer.columnIndex == 1)  // Front of CJK cell
+
+    // Press End
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 10) // End of CJK cell (rightBorder - 1)
 }
 
 @Test func testTableModeUpDownArrowNavigation() throws {

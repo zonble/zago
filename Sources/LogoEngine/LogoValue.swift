@@ -64,23 +64,64 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
+    private static func hasMatchingMultiWordClosingQuote(in str: String, startingAt quoteIdx: String.Index) -> Bool {
+        var idx = str.index(after: quoteIdx)
+        var prevChar: Character = "\""
+        var depth = 0
+        var foundSpace = false
+
+        while idx < str.endIndex {
+            let c = str[idx]
+            if (c == "[" || c == "{") && depth >= 0 {
+                depth += 1
+            } else if (c == "]" || c == "}") && depth > 0 {
+                depth -= 1
+            } else if c.isWhitespace && depth == 0 {
+                foundSpace = true
+            } else if c == "\"" && depth == 0 {
+                let nextIdx = str.index(after: idx)
+                let nextChar: Character = nextIdx < str.endIndex ? str[nextIdx] : " "
+                let isNewOpeningQuote = (prevChar.isWhitespace || prevChar == "[" || prevChar == "{") && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
+
+                if isNewOpeningQuote && foundSpace {
+                    return false
+                }
+                if !isNewOpeningQuote && foundSpace {
+                    return true
+                }
+            }
+            prevChar = c
+            idx = str.index(after: idx)
+        }
+        return false
+    }
+
     private static func tokenizeListContent(_ str: String) -> [String] {
         var tokens: [String] = []
         var current = ""
         var depth = 0
-        var inQuotes = false
+        var inMultiWordString = false
 
-        for ch in str {
+        var idx = str.startIndex
+        while idx < str.endIndex {
+            let ch = str[idx]
             if ch == "\"" {
-                inQuotes.toggle()
-                current.append(ch)
-            } else if (ch == "[" || ch == "{") && !inQuotes {
+                if !inMultiWordString && hasMatchingMultiWordClosingQuote(in: str, startingAt: idx) {
+                    inMultiWordString = true
+                    current.append(ch)
+                } else if inMultiWordString {
+                    inMultiWordString = false
+                    current.append(ch)
+                } else {
+                    current.append(ch)
+                }
+            } else if (ch == "[" || ch == "{") && !inMultiWordString {
                 depth += 1
                 current.append(ch)
-            } else if (ch == "]" || ch == "}") && !inQuotes {
+            } else if (ch == "]" || ch == "}") && !inMultiWordString {
                 depth -= 1
                 current.append(ch)
-            } else if ch == " " && depth == 0 && !inQuotes {
+            } else if ch.isWhitespace && depth == 0 && !inMultiWordString {
                 if !current.isEmpty {
                     tokens.append(current)
                     current = ""
@@ -88,6 +129,7 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             } else {
                 current.append(ch)
             }
+            idx = str.index(after: idx)
         }
         if !current.isEmpty {
             tokens.append(current)

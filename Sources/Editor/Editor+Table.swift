@@ -60,6 +60,20 @@ extension Editor {
             centerCellText()
             return true
 
+        case .home, .ctrl("a"), .ctrl("A"):
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            buffer.columnIndex = leftBorder + 1
+            clampTableModeCursor()
+            return true
+
+        case .end, .ctrl("e"), .ctrl("E"):
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
+            clampTableModeCursor()
+            return true
+
         case .enter:
             if buffer.lineIndex < cell.innerMaxLine {
                 buffer.lineIndex += 1

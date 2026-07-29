@@ -1036,6 +1036,38 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(logoEngine.lastResult == "[AX AY BX BY]")
 }
 
+@Test func testForeachQuotedWordLists() throws {
+    let dummyEditor = Editor()
+    let logoEngine = LogoEngine(delegate: dummyEditor)
+
+    // 1. foreach ["a "b "c] [ make "acc word :acc ? ]
+    logoEngine.execute("MAKE \"ACC \"\" FOREACH [\"a \"b \"c] [ MAKE \"ACC WORD :ACC ? ]")
+    #expect(logoEngine.variables["acc"] == "abc")
+
+    // 2. foreach ["a" "b" "c"] [ make "acc word :acc ? ]
+    logoEngine.execute("MAKE \"ACC \"\" FOREACH [\"a\" \"b\" \"c\"] [ MAKE \"ACC WORD :ACC ? ]")
+    #expect(logoEngine.variables["acc"] == "abc")
+
+    // 3. foreach ["a" "b "c] [ make "acc word :acc ? ]
+    logoEngine.execute("MAKE \"ACC \"\" FOREACH [\"a\" \"b \"c] [ MAKE \"ACC WORD :ACC ? ]")
+    #expect(logoEngine.variables["acc"] == "abc")
+
+    // 4. Editor PRINT testing for all 3 list quote formats
+    let editor = Editor()
+    editor.logoEngine.execute("FOREACH [\"a \"b \"c] [ PRINT ? ]")
+    #expect(editor.buffer.lines == ["abc"])
+
+    editor.buffer.lines = [""]
+    editor.buffer.columnIndex = 0
+    editor.logoEngine.execute("FOREACH [\"a\" \"b\" \"c\"] [ PRINT ? ]")
+    #expect(editor.buffer.lines == ["abc"])
+
+    editor.buffer.lines = [""]
+    editor.buffer.columnIndex = 0
+    editor.logoEngine.execute("FOREACH [\"a\" \"b \"c] [ PRINT ? ]")
+    #expect(editor.buffer.lines == ["abc"])
+}
+
 @Test func testLogoEditorBufferPrimitives() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

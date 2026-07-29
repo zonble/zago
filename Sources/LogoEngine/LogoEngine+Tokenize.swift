@@ -101,12 +101,14 @@ extension LogoEngine {
             if c == "\"" {
                 let nextIdx = script.index(after: idx)
                 let nextChar: Character = nextIdx < script.endIndex ? script[nextIdx] : "\n"
-                let isNextOpeningQuote = (prev.isWhitespace || prev == "[" || prev == "(") && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
-                if !isNextOpeningQuote {
+                let isNewOpeningQuote = (prev.isWhitespace || prev == "[" || prev == "(" || prev == "{") && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
+                if isNewOpeningQuote {
+                    return false
+                } else {
                     return true
                 }
             }
-            if c == "[" || c == "]" || c.isNewline { return false }
+            if c == "[" || c == "]" || c == "{" || c == "}" || c.isNewline { return false }
             prev = c
             idx = script.index(after: idx)
         }

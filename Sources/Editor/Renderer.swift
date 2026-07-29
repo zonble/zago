@@ -241,15 +241,23 @@ public final class Renderer {
                     let currentLanguage =
                         editor.displayConfig.enableSyntaxHighlight
                         ? editor.syntaxHighlighter.detectLanguage(for: editor.buffer.filePath) : nil
+                    var activeCellBounds: (left: Int, right: Int)? = nil
+                    if editor.isTableModeActive, let cell = editor.currentTableCell,
+                       vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
+                       vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count {
+                        let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
+                        activeCellBounds = editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+                    }
+
                     let chars = Array(vLine.text)
                     for (cIdxInVLine, ch) in chars.enumerated() {
                         let realCol = vLine.startCol + cIdxInVLine
-                        let isCellActive =
-                            editor.isTableModeActive && editor.currentTableCell != nil
-                            && (vLine.bufferLineIndex >= editor.currentTableCell!.innerMinLine
-                                && vLine.bufferLineIndex <= editor.currentTableCell!.innerMaxLine)
-                            && (realCol >= editor.currentTableCell!.innerMinCol
-                                && realCol <= editor.currentTableCell!.innerMaxCol)
+                        let isCellActive: Bool
+                        if let (cellLeft, cellRight) = activeCellBounds {
+                            isCellActive = realCol > cellLeft && realCol < cellRight
+                        } else {
+                            isCellActive = false
+                        }
 
                         if editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
                             lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
@@ -452,7 +460,9 @@ public final class Renderer {
         renderedPrompt: RenderedPrompt
     ) -> String {
         var output = ""
-        if case .none = editor.currentPromptMode {
+        if editor.isMenuBarActive {
+            output += "\u{1B}[\(rows);\(cols)H"
+        } else if case .none = editor.currentPromptMode {
             let vLineText = (cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count) ? virtualLines[cursorVLineIdx].text : ""
             let vLineChars = Array(vLineText)
             let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
