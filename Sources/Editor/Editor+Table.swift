@@ -71,30 +71,46 @@ extension Editor {
             return true
 
         case .backspace:
-            if buffer.columnIndex > cell.innerMinCol {
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let innerMinCol = leftBorder + 1
+
+            if buffer.columnIndex > innerMinCol {
                 saveUndoSnapshot()
-                var lineChars = Array(buffer.lines[buffer.lineIndex])
+                var lineChars = Array(line)
                 let deleteIdx = buffer.columnIndex - 1
-                if deleteIdx >= cell.innerMinCol && deleteIdx < lineChars.count {
+                if deleteIdx >= innerMinCol && deleteIdx < lineChars.count {
+                    let deletedChar = lineChars[deleteIdx]
+                    let dw = deletedChar.displayWidth
                     lineChars.remove(at: deleteIdx)
-                    let insertSpaceIdx = min(cell.innerMaxCol, lineChars.count)
-                    lineChars.insert(" ", at: insertSpaceIdx)
+                    let insertSpaceIdx = min(rightBorder - 1, lineChars.count)
+                    for _ in 0..<dw {
+                        lineChars.insert(" ", at: insertSpaceIdx)
+                    }
                     buffer.lines[buffer.lineIndex] = String(lineChars)
-                    buffer.columnIndex = max(cell.innerMinCol, deleteIdx)
+                    buffer.columnIndex = max(innerMinCol, deleteIdx)
                 }
             }
             clampTableModeCursor()
             return true
 
         case .delete:
-            if buffer.columnIndex <= cell.innerMaxCol {
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let innerMinCol = leftBorder + 1
+
+            if buffer.columnIndex < rightBorder {
                 saveUndoSnapshot()
-                var lineChars = Array(buffer.lines[buffer.lineIndex])
+                var lineChars = Array(line)
                 let deleteIdx = buffer.columnIndex
-                if deleteIdx >= cell.innerMinCol && deleteIdx <= cell.innerMaxCol && deleteIdx < lineChars.count {
+                if deleteIdx >= innerMinCol && deleteIdx < rightBorder && deleteIdx < lineChars.count {
+                    let deletedChar = lineChars[deleteIdx]
+                    let dw = deletedChar.displayWidth
                     lineChars.remove(at: deleteIdx)
-                    let insertSpaceIdx = min(cell.innerMaxCol, lineChars.count)
-                    lineChars.insert(" ", at: insertSpaceIdx)
+                    let insertSpaceIdx = min(rightBorder - 1, lineChars.count)
+                    for _ in 0..<dw {
+                        lineChars.insert(" ", at: insertSpaceIdx)
+                    }
                     buffer.lines[buffer.lineIndex] = String(lineChars)
                 }
             }
@@ -102,13 +118,18 @@ extension Editor {
             return true
 
         case .char(let ch):
-            if buffer.columnIndex <= cell.innerMaxCol {
-                let dw = ch.displayWidth
-                var lineChars = Array(buffer.lines[buffer.lineIndex])
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let innerMinCol = leftBorder + 1
+            let innerMaxCol = rightBorder - 1
 
-                // Check if cell has enough trailing spaces to absorb `dw` characters
+            if buffer.columnIndex >= innerMinCol && buffer.columnIndex <= rightBorder {
+                let dw = ch.displayWidth
+                var lineChars = Array(line)
+
+                // Check if cell has enough trailing spaces (each space is display width 1) to absorb `dw` columns
                 var spaceIndices: [Int] = []
-                for idx in stride(from: cell.innerMaxCol, through: cell.innerMinCol, by: -1) {
+                for idx in stride(from: innerMaxCol, through: innerMinCol, by: -1) {
                     if idx < lineChars.count && lineChars[idx] == " " {
                         spaceIndices.append(idx)
                         if spaceIndices.count == dw { break }
@@ -126,13 +147,16 @@ extension Editor {
                         lineChars.remove(at: spaceIdx)
                     }
                 }
-                lineChars.insert(ch, at: buffer.columnIndex)
+                let insertIdx = max(innerMinCol, min(buffer.columnIndex, lineChars.count))
+                lineChars.insert(ch, at: insertIdx)
                 buffer.lines[buffer.lineIndex] = String(lineChars)
-                buffer.columnIndex += 1
+                buffer.columnIndex = insertIdx + 1
 
-                if buffer.columnIndex > cell.innerMaxCol && buffer.lineIndex < cell.innerMaxLine {
+                let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
+                if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
                     buffer.lineIndex += 1
-                    buffer.columnIndex = cell.innerMinCol
+                    let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
+                    buffer.columnIndex = nextLineLeft + 1
                 }
             }
             clampTableModeCursor()
@@ -166,17 +190,60 @@ extension Editor {
     public func enterTableMode(with cell: TableCell) {
         isTableModeActive = true
         currentTableCell = cell
+        let targetLine = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
+        buffer.lineIndex = targetLine
+        guard targetLine >= 0 && targetLine < buffer.lines.count else { return }
+        let line = buffer.lines[targetLine]
+        let (cellLeft, cellRight) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        if buffer.columnIndex <= cellLeft || buffer.columnIndex >= cellRight {
+            buffer.columnIndex = cellLeft + 1
+        }
         clampTableModeCursor()
         setStatusMessage("[ TABLE MODE ] (M+T to exit | Tab to navigate)")
+    }
+
+    /// Finds the left and right vertical border character indices for the current cell on the given line string.
+    public func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
+        let chars = Array(line)
+        guard !chars.isEmpty else { return (0, 0) }
+
+        let targetCol = max(cell.minCol, min(nearCol, cell.maxCol))
+        var startSearch = max(0, min(targetCol, chars.count - 1))
+        if startSearch > 0 && TableCellDetector.verticalBorderChars.contains(chars[startSearch]) {
+            startSearch -= 1
+        }
+
+        var left = startSearch
+        while left >= 0 {
+            if TableCellDetector.verticalBorderChars.contains(chars[left]) {
+                break
+            }
+            left -= 1
+        }
+        if left < 0 { left = 0 }
+
+        var right = left + 1
+        while right < chars.count {
+            if TableCellDetector.verticalBorderChars.contains(chars[right]) {
+                break
+            }
+            right += 1
+        }
+        if right >= chars.count { right = chars.count - 1 }
+
+        return (left, right)
     }
 
     /// Clamps cursor position to inner bounds of current cell.
     public func clampTableModeCursor() {
         guard let cell = currentTableCell else { return }
         buffer.lineIndex = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
+        guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return }
         let line = buffer.lines[buffer.lineIndex]
-        let maxCol = min(cell.innerMaxCol, line.count)
-        buffer.columnIndex = max(cell.innerMinCol, min(buffer.columnIndex, maxCol))
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let innerMinCol = leftBorder + 1
+        let maxCol = min(rightBorder, line.count)
+        buffer.columnIndex = max(innerMinCol, min(buffer.columnIndex, maxCol))
     }
 
     /// Inserts LOGO output into the active table cell without shifting or overwriting borders.
@@ -190,7 +257,8 @@ extension Editor {
             if ch.isNewline {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
                 buffer.lineIndex += 1
-                buffer.columnIndex = cell.innerMinCol
+                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
+                buffer.columnIndex = nextLineLeft + 1
                 continue
             }
 
@@ -198,10 +266,12 @@ extension Editor {
                 break
             }
 
-            if buffer.columnIndex > cell.innerMaxCol {
+            let (_, rightBorder) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
+            if buffer.columnIndex >= rightBorder {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
                 buffer.lineIndex += 1
-                buffer.columnIndex = cell.innerMinCol
+                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
+                buffer.columnIndex = nextLineLeft + 1
             }
 
             guard insertCharacterInCurrentTableCell(ch, cell: cell) else { break }
@@ -211,29 +281,37 @@ extension Editor {
     }
 
     private func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell) -> Bool {
+        guard buffer.lineIndex >= cell.innerMinLine && buffer.lineIndex <= cell.innerMaxLine else { return false }
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return false }
-        guard buffer.columnIndex >= cell.innerMinCol && buffer.columnIndex <= cell.innerMaxCol else { return false }
+        let line = buffer.lines[buffer.lineIndex]
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let innerMinCol = leftBorder + 1
+        let innerMaxCol = rightBorder - 1
 
-        let displayWidth = ch.displayWidth
-        var lineChars = Array(buffer.lines[buffer.lineIndex])
-        guard cell.innerMaxCol < lineChars.count else { return false }
+        guard buffer.columnIndex >= innerMinCol && buffer.columnIndex <= rightBorder else { return false }
+
+        let dw = ch.displayWidth
+        var lineChars = Array(line)
 
         var spaceIndices: [Int] = []
-        for idx in stride(from: cell.innerMaxCol, through: cell.innerMinCol, by: -1) {
+        for idx in stride(from: innerMaxCol, through: innerMinCol, by: -1) {
             if idx < lineChars.count && lineChars[idx] == " " {
                 spaceIndices.append(idx)
-                if spaceIndices.count == displayWidth { break }
+                if spaceIndices.count == dw { break }
             }
         }
 
-        guard spaceIndices.count == displayWidth else { return false }
+        guard spaceIndices.count == dw else { return false }
 
         for spaceIdx in spaceIndices {
-            lineChars.remove(at: spaceIdx)
+            if spaceIdx < lineChars.count {
+                lineChars.remove(at: spaceIdx)
+            }
         }
-        lineChars.insert(ch, at: buffer.columnIndex)
+        let insertIdx = max(innerMinCol, min(buffer.columnIndex, lineChars.count))
+        lineChars.insert(ch, at: insertIdx)
         buffer.lines[buffer.lineIndex] = String(lineChars)
-        buffer.columnIndex += 1
+        buffer.columnIndex = insertIdx + 1
         buffer.isModified = true
         return true
     }
@@ -473,12 +551,16 @@ extension Editor {
             let fullLine = buffer.lines[lineIdx]
             let lineChars = Array(fullLine)
 
-            guard cell.innerMinCol <= cell.innerMaxCol && cell.innerMaxCol < lineChars.count else { continue }
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+            let innerMinCol = leftBorder + 1
+            let innerMaxCol = rightBorder - 1
 
-            let cellContent = String(lineChars[cell.innerMinCol...cell.innerMaxCol])
+            guard innerMinCol <= innerMaxCol && rightBorder < lineChars.count else { continue }
+
+            let cellContent = String(lineChars[innerMinCol...innerMaxCol])
             let trimmed = cellContent.trimmingCharacters(in: .whitespaces)
 
-            let innerWidth = cell.innerMaxCol - cell.innerMinCol + 1
+            let innerWidth = lineChars[innerMinCol...innerMaxCol].reduce(0) { $0 + $1.displayWidth }
             let contentWidth = trimmed.displayWidth
 
             if contentWidth <= innerWidth {
@@ -488,8 +570,8 @@ extension Editor {
 
                 let newCellText =
                     String(repeating: " ", count: leftPadding) + trimmed + String(repeating: " ", count: rightPadding)
-                let prefix = String(lineChars[0..<cell.innerMinCol])
-                let suffix = String(lineChars[(cell.innerMaxCol + 1)..<lineChars.count])
+                let prefix = String(lineChars[0...leftBorder])
+                let suffix = String(lineChars[rightBorder..<lineChars.count])
 
                 buffer.lines[lineIdx] = prefix + newCellText + suffix
             }

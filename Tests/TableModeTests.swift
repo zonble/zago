@@ -174,6 +174,8 @@ import Testing
     editor.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
+    let initialWidth = editor.buffer.lines[1].displayWidth
+
     // Type CJK Chinese characters ("測試")
     for ch in "測試" {
         editor.processKey(.char(ch))
@@ -181,8 +183,55 @@ import Testing
 
     #expect(editor.isTableModeActive == true)
     let line = editor.buffer.lines[1]
-    // Right border MUST still be '│'
     #expect(line.contains("│測試") && line.contains("│"))
+    // Total display width MUST remain unchanged (35 display columns)
+    #expect(line.displayWidth == initialWidth)
+}
+
+@Test func testTableModeCJKCharacterBorderAlignmentAndBackspace() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│                │                │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    let initialLineWidth = editor.buffer.lines[1].displayWidth
+
+    // Type 6 CJK characters (display width 12)
+    let inputString = "測試中文表格"
+    for ch in inputString {
+        editor.processKey(.char(ch))
+    }
+
+    let lineAfterCJK = editor.buffer.lines[1]
+    // 1. Display width MUST stay strictly 35
+    #expect(lineAfterCJK.displayWidth == initialLineWidth)
+    // 2. Contains CJK string
+    #expect(lineAfterCJK.contains("│測試中文表格"))
+
+    // Type ASCII character
+    editor.processKey(.char("!"))
+    let lineAfterASCII = editor.buffer.lines[1]
+    #expect(lineAfterASCII.displayWidth == initialLineWidth)
+
+    // Backspace ASCII character
+    editor.processKey(.backspace)
+    #expect(editor.buffer.lines[1].displayWidth == initialLineWidth)
+
+    // Backspace all CJK characters one by one
+    for _ in 0..<inputString.count {
+        editor.processKey(.backspace)
+        #expect(editor.buffer.lines[1].displayWidth == initialLineWidth)
+    }
+
+    // Verify line returned to empty cell state with intact borders
+    #expect(editor.buffer.lines[1] == "│                │                │")
 }
 
 @Test func testTableModeTabToNextRow() throws {

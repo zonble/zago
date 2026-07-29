@@ -40,7 +40,7 @@ public struct TableCell: Equatable, Sendable {
 public final class TableCellDetector {
     public init() {}
 
-    private static let verticalBorderChars: Set<Character> = [
+    public static let verticalBorderChars: Set<Character> = [
         "│", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
         "╭", "╮", "╰", "╯",
         "║", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
