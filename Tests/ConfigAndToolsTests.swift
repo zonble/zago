@@ -56,15 +56,15 @@ import Testing
 
 @Test func testEditConfigAndReloadConfigMenuItems() throws {
     let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-    let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
-    let existsBefore = FileManager.default.fileExists(atPath: sercPath)
-    let contentBefore = try? String(contentsOfFile: sercPath, encoding: .utf8)
+    let zagorcPath = (homeDir as NSString).appendingPathComponent(".zagorc")
+    let existsBefore = FileManager.default.fileExists(atPath: zagorcPath)
+    let contentBefore = try? String(contentsOfFile: zagorcPath, encoding: .utf8)
 
     defer {
         if !existsBefore {
-            try? FileManager.default.removeItem(atPath: sercPath)
+            try? FileManager.default.removeItem(atPath: zagorcPath)
         } else if let content = contentBefore {
-            try? content.write(toFile: sercPath, atomically: true, encoding: .utf8)
+            try? content.write(toFile: zagorcPath, atomically: true, encoding: .utf8)
         }
     }
 
@@ -80,10 +80,10 @@ import Testing
     #expect(editConfigItem?.commandId == .fileEditConfig)
     #expect(reloadConfigItem?.commandId == .fileReloadConfig)
 
-    // Test editConfig() creates/opens buffer for ~/.serc
+    // Test editConfig() creates/opens buffer for ~/.zagorc
     editor.editConfig()
-    #expect(editor.buffer.filePath?.hasSuffix(".serc") == true)
-    #expect(editor.statusMessage.contains(".serc"))
+    #expect(editor.buffer.filePath?.hasSuffix(".zagorc") == true || editor.buffer.filePath?.hasSuffix(".serc") == true)
+    #expect(editor.statusMessage.contains(".zagorc") || editor.statusMessage.contains(".serc"))
 
     // Test reloadConfig()
     editor.reloadConfig()
@@ -224,9 +224,9 @@ import Testing
     #expect(logoLang != nil)
     #expect(logoLang?.name == "LOGO")
 
-    let sercLang = highlighter.detectLanguage(for: ".serc")
-    #expect(sercLang != nil)
-    #expect(sercLang?.name == "LOGO")
+    let zagorcLang = highlighter.detectLanguage(for: ".zagorc")
+    #expect(zagorcLang != nil)
+    #expect(zagorcLang?.name == "LOGO")
 
     if let lang = logoLang {
         let highlighted = highlighter.highlight(

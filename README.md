@@ -1,8 +1,8 @@
-# `se`
+# `zago`
 
-`se` is a lightweight terminal text editor with powerful plain-text diagramming.
+`zago` (zonble's nano + LOGO) is a lightweight terminal text editor with powerful plain-text diagramming.
 
-![se editing a Markdown document with a plain-text diagram and LOGO command output](se.png)
+![zago editing a Markdown document with a plain-text diagram and LOGO command output](se.png)
 
 It keeps Pico/Nano-style editing simple, but adds first-class commands for boxes, connector lines, fills, tables, and repeatable layout work. Press `Esc`, type a command, and shape structured text directly in the buffer.
 
@@ -29,26 +29,26 @@ Create diagrams without leaving your Markdown, notes, or terminal workflow.
 Install with [Mint](https://github.com/yonaskolb/Mint):
 
 ```bash
-mint install zonble/se
-se notes.txt
+mint install zonble/zago
+zago notes.txt
 ```
 
 Or run without installing:
 
 ```bash
-mint run zonble/se notes.txt
+mint run zonble/zago notes.txt
 ```
 
 Build from source:
 
 ```bash
-git clone https://github.com/zonble/se.git
-cd se
+git clone https://github.com/zonble/zago.git
+cd zago
 swift build -c release
-.build/release/se notes.txt
-.build/release/se notes.txt --wrap 80
-.build/release/se notes.txt --ruler
-.build/release/se --init        # optional: create a starter ~/.serc
+.build/release/zago notes.txt
+.build/release/zago notes.txt --wrap 80
+.build/release/zago notes.txt --ruler
+.build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
 
 ## Command Examples

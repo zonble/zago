@@ -1,6 +1,6 @@
-# `se` Diagramming & Editing Commands: Guide & Reference
+# `zago` Diagramming & Editing Commands: Guide & Reference
 
-`se` provides a simple set of direct editing commands for drawing boxes, connector lines, tables, and laying out structured text directly inside your terminal buffer.
+`zago` provides a simple set of direct editing commands for drawing boxes, connector lines, tables, and laying out structured text directly inside your terminal buffer.
 
 Commands read like natural editing gestures: press `Esc`, type `BOX "Title"`, `LINE ARROW`, or `TABLE`, and shape your plain text instantly without leaving your text editor.
 
@@ -629,9 +629,9 @@ Disabled while Table Mode is active:
 
 ---
 
-## ⚙️ `.serc` Integration
+## ⚙️ `.zagorc` Integration
 
-LOGO commands can be entered from the command prompt, evaluated from the editor, or loaded through `.serc` key bindings and startup blocks.
+LOGO commands can be entered from the command prompt, evaluated from the editor, or loaded through `.zagorc` key bindings and startup blocks.
 
 For configuration syntax, named scripts, startup preludes, and command ids, see [Configuration](configuration.md).
 

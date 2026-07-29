@@ -2,9 +2,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "se",
+    name: "zago",
     products: [
-        .executable(name: "se", targets: ["se"]),
+        .executable(name: "zago", targets: ["zago"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
         .library(name: "Editor", targets: ["Editor"]),
@@ -25,7 +25,7 @@ let package = Package(
             dependencies: ["LogoEngine", "TextMetrics"]
         ),
         .executableTarget(
-            name: "se",
+            name: "zago",
             dependencies: [
                 "Editor",
                 "LogoEngine",
@@ -33,7 +33,7 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "seTests",
+            name: "zagoTests",
             dependencies: ["Editor", "LogoEngine", "TextMetrics"]
         ),
     ],

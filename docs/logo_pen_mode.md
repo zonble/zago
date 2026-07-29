@@ -1,6 +1,6 @@
 # 🖊️ `PD` / `PU` (Pen Down / Pen Up) Diagram Drawing Mode Guide
 
-In `se`, the classical LOGO commands `PD` (**Pen Down**) and `PU` (**Pen Up**) are repurposed into an intuitive **ASCII & Unicode Diagram Drawing Mode** for text files.
+In `zago`, the classical LOGO commands `PD` (**Pen Down**) and `PU` (**Pen Up**) are repurposed into an intuitive **ASCII & Unicode Diagram Drawing Mode** for text files.
 
 Instead of controlling a graphical canvas, `PD` and `PU` toggle how cursor navigation (`FD`, `BK`, `MOVE`, `GOTO`) interacts with the text editor buffer.
 
@@ -10,7 +10,7 @@ Instead of controlling a graphical canvas, `PD` and `PU` toggle how cursor navig
 
 In a text editor, drawing diagrams, ASCII flowcharts, box frames, or table structures often requires moving the cursor while leaving character trails, followed by repositioning the cursor to another location *without* overwriting existing text.
 
-| Command | Full Name | Status | Description in `se` Text Editor |
+| Command | Full Name | Status | Description in `zago` Text Editor |
 | :--- | :--- | :--- | :--- |
 | **`PD`** | **Pen Down** | Active Drawing Mode | Lowers the pen onto the text buffer. As the cursor moves (`FD`, `BK`, `MOVE`), it automatically inserts line-drawing characters (`─`, `│`) and fuses junction corners (`┌`, `┐`, `└`, `┘`, `┼`, `├`, `┤`, `┬`, `┴`). |
 | **`PU`** | **Pen Up** | Navigation Mode (Default) | Lifts the pen off the text buffer. The cursor can move freely (`GOTO`, `MOVE`, `FD`) without drawing any lines or altering existing text. |

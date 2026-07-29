@@ -1,6 +1,6 @@
-# `se` Editor Basics
+# `zago` Editor Basics
 
-`se` is modeless: ordinary typing inserts text, and editor actions are available through control keys, function keys, the menu bar, and the command prompt.
+`zago` is modeless: ordinary typing inserts text, and editor actions are available through control keys, function keys, the menu bar, and the command prompt.
 
 ## Common Keys
 

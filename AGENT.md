@@ -1,14 +1,14 @@
-# AGENT.md - AI Agent Development & Architecture Guide for `se`
+# AGENT.md - AI Agent Development & Architecture Guide for `zago`
 
-Welcome to `se` (Swift Editor), a lightweight, high-performance GNU Nano-compatible Terminal Text Editor written in Swift.
+Welcome to `zago` (zonble's nano + LOGO), a lightweight, high-performance GNU Nano-compatible Terminal Text Editor written in Swift.
 
-This document serves as the authoritative guide for AI Coding Agents (such as Antigravity, Codex, GitHub Copilot, and Claude Code) when modifying, refactoring, or extending the `se` codebase.
+This document serves as the authoritative guide for AI Coding Agents (such as Antigravity, Codex, GitHub Copilot, and Claude Code) when modifying, refactoring, or extending the `zago` codebase.
 
 ---
 
 ## 1. Executive Summary & Design Philosophy
 
-`se` is designed to be a fast, zero-dependency command-line text editor with complete GNU Nano keybinding compatibility, rich syntax highlighting, CJK double-width character support, dual-language localization (English and Traditional Chinese), and a user configuration system (`~/.serc`).
+`zago` is designed to be a fast, zero-dependency command-line text editor with complete GNU Nano keybinding compatibility, rich syntax highlighting, CJK double-width character support, dual-language localization (English and Traditional Chinese), and a user configuration system (`~/.zagorc`).
 
 ### Core Design Principles
 1. **Command-Driven Architecture**: All user actions are encapsulated into discrete `Command` objects managed by `CommandRegistry`. Key processing dispatches through commands rather than monolithic `switch` blocks.
@@ -23,18 +23,18 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 ## 2. Directory & Module Structure Map
 
 ```text
-se/
+zago/
 ├── Package.swift                             # Swift Package Manager manifest
 ├── README.md                                  # Short user-facing project entry point
 ├── AGENT.md                                   # AI Agent technical specification (this file)
 ├── docs/
 │   ├── README.md                              # Documentation index
 │   ├── logo.md                                # LOGO command language guide
-│   ├── configuration.md                       # .serc, key bindings, and Nano syntax loading
+│   ├── configuration.md                       # .zagorc, key bindings, and Nano syntax loading
 │   └── logo_pen_mode.md                       # Turtle/pen mode drawing guide
 ├── Sources/
-│   ├── se/
-│   │   └── se.swift                           # Main CLI entry point (swift-argument-parser)
+│   ├── zago/
+│   │   └── zago.swift                         # Main CLI entry point (swift-argument-parser)
 │   ├── TextMetrics/
 │   │   └── DisplayWidth.swift                  # Single source of truth for terminal display width
 │   └── Editor/
@@ -42,7 +42,7 @@ se/
 │       ├── TextBuffer.swift                   # Core line buffer, string insertion, range cutting
 │       ├── LayoutEngine.swift                 # Softwrap computation & VirtualLine coordinate mapping
 │       ├── Command.swift                      # Command & CommandRegistry key dispatch system
-│       ├── ConfigLoader.swift                 # Parser for ~/.serc and ./.serc configuration directives
+│       ├── ConfigLoader.swift                 # Parser for ~/.zagorc and ./.zagorc configuration directives
 │       ├── SpellChecker.swift                 # Misspelled word identification & location scanning
 │       ├── Editor.swift                       # Core Editor lifecycle, state properties, & run loop
 │       ├── Editor+Commands.swift              # Default keybindings & command registrations

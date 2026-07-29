@@ -180,24 +180,31 @@ public final class Editor {
         startFileWatcherForCurrentBuffer()
     }
 
-    /// Opens ~/.serc in a buffer for editing. Creates ~/.serc with default template if it does not exist.
+    /// Opens ~/.zagorc in a buffer for editing. Creates ~/.zagorc with default template if it does not exist.
     public func editConfig() {
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+        let zagorcPath = (homeDir as NSString).appendingPathComponent(".zagorc")
         let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
 
-        if !FileManager.default.fileExists(atPath: sercPath) {
-            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: sercPath)
+        let configPath: String
+        if FileManager.default.fileExists(atPath: zagorcPath) {
+            configPath = zagorcPath
+        } else if FileManager.default.fileExists(atPath: sercPath) {
+            configPath = sercPath
+        } else {
+            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: zagorcPath)
+            configPath = zagorcPath
         }
 
-        if let existingIndex = buffers.firstIndex(where: { $0.filePath == sercPath }) {
+        if let existingIndex = buffers.firstIndex(where: { $0.filePath == configPath }) {
             currentBufferIndex = existingIndex
             topVLineIndex = 0
             selectionMark = nil
             startFileWatcherForCurrentBuffer()
         } else {
-            openNewBuffer(filePath: sercPath)
+            openNewBuffer(filePath: configPath)
         }
-        setStatusMessage("[ Editing \(sercPath) ]")
+        setStatusMessage("[ Editing \(configPath) ]")
     }
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.

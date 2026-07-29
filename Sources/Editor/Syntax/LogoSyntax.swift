@@ -3,7 +3,7 @@ import LogoEngine
 
 public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let name = "LOGO"
-    public let fileExtensions = ["logo", "lg", ".serc"]
+    public let fileExtensions = ["logo", "lg", ".zagorc", ".serc"]
 
     private static let keywordPattern: String = {
         let lineSubkeywords = [

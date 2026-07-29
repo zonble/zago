@@ -3,10 +3,10 @@ import Editor
 import Foundation
 
 @main
-struct SE: ParsableCommand {
+struct Zago: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "se",
-        abstract: "A lightweight terminal text editor with powerful plain-text diagramming."
+        commandName: "zago",
+        abstract: "zago - zonble's nano + LOGO: A lightweight terminal text editor with powerful plain-text diagramming."
     )
 
     @Argument(help: "The file(s) to edit.")
@@ -34,7 +34,7 @@ struct SE: ParsableCommand {
 
     @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
-        help: "Generate a default ~/.serc configuration file.")
+        help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
 
     func run() throws {

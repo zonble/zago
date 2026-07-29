@@ -1,9 +1,9 @@
-# `se` Configuration
+# `zago` Configuration
 
-`se` reads configuration from two locations:
+`zago` reads configuration from two locations:
 
-1. `~/.serc` for user-wide defaults.
-2. `./.serc` for directory-local settings.
+1. `~/.zagorc` for user-wide defaults.
+2. `./.zagorc` for directory-local settings.
 
 Local settings are loaded after global settings, so a project can override the user's defaults.
 
@@ -11,24 +11,24 @@ The format is intentionally line-oriented and Nano-like. It supports editor sett
 
 ## Generating a Config File
 
-`se` can generate a commented starter `.serc` file:
+`zago` can generate a commented starter `.zagorc` file:
 
 ```bash
-se --init
+zago --init
 ```
 
-The default target is `~/.serc`. These aliases are equivalent:
+The default target is `~/.zagorc`. These aliases are equivalent:
 
 ```bash
-se --init-config
-se --generate-config
+zago --init-config
+zago --generate-config
 ```
 
 To write the template somewhere else, pass the target path as the positional argument:
 
 ```bash
-se --init ./.serc
-se --generate-config /tmp/example.serc
+zago --init ./.zagorc
+zago --generate-config /tmp/example.zagorc
 ```
 
 The command writes the template file and exits without opening the editor.
@@ -77,7 +77,7 @@ bind alt-b macro: BOX 30 4 ROUND
 
 ## LOGO Startup Code
 
-Each editor instance owns one persistent LOGO engine. Startup code loaded from `.serc` is evaluated into that engine, and later command-prompt input and key-bound scripts share its variables and procedures.
+Each editor instance owns one persistent LOGO engine. Startup code loaded from `.zagorc` is evaluated into that engine, and later command-prompt input and key-bound scripts share its variables and procedures.
 
 Use `logo-prelude` for startup variables and procedures:
 
@@ -105,7 +105,7 @@ endlogo
 bind alt-t logo:insert-title
 ```
 
-`logo-script` is a `.serc` container, not a second function syntax. Reusable LOGO logic should still be written with `TO ... END`.
+`logo-script` is a `.zagorc` container, not a second function syntax. Reusable LOGO logic should still be written with `TO ... END`.
 
 ## Shortcut Naming Convention
 
@@ -151,7 +151,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 
 ## Nano Syntax Files
 
-`se` can load GNU Nano `.nanorc` syntax definitions from common locations:
+`zago` can load GNU Nano `.nanorc` syntax definitions from common locations:
 
 1. `~/.nanorc`
 2. `/opt/homebrew/share/nano/*.nanorc`

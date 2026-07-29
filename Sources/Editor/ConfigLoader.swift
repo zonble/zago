@@ -99,21 +99,28 @@ public final class ConfigLoader {
 
     public init() {}
 
-    /// Loads configuration with cascading priority (~/.serc -> ./.serc).
+    /// Loads configuration with cascading priority (~/.zagorc -> ./.zagorc -> ~/.serc -> ./.serc).
     public func loadConfig() -> EditorConfig {
         var config = EditorConfig()
 
-        // 1. Try global ~/.serc
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        let globalPath = (homeDir as NSString).appendingPathComponent(".serc")
-        if FileManager.default.fileExists(atPath: globalPath) {
-            parseConfigFile(at: globalPath, into: &config)
+
+        // 1. Global ~/.zagorc (or legacy ~/.serc)
+        let globalZagorc = (homeDir as NSString).appendingPathComponent(".zagorc")
+        let globalSerc = (homeDir as NSString).appendingPathComponent(".serc")
+        if FileManager.default.fileExists(atPath: globalZagorc) {
+            parseConfigFile(at: globalZagorc, into: &config)
+        } else if FileManager.default.fileExists(atPath: globalSerc) {
+            parseConfigFile(at: globalSerc, into: &config)
         }
 
-        // 2. Try local ./.serc (overrides global)
-        let localPath = FileManager.default.currentDirectoryPath + "/.serc"
-        if FileManager.default.fileExists(atPath: localPath) {
-            parseConfigFile(at: localPath, into: &config)
+        // 2. Local ./.zagorc (or legacy ./.serc) (overrides global)
+        let localZagorc = FileManager.default.currentDirectoryPath + "/.zagorc"
+        let localSerc = FileManager.default.currentDirectoryPath + "/.serc"
+        if FileManager.default.fileExists(atPath: localZagorc) {
+            parseConfigFile(at: localZagorc, into: &config)
+        } else if FileManager.default.fileExists(atPath: localSerc) {
+            parseConfigFile(at: localSerc, into: &config)
         }
 
         return config
@@ -365,14 +372,14 @@ public final class ConfigLoader {
         return value
     }
 
-    /// Generates a clean default .serc configuration file with detailed comments and sample keybindings.
+    /// Generates a clean default .zagorc configuration file with detailed comments and sample keybindings.
     public static func generateDefaultConfigFile(targetPath: String? = nil) throws -> String {
         let path: String
         if let targetPath = targetPath {
             path = (targetPath as NSString).expandingTildeInPath
         } else {
             let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-            path = (homeDir as NSString).appendingPathComponent(".serc")
+            path = (homeDir as NSString).appendingPathComponent(".zagorc")
         }
 
         let content = defaultConfigTemplate
@@ -380,10 +387,10 @@ public final class ConfigLoader {
         return path
     }
 
-    /// Complete default .serc configuration file template content.
+    /// Complete default .zagorc configuration file template content.
     public static let defaultConfigTemplate = """
 # ==============================================================================
-#  se Text Editor Configuration File (~/.serc)
+#  zago Text Editor Configuration File (~/.zagorc)
 # ==============================================================================
 
 # Softwrap Column Width (uncomment to fix width, e.g. 80; omit for dynamic width)

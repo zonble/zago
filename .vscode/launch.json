@@ -19,6 +19,26 @@
             "target": "se",
             "configuration": "release",
             "preLaunchTask": "swift: Build Release se"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:se}",
+            "name": "Debug zago",
+            "target": "zago",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug zago"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:se}",
+            "name": "Release zago",
+            "target": "zago",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release zago"
         }
     ]
 }
