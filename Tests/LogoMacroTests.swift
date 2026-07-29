@@ -1103,6 +1103,32 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.statusMessage.hasPrefix("{") && editor.statusMessage.hasSuffix("}"))
 }
 
+@Test func testMDItemAndMDSetItemPrimitives() throws {
+    let editor = Editor()
+    // 1. MDITEM reading element
+    editor.logoEngine.execute("SHOW MDITEM [2 1] {{\"a \"b} {\"c \"d}}")
+    #expect(editor.statusMessage == "c")
+
+    // 2. MDSETITEM updating element
+    editor.logoEngine.execute("MAKE \"m {{\"a \"b} {\"c \"d}} MDSETITEM [2 1] :m \"X SHOW MDITEM [2 1] :m")
+    #expect(editor.statusMessage == "X")
+}
+
+@Test func testFirstsAndButFirstsPrimitives() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("SHOW FIRSTS [ [1 2 3] [a b c] ]")
+    #expect(editor.statusMessage == "[1 a]")
+
+    editor.logoEngine.execute("SHOW FIRSTS [ abc def ]")
+    #expect(editor.statusMessage == "[a d]")
+
+    editor.logoEngine.execute("SHOW BUTFIRSTS [ [1 2 3] [a b c] ]")
+    #expect(editor.statusMessage == "[[2 3] [b c]]")
+
+    editor.logoEngine.execute("SHOW BFS [ abc def ]")
+    #expect(editor.statusMessage == "[bc ef]")
+}
+
 @Test func testLogoEditorBufferPrimitives() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

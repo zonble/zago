@@ -196,6 +196,47 @@ extension LogoEngine {
                 return s.last != nil ? String(s.last!) : ""
             }
 
+        case .firsts:
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(v)
+            switch p {
+            case .list(let items), .array(let items):
+                let firstItems = items.map { item -> LogoValue in
+                    switch item {
+                    case .list(let subItems), .array(let subItems):
+                        return subItems.first ?? .string("")
+                    case .string(let s):
+                        return s.first != nil ? .string(String(s.first!)) : .string("")
+                    }
+                }
+                return LogoValue.list(firstItems).description
+            case .string(let s):
+                let firstItems = s.map { LogoValue.string(String($0)) }
+                return LogoValue.list(firstItems).description
+            }
+
+        case .butFirsts:
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(v)
+            switch p {
+            case .list(let items), .array(let items):
+                let bfItems = items.map { item -> LogoValue in
+                    switch item {
+                    case .list(let subItems):
+                        return .list(Array(subItems.dropFirst()))
+                    case .array(let subItems):
+                        return .array(Array(subItems.dropFirst()))
+                    case .string(let s):
+                        return .string(String(s.dropFirst()))
+                    }
+                }
+                return LogoValue.list(bfItems).description
+            case .string(let s):
+                return String(s.dropFirst())
+            }
+
         case .butFirst:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
@@ -246,6 +287,38 @@ extension LogoEngine {
                 }
                 return ""
             }
+
+        case .mditem:
+            index += 1
+            let idxVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let dataVal = evaluateExpression(tokens, index: &index)
+
+            let indicesList = LogoValue.parse(idxVal)
+            var indices: [Int] = []
+            switch indicesList {
+            case .list(let items), .array(let items):
+                indices = items.compactMap { Int($0.description) }
+            default:
+                if let single = Int(idxVal) {
+                    indices = [single]
+                }
+            }
+
+            var currentVal = LogoValue.parse(dataVal)
+            for idx in indices {
+                let zeroIdx = idx - 1
+                switch currentVal {
+                case .list(let items), .array(let items):
+                    guard zeroIdx >= 0 && zeroIdx < items.count else { return "" }
+                    currentVal = items[zeroIdx]
+                case .string(let s):
+                    guard zeroIdx >= 0 && zeroIdx < s.count else { return "" }
+                    let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
+                    currentVal = .string(String(s[strIdx]))
+                }
+            }
+            return currentVal.description
 
         case .pop:
             index += 1

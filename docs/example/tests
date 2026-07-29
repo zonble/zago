@@ -16,9 +16,23 @@ show lput 4 [ 1 2 3 ]
 show lput "e "bcd
 show array 10
 show mdarray [2 2]
-(mdarray [3 5] 0)
-
-
-
-
-
+(mdarray [3 2] 0)
+show listtoarray [ 1 3 5 7 ]
+show arraytolist { 2 4 6 8 }
+show combine "a [b c]
+show reverse [ 1 2 3 ]
+show reverse "abc
+show reverse "你好嗎
+show gensym
+show first [ 1 2 3 ]
+show first "abc
+show first "你好啊
+show last [ 1 2 3 ]
+show last "abc
+show last "你好啊
+show firsts [ [1 2 3] [a b c] ]
+show firsts [ abc def ]
+show butfirst [ 1 2 3 ]
+show butfirst "abc
+show butlast [ 1 2 3 ]
+show butlast "abc

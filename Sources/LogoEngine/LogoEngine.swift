@@ -94,14 +94,14 @@ public final class LogoEngine {
         .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
-        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end
+        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
         .apply, .invoke, .map, .mapSe, .filter, .reduce, .crossmap, .runResult,
         .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array, .mdarray,
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
-        .last, .firsts, .butFirst, .butLast, .butFirsts, .item,
+        .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
         .push, .pop, .dequeue, .isWord, .isList, .isArray,
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isBefore,
@@ -259,6 +259,61 @@ public final class LogoEngine {
                             s.replaceSubrange(strIdx...strIdx, with: newVal)
                             variables[varName] = s
                         }
+                    }
+                }
+
+            case .mdsetItem:
+                index += 1
+                let idxVal = evaluateExpression(tokens, index: &index)
+                if index + 1 < tokens.count {
+                    index += 1
+                    let varToken = tokens[index]
+                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                    index += 1
+                    let newVal = evaluateExpression(tokens, index: &index)
+
+                    let indicesList = LogoValue.parse(idxVal)
+                    var indices: [Int] = []
+                    switch indicesList {
+                    case .list(let items), .array(let items):
+                        indices = items.compactMap { Int($0.description) }
+                    default:
+                        if let single = Int(idxVal) {
+                            indices = [single]
+                        }
+                    }
+
+                    if let currentValStr = variables[varName] {
+                        var rootVal = LogoValue.parse(currentValStr)
+
+                        func updateNested(value: LogoValue, path: [Int], replacement: LogoValue) -> LogoValue {
+                            guard let head = path.first else { return replacement }
+                            let zeroIdx = head - 1
+                            let tail = Array(path.dropFirst())
+
+                            switch value {
+                            case .list(var items):
+                                if zeroIdx >= 0 && zeroIdx < items.count {
+                                    items[zeroIdx] = updateNested(value: items[zeroIdx], path: tail, replacement: replacement)
+                                    return .list(items)
+                                }
+                            case .array(var items):
+                                if zeroIdx >= 0 && zeroIdx < items.count {
+                                    items[zeroIdx] = updateNested(value: items[zeroIdx], path: tail, replacement: replacement)
+                                    return .array(items)
+                                }
+                            case .string(var s):
+                                if tail.isEmpty && zeroIdx >= 0 && zeroIdx < s.count {
+                                    let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
+                                    s.replaceSubrange(strIdx...strIdx, with: replacement.description)
+                                    return .string(s)
+                                }
+                            }
+                            return value
+                        }
+
+                        rootVal = updateNested(value: rootVal, path: indices, replacement: LogoValue.parse(newVal))
+                        variables[varName] = rootVal.description
                     }
                 }
 

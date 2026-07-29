@@ -109,6 +109,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case lput
     case array
     case mdarray
+    case mditem
+    case mdsetItem
     case listToArray
     case arrayToList
     case combine
@@ -316,6 +318,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["LPUT", "QUEUE"], .lput),
         (["ARRAY"], .array),
         (["MDARRAY"], .mdarray),
+        (["MDITEM"], .mditem),
+        (["MDSETITEM"], .mdsetItem),
         (["LISTTOARRAY"], .listToArray),
         (["ARRAYTOLIST"], .arrayToList),
         (["COMBINE"], .combine),
