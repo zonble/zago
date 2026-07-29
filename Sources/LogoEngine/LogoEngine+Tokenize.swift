@@ -320,50 +320,11 @@ extension LogoEngine {
             return listTokens.joined(separator: " ")
         }
 
-        if let prim = LogoPrimitive.from(token) {
-            switch prim {
-            case .date:
-                var format = "yyyy-MM-dd"
-                if index + 1 < tokens.count {
-                    let nextToken = tokens[index + 1]
-                    if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
-                        index += 1
-                        let customFmt = unquote(nextToken)
-                        if !customFmt.isEmpty {
-                            format = customFmt
-                        }
-                    }
-                }
-                return formatDate(format: format)
-
-            case .time:
-                var format = "HH:mm:ss"
-                if index + 1 < tokens.count {
-                    let nextToken = tokens[index + 1]
-                    if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
-                        index += 1
-                        let customFmt = unquote(nextToken)
-                        if !customFmt.isEmpty {
-                            format = customFmt
-                        }
-                    }
-                }
-                return formatTime(format: format)
-
-            default:
-                break
-            }
-        } else if let proc = customProcedures[upper] {
-            return invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
-        } else {
-            return resolveTokenValue(token)
-        }
-
         if let proc = customProcedures[upper] {
             return invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
         }
 
-        return evaluateDataPrimitives(tokens, index: &index) ?? resolveTokenValue(token)
+        return evaluateExpressionPrimitive(tokens, index: &index) ?? resolveTokenValue(token)
     }
 
     internal func resolveTokenValue(_ token: String) -> String {
