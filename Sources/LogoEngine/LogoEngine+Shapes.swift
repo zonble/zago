@@ -191,30 +191,42 @@ extension LogoEngine {
 
     private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
-        let maxLength = 10
-        var drawableOffsets: [Int] = []
+        let maxSearchLength = 200
+        var targetOffset: Int? = nil
+        var targetChar: Character? = nil
 
-        for offset in 0..<maxLength {
+        for offset in 0..<maxSearchLength {
             let col = startCol + offset
             let existing = getLineCharAt(line: startLine, col: col)
 
-            if existing == " " {
-                drawableOffsets.append(offset)
+            if offset == 0 {
                 continue
             }
 
-            if isMaskChar(existing) {
-                drawableOffsets.append(offset)
-                if offset > 0 { break }
-                continue
+            if existing != " " {
+                targetOffset = offset
+                targetChar = existing
+                break
             }
+        }
 
-            break
+        let drawableOffsets: [Int]
+        if let target = targetOffset {
+            let isMask = isMaskChar(targetChar ?? " ")
+            let shouldFuse = !arrowMode.hasForwardArrow && isMask
+            let maxOffset = shouldFuse ? target : target - 1
+            if maxOffset >= 0 {
+                drawableOffsets = Array(0...maxOffset)
+            } else {
+                drawableOffsets = []
+            }
+        } else {
+            drawableOffsets = Array(0..<10)
         }
 
         guard !drawableOffsets.isEmpty else { return }
 
-        editor.logoEngine(self, performAction: .ensureLineExists(index:startLine))
+        editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
         let startLineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
         var currentChars = Array(startLineStr)
         while currentChars.count < startCol {
@@ -241,25 +253,37 @@ extension LogoEngine {
 
     private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
-        let maxHeight = 10
-        var drawableOffsets: [Int] = []
+        let maxSearchHeight = 100
+        var targetOffset: Int? = nil
+        var targetChar: Character? = nil
 
-        for offset in 0..<maxHeight {
+        for offset in 0..<maxSearchHeight {
             let line = startLine + offset
             let existing = getLineCharAt(line: line, col: startCol)
 
-            if existing == " " {
-                drawableOffsets.append(offset)
+            if offset == 0 {
                 continue
             }
 
-            if isMaskChar(existing) {
-                drawableOffsets.append(offset)
-                if offset > 0 { break }
-                continue
+            if existing != " " {
+                targetOffset = offset
+                targetChar = existing
+                break
             }
+        }
 
-            break
+        let drawableOffsets: [Int]
+        if let target = targetOffset {
+            let isMask = isMaskChar(targetChar ?? " ")
+            let shouldFuse = !arrowMode.hasForwardArrow && isMask
+            let maxOffset = shouldFuse ? target : target - 1
+            if maxOffset >= 0 {
+                drawableOffsets = Array(0...maxOffset)
+            } else {
+                drawableOffsets = []
+            }
+        } else {
+            drawableOffsets = Array(0..<5)
         }
 
         guard !drawableOffsets.isEmpty else { return }
@@ -267,7 +291,7 @@ extension LogoEngine {
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
             let line = startLine + offset
-            editor.logoEngine(self, performAction: .ensureLineExists(index:line))
+            editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
             var currentChars = Array(lineStr)

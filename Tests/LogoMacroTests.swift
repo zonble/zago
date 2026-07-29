@@ -260,7 +260,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     let autoLineArrowFuseEditor = Editor()
     logoEngine.delegate = autoLineArrowFuseEditor
     logoEngine.execute("DRAWBOX 6 3 GOTO 2 1 LINE ARROW")
-    #expect(autoLineArrowFuseEditor.buffer.lines[1] == "├────┤")
+    #expect(autoLineArrowFuseEditor.buffer.lines[1] == "├───→│")
 
     let lineArrowParserEditor = Editor()
     logoEngine.delegate = lineArrowParserEditor
@@ -280,10 +280,10 @@ final class LogoTestResultBox: @unchecked Sendable {
     let autoVlineArrowEditor = Editor()
     logoEngine.delegate = autoVlineArrowEditor
     logoEngine.execute("VLINE ARROW")
-    #expect(autoVlineArrowEditor.buffer.lines.count == 10)
+    #expect(autoVlineArrowEditor.buffer.lines.count == 5)
     #expect(autoVlineArrowEditor.buffer.lines[0] == "│")
-    #expect(autoVlineArrowEditor.buffer.lines[8] == "│")
-    #expect(autoVlineArrowEditor.buffer.lines[9] == "↓")
+    #expect(autoVlineArrowEditor.buffer.lines[3] == "│")
+    #expect(autoVlineArrowEditor.buffer.lines[4] == "↓")
 
     let autoVlineArrowStopEditor = Editor()
     autoVlineArrowStopEditor.buffer.lines = ["", "", "X"]
@@ -291,12 +291,12 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("GOTO 1 1 VLINE ARROW")
     #expect(autoVlineArrowStopEditor.buffer.lines == ["│", "↓", "X"])
 
-    let autoVlineArrowFuseEditor = Editor()
-    logoEngine.delegate = autoVlineArrowFuseEditor
+    let autoVlineArrowTouchEditor = Editor()
+    logoEngine.delegate = autoVlineArrowTouchEditor
     logoEngine.execute("DRAWBOX 6 3 GOTO 1 3 VLINE ARROW")
-    #expect(autoVlineArrowFuseEditor.buffer.lines[0] == "┌─┬──┐")
-    #expect(autoVlineArrowFuseEditor.buffer.lines[1] == "│ │  │")
-    #expect(autoVlineArrowFuseEditor.buffer.lines[2] == "└─┴──┘")
+    #expect(autoVlineArrowTouchEditor.buffer.lines[0] == "┌─┬──┐")
+    #expect(autoVlineArrowTouchEditor.buffer.lines[1] == "│ ↓  │")
+    #expect(autoVlineArrowTouchEditor.buffer.lines[2] == "└────┘")
 
     // 16. LOGO DATE and TIME Command test
     let dateTimeEditor = Editor()

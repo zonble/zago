@@ -15,4 +15,4 @@
 | `^J` | Justify paragraph |
 | `^Z` | Undo |
 | `^G` | Help |
-| `Alt+T` | Toggle table mode |
+| `M+T` | Toggle table mode |

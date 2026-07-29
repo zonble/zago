@@ -96,8 +96,11 @@ swift test
 
 ## 4. Key Subsystem Specifications
 
-### A. Command & Key Dispatch System ([`Command.swift`](Sources/Editor/Command.swift))
+### A. Command, Key Dispatch & Shortcut Naming Convention ([`Command.swift`](Sources/Editor/Command.swift))
 - Every key sequence (including Ctrl keys, Function keys F1–F12, Arrow keys, Shift+Arrows, Alt/Esc sequences) maps to a `Key` enum.
+- **Shortcut Naming Convention in UI & Documentation**:
+  - Control key combinations MUST be represented in `^<key>` format (e.g., `^Q`, `^N`, `^W`, `^BS`).
+  - Alt / Meta key combinations MUST be represented in `M+<key>` format (e.g., `M+T`, `M+S`, `M+L`, `M+.`, `M+,`).
 - To add a new editor feature, register a new `Command` instance in [`Editor+Commands.swift`](Sources/Editor/Editor+Commands.swift):
   ```swift
   commandRegistry.register(Command(

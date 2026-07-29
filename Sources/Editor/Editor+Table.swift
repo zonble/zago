@@ -167,7 +167,7 @@ extension Editor {
         isTableModeActive = true
         currentTableCell = cell
         clampTableModeCursor()
-        setStatusMessage("[ TABLE MODE ] (Alt+T to exit | Tab to navigate)")
+        setStatusMessage("[ TABLE MODE ] (M+T to exit | Tab to navigate)")
     }
 
     /// Clamps cursor position to inner bounds of current cell.

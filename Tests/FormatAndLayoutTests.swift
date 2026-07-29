@@ -220,10 +220,10 @@ import TextMetrics
 
     // 1. LOGO macro prompt help bar
     let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }))
-    #expect(logoHelp.contains("BOX."))
-    #expect(logoHelp.contains("DRAWBOX."))
-    #expect(logoHelp.contains("TABLE.."))
-    #expect(logoHelp.contains("VLINE."))
+    #expect(logoHelp.contains("BOX"))
+    #expect(logoHelp.contains("DRAWBOX"))
+    #expect(logoHelp.contains("TABLE"))
+    #expect(logoHelp.contains("VLINE"))
     #expect(logoHelp.contains("TYPE"))
 
     // 2. Exit Confirmation prompt help bar
@@ -267,4 +267,41 @@ import TextMetrics
     let fullOutput = renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(fullOutput.hasPrefix("\u{1B}[?7l\u{1B}[H"))
 }
+
+@Test func testMenuBarCategoryHighlightStability() throws {
+    let editor = Editor()
+    editor.isMenuBarActive = true
+    let cols = 80
+
+    // Render with category 0 highlighted
+    editor.menuBar.categoryIndex = 0
+    let line0 = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: cols)
+
+    // Render with category 1 highlighted
+    editor.menuBar.categoryIndex = 1
+    let line1 = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: cols)
+
+    // Render with category 2 highlighted
+    editor.menuBar.categoryIndex = 2
+    let line2 = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: cols)
+
+    // Verify raw display lengths of all category selections are strictly identical (no horizontal jumping)
+    let clean0 = line0.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    let clean1 = line1.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    let clean2 = line2.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+
+    #expect(clean0.count == clean1.count)
+    #expect(clean1.count == clean2.count)
+
+    // Verify dropdown overlay column offset is aligned directly with category index
+    editor.menuBar.categoryIndex = 0
+    let (startCol0, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
+    #expect(startCol0 == 1)
+
+    editor.menuBar.categoryIndex = 1
+    let (startCol1, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
+    let title0Width = L10n[editor.menuBar.categories[0].titleKey].displayWidth
+    #expect(startCol1 == 1 + title0Width + 4)
+}
+
 

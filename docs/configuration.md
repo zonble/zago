@@ -107,41 +107,47 @@ bind alt-t logo:insert-title
 
 `logo-script` is a `.serc` container, not a second function syntax. Reusable LOGO logic should still be written with `TO ... END`.
 
+## Shortcut Naming Convention
+
+All shortcut representations across the editor, menu bar, help displays, and documentation follow a strict naming convention:
+- **Control keys**: Use `^<key>` format (e.g., `^Q`, `^N`, `^W`, `^BS`).
+- **Alt / Meta keys**: Use `M+<key>` format (e.g., `M+T`, `M+S`, `M+L`, `M+.`, `M+,`).
+
 ## Command IDs
 
 | Command ID | Description | Default Keys |
 | :--- | :--- | :--- |
-| `move.left` | Move cursor left | `Ctrl+B`, `Left Arrow` |
-| `move.right` | Move cursor right | `Ctrl+F`, `Right Arrow` |
-| `move.up` | Move cursor up | `Ctrl+P`, `Up Arrow` |
-| `move.down` | Move cursor down | `Ctrl+N`, `Down Arrow` |
-| `move.home` | Move to line start | `Ctrl+A`, `Home` |
-| `move.end` | Move to line end | `Ctrl+E`, `End` |
-| `move.pgdn` | Page down | `Ctrl+V`, `F8`, `PageDown` |
-| `move.pgup` | Page up | `Ctrl+Y`, `F7`, `PageUp` |
-| `edit.delete` | Delete character | `Ctrl+D`, `Delete` |
-| `edit.mark` | Set or unset selection mark | `Ctrl+^` |
-| `edit.cut` | Cut selected text, or current line when no selection exists | `Ctrl+K`, `F9` |
-| `edit.uncut` | Paste last cut text | `Ctrl+U`, `F10` |
-| `edit.justify` | Justify paragraph | `Ctrl+J` |
-| `edit.undo` | Undo edit | `Ctrl+Z` |
-| `edit.spell` | Interactive spell checker | `Ctrl+T`, `F12` |
-| `edit.eval_logo` | Evaluate LOGO at current line, selection, or code block | `Ctrl+Q` |
-| `search.whereis` | Search text | `Ctrl+W`, `F6` |
-| `cursor.goto_line` | Go to line or line,column | `Ctrl+/`, `Ctrl+_`, `Alt+G` |
-| `cursor.position` | Show cursor position | `Ctrl+C`, `F11` |
-| `file.save` | Save file | `Ctrl+O`, `Ctrl+S`, `F3` |
-| `file.insert` | Insert external file | `Ctrl+R`, `F5` |
-| `file.exit` | Exit buffer/editor | `Ctrl+X`, `F2` |
+| `move.left` | Move cursor left | `^B`, `Left Arrow` |
+| `move.right` | Move cursor right | `^F`, `Right Arrow` |
+| `move.up` | Move cursor up | `^P`, `Up Arrow` |
+| `move.down` | Move cursor down | `^N`, `Down Arrow` |
+| `move.home` | Move to line start | `^A`, `Home` |
+| `move.end` | Move to line end | `^E`, `End` |
+| `move.pgdn` | Page down | `^V`, `F8`, `PageDown` |
+| `move.pgup` | Page up | `^Y`, `F7`, `PageUp` |
+| `edit.delete` | Delete character | `^D`, `Delete` |
+| `edit.mark` | Set or unset selection mark | `^^` |
+| `edit.cut` | Cut selected text, or current line when no selection exists | `^K`, `F9` |
+| `edit.uncut` | Paste last cut text | `^U`, `F10` |
+| `edit.justify` | Justify paragraph | `^J` |
+| `edit.undo` | Undo edit | `^Z` |
+| `edit.spell` | Interactive spell checker | `^T`, `F12` |
+| `edit.eval_logo` | Evaluate LOGO at current line, selection, or code block | `^Q` |
+| `search.whereis` | Search text | `^W`, `F6` |
+| `cursor.goto_line` | Go to line or line,column | `^/`, `^_`, `M+G` |
+| `cursor.position` | Show cursor position | `^C`, `F11` |
+| `file.save` | Save file | `^O`, `^S`, `F3` |
+| `file.insert` | Insert external file | `^R`, `F5` |
+| `file.exit` | Exit buffer/editor | `^X`, `F2` |
 | `file.save_exit` | Save and exit | `F4` |
-| `buffer.next` | Next buffer | `Alt+.`, `Alt+>` |
-| `buffer.prev` | Previous buffer | `Alt+,`, `Alt+<` |
-| `buffer.new` | New buffer | `Ctrl+N` |
-| `macro.logo` | Open command prompt | `Esc`, `Alt+L`, `Alt+:`, `F8` |
-| `menu.show` | Toggle menu bar | `F1`, `Ctrl+M`, `Alt+M` |
-| `help.show` | Full-screen help | `Ctrl+G` |
-| `table.toggle` | Toggle table mode | `Alt+T` |
-| `table.style` | Cycle table style | `Alt+S` |
+| `buffer.next` | Next buffer | `M+.`, `M+>` |
+| `buffer.prev` | Previous buffer | `M+,`, `M+<` |
+| `buffer.new` | New buffer | `^N` |
+| `macro.logo` | Open command prompt | `Esc`, `M+L`, `M+:`, `F8` |
+| `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
+| `help.show` | Full-screen help | `^G` |
+| `table.toggle` | Toggle table mode | `M+T` |
+| `table.style` | Cycle table style | `M+S` |
 
 ## Nano Syntax Files
 

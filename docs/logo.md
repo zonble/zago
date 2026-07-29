@@ -11,13 +11,13 @@ This dialect treats the editor buffer as the main workspace. Commands can move t
 | Trigger Shortcut | Context / Input Mode | Description |
 | :--- | :--- | :--- |
 | **`Esc`** | Normal Edit Mode | Opens the bottom command prompt |
-| **`M-l` (`Alt+L` / `Option+L`)** | Normal Edit Mode | Alternate shortcut for the command prompt |
-| **`M-:` (`Alt+:`)** | Normal Edit Mode | Alternate Vim-style shortcut for the command prompt |
+| **`M+L`** | Normal Edit Mode | Alternate shortcut for the command prompt |
+| **`M+:`** | Normal Edit Mode | Alternate Vim-style shortcut for the command prompt |
 | **`F8`** | Normal Edit Mode | Function key shortcut for the command prompt |
 | **`Left / Right` (`^B` / `^F`)** | Command Prompt Active | Moves input cursor left / right inside the prompt |
 | **`Home / End` (`^A` / `^E`)** | Command Prompt Active | Moves input cursor directly to prompt line start / end |
 | **`Delete` / `Backspace` (`^D`)**| Command Prompt Active | Deletes character at / before input cursor |
-| **`Ctrl+Backspace` (`Ctrl+BS`)**| Command Prompt Active | Clears entire prompt input line |
+| **`^BS` (`Ctrl+Backspace`)**| Command Prompt Active | Clears entire prompt input line |
 | **`Up / Down` Arrows** | Command Prompt Active | Navigate through previously executed commands |
 | **`Enter`** | Command Prompt Active | Execute the command and save it to history |
 | **`Esc` / `^C`** | Command Prompt Active | Cancel prompt mode |
@@ -310,14 +310,14 @@ Use explicit lengths when you want deterministic drawing. Use no-argument auto-c
 
 ### 3. Table Creation
 
-`TABLE` inserts table structures at the cursor. It shifts existing text down instead of overwriting it. It does not enter Table Mode; use `Alt+T` for table editing mode.
+`TABLE` inserts table structures at the cursor. It shifts existing text down instead of overwriting it. It does not enter Table Mode; use `M+T` for table editing mode.
 
 | Command | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- |
 | `TABLE` | `TABLE` | Creates a default 3x3 table at the cursor | `TABLE` |
 | `TABLE` | `TABLE rows cols` | Creates a table with explicit row and column counts | `TABLE 4 2` |
 | `TABLE BORDER` | `TABLE BORDER SINGLE` | Sets the default table border style | `TABLE BORDER ROUND` |
-| `TABLE NEXTSTYLE` | `TABLE NEXTSTYLE` | Cycles the default table border style, matching `Alt+S` | `TABLE NEXTSTYLE` |
+| `TABLE NEXTSTYLE` | `TABLE NEXTSTYLE` | Cycles the default table border style, matching `M+S` | `TABLE NEXTSTYLE` |
 
 Supported table border styles:
 
@@ -342,7 +342,7 @@ TABLE 2 2
 ╰────────────────┴────────────────╯
 ```
 
-`TABLE` is useful when you want a structure first, then ordinary editing later. After creating a table, move the cursor into it and press `Alt+T` to edit cells.
+`TABLE` is useful when you want a structure first, then ordinary editing later. After creating a table, move the cursor into it and press `M+T` to edit cells.
 
 When Table Mode is active, `TABLE` is disabled to protect the current table structure.
 

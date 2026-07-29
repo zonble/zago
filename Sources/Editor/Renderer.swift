@@ -105,7 +105,7 @@ public final class Renderer {
                 if idx == editor.menuBar.categoryIndex {
                     rawMenuStr += " [ \(catTitle) ] "
                 } else {
-                    rawMenuStr += "  \(catTitle)   "
+                    rawMenuStr += "  \(catTitle)  "
                 }
             }
 
@@ -115,7 +115,7 @@ public final class Renderer {
                 if idx == editor.menuBar.categoryIndex {
                     formattedMenu += "\u{1B}[1;37;44m [ \(catTitle) ] \u{1B}[0;47;30m "
                 } else {
-                    formattedMenu += "  \(catTitle)   "
+                    formattedMenu += "  \(catTitle)  "
                 }
             }
             let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
@@ -648,7 +648,7 @@ public final class Renderer {
     public func generateDropdownOverlayLines(editor: Editor, cols: Int) -> (startCol: Int, boxWidth: Int, boxLines: [String]) {
         guard editor.isMenuBarActive else { return (0, 0, []) }
 
-        var colOffset = 0
+        var colOffset = 1
         for idx in 0..<editor.menuBar.categoryIndex {
             let title = L10n[editor.menuBar.categories[idx].titleKey]
             colOffset += title.displayWidth + 4
