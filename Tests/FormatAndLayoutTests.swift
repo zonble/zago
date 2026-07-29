@@ -120,7 +120,7 @@ import TextMetrics
     let linesNoRuler = cleanNoRuler.components(separatedBy: "\r\n")
 
     // Verify title bar on line 0 (with inverted video ANSI)
-    #expect(linesNoRuler[0].contains("se"))
+    #expect(linesNoRuler[0].contains("zago"))
     #expect(linesNoRuler[0].contains("\u{1B}[7m"))
 
     // Output must consist of exactly 24 screen line chunks (23 \r\n separators)
@@ -132,7 +132,7 @@ import TextMetrics
     let cleanWithRuler = outputWithRuler.hasPrefix("\u{1B}[H") ? String(outputWithRuler.dropFirst(3)) : outputWithRuler
     let linesWithRuler = cleanWithRuler.components(separatedBy: "\r\n")
 
-    #expect(linesWithRuler[0].contains("se"))
+    #expect(linesWithRuler[0].contains("zago"))
     #expect(linesWithRuler[0].contains("\u{1B}[7m"))
     #expect(linesWithRuler[1].contains("!"))  // Ruler line
 
@@ -328,7 +328,7 @@ import TextMetrics
 
     // Test Title Bar component
     let titleBarOutput = renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
-    #expect(titleBarOutput.contains("se"))
+    #expect(titleBarOutput.contains("zago"))
 
     // Test Ruler Bar component
     let rulerOutput = renderer.generateWordStarRuler(width: 30)
@@ -419,5 +419,3 @@ import TextMetrics
     let outputActive = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(outputActive.contains("\u{1B}[90m   1 \u{1B}[0m"))
 }
-
-
