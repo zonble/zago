@@ -556,7 +556,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute(
         "TYPE LIST? [1 2] TYPE \" \" TYPE NUMBER? 123 TYPE \" \" TYPE EMPTY? \"\" TYPE \" \" TYPE MEMBER? \"b\" [a b c]"
     )
-    #expect(ed7.buffer.lines[0] == "1 1 1 1")
+    #expect(ed7.buffer.lines[0] == "true true true true")
 
     let ed8 = Editor()
     logoEngine.delegate = ed8
@@ -617,38 +617,75 @@ final class LogoTestResultBox: @unchecked Sendable {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("WORD? \"abc\"")
-    #expect(logoEngine.lastResult == "1")
+    // 1. WORD? / WORDP
+    logoEngine.execute("WORDP \"a\"")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("WORDP 123")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("WORD? [1 2]")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("LIST? [1 2 3]")
-    #expect(logoEngine.lastResult == "1")
+    // 2. LIST? / LISTP
+    logoEngine.execute("LISTP [1 2 3]")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("LIST? \"abc\"")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("ARRAY? {1 2}")
-    #expect(logoEngine.lastResult == "1")
+    // 3. ARRAY? / ARRAYP
+    logoEngine.execute("ARRAYP {1 2}")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("ARRAY? [1 2]")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("NUMBER? 123.45")
-    #expect(logoEngine.lastResult == "1")
+    // 4. NUMBER? / NUMBERP
+    logoEngine.execute("NUMBERP 123.45")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("NUMBER? \"abc\"")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("EMPTY? \"\"")
-    #expect(logoEngine.lastResult == "1")
+    // 5. EMPTY? / EMPTYP
+    logoEngine.execute("EMPTYP \"\"")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("EMPTY? []")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("EMPTY? \"a\"")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("EQUAL? [1 2] [1 2]")
-    #expect(logoEngine.lastResult == "1")
+    // 6. EQUAL? / EQUALP / =
+    logoEngine.execute("EQUALP [1 2] [1 2]")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("EQUAL? 12 12.0")
+    #expect(logoEngine.lastResult == "true")
 
-    logoEngine.execute("NOTEQUAL? \"a\" \"b\"")
-    #expect(logoEngine.lastResult == "1")
+    // 7. NOTEQUAL? / NOTEQUALP
+    logoEngine.execute("NOTEQUALP \"a\" \"b\"")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("NOTEQUAL? 1 1")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("BEFORE? \"apple\" \"banana\"")
-    #expect(logoEngine.lastResult == "1")
+    // 8. BEFORE? / BEFOREP
+    logoEngine.execute("BEFOREP \"apple\" \"banana\"")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("BEFORE? \"banana\" \"apple\"")
+    #expect(logoEngine.lastResult == "false")
 
+    // 9. .EQ (Identity Equality)
     logoEngine.execute(".EQ \"test\" \"test\"")
-    #expect(logoEngine.lastResult == "1")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute(".EQ 12 12.0")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("SUBSTRING? \"cat\" \"caterpillar\"")
-    #expect(logoEngine.lastResult == "1")
+    // 10. SUBSTRING? / SUBSTRINGP
+    logoEngine.execute("SUBSTRINGP \"cat\" \"caterpillar\"")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("SUBSTRING? \"dog\" \"caterpillar\"")
+    #expect(logoEngine.lastResult == "false")
 
-    logoEngine.execute("MEMBER? \"b\" [a b c]")
-    #expect(logoEngine.lastResult == "1")
+    // 11. MEMBER? / MEMBERP
+    logoEngine.execute("MEMBERP \"b\" [a b c]")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("MEMBER? \"x\" [a b c]")
+    #expect(logoEngine.lastResult == "false")
 
     logoEngine.execute("MEMBER \"a\" \"banana\"")
     #expect(logoEngine.lastResult == "anana")
@@ -838,22 +875,22 @@ final class LogoTestResultBox: @unchecked Sendable {
     let logoEngine = LogoEngine(delegate: editor)
 
     logoEngine.execute("TRUE")
-    #expect(logoEngine.lastResult == "1")
+    #expect(logoEngine.lastResult == "true")
 
     logoEngine.execute("FALSE")
-    #expect(logoEngine.lastResult == "0")
+    #expect(logoEngine.lastResult == "false")
 
     logoEngine.execute("AND TRUE FALSE")
-    #expect(logoEngine.lastResult == "0")
+    #expect(logoEngine.lastResult == "false")
 
     logoEngine.execute("OR TRUE FALSE")
-    #expect(logoEngine.lastResult == "1")
+    #expect(logoEngine.lastResult == "true")
 
     logoEngine.execute("XOR TRUE TRUE")
-    #expect(logoEngine.lastResult == "0")
+    #expect(logoEngine.lastResult == "false")
 
     logoEngine.execute("NOT FALSE")
-    #expect(logoEngine.lastResult == "1")
+    #expect(logoEngine.lastResult == "true")
 }
 
 @Test func testRecursiveProcedureWithParameters() throws {
@@ -1168,6 +1205,22 @@ final class LogoTestResultBox: @unchecked Sendable {
     // 4. QUOTED number
     editor.logoEngine.execute("SHOW QUOTED 123")
     #expect(editor.statusMessage == "\"123")
+}
+
+@Test func testSetFirstAndSetBFPrimitives() throws {
+    let editor = Editor()
+
+    // 1. .SETFIRST on List
+    editor.logoEngine.execute("MAKE \"a [ 1 2 3 ] .SETFIRST :a \"7 SHOW :a")
+    #expect(editor.statusMessage == "[7 2 3]")
+
+    // 2. .SETFIRST on Array
+    editor.logoEngine.execute("MAKE \"a { 1 2 3 } .SETFIRST :a \"7 SHOW :a")
+    #expect(editor.statusMessage == "{7 2 3}")
+
+    // 3. .SETBF on List
+    editor.logoEngine.execute("MAKE \"a [ 1 2 3 ] .SETBF :a [ 8 9 ] SHOW :a")
+    #expect(editor.statusMessage == "[1 8 9]")
 }
 
 @Test func testFirstsAndButFirstsPrimitives() throws {

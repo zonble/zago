@@ -516,64 +516,40 @@ extension LogoEngine {
                 return ""
             }
 
-        case .remdup:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
-            let p = LogoValue.parse(v)
-            switch p {
-            case .list(let items):
-                var unique: [LogoValue] = []
-                for item in items {
-                    if !unique.contains(item) { unique.append(item) }
-                }
-                return LogoValue.list(unique).description
-            case .array(let items):
-                var unique: [LogoValue] = []
-                for item in items {
-                    if !unique.contains(item) { unique.append(item) }
-                }
-                return LogoValue.array(unique).description
-            case .string(let s):
-                var unique = ""
-                for ch in s {
-                    if !unique.contains(ch) { unique.append(ch) }
-                }
-                return unique
-            }
 
         case .isWord:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            if case .string = p { return "1" }
-            return "0"
+            if case .string = p { return "true" }
+            return "false"
 
         case .isList:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            if case .list = p { return "1" }
-            return "0"
+            if case .list = p { return "true" }
+            return "false"
 
         case .isArray:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            if case .array = p { return "1" }
-            return "0"
+            if case .array = p { return "true" }
+            return "false"
 
         case .isNumber:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
-            return Double(v) != nil ? "1" : "0"
+            return Double(v) != nil ? "true" : "false"
 
         case .isEmpty:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
             switch p {
-            case .list(let items), .array(let items): return items.isEmpty ? "1" : "0"
-            case .string(let s): return s.isEmpty ? "1" : "0"
+            case .list(let items), .array(let items): return items.isEmpty ? "true" : "false"
+            case .string(let s): return s.isEmpty ? "true" : "false"
             }
 
         case .isEqual:
@@ -581,21 +557,40 @@ extension LogoEngine {
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return v1 == v2 ? "1" : "0"
+            if v1 == v2 { return "true" }
+            if let d1 = Double(v1), let d2 = Double(v2) {
+                return d1 == d2 ? "true" : "false"
+            }
+            let p1 = LogoValue.parse(v1)
+            let p2 = LogoValue.parse(v2)
+            return p1 == p2 ? "true" : "false"
 
         case .isNotEqual:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return v1 != v2 ? "1" : "0"
+            if v1 == v2 { return "false" }
+            if let d1 = Double(v1), let d2 = Double(v2) {
+                return d1 != d2 ? "true" : "false"
+            }
+            let p1 = LogoValue.parse(v1)
+            let p2 = LogoValue.parse(v2)
+            return p1 != p2 ? "true" : "false"
+
+        case .isIdentityEqual:
+            index += 1
+            let v1 = evaluateExpression(tokens, index: &index)
+            index += 1
+            let v2 = evaluateExpression(tokens, index: &index)
+            return v1 == v2 ? "true" : "false"
 
         case .isBefore:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return v1 < v2 ? "1" : "0"
+            return v1 < v2 ? "true" : "false"
 
         case .isMember:
             index += 1
@@ -605,9 +600,9 @@ extension LogoEngine {
             let p = LogoValue.parse(haystack)
             switch p {
             case .list(let items), .array(let items):
-                return items.map { $0.description }.contains(needle) ? "1" : "0"
+                return items.map { $0.description }.contains(needle) ? "true" : "false"
             case .string(let s):
-                return s.contains(needle) ? "1" : "0"
+                return s.contains(needle) ? "true" : "false"
             }
 
         case .isSubstring:
@@ -615,35 +610,35 @@ extension LogoEngine {
             let needle = evaluateExpression(tokens, index: &index)
             index += 1
             let haystack = evaluateExpression(tokens, index: &index)
-            return haystack.contains(needle) ? "1" : "0"
+            return haystack.contains(needle) ? "true" : "false"
 
         case .less:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 < n2 ? "1" : "0"
+            return n1 < n2 ? "true" : "false"
 
         case .greater:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 > n2 ? "1" : "0"
+            return n1 > n2 ? "true" : "false"
 
         case .lessOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 <= n2 ? "1" : "0"
+            return n1 <= n2 ? "true" : "false"
 
         case .greaterOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 >= n2 ? "1" : "0"
+            return n1 >= n2 ? "true" : "false"
 
         // ---------------------------------------------------------------------
         // Editor Buffer Query Primitives
@@ -763,7 +758,7 @@ extension LogoEngine {
             let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return formatNum(a * b)
 
-        case .quotient, .quoted:
+        case .quotient:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
             if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
@@ -970,36 +965,36 @@ extension LogoEngine {
             }
 
         case .trueVal:
-            return "1"
+            return "true"
 
         case .falseVal:
-            return "0"
+            return "false"
 
         case .andLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) && logoIsTrue(v2)) ? "1" : "0"
+            return (logoIsTrue(v1) && logoIsTrue(v2)) ? "true" : "false"
 
         case .orLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) || logoIsTrue(v2)) ? "1" : "0"
+            return (logoIsTrue(v1) || logoIsTrue(v2)) ? "true" : "false"
 
         case .xorLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) != logoIsTrue(v2)) ? "1" : "0"
+            return (logoIsTrue(v1) != logoIsTrue(v2)) ? "true" : "false"
 
         case .notLogic:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
-            return logoIsTrue(v) ? "0" : "1"
+            return logoIsTrue(v) ? "false" : "true"
 
         // ---------------------------------------------------------------------
         // 2.5 Queries & Misc

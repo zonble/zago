@@ -129,6 +129,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case quoted
     case split
     case setItem
+    case setFirst
+    case setBFL
     case push
     case pop
     case dequeue
@@ -139,6 +141,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case isEmpty
     case isEqual
     case isNotEqual
+    case isIdentityEqual
     case isBefore
     case isMember
     case isSubstring
@@ -337,7 +340,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["REMDUP"], .remdup),
         (["QUOTED"], .quoted),
         (["SPLIT"], .split),
-        (["SETITEM"], .setItem),
+        ([".SETITEM", "SETITEM"], .setItem),
+        ([".SETFIRST", "SETFIRST"], .setFirst),
+        ([".SETBF", "SETBF", ".SETBUTFIRST", "SETBUTFIRST"], .setBFL),
         (["PUSH"], .push),
         (["POP"], .pop),
         (["DEQUEUE"], .dequeue),
@@ -348,7 +353,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["ARRAY?", "ARRAYP"], .isArray),
         (["NUMBER?", "NUMBERP"], .isNumber),
         (["EMPTY?", "EMPTYP"], .isEmpty),
-        (["EQUAL?", "EQUALP", ".EQ"], .isEqual),
+        (["EQUAL?", "EQUALP"], .isEqual),
+        ([".EQ"], .isIdentityEqual),
         (["NOTEQUAL?", "NOTEQUALP"], .isNotEqual),
         (["BEFORE?", "BEFOREP"], .isBefore),
         (["MEMBER?", "MEMBERP"], .isMember),

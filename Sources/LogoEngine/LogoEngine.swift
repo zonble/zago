@@ -94,7 +94,7 @@ public final class LogoEngine {
         .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
-        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem
+        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL
     ]
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
@@ -104,7 +104,7 @@ public final class LogoEngine {
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
         .push, .pop, .dequeue, .isWord, .isList, .isArray,
-        .isNumber, .isEmpty, .isEqual, .isNotEqual, .isBefore,
+        .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
         .isMember, .isSubstring, .count, .ascii, .char, .member, .uppercase, .lowercase,
         .standout, .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
         .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
@@ -258,6 +258,78 @@ public final class LogoEngine {
                             let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
                             s.replaceSubrange(strIdx...strIdx, with: newVal)
                             variables[varName] = s
+                        }
+                    }
+                }
+
+            case .setFirst:
+                if index + 1 < tokens.count {
+                    index += 1
+                    let varToken = tokens[index]
+                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                    index += 1
+                    let newVal = evaluateExpression(tokens, index: &index)
+
+                    if let currentValStr = variables[varName] {
+                        let parsed = LogoValue.parse(currentValStr)
+                        let newElem = LogoValue.parse(newVal)
+                        switch parsed {
+                        case .list(var items):
+                            if items.isEmpty {
+                                items = [newElem]
+                            } else {
+                                items[0] = newElem
+                            }
+                            variables[varName] = LogoValue.list(items).description
+                        case .array(var items):
+                            if items.isEmpty {
+                                items = [newElem]
+                            } else {
+                                items[0] = newElem
+                            }
+                            variables[varName] = LogoValue.array(items).description
+                        case .string(var s):
+                            if s.isEmpty {
+                                s = newVal
+                            } else {
+                                s.replaceSubrange(s.startIndex...s.startIndex, with: newVal)
+                            }
+                            variables[varName] = s
+                        }
+                    }
+                }
+
+            case .setBFL:
+                if index + 1 < tokens.count {
+                    index += 1
+                    let varToken = tokens[index]
+                    let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                    index += 1
+                    let newVal = evaluateExpression(tokens, index: &index)
+
+                    if let currentValStr = variables[varName] {
+                        let parsed = LogoValue.parse(currentValStr)
+                        let newTailParsed = LogoValue.parse(newVal)
+                        switch parsed {
+                        case .list(let items):
+                            let head = items.first ?? .string("")
+                            var tailItems: [LogoValue] = []
+                            switch newTailParsed {
+                            case .list(let t), .array(let t): tailItems = t
+                            case .string(let s): tailItems = [.string(s)]
+                            }
+                            variables[varName] = LogoValue.list([head] + tailItems).description
+                        case .array(let items):
+                            let head = items.first ?? .string("")
+                            var tailItems: [LogoValue] = []
+                            switch newTailParsed {
+                            case .list(let t), .array(let t): tailItems = t
+                            case .string(let s): tailItems = [.string(s)]
+                            }
+                            variables[varName] = LogoValue.array([head] + tailItems).description
+                        case .string(let s):
+                            let head = s.prefix(1)
+                            variables[varName] = String(head) + newVal
                         }
                     }
                 }
