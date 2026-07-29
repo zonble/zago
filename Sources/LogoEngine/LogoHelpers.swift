@@ -62,6 +62,30 @@ extension LogoEngine {
         return result
     }
 
+    internal func isQuotedWordToken(_ token: String) -> Bool {
+        token.hasPrefix("\"")
+    }
+
+    internal func parseUnquotedIntArgument(_ tokens: [String], index: inout Int) -> Int? {
+        guard index < tokens.count, !isQuotedWordToken(tokens[index]) else { return nil }
+
+        let token = tokens[index]
+        if let literalValue = Int(token) {
+            return literalValue
+        }
+
+        if token.hasPrefix(":") {
+            return Int(resolveTokenValue(token))
+        }
+
+        let variableName = token.lowercased()
+        if variables[variableName] != nil {
+            return Int(resolveTokenValue(token))
+        }
+
+        return nil
+    }
+
     /// Normalizes variable names (removes leading colon, unquotes, lowercases).
     internal func normalizeVariableName(_ raw: String) -> String {
         var name = unquote(raw.trimmingCharacters(in: CharacterSet(charactersIn: "()")))

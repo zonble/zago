@@ -143,6 +143,27 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(defaultRoundDrawBoxEditor.buffer.lines[1] == "│    │")
     #expect(defaultRoundDrawBoxEditor.buffer.lines[2] == "╰────╯")
 
+    let quotedNumberBoxEditor = Editor()
+    logoEngine.delegate = quotedNumberBoxEditor
+    logoEngine.execute("BOX \"10\"")
+    #expect(quotedNumberBoxEditor.buffer.lines[0] == "┌────┐")
+    #expect(quotedNumberBoxEditor.buffer.lines[1] == "│ 10 │")
+    #expect(quotedNumberBoxEditor.buffer.lines[2] == "└────┘")
+
+    let quotedNumberDrawBoxEditor = Editor()
+    logoEngine.delegate = quotedNumberDrawBoxEditor
+    logoEngine.execute("DRAWBOX \"10\"")
+    #expect(quotedNumberDrawBoxEditor.buffer.lines[0] == "┌────┐")
+    #expect(quotedNumberDrawBoxEditor.buffer.lines[1] == "│ 10 │")
+    #expect(quotedNumberDrawBoxEditor.buffer.lines[2] == "└────┘")
+
+    let variableSizedBoxEditor = Editor()
+    logoEngine.delegate = variableSizedBoxEditor
+    logoEngine.execute("MAKE \"w 6 BOX :w 3")
+    #expect(variableSizedBoxEditor.buffer.lines[0] == "┌────┐")
+    #expect(variableSizedBoxEditor.buffer.lines[1] == "│    │")
+    #expect(variableSizedBoxEditor.buffer.lines[2] == "└────┘")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]
@@ -205,6 +226,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(lineEditor.buffer.lines[2] == "──────────")
     #expect(lineEditor.buffer.lines[3] == "Footer")
 
+    let quotedNewlineEditor = Editor()
+    logoEngine.delegate = quotedNewlineEditor
+    logoEngine.execute("TYPE \"A\" NL \"3\" TYPE \"B\"")
+    #expect(quotedNewlineEditor.buffer.lines == ["A", "B"])
+
     // 15. LOGO VLINE Command test
     let vlineEditor = Editor()
     logoEngine.delegate = vlineEditor
@@ -252,6 +278,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("LINE 8 BOTHARROW")
     #expect(explicitLineBothArrowEditor.buffer.lines[0] == "←──────→")
 
+    let quotedLineLengthEditor = Editor()
+    logoEngine.delegate = quotedLineLengthEditor
+    logoEngine.execute("LINE \"8\"")
+    #expect(quotedLineLengthEditor.buffer.lines[0] == "──────────")
+
     let asciiLineArrowEditor = Editor()
     logoEngine.delegate = asciiLineArrowEditor
     logoEngine.execute("LINE 5 ASCII ARROW")
@@ -287,6 +318,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.delegate = explicitVlineArrowEditor
     logoEngine.execute("VLINE 4 BOTHARROW")
     #expect(explicitVlineArrowEditor.buffer.lines == ["↑", "│", "│", "↓"])
+
+    let quotedVlineHeightEditor = Editor()
+    logoEngine.delegate = quotedVlineHeightEditor
+    logoEngine.execute("VLINE \"3\"")
+    #expect(quotedVlineHeightEditor.buffer.lines == ["│", "│", "│", "│", "│"])
 
     let asciiVlineArrowEditor = Editor()
     logoEngine.delegate = asciiVlineArrowEditor
@@ -1355,6 +1391,9 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("GETLINE 2")
     #expect(logoEngine.lastResult == "Second Line")
 
+    logoEngine.execute("GETLINE \"1\"")
+    #expect(logoEngine.lastResult == "Second Line")
+
     logoEngine.execute("BUFFERTEXT")
     #expect(logoEngine.lastResult == "First Line\nSecond Line\nThird Line")
 
@@ -1365,11 +1404,19 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("GOTOLINE 1")
     #expect(editor.buffer.lineIndex == 0)
 
+    editor.buffer.lineIndex = 1
+    logoEngine.execute("GOTOLINE \"1\"")
+    #expect(editor.buffer.lineIndex == 1)
+
     logoEngine.execute("GOTOCOL 1")
     #expect(editor.buffer.columnIndex == 0)
 
     logoEngine.execute("SETLINE 1 \"New First Line\"")
     #expect(editor.buffer.lines[0] == "New First Line")
+
+    editor.buffer.lineIndex = 1
+    logoEngine.execute("SETLINE \"1\"")
+    #expect(editor.buffer.lines[1] == "1")
 
     // 3. Multi-Buffer Commands
     logoEngine.execute("BUFFERS")
@@ -1501,6 +1548,14 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines[1] == "│    │    │")
     #expect(editor.buffer.lines[2] == "├────┼────┤")
     #expect(editor.buffer.lines[4] == "└────┴────┘")
+
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE \"1\"")
+    #expect(editor.buffer.lines[0] == "┌────────────────┬────────────────┬────────────────┐")
+    #expect(editor.buffer.lines[1] == "│                │                │                │")
+    #expect(editor.buffer.lines[2] == "├────────────────┼────────────────┼────────────────┤")
 
     editor.buffer.lines = [""]
     editor.buffer.lineIndex = 0
@@ -1644,6 +1699,12 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines[0] == "*****")
     #expect(editor.buffer.lines[1] == "*****")
     #expect(editor.buffer.lines[2] == "*****")
+
+    // Quoted numeric words are fill patterns, not width arguments.
+    logoEngine.execute("CLEARBUFFER BOX 8 3 GOTO 2 2 FILL \"10\"")
+    #expect(editor.buffer.lines[0] == "┌──────┐")
+    #expect(editor.buffer.lines[1] == "│101010│")
+    #expect(editor.buffer.lines[2] == "└──────┘")
 
     // 4. Mode 1: Flood Fill enclosed region
     logoEngine.execute("CLEARBUFFER BOX 5 5 \"single\" GOTO 2 2 FILL \".\"")

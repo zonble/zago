@@ -24,10 +24,8 @@ extension LogoEngine {
             return
         }
 
-        let firstToken = tokens[index]
-
         // Mode 1: BOX width [height] ["text"] [align] [style]
-        if let w = Int(unquote(firstToken)) {
+        if let w = parseUnquotedIntArgument(tokens, index: &index) {
             let width = max(3, min(w, 200))
             var height: Int? = nil
             var textContent: String? = nil
@@ -35,9 +33,9 @@ extension LogoEngine {
             var styleName = ""
 
             if index + 1 < tokens.count {
-                let secondUpper = tokens[index + 1].uppercased()
-                if let h = Int(unquote(secondUpper)) {
-                    index += 1
+                var heightIndex = index + 1
+                if let h = parseUnquotedIntArgument(tokens, index: &heightIndex) {
+                    index = heightIndex
                     height = max(2, min(h, 100))
                 }
             }
@@ -372,18 +370,16 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         guard index < tokens.count else { return }
 
-        let firstValStr = unquote(tokens[index])
-
         var widthVal: Int? = nil
         var heightVal: Int? = nil
         var fillPattern = ""
 
-        if let w = Int(firstValStr) {
+        if let w = parseUnquotedIntArgument(tokens, index: &index) {
             widthVal = w
             if index + 1 < tokens.count {
-                let secondValStr = unquote(tokens[index + 1])
-                if let h = Int(secondValStr) {
-                    index += 1
+                var heightIndex = index + 1
+                if let h = parseUnquotedIntArgument(tokens, index: &heightIndex) {
+                    index = heightIndex
                     heightVal = h
                 }
             }

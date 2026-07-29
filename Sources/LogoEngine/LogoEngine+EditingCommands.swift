@@ -5,6 +5,22 @@ extension LogoEngine {
         LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
+    private func consumeOptionalEditingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
+        index += 1
+        guard index < tokens.count else {
+            index -= 1
+            return nil
+        }
+        guard !isExpressionArgumentBoundary(tokens[index]) else {
+            index -= 1
+            return nil
+        }
+        guard let value = parseUnquotedIntArgument(tokens, index: &index) else {
+            return nil
+        }
+        return value
+    }
+
     private func consumeExpressionArguments(
         _ tokens: [String],
         index: inout Int,
@@ -68,18 +84,14 @@ extension LogoEngine {
             return true
 
         case .delete:
-            index += 1
-            let valStr = evaluateExpression(tokens, index: &index)
-            let count = Int(valStr) ?? 1
+            let count = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
             for _ in 0..<count {
                 delegate.logoEngine(self, performAction: .deleteChar)
             }
             return true
 
         case .backspace:
-            index += 1
-            let valStr = evaluateExpression(tokens, index: &index)
-            let count = Int(valStr) ?? 1
+            let count = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
             for _ in 0..<count {
                 delegate.logoEngine(self, performAction: .backspaceChar)
             }
@@ -91,8 +103,11 @@ extension LogoEngine {
             if index < tokens.count {
                 let nextToken = tokens[index]
                 if !LogoEngine.isKeyword(nextToken) && nextToken != "]" {
-                    let valStr = evaluateExpression(tokens, index: &index)
-                    count = max(1, min(Int(valStr) ?? 1, 1000))
+                    if let parsedCount = parseUnquotedIntArgument(tokens, index: &index) {
+                        count = max(1, min(parsedCount, 1000))
+                    } else {
+                        index -= 1
+                    }
                 } else {
                     index -= 1
                 }
@@ -162,12 +177,12 @@ extension LogoEngine {
             return true
 
         case .indentLines:
-            let levels = Int(optionalCommandArgument(tokens, index: &index) ?? "") ?? 1
+            let levels = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
             delegate.logoEngine(self, performAction: .indentLines(levels: levels))
             return true
 
         case .outdentLines:
-            let levels = Int(optionalCommandArgument(tokens, index: &index) ?? "") ?? 1
+            let levels = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
             delegate.logoEngine(self, performAction: .outdentLines(levels: levels))
             return true
 
@@ -255,19 +270,13 @@ extension LogoEngine {
             return true
 
         case .gotoline:
-            index += 1
-            if index < tokens.count {
-                let lineStr = evaluateExpression(tokens, index: &index)
-                let row1Based = Int(lineStr) ?? 1
+            if let row1Based = consumeOptionalEditingIntArgument(tokens, index: &index) {
                 delegate.logoEngine(self, performAction: .gotoLine(max(0, row1Based - 1)))
             }
             return true
 
         case .gotocol:
-            index += 1
-            if index < tokens.count {
-                let colStr = evaluateExpression(tokens, index: &index)
-                let col1Based = Int(colStr) ?? 1
+            if let col1Based = consumeOptionalEditingIntArgument(tokens, index: &index) {
                 delegate.logoEngine(self, performAction: .gotoCol(max(0, col1Based - 1)))
             }
             return true
@@ -276,8 +285,8 @@ extension LogoEngine {
             index += 1
             if index < tokens.count {
                 let firstVal = evaluateExpression(tokens, index: &index)
-                if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
-                    let line1Based = Int(firstVal) ?? 1
+                if !isQuotedWordToken(tokens[index]), let line1Based = Int(firstVal),
+                   index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
                     index += 1
                     let textVal = unquote(evaluateExpression(tokens, index: &index))
                     delegate.logoEngine(self, performAction: .setLine(index: max(0, line1Based - 1), text: textVal))

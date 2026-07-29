@@ -150,14 +150,17 @@ extension LogoEngine {
                 setStyle(upper.lowercased())
                 consumedAny = true
                 lastConsumedIndex = cursor
-            } else if !LogoEngine.isKeyword(token) || token.hasPrefix("\"") {
+            } else if !LogoEngine.isKeyword(token) {
                 var evalIndex = cursor
-                let value = evaluateExpression(tokens, index: &evalIndex)
-                if let parsedLength = Int(value) {
+                if let parsedLength = parseUnquotedIntArgument(tokens, index: &evalIndex) {
                     setLength(max(1, min(parsedLength, maxLength)))
                     consumedAny = true
                     cursor = evalIndex
                     lastConsumedIndex = cursor
+                } else if isQuotedWordToken(token) {
+                    consumedAny = true
+                    lastConsumedIndex = cursor
+                    break
                 } else {
                     break
                 }
@@ -408,8 +411,11 @@ extension LogoEngine {
             let firstToken = tokens[index]
 
             if !LogoEngine.isKeyword(firstToken) && firstToken != "]" {
-                let valStr = evaluateExpression(tokens, index: &index)
-                count = max(1, min(Int(valStr) ?? 1, 50))
+                if let parsedCount = parseUnquotedIntArgument(tokens, index: &index) {
+                    count = max(1, min(parsedCount, 50))
+                } else if LogoEngine.isKeyword(firstToken) || firstToken == "]" {
+                    index -= 1
+                }
             } else {
                 index -= 1
             }

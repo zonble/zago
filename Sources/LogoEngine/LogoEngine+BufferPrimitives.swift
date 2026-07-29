@@ -14,11 +14,11 @@ extension LogoEngine {
 
         case .buffer:
             if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
-                index += 1
-                let targetVal = evaluateExpression(tokens, index: &index)
-                if let idx1Based = Int(targetVal) {
+                var targetIndex = index + 1
+                if let idx1Based = parseUnquotedIntArgument(tokens, index: &targetIndex) {
                     delegate?.logoEngine(self, performAction: .switchBuffer(index: max(0, idx1Based - 1)))
                 }
+                index = targetIndex
             }
             let curIdx = (delegate?.logoEngine(self, queryState: .currentBufferIndex) as? Int) ?? 0
             return "\(curIdx + 1)"
@@ -38,11 +38,11 @@ extension LogoEngine {
         case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
             if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
-                index += 1
-                let nStr = evaluateExpression(tokens, index: &index)
-                if let n1Based = Int(nStr) {
+                var lineArgIndex = index + 1
+                if let n1Based = parseUnquotedIntArgument(tokens, index: &lineArgIndex) {
                     lineIdx = max(0, n1Based - 1)
                 }
+                index = lineArgIndex
             }
             return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
 

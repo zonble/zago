@@ -5,11 +5,16 @@ extension LogoEngine {
         LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
-    private func consumeNextTableArgument(_ tokens: [String], index: inout Int) -> String? {
+    private func consumeNextTableIntArgument(_ tokens: [String], index: inout Int) -> Int? {
         guard index + 1 < tokens.count else { return nil }
         guard !isTableArgumentBoundary(tokens[index + 1]) else { return nil }
-        index += 1
-        return evaluateExpression(tokens, index: &index)
+        var nextIndex = index + 1
+        guard let value = parseUnquotedIntArgument(tokens, index: &nextIndex) else {
+            index = nextIndex
+            return nil
+        }
+        index = nextIndex
+        return value
     }
 
     private func consumeNextTableBorderStyle(_ tokens: [String], index: inout Int) -> String? {
@@ -59,13 +64,15 @@ extension LogoEngine {
         } else if subcommand == "NEXTSTYLE" {
             delegate.logoEngine(self, performAction: .nextBorderStyle)
             hasSetStatusMessage = true
-        } else if !LogoEngine.isStatementCommand(tokens[index]), let rows = Int(evaluateExpression(tokens, index: &index)) {
-            let cols = consumeNextTableArgument(tokens, index: &index).flatMap(Int.init) ?? 3
-            let cellWidth = consumeNextTableArgument(tokens, index: &index).flatMap(Int.init)
+        } else if !LogoEngine.isStatementCommand(tokens[index]), let rows = parseUnquotedIntArgument(tokens, index: &index) {
+            let cols = consumeNextTableIntArgument(tokens, index: &index) ?? 3
+            let cellWidth = consumeNextTableIntArgument(tokens, index: &index)
             delegate.logoEngine(self, performAction: .createTable(rows: rows, cols: cols, cellWidth: cellWidth))
             hasSetStatusMessage = true
         } else {
-            index -= 1
+            if index >= tokens.count || isTableArgumentBoundary(tokens[index]) {
+                index -= 1
+            }
             createDefaultTable()
         }
     }
