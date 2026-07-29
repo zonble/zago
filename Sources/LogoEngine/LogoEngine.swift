@@ -99,7 +99,7 @@ public final class LogoEngine {
 
     internal static let expressionPrimitives: Set<LogoPrimitive> = [
         .apply, .invoke, .map, .mapSe, .filter, .reduce, .crossmap, .runResult,
-        .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array,
+        .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array, .mdarray,
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
@@ -116,6 +116,10 @@ public final class LogoEngine {
 
     internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
 
+    internal static let variadicPrimitives: Set<LogoPrimitive> = [
+        .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic
+    ]
+
     internal static func isKeyword(_ token: String) -> Bool {
         guard let prim = LogoPrimitive.from(token) else { return false }
         return keywords.contains(prim)
@@ -124,6 +128,10 @@ public final class LogoEngine {
     internal static func isStatementCommand(_ token: String) -> Bool {
         guard let prim = LogoPrimitive.from(token) else { return false }
         return statementCommands.contains(prim)
+    }
+
+    internal static func isVariadicPrimitive(_ prim: LogoPrimitive) -> Bool {
+        return variadicPrimitives.contains(prim)
     }
 
     internal func optionalCommandArgument(_ tokens: [String], index: inout Int) -> String? {

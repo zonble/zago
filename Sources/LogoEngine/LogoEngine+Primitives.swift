@@ -94,6 +94,37 @@ extension LogoEngine {
             let items = Array(repeating: LogoValue.string(""), count: max(1, count))
             return LogoValue.array(items).description
 
+        case .mdarray:
+            index += 1
+            let sizeVal = evaluateExpression(tokens, index: &index)
+            let sizeList = LogoValue.parse(sizeVal)
+            var dimensions: [Int] = []
+            switch sizeList {
+            case .list(let items), .array(let items):
+                dimensions = items.compactMap { Int($0.description) }
+            default:
+                if let single = Int(sizeVal) {
+                    dimensions = [single]
+                }
+            }
+            let _ = optionalCommandArgument(tokens, index: &index)
+
+            func createMDArray(dims: [Int]) -> LogoValue {
+                guard let first = dims.first else { return .string("") }
+                let count = max(1, first)
+                let rest = Array(dims.dropFirst())
+                if rest.isEmpty {
+                    let items = Array(repeating: LogoValue.string(""), count: count)
+                    return .array(items)
+                } else {
+                    let inner = createMDArray(dims: rest)
+                    let items = Array(repeating: inner, count: count)
+                    return .array(items)
+                }
+            }
+
+            return createMDArray(dims: dimensions).description
+
         case .listToArray:
             index += 1
             let val = evaluateExpression(tokens, index: &index)

@@ -172,13 +172,13 @@ extension LogoEngine {
         if tokens[index] == "(" {
             index += 1
             if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
-               variadicPrim == .sum || variadicPrim == .min || variadicPrim == .max {
+               LogoEngine.isVariadicPrimitive(variadicPrim) {
                 index += 1
-                var values: [Double] = []
-                while index < tokens.count && tokens[index] != ")" {
-                    let value = evaluateExpression(tokens, index: &index)
-                    values.append(contentsOf: numericValues(in: LogoValue.parse(value)))
-                    if index + 1 < tokens.count && tokens[index + 1] != ")" {
+                var args: [String] = []
+                while index < tokens.count && tokens[index] != ")" && tokens[index] != "]" {
+                    let arg = evaluateExpression(tokens, index: &index)
+                    args.append(arg)
+                    if index + 1 < tokens.count && tokens[index + 1] != ")" && tokens[index + 1] != "]" {
                         index += 1
                     } else {
                         break
@@ -188,14 +188,49 @@ extension LogoEngine {
                     index += 1
                 }
                 switch variadicPrim {
+                case .word:
+                    leftVal = args.joined()
+
+                case .list:
+                    leftVal = "[" + args.joined(separator: " ") + "]"
+
+                case .sentence:
+                    var items: [LogoValue] = []
+                    for arg in args {
+                        let parsed = LogoValue.parse(arg)
+                        switch parsed {
+                        case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
+                        case .string(let s): items.append(.string(s))
+                        }
+                    }
+                    leftVal = LogoValue.list(items).description
+
                 case .sum:
-                    leftVal = formatNum(values.reduce(0, +))
+                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
+                    leftVal = formatNum(nums.reduce(0, +))
+
+                case .product:
+                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
+                    leftVal = formatNum(nums.reduce(1, *))
+
                 case .min:
-                    leftVal = formatNum(values.min() ?? 0)
+                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
+                    leftVal = formatNum(nums.min() ?? 0)
+
                 case .max:
-                    leftVal = formatNum(values.max() ?? 0)
+                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
+                    leftVal = formatNum(nums.max() ?? 0)
+
+                case .andLogic:
+                    let allTrue = args.allSatisfy { logoIsTrue($0) }
+                    leftVal = allTrue ? "1" : "0"
+
+                case .orLogic:
+                    let anyTrue = args.contains { logoIsTrue($0) }
+                    leftVal = anyTrue ? "1" : "0"
+
                 default:
-                    leftVal = "0"
+                    leftVal = ""
                 }
             } else {
                 leftVal = evaluateExpression(tokens, index: &index)

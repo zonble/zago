@@ -1,0 +1,24 @@
+show "hello
+show "hello\ logo
+show 12.34
+make :name "你好" show :name
+show [1 2 3]
+show {1 2 3}
+show ( 1 + 2 ) * 3
+show "hello
+(make :name "🔥" show "hello :name)
+show (word "a "b "c)
+show (list 1+2 2+3 3+4)
+show sentence [1 2 3] [and so on]
+show fput 0 [ 1 2 3 ]
+show fput "a "bcd
+show lput 4 [ 1 2 3 ]
+show lput "e "bcd
+show array 10
+show mdarray [2 2]
+(mdarray [3 5] 0)
+
+
+
+
+

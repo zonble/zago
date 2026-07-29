@@ -445,6 +445,16 @@ SETITEM 3 :cells "owner
 TYPE ITEM 2 :cells
 ```
 
+#### Differences Between Lists and Arrays
+
+| Property | List (`[...]`) | Array (`{...}`) |
+| :--- | :--- | :--- |
+| **Syntax** | Enclosed in square brackets `[1 2 3]` | Enclosed in curly braces `{1 2 3}` |
+| **Mutability** | Immutable structural sharing (modifications like `FPUT`/`LPUT` return new lists) | Mutable in-place (updated using `SETITEM`) |
+| **Access Time** | $O(N)$ sequential traversal | $O(1)$ constant random access |
+| **Sizing** | Dynamic length | Fixed size allocated with `ARRAY` or `MDARRAY` |
+| **Dimensions** | Nested lists `[[1 2] [3 4]]` | Multi-dimensional arrays allocated with `MDARRAY` |
+
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
 | `SORT` | - | `SORT [ASC\|DESC] data [template]` | Sorts list, array, or word (smart numeric/text detection, or custom predicate) | `SORT [3 12 2]`, `SORT "DESC "cba`, `SORT :list [?1 > ?2]` |

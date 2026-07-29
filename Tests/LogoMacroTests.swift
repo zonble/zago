@@ -1079,6 +1079,30 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines == ["3"])
 }
 
+@Test func testVariadicWordPrimitiveInParentheses() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("SHOW (WORD \"a \"b \"c)")
+    #expect(editor.statusMessage == "abc")
+
+    editor.buffer.lines = [""]
+    editor.buffer.columnIndex = 0
+    editor.logoEngine.execute("PRINT (WORD \"x \"y \"z \"w)")
+    #expect(editor.buffer.lines == ["xyzw"])
+}
+
+@Test func testVariadicListPrimitiveWithArithmeticExpressions() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("SHOW (LIST 1+2 2+3 3+4)")
+    #expect(editor.statusMessage == "[3 5 7]")
+}
+
+@Test func testMDArrayPrimitive() throws {
+    let editor = Editor()
+    editor.logoEngine.execute("SHOW (MDARRAY [3 5] 0)")
+    #expect(!editor.statusMessage.isEmpty)
+    #expect(editor.statusMessage.hasPrefix("{") && editor.statusMessage.hasSuffix("}"))
+}
+
 @Test func testLogoEditorBufferPrimitives() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
