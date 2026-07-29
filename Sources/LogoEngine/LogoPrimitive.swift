@@ -147,6 +147,10 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case isBefore
     case isMember
     case isSubstring
+    case isProcedure
+    case isPrimitive
+    case isDefined
+    case isName
     case count
     case ascii
     case char
@@ -363,6 +367,10 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BEFORE?", "BEFOREP"], .isBefore),
         (["MEMBER?", "MEMBERP"], .isMember),
         (["SUBSTRING?", "SUBSTRINGP"], .isSubstring),
+        (["PROCEDURE?", "PROCEDUREP"], .isProcedure),
+        (["PRIMITIVE?", "PRIMITIVEP"], .isPrimitive),
+        (["DEFINED?", "DEFINEDP"], .isDefined),
+        (["NAME?", "NAMEP"], .isName),
         (["LESSP", "LESS?"], .less),
         (["GREATERP", "GREATER?"], .greater),
         (["LESSEQUALP", "LESSEQUAL?"], .lessOrEqual),

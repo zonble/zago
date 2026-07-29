@@ -50,5 +50,55 @@ show remdup "banana
 show quoted "abc
 show split "a "banana
 show split 3 [1 2 3 4 1 2 3 4]
+show count [ 1 2 3 ]
+show count "hello
+show count "你好啊啊
+show count "🙆
+show count "🌳
+show ascii "abc
+show char 97
+show char 26954
+show member "a "banana
+show member 2 [1 2 3 4]
+show uppercase "abc
+show lowercase "ABC
+show standout "ABCabc123
+show parse "1+2
+show runparse "1+2
+print "hello
+type "hel  type "lo
+show "hello
+show (sum 1 2 3 4)
+show 1 + 1
+show -1 + -1
+show difference 2 1
+show -2 + -1
+show product 3 2
+show 3 * 2
+show 9/3
+show quotient 9 3
+show power 3 3
+show 3 ^ 3
+show remainder 9 2
+show modulo 9 2
+show 9 % 2
+show minus 9 5
+show 9 - 5
+show abs -4
+show abs 4
+show int 5.4
+show round 5.4
+show sqrt 4
+show exp 1
+show log10 100
+show ln 10
+show arctan 10
+
+
+
+
+
+
+
 
 

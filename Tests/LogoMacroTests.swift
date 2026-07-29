@@ -489,6 +489,36 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.delegate = ed4
     logoEngine.execute("IF 3.5 > 2.0 [ TYPE \"YES\" ]")
     #expect(ed4.buffer.lines[0] == "YES")
+
+    let ed5 = Editor()
+    logoEngine.delegate = ed5
+    logoEngine.execute("SHOW MINUS 9 5")
+    #expect(ed5.statusMessage == "4")
+
+    let ed6 = Editor()
+    logoEngine.delegate = ed6
+    logoEngine.execute("SHOW MINUS 9")
+    #expect(ed6.statusMessage == "-9")
+
+    let ed7 = Editor()
+    logoEngine.delegate = ed7
+    logoEngine.execute("TYPE MINUS 9 5")
+    #expect(ed7.buffer.lines[0] == "4")
+
+    let ed8 = Editor()
+    logoEngine.delegate = ed8
+    logoEngine.execute("SHOW ARCTAN 1")
+    #expect(ed8.statusMessage == "45")
+
+    let ed9 = Editor()
+    logoEngine.delegate = ed9
+    logoEngine.execute("SHOW (ARCTAN 0 1)")
+    #expect(ed9.statusMessage == "90")
+
+    let ed10 = Editor()
+    logoEngine.delegate = ed10
+    logoEngine.execute("SHOW (RADARCTAN 0 1)")
+    #expect(ed10.statusMessage == "1.5707963267948966")
 }
 
 @Test func testLogoBoxMultiLineTextWrapping() throws {
@@ -707,6 +737,41 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("PARSE \"1+2\"")
     #expect(logoEngine.lastResult == "[1 + 2]")
+
+    // 12. Procedure/name introspection predicates
+    logoEngine.execute("PRIMITIVE? \"SUM")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("PRIMITIVEP \"MISSINGPROC")
+    #expect(logoEngine.lastResult == "false")
+
+    logoEngine.execute("TO FOO OUTPUT 1 END")
+    logoEngine.execute("DEFINED? \"FOO")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("DEFINEDP \"SUM")
+    #expect(logoEngine.lastResult == "false")
+
+    logoEngine.execute("PROCEDURE? \"SUM")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("PROCEDUREP \"FOO")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("PROCEDURE? \"MISSINGPROC")
+    #expect(logoEngine.lastResult == "false")
+
+    logoEngine.execute("MAKE \"x 10")
+    logoEngine.execute("NAME? \"x")
+    #expect(logoEngine.lastResult == "true")
+    logoEngine.execute("NAMEP \"y")
+    #expect(logoEngine.lastResult == "false")
+}
+
+@Test func testLogoByeStopsTopLevelExecution() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TYPE \"a\" BYE TYPE \"b\"")
+
+    #expect(editor.buffer.lines[0] == "a")
+    #expect(logoEngine.byeFlag == true)
 }
 
 @Test func testSection4ArithmeticPrimitives() throws {

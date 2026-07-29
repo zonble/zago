@@ -1,6 +1,10 @@
 import Foundation
 
 extension LogoEngine {
+    private func normalizeProcedureName(_ raw: String) -> String {
+        unquote(raw.trimmingCharacters(in: CharacterSet(charactersIn: "()"))).uppercased()
+    }
+
     /// Evaluates UCB LOGO Data Structure Primitives (constructors, selectors, mutators, predicates, queries).
     internal func evaluateDataStructurePrimitives(_ tokens: [String], index: inout Int) -> String? {
         guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
@@ -634,6 +638,27 @@ extension LogoEngine {
             index += 1
             let haystack = evaluateExpression(tokens, index: &index)
             return haystack.contains(needle) ? "true" : "false"
+
+        case .isProcedure:
+            index += 1
+            let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
+            let exists = LogoPrimitive.from(name) != nil || customProcedures[name] != nil
+            return exists ? "true" : "false"
+
+        case .isPrimitive:
+            index += 1
+            let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
+            return LogoPrimitive.from(name) != nil ? "true" : "false"
+
+        case .isDefined:
+            index += 1
+            let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
+            return customProcedures[name] != nil ? "true" : "false"
+
+        case .isName:
+            index += 1
+            let name = normalizeVariableName(evaluateExpression(tokens, index: &index))
+            return variables[name] != nil ? "true" : "false"
 
         case .less:
             index += 1

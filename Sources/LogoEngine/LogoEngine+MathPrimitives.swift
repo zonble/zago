@@ -1,6 +1,12 @@
 import Foundation
 
 extension LogoEngine {
+    private func hasNextMathArgument(_ tokens: [String], after index: Int) -> Bool {
+        guard index + 1 < tokens.count else { return false }
+        let nextToken = tokens[index + 1]
+        return !LogoEngine.isStatementCommand(nextToken) && nextToken != "]" && nextToken != ")"
+    }
+
     /// Evaluates Numeric, Math, Bitwise, Logical, and Formatting Primitives.
     internal func evaluateMathPrimitives(_ tokens: [String], index: inout Int) -> String? {
         guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
@@ -101,6 +107,11 @@ extension LogoEngine {
         case .minus:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+                index += 1
+                let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+                return formatNum(a - b)
+            }
             return formatNum(-a)
 
         case .abs:
@@ -141,6 +152,11 @@ extension LogoEngine {
         case .arctan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            if hasNextMathArgument(tokens, after: index) {
+                index += 1
+                let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+                return formatNum(atan2(b, a) * 180.0 / .pi)
+            }
             return formatNum(atan(a) * 180.0 / .pi)
 
         case .sin:
@@ -161,6 +177,11 @@ extension LogoEngine {
         case .radArctan:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
+            if hasNextMathArgument(tokens, after: index) {
+                index += 1
+                let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
+                return formatNum(atan2(b, a))
+            }
             return formatNum(atan(a))
 
         case .radSin:

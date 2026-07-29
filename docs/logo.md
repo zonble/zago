@@ -498,16 +498,20 @@ TYPE ITEM 2 :cells
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `WORD?` | `WORDP` | `WORD? val` | Returns `1` if input is a word/string, `0` otherwise | `WORD? "hello"` |
-| `LIST?` | `LISTP` | `LIST? val` | Returns `1` if input is a list, `0` otherwise | `LIST? [1 2]` |
-| `ARRAY?` | `ARRAYP` | `ARRAY? val` | Returns `1` if input is an array, `0` otherwise | `ARRAY? :a` |
-| `NUMBER?` | `NUMBERP` | `NUMBER? val` | Returns `1` if input is numeric, `0` otherwise | `NUMBER? 42` |
-| `EMPTY?` | `EMPTYP` | `EMPTY? val` | Returns `1` if input is empty list or string, `0` otherwise | `EMPTY? []` |
-| `EQUAL?` | `EQUALP`, `.EQ` | `EQUAL? a b` | Returns `1` if $a == b$, `0` otherwise | `EQUAL? :i 5` |
-| `NOTEQUAL?` | `NOTEQUALP` | `NOTEQUAL? a b` | Returns `1` if $a \neq b$, `0` otherwise | `NOTEQUAL? :i 0` |
-| `BEFORE?` | `BEFOREP` | `BEFORE? str1 str2` | Returns `1` if `str1` precedes `str2` alphabetically | `BEFORE? "apple" "banana"` |
-| `MEMBER?` | `MEMBERP` | `MEMBER? item list` | Returns `1` if item exists in list | `MEMBER? 2 [1 2 3]` |
-| `SUBSTRING?` | `SUBSTRINGP` | `SUBSTRING? sub str` | Returns `1` if substring is contained in string | `SUBSTRING? "cat" "caterpillar"` |
+| `WORD?` | `WORDP` | `WORD? val` | Returns `true` if input is a word/string, `false` otherwise | `WORD? "hello"` |
+| `LIST?` | `LISTP` | `LIST? val` | Returns `true` if input is a list, `false` otherwise | `LIST? [1 2]` |
+| `ARRAY?` | `ARRAYP` | `ARRAY? val` | Returns `true` if input is an array, `false` otherwise | `ARRAY? :a` |
+| `NUMBER?` | `NUMBERP` | `NUMBER? val` | Returns `true` if input is numeric, `false` otherwise | `NUMBER? 42` |
+| `EMPTY?` | `EMPTYP` | `EMPTY? val` | Returns `true` if input is empty list or string, `false` otherwise | `EMPTY? []` |
+| `EQUAL?` | `EQUALP`, `.EQ` | `EQUAL? a b` | Returns `true` if $a == b$, `false` otherwise | `EQUAL? :i 5` |
+| `NOTEQUAL?` | `NOTEQUALP` | `NOTEQUAL? a b` | Returns `true` if $a \neq b$, `false` otherwise | `NOTEQUAL? :i 0` |
+| `BEFORE?` | `BEFOREP` | `BEFORE? str1 str2` | Returns `true` if `str1` precedes `str2` alphabetically | `BEFORE? "apple" "banana"` |
+| `MEMBER?` | `MEMBERP` | `MEMBER? item list` | Returns `true` if item exists in list | `MEMBER? 2 [1 2 3]` |
+| `SUBSTRING?` | `SUBSTRINGP` | `SUBSTRING? sub str` | Returns `true` if substring is contained in string | `SUBSTRING? "cat" "caterpillar"` |
+| `PROCEDURE?` | `PROCEDUREP` | `PROCEDURE? name` | Returns `true` if name is a built-in or user-defined procedure | `PROCEDURE? "SUM` |
+| `PRIMITIVE?` | `PRIMITIVEP` | `PRIMITIVE? name` | Returns `true` if name is a built-in primitive | `PRIMITIVE? "SUM` |
+| `DEFINED?` | `DEFINEDP` | `DEFINED? name` | Returns `true` if name is a user-defined procedure | `DEFINED? "FOO` |
+| `NAME?` | `NAMEP` | `NAME? name` | Returns `true` if a variable with that name exists | `NAME? "x` |
 | `LESS?` | `LESSP` | `LESS? a b` | Returns `1` if $a < b$ | `LESS? 3 5` |
 | `GREATER?` | `GREATERP` | `GREATER? a b` | Returns `1` if $a > b$ | `GREATER? 10 2` |
 | `LESSEQUAL?` | `LESSEQUALP` | `LESSEQUAL? a b` | Returns `1` if $a \le b$ | `LESSEQUAL? 5 5` |
@@ -530,11 +534,12 @@ TYPE ITEM 2 :cells
 | `POWER` | - | `POWER base exp` | Exponentiation ($a^b$) | `POWER 2 3` |
 | `REMAINDER` | - | `REMAINDER a b` | Integer remainder ($a \bmod b$) | `REMAINDER 10 3` |
 | `MODULO` | - | `MODULO a b` | Mathematical modulo | `MODULO -1 5` |
-| `MINUS`, `ABS` | - | `MINUS a`, `ABS a` | Negation and absolute value | `ABS -15` |
+| `MINUS`, `ABS` | - | `MINUS a [b]`, `ABS a` | Negation, or subtraction when `b` is present | `MINUS 9 5`, `ABS -15` |
 | `INT`, `ROUND` | - | `INT a`, `ROUND a` | Truncate integer and round | `ROUND 3.7` |
 | `SQRT`, `EXP` | - | `SQRT a`, `EXP a` | Square root and exponential $e^a$ | `SQRT 16` |
 | `LOG10`, `LN` | - | `LOG10 a`, `LN a` | Logarithm base 10 and natural log | `LOG10 100` |
 | `SIN`, `COS`, `TAN` | - | `SIN deg`, `COS deg` | Trigonometric functions (degrees) | `SIN 90` |
+| `ARCTAN`, `RADARCTAN` | - | `ARCTAN num`, `(ARCTAN x y)` | Arctangent in degrees or radians; two-input form uses `atan2(y, x)` | `(ARCTAN 0 1)` |
 | `RANGE` | `ISEQ` | `RANGE start end [step]` | Generates inclusive integer sequence list | `RANGE 1 5` $\rightarrow$ `[1 2 3 4 5]`, `RANGE 1 10 2` |
 | `RSEQ` | - | `RSEQ start end count` | Generates real number sequence list | `RSEQ 0 1 5` |
 | `RANDOM` | - | `RANDOM max [min]` | Generates random integer in range | `RANDOM 100`, `RANDOM 10 20` |

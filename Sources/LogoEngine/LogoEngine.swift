@@ -72,7 +72,8 @@ public final class LogoEngine {
         .pick, .remove, .remdup, .quoted, .split, .setItem,
         .push, .pop, .dequeue, .isWord, .isList, .isArray,
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
-        .isMember, .isSubstring, .count, .ascii, .char, .member, .uppercase, .lowercase,
+        .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
+        .count, .ascii, .char, .member, .uppercase, .lowercase,
         .standout, .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
         .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
         .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
@@ -152,7 +153,7 @@ public final class LogoEngine {
     /// Step-by-step 3-stage statement execution loop for tokenized scripts.
     internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
         guard self.delegate != nil else { return }
-        while index < tokens.count && frameReturn == nil && lastError == "[]" {
+        while index < tokens.count && frameReturn == nil && !byeFlag && lastError == "[]" {
             let token = tokens[index]
 
             if token == "]" {
