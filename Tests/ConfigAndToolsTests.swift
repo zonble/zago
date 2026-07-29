@@ -293,6 +293,10 @@ import Testing
     #expect(rstLang != nil)
     #expect(rstLang?.name == "reStructuredText")
 
+    let markdownLang = highlighter.detectLanguage(for: "notes.mkd")
+    #expect(markdownLang != nil)
+    #expect(markdownLang?.name == "Markdown")
+
     let orgLang = highlighter.detectLanguage(for: "todo.org")
     #expect(orgLang != nil)
     #expect(orgLang?.name == "Org-mode")
@@ -311,13 +315,68 @@ import Testing
         #expect(highlighted.contains("\u{1B}[1;36m"))
         #expect(highlighted.contains("\u{1B}[94m"))
 
+        let loopCounterHighlighted = highlighter.highlight(line: "REPEAT 3 [ TYPE :# ]", syntax: lang)
+        #expect(loopCounterHighlighted.contains("\u{1B}[94m:#"))
+
         let aliasHighlighted = highlighter.highlight(line: "FILE SAVE EDIT MAP.SE MODIFIED?", syntax: lang)
         #expect(aliasHighlighted.contains("\u{1B}[1;36mFILE"))
         #expect(aliasHighlighted.contains("\u{1B}[1;36mMODIFIED?"))
 
+        let lowercaseHighlighted = highlighter.highlight(line: "make \"i\" 1 ifelse :i > 5 [ fd 10 rt 90 ]", syntax: lang)
+        #expect(lowercaseHighlighted.contains("\u{1B}[1;36mmake"))
+        #expect(lowercaseHighlighted.contains("\u{1B}[1;36mifelse"))
+        #expect(lowercaseHighlighted.contains("\u{1B}[1;36mfd"))
+
+        let mixedCaseHighlighted = highlighter.highlight(line: "DrawBox 10 table 2 3 ascii", syntax: lang)
+        #expect(mixedCaseHighlighted.contains("\u{1B}[1;36mDrawBox"))
+        #expect(mixedCaseHighlighted.contains("\u{1B}[1;36mtable"))
+        #expect(mixedCaseHighlighted.contains("\u{1B}[1;36mascii"))
+
         let arrowHighlighted = highlighter.highlight(line: "LINE ARROW TYPE #", syntax: lang)
         #expect(arrowHighlighted.contains("\u{1B}[1;36mARROW"))
         #expect(!arrowHighlighted.contains("\u{1B}[90m#"))
+
+        let quotedWordsHighlighted = highlighter.highlight(line: "show \"1 \"2 \"3", syntax: lang)
+        #expect(quotedWordsHighlighted.contains("\u{1B}[32m\"1"))
+        #expect(quotedWordsHighlighted.contains("\u{1B}[32m\"2"))
+        #expect(quotedWordsHighlighted.contains("\u{1B}[32m\"3"))
+        #expect(!quotedWordsHighlighted.contains("\u{1B}[32m\"1 \""))
+
+        let commentHighlighted = highlighter.highlight(line: "TYPE \"ok ; SHOW :x 123", syntax: lang)
+        #expect(commentHighlighted.contains("\u{1B}[90m; SHOW :x 123"))
+        #expect(!commentHighlighted.contains("\u{1B}[1;36mSHOW"))
+        #expect(!commentHighlighted.contains("\u{1B}[94m:x"))
+
+        let semicolonStringHighlighted = highlighter.highlight(line: "TYPE \"a;b\" ; SHOW :x", syntax: lang)
+        #expect(semicolonStringHighlighted.contains("\u{1B}[32m\"a;b\""))
+        #expect(semicolonStringHighlighted.contains("\u{1B}[90m ; SHOW :x"))
+        #expect(!semicolonStringHighlighted.contains("\u{1B}[90m;b\""))
+    }
+
+    if let lang = markdownLang {
+        let fenceHighlighted = highlighter.highlight(line: "```logo", syntax: lang)
+        #expect(fenceHighlighted.contains("\u{1B}[94m```logo"))
+
+        let taskHighlighted = highlighter.highlight(line: "- [x] finish Markdown rules", syntax: lang)
+        #expect(taskHighlighted.contains("\u{1B}[94m- [x] "))
+
+        let tableHighlighted = highlighter.highlight(line: "| Name | Value |", syntax: lang)
+        #expect(tableHighlighted.contains("\u{1B}[94m| Name | Value |"))
+
+        let compactTableHighlighted = highlighter.highlight(line: "Name | Value | Notes", syntax: lang)
+        #expect(compactTableHighlighted.contains("\u{1B}[94mName | Value | Notes"))
+
+        let separatorHighlighted = highlighter.highlight(line: "| --- | :---: |", syntax: lang)
+        #expect(separatorHighlighted.contains("\u{1B}[1;36m| --- | :---: |"))
+
+        let referenceHighlighted = highlighter.highlight(line: "[docs]: https://example.com", syntax: lang)
+        #expect(referenceHighlighted.contains("\u{1B}[94m[docs]: https://example.com"))
+
+        let emphasisHighlighted = highlighter.highlight(line: " **good** and _cool_", syntax: lang)
+        #expect(emphasisHighlighted.contains("\u{1B}[32m**good**"))
+        #expect(emphasisHighlighted.contains("\u{1B}[0m and "))
+        #expect(emphasisHighlighted.contains("\u{1B}[32m_cool_"))
+        #expect(!emphasisHighlighted.contains("\u{1B}[32m**good** and _"))
     }
 
     if let lang = swiftLang {

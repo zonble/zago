@@ -14,20 +14,20 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
         let aliases = (LogoPrimitive.keywordAliases + lineSubkeywords)
             .map { NSRegularExpression.escapedPattern(for: $0) }
             .joined(separator: "|")
-        return "(?<![A-Za-z0-9_.?])(\(aliases))(?![A-Za-z0-9_.?])"
+        return "(?i)(?<![A-Za-z0-9_.?])(\(aliases))(?![A-Za-z0-9_.?])"
     }()
 
     public var rules: [SyntaxRule] {
         [
-            makeRule(Self.keywordPattern, .keyword),
-            // Variables (:var_name)
-            makeRule(":[a-zA-Z0-9_]+", .typeOrAttribute),
-            // Strings in double or single quotes
-            makeRule("\"[^\"]*\"|'[^']*'", .string),
-            // Numbers
-            makeRule("\\b\\d+\\b", .number),
+            // LOGO quoted words ("word), multi-word strings ("hello world"), and single-quoted text.
+            makeRule("\"[^\"\n]*\"(?![A-Za-z0-9:\"])|\"[^\"\\s\\[\\]\\{\\}\\(\\)]+|'[^']*'", .string),
             // LOGO comments
             makeRule(";.*$|//.*$", .comment),
+            makeRule(Self.keywordPattern, .keyword),
+            // Variables (:var_name) and loop/template counter (:#)
+            makeRule(":(#|[a-zA-Z0-9_]+)", .typeOrAttribute),
+            // Numbers
+            makeRule("\\b\\d+\\b", .number),
         ].compactMap { $0 }
     }
 }
