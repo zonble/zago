@@ -139,6 +139,23 @@ import TextMetrics
     #expect(linesWithRuler.count == 24)
 }
 
+@Test func testScreenRenderCanHideLineNumbers() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["alpha", "beta"]
+
+    let outputWithLineNumbers = editor.generateScreenOutput(rows: 10, cols: 40)
+    let linesWithLineNumbers = outputWithLineNumbers.components(separatedBy: "\r\n")
+    #expect(linesWithLineNumbers[1].contains("\u{1B}[90m   1 \u{1B}[0malpha"))
+    #expect(outputWithLineNumbers.contains("\u{1B}[2;6H"))
+
+    editor.displayConfig.showLineNumbers = false
+    let outputWithoutLineNumbers = editor.generateScreenOutput(rows: 10, cols: 40)
+    let linesWithoutLineNumbers = outputWithoutLineNumbers.components(separatedBy: "\r\n")
+    #expect(linesWithoutLineNumbers[1].contains("\u{1B}[Kalpha"))
+    #expect(!linesWithoutLineNumbers[1].contains("   1 "))
+    #expect(outputWithoutLineNumbers.contains("\u{1B}[2;1H"))
+}
+
 @Test func testRulerBarDimColorWhenMenuBarActive() throws {
     let editor = Editor()
     editor.displayConfig.showRuler = true

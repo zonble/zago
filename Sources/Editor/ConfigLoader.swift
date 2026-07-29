@@ -4,6 +4,7 @@ import Foundation
 public struct EditorConfig {
     public var wrapColumn: Int? = nil
     public var showRuler: Bool = false
+    public var showLineNumbers: Bool = true
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
@@ -165,11 +166,20 @@ public final class ConfigLoader {
                     case "nowrap":
                         config.wrapColumn = nil
 
-                    case "ruler":
+                    case "ruler", "showruler":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.showRuler = true
                         } else if value == "false" || value == "off" || value == "0" {
                             config.showRuler = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.showLineNumbers = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.showLineNumbers = false
                         } else {
                             config.syntaxErrorCount += 1
                         }
@@ -186,6 +196,10 @@ public final class ConfigLoader {
                             config.wrapColumn = nil
                         } else if value == "ruler" {
                             config.showRuler = false
+                        } else if value == "linenumbers" || value == "linenumber" || value == "line-numbers"
+                            || value == "line-number" || value == "line_numbers" || value == "line_number"
+                        {
+                            config.showLineNumbers = false
                         } else if value == "syntax" {
                             config.enableSyntaxHighlight = false
                         } else if value == "autoreload" {
@@ -194,7 +208,7 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
-                    case "syntax":
+                    case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.enableSyntaxHighlight = true
                         } else if value == "false" || value == "off" || value == "0" {
@@ -203,7 +217,7 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
-                    case "autoreload":
+                    case "autoreload", "auto-reload", "auto_reload":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.autoReload = true
                         } else if value == "false" || value == "off" || value == "0" {
@@ -221,6 +235,27 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    default:
+                        config.syntaxErrorCount += 1
+                    }
+                } else {
+                    config.syntaxErrorCount += 1
+                }
+
+            case "unset":
+                if tokens.count >= 2 {
+                    let option = tokens[1].lowercased()
+                    switch option {
+                    case "wrap":
+                        config.wrapColumn = nil
+                    case "ruler", "showruler":
+                        config.showRuler = false
+                    case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
+                        config.showLineNumbers = false
+                    case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
+                        config.enableSyntaxHighlight = false
+                    case "autoreload", "auto-reload", "auto_reload":
+                        config.autoReload = false
                     default:
                         config.syntaxErrorCount += 1
                     }
@@ -356,6 +391,9 @@ public final class ConfigLoader {
 
 # Show WordStar-style ruler bar (on / off)
 set showRuler off
+
+# Show line number gutter (on / off)
+set lineNumbers on
 
 # Tab Stop Width (default: 4)
 set tabSize 4

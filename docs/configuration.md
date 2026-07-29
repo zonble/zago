@@ -41,6 +41,8 @@ The command writes the template file and exits without opening the editor.
 | `unset wrap` | Disables softwrap | `unset wrap` |
 | `set ruler` | Shows the classic WordStar-style ruler bar | `set ruler` |
 | `unset ruler` | Hides the ruler bar | `unset ruler` |
+| `set linenumbers [on|off]` | Shows or hides the line number gutter | `set linenumbers off` |
+| `unset linenumbers` | Hides the line number gutter for easier terminal copy/paste | `unset linenumbers` |
 | `set syntax [on|off]` | Enables or disables syntax highlighting | `set syntax off` |
 | `set autoreload` | Enables file auto-reload for external changes | `set autoreload` |
 | `unset autoreload` | Disables file auto-reload | `unset autoreload` |

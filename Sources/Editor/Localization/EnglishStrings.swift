@@ -151,6 +151,7 @@ public struct EnglishStrings {
 
         "menu.tools.logo": "Command Prompt...\tEsc",
         "menu.tools.table_mode": "Toggle Table Mode\tAlt+T",
+        "menu.tools.line_numbers": "Toggle Line Numbers",
         "menu.tools.table_style": "Cycle Table Style\tAlt+S",
         "menu.tools.ruler": "Toggle Ruler Bar",
         "menu.tools.wrap_80": "Wrap Column: 80",

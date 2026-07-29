@@ -70,17 +70,20 @@ public final class Editor {
 
     public struct DisplayConfig: Sendable, Equatable {
         public var showRuler: Bool
+        public var showLineNumbers: Bool
         public var enableSyntaxHighlight: Bool
         public var autoReload: Bool
         public var tabSize: Int
 
         public init(
             showRuler: Bool = false,
+            showLineNumbers: Bool = true,
             enableSyntaxHighlight: Bool = true,
             autoReload: Bool = true,
             tabSize: Int = 4
         ) {
             self.showRuler = showRuler
+            self.showLineNumbers = showLineNumbers
             self.enableSyntaxHighlight = enableSyntaxHighlight
             self.autoReload = autoReload
             self.tabSize = tabSize
@@ -107,6 +110,7 @@ public final class Editor {
         // CLI argument priority > .serc config > default
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
+        let finalLineNumbers = loadedConfig.showLineNumbers
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
@@ -115,7 +119,8 @@ public final class Editor {
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.displayConfig = DisplayConfig(
-            showRuler: finalRuler, enableSyntaxHighlight: finalSyntax, autoReload: finalReload, tabSize: finalTabSize)
+            showRuler: finalRuler, showLineNumbers: finalLineNumbers, enableSyntaxHighlight: finalSyntax,
+            autoReload: finalReload, tabSize: finalTabSize)
 
         setupDefaultCommands()
         applyCustomConfig(loadedConfig)

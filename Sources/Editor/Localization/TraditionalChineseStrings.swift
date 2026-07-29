@@ -151,6 +151,7 @@ public struct TraditionalChineseStrings {
 
         "menu.tools.logo": "指令 Prompt...\tEsc",
         "menu.tools.table_mode": "切換表格隔離模式\tAlt+T",
+        "menu.tools.line_numbers": "切換行號顯示",
         "menu.tools.table_style": "切換預設表格風格\tAlt+S",
         "menu.tools.ruler": "切換 WordStar 標尺規列",
         "menu.tools.wrap_80": "自動換行：80",

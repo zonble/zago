@@ -14,7 +14,7 @@ Create diagrams without leaving your Markdown, notes, or terminal workflow.
 - Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
 - Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
 - Nano/Pico-like modeless editing: `^O` save, `^X` exit, `^W` search, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` help.
-- Correct CJK and multi-byte UTF-8 display-width handling through a shared text metrics module.
+- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, and connector lines aligned.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload, English and Traditional Chinese UI.
 

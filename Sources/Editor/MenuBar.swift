@@ -78,6 +78,13 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo),
                     MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo),
                     MenuItem(titleKey: "menu.tools.table_mode", hotkeyChar: "t", commandId: .tableToggle),
+                    MenuItem(
+                        titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
+                        action: { editor in
+                            editor.displayConfig.showLineNumbers.toggle()
+                            let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
+                            editor.setStatusMessage("[ Line Numbers \(state) ]")
+                        }),
                     MenuItem(titleKey: "menu.tools.table_style", hotkeyChar: "s", commandId: .tableStyle),
                     MenuItem(
                         titleKey: "menu.tools.ruler", hotkeyChar: "r",

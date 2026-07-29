@@ -258,7 +258,7 @@ extension Editor: LogoEngineDelegate {
             } else {
                 layoutEngine.wrapColumn = nil
             }
-        case "ruler", "rulerbar":
+        case "ruler", "rulerbar", "showruler":
             if arg == "off" || arg == "false" {
                 displayConfig.showRuler = false
             } else if arg == "on" || arg == "true" {
@@ -266,7 +266,15 @@ extension Editor: LogoEngineDelegate {
             } else {
                 displayConfig.showRuler.toggle()
             }
-        case "syntax":
+        case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
+            if arg == "off" || arg == "false" {
+                displayConfig.showLineNumbers = false
+            } else if arg == "on" || arg == "true" {
+                displayConfig.showLineNumbers = true
+            } else {
+                displayConfig.showLineNumbers.toggle()
+            }
+        case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
             if arg == "off" || arg == "false" {
                 displayConfig.enableSyntaxHighlight = false
             } else if arg == "on" || arg == "true" {
@@ -274,7 +282,7 @@ extension Editor: LogoEngineDelegate {
             } else {
                 displayConfig.enableSyntaxHighlight.toggle()
             }
-        case "autoreload":
+        case "autoreload", "auto-reload", "auto_reload":
             if arg == "off" || arg == "false" {
                 displayConfig.autoReload = false
             } else if arg == "on" || arg == "true" {

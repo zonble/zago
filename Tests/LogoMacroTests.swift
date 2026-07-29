@@ -58,6 +58,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     editor.displayConfig.showRuler = false
     logoEngine.execute("SET RULER ON")
     #expect(editor.displayConfig.showRuler == true)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    logoEngine.execute("SET LINENUMBERS OFF")
+    #expect(editor.displayConfig.showLineNumbers == false)
+    logoEngine.execute("SET LINENUMBERS ON")
+    #expect(editor.displayConfig.showLineNumbers == true)
 
     // 11. MSG Command Status Bar Output test
     logoEngine.execute("MAKE \"msg_val\" 42 MSG \"Current Val: \" + :msg_val")

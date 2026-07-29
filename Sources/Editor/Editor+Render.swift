@@ -13,7 +13,8 @@ extension Editor {
     /// Generates full screen ANSI output string for given terminal rows and cols dimensions.
     func generateScreenOutput(rows: Int, cols: Int) -> String {
         let mainAreaHeight = max(1, rows - (displayConfig.showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
-        let textWidth = max(10, cols - 5)  // 5 columns reserved for line number gutter ("1234 ")
+        let gutterWidth = displayConfig.showLineNumbers ? 5 : 0
+        let textWidth = max(10, cols - gutterWidth)
 
         // Compute Virtual Lines (wrapped visual sub-lines)
         let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
@@ -89,12 +90,11 @@ extension Editor {
         let (dropdownStartCol, dropdownBoxWidth, dropdownBoxLines) = generateDropdownOverlayLines(cols: cols)
 
         // 1.5 Optional WordStar Ruler Bar
-        let gutterWidth = 5
         if displayConfig.showRuler {
             let rulerStr = generateWordStarRuler(width: textWidth)
             output += "\u{1B}[K"
             if isMenuBarActive && dropdownBoxLines.count > 0 {
-                let plainRulerLine = "     " + rulerStr
+                let plainRulerLine = String(repeating: " ", count: gutterWidth) + rulerStr
                 let sliced = sliceOverlayLine(
                     baseFullLineStr: plainRulerLine,
                     boxLine: dropdownBoxLines[0],
@@ -105,7 +105,7 @@ extension Editor {
                 )
                 output += sliced + "\r\n"
             } else {
-                output += "\u{1B}[90m     \(rulerStr)\u{1B}[0m\r\n"
+                output += "\u{1B}[90m\(String(repeating: " ", count: gutterWidth))\(rulerStr)\u{1B}[0m\r\n"
             }
         }
 
@@ -122,12 +122,10 @@ extension Editor {
                 let isFirstSubLine = (vIndex < virtualLines.count) ? (virtualLines[vIndex].subLineIndex == 0) : true
                 let lineNumVal = (vIndex < virtualLines.count) ? virtualLines[vIndex].bufferLineIndex + 1 : 0
 
-                let lineNumStr: String
-                if lineNumVal > 0 {
-                    lineNumStr = isFirstSubLine ? String(format: "%4d ", lineNumVal) : "   ↳ "
-                } else {
-                    lineNumStr = "     "
-                }
+                let lineNumStr =
+                    displayConfig.showLineNumbers
+                    ? menuOverlayLineNumberString(lineNumber: lineNumVal, isFirstSubLine: isFirstSubLine)
+                    : ""
 
                 let fullLineStr = lineNumStr + vLineText
                 let sliced = sliceOverlayLine(
@@ -145,14 +143,12 @@ extension Editor {
                     let isFirstSubLine = (vLine.subLineIndex == 0)
 
                     // Gutter (Line Number or Softwrap Indicator ↳)
-                    let lineNumStr: String
-                    if isFirstSubLine {
-                        lineNumStr = String(format: "%4d ", vLine.bufferLineIndex + 1)
-                    } else {
-                        lineNumStr = "   ↳ "
+                    if displayConfig.showLineNumbers {
+                        let lineNumStr =
+                            isFirstSubLine ? String(format: "%4d ", vLine.bufferLineIndex + 1) : "   ↳ "
+                        lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
                     }
 
-                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
                     let currentLanguage =
                         displayConfig.enableSyntaxHighlight
                         ? syntaxHighlighter.detectLanguage(for: buffer.filePath) : nil
@@ -216,6 +212,11 @@ extension Editor {
         output += "\u{1B}[?25h"  // Show cursor
 
         return output
+    }
+
+    private func menuOverlayLineNumberString(lineNumber: Int, isFirstSubLine: Bool) -> String {
+        guard lineNumber > 0 else { return "     " }
+        return isFirstSubLine ? String(format: "%4d ", lineNumber) : "   ↳ "
     }
 
     struct RenderedPrompt {

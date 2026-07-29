@@ -12,17 +12,34 @@ import Testing
 @Test func testWrapColumnMenuActions() throws {
     let editor = Editor()
     #expect(editor.layoutEngine.wrapColumn == nil)
+    #expect(editor.displayConfig.showLineNumbers == true)
 
     let menuBar = MenuBar()
     let toolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
     #expect(toolsCategory != nil)
 
+    let tableModeIndex = toolsCategory?.items.firstIndex(where: { $0.titleKey == "menu.tools.table_mode" })
+    let lineNumbersIndex = toolsCategory?.items.firstIndex(where: { $0.titleKey == "menu.tools.line_numbers" })
+    #expect(tableModeIndex != nil)
+    #expect(lineNumbersIndex != nil)
+    #expect(lineNumbersIndex == tableModeIndex! + 1)
+
+    let lineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.line_numbers" })
     let wrap80Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_80" })
     let wrap60Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_60" })
     let wrap40Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_40" })
     let wrapResetItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_reset" })
 
+    #expect(lineNumbersItem != nil)
     #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
+
+    lineNumbersItem?.action?(editor)
+    #expect(editor.displayConfig.showLineNumbers == false)
+    #expect(editor.statusMessage == "[ Line Numbers hidden ]")
+
+    lineNumbersItem?.action?(editor)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    #expect(editor.statusMessage == "[ Line Numbers shown ]")
 
     wrap80Item?.action?(editor)
     #expect(editor.layoutEngine.wrapColumn == 80)
@@ -61,6 +78,7 @@ import Testing
 
     let content = try String(contentsOfFile: generatedPath, encoding: .utf8)
     #expect(content.contains("set showRuler off"))
+    #expect(content.contains("set lineNumbers on"))
     #expect(content.contains("set tabSize 4"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
@@ -86,8 +104,9 @@ import Testing
     let sampleConfig = """
         # Sample serc configuration
         set wrap 80
-        set ruler true
-        set autoreload true
+        set showRuler true
+        set lineNumbers off
+        set autoReload true
         bind ctrl-f move.left
         bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
         logo-prelude
@@ -115,6 +134,7 @@ import Testing
 
     #expect(config.wrapColumn == 80)
     #expect(config.showRuler == true)
+    #expect(config.showLineNumbers == false)
     #expect(config.autoReload == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
     #expect(config.customKeyBinds[.alt("h")] == "logo: MOVE HOME TYPE '# ' MOVE END")

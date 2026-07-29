@@ -206,6 +206,75 @@ Aliases:
 - `LEFTARROW` / `UPARROW`: same as `BACKARROW`
 - `BOTH` / `BIDIR`: same as `BOTHARROW`
 
+The modifier can appear with or without an explicit length:
+
+```logo
+LINE ARROW
+LINE 8 BACKARROW
+LINE 8 BOTHARROW
+VLINE ARROW
+VLINE 4 BOTHARROW
+```
+
+```text
+─────────→
+←───────
+←──────→
+
+│
+│
+│
+│
+│
+│
+│
+│
+│
+↓
+
+↑
+│
+│
+↓
+```
+
+Arrow modifiers are useful when pointing at text:
+
+```logo
+LINE 8 ARROW
+TYPE " target"
+```
+
+```text
+───────→ target
+```
+
+They are also useful in auto-connect mode. If the line stops because it reaches regular text, the last drawable cell becomes the arrowhead:
+
+```logo
+TYPE "   target"
+GOTO 1 1
+LINE ARROW
+```
+
+```text
+──→target
+```
+
+If the line reaches an existing box border, border fusion wins over arrow placement. This keeps connector lines attached cleanly to boxes:
+
+```logo
+DRAWBOX 6 3
+GOTO 2 1
+LINE ARROW
+```
+
+```text
+┌────┐
+├────┤
+└────┘
+```
+
 With `ASCII`, arrows use `<`, `>`, `^`, and `v`:
 
 ```logo
@@ -555,7 +624,7 @@ TYPE ITEM 2 :cells
 | `SET RULER ON / OFF` | Shows or hides column ruler line | `SET RULER ON` |
 | `SET WRAP 80` | Sets line wrap column width | `SET WRAP 80` |
 | `SET TAB 4` | Sets tab width spaces | `SET TAB 4` |
-| `SET LINENUMBERS ON / OFF` | Shows or hides line number gutter | `SET LINENUMBERS ON` |
+| `SET LINENUMBERS ON / OFF` | Shows or hides line number gutter; hiding it makes terminal copy/paste cleaner | `SET LINENUMBERS OFF` |
 
 ---
 
