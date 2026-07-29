@@ -46,6 +46,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileInsert = "file.insert"
     case fileSaveExit = "file.save_exit"
     case fileExit = "file.exit"
+    case fileEditConfig = "file.edit_config"
+    case fileReloadConfig = "file.reload_config"
 
     // Macro & UI
     case macroLogo = "macro.logo"

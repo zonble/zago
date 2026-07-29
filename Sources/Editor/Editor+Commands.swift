@@ -47,6 +47,8 @@ extension Editor {
         commandRegistry.register(ReadFileCommand())
         commandRegistry.register(SaveAndExitCommand())
         commandRegistry.register(ExitEditorCommand())
+        commandRegistry.register(EditConfigCommand())
+        commandRegistry.register(ReloadConfigCommand())
 
         // UI & Macro Commands
         commandRegistry.register(LogoMacroCommand())

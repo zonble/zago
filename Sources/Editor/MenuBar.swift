@@ -48,6 +48,8 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
                     MenuItem(titleKey: "menu.file.save_exit", hotkeyChar: "e", commandId: .fileSaveExit),
                     MenuItem(titleKey: "menu.file.exit", hotkeyChar: "x", commandId: .fileExit),
+                    MenuItem(titleKey: "menu.file.edit_config", hotkeyChar: "c", commandId: .fileEditConfig),
+                    MenuItem(titleKey: "menu.file.reload_config", hotkeyChar: "r", commandId: .fileReloadConfig),
                 ]),
             MenuCategory(
                 titleKey: "menu.edit", hotkeyChar: "e",

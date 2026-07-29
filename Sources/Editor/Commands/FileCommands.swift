@@ -55,3 +55,29 @@ public struct ExitEditorCommand: Command {
         }
     }
 }
+
+public struct EditConfigCommand: Command {
+    public let id: CommandID = .fileEditConfig
+    public let name = "Edit Config"
+    public let description = "Edit ~/.serc configuration file"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.editConfig()
+    }
+}
+
+public struct ReloadConfigCommand: Command {
+    public let id: CommandID = .fileReloadConfig
+    public let name = "Reload Config"
+    public let description = "Reload ~/.serc configuration file"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.reloadConfig()
+    }
+}

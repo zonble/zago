@@ -134,6 +134,8 @@ public struct TraditionalChineseStrings {
         "menu.file.save": "儲存檔案\t^O",
         "menu.file.save_exit": "儲存並關閉\tF4",
         "menu.file.exit": "關閉頁面 / 退出\t^X",
+        "menu.file.edit_config": "編輯設定檔(C)",
+        "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
         "menu.edit.mark": "標記選取區\t^M",

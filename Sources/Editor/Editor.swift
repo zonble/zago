@@ -180,6 +180,42 @@ public final class Editor {
         startFileWatcherForCurrentBuffer()
     }
 
+    /// Opens ~/.serc in a buffer for editing. Creates ~/.serc with default template if it does not exist.
+    public func editConfig() {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+        let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
+
+        if !FileManager.default.fileExists(atPath: sercPath) {
+            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: sercPath)
+        }
+
+        if let existingIndex = buffers.firstIndex(where: { $0.filePath == sercPath }) {
+            currentBufferIndex = existingIndex
+            topVLineIndex = 0
+            selectionMark = nil
+            startFileWatcherForCurrentBuffer()
+        } else {
+            openNewBuffer(filePath: sercPath)
+        }
+        setStatusMessage("[ Editing \(sercPath) ]")
+    }
+
+    /// Reloads configuration settings from ~/.serc or ./.serc files.
+    public func reloadConfig() {
+        let loadedConfig = ConfigLoader().loadConfig()
+        self.layoutEngine.wrapColumn = loadedConfig.wrapColumn
+        self.displayConfig.showRuler = loadedConfig.showRuler
+        self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
+        self.displayConfig.enableSyntaxHighlight = loadedConfig.enableSyntaxHighlight
+        self.displayConfig.autoReload = loadedConfig.autoReload
+        self.displayConfig.tabSize = loadedConfig.tabSize
+        if let lang = loadedConfig.language {
+            L10n.currentLanguage = lang
+        }
+        applyCustomConfig(loadedConfig)
+        setStatusMessage("[ Config reloaded ]")
+    }
+
     /// Closes current active buffer. If no buffers remain, exits editor.
     public func closeCurrentBuffer() {
         guard !buffers.isEmpty else {

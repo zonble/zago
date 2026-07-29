@@ -36,3 +36,19 @@ show butfirst [ 1 2 3 ]
 show butfirst "abc
 show butlast [ 1 2 3 ]
 show butlast "abc
+show butfirsts [ [ 1 2 3 ] [ a b c ] ]
+show butfirsts [ abc def ]
+show item 2 [ 1 2 3 ]
+show item 2 "abc
+show mditem [2 1] {{"a "b} {"c "d}}
+show pick [ 1 2 3 ]
+show pick "abc
+show remove "b [ a b c ]
+show remove "a "banana
+show remdup [ 1 2 3 2 3 4 3 4 5 ]
+show remdup "banana
+show quoted "abc
+show split "a "banana
+show split 3 [1 2 3 4 1 2 3 4]
+
+

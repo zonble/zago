@@ -54,6 +54,42 @@ import Testing
     #expect(editor.layoutEngine.wrapColumn == nil)
 }
 
+@Test func testEditConfigAndReloadConfigMenuItems() throws {
+    let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+    let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
+    let existsBefore = FileManager.default.fileExists(atPath: sercPath)
+    let contentBefore = try? String(contentsOfFile: sercPath, encoding: .utf8)
+
+    defer {
+        if !existsBefore {
+            try? FileManager.default.removeItem(atPath: sercPath)
+        } else if let content = contentBefore {
+            try? content.write(toFile: sercPath, atomically: true, encoding: .utf8)
+        }
+    }
+
+    let editor = Editor()
+    let fileCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.file" })
+    #expect(fileCategory != nil)
+
+    let editConfigItem = fileCategory?.items.first(where: { $0.titleKey == "menu.file.edit_config" })
+    let reloadConfigItem = fileCategory?.items.first(where: { $0.titleKey == "menu.file.reload_config" })
+
+    #expect(editConfigItem != nil)
+    #expect(reloadConfigItem != nil)
+    #expect(editConfigItem?.commandId == .fileEditConfig)
+    #expect(reloadConfigItem?.commandId == .fileReloadConfig)
+
+    // Test editConfig() creates/opens buffer for ~/.serc
+    editor.editConfig()
+    #expect(editor.buffer.filePath?.hasSuffix(".serc") == true)
+    #expect(editor.statusMessage.contains(".serc"))
+
+    // Test reloadConfig()
+    editor.reloadConfig()
+    #expect(editor.statusMessage == "[ Config reloaded ]")
+}
+
 @Test func testSpellChecker() throws {
     let checker = SpellChecker()
     #expect(checker.isCorrect("hello") == true)

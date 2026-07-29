@@ -1130,6 +1130,46 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(["x", "y", "z"].contains(editor.statusMessage))
 }
 
+@Test func testRemoveAndRemdupPrimitives() throws {
+    let editor = Editor()
+
+    // 1. REMOVE from List
+    editor.logoEngine.execute("SHOW REMOVE \"b [ a b c ]")
+    #expect(editor.statusMessage == "[a c]")
+
+    // 2. REMOVE from Word
+    editor.logoEngine.execute("SHOW REMOVE \"a \"banana")
+    #expect(editor.statusMessage == "bnn")
+
+    // 3. REMDUP from List
+    editor.logoEngine.execute("SHOW REMDUP [ a b a c b ]")
+    #expect(editor.statusMessage == "[a b c]")
+
+    // 4. REMDUP from Word
+    editor.logoEngine.execute("SHOW REMDUP \"banana")
+    #expect(editor.statusMessage == "ban")
+}
+
+@Test func testSplitAndQuotedPrimitives() throws {
+    let editor = Editor()
+
+    // 1. SPLIT word
+    editor.logoEngine.execute("SHOW SPLIT \"a \"banana")
+    #expect(editor.statusMessage == "[b n n]")
+
+    // 2. SPLIT list
+    editor.logoEngine.execute("SHOW SPLIT 3 [1 2 3 4 1 2 3 4]")
+    #expect(editor.statusMessage == "[[1 2] [4 1 2] [4]]")
+
+    // 3. QUOTED word
+    editor.logoEngine.execute("SHOW QUOTED \"abc")
+    #expect(editor.statusMessage == "\"abc")
+
+    // 4. QUOTED number
+    editor.logoEngine.execute("SHOW QUOTED 123")
+    #expect(editor.statusMessage == "\"123")
+}
+
 @Test func testFirstsAndButFirstsPrimitives() throws {
     let editor = Editor()
     editor.logoEngine.execute("SHOW FIRSTS [ [1 2 3] [a b c] ]")

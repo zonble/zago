@@ -304,6 +304,126 @@ extension LogoEngine {
                 return String(s[strIdx])
             }
 
+        case .remove:
+            index += 1
+            let thing = evaluateExpression(tokens, index: &index)
+            index += 1
+            let dataVal = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(dataVal)
+            let targetStr = LogoValue.parse(thing).description
+
+            switch p {
+            case .list(let items):
+                let filtered = items.filter { $0.description != targetStr }
+                return LogoValue.list(filtered).description
+            case .array(let items):
+                let filtered = items.filter { $0.description != targetStr }
+                return LogoValue.array(filtered).description
+            case .string(let s):
+                if targetStr.count == 1, let targetChar = targetStr.first {
+                    let filtered = s.filter { $0 != targetChar }
+                    return String(filtered)
+                } else {
+                    let filtered = s.replacingOccurrences(of: targetStr, with: "")
+                    return filtered
+                }
+            }
+
+        case .remdup:
+            index += 1
+            let dataVal = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(dataVal)
+
+            switch p {
+            case .list(let items):
+                var seen = Set<String>()
+                var result: [LogoValue] = []
+                for item in items {
+                    let desc = item.description
+                    if !seen.contains(desc) {
+                        seen.insert(desc)
+                        result.append(item)
+                    }
+                }
+                return LogoValue.list(result).description
+            case .array(let items):
+                var seen = Set<String>()
+                var result: [LogoValue] = []
+                for item in items {
+                    let desc = item.description
+                    if !seen.contains(desc) {
+                        seen.insert(desc)
+                        result.append(item)
+                    }
+                }
+                return LogoValue.array(result).description
+            case .string(let s):
+                var seen = Set<Character>()
+                var result = ""
+                for ch in s {
+                    if !seen.contains(ch) {
+                        seen.insert(ch)
+                        result.append(ch)
+                    }
+                }
+                return result
+            }
+
+        case .split:
+            index += 1
+            let delimVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let dataVal = evaluateExpression(tokens, index: &index)
+
+            let delimStr = LogoValue.parse(delimVal).description
+            let dataParsed = LogoValue.parse(dataVal)
+
+            switch dataParsed {
+            case .list(let items):
+                var result: [LogoValue] = []
+                var currentChunk: [LogoValue] = []
+                for item in items {
+                    if item.description == delimStr {
+                        result.append(.list(currentChunk))
+                        currentChunk = []
+                    } else {
+                        currentChunk.append(item)
+                    }
+                }
+                result.append(.list(currentChunk))
+                return LogoValue.list(result).description
+
+            case .array(let items):
+                var result: [LogoValue] = []
+                var currentChunk: [LogoValue] = []
+                for item in items {
+                    if item.description == delimStr {
+                        result.append(.array(currentChunk))
+                        currentChunk = []
+                    } else {
+                        currentChunk.append(item)
+                    }
+                }
+                result.append(.array(currentChunk))
+                return LogoValue.array(result).description
+
+            case .string(let s):
+                let parts = s.components(separatedBy: delimStr)
+                let nonSpaceParts = parts.filter { !$0.isEmpty }
+                let listItems = nonSpaceParts.map { LogoValue.string($0) }
+                return LogoValue.list(listItems).description
+            }
+
+        case .quoted:
+            index += 1
+            let v = evaluateExpression(tokens, index: &index)
+            let parsed = LogoValue.parse(v)
+            let s = parsed.description
+            if s.hasPrefix("\"") {
+                return s
+            }
+            return "\"" + s
+
         case .mditem:
             index += 1
             let idxVal = evaluateExpression(tokens, index: &index)

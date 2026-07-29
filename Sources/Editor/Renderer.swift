@@ -213,15 +213,16 @@ public final class Renderer {
                     showLineNumbers: editor.displayConfig.showLineNumbers,
                     isMenuOverlay: true
                 )
-                let lineNumStr = editor.displayConfig.showLineNumbers ? "\u{1B}[90m\(rawLineNumStr)\u{1B}[0m" : ""
 
-                let fullLineStr = lineNumStr + vLineText
+                let plainFullLineStr = rawLineNumStr + vLineText
                 let sliced = sliceOverlayLine(
-                    baseFullLineStr: fullLineStr,
+                    baseFullLineStr: plainFullLineStr,
                     boxLine: dropdownBoxLines[boxIdx],
                     dropdownStartCol: dropdownStartCol,
                     dropdownBoxWidth: dropdownBoxWidth,
-                    cols: cols
+                    cols: cols,
+                    showLineNumbers: editor.displayConfig.showLineNumbers,
+                    gutterWidth: gutterWidth
                 )
                 output += sliced + "\r\n"
             } else {
@@ -621,22 +622,33 @@ public final class Renderer {
         dropdownStartCol: Int,
         dropdownBoxWidth: Int,
         cols: Int,
-        isDim: Bool = false
+        isDim: Bool = false,
+        showLineNumbers: Bool = false,
+        gutterWidth: Int = 0
     ) -> String {
         let chars = Array(baseFullLineStr)
 
-        var leftStr = ""
+        var leftChars: [Character] = []
         var w = 0
         var cIdx = 0
         while cIdx < chars.count && w < dropdownStartCol {
             let chW = chars[cIdx].displayWidth
             if w + chW > dropdownStartCol { break }
-            leftStr.append(chars[cIdx])
+            leftChars.append(chars[cIdx])
             w += chW
             cIdx += 1
         }
+        var leftStr = String(leftChars)
         if w < dropdownStartCol {
             leftStr += String(repeating: " ", count: dropdownStartCol - w)
+        }
+
+        if showLineNumbers && gutterWidth > 0 && leftStr.count >= gutterWidth {
+            let gutterPart = String(leftStr.prefix(gutterWidth))
+            let textPart = String(leftStr.dropFirst(gutterWidth))
+            leftStr = "\u{1B}[90m\(gutterPart)\u{1B}[0m\(textPart)"
+        } else if isDim {
+            leftStr = "\u{1B}[90m\(leftStr)\u{1B}[0m"
         }
 
         let rightStartCol = dropdownStartCol + dropdownBoxWidth
@@ -657,7 +669,7 @@ public final class Renderer {
         }
 
         if isDim {
-            return "\u{1B}[90m\(leftStr)\u{1B}[0m\(boxLine)\u{1B}[90m\(rightStr)\u{1B}[0m"
+            rightStr = "\u{1B}[90m\(rightStr)\u{1B}[0m"
         }
         return leftStr + boxLine + rightStr
     }

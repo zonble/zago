@@ -134,6 +134,8 @@ public struct EnglishStrings {
         "menu.file.save": "Save File\t^O",
         "menu.file.save_exit": "Save & Exit\tF4",
         "menu.file.exit": "Exit Buffer / Editor\t^X",
+        "menu.file.edit_config": "Edit Config",
+        "menu.file.reload_config": "Reload Config",
 
         "menu.edit.undo": "Undo\t^Z",
         "menu.edit.mark": "Toggle Mark\t^M",
