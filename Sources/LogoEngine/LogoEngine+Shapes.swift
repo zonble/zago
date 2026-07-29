@@ -7,33 +7,36 @@ extension LogoEngine {
         case overlay
     }
 
+    private enum LineArrowMode {
+        case none
+        case forward
+        case backward
+        case both
+
+        var hasForwardArrow: Bool {
+            self == .forward || self == .both
+        }
+
+        var hasBackwardArrow: Bool {
+            self == .backward || self == .both
+        }
+    }
 
     internal func executeLineCommand(_ tokens: [String], index: inout Int) {
         guard let editor = self.delegate else { return }
         var length = 40
         var styleChar: Character = "─"
         var hasExplicitLength = false
+        var arrowMode: LineArrowMode = .none
 
         if index < tokens.count {
-            let firstToken = tokens[index]
-
-            if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
-                let valStr = evaluateExpression(tokens, index: &index)
-                length = max(1, min(Int(valStr) ?? 40, 200))
+            parseLineArguments(tokens, index: &index, maxLength: 200, defaultLength: 40) { value in
+                length = value
                 hasExplicitLength = true
-
-                if index + 1 < tokens.count {
-                    let nextToken = tokens[index + 1]
-                    let nextUpper = nextToken.uppercased()
-                    if !LogoEngine.isKeyword(nextToken) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
-                        index += 1
-                        let sStr = evaluateExpression(tokens, index: &index)
-                        if sStr == "double" { styleChar = "═" }
-                        else if sStr == "ascii" { styleChar = "-" }
-                    }
-                }
-            } else {
-                index -= 1
+            } setStyle: { style in
+                styleChar = (style == "double") ? "═" : "-"
+            } setArrowMode: { mode in
+                arrowMode = mode
             }
         } else {
             index -= 1
@@ -43,7 +46,7 @@ extension LogoEngine {
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         if !hasExplicitLength {
-            executeAutoLineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar)
+            executeAutoLineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar, arrowMode: arrowMode)
             return
         }
 
@@ -60,9 +63,12 @@ extension LogoEngine {
             let moveMask = (i == 0) ? 2 : ((i == length - 1) ? 8 : 10)
             if col < currentChars.count {
                 let existing = currentChars[col]
-                currentChars[col] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+                currentChars[col] = explicitHorizontalLineChar(
+                    existing: existing, styleChar: styleChar, moveMask: moveMask,
+                    isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode)
             } else {
-                currentChars.append(styleChar)
+                currentChars.append(horizontalLineChar(
+                    styleChar: styleChar, isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode))
             }
         }
 
@@ -75,27 +81,16 @@ extension LogoEngine {
         var height = 5
         var styleChar: Character = "│"
         var hasExplicitHeight = false
+        var arrowMode: LineArrowMode = .none
 
         if index < tokens.count {
-            let firstToken = tokens[index]
-
-            if (!LogoEngine.isKeyword(firstToken) || firstToken.hasPrefix("\"")) && firstToken != "]" {
-                let valStr = evaluateExpression(tokens, index: &index)
-                height = max(1, min(Int(valStr) ?? 5, 100))
+            parseLineArguments(tokens, index: &index, maxLength: 100, defaultLength: 5) { value in
+                height = value
                 hasExplicitHeight = true
-
-                if index + 1 < tokens.count {
-                    let nextToken = tokens[index + 1]
-                    let nextUpper = nextToken.uppercased()
-                    if !LogoEngine.isKeyword(nextToken) || nextUpper == "DOUBLE" || nextUpper == "ASCII" {
-                        index += 1
-                        let sStr = evaluateExpression(tokens, index: &index)
-                        if sStr == "double" { styleChar = "║" }
-                        else if sStr == "ascii" { styleChar = "|" }
-                    }
-                }
-            } else {
-                index -= 1
+            } setStyle: { style in
+                styleChar = (style == "double") ? "║" : "|"
+            } setArrowMode: { mode in
+                arrowMode = mode
             }
         } else {
             index -= 1
@@ -105,7 +100,7 @@ extension LogoEngine {
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         if !hasExplicitHeight {
-            executeAutoVlineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar)
+            executeAutoVlineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar, arrowMode: arrowMode)
             return
         }
 
@@ -121,7 +116,9 @@ extension LogoEngine {
 
             let moveMask = (r == 0) ? 4 : ((r == height - 1) ? 1 : 5)
             let existing = currentChars[startCol]
-            currentChars[startCol] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+            currentChars[startCol] = explicitVerticalLineChar(
+                existing: existing, styleChar: styleChar, moveMask: moveMask,
+                isStart: r == 0, isEnd: r == height - 1, arrowMode: arrowMode)
 
             editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
         }
@@ -130,7 +127,69 @@ extension LogoEngine {
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 
-    private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character) {
+    private func parseLineArguments(
+        _ tokens: [String],
+        index: inout Int,
+        maxLength: Int,
+        defaultLength: Int,
+        setLength: (Int) -> Void,
+        setStyle: (String) -> Void,
+        setArrowMode: (LineArrowMode) -> Void
+    ) {
+        var consumedAny = false
+        var cursor = index
+        var lastConsumedIndex = index - 1
+
+        while cursor < tokens.count {
+            let token = tokens[cursor]
+            if token == "]" || token == ")" { break }
+
+            let raw = unquote(token)
+            let upper = raw.uppercased()
+
+            if let arrowMode = lineArrowMode(for: upper) {
+                setArrowMode(arrowMode)
+                consumedAny = true
+                lastConsumedIndex = cursor
+            } else if upper == "DOUBLE" || upper == "ASCII" {
+                setStyle(upper.lowercased())
+                consumedAny = true
+                lastConsumedIndex = cursor
+            } else if !LogoEngine.isKeyword(token) || token.hasPrefix("\"") {
+                var evalIndex = cursor
+                let value = evaluateExpression(tokens, index: &evalIndex)
+                if let parsedLength = Int(value) {
+                    setLength(max(1, min(parsedLength, maxLength)))
+                    consumedAny = true
+                    cursor = evalIndex
+                    lastConsumedIndex = cursor
+                } else {
+                    break
+                }
+            } else {
+                break
+            }
+
+            cursor += 1
+        }
+
+        index = consumedAny ? lastConsumedIndex : index - 1
+    }
+
+    private func lineArrowMode(for uppercasedToken: String) -> LineArrowMode? {
+        switch uppercasedToken {
+        case "ARROW", "RIGHTARROW", "DOWNARROW":
+            return .forward
+        case "BACKARROW", "LEFTARROW", "UPARROW":
+            return .backward
+        case "BOTHARROW", "BOTH", "BIDIR":
+            return .both
+        default:
+            return nil
+        }
+    }
+
+    private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
         let maxLength = 10
         var drawableOffsets: [Int] = []
@@ -171,14 +230,16 @@ extension LogoEngine {
 
             let moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
             let existing = currentChars[col]
-            currentChars[col] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+            currentChars[col] = autoHorizontalLineChar(
+                existing: existing, styleChar: styleChar, moveMask: moveMask,
+                isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
         }
 
         editor.logoEngine(self, performAction: .setLine(index: startLine, text: String(currentChars)))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
     }
 
-    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character) {
+    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
         let maxHeight = 10
         var drawableOffsets: [Int] = []
@@ -216,7 +277,9 @@ extension LogoEngine {
 
             let moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
             let existing = currentChars[startCol]
-            currentChars[startCol] = fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+            currentChars[startCol] = autoVerticalLineChar(
+                existing: existing, styleChar: styleChar, moveMask: moveMask,
+                isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
 
             editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
         }
@@ -237,6 +300,86 @@ extension LogoEngine {
         if offset == 0 { return 4 }
         if offset == lastOffset { return 1 }
         return 5
+    }
+
+    private func explicitHorizontalLineChar(
+        existing: Character,
+        styleChar: Character,
+        moveMask: Int,
+        isStart: Bool,
+        isEnd: Bool,
+        arrowMode: LineArrowMode
+    ) -> Character {
+        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
+        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
+        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+    }
+
+    private func explicitVerticalLineChar(
+        existing: Character,
+        styleChar: Character,
+        moveMask: Int,
+        isStart: Bool,
+        isEnd: Bool,
+        arrowMode: LineArrowMode
+    ) -> Character {
+        if isStart, arrowMode.hasBackwardArrow { return verticalBackwardArrow(styleChar: styleChar) }
+        if isEnd, arrowMode.hasForwardArrow { return verticalForwardArrow(styleChar: styleChar) }
+        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+    }
+
+    private func autoHorizontalLineChar(
+        existing: Character,
+        styleChar: Character,
+        moveMask: Int,
+        isStart: Bool,
+        isEnd: Bool,
+        arrowMode: LineArrowMode
+    ) -> Character {
+        if isMaskChar(existing) {
+            return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+        }
+        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
+        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
+        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+    }
+
+    private func autoVerticalLineChar(
+        existing: Character,
+        styleChar: Character,
+        moveMask: Int,
+        isStart: Bool,
+        isEnd: Bool,
+        arrowMode: LineArrowMode
+    ) -> Character {
+        if isMaskChar(existing) {
+            return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+        }
+        if isStart, arrowMode.hasBackwardArrow { return verticalBackwardArrow(styleChar: styleChar) }
+        if isEnd, arrowMode.hasForwardArrow { return verticalForwardArrow(styleChar: styleChar) }
+        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
+    }
+
+    private func horizontalLineChar(styleChar: Character, isStart: Bool, isEnd: Bool, arrowMode: LineArrowMode) -> Character {
+        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
+        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
+        return styleChar
+    }
+
+    private func horizontalForwardArrow(styleChar: Character) -> Character {
+        styleChar == "-" ? ">" : "→"
+    }
+
+    private func horizontalBackwardArrow(styleChar: Character) -> Character {
+        styleChar == "-" ? "<" : "←"
+    }
+
+    private func verticalForwardArrow(styleChar: Character) -> Character {
+        styleChar == "|" ? "v" : "↓"
+    }
+
+    private func verticalBackwardArrow(styleChar: Character) -> Character {
+        styleChar == "|" ? "^" : "↑"
     }
 
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {

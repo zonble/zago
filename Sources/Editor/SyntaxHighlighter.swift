@@ -70,6 +70,7 @@ public final class SyntaxHighlighter {
             LogoSyntaxDefinition(),
             MermaidSyntaxDefinition(),
             DotSyntaxDefinition(),
+            PlantUMLSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())

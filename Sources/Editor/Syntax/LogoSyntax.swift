@@ -6,7 +6,12 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["logo", "lg", ".serc"]
 
     private static let keywordPattern: String = {
-        let aliases = LogoPrimitive.keywordAliases
+        let lineSubkeywords = [
+            "ARROW", "RIGHTARROW", "DOWNARROW",
+            "BACKARROW", "LEFTARROW", "UPARROW",
+            "BOTHARROW", "BOTH", "BIDIR",
+        ]
+        let aliases = (LogoPrimitive.keywordAliases + lineSubkeywords)
             .map { NSRegularExpression.escapedPattern(for: $0) }
             .joined(separator: "|")
         return "(?<![A-Za-z0-9_.?])(\(aliases))(?![A-Za-z0-9_.?])"
@@ -21,8 +26,8 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
             makeRule("\"[^\"]*\"|'[^']*'", .string),
             // Numbers
             makeRule("\\b\\d+\\b", .number),
-            // Comments (# comment, ; comment, // comment)
-            makeRule("#.*$|;.*$|//.*$", .comment),
+            // LOGO comments
+            makeRule(";.*$|//.*$", .comment),
         ].compactMap { $0 }
     }
 }

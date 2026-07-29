@@ -181,6 +181,10 @@ import Testing
         let aliasHighlighted = highlighter.highlight(line: "FILE SAVE EDIT MAP.SE MODIFIED?", syntax: lang)
         #expect(aliasHighlighted.contains("\u{1B}[1;36mFILE"))
         #expect(aliasHighlighted.contains("\u{1B}[1;36mMODIFIED?"))
+
+        let arrowHighlighted = highlighter.highlight(line: "LINE ARROW TYPE #", syntax: lang)
+        #expect(arrowHighlighted.contains("\u{1B}[1;36mARROW"))
+        #expect(!arrowHighlighted.contains("\u{1B}[90m#"))
     }
 
     if let lang = swiftLang {

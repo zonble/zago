@@ -170,7 +170,7 @@ import TextMetrics
     #expect(promptLine.contains("$"))
 }
 
-@Test func testMermaidAndDotSyntaxHighlighting() throws {
+@Test func testMermaidDotAndPlantUMLSyntaxHighlighting() throws {
     let highlighter = SyntaxHighlighter()
 
     // Test Mermaid language detection & highlighting
@@ -188,4 +188,12 @@ import TextMetrics
 
     let dotHighlighted = highlighter.highlight(line: "digraph G {", syntax: dotLang!)
     #expect(dotHighlighted.contains("\u{1B}["))
+
+    // Test PlantUML language detection & highlighting
+    let plantUMLLang = highlighter.detectLanguage(for: "diagram.puml")
+    #expect(plantUMLLang != nil)
+    #expect(plantUMLLang?.name == "PlantUML")
+
+    let plantUMLHighlighted = highlighter.highlight(line: "User -> Server", syntax: plantUMLLang!)
+    #expect(plantUMLHighlighted.contains("\u{1B}["))
 }

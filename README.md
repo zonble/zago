@@ -2,13 +2,15 @@
 
 `se` is a lightweight terminal text editor with powerful plain-text diagramming.
 
+![se editing a Markdown document with a plain-text diagram and LOGO command output](se.png)
+
 It keeps Pico/Nano-style editing simple, but adds first-class commands for boxes, connector lines, fills, tables, and repeatable layout work. Press `Esc`, type a command, and shape structured text directly in the buffer.
 
 Create diagrams without leaving your Markdown, notes, or terminal workflow.
 
 ## Features
 
-- Plain-text diagramming: draw boxes, connector lines, fills, and table layouts directly in the buffer.
+- Plain-text diagramming: draw boxes, arrow connector lines, fills, and table layouts directly in the buffer.
 - Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
 - Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
 - Nano/Pico-like modeless editing: `^O` save, `^X` exit, `^W` search, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` help.

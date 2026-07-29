@@ -216,6 +216,83 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(autoVlineFuseEditor.buffer.lines[1] == "│ │  │")
     #expect(autoVlineFuseEditor.buffer.lines[2] == "└─┴──┘")
 
+    let explicitLineArrowEditor = Editor()
+    logoEngine.delegate = explicitLineArrowEditor
+    logoEngine.execute("LINE 8 ARROW")
+    #expect(explicitLineArrowEditor.buffer.lines[0] == "───────→")
+
+    let explicitLineBackArrowEditor = Editor()
+    logoEngine.delegate = explicitLineBackArrowEditor
+    logoEngine.execute("LINE 8 BACKARROW")
+    #expect(explicitLineBackArrowEditor.buffer.lines[0] == "←───────")
+
+    let explicitLineBothArrowEditor = Editor()
+    logoEngine.delegate = explicitLineBothArrowEditor
+    logoEngine.execute("LINE 8 BOTHARROW")
+    #expect(explicitLineBothArrowEditor.buffer.lines[0] == "←──────→")
+
+    let asciiLineArrowEditor = Editor()
+    logoEngine.delegate = asciiLineArrowEditor
+    logoEngine.execute("LINE 5 ASCII ARROW")
+    #expect(asciiLineArrowEditor.buffer.lines[0] == "---->")
+
+    let autoLineArrowEditor = Editor()
+    logoEngine.delegate = autoLineArrowEditor
+    logoEngine.execute("LINE ARROW")
+    #expect(autoLineArrowEditor.buffer.lines[0] == "─────────→")
+
+    let autoLineBothArrowEditor = Editor()
+    logoEngine.delegate = autoLineBothArrowEditor
+    logoEngine.execute("LINE BOTHARROW")
+    #expect(autoLineBothArrowEditor.buffer.lines[0] == "←────────→")
+
+    let autoLineArrowStopEditor = Editor()
+    autoLineArrowStopEditor.buffer.lines = ["   X"]
+    logoEngine.delegate = autoLineArrowStopEditor
+    logoEngine.execute("GOTO 1 1 LINE ARROW")
+    #expect(autoLineArrowStopEditor.buffer.lines[0] == "──→X")
+
+    let autoLineArrowFuseEditor = Editor()
+    logoEngine.delegate = autoLineArrowFuseEditor
+    logoEngine.execute("DRAWBOX 6 3 GOTO 2 1 LINE ARROW")
+    #expect(autoLineArrowFuseEditor.buffer.lines[1] == "├────┤")
+
+    let lineArrowParserEditor = Editor()
+    logoEngine.delegate = lineArrowParserEditor
+    logoEngine.execute("LINE ARROW TYPE \"x\"")
+    #expect(lineArrowParserEditor.buffer.lines[0] == "─────────→x")
+
+    let explicitVlineArrowEditor = Editor()
+    logoEngine.delegate = explicitVlineArrowEditor
+    logoEngine.execute("VLINE 4 BOTHARROW")
+    #expect(explicitVlineArrowEditor.buffer.lines == ["↑", "│", "│", "↓"])
+
+    let asciiVlineArrowEditor = Editor()
+    logoEngine.delegate = asciiVlineArrowEditor
+    logoEngine.execute("VLINE 3 ASCII ARROW")
+    #expect(asciiVlineArrowEditor.buffer.lines == ["|", "|", "v"])
+
+    let autoVlineArrowEditor = Editor()
+    logoEngine.delegate = autoVlineArrowEditor
+    logoEngine.execute("VLINE ARROW")
+    #expect(autoVlineArrowEditor.buffer.lines.count == 10)
+    #expect(autoVlineArrowEditor.buffer.lines[0] == "│")
+    #expect(autoVlineArrowEditor.buffer.lines[8] == "│")
+    #expect(autoVlineArrowEditor.buffer.lines[9] == "↓")
+
+    let autoVlineArrowStopEditor = Editor()
+    autoVlineArrowStopEditor.buffer.lines = ["", "", "X"]
+    logoEngine.delegate = autoVlineArrowStopEditor
+    logoEngine.execute("GOTO 1 1 VLINE ARROW")
+    #expect(autoVlineArrowStopEditor.buffer.lines == ["│", "↓", "X"])
+
+    let autoVlineArrowFuseEditor = Editor()
+    logoEngine.delegate = autoVlineArrowFuseEditor
+    logoEngine.execute("DRAWBOX 6 3 GOTO 1 3 VLINE ARROW")
+    #expect(autoVlineArrowFuseEditor.buffer.lines[0] == "┌─┬──┐")
+    #expect(autoVlineArrowFuseEditor.buffer.lines[1] == "│ │  │")
+    #expect(autoVlineArrowFuseEditor.buffer.lines[2] == "└─┴──┘")
+
     // 16. LOGO DATE and TIME Command test
     let dateTimeEditor = Editor()
     logoEngine.delegate = dateTimeEditor

@@ -155,6 +155,8 @@ LINE 20
 VLINE 5
 LINE 30 DOUBLE
 VLINE 4 ASCII
+LINE ARROW
+VLINE BOTHARROW
 ```
 
 With an explicit length or height, the command draws exactly that distance, up to the implementation limits:
@@ -167,6 +169,8 @@ Without an explicit length, the command uses auto-connect mode:
 ```logo
 LINE
 VLINE
+LINE ARROW
+VLINE ARROW
 ```
 
 Auto-connect mode:
@@ -175,6 +179,8 @@ Auto-connect mode:
 - draws through empty space
 - stops before regular text
 - fuses into an existing border or junction, then stops
+- places an arrow on the final empty cell when an arrow modifier is present
+- keeps border fusion ahead of arrow placement when the line reaches a box or junction
 
 This makes it practical to connect boxes without counting exact distances:
 
@@ -185,6 +191,35 @@ LINE
 ```
 
 If the line reaches another border within 10 columns, the endpoint becomes a junction instead of overwriting the border.
+
+Arrow modifiers:
+
+| Modifier | Horizontal | Vertical |
+| :--- | :--- | :--- |
+| `ARROW` | forward arrow at the right end: `────→` | forward arrow at the bottom end: `│` ... `↓` |
+| `BACKARROW` | backward arrow at the left end: `←────` | backward arrow at the top end: `↑` ... `│` |
+| `BOTHARROW` | arrows at both ends: `←──→` | arrows at both ends: `↑` ... `↓` |
+
+Aliases:
+
+- `RIGHTARROW` / `DOWNARROW`: same as `ARROW`
+- `LEFTARROW` / `UPARROW`: same as `BACKARROW`
+- `BOTH` / `BIDIR`: same as `BOTHARROW`
+
+With `ASCII`, arrows use `<`, `>`, `^`, and `v`:
+
+```logo
+LINE 5 ASCII ARROW
+VLINE 3 ASCII ARROW
+```
+
+```text
+---->
+
+|
+|
+v
+```
 
 `LINE` and `VLINE` use smart junction fusion with existing single-line and double-line box characters. For example:
 
@@ -301,6 +336,8 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame | `DRAWBOX 20 5 "round"` |
+| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line, optionally with arrowheads | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line, optionally with arrowheads | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
 | `MARK` | - | `MARK` | Toggles text selection mark anchor | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
