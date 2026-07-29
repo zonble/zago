@@ -90,7 +90,7 @@ public struct TraditionalChineseStrings {
         "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
-        "helpview.logo_1": "    Esc / M+L / M+:    呼叫指令 Prompt",
+        "helpview.logo_1": "    Esc / M+:          呼叫指令 Prompt",
         "helpview.logo_2": "    TYPE / PRINT       於游標位置輸出/插入指定文字",
         "helpview.logo_3": "    MAKE / VAR / :var  宣告變數與進行四則運算求值",
         "helpview.logo_4": "    REPEAT / TO / EXEC 迴圈執行與自訂程序定義呼叫",

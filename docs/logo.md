@@ -1,8 +1,14 @@
-# `se` LOGO Command Language
+# `se` Diagramming & Editing Commands: Guide & Reference
 
-`se` includes a LOGO-inspired command language designed specifically for text editing. It borrows LOGO's readable command style (`MAKE`, `:var`, `REPEAT`, `IF`, `IFELSE`, `TO...END`) because it works well for short, direct editing gestures, but it is not a complete traditional LOGO implementation.
+`se` provides a simple set of direct editing commands for drawing boxes, connector lines, tables, and laying out structured text directly inside your terminal buffer.
 
-This dialect treats the editor buffer as the main workspace. Commands can move the cursor, insert and reshape text, draw boxes and connector lines, create tables, manage buffers, and automate repeated layout work. Some traditional LOGO ideas are adapted when they help editing; other parts are intentionally different or omitted.
+Commands read like natural editing gestures: press `Esc`, type `BOX "Title"`, `LINE ARROW`, or `TABLE`, and shape your plain text instantly without leaving your text editor.
+
+You do not need any programming background to use these commands—ordinary drawing and layout actions work right out of the box. As your editing tasks grow, optional variables, loops, and macro procedures are available whenever you want to automate repetitive work.
+
+This document is divided into two main parts:
+1. **The Step-by-Step Guide**: From basic box diagramming to optional automation like variables, loops, and procedures.
+2. **The Complete Command Reference**: An exhaustive dictionary of all commands, math operations, data structures, and buffer settings.
 
 ---
 
@@ -11,9 +17,6 @@ This dialect treats the editor buffer as the main workspace. Commands can move t
 | Trigger Shortcut | Context / Input Mode | Description |
 | :--- | :--- | :--- |
 | **`Esc`** | Normal Edit Mode | Opens the bottom command prompt |
-| **`M+L`** | Normal Edit Mode | Alternate shortcut for the command prompt |
-| **`M+:`** | Normal Edit Mode | Alternate Vim-style shortcut for the command prompt |
-| **`F8`** | Normal Edit Mode | Function key shortcut for the command prompt |
 | **`Left / Right` (`^B` / `^F`)** | Command Prompt Active | Moves input cursor left / right inside the prompt |
 | **`Home / End` (`^A` / `^E`)** | Command Prompt Active | Moves input cursor directly to prompt line start / end |
 | **`Delete` / `Backspace` (`^D`)**| Command Prompt Active | Deletes character at / before input cursor |
@@ -21,66 +24,28 @@ This dialect treats the editor buffer as the main workspace. Commands can move t
 | **`Up / Down` Arrows** | Command Prompt Active | Navigate through previously executed commands |
 | **`Enter`** | Command Prompt Active | Execute the command and save it to history |
 | **`Esc` / `^C`** | Command Prompt Active | Cancel prompt mode |
-| **`^Z`** | Normal Edit Mode | Atomic Undo: Reverts the entire LOGO macro execution in 1 step |
+| **`^Z`** | Normal Edit Mode | Atomic Undo: Reverts the entire command execution in 1 step |
 
 ---
 
-## 📖 Complete Command Reference & Vocabulary
+# 📚 PART 1: Quick Start & Essential Diagramming Guide
 
-### Comments
-
-Use `;` for LOGO comments. A semicolon outside quoted text ignores the rest of the line:
-
-```logo
-; setup
-MAKE "n" 3
-REPEAT :n [ TYPE # ] ; prints 123
-TYPE ";"
-TYPE "hello;world"
-```
-
-`#` is not a comment marker in LOGO. It remains available as the `REPEAT` counter and as ordinary text.
-
-### 1. Text Insertion, Deletion & Line Formatting
-
-| Command | Aliases | Syntax | Description | Example |
-| :--- | :--- | :--- | :--- | :--- |
-| `TYPE` | `PRINT`, `INSERT` | `TYPE "text"` or `INSERT "text"` | Inserts string or calculated expression at cursor | `INSERT "Hello World"` |
-| `APPEND` | - | `APPEND "text"` | Moves to current line end, then inserts text | `APPEND "."` |
-| `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
-| `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
-| `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
-| `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
-| `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE 2` |
-| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without `len`, draws up to 10 columns, stopping at text and fusing into borders. | `LINE`, `LINE 80 "double"` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without `height`, draws up to 10 rows, stopping at text and fusing into borders. | `VLINE`, `VLINE 5 "double"` |
-| `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL 5` |
-| `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
-| `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL 3` |
-| `CHANGE` | - | `CHANGE old new` | Replaces text in current line, or selected lines when a selection is active | `CHANGE "foo" "bar"` |
-| `JOIN` | - | `JOIN [separator]` | Joins the next line into the current line | `JOIN " "` |
-| `SPLITLINE` | - | `SPLITLINE` | Splits the current line at the cursor | `SPLITLINE` |
-| `INDENT` | - | `INDENT [n]` | Indents current line or selected lines by n tab units | `INDENT`, `INDENT 2` |
-| `OUTDENT` | - | `OUTDENT [n]` | Outdents current line or selected lines by n tab units | `OUTDENT` |
-| `JUSTIFY` | - | `JUSTIFY` | Reflows and justifies current paragraph | `JUSTIFY` |
+Most of the time in `se`, you only need a handful of essential commands to shape structured text: **`BOX`**, **`DRAWBOX`**, **`LINE`**, **`VLINE`**, **`TABLE`**, **`TYPE`**, and **`SHOW`**.
 
 ---
 
-### 2. Common Drawing Commands: `BOX`, `DRAWBOX`, `LINE`, and `VLINE`
+### Step 1: Drawing Framed Boxes (`BOX` and `DRAWBOX`)
 
-`BOX` and line drawing are the most useful LOGO commands for turning a plain text buffer into a structured terminal canvas. They are intended for fast notes, diagrams, forms, and lightweight layouts.
+`BOX` draws framed text containers. It turns a plain text buffer into a structured terminal canvas.
 
-#### `BOX`
-
-`BOX` draws a frame at the current cursor position by inserting box characters into each affected line. Existing text after the cursor on those lines is pushed to the right. It supports three common forms:
+#### `BOX` (Line-Oriented Frame)
+Inserts a frame into each affected line and pushes trailing text to the right.
 
 ```logo
 BOX "Hello"
-BOX 30 4
-BOX SELECTION
 ```
 
-Text boxes size themselves from the text:
+Text boxes size themselves automatically from the text:
 
 ```logo
 BOX "Status" "center" "round"
@@ -92,7 +57,7 @@ BOX "Status" "center" "round"
 ╰────────╯
 ```
 
-Empty boxes use explicit visual dimensions. `BOX` is an editing command: it inserts the frame into each affected line and pushes existing trailing text to the right.
+Empty boxes use explicit dimensions (width & height):
 
 ```logo
 BOX 30 4 ROUND
@@ -105,9 +70,8 @@ BOX 30 4 ROUND
 ╰────────────────────────────╯
 ```
 
-#### `DRAWBOX`
-
-`DRAWBOX` accepts the same arguments as `BOX`, but draws as a canvas overlay. Existing text in the target region can be replaced by the frame. Use it when you are composing a diagram and want later drawing commands such as `FILL`, `LINE`, and `VLINE` to work against fixed coordinates.
+#### `DRAWBOX` (Canvas Overlay Frame)
+`DRAWBOX` accepts the same arguments as `BOX`, but draws as a canvas overlay without pushing surrounding text. Use it when composing multi-box diagrams against fixed coordinates:
 
 ```logo
 DRAWBOX 30 4 ROUND
@@ -130,67 +94,50 @@ MOVE DOWN
 BOX SELECTION DOUBLE
 ```
 
-Supported alignments for text boxes:
+#### Supported Alignments & Styles
 
+Supported text alignments:
 - `left`
 - `center` / `centre`
 - `right`
 
-Supported styles:
-
+Supported border styles:
 - `single`: `┌ ┐ └ ┘ ─ │`
 - `double`: `╔ ╗ ╚ ╝ ═ ║`
 - `round` / `rounded`: `╭ ╮ ╰ ╯ ─ │`
-- `double-round`: rounded corners with double horizontal and vertical strokes where possible
+- `double-round`: rounded corners with double horizontal/vertical strokes
 - `ascii`: `+ - |`
 
-`BOX` is line-oriented: it does not push later lines down, but it does push trailing text on each affected line to the right. `DRAWBOX` is overlay-oriented: it preserves the surrounding prefix and suffix, and replaces the target region.
+---
 
-#### `LINE` and `VLINE`
+### Step 2: Connector Lines & Arrow Snapping (`LINE` and `VLINE`)
 
-`LINE` draws horizontally from the cursor. `VLINE` draws vertically from the cursor.
+`LINE` draws horizontal lines; `VLINE` draws vertical lines.
 
 ```logo
 LINE 20
 VLINE 5
 LINE 30 DOUBLE
 VLINE 4 ASCII
-LINE ARROW
-VLINE BOTHARROW
 ```
 
-With an explicit length or height, the command draws exactly that distance, up to the implementation limits:
+#### Auto-Connect Mode (No Length Specified)
+When no length or height is specified (e.g., `LINE`, `VLINE`, `LINE ARROW`, `VLINE ARROW`):
+- Scans forward through empty space.
+- **Without `ARROW`**: Scans until it reaches an existing box border or line, then fuses into a junction (e.g., `├`, `┬`, `┼`).
+- **With `ARROW`**: Scans until it reaches an existing box border, stops 1 cell before it, and places an arrowhead (`→` or `↓`) touching the border without altering the border.
 
-- `LINE`: 1 to 200 columns
-- `VLINE`: 1 to 100 rows
-
-Without an explicit length, the command uses auto-connect mode:
+Example: Connecting two boxes with `LINE ARROW`:
 
 ```logo
-LINE
-VLINE
-LINE ARROW
-VLINE ARROW
+DRAWBOX 6 3 GOTO 2 1 LINE ARROW
 ```
 
-Auto-connect mode:
-
-- scans up to 10 columns for `LINE`, or 10 rows for `VLINE`
-- draws through empty space
-- stops before regular text
-- fuses into an existing border or junction, then stops
-- places an arrow on the final empty cell when an arrow modifier is present
-- keeps border fusion ahead of arrow placement when the line reaches a box or junction
-
-This makes it practical to connect boxes without counting exact distances:
-
-```logo
-BOX 10 4
-GOTO 3 10
-LINE
+```text
+┌──────┐        ┌──────┐
+│  A   ├───────>│  B   │
+└──────┘        └──────┘
 ```
-
-If the line reaches another border within 10 columns, the endpoint becomes a junction instead of overwriting the border.
 
 Arrow modifiers:
 
@@ -201,133 +148,15 @@ Arrow modifiers:
 | `BOTHARROW` | arrows at both ends: `←──→` | arrows at both ends: `↑` ... `↓` |
 
 Aliases:
-
 - `RIGHTARROW` / `DOWNARROW`: same as `ARROW`
 - `LEFTARROW` / `UPARROW`: same as `BACKARROW`
 - `BOTH` / `BIDIR`: same as `BOTHARROW`
 
-The modifier can appear with or without an explicit length:
-
-```logo
-LINE ARROW
-LINE 8 BACKARROW
-LINE 8 BOTHARROW
-VLINE ARROW
-VLINE 4 BOTHARROW
-```
-
-```text
-─────────→
-←───────
-←──────→
-
-│
-│
-│
-│
-│
-│
-│
-│
-│
-↓
-
-↑
-│
-│
-↓
-```
-
-Arrow modifiers are useful when pointing at text:
-
-```logo
-LINE 8 ARROW
-TYPE " target"
-```
-
-```text
-───────→ target
-```
-
-They are also useful in auto-connect mode. If the line stops because it reaches regular text, the last drawable cell becomes the arrowhead:
-
-```logo
-TYPE "   target"
-GOTO 1 1
-LINE ARROW
-```
-
-```text
-──→target
-```
-
-If the line reaches an existing box border, border fusion wins over arrow placement. This keeps connector lines attached cleanly to boxes:
-
-```logo
-DRAWBOX 6 3
-GOTO 2 1
-LINE ARROW
-```
-
-```text
-┌────┐
-├────┤
-└────┘
-```
-
-With `ASCII`, arrows use `<`, `>`, `^`, and `v`:
-
-```logo
-LINE 5 ASCII ARROW
-VLINE 3 ASCII ARROW
-```
-
-```text
----->
-
-|
-|
-v
-```
-
-`LINE` and `VLINE` use smart junction fusion with existing single-line and double-line box characters. For example:
-
-```logo
-BOX 6 3
-GOTO 1 3
-VLINE 3
-```
-
-```text
-┌─┬──┐
-│ │  │
-└─┴──┘
-```
-
-Use explicit lengths when you want deterministic drawing. Use no-argument auto-connect mode when you are drawing connectors between nearby boxes.
-
 ---
 
-### 3. Table Creation
+### Step 3: Creating Grid Tables (`TABLE`)
 
-`TABLE` inserts table structures at the cursor. It shifts existing text down instead of overwriting it. It does not enter Table Mode; use `M+T` for table editing mode.
-
-| Command | Syntax | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `TABLE` | `TABLE` | Creates a default 3x3 table at the cursor | `TABLE` |
-| `TABLE` | `TABLE rows cols` | Creates a table with explicit row and column counts | `TABLE 4 2` |
-| `TABLE BORDER` | `TABLE BORDER SINGLE` | Sets the default table border style | `TABLE BORDER ROUND` |
-| `TABLE NEXTSTYLE` | `TABLE NEXTSTYLE` | Cycles the default table border style, matching `M+S` | `TABLE NEXTSTYLE` |
-
-Supported table border styles:
-
-- `SINGLE`
-- `DOUBLE`
-- `ROUND`
-- `ASCII`
-- `MARKDOWN`
-
-Example:
+`TABLE` inserts plain-text grid tables at the cursor position.
 
 ```logo
 TABLE BORDER ROUND
@@ -342,53 +171,167 @@ TABLE 2 2
 ╰────────────────┴────────────────╯
 ```
 
-`TABLE` is useful when you want a structure first, then ordinary editing later. After creating a table, move the cursor into it and press `M+T` to edit cells.
-
-When Table Mode is active, `TABLE` is disabled to protect the current table structure.
+After creating a table, move the cursor inside it and press **`M+T`** to activate cell-by-cell Table Mode.
 
 ---
 
-### 4. Classical Turtle Graphics & ASCII Diagram Pen Mode
+### Step 4: Text Output & Message Display (`TYPE` and `SHOW`)
 
-> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](logo_pen_mode.md).
+- **`TYPE "text"`** (or `PRINT`): Inserts text or calculated expressions directly at the cursor.
+- **`SHOW "message"`**: Displays a status bar notification message at the bottom of the screen.
+- **`DATE "YYYY/MM/DD"`**: Inserts current date.
+- **`TIME "HH:mm"`**: Inserts current time.
+
+---
+
+# 🎓 PART 2: Growing from Diagramming into Automation
+
+Once you are comfortable drawing boxes and lines, you can optionally use variables, loops, and procedures to automate repetitive layout tasks.
+
+---
+
+### 1. Variables (`MAKE` and `:var`)
+
+Assign values with `MAKE "name" value` and read them with `:name`:
+
+```logo
+MAKE "w" 20
+BOX :w 4 ROUND
+```
+
+You can also compute expressions dynamically:
+
+```logo
+MAKE "title" "Release Notes"
+BOX :title CENTER ROUND
+```
+
+---
+
+### 2. Loops (`REPEAT`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)
+
+#### `REPEAT`
+Repeats a block $n$ times. `REPEAT` automatically provides built-in loop counter variables `:#` and `:repcount` (1-indexed):
+
+```logo
+REPEAT 5 [ TYPE :# TYPE ". Item" MOVE DOWN MOVE HOME ]
+```
+
+```text
+1. Item
+2. Item
+3. Item
+4. Item
+5. Item
+```
+
+#### `FOREACH` and `ISEQ` (`RANGE`)
+`ISEQ 1 5` (or `RANGE 1 5`) generates a sequence list `[1 2 3 4 5]`. Use `FOREACH` to iterate over lists with `?` as the current item:
+
+```logo
+FOREACH (ISEQ 1 5) [ TYPE ? TYPE " " ]
+```
+
+```text
+1 2 3 4 5 
+```
+
+---
+
+### 3. Conditionals (`IF` and `IFELSE`)
+
+Branch based on conditions:
+
+```logo
+IF :count > 5 [ SHOW "Large batch" ]
+```
+
+```logo
+IFELSE MODIFIED? [ SHOW "Unsaved changes!" ] [ SHOW "Buffer clean" ]
+```
+
+---
+
+### 4. Custom Procedures (`TO ... END`)
+
+Define reusable macro procedures for frequent layout operations:
+
+```logo
+TO TITLE :text
+  BOX :text CENTER ROUND
+END
+
+TITLE "Architecture Overview"
+```
+
+Once defined, procedures live for the duration of the editor session.
+
+---
+
+### 5. Pen Mode & Turtle Graphics (`PD`, `PU`, `FD`, `BK`, `RT`, `LT`)
+
+Use Pen Down (`PD`) mode to turn cursor movement into line drawing. Moving the turtle draws lines and automatically fuses corners:
+
+```logo
+PD REPEAT 4 [ FD 5 RT 90 ] PU
+```
+
+```text
+┌────┐
+│    │
+│    │
+│    │
+└────┘
+```
+
+> For a complete guide on using `PD` and `PU` for ASCII flowcharts, see [logo_pen_mode.md](logo_pen_mode.md).
+
+---
+
+# 📖 PART 3: Complete Command Reference & Dictionary
+
+### Comments
+
+Use `;` for LOGO comments. A semicolon outside quoted text ignores the rest of the line:
+
+```logo
+; setup
+MAKE "n" 3
+REPEAT :n [ TYPE # ] ; prints 123
+TYPE ";"
+TYPE "hello;world"
+```
+
+`#` is not a comment marker in LOGO. It remains available as the `REPEAT` counter and as ordinary text.
+
+---
+
+### 1. Text Insertion, Deletion & Line Formatting
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `PD` | `PENDOWN` | `PD` | Pen Down: activates ASCII line & junction drawing mode during cursor movement | `PD` |
-| `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
-| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading | `FD 5`, `FD 10` |
-| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading | `BK 3` |
-| `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
-| `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
+| `TYPE` | `PRINT`, `INSERT` | `TYPE "text"` or `INSERT "text"` | Inserts string or calculated expression at cursor | `INSERT "Hello World"` |
+| `APPEND` | - | `APPEND "text"` | Moves to current line end, then inserts text | `APPEND "."` |
+| `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
+| `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
+| `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
+| `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
+| `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE 2` |
+| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without `len`, auto-connects to next border or stops before text. | `LINE`, `LINE 80 "double"` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without `height`, auto-connects to next border or stops before text. | `VLINE`, `VLINE 5 "double"` |
+| `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL 5` |
+| `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
+| `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL 3` |
+| `CHANGE` | - | `CHANGE old new` | Replaces text in current line, or selected lines when a selection is active | `CHANGE "foo" "bar"` |
+| `JOIN` | - | `JOIN [separator]` | Joins the next line into the current line | `JOIN " "` |
+| `SPLITLINE` | - | `SPLITLINE` | Splits the current line at the cursor | `SPLITLINE` |
+| `INDENT` | - | `INDENT [n]` | Indents current line or selected lines by n tab units | `INDENT`, `INDENT 2` |
+| `OUTDENT` | - | `OUTDENT [n]` | Outdents current line or selected lines by n tab units | `OUTDENT` |
+| `JUSTIFY` | - | `JUSTIFY` | Reflows and justifies current paragraph | `JUSTIFY` |
 
 ---
 
-### 5. Table Mode Safety
-
-When Table Mode is active, LOGO execution is constrained to protect the current table cell structure.
-
-Allowed behavior:
-
-- `TYPE` / `PRINT` may insert text into the active cell.
-- Text output is clipped to the editable cell area and will not shift, overwrite, or pass the right border.
-- Newlines move within the active cell; output stops when it would leave the cell.
-- Non-drawing expressions, variables, procedures, status messages, and data operations remain available.
-
-Disabled while Table Mode is active:
-
-- `BOX`
-- `DRAWBOX`
-- `LINE` / `HR`
-- `VLINE` / `VR` / `VHR`
-- `FILL`
-- `TABLE`
-- Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
-
-This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prompt, and `.serc` key-bound macros. It also applies when a called `TO ... END` procedure contains one of the disabled drawing commands.
-
----
-
-### 6. Cursor Navigation, Selection & 2D Canvas Overlay Box Framing
+### 2. Cursor Navigation, Selection & Canvas Positioning
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -414,32 +357,22 @@ This rule applies to all LOGO entry points: `^Q` eval, the interactive LOGO prom
 
 ---
 
-### 7. Multi-Buffer & Buffer Operations
+### 3. Classical Turtle Graphics & ASCII Diagram Pen Mode
+
+> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](logo_pen_mode.md).
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `BUFFERS` | `BUFFERLIST` | `BUFFERS` | Returns list of open buffer names | `MAKE "b" BUFFERS` |
-| `BUFFER` | `SETBUFFER` | `BUFFER [idx]` | Switches to buffer by index or returns active index | `BUFFER 2` |
-| `NEXTBUFFER` | - | `NEXTBUFFER` | Switches to next open buffer tab | `NEXTBUFFER` |
-| `PREVBUFFER` | - | `PREVBUFFER` | Switches to previous open buffer tab | `PREVBUFFER` |
-| `OPENBUFFER` | `EDIT` | `EDIT "path"` | Opens file path into a new buffer tab | `EDIT "main.swift"` |
-| `SAVE` | - | `SAVE ["path"]` | Saves the active buffer, optionally to a new path | `SAVE`, `SAVE "notes.txt"` |
-| `FILE` | - | `FILE ["path"]` | Saves the active buffer, then closes it | `FILE`, `FILE "notes.txt"` |
-| `CLOSEBUFFER` | - | `CLOSEBUFFER` | Closes active buffer tab | `CLOSEBUFFER` |
-| `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
-| `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE 1` |
-| `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE 1 "Title"` |
-| `ROW` | `LINE.NO` | `ROW` | Returns current 1-indexed row number | `SHOW ROW` |
-| `COL` | `COL.NO` | `COL` | Returns current 1-indexed column number | `SHOW COL` |
-| `LINECOUNT` | `LINES` | `LINECOUNT` | Returns total line count of active buffer | `SHOW LINECOUNT` |
-| `BUFFERTEXT` | - | `BUFFERTEXT` | Returns full string text of active buffer | `MAKE "t" BUFFERTEXT` |
-| `SELECTION` | `SELECTEDTEXT` | `SELECTION` | Returns currently selected text string | `MAKE "s" SELECTION` |
-| `MODIFIED?` | `CHANGED?` | `MODIFIED?` | Returns `1` if buffer has unsaved changes, `0` otherwise | `IF MODIFIED? [ SHOW "Unsaved" ]` |
-| `FILENAME` | `BUFFERNAME` | `FILENAME` | Returns filename of active buffer | `SHOW FILENAME` |
+| `PD` | `PENDOWN` | `PD` | Pen Down: activates ASCII line & junction drawing mode during cursor movement | `PD` |
+| `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
+| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading | `FD 5`, `FD 10` |
+| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading | `BK 3` |
+| `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
+| `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
 
 ---
 
-### 8. Data Structures: Lists, Arrays, Words & Sorting
+### 4. Data Structures: Lists, Arrays, Words & Sorting
 
 LOGO values are intentionally small and visible. The common types are words, numbers, lists, and arrays.
 
@@ -537,7 +470,7 @@ TYPE ITEM 2 :cells
 
 ---
 
-### 9. Predicates & Type Checking
+### 5. Predicates & Type Checking
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -558,7 +491,7 @@ TYPE ITEM 2 :cells
 
 ---
 
-### 10. Logical, Math & Bitwise Operations
+### 6. Logical, Math & Bitwise Operations
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -586,7 +519,7 @@ TYPE ITEM 2 :cells
 
 ---
 
-### 11. Conditionals, Loops & Higher-Order Functions
+### 7. Conditionals, Loops & Higher-Order Functions
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -599,7 +532,7 @@ TYPE ITEM 2 :cells
 | `TEST` | - | `TEST cond` | Sets internal test flag for `IFTRUE`/`IFFALSE` | `TEST :i == 1` |
 | `IFTRUE` | `IFT` | `IFTRUE [ block ]` | Executes if preceding `TEST` was true | `IFT [ TYPE "Yes" ]` |
 | `IFFALSE` | `IFF` | `IFFALSE [ block ]` | Executes if preceding `TEST` was false | `IFF [ TYPE "No" ]` |
-| `REPEAT` | - | `REPEAT count [ block ]` | Loops enclosed code block $n$ times | `REPEAT 3 [ TYPE "! " ]` |
+| `REPEAT` | - | `REPEAT count [ block ]` | Loops enclosed code block $n$ times (built-in `:#` / `:repcount`) | `REPEAT 3 [ TYPE "! " ]` |
 | `FOREVER` | - | `FOREVER [ block ]` | Infinite loop until `STOP` | `FOREVER [ ... IF :x [ STOP ] ]` |
 | `FOR` | - | `FOR [var start end step] [ block ]` | For loop over range | `FOR [i 1 5 1] [ TYPE :i ]` |
 | `DOTIMES` | - | `DOTIMES [var count] [ block ]` | Loops counter from 0 to count-1 | `DOTIMES [i 5] [ TYPE :i ]` |
@@ -617,7 +550,32 @@ TYPE ITEM 2 :cells
 
 ---
 
-### 12. Editor Configuration Settings (`SET`)
+### 8. Multi-Buffer & Buffer Operations
+
+| Command | Aliases | Syntax | Description | Example |
+| :--- | :--- | :--- | :--- | :--- |
+| `BUFFERS` | `BUFFERLIST` | `BUFFERS` | Returns list of open buffer names | `MAKE "b" BUFFERS` |
+| `BUFFER` | `SETBUFFER` | `BUFFER [idx]` | Switches to buffer by index or returns active index | `BUFFER 2` |
+| `NEXTBUFFER` | - | `NEXTBUFFER` | Switches to next open buffer tab | `NEXTBUFFER` |
+| `PREVBUFFER` | - | `PREVBUFFER` | Switches to previous open buffer tab | `PREVBUFFER` |
+| `OPENBUFFER` | `EDIT` | `EDIT "path"` | Opens file path into a new buffer tab | `EDIT "main.swift"` |
+| `SAVE` | - | `SAVE ["path"]` | Saves the active buffer, optionally to a new path | `SAVE`, `SAVE "notes.txt"` |
+| `FILE` | - | `FILE ["path"]` | Saves the active buffer, then closes it | `FILE`, `FILE "notes.txt"` |
+| `CLOSEBUFFER` | - | `CLOSEBUFFER` | Closes active buffer tab | `CLOSEBUFFER` |
+| `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
+| `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE 1` |
+| `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE 1 "Title"` |
+| `ROW` | `LINE.NO` | `ROW` | Returns current 1-indexed row number | `SHOW ROW` |
+| `COL` | `COL.NO` | `COL` | Returns current 1-indexed column number | `SHOW COL` |
+| `LINECOUNT` | `LINES` | `LINECOUNT` | Returns total line count of active buffer | `SHOW LINECOUNT` |
+| `BUFFERTEXT` | - | `BUFFERTEXT` | Returns full string text of active buffer | `MAKE "t" BUFFERTEXT` |
+| `SELECTION` | `SELECTEDTEXT` | `SELECTION` | Returns currently selected text string | `MAKE "s" SELECTION` |
+| `MODIFIED?` | `CHANGED?` | `MODIFIED?` | Returns `1` if buffer has unsaved changes, `0` otherwise | `IF MODIFIED? [ SHOW "Unsaved" ]` |
+| `FILENAME` | `BUFFERNAME` | `FILENAME` | Returns filename of active buffer | `SHOW FILENAME` |
+
+---
+
+### 9. Editor Configuration Settings (`SET`)
 
 | Setting Command | Description | Example |
 | :--- | :--- | :--- |
@@ -628,7 +586,28 @@ TYPE ITEM 2 :cells
 
 ---
 
-## `.serc` Integration
+### 10. Table Mode Safety
+
+When Table Mode is active, LOGO execution is constrained to protect the current table cell structure.
+
+Allowed behavior:
+- `TYPE` / `PRINT` may insert text into the active cell.
+- Text output is clipped to the editable cell area and will not shift, overwrite, or pass the right border.
+- Newlines move within the active cell; output stops when it would leave the cell.
+- Non-drawing expressions, variables, procedures, status messages, and data operations remain available.
+
+Disabled while Table Mode is active:
+- `BOX`
+- `DRAWBOX`
+- `LINE` / `HR`
+- `VLINE` / `VR` / `VHR`
+- `FILL`
+- `TABLE`
+- Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
+
+---
+
+## ⚙️ `.serc` Integration
 
 LOGO commands can be entered from the command prompt, evaluated from the editor, or loaded through `.serc` key bindings and startup blocks.
 
@@ -658,7 +637,7 @@ FOREACH ["alpha "beta "gamma] [
 - gamma
 ```
 
-Use `RANGE` when you want to iterate over numbers:
+Use `RANGE` / `ISEQ` when you want to iterate over numbers:
 
 ```logo
 FOREACH RANGE 1 3 [
@@ -803,4 +782,4 @@ TYPE "|"
 
 ## 🧪 Atomic Undo (`^Z`) Guarantee
 
-All operations performed by a single LOGO macro execution—regardless of how many lines or characters were inserted or modified—are grouped into a **single atomic Undo snapshot**.
+All operations performed by a single command execution—regardless of how many lines or characters were inserted or modified—are grouped into a **single atomic Undo snapshot**.

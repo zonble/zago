@@ -105,7 +105,7 @@ import Testing
     #expect(editor.buffer.lines[1] == "")
 }
 
-@Test func testAltLTriggersLogoPrompt() throws {
+@Test func testEscAndAltColonTriggersLogoPrompt() throws {
     let editor = Editor()
 
     // Test Esc
@@ -118,32 +118,12 @@ import Testing
 
     editor.currentPromptMode = .none
 
-    // Test Alt+l (.alt("l"))
-    editor.processKey(.alt("l"))
+    // Test Alt+: (.alt(":"))
+    editor.processKey(.alt(":"))
     if case .logoMacro = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
-        #expect(Bool(false), "Alt+l should trigger LOGO prompt mode")
-    }
-
-    editor.currentPromptMode = .none
-
-    // Test Alt+L (.alt("L"))
-    editor.processKey(.alt("L"))
-    if case .logoMacro = editor.currentPromptMode {
-        #expect(Bool(true))
-    } else {
-        #expect(Bool(false), "Alt+L should trigger LOGO prompt mode")
-    }
-
-    editor.currentPromptMode = .none
-
-    // Test macOS Option+L character '¬'
-    editor.processKey(.char("¬"))
-    if case .logoMacro = editor.currentPromptMode {
-        #expect(Bool(true))
-    } else {
-        #expect(Bool(false), "Option+L character ¬ should trigger LOGO prompt mode")
+        #expect(Bool(false), "Alt+: should trigger command prompt mode")
     }
 }
 

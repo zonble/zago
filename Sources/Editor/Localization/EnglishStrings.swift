@@ -90,7 +90,7 @@ public struct EnglishStrings {
         "helpview.file_9": "    F1 / M+M / ^M      Toggle top Menu Bar",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
-        "helpview.logo_1": "    Esc / M+L / M+:    Command prompt",
+        "helpview.logo_1": "    Esc / M+:          Command prompt",
         "helpview.logo_2": "    TYPE / PRINT       Insert text into buffer at cursor",
         "helpview.logo_3": "    MAKE / VAR / :var  Declare variables and arithmetic expressions",
         "helpview.logo_4": "    REPEAT / TO / EXEC Loop execution and custom procedure calls",

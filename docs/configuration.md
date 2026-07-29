@@ -111,7 +111,7 @@ bind alt-t logo:insert-title
 
 All shortcut representations across the editor, menu bar, help displays, and documentation follow a strict naming convention:
 - **Control keys**: Use `^<key>` format (e.g., `^Q`, `^N`, `^W`, `^BS`).
-- **Alt / Meta keys**: Use `M+<key>` format (e.g., `M+T`, `M+S`, `M+L`, `M+.`, `M+,`).
+- **Alt / Meta keys**: Use `M+<key>` format (e.g., `M+T`, `M+S`, `M+M`, `M+.`, `M+,`).
 
 ## Command IDs
 
@@ -143,7 +143,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `buffer.next` | Next buffer | `M+.`, `M+>` |
 | `buffer.prev` | Previous buffer | `M+,`, `M+<` |
 | `buffer.new` | New buffer | `^N` |
-| `macro.logo` | Open command prompt | `Esc`, `M+L`, `M+:`, `F8` |
+| `macro.logo` | Open command prompt | `Esc`, `M+:` |
 | `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
 | `help.show` | Full-screen help | `^G` |
 | `table.toggle` | Toggle table mode | `M+T` |

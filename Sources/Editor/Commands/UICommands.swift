@@ -4,7 +4,7 @@ public struct LogoMacroCommand: Command {
     public let id: CommandID = .macroLogo
     public let name = "Command"
     public let description = "Run an editor command"
-    public let keys: [Key] = [.esc, .alt("l"), .alt("L"), .alt(":"), .char("¬"), .char("Ò"), .char("…"), .f8]
+    public let keys: [Key] = [.esc, .alt(":")]
 
     public init() {}
 
