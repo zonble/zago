@@ -1,7 +1,7 @@
 ```text
-┌────────────────────────────────┐
-│ zego - Text and diagram editor │
-└───────┬───────────────────┬────┘
+┌───────────────────────────────────┐
+│ zago - Text and diagrams 文字圖表 │
+└───────────────────────────────────┘
 ┌───────┴──────────┐┌───────┴───────┐
 │ Editor interface ││ LOGO language │
 └────┬─────────┬───┘└────┬────────┬─┘
@@ -17,7 +17,6 @@
 
 ```logo
 ;Eval LOGO everywhere!
-NL REPEAT 10 [type "se rocks 🔥!!"]
+NL REPEAT 10 [type :# " - zago rocks 🔥!!"]
 ```
-se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!se rocks 🔥!!
-
+1 - zago rocks 🔥!!2 - zago rocks 🔥!!3 - zago rocks 🔥!!4 - zago rocks 🔥!!5 - zago rocks 🔥!!6 - zago rocks 🔥!!7 - zago rocks 🔥!!8 - zago rocks 🔥!!9 - zago rocks 🔥!!10 - zago rocks 🔥!!

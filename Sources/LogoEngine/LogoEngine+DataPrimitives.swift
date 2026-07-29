@@ -604,6 +604,30 @@ extension LogoEngine {
                 return s.contains(needle) ? "true" : "false"
             }
 
+        case .member:
+            index += 1
+            let needle = evaluateExpression(tokens, index: &index)
+            index += 1
+            let haystack = evaluateExpression(tokens, index: &index)
+            let p = LogoValue.parse(haystack)
+            let target = LogoValue.parse(needle).description
+            switch p {
+            case .list(let items):
+                guard let matchIndex = items.firstIndex(where: { $0.description == target }) else { return "" }
+                return LogoValue.list(Array(items[matchIndex...])).description
+            case .array(let items):
+                guard let matchIndex = items.firstIndex(where: { $0.description == target }) else { return "" }
+                return LogoValue.array(Array(items[matchIndex...])).description
+            case .string(let s):
+                guard let range = s.range(of: target) else { return "" }
+                return String(s[range.lowerBound...])
+            }
+
+        case .parse, .runparse:
+            index += 1
+            let script = evaluateExpression(tokens, index: &index)
+            return "[" + tokenize(script).joined(separator: " ") + "]"
+
         case .isSubstring:
             index += 1
             let needle = evaluateExpression(tokens, index: &index)

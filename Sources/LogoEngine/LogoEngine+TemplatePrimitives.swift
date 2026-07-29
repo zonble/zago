@@ -84,7 +84,9 @@ extension LogoEngine {
                 case .list(let listItems), .array(let listItems):
                     results.append(contentsOf: listItems.map { $0.description })
                 case .string(let s):
-                    results.append(s)
+                    if !s.isEmpty {
+                        results.append(s)
+                    }
                 }
             }
             return "[" + results.joined(separator: " ") + "]"
@@ -163,19 +165,27 @@ extension LogoEngine {
 
         case .sort:
             index += 1
-            var customTemplate: String? = nil
+            var descending = false
             if index < tokens.count {
                 let nextToken = tokens[index]
-                if nextToken.hasPrefix("\"") || nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil {
-                    customTemplate = unquote(nextToken)
-                } else {
-                    index -= 1
+                let modifier = unquote(nextToken).lowercased()
+                if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
+                    descending = true
+                    index += 1
                 }
             }
-            index += 1
             guard index < tokens.count else { return nil }
             let dataStr = evaluateExpression(tokens, index: &index)
             let parsed = LogoValue.parse(dataStr)
+            var customTemplate: String? = nil
+
+            if index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil {
+                    index += 1
+                    customTemplate = evaluateExpression(tokens, index: &index)
+                }
+            }
 
             let isLessThan: (String, String) -> Bool = { a, b in
                 if let t = customTemplate {
@@ -183,17 +193,10 @@ extension LogoEngine {
                     return self.logoIsTrue(res)
                 } else {
                     if let n1 = Double(a), let n2 = Double(b) {
-                        return n1 < n2
+                        return descending ? n1 > n2 : n1 < n2
                     }
-                    return a < b
+                    return descending ? a > b : a < b
                 }
-            }
-
-            let isDesc: Bool
-            if let t = customTemplate, t.lowercased() == "greaterp" || t.lowercased() == "greater?" {
-                isDesc = true
-            } else {
-                isDesc = false
             }
 
             switch parsed {
@@ -207,7 +210,7 @@ extension LogoEngine {
 
             case .string(let s):
                 if customTemplate == nil {
-                    let sortedChars = isDesc ? Array(s).sorted(by: >) : Array(s).sorted(by: <)
+                    let sortedChars = descending ? Array(s).sorted(by: >) : Array(s).sorted(by: <)
                     return String(sortedChars)
                 } else {
                     let sortedChars = Array(s).map { String($0) }.sorted { isLessThan($0, $1) }

@@ -1,12 +1,10 @@
 # `zago`: zonble's nano + LOGO
 
-`zago` is
+- a small terminal text editor.
+- draw boxes and lines in your Markdown file.
+- handles CJK and emoji alignment.
 
-- a lightweight terminal text editor.
-- a powerful plain-text diagramming app without leaving your Markdown file.
-- a tool that keeps the CJK/emoji aligned in text boxes.
-
-![zago editing a Markdown document with a plain-text diagram and LOGO command output](se.png)
+![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.png)
 
 ## Features
 
