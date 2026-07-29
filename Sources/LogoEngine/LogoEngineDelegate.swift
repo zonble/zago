@@ -14,7 +14,7 @@ public enum LogoEditorAction {
     case replaceText(old: String, new: String)
     case indentLines(levels: Int)
     case outdentLines(levels: Int)
-    case createTable(rows: Int, cols: Int)
+    case createTable(rows: Int, cols: Int, cellWidth: Int?)
     case setTableBorderStyle(String)
     case nextTableBorderStyle
     case moveCursorVirtual(Int)

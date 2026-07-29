@@ -77,6 +77,9 @@ extension LogoEngine {
             let v = evaluateExpression(tokens, index: &index)
             return "**\(v)**"
 
+        case .headingPrimitive:
+            return "\(heading)"
+
         default:
             return nil
         }

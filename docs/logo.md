@@ -168,8 +168,10 @@ Aliases:
 
 ```logo
 TABLE BORDER ROUND
-TABLE 2 2
+TABLE 2 2 16
 ```
+
+`TABLE rows cols cellWidth` accepts optional numeric dimensions. Rows are clamped to `1...50`, columns to `1...20`, and cell width to `1...40`.
 
 ```text
 ╭────────────────┬────────────────╮
@@ -379,6 +381,8 @@ TYPE "hello;world"
 | `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading | `BK 3` |
 | `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
 | `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
+| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction string (`"UP"`, `"RIGHT"`, `"DOWN"`, `"LEFT"`) | `SETH 0`, `SETH "RIGHT`, `SETH "DOWN` |
+| `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---
 

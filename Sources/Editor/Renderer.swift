@@ -335,7 +335,7 @@ public final class Renderer {
         case .logoMacro:
             // Custom LOGO macro primitives help bar
             helpItems1 = [
-                ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS]"), ("LINE", "[LEN][ARROW]"), ("SHOW", "VALUE")
+                ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"), ("SHOW", "VALUE")
             ]
             helpItems2 = [
                 ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("VLINE", "[LEN][ARROW]"), ("TYPE", "VALUE")

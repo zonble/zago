@@ -403,6 +403,18 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines[3] == "└┘")
 }
 
+@Test func testTurtleAutoExtendsLinesOnDownwardFD() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+    #expect(editor.buffer.lines.count == 1)
+
+    logoEngine.execute("SETH \"DOWN PD FD 10")
+    #expect(editor.buffer.lines.count == 10)
+    for line in editor.buffer.lines {
+        #expect(line == "│")
+    }
+}
+
 @Test func testTurtleDirectTableDrawing() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
@@ -1403,6 +1415,30 @@ final class LogoTestResultBox: @unchecked Sendable {
     editor.buffer.lines = [""]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE 2 2 4")
+    #expect(editor.buffer.lines[0] == "┌────┬────┐")
+    #expect(editor.buffer.lines[1] == "│    │    │")
+    #expect(editor.buffer.lines[2] == "├────┼────┤")
+    #expect(editor.buffer.lines[4] == "└────┴────┘")
+
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE 999 999 999")
+    #expect(editor.buffer.lines.count == 101)
+    #expect(editor.buffer.lines[0].count == 821)
+
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("TABLE 0 0 0")
+    #expect(editor.buffer.lines[0] == "┌─┐")
+    #expect(editor.buffer.lines[1] == "│ │")
+    #expect(editor.buffer.lines[2] == "└─┘")
+
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
     logoEngine.execute("TABLE BORDER ROUND TABLE")
     #expect(editor.defaultTableBorderStyle == .round)
     #expect(editor.buffer.lines[0].hasPrefix("╭"))
@@ -1623,6 +1659,31 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("CLEARBUFFER TYPE \"mid\" PREPEND \"<\" APPEND \">\"")
     #expect(editor.buffer.lines[0] == "<mid>")
+}
+
+@Test func testSetHeadingAndHeadingPrimitives() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    #expect(logoEngine.heading == 90)
+
+    logoEngine.execute("SETHEADING 0")
+    #expect(logoEngine.heading == 0)
+
+    logoEngine.execute("SETH \"RIGHT")
+    #expect(logoEngine.heading == 90)
+
+    logoEngine.execute("SETH \"DOWN")
+    #expect(logoEngine.heading == 180)
+
+    logoEngine.execute("SETH \"LEFT")
+    #expect(logoEngine.heading == 270)
+
+    logoEngine.execute("SETH \"UP")
+    #expect(logoEngine.heading == 0)
+
+    logoEngine.execute("TYPE HEADING")
+    #expect(editor.buffer.lines[0] == "0")
 }
 
 @Test func testRecursiveProcedureLimitFailsSafely() {

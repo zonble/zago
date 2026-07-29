@@ -1,6 +1,16 @@
 import Foundation
 import TextMetrics
 
+private enum TableLimits {
+    static let minRows = 1
+    static let maxRows = 50
+    static let minCols = 1
+    static let maxCols = 20
+    static let defaultCellWidth = 16
+    static let minCellWidth = 1
+    static let maxCellWidth = 40
+}
+
 extension Editor {
     /// Intercepts and processes keyboard events when Table Mode is active.
     /// - Returns: `true` if key event was handled in Table Mode.
@@ -366,6 +376,7 @@ extension Editor {
     public func createTable(
         rows: Int = 3,
         cols: Int = 3,
+        cellWidth requestedCellWidth: Int? = nil,
         enterMode: Bool = false,
         saveSnapshot: Bool = true
     ) {
@@ -375,9 +386,12 @@ extension Editor {
         let origLine = buffer.lineIndex
         let origCol = buffer.columnIndex
         let style = defaultTableBorderStyle
-        let rowCount = max(1, min(rows, 50))
-        let colCount = max(1, min(cols, 20))
-        let cellWidth = 16
+        let rowCount = max(TableLimits.minRows, min(rows, TableLimits.maxRows))
+        let colCount = max(TableLimits.minCols, min(cols, TableLimits.maxCols))
+        let cellWidth = max(
+            TableLimits.minCellWidth,
+            min(requestedCellWidth ?? TableLimits.defaultCellWidth, TableLimits.maxCellWidth)
+        )
 
         if style == .markdown {
             let headerCells = (1...colCount).map { "Header \($0)".padding(toLength: cellWidth, withPad: " ", startingAt: 0) }
@@ -414,7 +428,7 @@ extension Editor {
                 enterTableMode(with: cell)
             } else {
                 let cell = TableCell(
-                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: origCol, maxCol: origCol + 16,
+                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: origCol, maxCol: origCol + cellWidth,
                     style: style)
                 enterTableMode(with: cell)
             }

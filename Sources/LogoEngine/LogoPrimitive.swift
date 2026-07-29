@@ -42,6 +42,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case back
     case turnRight
     case turnLeft
+    case setHeading
+    case headingPrimitive
     case ifCondition
     case ifElseCondition
     case output
@@ -255,6 +257,8 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BK", "BACK", "BACKWARD"], .back),
         (["RT", "RIGHT"], .turnRight),
         (["LT", "LEFT"], .turnLeft),
+        (["SETHEADING", "SETH"], .setHeading),
+        (["HEADING"], .headingPrimitive),
         (["IF"], .ifCondition),
         (["IFELSE"], .ifElseCondition),
         (["OUTPUT", "OP"], .output),

@@ -32,8 +32,8 @@ extension Editor: LogoEngineDelegate {
             indentSelectedOrCurrentLines(levels: levels)
         case .outdentLines(let levels):
             outdentSelectedOrCurrentLines(levels: levels)
-        case .createTable(let rows, let cols):
-            createTable(rows: rows, cols: cols, enterMode: false, saveSnapshot: false)
+        case .createTable(let rows, let cols, let cellWidth):
+            createTable(rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
         case .setTableBorderStyle(let style):
             setTableBorderStyle(style)
         case .nextTableBorderStyle:
