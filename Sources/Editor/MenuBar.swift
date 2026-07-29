@@ -182,7 +182,9 @@ public final class MenuBar {
             MenuCategory(
                 titleKey: "menu.help", hotkeyChar: "h",
                 items: [
-                    MenuItem(titleKey: "menu.help.show", hotkeyChar: "h", commandId: .helpShow)
+                    MenuItem(titleKey: "menu.help.show", hotkeyChar: "h", commandId: .helpShow),
+                    MenuItem(titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference),
+                    MenuItem(titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace),
                 ]),
         ]
     }

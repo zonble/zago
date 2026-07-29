@@ -53,6 +53,8 @@ extension Editor {
 
         // UI & Macro Commands
         commandRegistry.register(LogoMacroCommand())
+        commandRegistry.register(LogoReferenceCommand())
+        commandRegistry.register(LogoWorkspaceCommand())
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(ToggleTableModeCommand())

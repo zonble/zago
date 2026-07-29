@@ -309,10 +309,12 @@ import TextMetrics
 
     // 3. Search input prompt help bar
     let searchHelp = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
-    #expect(searchHelp.contains("Help"))
+    #expect(!searchHelp.contains("Help"))
     #expect(searchHelp.contains("Cancel"))
     #expect(searchHelp.contains("Confirm"))
     #expect(searchHelp.contains("Clear"))
+    #expect(searchHelp.contains("Move"))
+    #expect(searchHelp.contains("Jump"))
 
     // 4. Default Nano help bar
     let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none)

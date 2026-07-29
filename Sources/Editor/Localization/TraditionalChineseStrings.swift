@@ -28,6 +28,86 @@ public struct TraditionalChineseStrings {
         "prompt.fill_text": "填滿文字：",
         "prompt.table_dimensions": "表格列 欄 寬：",
         "prompt.goto_line": "請輸入列號與欄號：",
+        "textview.footer": "  上/下：捲動   PgUp/PgDn：翻頁   Home/End：跳轉   其他按鍵：關閉",
+        "logoview.reference_title": "  zago - LOGO 指令參考",
+        "logoview.workspace_title": "  zago - LOGO 工作區",
+        "logoref.content": """
+  LOGO 指令參考
+  ================================================================
+
+  Editor LOGO 是編輯器巨集語言。指令會操作目前文字 buffer、
+  游標、選取範圍、表格、狀態列與多 buffer。
+
+  基本編輯
+    TYPE text                    插入文字或運算結果
+    SHOW expr                    顯示狀態訊息
+    MAKE "name value             定義變數
+    :name                        讀取變數
+    MOVE UP|DOWN|LEFT|RIGHT      移動游標
+    GOTO row [col]               跳到 1-based 列/欄
+    FIND "query                  搜尋文字
+
+  形狀與表格
+    BOX text [align] [style]     插入有框文字方塊
+    DRAWBOX width height [style] 在畫布上覆蓋繪製方框
+    LINE [len] [style] [arrow]   繪製/連接水平線
+    VLINE [height] [style]       繪製/連接垂直線
+    FILL text                    填滿選取範圍或方框內部
+    TABLE [rows cols width]      插入表格
+    TABLE BORDER style           設定預設框線樣式
+    TABLE NEXTSTYLE              切換下一個框線樣式
+
+  框線樣式
+    single, double, round, double-round, ascii, markdown
+
+  類海龜繪圖
+    PD / PU                      落筆/提筆
+    FD n / BK n                  前進/後退
+    RT angle / LT angle          右轉/左轉
+    SETHEADING angle|direction   設定方向
+    HEADING                      回傳目前方向
+
+  控制流程與 procedure
+    REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
+    IF test [ commands ]         條件執行
+    IFELSE test [ yes ] [ no ]   條件分支
+    FOREACH list [ commands ]    逐項執行，? 是目前項目
+    TO name :arg ... END         定義 user procedure
+    OUTPUT value                 從 reporter procedure 回傳值
+    STOP                         從 procedure 返回
+
+  常用 predicate
+    PROCEDURE? name              built-in 或 user-defined procedure 是否存在
+    PRIMITIVE? name              built-in primitive 是否存在
+    DEFINED? name                user-defined procedure 是否存在
+    NAME? name                   變數是否存在
+    WORD? LIST? ARRAY? NUMBER? EMPTY?
+
+  資料操作
+    WORD, LIST, SENTENCE, FIRST, LAST, BUTFIRST, BUTLAST
+    ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
+    ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
+
+  數學與邏輯
+    SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
+    REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10
+    SIN, COS, TAN, ARCTAN, RADSIN, RADCOS, RADTAN, RADARCTAN
+    LESS? GREATER? LESSEQUAL? GREATEREQUAL? EQUAL? NOTEQUAL?
+    TRUE, FALSE, AND, OR, XOR, NOT
+
+  Buffer 與檔案
+    BUFFERS, BUFFER, NEXTBUFFER, PREVBUFFER, OPENBUFFER, CLOSEBUFFER
+    SAVE, FILE, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
+    ROW, COL, LINECOUNT, FILENAME, MODIFIED?
+
+  所有 primitive alias
+""",
+        "logoworkspace.heading": "  LOGO 工作區",
+        "logoworkspace.procedures": "  User Procedures:",
+        "logoworkspace.variables": "  變數：",
+        "logoworkspace.none": "    （無）",
+        "logoworkspace.tip_1": "  在 LOGO 腳本中可用 PROCEDURE?、PRIMITIVE?、DEFINED?、NAME?",
+        "logoworkspace.tip_2": "  做可程式化的存在檢查。",
 
         // Status Messages
         "status.mark_set": "標記已設定",
@@ -178,6 +258,8 @@ public struct TraditionalChineseStrings {
         "menu.tools.wrap_40": "自動換行：40",
         "menu.tools.wrap_reset": "自動換行：動態",
 
-        "menu.help.show": "顯示完整說明手冊 (Help)\t^G"
+        "menu.help.show": "顯示完整說明手冊 (Help)\t^G",
+        "menu.help.logo_reference": "LOGO 指令參考",
+        "menu.help.logo_workspace": "Procedures 與變數"
     ]
 }

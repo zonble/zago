@@ -144,6 +144,8 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `buffer.prev` | Previous buffer | `M+,`, `M+<` |
 | `buffer.new` | New buffer | `^N` |
 | `macro.logo` | Open command prompt | `Esc`, `M+:` |
+| `logo.reference` | Show LOGO reference | Menu |
+| `logo.workspace` | Show LOGO procedures and variables | Menu |
 | `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
 | `help.show` | Full-screen help | `^G` |
 | `table.toggle` | Toggle table mode | `M+T` |

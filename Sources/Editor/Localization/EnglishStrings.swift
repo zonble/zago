@@ -28,6 +28,86 @@ public struct EnglishStrings {
         "prompt.fill_text": "Fill with: ",
         "prompt.table_dimensions": "Table rows cols width: ",
         "prompt.goto_line": "Enter line number, column number: ",
+        "textview.footer": "  Up/Down: scroll   PgUp/PgDn: page   Home/End: jump   Any other key: close",
+        "logoview.reference_title": "  zago - LOGO Reference",
+        "logoview.workspace_title": "  zago - LOGO Workspace",
+        "logoref.content": """
+  LOGO Reference
+  ================================================================
+
+  Editor LOGO is an editor macro language. Commands edit the current
+  text buffer, cursor, selection, tables, status bar, and buffers.
+
+  Essential editing
+    TYPE text                    Insert text or expression result
+    SHOW expr                    Show a status message
+    MAKE "name value             Define a variable
+    :name                        Read a variable
+    MOVE UP|DOWN|LEFT|RIGHT      Move the cursor
+    GOTO row [col]               Jump to 1-based row/column
+    FIND "query                  Search text
+
+  Shapes and tables
+    BOX text [align] [style]     Insert a framed box
+    DRAWBOX width height [style] Draw an overlay frame
+    LINE [len] [style] [arrow]   Draw/connect a horizontal line
+    VLINE [height] [style]       Draw/connect a vertical line
+    FILL text                    Fill selected region or box interior
+    TABLE [rows cols width]      Insert a table
+    TABLE BORDER style           Set default border style
+    TABLE NEXTSTYLE              Cycle border style
+
+  Border styles
+    single, double, round, double-round, ascii, markdown
+
+  Turtle-like drawing
+    PD / PU                      Pen down/up
+    FD n / BK n                  Move forward/back
+    RT angle / LT angle          Turn right/left
+    SETHEADING angle|direction   Set heading
+    HEADING                      Return current heading
+
+  Control flow and procedures
+    REPEAT n [ commands ]        Repeat block; # and repcount are 1-based
+    IF test [ commands ]         Conditional execution
+    IFELSE test [ yes ] [ no ]   Conditional branch
+    FOREACH list [ commands ]    Iterate with ? as current item
+    TO name :arg ... END         Define a user procedure
+    OUTPUT value                 Return from a reporter procedure
+    STOP                         Return from a procedure
+
+  Useful predicates
+    PROCEDURE? name              Built-in or user-defined procedure exists
+    PRIMITIVE? name              Built-in primitive exists
+    DEFINED? name                User-defined procedure exists
+    NAME? name                   Variable exists
+    WORD? LIST? ARRAY? NUMBER? EMPTY?
+
+  Data operations
+    WORD, LIST, SENTENCE, FIRST, LAST, BUTFIRST, BUTLAST
+    ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
+    ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
+
+  Math and logic
+    SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
+    REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10
+    SIN, COS, TAN, ARCTAN, RADSIN, RADCOS, RADTAN, RADARCTAN
+    LESS? GREATER? LESSEQUAL? GREATEREQUAL? EQUAL? NOTEQUAL?
+    TRUE, FALSE, AND, OR, XOR, NOT
+
+  Buffers and files
+    BUFFERS, BUFFER, NEXTBUFFER, PREVBUFFER, OPENBUFFER, CLOSEBUFFER
+    SAVE, FILE, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
+    ROW, COL, LINECOUNT, FILENAME, MODIFIED?
+
+  All primitive aliases
+""",
+        "logoworkspace.heading": "  LOGO Workspace",
+        "logoworkspace.procedures": "  User Procedures:",
+        "logoworkspace.variables": "  Variables:",
+        "logoworkspace.none": "    (none)",
+        "logoworkspace.tip_1": "  Use PROCEDURE?, PRIMITIVE?, DEFINED?, and NAME? in LOGO scripts",
+        "logoworkspace.tip_2": "  when you need a programmable existence check.",
 
         // Status Messages
         "status.mark_set": "Mark Set",
@@ -178,6 +258,8 @@ public struct EnglishStrings {
         "menu.tools.wrap_40": "Wrap Column: 40",
         "menu.tools.wrap_reset": "Wrap Column: Dynamic",
 
-        "menu.help.show": "Show Help Reference\t^G"
+        "menu.help.show": "Show Help Reference\t^G",
+        "menu.help.logo_reference": "LOGO Reference",
+        "menu.help.logo_workspace": "Procedures & Variables"
     ]
 }

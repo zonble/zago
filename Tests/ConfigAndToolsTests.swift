@@ -26,6 +26,7 @@ import Testing
     let wrap60Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_60" })
     let wrap40Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_40" })
     let wrapResetItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_reset" })
+    let helpCategory = menuBar.categories.first(where: { $0.titleKey == "menu.help" })
 
     #expect(lineNumbersItem != nil)
     #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
@@ -43,6 +44,11 @@ import Testing
     editor.isTableModeActive = true
     #expect(tableEditingModeItem?.isChecked?(editor) == true)
     editor.isTableModeActive = false
+
+    let logoReferenceItem = helpCategory?.items.first(where: { $0.titleKey == "menu.help.logo_reference" })
+    let logoWorkspaceItem = helpCategory?.items.first(where: { $0.titleKey == "menu.help.logo_workspace" })
+    #expect(logoReferenceItem?.commandId == .logoReference)
+    #expect(logoWorkspaceItem?.commandId == .logoWorkspace)
 
     let bordersCategory = menuBar.categories.first(where: { $0.titleKey == "menu.borders" })
     let singleItem = bordersCategory?.items.first(where: { $0.titleKey == "menu.borders.single" })
@@ -358,6 +364,8 @@ import Testing
     #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "Replaced 'helo' with 'hello'")
     #expect(L10n["helpview.sec_logo"] == "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:")
     #expect(L10n["helpview.logo_6"].contains("Turtle Graphics"))
+    #expect(L10n["menu.help.logo_reference"] == "LOGO Reference")
+    #expect(L10n["menu.help.logo_workspace"] == "Procedures & Variables")
 
     L10n.currentLanguage = .zh_TW
     #expect(L10n.helpGetHelp == "輔助說明")
@@ -377,4 +385,28 @@ import Testing
     #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "已將 'helo' 替換為 'hello'")
     #expect(L10n["helpview.sec_logo"] == "  LOGO 巨集語言與海龜繪圖指令：")
     #expect(L10n["helpview.logo_6"].contains("海龜繪圖"))
+    #expect(L10n["menu.help.logo_reference"] == "LOGO 指令參考")
+    #expect(L10n["menu.help.logo_workspace"] == "Procedures 與變數")
+}
+
+@Test func testLogoReferenceAndWorkspaceContent() throws {
+    let reference = LogoReferenceContent.lines(language: .en).joined(separator: "\n")
+    #expect(reference.contains("TABLE BORDER style"))
+    #expect(reference.contains("PROCEDURE? name"))
+    #expect(reference.contains("All primitive aliases"))
+
+    let editor = Editor()
+    editor.logoEngine.execute("MAKE \"answer 42 TO TITLE :text BOX :text CENTER ROUND END")
+    let workspace = LogoWorkspaceContent.lines(engine: editor.logoEngine).joined(separator: "\n")
+    #expect(workspace.contains("TITLE :text"))
+    #expect(workspace.contains("answer = 42"))
+
+    let zhReference = LogoReferenceContent.lines(language: .zh_TW).joined(separator: "\n")
+    #expect(zhReference.contains("LOGO 指令參考"))
+    #expect(zhReference.contains("設定預設框線樣式"))
+
+    let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(separator: "\n")
+    #expect(zhWorkspace.contains("LOGO 工作區"))
+    #expect(zhWorkspace.contains("（無）"))
+
 }

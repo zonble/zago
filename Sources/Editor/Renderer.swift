@@ -353,10 +353,10 @@ public final class Renderer {
         case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
             // Text & File Path Input prompt help bar
             helpItems1 = [
-                ("^G", "Help"), ("^C", "Cancel")
+                ("Enter", "Confirm"), ("^C", "Cancel"), ("^U", "Clear")
             ]
             helpItems2 = [
-                ("Enter", "Confirm"), ("^U", "Clear")
+                ("←/→", "Move"), ("Home/End", "Jump")
             ]
 
         case .none:

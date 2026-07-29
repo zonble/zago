@@ -42,6 +42,10 @@ public enum L10n {
         tables[currentLanguage]?[key] ?? tables[.en]?[key] ?? key
     }
 
+    public static func string(_ key: String, language: Language) -> String {
+        tables[language]?[key] ?? tables[.en]?[key] ?? key
+    }
+
     // MARK: - Strongly-Typed Help Bar Accessors
     public static var helpGetHelp: String { self["help.get_help"] }
     public static var helpWriteOut: String { self["help.write_out"] }

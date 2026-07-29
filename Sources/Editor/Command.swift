@@ -52,6 +52,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 
     // Macro & UI
     case macroLogo = "macro.logo"
+    case logoReference = "logo.reference"
+    case logoWorkspace = "logo.workspace"
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case tableToggle = "table.toggle"

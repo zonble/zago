@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 
 public struct LogoMacroCommand: Command {
     public let id: CommandID = .macroLogo
@@ -10,6 +11,42 @@ public struct LogoMacroCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.promptLogoMacro()
+    }
+}
+
+public struct LogoReferenceCommand: Command {
+    public let id: CommandID = .logoReference
+    public let name = "LOGO Reference"
+    public let description = "Show LOGO command reference"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        TextDocumentView(
+            terminal: editor.terminal,
+            title: L10n["logoview.reference_title"],
+            lines: LogoReferenceContent.lines(),
+            footer: L10n["textview.footer"]
+        ).show()
+    }
+}
+
+public struct LogoWorkspaceCommand: Command {
+    public let id: CommandID = .logoWorkspace
+    public let name = "LOGO Workspace"
+    public let description = "Show LOGO user procedures and variables"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        TextDocumentView(
+            terminal: editor.terminal,
+            title: L10n["logoview.workspace_title"],
+            lines: LogoWorkspaceContent.lines(engine: editor.logoEngine),
+            footer: L10n["textview.footer"]
+        ).show()
     }
 }
 
