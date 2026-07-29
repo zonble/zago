@@ -36,6 +36,8 @@ extension LogoEngine {
                         break
                     }
                     index += 1
+                } else {
+                    break
                 }
             }
             return true
@@ -55,6 +57,8 @@ extension LogoEngine {
                         break
                     }
                     index += 1
+                } else {
+                    break
                 }
             }
             let msgText = parts.joined(separator: " ")
