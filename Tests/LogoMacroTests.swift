@@ -164,6 +164,18 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(variableSizedBoxEditor.buffer.lines[1] == "│    │")
     #expect(variableSizedBoxEditor.buffer.lines[2] == "└────┘")
 
+    let expressionSizedDrawBoxEditor = Editor()
+    logoEngine.delegate = expressionSizedDrawBoxEditor
+    logoEngine.execute("MAKE \"n 2 DRAWBOX INT (:n * 3) :n ASCII")
+    #expect(expressionSizedDrawBoxEditor.buffer.lines[0] == "+----+")
+    #expect(expressionSizedDrawBoxEditor.buffer.lines[1] == "+----+")
+
+    let repeatCounterSizedDrawBoxEditor = Editor()
+    logoEngine.delegate = repeatCounterSizedDrawBoxEditor
+    logoEngine.execute("REPEAT 1 [ DRAWBOX INT (:# * 3) :# ASCII ]")
+    #expect(repeatCounterSizedDrawBoxEditor.buffer.lines[0] == "+-+")
+    #expect(repeatCounterSizedDrawBoxEditor.buffer.lines[1] == "+-+")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]

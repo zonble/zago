@@ -25,7 +25,7 @@ extension LogoEngine {
         }
 
         // Mode 1: BOX width [height] ["text"] [align] [style]
-        if let w = parseUnquotedIntArgument(tokens, index: &index) {
+        if let w = parseBoxDimensionArgument(tokens, index: &index) {
             let width = max(3, min(w, 200))
             var height: Int? = nil
             var textContent: String? = nil
@@ -34,7 +34,7 @@ extension LogoEngine {
 
             if index + 1 < tokens.count {
                 var heightIndex = index + 1
-                if let h = parseUnquotedIntArgument(tokens, index: &heightIndex) {
+                if let h = parseBoxDimensionArgument(tokens, index: &heightIndex) {
                     index = heightIndex
                     height = max(2, min(h, 100))
                 }
@@ -82,6 +82,47 @@ extension LogoEngine {
         }
 
         drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode)
+    }
+
+    private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
+        guard index < tokens.count, !isQuotedWordToken(tokens[index]) else { return nil }
+
+        let originalIndex = index
+        if let value = parseUnquotedIntArgument(tokens, index: &index) {
+            return value
+        }
+
+        let token = tokens[index]
+        if token == "]" || token == ")" { return nil }
+        guard isBoxDimensionExpressionStart(token) else { return nil }
+
+        var expressionIndex = index
+        let value = evaluateExpression(tokens, index: &expressionIndex)
+        guard expressionIndex >= originalIndex, let number = Double(value) else {
+            index = originalIndex
+            return nil
+        }
+
+        index = expressionIndex
+        return Int(number)
+    }
+
+    private func isBoxDimensionExpressionStart(_ token: String) -> Bool {
+        if token == "(" { return true }
+        if Double(token) != nil { return true }
+        if token.hasPrefix(":") { return true }
+        if variables[token.lowercased()] != nil { return true }
+
+        guard let primitive = LogoPrimitive.from(token) else { return false }
+        switch primitive {
+        case .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus,
+             .abs, .int, .round, .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan,
+             .radSin, .radCos, .radTan, .iseq, .rseq, .random, .form, .bitAnd, .bitOr, .bitXor,
+             .bitNot, .ashift, .lshift:
+            return true
+        default:
+            return false
+        }
     }
 
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
