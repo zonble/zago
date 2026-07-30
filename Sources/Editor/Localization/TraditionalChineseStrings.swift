@@ -209,6 +209,7 @@ public struct TraditionalChineseStrings {
         "menu.shapes": "形狀(S)",
         "menu.borders": "框線(O)",
         "menu.tools": "工具(T)",
+        "menu.diagrams": "圖表(D)",
         "menu.help": "說明(H)",
 
         // Menu Bar Items
@@ -257,6 +258,22 @@ public struct TraditionalChineseStrings {
         "menu.tools.wrap_60": "自動換行：60",
         "menu.tools.wrap_40": "自動換行：40",
         "menu.tools.wrap_reset": "自動換行：動態",
+
+        "menu.diagrams.mermaid_sequence": "Mermaid 時序圖 (Sequence)",
+        "menu.diagrams.mermaid_flowchart": "Mermaid 流程圖 (Flowchart)",
+        "menu.diagrams.mermaid_class": "Mermaid 類別圖 (Class)",
+        "menu.diagrams.mermaid_state": "Mermaid 狀態圖 (State)",
+        "menu.diagrams.mermaid_er": "Mermaid 實體關係圖 (ER)",
+        "menu.diagrams.mermaid_mindmap": "Mermaid 心智圖 (Mindmap)",
+
+        "menu.diagrams.puml_sequence": "PlantUML 時序圖 (Sequence)",
+        "menu.diagrams.puml_flowchart": "PlantUML 流程圖 (Flowchart)",
+        "menu.diagrams.puml_class": "PlantUML 類別圖 (Class)",
+        "menu.diagrams.puml_state": "PlantUML 狀態圖 (State)",
+        "menu.diagrams.puml_er": "PlantUML 實體關係圖 (ER)",
+
+        "menu.diagrams.dot_digraph": "Graphviz 有向圖 (digraph)",
+        "menu.diagrams.dot_graph": "Graphviz 無向圖 (graph)",
 
         "menu.help.show": "顯示完整說明手冊 (Help)\t^G",
         "menu.help.logo_reference": "LOGO 指令參考",

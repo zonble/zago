@@ -8,3 +8,4 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Editor basics](editor.md): common editing keys and basic editor behavior.
 - [Configuration](configuration.md): `.zagorc`, key bindings, startup LOGO code, command ids, and Nano syntax file loading.
 - [Pen mode and turtle drawing](logo_pen_mode.md): `PD`, `PU`, `FD`, `BK`, `RT`, and `LT` for terminal diagrams.
+- [Diagram snippets & menu rules](diagram_snippets.md): trigger conditions, code block context detection, filtering rules, and LOGO `DIAGRAM` command usage.

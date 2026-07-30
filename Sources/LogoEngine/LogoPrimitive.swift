@@ -35,6 +35,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case vline
     case vhr
     case table
+    case diagram
     case newline
     case penDown
     case penUp
@@ -254,6 +255,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["LINE", "HR"], .line),
         (["VLINE", "VR", "VHR"], .vline),
         (["TABLE"], .table),
+        (["DIAGRAM", "SNIPPET"], .diagram),
         (["NEWLINE", "NL", "ENTER"], .newline),
         (["PD", "PENDOWN"], .penDown),
         (["PU", "PENUP"], .penUp),

@@ -136,9 +136,24 @@ extension LogoEngine {
             executeTableCommand(tokens, index: &index)
             return true
 
+        case .diagram:
+            index += 1
+            executeDiagramCommand(tokens, index: &index)
+            return true
+
         default:
             return false
         }
+    }
+
+    private func executeDiagramCommand(_ tokens: [String], index: inout Int) {
+        let arg: String?
+        if index < tokens.count && !isDrawingArgumentBoundary(tokens[index]) {
+            arg = unquote(evaluateExpression(tokens, index: &index))
+        } else {
+            arg = nil
+        }
+        delegate?.logoEngine(self, performAction: .insertDiagramSnippet(type: arg))
     }
 
     internal func parseHeadingValue(_ valStr: String) -> Int {

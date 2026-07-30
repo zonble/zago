@@ -101,6 +101,7 @@ public final class Renderer {
     /// Renders the top Title Bar (or active Menu Bar categories).
     public func renderTitleOrMenuBar(editor: Editor, cols: Int) -> String {
         if editor.isMenuBarActive {
+            editor.menuBar.updateCategories(for: editor)
             func menuSegment(title: String, isSelected: Bool) -> String {
                 isSelected ? "[ \(title) ]" : "  \(title)  "
             }
@@ -202,21 +203,63 @@ public final class Renderer {
 
             let boxIdx = editor.displayConfig.showRuler ? (i + 1) : i
 
+            var lineOutput = ""
+            if vIndex < virtualLines.count {
+                let vLine = virtualLines[vIndex]
+                let isFirstSubLine = (vLine.subLineIndex == 0)
+
+                // Render Gutter (Line Number or Softwrap Indicator ↳)
+                if editor.displayConfig.showLineNumbers {
+                    let lineNumStr = renderLineNumberGutter(
+                        lineNumber: vLine.bufferLineIndex + 1,
+                        isFirstSubLine: isFirstSubLine,
+                        showLineNumbers: true,
+                        isMenuOverlay: editor.isMenuBarActive && boxIdx < dropdownBoxLines.count
+                    )
+                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
+                }
+
+                let currentLanguage =
+                    editor.displayConfig.enableSyntaxHighlight
+                    ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
+                let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil)
+                    ? editor.syntaxHighlighter.tokenTypes(for: vLine.text, syntax: currentLanguage!)
+                    : []
+
+                var activeCellBounds: (left: Int, right: Int)? = nil
+                if editor.isTableModeActive, let cell = editor.currentTableCell,
+                   vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
+                   vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count {
+                    let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
+                    activeCellBounds = editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+                }
+
+                let chars = Array(vLine.text)
+                for (cIdxInVLine, ch) in chars.enumerated() {
+                    let realCol = vLine.startCol + cIdxInVLine
+                    let isCellActive: Bool
+                    if let (cellLeft, cellRight) = activeCellBounds {
+                        isCellActive = realCol > cellLeft && realCol < cellRight
+                    } else {
+                        isCellActive = false
+                    }
+
+                    if editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                        lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
+                    } else if isCellActive {
+                        lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
+                    } else if cIdxInVLine < tokenTypes.count && tokenTypes[cIdxInVLine] != .normal {
+                        let tok = tokenTypes[cIdxInVLine]
+                        lineOutput += tok.ansiColor + String(ch) + "\u{1B}[0m"
+                    } else {
+                        lineOutput += String(ch)
+                    }
+                }
+            }
+
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
-                let vLineText = (vIndex < virtualLines.count) ? virtualLines[vIndex].text : ""
-                let isFirstSubLine = (vIndex < virtualLines.count) ? (virtualLines[vIndex].subLineIndex == 0) : true
-                let lineNumVal = (vIndex < virtualLines.count) ? virtualLines[vIndex].bufferLineIndex + 1 : 0
-
-                let rawLineNumStr = renderLineNumberGutter(
-                    lineNumber: lineNumVal,
-                    isFirstSubLine: isFirstSubLine,
-                    showLineNumbers: editor.displayConfig.showLineNumbers,
-                    isMenuOverlay: true
-                )
-
-                let plainFullLineStr = rawLineNumStr + vLineText
                 let sliced = sliceOverlayLine(
-                    baseFullLineStr: plainFullLineStr,
+                    baseFullLineStr: lineOutput,
                     boxLine: dropdownBoxLines[boxIdx],
                     dropdownStartCol: dropdownStartCol,
                     dropdownBoxWidth: dropdownBoxWidth,
@@ -226,59 +269,6 @@ public final class Renderer {
                 )
                 output += sliced + "\r\n"
             } else {
-                var lineOutput = ""
-                if vIndex < virtualLines.count {
-                    let vLine = virtualLines[vIndex]
-                    let isFirstSubLine = (vLine.subLineIndex == 0)
-
-                    // Render Gutter (Line Number or Softwrap Indicator ↳)
-                    if editor.displayConfig.showLineNumbers {
-                        let lineNumStr = renderLineNumberGutter(
-                            lineNumber: vLine.bufferLineIndex + 1,
-                            isFirstSubLine: isFirstSubLine,
-                            showLineNumbers: true,
-                            isMenuOverlay: false
-                        )
-                        lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
-                    }
-
-                    let currentLanguage =
-                        editor.displayConfig.enableSyntaxHighlight
-                        ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
-                    let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil)
-                        ? editor.syntaxHighlighter.tokenTypes(for: vLine.text, syntax: currentLanguage!)
-                        : []
-
-                    var activeCellBounds: (left: Int, right: Int)? = nil
-                    if editor.isTableModeActive, let cell = editor.currentTableCell,
-                       vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
-                       vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count {
-                        let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
-                        activeCellBounds = editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
-                    }
-
-                    let chars = Array(vLine.text)
-                    for (cIdxInVLine, ch) in chars.enumerated() {
-                        let realCol = vLine.startCol + cIdxInVLine
-                        let isCellActive: Bool
-                        if let (cellLeft, cellRight) = activeCellBounds {
-                            isCellActive = realCol > cellLeft && realCol < cellRight
-                        } else {
-                            isCellActive = false
-                        }
-
-                        if editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
-                            lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
-                        } else if isCellActive {
-                            lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
-                        } else if cIdxInVLine < tokenTypes.count && tokenTypes[cIdxInVLine] != .normal {
-                            let tok = tokenTypes[cIdxInVLine]
-                            lineOutput += tok.ansiColor + String(ch) + "\u{1B}[0m"
-                        } else {
-                            lineOutput += String(ch)
-                        }
-                    }
-                }
                 output += lineOutput + "\r\n"
             }
         }
@@ -621,7 +611,7 @@ public final class Renderer {
         return result
     }
 
-    /// Slices plain line text cleanly to insert a 2D dropdown box segment.
+    /// Slices line text (including ANSI syntax highlight sequences) cleanly to insert a 2D dropdown box segment.
     public func sliceOverlayLine(
         baseFullLineStr: String,
         boxLine: String,
@@ -632,43 +622,67 @@ public final class Renderer {
         showLineNumbers: Bool = false,
         gutterWidth: Int = 0
     ) -> String {
+        var leftStr = ""
+        var rightStr = ""
+        var currentVisCol = 0
+        var activeAnsiStyle = ""
+        var inAnsi = false
+        var currentAnsiSeq = ""
+
+        let rightStartCol = dropdownStartCol + dropdownBoxWidth
         let chars = Array(baseFullLineStr)
+        var i = 0
 
-        var leftChars: [Character] = []
-        var w = 0
-        var cIdx = 0
-        while cIdx < chars.count && w < dropdownStartCol {
-            let chW = chars[cIdx].displayWidth
-            if w + chW > dropdownStartCol { break }
-            leftChars.append(chars[cIdx])
-            w += chW
-            cIdx += 1
-        }
-        var leftStr = String(leftChars)
-        if w < dropdownStartCol {
-            leftStr += String(repeating: " ", count: dropdownStartCol - w)
+        while i < chars.count {
+            let ch = chars[i]
+
+            if ch == "\u{1B}" {
+                inAnsi = true
+                currentAnsiSeq = "\u{1B}"
+                i += 1
+                continue
+            }
+
+            if inAnsi {
+                currentAnsiSeq.append(ch)
+                if ch == "m" || ch == "H" || ch == "J" || ch == "K" {
+                    inAnsi = false
+                    if currentAnsiSeq != "\u{1B}[0m" && currentAnsiSeq != "\u{1B}[m" {
+                        activeAnsiStyle = currentAnsiSeq
+                    } else {
+                        activeAnsiStyle = ""
+                    }
+                    if currentVisCol < dropdownStartCol {
+                        leftStr += currentAnsiSeq
+                    } else if currentVisCol >= rightStartCol {
+                        rightStr += currentAnsiSeq
+                    }
+                    currentAnsiSeq = ""
+                }
+                i += 1
+                continue
+            }
+
+            let chW = ch.displayWidth
+
+            if currentVisCol < dropdownStartCol {
+                leftStr.append(ch)
+            } else if currentVisCol >= rightStartCol {
+                rightStr.append(ch)
+            }
+
+            currentVisCol += chW
+            i += 1
         }
 
-        if showLineNumbers && gutterWidth > 0 && leftStr.count >= gutterWidth {
-            let gutterPart = String(leftStr.prefix(gutterWidth))
-            let textPart = String(leftStr.dropFirst(gutterWidth))
-            leftStr = "\u{1B}[90m\(gutterPart)\u{1B}[0m\(textPart)"
-        } else if isDim {
+        if currentVisCol < dropdownStartCol {
+            leftStr += String(repeating: " ", count: dropdownStartCol - currentVisCol)
+        }
+
+        if isDim {
             leftStr = "\u{1B}[90m\(leftStr)\u{1B}[0m"
         }
 
-        let rightStartCol = dropdownStartCol + dropdownBoxWidth
-        var rightStr = ""
-        var w2 = 0
-        var cIdx2 = 0
-        while cIdx2 < chars.count {
-            let chW = chars[cIdx2].displayWidth
-            if w2 >= rightStartCol {
-                rightStr.append(chars[cIdx2])
-            }
-            w2 += chW
-            cIdx2 += 1
-        }
         let remainingRight = max(0, cols - rightStartCol - rightStr.displayWidth)
         if remainingRight > 0 {
             rightStr += String(repeating: " ", count: remainingRight)
@@ -676,8 +690,11 @@ public final class Renderer {
 
         if isDim {
             rightStr = "\u{1B}[90m\(rightStr)\u{1B}[0m"
+        } else if !activeAnsiStyle.isEmpty {
+            rightStr = "\(activeAnsiStyle)\(rightStr)\u{1B}[0m"
         }
-        return leftStr + boxLine + rightStr
+
+        return leftStr + "\u{1B}[0m" + boxLine + "\u{1B}[0m" + rightStr
     }
 
     /// Generates 2D dropdown box overlay lines for active menu category.

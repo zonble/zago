@@ -53,7 +53,7 @@ public final class LogoEngine {
         .make, .name, .set, .type, .show, .delete, .backspace, .deleteLine,
         .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
         .joinLine, .splitLine, .indentLines, .outdentLines,
-        .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .line, .hr, .vline, .vhr, .table,
+        .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .line, .hr, .vline, .vhr, .table, .diagram,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .nextBuffer, .prevBuffer, .openBuffer, .closeBuffer, .saveBuffer, .fileSaveAndQuit,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,

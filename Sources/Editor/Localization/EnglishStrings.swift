@@ -209,6 +209,7 @@ public struct EnglishStrings {
         "menu.shapes": "Shapes",
         "menu.borders": "Borders",
         "menu.tools": "Tools",
+        "menu.diagrams": "Diagrams",
         "menu.help": "Help",
 
         // Menu Bar Items
@@ -257,6 +258,22 @@ public struct EnglishStrings {
         "menu.tools.wrap_60": "Wrap Column: 60",
         "menu.tools.wrap_40": "Wrap Column: 40",
         "menu.tools.wrap_reset": "Wrap Column: Dynamic",
+
+        "menu.diagrams.mermaid_sequence": "Mermaid Sequence Diagram",
+        "menu.diagrams.mermaid_flowchart": "Mermaid Flowchart",
+        "menu.diagrams.mermaid_class": "Mermaid Class Diagram",
+        "menu.diagrams.mermaid_state": "Mermaid State Diagram",
+        "menu.diagrams.mermaid_er": "Mermaid ER Diagram",
+        "menu.diagrams.mermaid_mindmap": "Mermaid Mindmap",
+
+        "menu.diagrams.puml_sequence": "PlantUML Sequence Diagram",
+        "menu.diagrams.puml_flowchart": "PlantUML Flowchart",
+        "menu.diagrams.puml_class": "PlantUML Class Diagram",
+        "menu.diagrams.puml_state": "PlantUML State Diagram",
+        "menu.diagrams.puml_er": "PlantUML ER Diagram",
+
+        "menu.diagrams.dot_digraph": "Graphviz Directed Graph (digraph)",
+        "menu.diagrams.dot_graph": "Graphviz Undirected Graph (graph)",
 
         "menu.help.show": "Show Help Reference\t^G",
         "menu.help.logo_reference": "LOGO Reference",

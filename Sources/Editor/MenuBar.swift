@@ -47,7 +47,11 @@ public final class MenuBar {
     }
 
     public func setupCategories() {
-        categories = [
+        updateCategories(for: nil)
+    }
+
+    public func updateCategories(for editor: Editor? = nil) {
+        var baseCategories: [MenuCategory] = [
             MenuCategory(
                 titleKey: "menu.file", hotkeyChar: "f",
                 items: [
@@ -179,14 +183,26 @@ public final class MenuBar {
                             editor.setStatusMessage("[ Wrap Column reset to dynamic ]")
                         }),
                 ]),
+        ]
+
+        if let ed = editor, DiagramSnippets.shouldShowDiagramMenu(for: ed) {
+            baseCategories.append(DiagramSnippets.makeMenuCategory(for: ed))
+        }
+
+        baseCategories.append(
             MenuCategory(
                 titleKey: "menu.help", hotkeyChar: "h",
                 items: [
                     MenuItem(titleKey: "menu.help.show", hotkeyChar: "h", commandId: .helpShow),
                     MenuItem(titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference),
                     MenuItem(titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace),
-                ]),
-        ]
+                ])
+        )
+
+        self.categories = baseCategories
+        if categoryIndex >= categories.count {
+            categoryIndex = max(0, categories.count - 1)
+        }
     }
 
     public var currentCategory: MenuCategory {

@@ -126,6 +126,7 @@ TYPE "    database    "
 - [LOGO command language](docs/logo.md)
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
+- [Diagram snippets & menu rules](docs/diagram_snippets.md)
 
 ## Tests
 
