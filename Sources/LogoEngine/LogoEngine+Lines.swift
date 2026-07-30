@@ -47,27 +47,19 @@ extension LogoEngine {
 
         editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
 
-        let startLineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
-        var currentChars = Array(startLineStr)
-        while currentChars.count < startCol {
-            currentChars.append(" ")
-        }
+        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
 
         for i in 0..<length {
             let col = startCol + i
             let moveMask = (i == 0) ? 2 : ((i == length - 1) ? 8 : 10)
-            if col < currentChars.count {
-                let existing = currentChars[col]
-                currentChars[col] = explicitHorizontalLineChar(
-                    existing: existing, styleChar: styleChar, moveMask: moveMask,
-                    isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode)
-            } else {
-                currentChars.append(horizontalLineChar(
-                    styleChar: styleChar, isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode))
-            }
+            let existing = displayCharAt(in: lineText, visualColumn: col)
+            let char = explicitHorizontalLineChar(
+                existing: existing, styleChar: styleChar, moveMask: moveMask,
+                isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode)
+            lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
         }
 
-        editor.logoEngine(self, performAction: .setLine(index: startLine, text: String(currentChars)))
+        editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol + length))
     }
 
@@ -104,18 +96,15 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
-            var currentChars = Array(lineStr)
-            while currentChars.count <= startCol {
-                currentChars.append(" ")
-            }
 
             let moveMask = (r == 0) ? 4 : ((r == height - 1) ? 1 : 5)
-            let existing = currentChars[startCol]
-            currentChars[startCol] = explicitVerticalLineChar(
+            let existing = displayCharAt(in: lineStr, visualColumn: startCol)
+            let char = explicitVerticalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
                 isStart: r == 0, isEnd: r == height - 1, arrowMode: arrowMode)
+            let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
 
-            editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
+            editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
         editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
@@ -225,27 +214,21 @@ extension LogoEngine {
         guard !drawableOffsets.isEmpty else { return }
 
         editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
-        let startLineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
-        var currentChars = Array(startLineStr)
-        while currentChars.count < startCol {
-            currentChars.append(" ")
-        }
+        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
             let col = startCol + offset
-            while currentChars.count <= col {
-                currentChars.append(" ")
-            }
 
             let moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
-            let existing = currentChars[col]
-            currentChars[col] = autoHorizontalLineChar(
+            let existing = displayCharAt(in: lineText, visualColumn: col)
+            let char = autoHorizontalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
                 isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
+            lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
         }
 
-        editor.logoEngine(self, performAction: .setLine(index: startLine, text: String(currentChars)))
+        editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
     }
 
@@ -292,18 +275,15 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
-            var currentChars = Array(lineStr)
-            while currentChars.count <= startCol {
-                currentChars.append(" ")
-            }
 
             let moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
-            let existing = currentChars[startCol]
-            currentChars[startCol] = autoVerticalLineChar(
+            let existing = displayCharAt(in: lineStr, visualColumn: startCol)
+            let char = autoVerticalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
                 isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
+            let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
 
-            editor.logoEngine(self, performAction: .setLine(index: line, text: String(currentChars)))
+            editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
         editor.logoEngine(self, performAction: .updateLineIndex(startLine + drawableOffsets.count))
@@ -402,6 +382,57 @@ extension LogoEngine {
 
     private func verticalBackwardArrow(styleChar: Character) -> Character {
         styleChar == "|" ? "^" : "↑"
+    }
+
+    private func displayCharAt(in line: String, visualColumn: Int) -> Character {
+        var col = 0
+        for ch in line {
+            if col == visualColumn {
+                return ch
+            }
+            col += ch.displayWidth
+            if col > visualColumn {
+                return " "
+            }
+        }
+        return " "
+    }
+
+    private func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
+        let prefix = displayPrefix(in: line, before: startCol)
+        let suffix = displaySuffix(in: line, after: startCol + width)
+        let paddedPrefix = prefix + String(repeating: " ", count: max(0, startCol - prefix.displayWidth))
+        return paddedPrefix + replacement + suffix
+    }
+
+    private func displayPrefix(in line: String, before targetCol: Int) -> String {
+        var result = ""
+        var col = 0
+        for ch in line {
+            let nextCol = col + ch.displayWidth
+            if nextCol <= targetCol {
+                result.append(ch)
+            } else {
+                break
+            }
+            col = nextCol
+        }
+        return result
+    }
+
+    private func displaySuffix(in line: String, after targetCol: Int) -> String {
+        var result = ""
+        var col = 0
+        for ch in line {
+            let nextCol = col + ch.displayWidth
+            if col >= targetCol {
+                result.append(ch)
+            } else if nextCol > targetCol {
+                result += String(repeating: " ", count: nextCol - targetCol)
+            }
+            col = nextCol
+        }
+        return result
     }
 
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {

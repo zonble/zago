@@ -11,6 +11,8 @@ extension Editor: LogoEngineDelegate {
         case .insertText(let text):
             if isTableModeActive, currentTableCell != nil {
                 insertTextInCurrentTableCell(text)
+            } else if isCanvasModeActive {
+                insertCanvasString(text)
             } else {
                 buffer.insertString(text)
             }
@@ -63,7 +65,12 @@ extension Editor: LogoEngineDelegate {
         case .updateLineIndex(let lineIndex):
             buffer.lineIndex = lineIndex
         case .updateColumnIndex(let columnIndex):
-            buffer.columnIndex = columnIndex
+            if isCanvasModeActive {
+                canvasVisualColumn = max(0, columnIndex)
+                syncCanvasCursorToBuffer()
+            } else {
+                buffer.columnIndex = columnIndex
+            }
         case .setLine(let index, let text):
             if index >= 0 && index < buffer.lines.count {
                 buffer.lines[index] = text
@@ -110,7 +117,7 @@ extension Editor: LogoEngineDelegate {
         case .currentLineIndex:
             return buffer.lineIndex
         case .currentColumnIndex:
-            return buffer.columnIndex
+            return isCanvasModeActive ? canvasVisualColumn : buffer.columnIndex
         case .lineCount:
             return buffer.lines.count
         case .lineAt(let index):
@@ -184,6 +191,8 @@ extension Editor: LogoEngineDelegate {
     private func insertNewlineForLogo() {
         if isTableModeActive, currentTableCell != nil {
             moveToNextTableCellLineOrCell()
+        } else if isCanvasModeActive {
+            insertCanvasNewline()
         } else {
             buffer.insertNewline()
         }

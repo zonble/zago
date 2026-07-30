@@ -721,14 +721,19 @@ public final class Renderer {
             }
 
             let chW = ch.displayWidth
+            let nextVisCol = currentVisCol + chW
 
-            if currentVisCol < dropdownStartCol {
+            if currentVisCol < dropdownStartCol && nextVisCol > dropdownStartCol {
+                leftStr += String(repeating: " ", count: dropdownStartCol - currentVisCol)
+            } else if currentVisCol < dropdownStartCol {
                 leftStr.append(ch)
+            } else if currentVisCol < rightStartCol && nextVisCol > rightStartCol {
+                rightStr += String(repeating: " ", count: nextVisCol - rightStartCol)
             } else if currentVisCol >= rightStartCol {
                 rightStr.append(ch)
             }
 
-            currentVisCol += chW
+            currentVisCol = nextVisCol
             i += 1
         }
 

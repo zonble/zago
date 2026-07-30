@@ -21,6 +21,11 @@ extension Editor {
 
     /// Processes key input events.
     func processKey(_ key: Key) {
+        if key == .resize {
+            Terminal.clearScreen()
+            return
+        }
+
         // Handle input if currently in bottom prompt mode
         if case .none = currentPromptMode {
             if isMenuBarActive {

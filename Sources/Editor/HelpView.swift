@@ -37,6 +37,9 @@ public final class HelpView {
             case .end:
                 topIndex = maxTop
                 render()
+            case .resize:
+                Terminal.clearScreen()
+                render()
             case .unknown:
                 render()
             default:

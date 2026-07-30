@@ -509,6 +509,36 @@ import TextMetrics
     #expect(cleanPlain.contains("│   Box"))
 }
 
+@Test func testMenuOverlayReplacesWideCharactersCrossingBoundariesWithSpaces() throws {
+    let renderer = Renderer()
+
+    let leftOverlap = renderer.sliceOverlayLine(
+        baseFullLineStr: "AB中C",
+        boxLine: "[MENU]",
+        dropdownStartCol: 3,
+        dropdownBoxWidth: 6,
+        cols: 12
+    )
+    let cleanLeft = leftOverlap.replacingOccurrences(
+        of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+
+    #expect(cleanLeft.hasPrefix("AB [MENU]"))
+    #expect(!cleanLeft.contains("中"))
+
+    let rightOverlap = renderer.sliceOverlayLine(
+        baseFullLineStr: "ABC中Z",
+        boxLine: "MENU",
+        dropdownStartCol: 0,
+        dropdownBoxWidth: 4,
+        cols: 8
+    )
+    let cleanRight = rightOverlap.replacingOccurrences(
+        of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+
+    #expect(cleanRight.hasPrefix("MENU Z"))
+    #expect(!cleanRight.contains("中"))
+}
+
 @Test func testMenuBarCursorPositioningBottomRight() throws {
     let editor = Editor()
     editor.buffer.lines = ["Hello World"]

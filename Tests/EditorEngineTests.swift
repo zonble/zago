@@ -205,6 +205,36 @@ import TextMetrics
     #expect(output.contains("KLMNOPQRST"))
 }
 
+@Test func testCanvasModeLogoShapesStartAtVisualCursorColumn() throws {
+    let lineEditor = Editor()
+    lineEditor.buffer.lines = ["中ABCDEFG"]
+    lineEditor.buffer.lineIndex = 0
+    lineEditor.buffer.columnIndex = 1
+    lineEditor.switchToCanvasMode()
+    lineEditor.canvasVisualColumn = 4
+    lineEditor.syncCanvasCursorToBuffer()
+
+    lineEditor.runLogoScript("LINE 3")
+
+    #expect(lineEditor.buffer.lines[0] == "中AB───FG")
+    #expect(lineEditor.canvasVisualColumn == 7)
+
+    let boxEditor = Editor()
+    boxEditor.buffer.lines = ["中ABCDEFG", "中ABCDEFG", "中ABCDEFG"]
+    boxEditor.buffer.lineIndex = 0
+    boxEditor.buffer.columnIndex = 1
+    boxEditor.switchToCanvasMode()
+    boxEditor.canvasVisualColumn = 4
+    boxEditor.syncCanvasCursorToBuffer()
+
+    boxEditor.runLogoScript("DRAWBOX 4 3 ASCII")
+
+    #expect(boxEditor.buffer.lines[0] == "中AB+--+G")
+    #expect(boxEditor.buffer.lines[1] == "中AB|  |G")
+    #expect(boxEditor.buffer.lines[2] == "中AB+--+G")
+    #expect(boxEditor.canvasVisualColumn == 8)
+}
+
 @Test func testCanvasModeRejectsJustification() throws {
     let editor = Editor()
     editor.buffer.lines = ["one two three four"]

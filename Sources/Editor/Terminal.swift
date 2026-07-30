@@ -35,15 +35,20 @@ public enum Key: Equatable, Hashable, Sendable {
     case shiftArrowRight
     case shiftArrowUp
     case shiftArrowDown
+    case resize
     case unknown
 }
 
 /// Handles Terminal Raw Mode control and ANSI escape sequence parsing.
 public final class Terminal {
     private var originalTermios = termios()
+    private var lastWindowSize: (rows: Int, cols: Int)
+    private var lastReadTimedOut = false
     private(set) public var rawModeEnabled = false
 
-    public init() {}
+    public init() {
+        lastWindowSize = Terminal.currentWindowSize()
+    }
 
     deinit {
         disableRawMode()
@@ -73,6 +78,10 @@ public final class Terminal {
 
     /// Returns terminal window dimensions (rows, cols).
     public func getWindowSize() -> (rows: Int, cols: Int) {
+        Terminal.currentWindowSize()
+    }
+
+    private static func currentWindowSize() -> (rows: Int, cols: Int) {
         var ws = winsize()
         if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &ws) == 0 && ws.ws_col > 0 {
             return (rows: Int(ws.ws_row), cols: Int(ws.ws_col))
@@ -80,12 +89,23 @@ public final class Terminal {
         return (rows: 24, cols: 80)  // Fallback default
     }
 
+    private func consumeWindowResizeEvent() -> Bool {
+        let size = getWindowSize()
+        guard size.rows != lastWindowSize.rows || size.cols != lastWindowSize.cols else {
+            return false
+        }
+        lastWindowSize = size
+        return true
+    }
+
     /// Reads a single byte from standard input with optional timeout in milliseconds.
     private func readByte(timeoutMs: Int = 0) -> UInt8? {
+        lastReadTimedOut = false
         if timeoutMs > 0 {
             var fds = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
             let ret = poll(&fds, 1, Int32(timeoutMs))
             guard ret > 0 && (fds.revents & Int16(POLLIN)) != 0 else {
+                lastReadTimedOut = ret == 0
                 return nil
             }
         }
@@ -96,7 +116,23 @@ public final class Terminal {
 
     /// Reads the next input key (including ANSI key sequences).
     public func readKey() -> Key {
-        guard let b = readByte() else { return .unknown }
+        let b: UInt8
+        while true {
+            if consumeWindowResizeEvent() {
+                return .resize
+            }
+            guard let byte = readByte(timeoutMs: 250) else {
+                if consumeWindowResizeEvent() {
+                    return .resize
+                }
+                if lastReadTimedOut {
+                    continue
+                }
+                return .unknown
+            }
+            b = byte
+            break
+        }
 
         switch b {
         case 13:
