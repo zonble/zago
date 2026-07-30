@@ -508,27 +508,12 @@ extension Editor {
 
     /// Returns visual display column width for a given character index in a line string.
     public func getVisualColumn(in line: String, col: Int) -> Int {
-        let chars = Array(line)
-        let limit = max(0, min(col, chars.count))
-        var vCol = 0
-        for i in 0..<limit {
-            vCol += chars[i].displayWidth
-        }
-        return vCol
+        line.visualColumn(forCharacterOffset: col)
     }
 
     /// Returns Character array index in line string corresponding to target visual display column width.
     public func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
-        let chars = Array(line)
-        var curW = 0
-        for (idx, ch) in chars.enumerated() {
-            let w = ch.displayWidth
-            if curW + w > targetVisualCol {
-                return idx
-            }
-            curW += w
-        }
-        return chars.count
+        line.characterOffset(forVisualColumn: targetVisualCol)
     }
 
     /// Navigates to table cell above (Up Arrow at top row of cell).

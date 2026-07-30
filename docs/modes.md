@@ -452,7 +452,8 @@ Add a small set of shared helpers before implementing Canvas Mode behavior:
 characterIndexToVisualColumn(line, charOffset) -> Int
 visualColumnToCharacterIndex(line, visualColumn) -> String.Index / charOffset
 snapVisualColumn(line, visualColumn) -> valid cell boundary
-writeAtVisualColumn(line, visualColumn, character, policy) -> Void
+writingAtVisualColumn(line, visualColumn, character, policy) -> result
+clearingAtVisualColumn(line, visualColumn) -> result
 ```
 
 These helpers should define how the editor behaves when a target visual column
@@ -489,17 +490,18 @@ state without changing Canvas editing semantics yet.
 This phase is the technical prerequisite for Canvas Mode. Do not treat the
 existing buffer `columnIndex` as the Canvas `x` coordinate.
 
-- [ ] Add `characterIndexToVisualColumn` for converting a buffer character
+- [x] Add `characterIndexToVisualColumn` for converting a buffer character
   offset into a terminal display-cell column.
-- [ ] Add `visualColumnToCharacterIndex` for converting a terminal display-cell
+- [x] Add `visualColumnToCharacterIndex` for converting a terminal display-cell
   column back into a buffer insertion/replacement position.
-- [ ] Add `snapVisualColumn` for targets that land inside a wide character,
+- [x] Add `snapVisualColumn` for targets that land inside a wide character,
   combining sequence, emoji, or tab expansion.
-- [ ] Add `writeAtVisualColumn` for fixed-position write, replace, clear, and
-  pad behavior.
-- [ ] Reuse these helpers in Canvas Mode, Table Mode cell editing, Frame Mode
-  drawing, and cursor rendering where applicable.
-- [ ] Add focused tests for ASCII, CJK, emoji, combining marks, tabs, and
+- [x] Add `writingAtVisualColumn` and `clearingAtVisualColumn` for
+  fixed-position write, replace, clear, and pad behavior.
+- [x] Reuse these helpers in existing Table Mode visual-column navigation.
+- [ ] Reuse these helpers in Canvas Mode, Frame Mode drawing, and cursor
+  rendering as those phases are implemented.
+- [x] Add focused tests for ASCII, CJK, emoji, combining marks, tabs, and
   out-of-line padding.
 
 ### Phase 3: Canvas Mode

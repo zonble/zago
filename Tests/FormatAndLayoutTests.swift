@@ -97,6 +97,60 @@ import TextMetrics
     #expect("Hello".paddedToDisplayWidth(10) == "Hello     ")
 }
 
+@Test func testVisualColumnCoordinateHelpers() throws {
+    let mixed = "AB中D"
+
+    #expect(mixed.visualColumn(forCharacterOffset: 0) == 0)
+    #expect(mixed.visualColumn(forCharacterOffset: 2) == 2)
+    #expect(mixed.visualColumn(forCharacterOffset: 3) == 4)
+    #expect(mixed.visualColumn(forCharacterOffset: 99) == 5)
+
+    #expect(mixed.characterOffset(forVisualColumn: 0) == 0)
+    #expect(mixed.characterOffset(forVisualColumn: 2) == 2)
+    #expect(mixed.characterOffset(forVisualColumn: 3) == 2)
+    #expect(mixed.characterOffset(forVisualColumn: 4) == 3)
+    #expect(mixed.characterOffset(forVisualColumn: 99) == 4)
+
+    #expect(mixed.snappedVisualColumn(3, direction: .backward) == 2)
+    #expect(mixed.snappedVisualColumn(3, direction: .forward) == 4)
+    #expect(mixed.snappedVisualColumn(4, direction: .backward) == 4)
+}
+
+@Test func testVisualColumnWritePaddingReplaceAndClear() throws {
+    let padded = "AB".writingAtVisualColumn(4, character: "Z")
+    #expect(padded.text == "AB  Z")
+    #expect(padded.visualColumnAfterWrite == 5)
+    #expect(padded.characterOffsetAfterWrite == 5)
+
+    let wideOverAscii = "ABCD".writingAtVisualColumn(1, character: "中")
+    #expect(wideOverAscii.text == "A中D")
+    #expect(wideOverAscii.text.displayWidth == 4)
+
+    let narrowOverWide = "中D".writingAtVisualColumn(1, character: "A")
+    #expect(narrowOverWide.text == "A D")
+    #expect(narrowOverWide.text.displayWidth == 3)
+
+    let cleared = "A中D".clearingAtVisualColumn(2)
+    #expect(cleared.text == "A  D")
+    #expect(cleared.visualColumnAfterWrite == 3)
+}
+
+@Test func testVisualColumnHelpersWithEmojiCombiningAndTab() throws {
+    let emojiLine = "A🙂B"
+    #expect(emojiLine.visualColumn(forCharacterOffset: 2) == 3)
+    #expect(emojiLine.characterOffset(forVisualColumn: 2) == 1)
+    #expect(emojiLine.snappedVisualColumn(2, direction: .forward) == 3)
+
+    let combining = "e\u{301}B"
+    #expect(Array(combining).count == 2)
+    #expect(combining.visualColumn(forCharacterOffset: 1) == 1)
+    #expect(combining.characterOffset(forVisualColumn: 1) == 1)
+
+    let tabLine = "A\tB"
+    #expect(tabLine.visualColumn(forCharacterOffset: 2) == Character("\t").displayWidth + 1)
+    #expect(tabLine.characterOffset(forVisualColumn: 1) == 1)
+}
+
 @Test func testWordStarRuler() throws {
     let editor = Editor(showRuler: true)
     #expect(editor.displayConfig.showRuler == true)
