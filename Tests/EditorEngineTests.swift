@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TextMetrics
 
 @testable import Editor
 
@@ -138,6 +139,82 @@ import Testing
     // Test Backspace
     editor.processKey(.backspace)
     #expect(editor.buffer.lines[1] == "")
+}
+
+@Test func testCanvasModeFixedPositionTypingAndMovement() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["AB", "中D"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 2
+
+    editor.switchToCanvasMode()
+    #expect(editor.canvasVisualColumn == 2)
+
+    editor.processKey(.arrowRight)
+    editor.processKey(.arrowRight)
+    #expect(editor.canvasVisualColumn == 4)
+
+    editor.processKey(.char("Z"))
+    #expect(editor.buffer.lines[0] == "AB  Z")
+    #expect(editor.canvasVisualColumn == 5)
+
+    editor.processKey(.arrowUp)
+    #expect(editor.buffer.lineIndex == 0)
+
+    editor.processKey(.arrowDown)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 5)
+
+    editor.processKey(.char("Q"))
+    #expect(editor.buffer.lines[1] == "中D  Q")
+}
+
+@Test func testCanvasModeReplaceAndClearPreserveDisplayWidth() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["ABCD", "中D"]
+    editor.switchToCanvasMode()
+
+    editor.canvasVisualColumn = 1
+    editor.syncCanvasCursorToBuffer()
+    editor.processKey(.char("中"))
+    #expect(editor.buffer.lines[0] == "A中D")
+    #expect(editor.buffer.lines[0].displayWidth == 4)
+
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 2
+    editor.syncCanvasCursorToBuffer()
+    editor.processKey(.delete)
+    #expect(editor.buffer.lines[1] == "中 ")
+    #expect(editor.buffer.lines[1].displayWidth == 3)
+
+    editor.processKey(.backspace)
+    #expect(editor.canvasVisualColumn == 0)
+    #expect(editor.buffer.lines[1] == "   ")
+}
+
+@Test func testCanvasModeHorizontalRenderingOffset() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+    editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 12
+    editor.syncCanvasCursorToBuffer()
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 15)
+
+    #expect(editor.canvasHorizontalOffset == 10)
+    #expect(output.contains("KLMNOPQRST"))
+}
+
+@Test func testCanvasModeRejectsJustification() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one two three four"]
+    editor.switchToCanvasMode()
+
+    let handled = editor.commandRegistry.dispatch(key: .ctrl("J"), editor: editor)
+
+    #expect(handled == true)
+    #expect(editor.buffer.lines == ["one two three four"])
+    #expect(editor.statusMessage == "[ Justify disabled in Canvas Mode ]")
 }
 
 @Test func testEscAndAltColonTriggersLogoPrompt() throws {

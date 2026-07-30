@@ -45,18 +45,32 @@ extension Editor {
         }
 
         if commandRegistry.dispatch(key: key, editor: self) {
-            if isTableModeActive { clampTableModeCursor() } else { buffer.clampCursor() }
+            if isTableModeActive {
+                clampTableModeCursor()
+            } else if isCanvasModeActive {
+                syncCanvasCursorToBuffer()
+            } else {
+                buffer.clampCursor()
+            }
             return
         }
 
         switch key {
         case .backspace:
             saveUndoSnapshot()
-            buffer.backspace()
+            if isCanvasModeActive {
+                backspaceCanvasCharacter()
+            } else {
+                buffer.backspace()
+            }
 
         case .enter:
             saveUndoSnapshot()
-            buffer.insertNewline()
+            if isCanvasModeActive {
+                insertCanvasNewline()
+            } else {
+                buffer.insertNewline()
+            }
 
         case .char(let ch):
             let pastedText = terminal.readPendingText(firstChar: ch)
@@ -71,7 +85,9 @@ extension Editor {
                 saveUndoSnapshot()
             }
 
-            if !isMultiChar {
+            if isCanvasModeActive {
+                insertCanvasString(pastedText)
+            } else if !isMultiChar {
                 buffer.insert(character: ch)
             } else {
                 buffer.insertString(pastedText)
@@ -87,7 +103,11 @@ extension Editor {
             setStatusMessage(L10n["status.unknown_command"])
         }
 
-        buffer.clampCursor()
+        if isCanvasModeActive {
+            syncCanvasCursorToBuffer()
+        } else {
+            buffer.clampCursor()
+        }
     }
 
     /// Helper for prompt inline character insertion at promptCursorIndex.

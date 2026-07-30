@@ -132,6 +132,21 @@ public final class LayoutEngine {
         return virtualLines
     }
 
+    public func computeCanvasLines(from lines: [String]) -> [VirtualLine] {
+        if lines.isEmpty {
+            return [VirtualLine(bufferLineIndex: 0, subLineIndex: 0, text: "", startCol: 0, endCol: 0)]
+        }
+
+        return lines.enumerated().map { index, line in
+            VirtualLine(
+                bufferLineIndex: index,
+                subLineIndex: 0,
+                text: line,
+                startCol: 0,
+                endCol: line.count)
+        }
+    }
+
     /// Maps buffer real cursor position (lineIndex, columnIndex) to virtual
     /// line index and virtual column.
     public func getVirtualCursor(

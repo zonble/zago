@@ -24,6 +24,10 @@ public struct DeleteCharCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+        if editor.isCanvasModeActive {
+            editor.deleteCanvasCharacter()
+            return
+        }
         editor.buffer.delete()
     }
 }
@@ -91,7 +95,11 @@ public struct UncutTextCommand: Command {
     public func execute(on editor: Editor) {
         if let text = editor.clipboardText, !text.isEmpty {
             editor.saveUndoSnapshot()
-            editor.buffer.insertString(text)
+            if editor.isCanvasModeActive {
+                editor.insertCanvasString(text)
+            } else {
+                editor.buffer.insertString(text)
+            }
             editor.setStatusMessage(L10n["status.uncut_text"])
         } else {
             editor.setStatusMessage(L10n["status.clipboard_empty"])
@@ -109,7 +117,11 @@ public struct InsertTabCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
-        editor.buffer.insertString("    ")
+        if editor.isCanvasModeActive {
+            editor.insertCanvasString("    ")
+        } else {
+            editor.buffer.insertString("    ")
+        }
     }
 }
 
@@ -135,6 +147,10 @@ public struct JustifyParagraphCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        guard !editor.isCanvasModeActive else {
+            editor.setStatusMessage("[ Justify disabled in Canvas Mode ]")
+            return
+        }
         editor.saveUndoSnapshot()
         let (_, cols) = editor.terminal.getWindowSize()
         let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)

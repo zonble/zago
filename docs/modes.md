@@ -506,18 +506,18 @@ existing buffer `columnIndex` as the Canvas `x` coordinate.
 
 ### Phase 3: Canvas Mode
 
-- [ ] Add Canvas Mode cursor state using `(line, visualColumn)`.
-- [ ] Render Canvas Mode without softwrap: each buffer line maps to one visual
+- [x] Add Canvas Mode cursor state using `(line, visualColumn)`.
+- [x] Render Canvas Mode without softwrap: each buffer line maps to one visual
   row.
-- [ ] Add horizontal canvas page offset and viewport scrolling.
-- [ ] Update the ruler to start from the current canvas page offset.
-- [ ] Make printable input pad to virtual columns and replace at the target
+- [x] Add horizontal canvas page offset and viewport scrolling.
+- [x] Update the ruler to start from the current canvas page offset.
+- [x] Make printable input pad to virtual columns and replace at the target
   visual column.
-- [ ] Make Backspace and Delete clear cells without shifting fixed-position
+- [x] Make Backspace and Delete clear cells without shifting fixed-position
   layout.
-- [ ] Make paste write fixed-position text without paragraph reflow.
-- [ ] Disable or reject implicit justification in Canvas Mode.
-- [ ] Add Canvas Mode tests for cursor movement, write/clear behavior,
+- [x] Make paste write fixed-position text without paragraph reflow.
+- [x] Disable or reject implicit justification in Canvas Mode.
+- [x] Add Canvas Mode tests for cursor movement, write/clear behavior,
   horizontal scrolling, ruler offset, and CJK alignment.
 
 ### Phase 4: Table Mode Integration

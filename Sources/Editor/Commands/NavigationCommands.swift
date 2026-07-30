@@ -9,6 +9,11 @@ public struct MoveRightCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: 0, deltaColumn: 1)
+            return
+        }
+
         let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
         if editor.buffer.columnIndex < currentLineLength {
             editor.buffer.columnIndex += 1
@@ -28,6 +33,11 @@ public struct MoveLeftCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: 0, deltaColumn: -1)
+            return
+        }
+
         if editor.buffer.columnIndex > 0 {
             editor.buffer.columnIndex -= 1
         } else if editor.buffer.lineIndex > 0 {
@@ -46,6 +56,11 @@ public struct MoveUpCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: -1, deltaColumn: 0)
+            return
+        }
+
         editor.moveCursorVirtual(deltaRow: -1)
     }
 }
@@ -59,6 +74,11 @@ public struct MoveDownCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: 1, deltaColumn: 0)
+            return
+        }
+
         editor.moveCursorVirtual(deltaRow: 1)
     }
 }
@@ -72,6 +92,11 @@ public struct MoveHomeCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursorToLineStart()
+            return
+        }
+
         let vLine = editor.getVirtualLineForCursor()
         editor.buffer.columnIndex = vLine.startCol
     }
@@ -86,6 +111,11 @@ public struct MoveEndCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursorToLineEnd()
+            return
+        }
+
         let vLine = editor.getVirtualLineForCursor()
         editor.buffer.columnIndex = vLine.endCol
     }
@@ -102,6 +132,10 @@ public struct MovePgdnCommand: Command {
     public func execute(on editor: Editor) {
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0)
+            return
+        }
         editor.moveCursorVirtual(deltaRow: mainAreaHeight)
     }
 }
@@ -117,6 +151,10 @@ public struct MovePgupCommand: Command {
     public func execute(on editor: Editor) {
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
+        if editor.isCanvasModeActive {
+            editor.moveCanvasCursor(deltaLine: -mainAreaHeight, deltaColumn: 0)
+            return
+        }
         editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
     }
 }

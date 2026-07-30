@@ -58,6 +58,8 @@ public final class Editor {
     // Editor mode state
     public var baseMode: EditorBaseMode = .text
     public var overlayMode: EditorOverlayMode = .none
+    public var canvasVisualColumn: Int = 0
+    public var canvasHorizontalOffset: Int = 0
 
     // Table Mode state
     public var isTableModeActive: Bool = false

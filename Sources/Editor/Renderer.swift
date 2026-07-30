@@ -25,14 +25,24 @@ public final class Renderer {
         let textWidth = max(10, cols - gutterWidth)
 
         // Compute Virtual Lines (wrapped visual sub-lines)
-        let virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
+        let virtualLines =
+            editor.isCanvasModeActive
+            ? editor.layoutEngine.computeCanvasLines(from: editor.buffer.lines)
+            : editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
 
         // Find current virtual line index for buffer cursor
-        let (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
-            lineIndex: editor.buffer.lineIndex,
-            columnIndex: editor.buffer.columnIndex,
-            virtualLines: virtualLines
-        )
+        let (cursorVLineIdx, cursorVColIdx): (Int, Int)
+        if editor.isCanvasModeActive {
+            cursorVLineIdx = max(0, min(editor.buffer.lineIndex, max(0, virtualLines.count - 1)))
+            cursorVColIdx = editor.buffer.columnIndex
+            editor.ensureCanvasViewport(textWidth: textWidth)
+        } else {
+            (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
+                lineIndex: editor.buffer.lineIndex,
+                columnIndex: editor.buffer.columnIndex,
+                virtualLines: virtualLines
+            )
+        }
 
         // Adjust topVLineIndex viewport scrolling offset
         if cursorVLineIdx < editor.topVLineIndex {
@@ -163,7 +173,9 @@ public final class Renderer {
         dropdownBoxWidth: Int,
         dropdownBoxLines: [String]
     ) -> String {
-        let rulerStr = generateWordStarRuler(width: textWidth)
+        let rulerStr = generateWordStarRuler(
+            width: textWidth,
+            startColumn: editor.isCanvasModeActive ? editor.canvasHorizontalOffset + 1 : 1)
         var lineStr = "\u{1B}[K"
         if editor.isMenuBarActive && dropdownBoxLines.count > 0 {
             let plainRulerLine = String(repeating: " ", count: gutterWidth) + rulerStr
@@ -219,11 +231,24 @@ public final class Renderer {
                     lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
                 }
 
+                let renderedLineText: String
+                let renderedStartCol: Int
+                if editor.isCanvasModeActive {
+                    let slice = vLine.text.visualSlice(
+                        startVisualColumn: editor.canvasHorizontalOffset,
+                        width: max(0, cols - gutterWidth))
+                    renderedLineText = slice.text
+                    renderedStartCol = slice.startCharacterOffset
+                } else {
+                    renderedLineText = vLine.text
+                    renderedStartCol = vLine.startCol
+                }
+
                 let currentLanguage =
                     editor.displayConfig.enableSyntaxHighlight
                     ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
-                let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil)
-                    ? editor.syntaxHighlighter.tokenTypes(for: vLine.text, syntax: currentLanguage!)
+                let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil && !editor.isCanvasModeActive)
+                    ? editor.syntaxHighlighter.tokenTypes(for: renderedLineText, syntax: currentLanguage!)
                     : []
 
                 var activeCellBounds: (left: Int, right: Int)? = nil
@@ -234,9 +259,9 @@ public final class Renderer {
                     activeCellBounds = editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
                 }
 
-                let chars = Array(vLine.text)
+                let chars = Array(renderedLineText)
                 for (cIdxInVLine, ch) in chars.enumerated() {
-                    let realCol = vLine.startCol + cIdxInVLine
+                    let realCol = renderedStartCol + cIdxInVLine
                     let isCellActive: Bool
                     if let (cellLeft, cellRight) = activeCellBounds {
                         isCellActive = realCol > cellLeft && realCol < cellRight
@@ -484,10 +509,15 @@ public final class Renderer {
         if editor.isMenuBarActive {
             output += "\u{1B}[\(rows);\(cols)H"
         } else if case .none = editor.currentPromptMode {
-            let vLineText = (cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count) ? virtualLines[cursorVLineIdx].text : ""
-            let vLineChars = Array(vLineText)
-            let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
-            let cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
+            let cursorDisplayWidth: Int
+            if editor.isCanvasModeActive {
+                cursorDisplayWidth = max(0, editor.canvasVisualColumn - editor.canvasHorizontalOffset)
+            } else {
+                let vLineText = (cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count) ? virtualLines[cursorVLineIdx].text : ""
+                let vLineChars = Array(vLineText)
+                let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
+                cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
+            }
 
             let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (editor.displayConfig.showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
             let screenCol = gutterWidth + cursorDisplayWidth + 1
@@ -618,9 +648,14 @@ public final class Renderer {
 
     /// Generates WordStar-style ruler bar string.
     public func generateWordStarRuler(width: Int) -> String {
+        generateWordStarRuler(width: width, startColumn: 1)
+    }
+
+    public func generateWordStarRuler(width: Int, startColumn: Int) -> String {
         guard width > 0 else { return "" }
         var result = ""
-        for col in 1...width {
+        let firstColumn = max(1, startColumn)
+        for col in firstColumn..<(firstColumn + width) {
             if col % 10 == 0 {
                 let digit = (col / 10) % 10
                 result += "\(digit)"

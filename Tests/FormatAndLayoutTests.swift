@@ -29,6 +29,17 @@ import TextMetrics
     #expect(virtualLines[1].endCol == 20)
 }
 
+@Test func testCanvasLayoutDoesNotSoftwrap() throws {
+    let engine = LayoutEngine(wrapColumn: 10)
+    let lines = ["1234567890ABCDEFGHIJ12345"]
+
+    let virtualLines = engine.computeCanvasLines(from: lines)
+    #expect(virtualLines.count == 1)
+    #expect(virtualLines[0].text == "1234567890ABCDEFGHIJ12345")
+    #expect(virtualLines[0].startCol == 0)
+    #expect(virtualLines[0].endCol == 25)
+}
+
 @Test func testChineseDisplayWidthAndSoftwrap() throws {
     let ch: Character = "中"
     #expect(ch.displayWidth == 2)
@@ -135,6 +146,24 @@ import TextMetrics
     #expect(cleared.visualColumnAfterWrite == 3)
 }
 
+@Test func testVisualColumnSliceHelper() throws {
+    let line = "AB中DEFG"
+
+    let first = line.visualSlice(startVisualColumn: 0, width: 5)
+    #expect(first.text == "AB中D")
+    #expect(first.startCharacterOffset == 0)
+    #expect(first.endCharacterOffset == 4)
+
+    let insideWide = line.visualSlice(startVisualColumn: 3, width: 4)
+    #expect(insideWide.text == " DEF")
+    #expect(insideWide.startCharacterOffset == 2)
+
+    let beyondEnd = line.visualSlice(startVisualColumn: 10, width: 3)
+    #expect(beyondEnd.text == "   ")
+    #expect(beyondEnd.startCharacterOffset == line.count)
+    #expect(beyondEnd.endCharacterOffset == line.count)
+}
+
 @Test func testVisualColumnHelpersWithEmojiCombiningAndTab() throws {
     let emojiLine = "A🙂B"
     #expect(emojiLine.visualColumn(forCharacterOffset: 2) == 3)
@@ -161,6 +190,9 @@ import TextMetrics
 
     let ruler30 = editor.renderer.generateWordStarRuler(width: 30)
     #expect(ruler30 == "----!----1----!----2----!----3")
+
+    let offsetRuler = editor.renderer.generateWordStarRuler(width: 10, startColumn: 11)
+    #expect(offsetRuler == "----!----2")
 }
 
 @Test func testScreenRenderLayoutAndHeight() throws {

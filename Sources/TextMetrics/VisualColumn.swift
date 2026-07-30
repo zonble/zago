@@ -22,6 +22,18 @@ public struct VisualColumnWriteResult: Sendable, Equatable {
     }
 }
 
+public struct VisualColumnSliceResult: Sendable, Equatable {
+    public let text: String
+    public let startCharacterOffset: Int
+    public let endCharacterOffset: Int
+
+    public init(text: String, startCharacterOffset: Int, endCharacterOffset: Int) {
+        self.text = text
+        self.startCharacterOffset = startCharacterOffset
+        self.endCharacterOffset = endCharacterOffset
+    }
+}
+
 extension String {
     public func visualColumn(forCharacterOffset characterOffset: Int) -> Int {
         let chars = Array(self)
@@ -146,5 +158,62 @@ extension String {
             character: " ",
             policy: .clear,
             snapDirection: snapDirection)
+    }
+
+    public func visualSlice(startVisualColumn: Int, width: Int) -> VisualColumnSliceResult {
+        let start = max(0, startVisualColumn)
+        let targetWidth = max(0, width)
+        guard targetWidth > 0 else {
+            let offset = characterOffset(forVisualColumn: start)
+            return VisualColumnSliceResult(text: "", startCharacterOffset: offset, endCharacterOffset: offset)
+        }
+
+        var result = ""
+        var visualColumn = 0
+        var startOffset: Int?
+        var endOffset = 0
+
+        for (idx, ch) in enumerated() {
+            let chWidth = ch.displayWidth
+            let nextVisualColumn = visualColumn + chWidth
+
+            if nextVisualColumn <= start {
+                visualColumn = nextVisualColumn
+                continue
+            }
+
+            if visualColumn >= start + targetWidth {
+                break
+            }
+
+            if startOffset == nil {
+                startOffset = idx
+                if visualColumn < start {
+                    result += String(repeating: " ", count: nextVisualColumn - start)
+                } else {
+                    result.append(ch)
+                }
+            } else if nextVisualColumn <= start + targetWidth {
+                result.append(ch)
+            } else {
+                result += String(repeating: " ", count: max(0, start + targetWidth - visualColumn))
+            }
+
+            endOffset = idx + 1
+            visualColumn = nextVisualColumn
+        }
+
+        let startCharacterOffset = startOffset ?? count
+        if startOffset == nil {
+            endOffset = startCharacterOffset
+        }
+        if result.displayWidth < targetWidth {
+            result += String(repeating: " ", count: targetWidth - result.displayWidth)
+        }
+
+        return VisualColumnSliceResult(
+            text: result,
+            startCharacterOffset: startCharacterOffset,
+            endCharacterOffset: endOffset)
     }
 }

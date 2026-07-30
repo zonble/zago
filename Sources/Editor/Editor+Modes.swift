@@ -21,6 +21,9 @@ extension Editor {
     }
 
     public func switchToTextMode() {
+        if baseMode == .canvas {
+            syncCanvasCursorToBuffer()
+        }
         baseMode = .text
         if overlayMode == .frame {
             overlayMode = .none
@@ -29,7 +32,11 @@ extension Editor {
     }
 
     public func switchToCanvasMode() {
+        let wasCanvasMode = baseMode == .canvas
         baseMode = .canvas
+        if !wasCanvasMode {
+            syncCanvasCursorFromBuffer()
+        }
         setStatusMessage("[ Canvas Mode ]")
     }
 
@@ -53,7 +60,11 @@ extension Editor {
             return
         }
 
+        let wasCanvasMode = baseMode == .canvas
         baseMode = .canvas
+        if !wasCanvasMode {
+            syncCanvasCursorFromBuffer()
+        }
         overlayMode = .frame
         setStatusMessage("[ FRAME MODE ]")
     }
