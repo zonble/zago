@@ -2,7 +2,8 @@
 
 This document describes the planned editing modes for `zago`. The goal is to
 keep ordinary text editing fast while also supporting fixed-position diagram
-editing, table cell editing, and keyboard-driven frame drawing.
+editing, table cell editing, and keyboard-driven box/arrow drawing in Canvas
+Mode.
 
 `zago` should remain simple from the user's point of view: most editing happens
 in Text Editing Mode, while specialized modes temporarily change cursor
@@ -15,15 +16,11 @@ The editor has two kinds of modes:
 1. **Base modes** define the coordinate system and default typing behavior.
    - Text Editing Mode
    - Canvas Mode
-2. **Overlay modes** add constraints or special actions on top of the current
-   base mode.
+2. **Overlay modes** add constraints on top of the current base mode.
    - Table Mode
-   - Frame Mode
 
 Only one base mode is active at a time. Overlay modes may be active only when
-their requirements are satisfied. For example, Frame Mode is designed to run on
-top of Canvas Mode because frame drawing needs stable two-dimensional cursor
-coordinates.
+their requirements are satisfied.
 
 When an overlay mode exits, the editor should return to the base mode that was
 active before the overlay was entered.
@@ -35,7 +32,6 @@ active before the overlay was entered.
 | Text Editing Mode | Base | Normal prose and source editing | Soft wrap | Insert text |
 | Canvas Mode | Base | Fixed-position diagrams and layouts | No wrap | Replace or pad text at cursor |
 | Table Mode | Overlay | Edit inside one detected table cell | Inherits base mode where possible | Insert only within cell bounds |
-| Frame Mode | Overlay | Draw box lines with cursor movement | No wrap | Arrow keys draw line characters |
 
 ## Menu Bar Entrypoints
 
@@ -49,17 +45,14 @@ Suggested menu placement:
 | Edit | Text Editing Mode | Switch base mode to Text | checked when base mode is Text |
 | Edit | Canvas Mode | Toggle or switch base mode to Canvas | checked when base mode is Canvas |
 | Edit | Table Mode | Toggle Table Mode | checked when Table Mode is active |
-| Shapes | Frame Mode | Toggle Frame Mode | checked when Frame Mode is active |
 
 Menu behavior rules:
 
 - Text Editing Mode and Canvas Mode are mutually exclusive base-mode choices.
-- Table Mode and Frame Mode are overlay choices and should show checked state
-  independently from the base mode.
+- Table Mode is an overlay choice and should show checked state independently
+  from the base mode.
 - Selecting Table Mode from the menu follows the same behavior as `M+T`.
 - Selecting Canvas Mode from the menu follows the same behavior as `M+V`.
-- Selecting Frame Mode from the menu should switch to Canvas Mode first if the
-  current base mode is Text Editing Mode, then enable Frame Mode.
 - Menu items that cannot run in the current state should either be disabled or
   show a short status message explaining the conflict.
 
@@ -148,6 +141,35 @@ fixed-position content where every `(x, y)` coordinate matters.
 - Enter should move to the beginning of the next line, preserving Canvas Mode.
 - Paste should write fixed-position text without reflowing paragraphs.
 
+### Keyboard Drawing Rules
+
+Canvas Mode owns keyboard-driven line, box, and arrow drawing. There will be no
+separate Frame Mode.
+
+- `Shift+Arrow` draws one box-line step in the requested direction and moves
+  the canvas cursor to the new endpoint.
+- `Ctrl+Arrow` draws one arrow-line step in the requested direction and moves
+  the canvas cursor to the arrow endpoint.
+- Horizontal movement writes the horizontal line character from the current
+  border style.
+- Vertical movement writes the vertical line character from the current border
+  style.
+- Arrow-line movement uses the same horizontal/vertical line characters, then
+  places an arrowhead at the endpoint for the requested direction.
+- Corners, crossings, and T-junctions should be fused automatically when a
+  drawn segment meets an existing compatible box-drawing character.
+- Arrowheads should be fused or replaced carefully so the final endpoint remains
+  visually directional while the traversed segment still joins existing lines.
+- New drawing uses the same current/default border style used by LOGO `BOX`,
+  `DRAWBOX`, and table drawing commands.
+- Existing non-line text should not be overwritten unless a future explicit
+  overwrite policy is added.
+- Drawing must use display-cell coordinates, so CJK full-width characters,
+  emoji, combining marks, and tabs follow the same snapping rules as normal
+  Canvas Mode cursor movement.
+- Drawing is disabled while Table Mode is active, because Table Mode owns table
+  borders and adjacent cell geometry.
+
 ## Justification Rules
 
 Justification is the paragraph reflow command exposed by `^J` and the LOGO
@@ -209,12 +231,6 @@ In Table Mode:
 - If the reflowed text would exceed the available cell height, the editor should
   either clip with a status message or reject the operation; it must not expand
   or rewrite the table geometry implicitly.
-
-In Frame Mode:
-
-- Justification is disabled.
-- `^J` should not reflow or modify frame geometry while arrow-key drawing is
-  active.
 
 ## Table Mode
 
@@ -293,90 +309,19 @@ command is disabled in Table Mode.
   gracefully and keep the buffer content unchanged except for accepted edits.
 - Exiting Table Mode clears the active cell highlight and active cell metadata.
 
-## Frame Mode
-
-Frame Mode is an overlay mode for drawing boxes and connector lines directly
-with cursor movement.
-
-### Relationship To Canvas Mode
-
-- Frame Mode requires Canvas Mode.
-- Entering Frame Mode from Text Editing Mode should first switch to Canvas Mode,
-  then enable Frame Mode.
-- Exiting Frame Mode should leave the user in Canvas Mode unless the mode stack
-  explicitly records that Text Editing Mode should be restored.
-
-### Behavior
-
-- Arrow keys draw line characters while moving the cursor.
-- Movement writes horizontal and vertical characters from the editor's current
-  border style.
-- Corners and intersections should be fused automatically.
-- Existing compatible line characters should be upgraded to the correct
-  junction character.
-- Existing non-line text should not be overwritten unless the user explicitly
-  enables overwrite drawing.
-
-### Border Style
-
-Frame Mode must use the same current border style used by LOGO box and table
-drawing commands. If the user changes the selected border style through a menu,
-configuration command, or `TABLE BORDER ...`, subsequent Frame Mode drawing
-steps should use that new style.
-
-Frame Mode should not maintain a separate style selector unless there is an
-explicit command to temporarily override the editor default for the current
-drawing gesture.
-
-Supported style names should match the shared `BorderStyle` values:
-
-| Style | Horizontal | Vertical | Corners / Junctions |
-| :--- | :--- | :--- | :--- |
-| `single` | `─` | `│` | `┌` `┐` `└` `┘` `┼` |
-| `double` | `═` | `║` | `╔` `╗` `╚` `╝` `╬` |
-| `round` / `rounded` | `─` | `│` | `╭` `╮` `╰` `╯` `┼` |
-| `double-round` | `═` | `║` | `╭` `╮` `╰` `╯` `╬` |
-| `ascii` | `-` | `|` | `+` |
-
-`markdown` should be treated as `single` for Frame Mode unless a dedicated
-Markdown-frame behavior is added later.
-
-When Frame Mode fuses with an existing line, the current border style should
-determine the new character. For mixed-style intersections, prefer the active
-style for the newly written direction while preserving existing text whenever
-there is no compatible junction.
-
-### Key Behavior
-
-- Arrow keys draw one step in the requested direction.
-- `Shift+Arrow` may draw longer straight segments if the terminal input layer
-  can distinguish it.
-- `Space` should clear the current drawing cell when that does not damage a
-  protected table border.
-- `Esc` exits Frame Mode before opening the command prompt.
-
-### Table Interaction
-
-- Frame Mode should not run inside active Table Mode.
-- If Table Mode is active and the user requests Frame Mode, the editor should
-  either reject the request with a status message or exit Table Mode first,
-  depending on the chosen UX policy.
-- Frame drawing commands must not modify table borders when Table Mode owns the
-  current region.
-
 ## Mode Stack And State
 
 The editor should track:
 
 - Active base mode: `text` or `canvas`.
-- Active overlay mode: none, `table`, or `frame`.
+- Active overlay mode: none or `table`.
 - Previous base mode for overlays that temporarily force a different base mode.
 - Cursor position in buffer coordinates.
 - Preferred visual column for vertical movement.
 - Horizontal canvas page offset.
 - Table cell bounds when Table Mode is active.
-- Drawing style and overwrite policy when Frame Mode is active.
-- Current/default border style shared with LOGO boxes, tables, and Frame Mode.
+- Current/default border style shared with LOGO boxes, tables, and Canvas Mode
+  keyboard drawing.
 
 Suggested state transitions:
 
@@ -389,21 +334,18 @@ Suggested state transitions:
 | Text inside table | `M+T` | Text + Table |
 | Canvas inside table | `M+T` | Canvas + Table |
 | Any inside table | Menu: Table Mode | remembered base mode or base + Table |
-| Text | Frame toggle | Canvas + Frame |
-| Text | Menu: Frame Mode | Canvas + Frame |
-| Canvas | Frame toggle | Canvas + Frame |
-| Canvas | Menu: Frame Mode | Canvas + Frame |
-| Canvas + Frame | Frame toggle / `Esc` | Canvas |
-| Canvas + Frame | Menu: Frame Mode | Canvas |
 | Any + Table | `M+T` | remembered base mode |
 
 ## Conflict Rules
 
 - Table Mode has priority over ordinary text insertion because it protects table
   geometry.
-- Frame Mode has priority over ordinary arrow-key navigation because arrow keys
-  are drawing commands there.
-- Table Mode and Frame Mode should not be active at the same time.
+- In Canvas Mode, `Shift+Arrow` and `Ctrl+Arrow` have priority over selection
+  extension and word-wise movement because they are drawing gestures.
+- Table Mode has priority over Canvas Mode keyboard drawing. `Shift+Arrow`
+  should extend table selection or follow the table-mode rule, not draw over
+  borders; `Ctrl+Arrow` should follow the table-mode rule or be rejected with a
+  status message.
 - Command prompt, search prompt, save prompt, and confirmation prompts are not
   editor modes. They temporarily capture input and then return to the previous
   editor mode.
@@ -414,11 +356,11 @@ Suggested state transitions:
 
 - The line immediately above the two-line help bar is the status/prompt line.
   When no prompt is active, it should show the active mode indicators there.
-- Mode indicators should include Canvas Mode, Table Mode, and Frame Mode when
-  active. Text Editing Mode may be omitted because it is the default.
-- Suggested compact labels: `CANVAS`, `TABLE`, `FRAME`.
+- Mode indicators should include Canvas Mode and Table Mode when active. Text
+  Editing Mode may be omitted because it is the default.
+- Suggested compact labels: `CANVAS`, `TABLE`.
 - When multiple mode states are relevant, show them together, for example:
-  `CANVAS | TABLE` or `CANVAS | FRAME`.
+  `CANVAS | TABLE`.
 - A transient status message may temporarily replace or share space with the
   mode indicators, but the user should be able to see the active mode state
   while editing.
@@ -426,10 +368,31 @@ Suggested state transitions:
   borders.
 - Canvas Mode should render the cursor correctly on virtual columns beyond the
   current line end.
-- Frame Mode should provide immediate visual feedback after each arrow-key
-  drawing step.
+- Canvas Mode should provide immediate visual feedback after each
+  `Shift+Arrow` box-drawing step or `Ctrl+Arrow` arrow-drawing step.
 - Ruler rendering must account for soft wrap in Text Editing Mode and
   horizontal page offset in Canvas Mode.
+
+### Help Bar Rules
+
+The help bar must reflect the active editing semantics. Canvas Mode should not
+reuse the Text Editing Mode help set because several modifier keys have
+different meanings there.
+
+- Text Editing Mode shows the normal text-editing help set.
+- Canvas Mode shows a dedicated Canvas help set.
+- Canvas help uses both help-bar rows:
+  - Row 1: `^O Save`, `^X Exit`, `M+V Text`, `Arrows Move`,
+    `Shift+Arrow Box`, `Ctrl+Arrow Arrow`.
+  - Row 2: `Type Replace`, `BS/Del Clear`, `Enter New Line`, `M+T Table`,
+    `Esc Command`.
+- Table Mode help takes priority when Table Mode is active. If the base mode is
+  Canvas, the status/prompt line should still indicate `CANVAS | TABLE`, but
+  the help bar should describe table-safe editing.
+- Prompt and menu help bars take priority over all editor-mode help bars while
+  a prompt or menu is active.
+- Narrow terminal widths may abbreviate labels, but must not show Text Editing
+  Mode shortcuts that conflict with Canvas Mode drawing gestures.
 
 ## Implementation Notes
 
@@ -458,7 +421,7 @@ clearingAtVisualColumn(line, visualColumn) -> result
 
 These helpers should define how the editor behaves when a target visual column
 falls inside a wide character, combining sequence, emoji, or tab expansion.
-Canvas Mode, Table Mode cell editing, Frame Mode drawing, and cursor rendering
+Canvas Mode, keyboard drawing, Table Mode cell editing, and cursor rendering
 should all reuse the same conversion rules.
 
 ## Implementation Checklist
@@ -469,19 +432,18 @@ This phase should be the first implementation step. It establishes visible mode
 state without changing Canvas editing semantics yet.
 
 - [x] Add explicit editor mode state:
-  `baseMode: text | canvas` and `overlayMode: none | table | frame`.
+  `baseMode: text | canvas` and `overlayMode: none | table`.
 - [x] Keep Text Editing Mode as the default base mode.
 - [x] Add mode transition helpers instead of scattering mode changes across
   key handlers, menu actions, and LOGO actions.
-- [x] Add menu bar entries for Text Editing Mode, Canvas Mode, Table Mode, and
-  Frame Mode.
+- [x] Add menu bar entries for Text Editing Mode, Canvas Mode, and Table Mode.
 - [x] Render checked state for active mode menu items.
 - [x] Add status/prompt-line indicators above the help bar for active
-  `CANVAS`, `TABLE`, and `FRAME` states.
+  `CANVAS` and `TABLE` states.
 - [x] Ensure transient status messages do not permanently hide active mode
   indicators.
-- [x] Wire `M+V`, `M+T`, and Frame Mode toggle behavior through the same
-  transition helpers used by the menu bar.
+- [x] Wire `M+V` and `M+T` behavior through the same transition helpers used by
+  the menu bar.
 - [x] Add tests for mode state transitions, menu checked states, and
   status/prompt-line mode indicators.
 
@@ -499,8 +461,8 @@ existing buffer `columnIndex` as the Canvas `x` coordinate.
 - [x] Add `writingAtVisualColumn` and `clearingAtVisualColumn` for
   fixed-position write, replace, clear, and pad behavior.
 - [x] Reuse these helpers in existing Table Mode visual-column navigation.
-- [ ] Reuse these helpers in Canvas Mode, Frame Mode drawing, and cursor
-  rendering as those phases are implemented.
+- [ ] Reuse these helpers in Canvas Mode keyboard drawing and cursor rendering
+  as those phases are implemented.
 - [x] Add focused tests for ASCII, CJK, emoji, combining marks, tabs, and
   out-of-line padding.
 
@@ -520,7 +482,33 @@ existing buffer `columnIndex` as the Canvas `x` coordinate.
 - [x] Add Canvas Mode tests for cursor movement, write/clear behavior,
   horizontal scrolling, ruler offset, and CJK alignment.
 
-### Phase 4: Table Mode Integration
+### Phase 4: Canvas Mode Keyboard Drawing
+
+- [ ] Implement `Shift+Arrow` box-line drawing in Canvas Mode.
+- [ ] Implement `Ctrl+Arrow` arrow-line drawing in Canvas Mode.
+- [ ] Draw from the current canvas cursor position and move the cursor to the
+  endpoint.
+- [ ] Use the current/default border style shared with LOGO `BOX`, `DRAWBOX`,
+  line, and table drawing commands.
+- [ ] Fuse same-style corners, crossings, and T-junctions for box-line drawing.
+- [ ] Preserve arrowheads at `Ctrl+Arrow` endpoints while fusing the traversed
+  line segment with existing compatible lines.
+- [ ] Treat mixed-style junction fusion as best effort.
+- [ ] Do not overwrite existing non-line text unless a future explicit
+  overwrite policy is added.
+- [ ] Disable keyboard drawing while Table Mode is active.
+- [ ] Add a dedicated Canvas Mode help bar set.
+- [ ] Render Canvas Mode help as two explicit rows:
+  row 1 shows save/exit/mode/move/drawing shortcuts; row 2 shows
+  replace/clear/new-line/table/command shortcuts.
+- [ ] Keep prompt, menu, and Table Mode help bars higher priority than Canvas
+  Mode help.
+- [ ] Add undo grouping for keyboard drawing gestures.
+- [ ] Add tests for `Shift+Arrow` box lines, `Ctrl+Arrow` arrows, active border
+  style, CJK/display-column alignment, table-mode conflicts, Canvas help bar
+  content/priority, and undo behavior.
+
+### Phase 5: Table Mode Integration
 
 - [ ] Keep Table Mode as an overlay and record the active base mode on entry.
 - [ ] Return to the remembered base mode when Table Mode exits.
@@ -533,22 +521,10 @@ existing buffer `columnIndex` as the Canvas `x` coordinate.
 - [ ] Add tests for Text + Table, Canvas + Table, cell-width justification, and
   command blocking.
 
-### Phase 5: Frame Mode
-
-- [ ] Add Frame Mode as a Canvas overlay.
-- [ ] Entering Frame Mode from Text Editing Mode switches to Canvas Mode first.
-- [ ] Draw with arrow keys using the current border style.
-- [ ] Fuse same-style corners, crossings, and T-junctions.
-- [ ] Treat mixed-style junction fusion as best effort.
-- [ ] Prevent Frame Mode and Table Mode from being active at the same time.
-- [ ] Disable justification while Frame Mode is active.
-- [ ] Add undo grouping for frame drawing gestures.
-- [ ] Add tests for same-style fusion, active border style, mode conflicts, and
-  clean exit behavior.
-
 ### Phase 6: Undo And Polish
 
 - [ ] Group Canvas write gestures into coherent undo snapshots.
+- [ ] Group Canvas keyboard drawing gestures into coherent undo snapshots.
 - [ ] Group Table Mode edits into coherent undo snapshots.
 - [ ] Preserve mode state through prompt open/close flows.
 - [ ] Verify help bar, status/prompt line, and menu rendering at narrow terminal
@@ -564,8 +540,8 @@ Risk areas:
   inside a multi-column character.
 - Medium-high risk: Canvas Mode backspace, delete, and paste behavior because
   they must preserve fixed-position layout.
-- Higher risk but deferrable: mixed-style Frame Mode junction fusion and full
-  Table Mode plus Canvas Mode interaction.
+- Higher risk but deferrable: mixed-style keyboard drawing junction fusion and
+  full Table Mode plus Canvas Mode interaction.
 
 ## Test Checklist
 
@@ -579,16 +555,19 @@ Risk areas:
 - `M+T` enters Table Mode from both base modes and returns to the remembered
   mode on exit.
 - Menu Bar can toggle Table Mode and shows checked state when active.
-- Menu Bar can toggle Frame Mode and shows checked state when active.
-- The status/prompt line above the help bar displays active `CANVAS`, `TABLE`,
-  and `FRAME` indicators.
+- The status/prompt line above the help bar displays active `CANVAS` and
+  `TABLE` indicators.
 - Table Mode blocks geometry-changing LOGO commands.
 - Table Mode prevents CJK text from overflowing cell bounds.
 - `^J` reflows only the current paragraph or active selection in Text Editing
   Mode.
 - `^J` in Table Mode uses the active cell width and does not rewrite borders.
-- `^J` in Canvas Mode and Frame Mode leaves fixed-position content unchanged.
-- Frame Mode draws horizontal and vertical lines with arrow keys.
-- Frame Mode uses the current border style for new drawing steps.
-- Frame Mode fuses corners, crossings, and T-junctions.
-- Frame Mode exits cleanly and leaves the buffer in a valid state.
+- `^J` in Canvas Mode leaves fixed-position content unchanged.
+- Canvas Mode `Shift+Arrow` draws horizontal and vertical box lines.
+- Canvas Mode `Ctrl+Arrow` draws horizontal and vertical arrow lines.
+- Canvas Mode keyboard drawing uses the current border style for new drawing
+  steps.
+- Canvas Mode keyboard drawing fuses corners, crossings, and T-junctions.
+- Canvas Mode shows a dedicated two-row help bar set that documents
+  fixed-position editing plus `Shift+Arrow` and `Ctrl+Arrow` drawing gestures.
+- Prompt, menu, and Table Mode help bars take priority over Canvas help.
