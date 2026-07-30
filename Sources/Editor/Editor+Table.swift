@@ -38,7 +38,11 @@ extension Editor {
             return true
 
         case .shiftArrowLeft:
-            navigatePrevTableCell()
+            extendTableSelectionLeft(cell: cell)
+            return true
+
+        case .shiftArrowRight:
+            extendTableSelectionRight(cell: cell)
             return true
 
         case .arrowUp:
@@ -103,7 +107,14 @@ extension Editor {
             moveToNextTableCellLineOrCell()
             return true
 
+        case .ctrl("k"), .ctrl("K"):
+            cutTableCellText(cell: cell)
+            return true
+
         case .backspace:
+            if deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false) {
+                return true
+            }
             let line = buffer.lines[buffer.lineIndex]
             let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
@@ -127,7 +138,10 @@ extension Editor {
             clampTableModeCursor()
             return true
 
-        case .delete:
+        case .delete, .ctrl("d"), .ctrl("D"):
+            if deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false) {
+                return true
+            }
             let line = buffer.lines[buffer.lineIndex]
             let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
@@ -171,6 +185,147 @@ extension Editor {
         default:
             return false
         }
+    }
+
+    private func extendTableSelectionLeft(cell: TableCell) {
+        if selectionMark == nil {
+            selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+            setStatusMessage(L10n["status.mark_set"])
+        }
+
+        let line = buffer.lines[buffer.lineIndex]
+        let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let innerMinCol = leftBorder + 1
+        if buffer.columnIndex > innerMinCol {
+            buffer.columnIndex -= 1
+        } else if buffer.lineIndex > cell.innerMinLine {
+            buffer.lineIndex -= 1
+            let previousLine = buffer.lines[buffer.lineIndex]
+            let (previousLeft, previousRight) = findCellHorizontalBorders(in: previousLine, nearCol: cell.innerMinCol, cell: cell)
+            buffer.columnIndex = max(previousLeft + 1, previousRight - 1)
+        }
+        clampTableModeCursor()
+    }
+
+    private func extendTableSelectionRight(cell: TableCell) {
+        if selectionMark == nil {
+            selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+            setStatusMessage(L10n["status.mark_set"])
+        }
+
+        let line = buffer.lines[buffer.lineIndex]
+        let (_, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        if buffer.columnIndex < rightBorder {
+            buffer.columnIndex += 1
+        } else if buffer.lineIndex < cell.innerMaxLine {
+            buffer.lineIndex += 1
+            let nextLine = buffer.lines[buffer.lineIndex]
+            let (nextLeft, _) = findCellHorizontalBorders(in: nextLine, nearCol: cell.innerMinCol, cell: cell)
+            buffer.columnIndex = nextLeft + 1
+        }
+        clampTableModeCursor()
+    }
+
+    private struct TableSelectionSegment {
+        let line: Int
+        let startCol: Int
+        let endCol: Int
+    }
+
+    private func tableSelectionSegments(cell: TableCell) -> [TableSelectionSegment] {
+        guard let mark = selectionMark else { return [] }
+        let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
+        let (start, end) = getOrderedRange(mark1: mark, mark2: cursor)
+        guard start.line != end.line || start.column != end.column else { return [] }
+
+        var segments: [TableSelectionSegment] = []
+        let startLine = max(cell.innerMinLine, start.line)
+        let endLine = min(cell.innerMaxLine, end.line)
+        guard startLine <= endLine else { return [] }
+
+        for lineIndex in startLine...endLine {
+            guard lineIndex >= 0 && lineIndex < buffer.lines.count else { continue }
+            let line = buffer.lines[lineIndex]
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let innerStart = leftBorder + 1
+            let innerEnd = rightBorder
+            let rawStart = lineIndex == start.line ? start.column : innerStart
+            let rawEnd = lineIndex == end.line ? end.column : innerEnd
+            let segmentStart = max(innerStart, min(rawStart, innerEnd))
+            let segmentEnd = max(innerStart, min(rawEnd, innerEnd))
+            if segmentStart < segmentEnd {
+                segments.append(TableSelectionSegment(line: lineIndex, startCol: segmentStart, endCol: segmentEnd))
+            }
+        }
+        return segments
+    }
+
+    private func selectedTableText(segments: [TableSelectionSegment]) -> String {
+        segments.map { segment in
+            let chars = Array(buffer.lines[segment.line])
+            guard segment.startCol < chars.count else { return "" }
+            let end = min(segment.endCol, chars.count)
+            return String(chars[segment.startCol..<end])
+        }.joined(separator: "\n")
+    }
+
+    private func clearTableSegments(_ segments: [TableSelectionSegment]) {
+        for segment in segments {
+            guard segment.line >= 0 && segment.line < buffer.lines.count else { continue }
+            var chars = Array(buffer.lines[segment.line])
+            guard segment.startCol < chars.count else { continue }
+            let end = min(segment.endCol, chars.count)
+            var replacement: [Character] = []
+            for ch in chars[segment.startCol..<end] {
+                replacement.append(contentsOf: Array(String(repeating: " ", count: ch.displayWidth)))
+            }
+            chars.replaceSubrange(segment.startCol..<end, with: replacement)
+            buffer.lines[segment.line] = String(chars)
+        }
+        buffer.isModified = true
+    }
+
+    private func deleteTableSelectionIfNeeded(cell: TableCell, updateClipboard: Bool) -> Bool {
+        let segments = tableSelectionSegments(cell: cell)
+        guard !segments.isEmpty else { return false }
+        saveUndoSnapshot()
+        if updateClipboard {
+            clipboardText = selectedTableText(segments: segments)
+        }
+        clearTableSegments(segments)
+        let first = segments[0]
+        buffer.lineIndex = first.line
+        buffer.columnIndex = first.startCol
+        selectionMark = nil
+        clampTableModeCursor()
+        setStatusMessage(updateClipboard ? L10n["status.cut_text"] : "[ Deleted selection ]")
+        return true
+    }
+
+    private func cutTableCellText(cell: TableCell) {
+        if deleteTableSelectionIfNeeded(cell: cell, updateClipboard: true) {
+            return
+        }
+
+        let lineIndex = buffer.lineIndex
+        guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
+        let line = buffer.lines[lineIndex]
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let start = leftBorder + 1
+        let end = rightBorder
+        guard start < end else { return }
+
+        saveUndoSnapshot()
+        var chars = Array(line)
+        clipboardText = String(chars[start..<min(end, chars.count)])
+        let width = chars[start..<min(end, chars.count)].reduce(0) { $0 + $1.displayWidth }
+        chars.replaceSubrange(start..<min(end, chars.count), with: Array(String(repeating: " ", count: width)))
+        buffer.lines[lineIndex] = String(chars)
+        buffer.columnIndex = start
+        buffer.isModified = true
+        selectionMark = nil
+        clampTableModeCursor()
+        setStatusMessage(L10n["status.cut_text"])
     }
 
     // MARK: - Table Mode Methods

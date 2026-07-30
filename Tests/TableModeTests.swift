@@ -602,7 +602,7 @@ import Testing
     #expect(downEditor.buffer.lineIndex == 1)
 }
 
-@Test func testTableModeShiftTabNavigatesBackward() throws {
+@Test func testTableModeShiftArrowExtendsSelectionWithinCell() throws {
     let editor = Editor()
     editor.buffer.lines = [
         "┌────────────────┬────────────────┐",
@@ -617,12 +617,87 @@ import Testing
     editor.toggleTableMode()
     #expect(editor.currentTableCell?.minLine == 2)
 
-    // Press Shift+Tab from Row 2 Cell 1
+    editor.processKey(.shiftArrowLeft)
     editor.processKey(.shiftArrowLeft)
 
-    // Must jump to Row 1 Cell 2 (last cell of row above)!
-    #expect(editor.currentTableCell?.minLine == 0)
-    #expect(editor.currentTableCell?.minCol == 17)
+    #expect(editor.currentTableCell?.minLine == 2)
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.selectionMark?.line == 3)
+    #expect(editor.selectionMark?.column == 2)
+    #expect(editor.buffer.lineIndex == 3)
+    #expect(editor.buffer.columnIndex == 1)
+
+    editor.processKey(.shiftArrowRight)
+
+    #expect(editor.selectionMark?.line == 3)
+    #expect(editor.selectionMark?.column == 2)
+    #expect(editor.buffer.lineIndex == 3)
+    #expect(editor.buffer.columnIndex == 2)
+}
+
+@Test func testTableModeDeleteAndBackspaceClearSelectionWithoutMovingBorders() throws {
+    let deleteEditor = Editor()
+    deleteEditor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│abcdef          │keep            │",
+        "└────────────────┴────────────────┘",
+    ]
+    deleteEditor.buffer.lineIndex = 1
+    deleteEditor.buffer.columnIndex = 1
+    deleteEditor.toggleTableMode()
+
+    deleteEditor.processKey(.shiftArrowRight)
+    deleteEditor.processKey(.shiftArrowRight)
+    deleteEditor.processKey(.shiftArrowRight)
+    deleteEditor.processKey(.delete)
+
+    #expect(deleteEditor.buffer.lines[1] == "│   def          │keep            │")
+    #expect(deleteEditor.selectionMark == nil)
+    #expect(deleteEditor.currentTableCell?.minCol == 0)
+    #expect(deleteEditor.currentTableCell?.maxCol == 17)
+
+    let backspaceEditor = Editor()
+    backspaceEditor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│abcdef          │keep            │",
+        "└────────────────┴────────────────┘",
+    ]
+    backspaceEditor.buffer.lineIndex = 1
+    backspaceEditor.buffer.columnIndex = 1
+    backspaceEditor.toggleTableMode()
+
+    backspaceEditor.processKey(.shiftArrowRight)
+    backspaceEditor.processKey(.shiftArrowRight)
+    backspaceEditor.processKey(.shiftArrowRight)
+    backspaceEditor.processKey(.backspace)
+
+    #expect(backspaceEditor.buffer.lines[1] == "│   def          │keep            │")
+    #expect(backspaceEditor.selectionMark == nil)
+    #expect(backspaceEditor.currentTableCell?.minCol == 0)
+    #expect(backspaceEditor.currentTableCell?.maxCol == 17)
+}
+
+@Test func testTableModeCtrlKClearsCellTextWithoutDeletingTableRow() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│abcdef          │keep            │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.processKey(.ctrl("K"))
+
+    #expect(editor.buffer.lines == [
+        "┌────────────────┬────────────────┐",
+        "│                │keep            │",
+        "└────────────────┴────────────────┘",
+    ])
+    #expect(editor.clipboardText == "abcdef          ")
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.currentTableCell?.maxCol == 17)
 }
 
 @Test func testCycleBorderStyleCommand() throws {

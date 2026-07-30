@@ -344,6 +344,31 @@ import TextMetrics
     }
 }
 
+@Test func testEscClearsSelectionBeforeLogoPrompt() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 3
+    editor.selectionMark = (line: 0, column: 1)
+
+    editor.processKey(.esc)
+
+    #expect(editor.selectionMark == nil)
+    if case .none = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Esc with selection should clear selection before opening command prompt")
+    }
+    #expect(editor.statusMessage == L10n["status.mark_unset"])
+
+    editor.processKey(.alt(":"))
+    if case .logoMacro = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Alt+: should still trigger command prompt mode")
+    }
+}
+
 @Test func testCtrlBackspaceDeleteLineCommand() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Second Line", "Third Line"]

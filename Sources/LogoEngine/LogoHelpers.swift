@@ -66,6 +66,28 @@ extension LogoEngine {
         token.hasPrefix("\"")
     }
 
+    internal func setLastExpressionString(_ value: String) {
+        lastExpressionValue = .string(value)
+    }
+
+    internal func setLastExpressionDateTime(_ value: String) {
+        lastExpressionValue = .dateTime(value)
+    }
+
+    internal func runtimeValueForLastExpression(fallback value: String) -> LogoRuntimeValue {
+        if let runtimeValue = lastExpressionValue, runtimeValue.description == value {
+            return runtimeValue
+        }
+        return .string(value)
+    }
+
+    internal func runtimeValueForVariable(_ name: String, value: String) -> LogoRuntimeValue {
+        if let runtimeValue = variableValues[name], runtimeValue.description == value {
+            return runtimeValue
+        }
+        return .string(value)
+    }
+
     internal func parseUnquotedIntArgument(_ tokens: [String], index: inout Int) -> Int? {
         guard index < tokens.count, !isQuotedWordToken(tokens[index]) else { return nil }
 
@@ -75,11 +97,19 @@ extension LogoEngine {
         }
 
         if token.hasPrefix(":") {
+            let variableName = normalizeVariableName(token)
+            let value = variables[variableName] ?? ""
+            if !runtimeValueForVariable(variableName, value: value).isNumeric {
+                return nil
+            }
             return Int(resolveTokenValue(token))
         }
 
         let variableName = token.lowercased()
-        if variables[variableName] != nil {
+        if let value = variables[variableName] {
+            if !runtimeValueForVariable(variableName, value: value).isNumeric {
+                return nil
+            }
             return Int(resolveTokenValue(token))
         }
 

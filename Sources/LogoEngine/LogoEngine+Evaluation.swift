@@ -55,6 +55,7 @@ extension LogoEngine {
         guard lastError == "[]" else { return "" }
 
         var leftVal: String
+        var didApplyOperator = false
         if tokens[index] == "(" {
             index += 1
             if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
@@ -76,9 +77,11 @@ extension LogoEngine {
                 switch variadicPrim {
                 case .word:
                     leftVal = args.joined()
+                    setLastExpressionString(leftVal)
 
                 case .list:
                     leftVal = "[" + args.joined(separator: " ") + "]"
+                    setLastExpressionString(leftVal)
 
                 case .sentence:
                     var items: [LogoValue] = []
@@ -90,33 +93,41 @@ extension LogoEngine {
                         }
                     }
                     leftVal = LogoValue.list(items).description
+                    setLastExpressionString(leftVal)
 
                 case .sum:
                     let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
                     leftVal = formatNum(nums.reduce(0, +))
+                    setLastExpressionString(leftVal)
 
                 case .product:
                     let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
                     leftVal = formatNum(nums.reduce(1, *))
+                    setLastExpressionString(leftVal)
 
                 case .min:
                     let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
                     leftVal = formatNum(nums.min() ?? 0)
+                    setLastExpressionString(leftVal)
 
                 case .max:
                     let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
                     leftVal = formatNum(nums.max() ?? 0)
+                    setLastExpressionString(leftVal)
 
                 case .andLogic:
                     let allTrue = args.allSatisfy { logoIsTrue($0) }
                     leftVal = allTrue ? "1" : "0"
+                    setLastExpressionString(leftVal)
 
                 case .orLogic:
                     let anyTrue = args.contains { logoIsTrue($0) }
                     leftVal = anyTrue ? "1" : "0"
+                    setLastExpressionString(leftVal)
 
                 default:
                     leftVal = ""
+                    setLastExpressionString(leftVal)
                 }
             } else {
                 leftVal = evaluateExpression(tokens, index: &index)
@@ -136,6 +147,7 @@ extension LogoEngine {
                 break
             }
             if let op = LogoOperator.from(nextToken), op.isArithmetic {
+                didApplyOperator = true
                 index += 2
                 guard index < tokens.count else { break }
                 let rightVal = evaluateExpression(tokens, index: &index)
@@ -179,6 +191,9 @@ extension LogoEngine {
             }
         }
 
+        if didApplyOperator || lastExpressionValue?.description != leftVal {
+            setLastExpressionString(leftVal)
+        }
         return leftVal
     }
 
@@ -204,11 +219,14 @@ extension LogoEngine {
                 currIndex += 1
             }
             index = currIndex
+            setLastExpressionString(listTokens.joined(separator: " "))
             return listTokens.joined(separator: " ")
         }
 
         if let proc = customProcedures[upper] {
-            return invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
+            let result = invokeProcedure(proc, tokens: tokens, index: &index) ?? ""
+            setLastExpressionString(result)
+            return result
         }
 
         return evaluateExpressionPrimitive(tokens, index: &index) ?? resolveTokenValue(token)
@@ -219,14 +237,19 @@ extension LogoEngine {
         let lower = clean.lowercased()
         if clean.hasPrefix(":") {
             let varName = normalizeVariableName(clean)
-            return variables[varName] ?? ""
+            let value = variables[varName] ?? ""
+            lastExpressionValue = runtimeValueForVariable(varName, value: value)
+            return value
         }
         if clean.hasPrefix("?") || clean == "#" || variables[lower] != nil {
             if let val = variables[lower] {
+                lastExpressionValue = runtimeValueForVariable(lower, value: val)
                 return val
             }
         }
-        return unquote(clean)
+        let value = unquote(clean)
+        setLastExpressionString(value)
+        return value
     }
 
     internal func invokeProcedure(_ proc: LogoProcedure, tokens: [String], index: inout Int) -> String? {

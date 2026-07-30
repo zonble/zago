@@ -14,6 +14,27 @@ public struct LogoProcedure: Sendable {
     }
 }
 
+internal enum LogoRuntimeValue: Equatable {
+    case string(String)
+    case dateTime(String)
+
+    var description: String {
+        switch self {
+        case .string(let value), .dateTime(let value):
+            return value
+        }
+    }
+
+    var isNumeric: Bool {
+        switch self {
+        case .string(let value):
+            return Double(value) != nil
+        case .dateTime:
+            return false
+        }
+    }
+}
+
 /// LOGO-style Macro Language Engine for text editors.
 ///
 /// ### Core Concepts & Execution Architecture:
@@ -41,6 +62,8 @@ public struct LogoProcedure: Sendable {
 public final class LogoEngine {
     public var customProcedures: [String: LogoProcedure] = [:]
     public var variables: [String: String] = [:]
+    internal var variableValues: [String: LogoRuntimeValue] = [:]
+    internal var lastExpressionValue: LogoRuntimeValue? = nil
     public var hasSetStatusMessage: Bool = false
     internal var gensymCounter: Int = 0
 

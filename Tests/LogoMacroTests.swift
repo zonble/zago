@@ -176,6 +176,34 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(repeatCounterSizedDrawBoxEditor.buffer.lines[0] == "+-+")
     #expect(repeatCounterSizedDrawBoxEditor.buffer.lines[1] == "+-+")
 
+    let textWidthBoxEditor = Editor()
+    logoEngine.delegate = textWidthBoxEditor
+    logoEngine.execute("BOX \"Hi\" 10 ASCII")
+    #expect(textWidthBoxEditor.buffer.lines[0] == "+--------+")
+    #expect(textWidthBoxEditor.buffer.lines[1] == "|   Hi   |")
+    #expect(textWidthBoxEditor.buffer.lines[2] == "+--------+")
+
+    let cjkTextWidthBoxEditor = Editor()
+    logoEngine.delegate = cjkTextWidthBoxEditor
+    logoEngine.execute("BOX \"中文\" 10 ASCII")
+    #expect(cjkTextWidthBoxEditor.buffer.lines[0] == "+--------+")
+    #expect(cjkTextWidthBoxEditor.buffer.lines[1] == "|  中文  |")
+    #expect(cjkTextWidthBoxEditor.buffer.lines[2] == "+--------+")
+
+    let widthHeightTextBoxEditor = Editor()
+    logoEngine.delegate = widthHeightTextBoxEditor
+    logoEngine.execute("BOX 20 3 \"zonble\" ASCII")
+    #expect(widthHeightTextBoxEditor.buffer.lines[0] == "+------------------+")
+    #expect(widthHeightTextBoxEditor.buffer.lines[1] == "|      zonble      |")
+    #expect(widthHeightTextBoxEditor.buffer.lines[2] == "+------------------+")
+
+    let widthTextBoxEditor = Editor()
+    logoEngine.delegate = widthTextBoxEditor
+    logoEngine.execute("BOX 20 \"zonble\" ASCII")
+    #expect(widthTextBoxEditor.buffer.lines[0] == "+------------------+")
+    #expect(widthTextBoxEditor.buffer.lines[1] == "|      zonble      |")
+    #expect(widthTextBoxEditor.buffer.lines[2] == "+------------------+")
+
     // TDD Test Example 1: BOX with leading indent
     let indentEditor = Editor()
     indentEditor.buffer.lines = ["    ", "    ", "    "]
@@ -377,6 +405,22 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(dateBoxEditor.buffer.lines.count >= 3)
     #expect(dateBoxEditor.buffer.lines[1].contains("/"))
     #expect(dateBoxEditor.buffer.lines[0].hasPrefix("┌"))
+
+    let numericDateBoxEditor = Editor()
+    logoEngine.delegate = numericDateBoxEditor
+    logoEngine.execute("MAKE \"i DATE \"yyyy\" BOX :i")
+    let currentYearForBox = String(Calendar.current.component(.year, from: Date()))
+    #expect(logoEngine.variableValues["i"] == .dateTime(currentYearForBox))
+    #expect(numericDateBoxEditor.buffer.lines[0] == "┌──────┐")
+    #expect(numericDateBoxEditor.buffer.lines[1] == "│ \(currentYearForBox) │")
+    #expect(numericDateBoxEditor.buffer.lines[2] == "└──────┘")
+
+    let dateWidthBoxEditor = Editor()
+    logoEngine.delegate = dateWidthBoxEditor
+    logoEngine.execute("BOX DATE \"yyyy\" 10 ASCII")
+    #expect(dateWidthBoxEditor.buffer.lines[0] == "+--------+")
+    #expect(dateWidthBoxEditor.buffer.lines[1] == "|  \(currentYearForBox)  |")
+    #expect(dateWidthBoxEditor.buffer.lines[2] == "+--------+")
 
     // 17. Smart Line Junction Fusion (BOX + VLINE cross fusion)
     let fuseEditor = Editor()
@@ -611,9 +655,17 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.delegate = ed3
     logoEngine.execute("BOX 12 3 \"Hello World\"")
     #expect(ed3.buffer.lines[0] == "┌──────────┐")
-    #expect(ed3.buffer.lines[1] == "│ Hello    │")
-    #expect(ed3.buffer.lines[2] == "│ World    │")
+    #expect(ed3.buffer.lines[1] == "│  Hello   │")
+    #expect(ed3.buffer.lines[2] == "│  World   │")
     #expect(ed3.buffer.lines[3] == "└──────────┘")
+
+    let ed4 = Editor()
+    logoEngine.delegate = ed4
+    logoEngine.execute("BOX 12 3 \"Hello World\" \"left\"")
+    #expect(ed4.buffer.lines[0] == "┌──────────┐")
+    #expect(ed4.buffer.lines[1] == "│ Hello    │")
+    #expect(ed4.buffer.lines[2] == "│ World    │")
+    #expect(ed4.buffer.lines[3] == "└──────────┘")
 }
 
 @Test func testLogoDataStructurePrimitives() throws {

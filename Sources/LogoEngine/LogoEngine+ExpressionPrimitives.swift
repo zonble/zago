@@ -20,10 +20,17 @@ extension LogoEngine {
     ///   - index: Current token index pointer (inout).
     /// - Returns: Evaluated string result if handled, `nil` otherwise.
     internal func evaluateExpressionPrimitive(_ tokens: [String], index: inout Int) -> String? {
-        evaluateDataStructurePrimitives(tokens, index: &index)
+        guard index < tokens.count, let primitive = LogoPrimitive.from(tokens[index]) else { return nil }
+
+        let result = evaluateDataStructurePrimitives(tokens, index: &index)
             ?? evaluateMathPrimitives(tokens, index: &index)
             ?? evaluateBufferPrimitives(tokens, index: &index)
             ?? evaluateTemplatePrimitives(tokens, index: &index)
             ?? evaluateSystemPrimitives(tokens, index: &index)
+
+        if let result, primitive != .date, primitive != .time {
+            setLastExpressionString(result)
+        }
+        return result
     }
 }

@@ -27,7 +27,9 @@ extension LogoEngine {
             }
             let formatter = DateFormatter()
             formatter.dateFormat = format
-            return formatter.string(from: Date())
+            let value = formatter.string(from: Date())
+            setLastExpressionDateTime(value)
+            return value
 
         case .time:
             index += 1
@@ -45,7 +47,9 @@ extension LogoEngine {
             }
             let formatter = DateFormatter()
             formatter.dateFormat = format
-            return formatter.string(from: Date())
+            let value = formatter.string(from: Date())
+            setLastExpressionDateTime(value)
+            return value
 
         case .count:
             index += 1

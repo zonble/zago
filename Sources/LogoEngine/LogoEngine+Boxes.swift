@@ -30,6 +30,7 @@ extension LogoEngine {
             var height: Int? = nil
             var textContent: String? = nil
             var align = "left"
+            var hasExplicitAlign = false
             var styleName = ""
 
             if index + 1 < tokens.count {
@@ -48,6 +49,7 @@ extension LogoEngine {
 
                 if let parsedAlign = BoxAlignment(val) {
                     align = parsedAlign.rawValue
+                    hasExplicitAlign = true
                 } else if BorderStyle.isStyleToken(val) {
                     styleName = val
                 } else if textContent == nil {
@@ -56,6 +58,9 @@ extension LogoEngine {
             }
 
             if let text = textContent {
+                if !hasExplicitAlign {
+                    align = "center"
+                }
                 drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName), mode: mode)
             } else {
                 drawBoxFrame(width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode)
@@ -63,10 +68,20 @@ extension LogoEngine {
             return
         }
 
-        // Mode 2: BOX "text" [align/style] [style/align]
+        // Mode 2: BOX "text" [width] [align/style] [style/align]
         let textContent = evaluateExpression(tokens, index: &index)
+        var targetWidth: Int? = nil
         var align = "left"
         var styleName = ""
+
+        if index + 1 < tokens.count {
+            var widthIndex = index + 1
+            if let width = parseBoxDimensionArgument(tokens, index: &widthIndex) {
+                index = widthIndex
+                targetWidth = max(3, min(width, 200))
+                align = "center"
+            }
+        }
 
         while index + 1 < tokens.count {
             let nextToken = tokens[index + 1]
@@ -81,7 +96,7 @@ extension LogoEngine {
             }
         }
 
-        drawBoxAroundText(textContent, targetWidth: nil, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode)
+        drawBoxAroundText(textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode)
     }
 
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
@@ -98,7 +113,8 @@ extension LogoEngine {
 
         var expressionIndex = index
         let value = evaluateExpression(tokens, index: &expressionIndex)
-        guard expressionIndex >= originalIndex, let number = Double(value) else {
+        let runtimeValue = runtimeValueForLastExpression(fallback: value)
+        guard expressionIndex >= originalIndex, runtimeValue.isNumeric, let number = Double(value) else {
             index = originalIndex
             return nil
         }

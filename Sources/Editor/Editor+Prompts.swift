@@ -37,6 +37,11 @@ extension Editor {
                 toggleMenuBar()
                 return
             }
+            if key == .esc, selectionMark != nil {
+                selectionMark = nil
+                setStatusMessage(L10n["status.mark_unset"])
+                return
+            }
         } else {
             if key == .esc {
                 cancelPrompt()
