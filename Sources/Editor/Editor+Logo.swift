@@ -23,7 +23,7 @@ extension Editor: LogoEngineDelegate {
         case .backspaceChar:
             buffer.backspace()
         case .deleteLine:
-            buffer.deleteLine()
+            deleteCurrentLine()
         case .joinLine(let separator):
             joinCurrentLine(separator: separator)
         case .replaceText(let old, let new):

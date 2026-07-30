@@ -657,4 +657,62 @@ extension Editor {
         }
         setStatusMessage("[ Cell Text Centered (^J) ]")
     }
+
+    /// Deletes the current visual row inside the active cell without removing the buffer line or table borders.
+    public func deleteCurrentTableCellLine() {
+        guard isTableModeActive, let cell = currentTableCell else {
+            buffer.deleteLine()
+            return
+        }
+
+        clampTableModeCursor()
+        let startLine = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
+
+        for lineIdx in startLine...cell.innerMaxLine {
+            let sourceLine = lineIdx < cell.innerMaxLine ? lineIdx + 1 : nil
+            let sourceText = sourceLine.flatMap { tableCellInnerText(on: $0, cell: cell) } ?? ""
+            replaceTableCellInnerText(on: lineIdx, cell: cell, with: sourceText)
+        }
+
+        buffer.lineIndex = startLine
+        if buffer.lineIndex < buffer.lines.count {
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            buffer.columnIndex = leftBorder + 1
+        }
+        buffer.isModified = true
+        clampTableModeCursor()
+    }
+
+    private func tableCellInnerText(on lineIdx: Int, cell: TableCell) -> String? {
+        guard lineIdx >= 0 && lineIdx < buffer.lines.count else { return nil }
+
+        let fullLine = buffer.lines[lineIdx]
+        let lineChars = Array(fullLine)
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let innerMinCol = leftBorder + 1
+        let innerMaxCol = rightBorder - 1
+
+        guard innerMinCol <= innerMaxCol, innerMaxCol < lineChars.count else { return "" }
+        return String(lineChars[innerMinCol...innerMaxCol])
+    }
+
+    private func replaceTableCellInnerText(on lineIdx: Int, cell: TableCell, with text: String) {
+        guard lineIdx >= 0 && lineIdx < buffer.lines.count else { return }
+
+        let fullLine = buffer.lines[lineIdx]
+        let lineChars = Array(fullLine)
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let innerMinCol = leftBorder + 1
+        let innerMaxCol = rightBorder - 1
+
+        guard innerMinCol <= innerMaxCol, rightBorder < lineChars.count else { return }
+
+        let innerWidth = lineChars[innerMinCol...innerMaxCol].reduce(0) { $0 + $1.displayWidth }
+        let newCellText = text.paddedToDisplayWidth(innerWidth)
+
+        let prefix = String(lineChars[0...leftBorder])
+        let suffix = String(lineChars[rightBorder..<lineChars.count])
+        buffer.lines[lineIdx] = prefix + newCellText + suffix
+    }
 }

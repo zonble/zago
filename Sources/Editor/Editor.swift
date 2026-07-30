@@ -243,6 +243,10 @@ public final class Editor {
 
     /// Deletes current line with Undo snapshot tracking.
     public func deleteCurrentLine() {
+        if isTableModeActive, currentTableCell != nil {
+            deleteCurrentTableCellLine()
+            return
+        }
         buffer.deleteLine()
     }
 

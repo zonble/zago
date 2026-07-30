@@ -658,6 +658,52 @@ import Testing
     #expect(editor.buffer.lines[1].hasPrefix("│") && editor.buffer.lines[1].hasSuffix("│"))
 }
 
+@Test func testTableModeDeleteLineOnlyDeletesCurrentCellLine() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────┬────┐",
+        "│ABCD│WXYZ│",
+        "│EFGH│QRST│",
+        "└────┴────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.deleteCurrentLine()
+
+    #expect(editor.buffer.lines.count == 4)
+    #expect(editor.buffer.lines[0] == "┌────┬────┐")
+    #expect(editor.buffer.lines[1] == "│EFGH│WXYZ│")
+    #expect(editor.buffer.lines[2] == "│    │QRST│")
+    #expect(editor.buffer.lines[3] == "└────┴────┘")
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 1)
+
+    let logoEditor = Editor()
+    logoEditor.buffer.lines = [
+        "┌────┬────┐",
+        "│ABCD│WXYZ│",
+        "│EFGH│QRST│",
+        "└────┴────┘",
+    ]
+    logoEditor.buffer.lineIndex = 1
+    logoEditor.buffer.columnIndex = 6
+
+    logoEditor.toggleTableMode()
+    #expect(logoEditor.isTableModeActive == true)
+
+    logoEditor.logoEngine.execute("DELETELINE")
+
+    #expect(logoEditor.buffer.lines.count == 4)
+    #expect(logoEditor.buffer.lines[0] == "┌────┬────┐")
+    #expect(logoEditor.buffer.lines[1] == "│ABCD│QRST│")
+    #expect(logoEditor.buffer.lines[2] == "│EFGH│    │")
+    #expect(logoEditor.buffer.lines[3] == "└────┴────┘")
+}
+
 @Test func testTableModeTypingAtCellEndDoesNotShiftBorders() throws {
     let editor = Editor()
     editor.buffer.lines = [
