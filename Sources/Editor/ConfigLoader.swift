@@ -25,6 +25,15 @@ public enum KeyParser {
         let normalized = keyStr.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         if normalized.isEmpty { return nil }
 
+        switch normalized {
+        case "ctrl-shift-left", "ctrl-shift-arrow-left", "c-s-left", "c-s-arrow-left": return .ctrlShiftArrowLeft
+        case "ctrl-shift-right", "ctrl-shift-arrow-right", "c-s-right", "c-s-arrow-right": return .ctrlShiftArrowRight
+        case "ctrl-shift-up", "ctrl-shift-arrow-up", "c-s-up", "c-s-arrow-up": return .ctrlShiftArrowUp
+        case "ctrl-shift-down", "ctrl-shift-arrow-down", "c-s-down", "c-s-arrow-down": return .ctrlShiftArrowDown
+        default:
+            break
+        }
+
         if normalized.hasPrefix("ctrl-") || normalized.hasPrefix("^") {
             let charStr =
                 normalized.hasPrefix("ctrl-") ? String(normalized.dropFirst(5)) : String(normalized.dropFirst(1))

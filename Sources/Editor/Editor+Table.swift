@@ -168,14 +168,10 @@ extension Editor {
             if insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true) {
                 let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
                 if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
-                    buffer.lineIndex += 1
-                    let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
-                    buffer.columnIndex = nextLineLeft + 1
+                    moveToNextLineInCurrentTableCell(cell: cell)
                 }
             } else if isCanvasModeActive && buffer.columnIndex >= cell.innerMaxCol && buffer.lineIndex < cell.innerMaxLine {
-                buffer.lineIndex += 1
-                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
-                buffer.columnIndex = nextLineLeft + 1
+                moveToNextLineInCurrentTableCell(cell: cell)
                 _ = insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true)
             }
 
@@ -424,9 +420,7 @@ extension Editor {
         for ch in text {
             if ch.isNewline {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
-                buffer.lineIndex += 1
-                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
-                buffer.columnIndex = nextLineLeft + 1
+                moveToNextLineInCurrentTableCell(cell: cell)
                 continue
             }
 
@@ -437,14 +431,24 @@ extension Editor {
             let (_, rightBorder) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
             if buffer.columnIndex >= rightBorder {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
-                buffer.lineIndex += 1
-                let (nextLineLeft, _) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: 0, cell: cell)
-                buffer.columnIndex = nextLineLeft + 1
+                moveToNextLineInCurrentTableCell(cell: cell)
             }
 
             guard insertCharacterInCurrentTableCell(ch, cell: cell) else { break }
         }
 
+        clampTableModeCursor()
+    }
+
+    private func moveToNextLineInCurrentTableCell(cell: TableCell) {
+        guard buffer.lineIndex < cell.innerMaxLine else { return }
+        buffer.lineIndex += 1
+        guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return }
+        let (nextLineLeft, _) = findCellHorizontalBorders(
+            in: buffer.lines[buffer.lineIndex],
+            nearCol: cell.innerMinCol,
+            cell: cell)
+        buffer.columnIndex = nextLineLeft + 1
         clampTableModeCursor()
     }
 

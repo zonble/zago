@@ -146,9 +146,9 @@ fixed-position content where every `(x, y)` coordinate matters.
 Canvas Mode owns keyboard-driven line, box, and arrow drawing. There will be no
 separate Frame Mode.
 
-- `Shift+Arrow` draws one box-line step in the requested direction and moves
+- `⇧+Arrow` draws one box-line step in the requested direction and moves
   the canvas cursor to the new endpoint.
-- `Ctrl+Shift+Arrow` draws one arrow-line step in the requested direction and
+- `^⇧+Arrow` draws one arrow-line step in the requested direction and
   moves the canvas cursor to the arrow endpoint.
 - Horizontal movement writes the horizontal line character from the current
   border style.
@@ -340,11 +340,11 @@ Suggested state transitions:
 
 - Table Mode has priority over ordinary text insertion because it protects table
   geometry.
-- In Canvas Mode, `Shift+Arrow` and `Ctrl+Shift+Arrow` have priority over selection
+- In Canvas Mode, `⇧+Arrow` and `^⇧+Arrow` have priority over selection
   extension and word-wise movement because they are drawing gestures.
-- Table Mode has priority over Canvas Mode keyboard drawing. `Shift+Arrow`
+- Table Mode has priority over Canvas Mode keyboard drawing. `⇧+Arrow`
   should extend table selection or follow the table-mode rule, not draw over
-  borders; `Ctrl+Shift+Arrow` should follow the table-mode rule or be rejected with a
+  borders; `^⇧+Arrow` should follow the table-mode rule or be rejected with a
   status message.
 - Command prompt, search prompt, save prompt, and confirmation prompts are not
   editor modes. They temporarily capture input and then return to the previous
@@ -369,7 +369,7 @@ Suggested state transitions:
 - Canvas Mode should render the cursor correctly on virtual columns beyond the
   current line end.
 - Canvas Mode should provide immediate visual feedback after each
-  `Shift+Arrow` box-drawing step or `Ctrl+Shift+Arrow` arrow-drawing step.
+  `⇧+Arrow` box-drawing step or `^⇧+Arrow` arrow-drawing step.
 - Ruler rendering must account for soft wrap in Text Editing Mode and
   horizontal page offset in Canvas Mode.
 
@@ -383,7 +383,7 @@ different meanings there.
 - Canvas Mode shows a dedicated Canvas help set.
 - Canvas help uses both help-bar rows:
   - Row 1: `^O Save`, `^X Exit`, `M+V Text`, `Arrows Move`,
-    `Shift+Arrow Box`, `Ctrl+Shift+Arrow Arrow`.
+    `⇧+Arrow Box`, `^⇧+Arrow Arrow`.
   - Row 2: `Type Replace`, `BS/Del Clear`, `Enter New Line`, `M+T Table`,
     `Esc Command`.
 - Table Mode help takes priority when Table Mode is active. If the base mode is
@@ -484,27 +484,27 @@ existing buffer `columnIndex` as the Canvas `x` coordinate.
 
 ### Phase 4: Canvas Mode Keyboard Drawing
 
-- [ ] Implement `Shift+Arrow` box-line drawing in Canvas Mode.
-- [ ] Implement `Ctrl+Shift+Arrow` arrow-line drawing in Canvas Mode.
-- [ ] Draw from the current canvas cursor position and move the cursor to the
+- [x] Implement `⇧+Arrow` box-line drawing in Canvas Mode.
+- [x] Implement `^⇧+Arrow` arrow-line drawing in Canvas Mode.
+- [x] Draw from the current canvas cursor position and move the cursor to the
   endpoint.
-- [ ] Use the current/default border style shared with LOGO `BOX`, `DRAWBOX`,
+- [x] Use the current/default border style shared with LOGO `BOX`, `DRAWBOX`,
   line, and table drawing commands.
-- [ ] Fuse same-style corners, crossings, and T-junctions for box-line drawing.
-- [ ] Preserve arrowheads at `Ctrl+Shift+Arrow` endpoints while fusing the
+- [x] Fuse same-style corners, crossings, and T-junctions for box-line drawing.
+- [x] Preserve arrowheads at `^⇧+Arrow` endpoints while fusing the
   traversed line segment with existing compatible lines.
-- [ ] Treat mixed-style junction fusion as best effort.
-- [ ] Do not overwrite existing non-line text unless a future explicit
+- [x] Treat mixed-style junction fusion as best effort.
+- [x] Do not overwrite existing non-line text unless a future explicit
   overwrite policy is added.
-- [ ] Disable keyboard drawing while Table Mode is active.
-- [ ] Add a dedicated Canvas Mode help bar set.
-- [ ] Render Canvas Mode help as two explicit rows:
+- [x] Disable keyboard drawing while Table Mode is active.
+- [x] Add a dedicated Canvas Mode help bar set.
+- [x] Render Canvas Mode help as two explicit rows:
   row 1 shows save/exit/mode/move/drawing shortcuts; row 2 shows
   replace/clear/new-line/table/command shortcuts.
-- [ ] Keep prompt, menu, and Table Mode help bars higher priority than Canvas
+- [x] Keep prompt, menu, and Table Mode help bars higher priority than Canvas
   Mode help.
-- [ ] Add undo grouping for keyboard drawing gestures.
-- [ ] Add tests for `Shift+Arrow` box lines, `Ctrl+Shift+Arrow` arrows, active
+- [x] Add per-key undo snapshots for keyboard drawing gestures.
+- [x] Add tests for `⇧+Arrow` box lines, `^⇧+Arrow` arrows, active
   border style, CJK/display-column alignment, table-mode conflicts, Canvas help
   bar content/priority, and undo behavior.
 
@@ -563,11 +563,11 @@ Risk areas:
   Mode.
 - `^J` in Table Mode uses the active cell width and does not rewrite borders.
 - `^J` in Canvas Mode leaves fixed-position content unchanged.
-- Canvas Mode `Shift+Arrow` draws horizontal and vertical box lines.
-- Canvas Mode `Ctrl+Shift+Arrow` draws horizontal and vertical arrow lines.
+- Canvas Mode `⇧+Arrow` draws horizontal and vertical box lines.
+- Canvas Mode `^⇧+Arrow` draws horizontal and vertical arrow lines.
 - Canvas Mode keyboard drawing uses the current border style for new drawing
   steps.
 - Canvas Mode keyboard drawing fuses corners, crossings, and T-junctions.
 - Canvas Mode shows a dedicated two-row help bar set that documents
-  fixed-position editing plus `Shift+Arrow` and `Ctrl+Shift+Arrow` drawing gestures.
+  fixed-position editing plus `⇧+Arrow` and `^⇧+Arrow` drawing gestures.
 - Prompt, menu, and Table Mode help bars take priority over Canvas help.

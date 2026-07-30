@@ -949,6 +949,34 @@ import Testing
     #expect(editor.buffer.lines[1].displayWidth == initialWidth)
 }
 
+@Test func testTableModeTypingNearCellEndWrapsInsideCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐",
+        "│      a │",
+        "│        │",
+        "│        │",
+        "└────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 8
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.processKey(.char("b"))
+    editor.processKey(.char("c"))
+    editor.processKey(.char("d"))
+
+    #expect(editor.buffer.lines[0] == "┌────────┐")
+    #expect(editor.buffer.lines[1] == "│      ab│")
+    #expect(editor.buffer.lines[2] == "│cd      │")
+    #expect(editor.buffer.lines[3] == "│        │")
+    #expect(editor.buffer.lines[4] == "└────────┘")
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 3)
+}
+
 @Test func testCanvasTableModeTypingOutsideCellDoesNotWritePastBorder() throws {
     let editor = Editor()
     editor.buffer.lines = [

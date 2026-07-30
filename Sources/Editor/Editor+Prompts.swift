@@ -55,6 +55,10 @@ extension Editor {
             return
         }
 
+        if processCanvasDrawingKey(key) {
+            return
+        }
+
         if commandRegistry.dispatch(key: key, editor: self) {
             if isTableModeActive {
                 clampTableModeCursor()

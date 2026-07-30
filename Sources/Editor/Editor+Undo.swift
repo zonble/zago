@@ -41,6 +41,9 @@ extension Editor {
         buffer.lines = snapshot.lines
         buffer.lineIndex = max(0, min(snapshot.lineIndex, buffer.lines.count - 1))
         buffer.columnIndex = max(0, min(snapshot.columnIndex, buffer.lines[buffer.lineIndex].count))
+        if isCanvasModeActive {
+            syncCanvasCursorFromBuffer()
+        }
         buffer.isModified = snapshot.isModified
         setStatusMessage(L10n["status.undo_performed"])
     }

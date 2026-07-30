@@ -89,7 +89,7 @@ public final class Renderer {
         let renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &output)
 
         // 5. Dynamic Contextual Help Bar Component
-        output += renderHelpBar(cols: cols, promptMode: editor.currentPromptMode)
+        output += renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
 
         // 6. Terminal Cursor Positioning Component
         output += positionCursor(
@@ -363,7 +363,7 @@ public final class Renderer {
     // MARK: - Component 5: Dynamic Contextual Help Bar
 
     /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
-    public func renderHelpBar(cols: Int, promptMode: Editor.PromptMode) -> String {
+    public func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
         let helpWidth = min(cols, 80)
 
         let helpItems1: [(key: String, label: String)]
@@ -398,15 +398,26 @@ public final class Renderer {
             ]
 
         case .none:
-            // Default Nano text editing help bar
-            helpItems1 = [
-                ("^G", L10n.helpGetHelp), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
-                ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
-            ]
-            helpItems2 = [
-                ("^X", L10n.helpExit), ("^J", L10n.helpJustify), ("^W", L10n.helpWhereIs),
-                ("^V", L10n.helpNextPg), ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell),
-            ]
+            if editor?.isCanvasModeActive == true && editor?.isTableModeActive != true {
+                helpItems1 = [
+                    ("^O", "Save"), ("^X", "Exit"), ("M+V", "Text"),
+                    ("Arrows", "Move"), ("⇧+Arrow", "Box"),
+                ]
+                helpItems2 = [
+                    ("^⇧+Arrow", "Arrow"), ("Type", "Replace"), ("BS/Del", "Clear"),
+                    ("Enter", "New Line"), ("M+T", "Table"), ("Esc", "Command"),
+                ]
+            } else {
+                // Default Nano text editing help bar
+                helpItems1 = [
+                    ("^G", L10n.helpGetHelp), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
+                    ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
+                ]
+                helpItems2 = [
+                    ("^X", L10n.helpExit), ("^J", L10n.helpJustify), ("^W", L10n.helpWhereIs),
+                    ("^V", L10n.helpNextPg), ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell),
+                ]
+            }
         }
 
         return renderHelpItemsGrid(cols: cols, helpWidth: helpWidth, items1: helpItems1, items2: helpItems2)

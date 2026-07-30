@@ -268,6 +268,8 @@ import Testing
 
     let parsedUp = KeyParser.parse("up")
     #expect(parsedUp == .arrowUp)
+    #expect(KeyParser.parse("ctrl-shift-right") == .ctrlShiftArrowRight)
+    #expect(KeyParser.parse("ctrl-shift-arrow-left") == .ctrlShiftArrowLeft)
 
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_.serc").path
     let sampleConfig = """

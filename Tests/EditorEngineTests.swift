@@ -9,8 +9,100 @@ import TextMetrics
     let keyRight: Key = .shiftArrowRight
     let keyUp: Key = .shiftArrowUp
     let keyDown: Key = .shiftArrowDown
+    let ctrlShiftKeyLeft: Key = .ctrlShiftArrowLeft
+    let ctrlShiftKeyRight: Key = .ctrlShiftArrowRight
+    let ctrlShiftKeyUp: Key = .ctrlShiftArrowUp
+    let ctrlShiftKeyDown: Key = .ctrlShiftArrowDown
     #expect(keyLeft != keyRight)
     #expect(keyUp != keyDown)
+    #expect(ctrlShiftKeyLeft != ctrlShiftKeyRight)
+    #expect(ctrlShiftKeyUp != ctrlShiftKeyDown)
+    #expect(ctrlShiftKeyLeft != keyLeft)
+}
+
+@Test func testCanvasModeShiftArrowDrawsBoxLines() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+
+    editor.processKey(.shiftArrowRight)
+    #expect(editor.buffer.lines[0] == "─")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 1)
+
+    editor.processKey(.shiftArrowDown)
+    #expect(editor.buffer.lines[0] == "─┐")
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 1)
+}
+
+@Test func testCanvasModeCtrlShiftArrowDrawsArrows() throws {
+    let editor = Editor()
+    editor.defaultBorderStyle = .ascii
+    editor.switchToCanvasMode()
+
+    editor.processKey(.ctrlShiftArrowRight)
+    #expect(editor.buffer.lines[0] == "->")
+    #expect(editor.canvasVisualColumn == 1)
+
+    editor.processKey(.ctrlShiftArrowRight)
+    #expect(editor.buffer.lines[0] == "-->")
+    #expect(editor.canvasVisualColumn == 2)
+}
+
+@Test func testCanvasModeDrawingUsesBorderStyleAndVisualColumn() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["中"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 1
+    editor.defaultBorderStyle = .double
+    editor.switchToCanvasMode()
+
+    editor.processKey(.shiftArrowRight)
+
+    #expect(editor.buffer.lines[0] == "中═")
+    #expect(editor.canvasVisualColumn == 3)
+}
+
+@Test func testCanvasModeDrawingDoesNotOverwriteTextOrTableCells() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["A"]
+    editor.switchToCanvasMode()
+
+    editor.processKey(.shiftArrowRight)
+
+    #expect(editor.buffer.lines[0] == "A")
+    #expect(editor.canvasVisualColumn == 1)
+
+    let tableEditor = Editor()
+    tableEditor.buffer.lines = [
+        "┌────────────────┐",
+        "│                │",
+        "└────────────────┘",
+    ]
+    tableEditor.buffer.lineIndex = 1
+    tableEditor.buffer.columnIndex = 1
+    tableEditor.switchToCanvasMode()
+    tableEditor.toggleTableMode()
+
+    tableEditor.processKey(.ctrlShiftArrowRight)
+
+    #expect(tableEditor.buffer.lines[1] == "│                │")
+}
+
+@Test func testCanvasModeDrawingUndoRestoresVisualCursor() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+
+    editor.processKey(.shiftArrowRight)
+    #expect(editor.buffer.lines[0] == "─")
+    #expect(editor.canvasVisualColumn == 1)
+
+    editor.performUndo()
+
+    #expect(editor.buffer.lines[0] == "")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 0)
+    #expect(editor.canvasVisualColumn == 0)
 }
 
 @Test func testEditorUndoStack() throws {

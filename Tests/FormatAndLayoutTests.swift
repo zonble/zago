@@ -411,6 +411,14 @@ import TextMetrics
     #expect(defaultHelp.contains(L10n.helpGetHelp))
     #expect(defaultHelp.contains("^O"))
     #expect(defaultHelp.contains(L10n.helpWriteOut))
+
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
+    #expect(canvasHelp.contains("⇧+Arrow"))
+    #expect(canvasHelp.contains("^⇧+Arrow"))
+    #expect(canvasHelp.contains("BS/Del"))
+    #expect(!canvasHelp.contains(L10n.helpGetHelp))
 }
 
 @Test func testIdleStatusLineModeIndicators() throws {
