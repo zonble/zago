@@ -216,7 +216,7 @@ public final class Editor {
     /// Reloads configuration settings from ~/.serc or ./.serc files.
     public func reloadConfig() {
         let loadedConfig = ConfigLoader().loadConfig()
-        self.layoutEngine.wrapColumn = loadedConfig.wrapColumn
+        self.layoutEngine.setWrapColumn(loadedConfig.wrapColumn)
         self.displayConfig.showRuler = loadedConfig.showRuler
         self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
         self.displayConfig.enableSyntaxHighlight = loadedConfig.enableSyntaxHighlight

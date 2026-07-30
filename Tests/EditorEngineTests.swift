@@ -141,6 +141,36 @@ import TextMetrics
     #expect(editor.buffer.lines[1] == "")
 }
 
+@Test func testCursorPositionStatusIncludesVisualColumn() throws {
+    L10n.currentLanguage = .en
+    let editor = Editor()
+    editor.buffer.lines = ["中AB"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 2
+
+    editor.processKey(.ctrl("C"))
+
+    #expect(editor.statusMessage == "line 1/1 (100%), col 3/4, visual col 4/5")
+}
+
+@Test func testTextModeEndStopsAtCurrentWrappedVisualLineEnd() throws {
+    let editor = Editor(wrapColumn: 10)
+    editor.buffer.lines = ["1234567890ABCDEFGHIJ12345"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 9)
+
+    editor.buffer.columnIndex = 10
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 19)
+
+    editor.buffer.columnIndex = 20
+    editor.processKey(.end)
+    #expect(editor.buffer.columnIndex == 25)
+}
+
 @Test func testCanvasModeFixedPositionTypingAndMovement() throws {
     let editor = Editor()
     editor.buffer.lines = ["AB", "中D"]
@@ -190,6 +220,51 @@ import TextMetrics
     editor.processKey(.backspace)
     #expect(editor.canvasVisualColumn == 0)
     #expect(editor.buffer.lines[1] == "   ")
+}
+
+@Test func testCanvasModeBackspaceAtLineStartDeletesCurrentLine() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 0
+    editor.switchToCanvasMode()
+
+    editor.processKey(.backspace)
+
+    #expect(editor.buffer.lines == ["one", "three"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 0)
+}
+
+@Test func testCanvasModeEnterInsertsBlankLine() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 3
+    editor.switchToCanvasMode()
+
+    editor.processKey(.enter)
+
+    #expect(editor.buffer.lines == ["one", "", "two"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 0)
+}
+
+@Test func testCanvasModePageDownDoesNotCreateBlankLines() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two"]
+    editor.buffer.lineIndex = 0
+    editor.switchToCanvasMode()
+
+    editor.processKey(.pageDown)
+
+    #expect(editor.buffer.lines == ["one", "two"])
+    #expect(editor.buffer.lineIndex == 1)
+
+    editor.processKey(.arrowDown)
+
+    #expect(editor.buffer.lines == ["one", "two", ""])
+    #expect(editor.buffer.lineIndex == 2)
 }
 
 @Test func testCanvasModeHorizontalRenderingOffset() throws {

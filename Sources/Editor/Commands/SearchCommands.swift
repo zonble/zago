@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 public struct WhereIsCommand: Command {
     public let id: CommandID = .searchWhereIs
@@ -50,10 +51,16 @@ public struct ShowCursorPosCommand: Command {
         let totalLines = editor.buffer.lines.count
         let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
         let currentCol = editor.buffer.columnIndex + 1
-        let totalCol = editor.buffer.lines[editor.buffer.lineIndex].count + 1
+        let line = editor.buffer.lines[editor.buffer.lineIndex]
+        let totalCol = line.count + 1
+        let visualCol =
+            editor.isCanvasModeActive
+            ? editor.canvasVisualColumn + 1
+            : line.visualColumn(forCharacterOffset: editor.buffer.columnIndex) + 1
+        let totalVisualCol = line.displayWidth + 1
         editor.setStatusMessage(
             L10n.cursorInfo(
                 currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol,
-                totalCol: totalCol))
+                totalCol: totalCol, visualCol: visualCol, totalVisualCol: totalVisualCol))
     }
 }

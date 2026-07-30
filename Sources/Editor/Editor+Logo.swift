@@ -282,11 +282,11 @@ extension Editor: LogoEngineDelegate {
         switch setting.lowercased() {
         case "wrap", "wrapcolumn":
             if arg == "off" || arg == "false" || arg == "none" {
-                layoutEngine.wrapColumn = nil
+                layoutEngine.setWrapColumn(nil)
             } else if let w = Int(arg), w > 0 {
-                layoutEngine.wrapColumn = w
+                layoutEngine.setWrapColumn(w)
             } else {
-                layoutEngine.wrapColumn = nil
+                layoutEngine.setWrapColumn(nil)
             }
         case "ruler", "rulerbar", "showruler":
             if arg == "off" || arg == "false" {

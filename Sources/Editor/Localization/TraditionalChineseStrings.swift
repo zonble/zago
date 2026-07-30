@@ -193,7 +193,7 @@ public struct TraditionalChineseStrings {
         "msg.read_lines": "[ 已讀取 %d 行 ]",
         "msg.wrote_to_file": "[ 已儲存至 %@ ]",
         "msg.config_loaded_with_errors": "[ 已載入設定檔（含有 %d 個語法錯誤）]",
-        "msg.cursor_info": "第 %d/%d 行 (%d%%), 第 %d/%d 欄",
+        "msg.cursor_info": "第 %d/%d 行 (%d%%), 第 %d/%d 欄, 視覺欄 %d/%d",
         "msg.found_query_at_line": "於第 %2$d 行找到 \"%1$@\"",
         "msg.search_wrapped_found": "搜尋回到開頭，於第 %2$d 行找到 \"%1$@\"",
         "msg.not_found": "找不到 \"%@\"",

@@ -1,5 +1,6 @@
 import Foundation
 import LogoEngine
+import TextMetrics
 
 extension Editor {
     // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
@@ -604,11 +605,16 @@ extension Editor {
         buffer.clampCursor()
         let currentLine = buffer.lineIndex + 1
         let currentCol = buffer.columnIndex + 1
+        let line = buffer.lines[buffer.lineIndex]
+        let visualCol =
+            isCanvasModeActive
+            ? canvasVisualColumn + 1
+            : line.visualColumn(forCharacterOffset: buffer.columnIndex) + 1
         setStatusMessage(
             L10n.cursorInfo(
                 currentLine: currentLine, totalLines: buffer.lines.count,
                 percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
-                totalCol: buffer.lines[buffer.lineIndex].count + 1))
+                totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
     }
 
     /// Toggles Menu Bar mode on ESC key in normal edit mode.

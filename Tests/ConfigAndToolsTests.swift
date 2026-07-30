@@ -94,6 +94,12 @@ import Testing
 
     wrapResetItem?.action?(editor)
     #expect(editor.layoutEngine.wrapColumn == nil)
+
+    editor.layoutEngine.setWrapColumn(4)
+    #expect(editor.layoutEngine.wrapColumn == 10)
+
+    editor.runLogoScript("SET WRAP 4")
+    #expect(editor.layoutEngine.wrapColumn == 10)
 }
 
 @Test func testModeTransitionCommandsAndMenuItems() throws {
@@ -308,6 +314,22 @@ import Testing
     #expect(config.syntaxErrorCount == 1)
 }
 
+@Test func testWrapColumnMinimumIsTen() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_min_wrap_\(UUID().uuidString).serc").path
+    let sampleConfig = "set wrap 4\n"
+    try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    let loader = ConfigLoader()
+    var config = EditorConfig()
+    loader.parseConfigFile(at: tmpPath, into: &config)
+
+    #expect(config.wrapColumn == 10)
+
+    let engine = LayoutEngine(wrapColumn: 4)
+    #expect(engine.wrapColumn == 10)
+}
+
 @Test func testFileWatcherAndAutoReload() throws {
     let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_fs_watcher.txt").path
     try "Initial line\n".write(toFile: tmpFile, atomically: true, encoding: .utf8)
@@ -462,8 +484,10 @@ import Testing
     #expect(L10n.wroteToFile("test.txt") == "[ Wrote to test.txt ]")
     #expect(L10n.configLoadedWithErrors(2) == "[ Config loaded with 2 syntax error(s) ]")
     #expect(
-        L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10)
-            == "line 5/20 (25%), col 3/10")
+        L10n.cursorInfo(
+            currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10,
+            visualCol: 4, totalVisualCol: 12)
+            == "line 5/20 (25%), col 3/10, visual col 4/12")
     #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "Found \"foo\" at line 12")
     #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "Search wrapped, found \"foo\" at line 12")
     #expect(L10n.notFound(query: "bar") == "\"bar\" not found")
@@ -483,8 +507,10 @@ import Testing
     #expect(L10n.wroteToFile("test.txt") == "[ 已儲存至 test.txt ]")
     #expect(L10n.configLoadedWithErrors(2) == "[ 已載入設定檔（含有 2 個語法錯誤）]")
     #expect(
-        L10n.cursorInfo(currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10)
-            == "第 5/20 行 (25%), 第 3/10 欄")
+        L10n.cursorInfo(
+            currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10,
+            visualCol: 4, totalVisualCol: 12)
+            == "第 5/20 行 (25%), 第 3/10 欄, 視覺欄 4/12")
     #expect(L10n.foundQueryAtLine(query: "foo", line: 12) == "於第 12 行找到 \"foo\"")
     #expect(L10n.searchWrappedFound(query: "foo", line: 12) == "搜尋回到開頭，於第 12 行找到 \"foo\"")
     #expect(L10n.notFound(query: "bar") == "找不到 \"bar\"")

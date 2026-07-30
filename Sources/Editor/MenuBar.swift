@@ -164,25 +164,25 @@ public final class MenuBar {
                     MenuItem(
                         titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
                         action: { editor in
-                            editor.layoutEngine.wrapColumn = 80
+                            editor.layoutEngine.setWrapColumn(80)
                             editor.setStatusMessage("[ Wrap Column set to 80 ]")
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
                         action: { editor in
-                            editor.layoutEngine.wrapColumn = 60
+                            editor.layoutEngine.setWrapColumn(60)
                             editor.setStatusMessage("[ Wrap Column set to 60 ]")
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
                         action: { editor in
-                            editor.layoutEngine.wrapColumn = 40
+                            editor.layoutEngine.setWrapColumn(40)
                             editor.setStatusMessage("[ Wrap Column set to 40 ]")
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
                         action: { editor in
-                            editor.layoutEngine.wrapColumn = nil
+                            editor.layoutEngine.setWrapColumn(nil)
                             editor.setStatusMessage("[ Wrap Column reset to dynamic ]")
                         }),
                 ]),

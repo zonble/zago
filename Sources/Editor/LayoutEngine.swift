@@ -34,10 +34,20 @@ public struct VirtualLine {
 /// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
 /// coordinate conversions.
 public final class LayoutEngine {
+    public static let minimumWrapColumn = 10
     public var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
 
     public init(wrapColumn: Int? = nil) {
-        self.wrapColumn = wrapColumn
+        self.wrapColumn = Self.normalizedWrapColumn(wrapColumn)
+    }
+
+    public static func normalizedWrapColumn(_ column: Int?) -> Int? {
+        guard let column else { return nil }
+        return max(minimumWrapColumn, column)
+    }
+
+    public func setWrapColumn(_ column: Int?) {
+        wrapColumn = Self.normalizedWrapColumn(column)
     }
 
     /// Computes virtual display lines from raw buffer lines given available terminal view width, respecting word boundaries for Latin text.

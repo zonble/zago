@@ -48,14 +48,14 @@ import TextMetrics
     #expect(str.displayWidth == 8)
     #expect(str.paddedToDisplayWidth(10) == "中文測試  ")
 
-    // Test CJK softwrap: wrapColumn = 6 (accommodates 3 CJK characters per line)
+    // Test CJK softwrap: requested wrapColumn = 6 is clamped to 10 (5 CJK characters per line)
     let engine = LayoutEngine(wrapColumn: 6)
     let lines = ["一二三四五六"]  // 6 CJK characters, total display width 12
     let virtualLines = engine.computeVirtualLines(from: lines, viewWidth: 80)
 
     #expect(virtualLines.count == 2)
-    #expect(virtualLines[0].text == "一二三")
-    #expect(virtualLines[1].text == "四五六")
+    #expect(virtualLines[0].text == "一二三四五")
+    #expect(virtualLines[1].text == "六")
 }
 
 @Test func testJustifyParagraph() throws {
@@ -193,6 +193,9 @@ import TextMetrics
 
     let offsetRuler = editor.renderer.generateWordStarRuler(width: 10, startColumn: 11)
     #expect(offsetRuler == "----!----2")
+
+    let wrapMarkerRuler = editor.renderer.generateWordStarRuler(width: 20, startColumn: 1, wrapColumn: 10)
+    #expect(wrapMarkerRuler == "----!----<----!----2")
 }
 
 @Test func testScreenRenderLayoutAndHeight() throws {

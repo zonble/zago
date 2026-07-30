@@ -175,7 +175,8 @@ public final class Renderer {
     ) -> String {
         let rulerStr = generateWordStarRuler(
             width: textWidth,
-            startColumn: editor.isCanvasModeActive ? editor.canvasHorizontalOffset + 1 : 1)
+            startColumn: editor.isCanvasModeActive ? editor.canvasHorizontalOffset + 1 : 1,
+            wrapColumn: editor.layoutEngine.wrapColumn)
         var lineStr = "\u{1B}[K"
         if editor.isMenuBarActive && dropdownBoxLines.count > 0 {
             let plainRulerLine = String(repeating: " ", count: gutterWidth) + rulerStr
@@ -648,15 +649,17 @@ public final class Renderer {
 
     /// Generates WordStar-style ruler bar string.
     public func generateWordStarRuler(width: Int) -> String {
-        generateWordStarRuler(width: width, startColumn: 1)
+        generateWordStarRuler(width: width, startColumn: 1, wrapColumn: nil)
     }
 
-    public func generateWordStarRuler(width: Int, startColumn: Int) -> String {
+    public func generateWordStarRuler(width: Int, startColumn: Int, wrapColumn: Int? = nil) -> String {
         guard width > 0 else { return "" }
         var result = ""
         let firstColumn = max(1, startColumn)
         for col in firstColumn..<(firstColumn + width) {
-            if col % 10 == 0 {
+            if col == wrapColumn {
+                result += "<"
+            } else if col % 10 == 0 {
                 let digit = (col / 10) % 10
                 result += "\(digit)"
             } else if col % 5 == 0 {

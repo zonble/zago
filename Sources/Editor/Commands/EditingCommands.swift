@@ -147,6 +147,10 @@ public struct JustifyParagraphCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive {
+            editor.centerCellText()
+            return
+        }
         guard !editor.isCanvasModeActive else {
             editor.setStatusMessage("[ Justify disabled in Canvas Mode ]")
             return

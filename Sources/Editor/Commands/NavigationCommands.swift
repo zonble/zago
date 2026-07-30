@@ -116,8 +116,25 @@ public struct MoveEndCommand: Command {
             return
         }
 
-        let vLine = editor.getVirtualLineForCursor()
-        editor.buffer.columnIndex = vLine.endCol
+        let (_, cols) = editor.terminal.getWindowSize()
+        let textWidth = max(10, cols - 5)
+        let virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
+        let (cursorVLineIdx, _) = editor.layoutEngine.getVirtualCursor(
+            lineIndex: editor.buffer.lineIndex,
+            columnIndex: editor.buffer.columnIndex,
+            virtualLines: virtualLines
+        )
+
+        guard cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count else {
+            editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
+            return
+        }
+
+        let vLine = virtualLines[cursorVLineIdx]
+        let hasNextWrappedChunk =
+            cursorVLineIdx + 1 < virtualLines.count
+            && virtualLines[cursorVLineIdx + 1].bufferLineIndex == vLine.bufferLineIndex
+        editor.buffer.columnIndex = hasNextWrappedChunk ? max(vLine.startCol, vLine.endCol - 1) : vLine.endCol
     }
 }
 
@@ -133,7 +150,7 @@ public struct MovePgdnCommand: Command {
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
-            editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0)
+            editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: false)
             return
         }
         editor.moveCursorVirtual(deltaRow: mainAreaHeight)

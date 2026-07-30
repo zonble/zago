@@ -78,8 +78,16 @@ public enum L10n {
         String(format: self["msg.config_loaded_with_errors"], count)
     }
 
-    public static func cursorInfo(currentLine: Int, totalLines: Int, percent: Int, currentCol: Int, totalCol: Int) -> String {
-        String(format: self["msg.cursor_info"], currentLine, totalLines, percent, currentCol, totalCol)
+    public static func cursorInfo(
+        currentLine: Int,
+        totalLines: Int,
+        percent: Int,
+        currentCol: Int,
+        totalCol: Int,
+        visualCol: Int,
+        totalVisualCol: Int
+    ) -> String {
+        String(format: self["msg.cursor_info"], currentLine, totalLines, percent, currentCol, totalCol, visualCol, totalVisualCol)
     }
 
     public static func foundQueryAtLine(query: String, line: Int) -> String {

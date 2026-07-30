@@ -561,6 +561,47 @@ import Testing
     #expect(editor.currentTableCell?.minCol == 0)
 }
 
+@Test func testTableModeArrowKeysDoNotCrossTablesOrConnectors() throws {
+    let rightEditor = Editor()
+    rightEditor.buffer.lines = [
+        "┌────────┐   ┌────────────────────────────┐",
+        "│        │   │            zzzz            │",
+        "│ aaaaa  ├───┤            zzzz            │",
+        "└────────┘   └────────────────────────────┘",
+    ]
+    rightEditor.buffer.lineIndex = 2
+    rightEditor.buffer.columnIndex = 8
+
+    rightEditor.toggleTableMode()
+    #expect(rightEditor.currentTableCell?.minCol == 0)
+
+    rightEditor.processKey(.arrowRight)
+
+    #expect(rightEditor.currentTableCell?.minCol == 0)
+    #expect(rightEditor.currentTableCell?.maxCol == 9)
+
+    let downEditor = Editor()
+    downEditor.buffer.lines = [
+        "┌────┐",
+        "│ aa │",
+        "└────┘",
+        "",
+        "┌────┐",
+        "│ bb │",
+        "└────┘",
+    ]
+    downEditor.buffer.lineIndex = 1
+    downEditor.buffer.columnIndex = 2
+
+    downEditor.toggleTableMode()
+    #expect(downEditor.currentTableCell?.minLine == 0)
+
+    downEditor.processKey(.arrowDown)
+
+    #expect(downEditor.currentTableCell?.minLine == 0)
+    #expect(downEditor.buffer.lineIndex == 1)
+}
+
 @Test func testTableModeShiftTabNavigatesBackward() throws {
     let editor = Editor()
     editor.buffer.lines = [
@@ -628,6 +669,30 @@ import Testing
     // Padding needed = 11. Left padding = 5, Right padding = 6.
     let line = editor.buffer.lines[1]
     #expect(line == "│     Hello      │")
+}
+
+@Test func testCanvasTableModeCtrlJStillCentersCellText() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┐",
+        "│ Hello          │",
+        "└────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+
+    editor.toggleTableMode()
+    editor.switchToCanvasMode()
+
+    editor.processKey(.ctrl("J"))
+
+    #expect(editor.buffer.lines[1] == "│     Hello      │")
+    #expect(editor.statusMessage == "[ Cell Text Centered (^J) ]")
+
+    editor.buffer.lines[1] = "│ Hello          │"
+    _ = editor.commandRegistry.dispatch(key: .ctrl("J"), editor: editor)
+
+    #expect(editor.buffer.lines[1] == "│     Hello      │")
 }
 
 @Test func testTableModeDeleteAndBackspaceDoNotCorruptBorders() throws {
@@ -807,6 +872,36 @@ import Testing
     // Cell MUST NOT absorb 'Z' or expand line
     #expect(editor.buffer.lines[1] == "│1234567890123456│")
     #expect(editor.buffer.lines[1].displayWidth == initialWidth)
+}
+
+@Test func testCanvasTableModeTypingOutsideCellDoesNotWritePastBorder() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────┐",
+        "│    │",
+        "└────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 20
+    editor.syncCanvasCursorToBuffer()
+
+    editor.processKey(.char("X"))
+
+    #expect(editor.buffer.lines[1] == "│   X│")
+    #expect(editor.buffer.lines[1].displayWidth == 6)
+    #expect(editor.canvasVisualColumn == 5)
+
+    editor.buffer.lines[1] = "│中中│"
+    editor.buffer.columnIndex = 3
+    editor.syncCanvasCursorFromBuffer()
+    editor.processKey(.char("Y"))
+
+    #expect(editor.buffer.lines[1] == "│中中│")
+    #expect(editor.buffer.lines[1].displayWidth == 6)
 }
 
 @Test func testTableModeCJKMultiCharTypingSequenceOrder() throws {

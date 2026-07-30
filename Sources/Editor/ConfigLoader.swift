@@ -163,7 +163,7 @@ public final class ConfigLoader {
                     switch option {
                     case "wrap":
                         if let w = Int(value), w > 0 {
-                            config.wrapColumn = w
+                            config.wrapColumn = LayoutEngine.normalizedWrapColumn(w)
                         } else if value == "false" || value == "off" || value == "none" {
                             config.wrapColumn = nil
                         } else {

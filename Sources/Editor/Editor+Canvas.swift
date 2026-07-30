@@ -16,9 +16,9 @@ extension Editor {
         buffer.columnIndex = line.characterOffset(forVisualColumn: canvasVisualColumn)
     }
 
-    public func moveCanvasCursor(deltaLine: Int, deltaColumn: Int) {
+    public func moveCanvasCursor(deltaLine: Int, deltaColumn: Int, extendDownward: Bool = true) {
         let targetLine = buffer.lineIndex + deltaLine
-        if deltaLine > 0 {
+        if extendDownward && deltaLine > 0 {
             ensureCanvasLineExists(targetLine)
         }
         buffer.lineIndex = max(0, min(targetLine, buffer.lines.count - 1))
@@ -65,9 +65,11 @@ extension Editor {
     }
 
     public func insertCanvasNewline() {
-        buffer.lineIndex += 1
-        ensureCanvasLineExists(buffer.lineIndex)
+        let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
+        buffer.lines.insert("", at: insertIndex)
+        buffer.lineIndex = insertIndex
         canvasVisualColumn = 0
+        buffer.isModified = true
         syncCanvasCursorToBuffer()
     }
 
@@ -81,7 +83,12 @@ extension Editor {
     }
 
     public func backspaceCanvasCharacter() {
-        guard canvasVisualColumn > 0 else { return }
+        guard canvasVisualColumn > 0 else {
+            buffer.deleteLine()
+            canvasVisualColumn = 0
+            syncCanvasCursorToBuffer()
+            return
+        }
         ensureCanvasLineExists(buffer.lineIndex)
         let line = buffer.lines[buffer.lineIndex]
         let targetColumn: Int

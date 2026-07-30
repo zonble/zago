@@ -193,7 +193,7 @@ public struct EnglishStrings {
         "msg.read_lines": "[ Read %d line(s) ]",
         "msg.wrote_to_file": "[ Wrote to %@ ]",
         "msg.config_loaded_with_errors": "[ Config loaded with %d syntax error(s) ]",
-        "msg.cursor_info": "line %d/%d (%d%%), col %d/%d",
+        "msg.cursor_info": "line %d/%d (%d%%), col %d/%d, visual col %d/%d",
         "msg.found_query_at_line": "Found \"%1$@\" at line %2$d",
         "msg.search_wrapped_found": "Search wrapped, found \"%1$@\" at line %2$d",
         "msg.not_found": "\"%@\" not found",
