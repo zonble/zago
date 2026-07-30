@@ -231,6 +231,8 @@ public struct TraditionalChineseStrings {
         "menu.edit.spell": "拼字檢查…\t^T",
         "menu.edit.goto_line": "跳轉至指定行…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",
+        "menu.edit.text_editing_mode": "文字編輯模式",
+        "menu.edit.canvas_mode": "畫布模式\tM+V",
         "menu.edit.table_editing_mode": "表格編輯模式\tM+T",
 
         "menu.buffer.next": "下一個 Buffer\tM+.",
@@ -241,6 +243,7 @@ public struct TraditionalChineseStrings {
         "menu.shapes.line": "水平線",
         "menu.shapes.vline": "垂直線",
         "menu.shapes.table": "表格",
+        "menu.shapes.frame_mode": "框線模式",
         "menu.shapes.fill": "填滿區域",
 
         "menu.borders.single": "單線",

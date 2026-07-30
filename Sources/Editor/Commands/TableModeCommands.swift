@@ -1,5 +1,44 @@
 import Foundation
 
+public struct SwitchTextModeCommand: Command {
+    public let id: CommandID = .textMode
+    public let name = "Text Editing Mode"
+    public let description = "Switch to Text Editing Mode"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.switchToTextMode()
+    }
+}
+
+public struct ToggleCanvasModeCommand: Command {
+    public let id: CommandID = .canvasToggle
+    public let name = "Canvas Mode"
+    public let description = "Toggle Canvas Mode"
+    public let keys: [Key] = [.alt("v"), .alt("V")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.toggleCanvasMode()
+    }
+}
+
+public struct ToggleFrameModeCommand: Command {
+    public let id: CommandID = .frameToggle
+    public let name = "Frame Mode"
+    public let description = "Toggle Frame Mode"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.toggleFrameMode()
+    }
+}
+
 public struct ToggleTableModeCommand: Command {
     public let id: CommandID = .tableToggle
     public let name = "Table Mode"

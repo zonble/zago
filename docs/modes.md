@@ -467,21 +467,21 @@ should all reuse the same conversion rules.
 This phase should be the first implementation step. It establishes visible mode
 state without changing Canvas editing semantics yet.
 
-- [ ] Add explicit editor mode state:
+- [x] Add explicit editor mode state:
   `baseMode: text | canvas` and `overlayMode: none | table | frame`.
-- [ ] Keep Text Editing Mode as the default base mode.
-- [ ] Add mode transition helpers instead of scattering mode changes across
+- [x] Keep Text Editing Mode as the default base mode.
+- [x] Add mode transition helpers instead of scattering mode changes across
   key handlers, menu actions, and LOGO actions.
-- [ ] Add menu bar entries for Text Editing Mode, Canvas Mode, Table Mode, and
+- [x] Add menu bar entries for Text Editing Mode, Canvas Mode, Table Mode, and
   Frame Mode.
-- [ ] Render checked state for active mode menu items.
-- [ ] Add status/prompt-line indicators above the help bar for active
+- [x] Render checked state for active mode menu items.
+- [x] Add status/prompt-line indicators above the help bar for active
   `CANVAS`, `TABLE`, and `FRAME` states.
-- [ ] Ensure transient status messages do not permanently hide active mode
+- [x] Ensure transient status messages do not permanently hide active mode
   indicators.
-- [ ] Wire `M+V`, `M+T`, and Frame Mode toggle behavior through the same
+- [x] Wire `M+V`, `M+T`, and Frame Mode toggle behavior through the same
   transition helpers used by the menu bar.
-- [ ] Add tests for mode state transitions, menu checked states, and
+- [x] Add tests for mode state transitions, menu checked states, and
   status/prompt-line mode indicators.
 
 ### Phase 2: Display-Cell Coordinate Adapter

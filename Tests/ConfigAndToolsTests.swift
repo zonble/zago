@@ -35,11 +35,25 @@ import Testing
     let cutIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.cut" })
     let searchIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.search" })
     let justifyIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.justify" })
+    let textModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.text_editing_mode" })
+    let canvasModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.canvas_mode" })
     let tableEditingModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.table_editing_mode" })
     #expect(cutIndex != nil && searchIndex != nil && justifyIndex != nil)
     #expect(cutIndex! < searchIndex! && searchIndex! < justifyIndex!)
+    #expect(textModeItem?.commandId == .textMode)
+    #expect(canvasModeItem?.commandId == .canvasToggle)
+    #expect(textModeItem?.isChecked?(editor) == true)
+    #expect(canvasModeItem?.isChecked?(editor) == false)
     #expect(tableEditingModeItem?.commandId == .tableToggle)
     #expect(tableEditingModeItem?.isChecked?(editor) == false)
+
+    editor.switchToCanvasMode()
+    #expect(textModeItem?.isChecked?(editor) == false)
+    #expect(canvasModeItem?.isChecked?(editor) == true)
+
+    editor.switchToTextMode()
+    #expect(textModeItem?.isChecked?(editor) == true)
+    #expect(canvasModeItem?.isChecked?(editor) == false)
 
     editor.isTableModeActive = true
     #expect(tableEditingModeItem?.isChecked?(editor) == true)
@@ -80,6 +94,42 @@ import Testing
 
     wrapResetItem?.action?(editor)
     #expect(editor.layoutEngine.wrapColumn == nil)
+}
+
+@Test func testModeTransitionCommandsAndMenuItems() throws {
+    let editor = Editor()
+
+    #expect(editor.baseMode == .text)
+    #expect(editor.overlayMode == .none)
+    #expect(editor.isCanvasModeActive == false)
+    #expect(editor.isFrameModeActive == false)
+
+    _ = editor.commandRegistry.dispatch(id: .canvasToggle, editor: editor)
+    #expect(editor.baseMode == .canvas)
+    #expect(editor.isCanvasModeActive == true)
+
+    _ = editor.commandRegistry.dispatch(id: .canvasToggle, editor: editor)
+    #expect(editor.baseMode == .text)
+
+    _ = editor.commandRegistry.dispatch(id: .frameToggle, editor: editor)
+    #expect(editor.baseMode == .canvas)
+    #expect(editor.overlayMode == .frame)
+    #expect(editor.isFrameModeActive == true)
+
+    _ = editor.commandRegistry.dispatch(id: .textMode, editor: editor)
+    #expect(editor.baseMode == .text)
+    #expect(editor.overlayMode == .none)
+
+    let shapesCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.shapes" })
+    let frameItem = shapesCategory?.items.first(where: { $0.titleKey == "menu.shapes.frame_mode" })
+    #expect(frameItem?.commandId == .frameToggle)
+    #expect(frameItem?.isChecked?(editor) == false)
+
+    if let commandId = frameItem?.commandId {
+        _ = editor.commandRegistry.dispatch(id: commandId, editor: editor)
+    }
+    #expect(editor.baseMode == .canvas)
+    #expect(frameItem?.isChecked?(editor) == true)
 }
 
 @Test func testShapeFillMenuPromptsForFillText() throws {

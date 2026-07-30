@@ -299,17 +299,39 @@ public final class Renderer {
         output += "\u{1B}[K"  // Clear line
         let renderedPrompt = formatPromptLine(editor: editor, cols: cols)
         if case .none = editor.currentPromptMode {
-            if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
-                let msgWidth = editor.statusMessage.displayWidth
-                let leftPaddingCount = max(0, (cols - msgWidth) / 2)
-                let centeredMsg = String(repeating: " ", count: leftPaddingCount) + editor.statusMessage
-                output += centeredMsg.paddedToDisplayWidth(cols)
-            }
+            output += renderIdleStatusLine(editor: editor, cols: cols)
         } else {
             output += renderedPrompt.text
         }
         output += "\r\n"
         return renderedPrompt
+    }
+
+    public func renderIdleStatusLine(editor: Editor, cols: Int) -> String {
+        let modeText = editor.modeIndicatorText()
+        let activeStatus: String
+        if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
+            activeStatus = editor.statusMessage
+        } else {
+            activeStatus = ""
+        }
+
+        let combined: String
+        if modeText.isEmpty {
+            combined = activeStatus
+        } else if activeStatus.isEmpty {
+            combined = modeText
+        } else {
+            combined = "\(modeText)  \(activeStatus)"
+        }
+
+        guard !combined.isEmpty else {
+            return String(repeating: " ", count: max(0, cols))
+        }
+
+        let leftPaddingCount = max(0, (cols - combined.displayWidth) / 2)
+        let centered = String(repeating: " ", count: leftPaddingCount) + combined
+        return centered.paddedToDisplayWidth(cols)
     }
 
     // MARK: - Component 5: Dynamic Contextual Help Bar

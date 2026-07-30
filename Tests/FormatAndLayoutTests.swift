@@ -324,6 +324,26 @@ import TextMetrics
     #expect(defaultHelp.contains(L10n.helpWriteOut))
 }
 
+@Test func testIdleStatusLineModeIndicators() throws {
+    let editor = Editor()
+    let renderer = editor.renderer
+
+    #expect(renderer.renderIdleStatusLine(editor: editor, cols: 80).trimmingCharacters(in: .whitespaces).isEmpty)
+
+    editor.switchToCanvasMode()
+    let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(canvasStatus.contains("CANVAS"))
+
+    editor.toggleFrameMode()
+    let frameStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(frameStatus.contains("CANVAS | FRAME"))
+
+    editor.overlayMode = .none
+    editor.isTableModeActive = true
+    let tableStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(tableStatus.contains("CANVAS | TABLE"))
+}
+
 @Test func testRendererModularComponents() throws {
     let editor = Editor()
     let renderer = editor.renderer

@@ -55,6 +55,10 @@ public final class Editor {
     public var isMenuBarActive: Bool = false
     public let menuBar = MenuBar()
 
+    // Editor mode state
+    public var baseMode: EditorBaseMode = .text
+    public var overlayMode: EditorOverlayMode = .none
+
     // Table Mode state
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil

@@ -231,6 +231,8 @@ public struct EnglishStrings {
         "menu.edit.spell": "Spell Checker...\t^T",
         "menu.edit.goto_line": "Goto Line...\t^/",
         "menu.edit.justify": "Justify Paragraph\t^J",
+        "menu.edit.text_editing_mode": "Text Editing Mode",
+        "menu.edit.canvas_mode": "Canvas Mode\tM+V",
         "menu.edit.table_editing_mode": "Table Editing Mode\tM+T",
 
         "menu.buffer.next": "Next Buffer\tM+.",
@@ -241,6 +243,7 @@ public struct EnglishStrings {
         "menu.shapes.line": "Line",
         "menu.shapes.vline": "Vertical Line",
         "menu.shapes.table": "Table",
+        "menu.shapes.frame_mode": "Frame Mode",
         "menu.shapes.fill": "Fill Region",
 
         "menu.borders.single": "Single",

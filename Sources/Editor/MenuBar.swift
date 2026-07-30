@@ -76,6 +76,8 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
+                    MenuItem(titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode, isChecked: { $0.baseMode == .text }),
+                    MenuItem(titleKey: "menu.edit.canvas_mode", hotkeyChar: "v", commandId: .canvasToggle, isChecked: { $0.baseMode == .canvas }),
                     MenuItem(titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle, isChecked: { $0.isTableModeActive }),
                 ]),
             MenuCategory(
@@ -92,6 +94,7 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.shapes.line", hotkeyChar: "l", action: { $0.runLogoScript("LINE") }),
                     MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
                     MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
+                    MenuItem(titleKey: "menu.shapes.frame_mode", hotkeyChar: "r", commandId: .frameToggle, isChecked: { $0.isFrameModeActive }),
                     MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
                 ]),
             MenuCategory(

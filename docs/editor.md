@@ -15,4 +15,5 @@
 | `^J` | Justify paragraph |
 | `^Z` | Undo |
 | `^G` | Help |
+| `M+V` | Toggle canvas mode |
 | `M+T` | Toggle table mode |

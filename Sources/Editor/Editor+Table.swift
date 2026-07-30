@@ -200,7 +200,13 @@ extension Editor {
         if isTableModeActive {
             isTableModeActive = false
             currentTableCell = nil
+            overlayMode = .none
             setStatusMessage("[ Table Mode Exited ]")
+            return
+        }
+
+        if overlayMode == .frame {
+            setStatusMessage("[ Table Mode disabled in Frame Mode ]")
             return
         }
 
@@ -215,6 +221,7 @@ extension Editor {
     /// Enters Table Mode locked to target cell.
     public func enterTableMode(with cell: TableCell) {
         isTableModeActive = true
+        overlayMode = .table
         currentTableCell = cell
         let targetLine = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
         buffer.lineIndex = targetLine

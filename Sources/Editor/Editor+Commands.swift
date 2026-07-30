@@ -57,6 +57,9 @@ extension Editor {
         commandRegistry.register(LogoWorkspaceCommand())
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
+        commandRegistry.register(SwitchTextModeCommand())
+        commandRegistry.register(ToggleCanvasModeCommand())
+        commandRegistry.register(ToggleFrameModeCommand())
         commandRegistry.register(ToggleTableModeCommand())
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(
