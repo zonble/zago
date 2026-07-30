@@ -15,7 +15,7 @@ extension Editor: LogoEngineDelegate {
                 buffer.insertString(text)
             }
         case .insertNewline:
-            buffer.insertNewline()
+            insertNewlineForLogo()
         case .setStatusMessage(let msg):
             setStatusMessage(msg)
         case .deleteChar:
@@ -181,7 +181,19 @@ extension Editor: LogoEngineDelegate {
         return line...line
     }
 
+    private func insertNewlineForLogo() {
+        if isTableModeActive, currentTableCell != nil {
+            moveToNextTableCellLineOrCell()
+        } else {
+            buffer.insertNewline()
+        }
+    }
+
     private func joinCurrentLine(separator: String) {
+        if isTableModeActive, currentTableCell != nil {
+            joinCurrentTableCellLine(separator: separator)
+            return
+        }
         guard buffer.lineIndex + 1 < buffer.lines.count else { return }
         let currentLine = buffer.lines[buffer.lineIndex]
         let nextLine = buffer.lines.remove(at: buffer.lineIndex + 1)

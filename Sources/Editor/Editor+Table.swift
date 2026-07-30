@@ -89,13 +89,7 @@ extension Editor {
             return true
 
         case .enter:
-            if buffer.lineIndex < cell.innerMaxLine {
-                buffer.lineIndex += 1
-                buffer.columnIndex = cell.innerMinCol
-            } else {
-                navigateNextTableCell()
-            }
-            clampTableModeCursor()
+            moveToNextTableCellLineOrCell()
             return true
 
         case .backspace:
@@ -658,6 +652,40 @@ extension Editor {
         setStatusMessage("[ Cell Text Centered (^J) ]")
     }
 
+    public func moveToNextTableCellLineOrCell() {
+        guard let cell = currentTableCell else { return }
+        if buffer.lineIndex < cell.innerMaxLine {
+            buffer.lineIndex += 1
+            let line = buffer.lines[buffer.lineIndex]
+            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            buffer.columnIndex = leftBorder + 1
+        } else {
+            navigateNextTableCell()
+        }
+        clampTableModeCursor()
+    }
+
+    public func joinCurrentTableCellLine(separator: String) {
+        guard isTableModeActive, let cell = currentTableCell else { return }
+        clampTableModeCursor()
+        guard buffer.lineIndex < cell.innerMaxLine else { return }
+
+        let currentText = tableCellInnerText(on: buffer.lineIndex, cell: cell) ?? ""
+        let nextText = tableCellInnerText(on: buffer.lineIndex + 1, cell: cell) ?? ""
+        let joinedText = currentText.trimmingTrailingWhitespace() + separator + nextText.trimmingLeadingWhitespace()
+
+        replaceTableCellInnerText(on: buffer.lineIndex, cell: cell, with: joinedText)
+
+        let overflow = joinedText.dropDisplayWidth(tableCellInnerWidth(on: buffer.lineIndex, cell: cell))
+        replaceTableCellInnerText(on: buffer.lineIndex + 1, cell: cell, with: overflow)
+
+        let line = buffer.lines[buffer.lineIndex]
+        let (_, rightBorder) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        buffer.columnIndex = max(cell.innerMinCol, rightBorder - 1)
+        buffer.isModified = true
+        clampTableModeCursor()
+    }
+
     /// Deletes the current visual row inside the active cell without removing the buffer line or table borders.
     public func deleteCurrentTableCellLine() {
         guard isTableModeActive, let cell = currentTableCell else {
@@ -714,5 +742,50 @@ extension Editor {
         let prefix = String(lineChars[0...leftBorder])
         let suffix = String(lineChars[rightBorder..<lineChars.count])
         buffer.lines[lineIdx] = prefix + newCellText + suffix
+    }
+
+    private func tableCellInnerWidth(on lineIdx: Int, cell: TableCell) -> Int {
+        guard lineIdx >= 0 && lineIdx < buffer.lines.count else { return 0 }
+        let fullLine = buffer.lines[lineIdx]
+        let lineChars = Array(fullLine)
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let innerMinCol = leftBorder + 1
+        let innerMaxCol = rightBorder - 1
+        guard innerMinCol <= innerMaxCol, innerMaxCol < lineChars.count else { return 0 }
+        return lineChars[innerMinCol...innerMaxCol].reduce(0) { $0 + $1.displayWidth }
+    }
+}
+
+private extension String {
+    func trimmingLeadingWhitespace() -> String {
+        String(drop(while: { $0.isWhitespace }))
+    }
+
+    func trimmingTrailingWhitespace() -> String {
+        var result = self
+        while result.last?.isWhitespace == true {
+            result.removeLast()
+        }
+        return result
+    }
+
+    func dropDisplayWidth(_ width: Int) -> String {
+        guard width > 0 else { return self }
+        var result = ""
+        var visualWidth = 0
+        var isDropping = true
+
+        for ch in self {
+            let chWidth = ch.displayWidth
+            if isDropping {
+                if visualWidth + chWidth <= width {
+                    visualWidth += chWidth
+                    continue
+                }
+                isDropping = false
+            }
+            result.append(ch)
+        }
+        return result
     }
 }

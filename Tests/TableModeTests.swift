@@ -704,6 +704,73 @@ import Testing
     #expect(logoEditor.buffer.lines[3] == "└────┴────┘")
 }
 
+@Test func testTableModeLogoSplitLineDoesNotSplitBufferLine() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────┬────┐",
+        "│ABCD│WXYZ│",
+        "│EFGH│QRST│",
+        "└────┴────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.logoEngine.execute("SPLITLINE")
+
+    #expect(editor.buffer.lines.count == 4)
+    #expect(editor.buffer.lines[0] == "┌────┬────┐")
+    #expect(editor.buffer.lines[1] == "│ABCD│WXYZ│")
+    #expect(editor.buffer.lines[2] == "│EFGH│QRST│")
+    #expect(editor.buffer.lines[3] == "└────┴────┘")
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 1)
+}
+
+@Test func testTableModeLogoJoinOnlyJoinsCurrentCellLines() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────┬────┐",
+        "│AB  │WXYZ│",
+        "│CD  │QRST│",
+        "└────┴────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.logoEngine.execute("JOIN")
+
+    #expect(editor.buffer.lines.count == 4)
+    #expect(editor.buffer.lines[0] == "┌────┬────┐")
+    #expect(editor.buffer.lines[1] == "│ABCD│WXYZ│")
+    #expect(editor.buffer.lines[2] == "│    │QRST│")
+    #expect(editor.buffer.lines[3] == "└────┴────┘")
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 4)
+
+    editor.buffer.lines = [
+        "┌────┬────┐",
+        "│AB  │WXYZ│",
+        "│CD  │QRST│",
+        "└────┴────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.enterTableMode(with: TableCell(minLine: 0, maxLine: 3, minCol: 0, maxCol: 5))
+
+    editor.logoEngine.execute("JOIN \"-")
+
+    #expect(editor.buffer.lines.count == 4)
+    #expect(editor.buffer.lines[1] == "│AB-C│WXYZ│")
+    #expect(editor.buffer.lines[2] == "│D   │QRST│")
+    #expect(editor.buffer.columnIndex == 4)
+}
+
 @Test func testTableModeTypingAtCellEndDoesNotShiftBorders() throws {
     let editor = Editor()
     editor.buffer.lines = [
