@@ -430,6 +430,7 @@ import TextMetrics
     editor.switchToCanvasMode()
     let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(canvasStatus.contains("CANVAS"))
+    #expect(!canvasStatus.contains("[ Canvas Mode ]"))
 
     editor.toggleFrameMode()
     let frameStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)

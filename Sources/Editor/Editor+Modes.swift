@@ -28,7 +28,7 @@ extension Editor {
         if overlayMode == .frame {
             overlayMode = .none
         }
-        setStatusMessage("[ Text Editing Mode ]")
+        clearModeStatusMessage()
     }
 
     public func switchToCanvasMode() {
@@ -37,7 +37,16 @@ extension Editor {
         if !wasCanvasMode {
             syncCanvasCursorFromBuffer()
         }
-        setStatusMessage("[ Canvas Mode ]")
+        clearModeStatusMessage()
+    }
+
+    private func clearModeStatusMessage() {
+        switch statusMessage {
+        case "[ Text Editing Mode ]", "[ Canvas Mode ]":
+            setStatusMessage("")
+        default:
+            break
+        }
     }
 
     public func toggleCanvasMode() {
