@@ -1,4 +1,8 @@
-# `zago`: zonble's nano + LOGO
+# `zago`: Terminal Text Editor & Diagramming
+
+2026 © Weizhong Yang a.k.a. zonble
+
+`zago` is
 
 - a small terminal text editor.
 - draw boxes and lines in your Markdown file.
@@ -11,7 +15,8 @@
 - Plain-text diagramming: draw boxes, arrow connector lines, fills, and table layouts directly in the buffer.
 - Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
 - Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
-- Modeless editing: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` cancel selection/mark.
+- Modeless typing & dual spatial modes: Ordinary typing always inserts text directly. Press `M+V` to toggle between standard text stream mode and 2D Canvas Mode for freeform grid navigation and block editing.
+- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` cancel selection/mark.
 - Unicode-aware layout: CJK and emoji keep boxes, tables, fills, and connector lines aligned.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload, English and Traditional Chinese UI.
@@ -120,9 +125,19 @@ TYPE "    database    "
 └────────────────┘
 ```
 
+## Text Mode & 2D Canvas Mode
+
+`zago` provides two complementary spatial editing modes. In both modes, typing remains modeless and inserts characters directly:
+
+- **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
+- **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
+
+For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
+
 ## Documentation
 
 - [Editor basics](docs/editor.md)
+- [Mark, selection, and canvas behavior](docs/mark.md)
 - [LOGO command language](docs/logo.md)
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
@@ -135,3 +150,5 @@ Run `swift test`.
 ## License
 
 MIT License. Copyright (c) 2026 Weizhong Yang a.k.a. zonble.
+
+*Note: The name `zago` stands for "zonble's nano + LOGO".*
