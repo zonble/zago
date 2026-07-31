@@ -703,6 +703,7 @@ extension Editor {
     func toggleMenuBar() {
         isMenuBarActive.toggle()
         if isMenuBarActive {
+            menuBar.updateCategories(for: self)
             menuBar.categoryIndex = 0
             menuBar.itemIndex = 0
         }

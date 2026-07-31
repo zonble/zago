@@ -6,13 +6,15 @@ public struct MenuItem {
     public let commandId: CommandID?
     public let action: ((Editor) -> Void)?
     public let isChecked: ((Editor) -> Bool)?
+    public let isVisible: ((Editor) -> Bool)?
 
     public init(
         titleKey: String,
         hotkeyChar: Character,
         commandId: CommandID? = nil,
         action: ((Editor) -> Void)? = nil,
-        isChecked: ((Editor) -> Bool)? = nil
+        isChecked: ((Editor) -> Bool)? = nil,
+        isVisible: ((Editor) -> Bool)? = nil
     )
     {
         self.titleKey = titleKey
@@ -20,6 +22,7 @@ public struct MenuItem {
         self.commandId = commandId
         self.action = action
         self.isChecked = isChecked
+        self.isVisible = isVisible
     }
 }
 
@@ -68,7 +71,9 @@ public final class MenuBar {
                 titleKey: "menu.edit", hotkeyChar: "e",
                 items: [
                     MenuItem(titleKey: "menu.edit.undo", hotkeyChar: "u", commandId: .editUndo),
-                    MenuItem(titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark),
+                    MenuItem(
+                        titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark,
+                        isVisible: { $0.baseMode == .canvas }),
                     MenuItem(titleKey: "menu.edit.copy", hotkeyChar: "o", commandId: .editCopy),
                     MenuItem(titleKey: "menu.edit.cut", hotkeyChar: "c", commandId: .editCut),
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),
@@ -203,10 +208,19 @@ public final class MenuBar {
                 ])
         )
 
-        self.categories = baseCategories
+        if let editor {
+            self.categories = baseCategories.compactMap { category in
+                let visibleItems = category.items.filter { $0.isVisible?(editor) ?? true }
+                guard !visibleItems.isEmpty else { return nil }
+                return MenuCategory(titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems)
+            }
+        } else {
+            self.categories = baseCategories
+        }
         if categoryIndex >= categories.count {
             categoryIndex = max(0, categories.count - 1)
         }
+        itemIndex = min(itemIndex, max(0, currentCategory.items.count - 1))
     }
 
     public var currentCategory: MenuCategory {

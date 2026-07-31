@@ -7,7 +7,6 @@ public struct BufferCommandBarCommand: CommandBarCommand {
     public init() {}
 
     public func match(_ input: CommandBarInput) -> Bool {
-        guard !input.firstTokenIsAllUppercaseWord else { return false }
         return input.lowerFirstToken == "buffer"
     }
 

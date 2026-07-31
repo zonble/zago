@@ -942,7 +942,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.statusMessage == L10n["status.no_such_buffer"])
 }
 
-@Test func testCommandBarUppercaseBufferFallsBackToLogoReporter() throws {
+@Test func testCommandBarUppercaseBufferUsesCommandBarCommand() throws {
     let editor = Editor()
     editor.buffer.filePath = "first.txt"
     editor.openNewBuffer(filePath: "second.txt")
@@ -950,7 +950,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     submitCommandBar("BUFFER 2", editor: editor)
 
-    #expect(editor.currentBufferIndex == 0)
+    #expect(editor.currentBufferIndex == 1)
 }
 
 @Test func testCommandBarWriteShorthandUsesEditorSavePath() throws {

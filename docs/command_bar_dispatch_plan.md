@@ -312,8 +312,9 @@ Command prompt behavior:
 - `buffer 2` switches to buffer 2.
 - `buffer next` and `buffer prev` switch between open buffers.
 
-Uppercase `BUFFER` falls through to LOGO so reporter use remains available.
-`BUFFER 2` does not switch buffers because LOGO `BUFFER` is a reporter only.
+In the command prompt, `buffer` is always handled by the command bar before LOGO
+fallback, regardless of letter case. Direct LOGO execution still treats `BUFFER`
+as a reporter only.
 
 ### `SAVE`, `FILE`, `OPEN`, and `EDIT`
 
@@ -342,8 +343,8 @@ reporters:
 - `set wrap 80`
 - `SET WRAP 80`
 
-For `BUFFER`, all-uppercase input remains LOGO reporter syntax. Lowercase and
-mixed-case `buffer` input is command prompt shorthand.
+For `BUFFER`, command prompt input is command bar shorthand regardless of case.
+Direct LOGO execution keeps `BUFFER` as reporter syntax.
 
 ## Error Handling
 

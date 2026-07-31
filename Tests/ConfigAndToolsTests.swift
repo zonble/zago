@@ -102,6 +102,29 @@ import Testing
     #expect(editor.layoutEngine.wrapColumn == 10)
 }
 
+@Test func testCanvasMarkMenuItemOnlyVisibleInCanvasMode() throws {
+    let editor = Editor()
+
+    editor.menuBar.updateCategories(for: editor)
+    let textEditCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    #expect(textEditCategory?.items.contains(where: { $0.titleKey == "menu.edit.mark" }) == false)
+
+    editor.switchToCanvasMode()
+    editor.menuBar.updateCategories(for: editor)
+    let canvasEditCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    #expect(canvasEditCategory?.items.contains(where: { $0.titleKey == "menu.edit.mark" }) == true)
+
+    editor.switchToTextMode()
+    editor.isMenuBarActive = true
+    editor.menuBar.updateCategories(for: editor)
+    editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.edit" }) ?? 0
+
+    let (_, _, lines) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
+    let clean = lines.joined(separator: "\n")
+        .replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    #expect(!clean.contains("Toggle Canvas Mark"))
+}
+
 @Test func testModeTransitionCommandsAndMenuItems() throws {
     let editor = Editor()
 
