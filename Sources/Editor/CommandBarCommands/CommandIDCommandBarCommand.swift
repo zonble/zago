@@ -3,6 +3,7 @@ import Foundation
 public struct CommandIDCommandBarCommand: CommandBarCommand {
     public let name: String
     public let help: String
+    public let completionNames: [String]
     private let names: Set<String>
     private let commandID: CommandID
 
@@ -11,6 +12,7 @@ public struct CommandIDCommandBarCommand: CommandBarCommand {
         self.commandID = commandID
         self.name = names.sorted().first ?? commandID.rawValue
         self.help = help
+        self.completionNames = names.sorted()
     }
 
     public func match(_ input: CommandBarInput) -> Bool {

@@ -1049,6 +1049,82 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.statusMessage.contains("off"))
 }
 
+@Test func testCommandBarTabCompletesLogoKeyword() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "drawb" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "drawbox ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
+}
+
+@Test func testCommandBarTabCompletesCommandBarCommand() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "QUI" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "QUIT ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
+}
+
+@Test func testCommandBarTabCompletesHyphenatedCommandBarCommand() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "save-" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "save-exit ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
+}
+
+@Test func testCommandBarTabShowsMixedCommandAndLogoCompletions() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "sa" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "sa")
+    #expect(editor.promptCompletionText?.contains("save") == true)
+    #expect(editor.promptCompletionText?.contains("save-exit") == true)
+}
+
+@Test func testCommandBarExitAndSaveExitCommands() throws {
+    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_exit.txt").path
+    defer { try? FileManager.default.removeItem(atPath: savePath) }
+
+    let editor = Editor()
+    editor.buffer.filePath = "first.txt"
+    editor.openNewBuffer(filePath: savePath)
+    editor.buffer.lines = ["save and exit"]
+    editor.buffer.isModified = true
+
+    submitCommandBar("save-exit", editor: editor)
+
+    #expect(try String(contentsOfFile: savePath, encoding: .utf8) == "save and exit")
+    #expect(editor.buffers.count == 1)
+    #expect(editor.currentBufferIndex == 0)
+
+    editor.openNewBuffer(filePath: "third.txt")
+    submitCommandBar("quit", editor: editor)
+
+    #expect(editor.buffers.count == 1)
+    #expect(editor.currentBufferIndex == 0)
+}
+
 @Test func testLastLineDownKeyMovesToEOL() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]

@@ -3,6 +3,7 @@ import Foundation
 public struct SettingCommandBarCommand: CommandBarCommand {
     public let name = "set"
     public let help = "set <option> [value]"
+    public let completionNames = ["set", "unset"]
     public static let settingNames = ["wrap", "ruler", "linenumbers", "syntax", "autoreload", "tab", "lang"]
 
     public init() {}

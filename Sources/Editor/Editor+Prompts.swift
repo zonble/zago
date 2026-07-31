@@ -203,6 +203,22 @@ extension Editor {
         promptCursorIndex = replacement.count
     }
 
+    private func completionCandidate(_ candidate: String, matching typed: String) -> String {
+        if typed == typed.uppercased() && typed != typed.lowercased() {
+            return candidate.uppercased()
+        }
+        if typed == typed.lowercased() {
+            return candidate.lowercased()
+        }
+        return candidate
+    }
+
+    private func isCommandBarCompletionToken(_ token: String) -> Bool {
+        token.allSatisfy { ch in
+            ch.isLetter || ch == "-" || ch == "_" || ch == "." || ch == "?"
+        }
+    }
+
     private func showCommandBarCompletions(_ items: [String], label: String) {
         if items.isEmpty {
             promptCompletionText = L10n["status.no_completions"]
@@ -264,6 +280,43 @@ extension Editor {
         }
 
         _ = suffix
+        return true
+    }
+
+    private func completeCommandBarPrompt() -> Bool {
+        let clamped = max(0, min(promptCursorIndex, promptInputText.count))
+        let cursorIndex = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
+        let prefix = String(promptInputText[..<cursorIndex])
+
+        if completeSettingCommandPrompt() {
+            return true
+        }
+
+        guard !prefix.contains(where: \.isWhitespace) else {
+            return false
+        }
+
+        let token = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !token.isEmpty, isCommandBarCompletionToken(token) else {
+            return false
+        }
+
+        let commandNames = commandBarRegistry.completionNames
+        let logoNames = LogoPrimitive.keywordAliases
+        let lowerToken = token.lowercased()
+        let matches = Array(Set(commandNames + logoNames))
+            .filter { $0.lowercased().hasPrefix(lowerToken) }
+            .sorted { lhs, rhs in
+                if lhs.lowercased() == rhs.lowercased() { return lhs < rhs }
+                return lhs.lowercased() < rhs.lowercased()
+            }
+            .map { completionCandidate($0, matching: token) }
+
+        if matches.count == 1 {
+            replacePromptPrefix(matches[0] + " ")
+        } else {
+            showCommandBarCompletions(matches, label: "Tab")
+        }
         return true
     }
 
@@ -384,7 +437,7 @@ extension Editor {
         case .logoMacro(let completion):
             switch key {
             case .tab:
-                if completeSettingCommandPrompt() {
+                if completeCommandBarPrompt() {
                     break
                 }
             case .enter:

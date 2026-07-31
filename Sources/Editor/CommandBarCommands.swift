@@ -34,9 +34,14 @@ public struct CommandBarInput: Sendable, Equatable {
 public protocol CommandBarCommand {
     var name: String { get }
     var help: String { get }
+    var completionNames: [String] { get }
 
     func match(_ input: CommandBarInput) -> Bool
     func execute(_ input: CommandBarInput, editor: Editor) -> CommandBarDispatchResult
+}
+
+extension CommandBarCommand {
+    public var completionNames: [String] { [name] }
 }
 
 public final class CommandBarRegistry {
@@ -59,11 +64,18 @@ public final class CommandBarRegistry {
         return .noMatch
     }
 
+    public var completionNames: [String] {
+        Array(Set(commands.flatMap(\.completionNames))).sorted()
+    }
+
     public static func makeDefault() -> CommandBarRegistry {
         let registry = CommandBarRegistry()
         registry.register(CommandIDCommandBarCommand(names: ["save"], commandID: .fileSave))
         registry.register(CommandIDCommandBarCommand(names: ["new"], commandID: .bufferNew))
-        registry.register(CommandIDCommandBarCommand(names: ["close"], commandID: .fileExit))
+        registry.register(CommandIDCommandBarCommand(names: ["close", "exit", "quit"], commandID: .fileExit))
+        registry.register(
+            CommandIDCommandBarCommand(
+                names: ["file", "save-exit", "save_exit", "saveexit", "wq"], commandID: .fileSaveExit))
         registry.register(OpenCommandBarCommand())
         registry.register(WriteCommandBarCommand())
         registry.register(SettingCommandBarCommand())

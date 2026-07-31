@@ -332,6 +332,11 @@ When the command prompt contains `set `, pressing Tab should show available
 setting completions. If the current setting prefix has one match, Tab may insert
 the matched setting name and a trailing space.
 
+When the command prompt contains a single alphabetic token without whitespace,
+pressing Tab should complete command bar commands and LOGO keyword aliases. If
+there is one match, insert it and a trailing space. If there are multiple
+matches, show them in the prompt help bar.
+
 ## Case Rules
 
 The shorthand parser is case-insensitive for editor commands that are not LOGO

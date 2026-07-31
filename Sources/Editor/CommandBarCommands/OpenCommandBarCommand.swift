@@ -3,6 +3,7 @@ import Foundation
 public struct OpenCommandBarCommand: CommandBarCommand {
     public let name = "open"
     public let help = "open <path>"
+    public let completionNames = ["edit", "open"]
 
     public init() {}
 
