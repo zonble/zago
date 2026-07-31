@@ -48,6 +48,7 @@ public enum L10n {
 
     // MARK: - Strongly-Typed Help Bar Accessors
     public static var helpGetHelp: String { self["help.get_help"] }
+    public static var helpMenu: String { self["help.menu"] }
     public static var helpCancel: String { self["help.cancel"] }
     public static var helpWriteOut: String { self["help.write_out"] }
     public static var helpReadFile: String { self["help.read_file"] }

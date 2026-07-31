@@ -5,6 +5,7 @@ public struct TraditionalChineseStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help":   "輔助說明",
+        "help.menu":       "主選單",
         "help.cancel":     "取消",
         "help.write_out":  "寫入檔案",
         "help.read_file":  "讀入檔案",
@@ -17,6 +18,14 @@ public struct TraditionalChineseStrings {
         "help.next_pg":    "前往下頁",
         "help.uncut_text": "貼上文字",
         "help.to_spell":   "拼字檢查",
+        "help.table_exit": "離開表格",
+        "help.next_cell":  "下個儲存格",
+        "help.prev_cell":  "上個儲存格",
+        "help.cell_width": "寬度 -/+",
+        "help.cell_height": "高度 -/+",
+        "help.center_text": "置中對齊",
+        "help.clear_cell": "清空儲存格",
+        "help.select_text": "選取文字",
         "chrome.end_of_file": "檔案結尾",
 
         // Prompts
@@ -172,6 +181,8 @@ public struct TraditionalChineseStrings {
         "status.wrap_column_set": "[ 自動折行欄數設為 %d ]",
         "status.wrap_column_reset": "[ 自動折行欄數重設為動態 ]",
         "status.deleted_selection": "[ 已刪除選取範圍 ]",
+        "status.cannot_shrink_width": "[ 無法再縮小欄寬 ]",
+        "status.cannot_shrink_height": "[ 無法再縮小列高 ]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 

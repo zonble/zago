@@ -86,7 +86,7 @@ import TextMetrics
 
     tableEditor.processKey(.ctrlShiftArrowRight)
 
-    #expect(tableEditor.buffer.lines[1] == "│                │")
+    #expect(tableEditor.buffer.lines[1] == "│                 │")
 }
 
 @Test func testCanvasModeDrawingUndoRestoresVisualCursor() throws {

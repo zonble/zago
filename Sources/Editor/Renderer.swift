@@ -456,9 +456,18 @@ public final class Renderer {
             ]
 
         case .none:
-            if editor?.isCanvasModeActive == true && editor?.isTableModeActive != true {
+            if editor?.isTableModeActive == true {
                 helpItems1 = [
-                    ("F1", "Menu"), ("^O", "Save"), ("^X", "Exit"),
+                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("M+T", L10n["help.table_exit"]),
+                    ("C+⇧+←/→", L10n["help.cell_width"]), ("^J", L10n["help.center_text"]), ("^K", L10n["help.clear_cell"]),
+                ]
+                helpItems2 = [
+                    ("^X", L10n.helpExit), ("Tab", L10n["help.next_cell"]), ("⇧+Tab", L10n["help.prev_cell"]),
+                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]), ("Esc", "Command"),
+                ]
+            } else if editor?.isCanvasModeActive == true {
+                helpItems1 = [
+                    ("F1", L10n.helpMenu), ("^O", "Save"), ("^X", "Exit"),
                     ("M+V", "Text"),
                 ]
                 helpItems2 = [
@@ -468,7 +477,7 @@ public final class Renderer {
             } else {
                 // Default Nano text editing help bar
                 helpItems1 = [
-                    ("F1", "Menu"), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
+                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
                     ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
                 ]
                 helpItems2 = [

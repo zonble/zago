@@ -5,6 +5,7 @@ public struct EnglishStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help":   "Get Help",
+        "help.menu":       "Menu",
         "help.cancel":     "Cancel",
         "help.write_out":  "WriteOut",
         "help.read_file":  "Read File",
@@ -17,6 +18,14 @@ public struct EnglishStrings {
         "help.next_pg":    "Next Pg",
         "help.uncut_text": "UnCut Text",
         "help.to_spell":   "To Spell",
+        "help.table_exit": "Exit Table",
+        "help.next_cell":  "Next Cell",
+        "help.prev_cell":  "Prev Cell",
+        "help.cell_width": "Width -/+",
+        "help.cell_height": "Height -/+",
+        "help.center_text": "Center",
+        "help.clear_cell": "Clear Cell",
+        "help.select_text": "Select",
         "chrome.end_of_file": "End of File",
 
         // Prompts
@@ -172,6 +181,8 @@ public struct EnglishStrings {
         "status.wrap_column_set": "[ Wrap Column set to %d ]",
         "status.wrap_column_reset": "[ Wrap Column reset to dynamic ]",
         "status.deleted_selection": "[ Deleted selection ]",
+        "status.cannot_shrink_width": "[ Cannot shrink column width ]",
+        "status.cannot_shrink_height": "[ Cannot shrink row height ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 

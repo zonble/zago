@@ -163,7 +163,14 @@ public struct UncutTextCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        if editor.isCanvasModeActive && !editor.isTableModeActive {
+        if editor.isTableModeActive {
+            if let text = editor.clipboardText, !text.isEmpty {
+                editor.pasteTableCellText(text)
+                editor.setStatusMessage(L10n["status.uncut_text"])
+            } else {
+                editor.setStatusMessage(L10n["status.clipboard_empty"])
+            }
+        } else if editor.isCanvasModeActive {
             editor.pasteCanvasBlock()
         } else if let text = editor.clipboardText, !text.isEmpty {
             editor.saveUndoSnapshot()

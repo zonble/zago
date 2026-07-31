@@ -105,7 +105,9 @@ extension Editor {
                 saveUndoSnapshot()
             }
 
-            if isCanvasModeActive {
+            if isTableModeActive {
+                pasteTableCellText(pastedText)
+            } else if isCanvasModeActive {
                 insertCanvasString(pastedText)
             } else if !isMultiChar {
                 buffer.insert(character: ch)

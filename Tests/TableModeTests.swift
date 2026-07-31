@@ -1080,3 +1080,119 @@ import Testing
     // MUST move back down to Line 4 (index 3), inside cell 1 ("asdasd")!
     #expect(editor.buffer.lineIndex == 3)
 }
+
+@Test func testTableModeCtrlShiftArrowCellResizing() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┬────────┐",
+        "│ Cell 1 │ Cell 2 │",
+        "├────────┼────────┤",
+        "│ Cell 3 │ Cell 4 │",
+        "└────────┴────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+
+    editor.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // Initial maxCol of cell 1 is 9
+    let initialCell = editor.currentTableCell
+    #expect(initialCell?.maxCol == 9)
+
+    // Press Ctrl+Shift+Right -> Expand column width
+    editor.processKey(.ctrlShiftArrowRight)
+    #expect(editor.currentTableCell?.maxCol == 10)
+    #expect(editor.buffer.lines[0] == "┌─────────┬────────┐")
+    #expect(editor.buffer.lines[1] == "│ Cell 1  │ Cell 2 │")
+
+    // Press Ctrl+Shift+Left -> Shrink column width back
+    editor.processKey(.ctrlShiftArrowLeft)
+    #expect(editor.currentTableCell?.maxCol == 9)
+    #expect(editor.buffer.lines[0] == "┌────────┬────────┐")
+
+    // Press Ctrl+Shift+Down -> Expand row height
+    editor.processKey(.ctrlShiftArrowDown)
+    #expect(editor.currentTableCell?.maxLine == 3)
+    #expect(editor.buffer.lines.count == 6)
+    #expect(editor.buffer.lines[2] == "│        │        │")
+
+    // Press Ctrl+Shift+Up -> Shrink row height back
+    editor.processKey(.ctrlShiftArrowUp)
+    #expect(editor.currentTableCell?.maxLine == 2)
+    #expect(editor.buffer.lines.count == 5)
+
+    // Move to Cell 3 in Row 2 (line 3)
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 3
+    editor.currentTableCell = TableCellDetector().detectCell(in: editor.buffer.lines, line: 3, col: 3)
+
+    // Expand column 1 width from Row 2
+    editor.processKey(.ctrlShiftArrowRight)
+    #expect(editor.buffer.lines[0] == "┌─────────┬────────┐")
+    #expect(editor.buffer.lines[2] == "├─────────┼────────┤")
+    #expect(editor.buffer.lines[4] == "└─────────┴────────┘")
+}
+
+@Test func testTableModeHelpBar() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┬────────┐",
+        "│ Cell 1 │ Cell 2 │",
+        "└────────┴────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.toggleTableMode()
+
+    let renderer = Renderer()
+    let helpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
+
+    #expect(helpBar.contains("M+T"))
+    #expect(helpBar.contains("Tab"))
+    #expect(helpBar.contains("C+⇧+←/→"))
+    #expect(helpBar.contains("C+⇧+↑/↓"))
+}
+
+@Test func testTableModeCtrlUPasteDoesNotCorruptBorders() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┬────────┐",
+        "│        │ Cell 2 │",
+        "└────────┴────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    editor.clipboardText = "Hello"
+
+    // Press Ctrl+U in Table Mode
+    editor.processKey(.ctrl("u"))
+
+    // Verify cell contents and intact borders
+    #expect(editor.buffer.lines[0] == "┌────────┬────────┐")
+    #expect(editor.buffer.lines[1] == "│ Hello  │ Cell 2 │")
+    #expect(editor.buffer.lines[2] == "└────────┴────────┘")
+}
+
+@Test func testTableModeRowShrinkDoesNotDeleteNonEmptyLines() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┬────────┐",
+        "│ Line 1 │ Cell 2 │",
+        "│ Line 2 │        │",
+        "└────────┴────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    // Try to shrink height when both inner lines have text
+    editor.processKey(.ctrlShiftArrowUp)
+
+    // Verify height did NOT shrink and Line 2 was NOT deleted
+    #expect(editor.buffer.lines.count == 4)
+    #expect(editor.buffer.lines[1] == "│ Line 1 │ Cell 2 │")
+    #expect(editor.buffer.lines[2] == "│ Line 2 │        │")
+}
