@@ -56,6 +56,8 @@ public struct EnglishStrings {
     TABLE [rows cols width]      Insert a table
     TABLE BORDER style           Set default border style
     TABLE NEXTSTYLE              Cycle border style
+    Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
+            LINE clamps to 1...200 and VLINE clamps to 1...100.
 
   Border styles
     single, double, round, double-round, ascii, markdown
@@ -66,6 +68,8 @@ public struct EnglishStrings {
     RT angle / LT angle          Turn right/left
     SETHEADING angle|direction   Set heading
     HEADING                      Return current heading
+    Turtle stops at the top/left minimum edges; outward moves from
+    those edges draw nothing. Down/right moves may extend the buffer.
 
   Control flow and procedures
     REPEAT n [ commands ]        Repeat block; # and repcount are 1-based

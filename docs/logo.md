@@ -87,6 +87,12 @@ BOX 30 4 ROUND
 ╰────────────────────────────╯
 ```
 
+`BOX` and `DRAWBOX` clamp explicit dimensions to a visible, bounded range. Widths
+below `3` become `3`, heights below `2` become `2`, widths above `200` become
+`200`, and heights above `100` become `100`. For example, `BOX 0`,
+`BOX 1 0`, and `BOX -100 -100` all draw the smallest valid frame instead of
+failing or drawing nothing.
+
 #### `DRAWBOX` (Canvas Overlay Frame)
 
 `DRAWBOX` accepts the same arguments as `BOX`, but draws as a canvas overlay without pushing surrounding text. Use it when composing multi-box diagrams against fixed coordinates:
@@ -140,6 +146,10 @@ VLINE 5
 LINE 30 DOUBLE
 VLINE 4 ASCII
 ```
+
+Explicit `LINE` lengths are clamped to `1...200`, and explicit `VLINE` heights
+are clamped to `1...100`. This means `LINE 0`, `LINE -2`, and `LINE -100`
+draw a one-cell line, while `LINE 8000000` draws 200 cells.
 
 #### Auto-Connect Mode (No Length Specified)
 
@@ -311,6 +321,12 @@ PD REPEAT 4 [ FD 5 RT 90 ] PU
 └────┘
 ```
 
+The turtle canvas has a minimum row and column of `1` in LOGO commands
+(`0` internally). Moving up or left past that minimum boundary stops at the
+edge. A move that starts at the top edge and heads up, or starts at the left
+edge and heads left, draws nothing; a move that starts inside the canvas draws
+up to the edge and then stops. Moving down or right can extend the buffer.
+
 > For a complete guide on using `PD` and `PU` for ASCII flowcharts, see [logo_pen_mode.md](logo_pen_mode.md).
 
 ---
@@ -371,12 +387,12 @@ TYPE "hello;world"
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
 | `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
-| `BOX` | - | `BOX width height [style]` | Inserts an empty box frame (`single`, `double`, `ascii`, `round`, `double-round`) | `BOX 20 5 "round"` |
+| `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX 20 5 "round"` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
-| `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame | `DRAWBOX 20 5 "round"` |
-| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line, optionally with arrowheads | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line, optionally with arrowheads | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
+| `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 5 "round"` |
+| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
 | `MARK` | - | `MARK` | Toggles text selection mark anchor | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
@@ -392,8 +408,8 @@ TYPE "hello;world"
 | :--- | :--- | :--- | :--- | :--- |
 | `PD` | `PENDOWN` | `PD` | Pen Down: activates ASCII line & junction drawing mode during cursor movement | `PD` |
 | `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
-| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading | `FD 5`, `FD 10` |
-| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading | `BK 3` |
+| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading; stops at top/left minimum boundaries | `FD 5`, `FD 10` |
+| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading; stops at top/left minimum boundaries | `BK 3` |
 | `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
 | `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
 | `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction string (`"UP"`, `"RIGHT"`, `"DOWN"`, `"LEFT"`) | `SETH 0`, `SETH "RIGHT`, `SETH "DOWN` |

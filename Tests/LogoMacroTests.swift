@@ -256,6 +256,21 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(suffixEditor.buffer.lines[7] == "AA|      |AAAAAAAAAAAAAAAA")
     #expect(suffixEditor.buffer.lines[8] == "AA+------+AAAAAAAAAAAAAAAA")
 
+    let zeroWidthBoxEditor = Editor()
+    logoEngine.delegate = zeroWidthBoxEditor
+    logoEngine.execute("BOX 0")
+    #expect(zeroWidthBoxEditor.buffer.lines == ["┌─┐", "│ │", "│ │", "│ │", "└─┘"])
+
+    let zeroHeightBoxEditor = Editor()
+    logoEngine.delegate = zeroHeightBoxEditor
+    logoEngine.execute("BOX 1 0")
+    #expect(zeroHeightBoxEditor.buffer.lines == ["┌─┐", "└─┘"])
+
+    let negativeBoxEditor = Editor()
+    logoEngine.delegate = negativeBoxEditor
+    logoEngine.execute("BOX -100 -100")
+    #expect(negativeBoxEditor.buffer.lines == ["┌─┐", "└─┘"])
+
     // 14. LOGO LINE and NEWLINE Command test
     let lineEditor = Editor()
     logoEngine.delegate = lineEditor
@@ -270,6 +285,21 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.delegate = quotedNewlineEditor
     logoEngine.execute("TYPE \"A\" NL \"3\" TYPE \"B\"")
     #expect(quotedNewlineEditor.buffer.lines == ["A", "B"])
+
+    let zeroLineEditor = Editor()
+    logoEngine.delegate = zeroLineEditor
+    logoEngine.execute("LINE 0")
+    #expect(zeroLineEditor.buffer.lines[0] == "─")
+
+    let negativeLineEditor = Editor()
+    logoEngine.delegate = negativeLineEditor
+    logoEngine.execute("LINE -100")
+    #expect(negativeLineEditor.buffer.lines[0] == "─")
+
+    let hugeLineEditor = Editor()
+    logoEngine.delegate = hugeLineEditor
+    logoEngine.execute("LINE 8000000")
+    #expect(hugeLineEditor.buffer.lines[0].count == 200)
 
     // 15. LOGO VLINE Command test
     let vlineEditor = Editor()
@@ -505,7 +535,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     // Draw an expanding spiral using LOGO turtle loop and variable incrementing
     logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT 90 MAKE \"d\" ( :d + 2 ) ]")
     #expect(editor.buffer.lines.count >= 4, "lines were: \(editor.buffer.lines)")
-    #expect(editor.buffer.lines[0] == "├┐")
+    #expect(editor.buffer.lines[0] == "┌┐")
     #expect(editor.buffer.lines[1] == "││")
     #expect(editor.buffer.lines[2] == "││")
     #expect(editor.buffer.lines[3] == "└┘")
@@ -521,6 +551,33 @@ final class LogoTestResultBox: @unchecked Sendable {
     for line in editor.buffer.lines {
         #expect(line == "│")
     }
+}
+
+@Test func testTurtleStopsAtTopAndLeftBoundaries() throws {
+    let topBoundaryEditor = Editor()
+    let logoEngine = LogoEngine(delegate: topBoundaryEditor)
+
+    logoEngine.execute("SETH \"UP PD FD 5")
+    #expect(topBoundaryEditor.buffer.lines == [""])
+
+    let leftBoundaryEditor = Editor()
+    logoEngine.delegate = leftBoundaryEditor
+    logoEngine.execute("SETH \"LEFT PD FD 5")
+    #expect(leftBoundaryEditor.buffer.lines == [""])
+}
+
+@Test func testTurtleDrawsToMinimumBoundaryThenStops() throws {
+    let upToBoundaryEditor = Editor()
+    let logoEngine = LogoEngine(delegate: upToBoundaryEditor)
+
+    logoEngine.execute("SETH \"DOWN PU FD 3 SETH \"UP PD FD 5")
+    #expect(upToBoundaryEditor.buffer.lines == ["│", "│", "│"])
+
+    let leftToBoundaryEditor = Editor()
+    leftToBoundaryEditor.buffer.columnIndex = 2
+    logoEngine.delegate = leftToBoundaryEditor
+    logoEngine.execute("SETH \"LEFT PD FD 5")
+    #expect(leftToBoundaryEditor.buffer.lines == ["───"])
 }
 
 @Test func testTurtleDirectTableDrawing() throws {

@@ -39,6 +39,13 @@ extension LogoEngine {
         for step in 0..<steps {
             let currLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
             let currCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+            let nextLine = currLine + dRow
+            let nextCol = currCol + dCol
+            let nextIsInsideMinimumBounds = nextLine >= 0 && nextCol >= 0
+
+            if !nextIsInsideMinimumBounds && step == 0 {
+                break
+            }
 
             if isPenDown {
                 editor.logoEngine(self, performAction: .ensureLineExists(index: currLine))
@@ -49,7 +56,8 @@ extension LogoEngine {
                 }
                 let existingChar = lineChars[currCol]
                 let defaultNewChar: Character = (dRow != 0) ? "│" : "─"
-                let maskToApply = (step == 0) ? exitBit : ((step == steps - 1) ? entryBit : (exitBit | entryBit))
+                let isTerminalStep = step == steps - 1 || !nextIsInsideMinimumBounds
+                let maskToApply = (step == 0) ? exitBit : (isTerminalStep ? entryBit : (exitBit | entryBit))
                 let fusedChar = fuseCharContextual(line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar, moveMask: maskToApply)
                 lineChars[currCol] = fusedChar
                 editor.logoEngine(self, performAction: .setLine(index: currLine, text: String(lineChars)))
@@ -57,8 +65,7 @@ extension LogoEngine {
             }
 
             if step < steps - 1 {
-                let nextLine = max(0, currLine + dRow)
-                let nextCol = max(0, currCol + dCol)
+                guard nextIsInsideMinimumBounds else { break }
                 editor.logoEngine(self, performAction: .updateLineIndex(nextLine))
                 editor.logoEngine(self, performAction: .updateColumnIndex(nextCol))
             }

@@ -56,6 +56,8 @@ public struct TraditionalChineseStrings {
     TABLE [rows cols width]      插入表格
     TABLE BORDER style           設定預設框線樣式
     TABLE NEXTSTYLE              切換下一個框線樣式
+    邊界：BOX/DRAWBOX 限制為寬 3...200、高 2...100；
+          LINE 限制為 1...200，VLINE 限制為 1...100。
 
   框線樣式
     single, double, round, double-round, ascii, markdown
@@ -66,6 +68,8 @@ public struct TraditionalChineseStrings {
     RT angle / LT angle          右轉/左轉
     SETHEADING angle|direction   設定方向
     HEADING                      回傳目前方向
+    Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
+    往下/右移動可延伸 buffer。
 
   控制流程與 procedure
     REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
