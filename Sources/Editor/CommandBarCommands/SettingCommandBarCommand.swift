@@ -4,7 +4,7 @@ public struct SettingCommandBarCommand: CommandBarCommand {
     public let name = "set"
     public let help = "set <option> [value]"
     public let completionNames = ["set", "unset"]
-    public static let settingNames = ["wrap", "ruler", "linenumbers", "syntax", "autoreload", "tab", "lang"]
+    public static let settingNames = ["wrap", "ruler", "linenumbers", "syntax", "autoreload", "tab", "lang", "border"]
 
     public init() {}
 
@@ -41,6 +41,8 @@ public struct SettingCommandBarCommand: CommandBarCommand {
             return ["2", "4", "8"]
         case "lang", "language":
             return ["en", "zh_TW"]
+        case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+            return ["single", "double", "round", "double-round", "ascii", "markdown"]
         default:
             return []
         }

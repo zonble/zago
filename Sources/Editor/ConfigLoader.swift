@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 
 /// Parsed configuration settings loaded from ~/.serc or ./.serc files.
 public struct EditorConfig {
@@ -9,6 +10,7 @@ public struct EditorConfig {
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
     public var language: Language? = nil
+    public var defaultBorderStyle: BorderStyle = .single
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
     public var logoPrelude: String = ""
@@ -251,6 +253,13 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+                        if let style = BorderStyle(value) {
+                            config.defaultBorderStyle = style
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     default:
                         config.syntaxErrorCount += 1
                     }
@@ -318,6 +327,18 @@ public final class ConfigLoader {
                         config.syntaxErrorCount += 1
                     } else {
                         logoBlock = .script(name: name, lines: [])
+                    }
+                } else {
+                    config.syntaxErrorCount += 1
+                }
+
+            case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+                if tokens.count >= 2 {
+                    let value = tokens[1].lowercased()
+                    if let style = BorderStyle(value) {
+                        config.defaultBorderStyle = style
+                    } else {
+                        config.syntaxErrorCount += 1
                     }
                 } else {
                     config.syntaxErrorCount += 1
@@ -422,6 +443,9 @@ set autoReload on
 
 # Interface Language (en / zh_TW)
 # set language zh_TW
+
+# Default Table & Canvas Border Style (single / double / round / double-round / ascii / markdown)
+# set border single
 
 # ------------------------------------------------------------------------------
 # Custom Keybindings & Unbinds

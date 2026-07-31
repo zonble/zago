@@ -568,5 +568,22 @@ import Testing
     let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(separator: "\n")
     #expect(zhWorkspace.contains("LOGO 工作區"))
     #expect(zhWorkspace.contains("（無）"))
+}
 
+@Test func testDefaultBorderStyleConfig() throws {
+    let loader = ConfigLoader()
+    var config = EditorConfig()
+    let configContent = """
+    set border round
+    """
+    let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_border_config.zagorc").path
+    try configContent.write(toFile: tempFile, atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tempFile) }
+
+    loader.parseConfigFile(at: tempFile, into: &config)
+    #expect(config.defaultBorderStyle == .round)
+
+    let editor = Editor()
+    editor.applyEditorSetting(setting: "border", arg: "double")
+    #expect(editor.defaultBorderStyle == .double)
 }

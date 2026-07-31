@@ -302,6 +302,8 @@ public final class Editor {
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
     func applyCustomConfig(_ config: EditorConfig) {
+        defaultBorderStyle = config.defaultBorderStyle
+
         let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)
         if !prelude.isEmpty {
             logoEngine.execute(prelude)

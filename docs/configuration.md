@@ -47,6 +47,7 @@ The command writes the template file and exits without opening the editor.
 | `set autoreload` | Enables file auto-reload for external changes | `set autoreload` |
 | `unset autoreload` | Disables file auto-reload | `unset autoreload` |
 | `set lang [zh_TW|en]` | Sets the UI language explicitly | `set lang zh_TW` |
+| `set border [single\|double\|round\|double-round\|ascii\|markdown]` | Sets the default table & canvas border style | `set border round` |
 
 ## Key Bindings
 
