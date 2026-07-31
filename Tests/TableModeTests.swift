@@ -422,6 +422,16 @@ import Testing
         "└────────────┘",
     ])
     #expect(editor.statusMessage == "[ TABLE disabled in Table Mode ]")
+
+    editor.buffer.lines[1] = "│GOTO 1 1    │"
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 11
+    editor.processKey(.ctrl("Q"))
+    #expect(editor.statusMessage == "[ GOTO disabled in Table Mode ]")
+
+    editor.goToLocation(line: 1, column: 1)
+    #expect(editor.statusMessage == "[ GOTO disabled in Table Mode ]")
+    #expect(editor.buffer.lineIndex == 1)
 }
 
 @Test func testTableModeBlocksProcedureContainingLogoDrawingCommand() throws {

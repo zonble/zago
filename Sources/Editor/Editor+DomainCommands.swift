@@ -4,6 +4,11 @@ import TextMetrics
 
 extension Editor {
     public func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
+        if isTableModeActive {
+            setStatusMessage("[ GOTO disabled in Table Mode ]")
+            return
+        }
+
         guard oneBasedLine > 0 else {
             setStatusMessage(L10n["status.invalid_line"])
             return

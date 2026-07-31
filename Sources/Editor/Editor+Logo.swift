@@ -245,6 +245,7 @@ extension Editor {
     private static let tableModeBlockedLogoPrimitives: Set<LogoPrimitive> = [
         .box, .drawBox, .line, .hr, .vline, .vhr, .fill, .table,
         .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
+        .goto, .gotoline, .gotocol,
     ]
 
     @discardableResult

@@ -375,7 +375,7 @@ extension Editor {
             buffer.columnIndex = cellLeft + 1
         }
         clampTableModeCursor()
-        setStatusMessage("[ TABLE MODE ] (M+T to exit | Tab to navigate)")
+        setStatusMessage("(M+T to exit | Tab to navigate)")
     }
 
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
