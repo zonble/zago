@@ -327,6 +327,10 @@ Editor settings such as `set wrap 80`, `set tab 4`, `set linenumbers off`,
 They should not be LOGO primitives. LOGO data mutation primitives such as
 `SETITEM`, `.SETFIRST`, and `MDSETITEM` remain in LOGO.
 
+When the command prompt contains `set `, pressing Tab should show available
+setting completions. If the current setting prefix has one match, Tab may insert
+the matched setting name and a trailing space.
+
 ## Case Rules
 
 The shorthand parser is case-insensitive for editor commands that are not LOGO

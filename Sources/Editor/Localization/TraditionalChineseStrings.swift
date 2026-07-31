@@ -131,6 +131,8 @@ public struct TraditionalChineseStrings {
         "status.buffer_position": "Buffer %d / %d",
         "status.invalid_line": "無效的列號",
         "status.invalid_column": "無效的欄號",
+        "status.command_completions": "%@：%@",
+        "status.no_completions": "沒有可補完項目",
         "status.fill_text_required": "需要填滿文字",
         "status.justified_paragraph": "已完成段落重排",
         "status.already_oldest": "已至最舊復原紀錄",

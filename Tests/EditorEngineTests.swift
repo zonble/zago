@@ -1002,6 +1002,53 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.layoutEngine.wrapColumn == nil)
 }
 
+@Test func testCommandBarSetTabShowsSettingCompletions() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "SET " {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "SET ")
+    #expect(editor.statusMessage.contains("wrap"))
+    #expect(editor.promptCompletionText?.contains("wrap") == true)
+    #expect(editor.statusMessage.contains("linenumbers"))
+    #expect(editor.statusMessage.contains("syntax"))
+
+    let rendered = editor.renderer.render(editor: editor, rows: 24, cols: 80)
+    #expect(rendered.contains("wrap"))
+    #expect(rendered.contains("linenumbers"))
+}
+
+@Test func testCommandBarSetTabCompletesUniqueSettingPrefix() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "set li" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "set linenumbers ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
+}
+
+@Test func testCommandBarSetValueTabShowsValueCompletions() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "set syntax " {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "set syntax ")
+    #expect(editor.statusMessage.contains("on"))
+    #expect(editor.statusMessage.contains("off"))
+}
+
 @Test func testLastLineDownKeyMovesToEOL() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]

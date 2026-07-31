@@ -132,6 +132,7 @@ extension Editor {
 
     /// Helper for prompt inline character insertion at promptCursorIndex.
     private func insertPromptChar(_ ch: Character) {
+        promptCompletionText = nil
         let clamped = max(0, min(promptCursorIndex, promptInputText.count))
         let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
         promptInputText.insert(ch, at: idx)
@@ -140,12 +141,14 @@ extension Editor {
 
     /// Helper to clear the entire prompt input line (Ctrl+Backspace).
     private func clearPromptLine() {
+        promptCompletionText = nil
         promptInputText = ""
         promptCursorIndex = 0
     }
 
     /// Helper for prompt inline backspace deletion.
     private func deletePromptBackspace() {
+        promptCompletionText = nil
         if promptCursorIndex > 0 && !promptInputText.isEmpty {
             let clamped = max(1, min(promptCursorIndex, promptInputText.count))
             let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped - 1)
@@ -156,6 +159,7 @@ extension Editor {
 
     /// Helper for prompt inline delete key deletion.
     private func deletePromptDelete() {
+        promptCompletionText = nil
         if promptCursorIndex < promptInputText.count && !promptInputText.isEmpty {
             let clamped = max(0, min(promptCursorIndex, promptInputText.count - 1))
             let idx = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
@@ -189,6 +193,78 @@ extension Editor {
         default:
             return false
         }
+    }
+
+    private func replacePromptPrefix(_ replacement: String) {
+        promptCompletionText = nil
+        let clamped = max(0, min(promptCursorIndex, promptInputText.count))
+        let splitIndex = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
+        promptInputText = replacement + promptInputText[splitIndex...]
+        promptCursorIndex = replacement.count
+    }
+
+    private func showCommandBarCompletions(_ items: [String], label: String) {
+        if items.isEmpty {
+            promptCompletionText = L10n["status.no_completions"]
+            setStatusMessage(L10n["status.no_completions"])
+        } else {
+            let text = String(format: L10n["status.command_completions"], label, items.joined(separator: ", "))
+            promptCompletionText = text
+            setStatusMessage(text)
+        }
+    }
+
+    private func completeSettingCommandPrompt() -> Bool {
+        let clamped = max(0, min(promptCursorIndex, promptInputText.count))
+        let cursorIndex = promptInputText.index(promptInputText.startIndex, offsetBy: clamped)
+        let prefix = String(promptInputText[..<cursorIndex])
+        let suffix = String(promptInputText[cursorIndex...])
+
+        let commandParts = prefix.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
+        guard let command = commandParts.first?.lowercased(), command == "set" || command == "unset" else {
+            return false
+        }
+
+        guard prefix.contains(where: \.isWhitespace) else {
+            replacePromptPrefix(command + " ")
+            showCommandBarCompletions(SettingCommandBarCommand.settingNames, label: command.uppercased())
+            return true
+        }
+
+        let commandEnd = prefix.firstIndex(where: \.isWhitespace) ?? prefix.endIndex
+        let restStart = prefix[commandEnd...].firstIndex(where: { !$0.isWhitespace }) ?? prefix.endIndex
+        let rest = String(prefix[restStart...])
+
+        guard !rest.isEmpty else {
+            showCommandBarCompletions(SettingCommandBarCommand.settingNames, label: command.uppercased())
+            return true
+        }
+
+        if let settingEnd = rest.firstIndex(where: \.isWhitespace) {
+            let setting = String(rest[..<settingEnd])
+            let valuePrefixStart = rest[settingEnd...].firstIndex(where: { !$0.isWhitespace }) ?? rest.endIndex
+            let valuePrefix = String(rest[valuePrefixStart...]).lowercased()
+            let matches = SettingCommandBarCommand.valueSuggestions(for: setting)
+                .filter { valuePrefix.isEmpty || $0.lowercased().hasPrefix(valuePrefix) }
+
+            if matches.count == 1 && !valuePrefix.isEmpty {
+                replacePromptPrefix("\(command) \(setting) \(matches[0])")
+            } else {
+                showCommandBarCompletions(matches, label: setting)
+            }
+            return true
+        }
+
+        let settingPrefix = rest.lowercased()
+        let matches = SettingCommandBarCommand.settingNames.filter { $0.hasPrefix(settingPrefix) }
+        if matches.count == 1 && !settingPrefix.isEmpty {
+            replacePromptPrefix("\(command) \(matches[0]) ")
+        } else {
+            showCommandBarCompletions(matches, label: command.uppercased())
+        }
+
+        _ = suffix
+        return true
     }
 
     /// Processes keyboard input when in prompt mode.
@@ -307,8 +383,13 @@ extension Editor {
 
         case .logoMacro(let completion):
             switch key {
+            case .tab:
+                if completeSettingCommandPrompt() {
+                    break
+                }
             case .enter:
                 let script = promptInputText
+                promptCompletionText = nil
                 if !script.isEmpty {
                     if logoPromptHistory.last != script {
                         logoPromptHistory.append(script)
@@ -317,12 +398,14 @@ extension Editor {
                 currentPromptMode = .none
                 completion(script)
             case .arrowUp:
+                promptCompletionText = nil
                 if logoHistoryIndex > 0 {
                     logoHistoryIndex -= 1
                     promptInputText = logoPromptHistory[logoHistoryIndex]
                     promptCursorIndex = promptInputText.count
                 }
             case .arrowDown:
+                promptCompletionText = nil
                 if logoHistoryIndex < logoPromptHistory.count - 1 {
                     logoHistoryIndex += 1
                     promptInputText = logoPromptHistory[logoHistoryIndex]
@@ -333,6 +416,7 @@ extension Editor {
                     promptCursorIndex = 0
                 }
             case .esc, .ctrl("C"):
+                promptCompletionText = nil
                 currentPromptMode = .none
                 completion(nil)
             case .backspace:
@@ -547,6 +631,7 @@ extension Editor {
     func cancelPrompt() {
         currentPromptMode = .none
         promptInputText = ""
+        promptCompletionText = nil
     }
 
     /// Prompts user for LOGO macro script input (:logo / ^L).

@@ -38,6 +38,7 @@ matches, the input is evaluated as LOGO.
 | `buffer next` | Switch to the next buffer |
 | `buffer prev` / `buffer previous` | Switch to the previous buffer |
 | `buffer N` | Switch to 1-based buffer index `N` |
+| `set ` + `Tab` | Show available editor settings |
 
 Expressions and LOGO programs still fall through to LOGO. For example, `1 + 1`
 evaluates as a LOGO expression. File and multi-buffer actions such as `save`,

@@ -424,13 +424,18 @@ public final class Renderer {
 
         switch promptMode {
         case .logoMacro:
-            // Custom LOGO macro primitives help bar
-            helpItems1 = [
-                ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"), ("SHOW", "VALUE")
-            ]
-            helpItems2 = [
-                ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("VLINE", "[LEN][ARROW]"), ("TYPE", "VALUE")
-            ]
+            if let completionText = editor?.promptCompletionText, !completionText.isEmpty {
+                helpItems1 = [("SET", completionText)]
+                helpItems2 = [("Tab", "Complete"), ("Enter", "Confirm"), ("^C", "Cancel")]
+            } else {
+                // Custom LOGO macro primitives help bar
+                helpItems1 = [
+                    ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]")
+                ]
+                helpItems2 = [
+                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", "Complete")
+                ]
+            }
 
         case .confirmExitSave, .confirmExternalReload, .confirmCreateTable:
             // Y/N Exit & Confirmation prompt help bar

@@ -414,8 +414,8 @@ import TextMetrics
     #expect(logoHelp.contains("BOX"))
     #expect(logoHelp.contains("DRAWBOX"))
     #expect(logoHelp.contains("TABLE"))
-    #expect(logoHelp.contains("VLINE"))
-    #expect(logoHelp.contains("TYPE"))
+    #expect(logoHelp.contains("LINE"))
+    #expect(logoHelp.contains("Complete"))
 
     // 2. Exit Confirmation prompt help bar
     let exitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))

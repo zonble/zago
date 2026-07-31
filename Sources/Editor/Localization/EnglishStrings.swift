@@ -131,6 +131,8 @@ public struct EnglishStrings {
         "status.buffer_position": "Buffer %d of %d",
         "status.invalid_line": "Invalid line",
         "status.invalid_column": "Invalid column",
+        "status.command_completions": "%@: %@",
+        "status.no_completions": "No completions",
         "status.fill_text_required": "Fill text required",
         "status.justified_paragraph": "Justified paragraph",
         "status.already_oldest": "Already at oldest change",
