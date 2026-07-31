@@ -34,6 +34,18 @@ public final class Editor {
 
     var clipboardText: String? = nil
     var selectionMark: (line: Int, column: Int)? = nil
+    public struct CanvasBlockClipboard: Sendable, Equatable {
+        public let width: Int
+        public let rows: [String]
+
+        public init(width: Int, rows: [String]) {
+            self.width = width
+            self.rows = rows
+        }
+    }
+    public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
+    public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
+    public var canvasBlockClipboard: CanvasBlockClipboard? = nil
 
     // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
     var topVLineIndex: Int = 0
@@ -161,9 +173,9 @@ public final class Editor {
     /// Switches to next open buffer in sequence.
     public func nextBuffer() {
         guard buffers.count > 1 else { return }
-        currentBufferIndex = (currentBufferIndex + 1) % buffers.count
+            currentBufferIndex = (currentBufferIndex + 1) % buffers.count
         topVLineIndex = 0
-        selectionMark = nil
+        clearActiveMark()
         startFileWatcherForCurrentBuffer()
     }
 
@@ -172,7 +184,7 @@ public final class Editor {
         guard buffers.count > 1 else { return }
         currentBufferIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
         topVLineIndex = 0
-        selectionMark = nil
+        clearActiveMark()
         startFileWatcherForCurrentBuffer()
     }
 
@@ -182,7 +194,7 @@ public final class Editor {
         buffers.append(newBuf)
         currentBufferIndex = buffers.count - 1
         topVLineIndex = 0
-        selectionMark = nil
+        clearActiveMark()
         startFileWatcherForCurrentBuffer()
     }
 
@@ -205,7 +217,7 @@ public final class Editor {
         if let existingIndex = buffers.firstIndex(where: { $0.filePath == configPath }) {
             currentBufferIndex = existingIndex
             topVLineIndex = 0
-            selectionMark = nil
+            clearActiveMark()
             startFileWatcherForCurrentBuffer()
         } else {
             openNewBuffer(filePath: configPath)
@@ -242,7 +254,7 @@ public final class Editor {
         } else {
             currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
             topVLineIndex = 0
-            selectionMark = nil
+            clearActiveMark()
             startFileWatcherForCurrentBuffer()
         }
     }
@@ -377,7 +389,7 @@ public final class Editor {
         }
     }
 
-    /// Checks if a buffer character (line, col) is within the current selection mark range.
+    /// Checks if a buffer character (line, col) is within the current linear selection range.
     func isCharacterSelected(line: Int, col: Int) -> Bool {
         guard let mark = selectionMark else { return false }
         let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
@@ -398,5 +410,44 @@ public final class Editor {
             return col < end.column
         }
         return false
+    }
+
+    func isLineSelected(line: Int) -> Bool {
+        guard let mark = selectionMark else { return false }
+        let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+        if start.line == end.line {
+            return line == start.line && start.column != end.column
+        }
+        return line >= start.line && line <= end.line
+    }
+
+    public func clearActiveMark() {
+        selectionMark = nil
+        canvasBlockMark = nil
+        canvasBlockMarkEnd = nil
+    }
+
+    @discardableResult
+    func deleteTextSelectionIfNeeded(updateClipboard: Bool, saveSnapshot: Bool = true) -> Bool {
+        guard let mark = selectionMark else { return false }
+        let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
+        let (start, end) = getOrderedRange(mark1: mark, mark2: cursor)
+        guard start.line != end.line || start.column != end.column else {
+            selectionMark = nil
+            return false
+        }
+
+        if saveSnapshot {
+            saveUndoSnapshot()
+        }
+        let cutText = buffer.cutRange(start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+        if updateClipboard {
+            clipboardText = cutText
+        }
+        buffer.lineIndex = start.line
+        buffer.columnIndex = start.column
+        selectionMark = nil
+        buffer.clampCursor()
+        return true
     }
 }

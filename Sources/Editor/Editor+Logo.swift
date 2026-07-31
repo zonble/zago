@@ -81,6 +81,8 @@ extension Editor: LogoEngineDelegate {
             }
         case .refreshScreen:
             refreshScreen()
+        case .fillCanvasBlock(let text):
+            _ = fillCanvasBlock(with: text)
         case .gotoLine(let row):
             buffer.lineIndex = max(0, min(row, buffer.lines.count - 1))
             buffer.clampCursor()
@@ -125,6 +127,8 @@ extension Editor: LogoEngineDelegate {
             return buffer.lines[index]
         case .defaultBorderStyle:
             return defaultBorderStyle
+        case .hasCanvasBlockMark:
+            return isCanvasModeActive && !isTableModeActive && canvasBlockMark != nil
         case .bufferList:
             return buffers.map { $0.filePath ?? "Untitled" }
         case .currentBufferIndex:
@@ -401,7 +405,7 @@ extension Editor {
         return nil
     }
 
-    /// Evaluates LOGO code from selection mark, Markdown ```logo code fence, or current line/block.
+    /// Evaluates LOGO code from linear selection, Markdown ```logo code fence, or current line/block.
     public func evalLogoCode() {
         let script: String
 

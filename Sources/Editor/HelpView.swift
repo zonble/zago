@@ -1,6 +1,6 @@
 import Foundation
 
-/// Full-screen Help Viewer (^G / F1) displaying all editor keybindings with interactive scrolling.
+/// Full-screen Help Viewer displaying editor keybindings with interactive scrolling.
 public final class HelpView {
     private let terminal: Terminal
     private var topIndex: Int = 0
@@ -88,6 +88,7 @@ public final class HelpView {
             L10n["helpview.file_7"],
             L10n["helpview.file_8"],
             L10n["helpview.file_9"],
+            L10n["helpview.file_10"],
             "",
             L10n["helpview.sec_logo"],
             L10n["helpview.logo_1"],

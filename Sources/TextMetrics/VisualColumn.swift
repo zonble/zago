@@ -216,4 +216,47 @@ extension String {
             startCharacterOffset: startCharacterOffset,
             endCharacterOffset: endOffset)
     }
+
+    public func removingVisualColumns(start startVisualColumn: Int, width: Int) -> String {
+        let start = snappedVisualColumn(startVisualColumn, direction: .backward)
+        let end = snappedVisualColumn(start + max(0, width), direction: .forward)
+        guard end > start else { return self }
+
+        var padded = self
+        let currentWidth = padded.displayWidth
+        if end > currentWidth {
+            padded += String(repeating: " ", count: end - currentWidth)
+        }
+
+        var chars = Array(padded)
+        let startOffset = padded.characterOffset(forVisualColumn: start)
+        let endOffset = padded.characterOffset(forVisualColumn: end)
+        if startOffset < endOffset && startOffset < chars.count {
+            chars.removeSubrange(startOffset..<min(endOffset, chars.count))
+        }
+        return String(chars)
+    }
+
+    public func insertingAtVisualColumn(_ visualColumn: Int, text: String) -> String {
+        let target = max(0, visualColumn)
+        var padded = self
+        let currentWidth = padded.displayWidth
+        if target > currentWidth {
+            padded += String(repeating: " ", count: target - currentWidth)
+        }
+
+        let snapped = padded.snappedVisualColumn(target, direction: .backward)
+        var chars = Array(padded)
+        let offset = padded.characterOffset(forVisualColumn: snapped)
+        chars.insert(contentsOf: Array(text), at: min(offset, chars.count))
+        return String(chars)
+    }
+
+    public func trimmingTrailingSpaces() -> String {
+        var chars = Array(self)
+        while chars.last == " " {
+            chars.removeLast()
+        }
+        return String(chars)
+    }
 }

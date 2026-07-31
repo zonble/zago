@@ -28,6 +28,17 @@ private enum CanvasDrawDirection {
 }
 
 extension Editor {
+    struct CanvasBlockRectangle: Sendable, Equatable {
+        let topLine: Int
+        let bottomLine: Int
+        let leftColumn: Int
+        let rightColumnExclusive: Int
+
+        var width: Int {
+            max(0, rightColumnExclusive - leftColumn)
+        }
+    }
+
     func processCanvasDrawingKey(_ key: Key) -> Bool {
         guard isCanvasModeActive, !isTableModeActive else { return false }
 
@@ -63,6 +74,7 @@ extension Editor {
         }
 
         saveUndoSnapshot()
+        clearActiveMark()
         drawCanvasStep(direction: direction, drawsArrow: drawsArrow)
         return true
     }
@@ -112,6 +124,7 @@ extension Editor {
     }
 
     public func insertCanvasString(_ text: String) {
+        clearActiveMark()
         let startColumn = canvasVisualColumn
         let lines = text.components(separatedBy: .newlines)
         guard !lines.isEmpty else { return }
@@ -130,6 +143,7 @@ extension Editor {
     }
 
     public func insertCanvasNewline() {
+        clearActiveMark()
         let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
         buffer.lines.insert("", at: insertIndex)
         buffer.lineIndex = insertIndex
@@ -139,6 +153,7 @@ extension Editor {
     }
 
     public func deleteCanvasCharacter() {
+        clearActiveMark()
         ensureCanvasLineExists(buffer.lineIndex)
         let result = buffer.lines[buffer.lineIndex].clearingAtVisualColumn(canvasVisualColumn)
         buffer.lines[buffer.lineIndex] = result.text
@@ -148,6 +163,7 @@ extension Editor {
     }
 
     public func backspaceCanvasCharacter() {
+        clearActiveMark()
         guard canvasVisualColumn > 0 else {
             buffer.deleteLine()
             canvasVisualColumn = 0
@@ -184,6 +200,131 @@ extension Editor {
         while buffer.lines.count <= lineIndex {
             buffer.lines.append("")
         }
+    }
+
+    func currentCanvasBlockRectangle() -> CanvasBlockRectangle? {
+        guard let mark = canvasBlockMark else { return nil }
+        let end = canvasBlockMarkEnd ?? mark
+        let top = min(mark.line, end.line)
+        let bottom = max(mark.line, end.line)
+        let rawLeft = min(mark.visualColumn, end.visualColumn)
+        let rawRightInclusive = max(mark.visualColumn, end.visualColumn)
+        var left = rawLeft
+        var rightExclusive = rawRightInclusive + 1
+
+        for lineIndex in top...bottom {
+            guard lineIndex >= 0 && lineIndex < buffer.lines.count else { continue }
+            let line = buffer.lines[lineIndex]
+            let lineWidth = line.displayWidth
+            if rawLeft <= lineWidth {
+                left = min(left, line.snappedVisualColumn(rawLeft, direction: .backward))
+            }
+            if rawRightInclusive + 1 <= lineWidth {
+                rightExclusive = max(rightExclusive, line.snappedVisualColumn(rawRightInclusive + 1, direction: .forward))
+            }
+        }
+
+        return CanvasBlockRectangle(
+            topLine: max(0, top),
+            bottomLine: max(0, bottom),
+            leftColumn: max(0, left),
+            rightColumnExclusive: max(left, rightExclusive))
+    }
+
+    func isCanvasCellSelected(line: Int, visualColumn: Int) -> Bool {
+        guard let rect = currentCanvasBlockRectangle() else { return false }
+        return line >= rect.topLine && line <= rect.bottomLine
+            && visualColumn >= rect.leftColumn && visualColumn < rect.rightColumnExclusive
+    }
+
+    public func cutCanvasBlock() {
+        guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
+            setStatusMessage(L10n["status.no_block_marked"])
+            return
+        }
+
+        var rows: [String] = []
+        for lineIndex in rect.topLine...rect.bottomLine {
+            ensureCanvasLineExists(lineIndex)
+            let line = buffer.lines[lineIndex]
+            rows.append(line.visualSlice(startVisualColumn: rect.leftColumn, width: rect.width).text)
+            buffer.lines[lineIndex] = line.removingVisualColumns(start: rect.leftColumn, width: rect.width).trimmingTrailingSpaces()
+        }
+
+        canvasBlockClipboard = CanvasBlockClipboard(width: rect.width, rows: rows)
+        buffer.lineIndex = rect.topLine
+        canvasVisualColumn = rect.leftColumn
+        syncCanvasCursorToBuffer()
+        clearActiveMark()
+        buffer.isModified = true
+        setStatusMessage(L10n["status.cut_text"])
+    }
+
+    public func pasteCanvasBlock() {
+        guard let clipboard = canvasBlockClipboard, clipboard.width > 0, !clipboard.rows.isEmpty else {
+            setStatusMessage(L10n["status.clipboard_empty"])
+            return
+        }
+
+        saveUndoSnapshot()
+        let startLine = buffer.lineIndex
+        let startColumn = canvasVisualColumn
+        for (rowOffset, rowText) in clipboard.rows.enumerated() {
+            let targetLine = startLine + rowOffset
+            ensureCanvasLineExists(targetLine)
+            buffer.lines[targetLine] = buffer.lines[targetLine].insertingAtVisualColumn(startColumn, text: rowText)
+        }
+
+        buffer.lineIndex = startLine
+        canvasVisualColumn = startColumn
+        syncCanvasCursorToBuffer()
+        clearActiveMark()
+        buffer.isModified = true
+        setStatusMessage(L10n["status.uncut_text"])
+    }
+
+    public func fillCanvasBlock(with fillText: String) -> Bool {
+        guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else { return false }
+        guard !fillText.isEmpty else {
+            setStatusMessage(L10n["status.fill_text_required"])
+            return true
+        }
+
+        saveUndoSnapshot()
+        let replacement = repeatedCanvasFillText(fillText, width: rect.width)
+        for lineIndex in rect.topLine...rect.bottomLine {
+            ensureCanvasLineExists(lineIndex)
+            var line = buffer.lines[lineIndex].removingVisualColumns(start: rect.leftColumn, width: rect.width)
+            line = line.insertingAtVisualColumn(rect.leftColumn, text: replacement)
+            buffer.lines[lineIndex] = line.trimmingTrailingSpaces()
+        }
+        clearActiveMark()
+        buffer.isModified = true
+        setStatusMessage("[ Filled block ]")
+        syncCanvasCursorToBuffer()
+        return true
+    }
+
+    private func repeatedCanvasFillText(_ text: String, width: Int) -> String {
+        let fillChars = Array(text)
+        guard width > 0, !fillChars.isEmpty else { return "" }
+
+        var result = ""
+        var resultWidth = 0
+        var idx = 0
+        while resultWidth < width {
+            let ch = fillChars[idx % fillChars.count]
+            let chWidth = ch.displayWidth
+            if resultWidth + chWidth <= width {
+                result.append(ch)
+                resultWidth += chWidth
+            } else {
+                result += String(repeating: " ", count: width - resultWidth)
+                resultWidth = width
+            }
+            idx += 1
+        }
+        return result
     }
 
     private func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool) {

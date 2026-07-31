@@ -14,6 +14,7 @@
 | `^U` | Paste last cut text |
 | `^J` | Justify paragraph |
 | `^Z` | Undo |
-| `^G` | Help |
+| `^G` | Cancel active selection or canvas mark |
+| `F1` | Open menu bar |
 | `M+V` | Toggle canvas mode |
 | `M+T` | Toggle table mode |

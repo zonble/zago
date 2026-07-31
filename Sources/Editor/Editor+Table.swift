@@ -30,10 +30,12 @@ extension Editor {
 
         switch key {
         case .alt("t"), .alt("T"):
+            clearActiveMark()
             toggleTableMode()
             return true
 
         case .tab:
+            clearActiveMark()
             navigateNextTableCell()
             return true
 
@@ -46,6 +48,7 @@ extension Editor {
             return true
 
         case .arrowUp:
+            clearActiveMark()
             if buffer.lineIndex == cell.innerMinLine {
                 navigateUpTableCell()
             } else {
@@ -57,6 +60,7 @@ extension Editor {
             return true
 
         case .arrowDown:
+            clearActiveMark()
             if buffer.lineIndex == cell.innerMaxLine {
                 navigateDownTableCell()
             } else {
@@ -68,6 +72,7 @@ extension Editor {
             return true
 
         case .arrowLeft:
+            clearActiveMark()
             if buffer.columnIndex == cell.innerMinCol {
                 navigateLeftAdjacentTableCell()
             } else {
@@ -77,6 +82,7 @@ extension Editor {
             return true
 
         case .arrowRight:
+            clearActiveMark()
             if buffer.columnIndex == cell.innerMaxCol {
                 navigateRightAdjacentTableCell()
             } else {
@@ -90,6 +96,7 @@ extension Editor {
             return true
 
         case .home, .ctrl("a"), .ctrl("A"):
+            clearActiveMark()
             let line = buffer.lines[buffer.lineIndex]
             let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             buffer.columnIndex = leftBorder + 1
@@ -97,6 +104,7 @@ extension Editor {
             return true
 
         case .end, .ctrl("e"), .ctrl("E"):
+            clearActiveMark()
             let line = buffer.lines[buffer.lineIndex]
             let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
@@ -104,6 +112,7 @@ extension Editor {
             return true
 
         case .enter:
+            clearActiveMark()
             moveToNextTableCellLineOrCell()
             return true
 
@@ -165,6 +174,7 @@ extension Editor {
             return true
 
         case .char(let ch):
+            _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
             if insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true) {
                 let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
                 if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
@@ -329,6 +339,7 @@ extension Editor {
     /// Toggles Table Mode on/off.
     public func toggleTableMode() {
         if isTableModeActive {
+            clearActiveMark()
             isTableModeActive = false
             currentTableCell = nil
             overlayMode = .none
@@ -351,6 +362,7 @@ extension Editor {
 
     /// Enters Table Mode locked to target cell.
     public func enterTableMode(with cell: TableCell) {
+        clearActiveMark()
         isTableModeActive = true
         overlayMode = .table
         currentTableCell = cell

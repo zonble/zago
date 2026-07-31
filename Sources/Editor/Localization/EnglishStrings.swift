@@ -5,6 +5,7 @@ public struct EnglishStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help":   "Get Help",
+        "help.cancel":     "Cancel",
         "help.write_out":  "WriteOut",
         "help.read_file":  "Read File",
         "help.prev_pg":    "Prev Pg",
@@ -120,6 +121,9 @@ public struct EnglishStrings {
         "status.cut_one_line": "Cut 1 line",
         "status.uncut_text": "Uncut text",
         "status.clipboard_empty": "Clipboard is empty",
+        "status.no_selection": "No selection",
+        "status.no_block_marked": "No block marked",
+        "status.fill_text_required": "Fill text required",
         "status.justified_paragraph": "Justified paragraph",
         "status.already_oldest": "Already at oldest change",
         "status.undo_performed": "Undo performed",
@@ -152,8 +156,8 @@ public struct EnglishStrings {
 
         "helpview.sec_edit": "  EDITING & SELECTION:",
         "helpview.edit_1": "    ^D / Delete        Delete character at cursor position",
-        "helpview.edit_2": "    ^^ (Ctrl+^)        Set / Unset selection mark (starts text selection)",
-        "helpview.edit_3": "    ^K / F9            Cut selected text (or current line if no mark set)",
+        "helpview.edit_2": "    Shift+Arrow        Extend text/table selection",
+        "helpview.edit_3": "    ^K / F9            Cut selected text, canvas block, or current line",
         "helpview.edit_4": "    ^U / F10           Uncut (paste) last cut text at cursor position",
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
 
@@ -172,7 +176,8 @@ public struct EnglishStrings {
         "helpview.file_5": "    M+, / M+<          Previous Buffer (switch to previous buffer)",
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
         "helpview.file_7": "    F4                 Save & Exit (save buffer and close/exit)",
-        "helpview.file_8": "    ^G                 Display this help reference page",
+        "helpview.file_8": "    ^G                 Cancel active selection or canvas mark",
+        "helpview.file_10": "    ^^ (Canvas)        Set / unset rectangular canvas block mark",
         "helpview.file_9": "    F1 / M+M / ^M      Toggle top Menu Bar",
 
         "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
@@ -227,7 +232,7 @@ public struct EnglishStrings {
         "menu.file.reload_config": "Reload Config",
 
         "menu.edit.undo": "Undo\t^Z",
-        "menu.edit.mark": "Toggle Mark\t^M",
+        "menu.edit.mark": "Toggle Canvas Mark\t^^",
         "menu.edit.cut": "Cut Text\t^K",
         "menu.edit.paste": "UnCut (Paste)\t^U",
         "menu.edit.delete_line": "Delete Line\t^BS",
@@ -282,7 +287,7 @@ public struct EnglishStrings {
         "menu.diagrams.dot_digraph": "Graphviz Directed Graph (digraph)",
         "menu.diagrams.dot_graph": "Graphviz Undirected Graph (graph)",
 
-        "menu.help.show": "Show Help Reference\t^G",
+        "menu.help.show": "Show Help Reference",
         "menu.help.logo_reference": "LOGO Reference",
         "menu.help.logo_workspace": "Procedures & Variables"
     ]

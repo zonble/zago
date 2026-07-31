@@ -436,29 +436,221 @@ import TextMetrics
     }
 }
 
-@Test func testEscClearsSelectionBeforeLogoPrompt() throws {
+@Test func testCtrlGClearsSelectionAndEscOpensLogoPrompt() throws {
     let editor = Editor()
     editor.buffer.lines = ["abcdef"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 3
     editor.selectionMark = (line: 0, column: 1)
 
-    editor.processKey(.esc)
+    editor.processKey(.ctrl("G"))
 
     #expect(editor.selectionMark == nil)
     if case .none = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
-        #expect(Bool(false), "Esc with selection should clear selection before opening command prompt")
+        #expect(Bool(false), "^G with selection should stay in editing mode")
     }
     #expect(editor.statusMessage == L10n["status.mark_unset"])
 
-    editor.processKey(.alt(":"))
+    editor.processKey(.esc)
     if case .logoMacro = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
-        #expect(Bool(false), "Alt+: should still trigger command prompt mode")
+        #expect(Bool(false), "Esc should still trigger command prompt mode")
     }
+}
+
+@Test func testModeSwitchClearsMarksButKeepsSeparateClipboards() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef"]
+    editor.clipboardText = "text"
+    editor.selectionMark = (line: 0, column: 1)
+    editor.canvasBlockClipboard = Editor.CanvasBlockClipboard(width: 2, rows: ["xy"])
+
+    editor.switchToCanvasMode()
+    #expect(editor.selectionMark == nil)
+    #expect(editor.clipboardText == "text")
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
+
+    editor.canvasBlockMark = (line: 0, visualColumn: 1)
+    editor.switchToTextMode()
+    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.clipboardText == "text")
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
+}
+
+@Test func testTextSelectionReplacementAndEmptyLineHighlight() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abc", "", "def"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 1
+
+    editor.processKey(.shiftArrowDown)
+    editor.processKey(.shiftArrowDown)
+    #expect(editor.selectionMark?.line == 0)
+    #expect(editor.selectionMark?.column == 1)
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 0)
+
+    let rendered = editor.renderer.render(editor: editor, rows: 10, cols: 24)
+    #expect(rendered.contains("\u{1B}[7m                   \u{1B}[m"))
+
+    editor.processKey(.char("X"))
+    #expect(editor.selectionMark == nil)
+    #expect(editor.buffer.lines == ["aXdef"])
+}
+
+@Test func testCanvasBlockCutPasteAndCancel() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef", "123456"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    editor.processKey(.ctrl("K"))
+
+    #expect(editor.buffer.lines == ["aef", "156"])
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 1)
+    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.canvasBlockMarkEnd == nil)
+
+    editor.buffer.lines = ["xxYY", "zzWW"]
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 2
+    editor.processKey(.ctrl("U"))
+
+    #expect(editor.buffer.lines == ["xxbcdYY", "zz234WW"])
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 2)
+
+    editor.processKey(.mark)
+    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.canvasBlockMarkEnd != nil)
+    editor.processKey(.ctrl("G"))
+    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.canvasBlockMarkEnd == nil)
+}
+
+@Test func testCanvasBlockCutWithoutMarkAndCJKBoundarySnap() throws {
+    let noMarkEditor = Editor()
+    noMarkEditor.buffer.lines = ["abcdef"]
+    noMarkEditor.switchToCanvasMode()
+    noMarkEditor.processKey(.ctrl("K"))
+    #expect(noMarkEditor.buffer.lines == ["abcdef"])
+    #expect(noMarkEditor.canvasBlockClipboard == nil)
+    #expect(noMarkEditor.statusMessage == L10n["status.no_block_marked"])
+
+    let cjkEditor = Editor()
+    cjkEditor.buffer.lines = ["A中BC"]
+    cjkEditor.switchToCanvasMode()
+    cjkEditor.buffer.lineIndex = 0
+    cjkEditor.canvasVisualColumn = 2
+    cjkEditor.processKey(.mark)
+    cjkEditor.canvasVisualColumn = 2
+    cjkEditor.processKey(.mark)
+    cjkEditor.processKey(.ctrl("K"))
+
+    #expect(cjkEditor.buffer.lines == ["ABC"])
+    #expect(cjkEditor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["中"]))
+}
+
+@Test func testCanvasBlockMarkStatusShowsStartAndEndCoordinates() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    let status = editor.renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(status.contains("Mark Set (start 1,2 end 2,4)"))
+}
+
+@Test func testCanvasArrowMovementKeepsBlockMarkWithoutChangingBlock() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    #expect(editor.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+
+    editor.processKey(.arrowRight)
+    editor.processKey(.arrowDown)
+
+    #expect(editor.canvasBlockMark?.line == 0)
+    #expect(editor.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 2)
+
+    let status = editor.renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(status.contains("Mark Set (start 1,2 end 1,2)"))
+
+    editor.processKey(.mark)
+    #expect(editor.canvasBlockMark?.line == 0)
+    #expect(editor.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.canvasBlockMarkEnd?.line == 1)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 2)
+}
+
+@Test func testCanvasEmptyLineHighlightsOnlyMarkedBlockWidth() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abc", "", "def"]
+    editor.displayConfig.showLineNumbers = false
+    editor.displayConfig.showRuler = false
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 2
+    editor.processKey(.mark)
+    editor.canvasVisualColumn = 4
+    editor.processKey(.mark)
+
+    let virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: 10)
+    let rendered = editor.renderer.renderMainTextArea(
+        editor: editor,
+        mainAreaHeight: 3,
+        gutterWidth: 0,
+        virtualLines: virtualLines,
+        cols: 10,
+        dropdownStartCol: 0,
+        dropdownBoxWidth: 0,
+        dropdownBoxLines: []
+    )
+
+    let highlightedCells = rendered.components(separatedBy: "\u{1B}[7m \u{1B}[m").count - 1
+    #expect(highlightedCells == 3)
+    #expect(!rendered.contains("\u{1B}[7m          \u{1B}[m"))
+}
+
+@Test func testCanvasFillUsesActiveBlockMark() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef", "123456", "uvwxyz"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    editor.runLogoScript("FILL \"x")
+
+    #expect(editor.buffer.lines == ["axxxef", "1xxx56", "uvwxyz"])
+    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 3)
 }
 
 @Test func testCtrlBackspaceDeleteLineCommand() throws {

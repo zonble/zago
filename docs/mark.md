@@ -64,26 +64,28 @@ Canvas mode follows a PE2-style rectangular block mark model.
 
 ### Block Mark
 
-- `^^` / `Ctrl+^` sets or updates the canvas block mark.
-- The active block is the rectangle between the mark anchor and the current
-  cursor position.
+- `^^` / `Ctrl+^` sets the canvas block mark start point when no block is
+  active.
+- Pressing `^^` / `Ctrl+^` again sets the block end point at the current cursor
+  position.
+- Pressing `^^` / `Ctrl+^` after both points are set starts a new block mark at
+  the current cursor position.
+- Cursor movement does not change the active block mark. Only `^^` / `Ctrl+^`
+  changes the block start or end point.
+- The active block is the rectangle between the fixed start and end points.
 - Block bounds are visual-cell based and inclusive.
 - The block may include empty cells and trailing blank space.
+- Empty canvas lines render highlight only inside the rectangular block; they do
+  not become full-width highlighted lines. Full-width empty-line highlight is
+  text edit mode behavior only.
 - Canvas block mark is independent from text edit mode selection.
 - Block edges snap to whole character boundaries. A block operation must not
   split a wide character such as CJK text or emoji.
 
 ### Cancel Mark
 
-Canvas mode needs an explicit cancel-mark key. The exact key is still open.
-Candidates:
-
-- `Esc`
-- `^G`
-- a dedicated command exposed through the menu and configurable key bindings
-
-The chosen cancel command clears only the active canvas block mark. It does
-not alter either clipboard.
+`^G` cancels the active canvas block mark. It does not alter either clipboard.
+If no canvas block mark is active, `^G` reports that no block is marked.
 
 ### Cut Block
 
@@ -187,4 +189,4 @@ uvwxyz
 
 ## Open Decisions
 
-- Choose the final canvas cancel-mark key.
+There are no open mark behavior decisions at this time.

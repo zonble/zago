@@ -10,6 +10,9 @@ public struct DeleteLineCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+            return
+        }
         editor.deleteCurrentLine()
     }
 }
@@ -24,6 +27,9 @@ public struct DeleteCharCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+            return
+        }
         if editor.isCanvasModeActive {
             editor.deleteCanvasCharacter()
             return
@@ -35,18 +41,51 @@ public struct DeleteCharCommand: Command {
 public struct ToggleMarkCommand: Command {
     public let id: CommandID = .editMark
     public let name = "Mark"
-    public let description = "Set or unset selection mark"
+    public let description = "Set or unset canvas block mark"
     public let keys: [Key] = [.mark]
 
     public init() {}
 
     public func execute(on editor: Editor) {
-        if editor.selectionMark == nil {
-            editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+        guard editor.isCanvasModeActive && !editor.isTableModeActive else {
+            editor.setStatusMessage(L10n["status.no_selection"])
+            return
+        }
+
+        let point = (line: editor.buffer.lineIndex, visualColumn: editor.canvasVisualColumn)
+        if editor.canvasBlockMark == nil {
+            editor.canvasBlockMark = point
+            editor.canvasBlockMarkEnd = point
+            editor.setStatusMessage(L10n["status.mark_set"])
+        } else if let mark = editor.canvasBlockMark,
+                  let end = editor.canvasBlockMarkEnd,
+                  end.line == mark.line && end.visualColumn == mark.visualColumn {
+            editor.canvasBlockMarkEnd = point
             editor.setStatusMessage(L10n["status.mark_set"])
         } else {
-            editor.selectionMark = nil
+            editor.canvasBlockMark = point
+            editor.canvasBlockMarkEnd = point
+            editor.setStatusMessage(L10n["status.mark_set"])
+        }
+    }
+}
+
+public struct CancelSelectionCommand: Command {
+    public let id: CommandID = .editCancelSelection
+    public let name = "Cancel Selection"
+    public let description = "Cancel active selection or mark"
+    public let keys: [Key] = [.ctrl("G")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        if editor.selectionMark != nil || editor.canvasBlockMark != nil {
+            editor.clearActiveMark()
             editor.setStatusMessage(L10n["status.mark_unset"])
+        } else if editor.isCanvasModeActive {
+            editor.setStatusMessage(L10n["status.no_block_marked"])
+        } else {
+            editor.setStatusMessage(L10n["status.no_selection"])
         }
     }
 }
@@ -62,7 +101,9 @@ public struct CutTextCommand: Command {
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
         editor.buffer.clampCursor()
-        if let mark = editor.selectionMark {
+        if editor.isCanvasModeActive && !editor.isTableModeActive {
+            editor.cutCanvasBlock()
+        } else if let mark = editor.selectionMark {
             let (start, end) = editor.getOrderedRange(
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
 
@@ -93,13 +134,11 @@ public struct UncutTextCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        if let text = editor.clipboardText, !text.isEmpty {
+        if editor.isCanvasModeActive && !editor.isTableModeActive {
+            editor.pasteCanvasBlock()
+        } else if let text = editor.clipboardText, !text.isEmpty {
             editor.saveUndoSnapshot()
-            if editor.isCanvasModeActive {
-                editor.insertCanvasString(text)
-            } else {
-                editor.buffer.insertString(text)
-            }
+            editor.buffer.insertString(text)
             editor.setStatusMessage(L10n["status.uncut_text"])
         } else {
             editor.setStatusMessage(L10n["status.clipboard_empty"])
@@ -117,6 +156,10 @@ public struct InsertTabCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+            editor.buffer.insertString("    ")
+            return
+        }
         if editor.isCanvasModeActive {
             editor.insertCanvasString("    ")
         } else {

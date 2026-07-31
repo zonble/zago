@@ -67,7 +67,7 @@ public struct ShowHelpCommand: Command {
     public let id: CommandID = .helpShow
     public let name = "Get Help"
     public let description = "Show full-screen help"
-    public let keys: [Key] = [.ctrl("G")]
+    public let keys: [Key] = []
 
     public init() {}
 

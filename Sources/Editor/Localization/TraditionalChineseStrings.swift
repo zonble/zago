@@ -5,6 +5,7 @@ public struct TraditionalChineseStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help":   "輔助說明",
+        "help.cancel":     "取消",
         "help.write_out":  "寫入檔案",
         "help.read_file":  "讀入檔案",
         "help.prev_pg":    "前往上頁",
@@ -120,6 +121,9 @@ public struct TraditionalChineseStrings {
         "status.cut_one_line": "已剪下 1 行",
         "status.uncut_text": "已貼上文字",
         "status.clipboard_empty": "剪貼簿為空",
+        "status.no_selection": "沒有選取範圍",
+        "status.no_block_marked": "未標記區塊",
+        "status.fill_text_required": "需要填滿文字",
         "status.justified_paragraph": "已完成段落重排",
         "status.already_oldest": "已至最舊復原紀錄",
         "status.undo_performed": "已完成復原",
@@ -152,8 +156,8 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_edit": "  編輯、剪貼與選取：",
         "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
-        "helpview.edit_2": "    ^^ (Ctrl+^)        設定/取消選取標記（啟動範圍選取）",
-        "helpview.edit_3": "    ^K / F9            剪下選取文字（無標記時剪下整行）",
+        "helpview.edit_2": "    Shift+方向鍵       延伸 text/table 選取範圍",
+        "helpview.edit_3": "    ^K / F9            剪下選取文字、canvas 區塊或目前行",
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
 
@@ -172,7 +176,8 @@ public struct TraditionalChineseStrings {
         "helpview.file_5": "    M+, / M+<          Previous Buffer (切換至上一個 Buffer)",
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
         "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
-        "helpview.file_8": "    ^G                 顯示本完整幫助說明頁面",
+        "helpview.file_8": "    ^G                 取消目前選取範圍或 canvas mark",
+        "helpview.file_10": "    ^^ (Canvas)        設定/取消矩形 canvas 區塊標記",
         "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
@@ -227,7 +232,7 @@ public struct TraditionalChineseStrings {
         "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
-        "menu.edit.mark": "標記選取區\t^M",
+        "menu.edit.mark": "標記 Canvas 區塊\t^^",
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^BS",
@@ -282,7 +287,7 @@ public struct TraditionalChineseStrings {
         "menu.diagrams.dot_digraph": "Graphviz 有向圖 (digraph)",
         "menu.diagrams.dot_graph": "Graphviz 無向圖 (graph)",
 
-        "menu.help.show": "顯示完整說明手冊 (Help)\t^G",
+        "menu.help.show": "顯示完整說明手冊 (Help)",
         "menu.help.logo_reference": "LOGO 指令參考",
         "menu.help.logo_workspace": "Procedures 與變數"
     ]

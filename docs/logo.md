@@ -393,7 +393,7 @@ TYPE "hello;world"
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 5 "round"` |
 | `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
 | `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
-| `MARK` | - | `MARK` | Toggles text selection mark anchor | `MARK` |
+| `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
 | `FIND` | `SEARCH` | `FIND "query"` | Case-insensitive forward text search | `FIND "func"` |

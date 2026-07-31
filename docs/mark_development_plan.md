@@ -12,7 +12,7 @@ model defined in [mark.md](mark.md).
 - Text/table share one text clipboard.
 - Canvas mode uses a separate rectangular block clipboard.
 - `^G` becomes Cancel Selection / Cancel Mark.
-- Help moves off `^G`; `F1` and the Help menu remain the help entry points.
+- Help moves off `^G`; `F1` opens the menu bar, and the Help menu remains the help entry point.
 
 ## Phase 1: State Model
 
@@ -38,16 +38,17 @@ model defined in [mark.md](mark.md).
   - text mode: clear active selection, otherwise show no-selection status
   - table mode: clear active selection, otherwise show no-selection status
   - canvas mode: clear active block mark, otherwise show no-block status
-- Keep Help available through `F1` and the Help menu.
+- Keep Help available through the Help menu.
+- Keep `F1` as the menu bar entry point.
 - Update the bottom help bar:
   - remove `^G Help`
   - show `^G Cancel` or equivalent wording
-  - keep `F1 Help` where applicable
 - Update full-screen help and command descriptions:
   - text/table selection uses `Shift+Arrow`
   - canvas block mark uses `^^`
   - `^G` cancels selection/mark
-  - `F1` opens help
+  - the Help menu opens help
+  - `F1` opens the menu bar
 - Update configuration docs so the default command id for `^G` is no longer
   help.
 
@@ -155,7 +156,8 @@ Add focused tests before each implementation step.
   - text/table clipboard and canvas clipboard remain isolated
 - Help and key bindings:
   - `^G` dispatches cancel, not help
-  - `F1` opens help
+  - the Help menu opens help
+  - `F1` opens the menu bar
   - help text and help bar show the new bindings
 
 ## Phase 9: Documentation Updates

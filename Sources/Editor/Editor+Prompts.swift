@@ -37,11 +37,6 @@ extension Editor {
                 toggleMenuBar()
                 return
             }
-            if key == .esc, selectionMark != nil {
-                selectionMark = nil
-                setStatusMessage(L10n["status.mark_unset"])
-                return
-            }
         } else {
             if key == .esc {
                 cancelPrompt()
@@ -72,6 +67,9 @@ extension Editor {
 
         switch key {
         case .backspace:
+            if !isCanvasModeActive && deleteTextSelectionIfNeeded(updateClipboard: false) {
+                break
+            }
             saveUndoSnapshot()
             if isCanvasModeActive {
                 backspaceCanvasCharacter()
@@ -80,6 +78,10 @@ extension Editor {
             }
 
         case .enter:
+            if !isCanvasModeActive && deleteTextSelectionIfNeeded(updateClipboard: false) {
+                buffer.insertNewline()
+                break
+            }
             saveUndoSnapshot()
             if isCanvasModeActive {
                 insertCanvasNewline()
@@ -91,12 +93,15 @@ extension Editor {
             let pastedText = terminal.readPendingText(firstChar: ch)
             let isMultiChar = (pastedText.count > 1)
             let now = Date()
+            let replacedSelection = !isCanvasModeActive && selectionMark != nil
 
             let isCoalescedPaste =
                 isMultiChar && lastIsPaste
                 && (lastMutationTime != nil && now.timeIntervalSince(lastMutationTime!) < 0.5)
 
-            if !isCoalescedPaste {
+            if replacedSelection {
+                _ = deleteTextSelectionIfNeeded(updateClipboard: false)
+            } else if !isCoalescedPaste {
                 saveUndoSnapshot()
             }
 

@@ -13,6 +13,7 @@ public struct MoveRightCommand: Command {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: 1)
             return
         }
+        editor.clearActiveMark()
 
         let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
         if editor.buffer.columnIndex < currentLineLength {
@@ -37,6 +38,7 @@ public struct MoveLeftCommand: Command {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: -1)
             return
         }
+        editor.clearActiveMark()
 
         if editor.buffer.columnIndex > 0 {
             editor.buffer.columnIndex -= 1
@@ -60,6 +62,7 @@ public struct MoveUpCommand: Command {
             editor.moveCanvasCursor(deltaLine: -1, deltaColumn: 0)
             return
         }
+        editor.clearActiveMark()
 
         editor.moveCursorVirtual(deltaRow: -1)
     }
@@ -78,6 +81,7 @@ public struct MoveDownCommand: Command {
             editor.moveCanvasCursor(deltaLine: 1, deltaColumn: 0)
             return
         }
+        editor.clearActiveMark()
 
         editor.moveCursorVirtual(deltaRow: 1)
     }
@@ -96,6 +100,7 @@ public struct MoveHomeCommand: Command {
             editor.moveCanvasCursorToLineStart()
             return
         }
+        editor.clearActiveMark()
 
         let vLine = editor.getVirtualLineForCursor()
         editor.buffer.columnIndex = vLine.startCol
@@ -115,6 +120,7 @@ public struct MoveEndCommand: Command {
             editor.moveCanvasCursorToLineEnd()
             return
         }
+        editor.clearActiveMark()
 
         let (_, cols) = editor.terminal.getWindowSize()
         let textWidth = max(10, cols - 5)
@@ -153,6 +159,7 @@ public struct MovePgdnCommand: Command {
             editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: false)
             return
         }
+        editor.clearActiveMark()
         editor.moveCursorVirtual(deltaRow: mainAreaHeight)
     }
 }
@@ -172,6 +179,7 @@ public struct MovePgupCommand: Command {
             editor.moveCanvasCursor(deltaLine: -mainAreaHeight, deltaColumn: 0)
             return
         }
+        editor.clearActiveMark()
         editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
     }
 }

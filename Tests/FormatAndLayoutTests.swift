@@ -407,8 +407,9 @@ import TextMetrics
 
     // 4. Default Nano help bar
     let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none)
-    #expect(defaultHelp.contains("^G"))
-    #expect(defaultHelp.contains(L10n.helpGetHelp))
+    #expect(defaultHelp.contains("F1"))
+    #expect(defaultHelp.contains("Menu"))
+    #expect(!defaultHelp.contains("^G"))
     #expect(defaultHelp.contains("^O"))
     #expect(defaultHelp.contains(L10n.helpWriteOut))
 
@@ -416,8 +417,11 @@ import TextMetrics
     editor.switchToCanvasMode()
     let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
     #expect(canvasHelp.contains("⇧+Arrow"))
-    #expect(canvasHelp.contains("^⇧+Arrow"))
-    #expect(canvasHelp.contains("BS/Del"))
+    #expect(canvasHelp.contains("^^"))
+    #expect(canvasHelp.contains("^K"))
+    #expect(canvasHelp.contains("^U"))
+    #expect(canvasHelp.contains("F1"))
+    #expect(!canvasHelp.contains("^G"))
     #expect(!canvasHelp.contains(L10n.helpGetHelp))
 }
 

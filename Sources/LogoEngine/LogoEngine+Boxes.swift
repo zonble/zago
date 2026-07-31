@@ -448,7 +448,15 @@ extension LogoEngine {
             fillPattern = unquote(evaluateExpression(tokens, index: &index))
         }
 
-        if fillPattern.isEmpty { fillPattern = " " }
+        if fillPattern.isEmpty {
+            editor.logoEngine(self, performAction: .setStatusMessage("Fill text required"))
+            return
+        }
+
+        if (editor.logoEngine(self, queryState: .hasCanvasBlockMark) as? Bool) == true {
+            editor.logoEngine(self, performAction: .fillCanvasBlock(fillPattern))
+            return
+        }
 
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0

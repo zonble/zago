@@ -261,8 +261,12 @@ public final class Renderer {
                 }
 
                 let chars = Array(renderedLineText)
+                var renderedDisplayWidth = 0
                 for (cIdxInVLine, ch) in chars.enumerated() {
                     let realCol = renderedStartCol + cIdxInVLine
+                    let charVisualColumn = editor.isCanvasModeActive
+                        ? editor.canvasHorizontalOffset + renderedDisplayWidth
+                        : realCol
                     let isCellActive: Bool
                     if let (cellLeft, cellRight) = activeCellBounds {
                         isCellActive = realCol > cellLeft && realCol < cellRight
@@ -270,7 +274,9 @@ public final class Renderer {
                         isCellActive = false
                     }
 
-                    if editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                    if editor.isCanvasModeActive && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn) {
+                        lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"
+                    } else if !editor.isCanvasModeActive && editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
                     } else if isCellActive {
                         lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
@@ -280,6 +286,38 @@ public final class Renderer {
                     } else {
                         lineOutput += String(ch)
                     }
+                    renderedDisplayWidth += ch.displayWidth
+                }
+
+                let visibleTextWidth = max(0, cols - gutterWidth)
+                if editor.isCanvasModeActive {
+                    let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
+                    var selectedPad = ""
+                    var normalPad = ""
+                    for screenOffset in renderedDisplayWidth..<visibleTextWidth {
+                        let visualCol = editor.canvasHorizontalOffset + screenOffset
+                        if editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: visualCol) {
+                            if !normalPad.isEmpty {
+                                lineOutput += normalPad
+                                normalPad = ""
+                            }
+                            selectedPad.append(" ")
+                        } else {
+                            if !selectedPad.isEmpty {
+                                lineOutput += "\u{1B}[7m\(selectedPad)\u{1B}[m"
+                                selectedPad = ""
+                            }
+                            normalPad.append(" ")
+                        }
+                    }
+                    if !selectedPad.isEmpty {
+                        lineOutput += "\u{1B}[7m\(selectedPad)\u{1B}[m"
+                    }
+                    if !normalPad.isEmpty && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart) {
+                        lineOutput += normalPad
+                    }
+                } else if chars.isEmpty && editor.isLineSelected(line: vLine.bufferLineIndex) {
+                    lineOutput += "\u{1B}[7m\(String(repeating: " ", count: visibleTextWidth))\u{1B}[m"
                 }
             }
 
@@ -336,7 +374,9 @@ public final class Renderer {
     public func renderIdleStatusLine(editor: Editor, cols: Int) -> String {
         let modeText = editor.modeIndicatorText()
         let activeStatus: String
-        if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
+        if let markStatus = canvasMarkStatusText(editor: editor) {
+            activeStatus = markStatus
+        } else if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
             activeStatus = editor.statusMessage
         } else {
             activeStatus = ""
@@ -358,6 +398,16 @@ public final class Renderer {
         let leftPaddingCount = max(0, (cols - combined.displayWidth) / 2)
         let centered = String(repeating: " ", count: leftPaddingCount) + combined
         return centered.paddedToDisplayWidth(cols)
+    }
+
+    private func canvasMarkStatusText(editor: Editor) -> String? {
+        guard editor.isCanvasModeActive, let mark = editor.canvasBlockMark else { return nil }
+        let end = editor.canvasBlockMarkEnd ?? mark
+        let startRow = mark.line + 1
+        let startCol = mark.visualColumn + 1
+        let endRow = end.line + 1
+        let endCol = end.visualColumn + 1
+        return "\(L10n["status.mark_set"]) (start \(startRow),\(startCol) end \(endRow),\(endCol))"
     }
 
     // MARK: - Component 5: Dynamic Contextual Help Bar
@@ -400,17 +450,17 @@ public final class Renderer {
         case .none:
             if editor?.isCanvasModeActive == true && editor?.isTableModeActive != true {
                 helpItems1 = [
-                    ("^O", "Save"), ("^X", "Exit"), ("M+V", "Text"),
-                    ("Arrows", "Move"), ("⇧+Arrow", "Box"),
+                    ("F1", "Menu"), ("^O", "Save"), ("^X", "Exit"),
+                    ("M+V", "Text"),
                 ]
                 helpItems2 = [
-                    ("^⇧+Arrow", "Arrow"), ("Type", "Replace"), ("BS/Del", "Clear"),
-                    ("Enter", "New Line"), ("M+T", "Table"), ("Esc", "Command"),
+                    ("^^", "Mark"), ("^K", "Cut Block"), ("^U", "Paste Block"),
+                    ("⇧+Arrow", "Box"), ("Esc", "Command"),
                 ]
             } else {
                 // Default Nano text editing help bar
                 helpItems1 = [
-                    ("^G", L10n.helpGetHelp), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
+                    ("F1", "Menu"), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
                     ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
                 ]
                 helpItems2 = [

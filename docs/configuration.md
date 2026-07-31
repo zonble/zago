@@ -54,13 +54,13 @@ Use `bind` to map a key to a command id:
 
 ```nanorc
 bind ctrl-s file.save
-bind f1 help.show
+bind ctrl-g edit.cancel_selection
 ```
 
 Use `unbind` to remove a default binding:
 
 ```nanorc
-unbind f1
+unbind ctrl-g
 ```
 
 LOGO commands can be bound inline:
@@ -126,7 +126,8 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `move.pgdn` | Page down | `^V`, `F8`, `PageDown` |
 | `move.pgup` | Page up | `^Y`, `F7`, `PageUp` |
 | `edit.delete` | Delete character | `^D`, `Delete` |
-| `edit.mark` | Set or unset selection mark | `^^` |
+| `edit.mark` | Set or unset canvas block mark | `^^` in canvas mode |
+| `edit.cancel_selection` | Cancel active selection or canvas mark | `^G` |
 | `edit.cut` | Cut selected text, or current line when no selection exists | `^K`, `F9` |
 | `edit.uncut` | Paste last cut text | `^U`, `F10` |
 | `edit.justify` | Justify paragraph | `^J` |
@@ -147,7 +148,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `logo.reference` | Show LOGO reference | Menu |
 | `logo.workspace` | Show LOGO procedures and variables | Menu |
 | `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
-| `help.show` | Full-screen help | `^G` |
+| `help.show` | Full-screen help | Menu |
 | `mode.text` | Switch to text editing mode | Menu |
 | `mode.canvas.toggle` | Toggle canvas mode | `M+V` |
 | `mode.frame.toggle` | Toggle frame mode | Menu |
