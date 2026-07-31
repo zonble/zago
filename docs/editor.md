@@ -10,6 +10,7 @@
 | `^O` / `^S` | Save |
 | `^X` | Exit buffer/editor |
 | `^W` | Search |
+| `M+W` | Copy selected text or canvas block |
 | `^K` | Cut selected text, or cut current line |
 | `^U` | Paste last cut text |
 | `^J` | Justify paragraph |

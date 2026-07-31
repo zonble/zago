@@ -128,6 +128,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `edit.delete` | Delete character | `^D`, `Delete` |
 | `edit.mark` | Set or unset canvas block mark | `^^` in canvas mode |
 | `edit.cancel_selection` | Cancel active selection or canvas mark | `^G` |
+| `edit.copy` | Copy selected text or canvas block | `M+W` |
 | `edit.cut` | Cut selected text, or current line when no selection exists | `^K`, `F9` |
 | `edit.uncut` | Paste last cut text | `^U`, `F10` |
 | `edit.justify` | Justify paragraph | `^J` |

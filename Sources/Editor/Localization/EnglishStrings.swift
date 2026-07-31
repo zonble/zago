@@ -124,6 +124,9 @@ public struct EnglishStrings {
         "status.clipboard_empty": "Clipboard is empty",
         "status.no_selection": "No selection",
         "status.no_block_marked": "No block marked",
+        "status.block_mark_canvas_only": "Block mark is available in canvas mode only",
+        "status.copied_text": "Copied text",
+        "status.copied_block": "Copied block",
         "status.fill_text_required": "Fill text required",
         "status.justified_paragraph": "Justified paragraph",
         "status.already_oldest": "Already at oldest change",
@@ -141,6 +144,7 @@ public struct EnglishStrings {
         "status.logo_executed": "[ LOGO script executed ]",
         "status.logo_evaluated": "[ LOGO script evaluated ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
+        "menu.edit.copy": "Copy\tM+W",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  zago - Full Help & Command Reference",

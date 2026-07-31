@@ -48,7 +48,7 @@ public struct ToggleMarkCommand: Command {
 
     public func execute(on editor: Editor) {
         guard editor.isCanvasModeActive && !editor.isTableModeActive else {
-            editor.setStatusMessage(L10n["status.no_selection"])
+            editor.setStatusMessage(L10n["status.block_mark_canvas_only"])
             return
         }
 
@@ -66,6 +66,35 @@ public struct ToggleMarkCommand: Command {
             editor.canvasBlockMark = point
             editor.canvasBlockMarkEnd = point
             editor.setStatusMessage(L10n["status.mark_set"])
+        }
+    }
+}
+
+public struct CopyTextCommand: Command {
+    public let id: CommandID = .editCopy
+    public let name = "Copy Text"
+    public let description = "Copy selected text or canvas block"
+    public let keys: [Key] = [.alt("w"), .alt("W")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.buffer.clampCursor()
+        if editor.isCanvasModeActive && !editor.isTableModeActive {
+            _ = editor.copyCanvasBlock()
+        } else if let mark = editor.selectionMark {
+            let (start, end) = editor.getOrderedRange(
+                mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
+            guard start.line != end.line || start.column != end.column else {
+                editor.setStatusMessage(L10n["status.no_selection"])
+                return
+            }
+            editor.clipboardText = editor.buffer.textRange(
+                start: (line: start.line, col: start.column),
+                end: (line: end.line, col: end.column))
+            editor.setStatusMessage(L10n["status.copied_text"])
+        } else {
+            editor.setStatusMessage(L10n["status.no_selection"])
         }
     }
 }

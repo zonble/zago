@@ -118,6 +118,34 @@ public final class TextBuffer {
     }
 
     /// Cuts text range from start (line, col) to end (line, col) and returns cut text.
+    public func textRange(
+        start: (line: Int, col: Int),
+        end: (line: Int, col: Int)
+    ) -> String {
+        guard start.line >= 0, start.line < lines.count, end.line >= 0, end.line < lines.count else { return "" }
+        guard start.line <= end.line else { return "" }
+
+        if start.line == end.line {
+            let line = lines[start.line]
+            let sIdx = line.index(line.startIndex, offsetBy: min(start.col, line.count))
+            let eIdx = line.index(line.startIndex, offsetBy: min(end.col, line.count))
+            return String(line[sIdx..<eIdx])
+        }
+
+        let startLineStr = lines[start.line]
+        let endLineStr = lines[end.line]
+        let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: min(start.col, startLineStr.count))
+        let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: min(end.col, endLineStr.count))
+
+        var copiedLines: [String] = [String(startLineStr[sIdx...])]
+        if start.line + 1 < end.line {
+            copiedLines.append(contentsOf: lines[(start.line + 1)..<end.line])
+        }
+        copiedLines.append(String(endLineStr[..<eIdx]))
+        return copiedLines.joined(separator: "\n")
+    }
+
+    /// Cuts text range from start (line, col) to end (line, col) and returns cut text.
     public func cutRange(
         start: (line: Int, col: Int),
         end: (line: Int, col: Int)

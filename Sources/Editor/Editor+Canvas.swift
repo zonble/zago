@@ -237,6 +237,24 @@ extension Editor {
             && visualColumn >= rect.leftColumn && visualColumn < rect.rightColumnExclusive
     }
 
+    @discardableResult
+    public func copyCanvasBlock() -> Bool {
+        guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
+            setStatusMessage(L10n["status.no_block_marked"])
+            return false
+        }
+
+        var rows: [String] = []
+        for lineIndex in rect.topLine...rect.bottomLine {
+            let line = lineIndex < buffer.lines.count ? buffer.lines[lineIndex] : ""
+            rows.append(line.visualSlice(startVisualColumn: rect.leftColumn, width: rect.width).text)
+        }
+
+        canvasBlockClipboard = CanvasBlockClipboard(width: rect.width, rows: rows)
+        setStatusMessage(L10n["status.copied_block"])
+        return true
+    }
+
     public func cutCanvasBlock() {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
             setStatusMessage(L10n["status.no_block_marked"])

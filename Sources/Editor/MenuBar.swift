@@ -69,6 +69,7 @@ public final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.edit.undo", hotkeyChar: "u", commandId: .editUndo),
                     MenuItem(titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark),
+                    MenuItem(titleKey: "menu.edit.copy", hotkeyChar: "o", commandId: .editCopy),
                     MenuItem(titleKey: "menu.edit.cut", hotkeyChar: "c", commandId: .editCut),
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),
                     MenuItem(titleKey: "menu.edit.delete_line", hotkeyChar: "d", commandId: .editDeleteLine),

@@ -461,6 +461,16 @@ import TextMetrics
     }
 }
 
+@Test func testCtrlMarkInTextModeReportsCanvasOnlyMessage() throws {
+    let editor = Editor()
+
+    editor.processKey(.mark)
+
+    #expect(editor.selectionMark == nil)
+    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.statusMessage == L10n["status.block_mark_canvas_only"])
+}
+
 @Test func testModeSwitchClearsMarksButKeepsSeparateClipboards() throws {
     let editor = Editor()
     editor.buffer.lines = ["abcdef"]
@@ -478,6 +488,36 @@ import TextMetrics
     #expect(editor.canvasBlockMark == nil)
     #expect(editor.clipboardText == "text")
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
+}
+
+@Test func testTextCopySelectionKeepsSelectionCursorAndBuffer() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 4
+    editor.selectionMark = (line: 0, column: 1)
+
+    editor.processKey(.alt("w"))
+
+    #expect(editor.clipboardText == "bcd")
+    #expect(editor.buffer.lines == ["abcdef"])
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 4)
+    #expect(editor.selectionMark?.line == 0)
+    #expect(editor.selectionMark?.column == 1)
+    #expect(editor.buffer.isModified == false)
+    #expect(editor.statusMessage == L10n["status.copied_text"])
+}
+
+@Test func testCopyWithoutSelectionReportsNoSelection() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef"]
+
+    editor.processKey(.alt("w"))
+
+    #expect(editor.clipboardText == nil)
+    #expect(editor.buffer.lines == ["abcdef"])
+    #expect(editor.statusMessage == L10n["status.no_selection"])
 }
 
 @Test func testTextSelectionReplacementAndEmptyLineHighlight() throws {
@@ -499,6 +539,31 @@ import TextMetrics
     editor.processKey(.char("X"))
     #expect(editor.selectionMark == nil)
     #expect(editor.buffer.lines == ["aXdef"])
+}
+
+@Test func testCanvasCopyBlockKeepsMarkCursorAndBuffer() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef", "123456"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    editor.processKey(.alt("W"))
+
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
+    #expect(editor.buffer.lines == ["abcdef", "123456"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 3)
+    #expect(editor.canvasBlockMark?.line == 0)
+    #expect(editor.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.canvasBlockMarkEnd?.line == 1)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 3)
+    #expect(editor.buffer.isModified == false)
+    #expect(editor.statusMessage == L10n["status.copied_block"])
 }
 
 @Test func testCanvasBlockCutPasteAndCancel() throws {

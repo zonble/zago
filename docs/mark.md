@@ -37,6 +37,8 @@ full-width highlighted line so the selected line is visible.
 
 ### Cut and Paste
 
+- `M+W` copies the selected linear text into the text clipboard without
+  changing the selection, cursor, buffer, or undo history.
 - `^K` cuts the selected linear text into the text clipboard.
 - If no selection is active, `^K` cuts the current line.
 - `^U` pastes from the text clipboard as normal linear text insertion.
@@ -54,6 +56,8 @@ Table mode uses the same selection and clipboard model as text edit mode.
 - Typing text while a selection is active replaces the selected text, subject
   to table cell constraints.
 - `^K` cuts the selected linear text into the text clipboard.
+- `M+W` copies the selected linear text into the text clipboard without
+  changing the selection, cursor, buffer, or undo history.
 - If no selection is active, `^K` follows the table-mode line/cell cut rules.
 - `^U` pastes from the text clipboard using normal table-mode paste behavior.
 - Table mode does not use canvas block mark or canvas block clipboard.
@@ -92,6 +96,9 @@ Canvas mode follows a PE2-style rectangular block mark model.
 If no canvas block mark is active, `^G` reports that no block is marked.
 
 ### Cut Block
+
+With an active block mark, `M+W` copies a rectangular block into the canvas
+block clipboard without changing the mark, cursor, buffer, or undo history.
 
 With an active block mark, `^K` cuts a rectangular block into the canvas block
 clipboard.

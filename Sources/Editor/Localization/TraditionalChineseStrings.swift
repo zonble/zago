@@ -124,6 +124,9 @@ public struct TraditionalChineseStrings {
         "status.clipboard_empty": "剪貼簿為空",
         "status.no_selection": "沒有選取範圍",
         "status.no_block_marked": "未標記區塊",
+        "status.block_mark_canvas_only": "區塊標記只可在 canvas mode 使用",
+        "status.copied_text": "已複製文字",
+        "status.copied_block": "已複製區塊",
         "status.fill_text_required": "需要填滿文字",
         "status.justified_paragraph": "已完成段落重排",
         "status.already_oldest": "已至最舊復原紀錄",
@@ -141,6 +144,7 @@ public struct TraditionalChineseStrings {
         "status.logo_executed": "[ 已執行 LOGO 巨集腳本 ]",
         "status.logo_evaluated": "[ LOGO 腳本求值成功 ]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
+        "menu.edit.copy": "複製\tM+W",
 
         // Help Viewer (HelpView.swift)
         "helpview.title": "  zago - 完整指令與快速鍵說明手冊",

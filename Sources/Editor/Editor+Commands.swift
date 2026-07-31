@@ -23,6 +23,7 @@ extension Editor {
         commandRegistry.register(DeleteLineCommand())
         commandRegistry.register(DeleteCharCommand())
         commandRegistry.register(ToggleMarkCommand())
+        commandRegistry.register(CopyTextCommand())
         commandRegistry.register(CutTextCommand())
         commandRegistry.register(UncutTextCommand())
         commandRegistry.register(CancelSelectionCommand())
