@@ -21,8 +21,8 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
         [
             // LOGO quoted words ("word), multi-word strings ("hello world"), and single-quoted text.
             makeRule("\"[^\"\n]*\"(?![A-Za-z0-9:\"])|\"[^\"\\s\\[\\]\\{\\}\\(\\)]+|'[^']*'", .string),
-            // LOGO comments
-            makeRule(";.*$|//.*$", .comment),
+            // LOGO & config file comments (#, ;, //)
+            makeRule("(?<!:)#.*$|;.*$|//.*$", .comment),
             makeRule(Self.keywordPattern, .keyword),
             // Variables (:var_name) and loop/template counter (:#)
             makeRule(":(#|[a-zA-Z0-9_]+)", .typeOrAttribute),

@@ -175,13 +175,21 @@ extension LogoEngine {
             index += 1
             if index < tokens.count {
                 let dir = tokens[index].uppercased()
+                let count = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
+                let steps = max(1, count)
                 switch dir {
-                case "UP": delegate.logoEngine(self, performAction: .moveCursorVirtual(-1))
-                case "DOWN": delegate.logoEngine(self, performAction: .moveCursorVirtual(1))
-                case "LEFT": delegate.logoEngine(self, performAction: .moveLeft)
-                case "RIGHT": delegate.logoEngine(self, performAction: .moveRight)
-                case "HOME": delegate.logoEngine(self, performAction: .moveHome)
-                case "END": delegate.logoEngine(self, performAction: .moveEnd)
+                case "UP":
+                    for _ in 0..<steps { delegate.logoEngine(self, performAction: .moveCursorVirtual(-1)) }
+                case "DOWN":
+                    for _ in 0..<steps { delegate.logoEngine(self, performAction: .moveCursorVirtual(1)) }
+                case "LEFT":
+                    for _ in 0..<steps { delegate.logoEngine(self, performAction: .moveLeft) }
+                case "RIGHT":
+                    for _ in 0..<steps { delegate.logoEngine(self, performAction: .moveRight) }
+                case "HOME":
+                    delegate.logoEngine(self, performAction: .moveHome)
+                case "END":
+                    delegate.logoEngine(self, performAction: .moveEnd)
                 default: break
                 }
             }

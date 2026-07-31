@@ -465,14 +465,14 @@ set autoReload on
 #   MAKE "boxWidth 30
 #   TO FILLBOX :text
 #     BOX :boxWidth 4
-#     GOTO 2 2
+#     MOVE LEFT (:boxWidth - 1) MOVE UP 2
 #     FILL :text
 #   END
 # endlogo
 #
 # logo-script insert-title
 #   BOX 40 3 ROUND
-#   GOTO 2 2
+#   MOVE LEFT 38 MOVE UP 1
 #   FILL "-
 # endlogo
 #

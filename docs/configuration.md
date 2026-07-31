@@ -88,7 +88,7 @@ MAKE "boxWidth 30
 
 TO FILLBOX :text
   BOX :boxWidth 4 ROUND
-  GOTO 2 2
+  MOVE LEFT (:boxWidth - 1) MOVE UP 2
   FILL :text
 END
 endlogo
@@ -99,7 +99,7 @@ Use `logo-script` for named scripts that can be bound to keys:
 ```nanorc
 logo-script insert-title
 BOX 40 3 ROUND
-GOTO 2 2
+MOVE LEFT 38 MOVE UP 1
 FILL "Title
 endlogo
 

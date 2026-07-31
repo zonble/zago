@@ -307,13 +307,13 @@ import Testing
           MAKE "boxWidth 30
           TO FILLBOX :text
             BOX :boxWidth 4
-            GOTO 2 2
+            MOVE LEFT (:boxWidth - 1) MOVE UP 2
             FILL :text
           END
         endlogo
         logo-script insert-title
           BOX 40 3 ROUND
-          GOTO 2 2
+          MOVE LEFT 38 MOVE UP 1
           FILL "-
         endlogo
         unbind f1
@@ -429,9 +429,10 @@ import Testing
         #expect(mixedCaseHighlighted.contains("\u{1B}[1;36mtable"))
         #expect(mixedCaseHighlighted.contains("\u{1B}[1;36mascii"))
 
-        let arrowHighlighted = highlighter.highlight(line: "LINE ARROW TYPE #", syntax: lang)
+        let arrowHighlighted = highlighter.highlight(line: "LINE ARROW TYPE :#", syntax: lang)
         #expect(arrowHighlighted.contains("\u{1B}[1;36mARROW"))
         #expect(!arrowHighlighted.contains("\u{1B}[90m#"))
+        #expect(arrowHighlighted.contains("\u{1B}[94m:#"))
 
         let quotedWordsHighlighted = highlighter.highlight(line: "show \"1 \"2 \"3", syntax: lang)
         #expect(quotedWordsHighlighted.contains("\u{1B}[32m\"1"))
@@ -586,4 +587,19 @@ import Testing
     let editor = Editor()
     editor.applyEditorSetting(setting: "border", arg: "double")
     #expect(editor.defaultBorderStyle == .double)
+}
+
+@Test func testZagorcCommentSyntaxHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+    guard let syntax = highlighter.detectLanguage(for: ".zagorc") else {
+        Issue.record("Should detect syntax for .zagorc")
+        return
+    }
+
+    let commentTokens = highlighter.tokenTypes(for: "# set wrap 80", syntax: syntax)
+    #expect(commentTokens.allSatisfy { $0 == .comment })
+
+    let codeTokens = highlighter.tokenTypes(for: "MAKE \"i\" 80", syntax: syntax)
+    #expect(codeTokens.contains(.keyword))
+    #expect(codeTokens.contains(.number))
 }

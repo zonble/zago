@@ -17,13 +17,14 @@
 ## Features
 
 - Plain-text diagramming: draw boxes, arrow connector lines, fills, and table layouts directly in the buffer.
+- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, and connector lines aligned.
+- Modeless typing & dual spatial modes: Ordinary typing always inserts text directly. Press `M+V` to toggle between standard text stream mode and 2D Canvas Mode for freeform grid navigation and block editing.
+- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo.
+- Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
+- Multi-buffer editing, file auto-reload.
 - Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
 - Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
-- Modeless typing & dual spatial modes: Ordinary typing always inserts text directly. Press `M+V` to toggle between standard text stream mode and 2D Canvas Mode for freeform grid navigation and block editing.
-- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo, `^G` cancel selection/mark.
-- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, and connector lines aligned.
-- Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
-- Multi-buffer editing, file auto-reload, English and Traditional Chinese UI.
+
 
 ## Requirements
 
@@ -72,12 +73,16 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 The command language is LOGO-like because LOGO has a useful property: it often does not feel like programming. Commands read like direct editing actions, but they can still be combined with variables, loops, and procedures when the work becomes repetitive.
 
 ```logo
+BOX 30 5
+```
+
+```logo
 MOVE HOME
 TYPE "# "
 MOVE END
 ```
 
-The same language is available from the command prompt, key bindings, and startup configuration. Each editor instance owns one persistent LOGO runtime, so variables and procedures can live for the lifetime of the buffer session.
+The same language is available from the command prompt, key bindings, and startup configuration. Variables and procedures stay available throughout your editing session, so they can live for the lifetime of the buffer session.
 
 Create a numbered list:
 

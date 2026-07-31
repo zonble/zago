@@ -1953,3 +1953,15 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(result.error == "[Procedure recursion limit exceeded: LOOP]")
     #expect(result.status == "[Procedure recursion limit exceeded: LOOP]")
 }
+
+@Test func testMoveWithOptionalCount() {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    logoEngine.execute("TYPE \"abcdefghij\"")
+    logoEngine.execute("MOVE LEFT 5 TYPE \"X\"")
+    #expect(editor.buffer.lines[0] == "abcdeXfghij")
+
+    logoEngine.execute("MOVE RIGHT 3 TYPE \"Y\"")
+    #expect(editor.buffer.lines[0] == "abcdeXfghYij")
+}
