@@ -17,6 +17,7 @@ public struct EnglishStrings {
         "help.next_pg":    "Next Pg",
         "help.uncut_text": "UnCut Text",
         "help.to_spell":   "To Spell",
+        "chrome.end_of_file": "End of File",
 
         // Prompts
         "prompt.write_name": "File Name to Write: ",

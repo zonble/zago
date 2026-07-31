@@ -304,6 +304,33 @@ import TextMetrics
     #expect(plantUMLHighlighted.contains("\u{1B}["))
 }
 
+@Test func testTextSelectionKeepsSyntaxHighlightOutsideSelectedRange() throws {
+    let editor = Editor(filePath: "test.swift", enableSyntax: true)
+    editor.buffer.lines = ["let value = 1"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 7
+    editor.selectionMark = (line: 0, column: 4)
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
+
+    #expect(output.contains("\u{1B}[1;36ml\u{1B}[0m"))
+    #expect(output.contains("\u{1B}[1;36me\u{1B}[0m"))
+    #expect(output.contains("\u{1B}[1;36mt\u{1B}[0m"))
+    #expect(output.contains("\u{1B}[7m"))
+}
+
+@Test func testCanvasModeAppliesSyntaxHighlightingToBufferText() throws {
+    let editor = Editor(filePath: "test.swift", enableSyntax: true)
+    editor.buffer.lines = ["let value = 1"]
+    editor.switchToCanvasMode()
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
+
+    #expect(output.contains("\u{1B}[1;36ml\u{1B}[0m"))
+    #expect(output.contains("\u{1B}[1;36me\u{1B}[0m"))
+    #expect(output.contains("\u{1B}[1;36mt\u{1B}[0m"))
+}
+
 @Test func testEmbeddedCodeBlockSyntaxHighlighting() throws {
     let editor = Editor()
     editor.displayConfig.enableSyntaxHighlight = true
@@ -423,6 +450,26 @@ import TextMetrics
     #expect(canvasHelp.contains("F1"))
     #expect(!canvasHelp.contains("^G"))
     #expect(!canvasHelp.contains(L10n.helpGetHelp))
+}
+
+@Test func testCanvasModeRendersLocalizedEndOfFileMarker() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abc", "def"]
+    editor.switchToCanvasMode()
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
+
+    #expect(output.contains("~ \(L10n["chrome.end_of_file"])"))
+    #expect(output.contains("\u{1B}[90m"))
+}
+
+@Test func testTextModeDoesNotRenderEndOfFileMarker() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abc", "def"]
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
+
+    #expect(!output.contains("~ \(L10n["chrome.end_of_file"])"))
 }
 
 @Test func testIdleStatusLineModeIndicators() throws {

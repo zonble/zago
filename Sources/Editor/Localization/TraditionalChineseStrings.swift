@@ -17,6 +17,7 @@ public struct TraditionalChineseStrings {
         "help.next_pg":    "前往下頁",
         "help.uncut_text": "貼上文字",
         "help.to_spell":   "拼字檢查",
+        "chrome.end_of_file": "檔案結尾",
 
         // Prompts
         "prompt.write_name": "寫出檔案名稱：",

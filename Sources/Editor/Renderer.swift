@@ -248,7 +248,7 @@ public final class Renderer {
                 let currentLanguage =
                     editor.displayConfig.enableSyntaxHighlight
                     ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
-                let tokenTypes = (currentLanguage != nil && editor.selectionMark == nil && !editor.isCanvasModeActive)
+                let tokenTypes = (currentLanguage != nil)
                     ? editor.syntaxHighlighter.tokenTypes(for: renderedLineText, syntax: currentLanguage!)
                     : []
 
@@ -319,6 +319,9 @@ public final class Renderer {
                 } else if chars.isEmpty && editor.isLineSelected(line: vLine.bufferLineIndex) {
                     lineOutput += "\u{1B}[7m\(String(repeating: " ", count: visibleTextWidth))\u{1B}[m"
                 }
+            } else if editor.isCanvasModeActive && vIndex == virtualLines.count {
+                let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
+                lineOutput += "\u{1B}[90m\(gutter)~ \(L10n["chrome.end_of_file"])\u{1B}[0m"
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {

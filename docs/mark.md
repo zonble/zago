@@ -78,6 +78,10 @@ Canvas mode follows a PE2-style rectangular block mark model.
 - Empty canvas lines render highlight only inside the rectangular block; they do
   not become full-width highlighted lines. Full-width empty-line highlight is
   text edit mode behavior only.
+- Canvas mode renders a localized dim `~ End of File` / `~ 檔案結尾` marker on
+  the first visible row after the last buffer line. The marker is editor chrome,
+  not buffer content, and is not affected by mark, cut, paste, fill, or turtle
+  drawing.
 - Canvas block mark is independent from text edit mode selection.
 - Block edges snap to whole character boundaries. A block operation must not
   split a wide character such as CJK text or emoji.
