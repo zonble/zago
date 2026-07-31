@@ -102,8 +102,7 @@ public struct TraditionalChineseStrings {
     TRUE, FALSE, AND, OR, XOR, NOT
 
   Buffer 與檔案
-    BUFFERS, BUFFER, NEXTBUFFER, PREVBUFFER, OPENBUFFER, CLOSEBUFFER
-    SAVE, FILE, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
+    BUFFERS, BUFFER, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
     ROW, COL, LINECOUNT, FILENAME, MODIFIED?
 
   所有 primitive alias
@@ -127,6 +126,11 @@ public struct TraditionalChineseStrings {
         "status.block_mark_canvas_only": "區塊標記只可在 canvas mode 使用",
         "status.copied_text": "已複製文字",
         "status.copied_block": "已複製區塊",
+        "status.path_required": "需要路徑",
+        "status.no_such_buffer": "沒有這個 buffer",
+        "status.buffer_position": "Buffer %d / %d",
+        "status.invalid_line": "無效的列號",
+        "status.invalid_column": "無效的欄號",
         "status.fill_text_required": "需要填滿文字",
         "status.justified_paragraph": "已完成段落重排",
         "status.already_oldest": "已至最舊復原紀錄",

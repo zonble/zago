@@ -855,6 +855,131 @@ import TextMetrics
     #expect(editor.promptCursorIndex == 3)
 }
 
+private func submitCommandBar(_ text: String, editor: Editor) {
+    editor.promptLogoMacro()
+    for ch in text {
+        editor.processPromptKey(.char(ch))
+    }
+    editor.processPromptKey(.enter)
+}
+
+@Test func testCommandBarNumericGotoShorthand() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+
+    submitCommandBar("2", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 0)
+    #expect(editor.logoEngine.lastResult == nil)
+}
+
+@Test func testCommandBarNumericGotoWithColumnShorthand() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+
+    submitCommandBar("3:2", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 1)
+
+    submitCommandBar("1,3", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 2)
+}
+
+@Test func testCommandBarLogoExpressionFallback() throws {
+    let editor = Editor()
+
+    submitCommandBar("1 + 1", editor: editor)
+
+    #expect(editor.logoEngine.lastResult == "2")
+    #expect(editor.statusMessage == "2")
+}
+
+@Test func testCommandBarInvalidNumericGotoDoesNotFallThroughToLogo() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two"]
+
+    submitCommandBar("-1", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.logoEngine.lastResult == nil)
+    #expect(editor.statusMessage == L10n["status.invalid_line"])
+
+    submitCommandBar("0", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.logoEngine.lastResult == nil)
+    #expect(editor.statusMessage == L10n["status.invalid_line"])
+}
+
+@Test func testCommandBarOpenNewAndBufferShorthand() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "first.txt"
+
+    submitCommandBar("open second.txt", editor: editor)
+
+    #expect(editor.buffers.count == 2)
+    #expect(editor.currentBufferIndex == 1)
+    #expect(editor.buffer.filePath == "second.txt")
+
+    submitCommandBar("new", editor: editor)
+
+    #expect(editor.buffers.count == 3)
+    #expect(editor.currentBufferIndex == 2)
+    #expect(editor.buffer.filePath == nil)
+
+    submitCommandBar("buffer prev", editor: editor)
+    #expect(editor.currentBufferIndex == 1)
+
+    submitCommandBar("buffer 1", editor: editor)
+    #expect(editor.currentBufferIndex == 0)
+
+    submitCommandBar("buffer 99", editor: editor)
+    #expect(editor.currentBufferIndex == 0)
+    #expect(editor.statusMessage == L10n["status.no_such_buffer"])
+}
+
+@Test func testCommandBarUppercaseBufferFallsBackToLogoReporter() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "first.txt"
+    editor.openNewBuffer(filePath: "second.txt")
+    editor.currentBufferIndex = 0
+
+    submitCommandBar("BUFFER 2", editor: editor)
+
+    #expect(editor.currentBufferIndex == 0)
+}
+
+@Test func testCommandBarWriteShorthandUsesEditorSavePath() throws {
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_write.txt").path
+    defer { try? FileManager.default.removeItem(atPath: path) }
+    let editor = Editor()
+    editor.buffer.lines = ["command bar write"]
+    editor.buffer.isModified = true
+
+    submitCommandBar("write \(path)", editor: editor)
+
+    #expect(try String(contentsOfFile: path, encoding: .utf8) == "command bar write")
+    #expect(editor.buffer.filePath == path)
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testCommandBarUppercaseSaveUsesEditorCommand() throws {
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save.txt").path
+    defer { try? FileManager.default.removeItem(atPath: path) }
+    let editor = Editor(filePath: path)
+    editor.buffer.lines = ["command bar save"]
+    editor.buffer.isModified = true
+
+    submitCommandBar("SAVE", editor: editor)
+
+    #expect(try String(contentsOfFile: path, encoding: .utf8) == "command bar save")
+    #expect(editor.buffer.isModified == false)
+}
+
 @Test func testLastLineDownKeyMovesToEOL() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]

@@ -1539,59 +1539,37 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("SETLINE \"1\"")
     #expect(editor.buffer.lines[1] == "1")
 
-    // 3. Multi-Buffer Commands
+    // 3. Buffer queries
     logoEngine.execute("BUFFERS")
     #expect(logoEngine.lastResult != nil)
 
     logoEngine.execute("BUFFER")
     #expect(logoEngine.lastResult == "1")
 
-    logoEngine.execute("OPENBUFFER \"test_buffer.txt\"")
-    #expect(editor.buffers.count == 2)
-    #expect(editor.currentBufferIndex == 1)
-
-    logoEngine.execute("EDIT \"pe2_edit.txt\"")
-    #expect(editor.buffers.count == 3)
-    #expect(editor.currentBufferIndex == 2)
-
-    logoEngine.execute("PREVBUFFER")
-    #expect(editor.currentBufferIndex == 1)
-
-    logoEngine.execute("NEXTBUFFER")
-    #expect(editor.currentBufferIndex == 2)
-
-    logoEngine.execute("CLOSEBUFFER")
-    #expect(editor.buffers.count == 2)
-    #expect(editor.currentBufferIndex == 1)
-
     logoEngine.execute("CLEARBUFFER")
     #expect(editor.buffer.lines == [""])
 }
 
-@Test func testPe2CompatibleFileCommands() throws {
-    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent("se_pe2_save.txt").path
-    let filePath = FileManager.default.temporaryDirectory.appendingPathComponent("se_pe2_file.txt").path
-    defer {
-        try? FileManager.default.removeItem(atPath: savePath)
-        try? FileManager.default.removeItem(atPath: filePath)
-    }
+@Test func testInteractiveEditorCommandsAreNotLogoPrimitives() throws {
+    #expect(LogoPrimitive.from("OPENBUFFER") == nil)
+    #expect(LogoPrimitive.from("EDIT") == nil)
+    #expect(LogoPrimitive.from("NEXTBUFFER") == nil)
+    #expect(LogoPrimitive.from("PREVBUFFER") == nil)
+    #expect(LogoPrimitive.from("CLOSEBUFFER") == nil)
+    #expect(LogoPrimitive.from("SAVE") == nil)
+    #expect(LogoPrimitive.from("FILE") == nil)
+    #expect(LogoPrimitive.from("SETBUFFER") == nil)
+}
 
-    let editor = Editor(filePath: savePath)
+@Test func testLogoBufferReporterDoesNotSwitchBuffers() throws {
+    let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
+    editor.buffer.filePath = "first.txt"
+    editor.openNewBuffer(filePath: "second.txt")
+    editor.currentBufferIndex = 0
 
-    editor.buffer.lines = ["saved by SAVE"]
-    editor.buffer.isModified = true
-    logoEngine.execute("SAVE")
-    #expect(try String(contentsOfFile: savePath, encoding: .utf8) == "saved by SAVE")
-    #expect(editor.buffer.isModified == false)
-    #expect(editor.buffers.count == 1)
+    logoEngine.execute("BUFFER 2")
 
-    editor.openNewBuffer()
-    editor.buffer.lines = ["saved and closed by FILE"]
-    editor.buffer.isModified = true
-    logoEngine.execute("FILE \"\(filePath)\"")
-    #expect(try String(contentsOfFile: filePath, encoding: .utf8) == "saved and closed by FILE")
-    #expect(editor.buffers.count == 1)
     #expect(editor.currentBufferIndex == 0)
 }
 

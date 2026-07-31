@@ -85,6 +85,7 @@ public final class Editor {
 
     let syntaxHighlighter = SyntaxHighlighter()
     public let commandRegistry = CommandRegistry()
+    public let commandBarRegistry = CommandBarRegistry.makeDefault()
     public let fileWatcher = FileWatcher()
 
     public struct DisplayConfig: Sendable, Equatable {
@@ -162,7 +163,7 @@ public final class Editor {
             autoReload: autoReload, language: language)
     }
 
-    private func startFileWatcherForCurrentBuffer() {
+    func startFileWatcherForCurrentBuffer() {
         if let path = buffer.filePath {
             fileWatcher.start(path: path)
         } else {

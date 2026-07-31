@@ -3,6 +3,8 @@
 `zago` provides a simple set of direct editing commands for drawing boxes, connector lines, tables, and laying out structured text directly inside your terminal buffer.
 
 Commands read like natural editing gestures: press `Esc`, type `BOX "Title"`, `LINE ARROW`, or `TABLE`, and shape your plain text instantly without leaving your text editor.
+The command prompt also recognizes editor shorthand such as `42`, `save`,
+`open notes.txt`, and `buffer next` before falling back to LOGO syntax.
 
 You do not need any programming background to use these commands—ordinary drawing and layout actions work right out of the box. As your editing tasks grow, optional variables, loops, and macro procedures are available whenever you want to automate repetitive work.
 
@@ -28,6 +30,33 @@ This document is divided into two main parts:
 | **`^Z`** | Normal Edit Mode | Atomic Undo: Reverts the entire command execution in 1 step |
 
 ---
+
+## Command Prompt Dispatch
+
+The command prompt is shared by editor shorthand and LOGO.
+
+Dispatch order:
+
+1. Editor command shorthand
+2. Numeric goto shorthand
+3. LOGO script or expression
+
+Examples handled before LOGO:
+
+| Input | Action |
+| :--- | :--- |
+| `42` | Go to line 42 |
+| `42:7` / `42,7` | Go to line 42, column 7 |
+| `save` | Save the current buffer |
+| `write path` | Save the current buffer to `path` |
+| `open path` / `edit path` | Open `path` in a new buffer |
+| `new` | Open a new empty buffer |
+| `buffer next` / `buffer prev` | Switch buffers |
+| `buffer N` | Switch to 1-based buffer index `N` |
+
+Inputs that do not match shorthand are evaluated by LOGO. For compatibility,
+file and multi-buffer actions such as `save`, `open`, and `buffer 2` are handled
+by the command prompt before LOGO evaluation.
 
 # 📚 PART 1: Quick Start & Essential Diagramming Guide
 
@@ -615,13 +644,7 @@ TYPE ITEM 2 :cells
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
 | `BUFFERS` | `BUFFERLIST` | `BUFFERS` | Returns list of open buffer names | `MAKE "b" BUFFERS` |
-| `BUFFER` | `SETBUFFER` | `BUFFER [idx]` | Switches to buffer by index or returns active index | `BUFFER 2` |
-| `NEXTBUFFER` | - | `NEXTBUFFER` | Switches to next open buffer tab | `NEXTBUFFER` |
-| `PREVBUFFER` | - | `PREVBUFFER` | Switches to previous open buffer tab | `PREVBUFFER` |
-| `OPENBUFFER` | `EDIT` | `EDIT "path"` | Opens file path into a new buffer tab | `EDIT "main.swift"` |
-| `SAVE` | - | `SAVE ["path"]` | Saves the active buffer, optionally to a new path | `SAVE`, `SAVE "notes.txt"` |
-| `FILE` | - | `FILE ["path"]` | Saves the active buffer, then closes it | `FILE`, `FILE "notes.txt"` |
-| `CLOSEBUFFER` | - | `CLOSEBUFFER` | Closes active buffer tab | `CLOSEBUFFER` |
+| `BUFFER` | - | `BUFFER` | Returns active 1-based buffer index | `SHOW BUFFER` |
 | `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
 | `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE 1` |
 | `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE 1 "Title"` |

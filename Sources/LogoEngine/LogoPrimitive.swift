@@ -84,12 +84,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     // Multi-Buffer & Buffer Primitives
     case buffers
     case buffer
-    case nextBuffer
-    case prevBuffer
-    case openBuffer
-    case closeBuffer
-    case saveBuffer
-    case fileSaveAndQuit
     case clearBuffer
     case getline
     case setline
@@ -303,13 +297,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
 
         // Buffer Primitives
         (["BUFFERS", "BUFFERLIST"], .buffers),
-        (["BUFFER", "SETBUFFER"], .buffer),
-        (["NEXTBUFFER"], .nextBuffer),
-        (["PREVBUFFER"], .prevBuffer),
-        (["OPENBUFFER", "EDIT"], .openBuffer),
-        (["CLOSEBUFFER"], .closeBuffer),
-        (["SAVE"], .saveBuffer),
-        (["FILE"], .fileSaveAndQuit),
+        (["BUFFER"], .buffer),
         (["CLEARBUFFER", "ERASEBUFFER"], .clearBuffer),
         (["GETLINE"], .getline),
         (["SETLINE"], .setline),

@@ -257,20 +257,14 @@ Examples that must not be treated as numeric goto:
 
 ## LOGO Responsibilities
 
-LOGO should remain the programmable layer. The existing buffer primitives should
-stay in LOGO because they are useful inside procedures, control flow, startup
-configuration, and custom key bindings.
+LOGO should remain the programmable layer. It should keep value reporters and
+buffer-content macro operations, but interactive editor/file/multi-buffer
+actions belong to the command prompt layer.
 
 Keep these as LOGO primitives:
 
 - `BUFFERS` / `BUFFERLIST`
-- `BUFFER` / `SETBUFFER`
-- `NEXTBUFFER`
-- `PREVBUFFER`
-- `OPENBUFFER` / `EDIT`
-- `SAVE`
-- `FILE`
-- `CLOSEBUFFER`
+- `BUFFER`
 - `CLEARBUFFER` / `ERASEBUFFER`
 - `GETLINE`
 - `SETLINE`
@@ -284,54 +278,58 @@ Keep these as LOGO primitives:
 - `MODIFIED?` / `CHANGED?`
 - `FILENAME` / `BUFFERNAME`
 
-These commands should keep their current uppercase LOGO spelling and current
-macro behavior.
+Move these out of LOGO and handle them only as command prompt shorthand or
+key/menu editor commands:
+
+- `OPENBUFFER` / `EDIT`
+- `SAVE`
+- `FILE`
+- `CLOSEBUFFER`
+- `NEXTBUFFER`
+- `PREVBUFFER`
+- `SETBUFFER`
+
+These actions are editor/session operations, not document-transforming LOGO
+programs. Keeping them out of LOGO prevents macros from depending on prompt
+state, file-system prompts, or tab-management side effects.
 
 ## Ambiguous Buffer Primitives
 
-Some LOGO buffer primitives are also natural editor commands. They should stay
-in LOGO for compatibility, but command bar shorthand should prefer the editor
-layer.
+Some command prompt inputs use words that are also natural LOGO reporters. The
+dispatcher resolves this with explicit command prompt matching before LOGO
+fallback.
 
 ### `BUFFER`
 
-LOGO currently has mixed behavior:
+LOGO behavior:
 
 - `BUFFER` returns the current 1-based buffer index.
-- `BUFFER 2` switches to buffer 2 and returns the active index.
 
-This is acceptable for LOGO compatibility, but the command bar should treat
-`buffer 2` as an editor command shorthand.
+Command prompt behavior:
 
-### `SAVE` and `FILE`
+- `buffer` reports the current buffer position in the status bar.
+- `buffer 2` switches to buffer 2.
+- `buffer next` and `buffer prev` switch between open buffers.
 
-`SAVE "path"` and `FILE "path"` are scriptable and should stay in LOGO.
+Uppercase `BUFFER` falls through to LOGO so reporter use remains available.
+`BUFFER 2` does not switch buffers because LOGO `BUFFER` is a reporter only.
 
-Bare `SAVE` and `FILE` may invoke editor-specific behavior such as prompting
-for a path when the buffer has no file path. That behavior is useful in the
-interactive command bar, but it is less clean inside LOGO procedures.
+### `SAVE`, `FILE`, `OPEN`, and `EDIT`
 
-For compatibility, keep bare `SAVE` and `FILE` in LOGO for now. Document them
-as editor-dependent operations. New command bar shorthand should call editor
-commands directly.
+Saving, closing, and opening buffers are command prompt/editor operations. They
+should call shared `Editor` domain methods, not LOGO delegate actions.
 
 ## Case Rules
 
-The initial shorthand parser should be case-insensitive for editor commands:
+The shorthand parser is case-insensitive for editor commands that are not LOGO
+reporters:
 
 - `save`
 - `SAVE`
 - `Save`
 
-However, dispatch precedence must avoid breaking existing LOGO workflows. If a
-user enters a full LOGO program such as `SAVE "file.txt"` or `BUFFER 2`, it can
-still be handled by LOGO if the shorthand parser does not explicitly claim it.
-
-Recommended first implementation:
-
-- Claim lowercase and mixed-case editor shorthand forms.
-- Keep all-uppercase LOGO primitive forms available as LOGO.
-- Revisit case handling only after tests cover real command bar use.
+For `BUFFER`, all-uppercase input remains LOGO reporter syntax. Lowercase and
+mixed-case `buffer` input is command prompt shorthand.
 
 ## Error Handling
 
@@ -358,8 +356,11 @@ Add command bar dispatch tests for:
 - `write path` writes the active buffer to the requested path.
 - `open path` opens a new buffer without requiring LOGO quoting.
 - `buffer next`, `buffer prev`, and `buffer N` switch buffers.
-- Existing LOGO `BUFFER`, `BUFFER 2`, `SAVE "path"`, `OPENBUFFER "path"`,
-  `GETLINE`, and `SETLINE` continue to work.
+- LOGO `BUFFER` reports the active buffer index.
+- LOGO `BUFFER 2` does not switch buffers.
+- `SAVE`, `FILE`, `OPENBUFFER`, `EDIT`, `NEXTBUFFER`, `PREVBUFFER`,
+  `CLOSEBUFFER`, and `SETBUFFER` are not LOGO primitives.
+- Existing LOGO `GETLINE` and `SETLINE` continue to work.
 - `.zagorc` `logo-prelude` and `logo-script` continue to execute through LOGO.
 - Key/menu commands, LOGO delegate actions, and command bar shorthand produce
   the same editor state for shared operations.

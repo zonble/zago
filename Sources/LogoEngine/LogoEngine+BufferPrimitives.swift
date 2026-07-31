@@ -13,13 +13,6 @@ extension LogoEngine {
             return "[]"
 
         case .buffer:
-            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
-                var targetIndex = index + 1
-                if let idx1Based = parseUnquotedIntArgument(tokens, index: &targetIndex) {
-                    delegate?.logoEngine(self, performAction: .switchBuffer(index: max(0, idx1Based - 1)))
-                }
-                index = targetIndex
-            }
             let curIdx = (delegate?.logoEngine(self, queryState: .currentBufferIndex) as? Int) ?? 0
             return "\(curIdx + 1)"
 

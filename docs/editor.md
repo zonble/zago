@@ -19,3 +19,26 @@
 | `F1` | Open menu bar |
 | `M+V` | Toggle canvas mode |
 | `M+T` | Toggle table mode |
+
+## Command Prompt Shorthand
+
+The `Esc` command prompt first tries editor command shorthand. If no shorthand
+matches, the input is evaluated as LOGO.
+
+| Input | Action |
+| :--- | :--- |
+| `42` | Go to line 42 |
+| `42:7` / `42,7` | Go to line 42, column 7 |
+| `save` | Save the current buffer |
+| `write path` | Save the current buffer to `path` |
+| `open path` / `edit path` | Open `path` in a new buffer |
+| `new` | Open a new empty buffer |
+| `close` | Close the current buffer using normal editor close rules |
+| `buffer` | Show the active buffer position |
+| `buffer next` | Switch to the next buffer |
+| `buffer prev` / `buffer previous` | Switch to the previous buffer |
+| `buffer N` | Switch to 1-based buffer index `N` |
+
+Expressions and LOGO programs still fall through to LOGO. For example, `1 + 1`
+evaluates as a LOGO expression. File and multi-buffer actions such as `save`,
+`open`, and `buffer 2` are command prompt shorthand, not LOGO primitives.

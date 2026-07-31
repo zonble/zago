@@ -558,7 +558,12 @@ extension Editor {
                 self?.setStatusMessage(L10n["status.cancelled"])
                 return
             }
-            self.runLogoScript(script)
+            switch self.commandBarRegistry.dispatch(script, editor: self) {
+            case .handled:
+                break
+            case .noMatch:
+                self.runLogoScript(script)
+            }
         })
     }
 
@@ -606,29 +611,7 @@ extension Editor {
             .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
         if parts.isEmpty { return }
 
-        let targetLine = max(1, min(parts[0], buffer.lines.count)) - 1
-        buffer.lineIndex = targetLine
-
-        if parts.count > 1 {
-            let targetCol = max(1, min(parts[1], buffer.lines[targetLine].count + 1)) - 1
-            buffer.columnIndex = targetCol
-        } else {
-            buffer.columnIndex = 0
-        }
-
-        buffer.clampCursor()
-        let currentLine = buffer.lineIndex + 1
-        let currentCol = buffer.columnIndex + 1
-        let line = buffer.lines[buffer.lineIndex]
-        let visualCol =
-            isCanvasModeActive
-            ? canvasVisualColumn + 1
-            : line.visualColumn(forCharacterOffset: buffer.columnIndex) + 1
-        setStatusMessage(
-            L10n.cursorInfo(
-                currentLine: currentLine, totalLines: buffer.lines.count,
-                percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
-                totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
+        goToLocation(line: parts[0], column: parts.count > 1 ? parts[1] : nil)
     }
 
     /// Toggles Menu Bar mode on ESC key in normal edit mode.

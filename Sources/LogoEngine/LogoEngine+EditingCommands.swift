@@ -233,40 +233,8 @@ extension LogoEngine {
             }
             return true
 
-        case .nextBuffer:
-            delegate.logoEngine(self, performAction: .nextBuffer)
-            return true
-
-        case .prevBuffer:
-            delegate.logoEngine(self, performAction: .prevBuffer)
-            return true
-
-        case .closeBuffer:
-            delegate.logoEngine(self, performAction: .closeBuffer)
-            return true
-
-        case .openBuffer:
-            index += 1
-            if index < tokens.count {
-                let path = unquote(evaluateExpression(tokens, index: &index))
-                delegate.logoEngine(self, performAction: .openBuffer(path: path))
-            }
-            return true
-
         case .clearBuffer:
             delegate.logoEngine(self, performAction: .clearBuffer)
-            return true
-
-        case .saveBuffer:
-            let path = optionalCommandArgument(tokens, index: &index)
-            delegate.logoEngine(self, performAction: .saveBuffer(path: path))
-            hasSetStatusMessage = true
-            return true
-
-        case .fileSaveAndQuit:
-            let path = optionalCommandArgument(tokens, index: &index)
-            delegate.logoEngine(self, performAction: .saveAndCloseBuffer(path: path))
-            hasSetStatusMessage = true
             return true
 
         case .gotoline:

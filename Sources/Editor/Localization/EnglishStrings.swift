@@ -102,8 +102,7 @@ public struct EnglishStrings {
     TRUE, FALSE, AND, OR, XOR, NOT
 
   Buffers and files
-    BUFFERS, BUFFER, NEXTBUFFER, PREVBUFFER, OPENBUFFER, CLOSEBUFFER
-    SAVE, FILE, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
+    BUFFERS, BUFFER, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
     ROW, COL, LINECOUNT, FILENAME, MODIFIED?
 
   All primitive aliases
@@ -127,6 +126,11 @@ public struct EnglishStrings {
         "status.block_mark_canvas_only": "Block mark is available in canvas mode only",
         "status.copied_text": "Copied text",
         "status.copied_block": "Copied block",
+        "status.path_required": "Path required",
+        "status.no_such_buffer": "No such buffer",
+        "status.buffer_position": "Buffer %d of %d",
+        "status.invalid_line": "Invalid line",
+        "status.invalid_column": "Invalid column",
         "status.fill_text_required": "Fill text required",
         "status.justified_paragraph": "Justified paragraph",
         "status.already_oldest": "Already at oldest change",

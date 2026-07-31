@@ -9,11 +9,7 @@ public struct SaveFileCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        if let path = editor.buffer.filePath, !path.isEmpty {
-            editor.doSave(to: path)
-        } else {
-            editor.promptWriteFilePath()
-        }
+        editor.saveBuffer(path: nil)
     }
 }
 

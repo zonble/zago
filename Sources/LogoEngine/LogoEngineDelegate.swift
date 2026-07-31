@@ -43,13 +43,6 @@ public enum LogoEditorAction {
     case gotoLine(Int)
     case gotoCol(Int)
     case clearBuffer
-    case saveBuffer(path: String?)
-    case saveAndCloseBuffer(path: String?)
-    case switchBuffer(index: Int)
-    case openBuffer(path: String)
-    case closeBuffer
-    case nextBuffer
-    case prevBuffer
 }
 
 /// State queries requested from LOGO scripts to the host text editor.

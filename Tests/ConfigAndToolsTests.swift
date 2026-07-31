@@ -392,8 +392,8 @@ import Testing
         let loopCounterHighlighted = highlighter.highlight(line: "REPEAT 3 [ TYPE :# ]", syntax: lang)
         #expect(loopCounterHighlighted.contains("\u{1B}[94m:#"))
 
-        let aliasHighlighted = highlighter.highlight(line: "FILE SAVE EDIT MAP.SE MODIFIED?", syntax: lang)
-        #expect(aliasHighlighted.contains("\u{1B}[1;36mFILE"))
+        let aliasHighlighted = highlighter.highlight(line: "CLEARBUFFER MAP.SE MODIFIED?", syntax: lang)
+        #expect(aliasHighlighted.contains("\u{1B}[1;36mCLEARBUFFER"))
         #expect(aliasHighlighted.contains("\u{1B}[1;36mMODIFIED?"))
 
         let lowercaseHighlighted = highlighter.highlight(line: "make \"i\" 1 ifelse :i > 5 [ fd 10 rt 90 ]", syntax: lang)

@@ -156,6 +156,27 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `table.toggle` | Toggle table mode | `M+T` |
 | `border.style` | Cycle border style | `M+S` |
 
+## Command Prompt Shorthand
+
+The `macro.logo` prompt first dispatches editor shorthand, then numeric goto,
+then LOGO. Command bar shorthand is not represented as `CommandID` values
+because it is parsed text with optional arguments.
+
+Examples:
+
+| Input | Action |
+| :--- | :--- |
+| `save` | Dispatches `file.save` |
+| `new` | Dispatches `buffer.new` |
+| `close` | Dispatches `file.exit` |
+| `write path` | Saves to `path` |
+| `open path` / `edit path` | Opens `path` in a new buffer |
+| `buffer next` | Dispatches `buffer.next` |
+| `buffer prev` / `buffer previous` | Dispatches `buffer.prev` |
+| `buffer N` | Switches to 1-based buffer index `N` |
+| `42` | Goes to line 42 |
+| `42:7` / `42,7` | Goes to line 42, column 7 |
+
 ## Nano Syntax Files
 
 `zago` can load GNU Nano `.nanorc` syntax definitions from common locations:

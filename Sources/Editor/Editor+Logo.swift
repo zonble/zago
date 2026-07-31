@@ -84,33 +84,14 @@ extension Editor: LogoEngineDelegate {
         case .fillCanvasBlock(let text):
             _ = fillCanvasBlock(with: text)
         case .gotoLine(let row):
-            buffer.lineIndex = max(0, min(row, buffer.lines.count - 1))
-            buffer.clampCursor()
+            goToLocation(line: row + 1, column: nil)
         case .gotoCol(let col):
-            let lineText =
-                (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
-            buffer.columnIndex = max(0, min(col, lineText.count))
+            goToLocation(line: buffer.lineIndex + 1, column: col + 1)
         case .clearBuffer:
             buffer.lines = [""]
             buffer.lineIndex = 0
             buffer.columnIndex = 0
             buffer.isModified = true
-        case .saveBuffer(let path):
-            saveCurrentBuffer(path: path)
-        case .saveAndCloseBuffer(let path):
-            saveAndCloseCurrentBuffer(path: path)
-        case .switchBuffer(let idx):
-            if idx >= 0 && idx < buffers.count {
-                currentBufferIndex = idx
-            }
-        case .openBuffer(let path):
-            openNewBuffer(filePath: path)
-        case .closeBuffer:
-            closeCurrentBuffer()
-        case .nextBuffer:
-            nextBuffer()
-        case .prevBuffer:
-            prevBuffer()
         }
     }
 
@@ -155,28 +136,6 @@ extension Editor: LogoEngineDelegate {
             return buffer.isModified
         case .fileName:
             return buffer.filePath ?? "Untitled"
-        }
-    }
-
-    private func saveCurrentBuffer(path: String?) {
-        if let path, !path.isEmpty {
-            doSave(to: path)
-        } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
-            doSave(to: currentPath)
-        } else {
-            promptWriteFilePath()
-        }
-    }
-
-    private func saveAndCloseCurrentBuffer(path: String?) {
-        if let path, !path.isEmpty {
-            doSave(to: path)
-            closeCurrentBuffer()
-        } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
-            doSave(to: currentPath)
-            closeCurrentBuffer()
-        } else {
-            promptSaveAndExit()
         }
     }
 
