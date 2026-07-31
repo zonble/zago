@@ -526,6 +526,10 @@ import Testing
     #expect(L10n["menu.help.logo_reference"] == "LOGO Reference")
     #expect(L10n["menu.help.logo_workspace"] == "Procedures & Variables")
 
+    #expect(L10n.defaultBorder("Round") == "[ Default Border: Round ]")
+    #expect(L10n.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
+    #expect(L10n["status.table_mode_exited"] == "[ Table Mode Exited ]")
+
     L10n.currentLanguage = .zh_TW
     #expect(L10n.helpGetHelp == "輔助說明")
     #expect(L10n.helpExit == "離開")
@@ -544,6 +548,9 @@ import Testing
     #expect(L10n.errorInsertingFile(error: "Access denied") == "插入檔案錯誤：Access denied")
     #expect(L10n.errorSavingFile(error: "Disk full") == "儲存檔案錯誤：Disk full")
     #expect(L10n.replacedWord(target: "helo", newWord: "hello") == "已將 'helo' 替換為 'hello'")
+    #expect(L10n.defaultBorder("Round") == "[ 預設框線：Round ]")
+    #expect(L10n.disabledInTableMode("GOTO") == "[ 表格模式下停用 GOTO ]")
+    #expect(L10n["status.table_mode_exited"] == "[ 已退出表格模式 ]")
     #expect(L10n["helpview.sec_logo"] == "  LOGO 巨集語言與海龜繪圖指令：")
     #expect(L10n["helpview.logo_6"].contains("海龜繪圖"))
     #expect(L10n["menu.help.logo_reference"] == "LOGO 指令參考")

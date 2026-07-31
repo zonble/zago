@@ -31,7 +31,7 @@ public struct DiagramSnippets {
         }
 
         editor.buffer.isModified = true
-        editor.setStatusMessage("[ Inserted \(snippet.engine.rawValue) Snippet ]")
+        editor.setStatusMessage(L10n.insertedDiagramSnippet(snippet.engine.rawValue))
     }
 
     /// Generates the `MenuCategory` for Diagrams to be placed between Tools and Help, filtering items by active engine context.

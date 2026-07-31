@@ -118,4 +118,36 @@ public enum L10n {
     public static func replacedWord(target: String, newWord: String) -> String {
         String(format: self["msg.replaced_word"], target, newWord)
     }
+
+    public static func defaultBorder(_ style: String) -> String {
+        String(format: self["status.default_border"], style)
+    }
+
+    public static func unknownBorderStyle(_ style: String) -> String {
+        String(format: self["status.unknown_border_style"], style)
+    }
+
+    public static func unknownTableBorder(_ style: String) -> String {
+        String(format: self["status.unknown_table_border"], style)
+    }
+
+    public static func disabledInTableMode(_ token: String) -> String {
+        String(format: self["status.disabled_in_table_mode"], token)
+    }
+
+    public static func editingConfig(_ path: String) -> String {
+        String(format: self["status.editing_config"], path)
+    }
+
+    public static func insertedDiagramSnippet(_ name: String) -> String {
+        String(format: self["status.inserted_diagram_snippet"], name)
+    }
+
+    public static func lineNumbersState(_ state: String) -> String {
+        String(format: self["status.line_numbers_state"], state)
+    }
+
+    public static func wrapColumnSet(_ col: Int) -> String {
+        String(format: self["status.wrap_column_set"], col)
+    }
 }

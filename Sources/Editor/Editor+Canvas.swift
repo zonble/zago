@@ -318,7 +318,7 @@ extension Editor {
         }
         clearActiveMark()
         buffer.isModified = true
-        setStatusMessage("[ Filled block ]")
+        setStatusMessage(L10n["status.filled_block"])
         syncCanvasCursorToBuffer()
         return true
     }

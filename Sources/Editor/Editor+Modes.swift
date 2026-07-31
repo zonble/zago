@@ -63,12 +63,12 @@ extension Editor {
         if overlayMode == .frame {
             clearActiveMark()
             overlayMode = .none
-            setStatusMessage("[ Frame Mode Exited ]")
+            setStatusMessage(L10n["status.frame_mode_exited"])
             return
         }
 
         if isTableModeActive {
-            setStatusMessage("[ Frame Mode disabled in Table Mode ]")
+            setStatusMessage(L10n["status.frame_mode_disabled_in_table_mode"])
             return
         }
 
@@ -79,7 +79,7 @@ extension Editor {
             syncCanvasCursorFromBuffer()
         }
         overlayMode = .frame
-        setStatusMessage("[ FRAME MODE ]")
+        setStatusMessage(L10n["status.frame_mode"])
     }
 
     func modeIndicatorText() -> String {

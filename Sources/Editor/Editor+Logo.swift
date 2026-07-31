@@ -218,25 +218,12 @@ extension Editor: LogoEngineDelegate {
 
     private func setBorderStyle(_ style: String) {
         guard let borderStyle = BorderStyle(style) else {
-            setStatusMessage("[ Unknown table border: \(style) ]")
+            setStatusMessage(L10n.unknownTableBorder(style))
             return
         }
 
         defaultBorderStyle = borderStyle
-        switch borderStyle {
-        case .single:
-            setStatusMessage("[ Default Border: Single ]")
-        case .double:
-            setStatusMessage("[ Default Border: Double ]")
-        case .round:
-            setStatusMessage("[ Default Border: Round ]")
-        case .doubleRound:
-            setStatusMessage("[ Default Border: Double Round ]")
-        case .ascii:
-            setStatusMessage("[ Default Border: ASCII ]")
-        case .markdown:
-            setStatusMessage("[ Default Border: Markdown ]")
-        }
+        setStatusMessage(L10n.defaultBorder(borderStyle.rawValue))
     }
 
 }
@@ -251,7 +238,7 @@ extension Editor {
     @discardableResult
     func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
         if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
-            setStatusMessage("[ \(blockedToken) disabled in Table Mode ]")
+            setStatusMessage(L10n.disabledInTableMode(blockedToken))
             return false
         }
 

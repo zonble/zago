@@ -5,7 +5,7 @@ import TextMetrics
 extension Editor {
     public func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
         if isTableModeActive {
-            setStatusMessage("[ GOTO disabled in Table Mode ]")
+            setStatusMessage(L10n["status.goto_disabled_in_table_mode"])
             return
         }
 
@@ -116,11 +116,11 @@ extension Editor {
         case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
             if let style = BorderStyle(arg) {
                 defaultBorderStyle = style
-                setStatusMessage("[ Default Border: \(style.rawValue) ]")
+                setStatusMessage(L10n.defaultBorder(style.rawValue))
             } else if arg.isEmpty {
                 _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
             } else {
-                setStatusMessage("[ Unknown border style: \(arg) ]")
+                setStatusMessage(L10n.unknownBorderStyle(arg))
             }
         default:
             break

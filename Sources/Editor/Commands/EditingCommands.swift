@@ -224,7 +224,7 @@ public struct JustifyParagraphCommand: Command {
             return
         }
         guard !editor.isCanvasModeActive else {
-            editor.setStatusMessage("[ Justify disabled in Canvas Mode ]")
+            editor.setStatusMessage(L10n["status.justify_disabled_in_canvas_mode"])
             return
         }
         editor.saveUndoSnapshot()

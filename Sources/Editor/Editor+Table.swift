@@ -343,12 +343,12 @@ extension Editor {
             isTableModeActive = false
             currentTableCell = nil
             overlayMode = .none
-            setStatusMessage("[ Table Mode Exited ]")
+            setStatusMessage(L10n["status.table_mode_exited"])
             return
         }
 
         if overlayMode == .frame {
-            setStatusMessage("[ Table Mode disabled in Frame Mode ]")
+            setStatusMessage(L10n["status.table_mode_disabled_in_frame_mode"])
             return
         }
 
@@ -375,7 +375,7 @@ extension Editor {
             buffer.columnIndex = cellLeft + 1
         }
         clampTableModeCursor()
-        setStatusMessage("(M+T to exit | Tab to navigate)")
+        setStatusMessage(L10n["status.table_mode_hint"])
     }
 
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
@@ -525,13 +525,13 @@ extension Editor {
     public func promptCreateTableConfirm() {
         currentPromptMode = .confirmCreateTable(completion: { [weak self] confirm in
             guard let self = self, let confirm = confirm else {
-                self?.setStatusMessage("[ Table mode cancelled ]")
+                self?.setStatusMessage(L10n["status.table_mode_cancelled"])
                 return
             }
             if confirm {
                 self.createDefaultTable()
             } else {
-                self.setStatusMessage("[ Table mode cancelled ]")
+                self.setStatusMessage(L10n["status.table_mode_cancelled"])
             }
         })
     }
@@ -602,7 +602,7 @@ extension Editor {
                 enterTableMode(with: cell)
             }
         } else {
-            setStatusMessage("[ Table created ]")
+            setStatusMessage(L10n["status.table_created"])
         }
     }
 
@@ -817,7 +817,7 @@ extension Editor {
                 buffer.lines[lineIdx] = prefix + newCellText + suffix
             }
         }
-        setStatusMessage("[ Cell Text Centered (^J) ]")
+        setStatusMessage(L10n["status.cell_text_centered"])
     }
 
     public func moveToNextTableCellLineOrCell() {

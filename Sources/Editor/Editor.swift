@@ -224,7 +224,7 @@ public final class Editor {
         } else {
             openNewBuffer(filePath: configPath)
         }
-        setStatusMessage("[ Editing \(configPath) ]")
+        setStatusMessage(L10n.editingConfig(configPath))
     }
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.
@@ -240,7 +240,7 @@ public final class Editor {
             L10n.currentLanguage = lang
         }
         applyCustomConfig(loadedConfig)
-        setStatusMessage("[ Config reloaded ]")
+        setStatusMessage(L10n["status.config_reloaded"])
     }
 
     /// Closes current active buffer. If no buffers remain, exits editor.

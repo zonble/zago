@@ -64,22 +64,22 @@ public struct CycleBorderStyleCommand: Command {
         switch editor.defaultBorderStyle {
         case .single:
             editor.defaultBorderStyle = .double
-            editor.setStatusMessage("[ Default Border Style: Double Unicode (╔═║) ]")
+            editor.setStatusMessage(L10n.defaultBorder("Double Unicode (╔═║)"))
         case .double:
             editor.defaultBorderStyle = .round
-            editor.setStatusMessage("[ Default Border Style: Round Unicode (╭─│) ]")
+            editor.setStatusMessage(L10n.defaultBorder("Round Unicode (╭─│)"))
         case .round:
             editor.defaultBorderStyle = .doubleRound
-            editor.setStatusMessage("[ Default Border Style: Double Round Unicode (╭═║) ]")
+            editor.setStatusMessage(L10n.defaultBorder("Double Round Unicode (╭═║)"))
         case .doubleRound:
             editor.defaultBorderStyle = .ascii
-            editor.setStatusMessage("[ Default Border Style: ASCII (+-|) ]")
+            editor.setStatusMessage(L10n.defaultBorder("ASCII (+-|)"))
         case .ascii:
             editor.defaultBorderStyle = .markdown
-            editor.setStatusMessage("[ Default Border Style: Markdown (|---|) ]")
+            editor.setStatusMessage(L10n.defaultBorder("Markdown (|---|)"))
         case .markdown:
             editor.defaultBorderStyle = .single
-            editor.setStatusMessage("[ Default Border Style: Single Unicode (┌─│) ]")
+            editor.setStatusMessage(L10n.defaultBorder("Single Unicode (┌─│)"))
         }
     }
 }

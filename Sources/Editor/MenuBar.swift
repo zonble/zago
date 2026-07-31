@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 
 public struct MenuItem {
     public let titleKey: String
@@ -110,42 +111,42 @@ public final class MenuBar {
                         titleKey: "menu.borders.single", hotkeyChar: "s",
                         action: { editor in
                             editor.defaultBorderStyle = .single
-                            editor.setStatusMessage("[ Default Border: Single ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.single.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .single }),
                     MenuItem(
                         titleKey: "menu.borders.double", hotkeyChar: "d",
                         action: { editor in
                             editor.defaultBorderStyle = .double
-                            editor.setStatusMessage("[ Default Border: Double ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.double.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .double }),
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
                             editor.defaultBorderStyle = .round
-                            editor.setStatusMessage("[ Default Border: Round ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.round.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .round }),
                     MenuItem(
                         titleKey: "menu.borders.double_round", hotkeyChar: "u",
                         action: { editor in
                             editor.defaultBorderStyle = .doubleRound
-                            editor.setStatusMessage("[ Default Border: Double Round ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.doubleRound.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .doubleRound }),
                     MenuItem(
                         titleKey: "menu.borders.ascii", hotkeyChar: "a",
                         action: { editor in
                             editor.defaultBorderStyle = .ascii
-                            editor.setStatusMessage("[ Default Border: ASCII ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.ascii.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
                     MenuItem(
                         titleKey: "menu.borders.markdown", hotkeyChar: "m",
                         action: { editor in
                             editor.defaultBorderStyle = .markdown
-                            editor.setStatusMessage("[ Default Border: Markdown ]")
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.markdown.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .markdown }),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
@@ -160,7 +161,7 @@ public final class MenuBar {
                         action: { editor in
                             editor.displayConfig.showLineNumbers.toggle()
                             let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
-                            editor.setStatusMessage("[ Line Numbers \(state) ]")
+                            editor.setStatusMessage(L10n.lineNumbersState(state))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.ruler", hotkeyChar: "r",
@@ -171,25 +172,25 @@ public final class MenuBar {
                         titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(80)
-                            editor.setStatusMessage("[ Wrap Column set to 80 ]")
+                            editor.setStatusMessage(L10n.wrapColumnSet(80))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(60)
-                            editor.setStatusMessage("[ Wrap Column set to 60 ]")
+                            editor.setStatusMessage(L10n.wrapColumnSet(60))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(40)
-                            editor.setStatusMessage("[ Wrap Column set to 40 ]")
+                            editor.setStatusMessage(L10n.wrapColumnSet(40))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(nil)
-                            editor.setStatusMessage("[ Wrap Column reset to dynamic ]")
+                            editor.setStatusMessage(L10n["status.wrap_column_reset"])
                         }),
                 ]),
         ]
