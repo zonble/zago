@@ -25,6 +25,176 @@ keeps the implementation simple, but it makes some editor actions awkward:
 - Do not make the command bar a second general-purpose scripting language.
 - Do not make shorthand parsing clever enough to conflict with normal LOGO
   programs.
+- Do not create duplicate implementations of existing editor commands.
+
+## Architecture Rules
+
+Command bar commands are adapters, not a second editor implementation.
+
+A command bar command may:
+
+- Parse command bar text.
+- Validate arguments.
+- Convert shorthand arguments into editor-domain arguments.
+- Dispatch an existing `CommandID` through the existing `CommandRegistry`.
+- Call a shared `Editor` domain method when the action requires arguments.
+
+A command bar command must not:
+
+- Directly mutate `buffers`, `currentBufferIndex`, cursor indexes, or buffer
+  text when an existing command or domain method owns that behavior.
+- Reimplement save, open, close, buffer switching, goto, or editing semantics.
+- Produce behavior that differs from the matching key-bound or menu command.
+- Create a parallel undo, status-message, prompt, or dirty-flag policy.
+
+The intended flow is:
+
+```text
+CommandBarCommand
+  parse and validate command bar input
+  -> CommandRegistry.dispatch(CommandID) for existing no-argument commands
+  -> shared Editor domain method for argument-bearing commands
+
+Existing key/menu Command
+  -> same shared Editor domain method
+
+LOGO delegate action
+  -> same shared Editor domain method
+```
+
+This keeps behavior centralized. The command bar layer decides what the user
+meant; the editor layer still owns what the action does.
+
+## Command Bar Registry
+
+The command bar dispatcher should be a registry of small matcher commands, not
+a single large switch statement.
+
+Suggested types:
+
+```swift
+enum CommandBarDispatchResult {
+    case handled
+    case noMatch
+}
+
+protocol CommandBarCommand {
+    var name: String { get }
+    var help: String { get }
+
+    func match(_ input: CommandBarInput) -> Bool
+    func execute(_ input: CommandBarInput, editor: Editor) -> CommandBarDispatchResult
+}
+
+struct CommandBarInput {
+    let raw: String
+    let text: String
+    let tokens: [String]
+    let firstToken: String?
+    let rest: String
+}
+
+final class CommandBarRegistry {
+    private var commands: [CommandBarCommand] = []
+
+    func register(_ command: CommandBarCommand) {
+        commands.append(command)
+    }
+
+    func dispatch(_ rawInput: String, editor: Editor) -> CommandBarDispatchResult {
+        let input = CommandBarInput(rawInput)
+        guard !input.text.isEmpty else { return .handled }
+
+        for command in commands where command.match(input) {
+            return command.execute(input, editor: editor)
+        }
+
+        return .noMatch
+    }
+}
+```
+
+Registration order defines precedence. For example, exact editor shorthand
+commands should be registered before numeric goto, and LOGO should remain the
+fallback outside this registry.
+
+## Reuse Patterns
+
+### Existing No-Argument Commands
+
+When a command bar shorthand maps to an existing no-argument editor command,
+use `CommandRegistry`.
+
+```swift
+struct CommandIDCommandBarCommand: CommandBarCommand {
+    let names: Set<String>
+    let commandID: CommandID
+
+    func match(_ input: CommandBarInput) -> Bool {
+        guard input.rest.isEmpty, let first = input.firstToken else { return false }
+        return names.contains(first.lowercased())
+    }
+
+    func execute(_ input: CommandBarInput, editor: Editor) -> CommandBarDispatchResult {
+        _ = editor.commandRegistry.dispatch(id: commandID, editor: editor)
+        return .handled
+    }
+}
+```
+
+Examples:
+
+- `save` -> `CommandID.fileSave`
+- `new` -> `CommandID.bufferNew`
+- `buffer next` -> `CommandID.bufferNext`
+- `buffer prev` -> `CommandID.bufferPrev`
+
+### Argument-Bearing Commands
+
+When a shorthand carries arguments, the command bar command should only parse
+and validate those arguments. The behavior should live in a shared editor-domain
+method.
+
+```swift
+extension Editor {
+    func openBuffer(path: String) {
+        openNewBuffer(filePath: path)
+    }
+
+    func writeBuffer(path: String) {
+        doSave(to: path)
+    }
+
+    func switchToBuffer(oneBasedIndex: Int) {
+        guard oneBasedIndex > 0, oneBasedIndex <= buffers.count else {
+            setStatusMessage(L10n["status.no_such_buffer"])
+            return
+        }
+        currentBufferIndex = oneBasedIndex - 1
+    }
+}
+```
+
+Then command bar and LOGO delegate code should call the same methods instead of
+editing buffer state independently.
+
+### Pure Shorthand
+
+Some command bar forms do not correspond to an existing `CommandID`. Numeric
+goto is the main example.
+
+Even then, the command bar command should call a shared editor method:
+
+```swift
+extension Editor {
+    func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
+        // Owns range checks, cursor updates, canvas/text column handling, and status messages.
+    }
+}
+```
+
+The numeric command bar command, the goto prompt, and LOGO `GOTOLINE` /
+`GOTOCOL` should all reuse this method.
 
 ## Dispatch Order
 
@@ -191,19 +361,25 @@ Add command bar dispatch tests for:
 - Existing LOGO `BUFFER`, `BUFFER 2`, `SAVE "path"`, `OPENBUFFER "path"`,
   `GETLINE`, and `SETLINE` continue to work.
 - `.zagorc` `logo-prelude` and `logo-script` continue to execute through LOGO.
+- Key/menu commands, LOGO delegate actions, and command bar shorthand produce
+  the same editor state for shared operations.
 
 ## Migration Strategy
 
-1. Add a command bar dispatch function in the editor layer.
-2. Route LOGO prompt completion through that dispatcher.
-3. Implement numeric goto shorthand.
-4. Implement buffer and file shorthand commands.
-5. Keep LOGO as the fallback path.
-6. Update `docs/logo.md`, `docs/editor.md`, and `docs/configuration.md` after
+1. Extract shared `Editor` domain methods for open, write, buffer switching,
+   and goto behavior where direct mutations currently exist.
+2. Update existing key/menu commands and LOGO delegate actions to call those
+   shared domain methods.
+3. Add a `CommandBarRegistry` in the editor layer.
+4. Implement command bar commands as parse/validate adapters only.
+5. Route LOGO prompt completion through the command bar registry.
+6. Implement numeric goto shorthand.
+7. Implement buffer and file shorthand commands.
+8. Keep LOGO as the fallback path.
+9. Update `docs/logo.md`, `docs/editor.md`, and `docs/configuration.md` after
    behavior is implemented.
 
 ## Final Rule
 
 Use the editor command layer for interactive convenience. Use LOGO for
 programmable composition.
-
