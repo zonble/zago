@@ -82,6 +82,18 @@ The same language is available from the command prompt, key bindings, and startu
 Create a numbered list:
 
 ```logo
+REPEAT 5 [ TYPE :# ". List item" NL]
+```
+
+or
+
+```logo
+FOREACH (ISEQ 1 5) [TYPE ? ". List item" NL]
+```
+
+or 
+
+```logo
 MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:i + 1) ]
 ```
 
