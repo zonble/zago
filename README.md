@@ -1,12 +1,16 @@
 # `zago`: Terminal Text Editor & Diagramming
 
-2026 © Weizhong Yang a.k.a. zonble
-
-`zago` is
-
 - a small terminal text editor.
 - draw boxes and lines in your Markdown file.
 - handles CJK and emoji alignment.
+
+## Who is zago for?
+
+- **Text diagrams over images**: Clean, diffable diagrams in your Markdown.
+- **No GUI context-switching**: No need to open Monodraw or ASCIIFlow just to draw boxes.
+- **Keyboard-first**: Stay in the typing flow without reaching for a mouse.
+- **CJK & Emoji perfectionists**: Precise alignment that never breaks box borders.
+- **Terminal natives**: Fast documentation for local and SSH workflows.
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.png)
 
@@ -53,6 +57,15 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
+
+## Text Mode & 2D Canvas Mode
+
+`zago` provides two complementary spatial editing modes. In both modes, typing remains modeless and inserts characters directly:
+
+- **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
+- **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
+
+For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
 
 ## Command Examples
 
@@ -124,15 +137,6 @@ TYPE "    database    "
 │    database    │
 └────────────────┘
 ```
-
-## Text Mode & 2D Canvas Mode
-
-`zago` provides two complementary spatial editing modes. In both modes, typing remains modeless and inserts characters directly:
-
-- **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
-- **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
-
-For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
 
 ## Documentation
 
