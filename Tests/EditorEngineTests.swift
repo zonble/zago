@@ -980,6 +980,28 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.buffer.isModified == false)
 }
 
+@Test func testCommandBarSettingCommandsAreEditorCommands() throws {
+    let editor = Editor()
+    editor.displayConfig.showRuler = false
+    editor.displayConfig.showLineNumbers = true
+    editor.displayConfig.enableSyntaxHighlight = true
+
+    submitCommandBar("SET RULER ON", editor: editor)
+    #expect(editor.displayConfig.showRuler == true)
+
+    submitCommandBar("set linenumbers off", editor: editor)
+    #expect(editor.displayConfig.showLineNumbers == false)
+
+    submitCommandBar("set syntax off", editor: editor)
+    #expect(editor.displayConfig.enableSyntaxHighlight == false)
+
+    submitCommandBar("set wrap 4", editor: editor)
+    #expect(editor.layoutEngine.wrapColumn == 10)
+
+    submitCommandBar("unset wrap", editor: editor)
+    #expect(editor.layoutEngine.wrapColumn == nil)
+}
+
 @Test func testLastLineDownKeyMovesToEOL() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]

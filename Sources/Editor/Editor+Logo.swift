@@ -60,8 +60,6 @@ extension Editor: LogoEngineDelegate {
             performSearch(query: query)
         case .markModified:
             buffer.isModified = true
-        case .applySetting(let setting, let arg):
-            applySetting(setting: setting, arg: arg)
         case .updateLineIndex(let lineIndex):
             buffer.lineIndex = lineIndex
         case .updateColumnIndex(let columnIndex):
@@ -241,62 +239,6 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
-    private func applySetting(setting: String, arg: String) {
-        switch setting.lowercased() {
-        case "wrap", "wrapcolumn":
-            if arg == "off" || arg == "false" || arg == "none" {
-                layoutEngine.setWrapColumn(nil)
-            } else if let w = Int(arg), w > 0 {
-                layoutEngine.setWrapColumn(w)
-            } else {
-                layoutEngine.setWrapColumn(nil)
-            }
-        case "ruler", "rulerbar", "showruler":
-            if arg == "off" || arg == "false" {
-                displayConfig.showRuler = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.showRuler = true
-            } else {
-                displayConfig.showRuler.toggle()
-            }
-        case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
-            if arg == "off" || arg == "false" {
-                displayConfig.showLineNumbers = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.showLineNumbers = true
-            } else {
-                displayConfig.showLineNumbers.toggle()
-            }
-        case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
-            if arg == "off" || arg == "false" {
-                displayConfig.enableSyntaxHighlight = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.enableSyntaxHighlight = true
-            } else {
-                displayConfig.enableSyntaxHighlight.toggle()
-            }
-        case "autoreload", "auto-reload", "auto_reload":
-            if arg == "off" || arg == "false" {
-                displayConfig.autoReload = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.autoReload = true
-            } else {
-                displayConfig.autoReload.toggle()
-            }
-        case "tab", "tabsize":
-            if let size = Int(arg), size > 0 {
-                displayConfig.tabSize = size
-            }
-        case "lang":
-            if arg == "zh_tw" || arg == "zh" {
-                L10n.currentLanguage = .zh_TW
-            } else if arg == "en" {
-                L10n.currentLanguage = .en
-            }
-        default:
-            break
-        }
-    }
 }
 
 extension Editor {

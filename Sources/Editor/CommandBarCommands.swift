@@ -66,6 +66,7 @@ public final class CommandBarRegistry {
         registry.register(CommandIDCommandBarCommand(names: ["close"], commandID: .fileExit))
         registry.register(OpenCommandBarCommand())
         registry.register(WriteCommandBarCommand())
+        registry.register(SettingCommandBarCommand())
         registry.register(BufferCommandBarCommand())
         registry.register(NumericGotoCommandBarCommand())
         return registry

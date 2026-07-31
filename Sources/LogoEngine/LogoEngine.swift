@@ -73,7 +73,7 @@ public final class LogoEngine {
 
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
     internal static let statementCommands: Set<LogoPrimitive> = [
-        .make, .name, .set, .type, .show, .delete, .backspace, .deleteLine,
+        .make, .name, .type, .show, .delete, .backspace, .deleteLine,
         .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
         .joinLine, .splitLine, .indentLines, .outdentLines,
         .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .line, .hr, .vline, .vhr, .table, .diagram,

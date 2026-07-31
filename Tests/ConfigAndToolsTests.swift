@@ -98,7 +98,7 @@ import Testing
     editor.layoutEngine.setWrapColumn(4)
     #expect(editor.layoutEngine.wrapColumn == 10)
 
-    editor.runLogoScript("SET WRAP 4")
+    editor.applyEditorSetting(setting: "wrap", arg: "4")
     #expect(editor.layoutEngine.wrapColumn == 10)
 }
 

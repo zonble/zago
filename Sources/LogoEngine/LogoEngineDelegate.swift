@@ -21,7 +21,6 @@ public enum LogoEditorAction {
     case moveCursorVirtual(Int)
     case search(String)
     case markModified
-    case applySetting(setting: String, arg: String)
     case updateLineIndex(Int)
     case updateColumnIndex(Int)
     case setLine(index: Int, text: String)

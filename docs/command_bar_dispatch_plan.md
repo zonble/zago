@@ -281,6 +281,7 @@ Keep these as LOGO primitives:
 Move these out of LOGO and handle them only as command prompt shorthand or
 key/menu editor commands:
 
+- `SET`
 - `OPENBUFFER` / `EDIT`
 - `SAVE`
 - `FILE`
@@ -319,6 +320,13 @@ Uppercase `BUFFER` falls through to LOGO so reporter use remains available.
 Saving, closing, and opening buffers are command prompt/editor operations. They
 should call shared `Editor` domain methods, not LOGO delegate actions.
 
+### `SET` and `UNSET`
+
+Editor settings such as `set wrap 80`, `set tab 4`, `set linenumbers off`,
+`set syntax off`, and `unset wrap` are command prompt/configuration directives.
+They should not be LOGO primitives. LOGO data mutation primitives such as
+`SETITEM`, `.SETFIRST`, and `MDSETITEM` remain in LOGO.
+
 ## Case Rules
 
 The shorthand parser is case-insensitive for editor commands that are not LOGO
@@ -327,6 +335,8 @@ reporters:
 - `save`
 - `SAVE`
 - `Save`
+- `set wrap 80`
+- `SET WRAP 80`
 
 For `BUFFER`, all-uppercase input remains LOGO reporter syntax. Lowercase and
 mixed-case `buffer` input is command prompt shorthand.
@@ -359,7 +369,7 @@ Add command bar dispatch tests for:
 - LOGO `BUFFER` reports the active buffer index.
 - LOGO `BUFFER 2` does not switch buffers.
 - `SAVE`, `FILE`, `OPENBUFFER`, `EDIT`, `NEXTBUFFER`, `PREVBUFFER`,
-  `CLOSEBUFFER`, and `SETBUFFER` are not LOGO primitives.
+  `CLOSEBUFFER`, `SETBUFFER`, and `SET` are not LOGO primitives.
 - Existing LOGO `GETLINE` and `SETLINE` continue to work.
 - `.zagorc` `logo-prelude` and `logo-script` continue to execute through LOGO.
 - Key/menu commands, LOGO delegate actions, and command bar shorthand produce

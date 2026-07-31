@@ -658,14 +658,11 @@ TYPE ITEM 2 :cells
 
 ---
 
-### 9. Editor Configuration Settings (`SET`)
+### 9. Editor Settings
 
-| Setting Command | Description | Example |
-| :--- | :--- | :--- |
-| `SET RULER ON / OFF` | Shows or hides column ruler line | `SET RULER ON` |
-| `SET WRAP 80` | Sets line wrap column width | `SET WRAP 80` |
-| `SET TAB 4` | Sets tab width spaces | `SET TAB 4` |
-| `SET LINENUMBERS ON / OFF` | Shows or hides line number gutter; hiding it makes terminal copy/paste cleaner | `SET LINENUMBERS OFF` |
+Editor/session settings are command prompt and configuration directives, not
+LOGO primitives. Use command prompt shorthand such as `set wrap 80`,
+`set tab 4`, `set linenumbers off`, `set ruler on`, and `unset wrap`.
 
 ---
 

@@ -50,21 +50,6 @@ extension LogoEngine {
         guard let delegate = self.delegate else { return false }
 
         switch prim {
-        case .set:
-            index += 1
-            if index < tokens.count {
-                let setting = unquote(tokens[index]).lowercased()
-                var arg = ""
-                if index + 1 < tokens.count {
-                    if !LogoEngine.isKeyword(tokens[index + 1]) {
-                        index += 1
-                        arg = evaluateExpression(tokens, index: &index).lowercased()
-                    }
-                }
-                delegate.logoEngine(self, performAction: .applySetting(setting: setting, arg: arg))
-            }
-            return true
-
         case .type:
             index += 1
             consumeExpressionArguments(tokens, index: &index) { text in

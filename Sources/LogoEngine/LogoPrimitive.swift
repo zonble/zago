@@ -5,7 +5,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     // Statement / Control Primitives
     case make
     case name
-    case set
     case type
     case show
     case delete
@@ -221,7 +220,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["MAKE", "VAR"], .make),
         (["NAME"], .name),
         (["THING"], .thing),
-        (["SET"], .set),
         (["TYPE", "PRINT", "INSERT"], .type),
         (["MSG", "MESSAGE", "SHOW"], .show),
         (["DEL", "DELETE"], .delete),

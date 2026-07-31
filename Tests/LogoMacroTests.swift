@@ -54,15 +54,8 @@ final class LogoTestResultBox: @unchecked Sendable {
     editor.processKey(.enter)
     #expect(editor.logoPromptHistory.last == "TY")
 
-    // 10. SET Editor Configuration Settings test
-    editor.displayConfig.showRuler = false
-    logoEngine.execute("SET RULER ON")
-    #expect(editor.displayConfig.showRuler == true)
-    #expect(editor.displayConfig.showLineNumbers == true)
-    logoEngine.execute("SET LINENUMBERS OFF")
-    #expect(editor.displayConfig.showLineNumbers == false)
-    logoEngine.execute("SET LINENUMBERS ON")
-    #expect(editor.displayConfig.showLineNumbers == true)
+    // 10. Editor settings belong to the command prompt/config layer, not LOGO.
+    #expect(LogoPrimitive.from("SET") == nil)
 
     // 11. MSG Command Status Bar Output test
     logoEngine.execute("MAKE \"msg_val\" 42 MSG \"Current Val: \" + :msg_val")
@@ -1559,6 +1552,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(LogoPrimitive.from("SAVE") == nil)
     #expect(LogoPrimitive.from("FILE") == nil)
     #expect(LogoPrimitive.from("SETBUFFER") == nil)
+    #expect(LogoPrimitive.from("SET") == nil)
 }
 
 @Test func testLogoBufferReporterDoesNotSwitchBuffers() throws {
@@ -1615,7 +1609,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.buffer.columnIndex == 0)
 
-    logoEngine.execute("SET TAB 2")
+    editor.applyEditorSetting(setting: "tab", arg: "2")
     editor.selectionMark = (line: 0, column: 0)
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 0
