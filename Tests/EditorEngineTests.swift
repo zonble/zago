@@ -1012,10 +1012,9 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.processPromptKey(.tab)
 
     #expect(editor.promptInputText == "SET ")
-    #expect(editor.statusMessage.contains("wrap"))
     #expect(editor.promptCompletionText?.contains("wrap") == true)
-    #expect(editor.statusMessage.contains("linenumbers"))
-    #expect(editor.statusMessage.contains("syntax"))
+    #expect(editor.promptCompletionText?.contains("linenumbers") == true)
+    #expect(editor.promptCompletionText?.contains("syntax") == true)
 
     let rendered = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(rendered.contains("wrap"))
@@ -1045,8 +1044,8 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.processPromptKey(.tab)
 
     #expect(editor.promptInputText == "set syntax ")
-    #expect(editor.statusMessage.contains("on"))
-    #expect(editor.statusMessage.contains("off"))
+    #expect(editor.promptCompletionText?.contains("on") == true)
+    #expect(editor.promptCompletionText?.contains("off") == true)
 }
 
 @Test func testCommandBarTabCompletesLogoKeyword() throws {
@@ -1100,6 +1099,47 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.promptInputText == "sa")
     #expect(editor.promptCompletionText?.contains("save") == true)
     #expect(editor.promptCompletionText?.contains("save-exit") == true)
+}
+
+@Test func testCommandBarCompletionClearsOnEsc() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "sa" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+    #expect(editor.promptCompletionText != nil)
+
+    editor.processPromptKey(.esc)
+    #expect(editor.promptCompletionText == nil)
+    #expect(editor.statusMessage.contains("save") == false)
+}
+
+@Test func testCommandBarTabCompletesTokenWithLeadingContext() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "box 10 drawb" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "box 10 drawbox ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
+}
+
+@Test func testCommandBarTabCompletesTokenAfterBracket() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "REPEAT 5 [drawb" {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "REPEAT 5 [drawbox ")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count)
 }
 
 @Test func testCommandBarExitAndSaveExitCommands() throws {

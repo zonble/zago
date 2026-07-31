@@ -213,20 +213,20 @@ extension Editor {
         return candidate
     }
 
+    private func isCompletionTokenChar(_ ch: Character) -> Bool {
+        ch.isLetter || ch == "-" || ch == "_" || ch == "." || ch == "?"
+    }
+
     private func isCommandBarCompletionToken(_ token: String) -> Bool {
-        token.allSatisfy { ch in
-            ch.isLetter || ch == "-" || ch == "_" || ch == "." || ch == "?"
-        }
+        !token.isEmpty && token.allSatisfy(isCompletionTokenChar)
     }
 
     private func showCommandBarCompletions(_ items: [String], label: String) {
         if items.isEmpty {
             promptCompletionText = L10n["status.no_completions"]
-            setStatusMessage(L10n["status.no_completions"])
         } else {
             let text = String(format: L10n["status.command_completions"], label, items.joined(separator: ", "))
             promptCompletionText = text
-            setStatusMessage(text)
         }
     }
 
@@ -292,11 +292,11 @@ extension Editor {
             return true
         }
 
-        guard !prefix.contains(where: \.isWhitespace) else {
-            return false
-        }
+        let tokenStartIndex = prefix.lastIndex(where: { !isCompletionTokenChar($0) })
+            .map { prefix.index(after: $0) } ?? prefix.startIndex
+        let leadingContext = String(prefix[..<tokenStartIndex])
+        let token = String(prefix[tokenStartIndex...])
 
-        let token = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !token.isEmpty, isCommandBarCompletionToken(token) else {
             return false
         }
@@ -313,7 +313,7 @@ extension Editor {
             .map { completionCandidate($0, matching: token) }
 
         if matches.count == 1 {
-            replacePromptPrefix(matches[0] + " ")
+            replacePromptPrefix(leadingContext + matches[0] + " ")
         } else {
             showCommandBarCompletions(matches, label: "Tab")
         }
