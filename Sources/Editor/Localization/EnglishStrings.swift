@@ -183,6 +183,7 @@ public struct EnglishStrings {
         "status.deleted_selection": "[ Deleted selection ]",
         "status.cannot_shrink_width": "[ Cannot shrink column width ]",
         "status.cannot_shrink_height": "[ Cannot shrink row height ]",
+        "status.cannot_expand_width_collision": "[ Cannot expand width (adjacent box collision) ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 

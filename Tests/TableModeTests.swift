@@ -1196,3 +1196,38 @@ import Testing
     #expect(editor.buffer.lines[1] == "│ Line 1 │ Cell 2 │")
     #expect(editor.buffer.lines[2] == "│ Line 2 │        │")
 }
+
+@Test func testTableModeConnectorAutoConsumeAndCollisionPrevention() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌─┐     ┌───┐",
+        "│y│     │   │",
+        "│ ├─────┤   │",
+        "└─┘     └───┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    // Expand Left Box 1 width -> Should consume 1 connector char '─' without moving Right Box 2
+    editor.processKey(.ctrlShiftArrowRight)
+    #expect(editor.buffer.lines[0] == "┌──┐    ┌───┐")
+    #expect(editor.buffer.lines[1] == "│y │    │   │")
+    #expect(editor.buffer.lines[2] == "│  ├────┤   │")
+    #expect(editor.buffer.lines[3] == "└──┘    └───┘")
+
+    // Test direct collision prevention:
+    let collidingEditor = Editor()
+    collidingEditor.buffer.lines = [
+        "┌─┐┌───┐",
+        "│y││   │",
+        "└─┘└───┘",
+    ]
+    collidingEditor.buffer.lineIndex = 1
+    collidingEditor.buffer.columnIndex = 1
+    collidingEditor.toggleTableMode()
+
+    collidingEditor.processKey(.ctrlShiftArrowRight)
+    // Verify width was NOT expanded into colliding Box 2
+    #expect(collidingEditor.buffer.lines[1] == "│y││   │")
+}

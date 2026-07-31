@@ -972,6 +972,9 @@ extension Editor {
         let colRight = cell.maxCol
         let currentWidth = colRight - colLeft - 1
 
+        let nextCellToRight = findNextCellToRight(of: cell, on: cell.innerMinLine, detector: detector)
+        let isSameGridTable = (nextCellToRight != nil && nextCellToRight!.minCol == colRight)
+
         if delta < 0 {
             for lineIdx in tableLines {
                 let line = buffer.lines[lineIdx]
@@ -995,6 +998,21 @@ extension Editor {
                 setStatusMessage(L10n["status.cannot_shrink_width"])
                 return
             }
+        } else if delta > 0 {
+            for lineIdx in tableLines {
+                let line = buffer.lines[lineIdx]
+                let chars = Array(line)
+                let (leftB, rightB) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+                if leftB == colLeft && rightB == colRight {
+                    let nextIdx = rightB + 1
+                    if nextIdx < chars.count && TableCellDetector.verticalBorderChars.contains(chars[nextIdx]) {
+                        if !isSameGridTable {
+                            setStatusMessage(L10n["status.cannot_expand_width_collision"])
+                            return
+                        }
+                    }
+                }
+            }
         }
 
         for lineIdx in tableLines {
@@ -1010,6 +1028,16 @@ extension Editor {
                 let insertChar: Character = isBorderLine ? horiz : " "
                 let insertIndex = min(rightB, chars.count)
                 chars.insert(insertChar, at: insertIndex)
+
+                if !isSameGridTable {
+                    let connectorIdx = insertIndex + 2
+                    if connectorIdx < chars.count {
+                        let c = chars[connectorIdx]
+                        if c == "─" || c == "═" || c == "-" || c == " " {
+                            chars.remove(at: connectorIdx)
+                        }
+                    }
+                }
             } else if delta < 0 {
                 let removeIndex = rightB - 1
                 if removeIndex > colLeft && removeIndex < chars.count {

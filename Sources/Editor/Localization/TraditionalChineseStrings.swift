@@ -183,6 +183,7 @@ public struct TraditionalChineseStrings {
         "status.deleted_selection": "[ 已刪除選取範圍 ]",
         "status.cannot_shrink_width": "[ 無法再縮小欄寬 ]",
         "status.cannot_shrink_height": "[ 無法再縮小列高 ]",
+        "status.cannot_expand_width_collision": "[ 無法再增加欄寬（已碰觸鄰近圖形）]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 
