@@ -386,6 +386,18 @@ import Testing
     #expect(jsonLang != nil)
     #expect(jsonLang?.name == "JSON")
 
+    let yamlLang = highlighter.detectLanguage(for: "workflow.yml")
+    #expect(yamlLang != nil)
+    #expect(yamlLang?.name == "YAML")
+
+    let tomlLang = highlighter.detectLanguage(for: "pyproject.toml")
+    #expect(tomlLang != nil)
+    #expect(tomlLang?.name == "TOML")
+
+    let iniLang = highlighter.detectLanguage(for: "settings.ini")
+    #expect(iniLang != nil)
+    #expect(iniLang?.name == "INI")
+
     let rstLang = highlighter.detectLanguage(for: "docs.rst")
     #expect(rstLang != nil)
     #expect(rstLang?.name == "reStructuredText")
@@ -482,6 +494,38 @@ import Testing
         let envHighlighted = highlighter.highlight(line: "Env API_URL \"https://example.test\"", syntax: lang)
         #expect(envHighlighted.contains("\u{1B}[1;36mEnv"))
         #expect(envHighlighted.contains("\u{1B}[32m\"https://example.test\""))
+    }
+
+    if let lang = yamlLang {
+        let keyHighlighted = highlighter.highlight(line: "name: \"CI\"", syntax: lang)
+        #expect(keyHighlighted.contains("\u{1B}[1;36mname"))
+        #expect(keyHighlighted.contains("\u{1B}[32m\"CI\""))
+
+        let listHighlighted = highlighter.highlight(line: "  - run: swift test # verify", syntax: lang)
+        #expect(listHighlighted.contains("\u{1B}[33m  - "))
+        #expect(listHighlighted.contains("\u{1B}[1;36mrun"))
+        #expect(listHighlighted.contains("\u{1B}[90m# verify"))
+    }
+
+    if let lang = tomlLang {
+        let sectionHighlighted = highlighter.highlight(line: "[tool.swift]", syntax: lang)
+        #expect(sectionHighlighted.contains("\u{1B}[1;36m[tool.swift]"))
+
+        let keyHighlighted = highlighter.highlight(line: "enabled = true", syntax: lang)
+        #expect(keyHighlighted.contains("\u{1B}[1;36menabled"))
+        #expect(keyHighlighted.contains("\u{1B}[94mtrue"))
+    }
+
+    if let lang = iniLang {
+        let sectionHighlighted = highlighter.highlight(line: "[server]", syntax: lang)
+        #expect(sectionHighlighted.contains("\u{1B}[1;36m[server]"))
+
+        let keyHighlighted = highlighter.highlight(line: "port = 1976", syntax: lang)
+        #expect(keyHighlighted.contains("\u{1B}[1;36mport"))
+        #expect(keyHighlighted.contains("\u{1B}[33m1976"))
+
+        let commentHighlighted = highlighter.highlight(line: "; disabled", syntax: lang)
+        #expect(commentHighlighted.contains("\u{1B}[90m; disabled"))
     }
 
     if let swiftLang = highlighter.detectLanguage(for: "Package.swift") {

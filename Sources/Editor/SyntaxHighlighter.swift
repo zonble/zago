@@ -63,6 +63,9 @@ public final class SyntaxHighlighter {
             PythonSyntaxDefinition(),
             CSyntaxDefinition(),
             JSONSyntaxDefinition(),
+            YAMLSyntaxDefinition(),
+            TOMLSyntaxDefinition(),
+            INISyntaxDefinition(),
             MarkdownSyntaxDefinition(),
             ShellSyntaxDefinition(),
             ReSTSyntaxDefinition(),
@@ -271,6 +274,9 @@ public final class SyntaxHighlighter {
         case "swift": normalized = "swift"
         case "c", "cpp", "c++", "h", "hpp": normalized = "c"
         case "json": normalized = "json"
+        case "yaml", "yml": normalized = "yaml"
+        case "toml": normalized = "toml"
+        case "ini", "conf", "cfg", "properties": normalized = "ini"
         case "sh", "bash", "shell", "zsh": normalized = "sh"
         case "mermaid": normalized = "mermaid"
         case "dot": normalized = "dot"
