@@ -181,6 +181,12 @@ public final class MenuBar {
                             editor.setStatusMessage(L10n.lineNumbersState(state))
                         }),
                     MenuItem(
+                        titleKey: "menu.tools.sub_line_numbers", hotkeyChar: "u",
+                        action: { editor in
+                            editor.displayConfig.showSubLineNumbers.toggle()
+                        },
+                        isChecked: { $0.displayConfig.showSubLineNumbers }),
+                    MenuItem(
                         titleKey: "menu.tools.ruler", hotkeyChar: "r",
                         action: { editor in
                             editor.displayConfig.showRuler.toggle()

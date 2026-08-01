@@ -185,6 +185,7 @@ public struct TraditionalChineseStrings {
         "status.canvas_mode_hint": "(M+V 退出)",
         "mode.canvas": "畫布",
         "mode.table": "表格",
+        "subline.char_count": "%d 字",
         "status.table_mode_cancelled": "[ 已取消表格模式 ]",
         "status.table_created": "[ 表格已建立 ]",
         "status.cell_text_centered": "[ 已居中表格文字 (^J) ]",
@@ -326,6 +327,7 @@ public struct TraditionalChineseStrings {
 
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.line_numbers": "顯示/隱藏行號",
+        "menu.tools.sub_line_numbers": "顯示/隱藏子行號",
         "menu.tools.ruler": "顯示/隱藏尺標",
         "menu.tools.wrap_80": "換行: 80",
         "menu.tools.wrap_60": "換行: 60",

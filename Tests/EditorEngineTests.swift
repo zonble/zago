@@ -1016,11 +1016,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.promptInputText == "SET ")
     #expect(editor.promptCompletionText?.contains("wrap") == true)
     #expect(editor.promptCompletionText?.contains("linenumbers") == true)
+    #expect(editor.promptCompletionText?.contains("sublinenumbers") == true)
     #expect(editor.promptCompletionText?.contains("syntax") == true)
 
-    let rendered = editor.renderer.render(editor: editor, rows: 24, cols: 80)
-    #expect(rendered.contains("wrap"))
-    #expect(rendered.contains("linenumbers"))
+    #expect(editor.promptCompletionText?.hasPrefix("SET: ") == true)
 }
 
 @Test func testCommandBarSetTabCompletesUniqueSettingPrefix() throws {

@@ -29,6 +29,7 @@ import Testing
     #expect(lineNumbersIndex != nil)
 
     let lineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.line_numbers" })
+    let subLineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.sub_line_numbers" })
     let wrap80Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_80" })
     let wrap60Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_60" })
     let wrap40Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_40" })
@@ -36,6 +37,7 @@ import Testing
     let helpCategory = menuBar.categories.first(where: { $0.titleKey == "menu.help" })
 
     #expect(lineNumbersItem != nil)
+    #expect(subLineNumbersItem != nil)
     #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
 
     let editCategory = menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
@@ -89,6 +91,12 @@ import Testing
     lineNumbersItem?.action?(editor)
     #expect(editor.displayConfig.showLineNumbers == true)
     #expect(editor.statusMessage == "[ Line Numbers shown ]")
+
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+    #expect(subLineNumbersItem?.isChecked?(editor) == false)
+    subLineNumbersItem?.action?(editor)
+    #expect(editor.displayConfig.showSubLineNumbers == true)
+    #expect(subLineNumbersItem?.isChecked?(editor) == true)
 
     wrap80Item?.action?(editor)
     #expect(editor.layoutEngine.wrapColumn == 80)
@@ -272,6 +280,7 @@ import Testing
     let content = try String(contentsOfFile: generatedPath, encoding: .utf8)
     #expect(content.contains("set showRuler off"))
     #expect(content.contains("set lineNumbers on"))
+    #expect(content.contains("set subLineNumbers off"))
     #expect(content.contains("set tabSize 4"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
@@ -301,6 +310,7 @@ import Testing
         set wrap 80
         set showRuler true
         set lineNumbers off
+        set subLineNumbers on
         set autoReload true
         bind ctrl-f move.left
         bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
@@ -330,6 +340,7 @@ import Testing
     #expect(config.wrapColumn == 80)
     #expect(config.showRuler == true)
     #expect(config.showLineNumbers == false)
+    #expect(config.showSubLineNumbers == true)
     #expect(config.autoReload == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
     #expect(config.customKeyBinds[.alt("h")] == "logo: MOVE HOME TYPE '# ' MOVE END")
@@ -338,6 +349,20 @@ import Testing
     #expect(config.logoPrelude.contains("TO FILLBOX :text"))
     #expect(config.logoScripts["insert-title"]?.contains("BOX 40 3 ROUND") == true)
     #expect(config.syntaxErrorCount == 1)
+}
+
+@Test func testSubLineNumberSettingCommandSuggestionsAndAliases() throws {
+    #expect(SettingCommandBarCommand.settingNames.contains("sublinenumbers"))
+    #expect(SettingCommandBarCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
+
+    let editor = Editor()
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+
+    editor.applyEditorSetting(setting: "sublines", arg: "on")
+    #expect(editor.displayConfig.showSubLineNumbers == true)
+
+    editor.applyEditorSetting(setting: "subline_numbers", arg: "off")
+    #expect(editor.displayConfig.showSubLineNumbers == false)
 }
 
 @Test func testWrapColumnMinimumIsTen() throws {

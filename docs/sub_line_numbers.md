@@ -14,7 +14,7 @@ When editing prose with a fixed wrap column, the editor should make two things v
 For example, one long buffer line may wrap into eleven visual rows. The first visual row displays the real line number and the paragraph character count. Continuation rows display the softwrap marker and their sub line number:
 
 ```text
-   1 我在 2001 年，在當時相當普及的明日報個人 1 [123 chars]
+   1 我在 2001 年，在當時相當普及的明日報個人 [123 chars]
    ↳ 新聞台服務上，發表了《防區狀況三生效－驗 2
    ↳ 證精實案》，中間有一些網站轉載，之後也曾 3
    ↳ 經發行過實體書籍，但只有刊出前九章。前兩 4
@@ -54,20 +54,28 @@ The existing left gutter keeps its current meaning:
 - The first visual line shows the ordinary physical line number.
 - Wrapped continuation visual lines show the existing softwrap indicator `↳`.
 
-Sub line information is rendered on the right side of the text area:
+Sub line information is rendered immediately after the visual line text, separated by one blank space:
 
 - The first visual line of a wrapped physical line shows the paragraph character count, for example `[123 chars]`.
-- Every visual line in that physical line shows its 1-based sub line number.
-- The first visual line's sub line number is `1`.
+- Continuation visual lines show their 1-based sub line number.
+- The first visual line does not show sub line number `1`; its character count is enough to identify it as the paragraph start.
 - Continuation lines are numbered `2`, `3`, and so on.
 
-The right-side annotation should be visually dim or otherwise clearly secondary to document text. It must not be confused with editable content.
+The annotation should be visually dim or otherwise clearly secondary to document text. It must not be confused with editable content.
 
 ## Layout Rules
 
-The right-side annotation occupies reserved horizontal space in the rendered text area. Text should not overlap the annotation.
+The annotation does not occupy a reserved right-side gutter. It follows the rendered text, aligned to the configured wrap column:
 
-When the terminal is too narrow, the editor should prefer preserving editable text and cursor correctness over showing the annotation. A truncated or hidden annotation is acceptable; corrupting the buffer display is not.
+```text
+xxxxxxxx 1
+xxxxxxxx 2
+xxx      3
+```
+
+When the available text area is narrower than the configured wrap column, the annotation is hidden. This prevents the editor from showing sub line numbers for a temporary terminal width that does not match the target prose layout.
+
+When the terminal is too narrow, the editor should prefer preserving editable text and cursor correctness over showing the annotation. Corrupting the buffer display is not acceptable.
 
 The annotation must not affect:
 

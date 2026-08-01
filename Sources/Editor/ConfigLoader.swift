@@ -6,6 +6,7 @@ public struct EditorConfig {
     public var wrapColumn: Int? = nil
     public var showRuler: Bool = false
     public var showLineNumbers: Bool = true
+    public var showSubLineNumbers: Bool = false
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
@@ -202,6 +203,16 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
+                        "subline_number", "sublines":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.showSubLineNumbers = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.showSubLineNumbers = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "tabsize":
                         if let ts = Int(value), ts > 0 {
                             config.tabSize = ts
@@ -218,6 +229,11 @@ public final class ConfigLoader {
                             || value == "line-number" || value == "line_numbers" || value == "line_number"
                         {
                             config.showLineNumbers = false
+                        } else if value == "sublinenumbers" || value == "sublinenumber" || value == "subline-numbers"
+                            || value == "subline-number" || value == "subline_numbers" || value == "subline_number"
+                            || value == "sublines"
+                        {
+                            config.showSubLineNumbers = false
                         } else if value == "syntax" {
                             config.enableSyntaxHighlight = false
                         } else if value == "autoreload" {
@@ -278,6 +294,9 @@ public final class ConfigLoader {
                         config.showRuler = false
                     case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
                         config.showLineNumbers = false
+                    case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
+                        "subline_number", "sublines":
+                        config.showSubLineNumbers = false
                     case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
                         config.enableSyntaxHighlight = false
                     case "autoreload", "auto-reload", "auto_reload":
@@ -433,6 +452,9 @@ set showRuler off
 
 # Show line number gutter (on / off)
 set lineNumbers on
+
+# Show right-side sub line numbers for wrapped prose paragraphs (on / off)
+set subLineNumbers off
 
 # Tab Stop Width (default: 4)
 set tabSize 4

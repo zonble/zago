@@ -58,6 +58,51 @@ import TextMetrics
     #expect(virtualLines[1].text == "六")
 }
 
+@Test func testSubLineNumbersRenderForWrappedProse() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .en
+
+    let editor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
+    editor.displayConfig.showSubLineNumbers = true
+    editor.buffer.lines = ["中文中文中文中文中文中文"]
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
+
+    #expect(output.contains("[12 chars]"))
+    #expect(!output.contains("1 [12 chars]"))
+    #expect(output.contains("   ↳ "))
+    #expect(output.contains(" \u{1B}[90m2\u{1B}[0m"))
+    #expect(output.contains("中文       \u{1B}[90m3\u{1B}[0m"))
+}
+
+@Test func testSubLineNumbersRequireToggleAndFixedWrapColumn() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .en
+
+    let disabledEditor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
+    disabledEditor.displayConfig.showSubLineNumbers = false
+    disabledEditor.buffer.lines = ["中文中文中文中文中文中文"]
+
+    let disabledOutput = disabledEditor.renderer.render(editor: disabledEditor, rows: 8, cols: 40)
+    #expect(!disabledOutput.contains("[12 chars]"))
+
+    let dynamicWrapEditor = Editor(enableSyntax: false, language: .en)
+    dynamicWrapEditor.displayConfig.showSubLineNumbers = true
+    dynamicWrapEditor.buffer.lines = ["中文中文中文中文中文中文中文中文中文中文中文中文"]
+
+    let dynamicOutput = dynamicWrapEditor.renderer.render(editor: dynamicWrapEditor, rows: 8, cols: 20)
+    #expect(!dynamicOutput.contains("chars]"))
+
+    let narrowEditor = Editor(wrapColumn: 20, enableSyntax: false, language: .en)
+    narrowEditor.displayConfig.showSubLineNumbers = true
+    narrowEditor.buffer.lines = ["abcdefghijklmnopqrstuvwxyz"]
+
+    let narrowOutput = narrowEditor.renderer.render(editor: narrowEditor, rows: 8, cols: 20)
+    #expect(!narrowOutput.contains("chars]"))
+}
+
 @Test func testJustifyParagraph() throws {
     let buffer = TextBuffer()
     buffer.lines = [

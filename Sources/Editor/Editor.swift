@@ -93,6 +93,7 @@ public final class Editor {
     public struct DisplayConfig: Sendable, Equatable {
         public var showRuler: Bool
         public var showLineNumbers: Bool
+        public var showSubLineNumbers: Bool
         public var enableSyntaxHighlight: Bool
         public var autoReload: Bool
         public var tabSize: Int
@@ -100,12 +101,14 @@ public final class Editor {
         public init(
             showRuler: Bool = false,
             showLineNumbers: Bool = true,
+            showSubLineNumbers: Bool = false,
             enableSyntaxHighlight: Bool = true,
             autoReload: Bool = true,
             tabSize: Int = 4
         ) {
             self.showRuler = showRuler
             self.showLineNumbers = showLineNumbers
+            self.showSubLineNumbers = showSubLineNumbers
             self.enableSyntaxHighlight = enableSyntaxHighlight
             self.autoReload = autoReload
             self.tabSize = tabSize
@@ -133,6 +136,7 @@ public final class Editor {
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
         let finalLineNumbers = loadedConfig.showLineNumbers
+        let finalSubLineNumbers = loadedConfig.showSubLineNumbers
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
@@ -141,7 +145,8 @@ public final class Editor {
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.displayConfig = DisplayConfig(
-            showRuler: finalRuler, showLineNumbers: finalLineNumbers, enableSyntaxHighlight: finalSyntax,
+            showRuler: finalRuler, showLineNumbers: finalLineNumbers, showSubLineNumbers: finalSubLineNumbers,
+            enableSyntaxHighlight: finalSyntax,
             autoReload: finalReload, tabSize: finalTabSize)
 
         setupDefaultCommands()
@@ -234,6 +239,7 @@ public final class Editor {
         self.layoutEngine.setWrapColumn(loadedConfig.wrapColumn)
         self.displayConfig.showRuler = loadedConfig.showRuler
         self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
+        self.displayConfig.showSubLineNumbers = loadedConfig.showSubLineNumbers
         self.displayConfig.enableSyntaxHighlight = loadedConfig.enableSyntaxHighlight
         self.displayConfig.autoReload = loadedConfig.autoReload
         self.displayConfig.tabSize = loadedConfig.tabSize

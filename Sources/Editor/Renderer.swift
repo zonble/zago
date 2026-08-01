@@ -25,6 +25,7 @@ public final class Renderer {
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
         let gutterWidth = showGutter ? 5 : 0
         let textWidth = max(10, cols - gutterWidth)
+        let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
         // Compute Virtual Lines (wrapped visual sub-lines)
         let virtualLines =
@@ -80,6 +81,7 @@ public final class Renderer {
             editor: editor,
             mainAreaHeight: mainAreaHeight,
             gutterWidth: gutterWidth,
+            showSubLineInfo: showSubLineInfo,
             virtualLines: virtualLines,
             cols: cols,
             dropdownStartCol: dropdownStartCol,
@@ -206,6 +208,7 @@ public final class Renderer {
         editor: Editor,
         mainAreaHeight: Int,
         gutterWidth: Int,
+        showSubLineInfo: Bool? = nil,
         virtualLines: [VirtualLine],
         cols: Int,
         dropdownStartCol: Int,
@@ -213,6 +216,9 @@ public final class Renderer {
         dropdownBoxLines: [String]
     ) -> String {
         var output = ""
+        let resolvedShowSubLineInfo =
+            showSubLineInfo ?? shouldRenderSubLineInfo(editor: editor, textWidth: max(0, cols - gutterWidth))
+        let subLineCounts = makeSubLineCounts(from: virtualLines)
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -270,6 +276,7 @@ public final class Renderer {
 
                 let chars = Array(renderedLineText)
                 var renderedDisplayWidth = 0
+                let visibleTextWidth = max(0, cols - gutterWidth)
                 for (cIdxInVLine, ch) in chars.enumerated() {
                     let realCol = renderedStartCol + cIdxInVLine
                     let charVisualColumn =
@@ -302,7 +309,6 @@ public final class Renderer {
                     renderedDisplayWidth += ch.displayWidth
                 }
 
-                let visibleTextWidth = max(0, cols - gutterWidth)
                 if editor.isCanvasModeActive {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
                     var selectedPad = ""
@@ -334,6 +340,17 @@ public final class Renderer {
                 } else if chars.isEmpty && editor.isLineSelected(line: vLine.bufferLineIndex) {
                     lineOutput += "\u{1B}[7m\(String(repeating: " ", count: visibleTextWidth))\u{1B}[m"
                 }
+
+                if let subLineInfo = renderSubLineInfo(
+                    editor: editor,
+                    virtualLine: vLine,
+                    subLineCount: subLineCounts[vLine.bufferLineIndex] ?? 1,
+                    isEnabled: resolvedShowSubLineInfo
+                ) {
+                    let targetWidth = editor.layoutEngine.wrapColumn ?? renderedDisplayWidth
+                    lineOutput += String(repeating: " ", count: max(0, targetWidth - renderedDisplayWidth))
+                    lineOutput += subLineInfo
+                }
             } else if editor.isCanvasModeActive && vIndex == virtualLines.count {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\u{1B}[90m\(gutter)~ \(L10n["chrome.end_of_file"])\u{1B}[0m"
@@ -356,6 +373,49 @@ public final class Renderer {
         }
 
         return output
+    }
+
+    private func shouldRenderSubLineInfo(editor: Editor, textWidth: Int) -> Bool {
+        guard editor.displayConfig.showSubLineNumbers,
+            let wrapColumn = editor.layoutEngine.wrapColumn,
+            textWidth >= wrapColumn,
+            !editor.isCanvasModeActive,
+            !editor.isTableModeActive,
+            !editor.buffer.isDirectoryBuffer
+        else {
+            return false
+        }
+        return true
+    }
+
+    private func makeSubLineCounts(from virtualLines: [VirtualLine]) -> [Int: Int] {
+        var counts: [Int: Int] = [:]
+        for vLine in virtualLines {
+            counts[vLine.bufferLineIndex] = max(counts[vLine.bufferLineIndex] ?? 0, vLine.subLineIndex + 1)
+        }
+        return counts
+    }
+
+    private func renderSubLineInfo(
+        editor: Editor,
+        virtualLine: VirtualLine,
+        subLineCount: Int,
+        isEnabled: Bool
+    ) -> String? {
+        guard isEnabled, subLineCount > 1 else { return nil }
+
+        let label: String
+        if virtualLine.subLineIndex == 0 {
+            let charCount =
+                editor.buffer.lines.indices.contains(virtualLine.bufferLineIndex)
+                ? editor.buffer.lines[virtualLine.bufferLineIndex].count
+                : 0
+            label = "[\(String(format: L10n["subline.char_count"], charCount))]"
+        } else {
+            label = "\(virtualLine.subLineIndex + 1)"
+        }
+
+        return " \u{1B}[90m\(label)\u{1B}[0m"
     }
 
     /// Formats line number string for gutter column.

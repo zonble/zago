@@ -101,6 +101,15 @@ extension Editor {
             } else {
                 displayConfig.showLineNumbers.toggle()
             }
+        case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
+            "subline_number", "sublines":
+            if arg == "off" || arg == "false" {
+                displayConfig.showSubLineNumbers = false
+            } else if arg == "on" || arg == "true" {
+                displayConfig.showSubLineNumbers = true
+            } else {
+                displayConfig.showSubLineNumbers.toggle()
+            }
         case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
             if arg == "off" || arg == "false" {
                 displayConfig.enableSyntaxHighlight = false

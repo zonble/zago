@@ -185,6 +185,7 @@ public struct EnglishStrings {
         "status.canvas_mode_hint": "(M+V to exit)",
         "mode.canvas": "CANVAS",
         "mode.table": "TABLE",
+        "subline.char_count": "%d chars",
         "status.table_mode_cancelled": "[ Table mode cancelled ]",
         "status.table_created": "[ Table created ]",
         "status.cell_text_centered": "[ Cell Text Centered (^J) ]",
@@ -326,6 +327,7 @@ public struct EnglishStrings {
 
         "menu.tools.logo": "Command Prompt...\tEsc",
         "menu.tools.line_numbers": "Toggle Line Numbers",
+        "menu.tools.sub_line_numbers": "Toggle Sub Line Numbers",
         "menu.tools.ruler": "Toggle Ruler Bar",
         "menu.tools.wrap_80": "Wrap Column: 80",
         "menu.tools.wrap_60": "Wrap Column: 60",
