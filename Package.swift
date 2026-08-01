@@ -27,7 +27,8 @@ let package = Package(
             name: "TextTransform"
         ),
         .target(
-            name: "Syntax"
+            name: "Syntax",
+            dependencies: ["LogoEngine"]
         ),
         .target(
             name: "Diagram"
