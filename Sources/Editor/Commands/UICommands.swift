@@ -72,7 +72,11 @@ public struct ShowHelpCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        let helpView = HelpView(terminal: editor.terminal)
-        helpView.show()
+        TextDocumentView(
+            terminal: editor.terminal,
+            title: L10n["helpview.title"],
+            lines: HelpContent.lines(),
+            footer: L10n["helpview.footer"]
+        ).show()
     }
 }

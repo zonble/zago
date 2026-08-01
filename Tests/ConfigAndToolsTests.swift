@@ -3,10 +3,17 @@ import Testing
 
 @testable import Editor
 
-@Test func testHelpViewInstantiation() throws {
+@Test func testHelpContent() throws {
     let terminal = Terminal()
-    let helpView = HelpView(terminal: terminal)
+    let helpView = TextDocumentView(
+        terminal: terminal,
+        title: L10n["helpview.title"],
+        lines: HelpContent.lines(),
+        footer: L10n["helpview.footer"]
+    )
     _ = helpView
+    #expect(HelpContent.lines(language: .en).contains("  KEYBINDINGS & COMMANDS REFERENCE"))
+    #expect(HelpContent.lines(language: .zh_TW).contains("  快捷鍵與指令對照表"))
 }
 
 @Test func testWrapColumnMenuActions() throws {

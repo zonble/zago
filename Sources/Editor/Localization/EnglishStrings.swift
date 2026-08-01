@@ -180,11 +180,7 @@ public struct EnglishStrings {
         "status.unknown_border_style": "[ Unknown border style: %@ ]",
         "status.unknown_table_border": "[ Unknown table border: %@ ]",
         "status.disabled_in_table_mode": "[ %@ disabled in Table Mode ]",
-        "status.frame_mode_exited": "[ Frame Mode Exited ]",
-        "status.frame_mode_disabled_in_table_mode": "[ Frame Mode disabled in Table Mode ]",
-        "status.frame_mode": "[ FRAME MODE ]",
         "status.table_mode_exited": "[ Table Mode Exited ]",
-        "status.table_mode_disabled_in_frame_mode": "[ Table Mode disabled in Frame Mode ]",
         "status.table_mode_hint": "(M+T to exit | Tab to navigate)",
         "status.table_mode_cancelled": "[ Table mode cancelled ]",
         "status.table_created": "[ Table created ]",
@@ -204,7 +200,7 @@ public struct EnglishStrings {
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 
-        // Help Viewer (HelpView.swift)
+        // Help Viewer
         "helpview.title": "  zago - Full Help & Command Reference",
         "helpview.header": "  KEYBINDINGS & COMMANDS REFERENCE",
         "helpview.sec_nav": "  NAVIGATION & CURSOR MOVEMENT:",
@@ -315,7 +311,6 @@ public struct EnglishStrings {
         "menu.shapes.line": "Line",
         "menu.shapes.vline": "Vertical Line",
         "menu.shapes.table": "Table",
-        "menu.shapes.frame_mode": "Frame Mode",
         "menu.shapes.fill": "Fill Region",
 
         "menu.borders.single": "Single",

@@ -74,7 +74,7 @@ public struct TraditionalChineseStrings {
     GOTO row [col]               跳到 1-based 列/欄
     FIND "query                  搜尋文字
 
-  形狀與表格
+  圖形與表格
     BOX text [align] [style]     插入有框文字方塊
     DRAWBOX width height [style] 在畫布上覆蓋繪製方框
     LINE [len] [style] [arrow]   繪製/連接水平線
@@ -180,11 +180,7 @@ public struct TraditionalChineseStrings {
         "status.unknown_border_style": "[ 未知的框線樣式：%@ ]",
         "status.unknown_table_border": "[ 未知的表格框線：%@ ]",
         "status.disabled_in_table_mode": "[ 表格模式下停用 %@ ]",
-        "status.frame_mode_exited": "[ 已退出框線模式 ]",
-        "status.frame_mode_disabled_in_table_mode": "[ 表格模式下停用框線模式 ]",
-        "status.frame_mode": "[ 框線模式 ]",
         "status.table_mode_exited": "[ 已退出表格模式 ]",
-        "status.table_mode_disabled_in_frame_mode": "[ 框線模式下停用表格模式 ]",
         "status.table_mode_hint": "(M+T 退出 | Tab 移動)",
         "status.table_mode_cancelled": "[ 已取消表格模式 ]",
         "status.table_created": "[ 表格已建立 ]",
@@ -204,7 +200,7 @@ public struct TraditionalChineseStrings {
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 
-        // Help Viewer (HelpView.swift)
+        // Help Viewer
         "helpview.title": "  zago - 完整指令與快速鍵說明手冊",
         "helpview.header": "  快捷鍵與指令對照表",
         "helpview.sec_nav": "  游標移動與導航：",
@@ -278,7 +274,7 @@ public struct TraditionalChineseStrings {
         "menu.file": "檔案(F)",
         "menu.edit": "編輯(E)",
         "menu.buffer": "Buffer(B)",
-        "menu.shapes": "形狀(S)",
+        "menu.shapes": "圖形(S)",
         "menu.borders": "框線(O)",
         "menu.tools": "工具(T)",
         "menu.diagrams": "圖表(D)",
@@ -295,7 +291,7 @@ public struct TraditionalChineseStrings {
         "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
-        "menu.edit.mark": "標記 Canvas 區塊\t^^",
+        "menu.edit.mark": "標記區塊\t^^",
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^BS",
@@ -303,9 +299,9 @@ public struct TraditionalChineseStrings {
         "menu.edit.spell": "拼字檢查…\t^T",
         "menu.edit.goto_line": "跳轉至指定行…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",
-        "menu.edit.text_editing_mode": "文字編輯模式",
+        "menu.edit.text_editing_mode": "一般模式",
         "menu.edit.canvas_mode": "畫布模式\tM+V",
-        "menu.edit.table_editing_mode": "表格編輯模式\tM+T",
+        "menu.edit.table_editing_mode": "表格模式\tM+T",
 
         "menu.buffer.next": "下一個 Buffer\tM+.",
         "menu.buffer.prev": "上一個 Buffer\tM+,",
@@ -315,24 +311,23 @@ public struct TraditionalChineseStrings {
         "menu.shapes.line": "水平線",
         "menu.shapes.vline": "垂直線",
         "menu.shapes.table": "表格",
-        "menu.shapes.frame_mode": "框線模式",
         "menu.shapes.fill": "填滿區域",
 
         "menu.borders.single": "單線",
         "menu.borders.double": "雙線",
-        "menu.borders.round": "圓角",
+        "menu.borders.round": "單線圓角",
         "menu.borders.double_round": "雙線圓角",
         "menu.borders.ascii": "ASCII",
         "menu.borders.markdown": "Markdown",
-        "menu.borders.next_style": "下一個風格\tM+S",
+        "menu.borders.next_style": "下一種框線\tM+S",
 
         "menu.tools.logo": "指令 Prompt...\tEsc",
         "menu.tools.line_numbers": "切換行號顯示",
-        "menu.tools.ruler": "切換 WordStar 標尺規列",
-        "menu.tools.wrap_80": "自動換行：80",
-        "menu.tools.wrap_60": "自動換行：60",
-        "menu.tools.wrap_40": "自動換行：40",
-        "menu.tools.wrap_reset": "自動換行：動態",
+        "menu.tools.ruler": "切換標尺列",
+        "menu.tools.wrap_80": "自動換行: 80",
+        "menu.tools.wrap_60": "自動換行: 60",
+        "menu.tools.wrap_40": "自動換行: 40",
+        "menu.tools.wrap_reset": "自動換行: 動態",
 
         "menu.diagrams.mermaid_sequence": "Mermaid 時序圖 (Sequence)",
         "menu.diagrams.mermaid_flowchart": "Mermaid 流程圖 (Flowchart)",
