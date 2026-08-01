@@ -44,6 +44,12 @@ TYPE TRANSLIT "Latin-ASCII "Café
 
 Inserts the transformed result into the current buffer.
 
+```logo
+TRANSLIT "Zago-CJK-Punctuation "Hello, world!
+```
+
+Applies a zago-defined writing transform for CJK punctuation normalization.
+
 ## Semantics
 
 `TRANSLIT` is a reporter. It does not modify the buffer by itself.
@@ -58,6 +64,44 @@ TYPE :kana
 ```
 
 Editing actions should be built by combining `TRANSLIT` with existing editor primitives such as `TYPE`, selection reporters, or future text-selection primitives.
+
+## Transform Identifier Namespaces
+
+`TRANSLIT` accepts two classes of transform identifiers:
+
+- ICU transform identifiers, such as `Any-Hiragana`, `Fullwidth-Halfwidth`, `Latin-ASCII`, and `NFKC`.
+- zago writing transforms, reserved under the `Zago-*` namespace.
+
+ICU identifiers should be passed through to the platform ICU implementation.
+
+`Zago-*` identifiers are implemented by zago itself. They are intended for editor-specific prose cleanup that ICU does not model directly, or where zago wants a stable behavior across ICU versions.
+
+Suggested initial zago transforms:
+
+- `Zago-CJK-Punctuation`: normalize common ASCII punctuation into CJK punctuation for Chinese prose.
+- `Zago-CJK-Spacing`: normalize spacing around CJK, Latin, numbers, and punctuation.
+- `Zago-Prose-Cleanup`: a conservative composition of stable prose cleanup transforms.
+
+`Zago-*` transforms should be explicit and documented. They should not shadow ICU identifiers.
+
+## CJK Punctuation Normalization
+
+`Zago-CJK-Punctuation` should focus on predictable punctuation substitution for Chinese prose.
+
+Suggested baseline substitutions:
+
+| Input | Output |
+| --- | --- |
+| `,` | `，` |
+| `.` | `。` |
+| `:` | `：` |
+| `;` | `；` |
+| `?` | `？` |
+| `!` | `！` |
+
+Quote conversion is intentionally more complicated because ASCII quotes need pairing and context. It should either be omitted from the first version or implemented as a separate transform with explicit rules, for example `Zago-CJK-Quotes`.
+
+The transform should avoid touching punctuation inside contexts that zago can reliably identify as code. If that context is unavailable to the transformer, callers should apply it only to prose selections or prose lines.
 
 ## Argument Rules
 
