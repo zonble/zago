@@ -6,8 +6,8 @@ public struct DotSyntaxDefinition: SyntaxDefinition {
 
     public var rules: [SyntaxRule] {
         [
-            makeRule("//.*$|#.*$", .comment),
             makeRule("\"[^\"]*\"", .string),
+            makeRule("//.*$|#.*$", .comment),
             makeRule(
                 "\\b(digraph|graph|subgraph|node|edge|strict|shape|label|color|fillcolor|style|fontname|fontsize|rankdir|dir|arrowhead|arrowtail|weight|width|height|penwidth|splines|overlap)\\b",
                 .keyword),

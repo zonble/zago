@@ -6,8 +6,8 @@ public struct CSyntaxDefinition: SyntaxDefinition {
 
     public var rules: [SyntaxRule] {
         [
-            makeRule("//.*$", .comment),
             makeRule("\"[^\"]*\"|'[^']*'", .string),
+            makeRule("//.*$", .comment),
             makeRule("#include|#define|#ifdef|#ifndef|#endif|#pragma", .typeOrAttribute),
             makeRule(
                 "\\b(int|char|float|double|void|long|short|unsigned|signed|struct|union|enum|typedef|auto|register|extern|static|volatile|const|if|else|switch|case|default|while|do|for|break|continue|return|goto|sizeof)\\b",

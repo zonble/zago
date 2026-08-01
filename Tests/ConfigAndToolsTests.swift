@@ -451,6 +451,14 @@ import Testing
         #expect(!semicolonStringHighlighted.contains("\u{1B}[90m;b\""))
     }
 
+    if let swiftLang = highlighter.detectLanguage(for: "Package.swift") {
+        let packageLine = ".package(url: \"https://github.com/apple/swift-argument-parser.git\", from: \"1.3.0\"),"
+        let tokens = highlighter.tokenTypes(for: packageLine, syntax: swiftLang)
+        let githubRange = (packageLine as NSString).range(of: "github")
+        #expect(githubRange.location != NSNotFound)
+        #expect(tokens[githubRange.location] == .string)
+    }
+
     if let lang = markdownLang {
         let fenceHighlighted = highlighter.highlight(line: "```logo", syntax: lang)
         #expect(fenceHighlighted.contains("\u{1B}[94m```logo"))

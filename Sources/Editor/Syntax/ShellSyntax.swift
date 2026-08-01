@@ -6,8 +6,8 @@ public struct ShellSyntaxDefinition: SyntaxDefinition {
 
     public var rules: [SyntaxRule] {
         [
-            makeRule("#.*$", .comment),
             makeRule("\"[^\"]*\"|'[^']*'", .string),
+            makeRule("#.*$", .comment),
             makeRule(
                 "\\b(if|then|else|elif|fi|case|esac|for|while|until|do|done|in|function|return|exit|export|local|echo|set|unset)\\b",
                 .keyword),

@@ -6,8 +6,8 @@ public struct PythonSyntaxDefinition: SyntaxDefinition {
 
     public var rules: [SyntaxRule] {
         [
-            makeRule("#.*$", .comment),
             makeRule("\"\"\"[^\"]*\"\"\"|'''[^']*'''|\"[^\"]*\"|'[^']*'", .string),
+            makeRule("#.*$", .comment),
             makeRule(
                 "\\b(def|class|if|elif|else|while|for|in|try|except|finally|with|as|import|from|return|yield|break|continue|pass|lambda|global|nonlocal|assert|raise|async|await|and|or|not|is)\\b",
                 .keyword),

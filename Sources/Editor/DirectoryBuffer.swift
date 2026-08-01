@@ -100,25 +100,28 @@ public final class DirectoryBuffer: TextBuffer {
     @discardableResult
     public func activateEntry(editor: Editor) -> Bool {
         guard lineIndex >= 0 && lineIndex < lines.count else { return false }
-        let line = lines[lineIndex].trimmingCharacters(in: .newlines)
+        let trimmedLine = lines[lineIndex].trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if line == ".. (up a dir)" {
+        if trimmedLine == ".. (up a dir)" || trimmedLine.hasPrefix("..") {
             return navigateUp(editor: editor)
         }
 
-        if line.hasPrefix("▸ ") {
-            var folderName = String(line.dropFirst(2))
+        if trimmedLine.hasPrefix("▸ ") {
+            var folderName = String(trimmedLine.dropFirst(2))
             if folderName.hasSuffix("/") {
                 folderName = String(folderName.dropLast())
             }
             let childDir = (directoryPath as NSString).appendingPathComponent(folderName)
             loadDirectory(at: childDir)
+            editor.topVLineIndex = 0
+            editor.clearActiveMark()
             editor.startFileWatcherForCurrentBuffer()
             return true
         }
 
-        if line.hasPrefix("  ") {
-            var fileName = String(line.dropFirst(2))
+        if lines[lineIndex].hasPrefix("  ") {
+            let rawLine = lines[lineIndex].trimmingCharacters(in: .newlines)
+            var fileName = String(rawLine.dropFirst(2))
             if fileName.hasSuffix("*") {
                 fileName = String(fileName.dropLast())
             }
@@ -154,6 +157,8 @@ public final class DirectoryBuffer: TextBuffer {
         let parentDir = (directoryPath as NSString).deletingLastPathComponent
         if !parentDir.isEmpty && parentDir != directoryPath {
             loadDirectory(at: parentDir)
+            editor.topVLineIndex = 0
+            editor.clearActiveMark()
             editor.startFileWatcherForCurrentBuffer()
             return true
         }
