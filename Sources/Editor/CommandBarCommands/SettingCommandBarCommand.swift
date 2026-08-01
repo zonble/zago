@@ -4,7 +4,7 @@ public struct SettingCommandBarCommand: CommandBarCommand {
     public let name = "set"
     public let help = "set <option> [value]"
     public let completionNames = ["set", "unset"]
-    public static let settingNames = ["wrap", "ruler", "linenumbers", "syntax", "autoreload", "tab", "lang", "border"]
+    public static let settingNames = ["wrap", "ruler", "linenumbers", "syntax", "autoreload", "regex", "tab", "lang", "border"]
 
     public init() {}
 
@@ -35,7 +35,8 @@ public struct SettingCommandBarCommand: CommandBarCommand {
         case "ruler", "rulerbar", "showruler",
              "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number",
              "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting",
-             "autoreload", "auto-reload", "auto_reload":
+             "autoreload", "auto-reload", "auto_reload",
+             "regex", "regexp", "enableregex":
             return ["on", "off"]
         case "tab", "tabsize":
             return ["2", "4", "8"]

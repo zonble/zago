@@ -184,6 +184,7 @@ public struct EnglishStrings {
         "status.cannot_shrink_width": "[ Cannot shrink column width ]",
         "status.cannot_shrink_height": "[ Cannot shrink row height ]",
         "status.cannot_expand_width_collision": "[ Cannot expand width (adjacent box collision) ]",
+        "status.replaced_occurrences": "[ Replaced %d occurrence(s) ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 

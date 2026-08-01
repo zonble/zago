@@ -151,4 +151,8 @@ public enum L10n {
     public static func wrapColumnSet(_ col: Int) -> String {
         String(format: self["status.wrap_column_set"], col)
     }
+
+    public static func replacedOccurrences(_ count: Int) -> String {
+        String(format: self["status.replaced_occurrences"], count)
+    }
 }

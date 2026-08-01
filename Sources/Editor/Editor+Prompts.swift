@@ -594,39 +594,76 @@ extension Editor {
     }
 
     /// Performs search operation for target query string.
-    public func performSearch(query: String) {
+    public func performSearch(query: String, useRegex: Bool = false) {
         guard !query.isEmpty else { return }
 
+        let activeRegex: Bool = useRegex || isRegexSearchEnabled
         let startLine = buffer.lineIndex
         let startCol = buffer.columnIndex
 
-        // 1. Search forward from current position
-        for lIdx in startLine..<buffer.lines.count {
-            let line = buffer.lines[lIdx]
-            let fromCol = (lIdx == startLine) ? min(startCol + 1, line.count) : 0
-            if fromCol < line.count {
-                let searchStr = String(line.suffix(line.count - fromCol))
-                if let range = searchStr.range(of: query, options: .caseInsensitive) {
+        if activeRegex, let regex = try? NSRegularExpression(pattern: query, options: [.caseInsensitive]) {
+            // 1. Search forward from current position with Regex
+            for lIdx in startLine..<buffer.lines.count {
+                let line = buffer.lines[lIdx]
+                let fromCol = (lIdx == startLine) ? min(startCol + 1, line.count) : 0
+                if fromCol < line.count {
+                    let searchStr = String(line.suffix(line.count - fromCol))
+                    let nsRange = NSRange(searchStr.startIndex..<searchStr.endIndex, in: searchStr)
+                    if let match = regex.firstMatch(in: searchStr, options: [], range: nsRange),
+                       let range = Range(match.range(at: 0), in: searchStr) {
+                        let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
+                        buffer.lineIndex = lIdx
+                        buffer.columnIndex = fromCol + colOffset
+                        setStatusMessage(L10n.foundQueryAtLine(query: query, line: lIdx + 1))
+                        return
+                    }
+                }
+            }
+
+            // 2. Wrap search around from line 0 with Regex
+            for lIdx in 0...startLine {
+                let line = buffer.lines[lIdx]
+                let toCol = (lIdx == startLine) ? startCol : line.count
+                let searchStr = String(line.prefix(toCol))
+                let nsRange = NSRange(searchStr.startIndex..<searchStr.endIndex, in: searchStr)
+                if let match = regex.firstMatch(in: searchStr, options: [], range: nsRange),
+                   let range = Range(match.range(at: 0), in: searchStr) {
                     let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
                     buffer.lineIndex = lIdx
-                    buffer.columnIndex = fromCol + colOffset
-                    setStatusMessage(L10n.foundQueryAtLine(query: query, line: lIdx + 1))
+                    buffer.columnIndex = colOffset
+                    setStatusMessage(L10n.searchWrappedFound(query: query, line: lIdx + 1))
                     return
                 }
             }
-        }
+        } else {
+            // 1. Search forward from current position with String
+            for lIdx in startLine..<buffer.lines.count {
+                let line = buffer.lines[lIdx]
+                let fromCol = (lIdx == startLine) ? min(startCol + 1, line.count) : 0
+                if fromCol < line.count {
+                    let searchStr = String(line.suffix(line.count - fromCol))
+                    if let range = searchStr.range(of: query, options: .caseInsensitive) {
+                        let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
+                        buffer.lineIndex = lIdx
+                        buffer.columnIndex = fromCol + colOffset
+                        setStatusMessage(L10n.foundQueryAtLine(query: query, line: lIdx + 1))
+                        return
+                    }
+                }
+            }
 
-        // 2. Wrap search around from line 0
-        for lIdx in 0...startLine {
-            let line = buffer.lines[lIdx]
-            let toCol = (lIdx == startLine) ? startCol : line.count
-            let searchStr = String(line.prefix(toCol))
-            if let range = searchStr.range(of: query, options: .caseInsensitive) {
-                let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
-                buffer.lineIndex = lIdx
-                buffer.columnIndex = colOffset
-                setStatusMessage(L10n.searchWrappedFound(query: query, line: lIdx + 1))
-                return
+            // 2. Wrap search around from line 0 with String
+            for lIdx in 0...startLine {
+                let line = buffer.lines[lIdx]
+                let toCol = (lIdx == startLine) ? startCol : line.count
+                let searchStr = String(line.prefix(toCol))
+                if let range = searchStr.range(of: query, options: .caseInsensitive) {
+                    let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
+                    buffer.lineIndex = lIdx
+                    buffer.columnIndex = colOffset
+                    setStatusMessage(L10n.searchWrappedFound(query: query, line: lIdx + 1))
+                    return
+                }
             }
         }
 

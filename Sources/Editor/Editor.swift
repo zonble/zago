@@ -78,6 +78,7 @@ public final class Editor {
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil
     public var defaultBorderStyle: BorderStyle = .single
+    public var isRegexSearchEnabled: Bool = false
 
     var undoStack: [UndoSnapshot] = []
     let maxUndoStackSize = 100

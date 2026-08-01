@@ -103,6 +103,14 @@ extension Editor {
             } else {
                 displayConfig.autoReload.toggle()
             }
+        case "regex", "regexp", "enableregex":
+            if arg == "off" || arg == "false" {
+                isRegexSearchEnabled = false
+            } else if arg == "on" || arg == "true" {
+                isRegexSearchEnabled = true
+            } else {
+                isRegexSearchEnabled.toggle()
+            }
         case "tab", "tabsize":
             if let size = Int(arg), size > 0 {
                 displayConfig.tabSize = size

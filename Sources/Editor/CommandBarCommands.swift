@@ -81,6 +81,8 @@ public final class CommandBarRegistry {
         registry.register(SettingCommandBarCommand())
         registry.register(BufferCommandBarCommand())
         registry.register(NumericGotoCommandBarCommand())
+        registry.register(SearchCommandBarCommand())
+        registry.register(SubstituteCommandBarCommand())
         return registry
     }
 }
