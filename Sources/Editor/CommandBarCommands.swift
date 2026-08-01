@@ -72,10 +72,8 @@ public final class CommandBarRegistry {
         let registry = CommandBarRegistry()
         registry.register(CommandIDCommandBarCommand(names: ["save"], commandID: .fileSave))
         registry.register(CommandIDCommandBarCommand(names: ["new"], commandID: .bufferNew))
-        registry.register(CommandIDCommandBarCommand(names: ["close", "exit", "quit"], commandID: .fileExit))
-        registry.register(
-            CommandIDCommandBarCommand(
-                names: ["file", "save-exit", "save_exit", "saveexit", "wq"], commandID: .fileSaveExit))
+        registry.register(QuitCommandBarCommand())
+        registry.register(SaveExitCommandBarCommand())
         registry.register(OpenCommandBarCommand())
         registry.register(WriteCommandBarCommand())
         registry.register(SettingCommandBarCommand())
