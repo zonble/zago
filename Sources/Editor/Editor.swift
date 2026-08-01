@@ -1,5 +1,6 @@
 import Foundation
 import LogoEngine
+import Syntax
 
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {

@@ -7,6 +7,8 @@ let package = Package(
         .executable(name: "zago", targets: ["zago"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
+        .library(name: "Syntax", targets: ["Syntax"]),
+        .library(name: "Diagram", targets: ["Diagram"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -21,8 +23,14 @@ let package = Package(
             dependencies: ["TextMetrics"]
         ),
         .target(
+            name: "Syntax"
+        ),
+        .target(
+            name: "Diagram"
+        ),
+        .target(
             name: "Editor",
-            dependencies: ["LogoEngine", "TextMetrics"]
+            dependencies: ["Diagram", "LogoEngine", "Syntax", "TextMetrics"]
         ),
         .executableTarget(
             name: "zago",
@@ -34,7 +42,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Editor", "LogoEngine", "TextMetrics"]
+            dependencies: ["Diagram", "Editor", "LogoEngine", "Syntax", "TextMetrics"]
         ),
     ],
     swiftLanguageModes: [.v6]

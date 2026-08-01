@@ -1,3 +1,4 @@
+import Diagram
 import Foundation
 import LogoEngine
 

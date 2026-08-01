@@ -296,12 +296,17 @@ public final class SyntaxHighlighter {
     }
 
     /// Determines LanguageSyntax for a specific buffer line, accounting for Markdown/RST/Org-mode embedded code blocks.
-    public func getSyntaxForLine(editor: Editor, bufferLineIndex: Int) -> LanguageSyntax? {
-        guard editor.displayConfig.enableSyntaxHighlight else { return nil }
-        if editor.buffer.isDirectoryBuffer {
+    public func getSyntaxForLine(
+        filePath: String?,
+        isDirectoryBuffer: Bool,
+        lines: [String],
+        bufferLineIndex: Int,
+        isEnabled: Bool
+    ) -> LanguageSyntax? {
+        guard isEnabled else { return nil }
+        if isDirectoryBuffer {
             return DirectorySyntax.syntax
         }
-        let filePath = editor.buffer.filePath
         let defaultSyntax = detectLanguage(for: filePath)
 
         let ext = (filePath as NSString? ?? "").pathExtension.lowercased()
@@ -310,7 +315,6 @@ public final class SyntaxHighlighter {
         ].contains(ext)
         guard isMarkup else { return defaultSyntax }
 
-        let lines = editor.buffer.lines
         guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return defaultSyntax }
 
         if let embedded = detectEmbeddedLanguage(in: lines, bufferLineIndex: bufferLineIndex, fileExtension: ext) {

@@ -1,4 +1,5 @@
 import Foundation
+import Syntax
 import TextMetrics
 
 /// Centralized Renderer class responsible for composing and formatting all
