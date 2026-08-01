@@ -61,7 +61,10 @@ extension Editor: LogoEngineDelegate {
         case .markModified:
             buffer.isModified = true
         case .updateLineIndex(let lineIndex):
-            buffer.lineIndex = lineIndex
+            while buffer.lines.count <= lineIndex {
+                buffer.lines.append("")
+            }
+            buffer.lineIndex = max(0, lineIndex)
         case .updateColumnIndex(let columnIndex):
             if isCanvasModeActive {
                 canvasVisualColumn = max(0, columnIndex)

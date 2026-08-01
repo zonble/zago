@@ -1,6 +1,32 @@
 import Foundation
 import TextMetrics
 
+public enum BoxExitPosition: String, Sendable, CaseIterable {
+    case ne
+    case se
+    case nw
+    case sw
+    case down
+
+    public init?(_ raw: String) {
+        let clean = raw.lowercased().filter { $0.isLetter || $0.isNumber }
+        switch clean {
+        case "ne", "atne", "topright":
+            self = .ne
+        case "se", "atse", "bottomright":
+            self = .se
+        case "nw", "atnw", "topleft":
+            self = .nw
+        case "sw", "atsw", "bottomleft":
+            self = .sw
+        case "down", "atdown", "bottom", "s", "south":
+            self = .down
+        default:
+            return nil
+        }
+    }
+}
+
 extension LogoEngine {
     internal enum BoxDrawMode {
         case insert
@@ -24,7 +50,7 @@ extension LogoEngine {
             return
         }
 
-        // Mode 1: BOX width [height] ["text"] [align] [style]
+        // Mode 1: BOX width [height] ["text"] [align] [style] [exitPos]
         if let w = parseBoxDimensionArgument(tokens, index: &index) {
             let width = max(3, min(w, 200))
             var height: Int? = nil
@@ -32,6 +58,7 @@ extension LogoEngine {
             var align = "left"
             var hasExplicitAlign = false
             var styleName = ""
+            var exitPos: BoxExitPosition = .ne
 
             if index + 1 < tokens.count {
                 var heightIndex = index + 1
@@ -45,9 +72,13 @@ extension LogoEngine {
                 let nextToken = tokens[index + 1]
                 if shouldStopBoxArgumentScan(at: nextToken) { break }
                 index += 1
-                let val = unquote(tokens[index])
+                let rawToken = tokens[index]
+                let isQuoted = isQuotedWordToken(rawToken)
+                let val = unquote(rawToken)
 
-                if let parsedAlign = BoxAlignment(val) {
+                if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
+                    exitPos = parsedExit
+                } else if let parsedAlign = BoxAlignment(val) {
                     align = parsedAlign.rawValue
                     hasExplicitAlign = true
                 } else if BorderStyle.isStyleToken(val) {
@@ -61,18 +92,19 @@ extension LogoEngine {
                 if !hasExplicitAlign {
                     align = "center"
                 }
-                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName), mode: mode)
+                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
             } else {
-                drawBoxFrame(width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode)
+                drawBoxFrame(width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
             }
             return
         }
 
-        // Mode 2: BOX "text" [width] [align/style] [style/align]
+        // Mode 2: BOX "text" [width] [align/style/exit]
         let textContent = evaluateExpression(tokens, index: &index)
         var targetWidth: Int? = nil
         var align = "left"
         var styleName = ""
+        var exitPos: BoxExitPosition = .ne
 
         if index + 1 < tokens.count {
             var widthIndex = index + 1
@@ -87,16 +119,20 @@ extension LogoEngine {
             let nextToken = tokens[index + 1]
             if shouldStopBoxArgumentScan(at: nextToken) { break }
             index += 1
-            let val = unquote(tokens[index])
+            let rawToken = tokens[index]
+            let isQuoted = isQuotedWordToken(rawToken)
+            let val = unquote(rawToken)
 
-            if let parsedAlign = BoxAlignment(val) {
+            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
+                exitPos = parsedExit
+            } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign.rawValue
             } else if BorderStyle.isStyleToken(val) {
                 styleName = val
             }
         }
 
-        drawBoxAroundText(textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode)
+        drawBoxAroundText(textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
     }
 
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
@@ -143,11 +179,11 @@ extension LogoEngine {
 
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
         if token == "]" || token == ")" { return true }
-        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) { return false }
+        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) || BoxExitPosition(token) != nil { return false }
         return LogoEngine.isKeyword(token)
     }
 
-    private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode) {
+    private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne) {
         guard let editor = self.delegate else { return }
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
@@ -184,11 +220,10 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + height - 1))
-        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
+        updateCursorAfterBox(startLine: startLine, startCol: startCol, width: width, height: height, exitPos: exitPos)
     }
 
-    private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, mode: BoxDrawMode) {
+    private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne) {
         guard let editor = self.delegate else { return }
         let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
         let maxVisualWidth = rawLines.map { $0.displayWidth }.max() ?? 0
@@ -242,8 +277,29 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + calcHeight - 1))
-        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + calcWidth))
+        updateCursorAfterBox(startLine: startLine, startCol: startCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
+    }
+
+    private func updateCursorAfterBox(startLine: Int, startCol: Int, width: Int, height: Int, exitPos: BoxExitPosition) {
+        guard let editor = self.delegate else { return }
+        switch exitPos {
+        case .ne:
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
+        case .se:
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine + height - 1))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
+        case .nw:
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
+        case .sw:
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine + height - 1))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
+        case .down:
+            editor.logoEngine(self, performAction: .ensureLineExists(index: startLine + height))
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
+        }
     }
 
     private func buildRowText(

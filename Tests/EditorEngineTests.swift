@@ -1197,3 +1197,41 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.processKey(.ctrl("Q"))
     #expect(editor.statusMessage == "[Eval] 50")
 }
+
+@Test func testBoxExitPositions() throws {
+    // 1. NE (Default): Line 0, Col 10
+    let ed1 = Editor()
+    ed1.runLogoScript("BOX 10 4 NE")
+    #expect(ed1.buffer.lineIndex == 0)
+    #expect(ed1.buffer.columnIndex == 10)
+
+    // 2. SE / AT:SE: Line 3, Col 10
+    let ed2 = Editor()
+    ed2.runLogoScript("BOX 10 4 AT:SE")
+    #expect(ed2.buffer.lineIndex == 3)
+    #expect(ed2.buffer.columnIndex == 10)
+
+    // 3. NW / AT:NW: Line 0, Col 0
+    let ed3 = Editor()
+    ed3.runLogoScript("BOX 10 4 AT:NW")
+    #expect(ed3.buffer.lineIndex == 0)
+    #expect(ed3.buffer.columnIndex == 0)
+
+    // 4. SW / AT:SW: Line 3, Col 0
+    let ed4 = Editor()
+    ed4.runLogoScript("BOX 10 4 AT:SW")
+    #expect(ed4.buffer.lineIndex == 3)
+    #expect(ed4.buffer.columnIndex == 0)
+
+    // 5. DOWN / AT:DOWN: Line 4, Col 0
+    let ed5 = Editor()
+    ed5.runLogoScript("BOX 10 4 AT:DOWN")
+    #expect(ed5.buffer.lineIndex == 4)
+    #expect(ed5.buffer.columnIndex == 0)
+
+    // 6. Quoted string "SE" is text, not exit position!
+    let ed6 = Editor()
+    ed6.runLogoScript("BOX 10 4 \"SE\"")
+    #expect(ed6.buffer.lines[1].contains("SE"))
+    #expect(ed6.buffer.lineIndex == 0)
+}

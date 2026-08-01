@@ -222,15 +222,29 @@ All drawing commands start drawing at the **current cursor position** `(startLin
 
 | Command | Width / Length | Height | Cursor Position After Execution |
 | :--- | :--- | :--- | :--- |
-| **`BOX` / `DRAWBOX`** | $W$ | $H$ | `(startLine + H - 1, startCol + W)`<br>*(On the box's bottom row, immediately past the right border)* |
-| **`LINE`** | $L$ | 1 | `(startLine, startCol + L)`<br>*(On the same line, immediately past the right end of the line)* |
-| **`VLINE`** | 1 | $H$ | `(startLine + H, startCol)`<br>*(One line below the bottom end of the vertical line, at the same column)* |
-| **`TABLE`** | $C \times (W + 1) + 1$ | $2R + 1$ | `(startLine + totalHeight - 1, startCol + totalWidth)`<br>*(On the table's bottom line, immediately past the right border)* |
+| **`BOX` / `DRAWBOX`** | $W$ | $H$ | `(startLine, startCol + W)` *(Default: `NE` / `AT:NE` top-right alignment)* |
+| **`LINE`** | $L$ | 1 | `(startLine, startCol + L)` *(On the same line, immediately past the right end of the line)* |
+| **`VLINE`** | 1 | $H$ | `(startLine + H, startCol)` *(One line below the bottom end of the vertical line, at the same column)* |
+| **`TABLE`** | $C \times (W + 1) + 1$ | $2R + 1$ | `(startLine + totalHeight - 1, startCol + totalWidth)` *(On the table's bottom line, immediately past the right border)* |
+
+#### Box Exit Position Modifiers (`AT:NE`, `AT:SE`, `AT:NW`, `AT:SW`, `AT:DOWN`)
+
+`BOX` and `DRAWBOX` accept optional exit position modifiers to control where the cursor lands after drawing:
+
+| Modifier | Alias | Target Cursor Location |
+| :--- | :--- | :--- |
+| `NE` | `AT:NE`, `TOPRIGHT` | `(startLine, startCol + W)` *(Default: Top-right, for side-by-side box placement)* |
+| `SE` | `AT:SE`, `BOTTOMRIGHT` | `(startLine + H - 1, startCol + W)` *(Bottom-right corner)* |
+| `NW` | `AT:NW`, `TOPLEFT` | `(startLine, startCol)` *(Top-left corner / start position)* |
+| `SW` | `AT:SW`, `BOTTOMLEFT` | `(startLine + H - 1, startCol)` *(Bottom-left corner)* |
+| `DOWN` | `AT:DOWN`, `BOTTOM`, `S` | `(startLine + H, startCol)` *(Line immediately below the box, for stacked boxes or text)* |
+
+*Note: Unquoted tokens like `SE` or `AT:SE` are parsed as exit positions. To draw a box containing the literal text "SE", quote it: `BOX 20 5 "SE"`.*
 
 #### Example Flow
 If cursor is at `(0, 0)`:
-1. `BOX 10 3` draws a $10 \times 3$ box from `(0, 0)`. The cursor moves to `(2, 10)`.
-2. Following up with `LINE 5` draws a horizontal line from `(2, 10)` to `(2, 14)`. The cursor moves to `(2, 15)`.
+1. `BOX 10 3 NE` draws a $10 \times 3$ box and leaves the cursor at `(0, 10)` (top-aligned for side-by-side placement).
+2. `BOX 10 3 AT:DOWN` draws a second box at `(0, 10)` and leaves the cursor at `(3, 10)` (below the box).
 
 ---
 

@@ -107,7 +107,7 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + max(0, height - 1)))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 
@@ -286,7 +286,7 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + drawableOffsets.count))
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + max(0, drawableOffsets.count - 1)))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 
