@@ -18,6 +18,8 @@ extension Editor {
         commandRegistry.register(SelectRightCommand())
         commandRegistry.register(SelectUpCommand())
         commandRegistry.register(SelectDownCommand())
+        commandRegistry.register(SelectHomeCommand())
+        commandRegistry.register(SelectEndCommand())
 
         // Editing Commands
         commandRegistry.register(DeleteLineCommand())

@@ -268,6 +268,9 @@ public struct EnglishStrings {
         "status.no_document_link": "[ No document link at cursor ]",
         "status.document_link_same_file": "[ Link points to current file ]",
         "status.opened_document_link": "[ Opened %@ ]",
+        "status.no_text_selection": "[ No text selected ]",
+        "status.transformed_selection": "[ Transformed selection: %@ ]",
+        "status.text_transform_failed": "[ Text transform failed: %@ ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 
@@ -286,7 +289,7 @@ public struct EnglishStrings {
 
         "helpview.sec_edit": "  EDITING & SELECTION:",
         "helpview.edit_1": "    ^D / Delete        Delete character at cursor position",
-        "helpview.edit_2": "    Shift+Arrow        Extend text/table selection",
+        "helpview.edit_2": "    Shift+Arrow/Home/End Extend text/table selection",
         "helpview.edit_3": "    ^K / F9            Cut selected text, canvas block, or current line",
         "helpview.edit_4": "    ^U / F10           Uncut (paste) last cut text at cursor position",
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
@@ -395,6 +398,13 @@ public struct EnglishStrings {
         "menu.borders.next_style": "Next Style\tM+S",
 
         "menu.tools.logo": "Command Prompt...\tEsc",
+        "menu.tools.transform_tohant": "Transform: To Traditional Chinese",
+        "menu.tools.transform_tohans": "Transform: To Simplified Chinese",
+        "menu.tools.transform_tolatin": "Transform: To Latin",
+        "menu.tools.transform_hiragana": "Transform: To Hiragana",
+        "menu.tools.transform_katakana": "Transform: To Katakana",
+        "menu.tools.transform_romaji": "Transform: To Romaji",
+        "menu.tools.transform_cjk_spacing": "Transform: CJK Spacing",
         "menu.tools.line_numbers": "Toggle Line Numbers",
         "menu.tools.sub_line_numbers": "Toggle Sub Line Numbers",
         "menu.tools.ruler": "Toggle Ruler Bar",
@@ -421,6 +431,14 @@ public struct EnglishStrings {
 
         "menu.help.show": "Show Help Reference",
         "menu.help.logo_reference": "LOGO Reference",
-        "menu.help.logo_workspace": "Procedures & Variables"
+        "menu.help.logo_workspace": "Procedures & Variables",
+
+        "transform.tohant": "Traditional Chinese",
+        "transform.tohans": "Simplified Chinese",
+        "transform.tolatin": "Latin",
+        "transform.hiragana": "Hiragana",
+        "transform.katakana": "Katakana",
+        "transform.romaji": "Romaji",
+        "transform.cjk_spacing": "CJK Spacing"
     ]
 }

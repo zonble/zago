@@ -119,6 +119,34 @@ import Testing
     #expect(editor.layoutEngine.wrapColumn == 10)
 }
 
+@Test func testTextTransformMenuItemsOnlyShowWithTextSelection() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["中文API測試"]
+    editor.menuBar.updateCategories(for: editor)
+
+    var toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
+
+    editor.selectionMark = (line: 0, column: 0)
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = editor.buffer.lines[0].count
+    editor.menuBar.updateCategories(for: editor)
+
+    toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohant" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohans" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tolatin" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_hiragana" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_katakana" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_romaji" }) == true)
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == true)
+
+    editor.switchToCanvasMode()
+    editor.menuBar.updateCategories(for: editor)
+    toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
+}
+
 @Test func testCanvasMarkMenuItemOnlyVisibleInCanvasMode() throws {
     let editor = Editor()
 
@@ -303,6 +331,8 @@ import Testing
 
     let parsedUp = KeyParser.parse("up")
     #expect(parsedUp == .arrowUp)
+    #expect(KeyParser.parse("shift-home") == .shiftHome)
+    #expect(KeyParser.parse("shift-end") == .shiftEnd)
     #expect(KeyParser.parse("ctrl-shift-right") == .ctrlShiftArrowRight)
     #expect(KeyParser.parse("ctrl-shift-arrow-left") == .ctrlShiftArrowLeft)
 
@@ -666,6 +696,8 @@ import Testing
     #expect(L10n["help.uncut_block"] == "UnCut Block")
     #expect(L10n["help.open_link"] == "Open Link")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["menu.tools.transform_cjk_spacing"] == "Transform: CJK Spacing")
+    #expect(L10n["transform.tohant"] == "Traditional Chinese")
 
     #expect(L10n.defaultBorder("Round") == "[ Default Border: Round ]")
     #expect(L10n.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
@@ -708,6 +740,8 @@ import Testing
     #expect(L10n["help.uncut_block"] == "貼上區塊")
     #expect(L10n["help.open_link"] == "開啟連結")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["menu.tools.transform_cjk_spacing"] == "轉換：CJK 空格")
+    #expect(L10n["transform.tohant"] == "繁體中文")
 }
 
 @Test func testLogoReferenceAndWorkspaceContent() throws {

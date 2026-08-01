@@ -35,7 +35,7 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Diagram", "LogoEngine", "Syntax", "TextMetrics"]
+            dependencies: ["Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",

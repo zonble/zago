@@ -17,6 +17,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case selectRight = "select.right"
     case selectUp = "select.up"
     case selectDown = "select.down"
+    case selectHome = "select.home"
+    case selectEnd = "select.end"
 
     // Editing
     case editDeleteLine = "edit.delete_line"

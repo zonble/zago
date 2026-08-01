@@ -81,6 +81,8 @@ public enum KeyParser {
         case "shift-right", "shift-arrow-right": return .shiftArrowRight
         case "shift-up", "shift-arrow-up": return .shiftArrowUp
         case "shift-down", "shift-arrow-down": return .shiftArrowDown
+        case "shift-home", "s-home": return .shiftHome
+        case "shift-end", "s-end": return .shiftEnd
         case "f1": return .f1
         case "f2": return .f2
         case "f3": return .f3

@@ -126,6 +126,12 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `move.end` | Move to line end | `^E`, `End` |
 | `move.pgdn` | Page down | `^V`, `F8`, `PageDown` |
 | `move.pgup` | Page up | `^Y`, `F7`, `PageUp` |
+| `select.left` | Extend selection left | `Shift+Left` |
+| `select.right` | Extend selection right | `Shift+Right` |
+| `select.up` | Extend selection up | `Shift+Up` |
+| `select.down` | Extend selection down | `Shift+Down` |
+| `select.home` | Extend selection to line start | `Shift+Home` |
+| `select.end` | Extend selection to line end | `Shift+End` |
 | `edit.delete` | Delete character | `^D`, `Delete` |
 | `edit.mark` | Set or unset canvas block mark | `^^` in canvas mode |
 | `edit.cancel_selection` | Cancel active selection or canvas mark | `^G` |

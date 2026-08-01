@@ -1,6 +1,7 @@
 import Foundation
 import LogoEngine
 import TextMetrics
+import TextTransform
 
 extension Editor {
     public func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
@@ -102,6 +103,49 @@ extension Editor {
     private func standardizedDocumentPath(_ path: String) -> String {
         let expanded = NSString(string: path).expandingTildeInPath
         return URL(fileURLWithPath: expanded).standardizedFileURL.path
+    }
+
+    public func transformSelectedText(id transformId: String, label: String) {
+        guard let range = activeTextSelectionRange() else {
+            setStatusMessage(L10n["status.no_text_selection"])
+            return
+        }
+
+        let selectedText = buffer.textRange(
+            start: (line: range.start.line, col: range.start.column),
+            end: (line: range.end.line, col: range.end.column))
+
+        do {
+            let transformed = try TextTransformer.apply(transformId, to: selectedText)
+            saveUndoSnapshot()
+            _ = buffer.cutRange(
+                start: (line: range.start.line, col: range.start.column),
+                end: (line: range.end.line, col: range.end.column))
+            buffer.lineIndex = range.start.line
+            buffer.columnIndex = range.start.column
+            buffer.insertString(transformed)
+            selectionMark = nil
+            if isTableModeActive {
+                clampTableModeCursor()
+            } else {
+                buffer.clampCursor()
+            }
+            setStatusMessage(String(format: L10n["status.transformed_selection"], label))
+        } catch {
+            setStatusMessage(String(format: L10n["status.text_transform_failed"], "\(error)"))
+        }
+    }
+
+    func hasActiveTextSelection() -> Bool {
+        activeTextSelectionRange() != nil
+    }
+
+    private func activeTextSelectionRange() -> (start: (line: Int, column: Int), end: (line: Int, column: Int))? {
+        guard !isCanvasModeActive, !buffer.isDirectoryBuffer, let mark = selectionMark else { return nil }
+        let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
+        let range = getOrderedRange(mark1: mark, mark2: cursor)
+        guard range.start.line != range.end.line || range.start.column != range.end.column else { return nil }
+        return range
     }
 
     public func writeBuffer(path: String) {

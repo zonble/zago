@@ -35,6 +35,8 @@ public enum Key: Equatable, Hashable, Sendable {
     case shiftArrowRight
     case shiftArrowUp
     case shiftArrowDown
+    case shiftHome
+    case shiftEnd
     case ctrlShiftArrowLeft
     case ctrlShiftArrowRight
     case ctrlShiftArrowUp
@@ -220,6 +222,8 @@ public final class Terminal {
                     case "1;2C", "2C": return .shiftArrowRight
                     case "1;2A", "2A": return .shiftArrowUp
                     case "1;2B", "2B": return .shiftArrowDown
+                    case "1;2H", "2H", "1;2~", "2~": return .shiftHome
+                    case "1;2F", "2F", "4;2~": return .shiftEnd
                     case "1;6D", "6D": return .ctrlShiftArrowLeft
                     case "1;6C", "6C": return .ctrlShiftArrowRight
                     case "1;6A", "6A": return .ctrlShiftArrowUp

@@ -78,3 +78,39 @@ public struct SelectDownCommand: Command {
         editor.moveCursorVirtual(deltaRow: 1)
     }
 }
+
+public struct SelectHomeCommand: Command {
+    public let id: CommandID = .selectHome
+    public let name = "Select Home"
+    public let description = "Extend selection to line start"
+    public let keys: [Key] = [.shiftHome]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return }
+        if editor.selectionMark == nil {
+            editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.setStatusMessage(L10n["status.mark_set"])
+        }
+        editor.buffer.columnIndex = 0
+    }
+}
+
+public struct SelectEndCommand: Command {
+    public let id: CommandID = .selectEnd
+    public let name = "Select End"
+    public let description = "Extend selection to line end"
+    public let keys: [Key] = [.shiftEnd]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return }
+        if editor.selectionMark == nil {
+            editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.setStatusMessage(L10n["status.mark_set"])
+        }
+        editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
+    }
+}

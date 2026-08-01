@@ -176,6 +176,48 @@ public final class MenuBar {
                         titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
                         isVisible: { $0.buffer.allowsLogoExecution }),
                     MenuItem(
+                        titleKey: "menu.tools.transform_tohant", hotkeyChar: "h",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Hans-Hant", label: L10n["transform.tohant"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_tohans", hotkeyChar: "s",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Hant-Hans", label: L10n["transform.tohans"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_tolatin", hotkeyChar: "a",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Any-Latin", label: L10n["transform.tolatin"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_hiragana", hotkeyChar: "i",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Any-Hiragana", label: L10n["transform.hiragana"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_katakana", hotkeyChar: "k",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Any-Katakana", label: L10n["transform.katakana"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_romaji", hotkeyChar: "j",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Any-Latin", label: L10n["transform.romaji"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
+                        titleKey: "menu.tools.transform_cjk_spacing", hotkeyChar: "c",
+                        action: { editor in
+                            editor.transformSelectedText(id: "Zago-CJK-Spacing", label: L10n["transform.cjk_spacing"])
+                        },
+                        isVisible: { $0.hasActiveTextSelection() }),
+                    MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in
                             editor.displayConfig.showLineNumbers.toggle()

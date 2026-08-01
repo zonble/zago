@@ -268,6 +268,9 @@ public struct TraditionalChineseStrings {
         "status.no_document_link": "[ 游標所在位置沒有文件連結 ]",
         "status.document_link_same_file": "[ 連結指向目前檔案 ]",
         "status.opened_document_link": "[ 已開啟 %@ ]",
+        "status.no_text_selection": "[ 沒有選取文字 ]",
+        "status.transformed_selection": "[ 已轉換選取文字：%@ ]",
+        "status.text_transform_failed": "[ 文字轉換失敗：%@ ]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 
@@ -286,7 +289,7 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_edit": "  編輯、剪貼與選取：",
         "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
-        "helpview.edit_2": "    Shift+方向鍵       延伸 text/table 選取範圍",
+        "helpview.edit_2": "    Shift+方向鍵/Home/End 延伸 text/table 選取範圍",
         "helpview.edit_3": "    ^K / F9            剪下選取文字、canvas 區塊或目前行",
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
@@ -395,6 +398,13 @@ public struct TraditionalChineseStrings {
         "menu.borders.next_style": "下一種框線\tM+S",
 
         "menu.tools.logo": "指令列\tEsc",
+        "menu.tools.transform_tohant": "轉換：繁體中文",
+        "menu.tools.transform_tohans": "轉換：簡體中文",
+        "menu.tools.transform_tolatin": "轉換：拉丁轉寫",
+        "menu.tools.transform_hiragana": "轉換：平假名",
+        "menu.tools.transform_katakana": "轉換：片假名",
+        "menu.tools.transform_romaji": "轉換：羅馬字",
+        "menu.tools.transform_cjk_spacing": "轉換：CJK 空格",
         "menu.tools.line_numbers": "顯示/隱藏行號",
         "menu.tools.sub_line_numbers": "顯示/隱藏子行號",
         "menu.tools.ruler": "顯示/隱藏尺標",
@@ -421,6 +431,14 @@ public struct TraditionalChineseStrings {
 
         "menu.help.show": "顯示完整說明手冊 (Help)",
         "menu.help.logo_reference": "LOGO 指令參考",
-        "menu.help.logo_workspace": "Procedures 與變數"
+        "menu.help.logo_workspace": "Procedures 與變數",
+
+        "transform.tohant": "繁體中文",
+        "transform.tohans": "簡體中文",
+        "transform.tolatin": "拉丁轉寫",
+        "transform.hiragana": "平假名",
+        "transform.katakana": "片假名",
+        "transform.romaji": "羅馬字",
+        "transform.cjk_spacing": "CJK 空格"
     ]
 }

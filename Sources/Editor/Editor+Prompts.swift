@@ -58,6 +58,10 @@ extension Editor {
             return
         }
 
+        if (key == .shiftHome || key == .shiftEnd) && (isCanvasModeActive || isTableModeActive) {
+            return
+        }
+
         if commandRegistry.dispatch(key: key, editor: self) {
             if isTableModeActive {
                 clampTableModeCursor()
