@@ -140,9 +140,19 @@ public struct EnglishStrings {
     TOHIRAGANA text              Convert text to Hiragana
     TOKATAKANA text              Convert text to Katakana
     TOROMAJI text                Romanize Japanese text
+    SPACING.CJK text             Normalize CJK/ASCII word spacing
     Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
                     TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
                     TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+
+  Text counts
+    CHARCOUNT text               Count Unicode grapheme characters
+    CHARCOUNT.CJK text           Count CJK scripts and CJK punctuation
+    CHARCOUNT.WORDS text         Count alphanumeric word runs
+    CHARCOUNT.EMOJI text         Count emoji grapheme clusters
+    CHARCOUNT.LINES text         Count logical newline-separated lines
+    ASCII / ORD char             Unicode scalar code of first character
+    CHAR / CHR code              Character from Unicode scalar code
 
   Math and logic
     SUM a b ...                 Add numbers
@@ -159,6 +169,9 @@ public struct EnglishStrings {
     ARCTAN y [x]                Angle in degrees
     RADSIN / RADCOS / RADTAN r  Trig functions using radians
     RADARCTAN y [x]             Angle in radians
+    RANGE / ISEQ start end [step]
+                                Inclusive integer sequence list
+    RSEQ start end count         Real-number sequence list
     LESS? / GREATER? a b        Numeric comparison
     LESSEQUAL? / GREATEREQUAL?  Numeric <= or >= comparison
     EQUAL? / NOTEQUAL? a b      Equality comparison

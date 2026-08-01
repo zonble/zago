@@ -99,6 +99,8 @@ public final class LogoEngine {
         .standout, .translit,
         .transformToHans, .transformToHant, .transformToLatin,
         .transformToHiragana, .transformToKatakana, .transformToRomaji,
+        .spacingCJK,
+        .charCount, .charCountCJK, .charCountWords, .charCountEmoji, .charCountLines,
         .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
         .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
         .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,

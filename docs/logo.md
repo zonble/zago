@@ -579,11 +579,17 @@ TYPE ITEM 2 :cells
 | `PUSH` | - | `PUSH val list` | Pushes element to list variable | `PUSH 1 "myList"` |
 | `POP` | - | `POP list` | Pops element from list variable | `POP "myList"` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
+| `CHARCOUNT` | - | `CHARCOUNT text` | Counts Unicode grapheme characters in text | `CHARCOUNT "a👍中` |
+| `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK text` | Counts CJK scripts and CJK/fullwidth punctuation, excluding ASCII words and spaces | `CHARCOUNT.CJK "中文，API。` |
+| `CHARCOUNT.WORDS` | - | `CHARCOUNT.WORDS text` | Counts alphanumeric word runs | `CHARCOUNT.WORDS "Hello, world!` |
+| `CHARCOUNT.EMOJI` | - | `CHARCOUNT.EMOJI text` | Counts emoji grapheme clusters | `CHARCOUNT.EMOJI "A👍🏽🇹🇼` |
+| `CHARCOUNT.LINES` | - | `CHARCOUNT.LINES text` | Counts logical newline-separated text lines | `CHARCOUNT.LINES :text` |
 | `ASCII` / `ORD` | `ORD` | `ASCII char` \| `ORD char` | Returns Unicode/ASCII scalar code integer of character | `ASCII "A"`, `ORD "字"` |
 | `CHAR` / `CHR` | `CHR` | `CHAR code` \| `CHR code` | Returns character string for Unicode/ASCII code integer | `CHAR 65`, `CHR 23383` |
 | `UPPERCASE` | - | `UPPERCASE str` | Converts string to uppercase | `UPPERCASE "hello"` |
 | `LOWERCASE` | - | `LOWERCASE str` | Converts string to lowercase | `LOWERCASE "HELLO"` |
 | `TRANSLIT` | `TRANSFORM` | `TRANSLIT transform-id text` | Applies an ICU String Transform or zago `Zago-*` writing transform | `TRANSLIT "Any-Hiragana "Sakura`, `TRANSLIT "Zago-CJK-Punctuation "Hello,` |
+| `SPACING.CJK` | - | `SPACING.CJK text` | Normalizes spacing between CJK script characters and ASCII words/numbers without changing punctuation | `SPACING.CJK "中文API測試` |
 | `TOHANS` | `TRANSFORM.TOHANS` | `TOHANS text` | Converts Traditional Chinese text to Simplified Chinese via `Hant-Hans` | `TOHANS "繁體中文` |
 | `TOHANT` | `TRANSFORM.TOHANT` | `TOHANT text` | Converts Simplified Chinese text to Traditional Chinese via `Hans-Hant` | `TOHANT "简体中文` |
 | `TOLATIN` | `TRANSFORM.TOLATIN` | `TOLATIN text` | Romanizes text via `Any-Latin` | `TOLATIN "你好嗎？` |

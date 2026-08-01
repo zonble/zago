@@ -90,11 +90,8 @@ ICU identifiers should be passed through to the platform ICU implementation.
 Initial zago transforms:
 
 - `Zago-CJK-Punctuation`: normalize common ASCII punctuation into CJK punctuation for Chinese prose.
+- `Zago-CJK-Spacing`: normalize spacing between CJK script characters and ASCII words or numbers.
 - `Zago-Prose-Cleanup`: currently aliases `Zago-CJK-Punctuation`; it is reserved for a conservative composition of stable prose cleanup transforms.
-
-Planned zago transforms:
-
-- `Zago-CJK-Spacing`: normalize spacing around CJK, Latin, numbers, and punctuation.
 
 `Zago-*` transforms should be explicit and documented. They should not shadow ICU identifiers.
 
@@ -110,6 +107,7 @@ The following reporters are aliases for common ICU transform identifiers. They a
 | `TOHIRAGANA` | `TRANSFORM.TOHIRAGANA` | `Any-Hiragana` |
 | `TOKATAKANA` | `TRANSFORM.TOKATAKANA` | `Any-Katakana` |
 | `TOROMAJI` | `TRANSFORM.TOROMAJI` | `Any-Latin` |
+| `SPACING.CJK` | - | `Zago-CJK-Spacing` |
 
 `TOLATIN` and `TOROMAJI` intentionally share `Any-Latin`. The separate names make LOGO scripts read closer to the author's intent.
 

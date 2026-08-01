@@ -18,6 +18,13 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(try TextTransformer.apply("Fullwidth-Halfwidth", to: "ＡＢＣ１２３") == "ABC123")
     #expect(try TextTransformer.apply("Any-Hiragana", to: "Sakura") == "さくら")
     #expect(try TextTransformer.apply("Hant-Hans", to: "繁體中文") == "繁体中文")
+    #expect(try TextTransformer.apply("Zago-CJK-Spacing", to: "中文APIv2測試") == "中文 APIv2 測試")
+    #expect(try TextTransformer.apply("Zago-CJK-Spacing", to: "中 文  API") == "中文 API")
+    #expect(TextAnalyzer.characterCount(in: "a👍🏽中") == 3)
+    #expect(TextAnalyzer.cjkCharacterCount(in: "中文，API。かな") == 6)
+    #expect(TextAnalyzer.wordCount(in: "Hello, world! API v2") == 4)
+    #expect(TextAnalyzer.emojiCount(in: "A👍🏽🇹🇼1❤️") == 3)
+    #expect(TextAnalyzer.lineCount(in: "a\nb\n") == 3)
 
     let editor = Editor()
     let logoEngine = editor.logoEngine
@@ -45,6 +52,24 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("CLEARBUFFER TYPE TOROMAJI \"さくら")
     #expect(editor.buffer.lines[0] == "sakura")
+
+    logoEngine.execute("CLEARBUFFER TYPE SPACING.CJK \"中文API測試")
+    #expect(editor.buffer.lines[0] == "中文 API 測試")
+
+    logoEngine.execute("CHARCOUNT \"a👍🏽中")
+    #expect(logoEngine.lastResult == "3")
+
+    logoEngine.execute("CHARCOUNT.CJK \"中文，API。かな")
+    #expect(logoEngine.lastResult == "6")
+
+    logoEngine.execute("CHARCOUNT.WORDS \"Hello, world! API v2\"")
+    #expect(logoEngine.lastResult == "4")
+
+    logoEngine.execute("CHARCOUNT.EMOJI \"A👍🏽🇹🇼1❤️")
+    #expect(logoEngine.lastResult == "3")
+
+    logoEngine.execute("CHARCOUNT.LINES \"single")
+    #expect(logoEngine.lastResult == "1")
 
     logoEngine.execute("TRANSLIT \"Zago-Does-Not-Exist \"text")
     #expect(logoEngine.lastError == "[Unknown text transform: Zago-Does-Not-Exist]")

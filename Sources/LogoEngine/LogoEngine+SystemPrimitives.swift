@@ -110,6 +110,24 @@ extension LogoEngine {
         case .transformToRomaji:
             return applyFixedTextTransform("Any-Latin", tokens, index: &index)
 
+        case .spacingCJK:
+            return applyFixedTextTransform("Zago-CJK-Spacing", tokens, index: &index)
+
+        case .charCount:
+            return applyTextCount(tokens, index: &index) { TextAnalyzer.characterCount(in: $0) }
+
+        case .charCountCJK:
+            return applyTextCount(tokens, index: &index) { TextAnalyzer.cjkCharacterCount(in: $0) }
+
+        case .charCountWords:
+            return applyTextCount(tokens, index: &index) { TextAnalyzer.wordCount(in: $0) }
+
+        case .charCountEmoji:
+            return applyTextCount(tokens, index: &index) { TextAnalyzer.emojiCount(in: $0) }
+
+        case .charCountLines:
+            return applyTextCount(tokens, index: &index) { TextAnalyzer.lineCount(in: $0) }
+
         case .headingPrimitive:
             return "\(heading)"
 
@@ -134,5 +152,11 @@ extension LogoEngine {
             hasSetStatusMessage = true
             return ""
         }
+    }
+
+    private func applyTextCount(_ tokens: [String], index: inout Int, count: (String) -> Int) -> String {
+        index += 1
+        let inputText = unquote(evaluateExpression(tokens, index: &index))
+        return "\(count(inputText))"
     }
 }

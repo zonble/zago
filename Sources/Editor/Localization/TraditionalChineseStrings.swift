@@ -140,9 +140,19 @@ public struct TraditionalChineseStrings {
     TOHIRAGANA text              轉為平假名
     TOKATAKANA text              轉為片假名
     TOROMAJI text                日文轉羅馬字
+    SPACING.CJK text             正規化 CJK 與 ASCII 字詞間距
     Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
                     TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
                     TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+
+  文字計數
+    CHARCOUNT text               計算 Unicode grapheme 字元數
+    CHARCOUNT.CJK text           計算 CJK script 與 CJK 標點
+    CHARCOUNT.WORDS text         計算英數 word runs
+    CHARCOUNT.EMOJI text         計算 emoji grapheme clusters
+    CHARCOUNT.LINES text         計算以換行分隔的邏輯行數
+    ASCII / ORD char             第一個字元的 Unicode scalar code
+    CHAR / CHR code              從 Unicode scalar code 取得字元
 
   數學與邏輯
     SUM a b ...                 數字相加
@@ -159,6 +169,9 @@ public struct TraditionalChineseStrings {
     ARCTAN y [x]                回傳角度
     RADSIN / RADCOS / RADTAN r  以弧度為單位的三角函數
     RADARCTAN y [x]             回傳弧度
+    RANGE / ISEQ start end [step]
+                                產生 inclusive 整數序列 list
+    RSEQ start end count         產生實數序列 list
     LESS? / GREATER? a b        數字大小比較
     LESSEQUAL? / GREATEREQUAL?  數字 <= 或 >= 比較
     EQUAL? / NOTEQUAL? a b      相等/不相等比較

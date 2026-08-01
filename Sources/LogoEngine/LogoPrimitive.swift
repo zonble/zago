@@ -159,6 +159,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case transformToHiragana
     case transformToKatakana
     case transformToRomaji
+    case spacingCJK
+    case charCount
+    case charCountCJK
+    case charCountWords
+    case charCountEmoji
+    case charCountLines
     case parse
     case runparse
 
@@ -384,6 +390,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["TOHIRAGANA", "TRANSFORM.TOHIRAGANA"], .transformToHiragana),
         (["TOKATAKANA", "TRANSFORM.TOKATAKANA"], .transformToKatakana),
         (["TOROMAJI", "TRANSFORM.TOROMAJI"], .transformToRomaji),
+        (["SPACING.CJK"], .spacingCJK),
+        (["CHARCOUNT"], .charCount),
+        (["CHARCOUNT.CJK"], .charCountCJK),
+        (["CHARCOUNT.WORDS"], .charCountWords),
+        (["CHARCOUNT.EMOJI"], .charCountEmoji),
+        (["CHARCOUNT.LINES"], .charCountLines),
         (["PARSE"], .parse),
         (["RUNPARSE"], .runparse),
 
