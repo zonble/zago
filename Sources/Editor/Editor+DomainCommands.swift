@@ -54,7 +54,21 @@ extension Editor {
     }
 
     public func openBuffer(path: String) {
-        openNewBuffer(filePath: path)
+        let expanded = NSString(string: path).expandingTildeInPath
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: expanded, isDirectory: &isDir), isDir.boolValue {
+            openDirectoryBuffer(path: expanded)
+            return
+        }
+
+        if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
+            currentBufferIndex = existingIndex
+            topVLineIndex = 0
+            clearActiveMark()
+            startFileWatcherForCurrentBuffer()
+        } else {
+            openNewBuffer(filePath: expanded)
+        }
     }
 
     public func writeBuffer(path: String) {

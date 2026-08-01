@@ -36,12 +36,14 @@ public protocol CommandBarCommand {
     var help: String { get }
     var completionNames: [String] { get }
 
+    func isAvailable(in editor: Editor) -> Bool
     func match(_ input: CommandBarInput) -> Bool
     func execute(_ input: CommandBarInput, editor: Editor) -> CommandBarDispatchResult
 }
 
 extension CommandBarCommand {
     public var completionNames: [String] { [name] }
+    public func isAvailable(in editor: Editor) -> Bool { true }
 }
 
 public final class CommandBarRegistry {
@@ -58,14 +60,24 @@ public final class CommandBarRegistry {
         guard !input.text.isEmpty else { return .handled }
 
         for command in commands where command.match(input) {
+            guard command.isAvailable(in: editor) else {
+                editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+                return .handled
+            }
             return command.execute(input, editor: editor)
+        }
+
+        guard editor.buffer.allowsLogoExecution else {
+            editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+            return .handled
         }
 
         return .noMatch
     }
 
-    public var completionNames: [String] {
-        Array(Set(commands.flatMap(\.completionNames))).sorted()
+    public func completionNames(for editor: Editor) -> [String] {
+        let available = commands.filter { $0.isAvailable(in: editor) }
+        return Array(Set(available.flatMap(\.completionNames))).sorted()
     }
 
     public static func makeDefault() -> CommandBarRegistry {

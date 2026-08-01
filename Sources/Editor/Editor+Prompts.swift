@@ -307,8 +307,8 @@ extension Editor {
             return false
         }
 
-        let commandNames = commandBarRegistry.completionNames
-        let logoNames = LogoPrimitive.keywordAliases
+        let commandNames = commandBarRegistry.completionNames(for: self)
+        let logoNames = buffer.allowsLogoExecution ? LogoPrimitive.keywordAliases : []
         let lowerToken = token.lowercased()
         let matches = Array(Set(commandNames + logoNames))
             .filter { $0.lowercased().hasPrefix(lowerToken) }

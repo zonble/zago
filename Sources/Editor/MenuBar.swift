@@ -31,11 +31,18 @@ public struct MenuCategory {
     public let titleKey: String
     public let hotkeyChar: Character
     public let items: [MenuItem]
+    public let isVisible: ((Editor) -> Bool)?
 
-    public init(titleKey: String, hotkeyChar: Character, items: [MenuItem]) {
+    public init(
+        titleKey: String,
+        hotkeyChar: Character,
+        items: [MenuItem],
+        isVisible: ((Editor) -> Bool)? = nil
+    ) {
         self.titleKey = titleKey
         self.hotkeyChar = hotkeyChar
         self.items = items
+        self.isVisible = isVisible
     }
 }
 
@@ -83,9 +90,9 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
-                    MenuItem(titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode, isChecked: { $0.baseMode == .text }),
-                    MenuItem(titleKey: "menu.edit.canvas_mode", hotkeyChar: "v", commandId: .canvasToggle, isChecked: { $0.baseMode == .canvas }),
-                    MenuItem(titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle, isChecked: { $0.isTableModeActive }),
+                    MenuItem(titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode, isChecked: { $0.baseMode == .text }, isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(titleKey: "menu.edit.canvas_mode", hotkeyChar: "v", commandId: .canvasToggle, isChecked: { $0.baseMode == .canvas }, isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle, isChecked: { $0.isTableModeActive }, isVisible: { !$0.buffer.isDirectoryBuffer }),
                 ]),
             MenuCategory(
                 titleKey: "menu.buffer", hotkeyChar: "b",
@@ -103,7 +110,8 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
                     MenuItem(titleKey: "menu.shapes.frame_mode", hotkeyChar: "r", commandId: .frameToggle, isChecked: { $0.isFrameModeActive }),
                     MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
-                ]),
+                ],
+                isVisible: { $0.buffer.allowsLogoExecution }),
             MenuCategory(
                 titleKey: "menu.borders", hotkeyChar: "o",
                 items: [
@@ -154,8 +162,8 @@ public final class MenuBar {
             MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",
                 items: [
-                    MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo),
-                    MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo),
+                    MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo, isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo, isVisible: { $0.buffer.allowsLogoExecution }),
                     MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in
@@ -211,9 +219,10 @@ public final class MenuBar {
 
         if let editor {
             self.categories = baseCategories.compactMap { category in
+                guard category.isVisible?(editor) ?? true else { return nil }
                 let visibleItems = category.items.filter { $0.isVisible?(editor) ?? true }
                 guard !visibleItems.isEmpty else { return nil }
-                return MenuCategory(titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems)
+                return MenuCategory(titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems, isVisible: category.isVisible)
             }
         } else {
             self.categories = baseCategories

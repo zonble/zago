@@ -123,7 +123,26 @@ public final class DirectoryBuffer: TextBuffer {
                 fileName = String(fileName.dropLast())
             }
             let targetFilePath = (directoryPath as NSString).appendingPathComponent(fileName)
+            if isBinaryFile(at: targetFilePath) {
+                editor.setStatusMessage(L10n["status.cannot_open_binary_file"])
+                return true
+            }
             editor.openBuffer(path: targetFilePath)
+            return true
+        }
+
+        return false
+    }
+
+    private func isBinaryFile(at path: String) -> Bool {
+        guard let fileHandle = FileHandle(forReadingAtPath: path) else { return false }
+        defer { fileHandle.closeFile() }
+
+        let data = fileHandle.readData(ofLength: 8192)
+        if data.isEmpty { return false }
+
+        if data.contains(0) { return true }
+        if String(data: data, encoding: .utf8) == nil {
             return true
         }
 
@@ -158,10 +177,29 @@ extension Editor {
         }
 
         var isDir: ObjCBool = false
-        if FileManager.default.fileExists(atPath: resolvedPath, isDirectory: &isDir), isDir.boolValue {
-            openNewBuffer(filePath: resolvedPath)
-        } else {
+        guard FileManager.default.fileExists(atPath: resolvedPath, isDirectory: &isDir), isDir.boolValue else {
             setStatusMessage(L10n["status.no_such_buffer"])
+            return
         }
+
+        // 1. If current active buffer is ALREADY a DirectoryBuffer for resolvedPath: reload in place
+        if let dirBuffer = buffer as? DirectoryBuffer, dirBuffer.directoryPath == resolvedPath {
+            dirBuffer.loadDirectory(at: resolvedPath)
+            startFileWatcherForCurrentBuffer()
+            return
+        }
+
+        // 2. If another open buffer is ALREADY a DirectoryBuffer for resolvedPath: switch to it
+        if let existingIndex = buffers.firstIndex(where: { ($0 as? DirectoryBuffer)?.directoryPath == resolvedPath }) {
+            currentBufferIndex = existingIndex
+            (buffers[existingIndex] as? DirectoryBuffer)?.loadDirectory(at: resolvedPath)
+            topVLineIndex = 0
+            clearActiveMark()
+            startFileWatcherForCurrentBuffer()
+            return
+        }
+
+        // 3. Otherwise open new DirectoryBuffer
+        openNewBuffer(filePath: resolvedPath)
     }
 }

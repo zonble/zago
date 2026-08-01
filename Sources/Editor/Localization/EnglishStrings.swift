@@ -39,6 +39,7 @@ public struct EnglishStrings {
         "prompt.fill_text": "Fill with: ",
         "prompt.table_dimensions": "Table rows cols width: ",
         "status.directory_buffer_readonly": "Directory buffer is read-only",
+        "status.cannot_open_binary_file": "Cannot open binary file",
         "prompt.goto_line": "Enter line number, column number: ",
         "textview.footer": "  Up/Down: scroll   PgUp/PgDn: page   Home/End: jump   Any other key: close",
         "logoview.reference_title": "  zago - LOGO Reference",

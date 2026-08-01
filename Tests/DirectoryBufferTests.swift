@@ -77,15 +77,19 @@ import Foundation
     @Test func testDirAndLsCommandBarCommands() throws {
         let tempDir = FileManager.default.temporaryDirectory
         let editor = Editor()
+        let initialBufCount = editor.buffers.count
 
         let res = editor.commandBarRegistry.dispatch("dir \(tempDir.path)", editor: editor)
         #expect(res == .handled)
         #expect(editor.buffer is DirectoryBuffer)
         #expect(editor.buffer.isDirectoryBuffer == true)
+        #expect(editor.buffers.count == initialBufCount + 1)
 
+        // Running dir again while already in same directory buffer reuses buffer instead of creating duplicate
         let res2 = editor.commandBarRegistry.dispatch("ls \(tempDir.path)", editor: editor)
         #expect(res2 == .handled)
         #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffers.count == initialBufCount + 1)
     }
 
     @Test func testDirectoryBufferReadOnlyAndLogoBlock() throws {
@@ -109,5 +113,38 @@ import Foundation
         // Evaluating LOGO in DirectoryBuffer is blocked
         editor.evalLogoCode()
         #expect(editor.statusMessage == L10n["status.directory_buffer_readonly"])
+    }
+
+    @Test func testDirectoryBufferBinaryFileBlockingAndMenuVisibility() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_bin_\(UUID().uuidString)")
+        let binFile = workDir.appendingPathComponent("app.bin")
+
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        let binaryData = Data([0x00, 0x01, 0x02, 0xFF, 0xFE])
+        try binaryData.write(to: binFile)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let editor = Editor(filePath: workDir.path)
+        #expect(editor.buffer is DirectoryBuffer)
+
+        let dirBuffer = editor.buffer as! DirectoryBuffer
+        if let idx = dirBuffer.lines.firstIndex(where: { $0.contains("app.bin") }) {
+            dirBuffer.lineIndex = idx
+            dirBuffer.activateEntry(editor: editor)
+            #expect(editor.statusMessage == L10n["status.cannot_open_binary_file"])
+            #expect(editor.buffer.isDirectoryBuffer == true)
+        } else {
+            Issue.record("Expected app.bin entry in directory buffer")
+        }
+
+        // Verify mode toggle menu items are hidden in Directory Mode
+        editor.menuBar.updateCategories(for: editor)
+        let editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+        #expect(editCategory != nil)
+        let modeItems = editCategory?.items.filter {
+            ["menu.edit.text_editing_mode", "menu.edit.canvas_mode", "menu.edit.table_editing_mode"].contains($0.titleKey)
+        }
+        #expect(modeItems?.isEmpty == true)
     }
 }

@@ -20,7 +20,8 @@ public final class Renderer {
 
     /// Renders the complete screen output ANSI string for given terminal rows and cols dimensions.
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
-        let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
+        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
         let gutterWidth = showGutter ? 5 : 0
         let textWidth = max(10, cols - gutterWidth)
@@ -62,7 +63,7 @@ public final class Renderer {
             editor: editor, cols: cols)
 
         // 2. WordStar Ruler Bar Component (Optional)
-        if editor.displayConfig.showRuler {
+        if showRuler {
             output += renderRulerBar(
                 editor: editor,
                 textWidth: textWidth,

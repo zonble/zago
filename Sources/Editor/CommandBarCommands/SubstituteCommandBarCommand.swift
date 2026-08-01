@@ -7,6 +7,10 @@ public struct SubstituteCommandBarCommand: CommandBarCommand {
 
     public init() {}
 
+    public func isAvailable(in editor: Editor) -> Bool {
+        !editor.buffer.isReadOnly
+    }
+
     public func match(_ input: CommandBarInput) -> Bool {
         let text = input.text
         if text.hasPrefix("%s") {

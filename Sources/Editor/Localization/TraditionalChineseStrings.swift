@@ -38,6 +38,8 @@ public struct TraditionalChineseStrings {
         "prompt.logo": "❯ ",
         "prompt.fill_text": "填滿文字：",
         "prompt.table_dimensions": "表格列 欄 寬：",
+        "status.directory_buffer_readonly": "目錄 Buffer 為唯讀狀態",
+        "status.cannot_open_binary_file": "無法開啟非文字檔 (Binary File)",
         "prompt.goto_line": "請輸入列號與欄號：",
         "textview.footer": "  上/下：捲動   PgUp/PgDn：翻頁   Home/End：跳轉   其他按鍵：關閉",
         "logoview.reference_title": "  zago - LOGO 指令參考",

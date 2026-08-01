@@ -39,6 +39,7 @@ extension DiagramSnippets {
 
     /// Determines if the current buffer context warrants showing the Diagram menu in MenuBar.
     public static func shouldShowDiagramMenu(for editor: Editor) -> Bool {
+        guard editor.buffer.allowsLogoExecution else { return false }
         let ext = (editor.buffer.filePath as NSString?)?.pathExtension.lowercased() ?? ""
         if DiagramEngine.engine(forFileExtension: ext) != nil {
             return true
