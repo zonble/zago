@@ -105,6 +105,24 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 0)
 }
 
+@Test func testCanvasModeUndoRestoresSparseVisualCursor() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 8
+    editor.syncCanvasCursorToBuffer()
+
+    editor.processKey(.char("x"))
+    #expect(editor.buffer.lines[0] == "        x")
+    #expect(editor.canvasVisualColumn == 9)
+
+    editor.performUndo()
+
+    #expect(editor.buffer.lines[0] == "")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 8)
+    #expect(editor.buffer.columnIndex == 0)
+}
+
 @Test func testEditorUndoStack() throws {
     let editor = Editor()
     #expect(editor.buffer.lines[0] == "")
