@@ -94,7 +94,9 @@ struct Zago: ParsableCommand {
                 print(output)
                 return
             } catch {
-                fputs("Error reading script file '\(scriptPath)': \(error.localizedDescription)\n", stderr)
+                if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(using: .utf8) {
+                    FileHandle.standardError.write(data)
+                }
                 throw ExitCode.failure
             }
         }
