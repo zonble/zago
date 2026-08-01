@@ -63,8 +63,9 @@ extension LogoEngine {
         case .ascii:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
-            if let first = v.utf8.first {
-                return "\(first)"
+            let cleanStr = unquote(v)
+            if let firstScalar = cleanStr.unicodeScalars.first {
+                return "\(firstScalar.value)"
             }
             return "0"
 

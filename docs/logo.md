@@ -579,8 +579,8 @@ TYPE ITEM 2 :cells
 | `PUSH` | - | `PUSH val list` | Pushes element to list variable | `PUSH 1 "myList"` |
 | `POP` | - | `POP list` | Pops element from list variable | `POP "myList"` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
-| `ASCII` | - | `ASCII char` | Returns ASCII code integer of character | `ASCII "A"` |
-| `CHAR` | - | `CHAR code` | Returns character string for ASCII code | `CHAR 65` |
+| `ASCII` / `ORD` | `ORD` | `ASCII char` \| `ORD char` | Returns Unicode/ASCII scalar code integer of character | `ASCII "A"`, `ORD "字"` |
+| `CHAR` / `CHR` | `CHR` | `CHAR code` \| `CHR code` | Returns character string for Unicode/ASCII code integer | `CHAR 65`, `CHR 23383` |
 | `UPPERCASE` | - | `UPPERCASE str` | Converts string to uppercase | `UPPERCASE "hello"` |
 | `LOWERCASE` | - | `LOWERCASE str` | Converts string to lowercase | `LOWERCASE "HELLO"` |
 

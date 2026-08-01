@@ -1450,6 +1450,31 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.statusMessage == "\"123")
 }
 
+@Test func testAsciiOrdCharChrPrimitives() throws {
+    let editor = Editor()
+
+    // 1. ASCII / ORD ASCII char 'A' -> 65
+    editor.runLogoScript("SHOW ASCII \"A\"")
+    #expect(editor.statusMessage == "65")
+
+    editor.runLogoScript("SHOW ORD \"A\"")
+    #expect(editor.statusMessage == "65")
+
+    // 2. ASCII / ORD CJK char '你' (U+4F60 -> 20320)
+    editor.runLogoScript("SHOW ASCII \"你\"")
+    #expect(editor.statusMessage == "20320")
+
+    editor.runLogoScript("SHOW ORD \"你\"")
+    #expect(editor.statusMessage == "20320")
+
+    // 3. CHAR / CHR 20320 -> '你'
+    editor.runLogoScript("SHOW CHAR 20320")
+    #expect(editor.statusMessage == "你")
+
+    editor.runLogoScript("SHOW CHR 65")
+    #expect(editor.statusMessage == "A")
+}
+
 @Test func testSetFirstAndSetBFPrimitives() throws {
     let editor = Editor()
 
