@@ -75,6 +75,7 @@ public final class CommandBarRegistry {
         registry.register(QuitCommandBarCommand())
         registry.register(SaveExitCommandBarCommand())
         registry.register(OpenCommandBarCommand())
+        registry.register(DirCommandBarCommand())
         registry.register(WriteCommandBarCommand())
         registry.register(SettingCommandBarCommand())
         registry.register(BufferCommandBarCommand())

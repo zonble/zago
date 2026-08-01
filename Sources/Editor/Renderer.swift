@@ -21,7 +21,8 @@ public final class Renderer {
     /// Renders the complete screen output ANSI string for given terminal rows and cols dimensions.
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
-        let gutterWidth = editor.displayConfig.showLineNumbers ? 5 : 0
+        let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
+        let gutterWidth = showGutter ? 5 : 0
         let textWidth = max(10, cols - gutterWidth)
 
         // Compute Virtual Lines (wrapped visual sub-lines)
@@ -222,7 +223,7 @@ public final class Renderer {
                 let isFirstSubLine = (vLine.subLineIndex == 0)
 
                 // Render Gutter (Line Number or Softwrap Indicator ↳)
-                if editor.displayConfig.showLineNumbers {
+                if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
                     let lineNumStr = renderLineNumberGutter(
                         lineNumber: vLine.bufferLineIndex + 1,
                         isFirstSubLine: isFirstSubLine,

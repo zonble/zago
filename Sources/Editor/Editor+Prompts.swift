@@ -46,6 +46,10 @@ extension Editor {
             return
         }
 
+        if buffer.handleKey(key, editor: self) {
+            return
+        }
+
         if processTableModeKey(key) {
             return
         }

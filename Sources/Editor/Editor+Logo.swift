@@ -319,6 +319,11 @@ extension Editor {
             script = extractCurrentLineOrBlock()
         }
 
+        guard buffer.allowsLogoExecution else {
+            setStatusMessage(L10n["status.directory_buffer_readonly"])
+            return
+        }
+
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 

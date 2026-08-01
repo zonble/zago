@@ -23,7 +23,7 @@ public enum SyntaxTokenType {
 }
 
 /// Represents a syntax rule with regex pattern and token type.
-public struct SyntaxRule {
+public struct SyntaxRule: @unchecked Sendable {
     public let pattern: NSRegularExpression
     public let tokenType: SyntaxTokenType
 
@@ -35,7 +35,7 @@ public struct SyntaxRule {
 }
 
 /// Language syntax specification containing file extension matchers and rules.
-public struct LanguageSyntax {
+public struct LanguageSyntax: Sendable {
     public let name: String
     public let extensions: [String]
     public let rules: [SyntaxRule]
@@ -286,6 +286,9 @@ public final class SyntaxHighlighter {
     /// Determines LanguageSyntax for a specific buffer line, accounting for Markdown/RST/Org-mode embedded code blocks.
     public func getSyntaxForLine(editor: Editor, bufferLineIndex: Int) -> LanguageSyntax? {
         guard editor.displayConfig.enableSyntaxHighlight else { return nil }
+        if editor.buffer.isDirectoryBuffer {
+            return DirectorySyntax.syntax
+        }
         let filePath = editor.buffer.filePath
         let defaultSyntax = detectLanguage(for: filePath)
 

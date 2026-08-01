@@ -123,7 +123,7 @@ public final class Editor {
         if filePaths.isEmpty {
             self.buffers = [TextBuffer()]
         } else {
-            self.buffers = filePaths.map { TextBuffer(filePath: $0) }
+            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0) }
         }
         self.currentBufferIndex = 0
 
@@ -193,7 +193,7 @@ public final class Editor {
 
     /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
-        let newBuf = TextBuffer(filePath: filePath)
+        let newBuf = TextBuffer.makeBuffer(filePath: filePath)
         buffers.append(newBuf)
         currentBufferIndex = buffers.count - 1
         topVLineIndex = 0

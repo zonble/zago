@@ -2,7 +2,7 @@ import Foundation
 import TextMetrics
 
 /// Manages text buffer lines, file I/O, and cursor operations.
-public final class TextBuffer {
+open class TextBuffer {
     public var lines: [String] = [""]
     public var filePath: String?
     public var isModified: Bool = false
@@ -13,11 +13,31 @@ public final class TextBuffer {
     public var lineIndex: Int = 0
     public var columnIndex: Int = 0
 
+    open var isReadOnly: Bool { false }
+    open var allowsLogoExecution: Bool { true }
+    open var isDirectoryBuffer: Bool { false }
+
     public init(filePath: String? = nil) {
         self.filePath = filePath
         if let path = filePath {
             loadFile(at: path)
         }
+    }
+
+    /// Factory method to create appropriate TextBuffer or DirectoryBuffer.
+    public static func makeBuffer(filePath: String?) -> TextBuffer {
+        guard let path = filePath, !path.isEmpty else { return TextBuffer() }
+        let expandedPath = NSString(string: path).expandingTildeInPath
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: expandedPath, isDirectory: &isDir), isDir.boolValue {
+            return DirectoryBuffer(directoryPath: expandedPath)
+        }
+        return TextBuffer(filePath: expandedPath)
+    }
+
+    /// Key handler for specialized buffer types. Returns true if handled.
+    open func handleKey(_ key: Key, editor: Editor) -> Bool {
+        return false
     }
 
     /// Loads text from a file path.
