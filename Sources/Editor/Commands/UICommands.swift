@@ -76,7 +76,7 @@ public struct ShowHelpCommand: Command {
             terminal: editor.terminal,
             title: L10n["helpview.title"],
             lines: HelpContent.lines(),
-            footer: L10n["helpview.footer"]
+            footer: L10n["textview.footer"]
         ).show()
     }
 }

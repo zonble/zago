@@ -196,6 +196,19 @@ import TextMetrics
 
     let wrapMarkerRuler = editor.renderer.generateWordStarRuler(width: 20, startColumn: 1, wrapColumn: 10)
     #expect(wrapMarkerRuler == "----!----<----!----2")
+
+    editor.layoutEngine.setWrapColumn(10)
+    let renderedRuler = editor.renderer.renderRulerBar(
+        editor: editor,
+        textWidth: 20,
+        gutterWidth: 0,
+        cols: 20,
+        dropdownStartCol: 0,
+        dropdownBoxWidth: 0,
+        dropdownBoxLines: []
+    )
+    #expect(renderedRuler.contains("\u{1B}[90m"))
+    #expect(renderedRuler.contains("\u{1B}[1;33m<\u{1B}[90m"))
 }
 
 @Test func testScreenRenderLayoutAndHeight() throws {
@@ -512,6 +525,10 @@ import TextMetrics
 }
 
 @Test func testIdleStatusLineModeIndicators() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .en
+
     let editor = Editor()
     let renderer = editor.renderer
 
@@ -520,12 +537,19 @@ import TextMetrics
     editor.switchToCanvasMode()
     let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(canvasStatus.contains("CANVAS"))
+    #expect(canvasStatus.contains("(M+V to exit)"))
     #expect(!canvasStatus.contains("[ Canvas Mode ]"))
 
     editor.overlayMode = .none
     editor.isTableModeActive = true
     let tableStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(tableStatus.contains("CANVAS | TABLE"))
+
+    L10n.currentLanguage = .zh_TW
+    let localizedStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
+    #expect(localizedStatus.contains("畫布 | 表格"))
+    #expect(localizedStatus.contains("(M+V 退出)"))
+    #expect(!localizedStatus.contains("CANVAS | TABLE"))
 }
 
 @Test func testRendererModularComponents() throws {

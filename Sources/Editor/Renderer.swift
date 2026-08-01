@@ -193,7 +193,8 @@ public final class Renderer {
             )
             lineStr += sliced + "\r\n"
         } else {
-            lineStr += "\u{1B}[90m\(String(repeating: " ", count: gutterWidth))\(rulerStr)\u{1B}[0m\r\n"
+            let styledRulerStr = highlightWrapColumnMarker(in: rulerStr)
+            lineStr += "\u{1B}[90m\(String(repeating: " ", count: gutterWidth))\(styledRulerStr)\u{1B}[0m\r\n"
         }
         return lineStr
     }
@@ -396,7 +397,7 @@ public final class Renderer {
         } else if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
             activeStatus = editor.statusMessage
         } else if editor.baseMode == .canvas {
-            activeStatus = "(M+V to exit)"
+            activeStatus = L10n["status.canvas_mode_hint"]
         } else {
             activeStatus = ""
         }
@@ -766,6 +767,10 @@ public final class Renderer {
             }
         }
         return result
+    }
+
+    private func highlightWrapColumnMarker(in rulerStr: String) -> String {
+        rulerStr.replacingOccurrences(of: "<", with: "\u{1B}[1;33m<\u{1B}[90m")
     }
 
     /// Slices line text (including ANSI syntax highlight sequences) cleanly to insert a 2D dropdown box segment.

@@ -641,6 +641,9 @@ import Testing
     #expect(L10n.defaultBorder("Round") == "[ Default Border: Round ]")
     #expect(L10n.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
     #expect(L10n["status.table_mode_exited"] == "[ Table Mode Exited ]")
+    #expect(L10n["status.canvas_mode_hint"] == "(M+V to exit)")
+    #expect(L10n["mode.canvas"] == "CANVAS")
+    #expect(L10n["mode.table"] == "TABLE")
 
     L10n.currentLanguage = .zh_TW
     #expect(L10n.helpGetHelp == "輔助說明")
@@ -663,6 +666,9 @@ import Testing
     #expect(L10n.defaultBorder("Round") == "[ 預設框線：Round ]")
     #expect(L10n.disabledInTableMode("GOTO") == "[ 表格模式下停用 GOTO ]")
     #expect(L10n["status.table_mode_exited"] == "[ 已退出表格模式 ]")
+    #expect(L10n["status.canvas_mode_hint"] == "(M+V 退出)")
+    #expect(L10n["mode.canvas"] == "畫布")
+    #expect(L10n["mode.table"] == "表格")
     #expect(L10n["helpview.sec_logo"] == "  LOGO 巨集語言與海龜繪圖指令：")
     #expect(L10n["helpview.logo_6"].contains("海龜繪圖"))
     #expect(L10n["menu.help.logo_reference"] == "LOGO 指令參考")

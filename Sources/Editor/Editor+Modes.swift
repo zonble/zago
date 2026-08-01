@@ -54,10 +54,10 @@ extension Editor {
     func modeIndicatorText() -> String {
         var labels: [String] = []
         if baseMode == .canvas {
-            labels.append("CANVAS")
+            labels.append(L10n["mode.canvas"])
         }
         if isTableModeActive {
-            labels.append("TABLE")
+            labels.append(L10n["mode.table"])
         }
         return labels.joined(separator: " | ")
     }
