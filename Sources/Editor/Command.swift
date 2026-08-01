@@ -34,6 +34,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 
     // Search & Cursor
     case searchWhereIs = "search.whereis"
+    case documentOpenLink = "document.open_link"
     case cursorGotoLine = "cursor.goto_line"
     case screenRefresh = "screen.refresh"
     case cursorPos = "cursor.pos"

@@ -14,6 +14,19 @@ public struct WhereIsCommand: Command {
     }
 }
 
+public struct OpenDocumentLinkCommand: Command {
+    public let id: CommandID = .documentOpenLink
+    public let name = "Open Link"
+    public let description = "Open document link at cursor"
+    public let keys: [Key] = [.alt("o"), .alt("O")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.openDocumentLinkAtCursor()
+    }
+}
+
 public struct GotoLineCommand: Command {
     public let id: CommandID = .cursorGotoLine
     public let name = "Go To Line"

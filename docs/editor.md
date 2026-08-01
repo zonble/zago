@@ -17,6 +17,7 @@
 | `^Z` | Undo |
 | `^G` | Cancel active selection or canvas mark |
 | `F1` | Open menu bar |
+| `M+O` | Open Markdown, Org, reStructuredText, or AsciiDoc document link at cursor |
 | `M+V` | Toggle canvas mode |
 | `M+T` | Toggle table mode |
 

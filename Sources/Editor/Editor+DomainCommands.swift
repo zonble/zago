@@ -71,6 +71,39 @@ extension Editor {
         }
     }
 
+    public func openDocumentLinkAtCursor() {
+        guard !buffer.isDirectoryBuffer else {
+            setStatusMessage(L10n["status.no_document_link"])
+            return
+        }
+
+        let line = buffer.lines[buffer.lineIndex]
+        guard let link = DocumentLinkParser.link(atColumn: buffer.columnIndex, in: line),
+            let path = DocumentLinkParser.resolvedPath(target: link.target, currentFilePath: buffer.filePath)
+        else {
+            setStatusMessage(L10n["status.no_document_link"])
+            return
+        }
+
+        if isCurrentDocumentPath(path) {
+            setStatusMessage(L10n["status.document_link_same_file"])
+            return
+        }
+
+        openBuffer(path: path)
+        setStatusMessage(String(format: L10n["status.opened_document_link"], path))
+    }
+
+    private func isCurrentDocumentPath(_ path: String) -> Bool {
+        guard let currentPath = buffer.filePath, !currentPath.isEmpty else { return false }
+        return standardizedDocumentPath(currentPath) == standardizedDocumentPath(path)
+    }
+
+    private func standardizedDocumentPath(_ path: String) -> String {
+        let expanded = NSString(string: path).expandingTildeInPath
+        return URL(fileURLWithPath: expanded).standardizedFileURL.path
+    }
+
     public func writeBuffer(path: String) {
         doSave(to: path)
     }

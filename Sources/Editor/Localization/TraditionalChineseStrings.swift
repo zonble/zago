@@ -18,6 +18,7 @@ public struct TraditionalChineseStrings {
         "help.next_pg":    "前往下頁",
         "help.uncut_text": "貼上文字",
         "help.to_spell":   "拼字檢查",
+        "help.open_link":  "開啟連結",
         "help.table_exit": "離開表格",
         "help.next_cell":  "下個儲存格",
         "help.prev_cell":  "上個儲存格",
@@ -264,6 +265,9 @@ public struct TraditionalChineseStrings {
         "status.cannot_shrink_height": "[ 無法再縮小列高 ]",
         "status.cannot_expand_width_collision": "[ 無法再增加欄寬（已碰觸鄰近圖形）]",
         "status.replaced_occurrences": "[ 已替換 %d 處 ]",
+        "status.no_document_link": "[ 游標所在位置沒有文件連結 ]",
+        "status.document_link_same_file": "[ 連結指向目前檔案 ]",
+        "status.opened_document_link": "[ 已開啟 %@ ]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 
@@ -289,10 +293,11 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
         "helpview.search_1": "    ^W / F6            文字搜尋（不區分大小寫）",
-        "helpview.search_2": "    ^J                 重排與自動對齊當前段落（中英文混排）",
+        "helpview.search_2": "    M+O                開啟游標所在的 Markdown/Org/rst/AsciiDoc 文件連結",
         "helpview.search_3": "    ^L                 重新繪製 Terminal 畫面",
         "helpview.search_4": "    ^C / F11           顯示當前游標與行列位置資訊",
         "helpview.search_5": "    ^T / F12           啟動拼字檢查工具",
+        "helpview.search_6": "    ^J                 重排與自動對齊當前段落（中英文混排）",
 
         "helpview.sec_file": "  檔案與 Buffer 操作指令：",
         "helpview.file_1": "    ^S                 儲存目前檔案；^O / F3 WriteOut (選擇路徑)",
@@ -363,6 +368,7 @@ public struct TraditionalChineseStrings {
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^BS",
         "menu.edit.search": "搜尋文字…\t^W",
+        "menu.edit.open_link": "開啟連結\tM+O",
         "menu.edit.spell": "拼字檢查…\t^T",
         "menu.edit.goto_line": "跳轉至指定行…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",

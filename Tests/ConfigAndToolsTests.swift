@@ -43,11 +43,13 @@ import Testing
     let editCategory = menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
     let cutIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.cut" })
     let searchIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.search" })
+    let openLinkItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.open_link" })
     let justifyIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.justify" })
     let textModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.text_editing_mode" })
     let canvasModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.canvas_mode" })
     let tableEditingModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.table_editing_mode" })
     #expect(cutIndex != nil && searchIndex != nil && justifyIndex != nil)
+    #expect(openLinkItem?.commandId == .documentOpenLink)
     #expect(cutIndex! < searchIndex! && searchIndex! < justifyIndex!)
     #expect(textModeItem?.commandId == .textMode)
     #expect(canvasModeItem?.commandId == .canvasToggle)
@@ -662,6 +664,8 @@ import Testing
     #expect(L10n["help.complete"] == "Complete")
     #expect(L10n["help.mark_block"] == "Mark Block")
     #expect(L10n["help.uncut_block"] == "UnCut Block")
+    #expect(L10n["help.open_link"] == "Open Link")
+    #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
 
     #expect(L10n.defaultBorder("Round") == "[ Default Border: Round ]")
     #expect(L10n.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
@@ -702,6 +706,8 @@ import Testing
     #expect(L10n["help.complete"] == "補完")
     #expect(L10n["help.mark_block"] == "標記區塊")
     #expect(L10n["help.uncut_block"] == "貼上區塊")
+    #expect(L10n["help.open_link"] == "開啟連結")
+    #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
 }
 
 @Test func testLogoReferenceAndWorkspaceContent() throws {

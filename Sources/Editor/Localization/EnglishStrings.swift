@@ -18,6 +18,7 @@ public struct EnglishStrings {
         "help.next_pg":    "Next Pg",
         "help.uncut_text": "UnCut Text",
         "help.to_spell":   "To Spell",
+        "help.open_link":  "Open Link",
         "help.table_exit": "Exit Table",
         "help.next_cell":  "Next Cell",
         "help.prev_cell":  "Prev Cell",
@@ -264,6 +265,9 @@ public struct EnglishStrings {
         "status.cannot_shrink_height": "[ Cannot shrink row height ]",
         "status.cannot_expand_width_collision": "[ Cannot expand width (adjacent box collision) ]",
         "status.replaced_occurrences": "[ Replaced %d occurrence(s) ]",
+        "status.no_document_link": "[ No document link at cursor ]",
+        "status.document_link_same_file": "[ Link points to current file ]",
+        "status.opened_document_link": "[ Opened %@ ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 
@@ -289,10 +293,11 @@ public struct EnglishStrings {
 
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
         "helpview.search_1": "    ^W / F6            Where Is (case-insensitive text search)",
-        "helpview.search_2": "    ^J                 Justify (format) current paragraph (CJK/Latin reflow)",
+        "helpview.search_2": "    M+O                Open Markdown/Org/rst/AsciiDoc document link at cursor",
         "helpview.search_3": "    ^L                 Refresh screen display",
         "helpview.search_4": "    ^C / F11           Display current cursor position info",
         "helpview.search_5": "    ^T / F12           Spell checker status",
+        "helpview.search_6": "    ^J                 Justify (format) current paragraph (CJK/Latin reflow)",
 
         "helpview.sec_file": "  FILE & BUFFER OPERATIONS:",
         "helpview.file_1": "    ^S                 Save current file; ^O / F3 WriteOut (choose path)",
@@ -363,6 +368,7 @@ public struct EnglishStrings {
         "menu.edit.paste": "UnCut (Paste)\t^U",
         "menu.edit.delete_line": "Delete Line\t^BS",
         "menu.edit.search": "WhereIs (Search)...\t^W",
+        "menu.edit.open_link": "Open Link\tM+O",
         "menu.edit.spell": "Spell Checker...\t^T",
         "menu.edit.goto_line": "Goto Line...\t^/",
         "menu.edit.justify": "Justify Paragraph\t^J",

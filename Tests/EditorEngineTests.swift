@@ -158,6 +158,76 @@ import TextMetrics
     #expect(executed == true)
 }
 
+@Test func testDocumentLinkParserSupportsProseFormats() throws {
+    let markdown = DocumentLinkParser.link(atColumn: 8, in: "See [test](test.md#section)")
+    #expect(markdown?.target == "test.md#section")
+    #expect(DocumentLinkParser.localPathTarget(from: markdown?.target ?? "") == "test.md")
+
+    let org = DocumentLinkParser.link(atColumn: 4, in: "[[file:notes.org][notes]]")
+    #expect(org?.target == "file:notes.org")
+    #expect(DocumentLinkParser.localPathTarget(from: org?.target ?? "") == "notes.org")
+
+    let rst = DocumentLinkParser.link(atColumn: 3, in: "`Spec <docs/spec.rst>`_")
+    #expect(rst?.target == "docs/spec.rst")
+
+    let asciiDocLink = DocumentLinkParser.link(atColumn: 2, in: "xref:chapters/intro.adoc[Intro]")
+    #expect(asciiDocLink?.target == "chapters/intro.adoc")
+
+    let asciiDocInclude = DocumentLinkParser.link(atColumn: 2, in: "include::partials/setup.asciidoc[]")
+    #expect(asciiDocInclude?.target == "partials/setup.asciidoc")
+
+    #expect(DocumentLinkParser.localPathTarget(from: "https://example.com/test.md") == nil)
+    #expect(DocumentLinkParser.localPathTarget(from: "#local-anchor") == nil)
+}
+
+@Test func testOpenDocumentLinkCommandOpensRelativeMarkdownFile() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("zago_document_link_\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let indexPath = directory.appendingPathComponent("index.md").path
+    let targetPath = directory.appendingPathComponent("test.md").path
+    try "target".write(toFile: targetPath, atomically: true, encoding: .utf8)
+
+    let editor = Editor(filePath: indexPath)
+    editor.buffer.lines = ["See [test](test.md)"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 6
+
+    let handled = editor.commandRegistry.dispatch(key: .alt("o"), editor: editor)
+
+    #expect(handled == true)
+    #expect(editor.buffer.filePath == targetPath)
+    #expect(editor.buffer.lines.first == "target")
+}
+
+@Test func testOpenDocumentLinkCommandDoesNotReopenCurrentFile() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("zago_same_document_link_\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let indexPath = directory.appendingPathComponent("index.md").path
+    try "original".write(toFile: indexPath, atomically: true, encoding: .utf8)
+
+    let editor = Editor(filePath: indexPath)
+    editor.buffer.lines = ["See [this](./index.md#section)", "unchanged"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 6
+    editor.topVLineIndex = 3
+
+    let handled = editor.commandRegistry.dispatch(key: .alt("o"), editor: editor)
+
+    #expect(handled == true)
+    #expect(editor.buffers.count == 1)
+    #expect(editor.currentBufferIndex == 0)
+    #expect(editor.buffer.filePath == indexPath)
+    #expect(editor.buffer.lines == ["See [this](./index.md#section)", "unchanged"])
+    #expect(editor.topVLineIndex == 3)
+    #expect(editor.statusMessage == L10n["status.document_link_same_file"])
+}
+
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test.txt").path
     defer {

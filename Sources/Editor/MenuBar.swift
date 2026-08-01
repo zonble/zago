@@ -87,6 +87,7 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),
                     MenuItem(titleKey: "menu.edit.delete_line", hotkeyChar: "d", commandId: .editDeleteLine),
                     MenuItem(titleKey: "menu.edit.search", hotkeyChar: "s", commandId: .searchWhereIs),
+                    MenuItem(titleKey: "menu.edit.open_link", hotkeyChar: "l", commandId: .documentOpenLink),
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
