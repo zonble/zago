@@ -228,6 +228,45 @@ import TextMetrics
     #expect(linesWithRuler.count == 24)
 }
 
+@Test func testLocalizedHelpBarPromptAndCanvasLabels() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+
+    let renderer = Renderer()
+
+    L10n.currentLanguage = .zh_TW
+    let promptHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
+    #expect(promptHelpBar.contains("確認"))
+    #expect(promptHelpBar.contains("取消"))
+    #expect(promptHelpBar.contains("清除"))
+    #expect(promptHelpBar.contains("移動"))
+    #expect(promptHelpBar.contains("跳轉"))
+    #expect(!promptHelpBar.contains("Confirm"))
+    #expect(!promptHelpBar.contains("Cancel"))
+
+    let canvasEditor = Editor(language: .zh_TW)
+    canvasEditor.switchToCanvasMode()
+    let canvasHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: canvasEditor)
+    #expect(canvasHelpBar.contains("標記區塊"))
+    #expect(canvasHelpBar.contains("剪下區塊"))
+    #expect(canvasHelpBar.contains("複製區塊"))
+    #expect(canvasHelpBar.contains("貼上區塊"))
+    #expect(canvasHelpBar.contains("線段"))
+    #expect(canvasHelpBar.contains("箭頭"))
+    #expect(!canvasHelpBar.contains("Mark Block"))
+    #expect(!canvasHelpBar.contains("Copy Block"))
+
+    let confirmHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    #expect(confirmHelpBar.contains("是"))
+    #expect(confirmHelpBar.contains("否"))
+
+    let logoEditor = Editor(language: .zh_TW)
+    logoEditor.promptCompletionText = "SET wrap"
+    let logoHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }), editor: logoEditor)
+    #expect(logoHelpBar.contains("補完"))
+    #expect(logoHelpBar.contains("確認"))
+}
+
 @Test func testScreenRenderCanHideLineNumbers() throws {
     let editor = Editor()
     editor.buffer.lines = ["alpha", "beta"]
@@ -482,10 +521,6 @@ import TextMetrics
     let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(canvasStatus.contains("CANVAS"))
     #expect(!canvasStatus.contains("[ Canvas Mode ]"))
-
-    editor.toggleFrameMode()
-    let frameStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
-    #expect(frameStatus.contains("CANVAS | FRAME"))
 
     editor.overlayMode = .none
     editor.isTableModeActive = true

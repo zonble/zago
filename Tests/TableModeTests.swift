@@ -1158,6 +1158,16 @@ import Testing
     #expect(helpBar.contains("Tab"))
     #expect(helpBar.contains("C+⇧+←/→"))
     #expect(helpBar.contains("C+⇧+↑/↓"))
+
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .zh_TW
+    let localizedHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
+    #expect(localizedHelpBar.contains("離開表格"))
+    #expect(localizedHelpBar.contains("下個儲存格"))
+    #expect(localizedHelpBar.contains("選取文字"))
+    #expect(!localizedHelpBar.contains("Exit Table"))
+    #expect(!localizedHelpBar.contains("Select"))
 }
 
 @Test func testTableModeCtrlUPasteDoesNotCorruptBorders() throws {

@@ -139,23 +139,20 @@ import Testing
     _ = editor.commandRegistry.dispatch(id: .canvasToggle, editor: editor)
     #expect(editor.baseMode == .text)
 
-    _ = editor.commandRegistry.dispatch(id: .frameToggle, editor: editor)
-    #expect(editor.baseMode == .canvas)
-
     _ = editor.commandRegistry.dispatch(id: .textMode, editor: editor)
     #expect(editor.baseMode == .text)
     #expect(editor.overlayMode == .none)
 
-    let shapesCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.shapes" })
-    let frameItem = shapesCategory?.items.first(where: { $0.titleKey == "menu.shapes.frame_mode" })
-    #expect(frameItem?.commandId == .frameToggle)
-    #expect(frameItem?.isChecked?(editor) == false)
+    let editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    let canvasItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.canvas_mode" })
+    #expect(canvasItem?.commandId == .canvasToggle)
+    #expect(canvasItem?.isChecked?(editor) == false)
 
-    if let commandId = frameItem?.commandId {
+    if let commandId = canvasItem?.commandId {
         _ = editor.commandRegistry.dispatch(id: commandId, editor: editor)
     }
     #expect(editor.baseMode == .canvas)
-    #expect(frameItem?.isChecked?(editor) == true)
+    #expect(canvasItem?.isChecked?(editor) == true)
 }
 
 @Test func testShapeFillMenuPromptsForFillText() throws {
@@ -629,6 +626,10 @@ import Testing
     #expect(L10n["helpview.logo_6"].contains("Turtle Graphics"))
     #expect(L10n["menu.help.logo_reference"] == "LOGO Reference")
     #expect(L10n["menu.help.logo_workspace"] == "Procedures & Variables")
+    #expect(L10n["help.confirm"] == "Confirm")
+    #expect(L10n["help.complete"] == "Complete")
+    #expect(L10n["help.mark_block"] == "Mark Block")
+    #expect(L10n["help.uncut_block"] == "UnCut Block")
 
     #expect(L10n.defaultBorder("Round") == "[ Default Border: Round ]")
     #expect(L10n.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
@@ -659,6 +660,10 @@ import Testing
     #expect(L10n["helpview.logo_6"].contains("海龜繪圖"))
     #expect(L10n["menu.help.logo_reference"] == "LOGO 指令參考")
     #expect(L10n["menu.help.logo_workspace"] == "Procedures 與變數")
+    #expect(L10n["help.confirm"] == "確認")
+    #expect(L10n["help.complete"] == "補完")
+    #expect(L10n["help.mark_block"] == "標記區塊")
+    #expect(L10n["help.uncut_block"] == "貼上區塊")
 }
 
 @Test func testLogoReferenceAndWorkspaceContent() throws {

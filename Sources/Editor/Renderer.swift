@@ -442,33 +442,33 @@ public final class Renderer {
         case .logoMacro:
             if let completionText = editor?.promptCompletionText, !completionText.isEmpty {
                 helpItems1 = [("SET", completionText)]
-                helpItems2 = [("Tab", "Complete"), ("Enter", "Confirm"), ("^C", "Cancel")]
+                helpItems2 = [("Tab", L10n["help.complete"]), ("Enter", L10n["help.confirm"]), ("^C", L10n.helpCancel)]
             } else {
                 // Custom LOGO macro primitives help bar
                 helpItems1 = [
                     ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"),
                 ]
                 helpItems2 = [
-                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", "Complete"),
+                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", L10n["help.complete"]),
                 ]
             }
 
         case .confirmExitSave, .confirmExternalReload, .confirmCreateTable:
             // Y/N Exit & Confirmation prompt help bar
             helpItems1 = [
-                ("Y", "Yes"), ("^C", "Cancel"),
+                ("Y", L10n["help.yes"]), ("^C", L10n.helpCancel),
             ]
             helpItems2 = [
-                ("N", "No")
+                ("N", L10n["help.no"])
             ]
 
         case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
             // Text & File Path Input prompt help bar
             helpItems1 = [
-                ("Enter", "Confirm"), ("^C", "Cancel"), ("^U", "Clear"),
+                ("Enter", L10n["help.confirm"]), ("^C", L10n.helpCancel), ("^U", L10n["help.clear"]),
             ]
             helpItems2 = [
-                ("←/→", "Move"), ("Home/End", "Jump"),
+                ("←/→", L10n["help.move"]), ("Home/End", L10n["help.jump"]),
             ]
 
         case .none:
@@ -480,16 +480,16 @@ public final class Renderer {
                 ]
                 helpItems2 = [
                     ("^X", L10n.helpExit), ("Tab", L10n["help.next_cell"]), ("⇧+Tab", L10n["help.prev_cell"]),
-                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]), ("Esc", "Command"),
+                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]), ("Esc", L10n["help.command"]),
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^^", "Mark Block"), ("^K", "Cut Block"),
-                    ("⇧+Arrow", "Line"),
+                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^^", L10n["help.mark_block"]),
+                    ("^K", L10n["help.cut_block"]), ("⇧+Arrow", L10n["help.line"]),
                 ]
                 helpItems2 = [
-                    ("^X", L10n.helpExit), ("^W", L10n.helpWhereIs), ("M+W", "Copy Block"), ("^U", "UnCut Block"),
-                    ("^⇧+Arrow", "Arrow"),
+                    ("^X", L10n.helpExit), ("^W", L10n.helpWhereIs), ("M+W", L10n["help.copy_block"]),
+                    ("^U", L10n["help.uncut_block"]), ("^⇧+Arrow", L10n["help.arrow"]),
                 ]
             } else {
                 // Default Nano text editing help bar
