@@ -119,6 +119,19 @@ public struct EnglishStrings {
     ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
     ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
 
+  Text transforms
+    TRANSLIT transform text      Apply ICU or zago text transform
+    TRANSFORM transform text     Alias of TRANSLIT
+    TOHANS text                  Traditional Chinese to Simplified Chinese
+    TOHANT text                  Simplified Chinese to Traditional Chinese
+    TOLATIN text                 Romanize text
+    TOHIRAGANA text              Convert text to Hiragana
+    TOKATAKANA text              Convert text to Katakana
+    TOROMAJI text                Romanize Japanese text
+    Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
+                    TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
+                    TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+
   Math and logic
     SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
     REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10

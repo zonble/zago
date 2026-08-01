@@ -708,6 +708,8 @@ import Testing
     let reference = LogoReferenceContent.lines(language: .en).joined(separator: "\n")
     #expect(reference.contains("TABLE BORDER style"))
     #expect(reference.contains("PROCEDURE? name"))
+    #expect(reference.contains("TOHIRAGANA text"))
+    #expect(reference.contains("TRANSFORM.TOHANS"))
     #expect(reference.contains("All primitive aliases"))
 
     let editor = Editor()
@@ -719,6 +721,8 @@ import Testing
     let zhReference = LogoReferenceContent.lines(language: .zh_TW).joined(separator: "\n")
     #expect(zhReference.contains("LOGO 指令參考"))
     #expect(zhReference.contains("設定預設框線樣式"))
+    #expect(zhReference.contains("文字轉換"))
+    #expect(zhReference.contains("TOROMAJI text"))
 
     let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(separator: "\n")
     #expect(zhWorkspace.contains("LOGO 工作區"))

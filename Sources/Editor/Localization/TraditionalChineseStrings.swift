@@ -119,6 +119,19 @@ public struct TraditionalChineseStrings {
     ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
     ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
 
+  文字轉換
+    TRANSLIT transform text      套用 ICU 或 zago 文字轉換
+    TRANSFORM transform text     TRANSLIT 的別名
+    TOHANS text                  繁體中文轉簡體中文
+    TOHANT text                  簡體中文轉繁體中文
+    TOLATIN text                 轉為拉丁文字
+    TOHIRAGANA text              轉為平假名
+    TOKATAKANA text              轉為片假名
+    TOROMAJI text                日文轉羅馬字
+    Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
+                    TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
+                    TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+
   數學與邏輯
     SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
     REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10
