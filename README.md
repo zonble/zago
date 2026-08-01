@@ -12,7 +12,7 @@
 - **CJK & Emoji perfectionists**: Precise alignment that never breaks box borders.
 - **Terminal natives**: Fast documentation for local and SSH workflows.
 
-![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.png)
+![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
 
 ## Features
 

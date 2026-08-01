@@ -398,6 +398,14 @@ import Testing
     #expect(orgLang != nil)
     #expect(orgLang?.name == "Org-mode")
 
+    let adocLang = highlighter.detectLanguage(for: "doc.adoc")
+    #expect(adocLang != nil)
+    #expect(adocLang?.name == "AsciiDoc")
+
+    let wikiLang = highlighter.detectLanguage(for: "page.wiki")
+    #expect(wikiLang != nil)
+    #expect(wikiLang?.name == "Wiki")
+
     let logoLang = highlighter.detectLanguage(for: "script.logo")
     #expect(logoLang != nil)
     #expect(logoLang?.name == "LOGO")
@@ -458,6 +466,25 @@ import Testing
         #expect(githubRange.location != NSNotFound)
         #expect(tokens[githubRange.location] == .string)
     }
+
+    let adocLines = [
+        "= Title",
+        "[source,swift]",
+        "----",
+        "let x = 1",
+        "----"
+    ]
+    let adocEmbedded = highlighter.detectEmbeddedLanguage(in: adocLines, bufferLineIndex: 3, fileExtension: "adoc")
+    #expect(adocEmbedded?.name == "Swift")
+
+    let wikiLines = [
+        "== Section ==",
+        "<syntaxhighlight lang=\"python\">",
+        "print('hello')",
+        "</syntaxhighlight>"
+    ]
+    let wikiEmbedded = highlighter.detectEmbeddedLanguage(in: wikiLines, bufferLineIndex: 2, fileExtension: "wiki")
+    #expect(wikiEmbedded?.name == "Python")
 
     if let lang = markdownLang {
         let fenceHighlighted = highlighter.highlight(line: "```logo", syntax: lang)

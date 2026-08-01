@@ -71,6 +71,8 @@ public final class SyntaxHighlighter {
             MermaidSyntaxDefinition(),
             DotSyntaxDefinition(),
             PlantUMLSyntaxDefinition(),
+            AsciiDocSyntaxDefinition(),
+            WikiSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
@@ -275,6 +277,8 @@ public final class SyntaxHighlighter {
         case "md", "markdown": normalized = "md"
         case "rst", "rest": normalized = "rst"
         case "org": normalized = "org"
+        case "adoc", "asciidoc", "ascii": normalized = "adoc"
+        case "wiki", "mediawiki": normalized = "wiki"
         default: normalized = clean
         }
 
@@ -293,7 +297,7 @@ public final class SyntaxHighlighter {
         let defaultSyntax = detectLanguage(for: filePath)
 
         let ext = (filePath as NSString? ?? "").pathExtension.lowercased()
-        let isMarkup = ["md", "markdown", "mdown", "mkd", "rst", "rest", "org"].contains(ext)
+        let isMarkup = ["md", "markdown", "mdown", "mkd", "rst", "rest", "org", "adoc", "asciidoc", "ascii", "wiki", "mediawiki"].contains(ext)
         guard isMarkup else { return defaultSyntax }
 
         let lines = editor.buffer.lines
@@ -305,7 +309,7 @@ public final class SyntaxHighlighter {
         return defaultSyntax
     }
 
-    /// Detects embedded code block language in Markdown, RST, or Org-mode buffer up to bufferLineIndex.
+    /// Detects embedded code block language in Markdown, RST, Org-mode, AsciiDoc, or Wiki buffer up to bufferLineIndex.
     public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String) -> LanguageSyntax? {
         var activeLangName: String? = nil
         var inBlock = false
@@ -350,6 +354,56 @@ public final class SyntaxHighlighter {
             if inBlock, let langName = activeLangName {
                 let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
                 if currentLine.hasPrefix("..") {
+                    return nil
+                }
+                return findLanguage(named: langName)
+            }
+        } else if ["adoc", "asciidoc", "ascii"].contains(fileExtension) {
+            for i in 0...bufferLineIndex {
+                let line = lines[i].trimmingCharacters(in: .whitespaces)
+                if line.hasPrefix("[source") && line.contains("]") {
+                    if let start = line.firstIndex(of: ","), let end = line.firstIndex(of: "]"), start < end {
+                        let langStr = String(line[line.index(after: start)..<end]).trimmingCharacters(in: .whitespaces)
+                        activeLangName = langStr.isEmpty ? nil : langStr
+                    }
+                } else if line.hasPrefix("----") || line.hasPrefix("....") {
+                    if inBlock {
+                        inBlock = false
+                        activeLangName = nil
+                    } else if activeLangName != nil {
+                        inBlock = true
+                    }
+                }
+            }
+            if inBlock, let langName = activeLangName {
+                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
+                if currentLine.hasPrefix("----") || currentLine.hasPrefix("....") || currentLine.hasPrefix("[source") {
+                    return nil
+                }
+                return findLanguage(named: langName)
+            }
+        } else if ["wiki", "mediawiki"].contains(fileExtension) {
+            for i in 0...bufferLineIndex {
+                let line = lines[i].trimmingCharacters(in: .whitespaces).lowercased()
+                if line.contains("<syntaxhighlight") || line.contains("<source") || line.contains("<code") {
+                    if let langRange = line.range(of: "lang=\"") ?? line.range(of: "lang='") {
+                        let rest = line[langRange.upperBound...]
+                        if let quoteEnd = rest.firstIndex(where: { $0 == "\"" || $0 == "'" }) {
+                            let langStr = String(rest[..<quoteEnd]).trimmingCharacters(in: .whitespaces)
+                            activeLangName = langStr.isEmpty ? nil : langStr
+                            inBlock = true
+                        }
+                    }
+                }
+                if line.contains("</syntaxhighlight>") || line.contains("</source>") || line.contains("</code>") {
+                    inBlock = false
+                    activeLangName = nil
+                }
+            }
+            if inBlock, let langName = activeLangName {
+                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).lowercased()
+                if currentLine.contains("<syntaxhighlight") || currentLine.contains("<source") || currentLine.contains("<code") ||
+                   currentLine.contains("</syntaxhighlight>") || currentLine.contains("</source>") || currentLine.contains("</code>") {
                     return nil
                 }
                 return findLanguage(named: langName)
