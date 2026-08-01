@@ -236,7 +236,7 @@ extension Editor {
     ]
 
     @discardableResult
-    func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
+    public func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
         if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
             setStatusMessage(L10n.disabledInTableMode(blockedToken))
             return false

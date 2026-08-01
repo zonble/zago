@@ -610,3 +610,11 @@ import Testing
     #expect(codeTokens.contains(.keyword))
     #expect(codeTokens.contains(.number))
 }
+
+@Test func testHeadlessLogoScriptExecution() throws {
+    let editor = Editor()
+    editor.runLogoScript("BOX 20 4")
+    let output = editor.buffer.lines.joined(separator: "\n")
+    #expect(output.contains("┌──────────────────┐"))
+    #expect(output.contains("└──────────────────┘"))
+}

@@ -37,6 +37,16 @@ struct Zago: ParsableCommand {
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
 
+    @Option(
+        name: [.customShort("e"), .customLong("eval")],
+        help: "Execute inline LOGO code string in headless mode and print output to stdout.")
+    var eval: String?
+
+    @Option(
+        name: [.customShort("s"), .customLong("run"), .customLong("script")],
+        help: "Execute a LOGO script file in headless mode and print output to stdout.")
+    var script: String?
+
     func run() throws {
         if initConfig {
             let targetPath = files.first
@@ -62,6 +72,31 @@ struct Zago: ParsableCommand {
             }
         } else {
             selectedLang = nil
+        }
+
+        if let code = eval {
+            let editor = Editor(
+                wrapColumn: wrap, showRuler: false, enableSyntax: false, language: selectedLang)
+            editor.runLogoScript(code)
+            let output = editor.buffer.lines.joined(separator: "\n")
+            print(output)
+            return
+        }
+
+        if let scriptPath = script {
+            let fileURL = URL(fileURLWithPath: scriptPath)
+            do {
+                let code = try String(contentsOf: fileURL, encoding: .utf8)
+                let editor = Editor(
+                    wrapColumn: wrap, showRuler: false, enableSyntax: false, language: selectedLang)
+                editor.runLogoScript(code)
+                let output = editor.buffer.lines.joined(separator: "\n")
+                print(output)
+                return
+            } catch {
+                fputs("Error reading script file '\(scriptPath)': \(error.localizedDescription)\n", stderr)
+                throw ExitCode.failure
+            }
         }
 
         let editor = Editor(

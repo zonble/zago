@@ -216,6 +216,24 @@ Aliases:
 
 ---
 
+### Cursor Movement Rules for Drawing Primitives
+
+All drawing commands start drawing at the **current cursor position** `(startLine, startCol)` and automatically update the cursor after drawing:
+
+| Command | Width / Length | Height | Cursor Position After Execution |
+| :--- | :--- | :--- | :--- |
+| **`BOX` / `DRAWBOX`** | $W$ | $H$ | `(startLine + H - 1, startCol + W)`<br>*(On the box's bottom row, immediately past the right border)* |
+| **`LINE`** | $L$ | 1 | `(startLine, startCol + L)`<br>*(On the same line, immediately past the right end of the line)* |
+| **`VLINE`** | 1 | $H$ | `(startLine + H, startCol)`<br>*(One line below the bottom end of the vertical line, at the same column)* |
+| **`TABLE`** | $C \times (W + 1) + 1$ | $2R + 1$ | `(startLine + totalHeight - 1, startCol + totalWidth)`<br>*(On the table's bottom line, immediately past the right border)* |
+
+#### Example Flow
+If cursor is at `(0, 0)`:
+1. `BOX 10 3` draws a $10 \times 3$ box from `(0, 0)`. The cursor moves to `(2, 10)`.
+2. Following up with `LINE 5` draws a horizontal line from `(2, 10)` to `(2, 14)`. The cursor moves to `(2, 15)`.
+
+---
+
 ### Step 3: Creating Grid Tables (`TABLE`)
 
 `TABLE` inserts plain-text grid tables at the cursor position.
