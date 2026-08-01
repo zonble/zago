@@ -131,7 +131,6 @@ import Testing
     #expect(editor.baseMode == .text)
     #expect(editor.overlayMode == .none)
     #expect(editor.isCanvasModeActive == false)
-    #expect(editor.isFrameModeActive == false)
 
     _ = editor.commandRegistry.dispatch(id: .canvasToggle, editor: editor)
     #expect(editor.baseMode == .canvas)
@@ -142,8 +141,6 @@ import Testing
 
     _ = editor.commandRegistry.dispatch(id: .frameToggle, editor: editor)
     #expect(editor.baseMode == .canvas)
-    #expect(editor.overlayMode == .frame)
-    #expect(editor.isFrameModeActive == true)
 
     _ = editor.commandRegistry.dispatch(id: .textMode, editor: editor)
     #expect(editor.baseMode == .text)
@@ -340,7 +337,9 @@ import Testing
 }
 
 @Test func testWrapColumnMinimumIsTen() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_min_wrap_\(UUID().uuidString).serc").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "test_min_wrap_\(UUID().uuidString).serc"
+    ).path
     let sampleConfig = "set wrap 4\n"
     try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
@@ -443,7 +442,8 @@ import Testing
         #expect(aliasHighlighted.contains("\u{1B}[1;36mCLEARBUFFER"))
         #expect(aliasHighlighted.contains("\u{1B}[1;36mMODIFIED?"))
 
-        let lowercaseHighlighted = highlighter.highlight(line: "make \"i\" 1 ifelse :i > 5 [ fd 10 rt 90 ]", syntax: lang)
+        let lowercaseHighlighted = highlighter.highlight(
+            line: "make \"i\" 1 ifelse :i > 5 [ fd 10 rt 90 ]", syntax: lang)
         #expect(lowercaseHighlighted.contains("\u{1B}[1;36mmake"))
         #expect(lowercaseHighlighted.contains("\u{1B}[1;36mifelse"))
         #expect(lowercaseHighlighted.contains("\u{1B}[1;36mfd"))
@@ -541,7 +541,7 @@ import Testing
         "[source,swift]",
         "----",
         "let x = 1",
-        "----"
+        "----",
     ]
     let adocEmbedded = highlighter.detectEmbeddedLanguage(in: adocLines, bufferLineIndex: 3, fileExtension: "adoc")
     #expect(adocEmbedded?.name == "Swift")
@@ -550,7 +550,7 @@ import Testing
         "== Section ==",
         "<syntaxhighlight lang=\"python\">",
         "print('hello')",
-        "</syntaxhighlight>"
+        "</syntaxhighlight>",
     ]
     let wikiEmbedded = highlighter.detectEmbeddedLanguage(in: wikiLines, bufferLineIndex: 2, fileExtension: "wiki")
     #expect(wikiEmbedded?.name == "Python")
@@ -686,8 +686,8 @@ import Testing
     let loader = ConfigLoader()
     var config = EditorConfig()
     let configContent = """
-    set border round
-    """
+        set border round
+        """
     let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_border_config.zagorc").path
     try configContent.write(toFile: tempFile, atomically: true, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tempFile) }

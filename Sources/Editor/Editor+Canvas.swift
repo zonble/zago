@@ -220,7 +220,8 @@ extension Editor {
                 left = min(left, line.snappedVisualColumn(rawLeft, direction: .backward))
             }
             if rawRightInclusive + 1 <= lineWidth {
-                rightExclusive = max(rightExclusive, line.snappedVisualColumn(rawRightInclusive + 1, direction: .forward))
+                rightExclusive = max(
+                    rightExclusive, line.snappedVisualColumn(rawRightInclusive + 1, direction: .forward))
             }
         }
 
@@ -266,7 +267,8 @@ extension Editor {
             ensureCanvasLineExists(lineIndex)
             let line = buffer.lines[lineIndex]
             rows.append(line.visualSlice(startVisualColumn: rect.leftColumn, width: rect.width).text)
-            buffer.lines[lineIndex] = line.removingVisualColumns(start: rect.leftColumn, width: rect.width).trimmingTrailingSpaces()
+            buffer.lines[lineIndex] = line.removingVisualColumns(start: rect.leftColumn, width: rect.width)
+                .trimmingTrailingSpaces()
         }
 
         canvasBlockClipboard = CanvasBlockClipboard(width: rect.width, rows: rows)
@@ -395,17 +397,22 @@ extension Editor {
         if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .up, style: style) {
             mask |= CanvasDrawDirection.up.mask
         }
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .down, style: style) {
+        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .down, style: style)
+        {
             mask |= CanvasDrawDirection.down.mask
         }
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .left, style: style) {
+        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .left, style: style)
+        {
             mask |= CanvasDrawDirection.left.mask
         }
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .right, style: style) {
+        if adjacentCanvasLineContinues(
+            lineIndex: lineIndex, visualColumn: visualColumn, direction: .right, style: style)
+        {
             mask |= CanvasDrawDirection.right.mask
         }
 
-        writeCanvasCharacter(lineCharacter(forMask: mask, style: style), lineIndex: lineIndex, visualColumn: visualColumn)
+        writeCanvasCharacter(
+            lineCharacter(forMask: mask, style: style), lineIndex: lineIndex, visualColumn: visualColumn)
     }
 
     private func adjacentCanvasLineContinues(
@@ -471,10 +478,14 @@ extension Editor {
         case "┐", "╗", "╮": return CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
         case "└", "╚", "╰": return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
         case "┘", "╝", "╯": return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask
-        case "├", "╠": return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-        case "┤", "╣": return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
-        case "┬", "╦": return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-        case "┴", "╩": return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+        case "├", "╠":
+            return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+        case "┤", "╣":
+            return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
+        case "┬", "╦":
+            return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+        case "┴", "╩":
+            return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
         case "┼", "╬", "+": return 15
         case "→", ">": return CanvasDrawDirection.left.mask
         case "←", "<": return CanvasDrawDirection.right.mask
@@ -491,12 +502,12 @@ extension Editor {
         if style == .ascii {
             switch normalizedMask {
             case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
-                 CanvasDrawDirection.left.mask,
-                 CanvasDrawDirection.right.mask:
+                CanvasDrawDirection.left.mask,
+                CanvasDrawDirection.right.mask:
                 return Character(chars.horizontal)
             case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
-                 CanvasDrawDirection.up.mask,
-                 CanvasDrawDirection.down.mask:
+                CanvasDrawDirection.up.mask,
+                CanvasDrawDirection.down.mask:
                 return Character(chars.vertical)
             default:
                 return "+"
@@ -505,12 +516,12 @@ extension Editor {
 
         switch normalizedMask {
         case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
-             CanvasDrawDirection.left.mask,
-             CanvasDrawDirection.right.mask:
+            CanvasDrawDirection.left.mask,
+            CanvasDrawDirection.right.mask:
             return Character(chars.horizontal)
         case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
-             CanvasDrawDirection.up.mask,
-             CanvasDrawDirection.down.mask:
+            CanvasDrawDirection.up.mask,
+            CanvasDrawDirection.down.mask:
             return Character(chars.vertical)
         case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
             return Character(chars.topLeft)

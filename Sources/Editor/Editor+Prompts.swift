@@ -298,7 +298,8 @@ extension Editor {
             return true
         }
 
-        let tokenStartIndex = prefix.lastIndex(where: { !isCompletionTokenChar($0) })
+        let tokenStartIndex =
+            prefix.lastIndex(where: { !isCompletionTokenChar($0) })
             .map { prefix.index(after: $0) } ?? prefix.startIndex
         let leadingContext = String(prefix[..<tokenStartIndex])
         let token = String(prefix[tokenStartIndex...])
@@ -614,7 +615,8 @@ extension Editor {
                     let searchStr = String(line.suffix(line.count - fromCol))
                     let nsRange = NSRange(searchStr.startIndex..<searchStr.endIndex, in: searchStr)
                     if let match = regex.firstMatch(in: searchStr, options: [], range: nsRange),
-                       let range = Range(match.range(at: 0), in: searchStr) {
+                        let range = Range(match.range(at: 0), in: searchStr)
+                    {
                         let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
                         buffer.lineIndex = lIdx
                         buffer.columnIndex = fromCol + colOffset
@@ -631,7 +633,8 @@ extension Editor {
                 let searchStr = String(line.prefix(toCol))
                 let nsRange = NSRange(searchStr.startIndex..<searchStr.endIndex, in: searchStr)
                 if let match = regex.firstMatch(in: searchStr, options: [], range: nsRange),
-                   let range = Range(match.range(at: 0), in: searchStr) {
+                    let range = Range(match.range(at: 0), in: searchStr)
+                {
                     let colOffset = searchStr.distance(from: searchStr.startIndex, to: range.lowerBound)
                     buffer.lineIndex = lIdx
                     buffer.columnIndex = colOffset
@@ -763,7 +766,8 @@ extension Editor {
         promptInputText = "3 3 16"
         promptCursorIndex = promptInputText.count
         currentPromptMode = .tableDimensions(completion: { [weak self] input in
-            guard let self = self, let input = input?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty else {
+            guard let self = self, let input = input?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty
+            else {
                 self?.setStatusMessage(L10n["status.cancelled"])
                 return
             }

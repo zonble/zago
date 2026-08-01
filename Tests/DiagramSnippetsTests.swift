@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Editor
 @testable import LogoEngine
 
@@ -29,8 +30,9 @@ struct DiagramSnippetsTests {
         // Verify position: Diagrams category must be between Tools and Help
         let categoryKeys = editor.menuBar.categories.map { $0.titleKey }
         if let toolsIdx = categoryKeys.firstIndex(of: "menu.tools"),
-           let diagramsIdx = categoryKeys.firstIndex(of: "menu.diagrams"),
-           let helpIdx = categoryKeys.firstIndex(of: "menu.help") {
+            let diagramsIdx = categoryKeys.firstIndex(of: "menu.diagrams"),
+            let helpIdx = categoryKeys.firstIndex(of: "menu.help")
+        {
             #expect(diagramsIdx == toolsIdx + 1)
             #expect(helpIdx == diagramsIdx + 1)
         } else {
@@ -73,7 +75,7 @@ struct DiagramSnippetsTests {
         editor.buffer.lines = [
             "# Header",
             "```mermaid",
-            ""
+            "",
         ]
         editor.buffer.lineIndex = 2
         #expect(DiagramSnippets.detectCodeBlockEngine(editor: editor) == .mermaid)
@@ -82,7 +84,7 @@ struct DiagramSnippetsTests {
         // Inside ```dot block
         editor.buffer.lines = [
             "```dot",
-            ""
+            "",
         ]
         editor.buffer.lineIndex = 1
         #expect(DiagramSnippets.detectCodeBlockEngine(editor: editor) == .dot)

@@ -135,7 +135,8 @@ extension Editor {
             } else if arg == "en" {
                 L10n.currentLanguage = .en
             }
-        case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+        case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
+            "default-border-style", "default_border_style":
             if let style = BorderStyle(arg) {
                 defaultBorderStyle = style
                 setStatusMessage(L10n.defaultBorder(style.rawValue))

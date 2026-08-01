@@ -305,7 +305,9 @@ public final class SyntaxHighlighter {
         let defaultSyntax = detectLanguage(for: filePath)
 
         let ext = (filePath as NSString? ?? "").pathExtension.lowercased()
-        let isMarkup = ["md", "markdown", "mdown", "mkd", "rst", "rest", "org", "adoc", "asciidoc", "ascii", "wiki", "mediawiki"].contains(ext)
+        let isMarkup = [
+            "md", "markdown", "mdown", "mkd", "rst", "rest", "org", "adoc", "asciidoc", "ascii", "wiki", "mediawiki",
+        ].contains(ext)
         guard isMarkup else { return defaultSyntax }
 
         let lines = editor.buffer.lines
@@ -318,7 +320,9 @@ public final class SyntaxHighlighter {
     }
 
     /// Detects embedded code block language in Markdown, RST, Org-mode, AsciiDoc, or Wiki buffer up to bufferLineIndex.
-    public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String) -> LanguageSyntax? {
+    public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String)
+        -> LanguageSyntax?
+    {
         var activeLangName: String? = nil
         var inBlock = false
 
@@ -346,7 +350,9 @@ public final class SyntaxHighlighter {
             for i in 0...bufferLineIndex {
                 let line = lines[i]
                 let trimmed = line.trimmingCharacters(in: .whitespaces)
-                if trimmed.hasPrefix(".. code-block::") || trimmed.hasPrefix(".. code::") || trimmed.hasPrefix(".. highlight::") {
+                if trimmed.hasPrefix(".. code-block::") || trimmed.hasPrefix(".. code::")
+                    || trimmed.hasPrefix(".. highlight::")
+                {
                     inBlock = true
                     if let range = trimmed.range(of: "::") {
                         let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
@@ -410,8 +416,10 @@ public final class SyntaxHighlighter {
             }
             if inBlock, let langName = activeLangName {
                 let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).lowercased()
-                if currentLine.contains("<syntaxhighlight") || currentLine.contains("<source") || currentLine.contains("<code") ||
-                   currentLine.contains("</syntaxhighlight>") || currentLine.contains("</source>") || currentLine.contains("</code>") {
+                if currentLine.contains("<syntaxhighlight") || currentLine.contains("<source")
+                    || currentLine.contains("<code") || currentLine.contains("</syntaxhighlight>")
+                    || currentLine.contains("</source>") || currentLine.contains("</code>")
+                {
                     return nil
                 }
                 return findLanguage(named: langName)
@@ -426,7 +434,8 @@ public final class SyntaxHighlighter {
                         activeLangName = nil
                     } else {
                         inBlock = true
-                        let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(in: .whitespaces)
+                        let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(
+                            in: .whitespaces)
                         activeLangName = langStr.isEmpty ? nil : langStr
                     }
                 }

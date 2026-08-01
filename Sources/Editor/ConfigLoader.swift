@@ -253,7 +253,8 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
-                    case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+                    case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
+                        "default-border-style", "default_border_style":
                         if let style = BorderStyle(value) {
                             config.defaultBorderStyle = style
                         } else {
@@ -332,7 +333,8 @@ public final class ConfigLoader {
                     config.syntaxErrorCount += 1
                 }
 
-            case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle", "default-border-style", "default_border_style":
+            case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
+                "default-border-style", "default_border_style":
                 if tokens.count >= 2 {
                     let value = tokens[1].lowercased()
                     if let style = BorderStyle(value) {
@@ -364,7 +366,7 @@ public final class ConfigLoader {
         case .prelude(var lines):
             lines.append(rawLine)
             return .prelude(lines: lines)
-        case let .script(name, lines):
+        case .script(let name, let lines):
             var updatedLines = lines
             updatedLines.append(rawLine)
             return .script(name: name, lines: updatedLines)
@@ -373,9 +375,9 @@ public final class ConfigLoader {
 
     private func commitLogoBlock(_ block: LogoBlock, into config: inout EditorConfig) {
         switch block {
-        case let .prelude(lines):
+        case .prelude(let lines):
             appendLogoPrelude(lines.joined(separator: "\n"), into: &config)
-        case let .script(name, lines):
+        case .script(let name, let lines):
             config.logoScripts[name] = lines.joined(separator: "\n")
         }
     }

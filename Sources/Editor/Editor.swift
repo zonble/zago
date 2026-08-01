@@ -176,7 +176,7 @@ public final class Editor {
     /// Switches to next open buffer in sequence.
     public func nextBuffer() {
         guard buffers.count > 1 else { return }
-            currentBufferIndex = (currentBufferIndex + 1) % buffers.count
+        currentBufferIndex = (currentBufferIndex + 1) % buffers.count
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()
@@ -445,7 +445,8 @@ public final class Editor {
         if saveSnapshot {
             saveUndoSnapshot()
         }
-        let cutText = buffer.cutRange(start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+        let cutText = buffer.cutRange(
+            start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
         if updateClipboard {
             clipboardText = cutText
         }

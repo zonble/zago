@@ -1,5 +1,5 @@
-import Foundation
 import Dispatch
+import Foundation
 import Testing
 import TextMetrics
 
@@ -1873,16 +1873,18 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(logoEngine.tokenize("TYPE \"A\" ; inline comment") == ["TYPE", "\"A\""])
     #expect(logoEngine.tokenize("TYPE \"A;B\" ; inline comment") == ["TYPE", "\"A;B\""])
     #expect(logoEngine.tokenize("TYPE \";") == ["TYPE", "\";"])
-    #expect(logoEngine.tokenize("REPEAT 2 [ TYPE # ; comment inside block\n ]") == [
-        "REPEAT", "2", "[", "TYPE", "#", "]"
-    ])
+    #expect(
+        logoEngine.tokenize("REPEAT 2 [ TYPE # ; comment inside block\n ]") == [
+            "REPEAT", "2", "[", "TYPE", "#", "]",
+        ])
 
-    logoEngine.execute("""
-    ; setup comment
-    TYPE "A
-    ; skipped command: TYPE "x
-    TYPE "B ; inline comment
-    """)
+    logoEngine.execute(
+        """
+        ; setup comment
+        TYPE "A
+        ; skipped command: TYPE "x
+        TYPE "B ; inline comment
+        """)
     #expect(editor.buffer.lines[0] == "AB")
 
     logoEngine.execute("CLEARBUFFER TYPE \";")
@@ -1961,12 +1963,13 @@ final class LogoTestResultBox: @unchecked Sendable {
     let thread = Thread {
         let editor = Editor()
         let logoEngine = editor.logoEngine
-        logoEngine.execute("""
-        TO LOOP
-          OUTPUT LOOP
-        END
-        LOOP
-        """)
+        logoEngine.execute(
+            """
+            TO LOOP
+              OUTPUT LOOP
+            END
+            LOOP
+            """)
         result.error = logoEngine.lastError
         result.status = editor.statusMessage
         semaphore.signal()

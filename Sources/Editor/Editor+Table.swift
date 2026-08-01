@@ -74,7 +74,8 @@ extension Editor {
             } else {
                 let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
                 buffer.lineIndex -= 1
-                buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
+                buffer.columnIndex = getCharIndexForVisualColumn(
+                    in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
             }
             clampTableModeCursor()
             return true
@@ -86,7 +87,8 @@ extension Editor {
             } else {
                 let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
                 buffer.lineIndex += 1
-                buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
+                buffer.columnIndex = getCharIndexForVisualColumn(
+                    in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
             }
             clampTableModeCursor()
             return true
@@ -205,11 +207,14 @@ extension Editor {
         case .char(let ch):
             _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
             if insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true) {
-                let (_, newRight) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
+                let (_, newRight) = findCellHorizontalBorders(
+                    in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
                 if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
                     moveToNextLineInCurrentTableCell(cell: cell)
                 }
-            } else if isCanvasModeActive && buffer.columnIndex >= cell.innerMaxCol && buffer.lineIndex < cell.innerMaxLine {
+            } else if isCanvasModeActive && buffer.columnIndex >= cell.innerMaxCol
+                && buffer.lineIndex < cell.innerMaxLine
+            {
                 moveToNextLineInCurrentTableCell(cell: cell)
                 _ = insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true)
             }
@@ -236,7 +241,8 @@ extension Editor {
         } else if buffer.lineIndex > cell.innerMinLine {
             buffer.lineIndex -= 1
             let previousLine = buffer.lines[buffer.lineIndex]
-            let (previousLeft, previousRight) = findCellHorizontalBorders(in: previousLine, nearCol: cell.innerMinCol, cell: cell)
+            let (previousLeft, previousRight) = findCellHorizontalBorders(
+                in: previousLine, nearCol: cell.innerMinCol, cell: cell)
             buffer.columnIndex = max(previousLeft + 1, previousRight - 1)
         }
         clampTableModeCursor()
@@ -376,11 +382,6 @@ extension Editor {
             return
         }
 
-        if overlayMode == .frame {
-            setStatusMessage(L10n["status.table_mode_disabled_in_frame_mode"])
-            return
-        }
-
         let detector = TableCellDetector()
         if let cell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: buffer.columnIndex) {
             enterTableMode(with: cell)
@@ -469,7 +470,8 @@ extension Editor {
                 break
             }
 
-            let (_, rightBorder) = findCellHorizontalBorders(in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
+            let (_, rightBorder) = findCellHorizontalBorders(
+                in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
             if buffer.columnIndex >= rightBorder {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
                 moveToNextLineInCurrentTableCell(cell: cell)
@@ -501,7 +503,8 @@ extension Editor {
         clampTableModeCursor()
     }
 
-    private func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool {
+    private func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool
+    {
         guard buffer.lineIndex >= cell.innerMinLine && buffer.lineIndex <= cell.innerMaxLine else { return false }
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return false }
         let line = buffer.lines[buffer.lineIndex]
@@ -600,11 +603,19 @@ extension Editor {
         )
 
         if style == .markdown {
-            let headerCells = (1...colCount).map { "Header \($0)".padding(toLength: cellWidth, withPad: " ", startingAt: 0) }
+            let headerCells = (1...colCount).map {
+                "Header \($0)".padding(toLength: cellWidth, withPad: " ", startingAt: 0)
+            }
             var tableLines = ["| " + headerCells.joined(separator: " | ") + " |"]
-            tableLines.append("|" + Array(repeating: String(repeating: "-", count: cellWidth + 2), count: colCount).joined(separator: "|") + "|")
+            tableLines.append(
+                "|"
+                    + Array(repeating: String(repeating: "-", count: cellWidth + 2), count: colCount).joined(
+                        separator: "|") + "|")
             for _ in 0..<max(1, rowCount - 1) {
-                tableLines.append("| " + Array(repeating: String(repeating: " ", count: cellWidth), count: colCount).joined(separator: " | ") + " |")
+                tableLines.append(
+                    "| "
+                        + Array(repeating: String(repeating: " ", count: cellWidth), count: colCount).joined(
+                            separator: " | ") + " |")
             }
             insertTableLines(tableLines, at: origLine, column: origCol)
         } else {
@@ -612,14 +623,21 @@ extension Editor {
             let h = String(repeating: chars.horizontal, count: cellWidth)
             let content = String(repeating: " ", count: cellWidth)
             var tableLines: [String] = []
-            tableLines.append(chars.topLeft + Array(repeating: h, count: colCount).joined(separator: chars.topJoin) + chars.topRight)
+            tableLines.append(
+                chars.topLeft + Array(repeating: h, count: colCount).joined(separator: chars.topJoin) + chars.topRight)
             for row in 0..<rowCount {
-                tableLines.append(chars.vertical + Array(repeating: content, count: colCount).joined(separator: chars.vertical) + chars.vertical)
+                tableLines.append(
+                    chars.vertical + Array(repeating: content, count: colCount).joined(separator: chars.vertical)
+                        + chars.vertical)
                 if row < rowCount - 1 {
-                    tableLines.append(chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin) + chars.midRight)
+                    tableLines.append(
+                        chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin)
+                            + chars.midRight)
                 }
             }
-            tableLines.append(chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin) + chars.bottomRight)
+            tableLines.append(
+                chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin)
+                    + chars.bottomRight)
             insertTableLines(tableLines, at: origLine, column: origCol)
         }
 
@@ -634,7 +652,8 @@ extension Editor {
                 enterTableMode(with: cell)
             } else {
                 let cell = TableCell(
-                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: origCol, maxCol: origCol + cellWidth,
+                    minLine: origLine, maxLine: min(buffer.lines.count - 1, origLine + 3), minCol: origCol,
+                    maxCol: origCol + cellWidth,
                     style: style)
                 enterTableMode(with: cell)
             }
@@ -715,9 +734,9 @@ extension Editor {
         guard let cell = currentTableCell else { return }
         let detector = TableCellDetector()
         guard let rightCell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: cell.maxCol + 1),
-              rightCell.minLine == cell.minLine,
-              rightCell.maxLine == cell.maxLine,
-              rightCell.minCol == cell.maxCol
+            rightCell.minLine == cell.minLine,
+            rightCell.maxLine == cell.maxLine,
+            rightCell.minCol == cell.maxCol
         else { return }
 
         enterTableMode(with: rightCell)
@@ -727,9 +746,9 @@ extension Editor {
         guard let cell = currentTableCell, cell.minCol > 0 else { return }
         let detector = TableCellDetector()
         guard let leftCell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: cell.minCol - 1),
-              leftCell.minLine == cell.minLine,
-              leftCell.maxLine == cell.maxLine,
-              leftCell.maxCol == cell.minCol
+            leftCell.minLine == cell.minLine,
+            leftCell.maxLine == cell.maxLine,
+            leftCell.maxCol == cell.minCol
         else { return }
 
         enterTableMode(with: leftCell)
@@ -758,9 +777,9 @@ extension Editor {
         let safeCol = max(0, min(charIdx, lineText.count))
 
         guard let cellAbove = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol),
-              cellAbove.maxLine == cell.minLine,
-              cellAbove.minCol < cell.maxCol,
-              cellAbove.maxCol > cell.minCol
+            cellAbove.maxLine == cell.minLine,
+            cellAbove.minCol < cell.maxCol,
+            cellAbove.maxCol > cell.minCol
         else { return }
 
         enterTableMode(with: cellAbove)
@@ -783,9 +802,9 @@ extension Editor {
         let safeCol = max(0, min(charIdx, lineText.count))
 
         guard let cellBelow = detector.detectCell(in: buffer.lines, line: targetLine, col: safeCol),
-              cellBelow.minLine == cell.maxLine,
-              cellBelow.minCol < cell.maxCol,
-              cellBelow.maxCol > cell.minCol
+            cellBelow.minLine == cell.maxLine,
+            cellBelow.minCol < cell.maxCol,
+            cellBelow.maxCol > cell.minCol
         else { return }
 
         enterTableMode(with: cellBelow)
@@ -829,7 +848,8 @@ extension Editor {
             let fullLine = buffer.lines[lineIdx]
             let lineChars = Array(fullLine)
 
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, rightBorder) = findCellHorizontalBorders(
+                in: fullLine, nearCol: cell.innerMinCol, cell: cell)
             let innerMinCol = leftBorder + 1
             let innerMaxCol = rightBorder - 1
 
@@ -1019,7 +1039,8 @@ extension Editor {
             var chars = Array(buffer.lines[lineIdx])
             if chars.count <= colLeft { continue }
 
-            let (leftB, rightB) = findCellHorizontalBorders(in: buffer.lines[lineIdx], nearCol: cell.innerMinCol, cell: cell)
+            let (leftB, rightB) = findCellHorizontalBorders(
+                in: buffer.lines[lineIdx], nearCol: cell.innerMinCol, cell: cell)
             if leftB != colLeft { continue }
 
             if delta > 0 {
@@ -1178,12 +1199,12 @@ extension Editor {
     }
 }
 
-private extension String {
-    func trimmingLeadingWhitespace() -> String {
+extension String {
+    fileprivate func trimmingLeadingWhitespace() -> String {
         String(drop(while: { $0.isWhitespace }))
     }
 
-    func trimmingTrailingWhitespace() -> String {
+    fileprivate func trimmingTrailingWhitespace() -> String {
         var result = self
         while result.last?.isWhitespace == true {
             result.removeLast()
@@ -1191,7 +1212,7 @@ private extension String {
         return result
     }
 
-    func dropDisplayWidth(_ width: Int) -> String {
+    fileprivate func dropDisplayWidth(_ width: Int) -> String {
         guard width > 0 else { return self }
         var result = ""
         var visualWidth = 0

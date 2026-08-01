@@ -1,6 +1,7 @@
-import Testing
-@testable import Editor
 import Foundation
+import Testing
+
+@testable import Editor
 
 @Suite struct DirectoryBufferTests {
 
@@ -143,7 +144,8 @@ import Foundation
         let editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
         #expect(editCategory != nil)
         let modeItems = editCategory?.items.filter {
-            ["menu.edit.text_editing_mode", "menu.edit.canvas_mode", "menu.edit.table_editing_mode"].contains($0.titleKey)
+            ["menu.edit.text_editing_mode", "menu.edit.canvas_mode", "menu.edit.table_editing_mode"].contains(
+                $0.titleKey)
         }
         #expect(modeItems?.isEmpty == true)
     }

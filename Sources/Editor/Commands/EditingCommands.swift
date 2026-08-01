@@ -10,7 +10,8 @@ public struct DeleteLineCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
-        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
+        {
             return
         }
         editor.deleteCurrentLine()
@@ -27,7 +28,8 @@ public struct DeleteCharCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
-        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
+        {
             return
         }
         if editor.isCanvasModeActive {
@@ -58,8 +60,9 @@ public struct ToggleMarkCommand: Command {
             editor.canvasBlockMarkEnd = point
             editor.setStatusMessage(L10n["status.mark_set"])
         } else if let mark = editor.canvasBlockMark,
-                  let end = editor.canvasBlockMarkEnd,
-                  end.line == mark.line && end.visualColumn == mark.visualColumn {
+            let end = editor.canvasBlockMarkEnd,
+            end.line == mark.line && end.visualColumn == mark.visualColumn
+        {
             editor.canvasBlockMarkEnd = point
             editor.setStatusMessage(L10n["status.mark_set"])
         } else {
@@ -192,7 +195,8 @@ public struct InsertTabCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
-        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false) {
+        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
+        {
             editor.buffer.insertString("    ")
             return
         }

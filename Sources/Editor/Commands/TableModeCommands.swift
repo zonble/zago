@@ -26,19 +26,6 @@ public struct ToggleCanvasModeCommand: Command {
     }
 }
 
-public struct ToggleFrameModeCommand: Command {
-    public let id: CommandID = .frameToggle
-    public let name = "Frame Mode"
-    public let description = "Toggle Frame Mode"
-    public let keys: [Key] = []
-
-    public init() {}
-
-    public func execute(on editor: Editor) {
-        editor.toggleFrameMode()
-    }
-}
-
 public struct ToggleTableModeCommand: Command {
     public let id: CommandID = .tableToggle
     public let name = "Table Mode"
@@ -55,7 +42,8 @@ public struct ToggleTableModeCommand: Command {
 public struct CycleBorderStyleCommand: Command {
     public let id: CommandID = .borderStyle
     public let name = "Cycle Border Style"
-    public let description = "Switch default border style (Single -> Double -> Round -> Double Round -> ASCII -> Markdown)"
+    public let description =
+        "Switch default border style (Single -> Double -> Round -> Double Round -> ASCII -> Markdown)"
     public let keys: [Key] = [.alt("s"), .alt("S")]
 
     public init() {}

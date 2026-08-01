@@ -16,8 +16,7 @@ public struct MenuItem {
         action: ((Editor) -> Void)? = nil,
         isChecked: ((Editor) -> Bool)? = nil,
         isVisible: ((Editor) -> Bool)? = nil
-    )
-    {
+    ) {
         self.titleKey = titleKey
         self.hotkeyChar = hotkeyChar
         self.commandId = commandId
@@ -90,9 +89,15 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
-                    MenuItem(titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode, isChecked: { $0.baseMode == .text }, isVisible: { !$0.buffer.isDirectoryBuffer }),
-                    MenuItem(titleKey: "menu.edit.canvas_mode", hotkeyChar: "v", commandId: .canvasToggle, isChecked: { $0.baseMode == .canvas }, isVisible: { !$0.buffer.isDirectoryBuffer }),
-                    MenuItem(titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle, isChecked: { $0.isTableModeActive }, isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(
+                        titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode,
+                        isChecked: { $0.baseMode == .text }, isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(
+                        titleKey: "menu.edit.canvas_mode", hotkeyChar: "v", commandId: .canvasToggle,
+                        isChecked: { $0.baseMode == .canvas }, isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(
+                        titleKey: "menu.edit.table_editing_mode", hotkeyChar: "b", commandId: .tableToggle,
+                        isChecked: { $0.isTableModeActive }, isVisible: { !$0.buffer.isDirectoryBuffer }),
                 ]),
             MenuCategory(
                 titleKey: "menu.buffer", hotkeyChar: "b",
@@ -104,11 +109,11 @@ public final class MenuBar {
                 titleKey: "menu.shapes", hotkeyChar: "s",
                 items: [
                     MenuItem(titleKey: "menu.shapes.box", hotkeyChar: "b", action: { $0.runLogoScript("BOX") }),
-                    MenuItem(titleKey: "menu.shapes.draw_box", hotkeyChar: "d", action: { $0.runLogoScript("DRAWBOX") }),
+                    MenuItem(
+                        titleKey: "menu.shapes.draw_box", hotkeyChar: "d", action: { $0.runLogoScript("DRAWBOX") }),
                     MenuItem(titleKey: "menu.shapes.line", hotkeyChar: "l", action: { $0.runLogoScript("LINE") }),
                     MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
                     MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
-                    MenuItem(titleKey: "menu.shapes.frame_mode", hotkeyChar: "r", commandId: .frameToggle, isChecked: { $0.isFrameModeActive }),
                     MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
                 ],
                 isVisible: { $0.buffer.allowsLogoExecution }),
@@ -162,8 +167,12 @@ public final class MenuBar {
             MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",
                 items: [
-                    MenuItem(titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo, isVisible: { $0.buffer.allowsLogoExecution }),
-                    MenuItem(titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo, isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(
+                        titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo,
+                        isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(
+                        titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
+                        isVisible: { $0.buffer.allowsLogoExecution }),
                     MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in
@@ -222,7 +231,9 @@ public final class MenuBar {
                 guard category.isVisible?(editor) ?? true else { return nil }
                 let visibleItems = category.items.filter { $0.isVisible?(editor) ?? true }
                 guard !visibleItems.isEmpty else { return nil }
-                return MenuCategory(titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems, isVisible: category.isVisible)
+                return MenuCategory(
+                    titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems,
+                    isVisible: category.isVisible)
             }
         } else {
             self.categories = baseCategories

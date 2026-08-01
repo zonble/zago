@@ -60,7 +60,6 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case helpShow = "help.show"
     case textMode = "mode.text"
     case canvasToggle = "mode.canvas.toggle"
-    case frameToggle = "mode.frame.toggle"
     case tableToggle = "table.toggle"
     case borderStyle = "border.style"
     case diagramInsert = "diagram.insert"

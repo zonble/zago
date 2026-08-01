@@ -61,7 +61,6 @@ extension Editor {
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(SwitchTextModeCommand())
         commandRegistry.register(ToggleCanvasModeCommand())
-        commandRegistry.register(ToggleFrameModeCommand())
         commandRegistry.register(ToggleTableModeCommand())
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(

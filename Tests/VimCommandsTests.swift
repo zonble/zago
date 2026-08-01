@@ -1,6 +1,7 @@
-import Testing
-@testable import Editor
 import Foundation
+import Testing
+
+@testable import Editor
 
 @Suite struct VimCommandsTests {
 

@@ -49,10 +49,12 @@ public struct SubstituteCommandBarCommand: CommandBarCommand {
         var totalReplacements = 0
         var newLines = editor.buffer.lines
 
-        if useRegex, let regex = try? NSRegularExpression(
-            pattern: parsed.search,
-            options: isCaseInsensitive ? [.caseInsensitive] : []
-        ) {
+        if useRegex,
+            let regex = try? NSRegularExpression(
+                pattern: parsed.search,
+                options: isCaseInsensitive ? [.caseInsensitive] : []
+            )
+        {
             for lIdx in targetRange {
                 guard lIdx < newLines.count else { continue }
                 let line = newLines[lIdx]
@@ -87,10 +89,14 @@ public struct SubstituteCommandBarCommand: CommandBarCommand {
                     var searchStart = line.startIndex
                     var countOnLine = 0
                     while searchStart < line.endIndex,
-                          let range = line.range(of: searchStr, options: compareOptions, range: searchStart..<line.endIndex) {
+                        let range = line.range(
+                            of: searchStr, options: compareOptions, range: searchStart..<line.endIndex)
+                    {
                         countOnLine += 1
                         line.replaceSubrange(range, with: replaceStr)
-                        let newAdvance = line.index(range.lowerBound, offsetBy: replaceStr.count, limitedBy: line.endIndex) ?? line.endIndex
+                        let newAdvance =
+                            line.index(range.lowerBound, offsetBy: replaceStr.count, limitedBy: line.endIndex)
+                            ?? line.endIndex
                         searchStart = newAdvance
                     }
                     if countOnLine > 0 {
@@ -141,7 +147,7 @@ public struct SubstituteCommandBarCommand: CommandBarCommand {
             return nil
         }
 
-        guard let delim = restStr.first, (delim == "/" || delim == ",") else { return nil }
+        guard let delim = restStr.first, delim == "/" || delim == "," else { return nil }
         restStr = String(restStr.dropFirst(1))
 
         let parts = restStr.split(separator: delim, omittingEmptySubsequences: false).map(String.init)

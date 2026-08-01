@@ -1,6 +1,7 @@
-import Testing
-@testable import Editor
 import LogoEngine
+import Testing
+
+@testable import Editor
 
 @Suite struct SearchAndReplaceTests {
 
@@ -89,7 +90,7 @@ import LogoEngine
     @Test func testSubstituteRegexAndCaptureGroups() throws {
         let editor = Editor()
         editor.buffer.lines = [
-            "item_100 item_200",
+            "item_100 item_200"
         ]
         editor.buffer.lineIndex = 0
 

@@ -392,11 +392,12 @@ import Testing
     editor.buffer.columnIndex = 8
     editor.processKey(.ctrl("Q"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────┐",
-        "│BOX 8 3     │",
-        "└────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│BOX 8 3     │",
+            "└────────────┘",
+        ])
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│DRAWBOX 8 3 │"
@@ -404,11 +405,12 @@ import Testing
     editor.buffer.columnIndex = 12
     editor.processKey(.ctrl("Q"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────┐",
-        "│DRAWBOX 8 3 │",
-        "└────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│DRAWBOX 8 3 │",
+            "└────────────┘",
+        ])
     #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│TABLE       │"
@@ -416,11 +418,12 @@ import Testing
     editor.buffer.columnIndex = 6
     editor.processKey(.ctrl("Q"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────┐",
-        "│TABLE       │",
-        "└────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│TABLE       │",
+            "└────────────┘",
+        ])
     #expect(editor.statusMessage == "[ TABLE disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│GOTO 1 1    │"
@@ -450,11 +453,12 @@ import Testing
     editor.buffer.columnIndex = 8
     editor.processKey(.ctrl("Q"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────┐",
-        "│MAKEBOX     │",
-        "└────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│MAKEBOX     │",
+            "└────────────┘",
+        ])
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
 
     editor.logoEngine.execute("TO PAINTBOX DRAWBOX 8 3 END")
@@ -463,11 +467,12 @@ import Testing
     editor.buffer.columnIndex = 9
     editor.processKey(.ctrl("Q"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────┐",
-        "│PAINTBOX    │",
-        "└────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│PAINTBOX    │",
+            "└────────────┘",
+        ])
     #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
 }
 
@@ -490,7 +495,7 @@ import Testing
 
     // Press End (.end)
     editor.processKey(.end)
-    #expect(editor.buffer.columnIndex == 16) // End of cell
+    #expect(editor.buffer.columnIndex == 16)  // End of cell
 
     // Press Ctrl+A (^A)
     editor.processKey(.ctrl("a"))
@@ -498,7 +503,7 @@ import Testing
 
     // Press Ctrl+E (^E)
     editor.processKey(.ctrl("e"))
-    #expect(editor.buffer.columnIndex == 16) // End of cell
+    #expect(editor.buffer.columnIndex == 16)  // End of cell
 
     // Test CJK cell
     editor.buffer.lines[1] = "│ 測試中文表格   │                │"
@@ -510,7 +515,7 @@ import Testing
 
     // Press End
     editor.processKey(.end)
-    #expect(editor.buffer.columnIndex == 10) // End of CJK cell (rightBorder - 1)
+    #expect(editor.buffer.columnIndex == 10)  // End of CJK cell (rightBorder - 1)
 }
 
 @Test func testTableModeUpDownArrowNavigation() throws {
@@ -700,11 +705,12 @@ import Testing
 
     editor.processKey(.ctrl("K"))
 
-    #expect(editor.buffer.lines == [
-        "┌────────────────┬────────────────┐",
-        "│                │keep            │",
-        "└────────────────┴────────────────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────────┬────────────────┐",
+            "│                │keep            │",
+            "└────────────────┴────────────────┘",
+        ])
     #expect(editor.clipboardText == "abcdef          ")
     #expect(editor.currentTableCell?.minCol == 0)
     #expect(editor.currentTableCell?.maxCol == 17)

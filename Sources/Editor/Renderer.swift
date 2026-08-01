@@ -136,7 +136,8 @@ public final class Renderer {
             let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
             return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\u{1B}[0m\r\n"
         } else {
-            let bufIndexStr = editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : "zago"
+            let bufIndexStr =
+                editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : "zago"
             let leftText = "  \(bufIndexStr)"
             let centerText = editor.buffer.filePath ?? L10n.newBuffer
             let rightText = editor.buffer.isModified ? "\(L10n.modified)  " : "  "
@@ -249,24 +250,29 @@ public final class Renderer {
 
                 let currentLanguage =
                     editor.displayConfig.enableSyntaxHighlight
-                    ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex) : nil
-                let tokenTypes = (currentLanguage != nil)
+                    ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex)
+                    : nil
+                let tokenTypes =
+                    (currentLanguage != nil)
                     ? editor.syntaxHighlighter.tokenTypes(for: renderedLineText, syntax: currentLanguage!)
                     : []
 
                 var activeCellBounds: (left: Int, right: Int)? = nil
                 if editor.isTableModeActive, let cell = editor.currentTableCell,
-                   vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
-                   vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count {
+                    vLine.bufferLineIndex >= cell.innerMinLine && vLine.bufferLineIndex <= cell.innerMaxLine,
+                    vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count
+                {
                     let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
-                    activeCellBounds = editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+                    activeCellBounds = editor.findCellHorizontalBorders(
+                        in: fullLine, nearCol: cell.innerMinCol, cell: cell)
                 }
 
                 let chars = Array(renderedLineText)
                 var renderedDisplayWidth = 0
                 for (cIdxInVLine, ch) in chars.enumerated() {
                     let realCol = renderedStartCol + cIdxInVLine
-                    let charVisualColumn = editor.isCanvasModeActive
+                    let charVisualColumn =
+                        editor.isCanvasModeActive
                         ? editor.canvasHorizontalOffset + renderedDisplayWidth
                         : realCol
                     let isCellActive: Bool
@@ -276,9 +282,13 @@ public final class Renderer {
                         isCellActive = false
                     }
 
-                    if editor.isCanvasModeActive && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn) {
+                    if editor.isCanvasModeActive
+                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
+                    {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"
-                    } else if !editor.isCanvasModeActive && editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol) {
+                    } else if !editor.isCanvasModeActive
+                        && editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
+                    {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
                     } else if isCellActive {
                         lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
@@ -315,7 +325,9 @@ public final class Renderer {
                     if !selectedPad.isEmpty {
                         lineOutput += "\u{1B}[7m\(selectedPad)\u{1B}[m"
                     }
-                    if !normalPad.isEmpty && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart) {
+                    if !normalPad.isEmpty
+                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart)
+                    {
                         lineOutput += normalPad
                     }
                 } else if chars.isEmpty && editor.isLineSelected(line: vLine.bufferLineIndex) {
@@ -383,6 +395,8 @@ public final class Renderer {
             activeStatus = markStatus
         } else if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
             activeStatus = editor.statusMessage
+        } else if editor.baseMode == .canvas {
+            activeStatus = "(M+V to exit)"
         } else {
             activeStatus = ""
         }
@@ -432,17 +446,17 @@ public final class Renderer {
             } else {
                 // Custom LOGO macro primitives help bar
                 helpItems1 = [
-                    ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]")
+                    ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"),
                 ]
                 helpItems2 = [
-                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", "Complete")
+                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", "Complete"),
                 ]
             }
 
         case .confirmExitSave, .confirmExternalReload, .confirmCreateTable:
             // Y/N Exit & Confirmation prompt help bar
             helpItems1 = [
-                ("Y", "Yes"), ("^C", "Cancel")
+                ("Y", "Yes"), ("^C", "Cancel"),
             ]
             helpItems2 = [
                 ("N", "No")
@@ -451,17 +465,18 @@ public final class Renderer {
         case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
             // Text & File Path Input prompt help bar
             helpItems1 = [
-                ("Enter", "Confirm"), ("^C", "Cancel"), ("^U", "Clear")
+                ("Enter", "Confirm"), ("^C", "Cancel"), ("^U", "Clear"),
             ]
             helpItems2 = [
-                ("←/→", "Move"), ("Home/End", "Jump")
+                ("←/→", "Move"), ("Home/End", "Jump"),
             ]
 
         case .none:
             if editor?.isTableModeActive == true {
                 helpItems1 = [
                     ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("M+T", L10n["help.table_exit"]),
-                    ("C+⇧+←/→", L10n["help.cell_width"]), ("^J", L10n["help.center_text"]), ("^K", L10n["help.clear_cell"]),
+                    ("C+⇧+←/→", L10n["help.cell_width"]), ("^J", L10n["help.center_text"]),
+                    ("^K", L10n["help.clear_cell"]),
                 ]
                 helpItems2 = [
                     ("^X", L10n.helpExit), ("Tab", L10n["help.next_cell"]), ("⇧+Tab", L10n["help.prev_cell"]),
@@ -469,12 +484,12 @@ public final class Renderer {
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", "Save"), ("^X", "Exit"),
-                    ("M+V", "Text"),
+                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^^", "Mark Block"), ("^K", "Cut Block"),
+                    ("⇧+Arrow", "Line"),
                 ]
                 helpItems2 = [
-                    ("^^", "Mark"), ("^K", "Cut Block"), ("^U", "Paste Block"),
-                    ("⇧+Arrow", "Box"), ("Esc", "Command"),
+                    ("^X", L10n.helpExit), ("^W", L10n.helpWhereIs), ("M+W", "Copy Block"), ("^U", "UnCut Block"),
+                    ("^⇧+Arrow", "Arrow"),
                 ]
             } else {
                 // Default Nano text editing help bar
@@ -594,7 +609,9 @@ public final class Renderer {
             if editor.isCanvasModeActive {
                 cursorDisplayWidth = max(0, editor.canvasVisualColumn - editor.canvasHorizontalOffset)
             } else {
-                let vLineText = (cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count) ? virtualLines[cursorVLineIdx].text : ""
+                let vLineText =
+                    (cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count)
+                    ? virtualLines[cursorVLineIdx].text : ""
                 let vLineChars = Array(vLineText)
                 let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
                 cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
@@ -843,7 +860,9 @@ public final class Renderer {
     }
 
     /// Generates 2D dropdown box overlay lines for active menu category.
-    public func generateDropdownOverlayLines(editor: Editor, cols: Int) -> (startCol: Int, boxWidth: Int, boxLines: [String]) {
+    public func generateDropdownOverlayLines(editor: Editor, cols: Int) -> (
+        startCol: Int, boxWidth: Int, boxLines: [String]
+    ) {
         guard editor.isMenuBarActive else { return (0, 0, []) }
 
         var colOffset = 1

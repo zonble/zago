@@ -820,7 +820,9 @@ import TextMetrics
     editor.currentPromptMode = .none
     editor.processKey(.f1)
     editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.edit" })!
-    editor.menuBar.itemIndex = editor.menuBar.currentCategory.items.firstIndex(where: { $0.titleKey == "menu.edit.goto_line" })!
+    editor.menuBar.itemIndex = editor.menuBar.currentCategory.items.firstIndex(where: {
+        $0.titleKey == "menu.edit.goto_line"
+    })!
     editor.processKey(.enter)
     #expect(editor.isMenuBarActive == false)
     if case .gotoLine = editor.currentPromptMode {
