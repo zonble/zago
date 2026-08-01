@@ -115,9 +115,21 @@ public struct EnglishStrings {
     WORD? LIST? ARRAY? NUMBER? EMPTY?
 
   Data operations
-    WORD, LIST, SENTENCE, FIRST, LAST, BUTFIRST, BUTLAST
-    ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
-    ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
+    WORD a b ...                Join values into one word/string
+    LIST a b ...                Build a list, preserving each item
+    SENTENCE a b                Merge words/lists into one flat list
+    FIRST / LAST data           First or last item from word/list
+    BUTFIRST / BUTLAST data     Remove first or last item
+    ITEM n data                 1-based item from word/list/array
+    PICK data                   Random item from list or array
+    REMOVE item list            Return list without matching items
+    REMDUP list                 Return list with duplicates removed
+    SPLIT text delimiter        Split text into a LOGO list
+    SORT data [template]        Sort word/list/array, optionally custom
+    ARRAY n / MDARRAY dims      Create fixed-size arrays
+    SETITEM n array value       Mutate 1-based array item
+    MDSETITEM indexes array val Mutate multidimensional array item
+    ARRAYTOLIST / LISTTOARRAY   Convert between array and list values
 
   Text transforms
     TRANSLIT transform text      Apply ICU or zago text transform
@@ -133,15 +145,40 @@ public struct EnglishStrings {
                     TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
 
   Math and logic
-    SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
-    REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10
-    SIN, COS, TAN, ARCTAN, RADSIN, RADCOS, RADTAN, RADARCTAN
-    LESS? GREATER? LESSEQUAL? GREATEREQUAL? EQUAL? NOTEQUAL?
-    TRUE, FALSE, AND, OR, XOR, NOT
+    SUM a b ...                 Add numbers
+    DIFFERENCE a b / MINUS a    Subtract, or negate one number
+    PRODUCT a b ...             Multiply numbers
+    QUOTIENT a b                Divide a by b
+    POWER a b                   a raised to b
+    REMAINDER a b               Integer remainder
+    MODULO a b                  Mathematical modulo
+    ABS / INT / ROUND n         Absolute value, truncate, round
+    SQRT / EXP n                Square root, e raised to n
+    LN / LOG10 n                Natural log or base-10 log
+    SIN / COS / TAN degrees     Trig functions using degrees
+    ARCTAN y [x]                Angle in degrees
+    RADSIN / RADCOS / RADTAN r  Trig functions using radians
+    RADARCTAN y [x]             Angle in radians
+    LESS? / GREATER? a b        Numeric comparison
+    LESSEQUAL? / GREATEREQUAL?  Numeric <= or >= comparison
+    EQUAL? / NOTEQUAL? a b      Equality comparison
+    TRUE / FALSE                Boolean constants
+    AND / OR / XOR a b ...      Boolean combination
+    NOT value                   Boolean negation
 
   Buffers and files
-    BUFFERS, BUFFER, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
-    ROW, COL, LINECOUNT, FILENAME, MODIFIED?
+    BUFFERS                     List open buffer names
+    BUFFER                      Current 1-based buffer index
+    CLEARBUFFER                 Empty active buffer and reset cursor
+    GETLINE [row]               Read logical line; default current row
+    SETLINE [row] text          Replace logical line; default current row
+    BUFFERTEXT                  Full active buffer text joined by newlines
+    ROW / COL                   Current 1-based logical row and column
+    LINECOUNT                   Number of logical lines in active buffer
+    FILENAME                    Active buffer filename or display name
+    MODIFIED?                   1 if buffer has unsaved changes, else 0
+    Note: GETLINE, SETLINE, ROW, and LINECOUNT use logical buffer lines,
+          not soft-wrapped visual lines.
 
   All primitive aliases
 """,

@@ -115,9 +115,21 @@ public struct TraditionalChineseStrings {
     WORD? LIST? ARRAY? NUMBER? EMPTY?
 
   資料操作
-    WORD, LIST, SENTENCE, FIRST, LAST, BUTFIRST, BUTLAST
-    ITEM, PICK, REMOVE, REMDUP, SPLIT, SORT
-    ARRAY, MDARRAY, SETITEM, MDSETITEM, ARRAYTOLIST, LISTTOARRAY
+    WORD a b ...                串接成一個 word/string
+    LIST a b ...                建立 list，保留每個項目
+    SENTENCE a b                合併 word/list 成扁平 list
+    FIRST / LAST data           取 word/list 的第一或最後項目
+    BUTFIRST / BUTLAST data     去掉第一或最後項目
+    ITEM n data                 取 word/list/array 的 1-based 項目
+    PICK data                   從 list 或 array 隨機取一項
+    REMOVE item list            回傳移除指定項目的 list
+    REMDUP list                 回傳去除重複項目的 list
+    SPLIT text delimiter        將文字切成 LOGO list
+    SORT data [template]        排序 word/list/array，可給自訂 template
+    ARRAY n / MDARRAY dims      建立固定大小 array / 多維 array
+    SETITEM n array value       修改 array 的 1-based 項目
+    MDSETITEM indexes array val 修改多維 array 的項目
+    ARRAYTOLIST / LISTTOARRAY   在 array 與 list 之間轉換
 
   文字轉換
     TRANSLIT transform text      套用 ICU 或 zago 文字轉換
@@ -133,15 +145,40 @@ public struct TraditionalChineseStrings {
                     TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
 
   數學與邏輯
-    SUM, DIFFERENCE, MINUS, PRODUCT, QUOTIENT, POWER
-    REMAINDER, MODULO, ABS, INT, ROUND, SQRT, EXP, LN, LOG10
-    SIN, COS, TAN, ARCTAN, RADSIN, RADCOS, RADTAN, RADARCTAN
-    LESS? GREATER? LESSEQUAL? GREATEREQUAL? EQUAL? NOTEQUAL?
-    TRUE, FALSE, AND, OR, XOR, NOT
+    SUM a b ...                 數字相加
+    DIFFERENCE a b / MINUS a    相減，或將單一數字轉負
+    PRODUCT a b ...             數字相乘
+    QUOTIENT a b                a 除以 b
+    POWER a b                   a 的 b 次方
+    REMAINDER a b               整數餘數
+    MODULO a b                  數學 modulo
+    ABS / INT / ROUND n         絕對值、截斷、四捨五入
+    SQRT / EXP n                平方根、e 的 n 次方
+    LN / LOG10 n                自然對數、10 為底對數
+    SIN / COS / TAN degrees     以角度為單位的三角函數
+    ARCTAN y [x]                回傳角度
+    RADSIN / RADCOS / RADTAN r  以弧度為單位的三角函數
+    RADARCTAN y [x]             回傳弧度
+    LESS? / GREATER? a b        數字大小比較
+    LESSEQUAL? / GREATEREQUAL?  數字 <= 或 >= 比較
+    EQUAL? / NOTEQUAL? a b      相等/不相等比較
+    TRUE / FALSE                布林常數
+    AND / OR / XOR a b ...      布林組合
+    NOT value                   布林反相
 
   Buffer 與檔案
-    BUFFERS, BUFFER, CLEARBUFFER, GETLINE, SETLINE, BUFFERTEXT
-    ROW, COL, LINECOUNT, FILENAME, MODIFIED?
+    BUFFERS                     列出已開啟 buffer 名稱
+    BUFFER                      目前 buffer 的 1-based 編號
+    CLEARBUFFER                 清空目前 buffer 並重設游標
+    GETLINE [row]               讀取邏輯行；省略時讀目前行
+    SETLINE [row] text          取代邏輯行；省略時改目前行
+    BUFFERTEXT                  目前 buffer 全文，以換行串接
+    ROW / COL                   目前 1-based 邏輯列與欄
+    LINECOUNT                   目前 buffer 的邏輯行數
+    FILENAME                    目前 buffer 的檔名或顯示名稱
+    MODIFIED?                   有未儲存修改回傳 1，否則回傳 0
+    注意：GETLINE、SETLINE、ROW、LINECOUNT 使用邏輯行，
+          不是 soft wrap 後的視覺行。
 
   所有 primitive alias
 """,
