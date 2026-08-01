@@ -1,4 +1,5 @@
 import Foundation
+import TextTransform
 
 extension LogoEngine {
     /// System & Environment Primitives Evaluator (`evaluateSystemPrimitives`)
@@ -81,6 +82,23 @@ extension LogoEngine {
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             return "**\(v)**"
+
+        case .translit:
+            index += 1
+            let transformId = unquote(evaluateExpression(tokens, index: &index))
+            if index + 1 < tokens.count {
+                index += 1
+            }
+            let inputText = unquote(evaluateExpression(tokens, index: &index))
+            do {
+                return try TextTransformer.apply(transformId, to: inputText)
+            } catch {
+                let message = "[\(error)]"
+                lastError = message
+                delegate?.logoEngine(self, performAction: .setStatusMessage(message))
+                hasSetStatusMessage = true
+                return ""
+            }
 
         case .headingPrimitive:
             return "\(heading)"

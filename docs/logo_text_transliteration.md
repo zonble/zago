@@ -1,6 +1,6 @@
 # LOGO Text Transliteration
 
-This document defines a proposed LOGO text primitive for applying ICU String Transform rules to editor text.
+This document defines the LOGO text primitive for applying ICU String Transform rules and zago writing transforms to editor text.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ This is meant for writing and editing workflows, not for file format conversion 
 
 ## Primitive Name
 
-The primary primitive should be:
+The primary primitive is:
 
 ```logo
 TRANSLIT transform-id text
@@ -22,7 +22,7 @@ TRANSLIT transform-id text
 
 `TRANSLIT` is intentionally narrower than `CONVERT` and less generic than `TRANSFORM`. It communicates that the operation is text/script oriented, while still being short enough to feel natural in LOGO.
 
-`TRANSFORM` may be accepted as an alias if useful, but `TRANSLIT` should be the documented name.
+`TRANSFORM` is accepted as an alias, but `TRANSLIT` is the documented name.
 
 ## Examples
 
@@ -76,11 +76,14 @@ ICU identifiers should be passed through to the platform ICU implementation.
 
 `Zago-*` identifiers are implemented by zago itself. They are intended for editor-specific prose cleanup that ICU does not model directly, or where zago wants a stable behavior across ICU versions.
 
-Suggested initial zago transforms:
+Initial zago transforms:
 
 - `Zago-CJK-Punctuation`: normalize common ASCII punctuation into CJK punctuation for Chinese prose.
+- `Zago-Prose-Cleanup`: currently aliases `Zago-CJK-Punctuation`; it is reserved for a conservative composition of stable prose cleanup transforms.
+
+Planned zago transforms:
+
 - `Zago-CJK-Spacing`: normalize spacing around CJK, Latin, numbers, and punctuation.
-- `Zago-Prose-Cleanup`: a conservative composition of stable prose cleanup transforms.
 
 `Zago-*` transforms should be explicit and documented. They should not shadow ICU identifiers.
 
@@ -88,7 +91,7 @@ Suggested initial zago transforms:
 
 `Zago-CJK-Punctuation` should focus on predictable punctuation substitution for Chinese prose.
 
-Suggested baseline substitutions:
+Implemented baseline substitutions:
 
 | Input | Output |
 | --- | --- |

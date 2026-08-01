@@ -96,7 +96,7 @@ public final class LogoEngine {
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
         .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
         .count, .ascii, .char, .member, .uppercase, .lowercase,
-        .standout, .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
+        .standout, .translit, .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
         .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
         .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
         .iseq, .rseq, .random, .rerandom, .form, .bitAnd, .bitOr, .bitXor, .bitNot, .ashift, .lshift,

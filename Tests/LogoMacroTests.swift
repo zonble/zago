@@ -5,11 +5,31 @@ import TextMetrics
 
 @testable import Editor
 @testable import LogoEngine
+@testable import TextTransform
 
 final class LogoTestResultBox: @unchecked Sendable {
     var value: String?
     var error: String?
     var status: String?
+}
+
+@Test func testTextTransformerAndLogoTranslitPrimitive() throws {
+    #expect(try TextTransformer.apply("Zago-CJK-Punctuation", to: "Hello, world!") == "Hello， world！")
+    #expect(try TextTransformer.apply("Fullwidth-Halfwidth", to: "ＡＢＣ１２３") == "ABC123")
+    #expect(try TextTransformer.apply("Any-Hiragana", to: "Sakura") == "さくら")
+
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+
+    logoEngine.execute("TYPE TRANSLIT \"Zago-CJK-Punctuation \"Hello,\"")
+    #expect(editor.buffer.lines[0] == "Hello，")
+
+    logoEngine.execute("CLEARBUFFER TYPE TRANSFORM \"Fullwidth-Halfwidth \"ＡＢＣ１２３")
+    #expect(editor.buffer.lines[0] == "ABC123")
+
+    logoEngine.execute("TRANSLIT \"Zago-Does-Not-Exist \"text")
+    #expect(logoEngine.lastError == "[Unknown text transform: Zago-Does-Not-Exist]")
+    #expect(editor.statusMessage == "[Unknown text transform: Zago-Does-Not-Exist]")
 }
 
 @Test func testLogoMacroEngine() throws {
