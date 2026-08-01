@@ -14,6 +14,22 @@
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
 
+- [`zago`: Terminal Text Editor \& Diagramming](#zago-terminal-text-editor--diagramming)
+  - [Who is zago for?](#who-is-zago-for)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Quick Start](#quick-start)
+  - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
+  - [Command Examples](#command-examples)
+  - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
+    - [1. Interactive Editor Mode](#1-interactive-editor-mode)
+    - [2. Headless Scripting Mode](#2-headless-scripting-mode)
+    - [Command-Line Options](#command-line-options)
+  - [Documentation](#documentation)
+  - [Tests](#tests)
+  - [License](#license)
+
+
 ## Features
 
 - Plain-text diagramming: draw boxes, arrow connector lines, fills, and table layouts directly in the buffer.
@@ -57,47 +73,6 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
-
-## CLI Usage & Headless Scripting
-
-`zago` operates both as an interactive TUI editor and as a headless CLI diagram/table generator.
-
-### 1. Interactive Editor Mode
-
-Open one or more files in the terminal TUI editor:
-
-```bash
-zago notes.txt
-zago file1.txt file2.txt --wrap 80 --ruler
-```
-
-### 2. Headless Scripting Mode
-
-Execute LOGO scripts or inline LOGO code from the command line, render the canvas to a text buffer, and print the resulting ASCII output directly to stdout:
-
-```bash
-# Execute inline LOGO code and print output
-zago -e "BOX 20 4; MOVE DOWN MOVE RIGHT; FILL \"Hello World\""
-
-# Execute a LOGO script file and redirect output to a file
-zago -s myscript.logo > diagram.txt
-
-# Pipe generated diagram directly to clipboard
-zago --run generate_architecture.logo | pbcopy
-```
-
-### Command-Line Options
-
-| Option | Flag | Description |
-| :--- | :--- | :--- |
-| `files` | | File(s) to open in interactive editor mode. |
-| `-w`, `--wrap <col>` | | Specify softwrap column width (e.g. 80). |
-| `-r`, `--ruler` | | Display WordStar-style ruler bar above viewport. |
-| `-e`, `--eval <code>` | | Execute inline LOGO code in headless mode and print to stdout. |
-| `-s`, `--run`, `--script <file>` | | Execute a LOGO script file in headless mode and print to stdout. |
-| `--init` | | Generate default `~/.zagorc` configuration file. |
-| `--syntax <true/false>` | | Enable or disable syntax highlighting. |
-| `--lang <en/zh_TW>` | | Set interface language. |
 
 ## Text Mode & 2D Canvas Mode
 
@@ -194,6 +169,47 @@ TYPE "    database    "
 │    database    │
 └────────────────┘
 ```
+
+## CLI Usage & Headless Scripting
+
+`zago` operates both as an interactive TUI editor and as a headless CLI diagram/table generator.
+
+### 1. Interactive Editor Mode
+
+Open one or more files in the terminal TUI editor:
+
+```bash
+zago notes.txt
+zago file1.txt file2.txt --wrap 80 --ruler
+```
+
+### 2. Headless Scripting Mode
+
+Execute LOGO scripts or inline LOGO code from the command line, render the canvas to a text buffer, and print the resulting ASCII output directly to stdout:
+
+```bash
+# Execute inline LOGO code and print output
+zago -e "BOX 20 4; MOVE DOWN MOVE RIGHT; FILL \"Hello World\""
+
+# Execute a LOGO script file and redirect output to a file
+zago -s myscript.logo > diagram.txt
+
+# Pipe generated diagram directly to clipboard
+zago --run generate_architecture.logo | pbcopy
+```
+
+### Command-Line Options
+
+| Option | Flag | Description |
+| :--- | :--- | :--- |
+| `files` | | File(s) to open in interactive editor mode. |
+| `-w`, `--wrap <col>` | | Specify softwrap column width (e.g. 80). |
+| `-r`, `--ruler` | | Display WordStar-style ruler bar above viewport. |
+| `-e`, `--eval <code>` | | Execute inline LOGO code in headless mode and print to stdout. |
+| `-s`, `--run`, `--script <file>` | | Execute a LOGO script file in headless mode and print to stdout. |
+| `--init` | | Generate default `~/.zagorc` configuration file. |
+| `--syntax <true/false>` | | Enable or disable syntax highlighting. |
+| `--lang <en/zh_TW>` | | Set interface language. |
 
 ## Documentation
 

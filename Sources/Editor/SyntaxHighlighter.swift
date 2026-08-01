@@ -73,6 +73,7 @@ public final class SyntaxHighlighter {
             PlantUMLSyntaxDefinition(),
             AsciiDocSyntaxDefinition(),
             WikiSyntaxDefinition(),
+            VhsSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
@@ -279,6 +280,7 @@ public final class SyntaxHighlighter {
         case "org": normalized = "org"
         case "adoc", "asciidoc", "ascii": normalized = "adoc"
         case "wiki", "mediawiki": normalized = "wiki"
+        case "tape", "vhs": normalized = "tape"
         default: normalized = clean
         }
 

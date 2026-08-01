@@ -410,6 +410,10 @@ import Testing
     #expect(logoLang != nil)
     #expect(logoLang?.name == "LOGO")
 
+    let vhsLang = highlighter.detectLanguage(for: "demo.tape")
+    #expect(vhsLang != nil)
+    #expect(vhsLang?.name == "VHS")
+
     let zagorcLang = highlighter.detectLanguage(for: ".zagorc")
     #expect(zagorcLang != nil)
     #expect(zagorcLang?.name == "LOGO")
@@ -457,6 +461,27 @@ import Testing
         #expect(semicolonStringHighlighted.contains("\u{1B}[32m\"a;b\""))
         #expect(semicolonStringHighlighted.contains("\u{1B}[90m ; SHOW :x"))
         #expect(!semicolonStringHighlighted.contains("\u{1B}[90m;b\""))
+    }
+
+    if let lang = vhsLang {
+        let setHighlighted = highlighter.highlight(line: "Set FontSize 20", syntax: lang)
+        #expect(setHighlighted.contains("\u{1B}[1;36mSet"))
+        #expect(setHighlighted.contains("\u{1B}[94mFontSize"))
+        #expect(setHighlighted.contains("\u{1B}[33m20"))
+
+        let typeHighlighted = highlighter.highlight(line: "Type `echo # not comment`", syntax: lang)
+        #expect(typeHighlighted.contains("\u{1B}[1;36mType"))
+        #expect(typeHighlighted.contains("\u{1B}[32m`echo # not comment`"))
+        #expect(!typeHighlighted.contains("\u{1B}[90m# not comment"))
+
+        let waitHighlighted = highlighter.highlight(line: "Wait+Screen /ready\\/[0-9]+/", syntax: lang)
+        #expect(waitHighlighted.contains("\u{1B}[1;36mWait"))
+        #expect(waitHighlighted.contains("\u{1B}[94m+"))
+        #expect(waitHighlighted.contains("\u{1B}[32m/ready\\/[0-9]+/"))
+
+        let envHighlighted = highlighter.highlight(line: "Env API_URL \"https://example.test\"", syntax: lang)
+        #expect(envHighlighted.contains("\u{1B}[1;36mEnv"))
+        #expect(envHighlighted.contains("\u{1B}[32m\"https://example.test\""))
     }
 
     if let swiftLang = highlighter.detectLanguage(for: "Package.swift") {
