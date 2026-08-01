@@ -50,6 +50,17 @@ TRANSLIT "Zago-CJK-Punctuation "Hello, world!
 
 Applies a zago-defined writing transform for CJK punctuation normalization.
 
+Common Chinese and Japanese transforms also have convenience reporters:
+
+```logo
+TOHANS "繁體中文
+TOHANT "简体中文
+TOLATIN "你好嗎？
+TOHIRAGANA "Sakura
+TOKATAKANA "Sakura
+TOROMAJI "さくら
+```
+
 ## Semantics
 
 `TRANSLIT` is a reporter. It does not modify the buffer by itself.
@@ -86,6 +97,21 @@ Planned zago transforms:
 - `Zago-CJK-Spacing`: normalize spacing around CJK, Latin, numbers, and punctuation.
 
 `Zago-*` transforms should be explicit and documented. They should not shadow ICU identifiers.
+
+## Convenience Reporters
+
+The following reporters are aliases for common ICU transform identifiers. They accept one text argument and return transformed text.
+
+| Reporter | Alias | ICU transform |
+| --- | --- | --- |
+| `TOHANS` | `TRANSFORM.TOHANS` | `Hant-Hans` |
+| `TOHANT` | `TRANSFORM.TOHANT` | `Hans-Hant` |
+| `TOLATIN` | `TRANSFORM.TOLATIN` | `Any-Latin` |
+| `TOHIRAGANA` | `TRANSFORM.TOHIRAGANA` | `Any-Hiragana` |
+| `TOKATAKANA` | `TRANSFORM.TOKATAKANA` | `Any-Katakana` |
+| `TOROMAJI` | `TRANSFORM.TOROMAJI` | `Any-Latin` |
+
+`TOLATIN` and `TOROMAJI` intentionally share `Any-Latin`. The separate names make LOGO scripts read closer to the author's intent.
 
 ## CJK Punctuation Normalization
 

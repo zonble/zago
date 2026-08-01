@@ -17,6 +17,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(try TextTransformer.apply("Zago-CJK-Punctuation", to: "Hello, world!") == "Hello， world！")
     #expect(try TextTransformer.apply("Fullwidth-Halfwidth", to: "ＡＢＣ１２３") == "ABC123")
     #expect(try TextTransformer.apply("Any-Hiragana", to: "Sakura") == "さくら")
+    #expect(try TextTransformer.apply("Hant-Hans", to: "繁體中文") == "繁体中文")
 
     let editor = Editor()
     let logoEngine = editor.logoEngine
@@ -26,6 +27,24 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("CLEARBUFFER TYPE TRANSFORM \"Fullwidth-Halfwidth \"ＡＢＣ１２３")
     #expect(editor.buffer.lines[0] == "ABC123")
+
+    logoEngine.execute("CLEARBUFFER TYPE TOHANS \"繁體中文")
+    #expect(editor.buffer.lines[0] == "繁体中文")
+
+    logoEngine.execute("CLEARBUFFER TYPE TRANSFORM.TOHANT \"简体中文")
+    #expect(editor.buffer.lines[0] == "簡體中文")
+
+    logoEngine.execute("CLEARBUFFER TYPE TOLATIN \"你好嗎？")
+    #expect(editor.buffer.lines[0] == "nǐ hǎo ma？")
+
+    logoEngine.execute("CLEARBUFFER TYPE TOHIRAGANA \"Sakura")
+    #expect(editor.buffer.lines[0] == "さくら")
+
+    logoEngine.execute("CLEARBUFFER TYPE TRANSFORM.TOKATAKANA \"Sakura")
+    #expect(editor.buffer.lines[0] == "サクラ")
+
+    logoEngine.execute("CLEARBUFFER TYPE TOROMAJI \"さくら")
+    #expect(editor.buffer.lines[0] == "sakura")
 
     logoEngine.execute("TRANSLIT \"Zago-Does-Not-Exist \"text")
     #expect(logoEngine.lastError == "[Unknown text transform: Zago-Does-Not-Exist]")

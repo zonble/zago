@@ -90,21 +90,49 @@ extension LogoEngine {
                 index += 1
             }
             let inputText = unquote(evaluateExpression(tokens, index: &index))
-            do {
-                return try TextTransformer.apply(transformId, to: inputText)
-            } catch {
-                let message = "[\(error)]"
-                lastError = message
-                delegate?.logoEngine(self, performAction: .setStatusMessage(message))
-                hasSetStatusMessage = true
-                return ""
-            }
+            return applyTextTransform(transformId, to: inputText)
+
+        case .transformToHans:
+            return applyFixedTextTransform("Hant-Hans", tokens, index: &index)
+
+        case .transformToHant:
+            return applyFixedTextTransform("Hans-Hant", tokens, index: &index)
+
+        case .transformToLatin:
+            return applyFixedTextTransform("Any-Latin", tokens, index: &index)
+
+        case .transformToHiragana:
+            return applyFixedTextTransform("Any-Hiragana", tokens, index: &index)
+
+        case .transformToKatakana:
+            return applyFixedTextTransform("Any-Katakana", tokens, index: &index)
+
+        case .transformToRomaji:
+            return applyFixedTextTransform("Any-Latin", tokens, index: &index)
 
         case .headingPrimitive:
             return "\(heading)"
 
         default:
             return nil
+        }
+    }
+
+    private func applyFixedTextTransform(_ transformId: String, _ tokens: [String], index: inout Int) -> String {
+        index += 1
+        let inputText = unquote(evaluateExpression(tokens, index: &index))
+        return applyTextTransform(transformId, to: inputText)
+    }
+
+    private func applyTextTransform(_ transformId: String, to inputText: String) -> String {
+        do {
+            return try TextTransformer.apply(transformId, to: inputText)
+        } catch {
+            let message = "[\(error)]"
+            lastError = message
+            delegate?.logoEngine(self, performAction: .setStatusMessage(message))
+            hasSetStatusMessage = true
+            return ""
         }
     }
 }

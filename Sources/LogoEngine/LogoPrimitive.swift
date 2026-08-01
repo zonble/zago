@@ -153,6 +153,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case lowercase
     case standout
     case translit
+    case transformToHans
+    case transformToHant
+    case transformToLatin
+    case transformToHiragana
+    case transformToKatakana
+    case transformToRomaji
     case parse
     case runparse
 
@@ -372,6 +378,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["LOWERCASE"], .lowercase),
         (["STANDOUT"], .standout),
         (["TRANSLIT", "TRANSFORM"], .translit),
+        (["TOHANS", "TRANSFORM.TOHANS"], .transformToHans),
+        (["TOHANT", "TRANSFORM.TOHANT"], .transformToHant),
+        (["TOLATIN", "TRANSFORM.TOLATIN"], .transformToLatin),
+        (["TOHIRAGANA", "TRANSFORM.TOHIRAGANA"], .transformToHiragana),
+        (["TOKATAKANA", "TRANSFORM.TOKATAKANA"], .transformToKatakana),
+        (["TOROMAJI", "TRANSFORM.TOROMAJI"], .transformToRomaji),
         (["PARSE"], .parse),
         (["RUNPARSE"], .runparse),
 

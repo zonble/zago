@@ -584,6 +584,12 @@ TYPE ITEM 2 :cells
 | `UPPERCASE` | - | `UPPERCASE str` | Converts string to uppercase | `UPPERCASE "hello"` |
 | `LOWERCASE` | - | `LOWERCASE str` | Converts string to lowercase | `LOWERCASE "HELLO"` |
 | `TRANSLIT` | `TRANSFORM` | `TRANSLIT transform-id text` | Applies an ICU String Transform or zago `Zago-*` writing transform | `TRANSLIT "Any-Hiragana "Sakura`, `TRANSLIT "Zago-CJK-Punctuation "Hello,` |
+| `TOHANS` | `TRANSFORM.TOHANS` | `TOHANS text` | Converts Traditional Chinese text to Simplified Chinese via `Hant-Hans` | `TOHANS "繁體中文` |
+| `TOHANT` | `TRANSFORM.TOHANT` | `TOHANT text` | Converts Simplified Chinese text to Traditional Chinese via `Hans-Hant` | `TOHANT "简体中文` |
+| `TOLATIN` | `TRANSFORM.TOLATIN` | `TOLATIN text` | Romanizes text via `Any-Latin` | `TOLATIN "你好嗎？` |
+| `TOHIRAGANA` | `TRANSFORM.TOHIRAGANA` | `TOHIRAGANA text` | Converts text to Hiragana via `Any-Hiragana` | `TOHIRAGANA "Sakura` |
+| `TOKATAKANA` | `TRANSFORM.TOKATAKANA` | `TOKATAKANA text` | Converts text to Katakana via `Any-Katakana` | `TOKATAKANA "Sakura` |
+| `TOROMAJI` | `TRANSFORM.TOROMAJI` | `TOROMAJI text` | Romanizes Japanese text via `Any-Latin` | `TOROMAJI "さくら` |
 
 ---
 
