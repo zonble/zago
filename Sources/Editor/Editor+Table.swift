@@ -1,4 +1,5 @@
 import Foundation
+import LogoEngine
 import TextMetrics
 
 private enum TableLimits {
@@ -415,13 +416,13 @@ extension Editor {
 
         let targetCol = max(cell.minCol, min(nearCol, cell.maxCol))
         var startSearch = max(0, min(targetCol, chars.count - 1))
-        if startSearch > 0 && TableCellDetector.verticalBorderChars.contains(chars[startSearch]) {
+        if startSearch > 0 && BorderCharacterSet.verticalBoundaryChars.contains(chars[startSearch]) {
             startSearch -= 1
         }
 
         var left = startSearch
         while left >= 0 {
-            if TableCellDetector.verticalBorderChars.contains(chars[left]) {
+            if BorderCharacterSet.verticalBoundaryChars.contains(chars[left]) {
                 break
             }
             left -= 1
@@ -430,7 +431,7 @@ extension Editor {
 
         var right = left + 1
         while right < chars.count {
-            if TableCellDetector.verticalBorderChars.contains(chars[right]) {
+            if BorderCharacterSet.verticalBoundaryChars.contains(chars[right]) {
                 break
             }
             right += 1
@@ -1005,7 +1006,7 @@ extension Editor {
                 let (leftB, rightB) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
                 if leftB == colLeft && rightB == colRight {
                     let nextIdx = rightB + 1
-                    if nextIdx < chars.count && TableCellDetector.verticalBorderChars.contains(chars[nextIdx]) {
+                    if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
                         if !isSameGridTable {
                             setStatusMessage(L10n["status.cannot_expand_width_collision"])
                             return
@@ -1034,7 +1035,7 @@ extension Editor {
                     let connectorIdx = insertIndex + 2
                     if connectorIdx < chars.count {
                         let c = chars[connectorIdx]
-                        if c == "─" || c == "═" || c == "-" || c == " " {
+                        if BorderCharacterSet.isHorizontal(c) || c == " " {
                             chars.remove(at: connectorIdx)
                         }
                     }
@@ -1094,7 +1095,7 @@ extension Editor {
             var newLineChars = Array(templateLine)
 
             for c in 0..<newLineChars.count {
-                if !TableCellDetector.verticalBorderChars.contains(newLineChars[c]) {
+                if !BorderCharacterSet.verticalBoundaryChars.contains(newLineChars[c]) {
                     newLineChars[c] = " "
                 }
             }
@@ -1117,7 +1118,7 @@ extension Editor {
         let chars = Array(line)
 
         for c in chars {
-            if TableCellDetector.verticalBorderChars.contains(c) {
+            if BorderCharacterSet.verticalBoundaryChars.contains(c) {
                 continue
             }
             if !c.isWhitespace {
@@ -1158,15 +1159,10 @@ extension Editor {
     private func isTableBorderLine(_ chars: [Character], colLeft: Int, colRight: Int) -> Bool {
         guard colLeft + 1 < chars.count else { return false }
         let c = chars[colLeft + 1]
-        if c == "─" || c == "═" || c == "-" {
+        if BorderCharacterSet.isHorizontal(c) {
             return true
         }
-        let borderJunctions: Set<Character> = [
-            "┌", "┬", "┐", "└", "┴", "┘", "├", "┼", "┤",
-            "╭", "╮", "╰", "╯", "╔", "╦", "╗", "╚", "╩", "╝",
-            "╠", "╬", "╣", "+", "/", "\\",
-        ]
-        if colLeft < chars.count && borderJunctions.contains(chars[colLeft]) {
+        if colLeft < chars.count && BorderCharacterSet.isJunction(chars[colLeft]) {
             return true
         }
         return false
@@ -1175,7 +1171,7 @@ extension Editor {
     private func isAnyBorderLine(_ line: String, colLeft: Int) -> Bool {
         let chars = Array(line)
         guard colLeft < chars.count else { return false }
-        return TableCellDetector.verticalBorderChars.contains(chars[colLeft])
+        return BorderCharacterSet.verticalBoundaryChars.contains(chars[colLeft])
     }
 }
 

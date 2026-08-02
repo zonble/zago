@@ -504,9 +504,13 @@ import TextMetrics
 }
 
 @Test func testDynamicHelpBarByPromptMode() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .en
+
     let renderer = Renderer()
 
-    // 1. LOGO macro prompt help bar
+    // 1. LOGO macro prompt help bar (English)
     let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }))
     #expect(logoHelp.contains("BOX"))
     #expect(logoHelp.contains("DRAWBOX"))
@@ -514,13 +518,13 @@ import TextMetrics
     #expect(logoHelp.contains("LINE"))
     #expect(logoHelp.contains("Complete"))
 
-    // 2. Exit Confirmation prompt help bar
+    // 2. Exit Confirmation prompt help bar (English)
     let exitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
     #expect(exitHelp.contains("Yes"))
     #expect(exitHelp.contains("No"))
     #expect(exitHelp.contains("Cancel"))
 
-    // 3. Search input prompt help bar
+    // 3. Search input prompt help bar (English)
     let searchHelp = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
     #expect(!searchHelp.contains("Help"))
     #expect(searchHelp.contains("Cancel"))
@@ -529,7 +533,7 @@ import TextMetrics
     #expect(searchHelp.contains("Move"))
     #expect(searchHelp.contains("Jump"))
 
-    // 4. Default Nano help bar
+    // 4. Default Nano help bar (English)
     let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none)
     #expect(defaultHelp.contains("F1"))
     #expect(defaultHelp.contains("Menu"))
@@ -547,6 +551,13 @@ import TextMetrics
     #expect(canvasHelp.contains("F1"))
     #expect(!canvasHelp.contains("^G"))
     #expect(!canvasHelp.contains(L10n.helpGetHelp))
+
+    // 5. Traditional Chinese help bar verification
+    L10n.currentLanguage = .zh_TW
+    let zhExitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    #expect(zhExitHelp.contains("是"))
+    #expect(zhExitHelp.contains("否"))
+    #expect(zhExitHelp.contains("取消"))
 }
 
 @Test func testCanvasModeRendersLocalizedEndOfFileMarker() throws {

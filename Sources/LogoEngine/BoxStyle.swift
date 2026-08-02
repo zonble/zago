@@ -14,6 +14,79 @@ public struct TableBorderCharacters: Sendable {
     public let vertical: String
 }
 
+/// Unified source-of-truth for border, junction, and corner characters across the entire editor and Logo engine.
+public struct BorderCharacterSet: Sendable {
+    /// All vertical border characters (`│`, `║`, `|`, `/`, `\`).
+    public static let verticalBorderChars: Set<Character> = {
+        var set = Set(BorderStyle.allCases.compactMap { $0.tableCharacters.vertical.first })
+        set.insert("/")
+        set.insert("\\")
+        return set
+    }()
+
+    /// All horizontal border characters (`─`, `═`, `-`).
+    public static let horizontalBorderChars: Set<Character> = {
+        Set(BorderStyle.allCases.compactMap { $0.tableCharacters.horizontal.first })
+    }()
+
+    /// All border corner and T/cross junction characters.
+    public static let allJunctionChars: Set<Character> = {
+        var set = Set<Character>()
+        for style in BorderStyle.allCases {
+            let tc = style.tableCharacters
+            let cornersAndJoins = [
+                tc.topLeft, tc.topJoin, tc.topRight,
+                tc.midLeft, tc.midJoin, tc.midRight,
+                tc.bottomLeft, tc.bottomJoin, tc.bottomRight
+            ]
+            for str in cornersAndJoins {
+                if let ch = str.first {
+                    set.insert(ch)
+                }
+            }
+        }
+        set.insert("+")
+        set.insert("/")
+        set.insert("\\")
+        return set
+    }()
+
+    /// Union of vertical, horizontal, and junction border characters.
+    public static let allBorderChars: Set<Character> = {
+        verticalBorderChars.union(horizontalBorderChars).union(allJunctionChars)
+    }()
+
+    /// Vertical border characters including all corner and T/cross junctions (for vertical boundary scanning).
+    public static let verticalBoundaryChars: Set<Character> = {
+        verticalBorderChars.union(allJunctionChars)
+    }()
+
+    /// Horizontal border characters including all corner and T/cross junctions (for horizontal boundary scanning).
+    public static let horizontalBoundaryChars: Set<Character> = {
+        horizontalBorderChars.union(allJunctionChars)
+    }()
+
+    /// Returns true if character is any recognized border, junction, or corner character.
+    public static func isBorderOrJunction(_ ch: Character) -> Bool {
+        allBorderChars.contains(ch)
+    }
+
+    /// Returns true if character is a horizontal border character.
+    public static func isHorizontal(_ ch: Character) -> Bool {
+        horizontalBorderChars.contains(ch)
+    }
+
+    /// Returns true if character is a vertical border character.
+    public static func isVertical(_ ch: Character) -> Bool {
+        verticalBorderChars.contains(ch)
+    }
+
+    /// Returns true if character is a junction or corner character.
+    public static func isJunction(_ ch: Character) -> Bool {
+        allJunctionChars.contains(ch)
+    }
+}
+
 /// Shared border style used by LOGO boxes, editor tables, and menu state.
 public enum BorderStyle: String, CaseIterable, Sendable {
     case single = "single"

@@ -453,6 +453,8 @@ import Testing
 }
 
 @Test func testLocalization() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
     L10n.currentLanguage = .en
     #expect(L10n.helpGetHelp == "Get Help")
     #expect(L10n.helpExit == "Exit")

@@ -32,20 +32,6 @@ public struct TableCell: Equatable, Sendable {
 public final class TableCellDetector {
     public init() {}
 
-    public static let verticalBorderChars: Set<Character> = [
-        "│", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
-        "╭", "╮", "╰", "╯",
-        "║", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
-        "|", "+", "/", "\\",
-    ]
-
-    private static let horizontalBorderChars: Set<Character> = [
-        "─", "═", "-", "+", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
-        "╭", "╮", "╰", "╯",
-        "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
-        "/", "\\",
-    ]
-
     /// Detects enclosing table cell around (line, col) in lines buffer.
     public func detectCell(in lines: [String], line cursorLine: Int, col cursorCol: Int) -> TableCell? {
         guard !lines.isEmpty, cursorLine >= 0, cursorLine < lines.count else { return nil }
@@ -57,7 +43,7 @@ public final class TableCellDetector {
         var minCol: Int? = nil
         var c = cursorCol - 1
         while c >= 0 {
-            if c < chars.count && Self.verticalBorderChars.contains(chars[c]) {
+            if c < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[c]) {
                 minCol = c
                 break
             }
@@ -69,7 +55,7 @@ public final class TableCellDetector {
         var maxCol: Int? = nil
         var cRight = max(0, cursorCol)
         while cRight < chars.count {
-            if Self.verticalBorderChars.contains(chars[cRight]) {
+            if BorderCharacterSet.verticalBoundaryChars.contains(chars[cRight]) {
                 maxCol = cRight
                 break
             }
@@ -135,7 +121,7 @@ public final class TableCellDetector {
 
         var countBorder = 0
         for col in checkStart...checkEnd {
-            if Self.horizontalBorderChars.contains(chars[col]) {
+            if BorderCharacterSet.horizontalBoundaryChars.contains(chars[col]) {
                 countBorder += 1
             }
         }
@@ -144,7 +130,7 @@ public final class TableCellDetector {
 
     private func hasVerticalBorder(_ chars: [Character], col: Int) -> Bool {
         guard col >= 0 && col < chars.count else { return false }
-        return Self.verticalBorderChars.contains(chars[col])
+        return BorderCharacterSet.verticalBoundaryChars.contains(chars[col])
     }
 
     private func detectStyle(lines: [String], topLine: Int, leftCol: Int) -> BorderStyle {
