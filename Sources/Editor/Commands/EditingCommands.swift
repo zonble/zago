@@ -282,8 +282,8 @@ public struct SpellCheckCommand: Command {
 
 public struct EvalLogoCommand: Command {
     public let id: CommandID = .editEvalLogo
-    public let name = "Eval LOGO Code"
-    public let description = "Evaluate LOGO code at current line, selection, or code block"
+    public let name = "Eval Editor LOGO Code"
+    public let description = "Evaluate Editor LOGO code at current line, selection, or code block"
     public let keys: [Key] = [.ctrl("Q"), .ctrl("q")]
 
     public init() {}

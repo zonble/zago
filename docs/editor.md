@@ -1,6 +1,6 @@
 # `zago` Editor Basics
 
-`zago` is a modeless terminal text editor with built-in 2D diagramming capabilities, combining classic `nano` modeless typing and Emacs/WordStar keybindings with LOGO macro drawing and structured table editing.
+`zago` is a modeless terminal text editor with built-in 2D diagramming capabilities, combining classic `nano` modeless typing and Emacs/WordStar keybindings with Editor LOGO macro drawing and structured table editing.
 
 ---
 
@@ -8,20 +8,20 @@
 
 - [`zago` Editor Basics](#zago-editor-basics)
   - [Table of Contents](#table-of-contents)
-  - [Overview \& Architecture](#overview--architecture)
+  - [Overview & Architecture](#overview--architecture)
   - [Editor Modes](#editor-modes)
   - [Keybindings Reference](#keybindings-reference)
-    - [Navigation \& Movement](#navigation--movement)
-    - [Text Selection \& Clipboard](#text-selection--clipboard)
-    - [Editing \& Formatting](#editing--formatting)
-    - [Search \& Substitution](#search--substitution)
-    - [Document Links \& Navigation](#document-links--navigation)
-    - [File \& Buffer Operations](#file--buffer-operations)
-    - [Interface \& Menus](#interface--menus)
-  - [Command Prompt \& Shorthand](#command-prompt--shorthand)
+    - [Navigation & Movement](#navigation--movement)
+    - [Text Selection & Clipboard](#text-selection--clipboard)
+    - [Editing & Formatting](#editing--formatting)
+    - [Search & Substitution](#search--substitution)
+    - [Document Links & Navigation](#document-links--navigation)
+    - [File & Buffer Operations](#file--buffer-operations)
+    - [Interface & Menus](#interface--menus)
+  - [Command Prompt & Shorthand](#command-prompt--shorthand)
     - [Shorthand Commands](#shorthand-commands)
     - [Tab Completion](#tab-completion)
-    - [LOGO Fallthrough](#logo-fallthrough)
+    - [Editor LOGO Fallthrough](#logo-fallthrough)
   - [Multi-Buffer Workflow](#multi-buffer-workflow)
   - [Diagram Snippets](#diagram-snippets)
   - [Related Documentation](#related-documentation)
@@ -30,7 +30,7 @@
 
 ## Overview & Architecture
 
-`zago` operates modelessly: typing normal keys inserts text directly at the cursor without requiring an "insert mode". Advanced functions—such as file saving, text searching, canvas block operations, and LOGO script execution—are accessible via:
+`zago` operates modelessly: typing normal keys inserts text directly at the cursor without requiring an "insert mode". Advanced functions—such as file saving, text searching, canvas block operations, and Editor LOGO script execution—are accessible via:
 
 - **Control & Meta Keybindings** (e.g. `^O`, `^K`, `^U`, `M+W`, `M+V`)
 - **Function Keys** (e.g. `F1` for Menu Bar)

@@ -16,8 +16,8 @@ public struct LogoMacroCommand: Command {
 
 public struct LogoReferenceCommand: Command {
     public let id: CommandID = .logoReference
-    public let name = "LOGO Reference"
-    public let description = "Show LOGO command reference"
+    public let name = "Editor LOGO Reference"
+    public let description = "Show Editor LOGO command reference"
     public let keys: [Key] = []
 
     public init() {}
@@ -34,8 +34,8 @@ public struct LogoReferenceCommand: Command {
 
 public struct LogoWorkspaceCommand: Command {
     public let id: CommandID = .logoWorkspace
-    public let name = "LOGO Workspace"
-    public let description = "Show LOGO user procedures and variables"
+    public let name = "Editor LOGO Workspace"
+    public let description = "Show Editor LOGO user procedures and variables"
     public let keys: [Key] = []
 
     public init() {}

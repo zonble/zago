@@ -57,10 +57,10 @@ public struct EnglishStrings {
         "status.cannot_open_binary_file": "Cannot open binary file",
         "prompt.goto_line": "Enter line number, column number: ",
         "textview.footer": "  Up/Down: scroll   PgUp/PgDn: page   Home/End: jump   Any other key: close",
-        "logoview.reference_title": "  zago - LOGO Reference",
-        "logoview.workspace_title": "  zago - LOGO Workspace",
+        "logoview.reference_title": "  zago - Editor LOGO Reference",
+        "logoview.workspace_title": "  zago - Editor LOGO Workspace",
         "logoref.content": """
-  LOGO Reference
+  Editor LOGO Reference
   ================================================================
 
   Editor LOGO is an editor macro language. Commands edit the current
@@ -196,7 +196,7 @@ public struct EnglishStrings {
 
   All primitive aliases
 """,
-        "logoworkspace.heading": "  LOGO Workspace",
+        "logoworkspace.heading": "  Editor LOGO Workspace",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  Variables:",
         "logoworkspace.none": "    (none)",
@@ -314,7 +314,7 @@ public struct EnglishStrings {
         "helpview.file_10": "    ^^ (Canvas)        Set / unset rectangular canvas block mark",
         "helpview.file_9": "    F1 / M+M / ^M      Toggle top Menu Bar",
 
-        "helpview.sec_logo": "  LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
+        "helpview.sec_logo": "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Esc / M+:          Command prompt",
         "helpview.logo_2": "    TYPE / PRINT       Insert text into buffer at cursor",
         "helpview.logo_3": "    BOX / DRAWBOX / LINE / VLINE Draw box frames and separator lines with smart fusion",
@@ -432,7 +432,7 @@ public struct EnglishStrings {
         "menu.diagrams.dot_graph": "Graphviz Undirected Graph (graph)",
 
         "menu.help.show": "Show Help Reference",
-        "menu.help.logo_reference": "LOGO Reference",
+        "menu.help.logo_reference": "Editor LOGO Reference",
         "menu.help.logo_workspace": "Procedures & Variables",
 
         "transform.tohant": "Traditional Chinese",

@@ -7,7 +7,7 @@
 
 Local settings are loaded after global settings, so a project can override the user's defaults.
 
-The format is intentionally line-oriented and Nano-like. It supports editor settings, key bindings, LOGO command bindings, and startup LOGO code.
+The format is intentionally line-oriented and Nano-like. It supports editor settings, key bindings, Editor LOGO command bindings, and startup Editor LOGO code.
 
 ## Generating a Config File
 
@@ -18,67 +18,86 @@ zago --init
 ```
 
 The default target is `~/.zagorc`. These aliases are equivalent:
-
 ```bash
 zago --init-config
 zago --generate-config
 ```
 
-To write the template somewhere else, pass the target path as the positional argument:
+You can also specify a path:
 
 ```bash
 zago --init ./.zagorc
 zago --generate-config /tmp/example.zagorc
 ```
 
-The command writes the template file and exits without opening the editor.
+If the destination file already exists, `zago` leaves it unchanged and prints a notice.
 
-## Settings
+---
 
-| Directive | Description | Example |
-| :--- | :--- | :--- |
-| `set wrap [col]` | Enables softwrap at the terminal boundary or a fixed column width | `set wrap 80` |
-| `unset wrap` | Disables softwrap | `unset wrap` |
-| `set ruler` | Shows the classic WordStar-style ruler bar | `set ruler` |
-| `unset ruler` | Hides the ruler bar | `unset ruler` |
-| `set linenumbers [on|off]` | Shows or hides the line number gutter | `set linenumbers off` |
-| `unset linenumbers` | Hides the line number gutter for easier terminal copy/paste | `unset linenumbers` |
-| `set syntax [on|off]` | Enables or disables syntax highlighting | `set syntax off` |
-| `set autoreload` | Enables file auto-reload for external changes | `set autoreload` |
-| `unset autoreload` | Disables file auto-reload | `unset autoreload` |
-| `set lang [zh_TW|en]` | Sets the UI language explicitly | `set lang zh_TW` |
-| `set border [single\|double\|round\|double-round\|ascii\|markdown]` | Sets the default table & canvas border style | `set border round` |
+## Configuration Directives
+
+- `set <option> <value>` / `unset <option>`: configure editor options.
+- `bind <key> <action>`: bind a key sequence to an editor action or LOGO command.
+- `unbind <key>`: remove a key binding.
+- `logo-prelude ... endlogo`: evaluate startup LOGO code.
+- `logo-script <name> ... endlogo`: define a named LOGO script block for key bindings.
+- `include <path-glob>`: load Nano syntax definition files.
+
+---
+
+## Editor Options
+
+```nanorc
+set tabsize 4
+set tabstospaces
+unset tabstospaces
+set wrap 80
+unset wrap
+set lang zh_TW
+set syntax true
+set mouse true
+set backup true
+set backupdir ~/.zagorc-backups
+```
+
+Options configured in `.zagorc` apply when the editor starts.
+
+---
 
 ## Key Bindings
 
-Use `bind` to map a key to a command id:
+`zago` supports key bindings using Nano-style key names:
+
+- Control keys: `^O`, `^W`, `^R`, `^K`, `^U`, `^J`
+- Alt keys: `alt-w`, `alt-r`, `alt-j`, `alt-k`, `M-W`, `M-R`
+- Function keys: `F1` through `F12`
+- Special keys: `Esc`, `Tab`, `Enter`, `Backspace`, `Delete`, `Up`, `Down`, `Left`, `Right`
+
+Key bindings can invoke editor commands or LOGO code:
 
 ```nanorc
-bind ctrl-s file.save
-bind ctrl-g edit.cancel_selection
-```
+# Bind Alt+W to justify paragraph
+bind alt-w edit.justify
 
-Use `unbind` to remove a default binding:
-
-```nanorc
-unbind ctrl-g
-```
-
-LOGO commands can be bound inline:
-
-```nanorc
+# Bind Alt+H to inline Editor LOGO code
 bind alt-h logo: MOVE HOME TYPE "# " MOVE END
 ```
 
-The older `macro:` prefix is still accepted as an alias:
+Editor commands can be specified by ID:
+
+```nanorc
+bind alt-b edit.box
+```
+
+Or by macro shorthand string:
 
 ```nanorc
 bind alt-b macro: BOX 30 4 ROUND
 ```
 
-## LOGO Startup Code
+## Editor LOGO Startup Code
 
-Each editor instance owns one persistent LOGO engine. Startup code loaded from `.zagorc` is evaluated into that engine, and later command-prompt input and key-bound scripts share its variables and procedures.
+Each editor instance owns one persistent Editor LOGO engine. Startup code loaded from `.zagorc` is evaluated into that engine, and later command-prompt input and key-bound scripts share its variables and procedures.
 
 Use `logo-prelude` for startup variables and procedures:
 

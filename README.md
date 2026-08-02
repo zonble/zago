@@ -85,7 +85,7 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 
 ## Command Examples
 
-The command language is LOGO-like because LOGO has a useful property: it often does not feel like programming. Commands read like direct editing actions, but they can still be combined with variables, loops, and procedures when the work becomes repetitive.
+The command language is Editor LOGO. Commands read like direct editing actions, but they can still be combined with variables, loops, and procedures when the work becomes repetitive.
 
 ```logo
 BOX 30 5
@@ -215,7 +215,7 @@ zago --run generate_architecture.logo | pbcopy
 
 - [Editor basics](docs/editor.md)
 - [Mark, selection, and canvas behavior](docs/mark.md)
-- [LOGO command language](docs/logo.md)
+- [Editor LOGO command language](docs/logo.md)
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
 - [Diagram snippets & menu rules](docs/diagram_snippets.md)

@@ -1,6 +1,6 @@
 # Command Systems Architecture & Responsibility Division
 
-This document defines the architectural division of responsibilities between **Editor Commands (`Command`)** (handling both interactive keybindings and CommandBar string prompt dispatch) and the **LOGO Engine (`LogoEngine`)** in `zago`.
+This document defines the architectural division of responsibilities between **Editor Commands (`Command`)** (handling both interactive keybindings and CommandBar string prompt dispatch) and the **Editor LOGO Engine (`LogoEngine`)** in `zago`.
 
 ---
 
@@ -21,8 +21,8 @@ This document defines the architectural division of responsibilities between **E
 
 | Dimension | `Command` (Keybinding Mode) | `Command` (CommandBar Prompt Mode) | `LogoEngine` |
 | :--- | :--- | :--- | :--- |
-| **Trigger Source** | Direct Keybindings (e.g. `^O`, `Alt+T`, `Tab`, `F1`) | CommandBar Prompt (`:` or `Esc` input string, e.g. `save`, `open file.txt`) | LOGO code evaluation (`Ctrl+Q`, `:BOX 10 5`, script execution) |
-| **Input Format** | `Key` enum events | Space-separated string tokens (`CommandBarInput`) | Parsed LOGO AST / Tokens |
+| **Trigger Source** | Direct Keybindings (e.g. `^O`, `Alt+T`, `Tab`, `F1`) | CommandBar Prompt (`:` or `Esc` input string, e.g. `save`, `open file.txt`) | Editor LOGO code evaluation (`Ctrl+Q`, `:BOX 10 5`, script execution) |
+| **Input Format** | `Key` enum events | Space-separated string tokens (`CommandBarInput`) | Parsed Editor LOGO AST / Tokens |
 | **Primary Focus** | Real-time interactive UI, cursor movement, selection, mode toggling | Editor configuration, CLI commands, file operations via string args | Programmable scripting, turtle diagramming, math/string data manipulation |
 | **Execution Model** | Key lookup via `CommandRegistry` -> `execute(on:)` | String match via `CommandRegistry` -> `execute(with:on:)` | Lexer -> Parser -> Evaluator (`LogoScope`) |
 
@@ -40,10 +40,10 @@ Defined under `Sources/Editor/Commands/` (organized by domain into `FileCommands
   - **Tab Completion**: Automatically exposes `completionNames` derived from `commandBarAliases` for context-aware Tab completion in CommandBar.
 - **Design Principle**: Single Source of Truth for each command's name, description, keybindings, and CommandBar aliases.
 
-### B. LOGO Engine (`LogoEngine`)
+### B. Editor LOGO Engine (`LogoEngine`)
 Defined under `Sources/LogoEngine/`.
 
-- **Role**: Pure, programmable LOGO language interpreter, math engine, and turtle diagram generator.
+- **Role**: Pure, programmable Editor LOGO language interpreter, math engine, and turtle diagram generator.
 - **Key Responsibilities**:
   - Primitive evaluation (`FORWARD`, `BACK`, `RIGHT`, `LEFT`, `BOX`, `FILL`, `TABLE`).
   - Math & Data primitives (`+`, `-`, `FIRST`, `BUTFIRST`, `LIST`, `ARRAY`).

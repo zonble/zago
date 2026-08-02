@@ -1,4 +1,4 @@
-# `zago` Diagramming & Editing Commands: Guide & Reference
+# Editor LOGO Diagramming & Editing Commands: Guide & Reference
 
 `zago` provides a simple set of direct editing commands for drawing boxes, connector lines, tables, and laying out structured text directly inside your terminal buffer.
 

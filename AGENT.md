@@ -1,6 +1,6 @@
 # AGENT.md - AI Agent Development & Architecture Guide for `zago`
 
-Welcome to `zago` (zonble's nano + LOGO), a lightweight, high-performance GNU Nano-compatible Terminal Text Editor written in Swift.
+Welcome to `zago` (zonble's nano + Editor LOGO), a lightweight, high-performance GNU Nano-compatible Terminal Text Editor written in Swift.
 
 This document serves as the authoritative guide for AI Coding Agents (such as Antigravity, Codex, GitHub Copilot, and Claude Code) when modifying, refactoring, or extending the `zago` codebase.
 

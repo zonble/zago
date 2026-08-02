@@ -57,10 +57,10 @@ public struct TraditionalChineseStrings {
         "status.cannot_open_binary_file": "無法開啟非文字檔 (Binary File)",
         "prompt.goto_line": "請輸入列號與欄號：",
         "textview.footer": "  上/下：捲動   PgUp/PgDn：翻頁   Home/End：跳轉   其他按鍵：關閉",
-        "logoview.reference_title": "  zago - LOGO 指令參考",
-        "logoview.workspace_title": "  zago - LOGO 工作區",
+        "logoview.reference_title": "  zago - Editor LOGO 指令參考",
+        "logoview.workspace_title": "  zago - Editor LOGO 工作區",
         "logoref.content": """
-  LOGO 指令參考
+  Editor LOGO 指令參考
   ================================================================
 
   Editor LOGO 是編輯器巨集語言。指令會操作目前文字 buffer、
@@ -196,7 +196,7 @@ public struct TraditionalChineseStrings {
 
   所有 primitive alias
 """,
-        "logoworkspace.heading": "  LOGO 工作區",
+        "logoworkspace.heading": "  Editor LOGO 工作區",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  變數：",
         "logoworkspace.none": "    （無）",
@@ -314,7 +314,7 @@ public struct TraditionalChineseStrings {
         "helpview.file_10": "    ^^ (Canvas)        設定/取消矩形 canvas 區塊標記",
         "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列 (Menu Bar)",
 
-        "helpview.sec_logo": "  LOGO 巨集語言與海龜繪圖指令：",
+        "helpview.sec_logo": "  Editor LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Esc / M+:          移動到指令列",
         "helpview.logo_2": "    TYPE / PRINT       於游標位置輸出/插入指定文字",
         "helpview.logo_3": "    BOX / DRAWBOX / LINE / VLINE 畫框與橫豎分隔線（支援自動交點融合）",
@@ -432,7 +432,7 @@ public struct TraditionalChineseStrings {
         "menu.diagrams.dot_graph": "Graphviz 無向圖 (graph)",
 
         "menu.help.show": "顯示完整說明手冊 (Help)",
-        "menu.help.logo_reference": "LOGO 指令參考",
+        "menu.help.logo_reference": "Editor LOGO 指令參考",
         "menu.help.logo_workspace": "Procedures 與變數",
 
         "transform.tohant": "繁體中文",
