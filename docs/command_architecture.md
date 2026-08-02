@@ -1,6 +1,6 @@
 # Command Systems Architecture & Responsibility Division
 
-This document defines the architectural division of responsibilities among **Interactive Editor Commands (`Command`)**, **Command Bar Commands (`CommandBarCommand`)**, and the **LOGO Engine (`LogoEngine`)** in `zago`.
+This document defines the architectural division of responsibilities between **Editor Commands (`Command`)** (handling both interactive keybindings and CommandBar string prompt dispatch) and the **LOGO Engine (`LogoEngine`)** in `zago`.
 
 ---
 
@@ -11,47 +11,36 @@ This document defines the architectural division of responsibilities among **Int
                       │  User Keyboard & Stdin    │
                       └─────────────┬─────────────┘
                                     │
-           ┌────────────────────────┼────────────────────────┐
-           ▼                        ▼                        ▼
-┌────────────────────┐    ┌──────────────────┐    ┌────────────────────┐
-│   Command (Key)    │    │ CommandBarCommand│    │    LogoEngine      │
-│  (Interactive UI)  │    │  (Editor CLI)    │    │ (Language/Script)  │
-└────────────────────┘    └──────────────────┘    └────────────────────┘
+           ┌────────────────────────┴────────────────────────┐
+           ▼                                                 ▼
+┌─────────────────────────────────────────┐       ┌────────────────────┐
+│          Command (Unified)              │       │     LogoEngine     │
+│  (Keybindings & CommandBar CLI Prompt)  │       │ (Language/Script)  │
+└─────────────────────────────────────────┘       └────────────────────┘
 ```
 
-| Dimension | `Command` | `CommandBarCommand` | `LogoEngine` |
+| Dimension | `Command` (Keybinding Mode) | `Command` (CommandBar Prompt Mode) | `LogoEngine` |
 | :--- | :--- | :--- | :--- |
-| **Trigger Source** | Direct Keybindings (e.g. `Ctrl+O`, `Alt+T`, `Tab`, `F1`) | Command Bar Prompt (`:` or `Esc` input string, e.g. `:open file.txt`) | LOGO code evaluation (`Ctrl+Q`, `:BOX 10 5`, script execution) |
-| **Input Format** | `Key` enum events | Space-separated string tokens (`String`) | Parsed LOGO AST / Tokens |
+| **Trigger Source** | Direct Keybindings (e.g. `^O`, `Alt+T`, `Tab`, `F1`) | CommandBar Prompt (`:` or `Esc` input string, e.g. `save`, `open file.txt`) | LOGO code evaluation (`Ctrl+Q`, `:BOX 10 5`, script execution) |
+| **Input Format** | `Key` enum events | Space-separated string tokens (`CommandBarInput`) | Parsed LOGO AST / Tokens |
 | **Primary Focus** | Real-time interactive UI, cursor movement, selection, mode toggling | Editor configuration, CLI commands, file operations via string args | Programmable scripting, turtle diagramming, math/string data manipulation |
-| **Execution Model** | Synchronous, event-driven | String dispatch via `CommandRegistry` | Lexer -> Parser -> Evaluator (`LogoScope`) |
+| **Execution Model** | Key lookup via `CommandRegistry` -> `execute(on:)` | String match via `CommandRegistry` -> `execute(with:on:)` | Lexer -> Parser -> Evaluator (`LogoScope`) |
 
 ---
 
 ## 2. Component Details
 
-### A. Interactive Editor Commands (`Command`)
-Defined under `Sources/Editor/Commands/`.
+### A. Unified Editor Commands (`Command`)
+Defined under `Sources/Editor/Commands/` (organized by domain into `FileCommands.swift`, `SearchCommands.swift`, `NavigationCommands.swift`, `BufferCommands.swift`, `SettingCommands.swift`, `EditingCommands.swift`, `SelectionCommands.swift`, `TableModeCommands.swift`, `UICommands.swift`).
 
-- **Role**: Handles real-time, interactive UI actions triggered directly by keyboard shortcuts.
+- **Role**: Single protocol defining all editor actions, supporting both keybindings (`keys: [Key]`) and CommandBar text aliases (`commandBarAliases: [String]`).
 - **Key Responsibilities**:
-  - Cursor movement (`NavigateUp`, `NavigateDown`, `Home`, `End`).
-  - Editing operations (`InsertTab`, `DeleteLine`, `UncutText`, `JustifyParagraph`).
-  - Mode toggling & dialog triggers (`ToggleTableMode`, `ToggleCanvasMode`, `ActivateMenuBar`).
-- **Design Principle**: Must be fast, synchronous, and directly bound to UI state (`Editor`).
+  - **Interactive UI**: Cursor movement (`MoveUp`, `MoveDown`, `MoveHome`, `MoveEnd`), selection, mode toggling (`ToggleTableMode`, `ToggleCanvasMode`, `ToggleMenuBarCommand`).
+  - **Text-based CLI Commands**: File management (`open <file>`, `write [file]`, `quit`), editor settings (`set wrap <col>`, `set tabsize <size>`), navigation (`goto <line>[,<col>]`, `buffer <index>`).
+  - **Tab Completion**: Automatically exposes `completionNames` derived from `commandBarAliases` for context-aware Tab completion in CommandBar.
+- **Design Principle**: Single Source of Truth for each command's name, description, keybindings, and CommandBar aliases.
 
-### B. Command Bar Commands (`CommandBarCommand`)
-Defined under `Sources/Editor/Commands/CommandBarCommands.swift`.
-
-- **Role**: Text-based editor command line interface entered via the `: / Esc` prompt.
-- **Key Responsibilities**:
-  - File management (`open <file>`, `write [file]`, `quit`).
-  - Editor settings (`set wrap <col>`, `set tabwidth <size>`).
-  - Navigation (`goto <line>[,<col>]`, `buffer <index>`).
-  - Fallback gateway: Unknown commands are evaluated as LOGO expressions/scripts.
-- **Design Principle**: String-based command dispatch with clear argument validation and user-facing status reporting.
-
-### C. LOGO Engine (`LogoEngine`)
+### B. LOGO Engine (`LogoEngine`)
 Defined under `Sources/LogoEngine/`.
 
 - **Role**: Pure, programmable LOGO language interpreter, math engine, and turtle diagram generator.
@@ -60,7 +49,7 @@ Defined under `Sources/LogoEngine/`.
   - Math & Data primitives (`+`, `-`, `FIRST`, `BUTFIRST`, `LIST`, `ARRAY`).
   - Control flow & procedure definitions (`TO`, `END`, `IF`, `REPEAT`, `WHILE`).
   - Diagram generating helpers (`PRINT`, `TEXT`, `DIAGRAM`).
-- **Design Principle**: A clean, reproducible, side-effect-isolated programming environment.
+- **Design Principle**: A clean, reproducible, side-effect-isolated programming environment. Unknown CommandBar entries automatically fall through to `LogoEngine`.
 
 ---
 
@@ -78,19 +67,19 @@ To maintain language purity, safety, and decoupling, the following rules **MUST*
 
 ### ❌ 3. No Config File Parsing or Editor Setting Mutations
 - **Do NOT put**: Editor configuration parsing logic (`.zagorc` loading) inside `LogoEngine`.
-- **Reason**: Configuration loading is an editor lifecycle concern handled by `ConfigLoader`. LOGO code executed from `.zagorc` should only define primitives, procedures, or variables.
+- **Reason**: Configuration loading is handled by `ConfigLoader` in `Config` target. LOGO code executed from `.zagorc` should only define primitives, procedures, or variables.
 
 ---
 
 ## 4. Decision Matrix for New Features
 
-When adding a new feature, use this matrix to decide where it belongs:
+When adding a new editor feature, use this decision matrix:
 
 ```
-Is it triggered by a direct keypress?
- ├── YES ──> Implement as a `Command` (in `Commands/`)
- └── NO  ──> Is it typed as a string command like `:open` or `:goto`?
-              ├── YES ──> Implement as a `CommandBarCommand` (in `CommandRegistry`)
-              └── NO  ──> Is it a programmable script function or diagram generator?
-                           └── YES ──> Implement as a `LogoPrimitive` (in `LogoEngine/`)
+Is it an editor action (triggered by keypress or typed in CommandBar)?
+ ├── YES ──> Implement as a `Command` (in `Sources/Editor/Commands/`)
+ │            ├── Add keybindings (`keys: [...]`) for shortcut execution
+ │            └── Add CommandBar aliases (`commandBarAliases: [...]`) for text execution
+ └── NO  ──> Is it a programmable script function, procedure, or diagram generator?
+              └── YES ──> Implement as a `LogoPrimitive` (in `Sources/LogoEngine/`)
 ```

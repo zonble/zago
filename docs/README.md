@@ -6,7 +6,7 @@ This directory holds the detailed user and language documentation. The root [REA
 
 - [LOGO command language](logo.md): command prompt behavior, language vocabulary, drawing commands, procedures, data primitives, and examples.
 - [LOGO text transliteration](logo_text_transliteration.md): proposed ICU String Transform primitive for text/script conversion.
-- [Command & LOGO Architecture](command_architecture.md): division of responsibilities between Editor `Command`, `CommandBarCommand`, and `LogoEngine`.
+- [Command & LOGO Architecture](command_architecture.md): unified division of responsibilities between Editor `Command` and `LogoEngine`.
 - [Editor basics](editor.md): common editing keys and basic editor behavior.
 - [Mark, selection, and clipboard behavior](mark.md): text selection and canvas block mark rules.
 - [Configuration](configuration.md): `.zagorc`, key bindings, startup LOGO code, command ids, and Nano syntax file loading.
