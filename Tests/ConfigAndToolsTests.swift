@@ -58,12 +58,18 @@ import Testing
     let cutIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.cut" })
     let searchIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.search" })
     let openLinkItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.open_link" })
+    let outlineItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.outline" })
+    let nextHeadingItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.next_heading" })
+    let previousHeadingItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.previous_heading" })
     let justifyIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.justify" })
     let textModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.text_editing_mode" })
     let canvasModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.canvas_mode" })
     let tableEditingModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.table_editing_mode" })
     #expect(cutIndex != nil && searchIndex != nil && justifyIndex != nil)
     #expect(openLinkItem?.commandId == .documentOpenLink)
+    #expect(outlineItem?.commandId == .documentOutline)
+    #expect(nextHeadingItem?.commandId == .documentHeadingNext)
+    #expect(previousHeadingItem?.commandId == .documentHeadingPrevious)
     #expect(cutIndex! < searchIndex! && searchIndex! < justifyIndex!)
     #expect(textModeItem?.commandId == .textMode)
     #expect(canvasModeItem?.commandId == .canvasToggle)
@@ -131,6 +137,23 @@ import Testing
 
     editor.applyEditorSetting(setting: "wrap", arg: "4")
     #expect(editor.layoutEngine.wrapColumn == 10)
+}
+
+@Test func testOutlineMenuItemsOnlyShowForSupportedDocumentFormats() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "notes.md"
+    editor.menuBar.updateCategories(for: editor)
+    var editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.outline" }) == true)
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.next_heading" }) == true)
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.previous_heading" }) == true)
+
+    editor.buffer.filePath = "notes.txt"
+    editor.menuBar.updateCategories(for: editor)
+    editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.outline" }) == false)
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.next_heading" }) == false)
+    #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.previous_heading" }) == false)
 }
 
 @Test func testTextTransformMenuItemsOnlyShowWithTextSelection() throws {
@@ -500,6 +523,14 @@ import Testing
     #expect(L10n["help.uncut_block"] == "UnCut Block")
     #expect(L10n["help.open_link"] == "Open Link")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["helpview.search_3"].contains("outline"))
+    #expect(L10n["menu.edit.outline"] == "Outline\tM+\\")
+    #expect(L10n["menu.edit.next_heading"] == "Next Heading\tM+]")
+    #expect(L10n["menu.edit.previous_heading"] == "Previous Heading\tM+[")
+    #expect(L10n["status.no_headings"] == "[ No headings ]")
+    #expect(L10n["status.heading_nav_unsupported_format"] == "[ Document outline not supported for this file type ]")
+    #expect(String(format: L10n["status.heading_position"], 3, 18, "## Search") == "[ Heading 3/18: ## Search ]")
+    #expect(L10n["outlineview.title"] == "  Document Outline")
     #expect(L10n["menu.tools.word_count"] == "Word Count")
     #expect(
         String(format: L10n["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
@@ -548,6 +579,14 @@ import Testing
     #expect(L10n["help.uncut_block"] == "貼上區塊")
     #expect(L10n["help.open_link"] == "開啟連結")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["helpview.search_3"].contains("文件大綱"))
+    #expect(L10n["menu.edit.outline"] == "文件大綱\tM+\\")
+    #expect(L10n["menu.edit.next_heading"] == "下一個標題\tM+]")
+    #expect(L10n["menu.edit.previous_heading"] == "上一個標題\tM+[")
+    #expect(L10n["status.no_headings"] == "[ 沒有標題 ]")
+    #expect(L10n["status.heading_nav_unsupported_format"] == "[ 目前檔案格式不支援文件大綱 ]")
+    #expect(String(format: L10n["status.heading_position"], 3, 18, "## Search") == "[ 標題 3/18：## Search ]")
+    #expect(L10n["outlineview.title"] == "  文件大綱")
     #expect(L10n["menu.tools.word_count"] == "Word Count")
     #expect(
         String(format: L10n["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")

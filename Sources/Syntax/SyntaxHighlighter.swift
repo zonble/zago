@@ -42,6 +42,8 @@ public struct LanguageSyntax: Sendable {
     public let embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)?
     public let tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)?
     public let tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)?
+    public let supportsDocumentOutline: Bool
+    public let outlineParser: (@Sendable ([String]) -> DocumentOutline?)?
 
     public init(
         name: String,
@@ -49,7 +51,9 @@ public struct LanguageSyntax: Sendable {
         rules: [SyntaxRule],
         embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil,
         tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)? = nil,
-        tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil
+        tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil,
+        supportsDocumentOutline: Bool = false,
+        outlineParser: (@Sendable ([String]) -> DocumentOutline?)? = nil
     ) {
         self.name = name
         self.extensions = extensions
@@ -57,6 +61,8 @@ public struct LanguageSyntax: Sendable {
         self.embeddedLanguageDetector = embeddedLanguageDetector
         self.tableFormatter = tableFormatter
         self.tableNavigator = tableNavigator
+        self.supportsDocumentOutline = supportsDocumentOutline
+        self.outlineParser = outlineParser
     }
 }
 

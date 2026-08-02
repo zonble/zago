@@ -31,6 +31,7 @@ public protocol SyntaxDefinition: Sendable {
     var name: String { get }
     var fileExtensions: [String] { get }
     var rules: [SyntaxRule] { get }
+    var supportsDocumentOutline: Bool { get }
 
     /// Polymorphic hook for markup languages to detect embedded code block language names.
     func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String?
@@ -40,6 +41,9 @@ public protocol SyntaxDefinition: Sendable {
 
     /// Polymorphic hook for markup languages to navigate between table cells (Tab / Shift+Tab).
     func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult?
+
+    /// Polymorphic hook for markup languages to expose document headings.
+    func documentOutline(in lines: [String]) -> DocumentOutline?
 }
 
 extension SyntaxDefinition {
@@ -51,11 +55,19 @@ extension SyntaxDefinition {
         nil
     }
 
+    public var supportsDocumentOutline: Bool {
+        false
+    }
+
     public func formatTable(at lineIndex: Int, in lines: [String], cursorColumn: Int) -> TableFormatResult? {
         nil
     }
 
     public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
+        nil
+    }
+
+    public func documentOutline(in lines: [String]) -> DocumentOutline? {
         nil
     }
 
@@ -72,6 +84,10 @@ extension SyntaxDefinition {
             },
             tableNavigator: { lines, index, col, fwd in
                 self.navigateTableCell(at: index, column: col, in: lines, forward: fwd)
+            },
+            supportsDocumentOutline: supportsDocumentOutline,
+            outlineParser: { lines in
+                self.documentOutline(in: lines)
             }
         )
     }

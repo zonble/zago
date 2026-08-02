@@ -254,6 +254,45 @@ public struct OpenDocumentLinkCommand: Command {
     }
 }
 
+public struct NextHeadingCommand: Command {
+    public let id: CommandID = .documentHeadingNext
+    public let name = "Next Heading"
+    public let description = "Jump to next document heading"
+    public let keys: [Key] = [.alt("]")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.goToNextHeading()
+    }
+}
+
+public struct PreviousHeadingCommand: Command {
+    public let id: CommandID = .documentHeadingPrevious
+    public let name = "Previous Heading"
+    public let description = "Jump to previous document heading"
+    public let keys: [Key] = [.alt("[")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.goToPreviousHeading()
+    }
+}
+
+public struct DocumentOutlineCommand: Command {
+    public let id: CommandID = .documentOutline
+    public let name = "Outline"
+    public let description = "Open document outline"
+    public let keys: [Key] = [.alt("\\")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.showDocumentOutline()
+    }
+}
+
 public struct GotoLineCommand: Command {
     public let id: CommandID = .cursorGotoLine
     public let name = "Go To Line"

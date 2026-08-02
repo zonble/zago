@@ -3,6 +3,7 @@ import Foundation
 public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
     public let name = "AsciiDoc"
     public let fileExtensions = ["adoc", "asciidoc", "ascii"]
+    public let supportsDocumentOutline = true
 
     public var rules: [SyntaxRule] {
         [
@@ -53,5 +54,9 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
 
     public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
         PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
+    }
+
+    public func documentOutline(in lines: [String]) -> DocumentOutline? {
+        AsciiDocOutlineParser.parse(lines: lines)
     }
 }

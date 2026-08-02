@@ -165,6 +165,9 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `search.next` | Find next active search match | `M+N` |
 | `search.previous` | Find previous active search match | `M+P` |
 | `document.open_link` | Open Markdown, Org, reStructuredText, or AsciiDoc document link at cursor | `M+O` |
+| `document.heading_next` | Jump to next document heading | `M+]` |
+| `document.heading_previous` | Jump to previous document heading | `M+[` |
+| `document.outline` | Open current document outline picker | `M+\` |
 | `cursor.goto_line` | Go to line or line,column | `^/`, `^_`, `M+G` |
 | `cursor.position` | Show cursor position | `^C`, `F11` |
 | `file.save` | Save file | `^O`, `^S`, `F3` |

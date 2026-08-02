@@ -65,6 +65,8 @@
 | `PgUp` (`^Y`) | Page Up |
 | `PgDn` (`^V`) | Page Down |
 | `M+<` / `M+>` | Jump to beginning / end of buffer |
+| `M+[` / `M+]` | Jump to previous / next document heading |
+| `M+\` | Open current document outline picker |
 | `^C` | Display current line, column, character count, and visual position info |
 
 ### Text Selection & Clipboard
@@ -104,6 +106,8 @@
 | Key | Action |
 | :--- | :--- |
 | `M+O` | Open relative document link under cursor (supports Markdown `[text](path)`, Org-mode `[[path]]`, reST `:doc:` / `` `title <path>` ``, and AsciiDoc `link:path[]`) |
+| `M+[` / `M+]` | Navigate previous / next heading in Markdown, Org, reStructuredText, or AsciiDoc documents |
+| `M+\` | Open outline picker for headings in the current document |
 
 ### File & Buffer Operations
 

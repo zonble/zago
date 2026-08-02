@@ -1,6 +1,7 @@
 ```logo
-NL
-REPEAT 10 [BOX :# MOVE UP MOVE UP]
+NL NL NL NL
+MOVE UP MOVE UP MOVE UP
+REPEAT 10 [BOX :#]
 ```
 
 ```logo
@@ -14,7 +15,8 @@ REPEAT 10 [TYPE "- " TYPE :# NL]
 ```
 
 ```logo
-NL
+NL NL NL NL
+MOVE UP MOVE UP MOVE UP
 PD
 REPEAT 10 [FD 2 IFELSE :# % 2 == 0 [LEFT][RIGHT]]
 ```
@@ -24,5 +26,3 @@ PU
 PD
 FD 10
 ```
-
-

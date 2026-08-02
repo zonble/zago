@@ -3,6 +3,7 @@ import Foundation
 public struct MarkdownSyntaxDefinition: SyntaxDefinition {
     public let name = "Markdown"
     public let fileExtensions = ["md", "markdown", "mdown", "mkd"]
+    public let supportsDocumentOutline = true
 
     public var rules: [SyntaxRule] {
         [
@@ -74,5 +75,9 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
 
     public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
         PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .markdown)
+    }
+
+    public func documentOutline(in lines: [String]) -> DocumentOutline? {
+        MarkdownOutlineParser.parse(lines: lines)
     }
 }

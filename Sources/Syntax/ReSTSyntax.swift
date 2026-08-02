@@ -3,6 +3,7 @@ import Foundation
 public struct ReSTSyntaxDefinition: SyntaxDefinition {
     public let name = "reStructuredText"
     public let fileExtensions = ["rst", "rest"]
+    public let supportsDocumentOutline = true
 
     public var rules: [SyntaxRule] {
         [
@@ -60,5 +61,9 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
 
     public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
         PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .restGrid)
+    }
+
+    public func documentOutline(in lines: [String]) -> DocumentOutline? {
+        ReSTOutlineParser.parse(lines: lines)
     }
 }

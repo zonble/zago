@@ -147,7 +147,7 @@ public final class Terminal {
             }
             switch b2 {
             case UInt8(ascii: "["):
-                guard let b3 = readByte(timeoutMs: 50) else { return .esc }
+                guard let b3 = readByte(timeoutMs: 50) else { return .alt("[") }
                 switch b3 {
                 case UInt8(ascii: "A"): return .arrowUp
                 case UInt8(ascii: "B"): return .arrowDown

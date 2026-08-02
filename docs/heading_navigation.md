@@ -59,7 +59,7 @@ public enum DocumentOutlineParser {
 }
 ```
 
-`Language?` may be inferred from the current buffer file path or explicit editor language setting. If the language is unknown, the parser may use conservative multi-format detection for prose formats only.
+`Language?` may be inferred from the current buffer file path or explicit editor language setting. If the language is unknown, the parser may use conservative multi-format detection for prose formats only. Editor commands must only enable heading navigation for formats that explicitly support document outlines, so unsupported files such as shell scripts do not treat `#` comments as Markdown headings.
 
 ## Supported Heading Forms
 
@@ -193,6 +193,7 @@ Suggested status messages:
 [ Heading navigation disabled in Directory Mode ]
 [ Heading navigation disabled in Canvas Mode ]
 [ Heading navigation disabled in Table Mode ]
+[ Document outline not supported for this file type ]
 ```
 
 ## Outline View

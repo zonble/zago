@@ -102,6 +102,7 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 - Text counts from the Tools menu. With a selection, `Word Count` reports that selection; without a selection, it reports the whole document. The status includes chars, words, lines, and only shows CJK chars or emojis when present.
 - Optional sub line numbers for fixed-width prose drafting: when a wrap column is set, long physical lines can show visual-row numbers and paragraph character counts.
 - Document link navigation with `M+O` for local Markdown, Org, reStructuredText, and AsciiDoc links.
+- Heading navigation and outline picker for Markdown, Org, reStructuredText, and AsciiDoc documents.
 
 ## Command Examples
 
