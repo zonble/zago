@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 1.0.1 - 2026-08-02
+
+Preview release update for Homebrew distribution and Canvas Mode safety.
+
+### Added
+
+- Homebrew tap installation instructions with third-party tap trust guidance.
+- Linux Homebrew formula support through Homebrew's `swift` build dependency.
+- VHS demo sequence assets for documentation.
+- Command bar support for `set canvas-mode on`, `set canvas-mode off`, and `unset canvas-mode`.
+- Command bar support for `goto row [col]` in addition to numeric `row:col` and `row,col` shorthand.
+- Canvas Mode safety limits: auto-created rows and virtual columns are capped at 10,000.
+
+### Changed
+
+- Canvas Mode `goto row [col]` now auto-extends empty rows within the safety limits.
+- Text Mode `goto` keeps clamping to the existing buffer and never auto-extends rows.
+
+## 1.0.0 - 2026-08-02
+
 Preview release work for early testers.
 
 ### Added

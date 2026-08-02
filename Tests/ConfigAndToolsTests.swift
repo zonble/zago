@@ -6,7 +6,7 @@ import Testing
 
 @Test func testZagoVersionAndTitleBarDisplay() throws {
     #expect(!ZagoVersion.current.isEmpty)
-    #expect(ZagoVersion.current == "1.0.0")
+    #expect(ZagoVersion.current == "1.0.1")
 
     let editor = Editor()
     let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
