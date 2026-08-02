@@ -60,13 +60,16 @@
 
 ## Quick Start
 
-Install from the Homebrew tap once it is published:
+Install from the Homebrew tap:
 
 ```bash
 brew tap zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 zago notes.txt
 ```
+
+If Homebrew refuses to install from an untrusted third-party tap, run the `brew tap --trust zonble/zago` line and install again.
 
 Install with [Mint](https://github.com/yonaskolb/Mint):
 
@@ -95,10 +98,11 @@ swift build -c release
 
 ## Homebrew Tap
 
-The tap repository is expected to be `zonble/homebrew-zago`, which users access as:
+The tap repository is `zonble/homebrew-zago`, which users access as:
 
 ```bash
 brew tap zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 ```
 

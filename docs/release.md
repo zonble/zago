@@ -73,12 +73,21 @@ SIGN=0 ./build.sh
 
 ## Install From Homebrew Tap
 
-After the tap repository exists, users can install with:
+Users can install with:
 
 ```sh
 brew tap zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 zago --version
+```
+
+If Homebrew refuses to use the third-party tap, run:
+
+```sh
+brew tap-info zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
+brew install zago
 ```
 
 Tap maintenance is documented in [Homebrew Tap](homebrew_tap.md).

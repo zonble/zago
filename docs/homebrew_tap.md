@@ -8,7 +8,7 @@ The source repository is:
 https://github.com/zonble/zago
 ```
 
-The Homebrew tap repository should be:
+The Homebrew tap repository is:
 
 ```text
 https://github.com/zonble/homebrew-zago
@@ -18,8 +18,11 @@ With that repository name, users install zago with:
 
 ```sh
 brew tap zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 ```
+
+Homebrew may refuse to install from an untrusted third-party tap. Ask users to run `brew tap-info zonble/zago` first if they want to inspect the tap, then `brew tap --trust zonble/zago` before installing.
 
 ## Tap Repository Layout
 
@@ -38,7 +41,7 @@ mkdir -p Formula
 cp packaging/homebrew/zago.rb Formula/zago.rb
 ```
 
-The checked-in template uses a placeholder SHA. Replace it before pushing the tap.
+The checked-in template tracks the current release. Update the tag URL and SHA before each tap release.
 
 ## Release Source Archive
 
@@ -122,6 +125,7 @@ After the tap repository is pushed:
 
 ```sh
 brew tap zonble/zago
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 zago --version
 ```
