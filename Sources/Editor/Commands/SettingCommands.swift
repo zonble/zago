@@ -29,7 +29,7 @@ public struct SettingCommand: Command {
 
     public static let settingNames = [
         "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "regex", "tab",
-        "lang", "border",
+        "lang", "border", "trim-trailing-whitespace",
     ]
 
     public static func valueSuggestions(for setting: String) -> [String] {
@@ -43,6 +43,8 @@ public struct SettingCommand: Command {
             "canvas-mode", "canvasmode", "canvas_mode",
             "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting",
             "autoreload", "auto-reload", "auto_reload",
+            "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
+            "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces",
             "regex", "regexp", "enableregex":
             return ["on", "off"]
         case "tab", "tabsize":

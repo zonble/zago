@@ -733,8 +733,8 @@ TYPE ITEM 2 :cells
 
 Editor/session settings are command prompt and configuration directives, not
 LOGO primitives. Use command prompt shorthand such as `set wrap 80`,
-`set tab 4`, `set canvas-mode on`, `set linenumbers off`, `set ruler on`,
-and `unset wrap`.
+`set tab 4`, `set canvas-mode on`, `set trim-trailing-whitespace on`,
+`set linenumbers off`, `set ruler on`, and `unset wrap`.
 
 ---
 

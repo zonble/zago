@@ -730,6 +730,9 @@ extension Editor {
     /// Saves buffer to specified file path.
     func doSave(to path: String) {
         do {
+            if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
+                _ = buffer.trimTrailingWhitespace()
+            }
             try buffer.saveFile(to: path)
             setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
         } catch {

@@ -126,6 +126,7 @@ public final class Editor {
         public var enableSyntaxHighlight: Bool
         public var autoReload: Bool
         public var tabSize: Int
+        public var trimTrailingWhitespaceOnSave: Bool
 
         public init(
             showRuler: Bool = false,
@@ -133,7 +134,8 @@ public final class Editor {
             showSubLineNumbers: Bool = false,
             enableSyntaxHighlight: Bool = true,
             autoReload: Bool = true,
-            tabSize: Int = 4
+            tabSize: Int = 4,
+            trimTrailingWhitespaceOnSave: Bool = false
         ) {
             self.showRuler = showRuler
             self.showLineNumbers = showLineNumbers
@@ -141,6 +143,7 @@ public final class Editor {
             self.enableSyntaxHighlight = enableSyntaxHighlight
             self.autoReload = autoReload
             self.tabSize = tabSize
+            self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
         }
     }
 
@@ -170,13 +173,15 @@ public final class Editor {
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
         let finalTabSize = loadedConfig.tabSize
+        let finalTrimTrailingWhitespace = loadedConfig.trimTrailingWhitespaceOnSave
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.displayConfig = DisplayConfig(
             showRuler: finalRuler, showLineNumbers: finalLineNumbers, showSubLineNumbers: finalSubLineNumbers,
             enableSyntaxHighlight: finalSyntax,
-            autoReload: finalReload, tabSize: finalTabSize)
+            autoReload: finalReload, tabSize: finalTabSize,
+            trimTrailingWhitespaceOnSave: finalTrimTrailingWhitespace)
         self.baseMode = loadedConfig.startInCanvasMode ? .canvas : .text
 
         setupDefaultCommands()
@@ -276,6 +281,7 @@ public final class Editor {
         self.displayConfig.enableSyntaxHighlight = loadedConfig.enableSyntaxHighlight
         self.displayConfig.autoReload = loadedConfig.autoReload
         self.displayConfig.tabSize = loadedConfig.tabSize
+        self.displayConfig.trimTrailingWhitespaceOnSave = loadedConfig.trimTrailingWhitespaceOnSave
         if let lang = loadedConfig.language {
             L10n.currentLanguage = lang
         }

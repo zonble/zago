@@ -359,6 +359,7 @@ import Testing
     #expect(content.contains("set subLineNumbers off"))
     #expect(content.contains("# set canvas-mode off"))
     #expect(content.contains("set tabSize 4"))
+    #expect(content.contains("set trimTrailingWhitespace off"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
 }
@@ -392,6 +393,7 @@ import Testing
         set subLineNumbers on
         set canvas-mode on
         set autoReload true
+        set trimTrailingWhitespace on
         bind ctrl-f move.left
         bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
         logo-prelude
@@ -423,6 +425,7 @@ import Testing
     #expect(config.showSubLineNumbers == true)
     #expect(config.startInCanvasMode == true)
     #expect(config.autoReload == true)
+    #expect(config.trimTrailingWhitespaceOnSave == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
     #expect(config.customKeyBinds[.alt("h")] == "logo: MOVE HOME TYPE '# ' MOVE END")
     #expect(config.unbindKeys.contains(.f1))
@@ -437,6 +440,8 @@ import Testing
     #expect(SettingCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
     #expect(SettingCommand.settingNames.contains("canvas-mode"))
     #expect(SettingCommand.valueSuggestions(for: "canvas_mode") == ["on", "off"])
+    #expect(SettingCommand.settingNames.contains("trim-trailing-whitespace"))
+    #expect(SettingCommand.valueSuggestions(for: "trimTrailingWhitespace") == ["on", "off"])
 
     let editor = Editor()
     #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -452,6 +457,12 @@ import Testing
 
     editor.applyEditorSetting(setting: "canvasmode", arg: "off")
     #expect(editor.isCanvasModeActive == false)
+
+    editor.applyEditorSetting(setting: "trim-trailing-whitespace", arg: "on")
+    #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == true)
+
+    editor.applyEditorSetting(setting: "trim_trailing_spaces", arg: "off")
+    #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == false)
 }
 
 @Test func testWrapColumnMinimumIsTen() throws {

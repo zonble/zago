@@ -106,6 +106,22 @@ import Testing
     try? FileManager.default.removeItem(atPath: tempFile)
 }
 
+@Test func testTrimTrailingWhitespaceOnlyRemovesLineEndSpacesAndTabs() throws {
+    let buffer = TextBuffer()
+    buffer.lines = ["  alpha  ", "beta\t\t", "  gamma", "   ", ""]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 9
+
+    let changed = buffer.trimTrailingWhitespace()
+
+    #expect(changed == true)
+    #expect(buffer.lines == ["  alpha", "beta", "  gamma", "", ""])
+    #expect(buffer.columnIndex == 7)
+
+    let changedAgain = buffer.trimTrailingWhitespace()
+    #expect(changedAgain == false)
+}
+
 @Test func testTextBufferDeleteAndClamp() throws {
     let buffer = TextBuffer()
     buffer.lines = ["ABC"]

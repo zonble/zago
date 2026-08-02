@@ -257,6 +257,15 @@ extension Editor {
             } else {
                 displayConfig.autoReload.toggle()
             }
+        case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
+            "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces":
+            if arg == "off" || arg == "false" {
+                displayConfig.trimTrailingWhitespaceOnSave = false
+            } else if arg == "on" || arg == "true" {
+                displayConfig.trimTrailingWhitespaceOnSave = true
+            } else {
+                displayConfig.trimTrailingWhitespaceOnSave.toggle()
+            }
         case "regex", "regexp", "enableregex":
             if arg == "off" || arg == "false" {
                 isRegexSearchEnabled = false

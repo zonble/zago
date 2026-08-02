@@ -55,6 +55,8 @@ set wrap 80
 unset wrap
 set canvas-mode on
 set canvas-mode off
+set trim-trailing-whitespace on
+set trim-trailing-whitespace off
 set lang zh_TW
 set syntax true
 set mouse true
@@ -63,6 +65,9 @@ set backupdir ~/.zagorc-backups
 ```
 
 Options configured in `.zagorc` apply when the editor starts.
+
+`trim-trailing-whitespace` is off by default. When enabled, saving removes
+trailing spaces and tabs from each line before writing the file.
 
 ---
 

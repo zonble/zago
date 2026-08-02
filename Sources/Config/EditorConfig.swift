@@ -11,6 +11,7 @@ public struct EditorConfig {
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
+    public var trimTrailingWhitespaceOnSave: Bool = false
     public var language: Language? = nil
     public var defaultBorderStyle: BorderStyle = .single
     public var customKeyBinds: [Key: String] = [:]

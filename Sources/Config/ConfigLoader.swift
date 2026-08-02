@@ -148,6 +148,11 @@ public final class ConfigLoader {
                             config.enableSyntaxHighlight = false
                         } else if value == "autoreload" {
                             config.autoReload = false
+                        } else if value == "trim-trailing-whitespace" || value == "trimtrailingwhitespace"
+                            || value == "trim_trailing_whitespace" || value == "trim-trailing-spaces"
+                            || value == "trimtrailingspaces" || value == "trim_trailing_spaces"
+                        {
+                            config.trimTrailingWhitespaceOnSave = false
                         } else {
                             config.syntaxErrorCount += 1
                         }
@@ -166,6 +171,16 @@ public final class ConfigLoader {
                             config.autoReload = true
                         } else if value == "false" || value == "off" || value == "0" {
                             config.autoReload = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
+                        "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.trimTrailingWhitespaceOnSave = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.trimTrailingWhitespaceOnSave = false
                         } else {
                             config.syntaxErrorCount += 1
                         }
@@ -213,6 +228,9 @@ public final class ConfigLoader {
                         config.enableSyntaxHighlight = false
                     case "autoreload", "auto-reload", "auto_reload":
                         config.autoReload = false
+                    case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
+                        "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces":
+                        config.trimTrailingWhitespaceOnSave = false
                     default:
                         config.syntaxErrorCount += 1
                     }
@@ -379,6 +397,9 @@ set enableSyntax on
 
 # Auto Reload modified files from disk (on / off)
 set autoReload on
+
+# Trim trailing spaces and tabs before saving (on / off)
+set trimTrailingWhitespace off
 
 # Interface Language (en / zh_TW)
 # set language zh_TW

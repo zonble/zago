@@ -87,6 +87,18 @@ open class TextBuffer {
         self.isModified = false
     }
 
+    @discardableResult
+    public func trimTrailingWhitespace() -> Bool {
+        let trimmedLines = lines.map { line in
+            String(line.reversed().drop(while: { $0 == " " || $0 == "\t" }).reversed())
+        }
+        guard trimmedLines != lines else { return false }
+        lines = trimmedLines
+        clampCursor()
+        isModified = true
+        return true
+    }
+
     /// Inserts external file content at current cursor position.
     public func insertFile(at path: String) throws -> Int {
         let expandedPath = NSString(string: path).expandingTildeInPath

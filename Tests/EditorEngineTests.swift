@@ -236,6 +236,46 @@ import TextMetrics
     }
 }
 
+@Test func testSaveTrimsTrailingWhitespaceWhenSettingEnabled() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_trim_trailing_whitespace_\(UUID().uuidString).txt"
+    ).path
+    defer {
+        try? FileManager.default.removeItem(atPath: tmpPath)
+    }
+
+    let editor = Editor(filePath: tmpPath)
+    editor.buffer.lines = ["alpha  ", "\tbeta\t", "gamma"]
+    editor.buffer.isModified = true
+    editor.displayConfig.trimTrailingWhitespaceOnSave = true
+
+    editor.saveBuffer(path: nil)
+
+    #expect(editor.buffer.lines == ["alpha", "\tbeta", "gamma"])
+    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "alpha\n\tbeta\ngamma")
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testSavePreservesTrailingWhitespaceWhenSettingDisabled() throws {
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_preserve_trailing_whitespace_\(UUID().uuidString).txt"
+    ).path
+    defer {
+        try? FileManager.default.removeItem(atPath: tmpPath)
+    }
+
+    let editor = Editor(filePath: tmpPath)
+    editor.buffer.lines = ["alpha  ", "beta\t"]
+    editor.buffer.isModified = true
+    editor.displayConfig.trimTrailingWhitespaceOnSave = false
+
+    editor.saveBuffer(path: nil)
+
+    #expect(editor.buffer.lines == ["alpha  ", "beta\t"])
+    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "alpha  \nbeta\t")
+    #expect(editor.buffer.isModified == false)
+}
+
 @Test func testWriteOutStillPromptsForPath() throws {
     let editor = Editor()
 
@@ -1089,6 +1129,12 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     submitCommandBar("set syntax off", editor: editor)
     #expect(editor.displayConfig.enableSyntaxHighlight == false)
+
+    submitCommandBar("set trim-trailing-whitespace on", editor: editor)
+    #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == true)
+
+    submitCommandBar("unset trim-trailing-whitespace", editor: editor)
+    #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == false)
 
     submitCommandBar("set wrap 4", editor: editor)
     #expect(editor.layoutEngine.wrapColumn == 10)

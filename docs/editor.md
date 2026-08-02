@@ -166,7 +166,8 @@ Pressing `Esc` or `Alt+:` opens the bottom Command Prompt line. It parses inputs
 The command prompt features intelligent context-aware `Tab` completion:
 
 - **Command Shorthands**: Completes `save`, `open`, `write`, `buffer`, `exit`, etc.
-- **Settings & Options**: Typing `set ` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `canvas-mode`, `syntax`, `language`, `border`).
+- **Settings & Options**: Typing `set ` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `canvas-mode`, `trim-trailing-whitespace`, `syntax`, `language`, `border`).
+- **Save Cleanup**: `set trim-trailing-whitespace on` removes trailing spaces and tabs from each line before saving. It is off by default.
 - **File Paths**: Completes relative/absolute file system paths for `open` and `write`.
 - **LOGO Keywords & Macros**: Completes LOGO primitives (`BOX`, `TABLE`, `LINE`, `DRAWBOX`, `FILL`, `FD`, `RT`, `REPEAT`, etc.).
 
