@@ -1,5 +1,13 @@
 # `zago`: Terminal Text Editor & Diagramming
 
+![Swift 6](https://img.shields.io/badge/Swift-6-orange)
+![macOS + Linux](https://img.shields.io/badge/macOS%20%2B%20Linux-supported-blue)
+![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
+![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
+![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
+![Text + Canvas](https://img.shields.io/badge/Text%20%2B%20Canvas-editor-9333ea)
+![LOGO macros](https://img.shields.io/badge/LOGO-macros-ec4899)
+
 - a small terminal text editor.
 - draw boxes and lines in your Markdown file.
 - handles CJK and emoji alignment.
