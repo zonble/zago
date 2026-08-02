@@ -1,4 +1,4 @@
-# `zago`: A Tiny Terminal Swiss Army Knife for Markdown Writers
+# `zago`: A Lean Terminal Forge for Markdown Writers
 
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux](https://img.shields.io/badge/macOS%20%2B%20Linux-supported-blue)
@@ -8,7 +8,6 @@
 ![Diagrams](https://img.shields.io/badge/Text%20Diagrams-inline-7c3aed)
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
-![LOGO macros](https://img.shields.io/badge/LOGO-macros-ec4899)
 
 `zago` is a lightweight terminal workbench for people who live in Markdown.
 It keeps prose editing, pipe tables, local document links, headings, text
@@ -37,7 +36,7 @@ writing, tables, diagrams, and text operations.
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
 
-- [`zago`: A Tiny Terminal Swiss Army Knife for Markdown Writers](#zago-a-tiny-terminal-swiss-army-knife-for-markdown-writers)
+- [`zago`: A Lean Terminal Forge for Markdown Writers](#zago-a-lean-terminal-forge-for-markdown-writers)
   - [Who is zago for?](#who-is-zago-for)
   - [Features](#features)
   - [Requirements](#requirements)
