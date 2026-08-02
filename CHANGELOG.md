@@ -4,6 +4,29 @@
 
 No changes yet.
 
+## 1.0.2 - 2026-08-02
+
+Markdown writer workflow and per-buffer mode release.
+
+### Added
+
+- README positioning for zago as a lean terminal forge for Markdown writers.
+- Canvas Mode section in the in-app help reference.
+- Save-time `trim-trailing-whitespace` setting.
+- Table Mode support for using LOGO `FILL` to fill the current table cell.
+
+### Changed
+
+- Text/Canvas/Table runtime mode state is now local to each buffer/editor view.
+- Reloading `.zagorc` preserves existing buffer mode state while updating the startup default for new buffers.
+- No-argument `BOX` and `DRAWBOX` can frame the active Canvas Mode block mark.
+- Shared display-width fill helpers across canvas, table, and LOGO fill paths.
+
+### Fixed
+
+- Markdown syntax highlighting no longer treats list items containing `|` as compact tables.
+- `FILL` status messages from delegate-driven fills are preserved after LOGO execution.
+
 ## 1.0.1 - 2026-08-02
 
 Preview release update for Homebrew distribution and Canvas Mode safety.
