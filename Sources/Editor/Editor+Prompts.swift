@@ -252,7 +252,7 @@ extension Editor {
 
         guard prefix.contains(where: \.isWhitespace) else {
             replacePromptPrefix(command + " ")
-            showCommandBarCompletions(SettingCommandBarCommand.settingNames, label: command.uppercased())
+            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased())
             return true
         }
 
@@ -261,7 +261,7 @@ extension Editor {
         let rest = String(prefix[restStart...])
 
         guard !rest.isEmpty else {
-            showCommandBarCompletions(SettingCommandBarCommand.settingNames, label: command.uppercased())
+            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased())
             return true
         }
 
@@ -269,7 +269,7 @@ extension Editor {
             let setting = String(rest[..<settingEnd])
             let valuePrefixStart = rest[settingEnd...].firstIndex(where: { !$0.isWhitespace }) ?? rest.endIndex
             let valuePrefix = String(rest[valuePrefixStart...]).lowercased()
-            let matches = SettingCommandBarCommand.valueSuggestions(for: setting)
+            let matches = SettingCommand.valueSuggestions(for: setting)
                 .filter { valuePrefix.isEmpty || $0.lowercased().hasPrefix(valuePrefix) }
 
             if matches.count == 1 && !valuePrefix.isEmpty {
@@ -281,7 +281,7 @@ extension Editor {
         }
 
         let settingPrefix = rest.lowercased()
-        let matches = SettingCommandBarCommand.settingNames.filter { $0.hasPrefix(settingPrefix) }
+        let matches = SettingCommand.settingNames.filter { $0.hasPrefix(settingPrefix) }
         if matches.count == 1 && !settingPrefix.isEmpty {
             replacePromptPrefix("\(command) \(matches[0]) ")
         } else {

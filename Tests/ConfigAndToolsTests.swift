@@ -385,8 +385,8 @@ import Testing
 }
 
 @Test func testSubLineNumberSettingCommandSuggestionsAndAliases() throws {
-    #expect(SettingCommandBarCommand.settingNames.contains("sublinenumbers"))
-    #expect(SettingCommandBarCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
+    #expect(SettingCommand.settingNames.contains("sublinenumbers"))
+    #expect(SettingCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
 
     let editor = Editor()
     #expect(editor.displayConfig.showSubLineNumbers == false)

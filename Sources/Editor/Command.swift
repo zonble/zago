@@ -1,5 +1,36 @@
 import Foundation
 
+public enum CommandBarDispatchResult: Sendable, Equatable {
+    case handled
+    case noMatch
+}
+
+public struct CommandBarInput: Sendable, Equatable {
+    public let raw: String
+    public let text: String
+    public let tokens: [String]
+    public let firstToken: String?
+    public let rest: String
+
+    public init(_ raw: String) {
+        self.raw = raw
+        self.text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.tokens = text.split(whereSeparator: \.isWhitespace).map(String.init)
+        let parts = text.split(maxSplits: 1, whereSeparator: \.isWhitespace)
+        self.firstToken = parts.first.map(String.init)
+        self.rest = parts.count > 1 ? String(parts[1]) : ""
+    }
+
+    public var lowerFirstToken: String? {
+        firstToken?.lowercased()
+    }
+
+    public var firstTokenIsAllUppercaseWord: Bool {
+        guard let firstToken else { return false }
+        return firstToken != firstToken.lowercased() && firstToken == firstToken.uppercased()
+    }
+}
+
 /// Type-safe string enum defining all standard editor command identifiers.
 public enum CommandID: String, CaseIterable, Sendable, Hashable {
     // Navigation
@@ -74,14 +105,37 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case customMacro = "custom.macro"
 }
 
-/// Protocol defining a modeless editor command with metadata, keybindings, and execution action.
+/// Unified protocol defining an editor command with metadata, keybindings, CommandBar aliases, and execution logic.
 public protocol Command {
     var id: CommandID { get }
     var name: String { get }
     var description: String { get }
     var keys: [Key] { get }
+    var commandBarAliases: [String] { get }
+    var completionNames: [String] { get }
 
+    func isAvailable(in editor: Editor) -> Bool
+    func match(_ input: CommandBarInput) -> Bool
     func execute(on editor: Editor)
+    func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult
+}
+
+extension Command {
+    public var keys: [Key] { [] }
+    public var commandBarAliases: [String] { [] }
+    public var completionNames: [String] { commandBarAliases }
+
+    public func isAvailable(in editor: Editor) -> Bool { true }
+
+    public func match(_ input: CommandBarInput) -> Bool {
+        guard let first = input.lowerFirstToken else { return false }
+        return commandBarAliases.contains(first)
+    }
+
+    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+        execute(on: editor)
+        return .handled
+    }
 }
 
 /// Generic block-based command conforming to `Command` protocol.
@@ -90,13 +144,22 @@ public struct BlockCommand: Command {
     public let name: String
     public let description: String
     public let keys: [Key]
+    public let commandBarAliases: [String]
     private let closure: (Editor) -> Void
 
-    public init(id: CommandID, name: String, description: String, keys: [Key], action: @escaping (Editor) -> Void) {
+    public init(
+        id: CommandID,
+        name: String,
+        description: String,
+        keys: [Key] = [],
+        commandBarAliases: [String] = [],
+        action: @escaping (Editor) -> Void
+    ) {
         self.id = id
         self.name = name
         self.description = description
         self.keys = keys
+        self.commandBarAliases = commandBarAliases
         self.closure = action
     }
 
@@ -105,7 +168,7 @@ public struct BlockCommand: Command {
     }
 }
 
-/// Registry managing editor commands, keymaps, and action dispatch.
+/// Unified registry managing editor commands, keymaps, and CommandBar prompt dispatch.
 public final class CommandRegistry {
     private var keyMap: [Key: any Command] = [:]
     private(set) public var commands: [any Command] = []
@@ -154,5 +217,32 @@ public final class CommandRegistry {
             return true
         }
         return false
+    }
+
+    /// Dispatches raw string input from CommandBar to matching registered command.
+    public func dispatch(_ rawInput: String, editor: Editor) -> CommandBarDispatchResult {
+        let input = CommandBarInput(rawInput)
+        guard !input.text.isEmpty else { return .handled }
+
+        for command in commands where command.match(input) {
+            guard command.isAvailable(in: editor) else {
+                editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+                return .handled
+            }
+            return command.execute(with: input, on: editor)
+        }
+
+        guard editor.buffer.allowsLogoExecution else {
+            editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+            return .handled
+        }
+
+        return .noMatch
+    }
+
+    /// Returns sorted list of available CommandBar completion names for Tab completion.
+    public func completionNames(for editor: Editor) -> [String] {
+        let available = commands.filter { $0.isAvailable(in: editor) }
+        return Array(Set(available.flatMap(\.completionNames))).sorted()
     }
 }

@@ -1,21 +1,18 @@
 import Foundation
 
-public struct SettingCommandBarCommand: CommandBarCommand {
-    public let name = "set"
-    public let help = "set <option> [value]"
-    public let completionNames = ["set", "unset"]
-    public static let settingNames = [
-        "wrap", "ruler", "linenumbers", "sublinenumbers", "syntax", "autoreload", "regex", "tab", "lang", "border",
-    ]
+public struct SettingCommand: Command {
+    public let id: CommandID = .fileEditConfig
+    public let name = "Setting"
+    public let description = "Set editor settings (e.g. set wrap 80)"
+    public let commandBarAliases: [String] = ["set", "unset"]
 
     public init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
-        guard let first = input.lowerFirstToken else { return false }
-        return first == "set" || first == "unset"
+    public func execute(on editor: Editor) {
+        editor.editConfig()
     }
 
-    public func execute(_ input: CommandBarInput, editor: Editor) -> CommandBarDispatchResult {
+    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
         guard let first = input.lowerFirstToken else { return .handled }
 
         let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
@@ -29,6 +26,10 @@ public struct SettingCommandBarCommand: CommandBarCommand {
         editor.applyEditorSetting(setting: setting.lowercased(), arg: arg)
         return .handled
     }
+
+    public static let settingNames = [
+        "wrap", "ruler", "linenumbers", "sublinenumbers", "syntax", "autoreload", "regex", "tab", "lang", "border",
+    ]
 
     public static func valueSuggestions(for setting: String) -> [String] {
         switch setting.lowercased() {

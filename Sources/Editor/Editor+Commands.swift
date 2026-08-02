@@ -57,6 +57,18 @@ extension Editor {
         commandRegistry.register(EditConfigCommand())
         commandRegistry.register(ReloadConfigCommand())
 
+        // CommandBar Specialized Commands
+        commandRegistry.register(QuitCommand())
+        commandRegistry.register(SaveExitCommand())
+        commandRegistry.register(OpenCommand())
+        commandRegistry.register(DirCommand())
+        commandRegistry.register(WriteCommand())
+        commandRegistry.register(SettingCommand())
+        commandRegistry.register(BufferCommand())
+        commandRegistry.register(NumericGotoCommand())
+        commandRegistry.register(SearchCommand())
+        commandRegistry.register(SubstituteCommand())
+
         // UI & Macro Commands
         commandRegistry.register(LogoMacroCommand())
         commandRegistry.register(LogoReferenceCommand())

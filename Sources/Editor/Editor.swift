@@ -89,7 +89,7 @@ public final class Editor {
 
     let syntaxHighlighter = SyntaxHighlighter()
     public let commandRegistry = CommandRegistry()
-    public let commandBarRegistry = CommandBarRegistry.makeDefault()
+    public var commandBarRegistry: CommandRegistry { commandRegistry }
     public let fileWatcher = FileWatcher()
 
     public struct DisplayConfig: Sendable, Equatable {
