@@ -308,6 +308,12 @@ public struct EnglishStrings {
         "helpview.edit_4": "    ^U / F10           Uncut (paste) last cut text at cursor position",
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
 
+        "helpview.sec_canvas": "  CANVAS MODE:",
+        "helpview.canvas_1": "    M+V                Toggle Canvas Mode for fixed-position editing",
+        "helpview.canvas_2": "    Shift+Arrow        Draw box lines and move the canvas cursor",
+        "helpview.canvas_3": "    Ctrl+Shift+Arrow   Draw arrow lines with an arrowhead at the endpoint",
+        "helpview.canvas_4": "    ^^                 Set / unset rectangular canvas block mark",
+
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
         "helpview.search_1": "    ^W / F6, M+N/P    Search; repeat next/previous match",
         "helpview.search_2": "    M+O                Open Markdown/Org/rst/AsciiDoc document link at cursor",

@@ -308,6 +308,12 @@ public struct TraditionalChineseStrings {
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
 
+        "helpview.sec_canvas": "  Canvas 模式：",
+        "helpview.canvas_1": "    M+V                切換 Canvas Mode，進行固定位置編輯",
+        "helpview.canvas_2": "    Shift+方向鍵       畫出框線並移動畫布游標",
+        "helpview.canvas_3": "    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭",
+        "helpview.canvas_4": "    ^^                 設定/取消矩形 canvas 區塊標記",
+
         "helpview.sec_search": "  搜尋與段落重排對齊：",
         "helpview.search_1": "    ^W / F6, M+N/P    搜尋；跳到下一個/上一個結果",
         "helpview.search_2": "    M+O                開啟游標所在的 Markdown/Org/rst/AsciiDoc 文件連結",

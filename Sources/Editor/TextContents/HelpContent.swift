@@ -12,6 +12,7 @@ public enum HelpContent {
     private static let sections: [Section] = [
         Section(titleKey: "helpview.sec_nav", itemPrefix: "helpview.nav", itemRange: 1...8),
         Section(titleKey: "helpview.sec_edit", itemPrefix: "helpview.edit", itemRange: 1...5),
+        Section(titleKey: "helpview.sec_canvas", itemPrefix: "helpview.canvas", itemRange: 1...4),
         Section(titleKey: "helpview.sec_search", itemPrefix: "helpview.search", itemRange: 1...7),
         Section(titleKey: "helpview.sec_file", itemPrefix: "helpview.file", itemRange: 1...10),
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
