@@ -135,3 +135,40 @@ import TextMetrics
     #expect(editor.buffer.lines[0].hasPrefix("\tHello"))
     #expect(editor.buffer.lines[0].contains("+----+"))
 }
+
+@Test func testLogoEngineLineAndVLineVariants() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("LINE 5 \"double\" \"arrow\"")
+    #expect(editor.buffer.lines[0].contains("═"))
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("VLINE 3 \"double\"")
+    #expect(editor2.buffer.lines.count >= 3)
+    #expect(editor2.buffer.lines[0].contains("║"))
+}
+
+@Test func testLogoEngineControlCommands() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("MAKE \"i 1 WHILE [:i <= 3] [ TYPE :i MAKE \"i :i + 1 ]")
+    #expect(editor.buffer.lines[0] == "123")
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("FOR [j 1 3 1] [ TYPE :j ]")
+    #expect(editor2.buffer.lines[0] == "123")
+
+    let editor3 = Editor()
+    let logoEngine3 = LogoEngine(delegate: editor3)
+    logoEngine3.execute("TO FOO LOCAL \"x MAKE \"x 42 TYPE :x END FOO")
+    #expect(editor3.buffer.lines[0] == "42")
+
+    let editor4 = Editor()
+    let logoEngine4 = LogoEngine(delegate: editor4)
+    logoEngine4.execute("CATCH \"err [ THROW \"err ]")
+    #expect(!logoEngine4.lastError.isEmpty)
+}

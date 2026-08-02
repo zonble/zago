@@ -432,3 +432,80 @@ import TextMetrics
     logoEngine.execute("NAMEP \"y")
     #expect(logoEngine.lastResult == "false")
 }
+
+@Test func testLogoEngineTableCommands() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TABLE")
+    #expect(editor.buffer.lines.count >= 3)
+    #expect(editor.buffer.lines[0].contains("┌"))
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("TABLE 4 5 12")
+    #expect(editor2.buffer.lines.count >= 4)
+
+    let editor3 = Editor()
+    let logoEngine3 = LogoEngine(delegate: editor3)
+    logoEngine3.execute("TABLE BORDER double-round")
+    #expect(logoEngine3.hasSetStatusMessage)
+
+    logoEngine3.execute("TABLE NEXTSTYLE")
+    #expect(logoEngine3.hasSetStatusMessage)
+}
+
+@Test func testLogoEngineTemplatePrimitives() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("UPPERCASE \"hello")
+    #expect(logoEngine.lastResult == "HELLO")
+
+    logoEngine.execute("LOWERCASE \"WORLD")
+    #expect(logoEngine.lastResult == "world")
+
+    logoEngine.execute("APPLY [?1 + ?2] [3 4]")
+    #expect(logoEngine.lastResult == "7")
+
+    logoEngine.execute("INVOKE [?1 * 2] 5")
+    #expect(logoEngine.lastResult == "10")
+
+    logoEngine.execute("MAP [? * 2] [1 2 3]")
+    #expect(logoEngine.lastResult == "[2 4 6]")
+
+    logoEngine.execute("MAPSE [SENTENCE ? ?] [a b]")
+    #expect(logoEngine.lastResult == "[ a b ]")
+
+    logoEngine.execute("FILTER [? > 2] [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "[3 4 5]")
+
+    logoEngine.execute("FIND [? > 3] [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "4")
+
+    logoEngine.execute("REDUCE [?1 + ?2] [1 2 3 4]")
+    #expect(logoEngine.lastResult == "10")
+
+    logoEngine.execute("CROSSMAP [WORD ?1 ?2] [[a b] [1 2]]")
+    #expect(logoEngine.lastResult == "[a1 a2 b1 b2]")
+
+    logoEngine.execute("SORT [3 1 4 1 5 9 2]")
+    #expect(logoEngine.lastResult == "[1 1 2 3 4 5 9]")
+
+    logoEngine.execute("SORT DESC [3 1 4 1 5]")
+    #expect(logoEngine.lastResult == "[5 4 3 1 1]")
+}
+
+@Test func testLogoValueTypeCoercionsAndArrays() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("ARRAY 3")
+    #expect(logoEngine.lastResult?.hasPrefix("{") == true)
+
+    logoEngine.execute("SETITEM 1 {a b c} \"z")
+    #expect(logoEngine.lastResult?.contains("z") == true)
+
+    logoEngine.execute("ITEM 1 {x y z}")
+    #expect(logoEngine.lastResult == "x")
+}

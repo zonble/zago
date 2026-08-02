@@ -8,15 +8,16 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 
 ## 1. Executive Summary & Design Philosophy
 
-`zago` is designed to be a fast, zero-dependency command-line text editor with complete GNU Nano keybinding compatibility, rich syntax highlighting, CJK double-width character support, dual-language localization (English and Traditional Chinese), and a user configuration system (`~/.zagorc`).
+`zago` is designed to be a fast, zero-dependency command-line text editor with complete GNU Nano keybinding compatibility, rich syntax highlighting, CJK double-width character support, dual-language localization (English and Traditional Chinese), a user configuration system (`~/.zagorc`), and **Editor LOGO**—a specialized text-oriented macro & diagramming dialect based on UCBLogo.
 
 ### Core Design Principles
 1. **Command-Driven Architecture**: All user actions are encapsulated into discrete `Command` objects managed by `CommandRegistry`. Key processing dispatches through commands rather than monolithic `switch` blocks.
-2. **CJK & Multi-Byte Visual Alignment**: Line wrapping, gutter alignment, status bar centering, and terminal cursor coordinates calculate visual display width (`displayWidth`) rather than byte/character counts.
-3. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Render.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
-4. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
-5. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
-6. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
+2. **CJK & Multi-Byte Visual Alignment**: Line wrapping, gutter alignment, status bar centering, table cell padding, and terminal cursor coordinates calculate visual display width (`displayWidth`) rather than byte/character counts. CJK characters have a visual width of `2`.
+3. **Editor LOGO Dialect & Safety**: Built upon UCBLogo syntax (`TO ... END`), but removes GUI turtle windows and unconstrained loops (`FOREVER`) to prevent editor lockup. Added native editor navigation, box/line/table drawing (`BOX`, `LINE`, `TABLE`), and text transform primitives (`TRANSLIT`, `Zago-CJK-Punctuation`).
+4. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Render.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
+5. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
+6. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
+7. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, table formatting, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
 
 ---
 
@@ -133,6 +134,17 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
   1. Add the string key to [`EnglishStrings.swift`](Sources/Editor/Localization/EnglishStrings.swift).
   2. Add the corresponding translation to [`TraditionalChineseStrings.swift`](Sources/Editor/Localization/TraditionalChineseStrings.swift).
   3. Reference it via `L10n["your.key"]` or a strongly typed accessor in [`Localization.swift`](Sources/Editor/Localization/Localization.swift).
+
+### E. Table Formatting Engine Mechanics ([`PipeTableFormatter.swift`](Sources/Syntax/PipeTableFormatter.swift))
+- **Multi-Format Table Support**: Supports Markdown, Org Mode (`|---+---|`), reST Grid (`+---+---+`), and AsciiDoc (`[cols=...]` & `|===`).
+- **Visual Width Padding**: Cell width calculation and padding MUST use `cell.displayWidth` from `TextMetrics` (CJK visual width = 2 columns).
+- **Cursor Index Preservation**: `formatTable` MUST return `startLineIndex: lineIndex` (current line index) and calculate exact relative cell character offsets. Never reset cursor to Line 0.
+- **One-Cell-Per-Line Navigation**: AsciiDoc tables keep `updatedLines = nil` during Tab navigation to prevent flattening multi-line cell structures into single-line pipe rows.
+- **Drafting & Border Detection**: `findTableRange` inspects both upward (`lineIndex - 1`) and downward (`lineIndex + 1`) lines for draft rows (`|-`, `+-`). reST Grid double lines (`|=` / `+=`) generate `+==========+==========+` separators.
+
+### F. Swift Testing & Serialized Test Suites
+- When a test modifies global shared state (such as `L10n.currentLanguage`), annotate the enclosing test suite struct with `@Suite(.serialized)` to ensure serialized execution during parallel `swift test` runs.
+- Note: `@Test(.serialized)` on an individual test function is ignored by Swift Testing; `.serialized` must be applied at `@Suite` level.
 
 ---
 

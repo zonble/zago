@@ -931,3 +931,14 @@ TYPE "|"
 ## 🧪 Atomic Undo (`^Z`) Guarantee
 
 All operations performed by a single command execution—regardless of how many lines or characters were inserted or modified—are grouped into a **single atomic Undo snapshot**.
+
+---
+
+## 📜 History & Origins of Editor LOGO
+
+**Editor LOGO** in `zago` is a specialized, text-oriented dialect of the LOGO programming language designed specifically for text buffer manipulation and terminal diagramming:
+
+- **UCBLogo Heritage**: Built upon the foundational syntax and functional design of **UCBLogo** (Berkeley LOGO), preserving classic Lisp-like list processing, prefix evaluation, and procedure definitions (`TO ... END`).
+- **Safety & Loop Protection**: Removed legacy GUI turtle graphics windows and unconstrained control structures like `FOREVER` that could freeze the editor UI. All loop execution in Editor LOGO is strictly bounded (up to 10,000 iterations).
+- **Editor & Diagram Control Primitives**: Introduced native text editor control commands, including direct cursor movement (`MOVE UP|DOWN|LEFT|RIGHT`, `GOTO`), text insertion (`TYPE`, `PRINT`, `SHOW`), framed box layout (`BOX`, `DRAWBOX`), line drawing (`LINE`, `VLINE`), region filling (`FILL`), and structured tables (`TABLE`).
+- **Text Transforms & Information Keywords**: Added specialized string manipulation, ICU String Transforms (`TRANSLIT`), CJK writing normalization (`Zago-CJK-Punctuation`), and date/time metadata inspection primitives tailored for prose editing and documentation.

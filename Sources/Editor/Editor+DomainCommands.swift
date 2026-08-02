@@ -136,6 +136,21 @@ extension Editor {
         }
     }
 
+    public func showWordCount() {
+        let (text, statusFormat) =
+            if let range = activeTextSelectionRange() {
+                (
+                    buffer.textRange(
+                        start: (line: range.start.line, col: range.start.column),
+                        end: (line: range.end.line, col: range.end.column)),
+                    L10n["status.word_count_selection"]
+                )
+            } else {
+                (buffer.lines.joined(separator: "\n"), L10n["status.word_count_document"])
+            }
+        setStatusMessage(String(format: statusFormat, TextAnalyzer.wordCount(in: text)))
+    }
+
     func hasActiveTextSelection() -> Bool {
         activeTextSelectionRange() != nil
     }

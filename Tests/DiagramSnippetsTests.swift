@@ -149,4 +149,18 @@ struct DiagramSnippetsTests {
         let content = editor.buffer.lines.joined(separator: "\n")
         #expect(content.contains("sequenceDiagram"))
     }
+
+    @Test
+    func testAllMermaidPlantUMLDOTSnippets() {
+        let allSnippets = DiagramSnippetFactory.allSnippets
+        #expect(allSnippets.count >= 10)
+
+        for snippet in allSnippets {
+            let editor = Editor()
+            editor.openNewBuffer(filePath: "test.md")
+            DiagramSnippets.insertSnippet(snippet, into: editor)
+            #expect(!editor.buffer.lines.isEmpty)
+            #expect(snippet.titleKey.count > 0)
+        }
+    }
 }
