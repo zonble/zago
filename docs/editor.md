@@ -210,3 +210,4 @@ In Markdown, AsciiDoc, Graphviz DOT, PlantUML, or Mermaid documents, `zago` prov
 - ⚙️ [Configuration](configuration.md): Customizing `.zagorc`, key bindings, startup scripts, and Nano syntax definitions.
 - 📂 [Directory Mode](directory_mode.md): DirectoryBuffer browsing and binary safety matrix.
 - 📊 [Diagram Snippets](diagram_snippets.md): Pre-built diagram template insertion guide.
+- 🧭 [Heading Navigation & Outline](heading_navigation.md): Planned document heading navigation and outline picker behavior.
