@@ -56,7 +56,7 @@ public final class SyntaxHighlighter {
         loadNanoRC()
     }
 
-    /// Sets up built-in syntax rules for Swift, Python, C/C++, JSON, Markdown, and Shell.
+    /// Sets up built-in syntax rules for Swift, Python, C/C++, JSON, Markdown, Shell, LOGO, Diagrams, etc.
     private func setupBuiltInLanguages() {
         let definitions: [SyntaxDefinition] = [
             SwiftSyntaxDefinition(),
@@ -83,172 +83,14 @@ public final class SyntaxHighlighter {
         }
     }
 
-    /// Loads system and user .nanorc files (~/.nanorc, /etc/nanorc, /opt/homebrew/share/nanorc/*.nanorc, etc.)
+    /// Loads system and user .nanorc files using NanoRCParser.
     public func loadNanoRC() {
-        let candidatePaths = [
-            FileManager.default.homeDirectoryForCurrentUser.path + "/.nanorc",
-            "/etc/nanorc",
-            "/opt/homebrew/share/nanorc",
-            "/opt/homebrew/share/nano",
-            "/usr/share/nano",
-            "/usr/local/share/nano",
-        ]
-
-        for path in candidatePaths {
-            if path.hasSuffix(".nanorc") {
-                if FileManager.default.fileExists(atPath: path) {
-                    parseNanoRCFile(at: path)
-                }
-            } else if FileManager.default.fileExists(atPath: path) {
-                if let files = try? FileManager.default.contentsOfDirectory(atPath: path) {
-                    for f in files where f.hasSuffix(".nanorc") {
-                        parseNanoRCFile(at: (path as NSString).appendingPathComponent(f))
-                    }
-                }
-            }
-        }
+        NanoRCParser().loadNanoRC(into: &languages)
     }
 
-    /// Parses a .nanorc file and adds syntax color rules.
+    /// Parses a .nanorc file at specific path using NanoRCParser.
     public func parseNanoRCFile(at path: String) {
-        guard let content = try? String(contentsOfFile: path, encoding: .utf8) else { return }
-
-        var currentLangName: String? = nil
-        var currentExtensions: [String] = []
-        var currentRules: [SyntaxRule] = []
-
-        let lines = content.components(separatedBy: .newlines)
-        for rawLine in lines {
-            let line = rawLine.trimmingCharacters(in: .whitespaces)
-            if line.isEmpty || line.hasPrefix("#") { continue }
-
-            if line.hasPrefix("include ") {
-                let includePath = line.dropFirst(8).trimmingCharacters(in: CharacterSet(charactersIn: "\" '"))
-                processIncludePath(includePath)
-                continue
-            }
-
-            if line.hasPrefix("syntax ") {
-                if let name = currentLangName, !currentRules.isEmpty {
-                    languages.append(LanguageSyntax(name: name, extensions: currentExtensions, rules: currentRules))
-                }
-
-                let parts = parseQuotedTokens(String(line.dropFirst(7)))
-                if !parts.isEmpty {
-                    currentLangName = parts[0]
-                    currentExtensions = []
-                    currentRules = []
-
-                    for idx in 1..<parts.count {
-                        let pat = parts[idx]
-                        let ext = pat.replacingOccurrences(of: "\\.", with: "")
-                            .replacingOccurrences(of: "$", with: "")
-                            .replacingOccurrences(of: "^", with: "")
-                            .replacingOccurrences(of: "\\", with: "")
-                        if !ext.isEmpty {
-                            currentExtensions.append(ext)
-                        }
-                    }
-                }
-                continue
-            }
-
-            if line.hasPrefix("color ") || line.hasPrefix("icolor ") {
-                let isColor = line.hasPrefix("color ")
-                let body = line.dropFirst(isColor ? 6 : 7).trimmingCharacters(in: .whitespaces)
-                let parts = parseQuotedTokens(String(body))
-                if parts.count >= 2 {
-                    let colorName = parts[0].lowercased()
-                    let regexPattern = parts[1]
-
-                    let tokenType = mapColorNameToTokenType(colorName)
-                    if let rule = SyntaxRule(patternStr: regexPattern, tokenType: tokenType) {
-                        currentRules.append(rule)
-                    }
-                }
-            }
-        }
-
-        if let name = currentLangName, !currentRules.isEmpty {
-            languages.append(LanguageSyntax(name: name, extensions: currentExtensions, rules: currentRules))
-        }
-    }
-
-    private func processIncludePath(_ pathPattern: String) {
-        var expandedPath = pathPattern
-        if expandedPath.hasPrefix("~") {
-            let home = FileManager.default.homeDirectoryForCurrentUser.path
-            expandedPath = home + expandedPath.dropFirst(1)
-        }
-
-        if expandedPath.contains("*") {
-            let dirPath = (expandedPath as NSString).deletingLastPathComponent
-            let pattern = (expandedPath as NSString).lastPathComponent
-            let suffix = pattern.replacingOccurrences(of: "*", with: "")
-
-            if FileManager.default.fileExists(atPath: dirPath),
-                let files = try? FileManager.default.contentsOfDirectory(atPath: dirPath)
-            {
-                for f in files where f.hasSuffix(suffix) {
-                    let fullPath = (dirPath as NSString).appendingPathComponent(f)
-                    parseNanoRCFile(at: fullPath)
-                }
-            }
-        } else if FileManager.default.fileExists(atPath: expandedPath) {
-            parseNanoRCFile(at: expandedPath)
-        }
-    }
-
-    private func mapColorNameToTokenType(_ colorStr: String) -> SyntaxTokenType {
-        let primaryColor = colorStr.components(separatedBy: ",").first ?? colorStr
-        let c = primaryColor.lowercased()
-
-        if c.contains("cyan") || c.contains("magenta") {
-            return .keyword
-        } else if c.contains("green") {
-            return .string
-        } else if c.contains("black") || c.contains("gray") {
-            return .comment
-        } else if c.contains("yellow") || c.contains("red") {
-            return .number
-        } else if c.contains("blue") || c.contains("white") {
-            return .typeOrAttribute
-        }
-        return .keyword
-    }
-
-    private func parseQuotedTokens(_ str: String) -> [String] {
-        var tokens: [String] = []
-        var currentToken = ""
-        var inQuote = false
-        var quoteChar: Character? = nil
-
-        for ch in str {
-            if ch == "\"" || ch == "'" {
-                if !inQuote {
-                    inQuote = true
-                    quoteChar = ch
-                } else if quoteChar == ch {
-                    inQuote = false
-                    quoteChar = nil
-                    tokens.append(currentToken)
-                    currentToken = ""
-                } else {
-                    currentToken.append(ch)
-                }
-            } else if ch == " " && !inQuote {
-                if !currentToken.isEmpty {
-                    tokens.append(currentToken)
-                    currentToken = ""
-                }
-            } else {
-                currentToken.append(ch)
-            }
-        }
-        if !currentToken.isEmpty {
-            tokens.append(currentToken)
-        }
-        return tokens
+        NanoRCParser().parseNanoRCFile(at: path, into: &languages)
     }
 
     /// Auto-detects matching LanguageSyntax based on file path or extension.
@@ -262,198 +104,16 @@ public final class SyntaxHighlighter {
         }
     }
 
-    /// Finds matching LanguageSyntax by language name or file extension.
+    /// Finds matching LanguageSyntax dynamically by language name or file extension.
     public func findLanguage(named langName: String) -> LanguageSyntax? {
         let clean = langName.lowercased().trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         guard !clean.isEmpty else { return nil }
 
-        let normalized: String
-        switch clean {
-        case "logo": normalized = "logo"
-        case "py", "python": normalized = "py"
-        case "swift": normalized = "swift"
-        case "c", "cpp", "c++", "h", "hpp": normalized = "c"
-        case "json": normalized = "json"
-        case "yaml", "yml": normalized = "yaml"
-        case "toml": normalized = "toml"
-        case "ini", "conf", "cfg", "properties": normalized = "ini"
-        case "sh", "bash", "shell", "zsh": normalized = "sh"
-        case "mermaid": normalized = "mermaid"
-        case "dot": normalized = "dot"
-        case "plantuml", "puml": normalized = "puml"
-        case "md", "markdown": normalized = "md"
-        case "rst", "rest": normalized = "rst"
-        case "org": normalized = "org"
-        case "adoc", "asciidoc", "ascii": normalized = "adoc"
-        case "wiki", "mediawiki": normalized = "wiki"
-        case "tape", "vhs": normalized = "tape"
-        default: normalized = clean
-        }
-
         return languages.first { lang in
-            lang.name.lowercased() == normalized || lang.extensions.contains(normalized)
-        }
-    }
-
-    /// Determines LanguageSyntax for a specific buffer line, accounting for Markdown/RST/Org-mode embedded code blocks.
-    public func getSyntaxForLine(
-        filePath: String?,
-        isDirectoryBuffer: Bool,
-        lines: [String],
-        bufferLineIndex: Int,
-        isEnabled: Bool
-    ) -> LanguageSyntax? {
-        guard isEnabled else { return nil }
-        if isDirectoryBuffer {
-            return DirectorySyntax.syntax
-        }
-        let defaultSyntax = detectLanguage(for: filePath)
-
-        let ext = (filePath as NSString? ?? "").pathExtension.lowercased()
-        let isMarkup = [
-            "md", "markdown", "mdown", "mkd", "rst", "rest", "org", "adoc", "asciidoc", "ascii", "wiki", "mediawiki",
-        ].contains(ext)
-        guard isMarkup else { return defaultSyntax }
-
-        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return defaultSyntax }
-
-        if let embedded = detectEmbeddedLanguage(in: lines, bufferLineIndex: bufferLineIndex, fileExtension: ext) {
-            return embedded
-        }
-        return defaultSyntax
-    }
-
-    /// Detects embedded code block language in Markdown, RST, Org-mode, AsciiDoc, or Wiki buffer up to bufferLineIndex.
-    public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String)
-        -> LanguageSyntax?
-    {
-        var activeLangName: String? = nil
-        var inBlock = false
-
-        if fileExtension == "org" {
-            for i in 0...bufferLineIndex {
-                let line = lines[i].trimmingCharacters(in: .whitespaces)
-                let upper = line.uppercased()
-                if upper.hasPrefix("#+BEGIN_SRC") {
-                    inBlock = true
-                    let langStr = String(line.dropFirst("#+BEGIN_SRC".count)).trimmingCharacters(in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
-                } else if upper.hasPrefix("#+END_SRC") {
-                    inBlock = false
-                    activeLangName = nil
-                }
-            }
-            if inBlock, let langName = activeLangName {
-                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).uppercased()
-                if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC") {
-                    return nil
-                }
-                return findLanguage(named: langName)
-            }
-        } else if fileExtension == "rst" || fileExtension == "rest" {
-            for i in 0...bufferLineIndex {
-                let line = lines[i]
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                if trimmed.hasPrefix(".. code-block::") || trimmed.hasPrefix(".. code::")
-                    || trimmed.hasPrefix(".. highlight::")
-                {
-                    inBlock = true
-                    if let range = trimmed.range(of: "::") {
-                        let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
-                        activeLangName = langStr.isEmpty ? nil : langStr
-                    }
-                } else if inBlock {
-                    if !trimmed.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("\t") && !trimmed.hasPrefix("..") {
-                        inBlock = false
-                        activeLangName = nil
-                    }
-                }
-            }
-            if inBlock, let langName = activeLangName {
-                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
-                if currentLine.hasPrefix("..") {
-                    return nil
-                }
-                return findLanguage(named: langName)
-            }
-        } else if ["adoc", "asciidoc", "ascii"].contains(fileExtension) {
-            for i in 0...bufferLineIndex {
-                let line = lines[i].trimmingCharacters(in: .whitespaces)
-                if line.hasPrefix("[source") && line.contains("]") {
-                    if let start = line.firstIndex(of: ","), let end = line.firstIndex(of: "]"), start < end {
-                        let langStr = String(line[line.index(after: start)..<end]).trimmingCharacters(in: .whitespaces)
-                        activeLangName = langStr.isEmpty ? nil : langStr
-                    }
-                } else if line.hasPrefix("----") || line.hasPrefix("....") {
-                    if inBlock {
-                        inBlock = false
-                        activeLangName = nil
-                    } else if activeLangName != nil {
-                        inBlock = true
-                    }
-                }
-            }
-            if inBlock, let langName = activeLangName {
-                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
-                if currentLine.hasPrefix("----") || currentLine.hasPrefix("....") || currentLine.hasPrefix("[source") {
-                    return nil
-                }
-                return findLanguage(named: langName)
-            }
-        } else if ["wiki", "mediawiki"].contains(fileExtension) {
-            for i in 0...bufferLineIndex {
-                let line = lines[i].trimmingCharacters(in: .whitespaces).lowercased()
-                if line.contains("<syntaxhighlight") || line.contains("<source") || line.contains("<code") {
-                    if let langRange = line.range(of: "lang=\"") ?? line.range(of: "lang='") {
-                        let rest = line[langRange.upperBound...]
-                        if let quoteEnd = rest.firstIndex(where: { $0 == "\"" || $0 == "'" }) {
-                            let langStr = String(rest[..<quoteEnd]).trimmingCharacters(in: .whitespaces)
-                            activeLangName = langStr.isEmpty ? nil : langStr
-                            inBlock = true
-                        }
-                    }
-                }
-                if line.contains("</syntaxhighlight>") || line.contains("</source>") || line.contains("</code>") {
-                    inBlock = false
-                    activeLangName = nil
-                }
-            }
-            if inBlock, let langName = activeLangName {
-                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).lowercased()
-                if currentLine.contains("<syntaxhighlight") || currentLine.contains("<source")
-                    || currentLine.contains("<code") || currentLine.contains("</syntaxhighlight>")
-                    || currentLine.contains("</source>") || currentLine.contains("</code>")
-                {
-                    return nil
-                }
-                return findLanguage(named: langName)
-            }
-        } else {
-            // Markdown (md, markdown, mdown, mkd)
-            for i in 0...bufferLineIndex {
-                let line = lines[i].trimmingCharacters(in: .whitespaces)
-                if line.hasPrefix("```") || line.hasPrefix("~~~") {
-                    if inBlock {
-                        inBlock = false
-                        activeLangName = nil
-                    } else {
-                        inBlock = true
-                        let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(
-                            in: .whitespaces)
-                        activeLangName = langStr.isEmpty ? nil : langStr
-                    }
-                }
-            }
-            if inBlock, let langName = activeLangName {
-                let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
-                if currentLine.hasPrefix("```") || currentLine.hasPrefix("~~~") {
-                    return nil
-                }
-                return findLanguage(named: langName)
+            lang.name.lowercased() == clean || lang.extensions.contains { ext in
+                ext.lowercased() == clean
             }
         }
-
-        return nil
     }
 
     /// Returns token type map for each character in line based on syntax rules.

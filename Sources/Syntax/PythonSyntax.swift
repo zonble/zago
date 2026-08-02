@@ -2,7 +2,7 @@ import Foundation
 
 public struct PythonSyntaxDefinition: SyntaxDefinition {
     public let name = "Python"
-    public let fileExtensions = ["py"]
+    public let fileExtensions = ["py", "python"]
 
     public var rules: [SyntaxRule] {
         [

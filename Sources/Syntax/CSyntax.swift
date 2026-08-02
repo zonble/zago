@@ -2,7 +2,7 @@ import Foundation
 
 public struct CSyntaxDefinition: SyntaxDefinition {
     public let name = "C/C++"
-    public let fileExtensions = ["c", "cpp", "cc", "h", "hpp"]
+    public let fileExtensions = ["c", "cpp", "c++", "cc", "h", "hpp"]
 
     public var rules: [SyntaxRule] {
         [
