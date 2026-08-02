@@ -1,3 +1,4 @@
+import Config
 import Foundation
 import Syntax
 import TextMetrics
@@ -31,9 +32,9 @@ extension Renderer {
             let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
             return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\u{1B}[0m\r\n"
         } else {
-            let bufIndexStr =
-                editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : "zago"
-            let leftText = "  \(bufIndexStr)"
+            let bufCountStr =
+                editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
+            let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
             let centerText = editor.buffer.filePath ?? L10n.newBuffer
             let rightText = editor.buffer.isModified ? "\(L10n.modified)  " : "  "
 

@@ -7,7 +7,8 @@ import Foundation
 struct Zago: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "zago",
-        abstract: "zago - zonble's nano + LOGO: A lightweight terminal text editor with powerful plain-text diagramming."
+        abstract: "zago v\(ZagoVersion.current) - zonble's nano + Editor LOGO: A lightweight terminal text editor with powerful plain-text diagramming.",
+        version: ZagoVersion.current
     )
 
     @Argument(help: "The file(s) to edit.")
@@ -23,6 +24,16 @@ struct Zago: ParsableCommand {
         help:
             "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
     var ruler: Bool = false
+
+    @Option(
+        name: [.customLong("linenumbers"), .customLong("line-numbers"), .customShort("l")],
+        help: "Enable or disable line numbers (true/false).")
+    var lineNumbers: String?
+
+    @Option(
+        name: [.customLong("sublinenumbers"), .customLong("sub-line-numbers")],
+        help: "Enable or disable sub-line numbers for soft-wrapped lines (true/false).")
+    var subLineNumbers: String?
 
     @Option(
         name: [.customLong("syntax")], help: "Enable or disable syntax highlighting (true/false).")
@@ -62,6 +73,20 @@ struct Zago: ParsableCommand {
             enableSyntax = nil
         }
 
+        let enableLineNumbers: Bool?
+        if let l = lineNumbers?.lowercased() {
+            enableLineNumbers = (l == "true" || l == "1" || l == "on" || l == "yes")
+        } else {
+            enableLineNumbers = nil
+        }
+
+        let enableSubLineNumbers: Bool?
+        if let sl = subLineNumbers?.lowercased() {
+            enableSubLineNumbers = (sl == "true" || sl == "1" || sl == "on" || sl == "yes")
+        } else {
+            enableSubLineNumbers = nil
+        }
+
         let selectedLang: Language?
         if let l = lang?.lowercased() {
             if l == "zh_tw" || l == "zh-hant" || l == "zh" || l == "tw" {
@@ -77,7 +102,7 @@ struct Zago: ParsableCommand {
 
         if let code = eval {
             let editor = Editor(
-                wrapColumn: wrap, showRuler: false, enableSyntax: false, language: selectedLang)
+                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             print(output)
@@ -89,7 +114,7 @@ struct Zago: ParsableCommand {
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
                 let editor = Editor(
-                    wrapColumn: wrap, showRuler: false, enableSyntax: false, language: selectedLang)
+                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 print(output)
@@ -103,8 +128,8 @@ struct Zago: ParsableCommand {
         }
 
         let editor = Editor(
-            filePaths: files, wrapColumn: wrap, showRuler: ruler, enableSyntax: enableSyntax,
-            language: selectedLang)
+            filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
+            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang)
         editor.run()
     }
 }

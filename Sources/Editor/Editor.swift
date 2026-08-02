@@ -131,8 +131,8 @@ public final class Editor {
     public var displayConfig: DisplayConfig
 
     public init(
-        filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil,
-        autoReload: Bool? = nil, language: Language? = nil
+        filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
+        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil
     ) {
         self.terminal = Terminal()
 
@@ -145,11 +145,11 @@ public final class Editor {
 
         let loadedConfig = ConfigLoader().loadConfig()
 
-        // CLI argument priority > .serc config > default
+        // CLI argument priority > .zagorc config > default
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
         let finalRuler = showRuler ?? loadedConfig.showRuler
-        let finalLineNumbers = loadedConfig.showLineNumbers
-        let finalSubLineNumbers = loadedConfig.showSubLineNumbers
+        let finalLineNumbers = showLineNumbers ?? loadedConfig.showLineNumbers
+        let finalSubLineNumbers = showSubLineNumbers ?? loadedConfig.showSubLineNumbers
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
@@ -174,13 +174,13 @@ public final class Editor {
     }
 
     public convenience init(
-        filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, enableSyntax: Bool? = nil,
-        autoReload: Bool? = nil, language: Language? = nil
+        filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
+        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
-            filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, enableSyntax: enableSyntax,
-            autoReload: autoReload, language: language)
+            filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
+            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language)
     }
 
     func startFileWatcherForCurrentBuffer() {

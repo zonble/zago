@@ -4,6 +4,19 @@ import Testing
 @testable import Config
 @testable import Editor
 
+@Test func testZagoVersionAndTitleBarDisplay() throws {
+    #expect(!ZagoVersion.current.isEmpty)
+    #expect(ZagoVersion.current == "1.0.0")
+
+    let editor = Editor()
+    let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
+    #expect(titleLine.contains("zago \(ZagoVersion.current)"))
+
+    editor.openNewBuffer(filePath: "test2.txt")
+    let titleLineMulti = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
+    #expect(titleLineMulti.contains("zago \(ZagoVersion.current) [2/2]"))
+}
+
 @Test func testHelpContent() throws {
     let terminal = Terminal()
     let helpView = TextDocumentView(
