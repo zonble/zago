@@ -53,6 +53,7 @@ the file is on your laptop or on a server over SSH.
     - [1. Interactive Editor Mode](#1-interactive-editor-mode)
     - [2. Headless Scripting Mode](#2-headless-scripting-mode)
     - [Command-Line Options](#command-line-options)
+  - [FAQ, Sort Of](#faq-sort-of)
   - [Documentation](#documentation)
   - [Tests](#tests)
   - [License](#license)
@@ -293,6 +294,48 @@ zago --run generate_architecture.logo | pbcopy
 | `--init` | | Generate default `~/.zagorc` configuration file. |
 | `--syntax <true/false>` | | Enable or disable syntax highlighting. |
 | `--lang <en/zh_TW>` | | Set interface language. |
+
+## FAQ, Sort Of
+
+### How do I preview rendered HTML?
+
+You probably don't.
+
+In agent-facing Markdown, the source is the interface. AI agents read the
+Markdown itself; they do not need a rendered HTML preview. `zago` focuses on
+making that source easier to write, shape, and maintain.
+
+### Why a TUI app when Electron apps exist?
+
+For the same reason AI agent CLIs exist: the terminal is still the shortest path
+between code, files, tools, and remote machines.
+
+### Why not Vim or Emacs?
+
+The features I want are not just Markdown syntax helpers. They touch the
+editor's interaction model: Text Mode and Canvas Mode, table-cell editing,
+rectangular canvas blocks, LOGO commands, selection-based text tools, status
+lines, menus, and key bindings.
+
+In a powerful plugin ecosystem, that kind of opinionated workflow can easily
+fight the host editor, existing user habits, and other plugins. `zago` keeps the
+surface smaller so these pieces can be designed as one coherent Markdown writing
+flow.
+
+### Why not Rust?
+
+因為我不會。
+
+### Isn't LOGO for 80s kids?
+
+Yes. BTW, I am an 80s kid. :p
+
+Also, LOGO is still a pretty good little language for movement, repetition,
+shapes, and text macros.
+
+### How do I erase a wrong line or box in Canvas Mode?
+
+Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 
 ## Documentation
 
