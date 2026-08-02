@@ -117,6 +117,10 @@ BOX 30 4 ROUND
 ╰────────────────────────────╯
 ```
 
+In Canvas Mode, if a rectangular canvas block mark is active, `BOX` with no
+arguments draws a frame that matches the marked block. Without a canvas block
+mark, no-argument `BOX` keeps the default frame size.
+
 `BOX` and `DRAWBOX` clamp explicit dimensions to a visible, bounded range. Widths
 below `3` become `3`, heights below `2` become `2`, widths above `200` become
 `200`, and heights above `100` become `100`. For example, `BOX 0`,
@@ -132,6 +136,9 @@ DRAWBOX 30 4 ROUND
 GOTO 2 2
 FILL "hi
 ```
+
+Like `BOX`, no-argument `DRAWBOX` uses the active Canvas Mode block mark as its
+target frame when one is present.
 
 ```text
 ╭────────────────────────────╮
@@ -474,11 +481,14 @@ TYPE "hello;world"
 In Text Mode, `GOTO` clamps to the existing buffer. In Canvas Mode, `GOTO`
 auto-extends empty rows within the canvas safety limits: up to `10,000`
 auto-created rows and `10,000` virtual columns.
+
 | `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
 | `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX 20 5 "round"` |
+| `BOX` | - | `BOX` | In Canvas Mode with a block mark, frames the marked block; otherwise inserts the default empty frame | `BOX` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 5 "round"` |
+| `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
 | `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
 | `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |

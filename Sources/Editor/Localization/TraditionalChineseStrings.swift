@@ -76,8 +76,8 @@ public struct TraditionalChineseStrings {
     FIND "query                  搜尋文字
 
   圖形與表格
-    BOX text [align] [style]     插入有框文字方塊
-    DRAWBOX width height [style] 在畫布上覆蓋繪製方框
+    BOX [文字|寬 高]             插入方框；無參數時框住 canvas mark
+    DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住 mark
     LINE [len] [style] [arrow]   繪製/連接水平線
     VLINE [height] [style]       繪製/連接垂直線
     FILL text                    填滿選取範圍或方框內部

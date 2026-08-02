@@ -1,5 +1,19 @@
 import Foundation
 
+public struct LogoCanvasBlockFrame: Sendable, Equatable {
+    public let lineIndex: Int
+    public let visualColumn: Int
+    public let width: Int
+    public let height: Int
+
+    public init(lineIndex: Int, visualColumn: Int, width: Int, height: Int) {
+        self.lineIndex = lineIndex
+        self.visualColumn = visualColumn
+        self.width = width
+        self.height = height
+    }
+}
+
 /// Action mutations dispatched from LOGO scripts to the host text editor.
 public enum LogoEditorAction {
     case saveUndoSnapshot
@@ -52,6 +66,7 @@ public enum LogoEditorQuery {
     case lineAt(Int)
     case defaultBorderStyle
     case hasCanvasBlockMark
+    case canvasBlockFrame
 
     // Buffer Queries
     case bufferList

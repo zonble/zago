@@ -136,6 +136,37 @@ import TextMetrics
     #expect(editor.buffer.lines[0].contains("+----+"))
 }
 
+@Test func testBoxWithoutArgumentsUsesCanvasBlockFrameInCanvasMode() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = ["", "", "", ""]
+    editor.canvasBlockMark = (line: 1, visualColumn: 2)
+    editor.canvasBlockMarkEnd = (line: 3, visualColumn: 8)
+
+    editor.logoEngine.execute("BOX")
+
+    #expect(editor.buffer.lines[1] == "  ┌─────┐")
+    #expect(editor.buffer.lines[2] == "  │     │")
+    #expect(editor.buffer.lines[3] == "  └─────┘")
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 9)
+}
+
+@Test func testDrawBoxWithoutArgumentsUsesCanvasBlockFrameAsOverlay() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = ["abcdefghij", "0123456789"]
+    editor.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.canvasBlockMarkEnd = (line: 1, visualColumn: 6)
+
+    editor.logoEngine.execute("DRAWBOX")
+
+    #expect(editor.buffer.lines[0] == "ab┌───┐hij")
+    #expect(editor.buffer.lines[1] == "01└───┘789")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 7)
+}
+
 @Test func testLogoEngineLineAndVLineVariants() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

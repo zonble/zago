@@ -46,6 +46,17 @@ extension LogoEngine {
 
     internal func executeBoxCommand(_ tokens: [String], index: inout Int, mode: BoxDrawMode = .insert) {
         guard index < tokens.count else {
+            if let frame = delegate?.logoEngine(self, queryState: .canvasBlockFrame) as? LogoCanvasBlockFrame {
+                drawBoxFrameAt(
+                    startLine: frame.lineIndex,
+                    startCol: frame.visualColumn,
+                    width: max(3, min(frame.width, 200)),
+                    height: max(2, min(frame.height, 100)),
+                    style: defaultBoxStyle(),
+                    mode: mode
+                )
+                return
+            }
             drawBoxFrame(width: 20, height: 5, style: defaultBoxStyle(), mode: mode)
             return
         }
@@ -187,6 +198,28 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+
+        drawBoxFrameAt(
+            startLine: startLine,
+            startCol: startCol,
+            width: width,
+            height: height,
+            style: style,
+            mode: mode,
+            exitPos: exitPos
+        )
+    }
+
+    private func drawBoxFrameAt(
+        startLine: Int,
+        startCol: Int,
+        width: Int,
+        height: Int,
+        style: BoxStyle,
+        mode: BoxDrawMode,
+        exitPos: BoxExitPosition = .ne
+    ) {
+        guard let editor = self.delegate else { return }
 
         for r in 0..<height {
             let currentLineIndex = startLine + r

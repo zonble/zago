@@ -126,6 +126,17 @@ extension Editor: LogoEngineDelegate {
             return defaultBorderStyle
         case .hasCanvasBlockMark:
             return isCanvasModeActive && !isTableModeActive && canvasBlockMark != nil
+        case .canvasBlockFrame:
+            guard isCanvasModeActive, !isTableModeActive, let rect = currentCanvasBlockRectangle(), rect.width > 0
+            else {
+                return nil
+            }
+            return LogoCanvasBlockFrame(
+                lineIndex: rect.topLine,
+                visualColumn: rect.leftColumn,
+                width: rect.width,
+                height: rect.bottomLine - rect.topLine + 1
+            )
         case .bufferList:
             return buffers.map { $0.filePath ?? "Untitled" }
         case .currentBufferIndex:

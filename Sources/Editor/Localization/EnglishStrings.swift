@@ -76,8 +76,8 @@ public struct EnglishStrings {
     FIND "query                  Search text
 
   Shapes and tables
-    BOX text [align] [style]     Insert a framed box
-    DRAWBOX width height [style] Draw an overlay frame
+    BOX [text|width height]      Insert a framed box; no args frames canvas mark
+    DRAWBOX [text|width height]  Draw overlay frame; no args frames canvas mark
     LINE [len] [style] [arrow]   Draw/connect a horizontal line
     VLINE [height] [style]       Draw/connect a vertical line
     FILL text                    Fill selected region or box interior
