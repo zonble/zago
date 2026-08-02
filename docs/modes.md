@@ -343,6 +343,20 @@ The editor should track:
 - Current/default border style shared with LOGO boxes, tables, and Canvas Mode
   keyboard drawing.
 
+Base and overlay modes are per-editor runtime state, not global application
+state and not document metadata. Switching one editor view between Text Mode and
+Canvas Mode must not change another editor view, another window, or a future
+split pane.
+
+Configuration may define only the initial base mode for newly created editor
+instances. After an editor exists, runtime mode changes belong to that editor
+instance. Reloading configuration must not force the current editor back to the
+configured startup mode.
+
+Command-bar `set canvas-mode on/off` is a runtime command for the current editor
+instance. In `.zagorc`, the same option is interpreted as startup default for
+new editor instances.
+
 Suggested state transitions:
 
 | Current State | Input | Next State |

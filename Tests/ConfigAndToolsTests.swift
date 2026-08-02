@@ -246,6 +246,44 @@ import Testing
     #expect(canvasItem?.isChecked?(editor) == true)
 }
 
+@Test func testBaseModeIsLocalToEachEditorInstance() throws {
+    let leftEditor = Editor()
+    let rightEditor = Editor()
+
+    leftEditor.switchToCanvasMode()
+
+    #expect(leftEditor.baseMode == .canvas)
+    #expect(rightEditor.baseMode == .text)
+
+    rightEditor.switchToCanvasMode()
+    leftEditor.switchToTextMode()
+
+    #expect(leftEditor.baseMode == .text)
+    #expect(rightEditor.baseMode == .canvas)
+}
+
+@Test func testReloadedConfigPreservesPerEditorRuntimeMode() throws {
+    var config = EditorConfig()
+    config.startInCanvasMode = false
+    config.showRuler = true
+
+    let canvasEditor = Editor()
+    canvasEditor.switchToCanvasMode()
+    canvasEditor.applyReloadedConfig(config)
+
+    #expect(canvasEditor.baseMode == .canvas)
+    #expect(canvasEditor.displayConfig.showRuler == true)
+
+    config.startInCanvasMode = true
+
+    let textEditor = Editor()
+    textEditor.switchToTextMode()
+    textEditor.applyReloadedConfig(config)
+
+    #expect(textEditor.baseMode == .text)
+    #expect(textEditor.displayConfig.showRuler == true)
+}
+
 @Test func testShapeFillMenuPromptsForFillText() throws {
     let editor = Editor()
     editor.runLogoScript("CLEARBUFFER BOX 5 5 GOTO 2 2")

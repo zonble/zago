@@ -66,6 +66,11 @@ set backupdir ~/.zagorc-backups
 
 Options configured in `.zagorc` apply when the editor starts.
 
+`canvas-mode` in `.zagorc` is a startup default for newly created editor
+instances. Text/Canvas/Table mode state is runtime state owned by each editor
+view, so reloading configuration does not force an already-open editor to switch
+back to the configured startup mode.
+
 `trim-trailing-whitespace` is off by default. When enabled, saving removes
 trailing spaces and tabs from each line before writing the file.
 

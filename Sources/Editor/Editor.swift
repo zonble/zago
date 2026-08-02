@@ -274,6 +274,12 @@ public final class Editor {
     /// Reloads configuration settings from ~/.serc or ./.serc files.
     public func reloadConfig() {
         let loadedConfig = ConfigLoader().loadConfig()
+        applyReloadedConfig(loadedConfig)
+        setStatusMessage(L10n["status.config_reloaded"])
+    }
+
+    /// Applies reloadable configuration without changing per-editor runtime modes.
+    func applyReloadedConfig(_ loadedConfig: EditorConfig) {
         self.layoutEngine.setWrapColumn(loadedConfig.wrapColumn)
         self.displayConfig.showRuler = loadedConfig.showRuler
         self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
@@ -285,13 +291,7 @@ public final class Editor {
         if let lang = loadedConfig.language {
             L10n.currentLanguage = lang
         }
-        if loadedConfig.startInCanvasMode {
-            switchToCanvasMode()
-        } else {
-            switchToTextMode()
-        }
         applyCustomConfig(loadedConfig)
-        setStatusMessage(L10n["status.config_reloaded"])
     }
 
     /// Closes current active buffer. If no buffers remain, exits editor.
