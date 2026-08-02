@@ -27,6 +27,8 @@
   - [Features](#features)
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
+  - [Homebrew Tap](#homebrew-tap)
+  - [Preview Builds](#preview-builds)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
   - [Text Processing](#text-processing)
   - [Command Examples](#command-examples)
@@ -58,6 +60,14 @@
 
 ## Quick Start
 
+Install from the Homebrew tap once it is published:
+
+```bash
+brew tap zonble/zago
+brew install zago
+zago notes.txt
+```
+
 Install with [Mint](https://github.com/yonaskolb/Mint):
 
 ```bash
@@ -82,6 +92,37 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
+
+## Homebrew Tap
+
+The tap repository is expected to be `zonble/homebrew-zago`, which users access as:
+
+```bash
+brew tap zonble/zago
+brew install zago
+```
+
+Formula maintenance notes live in [Homebrew Tap](docs/homebrew_tap.md).
+
+## Preview Builds
+
+For early testers, the simplest source install path is:
+
+```bash
+git clone https://github.com/zonble/zago.git
+cd zago
+./build.sh
+zago --version
+```
+
+This installs `zago` to `/usr/local/bin/zago` by default. To install under your home directory:
+
+```bash
+PREFIX="$HOME/.local" ./build.sh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+See [Release & Preview Builds](docs/release.md) for smoke tests, known limitations, and what to include in bug reports.
 
 ## Text Mode & 2D Canvas Mode
 
@@ -241,6 +282,9 @@ zago --run generate_architecture.logo | pbcopy
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
 - [Diagram snippets & menu rules](docs/diagram_snippets.md)
+- [Homebrew tap](docs/homebrew_tap.md)
+- [Release & preview builds](docs/release.md)
+- [Changelog](CHANGELOG.md)
 
 ## Tests
 

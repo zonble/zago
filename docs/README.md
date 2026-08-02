@@ -15,3 +15,5 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Editor modes & layout](modes.md): Text Editing Mode, Canvas Mode, and Table Mode.
 - [Directory mode & permissions](directory_mode.md): DirectoryBuffer architecture, command filtering matrix, and Editor LOGO execution restrictions.
 - [Diagram snippets & menu rules](diagram_snippets.md): trigger conditions, code block context detection, filtering rules, and Editor LOGO `DIAGRAM` command usage.
+- [Homebrew tap](homebrew_tap.md): personal tap layout, Formula template, release checksum workflow, and user install commands.
+- [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
