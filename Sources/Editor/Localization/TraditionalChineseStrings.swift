@@ -358,6 +358,7 @@ public struct TraditionalChineseStrings {
         // Menu Bar Items
         "menu.file.new": "新建空白頁\t^N",
         "menu.file.open": "讀取外部檔案…\t^R",
+        "menu.file.directory": "瀏覽目錄\tDIR",
         "menu.file.save": "儲存檔案\t^S",
         "menu.file.write_out": "另存寫出…\t^O",
         "menu.file.save_exit": "儲存並關閉\tF4",

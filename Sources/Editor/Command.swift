@@ -50,6 +50,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileSave = "file.save"
     case fileWriteOut = "file.write_out"
     case fileInsert = "file.insert"
+    case fileDirectory = "file.directory"
     case fileSaveExit = "file.save_exit"
     case fileExit = "file.exit"
     case fileEditConfig = "file.edit_config"

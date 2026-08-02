@@ -51,6 +51,7 @@ extension Editor {
         commandRegistry.register(SaveFileCommand())
         commandRegistry.register(WriteOutCommand())
         commandRegistry.register(ReadFileCommand())
+        commandRegistry.register(DirectoryBufferCommand())
         commandRegistry.register(SaveAndExitCommand())
         commandRegistry.register(ExitEditorCommand())
         commandRegistry.register(EditConfigCommand())

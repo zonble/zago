@@ -39,6 +39,19 @@ public struct ReadFileCommand: Command {
     }
 }
 
+public struct DirectoryBufferCommand: Command {
+    public let id: CommandID = .fileDirectory
+    public let name = "Directory Buffer"
+    public let description = "Open directory buffer"
+    public let keys: [Key] = []
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.openDirectoryBuffer(path: nil)
+    }
+}
+
 public struct SaveAndExitCommand: Command {
     public let id: CommandID = .fileSaveExit
     public let name = "Save & Exit"

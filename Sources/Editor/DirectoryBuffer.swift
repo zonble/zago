@@ -41,8 +41,8 @@ public final class DirectoryBuffer: TextBuffer {
                 let rhsPath = (expandedPath as NSString).appendingPathComponent(rhs)
                 var lhsIsDir: ObjCBool = false
                 var rhsIsDir: ObjCBool = false
-                fileManager.fileExists(atPath: lhsPath, isDirectory: &lhsIsDir)
-                fileManager.fileExists(atPath: rhsPath, isDirectory: &rhsIsDir)
+                _ = fileManager.fileExists(atPath: lhsPath, isDirectory: &lhsIsDir)
+                _ = fileManager.fileExists(atPath: rhsPath, isDirectory: &rhsIsDir)
 
                 if lhsIsDir.boolValue != rhsIsDir.boolValue {
                     return lhsIsDir.boolValue
@@ -53,7 +53,7 @@ public final class DirectoryBuffer: TextBuffer {
             for name in sorted {
                 let fullPath = (expandedPath as NSString).appendingPathComponent(name)
                 var entryIsDir: ObjCBool = false
-                fileManager.fileExists(atPath: fullPath, isDirectory: &entryIsDir)
+                _ = fileManager.fileExists(atPath: fullPath, isDirectory: &entryIsDir)
 
                 if entryIsDir.boolValue {
                     newLines.append("▸ \(name)/")

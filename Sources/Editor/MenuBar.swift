@@ -68,6 +68,7 @@ public final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.file.new", hotkeyChar: "n", commandId: .bufferNew),
                     MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileInsert),
+                    MenuItem(titleKey: "menu.file.directory", hotkeyChar: "d", commandId: .fileDirectory),
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
                     MenuItem(titleKey: "menu.file.write_out", hotkeyChar: "w", commandId: .fileWriteOut),
                     MenuItem(titleKey: "menu.file.save_exit", hotkeyChar: "e", commandId: .fileSaveExit),

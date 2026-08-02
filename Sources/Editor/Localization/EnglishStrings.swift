@@ -358,6 +358,7 @@ public struct EnglishStrings {
         // Menu Bar Items
         "menu.file.new": "New Buffer\t^N",
         "menu.file.open": "Read File...\t^R",
+        "menu.file.directory": "Directory Buffer\tDIR",
         "menu.file.save": "Save File\t^S",
         "menu.file.write_out": "Write Out...\t^O",
         "menu.file.save_exit": "Save & Exit\tF4",
