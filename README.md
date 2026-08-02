@@ -1,28 +1,43 @@
-# `zago`: Terminal Text Editor & Diagramming
+# `zago`: A Tiny Terminal Swiss Army Knife for Markdown Writers
 
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux](https://img.shields.io/badge/macOS%20%2B%20Linux-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
+![Markdown first](https://img.shields.io/badge/Markdown-first-2563eb)
+![Tables](https://img.shields.io/badge/Pipe%20Tables-editable-0f766e)
+![Diagrams](https://img.shields.io/badge/Text%20Diagrams-inline-7c3aed)
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
-![Text + Canvas](https://img.shields.io/badge/Text%20%2B%20Canvas-editor-9333ea)
 ![LOGO macros](https://img.shields.io/badge/LOGO-macros-ec4899)
 
-- a small terminal text editor.
-- draw boxes and lines in your Markdown file.
-- handles CJK and emoji alignment.
+`zago` is a lightweight terminal workbench for people who live in Markdown.
+It keeps prose editing, pipe tables, local document links, headings, text
+diagrams, CJK-aware text tools, and small automation macros in one tiny editor.
+
+It is not trying to replace every editor you already know. It is for the
+Markdown work that usually sends you bouncing between a text editor, Obsidian,
+ASCIIFlow, Monodraw, shell scripts, and random word-count tools, whether the
+file is on your laptop or on a server over SSH.
+
+Stay in the terminal. Keep the file plain. Make the document itself carry the
+writing, tables, diagrams, and text operations.
 
 ## Who is zago for?
 
-- **Text diagrams over images**: Clean, diffable diagrams in your Markdown.
-- **No GUI context-switching**: No need to open Monodraw or ASCIIFlow just to draw boxes.
-- **Keyboard-first**: Stay in the typing flow without reaching for a mouse.
-- **CJK & Emoji perfectionists**: Precise alignment that never breaks box borders.
-- **Terminal natives**: Fast documentation for local and SSH workflows.
+- **Markdown writers** who want prose, headings, links, tables, and diagrams in
+  one local terminal tool.
+- **Technical writers** who prefer plain-text documents that remain readable in
+  Git diffs, SSH sessions, pull requests, and README files.
+- **People drawing text diagrams** who do not want to leave the document just to
+  open a diagramming app.
+- **CJK and emoji perfectionists** who need terminal display width to be correct
+  when boxes, tables, rulers, and wrapped prose are involved.
+- **Keyboard-first document builders** who like nano-style editing, but want a
+  sharper toolbox for Markdown-era writing.
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
 
-- [`zago`: Terminal Text Editor \& Diagramming](#zago-terminal-text-editor--diagramming)
+- [`zago`: A Tiny Terminal Swiss Army Knife for Markdown Writers](#zago-a-tiny-terminal-swiss-army-knife-for-markdown-writers)
   - [Who is zago for?](#who-is-zago-for)
   - [Features](#features)
   - [Requirements](#requirements)
@@ -42,9 +57,19 @@
 
 ## Features
 
-- Plain-text diagramming: draw boxes, arrow connector lines, fills, and table layouts directly in the buffer.
-- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, and connector lines aligned.
-- Modeless typing & dual spatial modes: Ordinary typing always inserts text directly. Press `M+V` to toggle between standard text stream mode and 2D Canvas Mode for freeform grid navigation and block editing.
+- Markdown-first editing: write prose, jump through local document links,
+  navigate headings, and keep README-style documents close to their final form.
+- Table-aware editing: format Markdown pipe tables, move between table cells,
+  and edit table content without breaking borders.
+- Plain-text diagramming: draw boxes, arrow connector lines, fills, and table
+  layouts directly in the buffer.
+- Text processing for writers: count chars, words, lines, CJK chars, and
+  emojis; normalize CJK/ASCII spacing; transform selected text between scripts.
+- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, rulers, and
+  connector lines aligned.
+- Modeless typing & dual spatial modes: Ordinary typing always inserts text
+  directly. Press `M+V` to toggle between standard text stream mode and 2D
+  Canvas Mode for freeform grid navigation and block editing.
 - Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload.
