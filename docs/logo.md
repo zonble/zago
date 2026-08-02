@@ -304,7 +304,15 @@ BOX :title CENTER ROUND
 
 ---
 
-### 2. Loops (`REPEAT`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)
+### 2. Loops (`REPEAT`, `WHILE`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)
+
+LOGO code runs inside an interactive editor, so loops are intentionally bounded. Each loop invocation can execute at most 10,000 iterations. When a loop exceeds that limit, execution stops and the editor reports:
+
+```text
+[LOGO loop iteration limit exceeded: WHILE (10000 iterations)]
+```
+
+This applies to `REPEAT`, `FOR`, `DOTIMES`, `WHILE`, `UNTIL`, `DO.WHILE`, and `DO.UNTIL`. The limit is a safety guard for editor macros; write long-running transformations as explicit batches instead of relying on open-ended loops.
 
 #### `REPEAT`
 
@@ -321,6 +329,20 @@ REPEAT 5 [ TYPE :# TYPE ". Item" MOVE DOWN MOVE HOME ]
 4. Item
 5. Item
 ```
+
+#### `WHILE`
+
+Runs a block while a condition remains true. Prefer the bracketed condition form:
+
+```logo
+MAKE "i 0
+WHILE [ :i < 5 ] [
+  TYPE :i
+  MAKE "i :i + 1
+]
+```
+
+For compatibility, `WHILE :i < 5 [ ... ]` is also accepted.
 
 #### `FOREACH` and `ISEQ` (`RANGE`)
 
@@ -667,7 +689,6 @@ TYPE ITEM 2 :cells
 | `IFTRUE` | `IFT` | `IFTRUE [ block ]` | Executes if preceding `TEST` was true | `IFT [ TYPE "Yes" ]` |
 | `IFFALSE` | `IFF` | `IFFALSE [ block ]` | Executes if preceding `TEST` was false | `IFF [ TYPE "No" ]` |
 | `REPEAT` | - | `REPEAT count [ block ]` | Loops enclosed code block $n$ times (built-in `:#` / `:repcount`) | `REPEAT 3 [ TYPE "! " ]` |
-| `FOREVER` | - | `FOREVER [ block ]` | Infinite loop until `STOP` | `FOREVER [ ... IF :x [ STOP ] ]` |
 | `FOR` | - | `FOR [var start end step] [ block ]` | For loop over range | `FOR [i 1 5 1] [ TYPE :i ]` |
 | `DOTIMES` | - | `DOTIMES [var count] [ block ]` | Loops counter from 0 to count-1 | `DOTIMES [i 5] [ TYPE :i ]` |
 | `WHILE` | - | `WHILE [ cond ] [ block ]` | Executes block while condition is true | `WHILE [ :i < 5 ] [ ... ]` |

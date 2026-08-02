@@ -79,7 +79,7 @@ public final class LogoEngine {
         .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .line, .hr, .vline, .vhr, .table, .diagram,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
-        .repeatLoop, .foreverLoop, .forLoop, .dotimesLoop, .whileLoop,
+        .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL
@@ -148,6 +148,8 @@ public final class LogoEngine {
     public var currentThrowValue: String? = nil
     internal var procedureCallDepth: Int = 0
     internal let maxProcedureCallDepth: Int = 32
+    public static let defaultMaxLoopIterations: Int = 10_000
+    public var maxLoopIterations: Int = LogoEngine.defaultMaxLoopIterations
 
     public weak var delegate: LogoEngineDelegate?
 
@@ -211,5 +213,17 @@ public final class LogoEngine {
             }
             index += 1
         }
+    }
+
+    internal func guardLoopIteration(_ loopName: String, iteration: Int) -> Bool {
+        let limit = max(1, maxLoopIterations)
+        guard iteration <= limit else {
+            let message = "[LOGO loop iteration limit exceeded: \(loopName) (\(limit) iterations)]"
+            lastError = message
+            delegate?.logoEngine(self, performAction: .setStatusMessage(message))
+            hasSetStatusMessage = true
+            return false
+        }
+        return true
     }
 }

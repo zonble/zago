@@ -48,7 +48,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case ifElseCondition
     case output
     case repeatLoop
-    case foreverLoop
     case forLoop
     case dotimesLoop
     case whileLoop
@@ -274,7 +273,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["IFELSE"], .ifElseCondition),
         (["OUTPUT", "OP"], .output),
         (["REPEAT"], .repeatLoop),
-        (["FOREVER"], .foreverLoop),
         (["FOR"], .forLoop),
         (["DOTIMES"], .dotimesLoop),
         (["WHILE"], .whileLoop),

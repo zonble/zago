@@ -132,29 +132,15 @@ extension LogoEngine {
             index += 1 // Advance to "["
             if index < tokens.count && tokens[index] == "[" {
                 let block = extractBlockTokens(tokens: tokens, index: &index)
+                guard count > 0 else { return true }
                 for r in 1...count {
+                    guard guardLoopIteration("REPEAT", iteration: r) else { break }
                     repCount = r
                     variables["#"] = "\(r)"
                     variables["repcount"] = "\(r)"
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                     if frameReturn != nil || byeFlag || currentThrowTag != nil { break }
-                }
-            }
-            return true
-
-        case .foreverLoop:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let block = extractBlockTokens(tokens: tokens, index: &index)
-                var r = 1
-                while !byeFlag && frameReturn == nil && currentThrowTag == nil {
-                    repCount = r
-                    variables["#"] = "\(r)"
-                    variables["repcount"] = "\(r)"
-                    var bIdx = 0
-                    executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                    r += 1
                 }
             }
             return true
@@ -278,7 +264,10 @@ extension LogoEngine {
                             stepVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 1
                         }
                         var cur = startVal
+                        var iteration = 0
                         while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                            iteration += 1
+                            guard guardLoopIteration("FOR", iteration: iteration) else { break }
                             variables[varName] = "\(cur)"
                             var bIdx = 0
                             executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
@@ -301,6 +290,7 @@ extension LogoEngine {
                         var cIdx = 1
                         let countVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 0
                         for i in 0..<countVal {
+                            guard guardLoopIteration("DOTIMES", iteration: i + 1) else { break }
                             variables[varName] = "\(i)"
                             var bIdx = 0
                             executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
@@ -313,14 +303,11 @@ extension LogoEngine {
 
         case .whileLoop:
             index += 1
-            var condTokens: [String] = []
-            while index < tokens.count && tokens[index] != "[" {
-                condTokens.append(tokens[index])
-                index += 1
-            }
-            if index < tokens.count && tokens[index] == "[" {
-                let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
+            if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
+                var iteration = 0
                 while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                    iteration += 1
+                    guard guardLoopIteration("WHILE", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
@@ -329,14 +316,11 @@ extension LogoEngine {
 
         case .untilLoop:
             index += 1
-            var condTokens: [String] = []
-            while index < tokens.count && tokens[index] != "[" {
-                condTokens.append(tokens[index])
-                index += 1
-            }
-            if index < tokens.count && tokens[index] == "[" {
-                let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
+            if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
+                var iteration = 0
                 while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                    iteration += 1
+                    guard guardLoopIteration("UNTIL", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
@@ -353,7 +337,10 @@ extension LogoEngine {
                     condTokens.append(tokens[index])
                     index += 1
                 }
+                var iteration = 0
                 repeat {
+                    iteration += 1
+                    guard guardLoopIteration("DO.WHILE", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 } while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
@@ -370,7 +357,10 @@ extension LogoEngine {
                     condTokens.append(tokens[index])
                     index += 1
                 }
+                var iteration = 0
                 repeat {
+                    iteration += 1
+                    guard guardLoopIteration("DO.UNTIL", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 } while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
@@ -440,5 +430,26 @@ extension LogoEngine {
         default:
             return false
         }
+    }
+
+    private func extractLoopConditionAndBody(tokens: [String], index: inout Int) -> (condition: [String], body: [String])? {
+        guard index < tokens.count else { return nil }
+
+        if tokens[index] == "[" {
+            let condition = extractBlockTokens(tokens: tokens, index: &index)
+            index += 1
+            guard index < tokens.count, tokens[index] == "[" else { return nil }
+            let body = extractBlockTokens(tokens: tokens, index: &index)
+            return (condition, body)
+        }
+
+        var condition: [String] = []
+        while index < tokens.count && tokens[index] != "[" {
+            condition.append(tokens[index])
+            index += 1
+        }
+        guard index < tokens.count, tokens[index] == "[" else { return nil }
+        let body = extractBlockTokens(tokens: tokens, index: &index)
+        return (condition, body)
     }
 }

@@ -1271,19 +1271,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("MAKE \"SUM2 0 REPEAT 4 [ MAKE \"SUM2 :SUM2 + REPCOUNT ]")
     #expect(logoEngine.variables["sum2"] == "10", "variables['sum2'] was \(logoEngine.variables["sum2"] ?? "nil")")
 
-    // FOREVER & STOP
-    logoEngine.execute(
-        """
-        TO TESTFOREVER
-          MAKE "N 0
-          FOREVER [
-            MAKE "N :N + 1
-            IF :N == 3 [ STOP ]
-          ]
-        END
-        TESTFOREVER
-        """)
-    #expect(logoEngine.variables["n"] == "3", "variables['n'] was \(logoEngine.variables["n"] ?? "nil")")
+    #expect(LogoPrimitive.from("FOREVER") == nil)
 
     // TEST, IFTRUE, IFFALSE
     logoEngine.execute("TEST 2 > 1  IFTRUE [ MAKE \"ANS \"yep ] IFFALSE [ MAKE \"ANS \"nope ]")
@@ -1306,9 +1294,15 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("MAKE \"W 0 WHILE :W < 5 [ MAKE \"W :W + 1 ]")
     #expect(logoEngine.variables["w"] == "5", "variables['w'] was \(logoEngine.variables["w"] ?? "nil")")
 
+    logoEngine.execute("MAKE \"WB 0 WHILE [ :WB < 5 ] [ MAKE \"WB :WB + 1 ]")
+    #expect(logoEngine.variables["wb"] == "5", "variables['wb'] was \(logoEngine.variables["wb"] ?? "nil")")
+
     // UNTIL loop
     logoEngine.execute("MAKE \"U 0 UNTIL :U == 5 [ MAKE \"U :U + 1 ]")
     #expect(logoEngine.variables["u"] == "5", "variables['u'] was \(logoEngine.variables["u"] ?? "nil")")
+
+    logoEngine.execute("MAKE \"UB 0 UNTIL [ :UB == 5 ] [ MAKE \"UB :UB + 1 ]")
+    #expect(logoEngine.variables["ub"] == "5", "variables['ub'] was \(logoEngine.variables["ub"] ?? "nil")")
 
     // DO.WHILE loop
     logoEngine.execute("MAKE \"DW 0 DO.WHILE [ MAKE \"DW :DW + 1 ] :DW < 3")
@@ -1332,6 +1326,18 @@ final class LogoTestResultBox: @unchecked Sendable {
     // CATCH & THROW & ERROR
     logoEngine.execute("CATCH \"T [ THROW \"T \"hello ]")
     #expect(logoEngine.lastResult == "hello", "CATCH lastResult was \(logoEngine.lastResult ?? "nil")")
+}
+
+@Test func testLogoLoopIterationLimit() throws {
+    let editor = Editor()
+    let logoEngine = editor.logoEngine
+    logoEngine.maxLoopIterations = 3
+
+    logoEngine.execute("MAKE \"W 0 WHILE TRUE [ MAKE \"W :W + 1 ]")
+
+    #expect(logoEngine.variables["w"] == "3")
+    #expect(logoEngine.lastError == "[LOGO loop iteration limit exceeded: WHILE (3 iterations)]")
+    #expect(editor.statusMessage == "[LOGO loop iteration limit exceeded: WHILE (3 iterations)]")
 }
 
 @Test func testSection82TemplateIteration() throws {
