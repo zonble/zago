@@ -114,6 +114,23 @@ fixed-position content where every `(x, y)` coordinate matters.
 - The editor horizontally scrolls by pages when the cursor moves outside the
   visible text area.
 
+### Canvas Safety Limits
+
+Canvas Mode has finite auto-extension limits so a mistyped command or LOGO
+macro cannot accidentally create a huge sparse buffer.
+
+- Maximum automatically created canvas rows: `10,000`.
+- Maximum virtual canvas columns: `10,000`.
+- Existing files may contain more than `10,000` lines, but Canvas Mode will not
+  auto-create rows beyond row `10,000`.
+- Text Mode `goto` clamps to the existing buffer and never auto-extends rows.
+- Canvas Mode `goto row [col]` auto-extends empty rows only when the target row
+  and column are within these limits.
+- Columns beyond the limit are rejected before padding or drawing can create
+  very long lines.
+- When a limit is exceeded, the cursor does not move and the editor reports a
+  status message.
+
 ### Coordinate Rules
 
 - The first editable column is `x = 0`, independent of the line number gutter.

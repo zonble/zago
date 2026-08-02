@@ -446,7 +446,62 @@ import TextMetrics
     #expect(output.contains("KLMNOPQRST"))
 }
 
+@Test func testTextModeGotoDoesNotAutoExtendBuffer() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two"]
 
+    editor.goToLocation(line: 100, column: 2)
+
+    #expect(editor.buffer.lines.count == 2)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 1)
+}
+
+@Test func testCanvasModeGotoAutoExtendsRowsWithinLimit() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one"]
+    editor.switchToCanvasMode()
+
+    editor.goToLocation(line: 5, column: 10)
+
+    #expect(editor.buffer.lines.count == 5)
+    #expect(editor.buffer.lineIndex == 4)
+    #expect(editor.canvasVisualColumn == 9)
+    #expect(editor.buffer.columnIndex == 0)
+    #expect(editor.buffer.isModified == true)
+}
+
+@Test func testCanvasModeGotoRejectsRowsAndColumnsBeyondLimit() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one"]
+    editor.switchToCanvasMode()
+
+    editor.goToLocation(line: EditorLimits.maxCanvasAutoExtendRows + 1, column: 1)
+
+    #expect(editor.buffer.lines.count == 1)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 0)
+    #expect(editor.statusMessage == L10n["status.canvas_row_limit_exceeded"])
+
+    editor.goToLocation(line: 1, column: EditorLimits.maxCanvasAutoExtendColumns + 1)
+
+    #expect(editor.buffer.lines.count == 1)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 0)
+    #expect(editor.statusMessage == L10n["status.canvas_column_limit_exceeded"])
+}
+
+@Test func testCanvasModeDrawingStopsAtColumnLimit() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.goToLocation(line: 1, column: EditorLimits.maxCanvasAutoExtendColumns)
+
+    editor.processKey(.shiftArrowRight)
+
+    #expect(editor.canvasVisualColumn == EditorLimits.maxCanvasAutoExtendColumns - 1)
+    #expect(editor.buffer.lines[0] == "")
+    #expect(editor.statusMessage == L10n["status.canvas_column_limit_exceeded"])
+}
 
 @Test func testCanvasModeRejectsJustification() throws {
     let editor = Editor()
@@ -906,6 +961,29 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.buffer.columnIndex == 2)
 }
 
+@Test func testCommandBarGotoCommandAcceptsLineAndColumn() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+
+    submitCommandBar("goto 3 2", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 1)
+    #expect(editor.logoEngine.lastResult == nil)
+
+    submitCommandBar("GOTO 1,3", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 2)
+    #expect(editor.logoEngine.lastResult == nil)
+
+    submitCommandBar("goto 2:2", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 1)
+    #expect(editor.logoEngine.lastResult == nil)
+}
+
 @Test func testCommandBarLogoExpressionFallback() throws {
     let editor = Editor()
 
@@ -1017,6 +1095,18 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     submitCommandBar("unset wrap", editor: editor)
     #expect(editor.layoutEngine.wrapColumn == nil)
+
+    submitCommandBar("set canvas-mode on", editor: editor)
+    #expect(editor.isCanvasModeActive == true)
+
+    submitCommandBar("SET CANVAS-MODE OFF", editor: editor)
+    #expect(editor.isCanvasModeActive == false)
+
+    submitCommandBar("set canvas_mode true", editor: editor)
+    #expect(editor.isCanvasModeActive == true)
+
+    submitCommandBar("unset canvas-mode", editor: editor)
+    #expect(editor.isCanvasModeActive == false)
 }
 
 @Test func testCommandBarSetTabShowsSettingCompletions() throws {
@@ -1032,6 +1122,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.promptCompletionText?.contains("wrap") == true)
     #expect(editor.promptCompletionText?.contains("linenumbers") == true)
     #expect(editor.promptCompletionText?.contains("sublinenumbers") == true)
+    #expect(editor.promptCompletionText?.contains("canvas-mode") == true)
     #expect(editor.promptCompletionText?.contains("syntax") == true)
 
     #expect(editor.promptCompletionText?.hasPrefix("SET: ") == true)
@@ -1060,6 +1151,20 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.processPromptKey(.tab)
 
     #expect(editor.promptInputText == "set syntax ")
+    #expect(editor.promptCompletionText?.contains("on") == true)
+    #expect(editor.promptCompletionText?.contains("off") == true)
+}
+
+@Test func testCommandBarSetCanvasModeValueTabShowsValueCompletions() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "set canvas-mode " {
+        editor.processPromptKey(.char(ch))
+    }
+
+    editor.processPromptKey(.tab)
+
+    #expect(editor.promptInputText == "set canvas-mode ")
     #expect(editor.promptCompletionText?.contains("on") == true)
     #expect(editor.promptCompletionText?.contains("off") == true)
 }

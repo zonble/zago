@@ -62,12 +62,22 @@ extension Editor: LogoEngineDelegate {
         case .markModified:
             buffer.isModified = true
         case .updateLineIndex(let lineIndex):
+            if isCanvasModeActive {
+                guard isCanvasLineAllowed(lineIndex), ensureCanvasLineExists(lineIndex) else { return }
+                buffer.lineIndex = max(0, lineIndex)
+                syncCanvasCursorToBuffer()
+                return
+            }
             while buffer.lines.count <= lineIndex {
                 buffer.lines.append("")
             }
             buffer.lineIndex = max(0, lineIndex)
         case .updateColumnIndex(let columnIndex):
             if isCanvasModeActive {
+                guard isCanvasColumnAllowed(columnIndex) else {
+                    setStatusMessage(L10n["status.canvas_column_limit_exceeded"])
+                    return
+                }
                 canvasVisualColumn = max(0, columnIndex)
                 syncCanvasCursorToBuffer()
             } else {
@@ -78,6 +88,10 @@ extension Editor: LogoEngineDelegate {
                 buffer.lines[index] = text
             }
         case .ensureLineExists(let index):
+            if isCanvasModeActive {
+                _ = ensureCanvasLineExists(index)
+                return
+            }
             while buffer.lines.count <= index {
                 buffer.lines.append("")
             }

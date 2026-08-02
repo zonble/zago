@@ -47,6 +47,7 @@ Examples handled before LOGO:
 | :--- | :--- |
 | `42` | Go to line 42 |
 | `42:7` / `42,7` | Go to line 42, column 7 |
+| `goto 42 7` | Go to line 42, column 7 |
 | `save` | Save the current buffer |
 | `write path` | Save the current buffer to `path` |
 | `open path` / `edit path` | Open `path` in a new buffer |
@@ -469,6 +470,10 @@ TYPE "hello;world"
 | `GOTO` | - | `GOTO line [column]` | Jumps directly to 1-indexed line and optional column | `GOTO 10`, `GOTO 42 5` |
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
+
+In Text Mode, `GOTO` clamps to the existing buffer. In Canvas Mode, `GOTO`
+auto-extends empty rows within the canvas safety limits: up to `10,000`
+auto-created rows and `10,000` virtual columns.
 | `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
 | `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX 20 5 "round"` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
@@ -728,7 +733,8 @@ TYPE ITEM 2 :cells
 
 Editor/session settings are command prompt and configuration directives, not
 LOGO primitives. Use command prompt shorthand such as `set wrap 80`,
-`set tab 4`, `set linenumbers off`, `set ruler on`, and `unset wrap`.
+`set tab 4`, `set canvas-mode on`, `set linenumbers off`, `set ruler on`,
+and `unset wrap`.
 
 ---
 

@@ -1,5 +1,5 @@
-# Output demo.gif
-Output demo.mp4
+Output zago.gif
+# Output zago.mp4
 
 Set Shell "bash"
 Set FontSize 20

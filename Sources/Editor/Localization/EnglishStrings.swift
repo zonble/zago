@@ -250,6 +250,8 @@ public struct EnglishStrings {
         "status.table_mode_exited": "[ Table Mode Exited ]",
         "status.table_mode_hint": "(M+T to exit | Tab to navigate)",
         "status.canvas_mode_hint": "(M+V to exit)",
+        "status.canvas_row_limit_exceeded": "[ Canvas row limit exceeded ]",
+        "status.canvas_column_limit_exceeded": "[ Canvas column limit exceeded ]",
         "mode.canvas": "CANVAS",
         "mode.table": "TABLE",
         "subline.char_count": "%d chars",

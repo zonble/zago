@@ -177,8 +177,12 @@ public final class Editor {
             showRuler: finalRuler, showLineNumbers: finalLineNumbers, showSubLineNumbers: finalSubLineNumbers,
             enableSyntaxHighlight: finalSyntax,
             autoReload: finalReload, tabSize: finalTabSize)
+        self.baseMode = loadedConfig.startInCanvasMode ? .canvas : .text
 
         setupDefaultCommands()
+        if isCanvasModeActive {
+            syncCanvasCursorFromBuffer()
+        }
         applyCustomConfig(loadedConfig)
 
         startFileWatcherForCurrentBuffer()
@@ -274,6 +278,11 @@ public final class Editor {
         self.displayConfig.tabSize = loadedConfig.tabSize
         if let lang = loadedConfig.language {
             L10n.currentLanguage = lang
+        }
+        if loadedConfig.startInCanvasMode {
+            switchToCanvasMode()
+        } else {
+            switchToTextMode()
         }
         applyCustomConfig(loadedConfig)
         setStatusMessage(L10n["status.config_reloaded"])

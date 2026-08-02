@@ -15,28 +15,38 @@ extension Editor {
             return
         }
 
-        let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
-        buffer.lineIndex = targetLine
-
-        if let oneBasedColumn {
+        if isCanvasModeActive {
+            if let oneBasedColumn, oneBasedColumn <= 0 {
+                setStatusMessage(L10n["status.invalid_column"])
+                return
+            }
+            let targetLine = oneBasedLine - 1
+            guard isCanvasLineAllowed(targetLine) else {
+                setStatusMessage(L10n["status.canvas_row_limit_exceeded"])
+                return
+            }
+            let targetColumn = (oneBasedColumn ?? 1) - 1
+            guard isCanvasColumnAllowed(targetColumn) else {
+                setStatusMessage(L10n["status.canvas_column_limit_exceeded"])
+                return
+            }
+            guard ensureCanvasLineExists(targetLine) else { return }
+            buffer.lineIndex = targetLine
+            canvasVisualColumn = targetColumn
+            syncCanvasCursorToBuffer()
+        } else if let oneBasedColumn {
             guard oneBasedColumn > 0 else {
                 setStatusMessage(L10n["status.invalid_column"])
                 return
             }
+            let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
+            buffer.lineIndex = targetLine
             let zeroBasedColumn = oneBasedColumn - 1
-            if isCanvasModeActive {
-                canvasVisualColumn = max(0, zeroBasedColumn)
-                syncCanvasCursorToBuffer()
-            } else {
-                buffer.columnIndex = max(0, min(zeroBasedColumn, buffer.lines[targetLine].count))
-            }
+            buffer.columnIndex = max(0, min(zeroBasedColumn, buffer.lines[targetLine].count))
         } else {
-            if isCanvasModeActive {
-                canvasVisualColumn = 0
-                syncCanvasCursorToBuffer()
-            } else {
-                buffer.columnIndex = 0
-            }
+            let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
+            buffer.lineIndex = targetLine
+            buffer.columnIndex = 0
         }
 
         buffer.clampCursor()
@@ -222,6 +232,14 @@ extension Editor {
                 displayConfig.showSubLineNumbers = true
             } else {
                 displayConfig.showSubLineNumbers.toggle()
+            }
+        case "canvas-mode", "canvasmode", "canvas_mode":
+            if arg == "off" || arg == "false" {
+                switchToTextMode()
+            } else if arg == "on" || arg == "true" {
+                switchToCanvasMode()
+            } else {
+                toggleCanvasMode()
             }
         case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
             if arg == "off" || arg == "false" {

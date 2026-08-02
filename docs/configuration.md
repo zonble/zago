@@ -53,6 +53,8 @@ set tabstospaces
 unset tabstospaces
 set wrap 80
 unset wrap
+set canvas-mode on
+set canvas-mode off
 set lang zh_TW
 set syntax true
 set mouse true

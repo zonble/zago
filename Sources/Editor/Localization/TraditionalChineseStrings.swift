@@ -250,6 +250,8 @@ public struct TraditionalChineseStrings {
         "status.table_mode_exited": "[ 已退出表格模式 ]",
         "status.table_mode_hint": "(M+T 退出 | Tab 移動)",
         "status.canvas_mode_hint": "(M+V 退出)",
+        "status.canvas_row_limit_exceeded": "[ 已超過畫布列數上限 ]",
+        "status.canvas_column_limit_exceeded": "[ 已超過畫布欄數上限 ]",
         "mode.canvas": "畫布",
         "mode.table": "表格",
         "subline.char_count": "%d 字",

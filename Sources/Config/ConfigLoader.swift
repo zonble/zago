@@ -112,6 +112,15 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "canvas-mode", "canvasmode", "canvas_mode":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.startInCanvasMode = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.startInCanvasMode = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "tabsize":
                         if let ts = Int(value), ts > 0 {
                             config.tabSize = ts
@@ -133,6 +142,8 @@ public final class ConfigLoader {
                             || value == "sublines"
                         {
                             config.showSubLineNumbers = false
+                        } else if value == "canvas-mode" || value == "canvasmode" || value == "canvas_mode" {
+                            config.startInCanvasMode = false
                         } else if value == "syntax" {
                             config.enableSyntaxHighlight = false
                         } else if value == "autoreload" {
@@ -196,6 +207,8 @@ public final class ConfigLoader {
                     case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
                         "subline_number", "sublines":
                         config.showSubLineNumbers = false
+                    case "canvas-mode", "canvasmode", "canvas_mode":
+                        config.startInCanvasMode = false
                     case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
                         config.enableSyntaxHighlight = false
                     case "autoreload", "auto-reload", "auto_reload":
@@ -354,6 +367,9 @@ set lineNumbers on
 
 # Show right-side sub line numbers for wrapped prose paragraphs (on / off)
 set subLineNumbers off
+
+# Start in Canvas Mode (on / off)
+# set canvas-mode off
 
 # Tab Stop Width (default: 4)
 set tabSize 4

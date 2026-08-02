@@ -47,6 +47,11 @@
 | :--- | :--- | :--- |
 | **Text Editing Mode** | *(Default)* | Modeless text editing with soft wrapping, syntax highlighting, paragraph justification (`^J`), and word-level selection. |
 | **Canvas Mode** | `M+V` / Menu | 2D freehand ASCII/Unicode diagram drawing with rectangular block selection, arrow key line drawing, and LOGO turtle graphics. |
+
+Canvas Mode automatically creates empty rows when moving or using `goto` below
+the current buffer, up to `10,000` rows. Virtual columns are limited to
+`10,000` columns so accidental commands cannot create extremely wide sparse
+lines.
 | **Table Mode** | `M+T` / Menu | Structural grid editing for ASCII/Unicode tables with automatic border preservation, cell text wrapping, centering (`^J`), and row/column resizing. |
 | **Directory Mode** | Command `dir` / `ls` | Interactive file browser buffer for exploring directories, inspecting files, and opening documents safely without corrupting binary files. |
 
@@ -154,14 +159,14 @@ Pressing `Esc` or `Alt+:` opens the bottom Command Prompt line. It parses inputs
 | `buffer prev` / `bprev` | Switch to previous buffer |
 | `buffer N` | Jump to 1-based buffer index `N` |
 | `dir` / `ls` | Open Directory Buffer browser for current working directory |
-| `set <option> <value>` | Modify editor configuration setting (e.g., `set wrap 80`, `set ruler on`) |
+| `set <option> <value>` | Modify editor configuration setting (e.g., `set wrap 80`, `set ruler on`, `set canvas-mode on`) |
 
 ### Tab Completion
 
 The command prompt features intelligent context-aware `Tab` completion:
 
 - **Command Shorthands**: Completes `save`, `open`, `write`, `buffer`, `exit`, etc.
-- **Settings & Options**: Typing `set ` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `syntax`, `language`, `border`).
+- **Settings & Options**: Typing `set ` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `canvas-mode`, `syntax`, `language`, `border`).
 - **File Paths**: Completes relative/absolute file system paths for `open` and `write`.
 - **LOGO Keywords & Macros**: Completes LOGO primitives (`BOX`, `TABLE`, `LINE`, `DRAWBOX`, `FILL`, `FD`, `RT`, `REPEAT`, etc.).
 

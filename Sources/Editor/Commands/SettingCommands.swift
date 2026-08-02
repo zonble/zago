@@ -28,7 +28,8 @@ public struct SettingCommand: Command {
     }
 
     public static let settingNames = [
-        "wrap", "ruler", "linenumbers", "sublinenumbers", "syntax", "autoreload", "regex", "tab", "lang", "border",
+        "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "regex", "tab",
+        "lang", "border",
     ]
 
     public static func valueSuggestions(for setting: String) -> [String] {
@@ -39,6 +40,7 @@ public struct SettingCommand: Command {
             "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number",
             "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
             "subline_number", "sublines",
+            "canvas-mode", "canvasmode", "canvas_mode",
             "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting",
             "autoreload", "auto-reload", "auto_reload",
             "regex", "regexp", "enableregex":

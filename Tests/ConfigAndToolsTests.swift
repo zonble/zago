@@ -351,6 +351,7 @@ import Testing
     #expect(content.contains("set showRuler off"))
     #expect(content.contains("set lineNumbers on"))
     #expect(content.contains("set subLineNumbers off"))
+    #expect(content.contains("# set canvas-mode off"))
     #expect(content.contains("set tabSize 4"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
@@ -383,6 +384,7 @@ import Testing
         set showRuler true
         set lineNumbers off
         set subLineNumbers on
+        set canvas-mode on
         set autoReload true
         bind ctrl-f move.left
         bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
@@ -413,6 +415,7 @@ import Testing
     #expect(config.showRuler == true)
     #expect(config.showLineNumbers == false)
     #expect(config.showSubLineNumbers == true)
+    #expect(config.startInCanvasMode == true)
     #expect(config.autoReload == true)
     #expect(config.customKeyBinds[.ctrl("f")] == "move.left")
     #expect(config.customKeyBinds[.alt("h")] == "logo: MOVE HOME TYPE '# ' MOVE END")
@@ -426,6 +429,8 @@ import Testing
 @Test func testSubLineNumberSettingCommandSuggestionsAndAliases() throws {
     #expect(SettingCommand.settingNames.contains("sublinenumbers"))
     #expect(SettingCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
+    #expect(SettingCommand.settingNames.contains("canvas-mode"))
+    #expect(SettingCommand.valueSuggestions(for: "canvas_mode") == ["on", "off"])
 
     let editor = Editor()
     #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -435,6 +440,12 @@ import Testing
 
     editor.applyEditorSetting(setting: "subline_numbers", arg: "off")
     #expect(editor.displayConfig.showSubLineNumbers == false)
+
+    editor.applyEditorSetting(setting: "canvas-mode", arg: "on")
+    #expect(editor.isCanvasModeActive == true)
+
+    editor.applyEditorSetting(setting: "canvasmode", arg: "off")
+    #expect(editor.isCanvasModeActive == false)
 }
 
 @Test func testWrapColumnMinimumIsTen() throws {

@@ -309,13 +309,14 @@ public struct GotoLineCommand: Command {
 public struct NumericGotoCommand: Command {
     public let id: CommandID = .cursorGotoLine
     public let name = "Goto Line"
-    public let description = "Jump to line or line:column"
+    public let description = "Jump to line or line/column"
     public let commandBarAliases: [String] = ["goto"]
 
     public init() {}
 
     public func match(_ input: CommandBarInput) -> Bool {
         input.text.range(of: #"^-?\d+([:,]-?\d+)?$"#, options: .regularExpression) != nil
+            || input.lowerFirstToken == "goto"
     }
 
     public func execute(on editor: Editor) {
@@ -323,9 +324,14 @@ public struct NumericGotoCommand: Command {
     }
 
     public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        let parts = input.text.split(whereSeparator: { $0 == ":" || $0 == "," }).map(String.init)
+        let locationText = input.lowerFirstToken == "goto" ? input.rest : input.text
+        let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
             editor.setStatusMessage(L10n["status.invalid_line"])
+            return .handled
+        }
+        guard parts.count <= 2 else {
+            editor.setStatusMessage(L10n["status.invalid_column"])
             return .handled
         }
 

@@ -7,6 +7,7 @@ public struct EditorConfig {
     public var showRuler: Bool = false
     public var showLineNumbers: Bool = true
     public var showSubLineNumbers: Bool = false
+    public var startInCanvasMode: Bool = false
     public var tabSize: Int = 4
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true

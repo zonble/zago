@@ -36,7 +36,7 @@ Defined under `Sources/Editor/Commands/` (organized by domain into `FileCommands
 - **Role**: Single protocol defining all editor actions, supporting both keybindings (`keys: [Key]`) and CommandBar text aliases (`commandBarAliases: [String]`).
 - **Key Responsibilities**:
   - **Interactive UI**: Cursor movement (`MoveUp`, `MoveDown`, `MoveHome`, `MoveEnd`), selection, mode toggling (`ToggleTableMode`, `ToggleCanvasMode`, `ToggleMenuBarCommand`).
-  - **Text-based CLI Commands**: File management (`open <file>`, `write [file]`, `quit`), editor settings (`set wrap <col>`, `set tabsize <size>`), navigation (`goto <line>[,<col>]`, `buffer <index>`).
+  - **Text-based CLI Commands**: File management (`open <file>`, `write [file]`, `quit`), editor settings (`set wrap <col>`, `set tabsize <size>`), navigation (`goto <line> [col]`, `buffer <index>`).
   - **Tab Completion**: Automatically exposes `completionNames` derived from `commandBarAliases` for context-aware Tab completion in CommandBar.
 - **Design Principle**: Single Source of Truth for each command's name, description, keybindings, and CommandBar aliases.
 
