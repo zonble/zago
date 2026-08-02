@@ -80,7 +80,7 @@ public struct TraditionalChineseStrings {
     DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住 mark
     LINE [len] [style] [arrow]   繪製/連接水平線
     VLINE [height] [style]       繪製/連接垂直線
-    FILL text                    填滿選取範圍或方框內部
+    FILL text                    填滿選取範圍、表格儲存格或方框內部
     TABLE [rows cols width]      插入表格
     TABLE BORDER style           設定預設框線樣式
     TABLE NEXTSTYLE              切換下一個框線樣式
@@ -242,6 +242,7 @@ public struct TraditionalChineseStrings {
         "status.logo_executed": "[ 已執行 LOGO 巨集腳本 ]",
         "status.logo_evaluated": "[ LOGO 腳本求值成功 ]",
         "status.filled_block": "[ 已填滿區塊 ]",
+        "status.filled_cell": "[ 已填滿儲存格 ]",
         "status.goto_disabled_in_table_mode": "[ 表格模式下停用 GOTO ]",
         "status.default_border": "[ 預設框線：%@ ]",
         "status.unknown_border_style": "[ 未知的框線樣式：%@ ]",
@@ -415,7 +416,7 @@ public struct TraditionalChineseStrings {
         "menu.shapes.line": "水平線",
         "menu.shapes.vline": "垂直線",
         "menu.shapes.table": "表格",
-        "menu.shapes.fill": "填滿區域",
+        "menu.shapes.fill": "填滿區域/儲存格",
 
         "menu.borders.single": "單線",
         "menu.borders.double": "雙線",

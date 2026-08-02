@@ -317,6 +317,57 @@ import Testing
     #expect(editor.buffer.lines[1].last == "│")
 }
 
+@Test func testTableModeFillFillsCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌──────┐",
+        "│      │",
+        "│      │",
+        "└──────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    let didRun = editor.runLogoScript("FILL \"中")
+
+    #expect(didRun == true)
+    #expect(
+        editor.buffer.lines == [
+            "┌──────┐",
+            "│中中中│",
+            "│中中中│",
+            "└──────┘",
+        ])
+    #expect(editor.statusMessage == "[ Filled cell ]")
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell != nil)
+}
+
+@Test func testTableModeCtrlQFillFillsCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────┐",
+        "│FILL \"x     │",
+        "└────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 2
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.columnIndex = 8
+    editor.processKey(.ctrl("Q"))
+
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────┐",
+            "│xxxxxxxxxxxx│",
+            "└────────────┘",
+        ])
+    #expect(editor.statusMessage == "[ Filled cell ]")
+}
+
 @Test func testTableModeCtrlQBlocksLogoDrawingCommands() throws {
     let editor = Editor()
     editor.buffer.lines = [

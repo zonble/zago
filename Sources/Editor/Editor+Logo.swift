@@ -99,6 +99,8 @@ extension Editor: LogoEngineDelegate {
             refreshScreen()
         case .fillCanvasBlock(let text):
             _ = fillCanvasBlock(with: text)
+        case .fillTableCell(let text):
+            _ = fillCurrentTableCell(with: text)
         case .gotoLine(let row):
             goToLocation(line: row + 1, column: nil)
         case .gotoCol(let col):
@@ -137,6 +139,8 @@ extension Editor: LogoEngineDelegate {
                 width: rect.width,
                 height: rect.bottomLine - rect.topLine + 1
             )
+        case .hasTableCell:
+            return isTableModeActive && currentTableCell != nil
         case .bufferList:
             return buffers.map { $0.filePath ?? "Untitled" }
         case .currentBufferIndex:
@@ -259,7 +263,7 @@ extension Editor: LogoEngineDelegate {
 
 extension Editor {
     private static let tableModeBlockedLogoPrimitives: Set<LogoPrimitive> = [
-        .box, .drawBox, .line, .hr, .vline, .vhr, .fill, .table,
+        .box, .drawBox, .line, .hr, .vline, .vhr, .table,
         .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .goto, .gotoline, .gotocol,
     ]

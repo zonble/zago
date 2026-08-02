@@ -80,7 +80,7 @@ public struct EnglishStrings {
     DRAWBOX [text|width height]  Draw overlay frame; no args frames canvas mark
     LINE [len] [style] [arrow]   Draw/connect a horizontal line
     VLINE [height] [style]       Draw/connect a vertical line
-    FILL text                    Fill selected region or box interior
+    FILL text                    Fill selected region, table cell, or box interior
     TABLE [rows cols width]      Insert a table
     TABLE BORDER style           Set default border style
     TABLE NEXTSTYLE              Cycle border style
@@ -242,6 +242,7 @@ public struct EnglishStrings {
         "status.logo_executed": "[ LOGO script executed ]",
         "status.logo_evaluated": "[ LOGO script evaluated ]",
         "status.filled_block": "[ Filled block ]",
+        "status.filled_cell": "[ Filled cell ]",
         "status.goto_disabled_in_table_mode": "[ GOTO disabled in Table Mode ]",
         "status.default_border": "[ Default Border: %@ ]",
         "status.unknown_border_style": "[ Unknown border style: %@ ]",
@@ -415,7 +416,7 @@ public struct EnglishStrings {
         "menu.shapes.line": "Line",
         "menu.shapes.vline": "Vertical Line",
         "menu.shapes.table": "Table",
-        "menu.shapes.fill": "Fill Region",
+        "menu.shapes.fill": "Fill Region/Cell",
 
         "menu.borders.single": "Single",
         "menu.borders.double": "Double",

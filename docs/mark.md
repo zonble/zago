@@ -180,6 +180,8 @@ marked rectangular block.
   content.
 - After a successful fill, the cursor stays in place and the canvas block mark
   is cleared.
+- In Table Mode, `FILL text` targets the active table cell instead of a canvas
+  block or flood-fill region.
 
 Example:
 

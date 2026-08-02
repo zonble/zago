@@ -400,7 +400,7 @@ extension Editor {
         }
 
         saveUndoSnapshot()
-        let replacement = repeatedCanvasFillText(fillText, width: rect.width)
+        let replacement = fillText.repeatedToDisplayWidth(rect.width)
         for lineIndex in rect.topLine...rect.bottomLine {
             guard ensureCanvasLineExists(lineIndex) else { return true }
             var line = buffer.lines[lineIndex].removingVisualColumns(start: rect.leftColumn, width: rect.width)
@@ -412,28 +412,6 @@ extension Editor {
         setStatusMessage(L10n["status.filled_block"])
         syncCanvasCursorToBuffer()
         return true
-    }
-
-    private func repeatedCanvasFillText(_ text: String, width: Int) -> String {
-        let fillChars = Array(text)
-        guard width > 0, !fillChars.isEmpty else { return "" }
-
-        var result = ""
-        var resultWidth = 0
-        var idx = 0
-        while resultWidth < width {
-            let ch = fillChars[idx % fillChars.count]
-            let chWidth = ch.displayWidth
-            if resultWidth + chWidth <= width {
-                result.append(ch)
-                resultWidth += chWidth
-            } else {
-                result += String(repeating: " ", count: width - resultWidth)
-                resultWidth = width
-            }
-            idx += 1
-        }
-        return result
     }
 
     private func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool) {

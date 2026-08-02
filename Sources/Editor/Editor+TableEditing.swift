@@ -259,6 +259,36 @@ extension Editor {
         clampTableModeCursor()
     }
 
+    /// Fills every editable row in the active table cell while preserving borders.
+    func fillCurrentTableCell(with fillText: String) -> Bool {
+        guard isTableModeActive, let cell = currentTableCell else { return false }
+        guard cell.innerMinLine <= cell.innerMaxLine else { return false }
+        guard !fillText.isEmpty else {
+            setStatusMessage(L10n["status.fill_text_required"])
+            return true
+        }
+
+        saveUndoSnapshot()
+        var didFill = false
+        for lineIdx in cell.innerMinLine...cell.innerMaxLine {
+            let width = tableCellInnerWidth(on: lineIdx, cell: cell)
+            guard width > 0 else { continue }
+            replaceTableCellInnerText(
+                on: lineIdx,
+                cell: cell,
+                with: fillText.repeatedToDisplayWidth(width)
+            )
+            didFill = true
+        }
+
+        if didFill {
+            buffer.isModified = true
+            setStatusMessage(L10n["status.filled_cell"])
+            clampTableModeCursor()
+        }
+        return true
+    }
+
     /// Deletes the current visual row inside the active cell without removing the buffer line or table borders.
     func deleteCurrentTableCellLine() {
         guard isTableModeActive, let cell = currentTableCell else {

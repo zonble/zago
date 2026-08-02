@@ -539,11 +539,19 @@ extension LogoEngine {
 
         if fillPattern.isEmpty {
             editor.logoEngine(self, performAction: .setStatusMessage("Fill text required"))
+            hasSetStatusMessage = true
+            return
+        }
+
+        if (editor.logoEngine(self, queryState: .hasTableCell) as? Bool) == true {
+            editor.logoEngine(self, performAction: .fillTableCell(fillPattern))
+            hasSetStatusMessage = true
             return
         }
 
         if (editor.logoEngine(self, queryState: .hasCanvasBlockMark) as? Bool) == true {
             editor.logoEngine(self, performAction: .fillCanvasBlock(fillPattern))
+            hasSetStatusMessage = true
             return
         }
 
@@ -585,24 +593,7 @@ extension LogoEngine {
     }
 
     private func fillStringWithPattern(pattern: String, targetWidth: Int) -> String {
-        guard targetWidth > 0 else { return "" }
-        var result = ""
-        var currentWidth = 0
-
-        while currentWidth < targetWidth {
-            let patWidth = pattern.displayWidth
-            if patWidth == 0 { break }
-
-            if currentWidth + patWidth <= targetWidth {
-                result += pattern
-                currentWidth += patWidth
-            } else {
-                let gap = targetWidth - currentWidth
-                result += String(repeating: " ", count: gap)
-                currentWidth += gap
-            }
-        }
-        return result
+        pattern.tiledToDisplayWidth(targetWidth)
     }
 
     private func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {

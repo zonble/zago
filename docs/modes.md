@@ -316,6 +316,9 @@ the current cell. Examples:
 - `TABLE`
 - commands or procedures that expand to the same geometry-changing primitives
 
+`FILL` is allowed in Table Mode. Instead of flood-filling or drawing a canvas
+region, it fills only the active cell's editable content and preserves borders.
+
 When blocked, the editor should show a short status message explaining which
 command is disabled in Table Mode.
 

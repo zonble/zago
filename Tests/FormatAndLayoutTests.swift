@@ -159,6 +159,9 @@ struct FormatAndLayoutTests {
     #expect("A❌B".displayWidth == 4)
     #expect("A❌️B".displayWidth == 4)
     #expect("Hello".paddedToDisplayWidth(10) == "Hello     ")
+    #expect("ab".repeatedToDisplayWidth(5) == "ababa")
+    #expect("中".repeatedToDisplayWidth(5) == "中中 ")
+    #expect("ab".tiledToDisplayWidth(5) == "abab ")
 }
 
 @Test func testEmojiDisplayWidthAffectsSoftwrapAndCursorPosition() throws {

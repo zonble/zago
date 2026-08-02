@@ -41,6 +41,7 @@ public enum LogoEditorAction {
     case ensureLineExists(index: Int)
     case refreshScreen
     case fillCanvasBlock(String)
+    case fillTableCell(String)
 
     // Navigation & Editing Actions
     case moveLeft
@@ -67,6 +68,7 @@ public enum LogoEditorQuery {
     case defaultBorderStyle
     case hasCanvasBlockMark
     case canvasBlockFrame
+    case hasTableCell
 
     // Buffer Queries
     case bufferList

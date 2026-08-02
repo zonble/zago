@@ -94,6 +94,49 @@ extension String {
         }
         return result
     }
+
+    /// Repeats the string as a pattern until it reaches the requested terminal display width.
+    public func repeatedToDisplayWidth(_ width: Int) -> String {
+        let fillChars = Array(self)
+        guard width > 0, !fillChars.isEmpty else { return "" }
+
+        var result = ""
+        var resultWidth = 0
+        var idx = 0
+        while resultWidth < width {
+            let ch = fillChars[idx % fillChars.count]
+            let chWidth = ch.displayWidth
+            if resultWidth + chWidth <= width {
+                result.append(ch)
+                resultWidth += chWidth
+            } else {
+                result += String(repeating: " ", count: width - resultWidth)
+                resultWidth = width
+            }
+            idx += 1
+        }
+        return result
+    }
+
+    /// Tiles the whole string as a pattern until it reaches the requested terminal display width.
+    public func tiledToDisplayWidth(_ width: Int) -> String {
+        guard width > 0 else { return "" }
+        let patternWidth = displayWidth
+        guard patternWidth > 0 else { return "" }
+
+        var result = ""
+        var resultWidth = 0
+        while resultWidth < width {
+            if resultWidth + patternWidth <= width {
+                result += self
+                resultWidth += patternWidth
+            } else {
+                result += String(repeating: " ", count: width - resultWidth)
+                resultWidth = width
+            }
+        }
+        return result
+    }
 }
 
 private extension UnicodeScalar {

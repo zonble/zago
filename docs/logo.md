@@ -137,6 +137,10 @@ GOTO 2 2
 FILL "hi
 ```
 
+In Table Mode, `FILL text` fills the current table cell only. It repeats the
+fill text across every editable row in the cell, clips to each row's display
+width, and preserves the table borders.
+
 Like `BOX`, no-argument `DRAWBOX` uses the active Canvas Mode block mark as its
 target frame when one is present.
 
@@ -765,7 +769,6 @@ Disabled while Table Mode is active:
 - `DRAWBOX`
 - `LINE` / `HR`
 - `VLINE` / `VR` / `VHR`
-- `FILL`
 - `TABLE`
 - Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
 
