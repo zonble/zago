@@ -282,7 +282,7 @@ import Testing
 
     // Test reloadConfig()
     editor.reloadConfig()
-    #expect(editor.statusMessage == "[ Config reloaded ]")
+    #expect(editor.statusMessage == L10n["status.config_reloaded"])
 }
 
 @Test func testSpellChecker() throws {
