@@ -230,6 +230,9 @@ public struct EnglishStrings {
         "status.cancelled": "Cancelled",
         "status.cancelled_exit": "Cancelled exit",
         "status.cancelled_search": "Cancelled search",
+        "status.search_cleared": "Search cleared",
+        "status.no_active_search": "No active search",
+        "status.invalid_regex": "Invalid regex: %@",
         "status.cancelled_insert": "Cancelled insert",
         "status.spell_check_skipped": "Spell check skipped",
         "status.word_kept": "Word kept",
@@ -297,7 +300,7 @@ public struct EnglishStrings {
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
 
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
-        "helpview.search_1": "    ^W / F6            Where Is (case-insensitive text search)",
+        "helpview.search_1": "    ^W / F6, M+N/P    Search; repeat next/previous match",
         "helpview.search_2": "    M+O                Open Markdown/Org/rst/AsciiDoc document link at cursor",
         "helpview.search_3": "    ^L                 Refresh screen display",
         "helpview.search_4": "    ^C / F11           Display current cursor position info",

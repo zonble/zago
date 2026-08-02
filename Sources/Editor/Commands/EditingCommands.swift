@@ -111,6 +111,9 @@ public struct CancelSelectionCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.clearActiveSearch() {
+            return
+        }
         if editor.selectionMark != nil || editor.canvasBlockMark != nil {
             editor.clearActiveMark()
             editor.setStatusMessage(L10n["status.mark_unset"])

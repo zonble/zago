@@ -208,6 +208,10 @@ public final class Renderer {
                         && editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
+                    } else if !editor.isCanvasModeActive
+                        && editor.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
+                    {
+                        lineOutput += "\u{1B}[43;30m\(ch)\u{1B}[0m"
                     } else if isCellActive {
                         lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
                     } else if cIdxInVLine < tokenTypes.count && tokenTypes[cIdxInVLine] != .normal {

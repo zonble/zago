@@ -230,6 +230,9 @@ public struct TraditionalChineseStrings {
         "status.cancelled": "已取消",
         "status.cancelled_exit": "已取消離開",
         "status.cancelled_search": "已取消搜尋",
+        "status.search_cleared": "已清除搜尋",
+        "status.no_active_search": "沒有作用中的搜尋",
+        "status.invalid_regex": "無效的 regex：%@",
         "status.cancelled_insert": "已取消插入檔案",
         "status.spell_check_skipped": "跳過拼字檢查",
         "status.word_kept": "保留原字詞",
@@ -297,7 +300,7 @@ public struct TraditionalChineseStrings {
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
-        "helpview.search_1": "    ^W / F6            文字搜尋（不區分大小寫）",
+        "helpview.search_1": "    ^W / F6, M+N/P    搜尋；跳到下一個/上一個結果",
         "helpview.search_2": "    M+O                開啟游標所在的 Markdown/Org/rst/AsciiDoc 文件連結",
         "helpview.search_3": "    ^L                 重新繪製 Terminal 畫面",
         "helpview.search_4": "    ^C / F11           顯示當前游標與行列位置資訊",

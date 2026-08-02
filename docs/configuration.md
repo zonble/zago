@@ -162,6 +162,8 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `edit.spell` | Interactive spell checker | `^T`, `F12` |
 | `edit.eval_logo` | Evaluate LOGO at current line, selection, or code block | `^Q` |
 | `search.whereis` | Search text | `^W`, `F6` |
+| `search.next` | Find next active search match | `M+N` |
+| `search.previous` | Find previous active search match | `M+P` |
 | `document.open_link` | Open Markdown, Org, reStructuredText, or AsciiDoc document link at cursor | `M+O` |
 | `cursor.goto_line` | Go to line or line,column | `^/`, `^_`, `M+G` |
 | `cursor.position` | Show cursor position | `^C`, `F11` |

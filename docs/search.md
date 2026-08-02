@@ -105,12 +105,12 @@ Suggested error message:
 [ Invalid regex: <message> ]
 ```
 
-## Implementation Phases
+## Implementation Status
 
-1. Active plain-text search query.
-2. `M+N` and `M+P` repeated navigation.
-3. Current-match highlight.
-4. Search status messages for wrapped and missing matches.
-5. Search history.
-6. Case-sensitive and regex prompt toggles.
-7. Optional visible all-match highlighting.
+1. Done: active plain-text search query.
+2. Done: `M+N` and `M+P` repeated navigation.
+3. Done: current-match highlight.
+4. Done: search status messages for wrapped and missing matches.
+5. Later: search history.
+6. Later: case-sensitive and regex prompt toggles.
+7. Later: optional visible all-match highlighting.

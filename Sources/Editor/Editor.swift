@@ -63,6 +63,22 @@ public final class Editor {
     var promptCursorIndex: Int = 0
     var promptCompletionText: String? = nil
     var lastSearchQuery: String = ""
+    struct SearchMatch: Sendable, Equatable {
+        let query: String
+        let line: Int
+        let column: Int
+        let length: Int
+        let usesRegex: Bool
+
+        init(query: String, line: Int, column: Int, length: Int, usesRegex: Bool) {
+            self.query = query
+            self.line = line
+            self.column = column
+            self.length = length
+            self.usesRegex = usesRegex
+        }
+    }
+    var activeSearchMatch: SearchMatch? = nil
     var logoPromptHistory: [String] = []
     var logoHistoryIndex: Int = 0
 
@@ -449,6 +465,7 @@ public final class Editor {
         selectionMark = nil
         canvasBlockMark = nil
         canvasBlockMarkEnd = nil
+        activeSearchMatch = nil
     }
 
     @discardableResult

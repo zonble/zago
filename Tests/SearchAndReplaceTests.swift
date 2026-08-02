@@ -19,7 +19,9 @@ import Testing
         let res = editor.commandBarRegistry.dispatch("/target", editor: editor)
         #expect(res == .handled)
         #expect(editor.buffer.lineIndex == 2)
+        #expect(editor.buffer.columnIndex == 9)
         #expect(editor.lastSearchQuery == "target")
+        #expect(editor.activeSearchMatch?.query == "target")
 
         // Search again using empty / to repeat search
         editor.buffer.lineIndex = 0
@@ -27,6 +29,60 @@ import Testing
         let resRepeat = editor.commandBarRegistry.dispatch("/", editor: editor)
         #expect(resRepeat == .handled)
         #expect(editor.buffer.lineIndex == 2)
+    }
+
+    @Test func testRepeatedSearchNextPrevious() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "alpha beta alpha",
+            "beta alpha",
+        ]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        editor.performSearch(query: "alpha")
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 0)
+        #expect(editor.activeSearchMatch?.length == 5)
+
+        editor.processKey(.alt("n"))
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 11)
+
+        editor.processKey(.alt("n"))
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 5)
+
+        editor.processKey(.alt("n"))
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 0)
+        #expect(editor.statusMessage == L10n.searchWrappedFound(query: "alpha", line: 1))
+
+        editor.processKey(.alt("p"))
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 5)
+        #expect(editor.statusMessage == L10n.searchWrappedFound(query: "alpha", line: 2))
+    }
+
+    @Test func testSearchHighlightAndClear() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["abc"]
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+
+        editor.performSearch(query: "b")
+        let highlighted = editor.renderer.render(editor: editor, rows: 8, cols: 20)
+        #expect(highlighted.contains("\u{1B}[43;30mb\u{1B}[0m"))
+
+        editor.selectionMark = (line: 0, column: 0)
+        editor.processKey(.ctrl("G"))
+        #expect(editor.activeSearchMatch == nil)
+        #expect(editor.selectionMark?.line == 0)
+        #expect(editor.statusMessage == L10n["status.search_cleared"])
+
+        editor.processKey(.ctrl("G"))
+        #expect(editor.selectionMark == nil)
+        #expect(editor.statusMessage == L10n["status.mark_unset"])
     }
 
     @Test func testSubstituteCurrentLine() throws {

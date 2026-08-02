@@ -46,6 +46,32 @@ public struct SearchCommand: Command {
     }
 }
 
+public struct SearchNextCommand: Command {
+    public let id: CommandID = .searchNext
+    public let name = "Find Next"
+    public let description = "Find next active search match"
+    public let keys: [Key] = [.alt("n"), .alt("N")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.findNextSearchMatch()
+    }
+}
+
+public struct SearchPreviousCommand: Command {
+    public let id: CommandID = .searchPrevious
+    public let name = "Find Previous"
+    public let description = "Find previous active search match"
+    public let keys: [Key] = [.alt("p"), .alt("P")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.findPreviousSearchMatch()
+    }
+}
+
 public struct SubstituteCommand: Command {
     public let id: CommandID = .editJustify
     public let name = "Substitute"

@@ -37,6 +37,8 @@ extension Editor {
 
         // Search & Cursor Commands
         commandRegistry.register(WhereIsCommand())
+        commandRegistry.register(SearchNextCommand())
+        commandRegistry.register(SearchPreviousCommand())
         commandRegistry.register(OpenDocumentLinkCommand())
         commandRegistry.register(GotoLineCommand())
         commandRegistry.register(RefreshScreenCommand())
