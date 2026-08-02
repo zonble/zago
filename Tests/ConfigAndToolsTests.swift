@@ -262,6 +262,33 @@ import Testing
     #expect(rightEditor.baseMode == .canvas)
 }
 
+@Test func testBaseModeIsLocalToEachBuffer() throws {
+    let editor = Editor()
+    editor.switchToTextMode()
+    editor.openNewBuffer(filePath: "second.md")
+    editor.switchToTextMode()
+
+    _ = editor.commandRegistry.dispatch(id: .canvasToggle, editor: editor)
+
+    #expect(editor.currentBufferIndex == 1)
+    #expect(editor.buffers[0].baseMode == .text)
+    #expect(editor.buffers[1].baseMode == .canvas)
+
+    editor.switchToBuffer(zeroBasedIndex: 0)
+    #expect(editor.baseMode == .text)
+
+    editor.applyEditorSetting(setting: "canvas-mode", arg: "on")
+    #expect(editor.buffers[0].baseMode == .canvas)
+    #expect(editor.buffers[1].baseMode == .canvas)
+
+    editor.applyEditorSetting(setting: "canvas-mode", arg: "off")
+    #expect(editor.buffers[0].baseMode == .text)
+    #expect(editor.buffers[1].baseMode == .canvas)
+
+    editor.switchToBuffer(zeroBasedIndex: 1)
+    #expect(editor.baseMode == .canvas)
+}
+
 @Test func testReloadedConfigPreservesPerEditorRuntimeMode() throws {
     var config = EditorConfig()
     config.startInCanvasMode = false

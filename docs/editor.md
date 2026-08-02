@@ -161,9 +161,9 @@ Pressing `Esc` or `Alt+:` opens the bottom Command Prompt line. It parses inputs
 | `dir` / `ls` | Open Directory Buffer browser for current working directory |
 | `set <option> <value>` | Modify editor configuration setting (e.g., `set wrap 80`, `set ruler on`, `set canvas-mode on`) |
 
-`set canvas-mode on/off` in the command prompt switches only the current editor
-instance. It is runtime mode state, not a global preference and not document
-metadata.
+`set canvas-mode on/off` in the command prompt switches only the current buffer
+or editor view. It is runtime mode state, not a global preference and not
+document metadata.
 
 ### Tab Completion
 

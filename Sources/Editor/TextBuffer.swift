@@ -13,6 +13,14 @@ open class TextBuffer {
     public var lineIndex: Int = 0
     public var columnIndex: Int = 0
 
+    // Runtime mode state belongs to the buffer/editor view, not to the process.
+    public var baseMode: EditorBaseMode = .text
+    public var overlayMode: EditorOverlayMode = .none
+    public var canvasVisualColumn: Int = 0
+    public var canvasHorizontalOffset: Int = 0
+    public var isTableModeActive: Bool = false
+    public var currentTableCell: TableCell? = nil
+
     open var isReadOnly: Bool { false }
     open var allowsLogoExecution: Bool { true }
     open var isDirectoryBuffer: Bool { false }

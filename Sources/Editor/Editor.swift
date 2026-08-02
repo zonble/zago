@@ -85,16 +85,35 @@ public final class Editor {
     // Menu Bar state
     public var isMenuBarActive: Bool = false
     public let menuBar = MenuBar()
+    private var defaultBaseMode: EditorBaseMode = .text
 
     // Editor mode state
-    public var baseMode: EditorBaseMode = .text
-    public var overlayMode: EditorOverlayMode = .none
-    public var canvasVisualColumn: Int = 0
-    public var canvasHorizontalOffset: Int = 0
+    public var baseMode: EditorBaseMode {
+        get { buffer.baseMode }
+        set { buffer.baseMode = newValue }
+    }
+    public var overlayMode: EditorOverlayMode {
+        get { buffer.overlayMode }
+        set { buffer.overlayMode = newValue }
+    }
+    public var canvasVisualColumn: Int {
+        get { buffer.canvasVisualColumn }
+        set { buffer.canvasVisualColumn = newValue }
+    }
+    public var canvasHorizontalOffset: Int {
+        get { buffer.canvasHorizontalOffset }
+        set { buffer.canvasHorizontalOffset = newValue }
+    }
 
     // Table Mode state
-    public var isTableModeActive: Bool = false
-    public var currentTableCell: TableCell? = nil
+    public var isTableModeActive: Bool {
+        get { buffer.isTableModeActive }
+        set { buffer.isTableModeActive = newValue }
+    }
+    public var currentTableCell: TableCell? {
+        get { buffer.currentTableCell }
+        set { buffer.currentTableCell = newValue }
+    }
     public var defaultBorderStyle: BorderStyle = .single
     public var isRegexSearchEnabled: Bool = false
 
@@ -174,6 +193,7 @@ public final class Editor {
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
         let finalTabSize = loadedConfig.tabSize
         let finalTrimTrailingWhitespace = loadedConfig.trimTrailingWhitespaceOnSave
+        let initialBaseMode: EditorBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
 
         L10n.currentLanguage = finalLang
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
@@ -182,7 +202,10 @@ public final class Editor {
             enableSyntaxHighlight: finalSyntax,
             autoReload: finalReload, tabSize: finalTabSize,
             trimTrailingWhitespaceOnSave: finalTrimTrailingWhitespace)
-        self.baseMode = loadedConfig.startInCanvasMode ? .canvas : .text
+        self.defaultBaseMode = initialBaseMode
+        for buffer in self.buffers {
+            buffer.baseMode = buffer.isDirectoryBuffer ? .text : initialBaseMode
+        }
 
         setupDefaultCommands()
         if isCanvasModeActive {
@@ -237,6 +260,7 @@ public final class Editor {
     /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
         let newBuf = TextBuffer.makeBuffer(filePath: filePath)
+        newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
         buffers.append(newBuf)
         currentBufferIndex = buffers.count - 1
         topVLineIndex = 0
@@ -288,6 +312,7 @@ public final class Editor {
         self.displayConfig.autoReload = loadedConfig.autoReload
         self.displayConfig.tabSize = loadedConfig.tabSize
         self.displayConfig.trimTrailingWhitespaceOnSave = loadedConfig.trimTrailingWhitespaceOnSave
+        self.defaultBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
         if let lang = loadedConfig.language {
             L10n.currentLanguage = lang
         }
