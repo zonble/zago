@@ -94,7 +94,12 @@ system "swift", "build",
   "--product", "zago"
 ```
 
-The first tap version is macOS-focused and depends on Xcode 16 or later because zago uses Swift 6. Linux users can still build from source with Swift 6 until the Homebrew Linux dependency story is verified.
+The formula supports macOS and Linux:
+
+- macOS builds with Xcode 16 or later.
+- Linux builds with Homebrew's `swift` package as a build dependency.
+
+For non-Homebrew Linux installs, ask users to install Swift 6 from their distribution or Swift.org and build from source.
 
 ## Local Tap Test
 

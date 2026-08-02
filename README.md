@@ -27,7 +27,6 @@
   - [Features](#features)
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
-  - [Homebrew Tap](#homebrew-tap)
   - [Preview Builds](#preview-builds)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
   - [Text Processing](#text-processing)
@@ -71,6 +70,8 @@ zago notes.txt
 
 If Homebrew refuses to install from an untrusted third-party tap, run the `brew tap --trust zonble/zago` line and install again.
 
+On Linux, the Homebrew formula builds zago with Homebrew's `swift` package. Without Homebrew, install Swift 6 from your distribution or Swift.org and use the source build commands below.
+
 Install with [Mint](https://github.com/yonaskolb/Mint):
 
 ```bash
@@ -95,18 +96,6 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
-
-## Homebrew Tap
-
-The tap repository is `zonble/homebrew-zago`, which users access as:
-
-```bash
-brew tap zonble/zago
-brew tap --trust zonble/zago  # allow this third-party tap
-brew install zago
-```
-
-Formula maintenance notes live in [Homebrew Tap](docs/homebrew_tap.md).
 
 ## Preview Builds
 

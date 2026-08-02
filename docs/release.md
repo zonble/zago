@@ -92,6 +92,8 @@ brew install zago
 
 Tap maintenance is documented in [Homebrew Tap](homebrew_tap.md).
 
+On Linux, the Homebrew formula depends on Homebrew's `swift` package at build time. For non-Homebrew Linux installs, use Swift 6 from the distribution or Swift.org and build from source.
+
 ## Smoke Test
 
 Before sharing a build, run:

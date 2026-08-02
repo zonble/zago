@@ -6,7 +6,13 @@ class Zago < Formula
   license "MIT"
   head "https://github.com/zonble/zago.git", branch: "main"
 
-  depends_on xcode: ["16.0", :build]
+  on_macos do
+    depends_on xcode: ["16.0", :build]
+  end
+
+  on_linux do
+    depends_on "swift" => :build
+  end
 
   def install
     system "swift", "build",
