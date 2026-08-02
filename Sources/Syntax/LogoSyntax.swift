@@ -19,9 +19,11 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
 
     public var rules: [SyntaxRule] {
         [
+            // Full-line comments must win before LOGO quoted-word rules in .zagorc samples.
+            makeRule("^\\s*(#|;|//).*$", .comment),
             // LOGO quoted words ("word), multi-word strings ("hello world"), and single-quoted text.
             makeRule("\"[^\"\n]*\"(?![A-Za-z0-9:\"])|\"[^\"\\s\\[\\]\\{\\}\\(\\)]+|'[^']*'", .string),
-            // LOGO & config file comments (#, ;, //)
+            // Inline LOGO & config file comments (#, ;, //)
             makeRule("(?<!:)#.*$|;.*$|//.*$", .comment),
             makeRule(Self.keywordPattern, .keyword),
             // Variables (:var_name) and loop/template counter (:#)

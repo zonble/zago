@@ -1,5 +1,28 @@
 import Foundation
 
+// Terminal cell width is deliberately handled above libc wcwidth().
+//
+// There are several different models in play:
+// - Swift `Character` is an extended grapheme cluster. One visible glyph such as
+//   "❤️" may contain multiple Unicode scalars.
+// - libc `wcwidth()` works per scalar and varies by platform / Unicode table
+//   version. It can report 1 for emoji-like symbols that modern terminals draw
+//   as 2 cells, such as "❌".
+// - Terminal rendering is pragmatic: CJK and emoji usually occupy 2 cells,
+//   combining marks / variation selectors / ZWJ occupy 0 cells, and ANSI escape
+//   sequences occupy no cells at all.
+//
+// For editor layout, table borders, canvas drawing, softwrap, and cursor
+// positioning, we need the terminal model rather than a pure Unicode model.
+// The rules below therefore:
+// - treat emoji grapheme clusters as 2 cells before consulting wcwidth(),
+// - preserve standalone zero-width scalars as 0 cells,
+// - fall back to wcwidth() plus explicit wide CJK/emoji ranges for normal text.
+//
+// Be careful when changing this file: returning 1 for a 2-cell emoji leaves
+// later text visually shifted left; returning 2 for a zero-width scalar creates
+// invisible columns that push the cursor and table borders to the right.
+
 #if canImport(Darwin)
     import Darwin
 #elseif canImport(Glibc)
@@ -14,20 +37,34 @@ import Foundation
 
 extension Character {
     /// Returns the terminal display width in columns.
+    ///
+    /// This is not the same as `String.count`, Unicode scalar count, UTF-8 byte
+    /// count, or raw `wcwidth()` for the first scalar. The return value is the
+    /// number of terminal cells the whole Swift `Character` is expected to
+    /// occupy.
     public var displayWidth: Int {
-        for scalar in unicodeScalars {
-            #if canImport(Darwin)
-                let width = wcwidth(wchar_t(scalar.value))
-            #elseif canImport(Glibc) || canImport(Musl)
-                let width = sys_wcwidth(Int32(scalar.value))
-            #else
-                let width = 1
-            #endif
-
-            if width > 0 { return Int(width) }
-            if scalar.isWideTerminalScalar { return 2 }
+        // Emoji clusters must win before scalar wcwidth(). Some platforms still
+        // report text-default emoji symbols as narrow even though terminals draw
+        // their emoji presentation as wide.
+        if isEmojiTerminalCluster {
+            return 2
         }
-        return 1
+
+        var totalWidth = 0
+        for scalar in unicodeScalars {
+            let width = scalar.terminalScalarWidth
+            if width > 0 {
+                totalWidth += width
+            } else if scalar.isWideTerminalScalar {
+                totalWidth += 2
+            }
+        }
+        if totalWidth > 0 {
+            return totalWidth
+        }
+        // A character made only of combining marks, variation selectors, or ZWJ
+        // is invisible by itself and must not advance the cursor.
+        return unicodeScalars.allSatisfy(\.isZeroWidthTerminalScalar) ? 0 : 1
     }
 }
 
@@ -60,6 +97,17 @@ extension String {
 }
 
 private extension UnicodeScalar {
+    var terminalScalarWidth: Int {
+        #if canImport(Darwin)
+            let width = wcwidth(wchar_t(value))
+        #elseif canImport(Glibc) || canImport(Musl)
+            let width = sys_wcwidth(Int32(value))
+        #else
+            let width = 1
+        #endif
+        return Int(width)
+    }
+
     var isWideTerminalScalar: Bool {
         switch value {
         case 0x1100...0x115F, 0x2329...0x232A, 0x2E80...0xA4CF,
@@ -69,6 +117,59 @@ private extension UnicodeScalar {
             return true
         default:
             return false
+        }
+    }
+
+    var isZeroWidthTerminalScalar: Bool {
+        switch value {
+        case 0x0300...0x036F,   // Combining Diacritical Marks
+             0x1AB0...0x1AFF,   // Combining Diacritical Marks Extended
+             0x1DC0...0x1DFF,   // Combining Diacritical Marks Supplement
+             0x200C...0x200D,   // Zero-width non-joiner/joiner
+             0x20D0...0x20FF,   // Combining Diacritical Marks for Symbols
+             0xFE00...0xFE0F,   // Variation Selectors
+             0xFE20...0xFE2F,   // Combining Half Marks
+             0xE0100...0xE01EF: // Variation Selectors Supplement
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+private extension Character {
+    var isEmojiTerminalCluster: Bool {
+        let scalars = Array(unicodeScalars)
+
+        // Most emoji have an emoji-presentation base scalar. Regional
+        // indicators and modern emoji blocks also render as double-width
+        // grapheme clusters in practical terminal UIs.
+        let hasEmojiBase = scalars.contains { scalar in
+            let value = scalar.value
+            return scalar.properties.isEmojiPresentation
+                || scalar.properties.isEmojiModifierBase
+                || (0x1F1E6...0x1F1FF).contains(value)
+                || (0x1F300...0x1FAFF).contains(value)
+        }
+        if hasEmojiBase {
+            return true
+        }
+
+        let hasEmojiPresentationSelector = scalars.contains { $0.value == 0xFE0F }
+        guard hasEmojiPresentationSelector else { return false }
+
+        // Text-default symbols such as "❤" become emoji presentation when VS16
+        // is present. The selector itself is zero-width, but the whole cluster
+        // should be treated as a 2-cell emoji.
+        return scalars.contains { scalar in
+            switch scalar.value {
+            case 0x2300...0x23FF,
+                 0x2600...0x27BF,
+                 0x2B00...0x2BFF:
+                return true
+            default:
+                return false
+            }
         }
     }
 }

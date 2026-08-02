@@ -90,7 +90,9 @@ extension Renderer {
             rightStr = "\(activeAnsiStyle)\(rightStr)\u{1B}[0m"
         }
 
-        return leftStr + "\u{1B}[0m" + boxLine + "\u{1B}[0m" + rightStr
+        let boxStartCursor = "\u{1B}[\(dropdownStartCol + 1)G"
+        let rightStartCursor = "\u{1B}[\(rightStartCol + 1)G"
+        return leftStr + "\u{1B}[0m" + boxStartCursor + boxLine + "\u{1B}[0m" + rightStartCursor + rightStr
     }
 
     /// Generates 2D dropdown box overlay lines for active menu category.

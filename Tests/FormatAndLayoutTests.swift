@@ -150,9 +150,52 @@ struct FormatAndLayoutTests {
 @Test func testTerminalDisplayWidthHelpers() throws {
     #expect(Character("A").displayWidth == 1)
     #expect(Character("中").displayWidth == 2)
+    #expect(Character("❌").displayWidth == 2)
+    #expect(Character("❤️").displayWidth == 2)
+    #expect(Character("\u{FE0F}").displayWidth == 0)
+    #expect(Character("\u{200D}").displayWidth == 0)
     #expect("Hello".displayWidth == 5)
     #expect("中文".displayWidth == 4)
+    #expect("A❌B".displayWidth == 4)
+    #expect("A❌️B".displayWidth == 4)
     #expect("Hello".paddedToDisplayWidth(10) == "Hello     ")
+}
+
+@Test func testEmojiDisplayWidthAffectsSoftwrapAndCursorPosition() throws {
+    let engine = LayoutEngine(wrapColumn: 10)
+
+    let exactFitLines = engine.computeVirtualLines(from: ["12345678❌A"], viewWidth: 80)
+    #expect(exactFitLines.map(\.text) == ["12345678❌", "A"])
+
+    let overflowLines = engine.computeVirtualLines(from: ["123456789❌A"], viewWidth: 80)
+    #expect(overflowLines.map(\.text) == ["123456789", "❌A"])
+
+    let editor = Editor(enableSyntax: false)
+    editor.displayConfig.showLineNumbers = false
+    editor.buffer.lines = ["A❌B"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 2
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 20)
+    #expect(output.contains("\u{1B}[2;4H"))
+}
+
+@Test func testRepeatedEmojiCursorPositionUsesDisplayWidth() throws {
+    let editor = Editor(enableSyntax: false)
+    editor.displayConfig.showLineNumbers = false
+    editor.buffer.lines = ["❌❌❌❌❌"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 5
+
+    #expect(editor.buffer.lines[0].count == 5)
+    #expect(editor.buffer.lines[0].displayWidth == 10)
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 30)
+    #expect(output.contains("\u{1B}[2;11H"))
+
+    editor.displayConfig.showLineNumbers = true
+    let outputWithGutter = editor.renderer.render(editor: editor, rows: 8, cols: 30)
+    #expect(outputWithGutter.contains("\u{1B}[2;16H"))
 }
 
 @Test func testVisualColumnCoordinateHelpers() throws {
@@ -695,6 +738,9 @@ struct FormatAndLayoutTests {
 
 @Test func testMenuOverlayReplacesWideCharactersCrossingBoundariesWithSpaces() throws {
     let renderer = Renderer()
+    func stripCSI(_ text: String) -> String {
+        text.replacingOccurrences(of: "\u{1B}\\[[0-9;]*[A-Za-z]", with: "", options: .regularExpression)
+    }
 
     let leftOverlap = renderer.sliceOverlayLine(
         baseFullLineStr: "AB中C",
@@ -703,8 +749,7 @@ struct FormatAndLayoutTests {
         dropdownBoxWidth: 6,
         cols: 12
     )
-    let cleanLeft = leftOverlap.replacingOccurrences(
-        of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    let cleanLeft = stripCSI(leftOverlap)
 
     #expect(cleanLeft.hasPrefix("AB [MENU]"))
     #expect(!cleanLeft.contains("中"))
@@ -716,11 +761,22 @@ struct FormatAndLayoutTests {
         dropdownBoxWidth: 4,
         cols: 8
     )
-    let cleanRight = rightOverlap.replacingOccurrences(
-        of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
+    let cleanRight = stripCSI(rightOverlap)
 
     #expect(cleanRight.hasPrefix("MENU Z"))
     #expect(!cleanRight.contains("中"))
+
+    let emojiBeforeMenu = renderer.sliceOverlayLine(
+        baseFullLineStr: "A❌BC",
+        boxLine: "MENU",
+        dropdownStartCol: 3,
+        dropdownBoxWidth: 4,
+        cols: 10
+    )
+    let cleanEmoji = stripCSI(emojiBeforeMenu)
+    #expect(cleanEmoji.hasPrefix("A❌MENU"))
+    #expect(emojiBeforeMenu.contains("\u{1B}[4G"))
+    #expect(emojiBeforeMenu.contains("\u{1B}[8G"))
 }
 
 @Test func testMenuBarCursorPositioningBottomRight() throws {

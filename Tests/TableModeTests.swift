@@ -993,6 +993,26 @@ import Testing
     #expect(line == "│        中文輸入法│")
 }
 
+@Test func testTableModeEmojiKeepsCellWidthAndCursorPosition() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────┐",
+        "│    │",
+        "└────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+
+    editor.toggleTableMode()
+    let initialWidth = editor.buffer.lines[1].displayWidth
+
+    editor.processKey(.char("❌"))
+
+    #expect(editor.buffer.lines[1] == "│❌  │")
+    #expect(editor.buffer.lines[1].displayWidth == initialWidth)
+    #expect(editor.buffer.lines[1].visualColumn(forCharacterOffset: editor.buffer.columnIndex) == 3)
+}
+
 @Test func testTableModeVisualColumnUpDownNavigationWithCJK() throws {
     let editor = Editor()
     editor.buffer.lines = [

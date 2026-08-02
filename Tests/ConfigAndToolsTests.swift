@@ -666,6 +666,12 @@ import Testing
     let commentTokens = highlighter.tokenTypes(for: "# set wrap 80", syntax: syntax)
     #expect(commentTokens.allSatisfy { $0 == .comment })
 
+    let commentedPreludeTokens = highlighter.tokenTypes(for: "#   MAKE \"boxWidth 30", syntax: syntax)
+    #expect(commentedPreludeTokens.allSatisfy { $0 == .comment })
+
+    let commentedVariableTokens = highlighter.tokenTypes(for: "#     FILL :text", syntax: syntax)
+    #expect(commentedVariableTokens.allSatisfy { $0 == .comment })
+
     let codeTokens = highlighter.tokenTypes(for: "MAKE \"i\" 80", syntax: syntax)
     #expect(codeTokens.contains(.keyword))
     #expect(codeTokens.contains(.number))
