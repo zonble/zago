@@ -8,6 +8,7 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Editor LOGO text transliteration](logo_text_transliteration.md): proposed ICU String Transform primitive for text/script conversion.
 - [Command & Editor LOGO Architecture](command_architecture.md): unified division of responsibilities between Editor `Command` and `LogoEngine`.
 - [Editor basics](editor.md): common editing keys and basic editor behavior.
+- [Search](search.md): active search query, repeated next/previous navigation, highlighting, and regex search rules.
 - [Mark, selection, and clipboard behavior](mark.md): text selection and canvas block mark rules.
 - [Configuration](configuration.md): `.zagorc`, key bindings, startup Editor LOGO code, command ids, Nano syntax file loading, and single-level embedded code block highlighting.
 - [Editor modes & layout](modes.md): Text Editing Mode, Canvas Mode, and Table Mode.

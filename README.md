@@ -234,6 +234,7 @@ zago --run generate_architecture.logo | pbcopy
 ## Documentation
 
 - [Editor basics](docs/editor.md)
+- [Search behavior](docs/search.md)
 - [Mark, selection, and canvas behavior](docs/mark.md)
 - [Editor LOGO command language](docs/logo.md)
 - [Configuration and key bindings](docs/configuration.md)
