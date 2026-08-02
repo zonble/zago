@@ -114,6 +114,18 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
+### Arch Linux
+
+You can install the package by cloning the packaging source and building it locally:
+
+```bash
+git clone https://github.com/cawa0505/aur-zago.git zago-bin
+cd zago-bin
+makepkg -si
+```
+
+This package installs a precompiled static binary. It is maintained and automatically updated to track upstream releases via GitHub Actions at [cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
+
 Build from source:
 
 ```bash
