@@ -521,7 +521,7 @@ extension Editor {
     }
 
     /// Performs search operation for target query string.
-    public func performSearch(query: String, useRegex: Bool = false) {
+    func performSearch(query: String, useRegex: Bool = false) {
         guard !query.isEmpty else { return }
 
         let activeRegex: Bool = useRegex || isRegexSearchEnabled

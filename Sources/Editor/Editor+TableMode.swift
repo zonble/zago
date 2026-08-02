@@ -373,7 +373,7 @@ extension Editor {
     // MARK: - Table Mode Toggle & Enter
 
     /// Toggles Table Mode on/off.
-    public func toggleTableMode() {
+    func toggleTableMode() {
         if isTableModeActive {
             clearActiveMark()
             isTableModeActive = false
@@ -392,7 +392,7 @@ extension Editor {
     }
 
     /// Enters Table Mode locked to target cell.
-    public func enterTableMode(with cell: TableCell) {
+    func enterTableMode(with cell: TableCell) {
         clearActiveMark()
         isTableModeActive = true
         overlayMode = .table

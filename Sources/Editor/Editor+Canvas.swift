@@ -79,7 +79,7 @@ extension Editor {
         return true
     }
 
-    public func syncCanvasCursorFromBuffer() {
+    func syncCanvasCursorFromBuffer() {
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else {
             canvasVisualColumn = 0
             return
@@ -87,13 +87,13 @@ extension Editor {
         canvasVisualColumn = buffer.lines[buffer.lineIndex].visualColumn(forCharacterOffset: buffer.columnIndex)
     }
 
-    public func syncCanvasCursorToBuffer() {
+    func syncCanvasCursorToBuffer() {
         ensureCanvasLineExists(buffer.lineIndex)
         let line = buffer.lines[buffer.lineIndex]
         buffer.columnIndex = line.characterOffset(forVisualColumn: canvasVisualColumn)
     }
 
-    public func moveCanvasCursor(deltaLine: Int, deltaColumn: Int, extendDownward: Bool = true) {
+    func moveCanvasCursor(deltaLine: Int, deltaColumn: Int, extendDownward: Bool = true) {
         let targetLine = buffer.lineIndex + deltaLine
         if extendDownward && deltaLine > 0 {
             ensureCanvasLineExists(targetLine)
@@ -103,18 +103,18 @@ extension Editor {
         syncCanvasCursorToBuffer()
     }
 
-    public func moveCanvasCursorToLineStart() {
+    func moveCanvasCursorToLineStart() {
         canvasVisualColumn = 0
         syncCanvasCursorToBuffer()
     }
 
-    public func moveCanvasCursorToLineEnd() {
+    func moveCanvasCursorToLineEnd() {
         ensureCanvasLineExists(buffer.lineIndex)
         canvasVisualColumn = buffer.lines[buffer.lineIndex].displayWidth
         syncCanvasCursorToBuffer()
     }
 
-    public func insertCanvasCharacter(_ ch: Character) {
+    func insertCanvasCharacter(_ ch: Character) {
         ensureCanvasLineExists(buffer.lineIndex)
         let result = buffer.lines[buffer.lineIndex].writingAtVisualColumn(canvasVisualColumn, character: ch)
         buffer.lines[buffer.lineIndex] = result.text
@@ -123,7 +123,7 @@ extension Editor {
         buffer.isModified = true
     }
 
-    public func insertCanvasString(_ text: String) {
+    func insertCanvasString(_ text: String) {
         clearActiveMark()
         let startColumn = canvasVisualColumn
         let lines = text.components(separatedBy: .newlines)
@@ -142,7 +142,7 @@ extension Editor {
         }
     }
 
-    public func insertCanvasNewline() {
+    func insertCanvasNewline() {
         clearActiveMark()
         let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
         buffer.lines.insert("", at: insertIndex)
@@ -152,7 +152,7 @@ extension Editor {
         syncCanvasCursorToBuffer()
     }
 
-    public func deleteCanvasCharacter() {
+    func deleteCanvasCharacter() {
         clearActiveMark()
         ensureCanvasLineExists(buffer.lineIndex)
         let result = buffer.lines[buffer.lineIndex].clearingAtVisualColumn(canvasVisualColumn)
@@ -162,7 +162,7 @@ extension Editor {
         syncCanvasCursorToBuffer()
     }
 
-    public func backspaceCanvasCharacter() {
+    func backspaceCanvasCharacter() {
         clearActiveMark()
         guard canvasVisualColumn > 0 else {
             buffer.deleteLine()
@@ -186,7 +186,7 @@ extension Editor {
         syncCanvasCursorToBuffer()
     }
 
-    public func ensureCanvasViewport(textWidth: Int) {
+    func ensureCanvasViewport(textWidth: Int) {
         let width = max(1, textWidth)
         if canvasVisualColumn < canvasHorizontalOffset {
             canvasHorizontalOffset = (canvasVisualColumn / width) * width
@@ -239,7 +239,7 @@ extension Editor {
     }
 
     @discardableResult
-    public func copyCanvasBlock() -> Bool {
+    func copyCanvasBlock() -> Bool {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
             setStatusMessage(L10n["status.no_block_marked"])
             return false
@@ -256,7 +256,7 @@ extension Editor {
         return true
     }
 
-    public func cutCanvasBlock() {
+    func cutCanvasBlock() {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
             setStatusMessage(L10n["status.no_block_marked"])
             return
@@ -280,7 +280,7 @@ extension Editor {
         setStatusMessage(L10n["status.cut_text"])
     }
 
-    public func pasteCanvasBlock() {
+    func pasteCanvasBlock() {
         guard let clipboard = canvasBlockClipboard, clipboard.width > 0, !clipboard.rows.isEmpty else {
             setStatusMessage(L10n["status.clipboard_empty"])
             return
@@ -303,7 +303,7 @@ extension Editor {
         setStatusMessage(L10n["status.uncut_text"])
     }
 
-    public func fillCanvasBlock(with fillText: String) -> Bool {
+    func fillCanvasBlock(with fillText: String) -> Bool {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else { return false }
         guard !fillText.isEmpty else {
             setStatusMessage(L10n["status.fill_text_required"])

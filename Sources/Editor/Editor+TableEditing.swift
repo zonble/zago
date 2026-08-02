@@ -35,7 +35,7 @@ extension Editor {
     }
 
     /// Pastes text into the active table cell without shifting or overwriting borders.
-    public func pasteTableCellText(_ text: String) {
+    func pasteTableCellText(_ text: String) {
         guard isTableModeActive, let cell = currentTableCell else { return }
         saveUndoSnapshot()
         _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
@@ -113,7 +113,7 @@ extension Editor {
     }
 
     /// Generates a table at cursor position.
-    public func createTable(
+    func createTable(
         rows: Int = 3,
         cols: Int = 3,
         cellWidth requestedCellWidth: Int? = nil,
@@ -218,7 +218,7 @@ extension Editor {
     }
 
     /// Centers text inside each line of the current table cell.
-    public func centerCellText() {
+    func centerCellText() {
         guard let cell = currentTableCell else { return }
         saveUndoSnapshot()
 
@@ -256,7 +256,7 @@ extension Editor {
         setStatusMessage(L10n["status.cell_text_centered"])
     }
 
-    public func joinCurrentTableCellLine(separator: String) {
+    func joinCurrentTableCellLine(separator: String) {
         guard isTableModeActive, let cell = currentTableCell else { return }
         clampTableModeCursor()
         guard buffer.lineIndex < cell.innerMaxLine else { return }
@@ -278,7 +278,7 @@ extension Editor {
     }
 
     /// Deletes the current visual row inside the active cell without removing the buffer line or table borders.
-    public func deleteCurrentTableCellLine() {
+    func deleteCurrentTableCellLine() {
         guard isTableModeActive, let cell = currentTableCell else {
             buffer.deleteLine()
             return

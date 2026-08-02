@@ -4,7 +4,7 @@ import TextMetrics
 
 extension Editor {
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
-    public func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
+    func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
         let chars = Array(line)
         guard !chars.isEmpty else { return (0, 0) }
 
@@ -36,7 +36,7 @@ extension Editor {
     }
 
     /// Clamps cursor position to inner bounds of current cell.
-    public func clampTableModeCursor() {
+    func clampTableModeCursor() {
         guard let cell = currentTableCell else { return }
         buffer.lineIndex = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return }
@@ -48,7 +48,7 @@ extension Editor {
     }
 
     /// Navigates to next table cell to the right or next row (Tab).
-    public func navigateNextTableCell() {
+    func navigateNextTableCell() {
         guard let cell = currentTableCell else { return }
         let detector = TableCellDetector()
 
@@ -116,17 +116,17 @@ extension Editor {
     }
 
     /// Returns visual display column width for a given character index in a line string.
-    public func getVisualColumn(in line: String, col: Int) -> Int {
+    func getVisualColumn(in line: String, col: Int) -> Int {
         line.visualColumn(forCharacterOffset: col)
     }
 
     /// Returns Character array index in line string corresponding to target visual display column width.
-    public func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
+    func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
         line.characterOffset(forVisualColumn: targetVisualCol)
     }
 
     /// Navigates to table cell above (Up Arrow at top row of cell).
-    public func navigateUpTableCell() {
+    func navigateUpTableCell() {
         guard let cell = currentTableCell else { return }
         let currentLineText = buffer.lines[buffer.lineIndex]
         let currentVCol = getVisualColumn(in: currentLineText, col: buffer.columnIndex)
@@ -151,7 +151,7 @@ extension Editor {
     }
 
     /// Navigates to table cell below (Down Arrow at bottom row of cell).
-    public func navigateDownTableCell() {
+    func navigateDownTableCell() {
         guard let cell = currentTableCell else { return }
         let currentLineText = buffer.lines[buffer.lineIndex]
         let currentVCol = getVisualColumn(in: currentLineText, col: buffer.columnIndex)
@@ -176,7 +176,7 @@ extension Editor {
     }
 
     /// Navigates to previous table cell to the left or previous row (Shift+Tab).
-    public func navigatePrevTableCell() {
+    func navigatePrevTableCell() {
         guard let cell = currentTableCell else { return }
         let prevCol = max(0, cell.minCol - 2)
         let detector = TableCellDetector()
@@ -199,7 +199,7 @@ extension Editor {
         }
     }
 
-    public func moveToNextTableCellLineOrCell() {
+    func moveToNextTableCellLineOrCell() {
         guard let cell = currentTableCell else { return }
         if buffer.lineIndex < cell.innerMaxLine {
             buffer.lineIndex += 1

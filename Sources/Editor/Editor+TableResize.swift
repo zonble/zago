@@ -4,7 +4,7 @@ import TextMetrics
 
 extension Editor {
     /// Resizes the column width of the active table cell (or standalone box) by delta (+1 or -1).
-    public func resizeCurrentTableCellWidth(delta: Int) {
+    func resizeCurrentTableCellWidth(delta: Int) {
         guard isTableModeActive, let cell = currentTableCell else { return }
         let detector = TableCellDetector()
         let tableLines = detectTableLineRange(for: cell)
@@ -98,7 +98,7 @@ extension Editor {
     }
 
     /// Resizes the row height of the active table cell (or standalone box) by delta (+1 or -1).
-    public func resizeCurrentTableCellHeight(delta: Int) {
+    func resizeCurrentTableCellHeight(delta: Int) {
         guard isTableModeActive, let cell = currentTableCell else { return }
         let detector = TableCellDetector()
 
