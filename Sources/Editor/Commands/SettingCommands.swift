@@ -49,7 +49,7 @@ public struct SettingCommand: Command {
             return ["en", "zh_TW"]
         case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
             "default-border-style", "default_border_style":
-            return ["single", "double", "round", "double-round", "ascii", "markdown"]
+            return ["single", "double", "round", "double-round", "ascii", "ascii-round"]
         default:
             return []
         }

@@ -195,6 +195,17 @@ public struct InsertTabCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+        if let syntax = editor.activeLanguageSyntax,
+            let navigator = syntax.tableNavigator,
+            let result = navigator(editor.buffer.lines, editor.buffer.lineIndex, editor.buffer.columnIndex, true)
+        {
+            if let updatedLines = result.updatedLines {
+                editor.buffer.lines = updatedLines
+            }
+            editor.buffer.lineIndex = result.newBufferLineIndex
+            editor.buffer.columnIndex = result.newCursorColumn
+            return
+        }
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
             editor.buffer.insertString("    ")
@@ -221,11 +232,11 @@ public struct UndoCommand: Command {
     }
 }
 
-public struct JustifyParagraphCommand: Command {
+public struct JustifyCommand: Command {
     public let id: CommandID = .editJustify
     public let name = "Justify"
-    public let description = "Format paragraph width"
-    public let keys: [Key] = [.ctrl("J")]
+    public let description = "Justify paragraph text or format table"
+    public let keys: [Key] = [.ctrl("J"), .ctrl("j")]
 
     public init() {}
 
@@ -239,6 +250,16 @@ public struct JustifyParagraphCommand: Command {
             return
         }
         editor.saveUndoSnapshot()
+        if let syntax = editor.activeLanguageSyntax,
+            let formatter = syntax.tableFormatter,
+            let result = formatter(editor.buffer.lines, editor.buffer.lineIndex, editor.buffer.columnIndex)
+        {
+            editor.buffer.lines = result.updatedLines
+            editor.buffer.lineIndex = result.startLineIndex
+            editor.buffer.columnIndex = result.newCursorColumn
+            editor.setStatusMessage("[ Formatted Table ]")
+            return
+        }
         let (_, cols) = editor.terminal.getWindowSize()
         let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
         editor.buffer.justifyParagraph(targetWidth: targetWidth)

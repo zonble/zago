@@ -53,4 +53,12 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
         }
         return nil
     }
+
+    public func formatTable(at lineIndex: Int, in lines: [String], cursorColumn: Int) -> TableFormatResult? {
+        PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .restGrid)
+    }
+
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
+        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .restGrid)
+    }
 }

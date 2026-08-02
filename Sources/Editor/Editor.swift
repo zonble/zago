@@ -88,6 +88,17 @@ public final class Editor {
     var lastIsPaste: Bool = false
 
     let syntaxHighlighter = SyntaxHighlighter()
+
+    public var activeLanguageSyntax: LanguageSyntax? {
+        syntaxHighlighter.getSyntaxForLine(
+            filePath: buffer.filePath,
+            isDirectoryBuffer: buffer.isDirectoryBuffer,
+            lines: buffer.lines,
+            bufferLineIndex: buffer.lineIndex,
+            isEnabled: displayConfig.enableSyntaxHighlight
+        )
+    }
+
     public let commandRegistry = CommandRegistry()
     public var commandBarRegistry: CommandRegistry { commandRegistry }
     public let fileWatcher = FileWatcher()

@@ -731,9 +731,53 @@ extension Editor {
             let parts = input.components(separatedBy: .whitespaces).compactMap { Int($0) }
             let rows = parts.count > 0 ? parts[0] : 3
             let cols = parts.count > 1 ? parts[1] : 3
+
+            if let syntaxName = self.activeLanguageSyntax?.name, syntaxName == "Markdown" || syntaxName == "Org-mode" {
+                self.insertTextTable(rows: rows, cols: cols, isOrg: syntaxName == "Org-mode")
+                return
+            }
+
             let width = parts.count > 2 ? parts[2] : nil
             self.createTable(rows: rows, cols: cols, cellWidth: width, enterMode: true, saveSnapshot: true)
         })
+    }
+
+    func insertTextTable(rows: Int, cols: Int, isOrg: Bool) {
+        saveUndoSnapshot()
+        var tableLines: [String] = []
+        var header = "|"
+        for c in 1...cols {
+            header += " Header \(c) |"
+        }
+        tableLines.append(header)
+
+        if isOrg {
+            var sep = "|"
+            for (cIdx, _) in (1...cols).enumerated() {
+                sep += "----------" + (cIdx == cols - 1 ? "|" : "+")
+            }
+            tableLines.append(sep)
+        } else {
+            var sep = "|"
+            for _ in 1...cols {
+                sep += " -------- |"
+            }
+            tableLines.append(sep)
+        }
+
+        for r in 1...rows {
+            var rowStr = "|"
+            for c in 1...cols {
+                rowStr += " Cell \(r).\(c) |"
+            }
+            tableLines.append(rowStr)
+        }
+
+        let insertIdx = min(max(0, buffer.lineIndex), buffer.lines.count)
+        buffer.lines.insert(contentsOf: tableLines, at: insertIdx)
+        buffer.lineIndex = insertIdx
+        buffer.columnIndex = 2
+        setStatusMessage(L10n["status.table_created"])
     }
 
     private func logoStringLiteral(_ text: String) -> String {

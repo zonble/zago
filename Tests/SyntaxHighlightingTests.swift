@@ -308,4 +308,59 @@ import Testing
     #expect(PythonSyntaxDefinition().detectEmbeddedLanguageName(in: ["x = 1"], bufferLineIndex: 0) == nil)
 }
 
+@Test func testMarkdownAndOrgTableFormattingAndNavigation() throws {
+    let mdSyntax = MarkdownSyntaxDefinition().buildLanguageSyntax()
+    #expect(mdSyntax.tableFormatter != nil)
+    #expect(mdSyntax.tableNavigator != nil)
+
+    let unalignedMd = [
+        "| Name | Role |",
+        "| --- | --- |",
+        "| Alice | Senior Software Engineer |",
+        "| Bob | Designer |",
+    ]
+
+    if let formatResult = mdSyntax.tableFormatter?(unalignedMd, 0, 2) {
+        #expect(formatResult.updatedLines[0] == "| Name  | Role                     |")
+        #expect(formatResult.updatedLines[2] == "| Alice | Senior Software Engineer |")
+        #expect(formatResult.updatedLines[3] == "| Bob   | Designer                 |")
+    }
+
+    // Cell navigation forwarding from last cell automatically appends a new empty row
+    if let navResult = mdSyntax.tableNavigator?(unalignedMd, 3, 10, true) {
+        #expect(navResult.updatedLines != nil)
+        #expect(navResult.newBufferLineIndex == 4)
+    }
+
+    let orgSyntax = OrgModeSyntaxDefinition().buildLanguageSyntax()
+    #expect(orgSyntax.tableFormatter != nil)
+    #expect(orgSyntax.tableNavigator != nil)
+}
+
+@Test func testOrgModeTableSyntaxHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+    let orgLines = [
+        "* Headline",
+        "| Header 1 | Header 2 |",
+        "|----------+----------|",
+        "| Data 1   | Data 2   |",
+    ]
+
+    let separatorHighlight = highlighter.tokenTypes(
+        for: orgLines[2],
+        syntax: OrgModeSyntaxDefinition().buildLanguageSyntax()
+    )
+    #expect(!separatorHighlight.isEmpty)
+    #expect(separatorHighlight[0] == .keyword)
+
+    let tableRowHighlight = highlighter.tokenTypes(
+        for: orgLines[1],
+        syntax: OrgModeSyntaxDefinition().buildLanguageSyntax()
+    )
+    #expect(!tableRowHighlight.isEmpty)
+    #expect(tableRowHighlight[0] == .typeOrAttribute)
+}
+
+
+
 

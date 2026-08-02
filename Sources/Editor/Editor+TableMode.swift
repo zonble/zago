@@ -375,11 +375,18 @@ extension Editor {
     /// Toggles Table Mode on/off.
     func toggleTableMode() {
         if isTableModeActive {
-            clearActiveMark()
             isTableModeActive = false
             currentTableCell = nil
             overlayMode = .none
             setStatusMessage(L10n["status.table_mode_exited"])
+            return
+        }
+
+        if let syntax = activeLanguageSyntax, syntax.tableFormatter != nil,
+            buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count,
+            buffer.lines[buffer.lineIndex].trimmingCharacters(in: CharacterSet.whitespaces).hasPrefix("|")
+        {
+            setStatusMessage("[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]")
             return
         }
 

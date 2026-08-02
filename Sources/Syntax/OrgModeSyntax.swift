@@ -18,6 +18,9 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
             makeRule("\\[\\[[^\\]]+\\](\\[[^\\]]+\\])?\\]", .typeOrAttribute),
             // Code & Timestamps (~code~, =verbatim=, <2026-07-28 Tue>)
             makeRule("~[^~]+~|=[^=]+=|\\<[^\\>]+\\>|\\[[^\\]]+\\]", .string),
+            // Tables (Separator lines & cell rows)
+            makeRule("^\\s*\\|[-+]*\\|?\\s*$", .keyword),
+            makeRule("^\\s*\\|.*\\|\\s*$", .typeOrAttribute),
         ].compactMap { $0 }
     }
 
@@ -46,5 +49,13 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
             return langName
         }
         return nil
+    }
+
+    public func formatTable(at lineIndex: Int, in lines: [String], cursorColumn: Int) -> TableFormatResult? {
+        PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .orgMode)
+    }
+
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
+        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .orgMode)
     }
 }

@@ -58,5 +58,5 @@ import Testing
     #expect(cell != nil)
     #expect(cell?.minLine == 1)
     #expect(cell?.maxLine == 3)
-    #expect(cell?.style == .markdown)
+    #expect(cell?.style == .single)
 }

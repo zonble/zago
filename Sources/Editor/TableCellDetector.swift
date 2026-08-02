@@ -144,8 +144,6 @@ public final class TableCellDetector {
             return .double
         } else if ch == "+" {
             return .ascii
-        } else if ch == "|" {
-            return .markdown
         }
         return .single
     }

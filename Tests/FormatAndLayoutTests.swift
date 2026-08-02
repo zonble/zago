@@ -4,7 +4,9 @@ import TextMetrics
 
 @testable import Editor
 
-@Test func testSoftwrapLayoutEngine() throws {
+@Suite(.serialized)
+struct FormatAndLayoutTests {
+    @Test func testSoftwrapLayoutEngine() throws {
     let engine = LayoutEngine(wrapColumn: 10)
     let lines = ["1234567890ABCDEFGHIJ12345"]  // 25 characters
 
@@ -671,6 +673,10 @@ import TextMetrics
 }
 
 @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {
+    let previousLanguage = L10n.currentLanguage
+    defer { L10n.currentLanguage = previousLanguage }
+    L10n.currentLanguage = .en
+
     let editor = Editor()
     editor.isMenuBarActive = true
     editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.borders" })!
@@ -756,4 +762,5 @@ import TextMetrics
     editor.menuBar.categoryIndex = 3
     let outputActive = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(outputActive.contains("\u{1B}[90m   1 \u{1B}[0m"))
+}
 }

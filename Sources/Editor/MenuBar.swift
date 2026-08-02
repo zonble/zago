@@ -165,13 +165,6 @@ public final class MenuBar {
                             editor.setStatusMessage(L10n.defaultBorder(BorderStyle.asciiRound.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
-                    MenuItem(
-                        titleKey: "menu.borders.markdown", hotkeyChar: "m",
-                        action: { editor in
-                            editor.defaultBorderStyle = .markdown
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.markdown.rawValue))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .markdown }),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
                 ]),
             MenuCategory(

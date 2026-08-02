@@ -46,4 +46,12 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
         }
         return nil
     }
+
+    public func formatTable(at lineIndex: Int, in lines: [String], cursorColumn: Int) -> TableFormatResult? {
+        PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .asciiDoc)
+    }
+
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
+        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
+    }
 }

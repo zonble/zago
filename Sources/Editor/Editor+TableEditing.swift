@@ -133,44 +133,26 @@ extension Editor {
             min(requestedCellWidth ?? TableLimits.defaultCellWidth, TableLimits.maxCellWidth)
         )
 
-        if style == .markdown {
-            let headerCells = (1...colCount).map {
-                "Header \($0)".padding(toLength: cellWidth, withPad: " ", startingAt: 0)
-            }
-            var tableLines = ["| " + headerCells.joined(separator: " | ") + " |"]
+        let chars = style.tableCharacters
+        let h = String(repeating: chars.horizontal, count: cellWidth)
+        let content = String(repeating: " ", count: cellWidth)
+        var tableLines: [String] = []
+        tableLines.append(
+            chars.topLeft + Array(repeating: h, count: colCount).joined(separator: chars.topJoin) + chars.topRight)
+        for row in 0..<rowCount {
             tableLines.append(
-                "|"
-                    + Array(repeating: String(repeating: "-", count: cellWidth + 2), count: colCount).joined(
-                        separator: "|") + "|")
-            for _ in 0..<max(1, rowCount - 1) {
+                chars.vertical + Array(repeating: content, count: colCount).joined(separator: chars.vertical)
+                    + chars.vertical)
+            if row < rowCount - 1 {
                 tableLines.append(
-                    "| "
-                        + Array(repeating: String(repeating: " ", count: cellWidth), count: colCount).joined(
-                            separator: " | ") + " |")
-            }
-            insertTableLines(tableLines, at: origLine, column: origCol)
-        } else {
-            let chars = style.tableCharacters
-            let h = String(repeating: chars.horizontal, count: cellWidth)
-            let content = String(repeating: " ", count: cellWidth)
-            var tableLines: [String] = []
-            tableLines.append(
-                chars.topLeft + Array(repeating: h, count: colCount).joined(separator: chars.topJoin) + chars.topRight)
-            for row in 0..<rowCount {
-                tableLines.append(
-                    chars.vertical + Array(repeating: content, count: colCount).joined(separator: chars.vertical)
-                        + chars.vertical)
-                if row < rowCount - 1 {
-                    tableLines.append(
-                        chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin)
-                            + chars.midRight)
+                    chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin)
+                        + chars.midRight)
                 }
-            }
-            tableLines.append(
-                chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin)
-                    + chars.bottomRight)
-            insertTableLines(tableLines, at: origLine, column: origCol)
         }
+        tableLines.append(
+            chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin)
+                + chars.bottomRight)
+        insertTableLines(tableLines, at: origLine, column: origCol)
 
         buffer.lineIndex = origLine + 1
         buffer.columnIndex = origCol + 1

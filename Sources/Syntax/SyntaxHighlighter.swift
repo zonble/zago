@@ -40,17 +40,23 @@ public struct LanguageSyntax: Sendable {
     public let extensions: [String]
     public let rules: [SyntaxRule]
     public let embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)?
+    public let tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)?
+    public let tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)?
 
     public init(
         name: String,
         extensions: [String],
         rules: [SyntaxRule],
-        embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil
+        embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil,
+        tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)? = nil,
+        tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil
     ) {
         self.name = name
         self.extensions = extensions
         self.rules = rules
         self.embeddedLanguageDetector = embeddedLanguageDetector
+        self.tableFormatter = tableFormatter
+        self.tableNavigator = tableNavigator
     }
 }
 

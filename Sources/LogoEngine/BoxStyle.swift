@@ -95,7 +95,6 @@ public enum BorderStyle: String, CaseIterable, Sendable {
     case doubleRound = "double-round"
     case ascii = "ascii"
     case asciiRound = "ascii-round"
-    case markdown = "markdown"
 
     public init?(_ token: String) {
         switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
@@ -111,8 +110,6 @@ public enum BorderStyle: String, CaseIterable, Sendable {
             self = .ascii
         case "asciiround", "ascii-round", "ascii_round", "asciirounded", "ascii-rounded", "ascii_rounded":
             self = .asciiRound
-        case "markdown":
-            self = .markdown
         default:
             return nil
         }
@@ -128,7 +125,7 @@ public enum BorderStyle: String, CaseIterable, Sendable {
 
     var boxStyle: BoxStyle {
         switch self {
-        case .single, .markdown:
+        case .single:
             return .single
         case .double:
             return .double
@@ -175,7 +172,7 @@ public enum BorderStyle: String, CaseIterable, Sendable {
                 midLeft: "+", midJoin: "+", midRight: "+",
                 bottomLeft: "\\", bottomJoin: "+", bottomRight: "/",
                 horizontal: "-", vertical: "|")
-        case .single, .markdown:
+        case .single:
             return TableBorderCharacters(
                 topLeft: "┌", topJoin: "┬", topRight: "┐",
                 midLeft: "├", midJoin: "┼", midRight: "┤",
