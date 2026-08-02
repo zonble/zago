@@ -9,22 +9,26 @@
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 
-`zago` is a lightweight terminal workbench for people who live in Markdown.
-It keeps prose editing, pipe tables, local document links, headings, text
-diagrams, CJK-aware text tools, and small automation macros in one tiny editor.
+In the AI-agent era, Markdown is becoming the control surface for software
+work: instructions, specs, review notes, implementation plans, and context that
+guide agent CLIs.
 
-It is not trying to replace every editor you already know. It is for the
-Markdown work that usually sends you bouncing between a text editor, Obsidian,
-ASCIIFlow, Monodraw, shell scripts, and random word-count tools, whether the
-file is on your laptop or on a server over SSH.
+But Markdown editing still breaks the terminal flow. GUI editors pull you out
+of the shell. Terminal editors usually lack table and diagram tools. A quick
+plain-text diagram often means opening a browser-based ASCII diagrammer or a
+dedicated diagram drawing app.
 
-Stay in the terminal. Keep the file plain. Make the document itself carry the
-writing, tables, diagrams, and text operations.
+`zago` is built for that shift: a lean terminal Markdown forge that keeps prose
+editing, pipe tables, local document links, headings, text diagrams, CJK-aware
+text tools, and small automation macros in the same plain-text flow, whether
+the file is on your laptop or on a server over SSH.
 
 ## Who is zago for?
 
+- **AI-agent users** who write Markdown instructions, specs, notes, and review
+  context from the terminal.
 - **Markdown writers** who want prose, headings, links, tables, and diagrams in
-  one local terminal tool.
+  one terminal tool.
 - **Technical writers** who prefer plain-text documents that remain readable in
   Git diffs, SSH sessions, pull requests, and README files.
 - **People drawing text diagrams** who do not want to leave the document just to
