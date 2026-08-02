@@ -37,7 +37,7 @@ extension Editor {
                 return
             }
         } else {
-            if key == .esc {
+            if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
                 cancelPrompt()
                 return
             }
@@ -330,29 +330,44 @@ extension Editor {
         return true
     }
 
+    /// Common handler for text input prompts.
+    private func processTextInputPromptKey(
+        _ key: Key,
+        trimWhitespace: Bool = false,
+        completion: (String?) -> Void
+    ) {
+        switch key {
+        case .enter:
+            let raw = promptInputText
+            let result = trimWhitespace ? raw.trimmingCharacters(in: .whitespacesAndNewlines) : raw
+            currentPromptMode = .none
+            completion(trimWhitespace && result.isEmpty ? nil : result)
+
+        case .backspace:
+            deletePromptBackspace()
+
+        case .char(let ch):
+            insertPromptChar(ch)
+
+        default:
+            break
+        }
+    }
+
     /// Processes keyboard input when in prompt mode.
     func processPromptKey(_ key: Key) {
         if handlePromptNavigationKeys(key) {
             return
         }
 
+        if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
+            cancelPrompt()
+            return
+        }
+
         switch currentPromptMode {
         case .saveFilePath(let completion):
-            switch key {
-            case .enter:
-                let path = promptInputText.trimmingCharacters(in: .whitespacesAndNewlines)
-                currentPromptMode = .none
-                completion(path.isEmpty ? nil : path)
-            case .esc, .ctrl("C"):
-                cancelPrompt()
-                setStatusMessage(L10n["status.cancelled"])
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
+            processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
         case .confirmExitSave(let completion):
             switch key {
@@ -362,9 +377,6 @@ extension Editor {
             case .char("n"), .char("N"):
                 currentPromptMode = .none
                 completion(false)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
             default:
                 break
             }
@@ -374,7 +386,7 @@ extension Editor {
             case .char("y"), .char("Y"), .enter:
                 currentPromptMode = .none
                 completion(true)
-            case .char("n"), .char("N"), .esc, .ctrl("C"):
+            case .char("n"), .char("N"):
                 currentPromptMode = .none
                 completion(false)
             default:
@@ -382,69 +394,23 @@ extension Editor {
             }
 
         case .search(let completion):
-            switch key {
-            case .enter:
-                let result = promptInputText
-                currentPromptMode = .none
-                completion(result)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
+            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
         case .insertFilePath(let completion):
-            switch key {
-            case .enter:
-                let result = promptInputText
-                currentPromptMode = .none
-                completion(result)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
+            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
         case .spellCheck(_, _, _, let completion):
-            switch key {
-            case .enter:
-                let replacement = promptInputText.trimmingCharacters(in: .whitespacesAndNewlines)
-                currentPromptMode = .none
-                completion(replacement)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
+            processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
         case .logoMacro(let completion):
             switch key {
             case .tab:
-                if completeCommandBarPrompt() {
-                    break
-                }
+                _ = completeCommandBarPrompt()
             case .enter:
                 let script = promptInputText
                 promptCompletionText = nil
-                if !script.isEmpty {
-                    if logoPromptHistory.last != script {
-                        logoPromptHistory.append(script)
-                    }
+                if !script.isEmpty && logoPromptHistory.last != script {
+                    logoPromptHistory.append(script)
                 }
                 currentPromptMode = .none
                 completion(script)
@@ -466,10 +432,6 @@ extension Editor {
                     promptInputText = ""
                     promptCursorIndex = 0
                 }
-            case .esc, .ctrl("C"):
-                promptCompletionText = nil
-                currentPromptMode = .none
-                completion(nil)
             case .backspace:
                 deletePromptBackspace()
             case .char(let ch):
@@ -478,39 +440,8 @@ extension Editor {
                 break
             }
 
-        case .fillText(let completion), .tableDimensions(let completion):
-            switch key {
-            case .enter:
-                let text = promptInputText
-                currentPromptMode = .none
-                completion(text)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
-
-        case .gotoLine(let completion):
-            switch key {
-            case .enter:
-                let lineStr = promptInputText
-                currentPromptMode = .none
-                completion(lineStr)
-            case .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(nil)
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
-            default:
-                break
-            }
+        case .fillText(let completion), .tableDimensions(let completion), .gotoLine(let completion):
+            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
         case .none:
             break
@@ -719,6 +650,41 @@ extension Editor {
 
     /// Cancels active prompt mode.
     func cancelPrompt() {
+        switch currentPromptMode {
+        case .saveFilePath(let completion):
+            currentPromptMode = .none
+            completion(nil)
+            setStatusMessage(L10n["status.cancelled"])
+        case .confirmExitSave(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .confirmExternalReload(let completion):
+            currentPromptMode = .none
+            completion(false)
+        case .search(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .insertFilePath(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .spellCheck(_, _, _, let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .logoMacro(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .fillText(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .tableDimensions(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .gotoLine(let completion):
+            currentPromptMode = .none
+            completion(nil)
+        case .none:
+            break
+        }
         currentPromptMode = .none
         promptInputText = ""
         promptCompletionText = nil
@@ -794,90 +760,7 @@ extension Editor {
         goToLocation(line: parts[0], column: parts.count > 1 ? parts[1] : nil)
     }
 
-    /// Toggles Menu Bar mode on ESC key in normal edit mode.
-    func toggleMenuBar() {
-        isMenuBarActive.toggle()
-        if isMenuBarActive {
-            menuBar.updateCategories(for: self)
-            menuBar.categoryIndex = 0
-            menuBar.itemIndex = 0
-        }
-    }
 
-    /// Handles key input navigation when Menu Bar is active.
-    func processMenuBarKey(_ key: Key) {
-        switch key {
-        case .esc, .ctrl("C"):
-            isMenuBarActive = false
-
-        case .arrowLeft:
-            menuBar.categoryIndex = (menuBar.categoryIndex - 1 + menuBar.categories.count) % menuBar.categories.count
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
-
-        case .arrowRight:
-            menuBar.categoryIndex = (menuBar.categoryIndex + 1) % menuBar.categories.count
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
-
-        case .arrowUp:
-            let count = menuBar.currentCategory.items.count
-            if count > 0 {
-                menuBar.itemIndex = (menuBar.itemIndex - 1 + count) % count
-            }
-
-        case .arrowDown:
-            let count = menuBar.currentCategory.items.count
-            if count > 0 {
-                menuBar.itemIndex = (menuBar.itemIndex + 1) % count
-            }
-
-        case .home:
-            menuBar.itemIndex = 0
-
-        case .end:
-            menuBar.itemIndex = max(0, menuBar.currentCategory.items.count - 1)
-
-        case .pageUp:
-            menuBar.categoryIndex = 0
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
-
-        case .pageDown:
-            menuBar.categoryIndex = max(0, menuBar.categories.count - 1)
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
-
-        case .enter:
-            executeCurrentMenuItem()
-
-        case .char(let ch):
-            let lowerCh = Character(String(ch).lowercased())
-            // Check if letter matches any category hotkey (f, e, s, b, t, h)
-            if let catIdx = menuBar.categories.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
-                menuBar.categoryIndex = catIdx
-                menuBar.itemIndex = 0
-            } else {
-                // Check if letter matches any item hotkey within active category
-                let items = menuBar.currentCategory.items
-                if let itemIdx = items.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
-                    menuBar.itemIndex = itemIdx
-                    executeCurrentMenuItem()
-                }
-            }
-
-        default:
-            break
-        }
-    }
-
-    /// Executes current selected menu item action.
-    func executeCurrentMenuItem() {
-        guard let item = menuBar.currentItem else { return }
-        isMenuBarActive = false
-
-        if let cmdId = item.commandId {
-            _ = commandRegistry.dispatch(id: cmdId, editor: self)
-        } else if let action = item.action {
-            action(self)
-        }
-    }
 
     /// Saves buffer to specified file path.
     func doSave(to path: String) {

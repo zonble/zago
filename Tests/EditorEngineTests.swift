@@ -507,6 +507,26 @@ import TextMetrics
     }
 }
 
+@Test func testCtrlGCancelsActivePromptMode() throws {
+    let editor = Editor()
+    editor.promptWriteFilePath()
+
+    if case .saveFilePath = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "saveFilePath prompt should be active")
+    }
+
+    editor.processKey(.ctrl("G"))
+
+    if case .none = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Ctrl+G should cancel active prompt mode")
+    }
+    #expect(editor.statusMessage == L10n["status.cancelled"])
+}
+
 @Test func testCtrlMarkInTextModeReportsCanvasOnlyMessage() throws {
     let editor = Editor()
 
