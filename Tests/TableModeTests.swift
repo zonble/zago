@@ -734,6 +734,9 @@ import Testing
     #expect(editor.defaultBorderStyle == .ascii)
 
     editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .asciiRound)
+
+    editor.processKey(.alt("s"))
     #expect(editor.defaultBorderStyle == .markdown)
 
     editor.processKey(.alt("s"))

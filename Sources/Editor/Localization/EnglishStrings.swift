@@ -394,6 +394,7 @@ public struct EnglishStrings {
         "menu.borders.round": "Round",
         "menu.borders.double_round": "Double Round",
         "menu.borders.ascii": "ASCII",
+        "menu.borders.ascii_round": "ASCII Rounded",
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "Next Style\tM+S",
 

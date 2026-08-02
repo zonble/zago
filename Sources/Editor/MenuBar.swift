@@ -158,6 +158,13 @@ public final class MenuBar {
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
                     MenuItem(
+                        titleKey: "menu.borders.ascii_round", hotkeyChar: "c",
+                        action: { editor in
+                            editor.defaultBorderStyle = .asciiRound
+                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.asciiRound.rawValue))
+                        },
+                        isChecked: { $0.defaultBorderStyle == .asciiRound }),
+                    MenuItem(
                         titleKey: "menu.borders.markdown", hotkeyChar: "m",
                         action: { editor in
                             editor.defaultBorderStyle = .markdown

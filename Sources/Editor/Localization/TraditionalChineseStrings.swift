@@ -394,6 +394,7 @@ public struct TraditionalChineseStrings {
         "menu.borders.round": "單線圓角",
         "menu.borders.double_round": "雙線圓角",
         "menu.borders.ascii": "ASCII",
+        "menu.borders.ascii_round": "ASCII 圓角",
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "下一種框線\tM+S",
 

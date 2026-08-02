@@ -21,6 +21,7 @@ public enum BorderStyle: String, CaseIterable, Sendable {
     case round = "round"
     case doubleRound = "double-round"
     case ascii = "ascii"
+    case asciiRound = "ascii-round"
     case markdown = "markdown"
 
     public init?(_ token: String) {
@@ -35,6 +36,8 @@ public enum BorderStyle: String, CaseIterable, Sendable {
             self = .doubleRound
         case "ascii":
             self = .ascii
+        case "asciiround", "ascii-round", "ascii_round", "asciirounded", "ascii-rounded", "ascii_rounded":
+            self = .asciiRound
         case "markdown":
             self = .markdown
         default:
@@ -62,6 +65,8 @@ public enum BorderStyle: String, CaseIterable, Sendable {
             return .doubleRound
         case .ascii:
             return .ascii
+        case .asciiRound:
+            return .asciiRound
         }
     }
 
@@ -91,6 +96,12 @@ public enum BorderStyle: String, CaseIterable, Sendable {
                 midLeft: "+", midJoin: "+", midRight: "+",
                 bottomLeft: "+", bottomJoin: "+", bottomRight: "+",
                 horizontal: "-", vertical: "|")
+        case .asciiRound:
+            return TableBorderCharacters(
+                topLeft: "/", topJoin: "+", topRight: "\\",
+                midLeft: "+", midJoin: "+", midRight: "+",
+                bottomLeft: "\\", bottomJoin: "+", bottomRight: "/",
+                horizontal: "-", vertical: "|")
         case .single, .markdown:
             return TableBorderCharacters(
                 topLeft: "┌", topJoin: "┬", topRight: "┐",
@@ -115,6 +126,7 @@ public struct BoxStyle: Sendable {
     static let round  = BoxStyle(topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
     static let doubleRound = BoxStyle(topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
     static let ascii  = BoxStyle(topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
+    static let asciiRound = BoxStyle(topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
 
     static func from(_ str: String) -> BoxStyle {
         BorderStyle.from(str).boxStyle

@@ -313,6 +313,15 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(suffixEditor.buffer.lines[7] == "AA|      |AAAAAAAAAAAAAAAA")
     #expect(suffixEditor.buffer.lines[8] == "AA+------+AAAAAAAAAAAAAAAA")
 
+    let asciiRoundEditor = Editor()
+    logoEngine.delegate = asciiRoundEditor
+    logoEngine.execute("BOX 8 3 \"ascii-round\"")
+    #expect(asciiRoundEditor.buffer.lines == [
+        "/------\\",
+        "|      |",
+        "\\------/"
+    ])
+
     let zeroWidthBoxEditor = Editor()
     logoEngine.delegate = zeroWidthBoxEditor
     logoEngine.execute("BOX 0")
@@ -1780,6 +1789,9 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     logoEngine.execute("TABLE BORDER ASCII")
     #expect(editor.defaultBorderStyle == .ascii)
+
+    logoEngine.execute("TABLE NEXTSTYLE")
+    #expect(editor.defaultBorderStyle == .asciiRound)
 
     logoEngine.execute("TABLE NEXTSTYLE")
     #expect(editor.defaultBorderStyle == .markdown)

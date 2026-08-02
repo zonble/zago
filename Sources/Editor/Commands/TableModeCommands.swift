@@ -63,6 +63,9 @@ public struct CycleBorderStyleCommand: Command {
             editor.defaultBorderStyle = .ascii
             editor.setStatusMessage(L10n.defaultBorder("ASCII (+-|)"))
         case .ascii:
+            editor.defaultBorderStyle = .asciiRound
+            editor.setStatusMessage(L10n.defaultBorder("ASCII Rounded (/-\\|)"))
+        case .asciiRound:
             editor.defaultBorderStyle = .markdown
             editor.setStatusMessage(L10n.defaultBorder("Markdown (|---|)"))
         case .markdown:

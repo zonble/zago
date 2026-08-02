@@ -36,13 +36,14 @@ public final class TableCellDetector {
         "│", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
         "╭", "╮", "╰", "╯",
         "║", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
-        "|", "+",
+        "|", "+", "/", "\\",
     ]
 
     private static let horizontalBorderChars: Set<Character> = [
         "─", "═", "-", "+", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
         "╭", "╮", "╰", "╯",
         "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
+        "/", "\\",
     ]
 
     /// Detects enclosing table cell around (line, col) in lines buffer.

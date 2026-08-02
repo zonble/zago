@@ -1164,7 +1164,7 @@ extension Editor {
         let borderJunctions: Set<Character> = [
             "┌", "┬", "┐", "└", "┴", "┘", "├", "┼", "┤",
             "╭", "╮", "╰", "╯", "╔", "╦", "╗", "╚", "╩", "╝",
-            "╠", "╬", "╣", "+",
+            "╠", "╬", "╣", "+", "/", "\\",
         ]
         if colLeft < chars.count && borderJunctions.contains(chars[colLeft]) {
             return true
