@@ -271,6 +271,8 @@ public struct TraditionalChineseStrings {
         "status.no_text_selection": "[ 沒有選取文字 ]",
         "status.transformed_selection": "[ 已轉換選取文字：%@ ]",
         "status.text_transform_failed": "[ 文字轉換失敗：%@ ]",
+        "status.word_count_selection": "[ 選取範圍：%@ ]",
+        "status.word_count_document": "[ 文件：%@ ]",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.edit.copy": "複製\tM+W",
 
@@ -400,6 +402,7 @@ public struct TraditionalChineseStrings {
         "menu.borders.next_style": "下一種框線\tM+S",
 
         "menu.tools.logo": "指令列\tEsc",
+        "menu.tools.word_count": "Word Count",
         "menu.tools.transform_tohant": "轉換：繁體中文",
         "menu.tools.transform_tohans": "轉換：簡體中文",
         "menu.tools.transform_tolatin": "轉換：拉丁轉寫",

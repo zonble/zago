@@ -20,6 +20,7 @@
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
+  - [Text Processing](#text-processing)
   - [Command Examples](#command-examples)
   - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
     - [1. Interactive Editor Mode](#1-interactive-editor-mode)
@@ -82,6 +83,17 @@ swift build -c release
 - **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
 
 For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
+
+## Text Processing
+
+`zago` is still a text editor. The diagram tools sit on top of ordinary prose editing rather than replacing it:
+
+- Linear text selection in Text Mode and Table Mode, including `Shift+Arrow` and `Shift+Home` / `Shift+End`, with selected text replaced by typing.
+- Paragraph justification (`^J`) for mixed CJK and Latin prose, using display width instead of byte or scalar counts.
+- Selection-based text transforms from the Tools menu: Traditional/Simplified Chinese conversion, Latin/Hiragana/Katakana/Romaji transliteration, and CJK/ASCII spacing normalization.
+- Text counts from the Tools menu. With a selection, `Word Count` reports that selection; without a selection, it reports the whole document. The status includes chars, words, lines, and only shows CJK chars or emojis when present.
+- Optional sub line numbers for fixed-width prose drafting: when a wrap column is set, long physical lines can show visual-row numbers and paragraph character counts.
+- Document link navigation with `M+O` for local Markdown, Org, reStructuredText, and AsciiDoc links.
 
 ## Command Examples
 

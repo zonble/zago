@@ -136,7 +136,7 @@ extension Editor {
         }
     }
 
-    public func showWordCount() {
+    public func showTextCounts() {
         let (text, statusFormat) =
             if let range = activeTextSelectionRange() {
                 (
@@ -148,11 +148,32 @@ extension Editor {
             } else {
                 (buffer.lines.joined(separator: "\n"), L10n["status.word_count_document"])
             }
-        setStatusMessage(String(format: statusFormat, TextAnalyzer.wordCount(in: text)))
+        setStatusMessage(String(format: statusFormat, textCountSummary(for: text)))
     }
 
     func hasActiveTextSelection() -> Bool {
         activeTextSelectionRange() != nil
+    }
+
+    private func textCountSummary(for text: String) -> String {
+        let charCount = TextAnalyzer.characterCount(in: text)
+        let wordCount = TextAnalyzer.wordCount(in: text)
+        let cjkCount = TextAnalyzer.cjkCharacterCount(in: text)
+        let emojiCount = TextAnalyzer.emojiCount(in: text)
+        let lineCount = TextAnalyzer.lineCount(in: text)
+
+        var parts = [
+            "\(charCount) \(charCount == 1 ? "char" : "chars")",
+            "\(wordCount) \(wordCount == 1 ? "word" : "words")",
+        ]
+        if cjkCount > 0 {
+            parts.append("\(cjkCount) CJK \(cjkCount == 1 ? "char" : "chars")")
+        }
+        if emojiCount > 0 {
+            parts.append("\(emojiCount) \(emojiCount == 1 ? "emoji" : "emojis")")
+        }
+        parts.append("\(lineCount) \(lineCount == 1 ? "line" : "lines")")
+        return parts.joined(separator: ", ")
     }
 
     private func activeTextSelectionRange() -> (start: (line: Int, column: Int), end: (line: Int, column: Int))? {

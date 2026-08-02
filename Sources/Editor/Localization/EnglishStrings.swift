@@ -271,6 +271,8 @@ public struct EnglishStrings {
         "status.no_text_selection": "[ No text selected ]",
         "status.transformed_selection": "[ Transformed selection: %@ ]",
         "status.text_transform_failed": "[ Text transform failed: %@ ]",
+        "status.word_count_selection": "[ Selection: %@ ]",
+        "status.word_count_document": "[ Document: %@ ]",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.edit.copy": "Copy\tM+W",
 
@@ -400,6 +402,7 @@ public struct EnglishStrings {
         "menu.borders.next_style": "Next Style\tM+S",
 
         "menu.tools.logo": "Command Prompt...\tEsc",
+        "menu.tools.word_count": "Word Count",
         "menu.tools.transform_tohant": "Transform: To Traditional Chinese",
         "menu.tools.transform_tohans": "Transform: To Simplified Chinese",
         "menu.tools.transform_tolatin": "Transform: To Latin",

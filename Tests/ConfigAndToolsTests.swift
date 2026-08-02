@@ -126,6 +126,7 @@ import Testing
     editor.menuBar.updateCategories(for: editor)
 
     var toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
 
     editor.selectionMark = (line: 0, column: 0)
@@ -134,6 +135,7 @@ import Testing
     editor.menuBar.updateCategories(for: editor)
 
     toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohant" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohans" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tolatin" }) == true)
@@ -145,6 +147,7 @@ import Testing
     editor.switchToCanvasMode()
     editor.menuBar.updateCategories(for: editor)
     toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+    #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
 }
 
@@ -484,6 +487,10 @@ import Testing
     #expect(L10n["help.uncut_block"] == "UnCut Block")
     #expect(L10n["help.open_link"] == "Open Link")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["menu.tools.word_count"] == "Word Count")
+    #expect(
+        String(format: L10n["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
+            == "[ Document: 21 chars, 5 words, 4 CJK chars, 2 lines ]")
     #expect(L10n["menu.tools.transform_cjk_spacing"] == "Transform: CJK Spacing")
     #expect(L10n["transform.tohant"] == "Traditional Chinese")
 
@@ -528,6 +535,10 @@ import Testing
     #expect(L10n["help.uncut_block"] == "貼上區塊")
     #expect(L10n["help.open_link"] == "開啟連結")
     #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
+    #expect(L10n["menu.tools.word_count"] == "Word Count")
+    #expect(
+        String(format: L10n["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
+            == "[ 文件：21 chars, 5 words, 4 CJK chars, 2 lines ]")
     #expect(L10n["menu.tools.transform_cjk_spacing"] == "轉換：CJK 空格")
     #expect(L10n["transform.tohant"] == "繁體中文")
 }

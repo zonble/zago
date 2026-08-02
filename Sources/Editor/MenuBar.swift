@@ -177,6 +177,12 @@ public final class MenuBar {
                         titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
                         isVisible: { $0.buffer.allowsLogoExecution }),
                     MenuItem(
+                        titleKey: "menu.tools.word_count", hotkeyChar: "w",
+                        action: { editor in
+                            editor.showTextCounts()
+                        },
+                        isVisible: { !$0.buffer.isDirectoryBuffer }),
+                    MenuItem(
                         titleKey: "menu.tools.transform_tohant", hotkeyChar: "h",
                         action: { editor in
                             editor.transformSelectedText(id: "Hans-Hant", label: L10n["transform.tohant"])

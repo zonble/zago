@@ -127,6 +127,21 @@ import Testing
     #expect(editor.statusMessage == L10n["status.no_text_selection"])
 }
 
+@Test func testTextCountsUseSelectionOrWholeDocument() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["Hello world", "中文 API 測試"]
+
+    editor.showTextCounts()
+    #expect(editor.statusMessage == "[ Document: 21 chars, 5 words, 4 CJK chars, 2 lines ]")
+
+    editor.selectionMark = (line: 0, column: 0)
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 5
+
+    editor.showTextCounts()
+    #expect(editor.statusMessage == "[ Selection: 5 chars, 1 word, 1 line ]")
+}
+
 @Test func testCanvasCopyBlockKeepsMarkCursorAndBuffer() throws {
     let editor = Editor()
     editor.buffer.lines = ["abcdef", "123456"]
