@@ -36,7 +36,7 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             makeRule("^\\s*(\\d+\\.|[*+-])\\s+", .number),
             makeRule("^\\s*\\|?\\s*:?-{3,}:?\\s*(\\|\\s*:?-{3,}:?\\s*)+\\|?\\s*$", .keyword),
             makeRule("^\\s*\\|.*\\|\\s*$", .typeOrAttribute),
-            makeRule("^\\s*[^|\\s][^|]*\\|[^|]+(\\|[^|]+)*\\s*$", .typeOrAttribute),
+            makeRule("^\\s*(?!(\\d+\\.|[*+-])\\s+)[^|\\s][^|]*\\|[^|]+(\\|[^|]+)*\\s*$", .typeOrAttribute),
         ].compactMap { $0 }
     }
 

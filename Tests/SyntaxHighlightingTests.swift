@@ -202,6 +202,13 @@ import Testing
         let compactTableHighlighted = highlighter.highlight(line: "Name | Value | Notes", syntax: lang)
         #expect(compactTableHighlighted.contains("\u{1B}[94mName | Value | Notes"))
 
+        let pipeListHighlighted = highlighter.highlight(
+            line: "- LINE [SINGLE|DOUBLE|ASCII] [ARROW|BACKARROW|",
+            syntax: lang
+        )
+        #expect(pipeListHighlighted.contains("\u{1B}[33m- "))
+        #expect(!pipeListHighlighted.contains("\u{1B}[94mLINE [SINGLE|DOUBLE|ASCII]"))
+
         let separatorHighlighted = highlighter.highlight(line: "| --- | :---: |", syntax: lang)
         #expect(separatorHighlighted.contains("\u{1B}[1;36m| --- | :---: |"))
 
@@ -360,7 +367,6 @@ import Testing
     #expect(!tableRowHighlight.isEmpty)
     #expect(tableRowHighlight[0] == .typeOrAttribute)
 }
-
 
 
 
