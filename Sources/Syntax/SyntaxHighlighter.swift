@@ -39,11 +39,18 @@ public struct LanguageSyntax: Sendable {
     public let name: String
     public let extensions: [String]
     public let rules: [SyntaxRule]
+    public let embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)?
 
-    public init(name: String, extensions: [String], rules: [SyntaxRule]) {
+    public init(
+        name: String,
+        extensions: [String],
+        rules: [SyntaxRule],
+        embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil
+    ) {
         self.name = name
         self.extensions = extensions
         self.rules = rules
+        self.embeddedLanguageDetector = embeddedLanguageDetector
     }
 }
 
@@ -106,7 +113,7 @@ public final class SyntaxHighlighter {
 
     /// Finds matching LanguageSyntax dynamically by language name or file extension.
     public func findLanguage(named langName: String) -> LanguageSyntax? {
-        let clean = langName.lowercased().trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        let clean = langName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { return nil }
 
         return languages.first { lang in
@@ -114,6 +121,42 @@ public final class SyntaxHighlighter {
                 ext.lowercased() == clean
             }
         }
+    }
+
+    /// Determines LanguageSyntax for a specific buffer line, accounting for embedded code blocks polymorphically.
+    public func getSyntaxForLine(
+        filePath: String?,
+        isDirectoryBuffer: Bool,
+        lines: [String],
+        bufferLineIndex: Int,
+        isEnabled: Bool
+    ) -> LanguageSyntax? {
+        guard isEnabled else { return nil }
+        if isDirectoryBuffer {
+            return DirectorySyntax.syntax
+        }
+        guard let defaultSyntax = detectLanguage(for: filePath) else { return nil }
+
+        if let detector = defaultSyntax.embeddedLanguageDetector,
+            let embeddedLangName = detector(lines, bufferLineIndex),
+            let embeddedSyntax = findLanguage(named: embeddedLangName)
+        {
+            return embeddedSyntax
+        }
+        return defaultSyntax
+    }
+
+    /// Convenience wrapper delegating embedded language detection to the matched LanguageSyntax detector.
+    public func detectEmbeddedLanguage(in lines: [String], bufferLineIndex: Int, fileExtension: String)
+        -> LanguageSyntax?
+    {
+        guard let defaultSyntax = detectLanguage(for: "file.\(fileExtension)") else { return nil }
+        if let detector = defaultSyntax.embeddedLanguageDetector,
+            let embeddedLangName = detector(lines, bufferLineIndex)
+        {
+            return findLanguage(named: embeddedLangName)
+        }
+        return nil
     }
 
     /// Returns token type map for each character in line based on syntax rules.

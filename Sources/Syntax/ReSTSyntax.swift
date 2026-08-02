@@ -20,4 +20,37 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
             makeRule("^\\s*:[a-zA-Z0-9_-]+:|^\\s*[*+-]\\s+", .number),
         ].compactMap { $0 }
     }
+
+    public func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String? {
+        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return nil }
+        var activeLangName: String? = nil
+        var inBlock = false
+
+        for i in 0...bufferLineIndex {
+            let line = lines[i]
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix(".. code-block::") || trimmed.hasPrefix(".. code::")
+                || trimmed.hasPrefix(".. highlight::")
+            {
+                inBlock = true
+                if let range = trimmed.range(of: "::") {
+                    let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                    activeLangName = langStr.isEmpty ? nil : langStr
+                }
+            } else if inBlock {
+                if !trimmed.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("\t") && !trimmed.hasPrefix("..") {
+                    inBlock = false
+                    activeLangName = nil
+                }
+            }
+        }
+        if inBlock, let langName = activeLangName {
+            let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
+            if currentLine.hasPrefix("..") {
+                return nil
+            }
+            return langName
+        }
+        return nil
+    }
 }

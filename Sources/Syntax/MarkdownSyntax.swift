@@ -38,4 +38,33 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             makeRule("^\\s*[^|\\s][^|]*\\|[^|]+(\\|[^|]+)*\\s*$", .typeOrAttribute),
         ].compactMap { $0 }
     }
+
+    public func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String? {
+        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return nil }
+        var activeLangName: String? = nil
+        var inBlock = false
+
+        for i in 0...bufferLineIndex {
+            let line = lines[i].trimmingCharacters(in: .whitespaces)
+            if line.hasPrefix("```") || line.hasPrefix("~~~") {
+                if inBlock {
+                    inBlock = false
+                    activeLangName = nil
+                } else {
+                    inBlock = true
+                    let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(
+                        in: .whitespaces)
+                    activeLangName = langStr.isEmpty ? nil : langStr
+                }
+            }
+        }
+        if inBlock, let langName = activeLangName {
+            let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces)
+            if currentLine.hasPrefix("```") || currentLine.hasPrefix("~~~") {
+                return nil
+            }
+            return langName
+        }
+        return nil
+    }
 }

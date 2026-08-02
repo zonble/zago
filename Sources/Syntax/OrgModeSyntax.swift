@@ -20,4 +20,31 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
             makeRule("~[^~]+~|=[^=]+=|\\<[^\\>]+\\>|\\[[^\\]]+\\]", .string),
         ].compactMap { $0 }
     }
+
+    public func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String? {
+        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return nil }
+        var activeLangName: String? = nil
+        var inBlock = false
+
+        for i in 0...bufferLineIndex {
+            let line = lines[i].trimmingCharacters(in: .whitespaces)
+            let upper = line.uppercased()
+            if upper.hasPrefix("#+BEGIN_SRC") {
+                inBlock = true
+                let langStr = String(line.dropFirst("#+BEGIN_SRC".count)).trimmingCharacters(in: .whitespaces)
+                activeLangName = langStr.isEmpty ? nil : langStr
+            } else if upper.hasPrefix("#+END_SRC") {
+                inBlock = false
+                activeLangName = nil
+            }
+        }
+        if inBlock, let langName = activeLangName {
+            let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).uppercased()
+            if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC") {
+                return nil
+            }
+            return langName
+        }
+        return nil
+    }
 }

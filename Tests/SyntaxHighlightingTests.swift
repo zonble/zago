@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import Editor
+@testable import Syntax
 
 @Test func testSyntaxHighlighter() throws {
     let highlighter = SyntaxHighlighter()
@@ -214,3 +215,97 @@ import Testing
         #expect(!emphasisHighlighted.contains("\u{1B}[32m**good** and _"))
     }
 }
+
+@Test func testFindLanguageByNameAndAliases() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // Test exact language names and alias extensions
+    #expect(highlighter.findLanguage(named: "Python")?.name == "Python")
+    #expect(highlighter.findLanguage(named: "py")?.name == "Python")
+    #expect(highlighter.findLanguage(named: "python")?.name == "Python")
+
+    #expect(highlighter.findLanguage(named: "Swift")?.name == "Swift")
+    #expect(highlighter.findLanguage(named: "swift")?.name == "Swift")
+
+    #expect(highlighter.findLanguage(named: "C/C++")?.name == "C/C++")
+    #expect(highlighter.findLanguage(named: "c")?.name == "C/C++")
+    #expect(highlighter.findLanguage(named: "cpp")?.name == "C/C++")
+    #expect(highlighter.findLanguage(named: "c++")?.name == "C/C++")
+
+    #expect(highlighter.findLanguage(named: "Shell")?.name == "Shell")
+    #expect(highlighter.findLanguage(named: "sh")?.name == "Shell")
+    #expect(highlighter.findLanguage(named: "bash")?.name == "Shell")
+    #expect(highlighter.findLanguage(named: "zsh")?.name == "Shell")
+    #expect(highlighter.findLanguage(named: "shell")?.name == "Shell")
+
+    #expect(highlighter.findLanguage(named: "Markdown")?.name == "Markdown")
+    #expect(highlighter.findLanguage(named: "md")?.name == "Markdown")
+    #expect(highlighter.findLanguage(named: "markdown")?.name == "Markdown")
+
+    #expect(highlighter.findLanguage(named: "PlantUML")?.name == "PlantUML")
+    #expect(highlighter.findLanguage(named: "puml")?.name == "PlantUML")
+    #expect(highlighter.findLanguage(named: "plantuml")?.name == "PlantUML")
+
+    #expect(highlighter.findLanguage(named: "AsciiDoc")?.name == "AsciiDoc")
+    #expect(highlighter.findLanguage(named: "adoc")?.name == "AsciiDoc")
+    #expect(highlighter.findLanguage(named: "asciidoc")?.name == "AsciiDoc")
+
+    #expect(highlighter.findLanguage(named: "Wiki")?.name == "Wiki")
+    #expect(highlighter.findLanguage(named: "mediawiki")?.name == "Wiki")
+
+    #expect(highlighter.findLanguage(named: "VHS")?.name == "VHS")
+    #expect(highlighter.findLanguage(named: "tape")?.name == "VHS")
+
+    #expect(highlighter.findLanguage(named: "NonExistentLanguage") == nil)
+}
+
+@Test func testEmbeddedLanguageDetectionForAllMarkupSyntaxes() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // 1. Markdown (```python and ~~~swift)
+    let mdLines = ["# Title", "```python", "print('hello')", "```"]
+    let mdSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.md", isDirectoryBuffer: false, lines: mdLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(mdSyntax?.name == "Python")
+
+    // 2. Org-mode (#+BEGIN_SRC logo ... #+END_SRC)
+    let orgLines = ["* Header", "#+BEGIN_SRC logo", "FD 10", "#+END_SRC"]
+    let orgSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.org", isDirectoryBuffer: false, lines: orgLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(orgSyntax?.name == "LOGO")
+
+    // 3. reStructuredText (.. code-block:: c)
+    let rstLines = ["Title", "=====", ".. code-block:: c", "    int x = 0;"]
+    let rstSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.rst", isDirectoryBuffer: false, lines: rstLines, bufferLineIndex: 3, isEnabled: true
+    )
+    #expect(rstSyntax?.name == "C/C++")
+
+    // 4. AsciiDoc ([source,swift] and ----)
+    let adocLines = ["= Title", "[source,swift]", "----", "let a = 1", "----"]
+    let adocSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.adoc", isDirectoryBuffer: false, lines: adocLines, bufferLineIndex: 3, isEnabled: true
+    )
+    #expect(adocSyntax?.name == "Swift")
+
+    // 5. Wiki (<syntaxhighlight lang="shell">)
+    let wikiLines = ["== Section ==", "<syntaxhighlight lang=\"shell\">", "echo hello", "</syntaxhighlight>"]
+    let wikiSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.wiki", isDirectoryBuffer: false, lines: wikiLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(wikiSyntax?.name == "Shell")
+
+    // Direct invocation on each SyntaxDefinition struct
+    #expect(MarkdownSyntaxDefinition().detectEmbeddedLanguageName(in: mdLines, bufferLineIndex: 2) == "python")
+    #expect(OrgModeSyntaxDefinition().detectEmbeddedLanguageName(in: orgLines, bufferLineIndex: 2) == "logo")
+    #expect(ReSTSyntaxDefinition().detectEmbeddedLanguageName(in: rstLines, bufferLineIndex: 3) == "c")
+    #expect(AsciiDocSyntaxDefinition().detectEmbeddedLanguageName(in: adocLines, bufferLineIndex: 3) == "swift")
+    #expect(WikiSyntaxDefinition().detectEmbeddedLanguageName(in: wikiLines, bufferLineIndex: 2) == "shell")
+
+    // Plain code file returns nil for embedded detection
+    #expect(PythonSyntaxDefinition().detectEmbeddedLanguageName(in: ["x = 1"], bufferLineIndex: 0) == nil)
+}
+
+
