@@ -34,7 +34,7 @@ the file is on your laptop or on a server over SSH.
 - **People drawing text diagrams** who do not want to leave the document just to
   open a diagramming app.
 - **CJK and emoji perfectionists** who need terminal display width to be correct
-  when boxes, tables, rulers, and wrapped prose are involved.
+  when boxes, status-icon tables, rulers, and wrapped prose are involved.
 - **Keyboard-first document builders** who like nano-style editing, but want a
   sharper toolbox for Markdown-era writing.
 
@@ -69,8 +69,8 @@ the file is on your laptop or on a server over SSH.
   layouts directly in the buffer.
 - Text processing for writers: count chars, words, lines, CJK chars, and
   emojis; normalize CJK/ASCII spacing; transform selected text between scripts.
-- Unicode-aware layout: CJK and emoji keep boxes, tables, fills, rulers, and
-  connector lines aligned.
+- Unicode-aware layout: CJK and emoji such as ✅, ❌, and ⚠️ keep boxes,
+  tables, fills, rulers, and connector lines aligned.
 - Modeless typing & dual spatial modes: Ordinary typing always inserts text
   directly. Press `M+V` to toggle between standard text stream mode and 2D
   Canvas Mode for freeform grid navigation and block editing.
