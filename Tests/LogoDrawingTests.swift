@@ -1,0 +1,137 @@
+import Foundation
+import Testing
+import TextMetrics
+
+@testable import Editor
+@testable import LogoEngine
+
+@Test func testTurtleSquareBoxDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("PD REPEAT 4 [ FD 4 RT 90 ]")
+    #expect(editor.buffer.lines.count >= 4)
+    #expect(editor.buffer.lines[0] == "┌──┐")
+    #expect(editor.buffer.lines[1] == "│  │")
+    #expect(editor.buffer.lines[2] == "│  │")
+    #expect(editor.buffer.lines[3] == "└──┘")
+}
+
+@Test func testTurtleLeftTurnAndBackward() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("LT 90 BK 3")
+    #expect(editor.buffer.lines.count == 3)
+    #expect(editor.buffer.lines[0] == "│")
+    #expect(editor.buffer.lines[1] == "│")
+    #expect(editor.buffer.lines[2] == "│")
+}
+
+@Test func testDoubleLineSmartJunctionFusion() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("BOX 6 3 \"double\" GOTO 1 3 VLINE 3 \"double\"")
+    #expect(editor.buffer.lines[0] == "╔═╦══╗")
+    #expect(editor.buffer.lines[1] == "║ ║  ║")
+    #expect(editor.buffer.lines[2] == "╚═╩══╝")
+}
+
+@Test func testTurtleVariableLoopCombo() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("MAKE \"dist\" 3 PD REPEAT 2 [ FD :dist RT 90 ]")
+    #expect(editor.buffer.lines[0] == "──┐")
+    #expect(editor.buffer.lines[1] == "  │")
+    #expect(editor.buffer.lines[2] == "  │")
+}
+
+@Test func testTurtleSpiralDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT 90 MAKE \"d\" ( :d + 2 ) ]")
+    #expect(editor.buffer.lines.count >= 4)
+    #expect(editor.buffer.lines[0] == "┌┐")
+    #expect(editor.buffer.lines[1] == "││")
+    #expect(editor.buffer.lines[2] == "││")
+    #expect(editor.buffer.lines[3] == "└┘")
+}
+
+@Test func testTurtleAutoExtendsLinesOnDownwardFD() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+    #expect(editor.buffer.lines.count == 1)
+
+    logoEngine.execute("SETH \"DOWN PD FD 10")
+    #expect(editor.buffer.lines.count == 10)
+    for line in editor.buffer.lines {
+        #expect(line == "│")
+    }
+}
+
+@Test func testTurtleStopsAtTopAndLeftBoundaries() throws {
+    let topBoundaryEditor = Editor()
+    let logoEngine = LogoEngine(delegate: topBoundaryEditor)
+
+    logoEngine.execute("SETH \"UP PD FD 5")
+    #expect(topBoundaryEditor.buffer.lines == [""])
+
+    let leftBoundaryEditor = Editor()
+    logoEngine.delegate = leftBoundaryEditor
+    logoEngine.execute("SETH \"LEFT PD FD 5")
+    #expect(leftBoundaryEditor.buffer.lines == [""])
+}
+
+@Test func testTurtleDrawsToMinimumBoundaryThenStops() throws {
+    let upToBoundaryEditor = Editor()
+    let logoEngine = LogoEngine(delegate: upToBoundaryEditor)
+
+    logoEngine.execute("SETH \"DOWN PU FD 3 SETH \"UP PD FD 5")
+    #expect(upToBoundaryEditor.buffer.lines == ["│", "│", "│"])
+
+    let leftToBoundaryEditor = Editor()
+    leftToBoundaryEditor.buffer.columnIndex = 2
+    logoEngine.delegate = leftToBoundaryEditor
+    logoEngine.execute("SETH \"LEFT PD FD 5")
+    #expect(leftToBoundaryEditor.buffer.lines == ["───"])
+}
+
+@Test func testTurtleDirectTableDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("PD REPEAT 4 [ FD 5 RT 90 ] PU GOTO 1 3 PD RT 90 FD 5 PU GOTO 3 1 PD LT 90 FD 5")
+    #expect(editor.buffer.lines.count >= 5)
+    #expect(editor.buffer.lines[0] == "┌─┬─┐")
+    #expect(editor.buffer.lines[1] == "│ │ │")
+    #expect(editor.buffer.lines[2] == "├─┼─┤")
+    #expect(editor.buffer.lines[3] == "│ │ │")
+    #expect(editor.buffer.lines[4] == "└─┴─┘")
+}
+
+@Test func testSetHeadingAndHeadingPrimitives() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SETH 90 HEADING")
+    #expect(logoEngine.lastResult == "90")
+
+    logoEngine.execute("SETHEADING 180 HEADING")
+    #expect(logoEngine.lastResult == "180")
+}
+
+@Test func testCanvasModeLogoShapesStartAtVisualCursorColumn() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = ["\tHello"]
+    editor.canvasVisualColumn = 10
+
+    let logoEngine = editor.logoEngine
+    logoEngine.execute("BOX 6 3 \"ascii\"")
+
+    #expect(editor.buffer.lines[0].hasPrefix("\tHello"))
+    #expect(editor.buffer.lines[0].contains("+----+"))
+}
