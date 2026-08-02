@@ -95,22 +95,22 @@ import Testing
     #expect(editor.currentTableCell == nil)
 }
 
-@Test func testCreateTableConfirmPrompt() throws {
+@Test func testCreateTableDimensionsPrompt() throws {
     let editor = Editor()
     #expect(editor.isTableModeActive == false)
 
     // Press Alt+T when no box exists around cursor
     editor.processKey(.alt("t"))
 
-    // Verify prompt is confirmCreateTable
-    if case .confirmCreateTable = editor.currentPromptMode {
+    // Verify prompt is tableDimensions (pre-filled with "3 3 16")
+    if case .tableDimensions = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
-        #expect(Bool(false), "Alt+T when no table exists should trigger confirmCreateTable prompt")
+        #expect(Bool(false), "Alt+T when no table exists should trigger tableDimensions prompt")
     }
 
-    // Press 'Y' to confirm creation
-    editor.processKey(.char("Y"))
+    // Press Enter to accept default 3x3 table dimensions
+    editor.processKey(.enter)
     #expect(editor.isTableModeActive == true)
     #expect(editor.currentTableCell != nil)
     #expect(editor.buffer.lines.count >= 4)

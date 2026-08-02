@@ -515,7 +515,7 @@ public final class Renderer {
                 ]
             }
 
-        case .confirmExitSave, .confirmExternalReload, .confirmCreateTable:
+        case .confirmExitSave, .confirmExternalReload:
             // Y/N Exit & Confirmation prompt help bar
             helpItems1 = [
                 ("Y", L10n["help.yes"]), ("^C", L10n.helpCancel),
@@ -707,9 +707,6 @@ public final class Renderer {
             isConfirmation = true
         case .confirmExternalReload:
             promptPrefix = L10n["prompt.confirm_reload"]
-            isConfirmation = true
-        case .confirmCreateTable:
-            promptPrefix = "Create 3x3 table at cursor? (y/n): "
             isConfirmation = true
         case .search:
             let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"

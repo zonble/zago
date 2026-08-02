@@ -386,7 +386,7 @@ extension Editor {
         if let cell = detector.detectCell(in: buffer.lines, line: buffer.lineIndex, col: buffer.columnIndex) {
             enterTableMode(with: cell)
         } else {
-            promptCreateTableConfirm()
+            promptTableDimensions()
         }
     }
 
@@ -559,26 +559,6 @@ extension Editor {
         buffer.columnIndex = prefix.count + min(insertIdx + 1, innerText.count)
         buffer.isModified = true
         return true
-    }
-
-    /// Prompts user to confirm creating a 3x3 table when no cell is found.
-    public func promptCreateTableConfirm() {
-        currentPromptMode = .confirmCreateTable(completion: { [weak self] confirm in
-            guard let self = self, let confirm = confirm else {
-                self?.setStatusMessage(L10n["status.table_mode_cancelled"])
-                return
-            }
-            if confirm {
-                self.createDefaultTable()
-            } else {
-                self.setStatusMessage(L10n["status.table_mode_cancelled"])
-            }
-        })
-    }
-
-    /// Generates a default 3x3 table at cursor position and enters Table Mode.
-    public func createDefaultTable() {
-        createTable(rows: 3, cols: 3, enterMode: true, saveSnapshot: true)
     }
 
     /// Generates a table at cursor position.

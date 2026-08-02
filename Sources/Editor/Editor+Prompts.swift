@@ -17,7 +17,6 @@ extension Editor {
         case fillText(completion: (String?) -> Void)
         case tableDimensions(completion: (String?) -> Void)
         case gotoLine(completion: (String?) -> Void)
-        case confirmCreateTable(completion: (Bool?) -> Void)
     }
 
     /// Processes key input events.
@@ -371,18 +370,6 @@ extension Editor {
             }
 
         case .confirmExternalReload(let completion):
-            switch key {
-            case .char("y"), .char("Y"), .enter:
-                currentPromptMode = .none
-                completion(true)
-            case .char("n"), .char("N"), .esc, .ctrl("C"):
-                currentPromptMode = .none
-                completion(false)
-            default:
-                break
-            }
-
-        case .confirmCreateTable(let completion):
             switch key {
             case .char("y"), .char("Y"), .enter:
                 currentPromptMode = .none
@@ -775,7 +762,11 @@ extension Editor {
                 self?.setStatusMessage(L10n["status.cancelled"])
                 return
             }
-            self.runLogoScript("TABLE \(input)")
+            let parts = input.components(separatedBy: .whitespaces).compactMap { Int($0) }
+            let rows = parts.count > 0 ? parts[0] : 3
+            let cols = parts.count > 1 ? parts[1] : 3
+            let width = parts.count > 2 ? parts[2] : nil
+            self.createTable(rows: rows, cols: cols, cellWidth: width, enterMode: true, saveSnapshot: true)
         })
     }
 
