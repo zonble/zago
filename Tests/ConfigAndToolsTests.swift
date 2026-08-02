@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 
+@testable import Config
 @testable import Editor
 
 @Test func testHelpContent() throws {

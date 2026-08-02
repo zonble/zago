@@ -1,3 +1,4 @@
+@_exported import Config
 import Foundation
 import LogoEngine
 import Syntax

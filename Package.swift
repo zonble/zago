@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
         .library(name: "TextTransform", targets: ["TextTransform"]),
+        .library(name: "Config", targets: ["Config"]),
         .library(name: "Syntax", targets: ["Syntax"]),
         .library(name: "Diagram", targets: ["Diagram"]),
         .library(name: "Editor", targets: ["Editor"]),
@@ -27,6 +28,10 @@ let package = Package(
             name: "TextTransform"
         ),
         .target(
+            name: "Config",
+            dependencies: ["LogoEngine"]
+        ),
+        .target(
             name: "Syntax",
             dependencies: ["LogoEngine"]
         ),
@@ -35,11 +40,12 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",
             dependencies: [
+                "Config",
                 "Editor",
                 "LogoEngine",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
@@ -47,7 +53,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Diagram", "Editor", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
         ),
     ],
     swiftLanguageModes: [.v6]
