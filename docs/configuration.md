@@ -220,3 +220,16 @@ Supported directives:
 - `color color_name "regex_pattern"`
 - `icolor color_name "regex_pattern"`
 - `include "/path/to/*.nanorc"`
+
+## Embedded Code Blocks
+
+Built-in markup syntaxes can detect one embedded code language inside document code blocks:
+
+- Markdown fenced code blocks, such as ```` ```swift ```` or `~~~logo`
+- Org-mode source blocks, such as `#+BEGIN_SRC logo`
+- reStructuredText code directives, such as `.. code-block:: c`
+- AsciiDoc source blocks, such as `[source,swift]` followed by `----`
+
+Embedded syntax detection is intentionally single-level. `zago` detects the outer file syntax, asks that syntax whether the current line is inside an embedded code block, and then highlights the line using the detected embedded language. It does not recursively inspect the embedded language for another embedded language.
+
+For example, a Markdown file containing an Org source block can be highlighted as Org while the cursor is inside that block, but `zago` will not then inspect that Org block for a nested Markdown or Swift block. This keeps syntax highlighting predictable and cheap in interactive editing.

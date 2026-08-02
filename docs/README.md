@@ -9,7 +9,7 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Command & Editor LOGO Architecture](command_architecture.md): unified division of responsibilities between Editor `Command` and `LogoEngine`.
 - [Editor basics](editor.md): common editing keys and basic editor behavior.
 - [Mark, selection, and clipboard behavior](mark.md): text selection and canvas block mark rules.
-- [Configuration](configuration.md): `.zagorc`, key bindings, startup Editor LOGO code, command ids, and Nano syntax file loading.
+- [Configuration](configuration.md): `.zagorc`, key bindings, startup Editor LOGO code, command ids, Nano syntax file loading, and single-level embedded code block highlighting.
 - [Editor modes & layout](modes.md): Text Editing Mode, Canvas Mode, and Table Mode.
 - [Directory mode & permissions](directory_mode.md): DirectoryBuffer architecture, command filtering matrix, and Editor LOGO execution restrictions.
 - [Diagram snippets & menu rules](diagram_snippets.md): trigger conditions, code block context detection, filtering rules, and Editor LOGO `DIAGRAM` command usage.
