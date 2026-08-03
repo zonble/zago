@@ -61,6 +61,28 @@ extension Editor {
             return
         }
 
+        if isCanvasModeActive {
+            switch key {
+            case .pageUp:
+                saveUndoSnapshot()
+                clearActiveMark()
+                let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
+                buffer.lineIndex = max(0, buffer.lineIndex - pageStep)
+                syncCanvasCursorFromBuffer()
+                return
+            case .pageDown:
+                saveUndoSnapshot()
+                clearActiveMark()
+                let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
+                let targetLine = min(buffer.lines.count - 1, buffer.lineIndex + pageStep)
+                buffer.lineIndex = max(0, targetLine)
+                syncCanvasCursorFromBuffer()
+                return
+            default:
+                break
+            }
+        }
+
         if commandRegistry.dispatch(key: key, editor: self) {
             if isTableModeActive {
                 clampTableModeCursor()

@@ -51,8 +51,14 @@ public final class Renderer {
         // Adjust topVLineIndex viewport scrolling offset
         if cursorVLineIdx < editor.topVLineIndex {
             editor.topVLineIndex = cursorVLineIdx
-        } else if cursorVLineIdx >= editor.topVLineIndex + mainAreaHeight {
+        } else if editor.isCanvasModeActive && cursorVLineIdx >= editor.topVLineIndex + max(1, mainAreaHeight - 1) {
+            editor.topVLineIndex = cursorVLineIdx - max(0, mainAreaHeight - 2)
+        } else if !editor.isCanvasModeActive && cursorVLineIdx >= editor.topVLineIndex + mainAreaHeight {
             editor.topVLineIndex = cursorVLineIdx - mainAreaHeight + 1
+        }
+        if editor.isCanvasModeActive {
+            let maxCanvasTop = max(0, virtualLines.count - max(1, mainAreaHeight - 1))
+            editor.topVLineIndex = max(0, min(editor.topVLineIndex, maxCanvasTop))
         }
 
         var output = ""
