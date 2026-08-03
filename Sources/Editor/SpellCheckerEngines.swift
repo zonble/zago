@@ -1,9 +1,5 @@
 import Foundation
 
-#if os(Windows)
-import WinSDK
-#endif
-
 /// Represents a misspelled word match in a text buffer.
 public struct MisspelledMatch {
     public let line: Int
@@ -42,7 +38,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
         didSet { loadDictionaryForLanguage() }
     }
 
-    private var dictionary: Set<String> = []
+    fileprivate(set) var dictionary: Set<String> = []
     private var userDictionary: Set<String> = []
     private var ignoredWords: Set<String> = []
 
