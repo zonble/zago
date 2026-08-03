@@ -4,6 +4,26 @@
 
 No changes yet.
 
+## 1.0.3 - 2026-08-04
+
+Windows compatibility and installation documentation release.
+
+### Added
+
+- Windows release packaging through `install.ps1`.
+- Windows CI coverage for Swift builds and tests.
+- README installation guidance for Windows, Arch Linux AUR, Mint, and Linux source builds.
+- Tests for Windows UTF-8 console requirements and UTF-16 surrogate pair output.
+- Page-down editor input coverage and stronger directory navigation tests.
+
+### Changed
+
+- Terminal raw mode, output, and window-size handling now use Windows-specific implementations where needed.
+- Ruler, line-number, and wrap-column display settings are now buffer-local.
+- Directory path handling now normalizes paths and expands home-directory input more consistently.
+- LOGO drawing commands now accept expression-based distance and heading arguments.
+- Canvas Mode page navigation keeps visual-column behavior aligned with canvas movement.
+
 ## 1.0.2 - 2026-08-02
 
 Markdown writer workflow and per-buffer mode release.
