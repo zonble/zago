@@ -67,16 +67,20 @@ extension Editor {
                 saveUndoSnapshot()
                 clearActiveMark()
                 let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
+                let originalCanvasColumn = canvasVisualColumn
                 buffer.lineIndex = max(0, buffer.lineIndex - pageStep)
-                syncCanvasCursorFromBuffer()
+                canvasVisualColumn = originalCanvasColumn
+                syncCanvasCursorToBuffer()
                 return
             case .pageDown:
                 saveUndoSnapshot()
                 clearActiveMark()
                 let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
                 let targetLine = min(buffer.lines.count - 1, buffer.lineIndex + pageStep)
+                let originalCanvasColumn = canvasVisualColumn
                 buffer.lineIndex = max(0, targetLine)
-                syncCanvasCursorFromBuffer()
+                canvasVisualColumn = originalCanvasColumn
+                syncCanvasCursorToBuffer()
                 return
             default:
                 break

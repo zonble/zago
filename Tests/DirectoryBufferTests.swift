@@ -91,6 +91,55 @@ import Testing
         #expect(res2 == .handled)
         #expect(editor.buffer is DirectoryBuffer)
         #expect(editor.buffers.count == initialBufCount + 1)
+
+        let res3 = editor.commandBarRegistry.dispatch("DIR \(tempDir.path)", editor: editor)
+        #expect(res3 == .handled)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffers.count == initialBufCount + 1)
+    }
+
+    @Test func testDirCommandNormalizesPathComponents() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_norm_\(UUID().uuidString)")
+        let childDir = workDir.appendingPathComponent("child")
+
+        try FileManager.default.createDirectory(at: childDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let editor = Editor()
+        let pathWithParentComponent = childDir.appendingPathComponent("..").path
+        let res = editor.commandBarRegistry.dispatch("dir \(pathWithParentComponent)", editor: editor)
+
+        #expect(res == .handled)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == workDir.standardizedFileURL.path)
+    }
+
+    @Test func testDirWithoutPathFromFileBufferOpensParentDirectory() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_parent_\(UUID().uuidString)")
+        let fileURL = workDir.appendingPathComponent("notes.md")
+
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        try "# Notes".write(to: fileURL, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let editor = Editor(filePath: fileURL.path)
+        let res = editor.commandBarRegistry.dispatch("dir", editor: editor)
+
+        #expect(res == .handled)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == workDir.standardizedFileURL.path)
+    }
+
+    @Test func testDirCommandExpandsHomeDirectory() throws {
+        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
+        let editor = Editor()
+        let res = editor.commandBarRegistry.dispatch("dir ~", editor: editor)
+
+        #expect(res == .handled)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == home.path)
     }
 
     @Test func testDirectoryBufferReadOnlyAndLogoBlock() throws {
