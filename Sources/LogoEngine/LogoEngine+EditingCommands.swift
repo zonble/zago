@@ -6,19 +6,7 @@ extension LogoEngine {
     }
 
     private func consumeOptionalEditingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        index += 1
-        guard index < tokens.count else {
-            index -= 1
-            return nil
-        }
-        guard !isExpressionArgumentBoundary(tokens[index]) else {
-            index -= 1
-            return nil
-        }
-        guard let value = parseUnquotedIntArgument(tokens, index: &index) else {
-            return nil
-        }
-        return value
+        consumeOptionalIntExpressionArgument(tokens, index: &index, isBoundary: isExpressionArgumentBoundary)
     }
 
     private func consumeExpressionArguments(
@@ -83,21 +71,9 @@ extension LogoEngine {
             return true
 
         case .deleteLine:
-            index += 1
             var count = 1
-            if index < tokens.count {
-                let nextToken = tokens[index]
-                if !LogoEngine.isKeyword(nextToken) && nextToken != "]" {
-                    if let parsedCount = parseUnquotedIntArgument(tokens, index: &index) {
-                        count = max(1, min(parsedCount, 1000))
-                    } else {
-                        index -= 1
-                    }
-                } else {
-                    index -= 1
-                }
-            } else {
-                index -= 1
+            if let parsedCount = consumeOptionalEditingIntArgument(tokens, index: &index) {
+                count = max(1, min(parsedCount, 1000))
             }
             for _ in 0..<count {
                 delegate.logoEngine(self, performAction: .deleteLine)

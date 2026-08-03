@@ -269,7 +269,7 @@ TABLE BORDER ROUND
 TABLE 2 2 16
 ```
 
-`TABLE rows cols cellWidth` accepts optional numeric dimensions. Rows are clamped to `1...50`, columns to `1...20`, and cell width to `1...40`.
+`TABLE rows cols cellWidth` accepts optional numeric expressions. Rows are clamped to `1...50`, columns to `1...20`, and cell width to `1...40`.
 
 ```text
 ╭────────────────┬────────────────╮
@@ -454,12 +454,12 @@ TYPE "hello;world"
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
 | `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
-| `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE 2` |
-| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without `len`, auto-connects to next border or stops before text. | `LINE`, `LINE 80 "double"` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without `height`, auto-connects to next border or stops before text. | `VLINE`, `VLINE 5 "double"` |
-| `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL 5` |
+| `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
+| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
+| `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL (2 + 3)` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
-| `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL 3` |
+| `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL (1 + 2)` |
 | `CHANGE` | - | `CHANGE old new` | Replaces text in current line, or selected lines when a selection is active | `CHANGE "foo" "bar"` |
 | `JOIN` | - | `JOIN [separator]` | Joins the next line into the current line | `JOIN " "` |
 | `SPLITLINE` | - | `SPLITLINE` | Splits the current line at the cursor | `SPLITLINE` |
@@ -478,23 +478,28 @@ TYPE "hello;world"
 | `BOTTOM` | - | `BOTTOM` | Moves cursor to the end of the file | `BOTTOM` |
 | `LINESTART` | - | `LINESTART` | Moves cursor to current line start | `LINESTART` |
 | `LINEEND` | - | `LINEEND` | Moves cursor to current line end | `LINEEND` |
-| `GOTO` | - | `GOTO line [column]` | Jumps directly to 1-indexed line and optional column | `GOTO 10`, `GOTO 42 5` |
-| `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE 15` |
-| `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL 8` |
+| `GOTO` | - | `GOTO row [column]` | Jumps directly to 1-indexed line and optional column | `GOTO 10`, `GOTO (40 + 2) 5` |
+| `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE (:row + 1)` |
+| `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL (4 * 2)` |
 
 In Text Mode, `GOTO` clamps to the existing buffer. In Canvas Mode, `GOTO`
 auto-extends empty rows within the canvas safety limits: up to `10,000`
 auto-created rows and `10,000` virtual columns.
 
+Numeric value arguments in editor and drawing commands may be integer
+expressions, such as `GOTO (:row + 1) 1`, `BOX (:w + 2) 4`, or
+`LINE (10 * 2) DOUBLE`. Name arguments, option tokens, and block arguments keep
+their own syntax and are not treated as general expressions.
+
 | `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
-| `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX 20 5 "round"` |
+| `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX (10 * 2) 5 "round"` |
 | `BOX` | - | `BOX` | In Canvas Mode with a block mark, frames the marked block; otherwise inserts the default empty frame | `BOX` |
 | `BOX` | - | `BOX SELECTION [style]` | Encloses active text selection region in box frame | `BOX SELECTION "double"` |
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
-| `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 5 "round"` |
+| `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 (2 + 3) "round"` |
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
-| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE 20 ASCII BOTHARROW` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE 5 BOTHARROW` |
+| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
+| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
@@ -510,11 +515,11 @@ auto-created rows and `10,000` virtual columns.
 | :--- | :--- | :--- | :--- | :--- |
 | `PD` | `PENDOWN` | `PD` | Pen Down: activates ASCII line & junction drawing mode during cursor movement | `PD` |
 | `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
-| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading; stops at top/left minimum boundaries | `FD 5`, `FD 10` |
-| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading; stops at top/left minimum boundaries | `BK 3` |
+| `FD` | `FORWARD` | `FD [expr]` | Move turtle/pen forward by an integer expression in current heading; stops at top/left minimum boundaries | `FD 5`, `FD (10 - :#)` |
+| `BK` | `BACK`, `BACKWARD` | `BK [expr]` | Move turtle/pen backward by an integer expression in opposite heading; stops at top/left minimum boundaries | `BK 3` |
 | `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
 | `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
-| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction string (`"UP"`, `"RIGHT"`, `"DOWN"`, `"LEFT"`) | `SETH 0`, `SETH "RIGHT`, `SETH "DOWN` |
+| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH 0`, `SETH RIGHT`, `SETH "DOWN` |
 | `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---
@@ -731,8 +736,8 @@ TYPE ITEM 2 :cells
 | `BUFFERS` | `BUFFERLIST` | `BUFFERS` | Returns list of open buffer names | `MAKE "b" BUFFERS` |
 | `BUFFER` | - | `BUFFER` | Returns active 1-based buffer index | `SHOW BUFFER` |
 | `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
-| `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE 1` |
-| `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE 1 "Title"` |
+| `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE (1 + 1)` |
+| `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE (1 + 1) "Title"` |
 | `ROW` | `LINE.NO` | `ROW` | Returns current 1-indexed row number | `SHOW ROW` |
 | `COL` | `COL.NO` | `COL` | Returns current 1-indexed column number | `SHOW COL` |
 | `LINECOUNT` | `LINES` | `LINECOUNT` | Returns total line count of active buffer | `SHOW LINECOUNT` |

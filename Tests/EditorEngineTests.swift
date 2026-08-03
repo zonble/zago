@@ -461,16 +461,25 @@ import TextMetrics
     editor.buffer.lines = ["one", "two"]
     editor.buffer.lineIndex = 0
     editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 5
+    editor.syncCanvasCursorToBuffer()
 
     editor.processKey(.pageDown)
 
     #expect(editor.buffer.lines == ["one", "two"])
     #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 5)
+
+    editor.processKey(.pageUp)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 5)
 
     editor.processKey(.arrowDown)
 
     #expect(editor.buffer.lines == ["one", "two", ""])
     #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.canvasVisualColumn == 5)
 }
 
 @Test func testCanvasModeHorizontalRenderingOffset() throws {

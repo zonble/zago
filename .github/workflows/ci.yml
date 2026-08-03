@@ -13,17 +13,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set up Swift Toolchain (Linux)
-        if: runner.os == 'Linux'
+      - name: Set up Swift Toolchain (Linux & Windows)
+        if: runner.os != 'macOS'
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.0"
+          swift-version: "6.0.3"
 
       - name: Install System Dictionary (Linux)
         if: runner.os == 'Linux'
@@ -42,3 +42,19 @@ jobs:
 
       - name: Build Package (Release)
         run: swift build -c release
+
+      - name: Create Windows Release Archive
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path .build\release\zago.exe -DestinationPath zago-windows-x64.zip -Force
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zago-${{ matrix.os }}
+          path: |
+            .build/release/zago
+            .build/release/zago.exe
+            .build/*/release/zago
+            .build/*/release/zago.exe
+            zago-windows-x64.zip
+          if-no-files-found: warn

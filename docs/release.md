@@ -18,6 +18,7 @@ Good first testers:
 - macOS 14.0 or later
 - Linux with Swift 6.0 or later
 - VT100 / ANSI-compatible terminal
+- On Windows, prefer Windows Terminal or another VT-enabled console, and verify the console is using UTF-8 input/output (disable `Ctrl+Shift+Up` and `Ctrl+Shift+Down` in **Settings -> Actions** if they conflict with Canvas Mode arrow drawing)
 
 Known-good terminal behavior should be checked on:
 

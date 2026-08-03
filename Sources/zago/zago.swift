@@ -63,7 +63,7 @@ struct Zago: ParsableCommand {
         if initConfig {
             let targetPath = files.first
             let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath)
-            print("Successfully generated default configuration file at: \(generatedPath)")
+            Terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
             return
         }
         let enableSyntax: Bool?
@@ -105,7 +105,7 @@ struct Zago: ParsableCommand {
                 wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
-            print(output)
+            Terminal.write(output + "\n")
             return
         }
 
@@ -117,7 +117,7 @@ struct Zago: ParsableCommand {
                     wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
-                print(output)
+                Terminal.write(output + "\n")
                 return
             } catch {
                 if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(using: .utf8) {

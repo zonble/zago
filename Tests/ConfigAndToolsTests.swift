@@ -36,6 +36,23 @@ import Testing
     #expect(HelpContent.lines(language: .zh_TW).contains("    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭"))
 }
 
+@Test func testWindowsUTF8ConsoleRequirementMessage() throws {
+    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 65001) == nil)
+    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 437, outputCodePage: 65001) == nil)
+
+    let message = Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 437)
+    #expect(message?.contains("UTF-8 Windows terminal") == true)
+    #expect(message?.contains("input 65001") == true)
+    #expect(message?.contains("output 437") == true)
+    #expect(message?.contains("chcp 65001") == true)
+}
+
+@Test func testWindowsConsoleOutputPreservesEmojiSurrogatePairs() throws {
+    let units = Terminal.consoleUTF16Units(for: "A🙂B")
+    #expect(units == [0x0041, 0xD83D, 0xDE42, 0x0042])
+    #expect(Terminal.characterFromConsoleUTF16Units([0xD83D, 0xDE42]) == "🙂")
+}
+
 @Test func testWrapColumnMenuActions() throws {
     let editor = Editor()
     #expect(editor.layoutEngine.wrapColumn == nil)
@@ -143,6 +160,43 @@ import Testing
 
     editor.applyEditorSetting(setting: "wrap", arg: "4")
     #expect(editor.layoutEngine.wrapColumn == 10)
+}
+
+@Test func testDisplaySettingsAreBufferLocal() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "first.md"
+    editor.openNewBuffer(filePath: "second.md")
+
+    editor.displayConfig.showRuler = true
+    editor.displayConfig.showLineNumbers = false
+    editor.displayConfig.showSubLineNumbers = true
+    editor.layoutEngine.setWrapColumn(80)
+
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "first.md")
+    #expect(editor.displayConfig.showRuler == false)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+    #expect(editor.layoutEngine.wrapColumn == nil)
+
+    editor.displayConfig.showRuler = false
+    editor.displayConfig.showLineNumbers = true
+    editor.displayConfig.showSubLineNumbers = false
+    editor.layoutEngine.setWrapColumn(40)
+
+    editor.nextBuffer()
+    #expect(editor.buffer.filePath == "second.md")
+    #expect(editor.displayConfig.showRuler == true)
+    #expect(editor.displayConfig.showLineNumbers == false)
+    #expect(editor.displayConfig.showSubLineNumbers == true)
+    #expect(editor.layoutEngine.wrapColumn == 80)
+
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "first.md")
+    #expect(editor.displayConfig.showRuler == false)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+    #expect(editor.layoutEngine.wrapColumn == 40)
 }
 
 @Test func testOutlineMenuItemsOnlyShowForSupportedDocumentFormats() throws {

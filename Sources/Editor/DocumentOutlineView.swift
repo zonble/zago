@@ -113,7 +113,7 @@ public final class DocumentOutlineView {
         }
 
         output += "\u{1B}[1;36m\(footer.paddedToDisplayWidth(cols))\u{1B}[0m"
-        print(output, terminator: "")
+        Terminal.write(output)
         fflush(nil)
     }
 }

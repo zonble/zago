@@ -156,7 +156,7 @@ public struct MovePgdnCommand: Command {
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
-            editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: false)
+            editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: true)
             return
         }
         editor.clearActiveMark()

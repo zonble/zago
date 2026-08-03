@@ -86,6 +86,10 @@ public final class Editor {
     public var isMenuBarActive: Bool = false
     public let menuBar = MenuBar()
     private var defaultBaseMode: EditorBaseMode = .text
+    private var defaultViewShowRuler = false
+    private var defaultViewShowLineNumbers = true
+    private var defaultViewShowSubLineNumbers = false
+    private var defaultViewWrapColumn: Int? = nil
 
     // Editor mode state
     public var baseMode: EditorBaseMode {
@@ -203,8 +207,16 @@ public final class Editor {
             autoReload: finalReload, tabSize: finalTabSize,
             trimTrailingWhitespaceOnSave: finalTrimTrailingWhitespace)
         self.defaultBaseMode = initialBaseMode
+        self.defaultViewShowRuler = finalRuler
+        self.defaultViewShowLineNumbers = finalLineNumbers
+        self.defaultViewShowSubLineNumbers = finalSubLineNumbers
+        self.defaultViewWrapColumn = LayoutEngine.normalizedWrapColumn(finalWrap)
         for buffer in self.buffers {
             buffer.baseMode = buffer.isDirectoryBuffer ? .text : initialBaseMode
+            buffer.viewShowRuler = defaultViewShowRuler
+            buffer.viewShowLineNumbers = defaultViewShowLineNumbers
+            buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
+            buffer.viewWrapColumn = defaultViewWrapColumn
         }
 
         setupDefaultCommands()
@@ -239,30 +251,58 @@ public final class Editor {
         }
     }
 
-    /// Switches to next open buffer in sequence.
-    public func nextBuffer() {
-        guard buffers.count > 1 else { return }
-        currentBufferIndex = (currentBufferIndex + 1) % buffers.count
+    func saveCurrentViewSettingsToBuffer() {
+        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
+        let current = buffers[currentBufferIndex]
+        current.viewShowRuler = displayConfig.showRuler
+        current.viewShowLineNumbers = displayConfig.showLineNumbers
+        current.viewShowSubLineNumbers = displayConfig.showSubLineNumbers
+        current.viewWrapColumn = layoutEngine.wrapColumn
+    }
+
+    func loadCurrentViewSettingsFromBuffer() {
+        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
+        let current = buffers[currentBufferIndex]
+        displayConfig.showRuler = current.viewShowRuler
+        displayConfig.showLineNumbers = current.viewShowLineNumbers
+        displayConfig.showSubLineNumbers = current.viewShowSubLineNumbers
+        layoutEngine.setWrapColumn(current.viewWrapColumn)
+    }
+
+    func switchToBuffer(index: Int) {
+        guard index >= 0, index < buffers.count else { return }
+        saveCurrentViewSettingsToBuffer()
+        currentBufferIndex = index
+        loadCurrentViewSettingsFromBuffer()
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()
+    }
+
+    /// Switches to next open buffer in sequence.
+    public func nextBuffer() {
+        guard buffers.count > 1 else { return }
+        switchToBuffer(index: (currentBufferIndex + 1) % buffers.count)
     }
 
     /// Switches to previous open buffer in sequence.
     public func prevBuffer() {
         guard buffers.count > 1 else { return }
-        currentBufferIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
-        topVLineIndex = 0
-        clearActiveMark()
-        startFileWatcherForCurrentBuffer()
+        switchToBuffer(index: (currentBufferIndex - 1 + buffers.count) % buffers.count)
     }
 
     /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
+        saveCurrentViewSettingsToBuffer()
         let newBuf = TextBuffer.makeBuffer(filePath: filePath)
         newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
+        newBuf.viewShowRuler = defaultViewShowRuler
+        newBuf.viewShowLineNumbers = defaultViewShowLineNumbers
+        newBuf.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
+        newBuf.viewWrapColumn = defaultViewWrapColumn
         buffers.append(newBuf)
         currentBufferIndex = buffers.count - 1
+        loadCurrentViewSettingsFromBuffer()
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()
@@ -285,10 +325,7 @@ public final class Editor {
         }
 
         if let existingIndex = buffers.firstIndex(where: { $0.filePath == configPath }) {
-            currentBufferIndex = existingIndex
-            topVLineIndex = 0
-            clearActiveMark()
-            startFileWatcherForCurrentBuffer()
+            switchToBuffer(index: existingIndex)
         } else {
             openNewBuffer(filePath: configPath)
         }
@@ -304,7 +341,11 @@ public final class Editor {
 
     /// Applies reloadable configuration without changing per-editor runtime modes.
     func applyReloadedConfig(_ loadedConfig: EditorConfig) {
-        self.layoutEngine.setWrapColumn(loadedConfig.wrapColumn)
+        self.defaultViewWrapColumn = LayoutEngine.normalizedWrapColumn(loadedConfig.wrapColumn)
+        self.defaultViewShowRuler = loadedConfig.showRuler
+        self.defaultViewShowLineNumbers = loadedConfig.showLineNumbers
+        self.defaultViewShowSubLineNumbers = loadedConfig.showSubLineNumbers
+        self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
         self.displayConfig.showRuler = loadedConfig.showRuler
         self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
         self.displayConfig.showSubLineNumbers = loadedConfig.showSubLineNumbers
@@ -313,6 +354,7 @@ public final class Editor {
         self.displayConfig.tabSize = loadedConfig.tabSize
         self.displayConfig.trimTrailingWhitespaceOnSave = loadedConfig.trimTrailingWhitespaceOnSave
         self.defaultBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
+        saveCurrentViewSettingsToBuffer()
         if let lang = loadedConfig.language {
             L10n.currentLanguage = lang
         }
@@ -326,11 +368,13 @@ public final class Editor {
             return
         }
 
+        saveCurrentViewSettingsToBuffer()
         buffers.remove(at: currentBufferIndex)
         if buffers.isEmpty {
             isRunning = false
         } else {
             currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
+            loadCurrentViewSettingsFromBuffer()
             topVLineIndex = 0
             clearActiveMark()
             startFileWatcherForCurrentBuffer()
@@ -426,7 +470,15 @@ public final class Editor {
 
     /// Starts the editor event loop.
     public func run() {
-        terminal.enableRawMode()
+        do {
+            try terminal.enableRawMode()
+        } catch {
+            let message = (error as? LocalizedError)?.errorDescription ?? "\(error)"
+            if let data = (message + "\n").data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            return
+        }
         Terminal.hideCursor()
 
         defer {

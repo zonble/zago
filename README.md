@@ -1,7 +1,7 @@
 # `zago`: A Lean Terminal Forge for Markdown Writers
 
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
-![macOS + Linux](https://img.shields.io/badge/macOS%20%2B%20Linux-supported-blue)
+![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
 ![Markdown first](https://img.shields.io/badge/Markdown-first-2563eb)
 ![Tables](https://img.shields.io/badge/Pipe%20Tables-editable-0f766e)
@@ -54,6 +54,12 @@ the file is on your laptop or on a server over SSH.
     - [2. Headless Scripting Mode](#2-headless-scripting-mode)
     - [Command-Line Options](#command-line-options)
   - [FAQ, Sort Of](#faq-sort-of)
+    - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
+    - [Why a TUI app when Electron apps exist?](#why-a-tui-app-when-electron-apps-exist)
+    - [Why not Vim or Emacs?](#why-not-vim-or-emacs)
+    - [Why not Rust?](#why-not-rust)
+    - [Isn't LOGO for 80s kids?](#isnt-logo-for-80s-kids)
+    - [How do I erase a wrong line or box in Canvas Mode?](#how-do-i-erase-a-wrong-line-or-box-in-canvas-mode)
   - [Documentation](#documentation)
   - [Tests](#tests)
   - [License](#license)
@@ -82,13 +88,22 @@ the file is on your laptop or on a server over SSH.
 
 ## Requirements
 
-- macOS 14.0+ or Linux
+- macOS 14.0+, Linux, or Windows
+- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled *(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may be intercepted by Windows Terminal's default hotkeys; disable them in **Settings -> Actions** to avoid conflicts with Canvas Mode arrow drawing)*
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
 
 ## Quick Start
 
-Install from the Homebrew tap:
+Install on Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
+```
+
+This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
+
+Install on macOS / Linux from Homebrew tap:
 
 ```bash
 brew tap zonble/zago
@@ -126,7 +141,7 @@ makepkg -si
 
 This package installs a precompiled static binary. It is maintained and automatically updated to track upstream releases via GitHub Actions at [cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
 
-Build from source:
+Build from source (macOS):
 
 ```bash
 git clone https://github.com/zonble/zago.git
@@ -137,6 +152,69 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
+
+Build from source (Linux):
+
+1. Install Swift 6.0+ toolchain using your distribution package manager, [swiftly](https://swiftlang.github.io/swiftly/), or from [Swift.org](https://www.swift.org/download/):
+
+   ```bash
+   # On Linux with Homebrew:
+   brew install swift
+
+   # Or install via swiftly:
+   curl -O https://swiftlang.github.io/swiftly/swiftly-installer.sh
+   bash swiftly-installer.sh
+   swiftly install 6.0
+   ```
+
+2. Clone and build:
+
+   ```bash
+   git clone https://github.com/zonble/zago.git
+   cd zago
+   swift build -c release
+   ```
+
+3. Run the binary or install using `build.sh`:
+
+   ```bash
+   .build/release/zago notes.txt
+
+   # Or install to ~/.local/bin (or /usr/local/bin):
+   PREFIX="$HOME/.local" ./build.sh
+   ```
+
+Build from source (Windows / Developers):
+
+*(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)*
+
+1. Install the Swift SDK using `winget`:
+
+   ```powershell
+   winget install Swift.Toolchain
+   ```
+
+2. Run PowerShell or Command Prompt as **Administrator** (required because dependencies such as `swift-argument-parser` create symbolic links on Windows during the build process).
+
+3. Clone and build:
+
+   ```powershell
+   git clone https://github.com/zonble/zago.git
+   cd zago
+   swift build
+   ```
+
+   To build a release version:
+
+   ```powershell
+   swift build -c release
+   ```
+
+   Then run the executable:
+
+   ```powershell
+   .build\release\zago.exe notes.txt
+   ```
 
 ## Preview Builds
 
@@ -164,6 +242,9 @@ See [Release & Preview Builds](docs/release.md) for smoke tests, known limitatio
 
 - **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
 - **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
+
+> [!TIP]
+> **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal actions (such as scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode, disable or unbind them in Windows Terminal via **Settings -> Actions**.
 
 For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
 

@@ -147,44 +147,8 @@ extension LogoEngine {
     }
 
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
-        guard index < tokens.count, !isQuotedWordToken(tokens[index]) else { return nil }
-
-        let originalIndex = index
-        if let value = parseUnquotedIntArgument(tokens, index: &index) {
-            return value
-        }
-
-        let token = tokens[index]
-        if token == "]" || token == ")" { return nil }
-        guard isBoxDimensionExpressionStart(token) else { return nil }
-
-        var expressionIndex = index
-        let value = evaluateExpression(tokens, index: &expressionIndex)
-        let runtimeValue = runtimeValueForLastExpression(fallback: value)
-        guard expressionIndex >= originalIndex, runtimeValue.isNumeric, let number = Double(value) else {
-            index = originalIndex
-            return nil
-        }
-
-        index = expressionIndex
-        return Int(number)
-    }
-
-    private func isBoxDimensionExpressionStart(_ token: String) -> Bool {
-        if token == "(" { return true }
-        if Double(token) != nil { return true }
-        if token.hasPrefix(":") { return true }
-        if variables[token.lowercased()] != nil { return true }
-
-        guard let primitive = LogoPrimitive.from(token) else { return false }
-        switch primitive {
-        case .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus,
-             .abs, .int, .round, .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan,
-             .radSin, .radCos, .radTan, .iseq, .rseq, .random, .form, .bitAnd, .bitOr, .bitXor,
-             .bitNot, .ashift, .lshift:
-            return true
-        default:
-            return false
+        parseIntExpressionArgument(tokens, index: &index) { token in
+            LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
         }
     }
 
@@ -520,11 +484,11 @@ extension LogoEngine {
         var heightVal: Int? = nil
         var fillPattern = ""
 
-        if let w = parseUnquotedIntArgument(tokens, index: &index) {
+        if let w = parseIntExpressionArgument(tokens, index: &index, isBoundary: shouldStopFillArgumentScan) {
             widthVal = w
             if index + 1 < tokens.count {
                 var heightIndex = index + 1
-                if let h = parseUnquotedIntArgument(tokens, index: &heightIndex) {
+                if let h = parseIntExpressionArgument(tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan) {
                     index = heightIndex
                     heightVal = h
                 }
@@ -590,6 +554,10 @@ extension LogoEngine {
 
         // Mode 1: Flood Fill enclosed region (No numbers)
         performFloodFill(startLine: startLine, startCol: startCol, fillPattern: fillPattern)
+    }
+
+    private func shouldStopFillArgumentScan(at token: String) -> Bool {
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
     private func fillStringWithPattern(pattern: String, targetWidth: Int) -> String {

@@ -139,9 +139,9 @@ extension LogoEngine {
                 setStyle(upper.lowercased())
                 consumedAny = true
                 lastConsumedIndex = cursor
-            } else if !LogoEngine.isKeyword(token) {
+            } else if !LogoEngine.isStatementCommand(token) {
                 var evalIndex = cursor
-                if let parsedLength = parseUnquotedIntArgument(tokens, index: &evalIndex) {
+                if let parsedLength = parseIntExpressionArgument(tokens, index: &evalIndex, isBoundary: isLineArgumentBoundary) {
                     setLength(max(1, min(parsedLength, maxLength)))
                     consumedAny = true
                     cursor = evalIndex
@@ -161,6 +161,10 @@ extension LogoEngine {
         }
 
         index = consumedAny ? lastConsumedIndex : index - 1
+    }
+
+    private func isLineArgumentBoundary(_ token: String) -> Bool {
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
     private func lineArrowMode(for uppercasedToken: String) -> LineArrowMode? {
@@ -438,20 +442,11 @@ extension LogoEngine {
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {
         guard let editor = self.delegate else { return }
         var count = 1
-        if index < tokens.count {
-            let firstToken = tokens[index]
-
-            if !LogoEngine.isKeyword(firstToken) && firstToken != "]" {
-                if let parsedCount = parseUnquotedIntArgument(tokens, index: &index) {
-                    count = max(1, min(parsedCount, 50))
-                } else if LogoEngine.isKeyword(firstToken) || firstToken == "]" {
-                    index -= 1
-                }
-            } else {
-                index -= 1
-            }
+        let argumentIndex = index
+        if let parsedCount = parseIntExpressionArgument(tokens, index: &index, isBoundary: isLineArgumentBoundary) {
+            count = max(1, min(parsedCount, 50))
         } else {
-            index -= 1
+            index = argumentIndex - 1
         }
 
         for _ in 0..<count {

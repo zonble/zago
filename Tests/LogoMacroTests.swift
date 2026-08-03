@@ -157,20 +157,43 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("GETLINE 2")
     #expect(logoEngine.lastResult == "Second Line")
 
+    logoEngine.execute("GETLINE (1 + 2)")
+    #expect(logoEngine.lastResult == "Third Line")
+
     logoEngine.execute("BUFFERTEXT")
     #expect(logoEngine.lastResult == "First Line\nSecond Line\nThird Line")
 
     logoEngine.execute("GOTOLINE 1")
     #expect(editor.buffer.lineIndex == 0)
 
+    logoEngine.execute("GOTOLINE (1 + 2)")
+    #expect(editor.buffer.lineIndex == 2)
+
     logoEngine.execute("GOTOCOL 1")
     #expect(editor.buffer.columnIndex == 0)
+
+    logoEngine.execute("GOTOCOL (2 + 3)")
+    #expect(editor.buffer.columnIndex == 4)
 
     logoEngine.execute("SETLINE 1 \"New First Line\"")
     #expect(editor.buffer.lines[0] == "New First Line")
 
+    logoEngine.execute("SETLINE (1 + 1) \"New Second Line\"")
+    #expect(editor.buffer.lines[1] == "New Second Line")
+
     logoEngine.execute("CLEARBUFFER")
     #expect(editor.buffer.lines == [""])
+}
+
+@Test func testLogoEditingCommandsAcceptExpressionArguments() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TYPE \"a NL (1 + 1) TYPE \"b")
+    #expect(editor.buffer.lines == ["a", "", "b"])
+
+    logoEngine.execute("CLEARBUFFER TYPE \"abcdef MOVE LEFT (2 + 1) DELETE (1 + 1)")
+    #expect(editor.buffer.lines == ["abcf"])
 }
 
 @Test func testPersistentLogoEngineState() {
@@ -225,6 +248,11 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(editor.buffer.lines[0] == "*****")
     #expect(editor.buffer.lines[1] == "*****")
     #expect(editor.buffer.lines[2] == "*****")
+
+    logoEngine.execute("CLEARBUFFER GOTO 1 1 FILL (2 + 3) (1 + 2) \"#\"")
+    #expect(editor.buffer.lines[0] == "#####")
+    #expect(editor.buffer.lines[1] == "#####")
+    #expect(editor.buffer.lines[2] == "#####")
 }
 
 @Test func testLogoSemicolonComments() {

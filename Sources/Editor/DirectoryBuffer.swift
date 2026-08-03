@@ -1,5 +1,45 @@
 import Foundation
 
+private enum DirectoryPath {
+    static func expandingTilde(_ path: String) -> String {
+        #if os(Windows)
+            let hasTildePrefix = path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\")
+        #else
+            let hasTildePrefix = path == "~" || path.hasPrefix("~/")
+        #endif
+        guard hasTildePrefix else {
+            return path
+        }
+
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        guard path.count > 1 else {
+            return home
+        }
+
+        let rest = String(path.dropFirst(2))
+        #if os(Windows)
+            let components = rest.split(whereSeparator: { $0 == "/" || $0 == "\\" }).map(String.init)
+        #else
+            let components = rest.split(separator: "/").map(String.init)
+        #endif
+        return components.reduce(URL(fileURLWithPath: home, isDirectory: true)) { url, component in
+            url.appendingPathComponent(component)
+        }.path
+    }
+
+    static func normalized(_ path: String, isDirectory: Bool = false) -> String {
+        URL(fileURLWithPath: expandingTilde(path), isDirectory: isDirectory).standardizedFileURL.path
+    }
+
+    static func child(_ name: String, in directory: String) -> String {
+        URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(name).path
+    }
+
+    static func parent(of directory: String) -> String {
+        URL(fileURLWithPath: directory, isDirectory: true).deletingLastPathComponent().path
+    }
+}
+
 public final class DirectoryBuffer: TextBuffer {
     public var directoryPath: String
 
@@ -8,14 +48,14 @@ public final class DirectoryBuffer: TextBuffer {
     override public var isDirectoryBuffer: Bool { true }
 
     public init(directoryPath: String) {
-        let expandedPath = NSString(string: directoryPath).expandingTildeInPath
+        let expandedPath = DirectoryPath.normalized(directoryPath, isDirectory: true)
         self.directoryPath = expandedPath
         super.init(filePath: expandedPath)
         loadDirectory(at: expandedPath)
     }
 
     public func loadDirectory(at path: String) {
-        let expandedPath = NSString(string: path).expandingTildeInPath
+        let expandedPath = DirectoryPath.normalized(path, isDirectory: true)
         let fileManager = FileManager.default
 
         var isDir: ObjCBool = false
@@ -37,8 +77,8 @@ public final class DirectoryBuffer: TextBuffer {
             let sorted = contents.filter { name in
                 !name.hasPrefix(".") || name == ".zagorc" || name == ".serc"
             }.sorted { lhs, rhs in
-                let lhsPath = (expandedPath as NSString).appendingPathComponent(lhs)
-                let rhsPath = (expandedPath as NSString).appendingPathComponent(rhs)
+                let lhsPath = DirectoryPath.child(lhs, in: expandedPath)
+                let rhsPath = DirectoryPath.child(rhs, in: expandedPath)
                 var lhsIsDir: ObjCBool = false
                 var rhsIsDir: ObjCBool = false
                 _ = fileManager.fileExists(atPath: lhsPath, isDirectory: &lhsIsDir)
@@ -51,7 +91,7 @@ public final class DirectoryBuffer: TextBuffer {
             }
 
             for name in sorted {
-                let fullPath = (expandedPath as NSString).appendingPathComponent(name)
+                let fullPath = DirectoryPath.child(name, in: expandedPath)
                 var entryIsDir: ObjCBool = false
                 _ = fileManager.fileExists(atPath: fullPath, isDirectory: &entryIsDir)
 
@@ -111,7 +151,7 @@ public final class DirectoryBuffer: TextBuffer {
             if folderName.hasSuffix("/") {
                 folderName = String(folderName.dropLast())
             }
-            let childDir = (directoryPath as NSString).appendingPathComponent(folderName)
+            let childDir = DirectoryPath.child(folderName, in: directoryPath)
             loadDirectory(at: childDir)
             editor.topVLineIndex = 0
             editor.clearActiveMark()
@@ -125,7 +165,7 @@ public final class DirectoryBuffer: TextBuffer {
             if fileName.hasSuffix("*") {
                 fileName = String(fileName.dropLast())
             }
-            let targetFilePath = (directoryPath as NSString).appendingPathComponent(fileName)
+            let targetFilePath = DirectoryPath.child(fileName, in: directoryPath)
             if isBinaryFile(at: targetFilePath) {
                 editor.setStatusMessage(L10n["status.cannot_open_binary_file"])
                 return true
@@ -154,7 +194,7 @@ public final class DirectoryBuffer: TextBuffer {
 
     @discardableResult
     public func navigateUp(editor: Editor) -> Bool {
-        let parentDir = (directoryPath as NSString).deletingLastPathComponent
+        let parentDir = DirectoryPath.parent(of: directoryPath)
         if !parentDir.isEmpty && parentDir != directoryPath {
             loadDirectory(at: parentDir)
             editor.topVLineIndex = 0
@@ -172,13 +212,13 @@ extension Editor {
         let targetPath = path?.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedPath: String
         if let targetPath, !targetPath.isEmpty {
-            resolvedPath = NSString(string: targetPath).expandingTildeInPath
+            resolvedPath = DirectoryPath.normalized(targetPath, isDirectory: true)
         } else if let dirBuffer = buffer as? DirectoryBuffer {
             resolvedPath = dirBuffer.directoryPath
         } else if let filePath = buffer.filePath {
-            resolvedPath = (filePath as NSString).deletingLastPathComponent
+            resolvedPath = DirectoryPath.parent(of: filePath)
         } else {
-            resolvedPath = FileManager.default.currentDirectoryPath
+            resolvedPath = DirectoryPath.normalized(FileManager.default.currentDirectoryPath, isDirectory: true)
         }
 
         var isDir: ObjCBool = false
@@ -196,10 +236,8 @@ extension Editor {
 
         // 2. If another open buffer is ALREADY a DirectoryBuffer for resolvedPath: switch to it
         if let existingIndex = buffers.firstIndex(where: { ($0 as? DirectoryBuffer)?.directoryPath == resolvedPath }) {
-            currentBufferIndex = existingIndex
+            switchToBuffer(index: existingIndex)
             (buffers[existingIndex] as? DirectoryBuffer)?.loadDirectory(at: resolvedPath)
-            topVLineIndex = 0
-            clearActiveMark()
             startFileWatcherForCurrentBuffer()
             return
         }

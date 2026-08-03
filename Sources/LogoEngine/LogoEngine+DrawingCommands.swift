@@ -2,7 +2,7 @@ import Foundation
 
 extension LogoEngine {
     private func isDrawingArgumentBoundary(_ token: String) -> Bool {
-        LogoEngine.isKeyword(token) || token == "]" || token == ")"
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
     private func consumeOptionalDrawingArgument(_ tokens: [String], index: inout Int) -> String? {
@@ -19,31 +19,36 @@ extension LogoEngine {
     }
 
     private func consumeOptionalDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
+        consumeOptionalIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
+    }
+
+    private func consumeNextDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
+        consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
+    }
+
+    private func isHeadingDirectionToken(_ token: String) -> Bool {
+        switch unquote(token).trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
+        case "UP", "TOP", "RIGHT", "DOWN", "BOTTOM", "LEFT":
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func consumeOptionalHeadingArgument(_ tokens: [String], index: inout Int) -> String? {
         index += 1
         guard index < tokens.count else {
             index -= 1
             return nil
         }
+        if isHeadingDirectionToken(tokens[index]) {
+            return tokens[index]
+        }
         guard !isDrawingArgumentBoundary(tokens[index]) else {
             index -= 1
             return nil
         }
-        guard let value = parseUnquotedIntArgument(tokens, index: &index) else {
-            return nil
-        }
-        return value
-    }
-
-    private func consumeNextDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        guard index + 1 < tokens.count else { return nil }
-        guard !isDrawingArgumentBoundary(tokens[index + 1]) else { return nil }
-        var nextIndex = index + 1
-        guard let value = parseUnquotedIntArgument(tokens, index: &nextIndex) else {
-            index = nextIndex
-            return nil
-        }
-        index = nextIndex
-        return value
+        return evaluateExpression(tokens, index: &index)
     }
 
     /// Executes Logo turtle & box/line drawing statement commands (PD, PU, FD, BK, LT, RT, GOTO, BOX, LINE, TABLE, etc.).
@@ -69,7 +74,7 @@ extension LogoEngine {
             return true
 
         case .setHeading:
-            let angle = consumeOptionalDrawingArgument(tokens, index: &index).map(parseHeadingValue) ?? 0
+            let angle = consumeOptionalHeadingArgument(tokens, index: &index).map(parseHeadingValue) ?? 0
             heading = ((angle % 360) + 360) % 360
             return true
 

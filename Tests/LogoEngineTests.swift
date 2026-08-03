@@ -446,6 +446,12 @@ import TextMetrics
     logoEngine2.execute("TABLE 4 5 12")
     #expect(editor2.buffer.lines.count >= 4)
 
+    let expressionEditor = Editor()
+    let expressionEngine = LogoEngine(delegate: expressionEditor)
+    expressionEngine.execute("TABLE (2 + 2) (2 + 1) (5 + 1)")
+    #expect(expressionEditor.buffer.lines.count == 9)
+    #expect(expressionEditor.buffer.lines[0] == "┌──────┬──────┬──────┐")
+
     let editor3 = Editor()
     let logoEngine3 = LogoEngine(delegate: editor3)
     logoEngine3.execute("TABLE BORDER double-round")
