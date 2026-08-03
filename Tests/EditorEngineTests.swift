@@ -1037,6 +1037,12 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.buffer.columnIndex == 1)
     #expect(editor.logoEngine.lastResult == nil)
+
+    submitCommandBar("goto 1 50", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 3)
+    #expect(editor.logoEngine.lastResult == nil)
 }
 
 @Test func testCommandBarLogoExpressionFallback() throws {

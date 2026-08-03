@@ -99,8 +99,7 @@ extension LogoEngine {
                 delegate.logoEngine(self, performAction: .updateColumnIndex(0))
 
                 if let col1Based = consumeNextDrawingIntArgument(tokens, index: &index) {
-                    let lineText = (delegate.logoEngine(self, queryState: .lineAt(lineNum)) as? String) ?? ""
-                    let colNum = max(1, min(col1Based, lineText.count + 1)) - 1
+                    let colNum = max(1, col1Based) - 1
                     delegate.logoEngine(self, performAction: .updateColumnIndex(colNum))
                 }
             }

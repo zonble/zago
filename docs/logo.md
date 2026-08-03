@@ -482,9 +482,11 @@ TYPE "hello;world"
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE (:row + 1)` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL (4 * 2)` |
 
-In Text Mode, `GOTO` clamps to the existing buffer. In Canvas Mode, `GOTO`
-auto-extends empty rows within the canvas safety limits: up to `10,000`
-auto-created rows and `10,000` virtual columns.
+In LOGO Text Mode, `GOTO` clamps the row to the existing buffer but allows the
+column to point past the current line end. Drawing and layout commands then
+fill the intervening space as needed. In Canvas Mode, `GOTO` auto-extends empty
+rows within the canvas safety limits: up to `10,000` auto-created rows and
+`10,000` virtual columns.
 
 Numeric value arguments in editor and drawing commands may be integer
 expressions, such as `GOTO (:row + 1) 1`, `BOX (:w + 2) 4`, or

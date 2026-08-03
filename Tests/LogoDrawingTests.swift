@@ -94,6 +94,18 @@ import TextMetrics
     #expect(drawing.contains("┘"))
 }
 
+@Test func testLogoGotoAllowsVirtualColumnsForDrawing() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("NL REPEAT 10 [ GOTO 3 (:# * 5) VLINE 10 ]")
+
+    let expectedLine = String((1...50).map { $0 % 5 == 0 ? "│" : " " }.joined())
+    #expect(editor.buffer.lines.count >= 11)
+    #expect(editor.buffer.lines[2] == expectedLine)
+    #expect(editor.buffer.lines[9] == expectedLine)
+}
+
 @Test func testTurtleAutoExtendsLinesOnDownwardFD() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
