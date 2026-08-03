@@ -134,7 +134,10 @@ jobs:
 
       - name: Build Package (Release)
         if: runner.os != 'Windows'
-        run: swift build -c release
+        run: |
+          swift build -c release
+          mkdir -p artifacts
+          cp "$(swift build -c release --show-bin-path)/zago" "artifacts/zago-${{ matrix.os }}"
 
       - name: Build Package (Release, Windows)
         if: runner.os == 'Windows'
@@ -153,19 +156,17 @@ jobs:
           Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
           & "$env:SWIFT_BIN\swift.exe" build -c release
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
+          Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago-windows-x64.exe" -Force
 
       - name: Create Windows Release Archive
         if: runner.os == 'Windows'
-        run: Compress-Archive -Path .build\release\zago.exe -DestinationPath zago-windows-x64.zip -Force
+        run: Compress-Archive -Path artifacts\zago-windows-x64.exe -DestinationPath artifacts\zago-windows-x64.zip -Force
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: zago-${{ matrix.os }}
-          path: |
-            .build/release/zago
-            .build/release/zago.exe
-            .build/*/release/zago
-            .build/*/release/zago.exe
-            zago-windows-x64.zip
-          if-no-files-found: warn
+          path: artifacts/*
+          if-no-files-found: error
