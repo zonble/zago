@@ -37,6 +37,7 @@ jobs:
           }
 
           $swiftBin.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "SWIFT_BIN=$($swiftBin.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install System Dictionary (Linux)
         if: runner.os == 'Linux'
@@ -58,8 +59,8 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift --version
+          $env:Path = "$env:SWIFT_BIN;$pathValue"
+          & "$env:SWIFT_BIN\swift.exe" --version
 
       - name: Build Package (Debug)
         if: runner.os != 'Windows'
@@ -75,8 +76,12 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift build
+          $env:Path = "$env:SWIFT_BIN;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" build
 
       - name: Run Automated Tests & Code Coverage
         if: runner.os != 'Windows'
@@ -92,8 +97,12 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift test --enable-code-coverage
+          $env:Path = "$env:SWIFT_BIN;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" test --enable-code-coverage
 
       - name: Build Package (Release)
         if: runner.os != 'Windows'
@@ -109,8 +118,12 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift build -c release
+          $env:Path = "$env:SWIFT_BIN;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" build -c release
 
       - name: Create Windows Release Archive
         if: runner.os == 'Windows'
