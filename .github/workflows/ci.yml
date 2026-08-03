@@ -21,7 +21,7 @@ jobs:
 
       - name: Set up Swift Toolchain (Linux & Windows)
         if: runner.os != 'macOS'
-        uses: swift-actions/setup-swift@v2
+        uses: swift-actions/setup-swift@v3
         with:
           swift-version: "6.0.3"
 
