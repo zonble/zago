@@ -121,7 +121,7 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
-Build from source (macOS / Linux):
+Build from source (macOS):
 
 ```bash
 git clone https://github.com/zonble/zago.git
@@ -132,6 +132,37 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
+
+Build from source (Linux):
+
+1. Install Swift 6.0+ toolchain using your distribution package manager, [swiftly](https://swiftlang.github.io/swiftly/), or from [Swift.org](https://www.swift.org/download/):
+
+   ```bash
+   # On Linux with Homebrew:
+   brew install swift
+
+   # Or install via swiftly:
+   curl -O https://swiftlang.github.io/swiftly/swiftly-installer.sh
+   bash swiftly-installer.sh
+   swiftly install 6.0
+   ```
+
+2. Clone and build:
+
+   ```bash
+   git clone https://github.com/zonble/zago.git
+   cd zago
+   swift build -c release
+   ```
+
+3. Run the binary or install using `build.sh`:
+
+   ```bash
+   .build/release/zago notes.txt
+
+   # Or install to ~/.local/bin (or /usr/local/bin):
+   PREFIX="$HOME/.local" ./build.sh
+   ```
 
 Build from source (Windows):
 

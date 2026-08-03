@@ -13,14 +13,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set up Swift Toolchain (Linux)
-        if: runner.os == 'Linux'
+      - name: Set up Swift Toolchain (Linux & Windows)
+        if: runner.os != 'macOS'
         uses: swift-actions/setup-swift@v2
         with:
           swift-version: "6.0"
@@ -42,3 +42,15 @@ jobs:
 
       - name: Build Package (Release)
         run: swift build -c release
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zago-${{ matrix.os }}
+          path: |
+            .build/release/zago
+            .build/release/zago.exe
+            .build/*/release/zago
+            .build/*/release/zago.exe
+          if-no-files-found: warn
+
