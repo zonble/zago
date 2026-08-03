@@ -89,7 +89,7 @@ the file is on your laptop or on a server over SSH.
 ## Requirements
 
 - macOS 14.0+, Linux, or Windows
-- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled
+- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled *(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may be intercepted by Windows Terminal's default hotkeys; disable them in **Settings -> Actions** to avoid conflicts with Canvas Mode arrow drawing)*
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
 
@@ -220,6 +220,9 @@ See [Release & Preview Builds](docs/release.md) for smoke tests, known limitatio
 
 - **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
 - **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
+
+> [!TIP]
+> **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal actions (such as scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode, disable or unbind them in Windows Terminal via **Settings -> Actions**.
 
 For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
 
