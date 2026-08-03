@@ -45,7 +45,12 @@ the file is on your laptop or on a server over SSH.
   - [Features](#features)
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
-  - [Preview Builds](#preview-builds)
+    - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
+    - [Install on Arch Linux](#install-on-arch-linux)
+    - [Install on Windows (PowerShell)](#install-on-windows-powershell)
+  - [Build](#build)
+    - [Build from source (Linux)](#build-from-source-linux)
+    - [Build from source (Windows / Developers)](#build-from-source-windows--developers)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
   - [Text Processing](#text-processing)
   - [Command Examples](#command-examples)
@@ -63,7 +68,6 @@ the file is on your laptop or on a server over SSH.
   - [Documentation](#documentation)
   - [Tests](#tests)
   - [License](#license)
-
 
 ## Features
 
@@ -95,15 +99,7 @@ the file is on your laptop or on a server over SSH.
 
 ## Quick Start
 
-Install on Windows (PowerShell):
-
-```powershell
-irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
-```
-
-This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
-
-Install on macOS / Linux from Homebrew tap:
+### Install on macOS / Linux from Homebrew tap
 
 ```bash
 brew tap zonble/zago
@@ -129,7 +125,7 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
-### Arch Linux
+### Install on Arch Linux
 
 You can install the package by cloning the packaging source and building it locally:
 
@@ -140,6 +136,14 @@ makepkg -si
 ```
 
 This package installs a precompiled static binary. It is maintained and automatically updated to track upstream releases via GitHub Actions at [cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
+
+### Install on Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
+```
+
+This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
 
 Build from source (macOS):
 
@@ -153,7 +157,9 @@ swift build -c release
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
 
-Build from source (Linux):
+## Build
+
+### Build from source (Linux)
 
 1. Install Swift 6.0+ toolchain using your distribution package manager, [swiftly](https://swiftlang.github.io/swiftly/), or from [Swift.org](https://www.swift.org/download/):
 
@@ -184,7 +190,7 @@ Build from source (Linux):
    PREFIX="$HOME/.local" ./build.sh
    ```
 
-Build from source (Windows / Developers):
+### Build from source (Windows / Developers)
 
 *(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)*
 
@@ -215,26 +221,6 @@ Build from source (Windows / Developers):
    ```powershell
    .build\release\zago.exe notes.txt
    ```
-
-## Preview Builds
-
-For early testers, the simplest source install path is:
-
-```bash
-git clone https://github.com/zonble/zago.git
-cd zago
-./build.sh
-zago --version
-```
-
-This installs `zago` to `/usr/local/bin/zago` by default. To install under your home directory:
-
-```bash
-PREFIX="$HOME/.local" ./build.sh
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-See [Release & Preview Builds](docs/release.md) for smoke tests, known limitations, and what to include in bug reports.
 
 ## Text Mode & 2D Canvas Mode
 

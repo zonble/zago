@@ -475,6 +475,12 @@ import TextMetrics
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 5)
 
+    editor.processKey(.pageDown)
+
+    #expect(editor.buffer.lines == ["one", "two"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 5)
+
     editor.processKey(.arrowDown)
 
     #expect(editor.buffer.lines == ["one", "two", ""])
