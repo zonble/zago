@@ -95,7 +95,15 @@ the file is on your laptop or on a server over SSH.
 
 ## Quick Start
 
-Install from the Homebrew tap:
+Install on Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
+```
+
+This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
+
+Install on macOS / Linux from Homebrew tap:
 
 ```bash
 brew tap zonble/zago
@@ -164,7 +172,9 @@ Build from source (Linux):
    PREFIX="$HOME/.local" ./build.sh
    ```
 
-Build from source (Windows):
+Build from source (Windows / Developers):
+
+*(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)*
 
 1. Install the Swift SDK using `winget`:
 

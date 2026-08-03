@@ -43,6 +43,10 @@ jobs:
       - name: Build Package (Release)
         run: swift build -c release
 
+      - name: Create Windows Release Archive
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path .build\release\zago.exe -DestinationPath zago-windows-x64.zip -Force
+
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -52,5 +56,6 @@ jobs:
             .build/release/zago.exe
             .build/*/release/zago
             .build/*/release/zago.exe
+            zago-windows-x64.zip
           if-no-files-found: warn
 
