@@ -160,10 +160,6 @@ jobs:
           $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
           Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago-windows-x64.exe" -Force
 
-      - name: Create Windows Release Archive
-        if: runner.os == 'Windows'
-        run: Compress-Archive -Path artifacts\zago-windows-x64.exe -DestinationPath artifacts\zago-windows-x64.zip -Force
-
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v7
         with:
