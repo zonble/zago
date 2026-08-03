@@ -45,16 +45,72 @@ jobs:
           sudo apt-get install -y wamerican
 
       - name: Display Swift Version
+        if: runner.os != 'Windows'
         run: swift --version
 
+      - name: Display Swift Version (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pathValue = [Environment]::GetEnvironmentVariable('Path', 'Process')
+          if (-not $pathValue) {
+            $pathValue = [Environment]::GetEnvironmentVariable('PATH', 'Process')
+          }
+          Remove-Item Env:PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:Path -ErrorAction SilentlyContinue
+          $env:Path = $pathValue
+          swift --version
+
       - name: Build Package (Debug)
+        if: runner.os != 'Windows'
         run: swift build
 
+      - name: Build Package (Debug, Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pathValue = [Environment]::GetEnvironmentVariable('Path', 'Process')
+          if (-not $pathValue) {
+            $pathValue = [Environment]::GetEnvironmentVariable('PATH', 'Process')
+          }
+          Remove-Item Env:PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:Path -ErrorAction SilentlyContinue
+          $env:Path = $pathValue
+          swift build
+
       - name: Run Automated Tests & Code Coverage
+        if: runner.os != 'Windows'
         run: swift test --enable-code-coverage
 
+      - name: Run Automated Tests & Code Coverage (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pathValue = [Environment]::GetEnvironmentVariable('Path', 'Process')
+          if (-not $pathValue) {
+            $pathValue = [Environment]::GetEnvironmentVariable('PATH', 'Process')
+          }
+          Remove-Item Env:PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:Path -ErrorAction SilentlyContinue
+          $env:Path = $pathValue
+          swift test --enable-code-coverage
+
       - name: Build Package (Release)
+        if: runner.os != 'Windows'
         run: swift build -c release
+
+      - name: Build Package (Release, Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pathValue = [Environment]::GetEnvironmentVariable('Path', 'Process')
+          if (-not $pathValue) {
+            $pathValue = [Environment]::GetEnvironmentVariable('PATH', 'Process')
+          }
+          Remove-Item Env:PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:Path -ErrorAction SilentlyContinue
+          $env:Path = $pathValue
+          swift build -c release
 
       - name: Create Windows Release Archive
         if: runner.os == 'Windows'
