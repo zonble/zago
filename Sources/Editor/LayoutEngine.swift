@@ -68,6 +68,16 @@ public final class LayoutEngine {
                 continue
             }
 
+            if line.utf8.allSatisfy({ $0 < 0x80 }) {
+                appendASCIIWrappedLines(
+                    line,
+                    bufferLineIndex: bIndex,
+                    effectiveWrap: effectiveWrap,
+                    to: &virtualLines
+                )
+                continue
+            }
+
             var currentCharIndex = 0
             var subIndex = 0
             let chars = Array(line)
@@ -140,6 +150,65 @@ public final class LayoutEngine {
         }
 
         return virtualLines
+    }
+
+    private func appendASCIIWrappedLines(
+        _ line: String,
+        bufferLineIndex: Int,
+        effectiveWrap: Int,
+        to virtualLines: inout [VirtualLine]
+    ) {
+        let bytes = Array(line.utf8)
+        var currentIndex = 0
+        var subIndex = 0
+
+        while currentIndex < bytes.count {
+            var endIndex = currentIndex
+            var lastWordBoundary = -1
+
+            while endIndex < bytes.count {
+                if endIndex - currentIndex + 1 > effectiveWrap && endIndex > currentIndex {
+                    break
+                }
+
+                if Self.isASCIIWordBoundary(bytes[endIndex]) {
+                    lastWordBoundary = endIndex
+                }
+
+                endIndex += 1
+            }
+
+            if endIndex < bytes.count && lastWordBoundary > currentIndex {
+                endIndex = lastWordBoundary + 1
+            } else if endIndex == currentIndex {
+                endIndex = currentIndex + 1
+            }
+
+            let text = String(decoding: bytes[currentIndex..<endIndex], as: UTF8.self)
+            virtualLines.append(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: subIndex,
+                    text: text,
+                    startCol: currentIndex,
+                    endCol: endIndex
+                ))
+
+            currentIndex = endIndex
+            subIndex += 1
+        }
+    }
+
+    private static func isASCIIWordBoundary(_ byte: UInt8) -> Bool {
+        if byte == 9 || byte == 10 || byte == 11 || byte == 12 || byte == 13 || byte == 32 {
+            return true
+        }
+        switch byte {
+        case 33...47, 58...64, 91...96, 123...126:
+            return true
+        default:
+            return false
+        }
     }
 
     public func computeCanvasLines(from lines: [String]) -> [VirtualLine] {
