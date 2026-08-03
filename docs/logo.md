@@ -510,11 +510,11 @@ auto-created rows and `10,000` virtual columns.
 | :--- | :--- | :--- | :--- | :--- |
 | `PD` | `PENDOWN` | `PD` | Pen Down: activates ASCII line & junction drawing mode during cursor movement | `PD` |
 | `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
-| `FD` | `FORWARD` | `FD [dist]` | Move turtle/pen forward $n$ steps in current heading; stops at top/left minimum boundaries | `FD 5`, `FD 10` |
-| `BK` | `BACK`, `BACKWARD` | `BK [dist]` | Move turtle/pen backward $n$ steps in opposite heading; stops at top/left minimum boundaries | `BK 3` |
+| `FD` | `FORWARD` | `FD [expr]` | Move turtle/pen forward by an integer expression in current heading; stops at top/left minimum boundaries | `FD 5`, `FD (10 - :#)` |
+| `BK` | `BACK`, `BACKWARD` | `BK [expr]` | Move turtle/pen backward by an integer expression in opposite heading; stops at top/left minimum boundaries | `BK 3` |
 | `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
 | `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
-| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction string (`"UP"`, `"RIGHT"`, `"DOWN"`, `"LEFT"`) | `SETH 0`, `SETH "RIGHT`, `SETH "DOWN` |
+| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH 0`, `SETH RIGHT`, `SETH "DOWN` |
 | `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---

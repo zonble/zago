@@ -60,6 +60,27 @@ import TextMetrics
     #expect(editor.buffer.lines[3] == "└┘")
 }
 
+@Test func testTurtleForwardAcceptsParenthesizedDistanceExpression() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SETH RIGHT PD FD (10 - 1)")
+    #expect(editor.buffer.lines[0] == "─────────")
+}
+
+@Test func testTurtleRepeatAcceptsExpressionDistanceAndBareHeading() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SETH RIGHT REPEAT 10 [ FD (10 - :#) RIGHT ]")
+
+    let drawing = editor.buffer.lines.joined(separator: "\n")
+    #expect(editor.buffer.lines.count > 1)
+    #expect(editor.buffer.lines[0].displayWidth > 1)
+    #expect(drawing.contains("┌"))
+    #expect(drawing.contains("┘"))
+}
+
 @Test func testTurtleAutoExtendsLinesOnDownwardFD() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
@@ -121,6 +142,9 @@ import TextMetrics
 
     logoEngine.execute("SETHEADING 180 HEADING")
     #expect(logoEngine.lastResult == "180")
+
+    logoEngine.execute("SETH RIGHT HEADING")
+    #expect(logoEngine.lastResult == "90")
 }
 
 @Test func testCanvasModeLogoShapesStartAtVisualCursorColumn() throws {

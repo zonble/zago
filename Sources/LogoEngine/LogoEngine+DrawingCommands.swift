@@ -18,6 +18,16 @@ extension LogoEngine {
         return evaluateExpression(tokens, index: &index)
     }
 
+    private func drawingIntValue(from value: String) -> Int? {
+        if let intValue = Int(value) {
+            return intValue
+        }
+        if let doubleValue = Double(value) {
+            return Int(doubleValue)
+        }
+        return nil
+    }
+
     private func consumeOptionalDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
         index += 1
         guard index < tokens.count else {
@@ -28,22 +38,49 @@ extension LogoEngine {
             index -= 1
             return nil
         }
-        guard let value = parseUnquotedIntArgument(tokens, index: &index) else {
+        let value = evaluateExpression(tokens, index: &index)
+        guard let intValue = drawingIntValue(from: value) else {
             return nil
         }
-        return value
+        return intValue
     }
 
     private func consumeNextDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
         guard index + 1 < tokens.count else { return nil }
         guard !isDrawingArgumentBoundary(tokens[index + 1]) else { return nil }
         var nextIndex = index + 1
-        guard let value = parseUnquotedIntArgument(tokens, index: &nextIndex) else {
+        let value = evaluateExpression(tokens, index: &nextIndex)
+        guard let intValue = drawingIntValue(from: value) else {
             index = nextIndex
             return nil
         }
         index = nextIndex
-        return value
+        return intValue
+    }
+
+    private func isHeadingDirectionToken(_ token: String) -> Bool {
+        switch unquote(token).trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
+        case "UP", "TOP", "RIGHT", "DOWN", "BOTTOM", "LEFT":
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func consumeOptionalHeadingArgument(_ tokens: [String], index: inout Int) -> String? {
+        index += 1
+        guard index < tokens.count else {
+            index -= 1
+            return nil
+        }
+        if isHeadingDirectionToken(tokens[index]) {
+            return tokens[index]
+        }
+        guard !isDrawingArgumentBoundary(tokens[index]) else {
+            index -= 1
+            return nil
+        }
+        return evaluateExpression(tokens, index: &index)
     }
 
     /// Executes Logo turtle & box/line drawing statement commands (PD, PU, FD, BK, LT, RT, GOTO, BOX, LINE, TABLE, etc.).
@@ -69,7 +106,7 @@ extension LogoEngine {
             return true
 
         case .setHeading:
-            let angle = consumeOptionalDrawingArgument(tokens, index: &index).map(parseHeadingValue) ?? 0
+            let angle = consumeOptionalHeadingArgument(tokens, index: &index).map(parseHeadingValue) ?? 0
             heading = ((angle % 360) + 360) % 360
             return true
 
