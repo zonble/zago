@@ -110,7 +110,7 @@ public final class Terminal {
 
     static func utf8ConsoleRequirementMessage(inputCodePage: UInt32, outputCodePage: UInt32) -> String? {
         let utf8CodePage: UInt32 = 65001
-        guard inputCodePage != utf8CodePage || outputCodePage != utf8CodePage else {
+        guard outputCodePage != utf8CodePage else {
             return nil
         }
 
@@ -218,8 +218,177 @@ public final class Terminal {
         #endif
     }
 
+    #if os(Windows)
+        private func readConsoleUTF16Unit(timeoutMs: Int = 0) -> UInt16? {
+            // Windows console input is fundamentally UTF-16. Reading it through
+            // the byte-oriented `ReadFile` path can split non-BMP emoji into
+            // surrogate halves, which then show up in the editor as two
+            // mojibake characters. Use `ReadConsoleW` and combine surrogate
+            // pairs before creating Swift `Character` values.
+            lastReadTimedOut = false
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            if timeoutMs > 0 {
+                let res = WaitForSingleObject(hInput, DWORD(timeoutMs))
+                if res == WAIT_TIMEOUT {
+                    lastReadTimedOut = true
+                    return nil
+                } else if res != WAIT_OBJECT_0 {
+                    return nil
+                }
+            }
+
+            var unit: UInt16 = 0
+            var unitsRead: DWORD = 0
+            if ReadConsoleW(hInput, &unit, 1, &unitsRead, nil) && unitsRead == 1 {
+                return unit
+            }
+            return nil
+        }
+
+        private static func isHighSurrogate(_ unit: UInt16) -> Bool {
+            (0xD800...0xDBFF).contains(unit)
+        }
+
+        private static func isLowSurrogate(_ unit: UInt16) -> Bool {
+            (0xDC00...0xDFFF).contains(unit)
+        }
+
+        private func readWindowsCharacter(firstUnit: UInt16) -> Character? {
+            if Self.isHighSurrogate(firstUnit), let low = readConsoleUTF16Unit(timeoutMs: 50), Self.isLowSurrogate(low) {
+                return Self.characterFromConsoleUTF16Units([firstUnit, low])
+            }
+            return Self.characterFromConsoleUTF16Units([firstUnit])
+        }
+
+        private func readWindowsKey() -> Key {
+            let unit: UInt16
+            while true {
+                if consumeWindowResizeEvent() {
+                    return .resize
+                }
+                guard let nextUnit = readConsoleUTF16Unit(timeoutMs: 250) else {
+                    if consumeWindowResizeEvent() {
+                        return .resize
+                    }
+                    if lastReadTimedOut {
+                        continue
+                    }
+                    return .unknown
+                }
+                unit = nextUnit
+                break
+            }
+
+            switch unit {
+            case 13:
+                return .enter
+            case 9:
+                return .tab
+            case 8:
+                return .ctrlBackspace
+            case 127:
+                return .backspace
+            case 30:
+                return .mark
+            case 31:
+                return .ctrl("/")
+            case 1...26:
+                let scalar = UnicodeScalar(UInt32(unit) + 64)!
+                return .ctrl(Character(scalar))
+            case 27:
+                guard let unit2 = readConsoleUTF16Unit(timeoutMs: 50) else { return .esc }
+                if unit2 == 8 || unit2 == 127 {
+                    return .ctrlBackspace
+                }
+                switch unit2 {
+                case UInt16(UInt8(ascii: "[")):
+                    guard let unit3 = readConsoleUTF16Unit(timeoutMs: 50) else { return .alt("[") }
+                    switch unit3 {
+                    case UInt16(UInt8(ascii: "A")): return .arrowUp
+                    case UInt16(UInt8(ascii: "B")): return .arrowDown
+                    case UInt16(UInt8(ascii: "C")): return .arrowRight
+                    case UInt16(UInt8(ascii: "D")): return .arrowLeft
+                    case UInt16(UInt8(ascii: "a")): return .shiftArrowUp
+                    case UInt16(UInt8(ascii: "b")): return .shiftArrowDown
+                    case UInt16(UInt8(ascii: "c")): return .shiftArrowRight
+                    case UInt16(UInt8(ascii: "d")): return .shiftArrowLeft
+                    case UInt16(UInt8(ascii: "H")): return .home
+                    case UInt16(UInt8(ascii: "F")): return .end
+                    case UInt16(UInt8(ascii: "1"))...UInt16(UInt8(ascii: "9")):
+                        var seqString = String(UnicodeScalar(UInt32(unit3))!)
+                        while let nextUnit = readConsoleUTF16Unit(timeoutMs: 50) {
+                            if nextUnit == UInt16(UInt8(ascii: "~"))
+                                || (nextUnit >= UInt16(UInt8(ascii: "A")) && nextUnit <= UInt16(UInt8(ascii: "Z")))
+                                || (nextUnit >= UInt16(UInt8(ascii: "a")) && nextUnit <= UInt16(UInt8(ascii: "z")))
+                            {
+                                seqString.append(Character(UnicodeScalar(UInt32(nextUnit))!))
+                                break
+                            }
+                            seqString.append(Character(UnicodeScalar(UInt32(nextUnit))!))
+                        }
+                        switch seqString {
+                        case "3", "3~": return .delete
+                        case "5", "5~": return .pageUp
+                        case "6", "6~": return .pageDown
+                        case "11", "11~": return .f1
+                        case "12", "12~": return .f2
+                        case "13", "13~": return .f3
+                        case "14", "14~": return .f4
+                        case "15", "15~": return .f5
+                        case "17", "17~": return .f6
+                        case "18", "18~": return .f7
+                        case "19", "19~": return .f8
+                        case "20", "20~": return .f9
+                        case "21", "21~": return .f10
+                        case "23", "23~": return .f11
+                        case "24", "24~": return .f12
+                        case "1;2D", "2D": return .shiftArrowLeft
+                        case "1;2C", "2C": return .shiftArrowRight
+                        case "1;2A", "2A": return .shiftArrowUp
+                        case "1;2B", "2B": return .shiftArrowDown
+                        case "1;2H", "2H", "1;2~", "2~": return .shiftHome
+                        case "1;2F", "2F", "4;2~": return .shiftEnd
+                        case "1;6D", "6D": return .ctrlShiftArrowLeft
+                        case "1;6C", "6C": return .ctrlShiftArrowRight
+                        case "1;6A", "6A": return .ctrlShiftArrowUp
+                        case "1;6B", "6B": return .ctrlShiftArrowDown
+                        case "1;5D", "5D": return .ctrl("B")
+                        case "1;5C", "5C": return .ctrl("F")
+                        default: return .unknown
+                        }
+                    default:
+                        return .esc
+                    }
+                case UInt16(UInt8(ascii: "O")):
+                    guard let unit3 = readConsoleUTF16Unit(timeoutMs: 50) else { return .esc }
+                    switch unit3 {
+                    case UInt16(UInt8(ascii: "H")): return .home
+                    case UInt16(UInt8(ascii: "F")): return .end
+                    case UInt16(UInt8(ascii: "P")): return .f1
+                    case UInt16(UInt8(ascii: "Q")): return .f2
+                    case UInt16(UInt8(ascii: "R")): return .f3
+                    case UInt16(UInt8(ascii: "S")): return .f4
+                    default: return .esc
+                    }
+                case 32...126:
+                    return .alt(Character(UnicodeScalar(UInt32(unit2))!))
+                default:
+                    return .esc
+                }
+            default:
+                if let ch = readWindowsCharacter(firstUnit: unit) {
+                    return .char(ch)
+                }
+                return .unknown
+            }
+        }
+    #endif
+
     /// Reads the next input key (including ANSI key sequences).
     public func readKey() -> Key {
+        #if os(Windows)
+            return readWindowsKey()
+        #else
         let b: UInt8
         while true {
             if consumeWindowResizeEvent() {
@@ -389,53 +558,56 @@ public final class Terminal {
 
             return .unknown
         }
+        #endif
     }
 
     /// Reads all currently queued pending text bytes from stdin without blocking (accelerates clipboard paste).
     public func readPendingText(firstChar: Character) -> String {
         #if os(Windows)
-            let hInput = GetStdHandle(DWORD(bitPattern: -10))
             var result = String(firstChar)
-            var rawBuffer = [UInt8](repeating: 0, count: 65536)
+            var rawBuffer = [UInt16](repeating: 0, count: 32768)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
 
             while WaitForSingleObject(hInput, 0) == WAIT_OBJECT_0 {
-                var bytesRead: DWORD = 0
-                if ReadFile(hInput, &rawBuffer, DWORD(rawBuffer.count), &bytesRead, nil) && bytesRead > 0 {
-                    let bytes = Array(rawBuffer[..<Int(bytesRead)])
+                var unitsRead: DWORD = 0
+                if ReadConsoleW(hInput, &rawBuffer, DWORD(rawBuffer.count), &unitsRead, nil) && unitsRead > 0 {
+                    let units = Array(rawBuffer[..<Int(unitsRead)])
                     var idx = 0
-                    while idx < bytes.count {
-                        let b = bytes[idx]
-                        if b == 13 || b == 10 {  // CR or LF
-                            if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                    while idx < units.count {
+                        let unit = units[idx]
+                        if unit == 13 || unit == 10 {  // CR or LF
+                            if unit == 13 && idx + 1 < units.count && units[idx + 1] == 10 {
                                 idx += 1
                             }
                             result.append("\n")
                             idx += 1
-                        } else if b == 27 {  // ESC sequence skip
+                        } else if unit == 27 {  // ESC sequence skip
                             idx += 1
-                            if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
+                            if idx < units.count && units[idx] == UInt16(UInt8(ascii: "[")) {
                                 idx += 1
-                                while idx < bytes.count && (bytes[idx] < 64 || bytes[idx] > 126) {
+                                while idx < units.count && (units[idx] < 64 || units[idx] > 126) {
                                     idx += 1
                                 }
-                                if idx < bytes.count { idx += 1 }
+                                if idx < units.count { idx += 1 }
                             }
-                        } else if b >= 32 || b == 9 {  // Printable character or Tab
-                            let charLen: Int
-                            switch b {
-                            case 0..<0x80: charLen = 1
-                            case 0xC0..<0xE0: charLen = 2
-                            case 0xE0..<0xF0: charLen = 3
-                            case 0xF0..<0xF8: charLen = 4
-                            default: charLen = 1
-                            }
-
-                            if idx + charLen <= bytes.count {
-                                let charBytes = bytes[idx..<(idx + charLen)]
-                                if let str = String(bytes: charBytes, encoding: .utf8) {
-                                    result.append(str)
+                        } else if unit >= 32 || unit == 9 {  // Printable character or Tab
+                            if Self.isHighSurrogate(unit) {
+                                if idx + 1 < units.count, Self.isLowSurrogate(units[idx + 1]) {
+                                    if let ch = Self.characterFromConsoleUTF16Units([unit, units[idx + 1]]) {
+                                        result.append(ch)
+                                    }
+                                    idx += 2
+                                } else if let low = readConsoleUTF16Unit(timeoutMs: 50), Self.isLowSurrogate(low) {
+                                    if let ch = Self.characterFromConsoleUTF16Units([unit, low]) {
+                                        result.append(ch)
+                                    }
+                                    idx += 1
+                                } else {
+                                    idx += 1
                                 }
-                                idx += charLen
+                            } else if let ch = Self.characterFromConsoleUTF16Units([unit]) {
+                                result.append(ch)
+                                idx += 1
                             } else {
                                 idx += 1
                             }
@@ -507,26 +679,60 @@ public final class Terminal {
         #endif
     }
 
+    static func consoleUTF16Units(for text: String) -> [UInt16] {
+        Array(text.utf16)
+    }
+
+    static func characterFromConsoleUTF16Units(_ units: [UInt16]) -> Character? {
+        String(decoding: units, as: UTF16.self).first
+    }
+
+    public static func write(_ text: String) {
+        guard !text.isEmpty else { return }
+        #if os(Windows)
+            // Windows console output must use the wide-character API. Swift's
+            // `print`/narrow stdout path can still mojibake non-BMP emoji
+            // surrogate pairs even when the output code page is UTF-8.
+            let hOutput = GetStdHandle(DWORD(bitPattern: -11))
+            var mode: DWORD = 0
+            if hOutput != INVALID_HANDLE_VALUE && GetConsoleMode(hOutput, &mode) {
+                let utf16 = consoleUTF16Units(for: text)
+                var written: DWORD = 0
+                let ok = utf16.withUnsafeBufferPointer { buffer -> Bool in
+                    guard let baseAddress = buffer.baseAddress else { return true }
+                    return WriteConsoleW(hOutput, baseAddress, DWORD(buffer.count), &written, nil)
+                }
+                if ok {
+                    return
+                }
+            }
+        #endif
+
+        if let data = text.data(using: .utf8) {
+            FileHandle.standardOutput.write(data)
+        }
+    }
+
     /// ANSI cursor hiding and movement helper functions.
     /// Note: Uses `fflush(nil)` instead of `fflush(stdout)` to safely flush all output streams
     /// without referencing the C global mutable variable `stdout` in Swift 6 concurrency mode.
     public static func hideCursor() {
-        print("\u{1B}[?25l", terminator: "")
+        write("\u{1B}[?25l")
         fflush(nil)
     }
 
     public static func showCursor() {
-        print("\u{1B}[?25h", terminator: "")
+        write("\u{1B}[?25h")
         fflush(nil)
     }
 
     public static func moveCursor(row: Int, col: Int) {
-        print("\u{1B}[\(row);\(col)H", terminator: "")
+        write("\u{1B}[\(row);\(col)H")
         fflush(nil)
     }
 
     public static func clearScreen() {
-        print("\u{1B}[2J\u{1B}[H", terminator: "")
+        write("\u{1B}[2J\u{1B}[H")
         fflush(nil)
     }
 }

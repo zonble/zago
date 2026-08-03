@@ -6,7 +6,7 @@ extension Editor {
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
         let output = renderer.render(editor: self, rows: rows, cols: cols)
-        print(output, terminator: "")
+        Terminal.write(output)
         fflush(nil)
     }
 

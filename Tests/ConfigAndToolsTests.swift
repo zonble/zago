@@ -38,12 +38,19 @@ import Testing
 
 @Test func testWindowsUTF8ConsoleRequirementMessage() throws {
     #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 65001) == nil)
+    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 437, outputCodePage: 65001) == nil)
 
-    let message = Terminal.utf8ConsoleRequirementMessage(inputCodePage: 950, outputCodePage: 65001)
+    let message = Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 437)
     #expect(message?.contains("UTF-8 Windows terminal") == true)
-    #expect(message?.contains("input 950") == true)
-    #expect(message?.contains("output 65001") == true)
+    #expect(message?.contains("input 65001") == true)
+    #expect(message?.contains("output 437") == true)
     #expect(message?.contains("chcp 65001") == true)
+}
+
+@Test func testWindowsConsoleOutputPreservesEmojiSurrogatePairs() throws {
+    let units = Terminal.consoleUTF16Units(for: "A🙂B")
+    #expect(units == [0x0041, 0xD83D, 0xDE42, 0x0042])
+    #expect(Terminal.characterFromConsoleUTF16Units([0xD83D, 0xDE42]) == "🙂")
 }
 
 @Test func testWrapColumnMenuActions() throws {
