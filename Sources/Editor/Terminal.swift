@@ -1,21 +1,24 @@
 import Config
 import Foundation
 
-#if canImport(Darwin)
+#if os(Windows)
+    import WinSDK
+#elseif canImport(Darwin)
     import Darwin
 #elseif canImport(Glibc)
     import Glibc
 #elseif canImport(Musl)
     import Musl
-#elseif canImport(WinSDK)
-    import WinSDK
 #endif
-
-
 
 /// Handles Terminal Raw Mode control and ANSI escape sequence parsing.
 public final class Terminal {
-    private var originalTermios = termios()
+    #if os(Windows)
+        private var originalInputMode: DWORD = 0
+        private var originalOutputMode: DWORD = 0
+    #else
+        private var originalTermios = termios()
+    #endif
     private var lastWindowSize: (rows: Int, cols: Int)
     private var lastReadTimedOut = false
     private(set) public var rawModeEnabled = false
@@ -31,23 +34,54 @@ public final class Terminal {
     /// Enables terminal raw mode.
     public func enableRawMode() {
         guard !rawModeEnabled else { return }
-        tcgetattr(STDIN_FILENO, &originalTermios)
+        #if os(Windows)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            let hOutput = GetStdHandle(DWORD(bitPattern: -11))
+            if hInput != INVALID_HANDLE_VALUE {
+                GetConsoleMode(hInput, &originalInputMode)
+                var rawInput = originalInputMode
+                rawInput &= ~DWORD(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT)
+                rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT)
+                SetConsoleMode(hInput, rawInput)
+            }
+            if hOutput != INVALID_HANDLE_VALUE {
+                GetConsoleMode(hOutput, &originalOutputMode)
+                var rawOutput = originalOutputMode
+                rawOutput |= DWORD(ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+                SetConsoleMode(hOutput, rawOutput)
+            }
+            rawModeEnabled = true
+        #else
+            tcgetattr(STDIN_FILENO, &originalTermios)
 
-        var raw = originalTermios
-        // Input flags: disable IXON (Ctrl+S/Ctrl+Q), ICRNL (map CR to NL)
-        raw.c_iflag &= ~tcflag_t(IXON | ICRNL)
-        // Local flags: disable ECHO, ICANON (canonical mode), ISIG (Ctrl+C/Ctrl+Z), IEXTEN (Ctrl+V)
-        raw.c_lflag &= ~tcflag_t(ECHO | ICANON | ISIG | IEXTEN)
+            var raw = originalTermios
+            // Input flags: disable IXON (Ctrl+S/Ctrl+Q), ICRNL (map CR to NL)
+            raw.c_iflag &= ~tcflag_t(IXON | ICRNL)
+            // Local flags: disable ECHO, ICANON (canonical mode), ISIG (Ctrl+C/Ctrl+Z), IEXTEN (Ctrl+V)
+            raw.c_lflag &= ~tcflag_t(ECHO | ICANON | ISIG | IEXTEN)
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
-        rawModeEnabled = true
+            tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
+            rawModeEnabled = true
+        #endif
     }
 
     /// Disables raw mode and restores original termios settings.
     public func disableRawMode() {
         guard rawModeEnabled else { return }
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &originalTermios)
-        rawModeEnabled = false
+        #if os(Windows)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            let hOutput = GetStdHandle(DWORD(bitPattern: -11))
+            if hInput != INVALID_HANDLE_VALUE {
+                SetConsoleMode(hInput, originalInputMode)
+            }
+            if hOutput != INVALID_HANDLE_VALUE {
+                SetConsoleMode(hOutput, originalOutputMode)
+            }
+            rawModeEnabled = false
+        #else
+            tcsetattr(STDIN_FILENO, TCSAFLUSH, &originalTermios)
+            rawModeEnabled = false
+        #endif
     }
 
     /// Returns terminal window dimensions (rows, cols).
@@ -56,11 +90,26 @@ public final class Terminal {
     }
 
     private static func currentWindowSize() -> (rows: Int, cols: Int) {
-        var ws = winsize()
-        if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &ws) == 0 && ws.ws_col > 0 {
-            return (rows: Int(ws.ws_row), cols: Int(ws.ws_col))
-        }
-        return (rows: 24, cols: 80)  // Fallback default
+        #if os(Windows)
+            let hOutput = GetStdHandle(DWORD(bitPattern: -11))
+            if hOutput != INVALID_HANDLE_VALUE {
+                var csbi = CONSOLE_SCREEN_BUFFER_INFO()
+                if GetConsoleScreenBufferInfo(hOutput, &csbi) {
+                    let cols = Int(csbi.srWindow.Right - csbi.srWindow.Left + 1)
+                    let rows = Int(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)
+                    if cols > 0 && rows > 0 {
+                        return (rows: rows, cols: cols)
+                    }
+                }
+            }
+            return (rows: 24, cols: 80)
+        #else
+            var ws = winsize()
+            if ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &ws) == 0 && ws.ws_col > 0 {
+                return (rows: Int(ws.ws_row), cols: Int(ws.ws_col))
+            }
+            return (rows: 24, cols: 80)  // Fallback default
+        #endif
     }
 
     private func consumeWindowResizeEvent() -> Bool {
@@ -75,17 +124,36 @@ public final class Terminal {
     /// Reads a single byte from standard input with optional timeout in milliseconds.
     private func readByte(timeoutMs: Int = 0) -> UInt8? {
         lastReadTimedOut = false
-        if timeoutMs > 0 {
-            var fds = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
-            let ret = poll(&fds, 1, Int32(timeoutMs))
-            guard ret > 0 && (fds.revents & Int16(POLLIN)) != 0 else {
-                lastReadTimedOut = ret == 0
-                return nil
+        #if os(Windows)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            if timeoutMs > 0 {
+                let res = WaitForSingleObject(hInput, DWORD(timeoutMs))
+                if res == WAIT_TIMEOUT {
+                    lastReadTimedOut = true
+                    return nil
+                } else if res != WAIT_OBJECT_0 {
+                    return nil
+                }
             }
-        }
-        var byte: UInt8 = 0
-        let n = read(STDIN_FILENO, &byte, 1)
-        return n == 1 ? byte : nil
+            var byte: UInt8 = 0
+            var bytesRead: DWORD = 0
+            if ReadFile(hInput, &byte, 1, &bytesRead, nil) && bytesRead == 1 {
+                return byte
+            }
+            return nil
+        #else
+            if timeoutMs > 0 {
+                var fds = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+                let ret = poll(&fds, 1, Int32(timeoutMs))
+                guard ret > 0 && (fds.revents & Int16(POLLIN)) != 0 else {
+                    lastReadTimedOut = ret == 0
+                    return nil
+                }
+            }
+            var byte: UInt8 = 0
+            let n = read(STDIN_FILENO, &byte, 1)
+            return n == 1 ? byte : nil
+        #endif
     }
 
     /// Reads the next input key (including ANSI key sequences).
@@ -263,61 +331,118 @@ public final class Terminal {
 
     /// Reads all currently queued pending text bytes from stdin without blocking (accelerates clipboard paste).
     public func readPendingText(firstChar: Character) -> String {
-        let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
-        _ = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK)
-        defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }
+        #if os(Windows)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            var result = String(firstChar)
+            var rawBuffer = [UInt8](repeating: 0, count: 65536)
 
-        var result = String(firstChar)
-        var rawBuffer = [UInt8](repeating: 0, count: 65536)
+            while WaitForSingleObject(hInput, 0) == WAIT_OBJECT_0 {
+                var bytesRead: DWORD = 0
+                if ReadFile(hInput, &rawBuffer, DWORD(rawBuffer.count), &bytesRead, nil) && bytesRead > 0 {
+                    let bytes = Array(rawBuffer[..<Int(bytesRead)])
+                    var idx = 0
+                    while idx < bytes.count {
+                        let b = bytes[idx]
+                        if b == 13 || b == 10 {  // CR or LF
+                            if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                                idx += 1
+                            }
+                            result.append("\n")
+                            idx += 1
+                        } else if b == 27 {  // ESC sequence skip
+                            idx += 1
+                            if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
+                                idx += 1
+                                while idx < bytes.count && (bytes[idx] < 64 || bytes[idx] > 126) {
+                                    idx += 1
+                                }
+                                if idx < bytes.count { idx += 1 }
+                            }
+                        } else if b >= 32 || b == 9 {  // Printable character or Tab
+                            let charLen: Int
+                            switch b {
+                            case 0..<0x80: charLen = 1
+                            case 0xC0..<0xE0: charLen = 2
+                            case 0xE0..<0xF0: charLen = 3
+                            case 0xF0..<0xF8: charLen = 4
+                            default: charLen = 1
+                            }
 
-        while true {
-            let n = read(STDIN_FILENO, &rawBuffer, rawBuffer.count)
-            if n <= 0 { break }
-
-            let bytes = Array(rawBuffer[..<n])
-            var idx = 0
-            while idx < bytes.count {
-                let b = bytes[idx]
-                if b == 13 || b == 10 {  // CR or LF
-                    if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
-                        idx += 1
-                    }
-                    result.append("\n")
-                    idx += 1
-                } else if b == 27 {  // ESC sequence skip
-                    idx += 1
-                    if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
-                        idx += 1
-                        while idx < bytes.count && (bytes[idx] < 64 || bytes[idx] > 126) {
+                            if idx + charLen <= bytes.count {
+                                let charBytes = bytes[idx..<(idx + charLen)]
+                                if let str = String(bytes: charBytes, encoding: .utf8) {
+                                    result.append(str)
+                                }
+                                idx += charLen
+                            } else {
+                                idx += 1
+                            }
+                        } else {
                             idx += 1
                         }
-                        if idx < bytes.count { idx += 1 }
                     }
-                } else if b >= 32 || b == 9 {  // Printable character or Tab
-                    let charLen: Int
-                    switch b {
-                    case 0..<0x80: charLen = 1
-                    case 0xC0..<0xE0: charLen = 2
-                    case 0xE0..<0xF0: charLen = 3
-                    case 0xF0..<0xF8: charLen = 4
-                    default: charLen = 1
-                    }
+                } else {
+                    break
+                }
+            }
+            return result
+        #else
+            let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
+            _ = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK)
+            defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }
 
-                    if idx + charLen <= bytes.count {
-                        let charBytes = bytes[idx..<(idx + charLen)]
-                        if let str = String(bytes: charBytes, encoding: .utf8) {
-                            result.append(str)
+            var result = String(firstChar)
+            var rawBuffer = [UInt8](repeating: 0, count: 65536)
+
+            while true {
+                let n = read(STDIN_FILENO, &rawBuffer, rawBuffer.count)
+                if n <= 0 { break }
+
+                let bytes = Array(rawBuffer[..<n])
+                var idx = 0
+                while idx < bytes.count {
+                    let b = bytes[idx]
+                    if b == 13 || b == 10 {  // CR or LF
+                        if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                            idx += 1
                         }
-                        idx += charLen
+                        result.append("\n")
+                        idx += 1
+                    } else if b == 27 {  // ESC sequence skip
+                        idx += 1
+                        if idx < bytes.count && bytes[idx] == UInt8(ascii: "[") {
+                            idx += 1
+                            while idx < bytes.count && (bytes[idx] < 64 || bytes[idx] > 126) {
+                                idx += 1
+                            }
+                            if idx < bytes.count { idx += 1 }
+                        }
+                    } else if b >= 32 || b == 9 {  // Printable character or Tab
+                        let charLen: Int
+                        switch b {
+                        case 0..<0x80: charLen = 1
+                        case 0xC0..<0xE0: charLen = 2
+                        case 0xE0..<0xF0: charLen = 3
+                        case 0xF0..<0xF8: charLen = 4
+                        default: charLen = 1
+                        }
+
+                        if idx + charLen <= bytes.count {
+                            let charBytes = bytes[idx..<(idx + charLen)]
+                            if let str = String(bytes: charBytes, encoding: .utf8) {
+                                result.append(str)
+                            }
+                            idx += charLen
+                        } else {
+                            idx += 1
+                        }
                     } else {
                         idx += 1
                     }
-                } else {
-                    idx += 1
                 }
             }
-        }
-        return result
+            return result
+        #endif
     }
 
     /// ANSI cursor hiding and movement helper functions.
@@ -343,3 +468,4 @@ public final class Terminal {
         fflush(nil)
     }
 }
+
