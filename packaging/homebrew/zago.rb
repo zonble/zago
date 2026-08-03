@@ -12,7 +12,7 @@ class Zago < Formula
 
   on_linux do
     depends_on "swift" => :build
-  end
+  end 
 
   def install
     system "swift", "build",
