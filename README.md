@@ -1,7 +1,7 @@
 # `zago`: A Lean Terminal Forge for Markdown Writers
 
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
-![macOS + Linux](https://img.shields.io/badge/macOS%20%2B%20Linux-supported-blue)
+![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
 ![Markdown first](https://img.shields.io/badge/Markdown-first-2563eb)
 ![Tables](https://img.shields.io/badge/Pipe%20Tables-editable-0f766e)
@@ -54,6 +54,12 @@ the file is on your laptop or on a server over SSH.
     - [2. Headless Scripting Mode](#2-headless-scripting-mode)
     - [Command-Line Options](#command-line-options)
   - [FAQ, Sort Of](#faq-sort-of)
+    - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
+    - [Why a TUI app when Electron apps exist?](#why-a-tui-app-when-electron-apps-exist)
+    - [Why not Vim or Emacs?](#why-not-vim-or-emacs)
+    - [Why not Rust?](#why-not-rust)
+    - [Isn't LOGO for 80s kids?](#isnt-logo-for-80s-kids)
+    - [How do I erase a wrong line or box in Canvas Mode?](#how-do-i-erase-a-wrong-line-or-box-in-canvas-mode)
   - [Documentation](#documentation)
   - [Tests](#tests)
   - [License](#license)
@@ -82,7 +88,7 @@ the file is on your laptop or on a server over SSH.
 
 ## Requirements
 
-- macOS 14.0+ or Linux
+- macOS 14.0+, Linux, or Windows
 - On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
@@ -115,7 +121,7 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
-Build from source:
+Build from source (macOS / Linux):
 
 ```bash
 git clone https://github.com/zonble/zago.git
@@ -126,6 +132,36 @@ swift build -c release
 .build/release/zago notes.txt --ruler
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
+
+Build from source (Windows):
+
+1. Install the Swift SDK using `winget`:
+
+   ```powershell
+   winget install Swift.Toolchain
+   ```
+
+2. Run PowerShell or Command Prompt as **Administrator** (required because dependencies such as `swift-argument-parser` create symbolic links on Windows during the build process).
+
+3. Clone and build:
+
+   ```powershell
+   git clone https://github.com/zonble/zago.git
+   cd zago
+   swift build
+   ```
+
+   To build a release version:
+
+   ```powershell
+   swift build -c release
+   ```
+
+   Then run the executable:
+
+   ```powershell
+   .build\release\zago.exe notes.txt
+   ```
 
 ## Preview Builds
 
