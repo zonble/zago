@@ -375,6 +375,7 @@ zago --run generate_architecture.logo | pbcopy
 | `--init` | | Generate default `~/.zagorc` configuration file. |
 | `--syntax <true/false>` | | Enable or disable syntax highlighting. |
 | `--lang <en/zh_TW>` | | Set interface language. |
+| `--spell-lang <lang>` | | Set spell checker language (e.g. en_US, de_DE, fr_FR). |
 
 ## FAQ, Sort Of
 

@@ -44,6 +44,12 @@ struct Zago: ParsableCommand {
     )
     var lang: String?
 
+    @Option(
+        name: [.customLong("spell-lang"), .customLong("spell-language")],
+        help: "Set spell checker language (e.g. en_US, de_DE, fr_FR)."
+    )
+    var spellLang: String?
+
     @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
@@ -102,7 +108,7 @@ struct Zago: ParsableCommand {
 
         if let code = eval {
             let editor = Editor(
-                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
+                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang, spellLanguage: spellLang)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             Terminal.write(output + "\n")
@@ -114,7 +120,7 @@ struct Zago: ParsableCommand {
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
                 let editor = Editor(
-                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
+                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang, spellLanguage: spellLang)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 Terminal.write(output + "\n")
@@ -129,7 +135,7 @@ struct Zago: ParsableCommand {
 
         let editor = Editor(
             filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
-            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang)
+            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang, spellLanguage: spellLang)
         editor.run()
     }
 }

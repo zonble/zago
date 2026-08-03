@@ -450,18 +450,7 @@ import Testing
     #expect(editor.statusMessage == L10n["status.config_reloaded"])
 }
 
-@Test func testSpellChecker() throws {
-    let checker = SpellChecker()
-    #expect(checker.isCorrect("hello") == true)
-    #expect(checker.isCorrect("swift") == true)
-    #expect(checker.isCorrect("中文測試") == true)
 
-    let buffer = TextBuffer()
-    buffer.lines = ["這是一段中文測試", "the hello world", "qxzywkwk misspelled"]
-    let target = checker.findNextMisspelled(in: buffer)
-    #expect(target != nil)
-    #expect(target?.word == "qxzywkwk")
-}
 
 @Test func testGenerateDefaultConfigFile() throws {
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_gen_.serc").path

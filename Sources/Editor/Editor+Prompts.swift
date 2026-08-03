@@ -566,7 +566,8 @@ extension Editor {
 
     /// Prompts user to check and replace misspelled words (^T / F12).
     func promptSpellCheck() {
-        if let target = spellChecker.findNextMisspelled(in: buffer) {
+        let syntaxName = activeLanguageSyntax?.name
+        if let target = spellChecker.findNextMisspelled(in: buffer, syntaxName: syntaxName) {
             buffer.lineIndex = target.line
             buffer.columnIndex = target.col
             promptInputText = target.word

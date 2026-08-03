@@ -174,7 +174,8 @@ public final class Editor {
 
     public init(
         filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
-        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil
+        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
+        spellLanguage: String? = nil
     ) {
         self.terminal = Terminal()
 
@@ -195,6 +196,7 @@ public final class Editor {
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
         let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
+        let finalSpellLang = spellLanguage ?? loadedConfig.spellLanguage
         let finalTabSize = loadedConfig.tabSize
         let finalTrimTrailingWhitespace = loadedConfig.trimTrailingWhitespaceOnSave
         let initialBaseMode: EditorBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
@@ -235,12 +237,14 @@ public final class Editor {
 
     public convenience init(
         filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
-        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil
+        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
+        spellLanguage: String? = nil
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
             filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
-            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language)
+            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language,
+            spellLanguage: spellLanguage)
     }
 
     func startFileWatcherForCurrentBuffer() {
@@ -423,6 +427,7 @@ public final class Editor {
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
     func applyCustomConfig(_ config: EditorConfig) {
         defaultBorderStyle = config.defaultBorderStyle
+        spellChecker.setLanguage(config.spellLanguage)
 
         let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)
         if !prelude.isEmpty {
