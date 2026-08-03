@@ -46,11 +46,13 @@ the file is on your laptop or on a server over SSH.
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
     - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
+    - [Install with Mint](#install-with-mint)
     - [Install on Arch Linux](#install-on-arch-linux)
     - [Install on Windows (PowerShell)](#install-on-windows-powershell)
   - [Build](#build)
-    - [Build from source (Linux)](#build-from-source-linux)
-    - [Build from source (Windows / Developers)](#build-from-source-windows--developers)
+    - [macOS](#macos)
+    - [Linux](#linux)
+    - [Windows / Developers](#windows--developers)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
   - [Text Processing](#text-processing)
   - [Command Examples](#command-examples)
@@ -112,7 +114,7 @@ If Homebrew refuses to install from an untrusted third-party tap, run the `brew 
 
 On Linux, the Homebrew formula builds zago with Homebrew's `swift` package. Without Homebrew, install Swift 6 from your distribution or Swift.org and use the source build commands below.
 
-Install with [Mint](https://github.com/yonaskolb/Mint):
+### Install with [Mint](https://github.com/yonaskolb/Mint)
 
 ```bash
 mint install zonble/zago
@@ -145,7 +147,9 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 
 This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
 
-Build from source (macOS):
+## Build
+
+### macOS
 
 ```bash
 git clone https://github.com/zonble/zago.git
@@ -157,9 +161,7 @@ swift build -c release
 .build/release/zago --init        # optional: create a starter ~/.zagorc
 ```
 
-## Build
-
-### Build from source (Linux)
+### Linux
 
 1. Install Swift 6.0+ toolchain using your distribution package manager, [swiftly](https://swiftlang.github.io/swiftly/), or from [Swift.org](https://www.swift.org/download/):
 
@@ -190,7 +192,7 @@ swift build -c release
    PREFIX="$HOME/.local" ./build.sh
    ```
 
-### Build from source (Windows / Developers)
+### Windows / Developers
 
 *(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)*
 
