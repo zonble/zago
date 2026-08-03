@@ -13,6 +13,22 @@ import Foundation
 
 /// Handles Terminal Raw Mode control and ANSI escape sequence parsing.
 public final class Terminal {
+    public enum StartupError: Error, LocalizedError {
+        case nonUTF8Console(inputCodePage: UInt32, outputCodePage: UInt32)
+        case consoleModeUnavailable
+
+        public var errorDescription: String? {
+            switch self {
+            case .nonUTF8Console(let inputCodePage, let outputCodePage):
+                return Terminal.utf8ConsoleRequirementMessage(
+                    inputCodePage: inputCodePage,
+                    outputCodePage: outputCodePage)
+            case .consoleModeUnavailable:
+                return "zago requires an interactive VT-compatible terminal."
+            }
+        }
+    }
+
     #if os(Windows)
         private var originalInputMode: DWORD = 0
         private var originalOutputMode: DWORD = 0
@@ -34,26 +50,47 @@ public final class Terminal {
     }
 
     /// Enables terminal raw mode.
-    public func enableRawMode() {
+    public func enableRawMode() throws {
         guard !rawModeEnabled else { return }
         #if os(Windows)
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
             let hOutput = GetStdHandle(DWORD(bitPattern: -11))
+            guard hInput != INVALID_HANDLE_VALUE, hOutput != INVALID_HANDLE_VALUE else {
+                throw StartupError.consoleModeUnavailable
+            }
+
+            originalInputCodePage = GetConsoleCP()
+            originalOutputCodePage = GetConsoleOutputCP()
+            if Terminal.utf8ConsoleRequirementMessage(
+                inputCodePage: UInt32(originalInputCodePage),
+                outputCodePage: UInt32(originalOutputCodePage)
+            ) != nil {
+                throw StartupError.nonUTF8Console(
+                    inputCodePage: UInt32(originalInputCodePage),
+                    outputCodePage: UInt32(originalOutputCodePage))
+            }
+
             if hInput != INVALID_HANDLE_VALUE {
-                GetConsoleMode(hInput, &originalInputMode)
+                guard GetConsoleMode(hInput, &originalInputMode) else {
+                    throw StartupError.consoleModeUnavailable
+                }
                 var rawInput = originalInputMode
                 rawInput &= ~DWORD(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT)
                 rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT)
-                SetConsoleMode(hInput, rawInput)
+                guard SetConsoleMode(hInput, rawInput) else {
+                    throw StartupError.consoleModeUnavailable
+                }
             }
             if hOutput != INVALID_HANDLE_VALUE {
-                GetConsoleMode(hOutput, &originalOutputMode)
+                guard GetConsoleMode(hOutput, &originalOutputMode) else {
+                    throw StartupError.consoleModeUnavailable
+                }
                 var rawOutput = originalOutputMode
                 rawOutput |= DWORD(ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
-                SetConsoleMode(hOutput, rawOutput)
+                guard SetConsoleMode(hOutput, rawOutput) else {
+                    throw StartupError.consoleModeUnavailable
+                }
             }
-            originalInputCodePage = GetConsoleCP()
-            originalOutputCodePage = GetConsoleOutputCP()
             _ = SetConsoleCP(UINT(CP_UTF8))
             _ = SetConsoleOutputCP(UINT(CP_UTF8))
             rawModeEnabled = true
@@ -69,6 +106,19 @@ public final class Terminal {
             tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
             rawModeEnabled = true
         #endif
+    }
+
+    static func utf8ConsoleRequirementMessage(inputCodePage: UInt32, outputCodePage: UInt32) -> String? {
+        let utf8CodePage: UInt32 = 65001
+        guard inputCodePage != utf8CodePage || outputCodePage != utf8CodePage else {
+            return nil
+        }
+
+        return """
+            zago requires a UTF-8 Windows terminal.
+            Current console code pages: input \(inputCodePage), output \(outputCodePage).
+            Use Windows Terminal or run `chcp 65001` before starting zago.
+            """
     }
 
     /// Disables raw mode and restores original termios settings.

@@ -36,6 +36,16 @@ import Testing
     #expect(HelpContent.lines(language: .zh_TW).contains("    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭"))
 }
 
+@Test func testWindowsUTF8ConsoleRequirementMessage() throws {
+    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 65001) == nil)
+
+    let message = Terminal.utf8ConsoleRequirementMessage(inputCodePage: 950, outputCodePage: 65001)
+    #expect(message?.contains("UTF-8 Windows terminal") == true)
+    #expect(message?.contains("input 950") == true)
+    #expect(message?.contains("output 65001") == true)
+    #expect(message?.contains("chcp 65001") == true)
+}
+
 @Test func testWrapColumnMenuActions() throws {
     let editor = Editor()
     #expect(editor.layoutEngine.wrapColumn == nil)

@@ -426,7 +426,15 @@ public final class Editor {
 
     /// Starts the editor event loop.
     public func run() {
-        terminal.enableRawMode()
+        do {
+            try terminal.enableRawMode()
+        } catch {
+            let message = (error as? LocalizedError)?.errorDescription ?? "\(error)"
+            if let data = (message + "\n").data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            return
+        }
         Terminal.hideCursor()
 
         defer {
