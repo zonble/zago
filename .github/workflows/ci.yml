@@ -23,7 +23,7 @@ jobs:
         if: runner.os != 'macOS'
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.0"
+          swift-version: "6.0.3"
 
       - name: Install System Dictionary (Linux)
         if: runner.os == 'Linux'
@@ -58,4 +58,3 @@ jobs:
             .build/*/release/zago.exe
             zago-windows-x64.zip
           if-no-files-found: warn
-
