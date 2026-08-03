@@ -31,6 +31,46 @@ struct FormatAndLayoutTests {
     #expect(virtualLines[1].endCol == 20)
 }
 
+@Test func testVirtualViewportMatchesFullSoftwrapWindow() throws {
+    let engine = LayoutEngine(wrapColumn: 10)
+    let lines = ["1234567890ABCDEFGHIJ12345", "short", String(repeating: "a", count: 120)]
+    let full = engine.computeVirtualLines(from: lines, viewWidth: 80)
+    let viewport = engine.computeVirtualViewport(
+        from: lines,
+        viewWidth: 80,
+        topVirtualLineIndex: 2,
+        height: 4,
+        cursorLineIndex: 2,
+        cursorColumnIndex: 35
+    )
+
+    #expect(viewport.lines.map(\.text) == full[2..<6].map(\.text))
+    #expect(viewport.startVirtualIndex == 2)
+    #expect(viewport.totalVirtualLineCount == full.count)
+
+    let (cursorVLine, cursorVCol) = engine.getVirtualCursor(
+        lineIndex: 2,
+        columnIndex: 35,
+        virtualLines: full
+    )
+    #expect(viewport.cursorVirtualLineIndex == cursorVLine)
+    #expect(viewport.cursorVirtualColumnIndex == cursorVCol)
+
+    let partialViewport = engine.computeVirtualViewport(
+        from: lines,
+        viewWidth: 80,
+        topVirtualLineIndex: 2,
+        height: 4,
+        cursorLineIndex: 2,
+        cursorColumnIndex: 35,
+        computeTotalLineCount: false
+    )
+    #expect(partialViewport.lines.map(\.text) == full[2..<6].map(\.text))
+    #expect(partialViewport.totalVirtualLineCount < full.count)
+    #expect(partialViewport.cursorVirtualLineIndex == cursorVLine)
+    #expect(partialViewport.cursorVirtualColumnIndex == cursorVCol)
+}
+
 @Test func testCanvasLayoutDoesNotSoftwrap() throws {
     let engine = LayoutEngine(wrapColumn: 10)
     let lines = ["1234567890ABCDEFGHIJ12345"]
