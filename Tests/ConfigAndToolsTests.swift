@@ -155,6 +155,43 @@ import Testing
     #expect(editor.layoutEngine.wrapColumn == 10)
 }
 
+@Test func testDisplaySettingsAreBufferLocal() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "first.md"
+    editor.openNewBuffer(filePath: "second.md")
+
+    editor.displayConfig.showRuler = true
+    editor.displayConfig.showLineNumbers = false
+    editor.displayConfig.showSubLineNumbers = true
+    editor.layoutEngine.setWrapColumn(80)
+
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "first.md")
+    #expect(editor.displayConfig.showRuler == false)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+    #expect(editor.layoutEngine.wrapColumn == nil)
+
+    editor.displayConfig.showRuler = false
+    editor.displayConfig.showLineNumbers = true
+    editor.displayConfig.showSubLineNumbers = false
+    editor.layoutEngine.setWrapColumn(40)
+
+    editor.nextBuffer()
+    #expect(editor.buffer.filePath == "second.md")
+    #expect(editor.displayConfig.showRuler == true)
+    #expect(editor.displayConfig.showLineNumbers == false)
+    #expect(editor.displayConfig.showSubLineNumbers == true)
+    #expect(editor.layoutEngine.wrapColumn == 80)
+
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "first.md")
+    #expect(editor.displayConfig.showRuler == false)
+    #expect(editor.displayConfig.showLineNumbers == true)
+    #expect(editor.displayConfig.showSubLineNumbers == false)
+    #expect(editor.layoutEngine.wrapColumn == 40)
+}
+
 @Test func testOutlineMenuItemsOnlyShowForSupportedDocumentFormats() throws {
     let editor = Editor()
     editor.buffer.filePath = "notes.md"

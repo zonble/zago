@@ -73,10 +73,7 @@ extension Editor {
         }
 
         if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
-            currentBufferIndex = existingIndex
-            topVLineIndex = 0
-            clearActiveMark()
-            startFileWatcherForCurrentBuffer()
+            switchToBuffer(index: existingIndex)
         } else {
             openNewBuffer(filePath: expanded)
         }
@@ -330,10 +327,7 @@ extension Editor {
             return false
         }
 
-        currentBufferIndex = index
-        topVLineIndex = 0
-        clearActiveMark()
-        startFileWatcherForCurrentBuffer()
+        switchToBuffer(index: index)
         return true
     }
 

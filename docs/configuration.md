@@ -71,6 +71,13 @@ editor views. Text/Canvas/Table mode state is runtime state owned by each
 buffer, so reloading configuration does not force already-open buffers to switch
 back to the configured startup mode.
 
+Display-oriented editing settings are buffer-local once a buffer is open:
+`wrap`, `ruler`, `linenumbers`, and `sublinenumbers` may differ between open
+buffers. Configuration and command-line flags provide the defaults copied into
+new buffers; changing one of these settings from the menu or command prompt
+affects the current buffer view only. Switching buffers restores that buffer's
+own display settings.
+
 `trim-trailing-whitespace` is off by default. When enabled, saving removes
 trailing spaces and tabs from each line before writing the file.
 

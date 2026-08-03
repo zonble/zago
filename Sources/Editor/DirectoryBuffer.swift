@@ -236,10 +236,8 @@ extension Editor {
 
         // 2. If another open buffer is ALREADY a DirectoryBuffer for resolvedPath: switch to it
         if let existingIndex = buffers.firstIndex(where: { ($0 as? DirectoryBuffer)?.directoryPath == resolvedPath }) {
-            currentBufferIndex = existingIndex
+            switchToBuffer(index: existingIndex)
             (buffers[existingIndex] as? DirectoryBuffer)?.loadDirectory(at: resolvedPath)
-            topVLineIndex = 0
-            clearActiveMark()
             startFileWatcherForCurrentBuffer()
             return
         }

@@ -348,6 +348,13 @@ application state and not document metadata. Switching one buffer between Text
 Mode and Canvas Mode must not change another buffer, another window, or a future
 split pane.
 
+Display view settings are also per-buffer editor-view runtime state. Line
+numbers, sub-line numbers, ruler visibility, and wrap column may differ between
+open buffers. Configuration and command-line options provide only the initial
+defaults copied into a newly created buffer; changing these settings later
+affects the current buffer view and must be restored when switching back to that
+buffer.
+
 Configuration may define only the initial base mode for newly created buffers or
 editor views. After a buffer exists, runtime mode changes belong to that buffer.
 Reloading configuration must not force existing buffers back to the configured

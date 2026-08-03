@@ -20,6 +20,10 @@ open class TextBuffer {
     public var canvasHorizontalOffset: Int = 0
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil
+    public var viewShowRuler: Bool = false
+    public var viewShowLineNumbers: Bool = true
+    public var viewShowSubLineNumbers: Bool = false
+    public var viewWrapColumn: Int? = nil
 
     open var isReadOnly: Bool { false }
     open var allowsLogoExecution: Bool { true }
