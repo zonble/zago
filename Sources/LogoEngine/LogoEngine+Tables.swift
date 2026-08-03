@@ -6,15 +6,7 @@ extension LogoEngine {
     }
 
     private func consumeNextTableIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        guard index + 1 < tokens.count else { return nil }
-        guard !isTableArgumentBoundary(tokens[index + 1]) else { return nil }
-        var nextIndex = index + 1
-        guard let value = parseUnquotedIntArgument(tokens, index: &nextIndex) else {
-            index = nextIndex
-            return nil
-        }
-        index = nextIndex
-        return value
+        consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isTableArgumentBoundary)
     }
 
     private func consumeNextTableBorderStyle(_ tokens: [String], index: inout Int) -> String? {
@@ -64,7 +56,7 @@ extension LogoEngine {
         } else if subcommand == "NEXTSTYLE" {
             delegate.logoEngine(self, performAction: .nextBorderStyle)
             hasSetStatusMessage = true
-        } else if !LogoEngine.isStatementCommand(tokens[index]), let rows = parseUnquotedIntArgument(tokens, index: &index) {
+        } else if let rows = parseIntExpressionArgument(tokens, index: &index, isBoundary: isTableArgumentBoundary) {
             let cols = consumeNextTableIntArgument(tokens, index: &index) ?? 3
             let cellWidth = consumeNextTableIntArgument(tokens, index: &index)
             delegate.logoEngine(self, performAction: .createTable(rows: rows, cols: cols, cellWidth: cellWidth))

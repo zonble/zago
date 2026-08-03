@@ -2,7 +2,7 @@ import Foundation
 
 extension LogoEngine {
     private func isDrawingArgumentBoundary(_ token: String) -> Bool {
-        LogoEngine.isKeyword(token) || token == "]" || token == ")"
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
     private func consumeOptionalDrawingArgument(_ tokens: [String], index: inout Int) -> String? {
@@ -18,44 +18,12 @@ extension LogoEngine {
         return evaluateExpression(tokens, index: &index)
     }
 
-    private func drawingIntValue(from value: String) -> Int? {
-        if let intValue = Int(value) {
-            return intValue
-        }
-        if let doubleValue = Double(value) {
-            return Int(doubleValue)
-        }
-        return nil
-    }
-
     private func consumeOptionalDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        index += 1
-        guard index < tokens.count else {
-            index -= 1
-            return nil
-        }
-        guard !isDrawingArgumentBoundary(tokens[index]) else {
-            index -= 1
-            return nil
-        }
-        let value = evaluateExpression(tokens, index: &index)
-        guard let intValue = drawingIntValue(from: value) else {
-            return nil
-        }
-        return intValue
+        consumeOptionalIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
     }
 
     private func consumeNextDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        guard index + 1 < tokens.count else { return nil }
-        guard !isDrawingArgumentBoundary(tokens[index + 1]) else { return nil }
-        var nextIndex = index + 1
-        let value = evaluateExpression(tokens, index: &nextIndex)
-        guard let intValue = drawingIntValue(from: value) else {
-            index = nextIndex
-            return nil
-        }
-        index = nextIndex
-        return intValue
+        consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
     }
 
     private func isHeadingDirectionToken(_ token: String) -> Bool {

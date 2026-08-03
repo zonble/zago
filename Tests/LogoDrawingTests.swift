@@ -68,6 +68,19 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "─────────")
 }
 
+@Test func testBoxAcceptsExpressionDimensions() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("BOX (3 + 4) (2 + 2)")
+    #expect(editor.buffer.lines == [
+        "┌─────┐",
+        "│     │",
+        "│     │",
+        "└─────┘",
+    ])
+}
+
 @Test func testTurtleRepeatAcceptsExpressionDistanceAndBareHeading() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
@@ -197,6 +210,11 @@ import TextMetrics
 
     logoEngine.execute("LINE 5 \"double\" \"arrow\"")
     #expect(editor.buffer.lines[0].contains("═"))
+
+    let expressionLineEditor = Editor()
+    let expressionLineEngine = LogoEngine(delegate: expressionLineEditor)
+    expressionLineEngine.execute("LINE (2 + 3) DOUBLE")
+    #expect(expressionLineEditor.buffer.lines[0] == "═════")
 
     let editor2 = Editor()
     let logoEngine2 = LogoEngine(delegate: editor2)

@@ -30,12 +30,8 @@ extension LogoEngine {
 
         case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
-            if index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
-                var lineArgIndex = index + 1
-                if let n1Based = parseUnquotedIntArgument(tokens, index: &lineArgIndex) {
-                    lineIdx = max(0, n1Based - 1)
-                }
-                index = lineArgIndex
+            if let n1Based = consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isBufferArgumentBoundary) {
+                lineIdx = max(0, n1Based - 1)
             }
             return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
 
@@ -55,5 +51,9 @@ extension LogoEngine {
         default:
             return nil
         }
+    }
+
+    private func isBufferArgumentBoundary(_ token: String) -> Bool {
+        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 }
