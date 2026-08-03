@@ -142,13 +142,20 @@ extension String {
 private extension UnicodeScalar {
     var terminalScalarWidth: Int {
         #if canImport(Darwin)
-            let width = wcwidth(wchar_t(value))
+            return Int(wcwidth(wchar_t(value)))
         #elseif canImport(Glibc) || canImport(Musl)
-            let width = sys_wcwidth(Int32(value))
+            return Int(sys_wcwidth(Int32(value)))
+        #elseif os(Windows)
+            if isZeroWidthTerminalScalar {
+                return 0
+            }
+            if isWideTerminalScalar {
+                return 2
+            }
+            return 1
         #else
-            let width = 1
+            return 1
         #endif
-        return Int(width)
     }
 
     var isWideTerminalScalar: Bool {

@@ -83,6 +83,7 @@ the file is on your laptop or on a server over SSH.
 ## Requirements
 
 - macOS 14.0+ or Linux
+- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
 

@@ -16,6 +16,8 @@ public final class Terminal {
     #if os(Windows)
         private var originalInputMode: DWORD = 0
         private var originalOutputMode: DWORD = 0
+        private var originalInputCodePage: UINT = 0
+        private var originalOutputCodePage: UINT = 0
     #else
         private var originalTermios = termios()
     #endif
@@ -50,6 +52,10 @@ public final class Terminal {
                 rawOutput |= DWORD(ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
                 SetConsoleMode(hOutput, rawOutput)
             }
+            originalInputCodePage = GetConsoleCP()
+            originalOutputCodePage = GetConsoleOutputCP()
+            _ = SetConsoleCP(UINT(CP_UTF8))
+            _ = SetConsoleOutputCP(UINT(CP_UTF8))
             rawModeEnabled = true
         #else
             tcgetattr(STDIN_FILENO, &originalTermios)
@@ -76,6 +82,12 @@ public final class Terminal {
             }
             if hOutput != INVALID_HANDLE_VALUE {
                 SetConsoleMode(hOutput, originalOutputMode)
+            }
+            if originalInputCodePage != 0 {
+                _ = SetConsoleCP(originalInputCodePage)
+            }
+            if originalOutputCodePage != 0 {
+                _ = SetConsoleOutputCP(originalOutputCodePage)
             }
             rawModeEnabled = false
         #else
@@ -468,4 +480,3 @@ public final class Terminal {
         fflush(nil)
     }
 }
-
