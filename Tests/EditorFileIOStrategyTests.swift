@@ -86,6 +86,21 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         }
         return entries
     }
+
+    var watchedPath: String? = nil
+    var watcherCallback: (() -> Void)? = nil
+
+    func startWatchingFile(at path: String, onChange: @escaping () -> Void) {
+        watchedPath = normalizePath(path, isDirectory: false)
+        watcherCallback = onChange
+    }
+
+    func stopWatchingFile(at path: String) {
+        if watchedPath == normalizePath(path, isDirectory: false) {
+            watchedPath = nil
+            watcherCallback = nil
+        }
+    }
 }
 
 @Test func testEditorLoadsAndSavesThroughFileIODelegate() throws {
@@ -121,3 +136,18 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     #expect(editor.buffer.filePath == "/project/readme.txt")
     #expect(editor.buffer.lines == ["hello"])
 }
+
+@Test func testEditorFileIOStrategyWatchNotificationTrigger() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
+    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO)
+
+    #expect(fileIO.watchedPath == "/notes.txt")
+    #expect(fileIO.watcherCallback != nil)
+
+    // Simulate external file change
+    fileIO.files["/notes.txt"] = "updated externally"
+    fileIO.watcherCallback?()
+
+    #expect(editor.buffer.lines == ["updated externally"])
+}
+

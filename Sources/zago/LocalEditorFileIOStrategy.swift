@@ -5,6 +5,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
     public static let shared = LocalEditorFileIOStrategy()
 
     private let fileManager: FileManager
+    private let fileWatcher = FileWatcher()
 
     public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
@@ -72,6 +73,15 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
                 isExecutable: info.isExecutable
             )
         }
+    }
+
+    public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {
+        fileWatcher.onChange = onChange
+        fileWatcher.start(path: normalizePath(path, isDirectory: false))
+    }
+
+    public func stopWatchingFile(at path: String) {
+        fileWatcher.stop()
     }
 
     private func expandTilde(_ path: String) -> String {

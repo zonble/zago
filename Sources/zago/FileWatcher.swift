@@ -68,7 +68,7 @@ public final class FileWatcher: @unchecked Sendable {
                 if currentMTime != self.lastModificationDate {
                     self.lastModificationDate = currentMTime
                     DispatchQueue.main.async {
-                        self.onChange?()
+                        self?.onChange?()
                     }
                 }
             }

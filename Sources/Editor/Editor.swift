@@ -140,8 +140,8 @@ public final class Editor {
 
     public let commandRegistry = CommandRegistry()
     public var commandBarRegistry: CommandRegistry { commandRegistry }
-    public let fileWatcher = FileWatcher()
     public var fileIOStrategy: EditorFileIOStrategy
+    private var currentWatchedPath: String? = nil
 
     public struct DisplayConfig: Sendable, Equatable {
         public var showRuler: Bool
@@ -229,11 +229,6 @@ public final class Editor {
         applyCustomConfig(loadedConfig)
 
         startFileWatcherForCurrentBuffer()
-
-        fileWatcher.onChange = { [weak self] in
-            guard let self = self, self.displayConfig.autoReload else { return }
-            self.handleExternalFileChange()
-        }
     }
 
     public convenience init(
@@ -249,10 +244,16 @@ public final class Editor {
     }
 
     func startFileWatcherForCurrentBuffer() {
+        if let oldPath = currentWatchedPath {
+            fileIOStrategy.stopWatchingFile(at: oldPath)
+            currentWatchedPath = nil
+        }
         if let path = buffer.filePath {
-            fileWatcher.start(path: path)
-        } else {
-            fileWatcher.stop()
+            currentWatchedPath = path
+            fileIOStrategy.startWatchingFile(at: path) { [weak self] in
+                guard let self = self, self.displayConfig.autoReload else { return }
+                self.handleExternalFileChange()
+            }
         }
     }
 
