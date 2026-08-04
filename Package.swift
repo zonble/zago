@@ -40,7 +40,11 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"],
+            linkerSettings: [
+                .linkedFramework("AppKit", .when(platforms: [.macOS])),
+                .linkedLibrary("ole32", .when(platforms: [.windows])),
+            ]
         ),
         .executableTarget(
             name: "zago",

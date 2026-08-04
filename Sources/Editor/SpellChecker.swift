@@ -6,7 +6,9 @@ public final class SpellChecker {
     public private(set) var ignoredWords: Set<String> = []
 
     public init(language: String = "en_US") {
-        #if os(Windows)
+        #if canImport(AppKit)
+            self.engine = AppleSpellCheckerEngine(language: language)
+        #elseif os(Windows)
             self.engine = WindowsSpellCheckerEngine(language: language)
         #else
             self.engine = UnixSpellCheckerEngine(language: language)

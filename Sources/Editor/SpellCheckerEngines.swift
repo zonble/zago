@@ -1,5 +1,13 @@
 import Foundation
 
+#if canImport(AppKit)
+    import AppKit
+#endif
+
+#if os(Windows)
+    import WinSDK
+#endif
+
 /// Represents a misspelled word match in a text buffer.
 public struct MisspelledMatch {
     public let line: Int
@@ -68,7 +76,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
 
         // Common fallback words if no system dictionary is present
         let fallbackWords = [
-            "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+            "the", "be", "to", "of", "and", "a", "in", "is", "that", "have", "i",
             "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
             "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
             "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
@@ -79,6 +87,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
             "back", "after", "use", "two", "how", "our", "work", "first", "well", "way",
             "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
             "hello", "world", "swift", "editor", "nano", "pico", "file", "text", "line", "code", "buffer",
+            "inside", "outside",
             "project", "document", "function", "variable", "command", "window", "terminal", "table", "canvas",
         ]
         self.dictionary = Set(fallbackWords)
@@ -112,17 +121,97 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
 
 // MARK: - Unix / Hunspell Engine
 
+#if canImport(AppKit)
+    public final class AppleSpellCheckerEngine: SpellCheckerEngine {
+        public var language: String
+
+        private let checker = NSSpellChecker.shared
+        private let documentTag: Int
+        private let usesSystemChecker: Bool
+        private let fallbackEngine: FallbackCheckerEngine
+        private var ignoredWords: Set<String> = []
+        private var userDictionary: Set<String> = []
+
+        public init(language: String = "en_US") {
+            self.language = language
+            self.documentTag = NSSpellChecker.uniqueSpellDocumentTag()
+            self.fallbackEngine = FallbackCheckerEngine(language: language)
+            let probe = checker.checkSpelling(
+                of: "hello",
+                startingAt: 0,
+                language: bcp47LanguageTag(language),
+                wrap: false,
+                inSpellDocumentWithTag: documentTag,
+                wordCount: nil
+            )
+            self.usesSystemChecker = probe.location == NSNotFound
+        }
+
+        deinit {
+            checker.closeSpellDocument(withTag: documentTag)
+        }
+
+        public func isCorrect(_ word: String) -> Bool {
+            let clean = normalizedWord(word)
+            if clean.isEmpty || clean.count <= 1 { return true }
+            if ignoredWords.contains(clean) || userDictionary.contains(clean) { return true }
+            guard usesSystemChecker else {
+                return fallbackEngine.isCorrect(word)
+            }
+
+            let range = checker.checkSpelling(
+                of: word,
+                startingAt: 0,
+                language: bcp47LanguageTag(language),
+                wrap: false,
+                inSpellDocumentWithTag: documentTag,
+                wordCount: nil
+            )
+            return range.location == NSNotFound
+        }
+
+        public func suggestions(for word: String) -> [String] {
+            let nsRange = NSRange(location: 0, length: (word as NSString).length)
+            let guesses = checker.guesses(
+                forWordRange: nsRange,
+                in: word,
+                language: bcp47LanguageTag(language),
+                inSpellDocumentWithTag: documentTag
+            )
+            return guesses?.isEmpty == false ? guesses! : fallbackEngine.suggestions(for: word)
+        }
+
+        public func ignoreWord(_ word: String) {
+            let clean = normalizedWord(word)
+            ignoredWords.insert(clean)
+            checker.ignoreWord(word, inSpellDocumentWithTag: documentTag)
+            fallbackEngine.ignoreWord(word)
+        }
+
+        public func addWordToDictionary(_ word: String) {
+            let clean = normalizedWord(word)
+            userDictionary.insert(clean)
+            fallbackEngine.addWordToDictionary(word)
+        }
+    }
+#endif
+
 public final class UnixSpellCheckerEngine: SpellCheckerEngine {
     public var language: String {
-        didSet { loadDictionary() }
+        didSet {
+            commandLineChecker = CommandLineSpellChecker(language: language)
+            loadDictionary()
+        }
     }
 
     private var dictionary: Set<String> = []
     private var ignoredWords: Set<String> = []
     private var userDictionary: Set<String> = []
+    private var commandLineChecker: CommandLineSpellChecker?
 
     public init(language: String = "en_US") {
         self.language = language
+        self.commandLineChecker = CommandLineSpellChecker(language: language)
         loadDictionary()
     }
 
@@ -164,6 +253,9 @@ public final class UnixSpellCheckerEngine: SpellCheckerEngine {
         let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
         if clean.isEmpty || clean.count <= 1 { return true }
         if ignoredWords.contains(clean) || userDictionary.contains(clean) { return true }
+        if let commandLineResult = commandLineChecker?.isCorrect(clean) {
+            return commandLineResult
+        }
         return dictionary.contains(clean)
     }
 
@@ -184,22 +276,126 @@ public final class UnixSpellCheckerEngine: SpellCheckerEngine {
     }
 }
 
+private final class CommandLineSpellChecker {
+    private let candidates: [(executable: URL, arguments: [String])]
+    private var cache: [String: Bool] = [:]
+
+    init?(language: String) {
+        let normalized = language.replacingOccurrences(of: "-", with: "_")
+        var found: [(URL, [String])] = []
+
+        if let hunspell = Self.findExecutable("hunspell") {
+            found.append((hunspell, ["-d", normalized, "-l"]))
+            found.append((hunspell, ["-l"]))
+        }
+        if let aspell = Self.findExecutable("aspell") {
+            found.append((aspell, ["--lang=\(normalized)", "list"]))
+            found.append((aspell, ["list"]))
+        }
+
+        guard !found.isEmpty else { return nil }
+        self.candidates = found
+    }
+
+    func isCorrect(_ word: String) -> Bool? {
+        if let cached = cache[word] { return cached }
+
+        for candidate in candidates {
+            guard let result = run(candidate: candidate, word: word) else { continue }
+            cache[word] = result
+            return result
+        }
+        return nil
+    }
+
+    private func run(candidate: (executable: URL, arguments: [String]), word: String) -> Bool? {
+        let process = Process()
+        process.executableURL = candidate.executable
+        process.arguments = candidate.arguments
+
+        let input = Pipe()
+        let output = Pipe()
+        let error = Pipe()
+        process.standardInput = input
+        process.standardOutput = output
+        process.standardError = error
+
+        do {
+            try process.run()
+            input.fileHandleForWriting.write(Data((word + "\n").utf8))
+            input.fileHandleForWriting.closeFile()
+            process.waitUntilExit()
+        } catch {
+            return nil
+        }
+
+        guard process.terminationStatus == 0 else { return nil }
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        let misspellings = String(data: data, encoding: .utf8)?
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            .filter { !$0.isEmpty } ?? []
+
+        return !misspellings.contains(word.lowercased())
+    }
+
+    private static func findExecutable(_ name: String) -> URL? {
+        let pathEntries = (ProcessInfo.processInfo.environment["PATH"] ?? "")
+            .split(separator: ":")
+            .map(String.init)
+        let candidates = pathEntries + ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"]
+
+        for directory in candidates {
+            let path = URL(fileURLWithPath: directory).appendingPathComponent(name).path
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return URL(fileURLWithPath: path)
+            }
+        }
+        return nil
+    }
+}
+
 // MARK: - Windows Engine
 
 public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     public var language: String {
-        didSet { fallbackEngine.language = language }
+        didSet {
+            fallbackEngine.language = language
+            #if os(Windows)
+            configureSystemChecker()
+            #endif
+        }
     }
 
     private let fallbackEngine: FallbackCheckerEngine
+    #if os(Windows)
+    private var checker: UnsafeMutablePointer<ISpellChecker>? = nil
+    private var didInitializeCOM = false
+    #endif
 
     public init(language: String = "en_US") {
         self.language = language
         self.fallbackEngine = FallbackCheckerEngine(language: language)
+        #if os(Windows)
+        configureSystemChecker()
+        #endif
+    }
+
+    deinit {
+        #if os(Windows)
+        releaseSystemChecker()
+        if didInitializeCOM {
+            CoUninitialize()
+        }
+        #endif
     }
 
     public func isCorrect(_ word: String) -> Bool {
-        // Fallback to dictionary engine for cross-platform consistency
+        #if os(Windows)
+        if let systemResult = systemIsCorrect(word) {
+            return systemResult
+        }
+        #endif
         return fallbackEngine.isCorrect(word)
     }
 
@@ -208,10 +404,99 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     }
 
     public func ignoreWord(_ word: String) {
+        #if os(Windows)
+        if let checker {
+            word.withCString(encodedAs: UTF16.self) { pWord in
+                _ = checker.pointee.lpVtbl.pointee.Ignore(checker, pWord)
+            }
+        }
+        #endif
         fallbackEngine.ignoreWord(word)
     }
 
     public func addWordToDictionary(_ word: String) {
+        #if os(Windows)
+        if let checker {
+            word.withCString(encodedAs: UTF16.self) { pWord in
+                _ = checker.pointee.lpVtbl.pointee.Add(checker, pWord)
+            }
+        }
+        #endif
         fallbackEngine.addWordToDictionary(word)
     }
+
+    #if os(Windows)
+    private func configureSystemChecker() {
+        releaseSystemChecker()
+
+        let hr = CoInitializeEx(nil, DWORD(COINIT_APARTMENTTHREADED))
+        if hr >= 0 {
+            didInitializeCOM = true
+        } else if hr != HRESULT(bitPattern: 0x80010106) {
+            return
+        }
+
+        var clsid = CLSID_SpellCheckerFactory
+        var iid = IID_ISpellCheckerFactory
+        var rawFactory: UnsafeMutableRawPointer? = nil
+        guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER), &iid, &rawFactory) >= 0,
+            let rawFactory
+        else {
+            return
+        }
+
+        let factory = rawFactory.assumingMemoryBound(to: ISpellCheckerFactory.self)
+        defer { _ = factory.pointee.lpVtbl.pointee.Release(factory) }
+
+        let tag = bcp47LanguageTag(language)
+        var supported = WINBOOL(0)
+        let supportHR = tag.withCString(encodedAs: UTF16.self) { pTag in
+            factory.pointee.lpVtbl.pointee.IsSupported(factory, pTag, &supported)
+        }
+        guard supportHR >= 0, supported != 0 else { return }
+
+        var createdChecker: UnsafeMutablePointer<ISpellChecker>? = nil
+        let createHR = tag.withCString(encodedAs: UTF16.self) { pTag in
+            factory.pointee.lpVtbl.pointee.CreateSpellChecker(factory, pTag, &createdChecker)
+        }
+        guard createHR >= 0 else { return }
+        checker = createdChecker
+    }
+
+    private func releaseSystemChecker() {
+        if let checker {
+            _ = checker.pointee.lpVtbl.pointee.Release(checker)
+            self.checker = nil
+        }
+    }
+
+    private func systemIsCorrect(_ word: String) -> Bool? {
+        guard let checker else { return nil }
+
+        var errors: UnsafeMutablePointer<IEnumSpellingError>? = nil
+        let checkHR = word.withCString(encodedAs: UTF16.self) { pWord in
+            checker.pointee.lpVtbl.pointee.Check(checker, pWord, &errors)
+        }
+        guard checkHR >= 0, let errors else { return nil }
+        defer { _ = errors.pointee.lpVtbl.pointee.Release(errors) }
+
+        var spellingError: UnsafeMutablePointer<ISpellingError>? = nil
+        let nextHR = errors.pointee.lpVtbl.pointee.Next(errors, &spellingError)
+        guard nextHR >= 0 else { return nil }
+
+        if let spellingError {
+            _ = spellingError.pointee.lpVtbl.pointee.Release(spellingError)
+            return false
+        }
+        return true
+    }
+    #endif
+}
+
+private func normalizedWord(_ word: String) -> String {
+    word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+}
+
+private func bcp47LanguageTag(_ language: String) -> String {
+    language.replacingOccurrences(of: "_", with: "-")
 }

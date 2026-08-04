@@ -141,6 +141,8 @@ public final class Editor {
     public let commandRegistry = CommandRegistry()
     public var commandBarRegistry: CommandRegistry { commandRegistry }
     public var fileIOStrategy: EditorFileIOStrategy
+    public var language: Language
+    var usesExplicitLanguage: Bool
     private var currentWatchedPath: String? = nil
 
     public struct DisplayConfig: Sendable, Equatable {
@@ -198,12 +200,15 @@ public final class Editor {
         let finalSubLineNumbers = showSubLineNumbers ?? loadedConfig.showSubLineNumbers
         let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
         let finalReload = autoReload ?? loadedConfig.autoReload
-        let finalLang = language ?? loadedConfig.language ?? Language.detectSystemLanguage()
+        let configuredLanguage = language ?? loadedConfig.language
+        let finalLang = configuredLanguage ?? Language.detectSystemLanguage()
         let finalSpellLang = spellLanguage ?? loadedConfig.spellLanguage
         let finalTabSize = loadedConfig.tabSize
         let finalTrimTrailingWhitespace = loadedConfig.trimTrailingWhitespaceOnSave
         let initialBaseMode: EditorBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
 
+        self.language = finalLang
+        self.usesExplicitLanguage = configuredLanguage != nil
         L10n.currentLanguage = finalLang
         self.spellChecker.setLanguage(finalSpellLang)
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
@@ -368,6 +373,8 @@ public final class Editor {
         self.defaultBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
         saveCurrentViewSettingsToBuffer()
         if let lang = loadedConfig.language {
+            self.language = lang
+            self.usesExplicitLanguage = true
             L10n.currentLanguage = lang
         }
         applyCustomConfig(loadedConfig)
