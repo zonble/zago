@@ -61,11 +61,12 @@ struct Zago: ParsableCommand {
 
     func run() throws {
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
+        let terminal = LocalTerminal()
 
         if initConfig {
             let targetPath = files.first
             let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath)
-            Terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
+            terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
             return
         }
         let enableSyntax: Bool?
@@ -106,10 +107,11 @@ struct Zago: ParsableCommand {
             let editor = Editor(
                 wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                 showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
-                fileIOStrategy: fileIOStrategy)
+                fileIOStrategy: fileIOStrategy,
+                terminal: terminal)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
-            Terminal.write(output + "\n")
+            terminal.write(output + "\n")
             return
         }
 
@@ -120,10 +122,11 @@ struct Zago: ParsableCommand {
                 let editor = Editor(
                     wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                     showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
-                    fileIOStrategy: fileIOStrategy)
+                    fileIOStrategy: fileIOStrategy,
+                    terminal: terminal)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
-                Terminal.write(output + "\n")
+                terminal.write(output + "\n")
                 return
             } catch {
                 if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(using: .utf8) {
@@ -136,7 +139,8 @@ struct Zago: ParsableCommand {
         let editor = Editor(
             filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang,
-            fileIOStrategy: fileIOStrategy)
+            fileIOStrategy: fileIOStrategy,
+            terminal: terminal)
         editor.run()
     }
 }

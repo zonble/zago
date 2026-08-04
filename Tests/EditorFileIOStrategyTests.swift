@@ -90,7 +90,12 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 
 @Test func testEditorLoadsAndSavesThroughFileIODelegate() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
-    let editor = Editor(filePath: "/notes.txt", autoReload: false, language: .en, fileIOStrategy: fileIO)
+    let editor = Editor(
+        filePath: "/notes.txt",
+        autoReload: false,
+        language: .en,
+        fileIOStrategy: fileIO,
+        terminal: TestEditorTerminal.shared)
 
     #expect(editor.buffer.lines == ["alpha", "beta"])
 
@@ -107,7 +112,12 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         files: ["/project/readme.txt": "hello"],
         directories: ["/project", "/project/src"]
     )
-    let editor = Editor(filePath: "/project", autoReload: false, language: .en, fileIOStrategy: fileIO)
+    let editor = Editor(
+        filePath: "/project",
+        autoReload: false,
+        language: .en,
+        fileIOStrategy: fileIO,
+        terminal: TestEditorTerminal.shared)
 
     #expect(editor.buffer is DirectoryBuffer)
     #expect(editor.buffer.lines.contains("▸ src/"))

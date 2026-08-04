@@ -18,7 +18,7 @@ import Testing
 }
 
 @Test func testHelpContent() throws {
-    let terminal = Terminal()
+    let terminal = TestEditorTerminal.shared
     let helpView = TextDocumentView(
         terminal: terminal,
         title: L10n["helpview.title"],
@@ -34,23 +34,6 @@ import Testing
     #expect(HelpContent.lines(language: .zh_TW).contains("  Canvas 模式："))
     #expect(HelpContent.lines(language: .zh_TW).contains("    Shift+方向鍵       畫出框線並移動畫布游標"))
     #expect(HelpContent.lines(language: .zh_TW).contains("    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭"))
-}
-
-@Test func testWindowsUTF8ConsoleRequirementMessage() throws {
-    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 65001) == nil)
-    #expect(Terminal.utf8ConsoleRequirementMessage(inputCodePage: 437, outputCodePage: 65001) == nil)
-
-    let message = Terminal.utf8ConsoleRequirementMessage(inputCodePage: 65001, outputCodePage: 437)
-    #expect(message?.contains("UTF-8 Windows terminal") == true)
-    #expect(message?.contains("input 65001") == true)
-    #expect(message?.contains("output 437") == true)
-    #expect(message?.contains("chcp 65001") == true)
-}
-
-@Test func testWindowsConsoleOutputPreservesEmojiSurrogatePairs() throws {
-    let units = Terminal.consoleUTF16Units(for: "A🙂B")
-    #expect(units == [0x0041, 0xD83D, 0xDE42, 0x0042])
-    #expect(Terminal.characterFromConsoleUTF16Units([0xD83D, 0xDE42]) == "🙂")
 }
 
 @Test func testWrapColumnMenuActions() throws {

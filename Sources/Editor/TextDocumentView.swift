@@ -3,13 +3,13 @@ import TextMetrics
 
 /// Generic full-screen, scrollable text viewer for reference-style editor pages.
 public final class TextDocumentView {
-    private let terminal: Terminal
+    private let terminal: EditorTerminal
     private let title: String
     private let lines: [String]
     private let footer: String
     private var topIndex: Int = 0
 
-    public init(terminal: Terminal, title: String, lines: [String], footer: String) {
+    public init(terminal: EditorTerminal, title: String, lines: [String], footer: String) {
         self.terminal = terminal
         self.title = title
         self.lines = lines
@@ -44,7 +44,7 @@ public final class TextDocumentView {
                 topIndex = maxTop
                 render()
             case .resize:
-                Terminal.clearScreen()
+                terminal.clearScreen()
                 render()
             case .unknown:
                 render()
@@ -69,7 +69,7 @@ public final class TextDocumentView {
         }
 
         output += "\u{1B}[1;36m\(footer.paddedToDisplayWidth(cols))\u{1B}[0m"
-        Terminal.write(output)
+        terminal.write(output)
         fflush(nil)
     }
 }

@@ -5,7 +5,7 @@ import Syntax
 
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {
-    let terminal: Terminal
+    let terminal: EditorTerminal
     public var buffers: [TextBuffer] = []
     public var currentBufferIndex: Int = 0
 
@@ -176,9 +176,10 @@ public final class Editor {
     public init(
         filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        fileIOStrategy: EditorFileIOStrategy
+        fileIOStrategy: EditorFileIOStrategy,
+        terminal: EditorTerminal
     ) {
-        self.terminal = Terminal()
+        self.terminal = terminal
         self.fileIOStrategy = fileIOStrategy
 
         if filePaths.isEmpty {
@@ -239,13 +240,15 @@ public final class Editor {
     public convenience init(
         filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        fileIOStrategy: EditorFileIOStrategy
+        fileIOStrategy: EditorFileIOStrategy,
+        terminal: EditorTerminal
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
             filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
             showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language,
-            fileIOStrategy: fileIOStrategy)
+            fileIOStrategy: fileIOStrategy,
+            terminal: terminal)
     }
 
     func startFileWatcherForCurrentBuffer() {
@@ -484,11 +487,11 @@ public final class Editor {
             }
             return
         }
-        Terminal.hideCursor()
+        terminal.hideCursor()
 
         defer {
-            Terminal.clearScreen()
-            Terminal.showCursor()
+            terminal.clearScreen()
+            terminal.showCursor()
             terminal.disableRawMode()
         }
 
@@ -496,7 +499,7 @@ public final class Editor {
             refreshScreen()
             let key = terminal.readKey()
             if key == .resize {
-                Terminal.clearScreen()
+                terminal.clearScreen()
                 continue
             }
             processKey(key)

@@ -22,7 +22,7 @@ extension Editor {
     /// Processes key input events.
     func processKey(_ key: Key) {
         if key == .resize {
-            Terminal.clearScreen()
+            terminal.clearScreen()
             return
         }
 

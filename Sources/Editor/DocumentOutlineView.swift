@@ -3,7 +3,7 @@ import Syntax
 import TextMetrics
 
 public final class DocumentOutlineView {
-    private let terminal: Terminal
+    private let terminal: EditorTerminal
     private let title: String
     private let headings: [DocumentHeading]
     private let footer: String
@@ -11,7 +11,7 @@ public final class DocumentOutlineView {
     private var topIndex: Int = 0
 
     public init(
-        terminal: Terminal,
+        terminal: EditorTerminal,
         title: String,
         headings: [DocumentHeading],
         footer: String,
@@ -63,7 +63,7 @@ public final class DocumentOutlineView {
                 guard headings.indices.contains(selectedIndex) else { return nil }
                 return headings[selectedIndex]
             case .resize:
-                Terminal.clearScreen()
+                terminal.clearScreen()
                 ensureSelectionVisible(availableHeight: availableHeight)
                 render()
             case .unknown:
@@ -113,7 +113,7 @@ public final class DocumentOutlineView {
         }
 
         output += "\u{1B}[1;36m\(footer.paddedToDisplayWidth(cols))\u{1B}[0m"
-        Terminal.write(output)
+        terminal.write(output)
         fflush(nil)
     }
 }

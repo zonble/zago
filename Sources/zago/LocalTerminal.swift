@@ -1,4 +1,5 @@
 import Config
+import Editor
 import Foundation
 
 #if os(Windows)
@@ -12,7 +13,7 @@ import Foundation
 #endif
 
 /// Handles Terminal Raw Mode control and ANSI escape sequence parsing.
-public final class Terminal {
+public final class LocalTerminal: EditorTerminal {
     public enum StartupError: Error, LocalizedError {
         case nonUTF8Console(inputCodePage: UInt32, outputCodePage: UInt32)
         case consoleModeUnavailable
@@ -20,7 +21,7 @@ public final class Terminal {
         public var errorDescription: String? {
             switch self {
             case .nonUTF8Console(let inputCodePage, let outputCodePage):
-                return Terminal.utf8ConsoleRequirementMessage(
+                return LocalTerminal.utf8ConsoleRequirementMessage(
                     inputCodePage: inputCodePage,
                     outputCodePage: outputCodePage)
             case .consoleModeUnavailable:
@@ -45,7 +46,7 @@ public final class Terminal {
     private(set) public var rawModeEnabled = false
 
     public init() {
-        lastWindowSize = Terminal.currentWindowSize()
+        lastWindowSize = LocalTerminal.currentWindowSize()
     }
 
     deinit {
@@ -64,7 +65,7 @@ public final class Terminal {
 
             originalInputCodePage = GetConsoleCP()
             originalOutputCodePage = GetConsoleOutputCP()
-            if Terminal.utf8ConsoleRequirementMessage(
+            if LocalTerminal.utf8ConsoleRequirementMessage(
                 inputCodePage: UInt32(originalInputCodePage),
                 outputCodePage: UInt32(originalOutputCodePage)
             ) != nil {
@@ -151,7 +152,7 @@ public final class Terminal {
 
     /// Returns terminal window dimensions (rows, cols).
     public func getWindowSize() -> (rows: Int, cols: Int) {
-        Terminal.currentWindowSize()
+        LocalTerminal.currentWindowSize()
     }
 
     private static func currentWindowSize() -> (rows: Int, cols: Int) {
@@ -729,6 +730,22 @@ public final class Terminal {
 
     static func characterFromConsoleUTF16Units(_ units: [UInt16]) -> Character? {
         String(decoding: units, as: UTF16.self).first
+    }
+
+    public func write(_ text: String) {
+        Self.write(text)
+    }
+
+    public func hideCursor() {
+        Self.hideCursor()
+    }
+
+    public func showCursor() {
+        Self.showCursor()
+    }
+
+    public func clearScreen() {
+        Self.clearScreen()
     }
 
     public static func write(_ text: String) {

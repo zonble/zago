@@ -112,6 +112,43 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
     }
 }
 
+final class TestEditorTerminal: EditorTerminal, @unchecked Sendable {
+    static let shared = TestEditorTerminal()
+
+    var rows = 24
+    var cols = 80
+
+    func enableRawMode() throws {
+    }
+
+    func disableRawMode() {
+    }
+
+    func getWindowSize() -> (rows: Int, cols: Int) {
+        (rows, cols)
+    }
+
+    func readKey() -> Key {
+        .esc
+    }
+
+    func readPendingText(firstChar: Character) -> String {
+        String(firstChar)
+    }
+
+    func write(_ text: String) {
+    }
+
+    func hideCursor() {
+    }
+
+    func showCursor() {
+    }
+
+    func clearScreen() {
+    }
+}
+
 extension Editor {
     convenience init(
         filePath: String? = nil,
@@ -132,7 +169,8 @@ extension Editor {
             enableSyntax: enableSyntax,
             autoReload: autoReload,
             language: language,
-            fileIOStrategy: TestLocalEditorFileIOStrategy.shared
+            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+            terminal: TestEditorTerminal.shared
         )
     }
 
@@ -155,7 +193,8 @@ extension Editor {
             enableSyntax: enableSyntax,
             autoReload: autoReload,
             language: language,
-            fileIOStrategy: TestLocalEditorFileIOStrategy.shared
+            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+            terminal: TestEditorTerminal.shared
         )
     }
 }
