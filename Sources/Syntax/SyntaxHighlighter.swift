@@ -96,6 +96,7 @@ public final class SyntaxHighlighter {
             AsciiDocSyntaxDefinition(),
             WikiSyntaxDefinition(),
             VhsSyntaxDefinition(),
+            CodeBlockPlainTextSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
@@ -150,10 +151,12 @@ public final class SyntaxHighlighter {
         guard let defaultSyntax = detectLanguage(for: filePath) else { return nil }
 
         if let detector = defaultSyntax.embeddedLanguageDetector,
-            let embeddedLangName = detector(lines, bufferLineIndex),
-            let embeddedSyntax = findLanguage(named: embeddedLangName)
+            let embeddedLangName = detector(lines, bufferLineIndex)
         {
-            return embeddedSyntax
+            if let embeddedSyntax = findLanguage(named: embeddedLangName) {
+                return embeddedSyntax
+            }
+            return findLanguage(named: "CodeBlockPlainText")
         }
         return defaultSyntax
     }
@@ -166,7 +169,7 @@ public final class SyntaxHighlighter {
         if let detector = defaultSyntax.embeddedLanguageDetector,
             let embeddedLangName = detector(lines, bufferLineIndex)
         {
-            return findLanguage(named: embeddedLangName)
+            return findLanguage(named: embeddedLangName) ?? findLanguage(named: "CodeBlockPlainText")
         }
         return nil
     }

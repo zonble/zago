@@ -33,18 +33,21 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
         for i in 0...bufferLineIndex {
             let line = lines[i].trimmingCharacters(in: .whitespaces)
             let upper = line.uppercased()
-            if upper.hasPrefix("#+BEGIN_SRC") {
+            if upper.hasPrefix("#+BEGIN_SRC") || upper.hasPrefix("#+BEGIN_EXAMPLE") {
                 inBlock = true
-                let langStr = String(line.dropFirst("#+BEGIN_SRC".count)).trimmingCharacters(in: .whitespaces)
-                activeLangName = langStr.isEmpty ? nil : langStr
-            } else if upper.hasPrefix("#+END_SRC") {
+                let prefix = upper.hasPrefix("#+BEGIN_SRC") ? "#+BEGIN_SRC" : "#+BEGIN_EXAMPLE"
+                let langStr = String(line.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
+                activeLangName = langStr.isEmpty ? "text" : langStr
+            } else if upper.hasPrefix("#+END_SRC") || upper.hasPrefix("#+END_EXAMPLE") {
                 inBlock = false
                 activeLangName = nil
             }
         }
         if inBlock, let langName = activeLangName {
             let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).uppercased()
-            if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC") {
+            if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC")
+                || currentLine.hasPrefix("#+BEGIN_EXAMPLE") || currentLine.hasPrefix("#+END_EXAMPLE")
+            {
                 return nil
             }
             return langName

@@ -55,7 +55,7 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
                     inBlock = true
                     let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(
                         in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
+                    activeLangName = langStr.isEmpty ? "text" : langStr
                 }
             }
         }
