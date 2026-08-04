@@ -516,6 +516,19 @@ struct FormatAndLayoutTests {
     #expect(output.contains("\u{1B}[1;36mt\u{1B}[0m"))
 }
 
+@Test func testSoftwrappedTableSyntaxHighlighting() throws {
+    let editor = Editor(filePath: "document.md", wrapColumn: 30, enableSyntax: true)
+    editor.buffer.lines = [
+        "| Header 1 | Header 2 | Very Long Table Content That Will Softwrap Across Multiple Sublines |"
+    ]
+
+    let output = editor.renderer.render(editor: editor, rows: 10, cols: 35)
+
+    let lines = output.components(separatedBy: "\r\n")
+    #expect(lines[1].contains("\u{1B}[94m"))
+    #expect(lines[2].contains("\u{1B}[94m"))
+}
+
 @Test func testEmbeddedCodeBlockSyntaxHighlighting() throws {
     let editor = Editor()
     editor.displayConfig.enableSyntaxHighlight = true
