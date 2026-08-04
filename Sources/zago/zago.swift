@@ -70,6 +70,8 @@ struct Zago: ParsableCommand {
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
         let terminal = LocalTerminal()
         let dependencies = EditorDependencies(fileIOStrategy: fileIOStrategy, terminal: terminal)
+        let configProvider = { ConfigLoader().loadConfig() }
+        let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
 
         if initConfig {
             let targetPath = files.first
@@ -112,14 +114,17 @@ struct Zago: ParsableCommand {
         }
 
         if let code = eval {
-            let configProvider = { ConfigLoader().loadConfig() }
-            let loadedConfig = configProvider()
             let editor = Editor(
-                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
-                showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
-                spellLanguage: spellLang,
-                loadedConfig: loadedConfig,
-                configProvider: configProvider,
+                options: EditorOptions(
+                    wrapColumn: wrap,
+                    showRuler: false,
+                    showLineNumbers: enableLineNumbers,
+                    showSubLineNumbers: enableSubLineNumbers,
+                    enableSyntax: false,
+                    language: selectedLang,
+                    spellLanguage: spellLang
+                ),
+                configSource: configSource,
                 dependencies: dependencies
                 )
 
@@ -133,14 +138,17 @@ struct Zago: ParsableCommand {
             let fileURL = URL(fileURLWithPath: scriptPath)
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
-                let configProvider = { ConfigLoader().loadConfig() }
-                let loadedConfig = configProvider()
                 let editor = Editor(
-                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
-                    showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
-                    spellLanguage: spellLang,
-                    loadedConfig: loadedConfig,
-                    configProvider: configProvider,
+                    options: EditorOptions(
+                        wrapColumn: wrap,
+                        showRuler: false,
+                        showLineNumbers: enableLineNumbers,
+                        showSubLineNumbers: enableSubLineNumbers,
+                        enableSyntax: false,
+                        language: selectedLang,
+                        spellLanguage: spellLang
+                    ),
+                    configSource: configSource,
                     dependencies: dependencies
                     )
                 editor.runLogoScript(code)
@@ -157,14 +165,18 @@ struct Zago: ParsableCommand {
             }
         }
 
-        let configProvider = { ConfigLoader().loadConfig() }
-        let loadedConfig = configProvider()
         let editor = Editor(
-            filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
-            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang,
-            spellLanguage: spellLang,
-            loadedConfig: loadedConfig,
-            configProvider: configProvider,
+            options: EditorOptions(
+                filePaths: files,
+                wrapColumn: wrap,
+                showRuler: ruler,
+                showLineNumbers: enableLineNumbers,
+                showSubLineNumbers: enableSubLineNumbers,
+                enableSyntax: enableSyntax,
+                language: selectedLang,
+                spellLanguage: spellLang
+            ),
+            configSource: configSource,
             dependencies: dependencies
             )
         editor.run()

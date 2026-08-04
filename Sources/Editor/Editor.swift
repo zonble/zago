@@ -14,6 +14,50 @@ public struct EditorDependencies {
     }
 }
 
+public struct EditorOptions {
+    public var filePaths: [String]
+    public var wrapColumn: Int?
+    public var showRuler: Bool?
+    public var showLineNumbers: Bool?
+    public var showSubLineNumbers: Bool?
+    public var enableSyntax: Bool?
+    public var autoReload: Bool?
+    public var language: Language?
+    public var spellLanguage: String?
+
+    public init(
+        filePaths: [String] = [],
+        wrapColumn: Int? = nil,
+        showRuler: Bool? = nil,
+        showLineNumbers: Bool? = nil,
+        showSubLineNumbers: Bool? = nil,
+        enableSyntax: Bool? = nil,
+        autoReload: Bool? = nil,
+        language: Language? = nil,
+        spellLanguage: String? = nil
+    ) {
+        self.filePaths = filePaths
+        self.wrapColumn = wrapColumn
+        self.showRuler = showRuler
+        self.showLineNumbers = showLineNumbers
+        self.showSubLineNumbers = showSubLineNumbers
+        self.enableSyntax = enableSyntax
+        self.autoReload = autoReload
+        self.language = language
+        self.spellLanguage = spellLanguage
+    }
+}
+
+public struct EditorConfigSource {
+    public let initial: EditorConfig
+    public let reload: () -> EditorConfig
+
+    public init(initial: EditorConfig = EditorConfig(), reload: @escaping () -> EditorConfig = { EditorConfig() }) {
+        self.initial = initial
+        self.reload = reload
+    }
+}
+
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {
     let terminal: EditorTerminal
@@ -187,56 +231,67 @@ public final class Editor {
 
     public var displayConfig: DisplayConfig
 
+    private struct ResolvedConfig {
+        let wrapColumn: Int?
+        let display: DisplayConfig
+        let language: Language
+        let usesExplicitLanguage: Bool
+        let spellLanguage: String
+        let baseMode: EditorBaseMode
+    }
+
+    private static func resolveConfig(options: EditorOptions, config: EditorConfig) -> ResolvedConfig {
+        let configuredLanguage = options.language ?? config.language
+        let display = DisplayConfig(
+            showRuler: options.showRuler ?? config.showRuler,
+            showLineNumbers: options.showLineNumbers ?? config.showLineNumbers,
+            showSubLineNumbers: options.showSubLineNumbers ?? config.showSubLineNumbers,
+            enableSyntaxHighlight: options.enableSyntax ?? config.enableSyntaxHighlight,
+            autoReload: options.autoReload ?? config.autoReload,
+            tabSize: config.tabSize,
+            trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave
+        )
+
+        return ResolvedConfig(
+            wrapColumn: options.wrapColumn ?? config.wrapColumn,
+            display: display,
+            language: configuredLanguage ?? Language.detectSystemLanguage(),
+            usesExplicitLanguage: configuredLanguage != nil,
+            spellLanguage: options.spellLanguage ?? config.spellLanguage,
+            baseMode: config.startInCanvasMode ? .canvas : .text
+        )
+    }
+
     public init(
-        filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
-        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        spellLanguage: String? = nil,
-        loadedConfig: EditorConfig = EditorConfig(),
-        configProvider: @escaping () -> EditorConfig = { EditorConfig() },
+        options: EditorOptions = EditorOptions(),
+        configSource: EditorConfigSource = EditorConfigSource(),
         dependencies: EditorDependencies
     ) {
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
-        self.configProvider = configProvider
+        self.configProvider = configSource.reload
 
-        if filePaths.isEmpty {
+        if options.filePaths.isEmpty {
             self.buffers = [TextBuffer()]
         } else {
-            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy) }
+            self.buffers = options.filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy) }
         }
         self.currentBufferIndex = 0
 
-        // CLI argument priority > .zagorc config > default
-        let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
-        let finalRuler = showRuler ?? loadedConfig.showRuler
-        let finalLineNumbers = showLineNumbers ?? loadedConfig.showLineNumbers
-        let finalSubLineNumbers = showSubLineNumbers ?? loadedConfig.showSubLineNumbers
-        let finalSyntax = enableSyntax ?? loadedConfig.enableSyntaxHighlight
-        let finalReload = autoReload ?? loadedConfig.autoReload
-        let configuredLanguage = language ?? loadedConfig.language
-        let finalLang = configuredLanguage ?? Language.detectSystemLanguage()
-        let finalSpellLang = spellLanguage ?? loadedConfig.spellLanguage
-        let finalTabSize = loadedConfig.tabSize
-        let finalTrimTrailingWhitespace = loadedConfig.trimTrailingWhitespaceOnSave
-        let initialBaseMode: EditorBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
-
-        self.language = finalLang
-        self.usesExplicitLanguage = configuredLanguage != nil
-        L10n.currentLanguage = finalLang
-        self.spellChecker.setLanguage(finalSpellLang)
-        self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
-        self.displayConfig = DisplayConfig(
-            showRuler: finalRuler, showLineNumbers: finalLineNumbers, showSubLineNumbers: finalSubLineNumbers,
-            enableSyntaxHighlight: finalSyntax,
-            autoReload: finalReload, tabSize: finalTabSize,
-            trimTrailingWhitespaceOnSave: finalTrimTrailingWhitespace)
-        self.defaultBaseMode = initialBaseMode
-        self.defaultViewShowRuler = finalRuler
-        self.defaultViewShowLineNumbers = finalLineNumbers
-        self.defaultViewShowSubLineNumbers = finalSubLineNumbers
-        self.defaultViewWrapColumn = LayoutEngine.normalizedWrapColumn(finalWrap)
+        let resolved = Self.resolveConfig(options: options, config: configSource.initial)
+        self.language = resolved.language
+        self.usesExplicitLanguage = resolved.usesExplicitLanguage
+        L10n.currentLanguage = resolved.language
+        self.spellChecker.setLanguage(resolved.spellLanguage)
+        self.layoutEngine = LayoutEngine(wrapColumn: resolved.wrapColumn)
+        self.displayConfig = resolved.display
+        self.defaultBaseMode = resolved.baseMode
+        self.defaultViewShowRuler = resolved.display.showRuler
+        self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
+        self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
+        self.defaultViewWrapColumn = layoutEngine.wrapColumn
         for buffer in self.buffers {
-            buffer.baseMode = buffer.isDirectoryBuffer ? .text : initialBaseMode
+            buffer.baseMode = buffer.isDirectoryBuffer ? .text : resolved.baseMode
             buffer.viewShowRuler = defaultViewShowRuler
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
@@ -247,29 +302,9 @@ public final class Editor {
         if isCanvasModeActive {
             syncCanvasCursorFromBuffer()
         }
-        applyCustomConfig(loadedConfig)
+        applyCustomConfig(configSource.initial)
 
         startFileWatcherForCurrentBuffer()
-    }
-
-    public convenience init(
-        filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
-        showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        spellLanguage: String? = nil,
-        loadedConfig: EditorConfig = EditorConfig(),
-        configProvider: @escaping () -> EditorConfig = { EditorConfig() },
-        dependencies: EditorDependencies
-    ) {
-        let paths = filePath != nil ? [filePath!] : []
-        self.init(
-            filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
-            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload,
-            language: language,
-            spellLanguage: spellLanguage,
-            loadedConfig: loadedConfig,
-            configProvider: configProvider,
-            dependencies: dependencies
-            )
     }
 
     func startFileWatcherForCurrentBuffer() {
@@ -376,24 +411,19 @@ public final class Editor {
 
     /// Applies reloadable configuration without changing per-editor runtime modes.
     func applyReloadedConfig(_ loadedConfig: EditorConfig) {
-        self.defaultViewWrapColumn = LayoutEngine.normalizedWrapColumn(loadedConfig.wrapColumn)
-        self.defaultViewShowRuler = loadedConfig.showRuler
-        self.defaultViewShowLineNumbers = loadedConfig.showLineNumbers
-        self.defaultViewShowSubLineNumbers = loadedConfig.showSubLineNumbers
+        let resolved = Self.resolveConfig(options: EditorOptions(), config: loadedConfig)
+        self.defaultViewWrapColumn = LayoutEngine.normalizedWrapColumn(resolved.wrapColumn)
+        self.defaultViewShowRuler = resolved.display.showRuler
+        self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
+        self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
-        self.displayConfig.showRuler = loadedConfig.showRuler
-        self.displayConfig.showLineNumbers = loadedConfig.showLineNumbers
-        self.displayConfig.showSubLineNumbers = loadedConfig.showSubLineNumbers
-        self.displayConfig.enableSyntaxHighlight = loadedConfig.enableSyntaxHighlight
-        self.displayConfig.autoReload = loadedConfig.autoReload
-        self.displayConfig.tabSize = loadedConfig.tabSize
-        self.displayConfig.trimTrailingWhitespaceOnSave = loadedConfig.trimTrailingWhitespaceOnSave
-        self.defaultBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
+        self.displayConfig = resolved.display
+        self.defaultBaseMode = resolved.baseMode
         saveCurrentViewSettingsToBuffer()
-        if let lang = loadedConfig.language {
-            self.language = lang
+        if loadedConfig.language != nil {
+            self.language = resolved.language
             self.usesExplicitLanguage = true
-            L10n.currentLanguage = lang
+            L10n.currentLanguage = resolved.language
         }
         applyCustomConfig(loadedConfig)
     }

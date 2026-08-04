@@ -363,8 +363,7 @@ import Testing
     reloadedConfig.showRuler = true
 
     let injectedEditor = Editor(
-        loadedConfig: initialConfig,
-        configProvider: { reloadedConfig },
+        configSource: EditorConfigSource(initial: initialConfig, reload: { reloadedConfig }),
         dependencies: EditorDependencies(
             fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
             terminal: TestEditorTerminal.shared

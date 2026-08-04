@@ -171,14 +171,16 @@ extension Editor {
         language: Language? = nil
     ) {
         self.init(
-            filePath: filePath,
-            wrapColumn: wrapColumn,
-            showRuler: showRuler,
-            showLineNumbers: showLineNumbers,
-            showSubLineNumbers: showSubLineNumbers,
-            enableSyntax: enableSyntax,
-            autoReload: autoReload,
-            language: language,
+            options: EditorOptions(
+                filePaths: filePath.map { [$0] } ?? [],
+                wrapColumn: wrapColumn,
+                showRuler: showRuler,
+                showLineNumbers: showLineNumbers,
+                showSubLineNumbers: showSubLineNumbers,
+                enableSyntax: enableSyntax,
+                autoReload: autoReload,
+                language: language
+            ),
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
                 terminal: TestEditorTerminal.shared
@@ -197,14 +199,16 @@ extension Editor {
         language: Language? = nil
     ) {
         self.init(
-            filePaths: filePaths,
-            wrapColumn: wrapColumn,
-            showRuler: showRuler,
-            showLineNumbers: showLineNumbers,
-            showSubLineNumbers: showSubLineNumbers,
-            enableSyntax: enableSyntax,
-            autoReload: autoReload,
-            language: language,
+            options: EditorOptions(
+                filePaths: filePaths,
+                wrapColumn: wrapColumn,
+                showRuler: showRuler,
+                showLineNumbers: showLineNumbers,
+                showSubLineNumbers: showSubLineNumbers,
+                enableSyntax: enableSyntax,
+                autoReload: autoReload,
+                language: language
+            ),
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
                 terminal: TestEditorTerminal.shared

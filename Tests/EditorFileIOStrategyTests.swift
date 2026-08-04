@@ -111,9 +111,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 @Test func testEditorLoadsAndSavesThroughFileIODelegate() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
     let editor = Editor(
-        filePath: "/notes.txt",
-        autoReload: false,
-        language: .en,
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: false, language: .en),
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
 
     #expect(editor.buffer.lines == ["alpha", "beta"])
@@ -132,9 +130,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         directories: ["/project", "/project/src"]
     )
     let editor = Editor(
-        filePath: "/project",
-        autoReload: false,
-        language: .en,
+        options: EditorOptions(filePaths: ["/project"], autoReload: false, language: .en),
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
 
     #expect(editor.buffer is DirectoryBuffer)
@@ -153,9 +149,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 @Test func testEditorFileIOStrategyWatchNotificationTrigger() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
     let editor = Editor(
-        filePath: "/notes.txt",
-        autoReload: true,
-        language: .en,
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: true, language: .en),
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
     )
 
@@ -173,9 +167,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 @Test func testEditorFileWatcherDirtyPromptsUser() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
     let editor = Editor(
-        filePath: "/notes.txt",
-        autoReload: true,
-        language: .en,
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: true, language: .en),
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
     )
 
@@ -212,4 +204,3 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     #expect(editor.buffer.lines == ["updated on disk"])
     #expect(editor.buffer.isModified == false)
 }
-
