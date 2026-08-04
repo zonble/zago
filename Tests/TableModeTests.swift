@@ -1258,3 +1258,38 @@ import Testing
     // Verify width was NOT expanded into colliding Box 2
     #expect(collidingEditor.buffer.lines[1] == "│y││   │")
 }
+
+@Test func testTableModePageUpAndPageDownClampsToCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┐",
+        "│ Line 1         │",
+        "│ Line 2         │",
+        "│ Line 3         │",
+        "└────────────────┘",
+    ]
+    editor.buffer.lineIndex = 2  // "│ Line 2         │"
+    editor.buffer.columnIndex = 3
+    editor.toggleTableMode()
+
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell?.innerMinLine == 1)
+    #expect(editor.currentTableCell?.innerMaxLine == 3)
+
+    // Press PageUp -> should move to top line of cell (line 1), NOT outside cell
+    editor.processKey(.pageUp)
+    #expect(editor.buffer.lineIndex == 1)
+
+    // Press PageUp again -> should stay at top line of cell (line 1)
+    editor.processKey(.pageUp)
+    #expect(editor.buffer.lineIndex == 1)
+
+    // Press PageDown -> should move to bottom line of cell (line 3), NOT outside cell
+    editor.processKey(.pageDown)
+    #expect(editor.buffer.lineIndex == 3)
+
+    // Press PageDown again -> should stay at bottom line of cell (line 3)
+    editor.processKey(.pageDown)
+    #expect(editor.buffer.lineIndex == 3)
+}
+

@@ -153,6 +153,15 @@ public struct MovePgdnCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive, let cell = editor.currentTableCell {
+            editor.clearActiveMark()
+            let vCol = editor.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+            editor.buffer.lineIndex = cell.innerMaxLine
+            editor.buffer.columnIndex = editor.getCharIndexForVisualColumn(
+                in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
+            editor.clampTableModeCursor()
+            return
+        }
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
@@ -173,6 +182,15 @@ public struct MovePgupCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive, let cell = editor.currentTableCell {
+            editor.clearActiveMark()
+            let vCol = editor.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+            editor.buffer.lineIndex = cell.innerMinLine
+            editor.buffer.columnIndex = editor.getCharIndexForVisualColumn(
+                in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
+            editor.clampTableModeCursor()
+            return
+        }
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
@@ -183,3 +201,4 @@ public struct MovePgupCommand: Command {
         editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
     }
 }
+

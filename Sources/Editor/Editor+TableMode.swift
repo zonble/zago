@@ -94,6 +94,25 @@ extension Editor {
             clampTableModeCursor()
             return true
 
+        case .pageUp, .ctrl("y"), .ctrl("Y"), .f7:
+            clearActiveMark()
+            let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
+            buffer.lineIndex = cell.innerMinLine
+            buffer.columnIndex = getCharIndexForVisualColumn(
+                in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
+            clampTableModeCursor()
+            return true
+
+        case .pageDown, .ctrl("v"), .ctrl("V"), .f8:
+            clearActiveMark()
+            let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
+            buffer.lineIndex = cell.innerMaxLine
+            buffer.columnIndex = getCharIndexForVisualColumn(
+                in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
+            clampTableModeCursor()
+            return true
+
+
         case .arrowLeft:
             clearActiveMark()
             if buffer.columnIndex == cell.innerMinCol {
