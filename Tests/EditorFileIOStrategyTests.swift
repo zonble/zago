@@ -144,10 +144,50 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     #expect(fileIO.watchedPath == "/notes.txt")
     #expect(fileIO.watcherCallback != nil)
 
-    // Simulate external file change
+    // 1. Not dirty -> Reload directly
     fileIO.files["/notes.txt"] = "updated externally"
     fileIO.watcherCallback?()
 
     #expect(editor.buffer.lines == ["updated externally"])
+    #expect(editor.buffer.isModified == false)
 }
+
+@Test func testEditorFileWatcherDirtyPromptsUser() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
+    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO)
+
+    // Make buffer dirty
+    editor.buffer.lines = ["alpha", "beta", "user edited line"]
+    editor.buffer.isModified = true
+
+    // External change occurs on disk
+    fileIO.files["/notes.txt"] = "updated on disk"
+    fileIO.watcherCallback?()
+
+    // Editor should prompt user for confirmation
+    if case .confirmExternalReload = editor.currentPromptMode {
+        // Correct prompt mode
+    } else {
+        Issue.record("Expected confirmExternalReload prompt mode when buffer is dirty")
+    }
+
+    // User chooses 'N' -> Keep local changes
+    editor.processKey(.char("n"))
+    #expect(editor.buffer.lines == ["alpha", "beta", "user edited line"])
+    #expect(editor.buffer.isModified == true)
+
+    // Trigger external change again
+    fileIO.watcherCallback?()
+    if case .confirmExternalReload = editor.currentPromptMode {
+        // Correct prompt mode
+    } else {
+        Issue.record("Expected confirmExternalReload prompt mode when buffer is dirty")
+    }
+
+    // User chooses 'Y' -> Discard local changes and reload from disk
+    editor.processKey(.char("y"))
+    #expect(editor.buffer.lines == ["updated on disk"])
+    #expect(editor.buffer.isModified == false)
+}
+
 
