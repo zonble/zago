@@ -79,51 +79,25 @@ struct Zago: ParsableCommand {
             terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
             return
         }
-        let enableSyntax: Bool?
-        if let s = syntax?.lowercased() {
-            enableSyntax = (s == "true" || s == "1" || s == "on" || s == "yes")
-        } else {
-            enableSyntax = nil
-        }
+        let enableSyntax = Self.parseBoolOption(syntax)
+        let enableLineNumbers = Self.parseBoolOption(lineNumbers)
+        let enableSubLineNumbers = Self.parseBoolOption(subLineNumbers)
+        let selectedLang = Self.parseLanguageOption(lang)
 
-        let enableLineNumbers: Bool?
-        if let l = lineNumbers?.lowercased() {
-            enableLineNumbers = (l == "true" || l == "1" || l == "on" || l == "yes")
-        } else {
-            enableLineNumbers = nil
-        }
-
-        let enableSubLineNumbers: Bool?
-        if let sl = subLineNumbers?.lowercased() {
-            enableSubLineNumbers = (sl == "true" || sl == "1" || sl == "on" || sl == "yes")
-        } else {
-            enableSubLineNumbers = nil
-        }
-
-        let selectedLang: Language?
-        if let l = lang?.lowercased() {
-            if l == "zh_tw" || l == "zh-hant" || l == "zh" || l == "tw" {
-                selectedLang = .zh_TW
-            } else if l == "en" || l == "english" {
-                selectedLang = .en
-            } else {
-                selectedLang = nil
-            }
-        } else {
-            selectedLang = nil
-        }
+        let baseOptions = EditorOptions(
+            wrapColumn: wrap,
+            showLineNumbers: enableLineNumbers,
+            showSubLineNumbers: enableSubLineNumbers,
+            language: selectedLang,
+            spellLanguage: spellLang
+        )
+        var headlessOptions = baseOptions
+        headlessOptions.showRuler = false
+        headlessOptions.enableSyntax = false
 
         if let code = eval {
             let editor = Editor(
-                options: EditorOptions(
-                    wrapColumn: wrap,
-                    showRuler: false,
-                    showLineNumbers: enableLineNumbers,
-                    showSubLineNumbers: enableSubLineNumbers,
-                    enableSyntax: false,
-                    language: selectedLang,
-                    spellLanguage: spellLang
-                ),
+                options: headlessOptions,
                 configSource: configSource,
                 dependencies: dependencies
                 )
@@ -139,15 +113,7 @@ struct Zago: ParsableCommand {
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
                 let editor = Editor(
-                    options: EditorOptions(
-                        wrapColumn: wrap,
-                        showRuler: false,
-                        showLineNumbers: enableLineNumbers,
-                        showSubLineNumbers: enableSubLineNumbers,
-                        enableSyntax: false,
-                        language: selectedLang,
-                        spellLanguage: spellLang
-                    ),
+                    options: headlessOptions,
                     configSource: configSource,
                     dependencies: dependencies
                     )
@@ -165,20 +131,34 @@ struct Zago: ParsableCommand {
             }
         }
 
+        var interactiveOptions = baseOptions
+        interactiveOptions.filePaths = files
+        interactiveOptions.showRuler = ruler
+        interactiveOptions.enableSyntax = enableSyntax
+
         let editor = Editor(
-            options: EditorOptions(
-                filePaths: files,
-                wrapColumn: wrap,
-                showRuler: ruler,
-                showLineNumbers: enableLineNumbers,
-                showSubLineNumbers: enableSubLineNumbers,
-                enableSyntax: enableSyntax,
-                language: selectedLang,
-                spellLanguage: spellLang
-            ),
+            options: interactiveOptions,
             configSource: configSource,
             dependencies: dependencies
             )
         editor.run()
+    }
+
+    private static func parseBoolOption(_ value: String?) -> Bool? {
+        guard let value else { return nil }
+        let normalized = value.lowercased()
+        return normalized == "true" || normalized == "1" || normalized == "on" || normalized == "yes"
+    }
+
+    private static func parseLanguageOption(_ value: String?) -> Language? {
+        guard let value else { return nil }
+        switch value.lowercased() {
+        case "zh_tw", "zh-hant", "zh", "tw":
+            return .zh_TW
+        case "en", "english":
+            return .en
+        default:
+            return nil
+        }
     }
 }
