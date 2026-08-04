@@ -22,6 +22,7 @@ public final class FileWatcher: @unchecked Sendable {
         private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
     #elseif os(Windows)
         private var changeHandle: HANDLE? = nil
+        private var timerSource: (any DispatchSourceTimer)? = nil
         private var isWatchingWindows = false
         private var watchedPath: String? = nil
         private var lastModificationDate: Date? = nil
@@ -74,7 +75,7 @@ public final class FileWatcher: @unchecked Sendable {
             let handle = dirPath.withCString(encodedAs: UTF16.self) { pStr in
                 FindFirstChangeNotificationW(
                     pStr,
-                    FALSE,
+                    false,
                     DWORD(FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_FILE_NAME)
                 )
             }
@@ -116,6 +117,10 @@ public final class FileWatcher: @unchecked Sendable {
             fileDescriptor = -1
         #elseif os(Windows)
             isWatchingWindows = false
+            if let timer = timerSource {
+                timer.cancel()
+                timerSource = nil
+            }
             if let h = changeHandle, h != INVALID_HANDLE_VALUE {
                 FindCloseChangeNotification(h)
                 changeHandle = nil
@@ -144,7 +149,7 @@ public final class FileWatcher: @unchecked Sendable {
                 let currentMTime = self.getModificationDate(for: p)
                 if currentMTime != self.lastModificationDate {
                     self.lastModificationDate = currentMTime
-                    self?.onChange?()
+                    self.onChange?()
                 }
             }
             self.timerSource = timer
