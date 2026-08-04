@@ -114,8 +114,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         filePath: "/notes.txt",
         autoReload: false,
         language: .en,
-        fileIOStrategy: fileIO,
-        terminal: TestEditorTerminal.shared)
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
 
     #expect(editor.buffer.lines == ["alpha", "beta"])
 
@@ -136,8 +135,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         filePath: "/project",
         autoReload: false,
         language: .en,
-        fileIOStrategy: fileIO,
-        terminal: TestEditorTerminal.shared)
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
 
     #expect(editor.buffer is DirectoryBuffer)
     #expect(editor.buffer.lines.contains("▸ src/"))
@@ -154,7 +152,12 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 
 @Test func testEditorFileIOStrategyWatchNotificationTrigger() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
-    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    let editor = Editor(
+        filePath: "/notes.txt",
+        autoReload: true,
+        language: .en,
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
 
     #expect(fileIO.watchedPath == "/notes.txt")
     #expect(fileIO.watcherCallback != nil)
@@ -169,7 +172,12 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 
 @Test func testEditorFileWatcherDirtyPromptsUser() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
-    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    let editor = Editor(
+        filePath: "/notes.txt",
+        autoReload: true,
+        language: .en,
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
 
     // Make buffer dirty
     editor.buffer.lines = ["alpha", "beta", "user edited line"]
@@ -204,5 +212,4 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     #expect(editor.buffer.lines == ["updated on disk"])
     #expect(editor.buffer.isModified == false)
 }
-
 

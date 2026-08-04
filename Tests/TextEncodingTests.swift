@@ -57,7 +57,12 @@ import Testing
     try big5Data.write(to: URL(fileURLWithPath: tmpPath))
 
     // 1. Open Big5 file in Editor
-    let editor = Editor(filePath: tmpPath, autoReload: false, language: .en, fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    let editor = Editor(
+        filePath: tmpPath,
+        autoReload: false,
+        language: .en,
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
     #expect(editor.buffer.fileEncoding == .big5)
     #expect(editor.buffer.lines == ["繁體中文檔案"])
 

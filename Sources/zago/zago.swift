@@ -69,6 +69,7 @@ struct Zago: ParsableCommand {
     func run() throws {
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
         let terminal = LocalTerminal()
+        let dependencies = EditorDependencies(fileIOStrategy: fileIOStrategy, terminal: terminal)
 
         if initConfig {
             let targetPath = files.first
@@ -119,8 +120,7 @@ struct Zago: ParsableCommand {
                 spellLanguage: spellLang,
                 loadedConfig: loadedConfig,
                 configProvider: configProvider,
-                fileIOStrategy: fileIOStrategy,
-                terminal: terminal
+                dependencies: dependencies
                 )
 
             editor.runLogoScript(code)
@@ -141,8 +141,7 @@ struct Zago: ParsableCommand {
                     spellLanguage: spellLang,
                     loadedConfig: loadedConfig,
                     configProvider: configProvider,
-                    fileIOStrategy: fileIOStrategy,
-                    terminal: terminal
+                    dependencies: dependencies
                     )
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
@@ -166,8 +165,7 @@ struct Zago: ParsableCommand {
             spellLanguage: spellLang,
             loadedConfig: loadedConfig,
             configProvider: configProvider,
-            fileIOStrategy: fileIOStrategy,
-            terminal: terminal
+            dependencies: dependencies
             )
         editor.run()
     }

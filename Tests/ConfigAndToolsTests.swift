@@ -365,8 +365,10 @@ import Testing
     let injectedEditor = Editor(
         loadedConfig: initialConfig,
         configProvider: { reloadedConfig },
-        fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
-        terminal: TestEditorTerminal.shared
+        dependencies: EditorDependencies(
+            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+            terminal: TestEditorTerminal.shared
+        )
     )
     #expect(injectedEditor.displayConfig.showLineNumbers == false)
     #expect(injectedEditor.displayConfig.showSubLineNumbers == true)

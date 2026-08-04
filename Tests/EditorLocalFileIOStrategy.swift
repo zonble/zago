@@ -179,8 +179,10 @@ extension Editor {
             enableSyntax: enableSyntax,
             autoReload: autoReload,
             language: language,
-            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
-            terminal: TestEditorTerminal.shared
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
         )
     }
 
@@ -203,8 +205,10 @@ extension Editor {
             enableSyntax: enableSyntax,
             autoReload: autoReload,
             language: language,
-            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
-            terminal: TestEditorTerminal.shared
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
         )
     }
 }

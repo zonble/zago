@@ -4,6 +4,16 @@ import LogoEngine
 import SpellChecker
 import Syntax
 
+public struct EditorDependencies {
+    public let fileIOStrategy: EditorFileIOStrategy
+    public let terminal: EditorTerminal
+
+    public init(fileIOStrategy: EditorFileIOStrategy, terminal: EditorTerminal) {
+        self.fileIOStrategy = fileIOStrategy
+        self.terminal = terminal
+    }
+}
+
 /// Nano-style UI state machine and core editor engine.
 public final class Editor {
     let terminal: EditorTerminal
@@ -183,17 +193,16 @@ public final class Editor {
         spellLanguage: String? = nil,
         loadedConfig: EditorConfig = EditorConfig(),
         configProvider: @escaping () -> EditorConfig = { EditorConfig() },
-        fileIOStrategy: EditorFileIOStrategy,
-        terminal: EditorTerminal
+        dependencies: EditorDependencies
     ) {
-        self.terminal = terminal
-        self.fileIOStrategy = fileIOStrategy
+        self.terminal = dependencies.terminal
+        self.fileIOStrategy = dependencies.fileIOStrategy
         self.configProvider = configProvider
 
         if filePaths.isEmpty {
             self.buffers = [TextBuffer()]
         } else {
-            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: fileIOStrategy) }
+            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy) }
         }
         self.currentBufferIndex = 0
 
@@ -249,8 +258,7 @@ public final class Editor {
         spellLanguage: String? = nil,
         loadedConfig: EditorConfig = EditorConfig(),
         configProvider: @escaping () -> EditorConfig = { EditorConfig() },
-        fileIOStrategy: EditorFileIOStrategy,
-        terminal: EditorTerminal
+        dependencies: EditorDependencies
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
@@ -260,8 +268,7 @@ public final class Editor {
             spellLanguage: spellLanguage,
             loadedConfig: loadedConfig,
             configProvider: configProvider,
-            fileIOStrategy: fileIOStrategy,
-            terminal: terminal
+            dependencies: dependencies
             )
     }
 

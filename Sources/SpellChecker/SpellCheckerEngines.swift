@@ -391,6 +391,9 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     }
 
     public func isCorrect(_ word: String) -> Bool {
+        if fallbackEngine.isCorrect(word) {
+            return true
+        }
         #if os(Windows)
         if let systemResult = systemIsCorrect(word) {
             return systemResult
