@@ -313,7 +313,7 @@ public struct EnglishStrings {
         "helpview.canvas_1": "    M+V                Toggle Canvas Mode for fixed-position editing",
         "helpview.canvas_2": "    Shift+Arrow        Draw box lines and move the canvas cursor",
         "helpview.canvas_3": "    Ctrl+Shift+Arrow   Draw arrow lines with an arrowhead at the endpoint",
-        "helpview.canvas_4": "    ^^                 Set / unset rectangular canvas block mark",
+        "helpview.canvas_4": "    ^^ / M+B           Set / unset rectangular canvas block mark",
 
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
         "helpview.search_1": "    ^W / F6, M+N/P    Search; repeat next/previous match",
@@ -336,7 +336,7 @@ public struct EnglishStrings {
         "helpview.file_6": "    ^X / F2            Close buffer / Exit editor",
         "helpview.file_7": "    F4                 Save & Exit (save buffer and close/exit)",
         "helpview.file_8": "    ^G                 Cancel active selection or canvas mark",
-        "helpview.file_10": "    ^^ (Canvas)        Set / unset rectangular canvas block mark",
+        "helpview.file_10": "    ^^ / M+B (Canvas)  Set / unset rectangular canvas block mark",
         "helpview.file_9": "    F1 / M+M / ^M      Toggle top Menu Bar",
 
         "helpview.sec_logo": "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
@@ -392,7 +392,7 @@ public struct EnglishStrings {
         "menu.file.reload_config": "Reload Config",
 
         "menu.edit.undo": "Undo\t^Z",
-        "menu.edit.mark": "Toggle Canvas Mark\t^^",
+        "menu.edit.mark": "Toggle Canvas Mark\t^^ / M+B",
         "menu.edit.cut": "Cut Text\t^K",
         "menu.edit.paste": "UnCut (Paste)\t^U",
         "menu.edit.delete_line": "Delete Line\t^BS",

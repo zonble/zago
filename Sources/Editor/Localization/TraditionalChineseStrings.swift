@@ -313,7 +313,7 @@ public struct TraditionalChineseStrings {
         "helpview.canvas_1": "    M+V                切換 Canvas Mode，進行固定位置編輯",
         "helpview.canvas_2": "    Shift+方向鍵       畫出框線並移動畫布游標",
         "helpview.canvas_3": "    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭",
-        "helpview.canvas_4": "    ^^                 設定/取消矩形 canvas 區塊標記",
+        "helpview.canvas_4": "    ^^ / M+B           設定/取消矩形 canvas 區塊標記",
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
         "helpview.search_1": "    ^W / F6, M+N/P    搜尋；跳到下一個/上一個結果",
@@ -336,7 +336,7 @@ public struct TraditionalChineseStrings {
         "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
         "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
         "helpview.file_8": "    ^G                 取消目前選取範圍或 canvas mark",
-        "helpview.file_10": "    ^^ (Canvas)        設定/取消矩形 canvas 區塊標記",
+        "helpview.file_10": "    ^^ / M+B (Canvas)  設定/取消矩形 canvas 區塊標記",
         "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列 (Menu Bar)",
 
         "helpview.sec_logo": "  Editor LOGO 巨集語言與海龜繪圖指令：",
@@ -392,7 +392,7 @@ public struct TraditionalChineseStrings {
         "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
-        "menu.edit.mark": "標記區塊\t^^",
+        "menu.edit.mark": "標記區塊\t^^ / M+B",
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^BS",

@@ -80,7 +80,7 @@ lines.
 | :--- | :--- |
 | `Shift` + `Arrow` | Start and extend text selection (Text Mode) or draw lines (Canvas Mode) |
 | `Shift` + `Home` / `End` | Extend selection to beginning / end of visual line |
-| `^^` (Ctrl+^) | Set block mark (Canvas Mode) |
+| `^^` (Ctrl+^) / `M+B` | Set block mark (Canvas Mode) |
 | `M+W` | Copy selected text or active canvas block to clipboard |
 | `^K` | Cut selected text, active canvas block, or cut current line |
 | `^U` | Paste (uncut) last copied/cut text or canvas block |

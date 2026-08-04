@@ -633,7 +633,7 @@ struct FormatAndLayoutTests {
     editor.switchToCanvasMode()
     let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
     #expect(canvasHelp.contains("⇧+Arrow"))
-    #expect(canvasHelp.contains("^^"))
+    #expect(canvasHelp.contains("M+B"))
     #expect(canvasHelp.contains("^K"))
     #expect(canvasHelp.contains("^U"))
     #expect(canvasHelp.contains("F1"))

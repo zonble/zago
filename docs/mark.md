@@ -68,13 +68,13 @@ Canvas mode follows a PE2-style rectangular block mark model.
 
 ### Block Mark
 
-- `^^` / `Ctrl+^` sets the canvas block mark start point when no block is
+- `^^` / `Ctrl+^` or `M+B` sets the canvas block mark start point when no block is
   active.
-- Pressing `^^` / `Ctrl+^` again sets the block end point at the current cursor
+- Pressing `^^` / `Ctrl+^` or `M+B` again sets the block end point at the current cursor
   position.
-- Pressing `^^` / `Ctrl+^` after both points are set starts a new block mark at
+- Pressing `^^` / `Ctrl+^` or `M+B` after both points are set starts a new block mark at
   the current cursor position.
-- Cursor movement does not change the active block mark. Only `^^` / `Ctrl+^`
+- Cursor movement does not change the active block mark. Only `^^` / `Ctrl+^` or `M+B`
   changes the block start or end point.
 - The active block is the rectangle between the fixed start and end points.
 - Block bounds are visual-cell based and inclusive.

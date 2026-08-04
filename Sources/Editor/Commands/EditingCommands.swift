@@ -44,7 +44,7 @@ public struct ToggleMarkCommand: Command {
     public let id: CommandID = .editMark
     public let name = "Mark"
     public let description = "Set or unset canvas block mark"
-    public let keys: [Key] = [.mark]
+    public let keys: [Key] = [.mark, .alt("b"), .alt("B")]
 
     public init() {}
 
