@@ -4,6 +4,14 @@
 
 No changes yet.
 
+## 1.0.4 - 2026-08-04
+
+Windows terminal redraw fix release.
+
+### Fixed
+
+- Windows terminal resize events now trigger an automatic full-screen redraw without waiting for the next keypress.
+
 ## 1.0.3 - 2026-08-04
 
 Windows compatibility and installation documentation release.

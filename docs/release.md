@@ -1,6 +1,6 @@
-# Release & Preview Builds
+# Release Process
 
-This document is the practical release checklist for sharing zago with early users.
+This document is the canonical release checklist for zago.
 
 ## Audience
 
@@ -95,21 +95,54 @@ Tap maintenance is documented in [Homebrew Tap](homebrew_tap.md).
 
 On Linux, the Homebrew formula depends on Homebrew's `swift` package at build time. For non-Homebrew Linux installs, use Swift 6 from the distribution or Swift.org and build from source.
 
-## Smoke Test
+## Release Inputs
+
+Before starting, choose the release version:
+
+```text
+X.Y.Z
+```
+
+For example:
+
+```text
+1.0.4
+```
+
+Use the corresponding tag name everywhere:
+
+```text
+vX.Y.Z
+```
+
+## Local Validation
 
 Before sharing a build, run:
 
-```sh
+```powershell
 swift test
-./build.sh
-zago --version
-zago --init
+swift build -c release --product zago
+.build\x86_64-unknown-windows-msvc\release\zago.exe --version
 ```
 
-Then manually check:
+On macOS or Linux, the release binary path is usually:
+
+```sh
+.build/release/zago --version
+```
+
+For install-script validation on macOS/Linux, also run:
+
+```sh
+./build.sh
+zago --version
+```
+
+Then manually smoke-test:
 
 - open, edit, save, and reopen a Markdown file
 - paste CJK text and emoji such as `❌❌❌❌❌`
+- resize the terminal window and verify the editor redraws automatically
 - open the menu over lines containing wide characters
 - toggle Canvas Mode with `M+V`
 - create and edit a simple table
@@ -120,19 +153,100 @@ Then manually check:
 
 1. Update `Sources/Config/ZagoVersion.swift`.
 2. Update `CHANGELOG.md`.
-3. Run `swift test`.
-4. Run `./build.sh`.
-5. Verify `zago --version`.
-6. Smoke-test CJK and emoji alignment in a real terminal.
-7. Create and push a git tag:
+3. Update any version-specific tests.
+4. Run the local validation commands above.
+5. Commit the release changes:
+
+```sh
+git status --short
+git add CHANGELOG.md Sources/Config/ZagoVersion.swift Tests/ConfigAndToolsTests.swift docs/release.md docs/homebrew_tap.md
+git commit -m "Release X.Y.Z"
+```
+
+6. Create and push the tag:
 
 ```sh
 git tag vX.Y.Z
+git push origin main
 git push origin vX.Y.Z
 ```
 
-8. Update the Homebrew tap Formula with the tag URL and SHA-256 checksum.
-9. Share install instructions and known limitations with testers.
+7. Convert the tag into a GitHub Release:
+
+```sh
+cat > release-notes-X.Y.Z.md <<'EOF'
+Windows terminal redraw fix release.
+
+### Fixed
+
+- Windows terminal resize events now trigger an automatic full-screen redraw without waiting for the next keypress.
+EOF
+
+gh release create vX.Y.Z \
+  --title "zago X.Y.Z" \
+  --notes-file release-notes-X.Y.Z.md \
+  --latest
+```
+
+If `gh` is unavailable, use GitHub's web UI:
+
+1. Open `https://github.com/zonble/zago/releases/new`.
+2. Choose the existing tag `vX.Y.Z`.
+3. Set the release title to `zago X.Y.Z`.
+4. Copy the `CHANGELOG.md` section for `X.Y.Z` into the release notes.
+5. Publish the release.
+
+8. Calculate the GitHub tag archive checksum:
+
+```sh
+curl -L https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz | shasum -a 256
+```
+
+PowerShell alternative:
+
+```powershell
+$version = "X.Y.Z"
+$archive = "$env:TEMP\zago-v$version.tar.gz"
+Invoke-WebRequest -UseBasicParsing `
+  -Uri "https://github.com/zonble/zago/archive/refs/tags/v$version.tar.gz" `
+  -OutFile $archive
+Get-FileHash -Algorithm SHA256 $archive
+```
+
+9. Update the Homebrew formula template and tap formula:
+
+```ruby
+url "https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz"
+sha256 "<sha256>"
+```
+
+10. In the tap repository, validate and push the formula:
+
+```sh
+brew install --build-from-source Formula/zago.rb
+brew test zago
+brew audit --strict Formula/zago.rb
+brew style Formula/zago.rb
+git add Formula/zago.rb
+git commit -m "zago X.Y.Z"
+git push origin main
+```
+
+11. Share install instructions and known limitations with testers.
+
+## GitHub Release Notes
+
+Use only the changelog section for the released version, not the entire changelog.
+
+For `1.0.4`, the release notes should be:
+
+```markdown
+Windows terminal redraw fix release.
+
+### Fixed
+
+- Windows terminal resize events now trigger an automatic full-screen redraw without waiting for the next keypress.
+```
 
 
 ## Tester Bug Reports
