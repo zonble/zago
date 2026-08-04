@@ -111,10 +111,14 @@ struct Zago: ParsableCommand {
         }
 
         if let code = eval {
+            let configProvider = { ConfigLoader().loadConfig() }
+            let loadedConfig = configProvider()
             let editor = Editor(
                 wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                 showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
                 spellLanguage: spellLang,
+                loadedConfig: loadedConfig,
+                configProvider: configProvider,
                 fileIOStrategy: fileIOStrategy,
                 terminal: terminal
                 )
@@ -129,10 +133,14 @@ struct Zago: ParsableCommand {
             let fileURL = URL(fileURLWithPath: scriptPath)
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
+                let configProvider = { ConfigLoader().loadConfig() }
+                let loadedConfig = configProvider()
                 let editor = Editor(
                     wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                     showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
                     spellLanguage: spellLang,
+                    loadedConfig: loadedConfig,
+                    configProvider: configProvider,
                     fileIOStrategy: fileIOStrategy,
                     terminal: terminal
                     )
@@ -150,10 +158,14 @@ struct Zago: ParsableCommand {
             }
         }
 
+        let configProvider = { ConfigLoader().loadConfig() }
+        let loadedConfig = configProvider()
         let editor = Editor(
             filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang,
             spellLanguage: spellLang,
+            loadedConfig: loadedConfig,
+            configProvider: configProvider,
             fileIOStrategy: fileIOStrategy,
             terminal: terminal
             )

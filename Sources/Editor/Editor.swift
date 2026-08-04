@@ -144,6 +144,7 @@ public final class Editor {
     public var fileIOStrategy: EditorFileIOStrategy
     public var language: Language
     var usesExplicitLanguage: Bool
+    private let configProvider: () -> EditorConfig
     private var currentWatchedPath: String? = nil
 
     public struct DisplayConfig: Sendable, Equatable {
@@ -180,11 +181,14 @@ public final class Editor {
         filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
         spellLanguage: String? = nil,
+        loadedConfig: EditorConfig = EditorConfig(),
+        configProvider: @escaping () -> EditorConfig = { EditorConfig() },
         fileIOStrategy: EditorFileIOStrategy,
         terminal: EditorTerminal
     ) {
         self.terminal = terminal
         self.fileIOStrategy = fileIOStrategy
+        self.configProvider = configProvider
 
         if filePaths.isEmpty {
             self.buffers = [TextBuffer()]
@@ -192,8 +196,6 @@ public final class Editor {
             self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: fileIOStrategy) }
         }
         self.currentBufferIndex = 0
-
-        let loadedConfig = ConfigLoader().loadConfig()
 
         // CLI argument priority > .zagorc config > default
         let finalWrap = wrapColumn ?? loadedConfig.wrapColumn
@@ -245,6 +247,8 @@ public final class Editor {
         filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
         spellLanguage: String? = nil,
+        loadedConfig: EditorConfig = EditorConfig(),
+        configProvider: @escaping () -> EditorConfig = { EditorConfig() },
         fileIOStrategy: EditorFileIOStrategy,
         terminal: EditorTerminal
     ) {
@@ -254,6 +258,8 @@ public final class Editor {
             showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload,
             language: language,
             spellLanguage: spellLanguage,
+            loadedConfig: loadedConfig,
+            configProvider: configProvider,
             fileIOStrategy: fileIOStrategy,
             terminal: terminal
             )
@@ -356,7 +362,7 @@ public final class Editor {
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.
     public func reloadConfig() {
-        let loadedConfig = ConfigLoader().loadConfig()
+        let loadedConfig = configProvider()
         applyReloadedConfig(loadedConfig)
         setStatusMessage(L10n["status.config_reloaded"])
     }

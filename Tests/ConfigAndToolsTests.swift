@@ -348,6 +348,35 @@ import Testing
     #expect(textEditor.displayConfig.showRuler == true)
 }
 
+@Test func testEditorConfigIsInjectedByAppEntrypoint() throws {
+    let defaultEditor = Editor()
+    #expect(defaultEditor.displayConfig.showLineNumbers == true)
+    #expect(defaultEditor.displayConfig.showSubLineNumbers == false)
+
+    var initialConfig = EditorConfig()
+    initialConfig.showLineNumbers = false
+    initialConfig.showSubLineNumbers = true
+
+    var reloadedConfig = EditorConfig()
+    reloadedConfig.showLineNumbers = true
+    reloadedConfig.showSubLineNumbers = false
+    reloadedConfig.showRuler = true
+
+    let injectedEditor = Editor(
+        loadedConfig: initialConfig,
+        configProvider: { reloadedConfig },
+        fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+        terminal: TestEditorTerminal.shared
+    )
+    #expect(injectedEditor.displayConfig.showLineNumbers == false)
+    #expect(injectedEditor.displayConfig.showSubLineNumbers == true)
+
+    injectedEditor.reloadConfig()
+    #expect(injectedEditor.displayConfig.showLineNumbers == true)
+    #expect(injectedEditor.displayConfig.showSubLineNumbers == false)
+    #expect(injectedEditor.displayConfig.showRuler == true)
+}
+
 @Test func testShapeFillMenuPromptsForFillText() throws {
     let editor = Editor()
     editor.runLogoScript("CLEARBUFFER BOX 5 5 GOTO 2 2")
@@ -734,7 +763,7 @@ import Testing
 
     let editor = Editor()
     editor.logoEngine.execute("MAKE \"answer 42 TO TITLE :text BOX :text CENTER ROUND END")
-    let workspace = LogoWorkspaceContent.lines(engine: editor.logoEngine).joined(separator: "\n")
+    let workspace = LogoWorkspaceContent.lines(engine: editor.logoEngine, language: .en).joined(separator: "\n")
     #expect(workspace.contains("TITLE :text"))
     #expect(workspace.contains("answer = 42"))
 
