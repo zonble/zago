@@ -9,7 +9,7 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("PD REPEAT 4 [ FD 4 RT 90 ]")
+    logoEngine.execute("PD REPEAT 4 [ FD 4 RT ]")
     #expect(editor.buffer.lines.count >= 4)
     #expect(editor.buffer.lines[0] == "┌──┐")
     #expect(editor.buffer.lines[1] == "│  │")
@@ -21,7 +21,7 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("LT 90 BK 3")
+    logoEngine.execute("LT BK 3")
     #expect(editor.buffer.lines.count == 3)
     #expect(editor.buffer.lines[0] == "│")
     #expect(editor.buffer.lines[1] == "│")
@@ -42,7 +42,7 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("MAKE \"dist\" 3 PD REPEAT 2 [ FD :dist RT 90 ]")
+    logoEngine.execute("MAKE \"dist\" 3 PD REPEAT 2 [ FD :dist RT ]")
     #expect(editor.buffer.lines[0] == "──┐")
     #expect(editor.buffer.lines[1] == "  │")
     #expect(editor.buffer.lines[2] == "  │")
@@ -52,7 +52,7 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT 90 MAKE \"d\" ( :d + 2 ) ]")
+    logoEngine.execute("MAKE \"d\" 2 PD REPEAT 4 [ FD :d RT MAKE \"d\" ( :d + 2 ) ]")
     #expect(editor.buffer.lines.count >= 4)
     #expect(editor.buffer.lines[0] == "┌┐")
     #expect(editor.buffer.lines[1] == "││")
@@ -149,7 +149,7 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("PD REPEAT 4 [ FD 5 RT 90 ] PU GOTO 1 3 PD RT 90 FD 5 PU GOTO 3 1 PD LT 90 FD 5")
+    logoEngine.execute("PD REPEAT 4 [ FD 5 RT ] PU GOTO 1 3 PD RT FD 5 PU GOTO 3 1 PD LT FD 5")
     #expect(editor.buffer.lines.count >= 5)
     #expect(editor.buffer.lines[0] == "┌─┬─┐")
     #expect(editor.buffer.lines[1] == "│ │ │")
@@ -162,14 +162,36 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("SETH 90 HEADING")
-    #expect(logoEngine.lastResult == "90")
-
-    logoEngine.execute("SETHEADING 180 HEADING")
-    #expect(logoEngine.lastResult == "180")
-
     logoEngine.execute("SETH RIGHT HEADING")
     #expect(logoEngine.lastResult == "90")
+
+    logoEngine.execute("SETHEADING DOWN HEADING")
+    #expect(logoEngine.lastResult == "180")
+
+    logoEngine.execute("SETH LEFT HEADING")
+    #expect(logoEngine.lastResult == "270")
+
+    logoEngine.execute("SETH UP HEADING")
+    #expect(logoEngine.lastResult == "0")
+}
+
+@Test func testSetHeadingRejectsNumericAngles() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SETH RIGHT SETH 180 HEADING")
+    #expect(logoEngine.lastResult == "90")
+}
+
+@Test func testTurnRightAndLeftTakeNoArguments() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("SETH UP RT HEADING")
+    #expect(logoEngine.lastResult == "90")
+
+    logoEngine.execute("LT HEADING")
+    #expect(logoEngine.lastResult == "0")
 }
 
 @Test func testCanvasModeLogoShapesStartAtVisualCursorColumn() throws {

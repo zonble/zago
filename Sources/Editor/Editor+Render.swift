@@ -48,7 +48,9 @@ extension Editor {
     ) -> (lineIndex: Int, columnIndex: Int) {
         let (_, cols) = terminal.getWindowSize()
         let textWidth = max(10, cols - 5)
-        guard let targetVLine = layoutEngine.computeVirtualLine(at: vLineIndex, from: buffer.lines, viewWidth: textWidth) else {
+        guard
+            let targetVLine = layoutEngine.computeVirtualLine(at: vLineIndex, from: buffer.lines, viewWidth: textWidth)
+        else {
             return (buffer.lineIndex, buffer.columnIndex)
         }
 
@@ -71,22 +73,26 @@ extension Editor {
         let cursorVLineIdx = cursorViewport.cursorVirtualLineIndex
 
         let targetVLineIdx = max(0, cursorVLineIdx + deltaRow)
-        guard let currentVLine = layoutEngine.computeVirtualLine(
-            at: cursorVLineIdx,
-            from: buffer.lines,
-            viewWidth: textWidth
-        ) else {
+        guard
+            let currentVLine = layoutEngine.computeVirtualLine(
+                at: cursorVLineIdx,
+                from: buffer.lines,
+                viewWidth: textWidth
+            )
+        else {
             return
         }
         let vLineChars = Array(currentVLine.text)
         let clampedCol = max(0, min(buffer.columnIndex - currentVLine.startCol, vLineChars.count))
         let visualCol = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
 
-        guard let targetVLine = layoutEngine.computeVirtualLine(
-            at: targetVLineIdx,
-            from: buffer.lines,
-            viewWidth: textWidth
-        ) else {
+        guard
+            let targetVLine = layoutEngine.computeVirtualLine(
+                at: targetVLineIdx,
+                from: buffer.lines,
+                viewWidth: textWidth
+            )
+        else {
             if deltaRow > 0 {
                 buffer.lineIndex = max(0, buffer.lines.count - 1)
                 buffer.columnIndex = buffer.lines.last?.count ?? 0

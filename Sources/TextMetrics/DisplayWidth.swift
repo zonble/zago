@@ -139,8 +139,8 @@ extension String {
     }
 }
 
-private extension UnicodeScalar {
-    var terminalScalarWidth: Int {
+extension UnicodeScalar {
+    fileprivate var terminalScalarWidth: Int {
         #if canImport(Darwin)
             return Int(wcwidth(wchar_t(value)))
         #elseif canImport(Glibc) || canImport(Musl)
@@ -158,28 +158,28 @@ private extension UnicodeScalar {
         #endif
     }
 
-    var isWideTerminalScalar: Bool {
+    fileprivate var isWideTerminalScalar: Bool {
         switch value {
         case 0x1100...0x115F, 0x2329...0x232A, 0x2E80...0xA4CF,
-             0xAC00...0xD7A3, 0xF900...0xFAFF, 0xFE10...0xFE19,
-             0xFE30...0xFE6F, 0xFF00...0xFF60, 0xFFE0...0xFFE6,
-             0x1F300...0x1FAFF:
+            0xAC00...0xD7A3, 0xF900...0xFAFF, 0xFE10...0xFE19,
+            0xFE30...0xFE6F, 0xFF00...0xFF60, 0xFFE0...0xFFE6,
+            0x1F300...0x1FAFF:
             return true
         default:
             return false
         }
     }
 
-    var isZeroWidthTerminalScalar: Bool {
+    fileprivate var isZeroWidthTerminalScalar: Bool {
         switch value {
-        case 0x0300...0x036F,   // Combining Diacritical Marks
-             0x1AB0...0x1AFF,   // Combining Diacritical Marks Extended
-             0x1DC0...0x1DFF,   // Combining Diacritical Marks Supplement
-             0x200C...0x200D,   // Zero-width non-joiner/joiner
-             0x20D0...0x20FF,   // Combining Diacritical Marks for Symbols
-             0xFE00...0xFE0F,   // Variation Selectors
-             0xFE20...0xFE2F,   // Combining Half Marks
-             0xE0100...0xE01EF: // Variation Selectors Supplement
+        case 0x0300...0x036F,  // Combining Diacritical Marks
+            0x1AB0...0x1AFF,  // Combining Diacritical Marks Extended
+            0x1DC0...0x1DFF,  // Combining Diacritical Marks Supplement
+            0x200C...0x200D,  // Zero-width non-joiner/joiner
+            0x20D0...0x20FF,  // Combining Diacritical Marks for Symbols
+            0xFE00...0xFE0F,  // Variation Selectors
+            0xFE20...0xFE2F,  // Combining Half Marks
+            0xE0100...0xE01EF:  // Variation Selectors Supplement
             return true
         default:
             return false
@@ -187,8 +187,8 @@ private extension UnicodeScalar {
     }
 }
 
-private extension Character {
-    var isEmojiTerminalCluster: Bool {
+extension Character {
+    fileprivate var isEmojiTerminalCluster: Bool {
         let scalars = Array(unicodeScalars)
 
         // Most emoji have an emoji-presentation base scalar. Regional
@@ -214,8 +214,8 @@ private extension Character {
         return scalars.contains { scalar in
             switch scalar.value {
             case 0x2300...0x23FF,
-                 0x2600...0x27BF,
-                 0x2B00...0x2BFF:
+                0x2600...0x27BF,
+                0x2B00...0x2BFF:
                 return true
             default:
                 return false

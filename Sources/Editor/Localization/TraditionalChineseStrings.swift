@@ -93,8 +93,8 @@ public struct TraditionalChineseStrings {
   類海龜繪圖
     PD / PU                      落筆/提筆
     FD expr / BK expr            前進/後退
-    RT angle / LT angle          右轉/左轉
-    SETHEADING angle|direction   設定方向；方向可不加引號
+    RT / LT                      右轉/左轉
+    SETHEADING direction         設定方向 (UP, RIGHT, DOWN, LEFT)；可不加引號
     HEADING                      回傳目前方向
     Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
     往下/右移動可延伸 buffer。

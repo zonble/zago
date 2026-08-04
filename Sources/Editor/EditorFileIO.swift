@@ -46,4 +46,11 @@ public protocol EditorFileIOStrategy: AnyObject {
     func readTextFile(at path: String) throws -> String
     func writeTextFile(_ contents: String, to path: String) throws
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry]
+    func startWatchingFile(at path: String, onChange: @escaping () -> Void)
+    func stopWatchingFile(at path: String)
+}
+
+extension EditorFileIOStrategy {
+    public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {}
+    public func stopWatchingFile(at path: String) {}
 }

@@ -183,6 +183,7 @@ public final class Renderer {
         let resolvedShowSubLineInfo =
             showSubLineInfo ?? shouldRenderSubLineInfo(editor: editor, textWidth: max(0, cols - gutterWidth))
         let subLineCounts = makeSubLineCounts(from: virtualLines)
+        var tokenTypesCache: [Int: [SyntaxTokenType]] = [:]
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -220,13 +221,24 @@ public final class Renderer {
                     renderedStartCol = vLine.startCol
                 }
 
+                let fullLineText =
+                    (vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count)
+                    ? editor.buffer.lines[vLine.bufferLineIndex]
+                    : renderedLineText
+
                 let currentLanguage =
                     editor.displayConfig.enableSyntaxHighlight
                     ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex)
                     : nil
                 let tokenTypes =
                     (currentLanguage != nil)
-                    ? editor.syntaxHighlighter.tokenTypes(for: renderedLineText, syntax: currentLanguage!)
+                    ? (tokenTypesCache[vLine.bufferLineIndex]
+                        ?? {
+                            let computed = editor.syntaxHighlighter.tokenTypes(
+                                for: fullLineText, syntax: currentLanguage!)
+                            tokenTypesCache[vLine.bufferLineIndex] = computed
+                            return computed
+                        }())
                     : []
 
                 var activeCellBounds: (left: Int, right: Int)? = nil
@@ -269,8 +281,8 @@ public final class Renderer {
                         lineOutput += "\u{1B}[43;30m\(ch)\u{1B}[0m"
                     } else if isCellActive {
                         lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
-                    } else if cIdxInVLine < tokenTypes.count && tokenTypes[cIdxInVLine] != .normal {
-                        let tok = tokenTypes[cIdxInVLine]
+                    } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
+                        let tok = tokenTypes[realCol]
                         lineOutput += tok.ansiColor + String(ch) + "\u{1B}[0m"
                     } else {
                         lineOutput += String(ch)

@@ -7,7 +7,8 @@ import Foundation
 struct Zago: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "zago",
-        abstract: "zago v\(ZagoVersion.current) - zonble's nano + Editor LOGO: A lightweight terminal text editor with powerful plain-text diagramming.",
+        abstract:
+            "zago v\(ZagoVersion.current) - zonble's nano + Editor LOGO: A lightweight terminal text editor with powerful plain-text diagramming.",
         version: ZagoVersion.current
     )
 
@@ -43,6 +44,12 @@ struct Zago: ParsableCommand {
         name: [.customLong("lang"), .customLong("language")], help: "Set interface language (en/zh_TW)."
     )
     var lang: String?
+
+    @Option(
+        name: [.customLong("spell-lang"), .customLong("spell-language")],
+        help: "Set spell checker language (e.g. en_US, de_DE, fr_FR)."
+    )
+    var spellLang: String?
 
     @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
@@ -107,8 +114,11 @@ struct Zago: ParsableCommand {
             let editor = Editor(
                 wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                 showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
+                spellLanguage: spellLang,
                 fileIOStrategy: fileIOStrategy,
-                terminal: terminal)
+                terminal: terminal
+                )
+
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             terminal.write(output + "\n")
@@ -122,14 +132,18 @@ struct Zago: ParsableCommand {
                 let editor = Editor(
                     wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
                     showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
+                    spellLanguage: spellLang,
                     fileIOStrategy: fileIOStrategy,
-                    terminal: terminal)
+                    terminal: terminal
+                    )
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 terminal.write(output + "\n")
                 return
             } catch {
-                if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(using: .utf8) {
+                if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(
+                    using: .utf8)
+                {
                     FileHandle.standardError.write(data)
                 }
                 throw ExitCode.failure
@@ -139,8 +153,10 @@ struct Zago: ParsableCommand {
         let editor = Editor(
             filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang,
+            spellLanguage: spellLang,
             fileIOStrategy: fileIOStrategy,
-            terminal: terminal)
+            terminal: terminal
+            )
         editor.run()
     }
 }

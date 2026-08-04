@@ -25,13 +25,13 @@ enum TextUnicodeClassifier {
 
     static func isCJKScriptScalar(_ scalar: Unicode.Scalar) -> Bool {
         switch scalar.value {
-        case 0x3040...0x30FF,   // Hiragana, Katakana
-             0x31F0...0x31FF,   // Katakana Phonetic Extensions
-             0x3400...0x4DBF,   // CJK Unified Ideographs Extension A
-             0x4E00...0x9FFF,   // CJK Unified Ideographs
-             0xAC00...0xD7AF,   // Hangul Syllables
-             0xF900...0xFAFF,   // CJK Compatibility Ideographs
-             0x20000...0x2FA1F: // CJK extensions and compatibility supplements
+        case 0x3040...0x30FF,  // Hiragana, Katakana
+            0x31F0...0x31FF,  // Katakana Phonetic Extensions
+            0x3400...0x4DBF,  // CJK Unified Ideographs Extension A
+            0x4E00...0x9FFF,  // CJK Unified Ideographs
+            0xAC00...0xD7AF,  // Hangul Syllables
+            0xF900...0xFAFF,  // CJK Compatibility Ideographs
+            0x20000...0x2FA1F:  // CJK extensions and compatibility supplements
             return true
         default:
             return false
@@ -41,12 +41,12 @@ enum TextUnicodeClassifier {
     static func isCJKPunctuationScalar(_ scalar: Unicode.Scalar) -> Bool {
         switch scalar.value {
         case 0x3000...0x303F,
-             0xFE10...0xFE1F,
-             0xFE30...0xFE4F,
-             0xFF01...0xFF0F,
-             0xFF1A...0xFF20,
-             0xFF3B...0xFF40,
-             0xFF5B...0xFF65:
+            0xFE10...0xFE1F,
+            0xFE30...0xFE4F,
+            0xFF01...0xFF0F,
+            0xFF1A...0xFF20,
+            0xFF3B...0xFF40,
+            0xFF5B...0xFF65:
             return true
         default:
             return false

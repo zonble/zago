@@ -13,6 +13,7 @@ public struct EditorConfig {
     public var autoReload: Bool = true
     public var trimTrailingWhitespaceOnSave: Bool = false
     public var language: Language? = nil
+    public var spellLanguage: String = "en_US"
     public var defaultBorderStyle: BorderStyle = .single
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []

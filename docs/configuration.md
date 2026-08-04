@@ -58,6 +58,8 @@ set canvas-mode off
 set trim-trailing-whitespace on
 set trim-trailing-whitespace off
 set lang zh_TW
+set spell-language en_US
+set spell-lang de_DE
 set syntax true
 set mouse true
 set backup true

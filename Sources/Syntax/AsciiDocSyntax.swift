@@ -27,14 +27,19 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
             if line.hasPrefix("[source") && line.contains("]") {
                 if let start = line.firstIndex(of: ","), let end = line.firstIndex(of: "]"), start < end {
                     let langStr = String(line[line.index(after: start)..<end]).trimmingCharacters(in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
+                    activeLangName = langStr.isEmpty ? "text" : langStr
+                } else {
+                    activeLangName = "text"
                 }
             } else if line.hasPrefix("----") || line.hasPrefix("....") {
                 if inBlock {
                     inBlock = false
                     activeLangName = nil
-                } else if activeLangName != nil {
+                } else {
                     inBlock = true
+                    if activeLangName == nil {
+                        activeLangName = "text"
+                    }
                 }
             }
         }
@@ -52,8 +57,11 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
         PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .asciiDoc)
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
-        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
+        PipeTableFormatter.navigateTableCell(
+            in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
     }
 
     public func documentOutline(in lines: [String]) -> DocumentOutline? {

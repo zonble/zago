@@ -18,7 +18,7 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
             // Links [[link][description]]
             makeRule("\\[\\[[^\\]]+\\](\\[[^\\]]+\\])?\\]", .typeOrAttribute),
             // Code & Timestamps (~code~, =verbatim=, <2026-07-28 Tue>)
-            makeRule("~[^~]+~|=[^=]+=|\\<[^\\>]+\\>|\\[[^\\]]+\\]", .string),
+            makeRule("~[^~`|\\n]+~|=[^=`|\\n]+=|\\<[^\\>`|\\n]+\\>|\\[[^\\]`|\\n]+\\]", .string),
             // Tables (Separator lines & cell rows)
             makeRule("^\\s*\\|[-+]*\\|?\\s*$", .keyword),
             makeRule("^\\s*\\|.*\\|\\s*$", .typeOrAttribute),
@@ -33,18 +33,21 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
         for i in 0...bufferLineIndex {
             let line = lines[i].trimmingCharacters(in: .whitespaces)
             let upper = line.uppercased()
-            if upper.hasPrefix("#+BEGIN_SRC") {
+            if upper.hasPrefix("#+BEGIN_SRC") || upper.hasPrefix("#+BEGIN_EXAMPLE") {
                 inBlock = true
-                let langStr = String(line.dropFirst("#+BEGIN_SRC".count)).trimmingCharacters(in: .whitespaces)
-                activeLangName = langStr.isEmpty ? nil : langStr
-            } else if upper.hasPrefix("#+END_SRC") {
+                let prefix = upper.hasPrefix("#+BEGIN_SRC") ? "#+BEGIN_SRC" : "#+BEGIN_EXAMPLE"
+                let langStr = String(line.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
+                activeLangName = langStr.isEmpty ? "text" : langStr
+            } else if upper.hasPrefix("#+END_SRC") || upper.hasPrefix("#+END_EXAMPLE") {
                 inBlock = false
                 activeLangName = nil
             }
         }
         if inBlock, let langName = activeLangName {
             let currentLine = lines[bufferLineIndex].trimmingCharacters(in: .whitespaces).uppercased()
-            if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC") {
+            if currentLine.hasPrefix("#+BEGIN_SRC") || currentLine.hasPrefix("#+END_SRC")
+                || currentLine.hasPrefix("#+BEGIN_EXAMPLE") || currentLine.hasPrefix("#+END_EXAMPLE")
+            {
                 return nil
             }
             return langName
@@ -56,8 +59,11 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
         PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .orgMode)
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
-        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .orgMode)
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
+        PipeTableFormatter.navigateTableCell(
+            in: lines, at: lineIndex, column: column, forward: forward, style: .orgMode)
     }
 
     public func documentOutline(in lines: [String]) -> DocumentOutline? {

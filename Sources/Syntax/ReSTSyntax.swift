@@ -36,7 +36,7 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
                 inBlock = true
                 if let range = trimmed.range(of: "::") {
                     let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
+                    activeLangName = langStr.isEmpty ? "text" : langStr
                 }
             } else if inBlock {
                 if !trimmed.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("\t") && !trimmed.hasPrefix("..") {
@@ -59,8 +59,11 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
         PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .restGrid)
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
-        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .restGrid)
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
+        PipeTableFormatter.navigateTableCell(
+            in: lines, at: lineIndex, column: column, forward: forward, style: .restGrid)
     }
 
     public func documentOutline(in lines: [String]) -> DocumentOutline? {

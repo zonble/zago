@@ -375,6 +375,7 @@ zago --run generate_architecture.logo | pbcopy
 | `--init` | | Generate default `~/.zagorc` configuration file. |
 | `--syntax <true/false>` | | Enable or disable syntax highlighting. |
 | `--lang <en/zh_TW>` | | Set interface language. |
+| `--spell-lang <lang>` | | Set spell checker language (e.g. en_US, de_DE, fr_FR). |
 
 ## FAQ, Sort Of
 
@@ -427,6 +428,7 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 - [Configuration and key bindings](docs/configuration.md)
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
 - [Diagram snippets & menu rules](docs/diagram_snippets.md)
+- [Spell checker architecture & plan](docs/spell_checker.md)
 - [Homebrew tap](docs/homebrew_tap.md)
 - [Release & preview builds](docs/release.md)
 - [Changelog](CHANGELOG.md)

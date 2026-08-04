@@ -156,6 +156,10 @@ extension Renderer {
     /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
     func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
         let helpWidth = min(cols, 80)
+        let language = editor?.usesExplicitLanguage == true ? editor?.language ?? L10n.currentLanguage : L10n.currentLanguage
+        func tr(_ key: String) -> String {
+            L10n.string(key, language: language)
+        }
 
         let helpItems1: [(key: String, label: String)]
         let helpItems2: [(key: String, label: String)]
@@ -164,60 +168,61 @@ extension Renderer {
         case .logoMacro:
             if let completionText = editor?.promptCompletionText, !completionText.isEmpty {
                 helpItems1 = [("SET", completionText)]
-                helpItems2 = [("Tab", L10n["help.complete"]), ("Enter", L10n["help.confirm"]), ("^C", L10n.helpCancel)]
+                helpItems2 = [("Tab", tr("help.complete")), ("Enter", tr("help.confirm")), ("^C", tr("help.cancel"))]
             } else {
                 helpItems1 = [
                     ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"),
                 ]
                 helpItems2 = [
-                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", L10n["help.complete"]),
+                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", tr("help.complete")),
                 ]
             }
 
         case .confirmExitSave, .confirmExternalReload:
             helpItems1 = [
-                ("Y", L10n["help.yes"]), ("^C", L10n.helpCancel),
+                ("Y", tr("help.yes")), ("^C", tr("help.cancel")),
             ]
             helpItems2 = [
-                ("N", L10n["help.no"])
+                ("N", tr("help.no"))
             ]
 
         case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
             helpItems1 = [
-                ("Enter", L10n["help.confirm"]), ("^C", L10n.helpCancel), ("^U", L10n["help.clear"]),
+                ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),
             ]
             helpItems2 = [
-                ("←/→", L10n["help.move"]), ("Home/End", L10n["help.jump"]),
+                ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
             ]
 
         case .none:
             if editor?.isTableModeActive == true {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("M+T", L10n["help.table_exit"]),
-                    ("C+⇧+←/→", L10n["help.cell_width"]), ("^J", L10n["help.center_text"]),
-                    ("^K", L10n["help.clear_cell"]),
+                    ("F1", tr("help.menu")), ("^O", tr("help.write_out")), ("M+T", tr("help.table_exit")),
+                    ("C+⇧+←/→", tr("help.cell_width")), ("^J", tr("help.center_text")),
+                    ("^K", tr("help.clear_cell")),
                 ]
                 helpItems2 = [
-                    ("^X", L10n.helpExit), ("Tab", L10n["help.next_cell"]), ("⇧+Tab", L10n["help.prev_cell"]),
-                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]), ("Esc", L10n["help.command"]),
+                    ("^X", tr("help.exit")), ("Tab", tr("help.next_cell")), ("⇧+Tab", tr("help.prev_cell")),
+                    ("C+⇧+↑/↓", tr("help.cell_height")), ("⇧+Arrow", tr("help.select_text")),
+                    ("Esc", tr("help.command")),
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("M+B", L10n["help.mark_block"]),
-                    ("^K", L10n["help.cut_block"]), ("⇧+Arrow", L10n["help.line"]),
+                    ("F1", tr("help.menu")), ("^O", tr("help.write_out")), ("M+B", tr("help.mark_block")),
+                    ("^K", tr("help.cut_block")), ("⇧+Arrow", tr("help.line")),
                 ]
                 helpItems2 = [
-                    ("^X", L10n.helpExit), ("^W", L10n.helpWhereIs), ("M+W", L10n["help.copy_block"]),
-                    ("^U", L10n["help.uncut_block"]), ("^⇧+Arrow", L10n["help.arrow"]),
+                    ("^X", tr("help.exit")), ("^W", tr("help.where_is")), ("M+W", tr("help.copy_block")),
+                    ("^U", tr("help.uncut_block")), ("^⇧+Arrow", tr("help.arrow")),
                 ]
             } else {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^R", L10n.helpReadFile),
-                    ("^Y", L10n.helpPrevPg), ("^K", L10n.helpCutText), ("^C", L10n.helpCurPos),
+                    ("F1", tr("help.menu")), ("^O", tr("help.write_out")), ("^R", tr("help.read_file")),
+                    ("^Y", tr("help.prev_pg")), ("^K", tr("help.cut_text")), ("^C", tr("help.cur_pos")),
                 ]
                 helpItems2 = [
-                    ("^X", L10n.helpExit), ("^J", L10n.helpJustify), ("^W", L10n.helpWhereIs),
-                    ("^V", L10n.helpNextPg), ("^U", L10n.helpUnCutText), ("^T", L10n.helpToSpell),
+                    ("^X", tr("help.exit")), ("^J", tr("help.justify")), ("^W", tr("help.where_is")),
+                    ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")), ("^T", tr("help.to_spell")),
                 ]
             }
         }

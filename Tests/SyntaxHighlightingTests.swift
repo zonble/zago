@@ -65,7 +65,7 @@ import Testing
 
     if let lang = logoLang {
         let highlighted = highlighter.highlight(
-            line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT 90 ] [ BOX 5 3 ]", syntax: lang)
+            line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT ] [ BOX 5 3 ]", syntax: lang)
         #expect(highlighted.contains("\u{1B}[1;36m"))
         #expect(highlighted.contains("\u{1B}[94m"))
 
@@ -367,6 +367,66 @@ import Testing
     #expect(!tableRowHighlight.isEmpty)
     #expect(tableRowHighlight[0] == .typeOrAttribute)
 }
+
+@Test func testPlainTextCodeBlockSyntaxHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // 1. Markdown plain text code block (``` without language)
+    let mdLines = ["# Title", "```", "# Not a header inside code block", "```"]
+    let mdSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.md", isDirectoryBuffer: false, lines: mdLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(mdSyntax?.name == "CodeBlockPlainText")
+    let mdHighlighted = highlighter.highlight(line: mdLines[2], syntax: mdSyntax!)
+    #expect(mdHighlighted.contains("\u{1B}[94m# Not a header inside code block"))
+
+    // 2. Markdown code block with explicit 'text' language
+    let mdTextLines = ["# Title", "```text", "plain text line", "```"]
+    let mdTextSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.md", isDirectoryBuffer: false, lines: mdTextLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(mdTextSyntax?.name == "CodeBlockPlainText")
+
+    // 3. Org-mode plain text code block (#+BEGIN_SRC or #+BEGIN_EXAMPLE)
+    let orgLines = ["* Header", "#+BEGIN_SRC", "* Not an org heading", "#+END_SRC"]
+    let orgSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.org", isDirectoryBuffer: false, lines: orgLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(orgSyntax?.name == "CodeBlockPlainText")
+    let orgHighlighted = highlighter.highlight(line: orgLines[2], syntax: orgSyntax!)
+    #expect(orgHighlighted.contains("\u{1B}[94m* Not an org heading"))
+
+    // 4. AsciiDoc plain text code block (----)
+    let adocLines = ["= Title", "----", "= Not an adoc title", "----"]
+    let adocSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.adoc", isDirectoryBuffer: false, lines: adocLines, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(adocSyntax?.name == "CodeBlockPlainText")
+    let adocHighlighted = highlighter.highlight(line: adocLines[2], syntax: adocSyntax!)
+    #expect(adocHighlighted.contains("\u{1B}[94m= Not an adoc title"))
+
+    // 5. reStructuredText plain text code block (.. code-block::)
+    let rstLines = ["Title", "=====", ".. code-block::", "    Title underline"]
+    let rstSyntax = highlighter.getSyntaxForLine(
+        filePath: "doc.rst", isDirectoryBuffer: false, lines: rstLines, bufferLineIndex: 3, isEnabled: true
+    )
+    #expect(rstSyntax?.name == "CodeBlockPlainText")
+    let rstHighlighted = highlighter.highlight(line: rstLines[3], syntax: rstSyntax!)
+    #expect(rstHighlighted.contains("\u{1B}[94m    Title underline"))
+}
+
+@Test func testMarkdownTableWithInlineCodeHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+    let lang = try #require(highlighter.detectLanguage(for: "test.md"))
+    let line = "| `server_legacy._norm_punct(t)` | `assistant_server.chat.response` |"
+    let tokenMap = highlighter.tokenTypes(for: line, syntax: lang)
+
+    let chars = Array(line)
+    for (i, ch) in chars.enumerated() {
+        print("[\(i)] '\(ch)' -> \(tokenMap[i])")
+    }
+}
+
 
 
 

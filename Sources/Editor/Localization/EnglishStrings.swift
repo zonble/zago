@@ -93,8 +93,8 @@ public struct EnglishStrings {
   Turtle-like drawing
     PD / PU                      Pen down/up
     FD expr / BK expr            Move forward/back
-    RT angle / LT angle          Turn right/left
-    SETHEADING angle|direction   Set heading; direction may be bare or quoted
+    RT / LT                      Turn right/left
+    SETHEADING direction         Set heading (UP, RIGHT, DOWN, LEFT); bare or quoted
     HEADING                      Return current heading
     Turtle stops at the top/left minimum edges; outward moves from
     those edges draw nothing. Down/right moves may extend the buffer.

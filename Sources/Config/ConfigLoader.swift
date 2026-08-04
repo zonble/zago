@@ -194,6 +194,13 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "spell-language", "spell-lang", "spelllanguage", "spelllang":
+                        if !value.isEmpty {
+                            config.spellLanguage = value
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
                         "default-border-style", "default_border_style":
                         if let style = BorderStyle(value) {
@@ -403,6 +410,9 @@ set trimTrailingWhitespace off
 
 # Interface Language (en / zh_TW)
 # set language zh_TW
+
+# Spell Checker Language (e.g. en_US, en_GB, de_DE, fr_FR, es_ES)
+# set spell-language en_US
 
 # Default Table & Canvas Border Style (single / double / round / double-round / ascii / markdown)
 # set border single

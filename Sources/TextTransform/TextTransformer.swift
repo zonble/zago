@@ -59,7 +59,8 @@ public enum TextTransformer {
     private static func normalizeCJKSpacing(_ text: String) -> String {
         let normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
-        return normalized
+        return
+            normalized
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { normalizeCJKSpacingLine(String($0)) }
             .joined(separator: "\n")

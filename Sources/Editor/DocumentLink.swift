@@ -128,10 +128,14 @@ public enum DocumentLinkParser {
     }
 
     private static func bareDocumentPaths(in line: String) -> [DocumentLink] {
-        matches(pattern: #"(?<![\w/.-])([A-Za-z0-9_./~-]+\.(?:md|markdown|org|rst|rest|adoc|asciidoc|asc|ascii))(?![\w/.-])"#, in: line)
-            .map { match in
-                DocumentLink(target: match.groups[0], range: match.range)
-            }
+        matches(
+            pattern:
+                #"(?<![\w/.-])([A-Za-z0-9_./~-]+\.(?:md|markdown|org|rst|rest|adoc|asciidoc|asc|ascii))(?![\w/.-])"#,
+            in: line
+        )
+        .map { match in
+            DocumentLink(target: match.groups[0], range: match.range)
+        }
     }
 
     private static func targetFromMarkdownDestination(_ raw: String) -> String? {
