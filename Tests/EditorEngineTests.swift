@@ -1284,10 +1284,11 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     editor.processPromptKey(.tab)
 
-    #expect(editor.promptInputText == "sa")
+    #expect(editor.promptInputText == "save")
     #expect(editor.promptCompletionText?.contains("save") == true)
     #expect(editor.promptCompletionText?.contains("save-exit") == true)
 }
+
 
 @Test func testCommandBarCompletionClearsOnEsc() throws {
     let editor = Editor()

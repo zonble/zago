@@ -313,11 +313,13 @@ extension Editor {
 
             if matches.count == 1 && !valuePrefix.isEmpty {
                 replacePromptPrefix("\(command) \(setting) \(matches[0])")
-            } else if !matches.isEmpty {
+            } else if !matches.isEmpty && !valuePrefix.isEmpty {
                 let lcp = longestCommonPrefix(of: matches)
                 if lcp.count > valuePrefix.count {
                     replacePromptPrefix("\(command) \(setting) \(lcp)")
                 }
+                showCommandBarCompletions(matches, label: setting)
+            } else {
                 showCommandBarCompletions(matches, label: setting)
             }
             return true
@@ -327,13 +329,16 @@ extension Editor {
         let matches = SettingCommand.settingNames.filter { $0.hasPrefix(settingPrefix) }
         if matches.count == 1 && !settingPrefix.isEmpty {
             replacePromptPrefix("\(command) \(matches[0]) ")
-        } else if !matches.isEmpty {
+        } else if !matches.isEmpty && !settingPrefix.isEmpty {
             let lcp = longestCommonPrefix(of: matches)
             if lcp.count > settingPrefix.count {
                 replacePromptPrefix("\(command) \(lcp)")
             }
             showCommandBarCompletions(matches, label: command.uppercased())
+        } else {
+            showCommandBarCompletions(matches, label: command.uppercased())
         }
+
 
         _ = suffix
         return true
