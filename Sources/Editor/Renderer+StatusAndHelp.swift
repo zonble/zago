@@ -168,8 +168,15 @@ extension Renderer {
         switch promptMode {
         case .logoMacro:
             if let completionText = editor?.promptCompletionText, !completionText.isEmpty {
-                helpItems1 = [("SET", completionText)]
-                helpItems2 = [("Tab", tr("help.complete")), ("Enter", tr("help.confirm")), ("^C", tr("help.cancel"))]
+                let line1 = formatCompletionLineText(completionText, width: helpWidth)
+                let grid = renderHelpItemsGrid(
+                    cols: cols,
+                    helpWidth: helpWidth,
+                    items1: [],
+                    items2: [("Tab", tr("help.complete")), ("Enter", tr("help.confirm")), ("^C", tr("help.cancel"))]
+                )
+                let line2 = grid.components(separatedBy: "\r\n").last ?? grid
+                return line1 + "\r\n" + line2
             } else {
                 helpItems1 = [
                     ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"),
@@ -178,6 +185,7 @@ extension Renderer {
                     ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", tr("help.complete")),
                 ]
             }
+
 
         case .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback:
             helpItems1 = [
@@ -231,7 +239,22 @@ extension Renderer {
         return renderHelpItemsGrid(cols: cols, helpWidth: helpWidth, items1: helpItems1, items2: helpItems2)
     }
 
+    /// Formats single-line completion candidates text for Help Bar line 1.
+    func formatCompletionLineText(_ text: String, width: Int) -> String {
+        let displayWidth = text.displayWidth
+        let visibleText: String
+        if displayWidth > width {
+            visibleText = text.visualSlice(startVisualColumn: 0, width: width).text
+        } else {
+            visibleText = text
+        }
+        let styled = "\u{1B}[1;33m\(visibleText)\u{1B}[0m"
+        let padCount = max(0, width - visibleText.displayWidth)
+        return styled + String(repeating: " ", count: padCount)
+    }
+
     /// Internal 2D column-alignment layout algorithm for Help Bar items.
+
     func renderHelpItemsGrid(
         cols: Int,
         helpWidth: Int,

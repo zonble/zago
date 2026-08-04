@@ -166,4 +166,31 @@ import Testing
         _ = editor.commandBarRegistry.dispatch("set regex off", editor: editor)
         #expect(editor.isRegexSearchEnabled == false)
     }
+
+    @Test func testCommandBarCompletionForTr() throws {
+        let editor = Editor()
+        editor.promptLogoMacro()
+        editor.processPromptKey(.char("t"))
+        editor.processPromptKey(.char("r"))
+        #expect(editor.promptInputText == "tr")
+
+        editor.processPromptKey(.tab)
+        #expect(editor.promptCompletionText != nil)
+        if let completionText = editor.promptCompletionText?.lowercased() {
+            #expect(completionText.contains("translit") && completionText.contains("transform"))
+        }
+    }
+
+    @Test func testHelpBarRenderingWithLongCompletionText() throws {
+        let editor = Editor()
+        let renderer = Renderer()
+        editor.promptLogoMacro()
+        editor.processPromptKey(.char("t"))
+        editor.processPromptKey(.char("r"))
+        editor.processPromptKey(.tab)
+        #expect(editor.promptCompletionText != nil)
+
+        let helpBarOutput = renderer.renderHelpBar(cols: 80, promptMode: editor.currentPromptMode, editor: editor)
+        #expect(helpBarOutput.contains("transform"))
+    }
 }
