@@ -46,7 +46,8 @@ public struct TraditionalChineseStrings {
         // Prompts
         "prompt.write_name": "寫出檔案名稱：",
         "prompt.confirm_exit_save": "是否儲存已修改的內容？(回答 \"N\" 將捨棄修改)：",
-        "prompt.confirm_reload": "檔案已於外部變更，是否重新載入？(回答 \"N\" 將保留當前修改)：",
+        "prompt.confirm_reload": "檔案已在磁碟上變更。是否重新載入？（答「N」將保留本地緩衝區）：",
+        "prompt.encoding_fallback": "編碼 \"%@\" 無法支援新文字，是否改以 UTF-8 格式儲存？(y/n) ",
         "prompt.search": "搜尋",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
@@ -238,6 +239,8 @@ public struct TraditionalChineseStrings {
         "status.word_kept": "保留原字詞",
         "status.no_misspelled": "[ 未發現拼錯字詞 ]",
         "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
+        "status.saved_as_utf8": "[ 已改用 UTF-8 儲存 ]",
+        "status.save_cancelled": "[ 存檔已取消 ]",
         "status.kept_local": "[ 已保留本地修改 ]",
         "status.logo_executed": "[ 已執行 LOGO 巨集腳本 ]",
         "status.logo_evaluated": "[ LOGO 腳本求值成功 ]",

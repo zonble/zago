@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "Config", targets: ["Config"]),
         .library(name: "Syntax", targets: ["Syntax"]),
         .library(name: "Diagram", targets: ["Diagram"]),
+        .library(name: "TextEncoding", targets: ["TextEncoding"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -19,6 +20,9 @@ let package = Package(
     targets: [
         .target(
             name: "TextMetrics"
+        ),
+        .target(
+            name: "TextEncoding"
         ),
         .target(
             name: "LogoEngine",
@@ -40,7 +44,7 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"],
+            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
             linkerSettings: [
                 .linkedFramework("AppKit", .when(platforms: [.macOS])),
                 .linkedLibrary("ole32", .when(platforms: [.windows])),
@@ -57,7 +61,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "Syntax", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
     ],
     swiftLanguageModes: [.v6]

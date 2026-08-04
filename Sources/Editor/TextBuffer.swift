@@ -51,6 +51,8 @@ open class TextBuffer {
         return TextBuffer(filePath: expandedPath, fileIO: fileIO)
     }
 
+    public var fileEncoding: String.Encoding = .utf8
+
     /// Key handler for specialized buffer types. Returns true if handled.
     open func handleKey(_ key: Key, editor: Editor) -> Bool {
         return false
@@ -62,11 +64,13 @@ open class TextBuffer {
         fileIO: EditorFileIOStrategy
     ) {
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        guard let content = try? fileIO.readTextFile(at: expandedPath) else {
+        guard let result = try? fileIO.readTextFile(at: expandedPath) else {
             replaceContents("", filePath: expandedPath, isModified: false)
+            self.fileEncoding = .utf8
             return
         }
-        replaceContents(content, filePath: expandedPath, isModified: false)
+        self.fileEncoding = result.encoding
+        replaceContents(result.content, filePath: expandedPath, isModified: false)
         lineIndex = 0
         columnIndex = 0
     }
@@ -77,15 +81,17 @@ open class TextBuffer {
             throw NSError(
                 domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
         }
-        let content = try fileIO.readTextFile(at: path)
-        replaceContents(content, filePath: path, isModified: false)
+        let result = try fileIO.readTextFile(at: path)
+        self.fileEncoding = result.encoding
+        replaceContents(result.content, filePath: path, isModified: false)
         clampCursor()
     }
 
     /// Saves buffer text to file.
     public func saveFile(
         to path: String? = nil,
-        fileIO: EditorFileIOStrategy
+        fileIO: EditorFileIOStrategy,
+        encoding: String.Encoding? = nil
     ) throws {
         let targetPath = path ?? filePath
         guard let savePath = targetPath, !savePath.isEmpty else {
@@ -95,9 +101,11 @@ open class TextBuffer {
 
         let expandedPath = fileIO.normalizePath(savePath, isDirectory: false)
         let content = lines.joined(separator: "\n")
-        try fileIO.writeTextFile(content, to: expandedPath)
+        let targetEncoding = encoding ?? self.fileEncoding
+        try fileIO.writeTextFile(content, to: expandedPath, encoding: targetEncoding)
 
         self.filePath = expandedPath
+        self.fileEncoding = targetEncoding
         self.isModified = false
     }
 
@@ -119,9 +127,9 @@ open class TextBuffer {
         fileIO: EditorFileIOStrategy
     ) throws -> Int {
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        let content = try fileIO.readTextFile(at: expandedPath)
-        let insertedLines = content.components(separatedBy: .newlines)
-        insertString(content)
+        let result = try fileIO.readTextFile(at: expandedPath)
+        let insertedLines = result.content.components(separatedBy: .newlines)
+        insertString(result.content)
         return insertedLines.count
     }
 

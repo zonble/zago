@@ -10,6 +10,7 @@ extension Editor {
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)
         case confirmExternalReload(completion: (Bool) -> Void)
+        case confirmEncodingFallback(originalEncoding: String.Encoding, completion: (Bool) -> Void)
         case search(completion: (String?) -> Void)
         case insertFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
@@ -419,6 +420,18 @@ extension Editor {
                 break
             }
 
+        case .confirmEncodingFallback(_, let completion):
+            switch key {
+            case .char("y"), .char("Y"):
+                currentPromptMode = .none
+                completion(true)
+            case .char("n"), .char("N"):
+                currentPromptMode = .none
+                completion(false)
+            default:
+                break
+            }
+
         case .search(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
@@ -609,6 +622,9 @@ extension Editor {
         case .confirmExternalReload(let completion):
             currentPromptMode = .none
             completion(false)
+        case .confirmEncodingFallback(_, let completion):
+            currentPromptMode = .none
+            completion(false)
         case .search(let completion):
             currentPromptMode = .none
             completion(nil)
@@ -753,13 +769,27 @@ extension Editor {
     }
 
     /// Saves buffer to specified file path.
-    func doSave(to path: String) {
+    func doSave(to path: String, forcedEncoding: String.Encoding? = nil) {
         do {
             if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
                 _ = buffer.trimTrailingWhitespace()
             }
-            try buffer.saveFile(to: path, fileIO: fileIOStrategy)
-            setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
+            try buffer.saveFile(to: path, fileIO: fileIOStrategy, encoding: forcedEncoding)
+            if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
+                setStatusMessage(L10n["status.saved_as_utf8"])
+            } else {
+                setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
+            }
+        } catch EncodingError.unsupportedCharacters {
+            let originalEncoding = buffer.fileEncoding
+            currentPromptMode = .confirmEncodingFallback(originalEncoding: originalEncoding) { [weak self] confirmed in
+                guard let self = self else { return }
+                if confirmed {
+                    self.doSave(to: path, forcedEncoding: .utf8)
+                } else {
+                    self.setStatusMessage(L10n["status.save_cancelled"])
+                }
+            }
         } catch {
             setStatusMessage(L10n.errorSavingFile(error: error.localizedDescription))
         }

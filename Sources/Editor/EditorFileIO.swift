@@ -1,4 +1,9 @@
 import Foundation
+import TextEncoding
+
+public enum EncodingError: Error {
+    case unsupportedCharacters
+}
 
 public struct EditorFileInfo: Sendable, Equatable {
     public let exists: Bool
@@ -43,8 +48,8 @@ public protocol EditorFileIOStrategy: AnyObject {
     func parentDirectory(of path: String) -> String
     func childPath(_ name: String, in directory: String) -> String
     func fileInfo(at path: String) -> EditorFileInfo
-    func readTextFile(at path: String) throws -> String
-    func writeTextFile(_ contents: String, to path: String) throws
+    func readTextFile(at path: String) throws -> TextReadResult
+    func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry]
     func startWatchingFile(at path: String, onChange: @escaping () -> Void)
     func stopWatchingFile(at path: String)

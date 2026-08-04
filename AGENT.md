@@ -93,6 +93,9 @@ swift test
 > [!IMPORTANT]
 > Never declare success or report completion without verifying that `swift test` passes with **0 failures**.
 
+> [!CAUTION]
+> **No Unsolicited Git Commits**: AI agents MUST NOT execute `git commit` unless the user explicitly instructs you to commit (e.g., "commit", "git commit"). Keep modifications in the working directory for user review.
+
 ---
 
 ## 4. Key Subsystem Specifications
@@ -156,6 +159,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 4. **Sanity Check Terminal Output**: Output ANSI escape sequences using buffer concatenation and flush output efficiently with `fflush(nil)`.
 5. **No File Overcrowding**: If an extension file grows beyond 300 lines, evaluate splitting it into a dedicated helper module.
 6. **Strict Test-Driven Development (TDD)**: AI agents MUST follow TDD. Before fixing a bug or adding features, write automated unit tests first in `Tests/seTests/seTests.swift` to assert the contract/behavior, run `swift test` to observe failure if applicable, implement the code fix, and verify zero test failures.
+7. **No Unsolicited Git Commits**: AI agents MUST NOT execute `git commit` unless the user explicitly requests a commit (e.g., "commit", "git commit"). Leave code changes in the working directory for user review.
 
 ---
 

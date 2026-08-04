@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TextEncoding
 
 @testable import Editor
 
@@ -55,16 +56,20 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
         return EditorFileInfo(exists: false, isDirectory: false)
     }
 
-    func readTextFile(at path: String) throws -> String {
+    func readTextFile(at path: String) throws -> TextReadResult {
         let normalized = normalizePath(path, isDirectory: false)
         guard let text = files[normalized] else {
             throw NSError(domain: "MemoryEditorFileIOStrategy", code: 1)
         }
-        return text
+        let data = Data(text.utf8)
+        return TextEncodingDetector.detectAndDecode(data) ?? TextReadResult(content: text, encoding: .utf8)
     }
 
-    func writeTextFile(_ contents: String, to path: String) throws {
+    func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws {
         let normalized = normalizePath(path, isDirectory: false)
+        guard contents.data(using: encoding) != nil else {
+            throw EncodingError.unsupportedCharacters
+        }
         files[normalized] = contents
         writes[normalized] = contents
     }

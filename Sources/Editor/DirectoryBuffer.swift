@@ -64,7 +64,8 @@ public final class DirectoryBuffer: TextBuffer {
 
     override public func saveFile(
         to path: String? = nil,
-        fileIO: EditorFileIOStrategy
+        fileIO: EditorFileIOStrategy,
+        encoding: String.Encoding? = nil
     ) throws {
         // Directory buffers are read-only, do not overwrite directory with text
     }

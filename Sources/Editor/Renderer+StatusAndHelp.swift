@@ -1,5 +1,6 @@
 import Config
 import Foundation
+import TextEncoding
 import Syntax
 import TextMetrics
 
@@ -178,7 +179,7 @@ extension Renderer {
                 ]
             }
 
-        case .confirmExitSave, .confirmExternalReload:
+        case .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback:
             helpItems1 = [
                 ("Y", tr("help.yes")), ("^C", tr("help.cancel")),
             ]
@@ -327,6 +328,10 @@ extension Renderer {
             isConfirmation = true
         case .confirmExternalReload:
             promptPrefix = L10n["prompt.confirm_reload"]
+            isConfirmation = true
+        case .confirmEncodingFallback(let originalEncoding, _):
+            let name = TextEncodingDetector.displayName(for: originalEncoding)
+            promptPrefix = String(format: L10n["prompt.encoding_fallback"], name)
             isConfirmation = true
         case .search:
             let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"

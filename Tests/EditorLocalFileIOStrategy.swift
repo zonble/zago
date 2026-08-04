@@ -1,5 +1,6 @@
 import Editor
 import Foundation
+import TextEncoding
 
 final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
     static let shared = TestLocalEditorFileIOStrategy()
@@ -52,12 +53,21 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         )
     }
 
-    func readTextFile(at path: String) throws -> String {
-        try String(contentsOfFile: normalizePath(path, isDirectory: false), encoding: .utf8)
+    func readTextFile(at path: String) throws -> TextReadResult {
+        let normalized = normalizePath(path, isDirectory: false)
+        let data = try Data(contentsOf: URL(fileURLWithPath: normalized))
+        guard let result = TextEncodingDetector.detectAndDecode(data) else {
+            throw CocoaError(.fileReadInapplicableStringEncoding)
+        }
+        return result
     }
 
-    func writeTextFile(_ contents: String, to path: String) throws {
-        try contents.write(toFile: normalizePath(path, isDirectory: false), atomically: true, encoding: .utf8)
+    func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws {
+        let normalized = normalizePath(path, isDirectory: false)
+        guard let data = contents.data(using: encoding) else {
+            throw EncodingError.unsupportedCharacters
+        }
+        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
     }
 
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
