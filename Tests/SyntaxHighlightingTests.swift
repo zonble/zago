@@ -65,7 +65,7 @@ import Testing
 
     if let lang = logoLang {
         let highlighted = highlighter.highlight(
-            line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT 90 ] [ BOX 5 3 ]", syntax: lang)
+            line: "MAKE \"i\" 1 IFELSE :i > 5 [ FD 10 RT ] [ BOX 5 3 ]", syntax: lang)
         #expect(highlighted.contains("\u{1B}[1;36m"))
         #expect(highlighted.contains("\u{1B}[94m"))
 

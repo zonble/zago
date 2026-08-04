@@ -519,9 +519,9 @@ their own syntax and are not treated as general expressions.
 | `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
 | `FD` | `FORWARD` | `FD [expr]` | Move turtle/pen forward by an integer expression in current heading; stops at top/left minimum boundaries | `FD 5`, `FD (10 - :#)` |
 | `BK` | `BACK`, `BACKWARD` | `BK [expr]` | Move turtle/pen backward by an integer expression in opposite heading; stops at top/left minimum boundaries | `BK 3` |
-| `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
-| `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
-| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH 0`, `SETH RIGHT`, `SETH "DOWN` |
+| `RT` | `RIGHT` | `RT` | Turn turtle right 90° | `RT` |
+| `LT` | `LEFT` | `LT` | Turn turtle left 90° | `LT` |
+| `SETHEADING` | `SETH` | `SETHEADING direction` | Set turtle heading by direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH RIGHT`, `SETH "DOWN` |
 | `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---

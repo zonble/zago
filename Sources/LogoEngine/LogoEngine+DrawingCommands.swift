@@ -41,14 +41,17 @@ extension LogoEngine {
             index -= 1
             return nil
         }
-        if isHeadingDirectionToken(tokens[index]) {
-            return tokens[index]
-        }
         guard !isDrawingArgumentBoundary(tokens[index]) else {
             index -= 1
             return nil
         }
-        return evaluateExpression(tokens, index: &index)
+        let evaluated = evaluateExpression(tokens, index: &index)
+        if parseHeadingValue(evaluated) != nil {
+            return evaluated
+        } else {
+            index -= 1
+            return nil
+        }
     }
 
     /// Executes Logo turtle & box/line drawing statement commands (PD, PU, FD, BK, LT, RT, GOTO, BOX, LINE, TABLE, etc.).
@@ -64,18 +67,18 @@ extension LogoEngine {
             return true
 
         case .turnRight:
-            let angle = consumeOptionalDrawingIntArgument(tokens, index: &index) ?? 90
-            heading = (heading + angle) % 360
+            heading = (heading + 90) % 360
             return true
 
         case .turnLeft:
-            let angle = consumeOptionalDrawingIntArgument(tokens, index: &index) ?? 90
-            heading = ((heading - angle) % 360 + 360) % 360
+            heading = ((heading - 90) % 360 + 360) % 360
             return true
 
         case .setHeading:
-            let angle = consumeOptionalHeadingArgument(tokens, index: &index).map(parseHeadingValue) ?? 0
-            heading = ((angle % 360) + 360) % 360
+            if let dirStr = consumeOptionalHeadingArgument(tokens, index: &index),
+               let angle = parseHeadingValue(dirStr) {
+                heading = ((angle % 360) + 360) % 360
+            }
             return true
 
         case .forward:
@@ -160,7 +163,7 @@ extension LogoEngine {
         delegate?.logoEngine(self, performAction: .insertDiagramSnippet(type: arg))
     }
 
-    internal func parseHeadingValue(_ valStr: String) -> Int {
+    internal func parseHeadingValue(_ valStr: String) -> Int? {
         let clean = unquote(valStr).trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         switch clean {
         case "UP", "TOP":
@@ -172,7 +175,7 @@ extension LogoEngine {
         case "LEFT":
             return 270
         default:
-            return Int(clean) ?? 0
+            return nil
         }
     }
 }
