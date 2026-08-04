@@ -402,7 +402,7 @@ struct FormatAndLayoutTests {
     #expect(!canvasHelpBar.contains("Mark Block"))
     #expect(!canvasHelpBar.contains("Copy Block"))
 
-    let confirmHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    let confirmHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }), editor: canvasEditor)
     #expect(confirmHelpBar.contains("是"))
     #expect(confirmHelpBar.contains("否"))
 
