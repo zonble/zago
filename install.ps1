@@ -43,9 +43,11 @@ try {
         $tempExtractDir = Join-Path $env:TEMP "zago_extract_$([Guid]::NewGuid().Guid)"
         Expand-Archive -Path $tempFile -DestinationPath $tempExtractDir -Force
         
-        $extractedExe = Get-ChildItem -Path $tempExtractDir -Filter "zago.exe" -Recurse | Select-Object -First 1
+        $extractedExe = Get-ChildItem -Path $tempExtractDir -Filter "zago*.exe" -Recurse |
+            Sort-Object @{ Expression = { if ($_.Name -eq $exeName) { 0 } else { 1 } } }, Name |
+            Select-Object -First 1
         if (-not $extractedExe) {
-            throw "zago.exe was not found inside the downloaded zip package."
+            throw "No zago*.exe executable was found inside the downloaded zip package."
         }
 
         Copy-Item -Path $extractedExe.FullName -Destination $targetExe -Force
