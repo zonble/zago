@@ -739,6 +739,8 @@ struct FormatAndLayoutTests {
     let clean1 = line1.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
     let clean2 = line2.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
 
+    #expect(clean0.contains("[File]"))
+    #expect(!clean0.contains("[ File ]"))
     #expect(clean0.count == clean1.count)
     #expect(clean1.count == clean2.count)
 
@@ -750,12 +752,12 @@ struct FormatAndLayoutTests {
     editor.menuBar.categoryIndex = 1
     let (startCol1, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
     let title0Width = L10n[editor.menuBar.categories[0].titleKey].displayWidth
-    #expect(startCol1 == 1 + title0Width + 4)
+    #expect(startCol1 == 1 + title0Width + 2)
 
     editor.menuBar.categoryIndex = 2
     let (startCol2, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
     let title1Width = L10n[editor.menuBar.categories[1].titleKey].displayWidth
-    #expect(startCol2 == 1 + title0Width + 4 + title1Width + 4)
+    #expect(startCol2 == 1 + title0Width + 2 + title1Width + 2)
 }
 
 @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {

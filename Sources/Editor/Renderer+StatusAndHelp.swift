@@ -11,7 +11,7 @@ extension Renderer {
         if editor.isMenuBarActive {
             editor.menuBar.updateCategories(for: editor)
             func menuSegment(title: String, isSelected: Bool) -> String {
-                isSelected ? "[ \(title) ]" : "  \(title)  "
+                isSelected ? "[\(title)]" : " \(title) "
             }
 
             var rawMenuStr = " "
