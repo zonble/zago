@@ -429,6 +429,7 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 - [Pen mode and turtle drawing](docs/logo_pen_mode.md)
 - [Diagram snippets & menu rules](docs/diagram_snippets.md)
 - [Spell checker architecture & plan](docs/spell_checker.md)
+- [File encoding & auto-detection](docs/encoding.md)
 - [Homebrew tap](docs/homebrew_tap.md)
 - [Release & preview builds](docs/release.md)
 - [Changelog](CHANGELOG.md)
