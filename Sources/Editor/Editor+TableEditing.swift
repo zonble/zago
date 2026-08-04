@@ -54,8 +54,7 @@ extension Editor {
         clampTableModeCursor()
     }
 
-    func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool
-    {
+    func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool {
         guard buffer.lineIndex >= cell.innerMinLine && buffer.lineIndex <= cell.innerMaxLine else { return false }
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return false }
         let line = buffer.lines[buffer.lineIndex]
@@ -147,7 +146,7 @@ extension Editor {
                 tableLines.append(
                     chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin)
                         + chars.midRight)
-                }
+            }
         }
         tableLines.append(
             chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin)

@@ -329,12 +329,14 @@ extension Editor {
             setStatusMessage(L10n["status.no_block_marked"])
             return
         }
-        guard isCanvasRangeAllowed(
-            topLine: rect.topLine,
-            bottomLine: rect.bottomLine,
-            leftColumn: rect.leftColumn,
-            rightColumnExclusive: rect.rightColumnExclusive
-        ) else { return }
+        guard
+            isCanvasRangeAllowed(
+                topLine: rect.topLine,
+                bottomLine: rect.bottomLine,
+                leftColumn: rect.leftColumn,
+                rightColumnExclusive: rect.rightColumnExclusive
+            )
+        else { return }
 
         var rows: [String] = []
         for lineIndex in rect.topLine...rect.bottomLine {
@@ -364,12 +366,14 @@ extension Editor {
         let startColumn = canvasVisualColumn
         let endLine = startLine + clipboard.rows.count - 1
         let endColumn = startColumn + clipboard.width
-        guard isCanvasRangeAllowed(
-            topLine: startLine,
-            bottomLine: endLine,
-            leftColumn: startColumn,
-            rightColumnExclusive: endColumn
-        ) else { return }
+        guard
+            isCanvasRangeAllowed(
+                topLine: startLine,
+                bottomLine: endLine,
+                leftColumn: startColumn,
+                rightColumnExclusive: endColumn
+            )
+        else { return }
 
         saveUndoSnapshot()
         for (rowOffset, rowText) in clipboard.rows.enumerated() {
@@ -388,12 +392,14 @@ extension Editor {
 
     func fillCanvasBlock(with fillText: String) -> Bool {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else { return false }
-        guard isCanvasRangeAllowed(
-            topLine: rect.topLine,
-            bottomLine: rect.bottomLine,
-            leftColumn: rect.leftColumn,
-            rightColumnExclusive: rect.rightColumnExclusive
-        ) else { return true }
+        guard
+            isCanvasRangeAllowed(
+                topLine: rect.topLine,
+                bottomLine: rect.bottomLine,
+                leftColumn: rect.leftColumn,
+                rightColumnExclusive: rect.rightColumnExclusive
+            )
+        else { return true }
         guard !fillText.isEmpty else {
             setStatusMessage(L10n["status.fill_text_required"])
             return true

@@ -11,7 +11,7 @@ public struct WikiSyntaxDefinition: SyntaxDefinition {
             makeRule("\\[\\[[^\\]\\n]+\\]\\]", .typeOrAttribute),
             makeRule("\\[https?://[^\\s\\]]+(?:\\s+[^\\]]+)?\\]", .typeOrAttribute),
             makeRule("'''[^'\\n]+'''|''[^'\\n]+''", .string),
-            makeRule("\\{\\{[^\\}\\n]+\\}\\}" , .keyword),
+            makeRule("\\{\\{[^\\}\\n]+\\}\\}", .keyword),
             makeRule("<!--.*?-->", .comment),
             makeRule("\\b([0-9]+)\\b", .number),
         ].compactMap { $0 }

@@ -7,7 +7,8 @@ import Foundation
 struct Zago: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "zago",
-        abstract: "zago v\(ZagoVersion.current) - zonble's nano + Editor LOGO: A lightweight terminal text editor with powerful plain-text diagramming.",
+        abstract:
+            "zago v\(ZagoVersion.current) - zonble's nano + Editor LOGO: A lightweight terminal text editor with powerful plain-text diagramming.",
         version: ZagoVersion.current
     )
 
@@ -135,7 +136,9 @@ struct Zago: ParsableCommand {
                 Terminal.write(output + "\n")
                 return
             } catch {
-                if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(using: .utf8) {
+                if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(
+                    using: .utf8)
+                {
                     FileHandle.standardError.write(data)
                 }
                 throw ExitCode.failure

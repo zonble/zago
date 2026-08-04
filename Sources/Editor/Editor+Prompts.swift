@@ -752,8 +752,6 @@ extension Editor {
         goToLocation(line: parts[0], column: parts.count > 1 ? parts[1] : nil)
     }
 
-
-
     /// Saves buffer to specified file path.
     func doSave(to path: String) {
         do {

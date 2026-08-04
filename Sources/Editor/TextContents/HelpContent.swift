@@ -24,7 +24,8 @@ public enum HelpContent {
 
     private static func sectionLines(language: Language) -> [String] {
         sections.enumerated().flatMap { index, section in
-            let lines = [L10n.string(section.titleKey, language: language)]
+            let lines =
+                [L10n.string(section.titleKey, language: language)]
                 + section.itemRange.map { L10n.string("\(section.itemPrefix)_\($0)", language: language) }
             return index == sections.indices.last ? lines : lines + [""]
         }

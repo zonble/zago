@@ -25,7 +25,8 @@ enum PipeTableFormatter {
         case .asciiDoc:
             return trimmed.hasPrefix("|") || trimmed.hasPrefix("[cols=")
         case .restGrid:
-            return (trimmed.hasPrefix("+") || trimmed.hasPrefix("|")) && (trimmed.hasSuffix("+") || trimmed.hasSuffix("|"))
+            return (trimmed.hasPrefix("+") || trimmed.hasPrefix("|"))
+                && (trimmed.hasSuffix("+") || trimmed.hasSuffix("|"))
         }
     }
 
@@ -184,14 +185,17 @@ enum PipeTableFormatter {
         var formattedLines: [String] = []
         if style == .asciiDoc { formattedLines.append("|===") }
         if style == .restGrid {
-            formattedLines.append(buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
+            formattedLines.append(
+                buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
         }
 
         for (rIdx, row) in rows.enumerated() {
             if isSeparatorRow(row, style: style) {
                 let isHeader = (rIdx == 1)
                 let containsEq = row.joined().contains("=")
-                let sep = buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: isHeader, containsEquals: containsEq)
+                let sep = buildSeparatorRow(
+                    colWidths: colWidths, alignments: alignments, style: style, isHeader: isHeader,
+                    containsEquals: containsEq)
                 formattedLines.append(sep)
             } else {
                 var lineStr = "|"
@@ -205,14 +209,17 @@ enum PipeTableFormatter {
                 if style == .restGrid {
                     let isLast = (rIdx == rows.count - 1)
                     if !isLast && (rIdx + 1 < rows.count) && !isSeparatorRow(rows[rIdx + 1], style: style) {
-                        formattedLines.append(buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
+                        formattedLines.append(
+                            buildSeparatorRow(
+                                colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
                     }
                 }
             }
         }
 
         if style == .restGrid {
-            formattedLines.append(buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
+            formattedLines.append(
+                buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: false))
         } else if style == .asciiDoc {
             formattedLines.append("|===")
         }
@@ -258,7 +265,8 @@ enum PipeTableFormatter {
                 var newBufferLines = lines
                 let insertIdx = range.upperBound - 1
                 newBufferLines.insert("|", at: insertIdx)
-                return TableNavigationResult(newBufferLineIndex: insertIdx, newCursorColumn: 2, updatedLines: newBufferLines)
+                return TableNavigationResult(
+                    newBufferLineIndex: insertIdx, newCursorColumn: 2, updatedLines: newBufferLines)
             } else {
                 var target = lineIndex - 1
                 while target >= range.lowerBound {
@@ -385,7 +393,10 @@ enum PipeTableFormatter {
         for (rIdx, row) in rows.enumerated() {
             if isSeparatorRow(row, style: style) {
                 let containsEq = row.joined().contains("=")
-                formattedLines.append(buildSeparatorRow(colWidths: colWidths, alignments: alignments, style: style, isHeader: (rIdx == 1), containsEquals: containsEq))
+                formattedLines.append(
+                    buildSeparatorRow(
+                        colWidths: colWidths, alignments: alignments, style: style, isHeader: (rIdx == 1),
+                        containsEquals: containsEq))
             } else {
                 var lineStr = "|"
                 for (cIdx, cell) in row.enumerated() {

@@ -199,7 +199,8 @@ extension Renderer {
                 ]
                 helpItems2 = [
                     ("^X", L10n.helpExit), ("Tab", L10n["help.next_cell"]), ("⇧+Tab", L10n["help.prev_cell"]),
-                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]), ("Esc", L10n["help.command"]),
+                    ("C+⇧+↑/↓", L10n["help.cell_height"]), ("⇧+Arrow", L10n["help.select_text"]),
+                    ("Esc", L10n["help.command"]),
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [

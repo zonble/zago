@@ -7,9 +7,9 @@ public final class SpellChecker {
 
     public init(language: String = "en_US") {
         #if os(Windows)
-        self.engine = WindowsSpellCheckerEngine(language: language)
+            self.engine = WindowsSpellCheckerEngine(language: language)
         #else
-        self.engine = UnixSpellCheckerEngine(language: language)
+            self.engine = UnixSpellCheckerEngine(language: language)
         #endif
     }
 
@@ -62,23 +62,28 @@ public final class SpellChecker {
             // Format-specific code block boundary detection
             if normalizedSyntax.contains("org") {
                 if lowerTrimmed.hasPrefix("#+begin_src") || lowerTrimmed.hasPrefix("#+begin_example") {
-                    inCodeBlock = true; continue
+                    inCodeBlock = true
+                    continue
                 }
                 if lowerTrimmed.hasPrefix("#+end_src") || lowerTrimmed.hasPrefix("#+end_example") {
-                    inCodeBlock = false; continue
+                    inCodeBlock = false
+                    continue
                 }
             } else if normalizedSyntax.contains("asciidoc") || normalizedSyntax.contains("adoc") {
                 if lowerTrimmed.hasPrefix("----") || lowerTrimmed.hasPrefix("....") {
-                    inCodeBlock.toggle(); continue
+                    inCodeBlock.toggle()
+                    continue
                 }
             } else if normalizedSyntax.contains("rest") || normalizedSyntax.contains("rst") {
                 if lowerTrimmed.hasPrefix(".. code-block::") || lowerTrimmed.hasPrefix(".. code::") {
-                    inCodeBlock = true; continue
+                    inCodeBlock = true
+                    continue
                 }
             } else {
                 // Default / Markdown
                 if lowerTrimmed.hasPrefix("```") || lowerTrimmed.hasPrefix("~~~") {
-                    inCodeBlock.toggle(); continue
+                    inCodeBlock.toggle()
+                    continue
                 }
             }
 

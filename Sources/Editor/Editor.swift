@@ -176,7 +176,7 @@ public final class Editor {
     public init(
         filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        spellLanguage: String? = nil
+        spellLanguage: String? = nil,
         fileIOStrategy: EditorFileIOStrategy
     ) {
         self.terminal = Terminal()
@@ -236,13 +236,14 @@ public final class Editor {
     public convenience init(
         filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
-        spellLanguage: String? = nil
+        spellLanguage: String? = nil,
         fileIOStrategy: EditorFileIOStrategy
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
             filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
-            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language,
+            showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload,
+            language: language,
             spellLanguage: spellLanguage,
             fileIOStrategy: fileIOStrategy)
     }

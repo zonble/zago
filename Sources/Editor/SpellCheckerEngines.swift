@@ -58,7 +58,8 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
 
         for path in candidatePaths {
             if FileManager.default.fileExists(atPath: path),
-               let content = try? String(contentsOfFile: path, encoding: .utf8) {
+                let content = try? String(contentsOfFile: path, encoding: .utf8)
+            {
                 let words = content.components(separatedBy: .newlines)
                 self.dictionary = Set(words.map { $0.lowercased() })
                 return
@@ -140,7 +141,8 @@ public final class UnixSpellCheckerEngine: SpellCheckerEngine {
 
         for path in candidatePaths {
             if FileManager.default.fileExists(atPath: path),
-               let content = try? String(contentsOfFile: path, encoding: .utf8) {
+                let content = try? String(contentsOfFile: path, encoding: .utf8)
+            {
                 let lines = content.components(separatedBy: .newlines)
                 for line in lines {
                     let trimmed = line.trimmingCharacters(in: .whitespaces)

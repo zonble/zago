@@ -57,8 +57,11 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
         PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .asciiDoc)
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
-        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
+        PipeTableFormatter.navigateTableCell(
+            in: lines, at: lineIndex, column: column, forward: forward, style: .asciiDoc)
     }
 
     public func documentOutline(in lines: [String]) -> DocumentOutline? {

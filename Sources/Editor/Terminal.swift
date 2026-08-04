@@ -294,7 +294,8 @@ public final class Terminal {
         }
 
         private func readWindowsCharacter(firstUnit: UInt16) -> Character? {
-            if Self.isHighSurrogate(firstUnit), let low = readConsoleUTF16Unit(timeoutMs: 50), Self.isLowSurrogate(low) {
+            if Self.isHighSurrogate(firstUnit), let low = readConsoleUTF16Unit(timeoutMs: 50), Self.isLowSurrogate(low)
+            {
                 return Self.characterFromConsoleUTF16Units([firstUnit, low])
             }
             return Self.characterFromConsoleUTF16Units([firstUnit])
@@ -433,172 +434,172 @@ public final class Terminal {
         #if os(Windows)
             return readWindowsKey()
         #else
-        let b: UInt8
-        while true {
-            if consumeWindowResizeEvent() {
-                return .resize
-            }
-            guard let byte = readByte(timeoutMs: 250) else {
+            let b: UInt8
+            while true {
                 if consumeWindowResizeEvent() {
                     return .resize
                 }
-                return .unknown
+                guard let byte = readByte(timeoutMs: 250) else {
+                    if consumeWindowResizeEvent() {
+                        return .resize
+                    }
+                    return .unknown
+                }
+                b = byte
+                break
             }
-            b = byte
-            break
-        }
 
-        switch b {
-        case 13:
-            // Enter (CR: ASCII 13)
-            return .enter
+            switch b {
+            case 13:
+                // Enter (CR: ASCII 13)
+                return .enter
 
-        case 9:
-            // Tab (ASCII 9)
-            return .tab
+            case 9:
+                // Tab (ASCII 9)
+                return .tab
 
-        case 8:
-            // Ctrl+Backspace / Ctrl+H (ASCII 8)
-            return .ctrlBackspace
-
-        case 127:
-            // Backspace (ASCII 127)
-            return .backspace
-
-        case 30:
-            // Mark key: Ctrl+^ (ASCII 30 / 0x1E)
-            return .mark
-
-        case 31:
-            // Goto Line key: Ctrl+/ or Ctrl+_ (ASCII 31 / 0x1F)
-            return .ctrl("/")
-
-        case 1...26:
-            // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
-            let scalar = UnicodeScalar(UInt32(b) + 64)!  // 1 -> 'A', 15 -> 'O'
-            return .ctrl(Character(scalar))
-
-        case 27:
-            // Escape Sequences (50ms timeout to detect standalone ESC key vs ANSI sequence)
-            guard let b2 = readByte(timeoutMs: 50) else { return .esc }
-            if b2 == 8 || b2 == 127 {
-                // ESC + Backspace / Alt+Backspace / Ctrl+Backspace
+            case 8:
+                // Ctrl+Backspace / Ctrl+H (ASCII 8)
                 return .ctrlBackspace
-            }
-            switch b2 {
-            case UInt8(ascii: "["):
-                guard let b3 = readByte(timeoutMs: 50) else { return .alt("[") }
-                switch b3 {
-                case UInt8(ascii: "A"): return .arrowUp
-                case UInt8(ascii: "B"): return .arrowDown
-                case UInt8(ascii: "C"): return .arrowRight
-                case UInt8(ascii: "D"): return .arrowLeft
-                case UInt8(ascii: "a"): return .shiftArrowUp
-                case UInt8(ascii: "b"): return .shiftArrowDown
-                case UInt8(ascii: "c"): return .shiftArrowRight
-                case UInt8(ascii: "d"): return .shiftArrowLeft
-                case UInt8(ascii: "H"): return .home
-                case UInt8(ascii: "F"): return .end
-                case UInt8(ascii: "1")...UInt8(ascii: "9"):
-                    var seqString = String(UnicodeScalar(b3))
-                    while let nb = readByte(timeoutMs: 50) {
-                        if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z"))
-                            || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z"))
-                        {
+
+            case 127:
+                // Backspace (ASCII 127)
+                return .backspace
+
+            case 30:
+                // Mark key: Ctrl+^ (ASCII 30 / 0x1E)
+                return .mark
+
+            case 31:
+                // Goto Line key: Ctrl+/ or Ctrl+_ (ASCII 31 / 0x1F)
+                return .ctrl("/")
+
+            case 1...26:
+                // Ctrl keys (1 ~ 26 -> Ctrl+A ~ Ctrl+Z)
+                let scalar = UnicodeScalar(UInt32(b) + 64)!  // 1 -> 'A', 15 -> 'O'
+                return .ctrl(Character(scalar))
+
+            case 27:
+                // Escape Sequences (50ms timeout to detect standalone ESC key vs ANSI sequence)
+                guard let b2 = readByte(timeoutMs: 50) else { return .esc }
+                if b2 == 8 || b2 == 127 {
+                    // ESC + Backspace / Alt+Backspace / Ctrl+Backspace
+                    return .ctrlBackspace
+                }
+                switch b2 {
+                case UInt8(ascii: "["):
+                    guard let b3 = readByte(timeoutMs: 50) else { return .alt("[") }
+                    switch b3 {
+                    case UInt8(ascii: "A"): return .arrowUp
+                    case UInt8(ascii: "B"): return .arrowDown
+                    case UInt8(ascii: "C"): return .arrowRight
+                    case UInt8(ascii: "D"): return .arrowLeft
+                    case UInt8(ascii: "a"): return .shiftArrowUp
+                    case UInt8(ascii: "b"): return .shiftArrowDown
+                    case UInt8(ascii: "c"): return .shiftArrowRight
+                    case UInt8(ascii: "d"): return .shiftArrowLeft
+                    case UInt8(ascii: "H"): return .home
+                    case UInt8(ascii: "F"): return .end
+                    case UInt8(ascii: "1")...UInt8(ascii: "9"):
+                        var seqString = String(UnicodeScalar(b3))
+                        while let nb = readByte(timeoutMs: 50) {
+                            if nb == UInt8(ascii: "~") || (nb >= UInt8(ascii: "A") && nb <= UInt8(ascii: "Z"))
+                                || (nb >= UInt8(ascii: "a") && nb <= UInt8(ascii: "z"))
+                            {
+                                seqString.append(Character(UnicodeScalar(nb)))
+                                break
+                            }
                             seqString.append(Character(UnicodeScalar(nb)))
-                            break
                         }
-                        seqString.append(Character(UnicodeScalar(nb)))
+                        switch seqString {
+                        case "3", "3~": return .delete
+                        case "5", "5~": return .pageUp
+                        case "6", "6~": return .pageDown
+                        case "11", "11~": return .f1
+                        case "12", "12~": return .f2
+                        case "13", "13~": return .f3
+                        case "14", "14~": return .f4
+                        case "15", "15~": return .f5
+                        case "17", "17~": return .f6
+                        case "18", "18~": return .f7
+                        case "19", "19~": return .f8
+                        case "20", "20~": return .f9
+                        case "21", "21~": return .f10
+                        case "23", "23~": return .f11
+                        case "24", "24~": return .f12
+                        case "1;2D", "2D": return .shiftArrowLeft
+                        case "1;2C", "2C": return .shiftArrowRight
+                        case "1;2A", "2A": return .shiftArrowUp
+                        case "1;2B", "2B": return .shiftArrowDown
+                        case "1;2H", "2H", "1;2~", "2~": return .shiftHome
+                        case "1;2F", "2F", "4;2~": return .shiftEnd
+                        case "1;6D", "6D": return .ctrlShiftArrowLeft
+                        case "1;6C", "6C": return .ctrlShiftArrowRight
+                        case "1;6A", "6A": return .ctrlShiftArrowUp
+                        case "1;6B", "6B": return .ctrlShiftArrowDown
+                        case "1;5D", "5D": return .ctrl("B")
+                        case "1;5C", "5C": return .ctrl("F")
+                        default: return .unknown
+                        }
+                    default:
+                        return .esc
                     }
-                    switch seqString {
-                    case "3", "3~": return .delete
-                    case "5", "5~": return .pageUp
-                    case "6", "6~": return .pageDown
-                    case "11", "11~": return .f1
-                    case "12", "12~": return .f2
-                    case "13", "13~": return .f3
-                    case "14", "14~": return .f4
-                    case "15", "15~": return .f5
-                    case "17", "17~": return .f6
-                    case "18", "18~": return .f7
-                    case "19", "19~": return .f8
-                    case "20", "20~": return .f9
-                    case "21", "21~": return .f10
-                    case "23", "23~": return .f11
-                    case "24", "24~": return .f12
-                    case "1;2D", "2D": return .shiftArrowLeft
-                    case "1;2C", "2C": return .shiftArrowRight
-                    case "1;2A", "2A": return .shiftArrowUp
-                    case "1;2B", "2B": return .shiftArrowDown
-                    case "1;2H", "2H", "1;2~", "2~": return .shiftHome
-                    case "1;2F", "2F", "4;2~": return .shiftEnd
-                    case "1;6D", "6D": return .ctrlShiftArrowLeft
-                    case "1;6C", "6C": return .ctrlShiftArrowRight
-                    case "1;6A", "6A": return .ctrlShiftArrowUp
-                    case "1;6B", "6B": return .ctrlShiftArrowDown
-                    case "1;5D", "5D": return .ctrl("B")
-                    case "1;5C", "5C": return .ctrl("F")
-                    default: return .unknown
+
+                case UInt8(ascii: "O"):
+                    guard let b3 = readByte(timeoutMs: 50) else { return .esc }
+                    switch b3 {
+                    case UInt8(ascii: "H"): return .home
+                    case UInt8(ascii: "F"): return .end
+                    case UInt8(ascii: "P"): return .f1
+                    case UInt8(ascii: "Q"): return .f2
+                    case UInt8(ascii: "R"): return .f3
+                    case UInt8(ascii: "S"): return .f4
+                    default: return .esc
                     }
+
+                case 32...126:
+                    let ch = Character(UnicodeScalar(b2))
+                    return .alt(ch)
+
                 default:
                     return .esc
                 }
 
-            case UInt8(ascii: "O"):
-                guard let b3 = readByte(timeoutMs: 50) else { return .esc }
-                switch b3 {
-                case UInt8(ascii: "H"): return .home
-                case UInt8(ascii: "F"): return .end
-                case UInt8(ascii: "P"): return .f1
-                case UInt8(ascii: "Q"): return .f2
-                case UInt8(ascii: "R"): return .f3
-                case UInt8(ascii: "S"): return .f4
-                default: return .esc
+            default:
+                // Process UTF-8 multi-byte sequence (determining required byte count based on UTF-8 leading byte header)
+                var bytes: [UInt8] = [b]
+                let neededBytes: Int
+                switch b {
+                case 0..<0x80:
+                    // 1-byte ASCII character (0xxxxxxx)
+                    neededBytes = 1
+                case 0xC0..<0xE0:
+                    // 2-byte UTF-8 character (110xxxxx 10xxxxxx)
+                    neededBytes = 2
+                case 0xE0..<0xF0:
+                    // 3-byte UTF-8 character (1110xxxx 10xxxxxx 10xxxxxx, e.g. CJK Chinese)
+                    neededBytes = 3
+                case 0xF0..<0xF8:
+                    // 4-byte UTF-8 character (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx, e.g. Emoji)
+                    neededBytes = 4
+                default:
+                    neededBytes = 1
                 }
 
-            case 32...126:
-                let ch = Character(UnicodeScalar(b2))
-                return .alt(ch)
-
-            default:
-                return .esc
-            }
-
-        default:
-            // Process UTF-8 multi-byte sequence (determining required byte count based on UTF-8 leading byte header)
-            var bytes: [UInt8] = [b]
-            let neededBytes: Int
-            switch b {
-            case 0..<0x80:
-                // 1-byte ASCII character (0xxxxxxx)
-                neededBytes = 1
-            case 0xC0..<0xE0:
-                // 2-byte UTF-8 character (110xxxxx 10xxxxxx)
-                neededBytes = 2
-            case 0xE0..<0xF0:
-                // 3-byte UTF-8 character (1110xxxx 10xxxxxx 10xxxxxx, e.g. CJK Chinese)
-                neededBytes = 3
-            case 0xF0..<0xF8:
-                // 4-byte UTF-8 character (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx, e.g. Emoji)
-                neededBytes = 4
-            default:
-                neededBytes = 1
-            }
-
-            while bytes.count < neededBytes {
-                if let nb = readByte() {
-                    bytes.append(nb)
-                } else {
-                    break
+                while bytes.count < neededBytes {
+                    if let nb = readByte() {
+                        bytes.append(nb)
+                    } else {
+                        break
+                    }
                 }
-            }
 
-            if let str = String(bytes: bytes, encoding: .utf8), let ch = str.first {
-                return .char(ch)
-            }
+                if let str = String(bytes: bytes, encoding: .utf8), let ch = str.first {
+                    return .char(ch)
+                }
 
-            return .unknown
-        }
+                return .unknown
+            }
         #endif
     }
 

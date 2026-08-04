@@ -58,7 +58,9 @@ extension Editor {
         case .next:
             target = outline.headings.first { $0.lineIndex > buffer.lineIndex } ?? outline.headings[0]
         case .previous:
-            target = outline.headings.last { $0.lineIndex < buffer.lineIndex } ?? outline.headings[outline.headings.count - 1]
+            target =
+                outline.headings.last { $0.lineIndex < buffer.lineIndex }
+                ?? outline.headings[outline.headings.count - 1]
         }
         jumpToHeading(target, in: outline)
     }

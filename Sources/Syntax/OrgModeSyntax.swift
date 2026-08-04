@@ -59,8 +59,11 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
         PipeTableFormatter.formatTable(in: lines, at: lineIndex, cursorColumn: cursorColumn, style: .orgMode)
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
-        PipeTableFormatter.navigateTableCell(in: lines, at: lineIndex, column: column, forward: forward, style: .orgMode)
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
+        PipeTableFormatter.navigateTableCell(
+            in: lines, at: lineIndex, column: column, forward: forward, style: .orgMode)
     }
 
     public func documentOutline(in lines: [String]) -> DocumentOutline? {

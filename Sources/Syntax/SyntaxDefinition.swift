@@ -63,7 +63,9 @@ extension SyntaxDefinition {
         nil
     }
 
-    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool) -> TableNavigationResult? {
+    public func navigateTableCell(at lineIndex: Int, column: Int, in lines: [String], forward: Bool)
+        -> TableNavigationResult?
+    {
         nil
     }
 

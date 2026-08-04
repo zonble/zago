@@ -232,11 +232,13 @@ public final class Renderer {
                     : nil
                 let tokenTypes =
                     (currentLanguage != nil)
-                    ? (tokenTypesCache[vLine.bufferLineIndex] ?? {
-                        let computed = editor.syntaxHighlighter.tokenTypes(for: fullLineText, syntax: currentLanguage!)
-                        tokenTypesCache[vLine.bufferLineIndex] = computed
-                        return computed
-                    }())
+                    ? (tokenTypesCache[vLine.bufferLineIndex]
+                        ?? {
+                            let computed = editor.syntaxHighlighter.tokenTypes(
+                                for: fullLineText, syntax: currentLanguage!)
+                            tokenTypesCache[vLine.bufferLineIndex] = computed
+                            return computed
+                        }())
                     : []
 
                 var activeCellBounds: (left: Int, right: Int)? = nil

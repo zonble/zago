@@ -54,4 +54,3 @@ extension EditorFileIOStrategy {
     public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {}
     public func stopWatchingFile(at path: String) {}
 }
-

@@ -130,9 +130,10 @@ public final class SyntaxHighlighter {
         guard !clean.isEmpty else { return nil }
 
         return languages.first { lang in
-            lang.name.lowercased() == clean || lang.extensions.contains { ext in
-                ext.lowercased() == clean
-            }
+            lang.name.lowercased() == clean
+                || lang.extensions.contains { ext in
+                    ext.lowercased() == clean
+                }
         }
     }
 
