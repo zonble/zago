@@ -1,7 +1,12 @@
 import Foundation
 
+/// Abstract protocol for text buffers compatible with `SpellChecker`.
+///
+/// Implement this protocol or conform custom text buffer types to enable automated spell checking.
 public protocol SpellCheckableBuffer {
+    /// Array of text lines contained in the buffer.
     var lines: [String] { get }
+    /// Optional file path used for format detection (e.g., `.md`, `.org`, `.adoc`).
     var filePath: String? { get }
 }
 

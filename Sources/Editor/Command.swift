@@ -111,17 +111,50 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 }
 
 /// Unified protocol defining an editor command with metadata, keybindings, CommandBar aliases, and execution logic.
+///
+/// Implement this protocol to add custom commands, keybindings, or CommandBar macro utilities to `Editor`.
 public protocol Command {
+    /// Unique command identifier for menu binding and command dispatch.
     var id: CommandID { get }
+
+    /// Human-readable localized title of the command.
     var name: String { get }
+
+    /// Detailed description explaining the purpose of the command.
     var description: String { get }
+
+    /// Default shortcut keybindings that trigger this command.
     var keys: [Key] { get }
+
+    /// CommandBar command aliases (e.g. `["write", "w", "save"]`).
     var commandBarAliases: [String] { get }
+
+    /// Auto-completion candidate names displayed when typing in the CommandBar.
     var completionNames: [String] { get }
 
+    /// Evaluates whether the command can be executed in the current editor state.
+    ///
+    /// - Parameter editor: Active editor instance.
+    /// - Returns: `true` if command is available for execution; otherwise `false`.
     func isAvailable(in editor: Editor) -> Bool
+
+    /// Checks if typed CommandBar input matches this command.
+    ///
+    /// - Parameter input: Parsed CommandBar input token stream.
+    /// - Returns: `true` if input matches command aliases.
     func match(_ input: CommandBarInput) -> Bool
+
+    /// Executes command logic directly on the editor instance.
+    ///
+    /// - Parameter editor: Active editor instance.
     func execute(on editor: Editor)
+
+    /// Executes command logic with CommandBar arguments, returning dispatch result status.
+    ///
+    /// - Parameters:
+    ///   - input: Parsed CommandBar input containing arguments.
+    ///   - editor: Active editor instance.
+    /// - Returns: Result status (`.handled`, `.passThrough`, or `.invalidArguments`).
     func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult
 }
 
