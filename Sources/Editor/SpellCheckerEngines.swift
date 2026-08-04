@@ -436,8 +436,8 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
             return
         }
 
-        var clsid = CLSID_SpellCheckerFactory
-        var iid = IID_ISpellCheckerFactory
+        var clsid = spellCheckerFactoryCLSID()
+        var iid = spellCheckerFactoryIID()
         var rawFactory: UnsafeMutableRawPointer? = nil
         guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER), &iid, &rawFactory) >= 0,
             let rawFactory
@@ -492,6 +492,40 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     }
     #endif
 }
+
+#if os(Windows)
+    private func spellCheckerFactoryCLSID() -> GUID {
+        makeGUID(
+            data1: 0x7ab36653,
+            data2: 0x1796,
+            data3: 0x484b,
+            data4: (0xbd, 0xfa, 0xe7, 0x4f, 0x1d, 0xb7, 0xc1, 0xdc)
+        )
+    }
+
+    private func spellCheckerFactoryIID() -> GUID {
+        makeGUID(
+            data1: 0x8e018a9d,
+            data2: 0x2415,
+            data3: 0x4677,
+            data4: (0xbf, 0x08, 0x79, 0x4e, 0xa6, 0x1f, 0x94, 0xbb)
+        )
+    }
+
+    private func makeGUID(
+        data1: ULONG,
+        data2: USHORT,
+        data3: USHORT,
+        data4: (UCHAR, UCHAR, UCHAR, UCHAR, UCHAR, UCHAR, UCHAR, UCHAR)
+    ) -> GUID {
+        var guid = GUID()
+        guid.Data1 = data1
+        guid.Data2 = data2
+        guid.Data3 = data3
+        guid.Data4 = data4
+        return guid
+    }
+#endif
 
 private func normalizedWord(_ word: String) -> String {
     word.lowercased().trimmingCharacters(in: .punctuationCharacters)
