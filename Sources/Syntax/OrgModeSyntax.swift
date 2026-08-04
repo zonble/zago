@@ -18,7 +18,7 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
             // Links [[link][description]]
             makeRule("\\[\\[[^\\]]+\\](\\[[^\\]]+\\])?\\]", .typeOrAttribute),
             // Code & Timestamps (~code~, =verbatim=, <2026-07-28 Tue>)
-            makeRule("~[^~]+~|=[^=]+=|\\<[^\\>]+\\>|\\[[^\\]]+\\]", .string),
+            makeRule("~[^~`|\\n]+~|=[^=`|\\n]+=|\\<[^\\>`|\\n]+\\>|\\[[^\\]`|\\n]+\\]", .string),
             // Tables (Separator lines & cell rows)
             makeRule("^\\s*\\|[-+]*\\|?\\s*$", .keyword),
             makeRule("^\\s*\\|.*\\|\\s*$", .typeOrAttribute),

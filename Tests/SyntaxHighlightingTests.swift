@@ -415,6 +415,18 @@ import Testing
     #expect(rstHighlighted.contains("\u{1B}[94m    Title underline"))
 }
 
+@Test func testMarkdownTableWithInlineCodeHighlighting() throws {
+    let highlighter = SyntaxHighlighter()
+    let lang = try #require(highlighter.detectLanguage(for: "test.md"))
+    let line = "| `server_legacy._norm_punct(t)` | `assistant_server.chat.response` |"
+    let tokenMap = highlighter.tokenTypes(for: line, syntax: lang)
+
+    let chars = Array(line)
+    for (i, ch) in chars.enumerated() {
+        print("[\(i)] '\(ch)' -> \(tokenMap[i])")
+    }
+}
+
 
 
 
