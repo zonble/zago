@@ -53,9 +53,7 @@ public final class FileWatcher: @unchecked Sendable {
             )
 
             src.setEventHandler { [weak self] in
-                DispatchQueue.main.async {
-                    self?.onChange?()
-                }
+                self?.onChange?()
             }
 
             src.setCancelHandler { [fd = fileDescriptor] in
@@ -93,9 +91,7 @@ public final class FileWatcher: @unchecked Sendable {
                             let currentMTime = self.getModificationDate(for: path)
                             if currentMTime != self.lastModificationDate {
                                 self.lastModificationDate = currentMTime
-                                DispatchQueue.main.async {
-                                    self.onChange?()
-                                }
+                                self.onChange?()
                             }
                             FindNextChangeNotification(h)
                         }
@@ -148,9 +144,7 @@ public final class FileWatcher: @unchecked Sendable {
                 let currentMTime = self.getModificationDate(for: p)
                 if currentMTime != self.lastModificationDate {
                     self.lastModificationDate = currentMTime
-                    DispatchQueue.main.async {
-                        self?.onChange?()
-                    }
+                    self?.onChange?()
                 }
             }
             self.timerSource = timer

@@ -442,9 +442,6 @@ public final class Terminal {
                 if consumeWindowResizeEvent() {
                     return .resize
                 }
-                if lastReadTimedOut {
-                    continue
-                }
                 return .unknown
             }
             b = byte

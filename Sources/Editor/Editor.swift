@@ -496,8 +496,10 @@ public final class Editor {
         while isRunning {
             refreshScreen()
             let key = terminal.readKey()
-            if key == .resize {
-                Terminal.clearScreen()
+            if key == .resize || key == .unknown {
+                if key == .resize {
+                    Terminal.clearScreen()
+                }
                 continue
             }
             processKey(key)
