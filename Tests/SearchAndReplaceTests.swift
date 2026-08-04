@@ -193,4 +193,29 @@ import Testing
         let helpBarOutput = renderer.renderHelpBar(cols: 80, promptMode: editor.currentPromptMode, editor: editor)
         #expect(helpBarOutput.contains("transform"))
     }
+
+    @Test func testCommandBarLCPCompletion() throws {
+        let editor = Editor()
+        editor.promptLogoMacro()
+
+        // Type "tra" and press Tab -> should auto-complete to "trans" (LCP of transform*, translit)
+        for ch in "tra" { editor.processPromptKey(.char(ch)) }
+        #expect(editor.promptInputText == "tra")
+        editor.processPromptKey(.tab)
+        #expect(editor.promptInputText == "trans")
+
+        // Type "f" ("transf") and press Tab -> should auto-complete to "transform"
+        editor.processPromptKey(.char("f"))
+        #expect(editor.promptInputText == "transf")
+        editor.processPromptKey(.tab)
+        #expect(editor.promptInputText == "transform")
+
+        // Type ".toha" ("transform.toha") and press Tab -> should auto-complete to "transform.tohan"
+        for ch in ".toha" { editor.processPromptKey(.char(ch)) }
+        #expect(editor.promptInputText == "transform.toha")
+        editor.processPromptKey(.tab)
+        #expect(editor.promptInputText == "transform.tohan")
+    }
 }
+
+

@@ -257,6 +257,18 @@ extension Editor {
         !token.isEmpty && token.allSatisfy(isCompletionTokenChar)
     }
 
+    private func longestCommonPrefix(of strings: [String]) -> String {
+        guard let first = strings.first, !first.isEmpty else { return "" }
+        var prefix = first
+        for s in strings.dropFirst() {
+            while !s.lowercased().hasPrefix(prefix.lowercased()) {
+                prefix.removeLast()
+                if prefix.isEmpty { return "" }
+            }
+        }
+        return prefix
+    }
+
     private func showCommandBarCompletions(_ items: [String], label: String) {
         if items.isEmpty {
             promptCompletionText = L10n["status.no_completions"]
@@ -301,7 +313,11 @@ extension Editor {
 
             if matches.count == 1 && !valuePrefix.isEmpty {
                 replacePromptPrefix("\(command) \(setting) \(matches[0])")
-            } else {
+            } else if !matches.isEmpty {
+                let lcp = longestCommonPrefix(of: matches)
+                if lcp.count > valuePrefix.count {
+                    replacePromptPrefix("\(command) \(setting) \(lcp)")
+                }
                 showCommandBarCompletions(matches, label: setting)
             }
             return true
@@ -311,7 +327,11 @@ extension Editor {
         let matches = SettingCommand.settingNames.filter { $0.hasPrefix(settingPrefix) }
         if matches.count == 1 && !settingPrefix.isEmpty {
             replacePromptPrefix("\(command) \(matches[0]) ")
-        } else {
+        } else if !matches.isEmpty {
+            let lcp = longestCommonPrefix(of: matches)
+            if lcp.count > settingPrefix.count {
+                replacePromptPrefix("\(command) \(lcp)")
+            }
             showCommandBarCompletions(matches, label: command.uppercased())
         }
 
@@ -351,11 +371,18 @@ extension Editor {
 
         if matches.count == 1 {
             replacePromptPrefix(leadingContext + matches[0] + " ")
-        } else {
+        } else if !matches.isEmpty {
+            let lcp = longestCommonPrefix(of: matches)
+            if lcp.count > token.count {
+                replacePromptPrefix(leadingContext + lcp)
+            }
             showCommandBarCompletions(matches, label: "Tab")
+        } else {
+            showCommandBarCompletions([], label: "Tab")
         }
         return true
     }
+
 
     /// Common handler for text input prompts.
     private func processTextInputPromptKey(
