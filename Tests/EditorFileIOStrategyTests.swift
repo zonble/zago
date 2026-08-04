@@ -149,7 +149,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 
 @Test func testEditorFileIOStrategyWatchNotificationTrigger() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
-    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO)
+    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
 
     #expect(fileIO.watchedPath == "/notes.txt")
     #expect(fileIO.watcherCallback != nil)
@@ -164,7 +164,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
 
 @Test func testEditorFileWatcherDirtyPromptsUser() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
-    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO)
+    let editor = Editor(filePath: "/notes.txt", autoReload: true, language: .en, fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
 
     // Make buffer dirty
     editor.buffer.lines = ["alpha", "beta", "user edited line"]
@@ -182,7 +182,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     }
 
     // User chooses 'N' -> Keep local changes
-    editor.processKey(.char("n"))
+    editor.processKey(.char(Character("n")))
     #expect(editor.buffer.lines == ["alpha", "beta", "user edited line"])
     #expect(editor.buffer.isModified == true)
 
@@ -195,7 +195,7 @@ private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked
     }
 
     // User chooses 'Y' -> Discard local changes and reload from disk
-    editor.processKey(.char("y"))
+    editor.processKey(.char(Character("y")))
     #expect(editor.buffer.lines == ["updated on disk"])
     #expect(editor.buffer.isModified == false)
 }

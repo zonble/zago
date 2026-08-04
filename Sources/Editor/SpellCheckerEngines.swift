@@ -407,7 +407,7 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
         #if os(Windows)
         if let checker {
             word.withCString(encodedAs: UTF16.self) { pWord in
-                _ = checker.pointee.lpVtbl.pointee.Ignore(checker, pWord)
+                _ = checker.pointee.lpVtbl.pointee.Ignore(UnsafeMutableRawPointer(checker), pWord)
             }
         }
         #endif
@@ -418,7 +418,7 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
         #if os(Windows)
         if let checker {
             word.withCString(encodedAs: UTF16.self) { pWord in
-                _ = checker.pointee.lpVtbl.pointee.Add(checker, pWord)
+                _ = checker.pointee.lpVtbl.pointee.Add(UnsafeMutableRawPointer(checker), pWord)
             }
         }
         #endif
@@ -439,33 +439,33 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
         var clsid = spellCheckerFactoryCLSID()
         var iid = spellCheckerFactoryIID()
         var rawFactory: UnsafeMutableRawPointer? = nil
-        guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER), &iid, &rawFactory) >= 0,
+        guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER.rawValue), &iid, &rawFactory) >= 0,
             let rawFactory
         else {
             return
         }
 
         let factory = rawFactory.assumingMemoryBound(to: WindowsISpellCheckerFactory.self)
-        defer { _ = factory.pointee.lpVtbl.pointee.Release(factory) }
+        defer { _ = factory.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(factory)) }
 
         let tag = bcp47LanguageTag(language)
-        var supported = WINBOOL(0)
+        var supported = WindowsBool(false)
         let supportHR = tag.withCString(encodedAs: UTF16.self) { pTag in
-            factory.pointee.lpVtbl.pointee.IsSupported(factory, pTag, &supported)
+            factory.pointee.lpVtbl.pointee.IsSupported(UnsafeMutableRawPointer(factory), pTag, &supported)
         }
-        guard supportHR >= 0, supported != 0 else { return }
+        guard supportHR >= 0, supported.boolValue else { return }
 
-        var createdChecker: UnsafeMutablePointer<WindowsISpellChecker>? = nil
+        var rawChecker: UnsafeMutableRawPointer? = nil
         let createHR = tag.withCString(encodedAs: UTF16.self) { pTag in
-            factory.pointee.lpVtbl.pointee.CreateSpellChecker(factory, pTag, &createdChecker)
+            factory.pointee.lpVtbl.pointee.CreateSpellChecker(UnsafeMutableRawPointer(factory), pTag, &rawChecker)
         }
-        guard createHR >= 0 else { return }
-        checker = createdChecker
+        guard createHR >= 0, let rawChecker else { return }
+        checker = rawChecker.assumingMemoryBound(to: WindowsISpellChecker.self)
     }
 
     private func releaseSystemChecker() {
         if let checker {
-            _ = checker.pointee.lpVtbl.pointee.Release(checker)
+            _ = checker.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(checker))
             self.checker = nil
         }
     }
@@ -473,19 +473,21 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     private func systemIsCorrect(_ word: String) -> Bool? {
         guard let checker else { return nil }
 
-        var errors: UnsafeMutablePointer<WindowsIEnumSpellingError>? = nil
+        var rawErrors: UnsafeMutableRawPointer? = nil
         let checkHR = word.withCString(encodedAs: UTF16.self) { pWord in
-            checker.pointee.lpVtbl.pointee.Check(checker, pWord, &errors)
+            checker.pointee.lpVtbl.pointee.Check(UnsafeMutableRawPointer(checker), pWord, &rawErrors)
         }
-        guard checkHR >= 0, let errors else { return nil }
-        defer { _ = errors.pointee.lpVtbl.pointee.Release(errors) }
+        guard checkHR >= 0, let rawErrors else { return nil }
+        let errors = rawErrors.assumingMemoryBound(to: WindowsIEnumSpellingError.self)
+        defer { _ = errors.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(errors)) }
 
-        var spellingError: UnsafeMutablePointer<WindowsISpellingError>? = nil
-        let nextHR = errors.pointee.lpVtbl.pointee.Next(errors, &spellingError)
+        var rawSpellingError: UnsafeMutableRawPointer? = nil
+        let nextHR = errors.pointee.lpVtbl.pointee.Next(UnsafeMutableRawPointer(errors), &rawSpellingError)
         guard nextHR >= 0 else { return nil }
 
-        if let spellingError {
-            _ = spellingError.pointee.lpVtbl.pointee.Release(spellingError)
+        if let rawSpellingError {
+            let spellingError = rawSpellingError.assumingMemoryBound(to: WindowsISpellingError.self)
+            _ = spellingError.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(spellingError))
             return false
         }
         return true
@@ -501,7 +503,7 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     private struct WindowsISpellingErrorVtbl {
         let QueryInterface: UnsafeRawPointer?
         let AddRef: UnsafeRawPointer?
-        let Release: @convention(c) (UnsafeMutablePointer<WindowsISpellingError>?) -> ULONG
+        let Release: @convention(c) (UnsafeMutableRawPointer?) -> ULONG
         let getStartIndex: UnsafeRawPointer?
         let getLength: UnsafeRawPointer?
         let getCorrectiveAction: UnsafeRawPointer?
@@ -515,11 +517,11 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     private struct WindowsIEnumSpellingErrorVtbl {
         let QueryInterface: UnsafeRawPointer?
         let AddRef: UnsafeRawPointer?
-        let Release: @convention(c) (UnsafeMutablePointer<WindowsIEnumSpellingError>?) -> ULONG
+        let Release: @convention(c) (UnsafeMutableRawPointer?) -> ULONG
         let Next:
             @convention(c) (
-                UnsafeMutablePointer<WindowsIEnumSpellingError>?,
-                UnsafeMutablePointer<UnsafeMutablePointer<WindowsISpellingError>?>
+                UnsafeMutableRawPointer?,
+                UnsafeMutablePointer<UnsafeMutableRawPointer?>?
             ) -> HRESULT
     }
 
@@ -530,17 +532,17 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     private struct WindowsISpellCheckerVtbl {
         let QueryInterface: UnsafeRawPointer?
         let AddRef: UnsafeRawPointer?
-        let Release: @convention(c) (UnsafeMutablePointer<WindowsISpellChecker>?) -> ULONG
+        let Release: @convention(c) (UnsafeMutableRawPointer?) -> ULONG
         let getLanguageTag: UnsafeRawPointer?
         let Check:
             @convention(c) (
-                UnsafeMutablePointer<WindowsISpellChecker>?,
+                UnsafeMutableRawPointer?,
                 UnsafePointer<WCHAR>?,
-                UnsafeMutablePointer<UnsafeMutablePointer<WindowsIEnumSpellingError>?>
+                UnsafeMutablePointer<UnsafeMutableRawPointer?>?
             ) -> HRESULT
         let Suggest: UnsafeRawPointer?
-        let Add: @convention(c) (UnsafeMutablePointer<WindowsISpellChecker>?, UnsafePointer<WCHAR>?) -> HRESULT
-        let Ignore: @convention(c) (UnsafeMutablePointer<WindowsISpellChecker>?, UnsafePointer<WCHAR>?) -> HRESULT
+        let Add: @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<WCHAR>?) -> HRESULT
+        let Ignore: @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<WCHAR>?) -> HRESULT
         let AutoCorrect: UnsafeRawPointer?
         let GetOptionValue: UnsafeRawPointer?
         let getOptionIds: UnsafeRawPointer?
@@ -559,19 +561,19 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
     private struct WindowsISpellCheckerFactoryVtbl {
         let QueryInterface: UnsafeRawPointer?
         let AddRef: UnsafeRawPointer?
-        let Release: @convention(c) (UnsafeMutablePointer<WindowsISpellCheckerFactory>?) -> ULONG
+        let Release: @convention(c) (UnsafeMutableRawPointer?) -> ULONG
         let getSupportedLanguages: UnsafeRawPointer?
         let IsSupported:
             @convention(c) (
-                UnsafeMutablePointer<WindowsISpellCheckerFactory>?,
+                UnsafeMutableRawPointer?,
                 UnsafePointer<WCHAR>?,
-                UnsafeMutablePointer<WINBOOL>?
+                UnsafeMutablePointer<WindowsBool>?
             ) -> HRESULT
         let CreateSpellChecker:
             @convention(c) (
-                UnsafeMutablePointer<WindowsISpellCheckerFactory>?,
+                UnsafeMutableRawPointer?,
                 UnsafePointer<WCHAR>?,
-                UnsafeMutablePointer<UnsafeMutablePointer<WindowsISpellChecker>?>
+                UnsafeMutablePointer<UnsafeMutableRawPointer?>?
             ) -> HRESULT
     }
 
