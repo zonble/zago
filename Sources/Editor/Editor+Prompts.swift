@@ -556,7 +556,7 @@ extension Editor {
             }
             do {
                 self.saveUndoSnapshot()
-                let count = try self.buffer.insertFile(at: path)
+                let count = try self.buffer.insertFile(at: path, fileIO: self.fileIOStrategy)
                 self.setStatusMessage(L10n.insertedLines(count))
             } catch {
                 self.setStatusMessage(L10n.errorInsertingFile(error: error.localizedDescription))
@@ -759,7 +759,7 @@ extension Editor {
             if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
                 _ = buffer.trimTrailingWhitespace()
             }
-            try buffer.saveFile(to: path)
+            try buffer.saveFile(to: path, fileIO: fileIOStrategy)
             setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
         } catch {
             setStatusMessage(L10n.errorSavingFile(error: error.localizedDescription))

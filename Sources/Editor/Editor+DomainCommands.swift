@@ -65,9 +65,9 @@ extension Editor {
     }
 
     public func openBuffer(path: String) {
-        let expanded = NSString(string: path).expandingTildeInPath
-        var isDir: ObjCBool = false
-        if FileManager.default.fileExists(atPath: expanded, isDirectory: &isDir), isDir.boolValue {
+        let expanded = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let info = fileIOStrategy.fileInfo(at: expanded)
+        if info.exists, info.isDirectory {
             openDirectoryBuffer(path: expanded)
             return
         }
@@ -108,8 +108,7 @@ extension Editor {
     }
 
     private func standardizedDocumentPath(_ path: String) -> String {
-        let expanded = NSString(string: path).expandingTildeInPath
-        return URL(fileURLWithPath: expanded).standardizedFileURL.path
+        fileIOStrategy.normalizePath(path, isDirectory: false)
     }
 
     public func transformSelectedText(id transformId: String, label: String) {

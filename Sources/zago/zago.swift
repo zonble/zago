@@ -60,6 +60,8 @@ struct Zago: ParsableCommand {
     var script: String?
 
     func run() throws {
+        let fileIOStrategy = LocalEditorFileIOStrategy.shared
+
         if initConfig {
             let targetPath = files.first
             let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath)
@@ -102,7 +104,9 @@ struct Zago: ParsableCommand {
 
         if let code = eval {
             let editor = Editor(
-                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
+                wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
+                showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
+                fileIOStrategy: fileIOStrategy)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             Terminal.write(output + "\n")
@@ -114,7 +118,9 @@ struct Zago: ParsableCommand {
             do {
                 let code = try String(contentsOf: fileURL, encoding: .utf8)
                 let editor = Editor(
-                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers, showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang)
+                    wrapColumn: wrap, showRuler: false, showLineNumbers: enableLineNumbers,
+                    showSubLineNumbers: enableSubLineNumbers, enableSyntax: false, language: selectedLang,
+                    fileIOStrategy: fileIOStrategy)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 Terminal.write(output + "\n")
@@ -129,7 +135,8 @@ struct Zago: ParsableCommand {
 
         let editor = Editor(
             filePaths: files, wrapColumn: wrap, showRuler: ruler, showLineNumbers: enableLineNumbers,
-            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang)
+            showSubLineNumbers: enableSubLineNumbers, enableSyntax: enableSyntax, language: selectedLang,
+            fileIOStrategy: fileIOStrategy)
         editor.run()
     }
 }

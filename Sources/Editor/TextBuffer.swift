@@ -1,7 +1,7 @@
 import Foundation
 import TextMetrics
 
-/// Manages text buffer lines, file I/O, and cursor operations.
+/// Manages text buffer lines and cursor operations.
 open class TextBuffer {
     public var lines: [String] = [""]
     public var filePath: String?
@@ -29,22 +29,26 @@ open class TextBuffer {
     open var allowsLogoExecution: Bool { true }
     open var isDirectoryBuffer: Bool { false }
 
-    public init(filePath: String? = nil) {
+    public init() {
+    }
+
+    public init(filePath: String, fileIO: EditorFileIOStrategy) {
         self.filePath = filePath
-        if let path = filePath {
-            loadFile(at: path)
-        }
+        loadFile(at: filePath, fileIO: fileIO)
     }
 
     /// Factory method to create appropriate TextBuffer or DirectoryBuffer.
-    public static func makeBuffer(filePath: String?) -> TextBuffer {
+    public static func makeBuffer(
+        filePath: String?,
+        fileIO: EditorFileIOStrategy
+    ) -> TextBuffer {
         guard let path = filePath, !path.isEmpty else { return TextBuffer() }
-        let expandedPath = NSString(string: path).expandingTildeInPath
-        var isDir: ObjCBool = false
-        if FileManager.default.fileExists(atPath: expandedPath, isDirectory: &isDir), isDir.boolValue {
-            return DirectoryBuffer(directoryPath: expandedPath)
+        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
+        let info = fileIO.fileInfo(at: expandedPath)
+        if info.exists, info.isDirectory {
+            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO)
         }
-        return TextBuffer(filePath: expandedPath)
+        return TextBuffer(filePath: expandedPath, fileIO: fileIO)
     }
 
     /// Key handler for specialized buffer types. Returns true if handled.
@@ -53,47 +57,45 @@ open class TextBuffer {
     }
 
     /// Loads text from a file path.
-    public func loadFile(at path: String) {
-        let expandedPath = NSString(string: path).expandingTildeInPath
-        if let content = try? String(contentsOfFile: expandedPath, encoding: .utf8) {
-            let fileLines = content.components(separatedBy: .newlines)
-            self.lines = fileLines.isEmpty ? [""] : fileLines
-            self.filePath = expandedPath
-            self.isModified = false
-            self.lineIndex = 0
-            self.columnIndex = 0
-        } else {
-            // Create an empty buffer if file does not exist yet
-            self.lines = [""]
-            self.filePath = expandedPath
-            self.isModified = false
+    public func loadFile(
+        at path: String,
+        fileIO: EditorFileIOStrategy
+    ) {
+        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
+        guard let content = try? fileIO.readTextFile(at: expandedPath) else {
+            replaceContents("", filePath: expandedPath, isModified: false)
+            return
         }
+        replaceContents(content, filePath: expandedPath, isModified: false)
+        lineIndex = 0
+        columnIndex = 0
     }
 
     /// Reloads buffer content from current file path.
-    public func reloadFile() throws {
+    public func reloadFile(fileIO: EditorFileIOStrategy) throws {
         guard let path = filePath, !path.isEmpty else {
             throw NSError(
                 domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
         }
-        let content = try String(contentsOfFile: path, encoding: .utf8)
-        let fileLines = content.components(separatedBy: .newlines)
-        self.lines = fileLines.isEmpty ? [""] : fileLines
-        self.isModified = false
+        let content = try fileIO.readTextFile(at: path)
+        replaceContents(content, filePath: path, isModified: false)
         clampCursor()
     }
 
     /// Saves buffer text to file.
-    public func saveFile(to path: String? = nil) throws {
+    public func saveFile(
+        to path: String? = nil,
+        fileIO: EditorFileIOStrategy
+    ) throws {
         let targetPath = path ?? filePath
         guard let savePath = targetPath, !savePath.isEmpty else {
             throw NSError(
                 domain: "TextBuffer", code: 1, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
         }
 
-        let expandedPath = NSString(string: savePath).expandingTildeInPath
+        let expandedPath = fileIO.normalizePath(savePath, isDirectory: false)
         let content = lines.joined(separator: "\n")
-        try content.write(toFile: expandedPath, atomically: true, encoding: .utf8)
+        try fileIO.writeTextFile(content, to: expandedPath)
 
         self.filePath = expandedPath
         self.isModified = false
@@ -112,12 +114,22 @@ open class TextBuffer {
     }
 
     /// Inserts external file content at current cursor position.
-    public func insertFile(at path: String) throws -> Int {
-        let expandedPath = NSString(string: path).expandingTildeInPath
-        let content = try String(contentsOfFile: expandedPath, encoding: .utf8)
+    public func insertFile(
+        at path: String,
+        fileIO: EditorFileIOStrategy
+    ) throws -> Int {
+        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
+        let content = try fileIO.readTextFile(at: expandedPath)
         let insertedLines = content.components(separatedBy: .newlines)
         insertString(content)
         return insertedLines.count
+    }
+
+    public func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false) {
+        let fileLines = text.components(separatedBy: .newlines)
+        self.lines = fileLines.isEmpty ? [""] : fileLines
+        self.filePath = filePath ?? self.filePath
+        self.isModified = isModified
     }
 
     /// Inserts multi-line or single-line string content at current cursor position.
