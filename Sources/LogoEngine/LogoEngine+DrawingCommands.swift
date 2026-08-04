@@ -41,6 +41,9 @@ extension LogoEngine {
             index -= 1
             return nil
         }
+        if isHeadingDirectionToken(tokens[index]) {
+            return tokens[index]
+        }
         guard !isDrawingArgumentBoundary(tokens[index]) else {
             index -= 1
             return nil
