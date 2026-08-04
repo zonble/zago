@@ -205,6 +205,7 @@ public final class Editor {
         let initialBaseMode: EditorBaseMode = loadedConfig.startInCanvasMode ? .canvas : .text
 
         L10n.currentLanguage = finalLang
+        self.spellChecker.setLanguage(finalSpellLang)
         self.layoutEngine = LayoutEngine(wrapColumn: finalWrap)
         self.displayConfig = DisplayConfig(
             showRuler: finalRuler, showLineNumbers: finalLineNumbers, showSubLineNumbers: finalSubLineNumbers,
