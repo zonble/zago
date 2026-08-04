@@ -1,6 +1,7 @@
 @_exported import Config
 import Foundation
 import LogoEngine
+import SpellChecker
 import Syntax
 
 /// Nano-style UI state machine and core editor engine.

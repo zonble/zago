@@ -1,5 +1,10 @@
 import Foundation
 
+public protocol SpellCheckableBuffer {
+    var lines: [String] { get }
+    var filePath: String? { get }
+}
+
 /// Spell Checker (^T / F12) manager using platform engines and Markdown context awareness.
 public final class SpellChecker {
     public var engine: SpellCheckerEngine
@@ -46,18 +51,35 @@ public final class SpellChecker {
     /// Finds misspelled words in the text buffer starting at (startingLine, startingCol),
     /// applying format-specific code block and inline code skipping based on document syntax or file extension.
     public func findNextMisspelled(
-        in buffer: TextBuffer,
+        in buffer: SpellCheckableBuffer,
         startingAt startingLine: Int = 0,
         startingCol: Int = 0,
         syntaxName: String? = nil
     ) -> MisspelledMatch? {
-        guard !buffer.lines.isEmpty else { return nil }
+        findNextMisspelled(
+            lines: buffer.lines,
+            filePath: buffer.filePath,
+            startingAt: startingLine,
+            startingCol: startingCol,
+            syntaxName: syntaxName
+        )
+    }
 
-        let normalizedSyntax = (syntaxName ?? detectFormatFromFilePath(buffer.filePath)).lowercased()
+    /// Finds misspelled words in lines starting at (startingLine, startingCol).
+    public func findNextMisspelled(
+        lines: [String],
+        filePath: String? = nil,
+        startingAt startingLine: Int = 0,
+        startingCol: Int = 0,
+        syntaxName: String? = nil
+    ) -> MisspelledMatch? {
+        guard !lines.isEmpty else { return nil }
+
+        let normalizedSyntax = (syntaxName ?? detectFormatFromFilePath(filePath)).lowercased()
         var inCodeBlock = false
 
-        for lIdx in 0..<buffer.lines.count {
-            let line = buffer.lines[lIdx]
+        for lIdx in 0..<lines.count {
+            let line = lines[lIdx]
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             let lowerTrimmed = trimmed.lowercased()
 

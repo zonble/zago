@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "Syntax", targets: ["Syntax"]),
         .library(name: "Diagram", targets: ["Diagram"]),
         .library(name: "TextEncoding", targets: ["TextEncoding"]),
+        .library(name: "SpellChecker", targets: ["SpellChecker"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -23,6 +24,13 @@ let package = Package(
         ),
         .target(
             name: "TextEncoding"
+        ),
+        .target(
+            name: "SpellChecker",
+            linkerSettings: [
+                .linkedFramework("AppKit", .when(platforms: [.macOS])),
+                .linkedLibrary("ole32", .when(platforms: [.windows])),
+            ]
         ),
         .target(
             name: "LogoEngine",
@@ -44,11 +52,7 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "LogoEngine", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
-            linkerSettings: [
-                .linkedFramework("AppKit", .when(platforms: [.macOS])),
-                .linkedLibrary("ole32", .when(platforms: [.windows])),
-            ]
+            dependencies: ["Config", "Diagram", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",
@@ -61,7 +65,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
     ],
     swiftLanguageModes: [.v6]

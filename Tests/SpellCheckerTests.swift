@@ -3,6 +3,7 @@ import Testing
 
 @testable import Config
 @testable import Editor
+@testable import SpellChecker
 
 @Test func testSpellCheckerBasicCorrectness() throws {
     let checker = SpellChecker()

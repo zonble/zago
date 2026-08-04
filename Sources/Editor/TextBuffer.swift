@@ -1,8 +1,9 @@
 import Foundation
+import SpellChecker
 import TextMetrics
 
 /// Manages text buffer lines and cursor operations.
-open class TextBuffer {
+open class TextBuffer: SpellCheckableBuffer {
     public var lines: [String] = [""]
     public var filePath: String?
     public var isModified: Bool = false
