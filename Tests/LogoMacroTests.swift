@@ -22,6 +22,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(try TextTransformer.apply("Zago-CJK-Spacing", to: "中 文  API") == "中文 API")
     #expect(TextAnalyzer.characterCount(in: "a👍🏽中") == 3)
     #expect(TextAnalyzer.cjkCharacterCount(in: "中文，API。かな") == 6)
+    #expect(TextAnalyzer.cjkCharacterCount(in: "中\u{30EDE}文") == 3)
     #expect(TextAnalyzer.wordCount(in: "Hello, world! API v2") == 4)
     #expect(TextAnalyzer.emojiCount(in: "A👍🏽🇹🇼1❤️") == 3)
     #expect(TextAnalyzer.lineCount(in: "a\nb\n") == 3)

@@ -190,12 +190,14 @@ struct FormatAndLayoutTests {
 @Test func testTerminalDisplayWidthHelpers() throws {
     #expect(Character("A").displayWidth == 1)
     #expect(Character("中").displayWidth == 2)
+    #expect(Character("\u{30EDE}").displayWidth == 2)
     #expect(Character("❌").displayWidth == 2)
     #expect(Character("❤️").displayWidth == 2)
     #expect(Character("\u{FE0F}").displayWidth == 0)
     #expect(Character("\u{200D}").displayWidth == 0)
     #expect("Hello".displayWidth == 5)
     #expect("中文".displayWidth == 4)
+    #expect("A\u{30EDE}B".displayWidth == 4)
     #expect("A❌B".displayWidth == 4)
     #expect("A❌️B".displayWidth == 4)
     #expect("Hello".paddedToDisplayWidth(10) == "Hello     ")
@@ -258,6 +260,11 @@ struct FormatAndLayoutTests {
     #expect(mixed.snappedVisualColumn(3, direction: .backward) == 2)
     #expect(mixed.snappedVisualColumn(3, direction: .forward) == 4)
     #expect(mixed.snappedVisualColumn(4, direction: .backward) == 4)
+
+    let extendedCJK = "A\u{30EDE}B"
+    #expect(extendedCJK.visualColumn(forCharacterOffset: 2) == 3)
+    #expect(extendedCJK.characterOffset(forVisualColumn: 2) == 1)
+    #expect(extendedCJK.snappedVisualColumn(2, direction: .forward) == 3)
 }
 
 @Test func testVisualColumnWritePaddingReplaceAndClear() throws {
