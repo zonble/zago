@@ -51,30 +51,40 @@ Homebrew should build from an immutable release tag archive:
 https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz
 ```
 
-To prepare a new release:
+To prepare a new release, follow the canonical checklist in [Release Process](release.md). The Homebrew-specific steps are:
 
-1. Update `Sources/Config/ZagoVersion.swift`.
-2. Update `CHANGELOG.md`.
-3. Run the release smoke test from `docs/release.md`.
-4. Commit the release changes.
-5. Create and push a tag:
+1. Create and push the source release tag:
 
 ```sh
 git tag vX.Y.Z
+git push origin main
 git push origin vX.Y.Z
 ```
 
-6. Calculate the archive checksum:
+2. Convert the tag into a GitHub Release.
+3. Calculate the archive checksum:
 
 ```sh
 curl -L https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz | shasum -a 256
 ```
 
-7. Update `Formula/zago.rb` in `homebrew-zago`:
+4. Update `Formula/zago.rb` in `homebrew-zago`:
 
 ```ruby
 url "https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz"
 sha256 "<sha256>"
+```
+
+5. Validate and push the tap formula:
+
+```sh
+brew install --build-from-source Formula/zago.rb
+brew test zago
+brew audit --strict Formula/zago.rb
+brew style Formula/zago.rb
+git add Formula/zago.rb
+git commit -m "zago X.Y.Z"
+git push origin main
 ```
 
 ## Formula

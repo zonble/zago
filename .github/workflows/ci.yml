@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, dev ]
   pull_request:
     branches: [ main, master ]
 
@@ -36,7 +36,23 @@ jobs:
             throw "Swift toolchain was installed by winget, but no Swift usr\bin directory was found."
           }
 
+          $swiftRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $swiftBin.FullName)))
+          $swiftSdk = Get-ChildItem -Path "$swiftRoot\Platforms\*\Windows.platform\Developer\SDKs\Windows.sdk" -Directory -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $swiftSdk) {
+            throw "Swift toolchain was installed by winget, but no Windows.sdk directory was found under $swiftRoot."
+          }
+
+          $swiftUsrBins = Get-ChildItem -Path $swiftRoot -Recurse -Directory -Filter bin -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -like "*\usr\bin" }
+          $swiftPathPrefix = ($swiftUsrBins | ForEach-Object { $_.FullName }) -join ";"
+
           $swiftBin.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "$($swiftSdk.FullName)\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "SWIFT_BIN=$($swiftBin.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SWIFT_SDKROOT=$($swiftSdk.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SWIFT_PATH_PREFIX=$swiftPathPrefix" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install System Dictionary (Linux)
         if: runner.os == 'Linux'
@@ -58,8 +74,19 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift --version
+          $env:SDKROOT = $env:SWIFT_SDKROOT
+          $env:Path = "$env:SWIFT_PATH_PREFIX;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          Write-Host "SWIFT_BIN=$env:SWIFT_BIN"
+          Write-Host "SDKROOT=$env:SDKROOT"
+          Write-Host "SWIFT_PATH_PREFIX=$env:SWIFT_PATH_PREFIX"
+          Test-Path "$env:SWIFT_BIN\swift.exe"
+          Test-Path "$env:SDKROOT"
+          where.exe swift
+          & "$env:SWIFT_BIN\swift.exe" --version
 
       - name: Build Package (Debug)
         if: runner.os != 'Windows'
@@ -75,8 +102,13 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift build
+          $env:SDKROOT = $env:SWIFT_SDKROOT
+          $env:Path = "$env:SWIFT_PATH_PREFIX;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" build
 
       - name: Run Automated Tests & Code Coverage
         if: runner.os != 'Windows'
@@ -92,12 +124,20 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift test --enable-code-coverage
+          $env:SDKROOT = $env:SWIFT_SDKROOT
+          $env:Path = "$env:SWIFT_PATH_PREFIX;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" test --enable-code-coverage
 
       - name: Build Package (Release)
         if: runner.os != 'Windows'
-        run: swift build -c release
+        run: |
+          swift build -c release
+          mkdir -p artifacts
+          cp "$(swift build -c release --show-bin-path)/zago" "artifacts/zago-${{ matrix.os }}"
 
       - name: Build Package (Release, Windows)
         if: runner.os == 'Windows'
@@ -109,21 +149,20 @@ jobs:
           }
           Remove-Item Env:PATH -ErrorAction SilentlyContinue
           Remove-Item Env:Path -ErrorAction SilentlyContinue
-          $env:Path = $pathValue
-          swift build -c release
-
-      - name: Create Windows Release Archive
-        if: runner.os == 'Windows'
-        run: Compress-Archive -Path .build\release\zago.exe -DestinationPath zago-windows-x64.zip -Force
+          $env:SDKROOT = $env:SWIFT_SDKROOT
+          $env:Path = "$env:SWIFT_PATH_PREFIX;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" build -c release
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
+          Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago-windows-x64.exe" -Force
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v7
         with:
           name: zago-${{ matrix.os }}
-          path: |
-            .build/release/zago
-            .build/release/zago.exe
-            .build/*/release/zago
-            .build/*/release/zago.exe
-            zago-windows-x64.zip
-          if-no-files-found: warn
+          path: artifacts/*
+          if-no-files-found: error

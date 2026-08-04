@@ -11,7 +11,7 @@ extension Renderer {
         if editor.isMenuBarActive {
             editor.menuBar.updateCategories(for: editor)
             func menuSegment(title: String, isSelected: Bool) -> String {
-                isSelected ? "[ \(title) ]" : "  \(title)  "
+                isSelected ? "[\(title)]" : " \(title) "
             }
 
             var rawMenuStr = " "
@@ -203,7 +203,7 @@ extension Renderer {
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("^^", L10n["help.mark_block"]),
+                    ("F1", L10n.helpMenu), ("^O", L10n.helpWriteOut), ("M+B", L10n["help.mark_block"]),
                     ("^K", L10n["help.cut_block"]), ("⇧+Arrow", L10n["help.line"]),
                 ]
                 helpItems2 = [

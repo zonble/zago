@@ -140,7 +140,8 @@ public final class Editor {
 
     public let commandRegistry = CommandRegistry()
     public var commandBarRegistry: CommandRegistry { commandRegistry }
-    public let fileWatcher = FileWatcher()
+    public var fileIOStrategy: EditorFileIOStrategy
+    private var currentWatchedPath: String? = nil
 
     public struct DisplayConfig: Sendable, Equatable {
         public var showRuler: Bool
@@ -176,13 +177,15 @@ public final class Editor {
         filePaths: [String], wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
         spellLanguage: String? = nil
+        fileIOStrategy: EditorFileIOStrategy
     ) {
         self.terminal = Terminal()
+        self.fileIOStrategy = fileIOStrategy
 
         if filePaths.isEmpty {
             self.buffers = [TextBuffer()]
         } else {
-            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0) }
+            self.buffers = filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: fileIOStrategy) }
         }
         self.currentBufferIndex = 0
 
@@ -228,30 +231,33 @@ public final class Editor {
         applyCustomConfig(loadedConfig)
 
         startFileWatcherForCurrentBuffer()
-
-        fileWatcher.onChange = { [weak self] in
-            guard let self = self, self.displayConfig.autoReload else { return }
-            self.handleExternalFileChange()
-        }
     }
 
     public convenience init(
         filePath: String? = nil, wrapColumn: Int? = nil, showRuler: Bool? = nil, showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil, enableSyntax: Bool? = nil, autoReload: Bool? = nil, language: Language? = nil,
         spellLanguage: String? = nil
+        fileIOStrategy: EditorFileIOStrategy
     ) {
         let paths = filePath != nil ? [filePath!] : []
         self.init(
             filePaths: paths, wrapColumn: wrapColumn, showRuler: showRuler, showLineNumbers: showLineNumbers,
             showSubLineNumbers: showSubLineNumbers, enableSyntax: enableSyntax, autoReload: autoReload, language: language,
-            spellLanguage: spellLanguage)
+            spellLanguage: spellLanguage,
+            fileIOStrategy: fileIOStrategy)
     }
 
     func startFileWatcherForCurrentBuffer() {
+        if let oldPath = currentWatchedPath {
+            fileIOStrategy.stopWatchingFile(at: oldPath)
+            currentWatchedPath = nil
+        }
         if let path = buffer.filePath {
-            fileWatcher.start(path: path)
-        } else {
-            fileWatcher.stop()
+            currentWatchedPath = path
+            fileIOStrategy.startWatchingFile(at: path) { [weak self] in
+                guard let self = self, self.displayConfig.autoReload else { return }
+                self.handleExternalFileChange()
+            }
         }
     }
 
@@ -298,7 +304,7 @@ public final class Editor {
     /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
         saveCurrentViewSettingsToBuffer()
-        let newBuf = TextBuffer.makeBuffer(filePath: filePath)
+        let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy)
         newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
         newBuf.viewShowRuler = defaultViewShowRuler
         newBuf.viewShowLineNumbers = defaultViewShowLineNumbers
@@ -314,14 +320,14 @@ public final class Editor {
 
     /// Opens ~/.zagorc in a buffer for editing. Creates ~/.zagorc with default template if it does not exist.
     public func editConfig() {
-        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+        let homeDir = fileIOStrategy.homeDirectoryPath()
         let zagorcPath = (homeDir as NSString).appendingPathComponent(".zagorc")
         let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
 
         let configPath: String
-        if FileManager.default.fileExists(atPath: zagorcPath) {
+        if fileIOStrategy.fileInfo(at: zagorcPath).exists {
             configPath = zagorcPath
-        } else if FileManager.default.fileExists(atPath: sercPath) {
+        } else if fileIOStrategy.fileInfo(at: sercPath).exists {
             configPath = sercPath
         } else {
             _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: zagorcPath)
@@ -403,7 +409,7 @@ public final class Editor {
                 guard let self = self else { return }
                 if reload {
                     do {
-                        try self.buffer.reloadFile()
+                        try self.buffer.reloadFile(fileIO: self.fileIOStrategy)
                         self.buffer.isModified = false
                         self.setStatusMessage(L10n["status.file_reloaded"])
                     } catch {
@@ -416,7 +422,7 @@ public final class Editor {
             setStatusMessage(L10n["prompt.confirm_reload"])
         } else {
             do {
-                try buffer.reloadFile()
+                try buffer.reloadFile(fileIO: fileIOStrategy)
                 setStatusMessage(L10n["status.file_reloaded"])
             } catch {
                 setStatusMessage(error.localizedDescription)
@@ -495,8 +501,10 @@ public final class Editor {
         while isRunning {
             refreshScreen()
             let key = terminal.readKey()
-            if key == .resize {
-                Terminal.clearScreen()
+            if key == .resize || key == .unknown {
+                if key == .resize {
+                    Terminal.clearScreen()
+                }
                 continue
             }
             processKey(key)

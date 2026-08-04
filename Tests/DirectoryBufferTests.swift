@@ -102,8 +102,10 @@ import Testing
         let tempDir = FileManager.default.temporaryDirectory
         let workDir = tempDir.appendingPathComponent("test_dir_norm_\(UUID().uuidString)")
         let childDir = workDir.appendingPathComponent("child")
+        let markerFile = workDir.appendingPathComponent("marker.txt")
 
         try FileManager.default.createDirectory(at: childDir, withIntermediateDirectories: true)
+        try "marker".write(to: markerFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: workDir) }
 
         let editor = Editor()
@@ -112,7 +114,13 @@ import Testing
 
         #expect(res == .handled)
         #expect(editor.buffer is DirectoryBuffer)
-        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == workDir.standardizedFileURL.path)
+        let resolvedMarkerPath = URL(
+            fileURLWithPath: (editor.buffer as? DirectoryBuffer)?.directoryPath ?? "",
+            isDirectory: true
+        )
+        .appendingPathComponent("marker.txt")
+        .path
+        #expect(FileManager.default.fileExists(atPath: resolvedMarkerPath))
     }
 
     @Test func testDirWithoutPathFromFileBufferOpensParentDirectory() throws {

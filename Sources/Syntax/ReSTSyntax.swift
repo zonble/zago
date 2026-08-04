@@ -36,7 +36,7 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
                 inBlock = true
                 if let range = trimmed.range(of: "::") {
                     let langStr = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
+                    activeLangName = langStr.isEmpty ? "text" : langStr
                 }
             } else if inBlock {
                 if !trimmed.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("\t") && !trimmed.hasPrefix("..") {

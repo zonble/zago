@@ -1,65 +1,30 @@
 import Foundation
 
-private enum DirectoryPath {
-    static func expandingTilde(_ path: String) -> String {
-        #if os(Windows)
-            let hasTildePrefix = path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\")
-        #else
-            let hasTildePrefix = path == "~" || path.hasPrefix("~/")
-        #endif
-        guard hasTildePrefix else {
-            return path
-        }
-
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        guard path.count > 1 else {
-            return home
-        }
-
-        let rest = String(path.dropFirst(2))
-        #if os(Windows)
-            let components = rest.split(whereSeparator: { $0 == "/" || $0 == "\\" }).map(String.init)
-        #else
-            let components = rest.split(separator: "/").map(String.init)
-        #endif
-        return components.reduce(URL(fileURLWithPath: home, isDirectory: true)) { url, component in
-            url.appendingPathComponent(component)
-        }.path
-    }
-
-    static func normalized(_ path: String, isDirectory: Bool = false) -> String {
-        URL(fileURLWithPath: expandingTilde(path), isDirectory: isDirectory).standardizedFileURL.path
-    }
-
-    static func child(_ name: String, in directory: String) -> String {
-        URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(name).path
-    }
-
-    static func parent(of directory: String) -> String {
-        URL(fileURLWithPath: directory, isDirectory: true).deletingLastPathComponent().path
-    }
-}
-
 public final class DirectoryBuffer: TextBuffer {
     public var directoryPath: String
+    public let fileIO: EditorFileIOStrategy
 
     override public var isReadOnly: Bool { true }
     override public var allowsLogoExecution: Bool { false }
     override public var isDirectoryBuffer: Bool { true }
 
-    public init(directoryPath: String) {
-        let expandedPath = DirectoryPath.normalized(directoryPath, isDirectory: true)
+    public init(
+        directoryPath: String,
+        fileIO: EditorFileIOStrategy
+    ) {
+        let expandedPath = fileIO.normalizePath(directoryPath, isDirectory: true)
         self.directoryPath = expandedPath
-        super.init(filePath: expandedPath)
+        self.fileIO = fileIO
+        super.init()
+        self.filePath = expandedPath
         loadDirectory(at: expandedPath)
     }
 
     public func loadDirectory(at path: String) {
-        let expandedPath = DirectoryPath.normalized(path, isDirectory: true)
-        let fileManager = FileManager.default
+        let expandedPath = fileIO.normalizePath(path, isDirectory: true)
 
-        var isDir: ObjCBool = false
-        guard fileManager.fileExists(atPath: expandedPath, isDirectory: &isDir), isDir.boolValue else {
+        let info = fileIO.fileInfo(at: expandedPath)
+        guard info.exists, info.isDirectory else {
             return
         }
 
@@ -73,33 +38,21 @@ public final class DirectoryBuffer: TextBuffer {
         newLines.append("")
         newLines.append(".. (up a dir)")
 
-        if let contents = try? fileManager.contentsOfDirectory(atPath: expandedPath) {
-            let sorted = contents.filter { name in
-                !name.hasPrefix(".") || name == ".zagorc" || name == ".serc"
+        if let contents = try? fileIO.listDirectory(at: expandedPath) {
+            let sorted = contents.filter { entry in
+                !entry.name.hasPrefix(".") || entry.name == ".zagorc" || entry.name == ".serc"
             }.sorted { lhs, rhs in
-                let lhsPath = DirectoryPath.child(lhs, in: expandedPath)
-                let rhsPath = DirectoryPath.child(rhs, in: expandedPath)
-                var lhsIsDir: ObjCBool = false
-                var rhsIsDir: ObjCBool = false
-                _ = fileManager.fileExists(atPath: lhsPath, isDirectory: &lhsIsDir)
-                _ = fileManager.fileExists(atPath: rhsPath, isDirectory: &rhsIsDir)
-
-                if lhsIsDir.boolValue != rhsIsDir.boolValue {
-                    return lhsIsDir.boolValue
+                if lhs.isDirectory != rhs.isDirectory {
+                    return lhs.isDirectory
                 }
-                return lhs.lowercased() < rhs.lowercased()
+                return lhs.name.lowercased() < rhs.name.lowercased()
             }
 
-            for name in sorted {
-                let fullPath = DirectoryPath.child(name, in: expandedPath)
-                var entryIsDir: ObjCBool = false
-                _ = fileManager.fileExists(atPath: fullPath, isDirectory: &entryIsDir)
-
-                if entryIsDir.boolValue {
-                    newLines.append("▸ \(name)/")
+            for entry in sorted {
+                if entry.isDirectory {
+                    newLines.append("▸ \(entry.name)/")
                 } else {
-                    let isExec = fileManager.isExecutableFile(atPath: fullPath)
-                    newLines.append("  \(name)\(isExec ? "*" : "")")
+                    newLines.append("  \(entry.name)\(entry.isExecutable ? "*" : "")")
                 }
             }
         }
@@ -109,7 +62,10 @@ public final class DirectoryBuffer: TextBuffer {
         self.columnIndex = 0
     }
 
-    override public func saveFile(to path: String? = nil) throws {
+    override public func saveFile(
+        to path: String? = nil,
+        fileIO: EditorFileIOStrategy
+    ) throws {
         // Directory buffers are read-only, do not overwrite directory with text
     }
 
@@ -151,7 +107,7 @@ public final class DirectoryBuffer: TextBuffer {
             if folderName.hasSuffix("/") {
                 folderName = String(folderName.dropLast())
             }
-            let childDir = DirectoryPath.child(folderName, in: directoryPath)
+            let childDir = fileIO.childPath(folderName, in: directoryPath)
             loadDirectory(at: childDir)
             editor.topVLineIndex = 0
             editor.clearActiveMark()
@@ -165,8 +121,8 @@ public final class DirectoryBuffer: TextBuffer {
             if fileName.hasSuffix("*") {
                 fileName = String(fileName.dropLast())
             }
-            let targetFilePath = DirectoryPath.child(fileName, in: directoryPath)
-            if isBinaryFile(at: targetFilePath) {
+            let targetFilePath = fileIO.childPath(fileName, in: directoryPath)
+            if fileIO.fileInfo(at: targetFilePath).isBinary {
                 editor.setStatusMessage(L10n["status.cannot_open_binary_file"])
                 return true
             }
@@ -177,24 +133,9 @@ public final class DirectoryBuffer: TextBuffer {
         return false
     }
 
-    private func isBinaryFile(at path: String) -> Bool {
-        guard let fileHandle = FileHandle(forReadingAtPath: path) else { return false }
-        defer { fileHandle.closeFile() }
-
-        let data = fileHandle.readData(ofLength: 8192)
-        if data.isEmpty { return false }
-
-        if data.contains(0) { return true }
-        if String(data: data, encoding: .utf8) == nil {
-            return true
-        }
-
-        return false
-    }
-
     @discardableResult
     public func navigateUp(editor: Editor) -> Bool {
-        let parentDir = DirectoryPath.parent(of: directoryPath)
+        let parentDir = fileIO.parentDirectory(of: directoryPath)
         if !parentDir.isEmpty && parentDir != directoryPath {
             loadDirectory(at: parentDir)
             editor.topVLineIndex = 0
@@ -212,17 +153,17 @@ extension Editor {
         let targetPath = path?.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedPath: String
         if let targetPath, !targetPath.isEmpty {
-            resolvedPath = DirectoryPath.normalized(targetPath, isDirectory: true)
+            resolvedPath = fileIOStrategy.normalizePath(targetPath, isDirectory: true)
         } else if let dirBuffer = buffer as? DirectoryBuffer {
             resolvedPath = dirBuffer.directoryPath
         } else if let filePath = buffer.filePath {
-            resolvedPath = DirectoryPath.parent(of: filePath)
+            resolvedPath = fileIOStrategy.parentDirectory(of: filePath)
         } else {
-            resolvedPath = DirectoryPath.normalized(FileManager.default.currentDirectoryPath, isDirectory: true)
+            resolvedPath = fileIOStrategy.normalizePath(fileIOStrategy.currentDirectoryPath(), isDirectory: true)
         }
 
-        var isDir: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: resolvedPath, isDirectory: &isDir), isDir.boolValue else {
+        let info = fileIOStrategy.fileInfo(at: resolvedPath)
+        guard info.exists, info.isDirectory else {
             setStatusMessage(L10n["status.no_such_buffer"])
             return
         }

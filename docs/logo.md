@@ -482,9 +482,11 @@ TYPE "hello;world"
 | `GOTOLINE` | `SETROW` | `GOTOLINE row` | Moves cursor to 1-indexed row number | `GOTOLINE (:row + 1)` |
 | `GOTOCOL` | `SETCOL` | `GOTOCOL col` | Moves cursor to 1-indexed column number | `GOTOCOL (4 * 2)` |
 
-In Text Mode, `GOTO` clamps to the existing buffer. In Canvas Mode, `GOTO`
-auto-extends empty rows within the canvas safety limits: up to `10,000`
-auto-created rows and `10,000` virtual columns.
+In LOGO Text Mode, `GOTO` clamps the row to the existing buffer but allows the
+column to point past the current line end. Drawing and layout commands then
+fill the intervening space as needed. In Canvas Mode, `GOTO` auto-extends empty
+rows within the canvas safety limits: up to `10,000` auto-created rows and
+`10,000` virtual columns.
 
 Numeric value arguments in editor and drawing commands may be integer
 expressions, such as `GOTO (:row + 1) 1`, `BOX (:w + 2) 4`, or
@@ -517,9 +519,9 @@ their own syntax and are not treated as general expressions.
 | `PU` | `PENUP` | `PU` | Pen Up (Default): deactivates drawing mode to move cursor without altering text | `PU` |
 | `FD` | `FORWARD` | `FD [expr]` | Move turtle/pen forward by an integer expression in current heading; stops at top/left minimum boundaries | `FD 5`, `FD (10 - :#)` |
 | `BK` | `BACK`, `BACKWARD` | `BK [expr]` | Move turtle/pen backward by an integer expression in opposite heading; stops at top/left minimum boundaries | `BK 3` |
-| `RT` | `RIGHT` | `RT [angle]` | Turn turtle right 90° (or specified angle) | `RT`, `RT 90` |
-| `LT` | `LEFT` | `LT [angle]` | Turn turtle left 90° (or specified angle) | `LT`, `LT 90` |
-| `SETHEADING` | `SETH` | `SETHEADING angle/direction` | Set turtle heading by angle (`0`, `90`, `180`, `270`) or direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH 0`, `SETH RIGHT`, `SETH "DOWN` |
+| `RT` | `RIGHT` | `RT` | Turn turtle right 90° | `RT` |
+| `LT` | `LEFT` | `LT` | Turn turtle left 90° | `LT` |
+| `SETHEADING` | `SETH` | `SETHEADING direction` | Set turtle heading by direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH RIGHT`, `SETH "DOWN` |
 | `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---

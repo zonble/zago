@@ -31,6 +31,28 @@ public struct VirtualLine {
     public let endCol: Int
 }
 
+public struct VirtualViewport {
+    public let lines: [VirtualLine]
+    public let startVirtualIndex: Int
+    public let totalVirtualLineCount: Int
+    public let cursorVirtualLineIndex: Int
+    public let cursorVirtualColumnIndex: Int
+
+    public init(
+        lines: [VirtualLine],
+        startVirtualIndex: Int,
+        totalVirtualLineCount: Int,
+        cursorVirtualLineIndex: Int,
+        cursorVirtualColumnIndex: Int
+    ) {
+        self.lines = lines
+        self.startVirtualIndex = startVirtualIndex
+        self.totalVirtualLineCount = totalVirtualLineCount
+        self.cursorVirtualLineIndex = cursorVirtualLineIndex
+        self.cursorVirtualColumnIndex = cursorVirtualColumnIndex
+    }
+}
+
 /// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
 /// coordinate conversions.
 public final class LayoutEngine {
@@ -50,96 +72,377 @@ public final class LayoutEngine {
         wrapColumn = Self.normalizedWrapColumn(column)
     }
 
+    private func effectiveWrap(for viewWidth: Int) -> Int {
+        max(2, min(wrapColumn ?? viewWidth, viewWidth))
+    }
+
     /// Computes virtual display lines from raw buffer lines given available terminal view width, respecting word boundaries for Latin text.
     public func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
-        let effectiveWrap = max(2, min(wrapColumn ?? viewWidth, viewWidth))
+        let effectiveWrap = effectiveWrap(for: viewWidth)
         var virtualLines: [VirtualLine] = []
 
         for (bIndex, line) in lines.enumerated() {
-            if line.isEmpty {
-                virtualLines.append(
-                    VirtualLine(
-                        bufferLineIndex: bIndex,
-                        subLineIndex: 0,
-                        text: "",
-                        startCol: 0,
-                        endCol: 0
-                    ))
-                continue
-            }
-
-            var currentCharIndex = 0
-            var subIndex = 0
-            let chars = Array(line)
-            let totalChars = chars.count
-
-            // Core Softwrap Loop: Iteratively slice a raw buffer line into one or more VirtualLines
-            while currentCharIndex < totalChars {
-                var currentWidth = 0
-                var endIndex = currentCharIndex
-                var lastWordBoundary = -1
-
-                // Inner Scan Loop: Accumulate displayWidth starting from
-                // currentCharIndex
-                while endIndex < totalChars {
-                    let ch = chars[endIndex]
-                    let w = ch.displayWidth
-
-                    // 1. Column Limit Guard: If adding the current character's
-                    //    displayWidth (ASCII=1, CJK/Emoji=2) exceeds
-                    //    effectiveWrap and the current sub-line already has at
-                    //    least one character, terminate the inner scan loop.
-                    if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
-                        break
-                    }
-
-                    // 2. Track Word Boundary: Record the last safe word
-                    //    boundary position (whitespace ' ', CJK wide character
-                    //    displayWidth >= 2, or punctuation). This allows
-                    //    trailing Latin words to be wrapped as a whole to the
-                    //    next line.
-                    if ch.isWhitespace || ch.displayWidth >= 2 || ch.isPunctuation {
-                        lastWordBoundary = endIndex
-                    }
-
-                    currentWidth += w
-                    endIndex += 1
-                }
-
-                // 3. Smart Word-Wrap Backtracking Adjustment: If the scan
-                //    didn't reach line end (endIndex < totalChars) and a valid
-                //    word boundary was found (lastWordBoundary >
-                //    currentCharIndex), backtrack the break point to right
-                //    after the last boundary character to avoid breaking
-                //    English words in the middle.
-                if endIndex < totalChars && lastWordBoundary > currentCharIndex {
-                    endIndex = lastWordBoundary + 1
-                } else if endIndex == currentCharIndex {
-                    // Fallback Guard: If a single character's displayWidth
-                    // exceeds effectiveWrap, force advance by 1 char to avoid
-                    // infinite loop
-                    endIndex = currentCharIndex + 1
-                }
-
-                // Slice substring and character range for this virtual display chunk
-                let chunkText = String(chars[currentCharIndex..<endIndex])
-
-                virtualLines.append(
-                    VirtualLine(
-                        bufferLineIndex: bIndex,
-                        subLineIndex: subIndex,
-                        text: chunkText,
-                        startCol: currentCharIndex,
-                        endCol: endIndex
-                    ))
-
-                // Advance starting index for the next virtual line chunk
-                currentCharIndex = endIndex
-                subIndex += 1
-            }
+            virtualLines.append(contentsOf: wrapLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap))
         }
 
         return virtualLines
+    }
+
+    public func computeVirtualViewport(
+        from lines: [String],
+        viewWidth: Int,
+        topVirtualLineIndex: Int,
+        height: Int,
+        cursorLineIndex: Int,
+        cursorColumnIndex: Int,
+        computeTotalLineCount: Bool = true
+    ) -> VirtualViewport {
+        let effectiveWrap = effectiveWrap(for: viewWidth)
+        let targetTop = max(0, topVirtualLineIndex)
+        let targetEnd = targetTop + max(0, height)
+        let cursorLineIndex = max(0, min(cursorLineIndex, max(0, lines.count - 1)))
+
+        var viewportLines: [VirtualLine] = []
+        var virtualIndex = 0
+        var cursorVirtualLineIndex = 0
+        var cursorVirtualColumnIndex = 0
+        var cursorResolved = false
+
+        for (bIndex, line) in lines.enumerated() {
+            var cursorFallback: (vLineIndex: Int, vColIndex: Int)?
+            let completedLine = visitWrappedLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap) { vLine in
+                if bIndex == cursorLineIndex {
+                    let isAtLineEnd = vLine.endCol == line.count
+                    let cursorIsInChunk =
+                        cursorColumnIndex >= vLine.startCol
+                        && (cursorColumnIndex < vLine.endCol || (isAtLineEnd && cursorColumnIndex <= vLine.endCol))
+
+                    cursorFallback = (virtualIndex, vLine.text.count)
+                    if cursorIsInChunk {
+                        cursorVirtualLineIndex = virtualIndex
+                        cursorVirtualColumnIndex = cursorColumnIndex - vLine.startCol
+                        cursorResolved = true
+                    }
+                }
+
+                if virtualIndex >= targetTop && virtualIndex < targetEnd {
+                    viewportLines.append(vLine)
+                }
+                virtualIndex += 1
+
+                let stillNeedsCursor =
+                    bIndex < cursorLineIndex || (bIndex == cursorLineIndex && !cursorResolved)
+                return computeTotalLineCount || virtualIndex < targetEnd || stillNeedsCursor
+            }
+
+            if bIndex == cursorLineIndex && !cursorResolved, let cursorFallback {
+                cursorVirtualLineIndex = cursorFallback.vLineIndex
+                cursorVirtualColumnIndex = cursorFallback.vColIndex
+                cursorResolved = true
+            }
+
+            if !completedLine || (!computeTotalLineCount && virtualIndex >= targetEnd && bIndex >= cursorLineIndex) {
+                break
+            }
+        }
+
+        return VirtualViewport(
+            lines: viewportLines,
+            startVirtualIndex: targetTop,
+            totalVirtualLineCount: virtualIndex,
+            cursorVirtualLineIndex: cursorVirtualLineIndex,
+            cursorVirtualColumnIndex: cursorVirtualColumnIndex
+        )
+    }
+
+    public func computeVirtualLine(at virtualLineIndex: Int, from lines: [String], viewWidth: Int) -> VirtualLine? {
+        let effectiveWrap = effectiveWrap(for: viewWidth)
+        let targetIndex = max(0, virtualLineIndex)
+        var virtualIndex = 0
+        var result: VirtualLine?
+
+        for (bIndex, line) in lines.enumerated() {
+            let completedLine = visitWrappedLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap) { vLine in
+                if virtualIndex == targetIndex {
+                    result = vLine
+                    return false
+                }
+                virtualIndex += 1
+                return true
+            }
+            if !completedLine {
+                break
+            }
+        }
+
+        return result
+    }
+
+    private func wrapLine(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
+        if line.isEmpty {
+            return [
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: 0,
+                    text: "",
+                    startCol: 0,
+                    endCol: 0)
+            ]
+        }
+
+        if line.utf8.allSatisfy({ $0 < 0x80 }) {
+            return asciiWrappedLines(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap)
+        }
+
+        var virtualLines: [VirtualLine] = []
+        var currentCharIndex = 0
+        var subIndex = 0
+        let chars = Array(line)
+        let totalChars = chars.count
+
+        // Core Softwrap Loop: Iteratively slice a raw buffer line into one or more VirtualLines
+        while currentCharIndex < totalChars {
+            var currentWidth = 0
+            var endIndex = currentCharIndex
+            var lastWordBoundary = -1
+
+            while endIndex < totalChars {
+                let ch = chars[endIndex]
+                let w = ch.displayWidth
+
+                if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
+                    break
+                }
+
+                if ch.isWhitespace || ch.displayWidth >= 2 || ch.isPunctuation {
+                    lastWordBoundary = endIndex
+                }
+
+                currentWidth += w
+                endIndex += 1
+            }
+
+            if endIndex < totalChars && lastWordBoundary > currentCharIndex {
+                endIndex = lastWordBoundary + 1
+            } else if endIndex == currentCharIndex {
+                endIndex = currentCharIndex + 1
+            }
+
+            virtualLines.append(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: subIndex,
+                    text: String(chars[currentCharIndex..<endIndex]),
+                    startCol: currentCharIndex,
+                    endCol: endIndex
+                ))
+
+            currentCharIndex = endIndex
+            subIndex += 1
+        }
+        return virtualLines
+    }
+
+    @discardableResult
+    private func visitWrappedLine(
+        _ line: String,
+        bufferLineIndex: Int,
+        effectiveWrap: Int,
+        _ body: (VirtualLine) -> Bool
+    ) -> Bool {
+        if line.isEmpty {
+            return body(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: 0,
+                    text: "",
+                    startCol: 0,
+                    endCol: 0)
+            )
+        }
+
+        if line.utf8.allSatisfy({ $0 < 0x80 }) {
+            return visitASCIIWrappedLine(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, body)
+        }
+
+        var currentCharIndex = 0
+        var subIndex = 0
+        let chars = Array(line)
+        let totalChars = chars.count
+
+        while currentCharIndex < totalChars {
+            var currentWidth = 0
+            var endIndex = currentCharIndex
+            var lastWordBoundary = -1
+
+            while endIndex < totalChars {
+                let ch = chars[endIndex]
+                let w = ch.displayWidth
+
+                if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
+                    break
+                }
+
+                if ch.isWhitespace || ch.displayWidth >= 2 || ch.isPunctuation {
+                    lastWordBoundary = endIndex
+                }
+
+                currentWidth += w
+                endIndex += 1
+            }
+
+            if endIndex < totalChars && lastWordBoundary > currentCharIndex {
+                endIndex = lastWordBoundary + 1
+            } else if endIndex == currentCharIndex {
+                endIndex = currentCharIndex + 1
+            }
+
+            let shouldContinue = body(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: subIndex,
+                    text: String(chars[currentCharIndex..<endIndex]),
+                    startCol: currentCharIndex,
+                    endCol: endIndex
+                ))
+            if !shouldContinue {
+                return false
+            }
+
+            currentCharIndex = endIndex
+            subIndex += 1
+        }
+        return true
+    }
+
+    @discardableResult
+    private func visitASCIIWrappedLine(
+        _ line: String,
+        bufferLineIndex: Int,
+        effectiveWrap: Int,
+        _ body: (VirtualLine) -> Bool
+    ) -> Bool {
+        let bytes = Array(line.utf8)
+        var currentIndex = 0
+        var subIndex = 0
+
+        while currentIndex < bytes.count {
+            var endIndex = currentIndex
+            var lastWordBoundary = -1
+
+            while endIndex < bytes.count {
+                if endIndex - currentIndex + 1 > effectiveWrap && endIndex > currentIndex {
+                    break
+                }
+
+                if Self.isASCIIWordBoundary(bytes[endIndex]) {
+                    lastWordBoundary = endIndex
+                }
+
+                endIndex += 1
+            }
+
+            if endIndex < bytes.count && lastWordBoundary > currentIndex {
+                endIndex = lastWordBoundary + 1
+            } else if endIndex == currentIndex {
+                endIndex = currentIndex + 1
+            }
+
+            let text = String(decoding: bytes[currentIndex..<endIndex], as: UTF8.self)
+            let shouldContinue = body(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: subIndex,
+                    text: text,
+                    startCol: currentIndex,
+                    endCol: endIndex
+                ))
+            if !shouldContinue {
+                return false
+            }
+
+            currentIndex = endIndex
+            subIndex += 1
+        }
+        return true
+    }
+
+    private func asciiWrappedLines(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
+        let bytes = Array(line.utf8)
+        var virtualLines: [VirtualLine] = []
+        var currentIndex = 0
+        var subIndex = 0
+
+        while currentIndex < bytes.count {
+            var endIndex = currentIndex
+            var lastWordBoundary = -1
+
+            while endIndex < bytes.count {
+                if endIndex - currentIndex + 1 > effectiveWrap && endIndex > currentIndex {
+                    break
+                }
+
+                if Self.isASCIIWordBoundary(bytes[endIndex]) {
+                    lastWordBoundary = endIndex
+                }
+
+                endIndex += 1
+            }
+
+            if endIndex < bytes.count && lastWordBoundary > currentIndex {
+                endIndex = lastWordBoundary + 1
+            } else if endIndex == currentIndex {
+                endIndex = currentIndex + 1
+            }
+
+            let text = String(decoding: bytes[currentIndex..<endIndex], as: UTF8.self)
+            virtualLines.append(
+                VirtualLine(
+                    bufferLineIndex: bufferLineIndex,
+                    subLineIndex: subIndex,
+                    text: text,
+                    startCol: currentIndex,
+                    endCol: endIndex
+                ))
+
+            currentIndex = endIndex
+            subIndex += 1
+        }
+        return virtualLines
+    }
+
+    private func virtualCursorInWrappedLine(
+        lineIndex: Int,
+        columnIndex: Int,
+        wrappedLine: [VirtualLine]
+    ) -> (vLineOffset: Int, vColIndex: Int) {
+        for (offset, vLine) in wrappedLine.enumerated() {
+            let isLastSubline = offset == wrappedLine.count - 1
+            if isLastSubline {
+                if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
+                    return (offset, columnIndex - vLine.startCol)
+                }
+            } else if columnIndex >= vLine.startCol && columnIndex < vLine.endCol {
+                return (offset, columnIndex - vLine.startCol)
+            }
+        }
+
+        if let last = wrappedLine.last {
+            return (max(0, wrappedLine.count - 1), last.text.count)
+        }
+        return (0, 0)
+    }
+
+    private static func isASCIIWordBoundary(_ byte: UInt8) -> Bool {
+        if byte == 9 || byte == 10 || byte == 11 || byte == 12 || byte == 13 || byte == 32 {
+            return true
+        }
+        switch byte {
+        case 33...47, 58...64, 91...96, 123...126:
+            return true
+        default:
+            return false
+        }
     }
 
     public func computeCanvasLines(from lines: [String]) -> [VirtualLine] {

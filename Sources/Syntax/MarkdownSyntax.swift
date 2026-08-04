@@ -26,9 +26,9 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             makeRule("\\[\\^[^\\]]+\\]|https?://[^\\s<>]+|<https?://[^>]+>", .typeOrAttribute),
 
             // Emphasis and strikethrough
-            makeRule("(\\*\\*|__)[^*_]+(\\*\\*|__)", .string),
-            makeRule("\\*[^*]+\\*|_[^_]+_", .string),
-            makeRule("~~[^~]+~~", .string),
+            makeRule("(\\*\\*|__)[^*`|\\n_]+(\\*\\*|__)", .string),
+            makeRule("\\*[^*`|\\n]+\\*|_[^_`|\\n]+_", .string),
+            makeRule("~~[^~`|\\n]+~~", .string),
 
             // Blockquotes, task lists, ordered/unordered lists, and tables
             makeRule("^\\s*>.*$", .number),
@@ -55,7 +55,7 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
                     inBlock = true
                     let langStr = String(line.drop(while: { $0 == "`" || $0 == "~" })).trimmingCharacters(
                         in: .whitespaces)
-                    activeLangName = langStr.isEmpty ? nil : langStr
+                    activeLangName = langStr.isEmpty ? "text" : langStr
                 }
             }
         }

@@ -104,7 +104,7 @@ extension Renderer {
         var colOffset = 1
         for idx in 0..<editor.menuBar.categoryIndex {
             let title = L10n[editor.menuBar.categories[idx].titleKey]
-            colOffset += title.displayWidth + 4
+            colOffset += title.displayWidth + 2
         }
 
         let cat = editor.menuBar.currentCategory

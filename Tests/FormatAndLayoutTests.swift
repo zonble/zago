@@ -31,6 +31,46 @@ struct FormatAndLayoutTests {
     #expect(virtualLines[1].endCol == 20)
 }
 
+@Test func testVirtualViewportMatchesFullSoftwrapWindow() throws {
+    let engine = LayoutEngine(wrapColumn: 10)
+    let lines = ["1234567890ABCDEFGHIJ12345", "short", String(repeating: "a", count: 120)]
+    let full = engine.computeVirtualLines(from: lines, viewWidth: 80)
+    let viewport = engine.computeVirtualViewport(
+        from: lines,
+        viewWidth: 80,
+        topVirtualLineIndex: 2,
+        height: 4,
+        cursorLineIndex: 2,
+        cursorColumnIndex: 35
+    )
+
+    #expect(viewport.lines.map(\.text) == full[2..<6].map(\.text))
+    #expect(viewport.startVirtualIndex == 2)
+    #expect(viewport.totalVirtualLineCount == full.count)
+
+    let (cursorVLine, cursorVCol) = engine.getVirtualCursor(
+        lineIndex: 2,
+        columnIndex: 35,
+        virtualLines: full
+    )
+    #expect(viewport.cursorVirtualLineIndex == cursorVLine)
+    #expect(viewport.cursorVirtualColumnIndex == cursorVCol)
+
+    let partialViewport = engine.computeVirtualViewport(
+        from: lines,
+        viewWidth: 80,
+        topVirtualLineIndex: 2,
+        height: 4,
+        cursorLineIndex: 2,
+        cursorColumnIndex: 35,
+        computeTotalLineCount: false
+    )
+    #expect(partialViewport.lines.map(\.text) == full[2..<6].map(\.text))
+    #expect(partialViewport.totalVirtualLineCount < full.count)
+    #expect(partialViewport.cursorVirtualLineIndex == cursorVLine)
+    #expect(partialViewport.cursorVirtualColumnIndex == cursorVCol)
+}
+
 @Test func testCanvasLayoutDoesNotSoftwrap() throws {
     let engine = LayoutEngine(wrapColumn: 10)
     let lines = ["1234567890ABCDEFGHIJ12345"]
@@ -476,6 +516,19 @@ struct FormatAndLayoutTests {
     #expect(output.contains("\u{1B}[1;36mt\u{1B}[0m"))
 }
 
+@Test func testSoftwrappedTableSyntaxHighlighting() throws {
+    let editor = Editor(filePath: "document.md", wrapColumn: 30, enableSyntax: true)
+    editor.buffer.lines = [
+        "| Header 1 | Header 2 | Very Long Table Content That Will Softwrap Across Multiple Sublines |"
+    ]
+
+    let output = editor.renderer.render(editor: editor, rows: 10, cols: 35)
+
+    let lines = output.components(separatedBy: "\r\n")
+    #expect(lines[1].contains("\u{1B}[94m"))
+    #expect(lines[2].contains("\u{1B}[94m"))
+}
+
 @Test func testEmbeddedCodeBlockSyntaxHighlighting() throws {
     let editor = Editor()
     editor.displayConfig.enableSyntaxHighlight = true
@@ -593,7 +646,7 @@ struct FormatAndLayoutTests {
     editor.switchToCanvasMode()
     let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
     #expect(canvasHelp.contains("⇧+Arrow"))
-    #expect(canvasHelp.contains("^^"))
+    #expect(canvasHelp.contains("M+B"))
     #expect(canvasHelp.contains("^K"))
     #expect(canvasHelp.contains("^U"))
     #expect(canvasHelp.contains("F1"))
@@ -699,6 +752,8 @@ struct FormatAndLayoutTests {
     let clean1 = line1.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
     let clean2 = line2.replacingOccurrences(of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
 
+    #expect(clean0.contains("[File]"))
+    #expect(!clean0.contains("[ File ]"))
     #expect(clean0.count == clean1.count)
     #expect(clean1.count == clean2.count)
 
@@ -710,12 +765,12 @@ struct FormatAndLayoutTests {
     editor.menuBar.categoryIndex = 1
     let (startCol1, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
     let title0Width = L10n[editor.menuBar.categories[0].titleKey].displayWidth
-    #expect(startCol1 == 1 + title0Width + 4)
+    #expect(startCol1 == 1 + title0Width + 2)
 
     editor.menuBar.categoryIndex = 2
     let (startCol2, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
     let title1Width = L10n[editor.menuBar.categories[1].titleKey].displayWidth
-    #expect(startCol2 == 1 + title0Width + 4 + title1Width + 4)
+    #expect(startCol2 == 1 + title0Width + 2 + title1Width + 2)
 }
 
 @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {

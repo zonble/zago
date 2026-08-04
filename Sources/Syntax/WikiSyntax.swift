@@ -25,13 +25,15 @@ public struct WikiSyntaxDefinition: SyntaxDefinition {
         for i in 0...bufferLineIndex {
             let line = lines[i].trimmingCharacters(in: .whitespaces).lowercased()
             if line.contains("<syntaxhighlight") || line.contains("<source") || line.contains("<code") {
+                inBlock = true
                 if let langRange = line.range(of: "lang=\"") ?? line.range(of: "lang='") {
                     let rest = line[langRange.upperBound...]
                     if let quoteEnd = rest.firstIndex(where: { $0 == "\"" || $0 == "'" }) {
                         let langStr = String(rest[..<quoteEnd]).trimmingCharacters(in: .whitespaces)
-                        activeLangName = langStr.isEmpty ? nil : langStr
-                        inBlock = true
+                        activeLangName = langStr.isEmpty ? "text" : langStr
                     }
+                } else {
+                    activeLangName = "text"
                 }
             }
             if line.contains("</syntaxhighlight>") || line.contains("</source>") || line.contains("</code>") {

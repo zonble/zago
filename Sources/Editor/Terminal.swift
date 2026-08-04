@@ -39,6 +39,9 @@ public final class Terminal {
     #endif
     private var lastWindowSize: (rows: Int, cols: Int)
     private var lastReadTimedOut = false
+    #if os(Windows)
+        private var pendingResizeEvent = false
+    #endif
     private(set) public var rawModeEnabled = false
 
     public init() {
@@ -76,7 +79,7 @@ public final class Terminal {
                 }
                 var rawInput = originalInputMode
                 rawInput &= ~DWORD(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT)
-                rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT)
+                rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_WINDOW_INPUT)
                 guard SetConsoleMode(hInput, rawInput) else {
                     throw StartupError.consoleModeUnavailable
                 }
@@ -219,6 +222,37 @@ public final class Terminal {
     }
 
     #if os(Windows)
+        private func consumePendingWindowsResizeInput() -> Bool {
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            guard hInput != INVALID_HANDLE_VALUE else { return false }
+
+            while true {
+                var eventCount: DWORD = 0
+                guard GetNumberOfConsoleInputEvents(hInput, &eventCount), eventCount > 0 else {
+                    return false
+                }
+
+                var record = INPUT_RECORD()
+                var recordsRead: DWORD = 0
+                guard PeekConsoleInputW(hInput, &record, 1, &recordsRead), recordsRead == 1 else {
+                    return false
+                }
+
+                if record.EventType == WORD(WINDOW_BUFFER_SIZE_EVENT) {
+                    _ = ReadConsoleInputW(hInput, &record, 1, &recordsRead)
+                    _ = consumeWindowResizeEvent()
+                    pendingResizeEvent = true
+                    return true
+                }
+
+                if record.EventType == WORD(KEY_EVENT) {
+                    return false
+                }
+
+                _ = ReadConsoleInputW(hInput, &record, 1, &recordsRead)
+            }
+        }
+
         private func readConsoleUTF16Unit(timeoutMs: Int = 0) -> UInt16? {
             // Windows console input is fundamentally UTF-16. Reading it through
             // the byte-oriented `ReadFile` path can split non-BMP emoji into
@@ -227,12 +261,18 @@ public final class Terminal {
             // pairs before creating Swift `Character` values.
             lastReadTimedOut = false
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            if consumePendingWindowsResizeInput() {
+                return nil
+            }
             if timeoutMs > 0 {
                 let res = WaitForSingleObject(hInput, DWORD(timeoutMs))
                 if res == WAIT_TIMEOUT {
                     lastReadTimedOut = true
                     return nil
                 } else if res != WAIT_OBJECT_0 {
+                    return nil
+                }
+                if consumePendingWindowsResizeInput() {
                     return nil
                 }
             }
@@ -263,10 +303,14 @@ public final class Terminal {
         private func readWindowsKey() -> Key {
             let unit: UInt16
             while true {
-                if consumeWindowResizeEvent() {
+                if consumePendingWindowsResizeInput() || consumeWindowResizeEvent() {
                     return .resize
                 }
                 guard let nextUnit = readConsoleUTF16Unit(timeoutMs: 250) else {
+                    if pendingResizeEvent {
+                        pendingResizeEvent = false
+                        return .resize
+                    }
                     if consumeWindowResizeEvent() {
                         return .resize
                     }
@@ -397,9 +441,6 @@ public final class Terminal {
             guard let byte = readByte(timeoutMs: 250) else {
                 if consumeWindowResizeEvent() {
                     return .resize
-                }
-                if lastReadTimedOut {
-                    continue
                 }
                 return .unknown
             }

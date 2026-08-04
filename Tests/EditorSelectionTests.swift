@@ -159,3 +159,29 @@ import Testing
     #expect(editor.buffer.lines == ["abcdef", "123456"])
     #expect(editor.statusMessage == L10n["status.copied_block"])
 }
+
+@Test func testCanvasModeAltBTogglesBlockMarkLikeMarkKey() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["abcdef", "123456"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+
+    editor.processKey(.alt("b"))
+
+    #expect(editor.canvasBlockMark?.line == 0)
+    #expect(editor.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+    #expect(editor.statusMessage == L10n["status.mark_set"])
+
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.alt("B"))
+
+    #expect(editor.canvasBlockMark?.line == 0)
+    #expect(editor.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.canvasBlockMarkEnd?.line == 1)
+    #expect(editor.canvasBlockMarkEnd?.visualColumn == 3)
+    #expect(editor.statusMessage == L10n["status.mark_set"])
+}

@@ -173,7 +173,7 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `select.home` | Extend selection to line start | `Shift+Home` |
 | `select.end` | Extend selection to line end | `Shift+End` |
 | `edit.delete` | Delete character | `^D`, `Delete` |
-| `edit.mark` | Set or unset canvas block mark | `^^` in canvas mode |
+| `edit.mark` | Set or unset canvas block mark | `^^`, `M+B` in canvas mode |
 | `edit.cancel_selection` | Cancel active selection or canvas mark | `^G` |
 | `edit.copy` | Copy selected text or canvas block | `M+W` |
 | `edit.cut` | Cut selected text, or current line when no selection exists | `^K`, `F9` |
