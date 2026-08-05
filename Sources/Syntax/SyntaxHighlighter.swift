@@ -34,16 +34,34 @@ public struct SyntaxRule: @unchecked Sendable {
     }
 }
 
-/// Language syntax specification containing file extension matchers and rules.
+/// Language syntax specification containing file extension matchers, tokenization rules, and feature hooks.
 public struct LanguageSyntax: Sendable {
+    /// Human-readable display name of the language (e.g. "Markdown", "Swift", "Python").
     public let name: String
+
+    /// Array of matching file extension strings without leading dots (e.g. ["md", "markdown"]).
     public let extensions: [String]
+
+    /// List of regex tokenization rules used for ANSI color highlighting.
     public let rules: [SyntaxRule]
+
+    /// Optional polymorphic closure for detecting embedded code block language names in markup files.
     public let embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)?
+
+    /// Optional polymorphic closure for formatting and aligning text tables in markup files.
     public let tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)?
+
+    /// Optional polymorphic closure for navigating table cells via Tab / Shift+Tab in markup files.
     public let tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)?
+
+    /// Whether this syntax specification supports structure tree extraction (Document Outline / Heading navigation).
     public let supportsDocumentOutline: Bool
+
+    /// Optional polymorphic closure for parsing document headings into a DocumentOutline tree.
     public let outlineParser: (@Sendable ([String]) -> DocumentOutline?)?
+
+    /// Whether this syntax specification supports Markdown-style list auto-indentation and continuation on Enter.
+    public let supportsListAutoIndent: Bool
 
     public init(
         name: String,
@@ -53,7 +71,8 @@ public struct LanguageSyntax: Sendable {
         tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)? = nil,
         tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil,
         supportsDocumentOutline: Bool = false,
-        outlineParser: (@Sendable ([String]) -> DocumentOutline?)? = nil
+        outlineParser: (@Sendable ([String]) -> DocumentOutline?)? = nil,
+        supportsListAutoIndent: Bool = false
     ) {
         self.name = name
         self.extensions = extensions
@@ -63,6 +82,7 @@ public struct LanguageSyntax: Sendable {
         self.tableNavigator = tableNavigator
         self.supportsDocumentOutline = supportsDocumentOutline
         self.outlineParser = outlineParser
+        self.supportsListAutoIndent = supportsListAutoIndent
     }
 }
 

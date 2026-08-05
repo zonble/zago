@@ -4,6 +4,7 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
     public let name = "Markdown"
     public let fileExtensions = ["md", "markdown", "mdown", "mkd"]
     public let supportsDocumentOutline = true
+    public let supportsListAutoIndent = true
 
     public var rules: [SyntaxRule] {
         [

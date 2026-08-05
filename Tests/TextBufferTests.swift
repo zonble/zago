@@ -153,3 +153,51 @@ import Testing
     #expect(buffer.lines == [""])
     #expect(buffer.lineIndex == 0)
 }
+
+@Test func testMarkdownListAutoIndent() throws {
+    let buffer = TextBuffer()
+    buffer.lines = ["- First item"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 12
+
+    buffer.insertNewline(enableListAutoIndent: true)
+    #expect(buffer.lines == ["- First item", "- "])
+    #expect(buffer.lineIndex == 1)
+    #expect(buffer.columnIndex == 2)
+
+    // Task list reset to unchecked
+    buffer.lines = ["- [x] Done task"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 15
+    buffer.insertNewline(enableListAutoIndent: true)
+    #expect(buffer.lines == ["- [x] Done task", "- [ ] "])
+    #expect(buffer.lineIndex == 1)
+    #expect(buffer.columnIndex == 6)
+
+    // Ordered list auto increment
+    buffer.lines = ["1. Item one"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 11
+    buffer.insertNewline(enableListAutoIndent: true)
+    #expect(buffer.lines == ["1. Item one", "2. "])
+    #expect(buffer.lineIndex == 1)
+    #expect(buffer.columnIndex == 3)
+
+    // Indented sub-list
+    buffer.lines = ["  * Sub item"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 12
+    buffer.insertNewline(enableListAutoIndent: true)
+    #expect(buffer.lines == ["  * Sub item", "  * "])
+    #expect(buffer.lineIndex == 1)
+    #expect(buffer.columnIndex == 4)
+
+    // Empty list item termination
+    buffer.lines = ["- "]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 2
+    buffer.insertNewline(enableListAutoIndent: true)
+    #expect(buffer.lines == ["", ""])
+    #expect(buffer.lineIndex == 1)
+    #expect(buffer.columnIndex == 0)
+}

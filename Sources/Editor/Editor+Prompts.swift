@@ -113,14 +113,14 @@ extension Editor {
 
         case .enter:
             if !isCanvasModeActive && deleteTextSelectionIfNeeded(updateClipboard: false) {
-                buffer.insertNewline()
+                buffer.insertNewline(enableListAutoIndent: isListAutoIndentSupportedBuffer)
                 break
             }
             saveUndoSnapshot()
             if isCanvasModeActive {
                 insertCanvasNewline()
             } else {
-                buffer.insertNewline()
+                buffer.insertNewline(enableListAutoIndent: isListAutoIndentSupportedBuffer)
             }
 
         case .char(let ch):

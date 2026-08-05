@@ -4,6 +4,7 @@ public struct ReSTSyntaxDefinition: SyntaxDefinition {
     public let name = "reStructuredText"
     public let fileExtensions = ["rst", "rest"]
     public let supportsDocumentOutline = true
+    public let supportsListAutoIndent = true
 
     public var rules: [SyntaxRule] {
         [

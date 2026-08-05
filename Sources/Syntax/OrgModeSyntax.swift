@@ -4,6 +4,7 @@ public struct OrgModeSyntaxDefinition: SyntaxDefinition {
     public let name = "Org-mode"
     public let fileExtensions = ["org"]
     public let supportsDocumentOutline = true
+    public let supportsListAutoIndent = true
 
     public var rules: [SyntaxRule] {
         [

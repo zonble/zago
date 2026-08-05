@@ -32,6 +32,7 @@ public protocol SyntaxDefinition: Sendable {
     var fileExtensions: [String] { get }
     var rules: [SyntaxRule] { get }
     var supportsDocumentOutline: Bool { get }
+    var supportsListAutoIndent: Bool { get }
 
     /// Polymorphic hook for markup languages to detect embedded code block language names.
     func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String?
@@ -56,6 +57,10 @@ extension SyntaxDefinition {
     }
 
     public var supportsDocumentOutline: Bool {
+        false
+    }
+
+    public var supportsListAutoIndent: Bool {
         false
     }
 
@@ -90,7 +95,8 @@ extension SyntaxDefinition {
             supportsDocumentOutline: supportsDocumentOutline,
             outlineParser: { lines in
                 self.documentOutline(in: lines)
-            }
+            },
+            supportsListAutoIndent: supportsListAutoIndent
         )
     }
 }

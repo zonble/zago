@@ -4,6 +4,7 @@ public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
     public let name = "AsciiDoc"
     public let fileExtensions = ["adoc", "asciidoc", "ascii"]
     public let supportsDocumentOutline = true
+    public let supportsListAutoIndent = true
 
     public var rules: [SyntaxRule] {
         [

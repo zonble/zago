@@ -350,6 +350,14 @@ public final class Editor: @unchecked Sendable {
         }
     }
 
+    public var isListAutoIndentSupportedBuffer: Bool {
+        guard !buffer.isDirectoryBuffer else { return false }
+        if let currentSyntax = syntaxHighlighter.getSyntaxForLine(editor: self, bufferLineIndex: buffer.lineIndex) {
+            return currentSyntax.supportsListAutoIndent
+        }
+        return false
+    }
+
     func saveCurrentViewSettingsToBuffer() {
         guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
         let current = buffers[currentBufferIndex]

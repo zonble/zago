@@ -271,8 +271,8 @@ open class TextBuffer: SpellCheckableBuffer {
         isModified = true
     }
 
-    /// Inserts a newline at the current cursor position.
-    public func insertNewline() {
+    /// Inserts a newline at the current cursor position, optionally continuing list items for Markdown/AsciiDoc/Org buffers.
+    public func insertNewline(enableListAutoIndent: Bool = false) {
         ensureBounds()
         let currentLine = lines[lineIndex]
         let index =
@@ -282,12 +282,83 @@ open class TextBuffer: SpellCheckableBuffer {
         let leftPart = String(currentLine[..<index])
         let rightPart = String(currentLine[index...])
 
+        if enableListAutoIndent, let listInfo = parseListPrefix(leftPart) {
+            if listInfo.isEmptyItem && rightPart.isEmpty {
+                // Empty item termination: clear list prefix on current line and convert to normal empty newline
+                lines[lineIndex] = String(listInfo.leadingWhitespace)
+                lines.insert(String(listInfo.leadingWhitespace), at: lineIndex + 1)
+                lineIndex += 1
+                columnIndex = listInfo.leadingWhitespace.count
+                isModified = true
+                return
+            } else if !listInfo.isEmptyItem {
+                lines[lineIndex] = leftPart
+                let nextLine = listInfo.nextPrefix + rightPart
+                lines.insert(nextLine, at: lineIndex + 1)
+                lineIndex += 1
+                columnIndex = listInfo.nextPrefix.count
+                isModified = true
+                return
+            }
+        }
+
         lines[lineIndex] = leftPart
         lines.insert(rightPart, at: lineIndex + 1)
 
         lineIndex += 1
         columnIndex = 0
         isModified = true
+    }
+
+    private struct ListPrefixInfo {
+        let leadingWhitespace: String
+        let nextPrefix: String
+        let isEmptyItem: Bool
+    }
+
+    private func parseListPrefix(_ text: String) -> ListPrefixInfo? {
+        let leading = String(text.prefix(while: { $0 == " " || $0 == "\t" }))
+        let rest = String(text.dropFirst(leading.count))
+
+        // 1. Task List: - [ ] or - [x] or * [ ] or * [x]
+        if rest.hasPrefix("- [ ] ") || rest.hasPrefix("- [x] ") || rest.hasPrefix("* [ ] ") || rest.hasPrefix("* [x] ") {
+            let afterPrefix = rest.dropFirst(6)
+            let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return ListPrefixInfo(
+                leadingWhitespace: leading,
+                nextPrefix: leading + "- [ ] ",
+                isEmptyItem: isEmpty
+            )
+        }
+
+        // 2. Ordered List: e.g. "1. ", "12. "
+        if let match = rest.range(of: "^[0-9]+\\.\\s+", options: .regularExpression) {
+            let prefixStr = String(rest[match])
+            let numStr = prefixStr.trimmingCharacters(in: .whitespacesAndNewlines).dropLast()
+            if let num = Int(numStr) {
+                let afterPrefix = rest[match.upperBound...]
+                let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                return ListPrefixInfo(
+                    leadingWhitespace: leading,
+                    nextPrefix: leading + "\(num + 1). ",
+                    isEmptyItem: isEmpty
+                )
+            }
+        }
+
+        // 3. Bullet List: - , * , + 
+        if rest.hasPrefix("- ") || rest.hasPrefix("* ") || rest.hasPrefix("+ ") {
+            let symbol = String(rest.prefix(2))
+            let afterPrefix = rest.dropFirst(2)
+            let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return ListPrefixInfo(
+                leadingWhitespace: leading,
+                nextPrefix: leading + symbol,
+                isEmptyItem: isEmpty
+            )
+        }
+
+        return nil
     }
 
     /// Deletes the character preceding the cursor (Backspace).
