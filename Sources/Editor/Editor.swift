@@ -274,7 +274,9 @@ public final class Editor {
         if options.filePaths.isEmpty {
             self.buffers = [TextBuffer()]
         } else {
-            self.buffers = options.filePaths.map { TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy) }
+            self.buffers = options.filePaths.map {
+                TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy)
+            }
         }
         self.currentBufferIndex = 0
 

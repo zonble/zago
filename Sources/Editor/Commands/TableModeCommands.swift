@@ -17,7 +17,7 @@ public struct ToggleCanvasModeCommand: Command {
     public let id: CommandID = .canvasToggle
     public let name = "Canvas Mode"
     public let description = "Toggle Canvas Mode"
-    public let keys: [Key] = [.f7, .alt("v"), .alt("V")]
+    public let keys: [Key] = [.f8, .alt("v"), .alt("V")]
 
     public init() {}
 
@@ -30,7 +30,7 @@ public struct ToggleTableModeCommand: Command {
     public let id: CommandID = .tableToggle
     public let name = "Table Mode"
     public let description = "Toggle Table Mode for active cell"
-    public let keys: [Key] = [.f8, .alt("t"), .alt("T")]
+    public let keys: [Key] = [.f7, .alt("t"), .alt("T")]
 
     public init() {}
 

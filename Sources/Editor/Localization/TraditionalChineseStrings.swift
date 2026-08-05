@@ -4,43 +4,46 @@ import Foundation
 public struct TraditionalChineseStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
-        "help.get_help":   "輔助說明",
-        "help.menu":       "主選單",
-        "help.cancel":     "取消",
-        "help.write_out":  "寫入檔案",
-        "help.read_file":  "讀入檔案",
-        "help.prev_pg":    "前往上頁",
-        "help.cut_text":   "剪下文字",
-        "help.cur_pos":    "游標位置",
-        "help.exit":       "離開",
-        "help.justify":    "重排文字",
-        "help.where_is":   "搜尋",
-        "help.next_pg":    "前往下頁",
+        "help.get_help": "輔助說明",
+        "help.menu": "主選單",
+        "help.cancel": "取消",
+        "help.write_out": "寫入檔案",
+        "help.read_file": "讀入檔案",
+        "help.prev_pg": "前往上頁",
+        "help.cut_text": "剪下文字",
+        "help.cur_pos": "游標位置",
+        "help.exit": "離開",
+        "help.canvas_mode": "畫布",
+        "help.table_mode": "表格",
+        "help.text_mode": "文字",
+        "help.justify": "重排文字",
+        "help.where_is": "搜尋",
+        "help.next_pg": "前往下頁",
         "help.uncut_text": "貼上文字",
-        "help.to_spell":   "拼字檢查",
-        "help.open_link":  "開啟連結",
+        "help.to_spell": "拼字檢查",
+        "help.open_link": "開啟連結",
         "help.table_exit": "離開表格",
-        "help.next_cell":  "下個儲存格",
-        "help.prev_cell":  "上個儲存格",
-        "help.cell_width": "寬度 -/+",
-        "help.cell_height": "高度 -/+",
+        "help.next_cell": "下個儲存格",
+        "help.prev_cell": "上個儲存格",
+        "help.cell_width": "儲存格寬度 -/+",
+        "help.cell_height": "儲存格高度 -/+",
         "help.center_text": "置中對齊",
         "help.clear_cell": "清空儲存格",
         "help.select_text": "選取文字",
-        "help.complete":   "補完",
-        "help.confirm":    "確認",
-        "help.yes":        "是",
-        "help.no":         "否",
-        "help.clear":      "清除",
-        "help.move":       "移動",
-        "help.jump":       "跳轉",
-        "help.command":    "指令",
+        "help.complete": "補完",
+        "help.confirm": "確認",
+        "help.yes": "是",
+        "help.no": "否",
+        "help.clear": "清除",
+        "help.move": "移動",
+        "help.jump": "跳轉",
+        "help.command": "指令",
         "help.mark_block": "標記區塊",
-        "help.cut_block":  "剪下區塊",
+        "help.cut_block": "剪下區塊",
         "help.copy_block": "複製區塊",
         "help.uncut_block": "貼上區塊",
-        "help.line":       "線段",
-        "help.arrow":      "箭頭",
+        "help.line": "線段",
+        "help.arrow": "箭頭",
         "chrome.end_of_file": "檔案結尾",
 
         // Prompts
@@ -61,142 +64,142 @@ public struct TraditionalChineseStrings {
         "logoview.reference_title": "  zago - Editor LOGO 指令參考",
         "logoview.workspace_title": "  zago - Editor LOGO 工作區",
         "logoref.content": """
-  Editor LOGO 指令參考
-  ================================================================
+          Editor LOGO 指令參考
+          ================================================================
 
-  Editor LOGO 是編輯器巨集語言。指令會操作目前文字 buffer、
-  游標、選取範圍、表格、狀態列與多 buffer。
+          Editor LOGO 是編輯器巨集語言。指令會操作目前文字 buffer、
+          游標、選取範圍、表格、狀態列與多 buffer。
 
-  基本編輯
-    TYPE text                    插入文字或運算結果
-    SHOW expr                    顯示狀態訊息
-    MAKE "name value             定義變數
-    :name                        讀取變數
-    MOVE UP|DOWN|LEFT|RIGHT      移動游標
-    GOTO row [col]               跳到 1-based 列/欄
-    FIND "query                  搜尋文字
+          基本編輯
+            TYPE text                    插入文字或運算結果
+            SHOW expr                    顯示狀態訊息
+            MAKE "name value             定義變數
+            :name                        讀取變數
+            MOVE UP|DOWN|LEFT|RIGHT      移動游標
+            GOTO row [col]               跳到 1-based 列/欄
+            FIND "query                  搜尋文字
 
-  圖形與表格
-    BOX [文字|寬 高]             插入方框；無參數時框住 canvas mark
-    DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住 mark
-    LINE [len] [style] [arrow]   繪製/連接水平線
-    VLINE [height] [style]       繪製/連接垂直線
-    FILL text                    填滿選取範圍、表格儲存格或方框內部
-    TABLE [rows cols width]      插入表格
-    TABLE BORDER style           設定預設框線樣式
-    TABLE NEXTSTYLE              切換下一個框線樣式
-    邊界：BOX/DRAWBOX 限制為寬 3...200、高 2...100；
-          LINE 限制為 1...200，VLINE 限制為 1...100。
+          圖形與表格
+            BOX [文字|寬 高]             插入方框；無參數時框住 canvas mark
+            DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住 mark
+            LINE [len] [style] [arrow]   繪製/連接水平線
+            VLINE [height] [style]       繪製/連接垂直線
+            FILL text                    填滿選取範圍、表格儲存格或方框內部
+            TABLE [rows cols width]      插入表格
+            TABLE BORDER style           設定預設框線樣式
+            TABLE NEXTSTYLE              切換下一個框線樣式
+            邊界：BOX/DRAWBOX 限制為寬 3...200、高 2...100；
+                  LINE 限制為 1...200，VLINE 限制為 1...100。
 
-  框線樣式
-    single, double, round, double-round, ascii, markdown
+          框線樣式
+            single, double, round, double-round, ascii, markdown
 
-  類海龜繪圖
-    PD / PU                      落筆/提筆
-    FD expr / BK expr            前進/後退
-    RT / LT                      右轉/左轉
-    SETHEADING direction         設定方向 (UP, RIGHT, DOWN, LEFT)；可不加引號
-    HEADING                      回傳目前方向
-    Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
-    往下/右移動可延伸 buffer。
+          類海龜繪圖
+            PD / PU                      落筆/提筆
+            FD expr / BK expr            前進/後退
+            RT / LT                      右轉/左轉
+            SETHEADING direction         設定方向 (UP, RIGHT, DOWN, LEFT)；可不加引號
+            HEADING                      回傳目前方向
+            Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
+            往下/右移動可延伸 buffer。
 
-  控制流程與 procedure
-    REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
-    IF test [ commands ]         條件執行
-    IFELSE test [ yes ] [ no ]   條件分支
-    FOREACH list [ commands ]    逐項執行，? 是目前項目
-    TO name :arg ... END         定義 user procedure
-    OUTPUT value                 從 reporter procedure 回傳值
-    STOP                         從 procedure 返回
+          控制流程與 procedure
+            REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
+            IF test [ commands ]         條件執行
+            IFELSE test [ yes ] [ no ]   條件分支
+            FOREACH list [ commands ]    逐項執行，? 是目前項目
+            TO name :arg ... END         定義 user procedure
+            OUTPUT value                 從 reporter procedure 回傳值
+            STOP                         從 procedure 返回
 
-  常用 predicate
-    PROCEDURE? name              built-in 或 user-defined procedure 是否存在
-    PRIMITIVE? name              built-in primitive 是否存在
-    DEFINED? name                user-defined procedure 是否存在
-    NAME? name                   變數是否存在
-    WORD? LIST? ARRAY? NUMBER? EMPTY?
+          常用 predicate
+            PROCEDURE? name              built-in 或 user-defined procedure 是否存在
+            PRIMITIVE? name              built-in primitive 是否存在
+            DEFINED? name                user-defined procedure 是否存在
+            NAME? name                   變數是否存在
+            WORD? LIST? ARRAY? NUMBER? EMPTY?
 
-  資料操作
-    WORD a b ...                串接成一個 word/string
-    LIST a b ...                建立 list，保留每個項目
-    SENTENCE a b                合併 word/list 成扁平 list
-    FIRST / LAST data           取 word/list 的第一或最後項目
-    BUTFIRST / BUTLAST data     去掉第一或最後項目
-    ITEM n data                 取 word/list/array 的 1-based 項目
-    PICK data                   從 list 或 array 隨機取一項
-    REMOVE item list            回傳移除指定項目的 list
-    REMDUP list                 回傳去除重複項目的 list
-    SPLIT text delimiter        將文字切成 LOGO list
-    SORT data [template]        排序 word/list/array，可給自訂 template
-    ARRAY n / MDARRAY dims      建立固定大小 array / 多維 array
-    SETITEM n array value       修改 array 的 1-based 項目
-    MDSETITEM indexes array val 修改多維 array 的項目
-    ARRAYTOLIST / LISTTOARRAY   在 array 與 list 之間轉換
+          資料操作
+            WORD a b ...                串接成一個 word/string
+            LIST a b ...                建立 list，保留每個項目
+            SENTENCE a b                合併 word/list 成扁平 list
+            FIRST / LAST data           取 word/list 的第一或最後項目
+            BUTFIRST / BUTLAST data     去掉第一或最後項目
+            ITEM n data                 取 word/list/array 的 1-based 項目
+            PICK data                   從 list 或 array 隨機取一項
+            REMOVE item list            回傳移除指定項目的 list
+            REMDUP list                 回傳去除重複項目的 list
+            SPLIT text delimiter        將文字切成 LOGO list
+            SORT data [template]        排序 word/list/array，可給自訂 template
+            ARRAY n / MDARRAY dims      建立固定大小 array / 多維 array
+            SETITEM n array value       修改 array 的 1-based 項目
+            MDSETITEM indexes array val 修改多維 array 的項目
+            ARRAYTOLIST / LISTTOARRAY   在 array 與 list 之間轉換
 
-  文字轉換
-    TRANSLIT transform text      套用 ICU 或 zago 文字轉換
-    TRANSFORM transform text     TRANSLIT 的別名
-    TOHANS text                  繁體中文轉簡體中文
-    TOHANT text                  簡體中文轉繁體中文
-    TOLATIN text                 轉為拉丁文字
-    TOHIRAGANA text              轉為平假名
-    TOKATAKANA text              轉為片假名
-    TOROMAJI text                日文轉羅馬字
-    SPACING.CJK text             正規化 CJK 與 ASCII 字詞間距
-    Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
-                    TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
-                    TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+          文字轉換
+            TRANSLIT transform text      套用 ICU 或 zago 文字轉換
+            TRANSFORM transform text     TRANSLIT 的別名
+            TOHANS text                  繁體中文轉簡體中文
+            TOHANT text                  簡體中文轉繁體中文
+            TOLATIN text                 轉為拉丁文字
+            TOHIRAGANA text              轉為平假名
+            TOKATAKANA text              轉為片假名
+            TOROMAJI text                日文轉羅馬字
+            SPACING.CJK text             正規化 CJK 與 ASCII 字詞間距
+            Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
+                            TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
+                            TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
 
-  文字計數
-    CHARCOUNT text               計算 Unicode grapheme 字元數
-    CHARCOUNT.CJK text           計算 CJK script 與 CJK 標點
-    CHARCOUNT.WORDS text         計算英數 word runs
-    CHARCOUNT.EMOJI text         計算 emoji grapheme clusters
-    CHARCOUNT.LINES text         計算以換行分隔的邏輯行數
-    ASCII / ORD char             第一個字元的 Unicode scalar code
-    CHAR / CHR code              從 Unicode scalar code 取得字元
+          文字計數
+            CHARCOUNT text               計算 Unicode grapheme 字元數
+            CHARCOUNT.CJK text           計算 CJK script 與 CJK 標點
+            CHARCOUNT.WORDS text         計算英數 word runs
+            CHARCOUNT.EMOJI text         計算 emoji grapheme clusters
+            CHARCOUNT.LINES text         計算以換行分隔的邏輯行數
+            ASCII / ORD char             第一個字元的 Unicode scalar code
+            CHAR / CHR code              從 Unicode scalar code 取得字元
 
-  數學與邏輯
-    SUM a b ...                 數字相加
-    DIFFERENCE a b / MINUS a    相減，或將單一數字轉負
-    PRODUCT a b ...             數字相乘
-    QUOTIENT a b                a 除以 b
-    POWER a b                   a 的 b 次方
-    REMAINDER a b               整數餘數
-    MODULO a b                  數學 modulo
-    ABS / INT / ROUND n         絕對值、截斷、四捨五入
-    SQRT / EXP n                平方根、e 的 n 次方
-    LN / LOG10 n                自然對數、10 為底對數
-    SIN / COS / TAN degrees     以角度為單位的三角函數
-    ARCTAN y [x]                回傳角度
-    RADSIN / RADCOS / RADTAN r  以弧度為單位的三角函數
-    RADARCTAN y [x]             回傳弧度
-    RANGE / ISEQ start end [step]
-                                產生 inclusive 整數序列 list
-    RSEQ start end count         產生實數序列 list
-    LESS? / GREATER? a b        數字大小比較
-    LESSEQUAL? / GREATEREQUAL?  數字 <= 或 >= 比較
-    EQUAL? / NOTEQUAL? a b      相等/不相等比較
-    TRUE / FALSE                布林常數
-    AND / OR / XOR a b ...      布林組合
-    NOT value                   布林反相
+          數學與邏輯
+            SUM a b ...                 數字相加
+            DIFFERENCE a b / MINUS a    相減，或將單一數字轉負
+            PRODUCT a b ...             數字相乘
+            QUOTIENT a b                a 除以 b
+            POWER a b                   a 的 b 次方
+            REMAINDER a b               整數餘數
+            MODULO a b                  數學 modulo
+            ABS / INT / ROUND n         絕對值、截斷、四捨五入
+            SQRT / EXP n                平方根、e 的 n 次方
+            LN / LOG10 n                自然對數、10 為底對數
+            SIN / COS / TAN degrees     以角度為單位的三角函數
+            ARCTAN y [x]                回傳角度
+            RADSIN / RADCOS / RADTAN r  以弧度為單位的三角函數
+            RADARCTAN y [x]             回傳弧度
+            RANGE / ISEQ start end [step]
+                                        產生 inclusive 整數序列 list
+            RSEQ start end count         產生實數序列 list
+            LESS? / GREATER? a b        數字大小比較
+            LESSEQUAL? / GREATEREQUAL?  數字 <= 或 >= 比較
+            EQUAL? / NOTEQUAL? a b      相等/不相等比較
+            TRUE / FALSE                布林常數
+            AND / OR / XOR a b ...      布林組合
+            NOT value                   布林反相
 
-  Buffer 與檔案
-    BUFFERS                     列出已開啟 buffer 名稱
-    BUFFER                      目前 buffer 的 1-based 編號
-    CLEARBUFFER                 清空目前 buffer 並重設游標
-    GETLINE [row]               讀取邏輯行；省略時讀目前行
-    SETLINE [row] text          取代邏輯行；省略時改目前行
-    BUFFERTEXT                  目前 buffer 全文，以換行串接
-    ROW / COL                   目前 1-based 邏輯列與欄
-    LINECOUNT                   目前 buffer 的邏輯行數
-    FILENAME                    目前 buffer 的檔名或顯示名稱
-    MODIFIED?                   有未儲存修改回傳 1，否則回傳 0
-    注意：GETLINE、SETLINE、ROW、LINECOUNT 使用邏輯行，
-          不是 soft wrap 後的視覺行。
+          Buffer 與檔案
+            BUFFERS                     列出已開啟 buffer 名稱
+            BUFFER                      目前 buffer 的 1-based 編號
+            CLEARBUFFER                 清空目前 buffer 並重設游標
+            GETLINE [row]               讀取邏輯行；省略時讀目前行
+            SETLINE [row] text          取代邏輯行；省略時改目前行
+            BUFFERTEXT                  目前 buffer 全文，以換行串接
+            ROW / COL                   目前 1-based 邏輯列與欄
+            LINECOUNT                   目前 buffer 的邏輯行數
+            FILENAME                    目前 buffer 的檔名或顯示名稱
+            MODIFIED?                   有未儲存修改回傳 1，否則回傳 0
+            注意：GETLINE、SETLINE、ROW、LINECOUNT 使用邏輯行，
+                  不是 soft wrap 後的視覺行。
 
-  所有 primitive alias
-""",
+          所有 primitive alias
+        """,
         "logoworkspace.heading": "  Editor LOGO 工作區",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  變數：",
@@ -252,8 +255,8 @@ public struct TraditionalChineseStrings {
         "status.unknown_table_border": "[ 未知的表格框線：%@ ]",
         "status.disabled_in_table_mode": "[ 表格模式下停用 %@ ]",
         "status.table_mode_exited": "[ 已退出表格模式 ]",
-        "status.table_mode_hint": "(F8 / M+T 退出 | Tab 移動)",
-        "status.canvas_mode_hint": "(F7 / M+V 退出)",
+        "status.table_mode_hint": "(F7 / M+T 退出 | Tab 移動)",
+        "status.canvas_mode_hint": "(F8 / M+V 退出)",
         "status.canvas_row_limit_exceeded": "[ 已超過畫布列數上限 ]",
         "status.canvas_column_limit_exceeded": "[ 已超過畫布欄數上限 ]",
         "mode.canvas": "畫布",
@@ -473,6 +476,6 @@ public struct TraditionalChineseStrings {
         "transform.hiragana": "平假名",
         "transform.katakana": "片假名",
         "transform.romaji": "羅馬字",
-        "transform.cjk_spacing": "CJK 空格"
+        "transform.cjk_spacing": "CJK 空格",
     ]
 }

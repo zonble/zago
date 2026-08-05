@@ -4,43 +4,46 @@ import Foundation
 public struct EnglishStrings {
     public static let table: [String: String] = [
         // Help Bar Labels
-        "help.get_help":   "Get Help",
-        "help.menu":       "Menu",
-        "help.cancel":     "Cancel",
-        "help.write_out":  "WriteOut",
-        "help.read_file":  "Read File",
-        "help.prev_pg":    "Prev Pg",
-        "help.cut_text":   "Cut Text",
-        "help.cur_pos":    "Cur Pos",
-        "help.exit":       "Exit",
-        "help.justify":    "Justify",
-        "help.where_is":   "Where Is",
-        "help.next_pg":    "Next Pg",
+        "help.get_help": "Get Help",
+        "help.menu": "Menu",
+        "help.cancel": "Cancel",
+        "help.write_out": "WriteOut",
+        "help.read_file": "Read File",
+        "help.prev_pg": "Prev Pg",
+        "help.cut_text": "Cut Text",
+        "help.cur_pos": "Cur Pos",
+        "help.exit": "Exit",
+        "help.canvas_mode": "Canvas",
+        "help.table_mode": "Table",
+        "help.text_mode": "Text",
+        "help.justify": "Justify",
+        "help.where_is": "Where Is",
+        "help.next_pg": "Next Pg",
         "help.uncut_text": "UnCut Text",
-        "help.to_spell":   "To Spell",
-        "help.open_link":  "Open Link",
+        "help.to_spell": "To Spell",
+        "help.open_link": "Open Link",
         "help.table_exit": "Exit Table",
-        "help.next_cell":  "Next Cell",
-        "help.prev_cell":  "Prev Cell",
-        "help.cell_width": "Width -/+",
-        "help.cell_height": "Height -/+",
+        "help.next_cell": "Next Cell",
+        "help.prev_cell": "Prev Cell",
+        "help.cell_width": "Cell Width -/+",
+        "help.cell_height": "Cell Height -/+",
         "help.center_text": "Center",
         "help.clear_cell": "Clear Cell",
         "help.select_text": "Select",
-        "help.complete":   "Complete",
-        "help.confirm":    "Confirm",
-        "help.yes":        "Yes",
-        "help.no":         "No",
-        "help.clear":      "Clear",
-        "help.move":       "Move",
-        "help.jump":       "Jump",
-        "help.command":    "Command",
+        "help.complete": "Complete",
+        "help.confirm": "Confirm",
+        "help.yes": "Yes",
+        "help.no": "No",
+        "help.clear": "Clear",
+        "help.move": "Move",
+        "help.jump": "Jump",
+        "help.command": "Command",
         "help.mark_block": "Mark Block",
-        "help.cut_block":  "Cut Block",
+        "help.cut_block": "Cut Block",
         "help.copy_block": "Copy Block",
         "help.uncut_block": "UnCut Block",
-        "help.line":       "Line",
-        "help.arrow":      "Arrow",
+        "help.line": "Line",
+        "help.arrow": "Arrow",
         "chrome.end_of_file": "End of File",
 
         // Prompts
@@ -61,142 +64,142 @@ public struct EnglishStrings {
         "logoview.reference_title": "  zago - Editor LOGO Reference",
         "logoview.workspace_title": "  zago - Editor LOGO Workspace",
         "logoref.content": """
-  Editor LOGO Reference
-  ================================================================
+          Editor LOGO Reference
+          ================================================================
 
-  Editor LOGO is an editor macro language. Commands edit the current
-  text buffer, cursor, selection, tables, status bar, and buffers.
+          Editor LOGO is an editor macro language. Commands edit the current
+          text buffer, cursor, selection, tables, status bar, and buffers.
 
-  Essential editing
-    TYPE text                    Insert text or expression result
-    SHOW expr                    Show a status message
-    MAKE "name value             Define a variable
-    :name                        Read a variable
-    MOVE UP|DOWN|LEFT|RIGHT      Move the cursor
-    GOTO row [col]               Jump to 1-based row/column
-    FIND "query                  Search text
+          Essential editing
+            TYPE text                    Insert text or expression result
+            SHOW expr                    Show a status message
+            MAKE "name value             Define a variable
+            :name                        Read a variable
+            MOVE UP|DOWN|LEFT|RIGHT      Move the cursor
+            GOTO row [col]               Jump to 1-based row/column
+            FIND "query                  Search text
 
-  Shapes and tables
-    BOX [text|width height]      Insert a framed box; no args frames canvas mark
-    DRAWBOX [text|width height]  Draw overlay frame; no args frames canvas mark
-    LINE [len] [style] [arrow]   Draw/connect a horizontal line
-    VLINE [height] [style]       Draw/connect a vertical line
-    FILL text                    Fill selected region, table cell, or box interior
-    TABLE [rows cols width]      Insert a table
-    TABLE BORDER style           Set default border style
-    TABLE NEXTSTYLE              Cycle border style
-    Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
-            LINE clamps to 1...200 and VLINE clamps to 1...100.
+          Shapes and tables
+            BOX [text|width height]      Insert a framed box; no args frames canvas mark
+            DRAWBOX [text|width height]  Draw overlay frame; no args frames canvas mark
+            LINE [len] [style] [arrow]   Draw/connect a horizontal line
+            VLINE [height] [style]       Draw/connect a vertical line
+            FILL text                    Fill selected region, table cell, or box interior
+            TABLE [rows cols width]      Insert a table
+            TABLE BORDER style           Set default border style
+            TABLE NEXTSTYLE              Cycle border style
+            Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
+                    LINE clamps to 1...200 and VLINE clamps to 1...100.
 
-  Border styles
-    single, double, round, double-round, ascii, markdown
+          Border styles
+            single, double, round, double-round, ascii, markdown
 
-  Turtle-like drawing
-    PD / PU                      Pen down/up
-    FD expr / BK expr            Move forward/back
-    RT / LT                      Turn right/left
-    SETHEADING direction         Set heading (UP, RIGHT, DOWN, LEFT); bare or quoted
-    HEADING                      Return current heading
-    Turtle stops at the top/left minimum edges; outward moves from
-    those edges draw nothing. Down/right moves may extend the buffer.
+          Turtle-like drawing
+            PD / PU                      Pen down/up
+            FD expr / BK expr            Move forward/back
+            RT / LT                      Turn right/left
+            SETHEADING direction         Set heading (UP, RIGHT, DOWN, LEFT); bare or quoted
+            HEADING                      Return current heading
+            Turtle stops at the top/left minimum edges; outward moves from
+            those edges draw nothing. Down/right moves may extend the buffer.
 
-  Control flow and procedures
-    REPEAT n [ commands ]        Repeat block; # and repcount are 1-based
-    IF test [ commands ]         Conditional execution
-    IFELSE test [ yes ] [ no ]   Conditional branch
-    FOREACH list [ commands ]    Iterate with ? as current item
-    TO name :arg ... END         Define a user procedure
-    OUTPUT value                 Return from a reporter procedure
-    STOP                         Return from a procedure
+          Control flow and procedures
+            REPEAT n [ commands ]        Repeat block; # and repcount are 1-based
+            IF test [ commands ]         Conditional execution
+            IFELSE test [ yes ] [ no ]   Conditional branch
+            FOREACH list [ commands ]    Iterate with ? as current item
+            TO name :arg ... END         Define a user procedure
+            OUTPUT value                 Return from a reporter procedure
+            STOP                         Return from a procedure
 
-  Useful predicates
-    PROCEDURE? name              Built-in or user-defined procedure exists
-    PRIMITIVE? name              Built-in primitive exists
-    DEFINED? name                User-defined procedure exists
-    NAME? name                   Variable exists
-    WORD? LIST? ARRAY? NUMBER? EMPTY?
+          Useful predicates
+            PROCEDURE? name              Built-in or user-defined procedure exists
+            PRIMITIVE? name              Built-in primitive exists
+            DEFINED? name                User-defined procedure exists
+            NAME? name                   Variable exists
+            WORD? LIST? ARRAY? NUMBER? EMPTY?
 
-  Data operations
-    WORD a b ...                Join values into one word/string
-    LIST a b ...                Build a list, preserving each item
-    SENTENCE a b                Merge words/lists into one flat list
-    FIRST / LAST data           First or last item from word/list
-    BUTFIRST / BUTLAST data     Remove first or last item
-    ITEM n data                 1-based item from word/list/array
-    PICK data                   Random item from list or array
-    REMOVE item list            Return list without matching items
-    REMDUP list                 Return list with duplicates removed
-    SPLIT text delimiter        Split text into a LOGO list
-    SORT data [template]        Sort word/list/array, optionally custom
-    ARRAY n / MDARRAY dims      Create fixed-size arrays
-    SETITEM n array value       Mutate 1-based array item
-    MDSETITEM indexes array val Mutate multidimensional array item
-    ARRAYTOLIST / LISTTOARRAY   Convert between array and list values
+          Data operations
+            WORD a b ...                Join values into one word/string
+            LIST a b ...                Build a list, preserving each item
+            SENTENCE a b                Merge words/lists into one flat list
+            FIRST / LAST data           First or last item from word/list
+            BUTFIRST / BUTLAST data     Remove first or last item
+            ITEM n data                 1-based item from word/list/array
+            PICK data                   Random item from list or array
+            REMOVE item list            Return list without matching items
+            REMDUP list                 Return list with duplicates removed
+            SPLIT text delimiter        Split text into a LOGO list
+            SORT data [template]        Sort word/list/array, optionally custom
+            ARRAY n / MDARRAY dims      Create fixed-size arrays
+            SETITEM n array value       Mutate 1-based array item
+            MDSETITEM indexes array val Mutate multidimensional array item
+            ARRAYTOLIST / LISTTOARRAY   Convert between array and list values
 
-  Text transforms
-    TRANSLIT transform text      Apply ICU or zago text transform
-    TRANSFORM transform text     Alias of TRANSLIT
-    TOHANS text                  Traditional Chinese to Simplified Chinese
-    TOHANT text                  Simplified Chinese to Traditional Chinese
-    TOLATIN text                 Romanize text
-    TOHIRAGANA text              Convert text to Hiragana
-    TOKATAKANA text              Convert text to Katakana
-    TOROMAJI text                Romanize Japanese text
-    SPACING.CJK text             Normalize CJK/ASCII word spacing
-    Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
-                    TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
-                    TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+          Text transforms
+            TRANSLIT transform text      Apply ICU or zago text transform
+            TRANSFORM transform text     Alias of TRANSLIT
+            TOHANS text                  Traditional Chinese to Simplified Chinese
+            TOHANT text                  Simplified Chinese to Traditional Chinese
+            TOLATIN text                 Romanize text
+            TOHIRAGANA text              Convert text to Hiragana
+            TOKATAKANA text              Convert text to Katakana
+            TOROMAJI text                Romanize Japanese text
+            SPACING.CJK text             Normalize CJK/ASCII word spacing
+            Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
+                            TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
+                            TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
 
-  Text counts
-    CHARCOUNT text               Count Unicode grapheme characters
-    CHARCOUNT.CJK text           Count CJK scripts and CJK punctuation
-    CHARCOUNT.WORDS text         Count alphanumeric word runs
-    CHARCOUNT.EMOJI text         Count emoji grapheme clusters
-    CHARCOUNT.LINES text         Count logical newline-separated lines
-    ASCII / ORD char             Unicode scalar code of first character
-    CHAR / CHR code              Character from Unicode scalar code
+          Text counts
+            CHARCOUNT text               Count Unicode grapheme characters
+            CHARCOUNT.CJK text           Count CJK scripts and CJK punctuation
+            CHARCOUNT.WORDS text         Count alphanumeric word runs
+            CHARCOUNT.EMOJI text         Count emoji grapheme clusters
+            CHARCOUNT.LINES text         Count logical newline-separated lines
+            ASCII / ORD char             Unicode scalar code of first character
+            CHAR / CHR code              Character from Unicode scalar code
 
-  Math and logic
-    SUM a b ...                 Add numbers
-    DIFFERENCE a b / MINUS a    Subtract, or negate one number
-    PRODUCT a b ...             Multiply numbers
-    QUOTIENT a b                Divide a by b
-    POWER a b                   a raised to b
-    REMAINDER a b               Integer remainder
-    MODULO a b                  Mathematical modulo
-    ABS / INT / ROUND n         Absolute value, truncate, round
-    SQRT / EXP n                Square root, e raised to n
-    LN / LOG10 n                Natural log or base-10 log
-    SIN / COS / TAN degrees     Trig functions using degrees
-    ARCTAN y [x]                Angle in degrees
-    RADSIN / RADCOS / RADTAN r  Trig functions using radians
-    RADARCTAN y [x]             Angle in radians
-    RANGE / ISEQ start end [step]
-                                Inclusive integer sequence list
-    RSEQ start end count         Real-number sequence list
-    LESS? / GREATER? a b        Numeric comparison
-    LESSEQUAL? / GREATEREQUAL?  Numeric <= or >= comparison
-    EQUAL? / NOTEQUAL? a b      Equality comparison
-    TRUE / FALSE                Boolean constants
-    AND / OR / XOR a b ...      Boolean combination
-    NOT value                   Boolean negation
+          Math and logic
+            SUM a b ...                 Add numbers
+            DIFFERENCE a b / MINUS a    Subtract, or negate one number
+            PRODUCT a b ...             Multiply numbers
+            QUOTIENT a b                Divide a by b
+            POWER a b                   a raised to b
+            REMAINDER a b               Integer remainder
+            MODULO a b                  Mathematical modulo
+            ABS / INT / ROUND n         Absolute value, truncate, round
+            SQRT / EXP n                Square root, e raised to n
+            LN / LOG10 n                Natural log or base-10 log
+            SIN / COS / TAN degrees     Trig functions using degrees
+            ARCTAN y [x]                Angle in degrees
+            RADSIN / RADCOS / RADTAN r  Trig functions using radians
+            RADARCTAN y [x]             Angle in radians
+            RANGE / ISEQ start end [step]
+                                        Inclusive integer sequence list
+            RSEQ start end count         Real-number sequence list
+            LESS? / GREATER? a b        Numeric comparison
+            LESSEQUAL? / GREATEREQUAL?  Numeric <= or >= comparison
+            EQUAL? / NOTEQUAL? a b      Equality comparison
+            TRUE / FALSE                Boolean constants
+            AND / OR / XOR a b ...      Boolean combination
+            NOT value                   Boolean negation
 
-  Buffers and files
-    BUFFERS                     List open buffer names
-    BUFFER                      Current 1-based buffer index
-    CLEARBUFFER                 Empty active buffer and reset cursor
-    GETLINE [row]               Read logical line; default current row
-    SETLINE [row] text          Replace logical line; default current row
-    BUFFERTEXT                  Full active buffer text joined by newlines
-    ROW / COL                   Current 1-based logical row and column
-    LINECOUNT                   Number of logical lines in active buffer
-    FILENAME                    Active buffer filename or display name
-    MODIFIED?                   1 if buffer has unsaved changes, else 0
-    Note: GETLINE, SETLINE, ROW, and LINECOUNT use logical buffer lines,
-          not soft-wrapped visual lines.
+          Buffers and files
+            BUFFERS                     List open buffer names
+            BUFFER                      Current 1-based buffer index
+            CLEARBUFFER                 Empty active buffer and reset cursor
+            GETLINE [row]               Read logical line; default current row
+            SETLINE [row] text          Replace logical line; default current row
+            BUFFERTEXT                  Full active buffer text joined by newlines
+            ROW / COL                   Current 1-based logical row and column
+            LINECOUNT                   Number of logical lines in active buffer
+            FILENAME                    Active buffer filename or display name
+            MODIFIED?                   1 if buffer has unsaved changes, else 0
+            Note: GETLINE, SETLINE, ROW, and LINECOUNT use logical buffer lines,
+                  not soft-wrapped visual lines.
 
-  All primitive aliases
-""",
+          All primitive aliases
+        """,
         "logoworkspace.heading": "  Editor LOGO Workspace",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  Variables:",
@@ -252,8 +255,8 @@ public struct EnglishStrings {
         "status.unknown_table_border": "[ Unknown table border: %@ ]",
         "status.disabled_in_table_mode": "[ %@ disabled in Table Mode ]",
         "status.table_mode_exited": "[ Table Mode Exited ]",
-        "status.table_mode_hint": "(F8 / M+T to exit | Tab to navigate)",
-        "status.canvas_mode_hint": "(F7 / M+V to exit)",
+        "status.table_mode_hint": "(F7 / M+T to exit | Tab to navigate)",
+        "status.canvas_mode_hint": "(F8 / M+V to exit)",
         "status.canvas_row_limit_exceeded": "[ Canvas row limit exceeded ]",
         "status.canvas_column_limit_exceeded": "[ Canvas column limit exceeded ]",
         "mode.canvas": "CANVAS",
@@ -313,7 +316,7 @@ public struct EnglishStrings {
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
 
         "helpview.sec_canvas": "  CANVAS MODE:",
-        "helpview.canvas_1": "    F7 / M+V           Toggle Canvas Mode for fixed-position editing",
+        "helpview.canvas_1": "    F8 / M+V           Toggle Canvas Mode for fixed-position editing",
         "helpview.canvas_2": "    Shift+Arrow        Draw box lines and move the canvas cursor",
         "helpview.canvas_3": "    Ctrl+Shift+Arrow   Draw arrow lines with an arrowhead at the endpoint",
         "helpview.canvas_4": "    ^^ / M+B           Set / unset rectangular canvas block mark",
@@ -473,6 +476,6 @@ public struct EnglishStrings {
         "transform.hiragana": "Hiragana",
         "transform.katakana": "Katakana",
         "transform.romaji": "Romaji",
-        "transform.cjk_spacing": "CJK Spacing"
+        "transform.cjk_spacing": "CJK Spacing",
     ]
 }

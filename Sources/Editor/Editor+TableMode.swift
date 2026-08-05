@@ -30,7 +30,7 @@ extension Editor {
         }
 
         switch key {
-        case .alt("t"), .alt("T"), .f8:
+        case .alt("t"), .alt("T"), .f7:
             clearActiveMark()
             toggleTableMode()
             return true
@@ -111,7 +111,6 @@ extension Editor {
                 in: buffer.lines[buffer.lineIndex], targetVisualCol: vCol)
             clampTableModeCursor()
             return true
-
 
         case .arrowLeft:
             clearActiveMark()

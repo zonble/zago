@@ -8,7 +8,7 @@ public enum L10n {
     /// Translation tables mapped per language.
     private static let tables: [Language: [String: String]] = [
         .en: EnglishStrings.table,
-        .zh_TW: TraditionalChineseStrings.table
+        .zh_TW: TraditionalChineseStrings.table,
     ]
 
     /// Subscript lookup for localized string key.
@@ -24,6 +24,9 @@ public enum L10n {
     public static var helpGetHelp: String { self["help.get_help"] }
     public static var helpMenu: String { self["help.menu"] }
     public static var helpCancel: String { self["help.cancel"] }
+    public static var helpCanvasMode: String { self["help.canvas_mode"] }
+    public static var helpTableMode: String { self["help.table_mode"] }
+    public static var helpTextMode: String { self["help.text_mode"] }
     public static var helpWriteOut: String { self["help.write_out"] }
     public static var helpReadFile: String { self["help.read_file"] }
     public static var helpPrevPg: String { self["help.prev_pg"] }
@@ -63,7 +66,9 @@ public enum L10n {
         visualCol: Int,
         totalVisualCol: Int
     ) -> String {
-        String(format: self["msg.cursor_info"], currentLine, totalLines, percent, currentCol, totalCol, visualCol, totalVisualCol)
+        String(
+            format: self["msg.cursor_info"], currentLine, totalLines, percent, currentCol, totalCol, visualCol,
+            totalVisualCol)
     }
 
     public static func foundQueryAtLine(query: String, line: Int) -> String {

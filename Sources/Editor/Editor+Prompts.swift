@@ -339,7 +339,6 @@ extension Editor {
             showCommandBarCompletions(matches, label: command.uppercased())
         }
 
-
         _ = suffix
         return true
     }
@@ -387,7 +386,6 @@ extension Editor {
         }
         return true
     }
-
 
     /// Common handler for text input prompts.
     private func processTextInputPromptKey(
