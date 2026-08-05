@@ -19,4 +19,5 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Spell Checker Architecture & Plan](spell_checker.md): multi-language design, platform engines (Windows COM API, Hunspell, macOS NSSpellChecker), Markdown context filtering, and `.zagorc` language directives.
 - [File Encoding & Auto-Detection Architecture](encoding.md): multi-encoding auto-detection, buffer encoding state preservation, and UTF-8 fallback workflow.
 - [Git Integration & Diff Gutter Specification](git_integration.md): non-Git-client design, title bar `[branch]` status, real-time diff against `HEAD`, and line number gutter colors (`+`, `~`, `-`).
+- [Buffer Rendering Performance Improvement Plan](rendering_performance_plan.md): analysis of current rendering bottlenecks and step-by-step optimization plan (Git Diff decoupling, Syntax Caching, Double Buffering, Virtual Line Caching).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
