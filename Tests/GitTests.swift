@@ -56,22 +56,22 @@ import Testing
     #expect(info.lineStatuses[1] == .unmodified)
 }
 
-// @Test func testRealRepositoryDetectionWithRelativePaths() {
-//     let gitService = GitService.shared
+@Test func testRealRepositoryDetectionWithRelativePaths() {
+    let gitService = GitService()
 
-//     let infoRelative = gitService.detectRepository(for: "README.md")
-//     #expect(infoRelative != nil)
-//     #expect(infoRelative?.branchName == "dev")
-//     #expect(infoRelative?.relativeFilePath == "README.md")
+    let infoRelative = gitService.detectRepository(for: "README.md")
+    #expect(infoRelative != nil)
+    #expect(infoRelative?.branchName != nil)
+    #expect(infoRelative?.relativeFilePath == "README.md")
 
-//     let infoSubdir = gitService.detectRepository(for: "Sources/Editor/Editor.swift")
-//     #expect(infoSubdir != nil)
-//     #expect(infoSubdir?.branchName == "dev")
-//     #expect(infoSubdir?.relativeFilePath == "Sources/Editor/Editor.swift")
+    let infoSubdir = gitService.detectRepository(for: "Sources/Editor/Editor.swift")
+    #expect(infoSubdir != nil)
+    #expect(infoSubdir?.branchName != nil)
+    #expect(infoSubdir?.relativeFilePath == "Sources/Editor/Editor.swift")
 
-//     let diffInfo = gitService.computeDiffSync(filePath: "README.md", currentLines: ["# zago"])
-//     #expect(diffInfo.branchName == "dev")
-// }
+    let diffInfo = gitService.computeDiffSync(filePath: "README.md", currentLines: ["# zago"])
+    #expect(diffInfo.branchName != nil)
+}
 
 @Test func testTitleBarBranchDisplay() {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/test/file.txt": "Hello World"])

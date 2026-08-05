@@ -58,8 +58,8 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         let relativePath: String
         if let absFilePath = absFilePath, absFilePath.hasPrefix(repoRoot) {
             var rel = String(absFilePath.dropFirst(repoRoot.count))
-            if rel.hasPrefix("/") { rel.removeFirst() }
-            relativePath = rel
+            while rel.hasPrefix("/") || rel.hasPrefix("\\") { rel.removeFirst() }
+            relativePath = rel.replacingOccurrences(of: "\\", with: "/")
         } else {
             relativePath = absFilePath.map { ($0 as NSString).lastPathComponent } ?? ""
         }
@@ -149,6 +149,7 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
             let indexCode = line.prefix(1)
             let workCode = line.dropFirst().prefix(1)
             let path = String(line.dropFirst(3)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            let normalizedPath = path.replacingOccurrences(of: "\\", with: "/")
 
             let badge: String
             if indexCode == "?" || workCode == "?" {
@@ -164,7 +165,7 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
             } else {
                 badge = "[M]"
             }
-            statusMap[path] = badge
+            statusMap[normalizedPath] = badge
         }
         return statusMap
     }
@@ -181,7 +182,7 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
 
     private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
         #if os(Windows)
-        let gitNames = ["git.exe", "git"]
+        let gitNames = ["git.exe", "git", "git.cmd"]
         let pathSeparator = ";"
         #else
         let gitNames = ["git"]
@@ -190,16 +191,28 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
 
         let envPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
         var searchDirs = envPath.components(separatedBy: pathSeparator)
-        #if !os(Windows)
+        #if os(Windows)
+        searchDirs.append(contentsOf: [
+            "C:\\Program Files\\Git\\cmd",
+            "C:\\Program Files\\Git\\bin",
+            "C:\\Program Files (x86)\\Git\\cmd"
+        ])
+        #else
         searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
         #endif
 
         for dir in searchDirs where !dir.isEmpty {
             for name in gitNames {
                 let candidate = (dir as NSString).appendingPathComponent(name)
+                #if os(Windows)
+                if FileManager.default.fileExists(atPath: candidate) {
+                    return (URL(fileURLWithPath: candidate), [])
+                }
+                #else
                 if FileManager.default.isExecutableFile(atPath: candidate) {
                     return (URL(fileURLWithPath: candidate), [])
                 }
+                #endif
             }
         }
 
@@ -218,13 +231,18 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         process.arguments = prefixArgs + args
         process.currentDirectoryURL = URL(fileURLWithPath: cwd)
         process.standardOutput = pipe
-        process.standardError = Pipe()
+        process.standardError = FileHandle.nullDevice
+
+        var env = ProcessInfo.processInfo.environment
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        env["GIT_OPTIONAL_LOCKS"] = "0"
+        process.environment = env
 
         do {
             try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
             process.waitUntilExit()
             guard process.terminationStatus == 0 else { return nil }
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
             return String(data: data, encoding: .utf8)
         } catch {
             return nil
