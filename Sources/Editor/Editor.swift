@@ -383,6 +383,15 @@ public final class Editor: @unchecked Sendable {
 
     /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
+        if let path = filePath, !path.isEmpty {
+            let normalized = fileIOStrategy.normalizePath(path, isDirectory: false)
+            let info = fileIOStrategy.fileInfo(at: normalized)
+            if info.exists && !info.isDirectory && info.isBinary {
+                let name = (path as NSString).lastPathComponent
+                setStatusMessage("Cannot open binary file '\(name)'")
+                return
+            }
+        }
         saveCurrentViewSettingsToBuffer()
         let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy)
         newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode

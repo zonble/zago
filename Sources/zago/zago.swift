@@ -136,6 +136,18 @@ struct Zago: ParsableCommand {
         interactiveOptions.showRuler = ruler
         interactiveOptions.enableSyntax = enableSyntax
 
+        for file in files {
+            let normalized = fileIOStrategy.normalizePath(file, isDirectory: false)
+            let info = fileIOStrategy.fileInfo(at: normalized)
+            if info.exists && !info.isDirectory && info.isBinary {
+                let name = (file as NSString).lastPathComponent
+                if let data = "Error: '\(name)' is a binary file and cannot be opened.\n".data(using: .utf8) {
+                    FileHandle.standardError.write(data)
+                }
+                throw ExitCode.failure
+            }
+        }
+
         let editor = Editor(
             options: interactiveOptions,
             configSource: configSource,
