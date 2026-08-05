@@ -679,17 +679,17 @@ struct ConfigAndToolsTests {
     #expect(editor.buffer.lines.first == "Modified externally")
 }
 
-
-
 @Test func testNanoRCParser() throws {
-    let tmpNanoRC = FileManager.default.temporaryDirectory.appendingPathComponent("test.nanorc").path
+    let rawPath = FileManager.default.temporaryDirectory
+        .appendingPathComponent("test_\(UUID().uuidString).nanorc").path
+    let tmpNanoRC = TestLocalEditorFileIOStrategy().normalizePath(rawPath, isDirectory: false)
     let content = """
         # Sample nanorc file
         syntax "customlang" "\\.custom$"
         color cyan "\\b(foo|bar)\\b"
         color green "\"([^\"]*)\""
         """
-    try content.write(toFile: tmpNanoRC, atomically: true, encoding: .utf8)
+    try content.write(to: URL(fileURLWithPath: tmpNanoRC), atomically: true, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpNanoRC) }
 
     let highlighter = SyntaxHighlighter()
