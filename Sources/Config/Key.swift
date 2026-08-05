@@ -5,6 +5,7 @@ public enum Key: Equatable, Hashable, Sendable {
     case char(Character)
     case ctrl(Character)
     case alt(Character)
+    case ctrlShift(Character)
     case arrowUp
     case arrowDown
     case arrowLeft

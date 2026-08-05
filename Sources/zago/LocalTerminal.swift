@@ -398,6 +398,8 @@ public final class LocalTerminal: EditorTerminal {
                         case "1;6C", "6C": return .ctrlShiftArrowRight
                         case "1;6A", "6A": return .ctrlShiftArrowUp
                         case "1;6B", "6B": return .ctrlShiftArrowDown
+                        case "1;6f", "1;6F", "102;6u", "70;6u": return .ctrlShift("f")
+                        case "1;6b", "98;6u", "66;6u": return .ctrlShift("b")
                         case "1;5D", "5D": return .ctrl("B")
                         case "1;5C", "5C": return .ctrl("F")
                         default: return .unknown
@@ -538,6 +540,8 @@ public final class LocalTerminal: EditorTerminal {
                         case "1;6C", "6C": return .ctrlShiftArrowRight
                         case "1;6A", "6A": return .ctrlShiftArrowUp
                         case "1;6B", "6B": return .ctrlShiftArrowDown
+                        case "1;6f", "1;6F", "102;6u", "70;6u": return .ctrlShift("f")
+                        case "1;6b", "98;6u", "66;6u": return .ctrlShift("b")
                         case "1;5D", "5D": return .ctrl("B")
                         case "1;5C", "5C": return .ctrl("F")
                         default: return .unknown

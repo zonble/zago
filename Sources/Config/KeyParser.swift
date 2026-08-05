@@ -15,6 +15,14 @@ public enum KeyParser {
             break
         }
 
+        if normalized.hasPrefix("ctrl-shift-") || normalized.hasPrefix("c-s-") {
+            let prefixLen = normalized.hasPrefix("ctrl-shift-") ? 11 : 4
+            let charStr = String(normalized.dropFirst(prefixLen))
+            if let first = charStr.first {
+                return .ctrlShift(first)
+            }
+        }
+
         if normalized.hasPrefix("ctrl-") || normalized.hasPrefix("^") {
             let charStr =
                 normalized.hasPrefix("ctrl-") ? String(normalized.dropFirst(5)) : String(normalized.dropFirst(1))

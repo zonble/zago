@@ -222,7 +222,7 @@ public struct MoveWordForwardCommand: Command {
     public let id: CommandID = .moveWordForward
     public let name = "Forward Word"
     public let description = "Move forward one word"
-    public let keys: [Key] = [.alt("f"), .alt("F")]
+    public let keys: [Key] = [.ctrlShift("f"), .ctrlShift("F")]
 
     public init() {}
 
@@ -238,7 +238,7 @@ public struct MoveWordBackwardCommand: Command {
     public let id: CommandID = .moveWordBackward
     public let name = "Backward Word"
     public let description = "Move backward one word"
-    public let keys: [Key] = [.alt("b"), .alt("B")]
+    public let keys: [Key] = [.ctrlShift("b"), .ctrlShift("B")]
 
     public init() {}
 

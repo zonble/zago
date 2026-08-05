@@ -263,3 +263,21 @@ import Testing
     buffer.moveWordBackward()
     #expect(buffer.columnIndex == 3) // before 世
 }
+
+@Test func testCtrlShiftWordNavigationKeyDispatch() {
+    let editor = Editor()
+    editor.buffer.lines = ["hello world zago"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    // Ctrl+Shift+F moves forward 1 word
+    _ = editor.commandRegistry.dispatch(key: .ctrlShift("f"), editor: editor)
+    #expect(editor.buffer.columnIndex == 5)
+
+    _ = editor.commandRegistry.dispatch(key: .ctrlShift("f"), editor: editor)
+    #expect(editor.buffer.columnIndex == 11)
+
+    // Ctrl+Shift+B moves backward 1 word
+    _ = editor.commandRegistry.dispatch(key: .ctrlShift("b"), editor: editor)
+    #expect(editor.buffer.columnIndex == 6)
+}

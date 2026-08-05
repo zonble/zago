@@ -213,10 +213,10 @@ extension Editor {
         case .arrowRight, .ctrl("F"):
             promptCursorIndex = min(promptInputText.count, promptCursorIndex + 1)
             return true
-        case .alt("b"), .alt("B"):
+        case .ctrlShift("b"), .ctrlShift("B"):
             movePromptWordBackward()
             return true
-        case .alt("f"), .alt("F"):
+        case .ctrlShift("f"), .ctrlShift("F"):
             movePromptWordForward()
             return true
         case .ctrl("A"), .home:
