@@ -17,10 +17,52 @@ public final class Renderer {
         }
     }
 
-    public init() {}
+    private var lastRenderedLines: [String] = []
+    private var lastRows: Int = 0
+    private var lastCols: Int = 0
 
-    /// Renders the complete screen output ANSI string for given terminal rows and cols dimensions.
+    /// Invalidates the screen line buffer cache, forcing a full redraw on the next render pass.
+    public func invalidateScreenCache() {
+        lastRenderedLines.removeAll()
+    }
+
+    /// Renders the complete static screen output ANSI string for given terminal rows and cols dimensions (used for unit tests and full redraws).
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
+        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, rows: rows, cols: cols)
+        return "\u{1B}[?7l\u{1B}[H" + screenLines.joined(separator: "\r\n") + cursorPosStr
+    }
+
+    /// Renders screen using Double Buffering / Screen Line Diffing for interactive terminal sessions.
+    public func renderDiff(editor: Editor, rows: Int, cols: Int) -> String {
+        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, rows: rows, cols: cols)
+        let isDiffable = (rows == lastRows && cols == lastCols && lastRenderedLines.count == screenLines.count)
+
+        var output = ""
+        if !isDiffable {
+            output += "\u{1B}[?7l\u{1B}[H"
+            for i in 0..<screenLines.count {
+                output += screenLines[i] + "\u{1B}[K"
+                if i < screenLines.count - 1 {
+                    output += "\r\n"
+                }
+            }
+            output += cursorPosStr
+        } else {
+            for i in 0..<screenLines.count {
+                if screenLines[i] != lastRenderedLines[i] {
+                    output += "\u{1B}[?7l\u{1B}[\(i + 1);1H" + screenLines[i] + "\u{1B}[K"
+                }
+            }
+            output += cursorPosStr
+        }
+
+        lastRenderedLines = screenLines
+        lastRows = rows
+        lastCols = cols
+        return output
+    }
+
+    private func renderScreenLines(editor: Editor, rows: Int, cols: Int) -> (screenLines: [String], cursorPosStr: String) {
         editor.updateGitDiffIfNeeded()
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
@@ -105,18 +147,19 @@ public final class Renderer {
             displayedVirtualLineStartIndex = virtualLineStartIndex
         }
 
-        var output = ""
-        output += "\u{1B}[?7l\u{1B}[H"  // Disable terminal auto-wrap (DECAWM Reset) & Reset cursor to (1, 1)
+        var screenLines: [String] = []
 
         // 1. Title Bar or Top Menu Bar Component
-        output += renderTitleOrMenuBar(editor: editor, cols: cols)
+        let titleLineStr = renderTitleOrMenuBar(editor: editor, cols: cols)
+        let titleLines = titleLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+        screenLines.append(contentsOf: titleLines)
 
         let (dropdownStartCol, dropdownBoxWidth, dropdownBoxLines) = generateDropdownOverlayLines(
             editor: editor, cols: cols)
 
         // 2. WordStar Ruler Bar Component (Optional)
         if showRuler {
-            output += renderRulerBar(
+            let rulerLineStr = renderRulerBar(
                 editor: editor,
                 textWidth: textWidth,
                 gutterWidth: gutterWidth,
@@ -125,10 +168,12 @@ public final class Renderer {
                 dropdownBoxWidth: dropdownBoxWidth,
                 dropdownBoxLines: dropdownBoxLines
             )
+            let rulerLines = rulerLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: rulerLines)
         }
 
         // 3. Main Text Area Component (with Line Numbers Gutter)
-        output += renderMainTextArea(
+        let mainTextStr = renderMainTextArea(
             editor: editor,
             mainAreaHeight: mainAreaHeight,
             gutterWidth: gutterWidth,
@@ -141,15 +186,22 @@ public final class Renderer {
             dropdownBoxWidth: dropdownBoxWidth,
             dropdownBoxLines: dropdownBoxLines
         )
+        let mainLines = mainTextStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+        screenLines.append(contentsOf: mainLines)
 
         // 4. Status & Prompt Line Component
-        let renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &output)
+        var statusStr = ""
+        let renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &statusStr)
+        let statusLines = statusStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+        screenLines.append(contentsOf: statusLines)
 
         // 5. Dynamic Contextual Help Bar Component
-        output += renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
+        let helpStr = renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
+        let helpLines = helpStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+        screenLines.append(contentsOf: helpLines)
 
         // 6. Terminal Cursor Positioning Component
-        output += positionCursor(
+        let cursorPosStr = positionCursor(
             editor: editor,
             rows: rows,
             cols: cols,
@@ -161,7 +213,7 @@ public final class Renderer {
             renderedPrompt: renderedPrompt
         )
 
-        return output
+        return (screenLines, cursorPosStr)
     }
 
     // MARK: - Main Text Area & Line Numbers Gutter

@@ -381,6 +381,33 @@ struct FormatAndLayoutTests {
     #expect(linesWithRuler.count == 24)
 }
 
+@Test func testInitialFrameRenderDiffDoesNotEndWithTrailingNewlineThatCausesTerminalScroll() throws {
+    let editor = Editor()
+    let rows = 24
+    let cols = 80
+
+    // Initial frame render via renderDiff (full redraw path)
+    let initialOutput = editor.renderer.renderDiff(editor: editor, rows: rows, cols: cols)
+
+    // Must start with disable wrap + move cursor top-left
+    #expect(initialOutput.hasPrefix("\u{1B}[?7l\u{1B}[H"))
+
+    // Separate main content from trailing cursor positioning ansi (e.g. \u{1B}[3;7H)
+    let contentWithoutHeader = String(initialOutput.dropFirst(8))
+    let parts = contentWithoutHeader.components(separatedBy: "\r\n")
+
+    // Must have exactly 24 line components (23 \r\n separators)
+    #expect(parts.count == 24)
+
+    // The first line must contain topbar title "zago"
+    #expect(parts[0].contains("zago"))
+
+    // The 24th line (last row) MUST NOT contain trailing \r\n before cursor positioning
+    let lastRowWithCursor = parts[23]
+    #expect(!lastRowWithCursor.contains("\r\n"))
+    #expect(lastRowWithCursor.contains("\u{1B}[K"))
+}
+
 @Test func testLocalizedHelpBarPromptAndCanvasLabels() throws {
     let previousLanguage = L10n.currentLanguage
     defer { L10n.currentLanguage = previousLanguage }

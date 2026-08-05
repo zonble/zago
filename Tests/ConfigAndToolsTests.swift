@@ -4,7 +4,9 @@ import Testing
 @testable import Config
 @testable import Editor
 
-@Test func testZagoVersionAndTitleBarDisplay() throws {
+@Suite(.serialized)
+struct ConfigAndToolsTests {
+    @Test func testZagoVersionAndTitleBarDisplay() throws {
     #expect(!ZagoVersion.current.isEmpty)
     #expect(ZagoVersion.current == "1.0.5")
 
@@ -883,10 +885,11 @@ import Testing
     #expect(codeTokens.contains(.number))
 }
 
-@Test func testHeadlessLogoScriptExecution() throws {
-    let editor = Editor()
-    editor.runLogoScript("BOX 20 4")
-    let output = editor.buffer.lines.joined(separator: "\n")
-    #expect(output.contains("┌──────────────────┐"))
-    #expect(output.contains("└──────────────────┘"))
+    @Test func testHeadlessLogoScriptExecution() throws {
+        let editor = Editor()
+        editor.runLogoScript("BOX 20 4")
+        let output = editor.buffer.lines.joined(separator: "\n")
+        #expect(output.contains("┌──────────────────┐"))
+        #expect(output.contains("└──────────────────┘"))
+    }
 }

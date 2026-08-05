@@ -2,10 +2,10 @@ import Foundation
 import TextMetrics
 
 extension Editor {
-    /// Refreshes screen rendering directly using centralized Renderer.
+    /// Refreshes screen rendering directly using centralized Renderer with Double Buffering / Screen Line Diffing.
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
-        let output = renderer.render(editor: self, rows: rows, cols: cols)
+        let output = renderer.renderDiff(editor: self, rows: rows, cols: cols)
         terminal.write(output)
         fflush(nil)
     }
