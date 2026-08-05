@@ -148,7 +148,7 @@ public struct MovePgdnCommand: Command {
     public let id: CommandID = .movePgdn
     public let name = "Next Page"
     public let description = "Move forward one page"
-    public let keys: [Key] = [.ctrl("V"), .f8, .pageDown]
+    public let keys: [Key] = [.ctrl("V"), .pageDown]
 
     public init() {}
 
@@ -177,7 +177,7 @@ public struct MovePgupCommand: Command {
     public let id: CommandID = .movePgup
     public let name = "Previous Page"
     public let description = "Move backward one page"
-    public let keys: [Key] = [.ctrl("Y"), .f7, .pageUp]
+    public let keys: [Key] = [.ctrl("Y"), .pageUp]
 
     public init() {}
 

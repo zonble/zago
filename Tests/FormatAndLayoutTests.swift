@@ -701,7 +701,7 @@ struct FormatAndLayoutTests {
     editor.switchToCanvasMode()
     let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(canvasStatus.contains("CANVAS"))
-    #expect(canvasStatus.contains("(M+V to exit)"))
+    #expect(canvasStatus.contains("(F7 / M+V to exit)"))
     #expect(!canvasStatus.contains("[ Canvas Mode ]"))
 
     editor.overlayMode = .none
@@ -712,7 +712,7 @@ struct FormatAndLayoutTests {
     L10n.currentLanguage = .zh_TW
     let localizedStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(localizedStatus.contains("畫布 | 表格"))
-    #expect(localizedStatus.contains("(M+V 退出)"))
+    #expect(localizedStatus.contains("(F7 / M+V 退出)"))
     #expect(!localizedStatus.contains("CANVAS | TABLE"))
 }
 

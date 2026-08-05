@@ -30,7 +30,7 @@ extension Editor {
         }
 
         switch key {
-        case .alt("t"), .alt("T"):
+        case .alt("t"), .alt("T"), .f8:
             clearActiveMark()
             toggleTableMode()
             return true
@@ -94,7 +94,7 @@ extension Editor {
             clampTableModeCursor()
             return true
 
-        case .pageUp, .ctrl("y"), .ctrl("Y"), .f7:
+        case .pageUp, .ctrl("y"), .ctrl("Y"):
             clearActiveMark()
             let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
             buffer.lineIndex = cell.innerMinLine
@@ -103,7 +103,7 @@ extension Editor {
             clampTableModeCursor()
             return true
 
-        case .pageDown, .ctrl("v"), .ctrl("V"), .f8:
+        case .pageDown, .ctrl("v"), .ctrl("V"):
             clearActiveMark()
             let vCol = getVisualColumn(in: buffer.lines[buffer.lineIndex], col: buffer.columnIndex)
             buffer.lineIndex = cell.innerMaxLine
