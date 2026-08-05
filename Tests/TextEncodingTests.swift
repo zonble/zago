@@ -86,3 +86,24 @@ import Testing
     #expect(savedRead.encoding == .utf8)
     #expect(savedRead.content == "繁體中文檔案 🚀 Emoji")
 }
+
+@Test func testUTF16BOMAndOtherEncodingsDetection() throws {
+    // UTF-16 LE with BOM
+    let utf16LEText = "UTF16LE Test"
+    var dataLE = Data([0xFF, 0xFE])
+    dataLE.append(contentsOf: utf16LEText.data(using: .utf16LittleEndian)!)
+    let resultLE = TextEncodingDetector.detectAndDecode(dataLE)
+    #expect(resultLE?.encoding == .utf16LittleEndian)
+    #expect(resultLE?.content == utf16LEText)
+
+    // UTF-16 BE with BOM
+    let utf16BEText = "UTF16BE Test"
+    var dataBE = Data([0xFE, 0xFF])
+    dataBE.append(contentsOf: utf16BEText.data(using: .utf16BigEndian)!)
+    let resultBE = TextEncodingDetector.detectAndDecode(dataBE)
+    #expect(resultBE?.encoding == .utf16BigEndian)
+    #expect(resultBE?.content == utf16BEText)
+
+    // Empty data handling
+    #expect(TextEncodingDetector.detectAndDecode(Data())?.content == "")
+}

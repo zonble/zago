@@ -515,3 +515,108 @@ import TextMetrics
     logoEngine.execute("ITEM 1 {x y z}")
     #expect(logoEngine.lastResult == "x")
 }
+
+@Test func testLogoVariableAndPropertyCommands() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("MAKE \"a 42")
+    logoEngine.execute("THING \"a")
+    #expect(logoEngine.lastResult == "42")
+
+    logoEngine.execute("NAMEP \"a")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("NAMEP \"nonexistent")
+    #expect(logoEngine.lastResult == "false")
+
+    logoEngine.execute("PONS")
+    #expect(logoEngine.lastResult != nil)
+
+    logoEngine.execute("POPS")
+    #expect(logoEngine.lastResult != nil)
+
+    logoEngine.execute("POVAS")
+    #expect(logoEngine.lastResult != nil)
+}
+
+@Test func testLogoDataPrimitivesAndStringFunctions() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("FIRST \"hello")
+    #expect(logoEngine.lastResult == "h")
+
+    logoEngine.execute("BUTFIRST \"hello")
+    #expect(logoEngine.lastResult == "ello")
+
+    logoEngine.execute("LAST \"hello")
+    #expect(logoEngine.lastResult == "o")
+
+    logoEngine.execute("BUTLAST \"hello")
+    #expect(logoEngine.lastResult == "hell")
+
+    logoEngine.execute("WORD \"hello \"world")
+    #expect(logoEngine.lastResult == "helloworld")
+
+    logoEngine.execute("SENTENCE \"hello \"world")
+    #expect(logoEngine.lastResult == "[hello world]")
+
+    logoEngine.execute("LIST \"a \"b")
+    #expect(logoEngine.lastResult == "[a b]")
+
+    logoEngine.execute("COUNT [1 2 3 4 5]")
+    #expect(logoEngine.lastResult == "5")
+
+    logoEngine.execute("EMPTYP []")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("EMPTYP [1]")
+    #expect(logoEngine.lastResult == "false")
+
+    logoEngine.execute("LISTP [1 2]")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("WORDP \"abc")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("NUMBERP 123")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("ARRAYP {1 2 3}")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("ASCII \"A")
+    #expect(logoEngine.lastResult == "65")
+
+    logoEngine.execute("CHAR 65")
+    #expect(logoEngine.lastResult == "A")
+
+    logoEngine.execute("LOWERCASE \"HELLO")
+    #expect(logoEngine.lastResult == "hello")
+
+    logoEngine.execute("UPPERCASE \"hello")
+    #expect(logoEngine.lastResult == "HELLO")
+
+    logoEngine.execute("MEMBERP \"b [a b c]")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("REVERSE [1 2 3]")
+    #expect(logoEngine.lastResult == "[3 2 1]")
+}
+
+@Test func testLogoBufferEditingAndNavigationCommands() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("TYPE \"hello TYPE \"world")
+    #expect(editor.buffer.lines[0] == "helloworld")
+
+    logoEngine.execute("GOTO 1 1")
+    #expect(editor.buffer.lineIndex == 0)
+
+    logoEngine.execute("HOME")
+    #expect(editor.buffer.lineIndex == 0)
+
+    logoEngine.execute("CLEAN")
+}

@@ -145,6 +145,53 @@ import Testing
     #expect(editor.layoutEngine.wrapColumn == 10)
 }
 
+@Test func testConfigLoaderDirectivesAndLogoBlocks() throws {
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_zagorc_directives").path
+    defer { try? FileManager.default.removeItem(atPath: tmpFile) }
+
+    let configContent = """
+    # Sample config file
+    set wrap 80
+    set ruler on
+    set linenumbers off
+    set sublinenumbers on
+    set canvas-mode on
+    set border round
+    set spell-language en
+    set trim-trailing-whitespace on
+    set auto-reload on
+
+    unset wrap
+    unset ruler
+    unset linenumbers
+    unset canvas-mode
+
+    bind Ctrl+A move-home
+    unbind Ctrl+A
+
+    logo-prelude
+    MAKE "globalVar 123
+    endlogo
+
+    logo-script customMacro
+    PRINT "MacroExecuted
+    endlogo
+    """
+
+    try configContent.write(toFile: tmpFile, atomically: true, encoding: .utf8)
+
+    let loader = ConfigLoader()
+    var config = EditorConfig()
+    loader.parseConfigFile(at: tmpFile, into: &config)
+
+    #expect(config.loadedFilePath == tmpFile)
+    #expect(config.defaultBorderStyle == .round)
+    #expect(config.spellLanguage == "en")
+    #expect(config.trimTrailingWhitespaceOnSave == true)
+    #expect(config.autoReload == true)
+    #expect(config.logoPrelude.contains("MAKE \"globalVar 123"))
+}
+
 @Test func testDisplaySettingsAreBufferLocal() throws {
     let editor = Editor()
     editor.buffer.filePath = "first.md"

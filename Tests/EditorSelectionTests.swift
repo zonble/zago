@@ -185,3 +185,66 @@ import Testing
     #expect(editor.canvasBlockMarkEnd?.visualColumn == 3)
     #expect(editor.statusMessage == L10n["status.mark_set"])
 }
+
+@Test func testNavigationAndSelectionCommands() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["hello world zago", "second line text"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    // Test MoveRightCommand & MoveLeftCommand
+    let moveRight = MoveRightCommand()
+    moveRight.execute(on: editor)
+    #expect(editor.buffer.columnIndex == 1)
+
+    let moveLeft = MoveLeftCommand()
+    moveLeft.execute(on: editor)
+    #expect(editor.buffer.columnIndex == 0)
+
+    // Test MoveEndCommand & MoveHomeCommand
+    let moveEnd = MoveEndCommand()
+    moveEnd.execute(on: editor)
+    #expect(editor.buffer.columnIndex == editor.buffer.lines[0].count)
+
+    let moveHome = MoveHomeCommand()
+    moveHome.execute(on: editor)
+    #expect(editor.buffer.columnIndex == 0)
+
+    // Test MovePgdnCommand & MovePgupCommand
+    let movePgdn = MovePgdnCommand()
+    movePgdn.execute(on: editor)
+    let movePgup = MovePgupCommand()
+    movePgup.execute(on: editor)
+
+    // Test ToggleMarkCommand
+    let markCmd = ToggleMarkCommand()
+    markCmd.execute(on: editor)
+
+    // Test CopyTextCommand & CutTextCommand & UncutTextCommand
+    let copyCmd = CopyTextCommand()
+    copyCmd.execute(on: editor)
+
+    let cutCmd = CutTextCommand()
+    cutCmd.execute(on: editor)
+
+    let uncutCmd = UncutTextCommand()
+    uncutCmd.execute(on: editor)
+}
+
+@Test func testUICommandsExecution() throws {
+    let editor = Editor()
+
+    let helpCmd = ShowHelpCommand()
+    helpCmd.execute(on: editor)
+
+    let logoRefCmd = LogoReferenceCommand()
+    logoRefCmd.execute(on: editor)
+
+    let logoWsCmd = LogoWorkspaceCommand()
+    logoWsCmd.execute(on: editor)
+
+    let toggleMenuCmd = ToggleMenuBarCommand()
+    #expect(editor.isMenuBarActive == false)
+    toggleMenuCmd.execute(on: editor)
+    #expect(editor.isMenuBarActive == true)
+}
