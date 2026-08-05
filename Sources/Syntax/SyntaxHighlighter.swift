@@ -89,10 +89,19 @@ public struct LanguageSyntax: Sendable {
 /// Syntax Highlighting Engine managing language rules, regex tokenization, and ANSI color formatting.
 public final class SyntaxHighlighter {
     private var languages: [LanguageSyntax] = []
+    private let cacheLock = NSLock()
+    private var tokenCache: [String: [SyntaxTokenType]] = [:]
 
     public init() {
         setupBuiltInLanguages()
         loadNanoRC()
+    }
+
+    /// Clears the syntax tokenization cache.
+    public func clearCache() {
+        cacheLock.lock()
+        tokenCache.removeAll()
+        cacheLock.unlock()
     }
 
     /// Sets up built-in syntax rules for Swift, Python, C/C++, JSON, Markdown, Shell, LOGO, Diagrams, etc.
@@ -198,6 +207,15 @@ public final class SyntaxHighlighter {
     /// Returns token type map for each character in line based on syntax rules.
     public func tokenTypes(for line: String, syntax: LanguageSyntax) -> [SyntaxTokenType] {
         guard !line.isEmpty else { return [] }
+        let cacheKey = "\(syntax.name):\(line)"
+
+        cacheLock.lock()
+        if let cached = tokenCache[cacheKey] {
+            cacheLock.unlock()
+            return cached
+        }
+        cacheLock.unlock()
+
         var tokenMap = [SyntaxTokenType](repeating: .normal, count: line.count)
         let nsLine = line as NSString
 
@@ -213,6 +231,14 @@ public final class SyntaxHighlighter {
                 }
             }
         }
+
+        cacheLock.lock()
+        if tokenCache.count > 5000 {
+            tokenCache.removeAll()
+        }
+        tokenCache[cacheKey] = tokenMap
+        cacheLock.unlock()
+
         return tokenMap
     }
 

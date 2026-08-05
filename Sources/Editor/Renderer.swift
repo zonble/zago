@@ -21,7 +21,7 @@ public final class Renderer {
 
     /// Renders the complete screen output ANSI string for given terminal rows and cols dimensions.
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
-        editor.updateGitDiff()
+        editor.updateGitDiffIfNeeded()
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer

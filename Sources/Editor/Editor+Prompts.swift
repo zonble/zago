@@ -23,6 +23,12 @@ extension Editor {
 
     /// Processes key input events.
     func processKey(_ key: Key) {
+        defer {
+            if buffer.isModified {
+                markGitDiffDirty()
+            }
+        }
+
         if key == .resize {
             terminal.clearScreen()
             return

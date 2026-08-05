@@ -121,7 +121,19 @@ public final class Editor: @unchecked Sendable {
     /// Git Diff & Repository context for current buffer
     public var gitDiffInfo: GitDiffInfo = .empty
 
+    public var isGitDiffDirty: Bool = true
+
+    public func markGitDiffDirty() {
+        isGitDiffDirty = true
+    }
+
+    public func updateGitDiffIfNeeded() {
+        guard isGitDiffDirty else { return }
+        updateGitDiff()
+    }
+
     public func updateGitDiff() {
+        isGitDiffDirty = false
         guard displayConfig.showGitDiff else {
             gitDiffInfo = .empty
             return
