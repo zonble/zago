@@ -18,4 +18,5 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Homebrew tap](homebrew_tap.md): personal tap layout, Formula template, release checksum workflow, and user install commands.
 - [Spell Checker Architecture & Plan](spell_checker.md): multi-language design, platform engines (Windows COM API, Hunspell, macOS NSSpellChecker), Markdown context filtering, and `.zagorc` language directives.
 - [File Encoding & Auto-Detection Architecture](encoding.md): multi-encoding auto-detection, buffer encoding state preservation, and UTF-8 fallback workflow.
+- [Git Integration & Diff Gutter Specification](git_integration.md): non-Git-client design, title bar `[branch]` status, real-time diff against `HEAD`, and line number gutter colors (`+`, `~`, `-`).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
