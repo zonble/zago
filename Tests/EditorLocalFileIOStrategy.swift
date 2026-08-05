@@ -74,7 +74,11 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
               roundtrip == contents else {
             throw EncodingError.unsupportedCharacters
         }
+        #if os(Windows)
+        try data.write(to: URL(fileURLWithPath: normalized), options: [])
+        #else
         try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+        #endif
     }
 
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {

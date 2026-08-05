@@ -315,21 +315,26 @@ import TextMetrics
 }
 
 @Test func testOpenDocumentLinkCommandDoesNotReopenCurrentFile() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent("zago_same_document_link_\(UUID().uuidString)", isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: directory) }
+    let rawDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("zago_same_document_link_\(UUID().uuidString)", isDirectory: true).path
+    let directoryPath = TestLocalEditorFileIOStrategy().normalizePath(rawDirectory, isDirectory: true)
+    try FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: true)
 
-    let indexPath = directory.appendingPathComponent("index.md").path
-    try "original".write(toFile: indexPath, atomically: true, encoding: .utf8)
+    let indexPath = (directoryPath as NSString).appendingPathComponent("index.md")
+    try "original".write(to: URL(fileURLWithPath: indexPath), atomically: true, encoding: .utf8)
 
     let editor = Editor(filePath: indexPath)
+    defer {
+        editor.stopFileWatcherForCurrentBuffer()
+        try? FileManager.default.removeItem(atPath: directoryPath)
+    }
+
     editor.buffer.lines = ["See [this](./index.md#section)", "unchanged"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 6
     editor.topVLineIndex = 3
 
-    let handled = editor.commandRegistry.dispatch(key: .alt("o"), editor: editor)
+    let handled = editor.commandRegistry.dispatch(key: Key.alt("o"), editor: editor)
 
     #expect(handled == true)
     #expect(editor.buffers.count == 1)
@@ -342,19 +347,20 @@ import TextMetrics
 
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test.txt").path
+    let normalizedPath = TestLocalEditorFileIOStrategy().normalizePath(tmpPath, isDirectory: false)
     defer {
-        try? FileManager.default.removeItem(atPath: tmpPath)
+        try? FileManager.default.removeItem(atPath: normalizedPath)
     }
 
-    let editor = Editor(filePath: tmpPath)
+    let editor = Editor(filePath: normalizedPath)
     editor.buffer.lines = ["saved without prompt"]
     editor.buffer.isModified = true
 
-    let handled = editor.commandRegistry.dispatch(key: .ctrl("S"), editor: editor)
+    let handled = editor.commandRegistry.dispatch(key: Key.ctrl("S"), editor: editor)
 
     #expect(handled == true)
     #expect(editor.buffer.isModified == false)
-    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "saved without prompt")
+    #expect(try String(contentsOf: URL(fileURLWithPath: normalizedPath), encoding: .utf8) == "saved without prompt")
     if case .none = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
@@ -366,19 +372,20 @@ import TextMetrics
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
         "zago_trim_trailing_whitespace_\(UUID().uuidString).txt"
     ).path
+    let normalizedPath = TestLocalEditorFileIOStrategy().normalizePath(tmpPath, isDirectory: false)
     defer {
-        try? FileManager.default.removeItem(atPath: tmpPath)
+        try? FileManager.default.removeItem(atPath: normalizedPath)
     }
 
-    let editor = Editor(filePath: tmpPath)
+    let editor = Editor(filePath: normalizedPath)
     editor.buffer.lines = ["alpha  ", "\tbeta\t", "gamma"]
     editor.buffer.isModified = true
     editor.displayConfig.trimTrailingWhitespaceOnSave = true
 
-    editor.saveBuffer(path: nil)
+    editor.saveBuffer(path: Optional<String>.none)
 
     #expect(editor.buffer.lines == ["alpha", "\tbeta", "gamma"])
-    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "alpha\n\tbeta\ngamma")
+    #expect(try String(contentsOf: URL(fileURLWithPath: normalizedPath), encoding: .utf8) == "alpha\n\tbeta\ngamma")
     #expect(editor.buffer.isModified == false)
 }
 
@@ -386,19 +393,20 @@ import TextMetrics
     let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
         "zago_preserve_trailing_whitespace_\(UUID().uuidString).txt"
     ).path
+    let normalizedPath = TestLocalEditorFileIOStrategy().normalizePath(tmpPath, isDirectory: false)
     defer {
-        try? FileManager.default.removeItem(atPath: tmpPath)
+        try? FileManager.default.removeItem(atPath: normalizedPath)
     }
 
-    let editor = Editor(filePath: tmpPath)
+    let editor = Editor(filePath: normalizedPath)
     editor.buffer.lines = ["alpha  ", "beta\t"]
     editor.buffer.isModified = true
     editor.displayConfig.trimTrailingWhitespaceOnSave = false
 
-    editor.saveBuffer(path: nil)
+    editor.saveBuffer(path: Optional<String>.none)
 
     #expect(editor.buffer.lines == ["alpha  ", "beta\t"])
-    #expect(try String(contentsOfFile: tmpPath, encoding: .utf8) == "alpha  \nbeta\t")
+    #expect(try String(contentsOf: URL(fileURLWithPath: normalizedPath), encoding: .utf8) == "alpha  \nbeta\t")
     #expect(editor.buffer.isModified == false)
 }
 

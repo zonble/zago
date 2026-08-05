@@ -362,6 +362,17 @@ public final class Editor: @unchecked Sendable {
         }
     }
 
+    public func stopFileWatcherForCurrentBuffer() {
+        if let oldPath = currentWatchedPath {
+            fileIOStrategy.stopWatchingFile(at: oldPath)
+            currentWatchedPath = nil
+        }
+    }
+
+    deinit {
+        stopFileWatcherForCurrentBuffer()
+    }
+
     public var isListAutoIndentSupportedBuffer: Bool {
         guard !buffer.isDirectoryBuffer else { return false }
         if let currentSyntax = syntaxHighlighter.getSyntaxForLine(editor: self, bufferLineIndex: buffer.lineIndex) {

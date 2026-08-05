@@ -86,15 +86,15 @@ public final class FileWatcher: @unchecked Sendable {
 
                 queue.async { [weak self] in
                     while let self = self, self.isWatchingWindows, let h = self.changeHandle {
-                        let res = WaitForSingleObject(h, 1000)
+                        let res = WaitForSingleObject(h, 100)
                         if res == WAIT_OBJECT_0 {
-                            if !self.isWatchingWindows { break }
+                            guard self.isWatchingWindows, let currentHandle = self.changeHandle else { break }
                             let currentMTime = self.getModificationDate(for: path)
                             if currentMTime != self.lastModificationDate {
                                 self.lastModificationDate = currentMTime
                                 self.onChange?()
                             }
-                            FindNextChangeNotification(h)
+                            FindNextChangeNotification(currentHandle)
                         }
                     }
                 }
