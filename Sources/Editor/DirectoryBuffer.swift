@@ -46,10 +46,10 @@ public final class DirectoryBuffer: TextBuffer {
         }
 
         var newLines: [String] = []
-        newLines.append("\" Directory: \(expandedPath)\(branchStr)")
-        newLines.append("\" Press Enter on a file to open, or on a folder to navigate")
+        newLines.append(L10n.dirBufHeaderDirectory(expandedPath, branchStr))
+        newLines.append(L10n.dirBufHeaderInstructions)
         newLines.append("")
-        newLines.append(".. (up a dir)")
+        newLines.append(L10n.dirBufUpDir)
 
         if let contents = try? fileIO.listDirectory(at: expandedPath) {
             let sorted = contents.filter { entry in

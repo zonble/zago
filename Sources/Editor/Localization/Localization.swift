@@ -42,6 +42,13 @@ public enum L10n {
     public static var newBuffer: String { self["buffer.new_buffer"] }
     public static var modified: String { self["buffer.modified"] }
 
+    // MARK: - Directory Buffer Helpers
+    public static func dirBufHeaderDirectory(_ path: String, _ branch: String) -> String {
+        String(format: self["dirbuf.header_directory"], "\(path)\(branch)")
+    }
+    public static var dirBufHeaderInstructions: String { self["dirbuf.header_instructions"] }
+    public static var dirBufUpDir: String { self["dirbuf.up_dir"] }
+
     // MARK: - Format String Helpers
     public static func readLines(_ count: Int) -> String {
         String(format: self["msg.read_lines"], count)

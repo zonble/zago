@@ -24,8 +24,8 @@ import Testing
 
         let dirBuffer = buffer as! DirectoryBuffer
         #expect(dirBuffer.lines.count >= 5)
-        #expect(dirBuffer.lines[0].contains("\" Directory:"))
-        #expect(dirBuffer.lines[3] == ".. (up a dir)")
+        #expect(dirBuffer.lines[0].contains(L10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
+        #expect(dirBuffer.lines[3] == L10n.dirBufUpDir)
 
         // Contains subfolder and file
         #expect(dirBuffer.lines.contains("  ▸ subfolder/"))
