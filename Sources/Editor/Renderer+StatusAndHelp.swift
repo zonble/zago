@@ -17,13 +17,13 @@ extension Renderer {
 
             var rawMenuStr = " "
             for (idx, cat) in editor.menuBar.categories.enumerated() {
-                let catTitle = L10n[cat.titleKey]
+                let catTitle = editor.l10n[cat.titleKey]
                 rawMenuStr += menuSegment(title: catTitle, isSelected: idx == editor.menuBar.categoryIndex)
             }
 
             var formattedMenu = "\u{1B}[47;30m "
             for (idx, cat) in editor.menuBar.categories.enumerated() {
-                let catTitle = L10n[cat.titleKey]
+                let catTitle = editor.l10n[cat.titleKey]
                 if idx == editor.menuBar.categoryIndex {
                     formattedMenu += "\u{1B}[1;37;44m\(menuSegment(title: catTitle, isSelected: true))\u{1B}[0;47;30m"
                 } else {
@@ -36,7 +36,7 @@ extension Renderer {
             let bufCountStr =
                 editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
             let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
-            let centerText = editor.buffer.filePath ?? L10n.newBuffer
+            let centerText = editor.buffer.filePath ?? editor.l10n.newBuffer
             let branchTextStr: String
             if editor.displayConfig.showGitDiff, let branch = editor.gitDiffInfo.branchName, !branch.isEmpty {
                 branchTextStr = " [\(branch)]"
@@ -44,7 +44,7 @@ extension Renderer {
                 branchTextStr = ""
             }
 
-            let modifiedBadgeStr = editor.buffer.isModified ? "\(L10n.modified)" : ""
+            let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
             let rightText: String
             if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
                 rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
@@ -136,7 +136,7 @@ extension Renderer {
         } else if let time = editor.statusMessageTime, Date().timeIntervalSince(time) < 5.0 {
             activeStatus = editor.statusMessage
         } else if editor.baseMode == .canvas {
-            activeStatus = L10n["status.canvas_mode_hint"]
+            activeStatus = editor.l10n["status.canvas_mode_hint"]
         } else {
             activeStatus = ""
         }
@@ -174,8 +174,7 @@ extension Renderer {
     /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
     func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
         let helpWidth = min(cols, 80)
-        let language =
-            editor?.usesExplicitLanguage == true ? editor?.language ?? L10n.currentLanguage : L10n.currentLanguage
+        let language = editor?.language ?? .detectSystemLanguage()
         func tr(_ key: String) -> String {
             L10n.string(key, language: language)
         }

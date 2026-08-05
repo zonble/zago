@@ -26,9 +26,9 @@ public struct LogoReferenceCommand: Command {
     public func execute(on editor: Editor) {
         TextDocumentView(
             terminal: editor.terminal,
-            title: L10n["logoview.reference_title"],
-            lines: LogoReferenceContent.lines(),
-            footer: L10n["textview.footer"]
+            title: editor.l10n["logoview.reference_title"],
+            lines: LogoReferenceContent.lines(language: editor.language),
+            footer: editor.l10n["textview.footer"]
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()
@@ -47,9 +47,9 @@ public struct LogoWorkspaceCommand: Command {
     public func execute(on editor: Editor) {
         TextDocumentView(
             terminal: editor.terminal,
-            title: L10n["logoview.workspace_title"],
-            lines: LogoWorkspaceContent.lines(engine: editor.logoEngine),
-            footer: L10n["textview.footer"]
+            title: editor.l10n["logoview.workspace_title"],
+            lines: LogoWorkspaceContent.lines(engine: editor.logoEngine, language: editor.language),
+            footer: editor.l10n["textview.footer"]
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()

@@ -2,7 +2,7 @@ import Foundation
 import LogoEngine
 
 public enum LogoWorkspaceContent {
-    public static func lines(engine: LogoEngine, language: Language = L10n.currentLanguage) -> [String] {
+    public static func lines(engine: LogoEngine, language: Language = .detectSystemLanguage()) -> [String] {
         var output = [
             L10n.string("logoworkspace.heading", language: language),
             "  ================================================================",

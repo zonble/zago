@@ -101,9 +101,6 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testSubLineNumbersRenderForWrappedProse() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
 
     let editor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
     editor.displayConfig.showSubLineNumbers = true
@@ -119,9 +116,6 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testSubLineNumbersRequireToggleAndFixedWrapColumn() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
 
     let disabledEditor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
     disabledEditor.displayConfig.showSubLineNumbers = false
@@ -427,13 +421,9 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testLocalizedHelpBarPromptAndCanvasLabels() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-
     let renderer = Renderer()
 
-    L10n.currentLanguage = .zh_TW
-    let promptHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
+    let promptHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }), editor: Editor(language: .zh_TW))
     #expect(promptHelpBar.contains("確認"))
     #expect(promptHelpBar.contains("取消"))
     #expect(promptHelpBar.contains("清除"))
@@ -657,14 +647,11 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testDynamicHelpBarByPromptMode() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
-
     let renderer = Renderer()
+    let editorEn = Editor(language: .en)
 
     // 1. LOGO macro prompt help bar (English)
-    let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }))
+    let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }), editor: editorEn)
     #expect(logoHelp.contains("BOX"))
     #expect(logoHelp.contains("DRAWBOX"))
     #expect(logoHelp.contains("TABLE"))
@@ -672,13 +659,13 @@ struct FormatAndLayoutTests {
     #expect(logoHelp.contains("Complete"))
 
     // 2. Exit Confirmation prompt help bar (English)
-    let exitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    let exitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }), editor: editorEn)
     #expect(exitHelp.contains("Yes"))
     #expect(exitHelp.contains("No"))
     #expect(exitHelp.contains("Cancel"))
 
     // 3. Search input prompt help bar (English)
-    let searchHelp = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }))
+    let searchHelp = renderer.renderHelpBar(cols: 80, promptMode: .search(completion: { _ in }), editor: editorEn)
     #expect(!searchHelp.contains("Help"))
     #expect(searchHelp.contains("Cancel"))
     #expect(searchHelp.contains("Confirm"))
@@ -687,14 +674,14 @@ struct FormatAndLayoutTests {
     #expect(searchHelp.contains("Jump"))
 
     // 4. Default Nano help bar (English)
-    let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none)
+    let defaultHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editorEn)
     #expect(defaultHelp.contains("F1"))
     #expect(defaultHelp.contains("Menu"))
     #expect(!defaultHelp.contains("^G"))
     #expect(defaultHelp.contains("^O"))
-    #expect(defaultHelp.contains(L10n.helpWriteOut))
+    #expect(defaultHelp.contains(editorEn.l10n.helpWriteOut))
 
-    let editor = Editor()
+    let editor = Editor(language: .en)
     editor.switchToCanvasMode()
     let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
     #expect(canvasHelp.contains("⇧+Arrow"))
@@ -703,11 +690,11 @@ struct FormatAndLayoutTests {
     #expect(canvasHelp.contains("^U"))
     #expect(canvasHelp.contains("F1"))
     #expect(!canvasHelp.contains("^G"))
-    #expect(!canvasHelp.contains(L10n.helpGetHelp))
+    #expect(!canvasHelp.contains(editor.l10n.helpGetHelp))
 
     // 5. Traditional Chinese help bar verification
-    L10n.currentLanguage = .zh_TW
-    let zhExitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }))
+    let editorZh = Editor(language: .zh_TW)
+    let zhExitHelp = renderer.renderHelpBar(cols: 80, promptMode: .confirmExitSave(completion: { _ in }), editor: editorZh)
     #expect(zhExitHelp.contains("是"))
     #expect(zhExitHelp.contains("否"))
     #expect(zhExitHelp.contains("取消"))
@@ -734,11 +721,7 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testIdleStatusLineModeIndicators() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
-
-    let editor = Editor()
+    let editor = Editor(language: .en)
     let renderer = editor.renderer
 
     #expect(renderer.renderIdleStatusLine(editor: editor, cols: 80).trimmingCharacters(in: .whitespaces).isEmpty)
@@ -754,7 +737,7 @@ struct FormatAndLayoutTests {
     let tableStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(tableStatus.contains("CANVAS | TABLE"))
 
-    L10n.currentLanguage = .zh_TW
+    editor.language = .zh_TW
     let localizedStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
     #expect(localizedStatus.contains("畫布 | 表格"))
     #expect(localizedStatus.contains("(F8 / M+V 退出)"))
@@ -826,11 +809,7 @@ struct FormatAndLayoutTests {
 }
 
 @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
-
-    let editor = Editor()
+    let editor = Editor(language: .en)
     editor.isMenuBarActive = true
     editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.borders" })!
 

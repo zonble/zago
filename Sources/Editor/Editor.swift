@@ -228,8 +228,9 @@ public final class Editor: @unchecked Sendable {
     public let commandRegistry = CommandRegistry()
     public var commandBarRegistry: CommandRegistry { commandRegistry }
     public var fileIOStrategy: EditorFileIOStrategy
-    public var language: Language
-    var usesExplicitLanguage: Bool
+    public var language: Language = .detectSystemLanguage()
+    public var usesExplicitLanguage: Bool = false
+    public var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
     private var currentWatchedPath: String? = nil
 
@@ -321,7 +322,6 @@ public final class Editor: @unchecked Sendable {
         let resolved = Self.resolveConfig(options: options, config: configSource.initial)
         self.language = resolved.language
         self.usesExplicitLanguage = resolved.usesExplicitLanguage
-        L10n.currentLanguage = resolved.language
         self.spellChecker.setLanguage(resolved.spellLanguage)
         self.layoutEngine = LayoutEngine(wrapColumn: resolved.wrapColumn)
         self.displayConfig = resolved.display
@@ -405,7 +405,7 @@ public final class Editor: @unchecked Sendable {
         currentBufferIndex = index
         loadCurrentViewSettingsFromBuffer()
         if let dirBuffer = buffers[currentBufferIndex] as? DirectoryBuffer {
-            dirBuffer.loadDirectory(at: dirBuffer.directoryPath)
+            dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
         }
         topVLineIndex = 0
         clearActiveMark()
@@ -497,7 +497,6 @@ public final class Editor: @unchecked Sendable {
         if loadedConfig.language != nil {
             self.language = resolved.language
             self.usesExplicitLanguage = true
-            L10n.currentLanguage = resolved.language
         }
         applyCustomConfig(loadedConfig)
     }

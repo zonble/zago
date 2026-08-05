@@ -288,11 +288,9 @@ extension Editor {
             if arg == "zh_tw" || arg == "zh" {
                 language = .zh_TW
                 usesExplicitLanguage = true
-                L10n.currentLanguage = .zh_TW
             } else if arg == "en" {
                 language = .en
                 usesExplicitLanguage = true
-                L10n.currentLanguage = .en
             }
         case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
             "default-border-style", "default_border_style":

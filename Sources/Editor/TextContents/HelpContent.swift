@@ -18,7 +18,7 @@ public enum HelpContent {
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
     ]
 
-    public static func lines(language: Language = L10n.currentLanguage) -> [String] {
+    public static func lines(language: Language = .detectSystemLanguage()) -> [String] {
         [L10n.string("helpview.header", language: language), divider] + sectionLines(language: language)
     }
 

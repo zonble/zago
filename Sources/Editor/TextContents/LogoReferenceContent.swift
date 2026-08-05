@@ -2,7 +2,7 @@ import Foundation
 import LogoEngine
 
 public enum LogoReferenceContent {
-    public static func lines(language: Language = L10n.currentLanguage) -> [String] {
+    public static func lines(language: Language = .detectSystemLanguage()) -> [String] {
         L10n.string("logoref.content", language: language).components(separatedBy: "\n") + wrappedAliases(width: 68)
     }
 

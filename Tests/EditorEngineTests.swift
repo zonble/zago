@@ -485,8 +485,8 @@ import TextMetrics
 }
 
 @Test func testCursorPositionStatusIncludesVisualColumn() throws {
-    L10n.currentLanguage = .en
     let editor = Editor()
+    editor.language = .en
     editor.buffer.lines = ["中AB"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 2

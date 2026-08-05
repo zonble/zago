@@ -13,7 +13,8 @@ public final class DirectoryBuffer: TextBuffer {
     public init(
         directoryPath: String,
         fileIO: EditorFileIOStrategy,
-        gitService: GitServiceProtocol = GitService()
+        gitService: GitServiceProtocol = GitService(),
+        language: Language = .detectSystemLanguage()
     ) {
         let expandedPath = fileIO.normalizePath(directoryPath, isDirectory: true)
         self.directoryPath = expandedPath
@@ -21,10 +22,10 @@ public final class DirectoryBuffer: TextBuffer {
         self.gitService = gitService
         super.init()
         self.filePath = expandedPath
-        loadDirectory(at: expandedPath)
+        loadDirectory(at: expandedPath, language: language)
     }
 
-    public func loadDirectory(at path: String) {
+    public func loadDirectory(at path: String, language: Language = .detectSystemLanguage()) {
         let expandedPath = fileIO.normalizePath(path, isDirectory: true)
 
         let info = fileIO.fileInfo(at: expandedPath)
@@ -45,11 +46,12 @@ public final class DirectoryBuffer: TextBuffer {
             gitStatusMap = [:]
         }
 
+        let l10n = L10n(language: language)
         var newLines: [String] = []
-        newLines.append(L10n.dirBufHeaderDirectory(expandedPath, branchStr))
-        newLines.append(L10n.dirBufHeaderInstructions)
+        newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr))
+        newLines.append(l10n.dirBufHeaderInstructions)
         newLines.append("")
-        newLines.append(L10n.dirBufUpDir)
+        newLines.append(l10n.dirBufUpDir)
 
         if let contents = try? fileIO.listDirectory(at: expandedPath) {
             let sorted = contents.filter { entry in
