@@ -107,3 +107,45 @@ import Testing
     // Empty data handling
     #expect(TextEncodingDetector.detectAndDecode(Data())?.content == "")
 }
+
+@Test func testNonUTF8TextFileIsNotDetectedAsBinary() throws {
+    let big5Text = "正氣中華報\n交接與傳承故事"
+    guard let big5Data = big5Text.data(using: .big5) else {
+        Issue.record("Failed to create Big5 test data")
+        return
+    }
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpPath = fileIO.normalizePath(
+        FileManager.default.temporaryDirectory.appendingPathComponent("test_big5_doc_\(UUID().uuidString).md").path,
+        isDirectory: false
+    )
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    try big5Data.write(to: URL(fileURLWithPath: tmpPath))
+
+    let info = fileIO.fileInfo(at: tmpPath)
+    #expect(info.exists == true)
+    #expect(info.isBinary == false)
+}
+
+@Test func testUTF8FileCutOffAt8192ByteBoundaryIsNotDetectedAsBinary() throws {
+    let text = String(repeating: "繁體中文測試文章內容。", count: 500)
+    let data = Data(text.utf8)
+    #expect(data.count > 8192)
+
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpPath = fileIO.normalizePath(
+        FileManager.default.temporaryDirectory.appendingPathComponent("test_utf8_boundary_\(UUID().uuidString).md").path,
+        isDirectory: false
+    )
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    try data.write(to: URL(fileURLWithPath: tmpPath))
+
+    let info = fileIO.fileInfo(at: tmpPath)
+    #expect(info.exists == true)
+    #expect(info.isBinary == false)
+
+    let readResult = try fileIO.readTextFile(at: tmpPath)
+    #expect(readResult.encoding == .utf8)
+}

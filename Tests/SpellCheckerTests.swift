@@ -143,15 +143,17 @@ struct SpellCheckerTests {
     }
 }
 
-    @Test func testSpellLanguageConfigDirective() throws {
-        let loader = ConfigLoader()
-        var config = EditorConfig()
-        let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_spell_lang_.zagorc").path
-        let sampleConfig = "set spell-language de_DE\n"
-        try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+@Test func testSpellLanguageConfigDirective() throws {
+    let loader = ConfigLoader()
+    var config = EditorConfig()
+    let rawPath = FileManager.default.temporaryDirectory
+        .appendingPathComponent("test_spell_lang_\(UUID().uuidString).zagorc").path
+    let tmpPath = TestLocalEditorFileIOStrategy().normalizePath(rawPath, isDirectory: false)
+    let sampleConfig = "set spell-language de_DE\n"
+    try sampleConfig.write(to: URL(fileURLWithPath: tmpPath), atomically: true, encoding: .utf8)
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
-        loader.parseConfigFile(at: tmpPath, into: &config)
-        #expect(config.spellLanguage.lowercased() == "de_de")
-    }
+    loader.parseConfigFile(at: tmpPath, into: &config)
+    #expect(config.spellLanguage.lowercased() == "de_de")
+}
 }

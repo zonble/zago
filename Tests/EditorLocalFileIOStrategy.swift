@@ -128,8 +128,25 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         }
         let data = Data(fileData.prefix(8192))
         if data.isEmpty { return false }
-        if data.contains(0) { return true }
-        return String(data: data, encoding: .utf8) == nil
+        let hasUTF16BOM = (data.count >= 2 && ((data[0] == 0xFE && data[1] == 0xFF) || (data[0] == 0xFF && data[1] == 0xFE)))
+        if !hasUTF16BOM && data.contains(0) {
+            return true
+        }
+
+        var checkBuffer = data
+        while !checkBuffer.isEmpty {
+            if String(data: checkBuffer, encoding: .utf8) != nil {
+                return false
+            }
+            let last = checkBuffer.last!
+            if (last & 0x80) != 0 {
+                checkBuffer.removeLast()
+            } else {
+                break
+            }
+        }
+
+        return TextEncodingDetector.detectAndDecode(data) == nil
     }
 }
 
