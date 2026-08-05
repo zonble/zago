@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-No changes yet.
+### Changed
+
+- Canvas Mode line drawing (`Shift+Arrow`) now performs step-by-step line fusion when entering existing box-drawing characters, forming T-junctions or corners on initial entry before creating crossings on subsequent extension steps.
 
 ## 1.0.4 - 2026-08-04
 

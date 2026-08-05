@@ -173,8 +173,14 @@ separate Frame Mode.
   style.
 - Arrow-line movement uses the same horizontal/vertical line characters, then
   places an arrowhead at the endpoint for the requested direction.
-- Corners, crossings, and T-junctions should be fused automatically when a
-  drawn segment meets an existing compatible box-drawing character.
+- Corners, crossings, and T-junctions are fused automatically when a drawn segment
+  meets an existing compatible box-drawing character:
+  - Entering a target cell containing an existing line character fuses the incoming
+    connection into a T-junction or corner (e.g. drawing `Shift+Right` from `─`
+    into `│` fuses `│` into `┤` and moves the cursor onto `┤`).
+  - Drawing past the junction on a subsequent step extends the line further to
+    fuse into a full crossing (e.g. drawing `Shift+Right` again from `┤` updates
+    `┤` to `┼`).
 - Arrowheads should be fused or replaced carefully so the final endpoint remains
   visually directional while the traversed segment still joins existing lines.
 - New drawing uses the same current/default border style used by LOGO `BOX`,
