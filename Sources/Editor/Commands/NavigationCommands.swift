@@ -91,11 +91,19 @@ public struct MoveHomeCommand: Command {
     public let id: CommandID = .moveHome
     public let name = "Beginning of Line"
     public let description = "Move to beginning of line"
-    public let keys: [Key] = [.ctrl("A"), .home]
+    public let keys: [Key] = [.ctrl("A"), .ctrl("a"), .home]
 
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive, let cell = editor.currentTableCell {
+            editor.clearActiveMark()
+            let line = editor.buffer.lines[editor.buffer.lineIndex]
+            let (leftBorder, _) = editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            editor.buffer.columnIndex = leftBorder + 1
+            editor.clampTableModeCursor()
+            return
+        }
         if editor.isCanvasModeActive {
             editor.moveCanvasCursorToLineStart()
             return
@@ -111,11 +119,19 @@ public struct MoveEndCommand: Command {
     public let id: CommandID = .moveEnd
     public let name = "End of Line"
     public let description = "Move to end of line"
-    public let keys: [Key] = [.ctrl("E"), .end]
+    public let keys: [Key] = [.ctrl("E"), .ctrl("e"), .end]
 
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive, let cell = editor.currentTableCell {
+            editor.clearActiveMark()
+            let line = editor.buffer.lines[editor.buffer.lineIndex]
+            let (leftBorder, rightBorder) = editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
+            editor.clampTableModeCursor()
+            return
+        }
         if editor.isCanvasModeActive {
             editor.moveCanvasCursorToLineEnd()
             return
@@ -148,7 +164,7 @@ public struct MovePgdnCommand: Command {
     public let id: CommandID = .movePgdn
     public let name = "Next Page"
     public let description = "Move forward one page"
-    public let keys: [Key] = [.ctrl("V"), .pageDown]
+    public let keys: [Key] = [.ctrl("V"), .ctrl("v"), .pageDown]
 
     public init() {}
 
@@ -177,7 +193,7 @@ public struct MovePgupCommand: Command {
     public let id: CommandID = .movePgup
     public let name = "Previous Page"
     public let description = "Move backward one page"
-    public let keys: [Key] = [.ctrl("Y"), .pageUp]
+    public let keys: [Key] = [.ctrl("Y"), .ctrl("y"), .pageUp]
 
     public init() {}
 

@@ -129,14 +129,20 @@ public struct CutTextCommand: Command {
     public let id: CommandID = .editCut
     public let name = "Cut Text"
     public let description = "Cut selected text or line"
-    public let keys: [Key] = [.ctrl("K"), .f9]
+    public let keys: [Key] = [.ctrl("K"), .ctrl("k"), .f9]
 
     public init() {}
 
     public func execute(on editor: Editor) {
+        if editor.isTableModeActive {
+            if let cell = editor.currentTableCell {
+                editor.cutTableCellText(cell: cell)
+            }
+            return
+        }
         editor.saveUndoSnapshot()
         editor.buffer.clampCursor()
-        if editor.isCanvasModeActive && !editor.isTableModeActive {
+        if editor.isCanvasModeActive {
             editor.cutCanvasBlock()
         } else if let mark = editor.selectionMark {
             let (start, end) = editor.getOrderedRange(
@@ -164,7 +170,7 @@ public struct UncutTextCommand: Command {
     public let id: CommandID = .editUncut
     public let name = "UnCut Text"
     public let description = "Paste cut text"
-    public let keys: [Key] = [.ctrl("U"), .f10]
+    public let keys: [Key] = [.ctrl("U"), .ctrl("u"), .f10]
 
     public init() {}
 

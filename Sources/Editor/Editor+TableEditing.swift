@@ -40,6 +40,11 @@ extension Editor {
         saveUndoSnapshot()
         _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
         insertTextInCurrentTableCell(text)
+        let line = buffer.lines[buffer.lineIndex]
+        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        if buffer.columnIndex >= rightBorder {
+            buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
+        }
     }
 
     func moveToNextLineInCurrentTableCell(cell: TableCell) {

@@ -764,6 +764,66 @@ import Testing
     #expect(editor.currentTableCell?.maxCol == 17)
 }
 
+@Test func testTableModeF9ClearsCellTextWithoutDeletingTableRow() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│abcdef          │keep            │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.processKey(.f9)
+
+    #expect(
+        editor.buffer.lines == [
+            "┌────────────────┬────────────────┐",
+            "│                │keep            │",
+            "└────────────────┴────────────────┘",
+        ])
+    #expect(editor.clipboardText == "abcdef          ")
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.currentTableCell?.maxCol == 17)
+}
+
+@Test func testZagorcCustomKeybindingsDisabledInTableMode() throws {
+    let editor = Editor()
+    var config = EditorConfig()
+    config.customKeyBinds[.ctrl("f")] = "logo: TYPE \"CUSTOM_MACRO\""
+    editor.applyCustomConfig(config)
+
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│cell 1          │cell 2          │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.processKey(.ctrl("F"))
+    #expect(!editor.buffer.lines[1].contains("CUSTOM_MACRO"))
+}
+
+@Test func testTableModePasteAtCellBottomKeepsCursorInsideCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│                │right cell      │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.pasteTableCellText("12345678901234567890")
+
+    #expect(editor.buffer.columnIndex == 16)
+    #expect(editor.buffer.lines[1] == "│1234567890123456│right cell      │")
+}
+
 @Test func testCycleBorderStyleCommand() throws {
     let editor = Editor()
     #expect(editor.defaultBorderStyle == .single)

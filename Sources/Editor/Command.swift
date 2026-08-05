@@ -250,6 +250,9 @@ public final class CommandRegistry {
     /// Dispatches a key input to its registered command action.
     /// Returns `true` if a command was found and executed.
     public func dispatch(key: Key, editor: Editor) -> Bool {
+        if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
+            return false
+        }
         if let command = keyMap[key] {
             command.execute(on: editor)
             return true

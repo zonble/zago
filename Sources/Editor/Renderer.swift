@@ -442,7 +442,19 @@ public final class Renderer {
                     (localCursorVLineIdx >= 0 && localCursorVLineIdx < virtualLines.count)
                     ? virtualLines[localCursorVLineIdx].text : ""
                 let vLineChars = Array(vLineText)
-                let clampedCol = max(0, min(cursorVColIdx, vLineChars.count))
+                let effectiveCol: Int
+                if editor.isTableModeActive, let cell = editor.currentTableCell,
+                   editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine {
+                    let (leftBorder, rightBorder) = editor.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
+                    if cursorVColIdx >= rightBorder {
+                        effectiveCol = max(leftBorder + 1, rightBorder - 1)
+                    } else {
+                        effectiveCol = cursorVColIdx
+                    }
+                } else {
+                    effectiveCol = cursorVColIdx
+                }
+                let clampedCol = max(0, min(effectiveCol, vLineChars.count))
                 cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
             }
 

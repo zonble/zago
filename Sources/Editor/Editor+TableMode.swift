@@ -157,11 +157,11 @@ extension Editor {
             moveToNextTableCellLineOrCell()
             return true
 
-        case .ctrl("k"), .ctrl("K"):
+        case .ctrl("k"), .ctrl("K"), .f9:
             cutTableCellText(cell: cell)
             return true
 
-        case .ctrl("u"), .ctrl("U"):
+        case .ctrl("u"), .ctrl("U"), .f10:
             if let text = clipboardText, !text.isEmpty {
                 pasteTableCellText(text)
                 setStatusMessage(L10n["status.uncut_text"])
@@ -362,7 +362,7 @@ extension Editor {
         return true
     }
 
-    private func cutTableCellText(cell: TableCell) {
+    func cutTableCellText(cell: TableCell) {
         if deleteTableSelectionIfNeeded(cell: cell, updateClipboard: true) {
             return
         }

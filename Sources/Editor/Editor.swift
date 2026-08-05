@@ -230,6 +230,7 @@ public final class Editor {
     }
 
     public var displayConfig: DisplayConfig
+    public var customBoundKeys: Set<Key> = []
 
     private struct ResolvedConfig {
         let wrapColumn: Int?
@@ -491,6 +492,7 @@ public final class Editor {
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
     func applyCustomConfig(_ config: EditorConfig) {
+        customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
         spellChecker.setLanguage(config.spellLanguage)
 
