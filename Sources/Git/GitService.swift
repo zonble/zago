@@ -59,6 +59,7 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         if let absFilePath = absFilePath, absFilePath.hasPrefix(repoRoot) {
             var rel = String(absFilePath.dropFirst(repoRoot.count))
             while rel.hasPrefix("/") || rel.hasPrefix("\\") { rel.removeFirst() }
+            // NOTE (Windows Path Normalization): Git commands require forward slashes '/' for repository object paths.
             relativePath = rel.replacingOccurrences(of: "\\", with: "/")
         } else {
             relativePath = absFilePath.map { ($0 as NSString).lastPathComponent } ?? ""
@@ -240,6 +241,9 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
 
         do {
             try process.run()
+            // NOTE (Process Pipe Deadlock Pitfall): Calling waitUntilExit() BEFORE readDataToEndOfFile()
+            // will cause a deadlock if stdout output exceeds OS pipe buffer (64KB). Git blocks writing,
+            // while Swift blocks waiting for process exit. Read pipe BEFORE waitUntilExit().
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             process.waitUntilExit()
             guard process.terminationStatus == 0 else { return nil }

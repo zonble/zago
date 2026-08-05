@@ -64,7 +64,14 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
 
     func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws {
         let normalized = normalizePath(path, isDirectory: false)
-        guard let data = contents.data(using: encoding) else {
+        // NOTE (Cross-Platform Pitfall): On Windows (swift-corelibs-foundation using WideCharToMultiByte),
+        // contents.data(using: encoding, allowLossyConversion: false) may silently replace unmappable
+        // characters (e.g. Emoji in Big5) with default fallback characters ('?') instead of returning nil.
+        // We perform a strict roundtrip equality check (roundtrip == contents) to ensure non-lossy
+        // encoding validation consistently across macOS, Linux, and Windows.
+        guard let data = contents.data(using: encoding, allowLossyConversion: false),
+              let roundtrip = String(data: data, encoding: encoding),
+              roundtrip == contents else {
             throw EncodingError.unsupportedCharacters
         }
         try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
