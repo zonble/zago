@@ -2,6 +2,12 @@ import Editor
 import Foundation
 import TextEncoding
 
+#if os(Windows)
+public let testAtomicallyOption = false
+#else
+public let testAtomicallyOption = true
+#endif
+
 final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
     static let shared = TestLocalEditorFileIOStrategy()
 

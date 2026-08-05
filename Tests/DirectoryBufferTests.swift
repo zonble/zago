@@ -12,7 +12,7 @@ import Testing
         let fileURL = workDir.appendingPathComponent("notes.md")
 
         try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
-        try "# Notes".write(to: fileURL, atomically: true, encoding: .utf8)
+        try "# Notes".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: workDir) }
 
         // Test Factory method TextBuffer.makeBuffer(filePath:)
@@ -39,10 +39,12 @@ import Testing
         let fileURL = workDir.appendingPathComponent("target.txt")
 
         try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
-        try "Target file content".write(to: fileURL, atomically: true, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
+        try "Target file content".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
         let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
         #expect(editor.buffer is DirectoryBuffer)
 
         let dirBuffer = editor.buffer as! DirectoryBuffer
@@ -105,7 +107,7 @@ import Testing
         let markerFile = workDir.appendingPathComponent("marker.txt")
 
         try FileManager.default.createDirectory(at: childDir, withIntermediateDirectories: true)
-        try "marker".write(to: markerFile, atomically: true, encoding: .utf8)
+        try "marker".write(to: markerFile, atomically: testAtomicallyOption, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: workDir) }
 
         let editor = Editor()
@@ -129,10 +131,12 @@ import Testing
         let fileURL = workDir.appendingPathComponent("notes.md")
 
         try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
-        try "# Notes".write(to: fileURL, atomically: true, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
+        try "# Notes".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
         let editor = Editor(filePath: fileURL.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
         let res = editor.commandBarRegistry.dispatch("dir", editor: editor)
 
         #expect(res == .handled)

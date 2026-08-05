@@ -296,13 +296,16 @@ import TextMetrics
     let directory = FileManager.default.temporaryDirectory
         .appendingPathComponent("zago_document_link_\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: directory) }
 
     let indexPath = directory.appendingPathComponent("index.md").path
     let targetPath = directory.appendingPathComponent("test.md").path
-    try "target".write(toFile: targetPath, atomically: true, encoding: .utf8)
+    try "target".write(to: URL(fileURLWithPath: targetPath), atomically: testAtomicallyOption, encoding: .utf8)
 
     let editor = Editor(filePath: indexPath)
+    defer {
+        editor.stopFileWatcherForCurrentBuffer()
+        try? FileManager.default.removeItem(at: directory)
+    }
     editor.buffer.lines = ["See [test](test.md)"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 6
@@ -321,7 +324,7 @@ import TextMetrics
     try FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: true)
 
     let indexPath = (directoryPath as NSString).appendingPathComponent("index.md")
-    try "original".write(to: URL(fileURLWithPath: indexPath), atomically: true, encoding: .utf8)
+    try "original".write(to: URL(fileURLWithPath: indexPath), atomically: testAtomicallyOption, encoding: .utf8)
 
     let editor = Editor(filePath: indexPath)
     defer {

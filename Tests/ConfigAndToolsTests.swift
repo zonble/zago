@@ -180,7 +180,7 @@ struct ConfigAndToolsTests {
     endlogo
     """
 
-    try configContent.write(toFile: tmpFile, atomically: true, encoding: .utf8)
+    try configContent.write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
 
     let loader = ConfigLoader()
     var config = EditorConfig()
@@ -496,7 +496,7 @@ struct ConfigAndToolsTests {
         if !existsBefore {
             try? FileManager.default.removeItem(atPath: zagorcPath)
         } else if let content = contentBefore {
-            try? content.write(toFile: zagorcPath, atomically: true, encoding: .utf8)
+            try? content.write(to: URL(fileURLWithPath: zagorcPath), atomically: testAtomicallyOption, encoding: .utf8)
         }
     }
 
@@ -592,7 +592,7 @@ struct ConfigAndToolsTests {
         unbind f1
         invalid syntax line
         """
-    try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+    try sampleConfig.write(to: URL(fileURLWithPath: tmpPath), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
     let loader = ConfigLoader()
@@ -650,7 +650,7 @@ struct ConfigAndToolsTests {
         "test_min_wrap_\(UUID().uuidString).serc"
     ).path
     let sampleConfig = "set wrap 4\n"
-    try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+    try sampleConfig.write(to: URL(fileURLWithPath: tmpPath), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
     let loader = ConfigLoader()
@@ -665,14 +665,16 @@ struct ConfigAndToolsTests {
 
 @Test func testFileWatcherAndAutoReload() throws {
     let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_fs_watcher.txt").path
-    try "Initial line\n".write(toFile: tmpFile, atomically: true, encoding: .utf8)
-    defer { try? FileManager.default.removeItem(atPath: tmpFile) }
-
+    try "Initial line\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
     let editor = Editor(filePath: tmpFile, autoReload: true)
+    defer {
+        editor.stopFileWatcherForCurrentBuffer()
+        try? FileManager.default.removeItem(atPath: tmpFile)
+    }
     #expect(editor.displayConfig.autoReload == true)
 
     // Test external change reloading when unmodified
-    try "Modified externally\n".write(toFile: tmpFile, atomically: true, encoding: .utf8)
+    try "Modified externally\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
 
     // Trigger reload
     editor.handleExternalFileChange()
@@ -689,7 +691,7 @@ struct ConfigAndToolsTests {
         color cyan "\\b(foo|bar)\\b"
         color green "\"([^\"]*)\""
         """
-    try content.write(to: URL(fileURLWithPath: tmpNanoRC), atomically: true, encoding: .utf8)
+    try content.write(to: URL(fileURLWithPath: tmpNanoRC), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpNanoRC) }
 
     let highlighter = SyntaxHighlighter()
@@ -853,7 +855,7 @@ struct ConfigAndToolsTests {
         set border round
         """
     let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_border_config.zagorc").path
-    try configContent.write(toFile: tempFile, atomically: true, encoding: .utf8)
+    try configContent.write(to: URL(fileURLWithPath: tempFile), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tempFile) }
 
     loader.parseConfigFile(at: tempFile, into: &config)

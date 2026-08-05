@@ -382,7 +382,11 @@ public final class ConfigLoader {
         }
 
         let content = defaultConfigTemplate
-        try content.write(toFile: path, atomically: true, encoding: .utf8)
+        #if os(Windows)
+        try content.write(to: URL(fileURLWithPath: path), atomically: false, encoding: .utf8)
+        #else
+        try content.write(to: URL(fileURLWithPath: path), atomically: true, encoding: .utf8)
+        #endif
         return path
     }
 
