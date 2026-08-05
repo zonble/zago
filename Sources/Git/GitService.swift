@@ -143,31 +143,43 @@ public final class GitService: @unchecked Sendable {
         }
     }
 
-    private func findGitBinary() -> URL {
-        let candidates = [
-            "/usr/bin/git",
-            "/opt/homebrew/bin/git",
-            "/usr/local/bin/git"
-        ]
-        for candidate in candidates {
-            if FileManager.default.isExecutableFile(atPath: candidate) {
-                return URL(fileURLWithPath: candidate)
+    private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
+        #if os(Windows)
+        let gitNames = ["git.exe", "git"]
+        let pathSeparator = ";"
+        #else
+        let gitNames = ["git"]
+        let pathSeparator = ":"
+        #endif
+
+        let envPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
+        var searchDirs = envPath.components(separatedBy: pathSeparator)
+        #if !os(Windows)
+        searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
+        #endif
+
+        for dir in searchDirs where !dir.isEmpty {
+            for name in gitNames {
+                let candidate = (dir as NSString).appendingPathComponent(name)
+                if FileManager.default.isExecutableFile(atPath: candidate) {
+                    return (URL(fileURLWithPath: candidate), [])
+                }
             }
         }
-        return URL(fileURLWithPath: "/usr/bin/env")
+
+        #if os(Windows)
+        return (URL(fileURLWithPath: "C:\\Program Files\\Git\\cmd\\git.exe"), [])
+        #else
+        return (URL(fileURLWithPath: "/usr/bin/env"), ["git"])
+        #endif
     }
 
     private func runGitCommand(args: [String], cwd: String) -> String? {
+        let (gitURL, prefixArgs) = findGitBinary()
         let process = Process()
         let pipe = Pipe()
-        let gitURL = findGitBinary()
-        if gitURL.path == "/usr/bin/env" {
-            process.executableURL = gitURL
-            process.arguments = ["git"] + args
-        } else {
-            process.executableURL = gitURL
-            process.arguments = args
-        }
+        process.executableURL = gitURL
+        process.arguments = prefixArgs + args
         process.currentDirectoryURL = URL(fileURLWithPath: cwd)
         process.standardOutput = pipe
         process.standardError = Pipe()
