@@ -531,6 +531,37 @@ import TextMetrics
     #expect(editor.buffer.lines[1] == "中D  Q")
 }
 
+@Test func testCanvasModeTypingPreservesBlockMark() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+
+    // Set canvas block mark at (0, 0)
+    editor.processKey(.mark)
+    #expect(editor.canvasBlockMark != nil)
+
+    // Move to (2, 5) and set block mark end
+    editor.buffer.lineIndex = 2
+    editor.canvasVisualColumn = 5
+    editor.processKey(.mark)
+    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.canvasBlockMarkEnd != nil)
+
+    // Typing a character should NOT clear the canvas block mark
+    editor.processKey(.char("X"))
+    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.canvasBlockMarkEnd != nil)
+
+    // Backspace should NOT clear the canvas block mark
+    editor.processKey(.backspace)
+    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.canvasBlockMarkEnd != nil)
+
+    // Delete should NOT clear the canvas block mark
+    editor.processKey(.delete)
+    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.canvasBlockMarkEnd != nil)
+}
+
 @Test func testCanvasModeReplaceAndClearPreserveDisplayWidth() throws {
     let editor = Editor()
     editor.buffer.lines = ["ABCD", "中D"]

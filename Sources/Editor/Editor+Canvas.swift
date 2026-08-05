@@ -166,7 +166,6 @@ extension Editor {
     }
 
     func insertCanvasString(_ text: String) {
-        clearActiveMark()
         let startColumn = canvasVisualColumn
         let lines = text.components(separatedBy: .newlines)
         guard !lines.isEmpty else { return }
@@ -185,7 +184,6 @@ extension Editor {
     }
 
     func insertCanvasNewline() {
-        clearActiveMark()
         let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
         guard isCanvasLineAllowed(insertIndex) else {
             setStatusMessage(L10n["status.canvas_row_limit_exceeded"])
@@ -199,7 +197,6 @@ extension Editor {
     }
 
     func deleteCanvasCharacter() {
-        clearActiveMark()
         guard ensureCanvasLineExists(buffer.lineIndex) else { return }
         let result = buffer.lines[buffer.lineIndex].clearingAtVisualColumn(canvasVisualColumn)
         buffer.lines[buffer.lineIndex] = result.text
@@ -209,7 +206,6 @@ extension Editor {
     }
 
     func backspaceCanvasCharacter() {
-        clearActiveMark()
         guard canvasVisualColumn > 0 else {
             buffer.deleteLine()
             canvasVisualColumn = 0
