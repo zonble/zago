@@ -278,6 +278,31 @@ import TextMetrics
     #expect(line1.contains("你好嗎？"))
 }
 
+@Test func testLogoVlineBetweenStackedBoxesDoesNotOverwriteUpperBoxText() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌──────┐",
+        "│ 你好 │",
+        "└──────┘",
+        "",
+        "",
+        "┌──────┐",
+        "│ 你好 │",
+        "└──────┘"
+    ]
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 3
+
+    logoEngine.execute("VLINE")
+
+    #expect(editor.buffer.lines[1] == "│ 你好 │")
+    #expect(editor.buffer.lines[2].contains("┬"))
+    #expect(editor.buffer.lines[3].contains("│"))
+    #expect(editor.buffer.lines[5].contains("┴"))
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

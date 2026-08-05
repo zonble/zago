@@ -240,19 +240,7 @@ extension LogoEngine {
             if isMaskChar(next.char) {
                 if let afterNext = findNextNonSpace(in: lineText, from: next.col + 1) {
                     if afterNext.col > next.col + 1 && isMaskChar(afterNext.char) {
-                        if startCol <= next.col {
-                            realStartCol = next.col
-                        }
-                    }
-                }
-            }
-        }
-
-        if let prev = findPrevNonSpace(in: lineText, from: startCol) {
-            if isMaskChar(prev.char) {
-                if let next = findNextNonSpace(in: lineText, from: startCol) {
-                    if isMaskChar(next.char) && next.col > prev.col + 1 {
-                        realStartCol = prev.col
+                        realStartCol = next.col
                     }
                 }
             }
@@ -317,19 +305,7 @@ extension LogoEngine {
             if isMaskChar(next.char) {
                 if let afterNext = findNextNonSpaceVertical(fromLine: next.line + 1, col: startCol) {
                     if afterNext.line > next.line + 1 && isMaskChar(afterNext.char) {
-                        if startLine <= next.line {
-                            realStartLine = next.line
-                        }
-                    }
-                }
-            }
-        }
-
-        if let prev = findPrevNonSpaceVertical(fromLine: startLine, col: startCol) {
-            if isMaskChar(prev.char) {
-                if let next = findNextNonSpaceVertical(fromLine: startLine, col: startCol) {
-                    if isMaskChar(next.char) && next.line > prev.line + 1 {
-                        realStartLine = prev.line
+                        realStartLine = next.line
                     }
                 }
             }
