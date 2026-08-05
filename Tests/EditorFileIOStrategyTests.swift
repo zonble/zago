@@ -134,11 +134,11 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
 
     #expect(editor.buffer is DirectoryBuffer)
-    #expect(editor.buffer.lines.contains("▸ src/"))
-    #expect(editor.buffer.lines.contains("  readme.txt"))
+    #expect(editor.buffer.lines.contains(where: { $0.hasSuffix("▸ src/") }))
+    #expect(editor.buffer.lines.contains(where: { $0.hasSuffix("readme.txt") }))
 
     let dirBuffer = try #require(editor.buffer as? DirectoryBuffer)
-    dirBuffer.lineIndex = try #require(dirBuffer.lines.firstIndex(of: "  readme.txt"))
+    dirBuffer.lineIndex = try #require(dirBuffer.lines.firstIndex(where: { $0.hasSuffix("readme.txt") }))
     #expect(dirBuffer.activateEntry(editor: editor) == true)
 
     #expect(editor.buffer.isDirectoryBuffer == false)

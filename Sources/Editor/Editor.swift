@@ -8,10 +8,16 @@ import Syntax
 public struct EditorDependencies {
     public let fileIOStrategy: EditorFileIOStrategy
     public let terminal: EditorTerminal
+    public let gitService: GitServiceProtocol
 
-    public init(fileIOStrategy: EditorFileIOStrategy, terminal: EditorTerminal) {
+    public init(
+        fileIOStrategy: EditorFileIOStrategy,
+        terminal: EditorTerminal,
+        gitService: GitServiceProtocol = GitService()
+    ) {
         self.fileIOStrategy = fileIOStrategy
         self.terminal = terminal
+        self.gitService = gitService
     }
 }
 
@@ -110,6 +116,8 @@ public final class Editor: @unchecked Sendable {
 
     let spellChecker = SpellChecker()
 
+    public let gitService: GitServiceProtocol
+
     /// Git Diff & Repository context for current buffer
     public var gitDiffInfo: GitDiffInfo = .empty
 
@@ -118,7 +126,7 @@ public final class Editor: @unchecked Sendable {
             gitDiffInfo = .empty
             return
         }
-        gitDiffInfo = GitService.shared.computeDiffSync(filePath: buffer.filePath, currentLines: buffer.lines)
+        gitDiffInfo = gitService.computeDiffSync(filePath: buffer.filePath, currentLines: buffer.lines)
     }
 
     // Persistent LOGO Macro Engine
@@ -286,6 +294,7 @@ public final class Editor: @unchecked Sendable {
     ) {
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
+        self.gitService = dependencies.gitService
         self.configProvider = configSource.reload
 
         if options.filePaths.isEmpty {
@@ -364,6 +373,9 @@ public final class Editor: @unchecked Sendable {
         saveCurrentViewSettingsToBuffer()
         currentBufferIndex = index
         loadCurrentViewSettingsFromBuffer()
+        if let dirBuffer = buffers[currentBufferIndex] as? DirectoryBuffer {
+            dirBuffer.loadDirectory(at: dirBuffer.directoryPath)
+        }
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()

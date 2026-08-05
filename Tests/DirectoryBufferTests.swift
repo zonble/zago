@@ -28,7 +28,7 @@ import Testing
         #expect(dirBuffer.lines[3] == ".. (up a dir)")
 
         // Contains subfolder and file
-        #expect(dirBuffer.lines.contains("▸ subfolder/"))
+        #expect(dirBuffer.lines.contains("  ▸ subfolder/"))
         #expect(dirBuffer.lines.contains("  notes.md"))
     }
 
@@ -48,7 +48,7 @@ import Testing
         let dirBuffer = editor.buffer as! DirectoryBuffer
 
         // Find line index for subfolder
-        if let idx = dirBuffer.lines.firstIndex(of: "▸ subfolder/") {
+        if let idx = dirBuffer.lines.firstIndex(where: { $0.hasSuffix("▸ subfolder/") }) {
             dirBuffer.lineIndex = idx
             let handled = dirBuffer.activateEntry(editor: editor)
             #expect(handled == true)
@@ -63,7 +63,7 @@ import Testing
         #expect(dirBuffer.directoryPath == workDir.path)
 
         // Open target.txt
-        if let fileIdx = dirBuffer.lines.firstIndex(of: "  target.txt") {
+        if let fileIdx = dirBuffer.lines.firstIndex(where: { $0.hasSuffix("target.txt") }) {
             dirBuffer.lineIndex = fileIdx
             let fileHandled = dirBuffer.activateEntry(editor: editor)
             #expect(fileHandled == true)

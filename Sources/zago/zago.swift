@@ -2,6 +2,7 @@ import ArgumentParser
 import Config
 import Editor
 import Foundation
+import Git
 
 @main
 struct Zago: ParsableCommand {
@@ -69,7 +70,12 @@ struct Zago: ParsableCommand {
     func run() throws {
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
         let terminal = LocalTerminal()
-        let dependencies = EditorDependencies(fileIOStrategy: fileIOStrategy, terminal: terminal)
+        let gitService = GitService()
+        let dependencies = EditorDependencies(
+            fileIOStrategy: fileIOStrategy,
+            terminal: terminal,
+            gitService: gitService
+        )
         let configProvider = { ConfigLoader().loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
 

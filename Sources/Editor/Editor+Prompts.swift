@@ -805,6 +805,11 @@ extension Editor {
                 _ = buffer.trimTrailingWhitespace()
             }
             try buffer.saveFile(to: path, fileIO: fileIOStrategy, encoding: forcedEncoding)
+            for b in buffers {
+                if let dirBuf = b as? DirectoryBuffer {
+                    dirBuf.loadDirectory(at: dirBuf.directoryPath)
+                }
+            }
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
                 setStatusMessage(L10n["status.saved_as_utf8"])
             } else {

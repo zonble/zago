@@ -1,8 +1,10 @@
 import Foundation
+import Git
 
 public final class DirectoryBuffer: TextBuffer {
     public var directoryPath: String
     public let fileIO: EditorFileIOStrategy
+    public let gitService: GitServiceProtocol
 
     override public var isReadOnly: Bool { true }
     override public var allowsLogoExecution: Bool { false }
@@ -10,11 +12,13 @@ public final class DirectoryBuffer: TextBuffer {
 
     public init(
         directoryPath: String,
-        fileIO: EditorFileIOStrategy
+        fileIO: EditorFileIOStrategy,
+        gitService: GitServiceProtocol = GitService()
     ) {
         let expandedPath = fileIO.normalizePath(directoryPath, isDirectory: true)
         self.directoryPath = expandedPath
         self.fileIO = fileIO
+        self.gitService = gitService
         super.init()
         self.filePath = expandedPath
         loadDirectory(at: expandedPath)
@@ -32,8 +36,17 @@ public final class DirectoryBuffer: TextBuffer {
         self.filePath = expandedPath
         self.isModified = false
 
+        let repoInfo = gitService.detectRepository(for: expandedPath)
+        let branchStr = (repoInfo?.branchName != nil && !repoInfo!.branchName!.isEmpty) ? " [\(repoInfo!.branchName!)]" : ""
+        let gitStatusMap: [String: String]
+        if let repoRoot = repoInfo?.repoRootPath {
+            gitStatusMap = gitService.fetchDirectoryGitStatus(repoRoot: repoRoot)
+        } else {
+            gitStatusMap = [:]
+        }
+
         var newLines: [String] = []
-        newLines.append("\" Directory: \(expandedPath)")
+        newLines.append("\" Directory: \(expandedPath)\(branchStr)")
         newLines.append("\" Press Enter on a file to open, or on a folder to navigate")
         newLines.append("")
         newLines.append(".. (up a dir)")
@@ -49,10 +62,34 @@ public final class DirectoryBuffer: TextBuffer {
             }
 
             for entry in sorted {
-                if entry.isDirectory {
-                    newLines.append("▸ \(entry.name)/")
+                let entryRelPath: String
+                if let repoRoot = repoInfo?.repoRootPath, expandedPath.hasPrefix(repoRoot) {
+                    var relDir = String(expandedPath.dropFirst(repoRoot.count))
+                    if relDir.hasPrefix("/") { relDir.removeFirst() }
+                    entryRelPath = relDir.isEmpty ? entry.name : "\(relDir)/\(entry.name)"
                 } else {
-                    newLines.append("  \(entry.name)\(entry.isExecutable ? "*" : "")")
+                    entryRelPath = entry.name
+                }
+
+                let rawBadge = gitStatusMap[entryRelPath] ?? gitStatusMap["\(entryRelPath)/"] ?? ""
+                let badgePrefix: String
+                if rawBadge.isEmpty {
+                    badgePrefix = "  "
+                } else {
+                    let code: String
+                    if rawBadge.contains("?") { code = "?" }
+                    else if rawBadge.contains("A") { code = "A" }
+                    else if rawBadge.contains("M") { code = "M" }
+                    else if rawBadge.contains("D") { code = "D" }
+                    else if rawBadge.contains("R") { code = "R" }
+                    else { code = "M" }
+                    badgePrefix = "\(code) "
+                }
+
+                if entry.isDirectory {
+                    newLines.append("\(badgePrefix)▸ \(entry.name)/")
+                } else {
+                    newLines.append("\(badgePrefix)\(entry.name)\(entry.isExecutable ? "*" : "")")
                 }
             }
         }
@@ -97,28 +134,39 @@ public final class DirectoryBuffer: TextBuffer {
     @discardableResult
     public func activateEntry(editor: Editor) -> Bool {
         guard lineIndex >= 0 && lineIndex < lines.count else { return false }
-        let trimmedLine = lines[lineIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+        let line = lines[lineIndex]
+        let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if trimmedLine == ".. (up a dir)" || trimmedLine.hasPrefix("..") {
             return navigateUp(editor: editor)
         }
 
-        if trimmedLine.hasPrefix("▸ ") {
-            var folderName = String(trimmedLine.dropFirst(2))
-            if folderName.hasSuffix("/") {
-                folderName = String(folderName.dropLast())
+        if line.contains("▸ ") {
+            let parts = line.components(separatedBy: "▸ ")
+            if parts.count >= 2 {
+                var folderName = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+                if folderName.hasSuffix("/") {
+                    folderName = String(folderName.dropLast())
+                }
+                let childDir = fileIO.childPath(folderName, in: directoryPath)
+                loadDirectory(at: childDir)
+                editor.topVLineIndex = 0
+                editor.clearActiveMark()
+                editor.startFileWatcherForCurrentBuffer()
+                return true
             }
-            let childDir = fileIO.childPath(folderName, in: directoryPath)
-            loadDirectory(at: childDir)
-            editor.topVLineIndex = 0
-            editor.clearActiveMark()
-            editor.startFileWatcherForCurrentBuffer()
-            return true
         }
 
-        if lines[lineIndex].hasPrefix("  ") {
-            let rawLine = lines[lineIndex].trimmingCharacters(in: .newlines)
-            var fileName = String(rawLine.dropFirst(2))
+        if lineIndex >= 4 {
+            var rawName = line.trimmingCharacters(in: .newlines)
+            if rawName.count >= 2 {
+                let firstTwo = rawName.prefix(2)
+                if firstTwo == "M " || firstTwo == "? " || firstTwo == "A " || firstTwo == "D " || firstTwo == "R " || firstTwo == "  " {
+                    rawName = String(rawName.dropFirst(2))
+                }
+            }
+            let trimmed = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
+            var fileName = trimmed
             if fileName.hasSuffix("*") {
                 fileName = String(fileName.dropLast())
             }
@@ -145,46 +193,5 @@ public final class DirectoryBuffer: TextBuffer {
             return true
         }
         return false
-    }
-}
-
-extension Editor {
-    /// Opens current working directory or specified directory path in a DirectoryBuffer.
-    public func openDirectoryBuffer(path: String? = nil) {
-        let targetPath = path?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let resolvedPath: String
-        if let targetPath, !targetPath.isEmpty {
-            resolvedPath = fileIOStrategy.normalizePath(targetPath, isDirectory: true)
-        } else if let dirBuffer = buffer as? DirectoryBuffer {
-            resolvedPath = dirBuffer.directoryPath
-        } else if let filePath = buffer.filePath {
-            resolvedPath = fileIOStrategy.parentDirectory(of: filePath)
-        } else {
-            resolvedPath = fileIOStrategy.normalizePath(fileIOStrategy.currentDirectoryPath(), isDirectory: true)
-        }
-
-        let info = fileIOStrategy.fileInfo(at: resolvedPath)
-        guard info.exists, info.isDirectory else {
-            setStatusMessage(L10n["status.no_such_buffer"])
-            return
-        }
-
-        // 1. If current active buffer is ALREADY a DirectoryBuffer for resolvedPath: reload in place
-        if let dirBuffer = buffer as? DirectoryBuffer, dirBuffer.directoryPath == resolvedPath {
-            dirBuffer.loadDirectory(at: resolvedPath)
-            startFileWatcherForCurrentBuffer()
-            return
-        }
-
-        // 2. If another open buffer is ALREADY a DirectoryBuffer for resolvedPath: switch to it
-        if let existingIndex = buffers.firstIndex(where: { ($0 as? DirectoryBuffer)?.directoryPath == resolvedPath }) {
-            switchToBuffer(index: existingIndex)
-            (buffers[existingIndex] as? DirectoryBuffer)?.loadDirectory(at: resolvedPath)
-            startFileWatcherForCurrentBuffer()
-            return
-        }
-
-        // 3. Otherwise open new DirectoryBuffer
-        openNewBuffer(filePath: resolvedPath)
     }
 }

@@ -7,13 +7,13 @@ public struct DirectorySyntax {
         if let rule = SyntaxRule(patternStr: "^\" .*$", tokenType: .comment) {
             rules.append(rule)
         }
-        if let rule = SyntaxRule(patternStr: "^\\.\\. \\(up a dir\\)$", tokenType: .keyword) {
+        if let rule = SyntaxRule(patternStr: ".*\\(up a dir\\)$", tokenType: .keyword) {
             rules.append(rule)
         }
-        if let rule = SyntaxRule(patternStr: "^▸ .*$", tokenType: .typeOrAttribute) {
+        if let rule = SyntaxRule(patternStr: ".*▸.*", tokenType: .typeOrAttribute) {
             rules.append(rule)
         }
-        if let rule = SyntaxRule(patternStr: "^  .*\\*$", tokenType: .string) {
+        if let rule = SyntaxRule(patternStr: ".*\\*$", tokenType: .string) {
             rules.append(rule)
         }
 

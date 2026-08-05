@@ -63,6 +63,7 @@ let package = Package(
             dependencies: [
                 "Config",
                 "Editor",
+                "Git",
                 "LogoEngine",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]

@@ -1,9 +1,13 @@
 import Foundation
 
-/// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
-public final class GitService: @unchecked Sendable {
-    public static let shared = GitService()
+public protocol GitServiceProtocol: Sendable {
+    func detectRepository(for filePath: String?) -> GitRepositoryInfo?
+    func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo
+    func fetchDirectoryGitStatus(repoRoot: String) -> [String: String]
+}
 
+/// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
+public final class GitService: GitServiceProtocol, @unchecked Sendable {
     private let queue = DispatchQueue(label: "org.zago.gitservice", qos: .userInitiated)
     private var repoRootCache: [String: String] = [:]
     private var branchCache: [String: String] = [:]
@@ -131,6 +135,38 @@ public final class GitService: @unchecked Sendable {
             }
         }
         return runGitCommand(args: ["branch", "--show-current"], cwd: repoRoot)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Fetches Git status badges for files in a repository directory via `git status --porcelain`.
+    public func fetchDirectoryGitStatus(repoRoot: String) -> [String: String] {
+        guard let output = runGitCommand(args: ["status", "--porcelain", "-u"], cwd: repoRoot) else {
+            return [:]
+        }
+        var statusMap: [String: String] = [:]
+        let lines = output.components(separatedBy: .newlines)
+        for line in lines {
+            guard line.count >= 4 else { continue }
+            let indexCode = line.prefix(1)
+            let workCode = line.dropFirst().prefix(1)
+            let path = String(line.dropFirst(3)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+
+            let badge: String
+            if indexCode == "?" || workCode == "?" {
+                badge = "[?]"
+            } else if indexCode == "A" || workCode == "A" {
+                badge = "[A]"
+            } else if indexCode == "M" || workCode == "M" {
+                badge = "[M]"
+            } else if indexCode == "D" || workCode == "D" {
+                badge = "[D]"
+            } else if indexCode == "R" || workCode == "R" {
+                badge = "[R]"
+            } else {
+                badge = "[M]"
+            }
+            statusMap[path] = badge
+        }
+        return statusMap
     }
 
     private func fetchHEADLinesSync(repoInfo: GitRepositoryInfo) -> [String]? {

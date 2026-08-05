@@ -64,6 +64,16 @@ extension Editor {
                 totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
     }
 
+    public func openDirectoryBuffer(path: String? = nil) {
+        let dirPath = path ?? (buffer.filePath != nil ? fileIOStrategy.parentDirectory(of: buffer.filePath!) : fileIOStrategy.currentDirectoryPath())
+        let expanded = fileIOStrategy.normalizePath(dirPath, isDirectory: true)
+        if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
+            switchToBuffer(index: existingIndex)
+        } else {
+            openNewBuffer(filePath: expanded)
+        }
+    }
+
     public func openBuffer(path: String) {
         let expanded = fileIOStrategy.normalizePath(path, isDirectory: false)
         let info = fileIOStrategy.fileInfo(at: expanded)

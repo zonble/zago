@@ -1,4 +1,5 @@
 import Foundation
+import Git
 import SpellChecker
 import TextMetrics
 
@@ -41,13 +42,14 @@ open class TextBuffer: SpellCheckableBuffer {
     /// Factory method to create appropriate TextBuffer or DirectoryBuffer.
     public static func makeBuffer(
         filePath: String?,
-        fileIO: EditorFileIOStrategy
+        fileIO: EditorFileIOStrategy,
+        gitService: GitServiceProtocol = GitService()
     ) -> TextBuffer {
         guard let path = filePath, !path.isEmpty else { return TextBuffer() }
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
         let info = fileIO.fileInfo(at: expandedPath)
         if info.exists, info.isDirectory {
-            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO)
+            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO, gitService: gitService)
         }
         return TextBuffer(filePath: expandedPath, fileIO: fileIO)
     }

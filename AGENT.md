@@ -12,12 +12,13 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 
 ### Core Design Principles
 1. **Command-Driven Architecture**: All user actions are encapsulated into discrete `Command` objects managed by `CommandRegistry`. Key processing dispatches through commands rather than monolithic `switch` blocks.
-2. **CJK & Multi-Byte Visual Alignment**: Line wrapping, gutter alignment, status bar centering, table cell padding, and terminal cursor coordinates calculate visual display width (`displayWidth`) rather than byte/character counts. CJK characters have a visual width of `2`.
-3. **Editor LOGO Dialect & Safety**: Built upon UCBLogo syntax (`TO ... END`), but removes GUI turtle windows and unconstrained loops (`FOREVER`) to prevent editor lockup. Added native editor navigation, box/line/table drawing (`BOX`, `LINE`, `TABLE`), and text transform primitives (`TRANSLIT`, `Zago-CJK-Punctuation`).
-4. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Render.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
-5. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
-6. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
-7. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, table formatting, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
+2. **Dependency Injection & No Singletons**: Services (such as `GitService`, `EditorFileIOStrategy`, terminal drivers) MUST NOT use global mutable singletons (avoid `public static let shared`). Inject dependencies via protocols or container structs (`EditorDependencies`) from the entrypoint (`zago.swift`). Sub-services and helper modules MUST NOT hold direct dependencies on the monolithic `Editor` class.
+3. **CJK & Multi-Byte Visual Alignment**: Line wrapping, gutter alignment, status bar centering, table cell padding, and terminal cursor coordinates calculate visual display width (`displayWidth`) rather than byte/character counts. CJK characters have a visual width of `2`.
+4. **Editor LOGO Dialect & Safety**: Built upon UCBLogo syntax (`TO ... END`), but removes GUI turtle windows and unconstrained loops (`FOREVER`) to prevent editor lockup. Added native editor navigation, box/line/table drawing (`BOX`, `LINE`, `TABLE`), and text transform primitives (`TRANSLIT`, `Zago-CJK-Punctuation`).
+5. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Render.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
+6. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
+7. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
+8. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, table formatting, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
 
 ---
 
@@ -160,6 +161,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 5. **No File Overcrowding**: If an extension file grows beyond 300 lines, evaluate splitting it into a dedicated helper module.
 6. **Strict Test-Driven Development (TDD)**: AI agents MUST follow TDD. Before fixing a bug or adding features, write automated unit tests first in `Tests/seTests/seTests.swift` to assert the contract/behavior, run `swift test` to observe failure if applicable, implement the code fix, and verify zero test failures.
 7. **No Unsolicited Git Commits**: AI agents MUST NOT execute `git commit` unless the user explicitly requests a commit (e.g., "commit", "git commit"). Leave code changes in the working directory for user review.
+8. **Avoid Singletons & Direct Editor Class Dependencies**: Avoid global mutable singletons (`public static let shared`). Services MUST be passed via protocol abstractions or `EditorDependencies`. Secondary components, background services, and sub-systems MUST NOT depend directly on the monolithic `Editor` class.
 
 ---
 
@@ -168,3 +170,4 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 - [ ] **Adding a syntax language**: Create a new class under `Sources/Editor/Syntax/` inheriting from `SyntaxDefinition`, and register it in `SyntaxHighlighter.swift`.
 - [ ] **Adding a new keybinding**: Register the command in `Editor+Commands.swift`, add help bar label in `Localization/`, and update `HelpView.swift`.
 - [ ] **Adding a user configuration flag**: Add property to `EditorConfig` in `ConfigLoader.swift`, update parser directives, and connect in `Editor.init`.
+
