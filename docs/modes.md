@@ -1,6 +1,6 @@
 # Editor Modes
 
-This document describes the planned editing modes for `zago`. The goal is to
+This document defines the editing modes and layout behavior for `zago`. The goal is to
 keep ordinary text editing fast while also supporting fixed-position diagram
 editing, table cell editing, and keyboard-driven box/arrow drawing in Canvas
 Mode.

@@ -36,6 +36,7 @@
 - **Function Keys** (e.g. `F1` for Menu Bar)
 - **Interactive Menu Bar** (`F1`)
 - **Command Prompt / Command Bar** (`Esc` or `Alt+:`)
+- **VT100 ANSI Double Buffering & Line Diffing Algorithm**: Flicker-free terminal rendering with line-level diffing, CJK layout caching, and hardware scroll avoidance.
 
 ---
 

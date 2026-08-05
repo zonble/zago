@@ -1,6 +1,6 @@
-# Spell Checker Architecture & Development Plan
+# Spell Checker Architecture & Specification
 
-This document outlines the architecture, cross-platform design goals, and development milestones for `zago`'s spell checking system.
+This document defines the architecture, cross-platform engine design, and configuration specifications for `zago`'s spell checking system.
 
 ---
 

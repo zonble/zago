@@ -16,8 +16,8 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Directory mode & permissions](directory_mode.md): DirectoryBuffer architecture, command filtering matrix, and Editor LOGO execution restrictions.
 - [Diagram snippets & menu rules](diagram_snippets.md): trigger conditions, code block context detection, filtering rules, and Editor LOGO `DIAGRAM` command usage.
 - [Homebrew tap](homebrew_tap.md): personal tap layout, Formula template, release checksum workflow, and user install commands.
-- [Spell Checker Architecture & Plan](spell_checker.md): multi-language design, platform engines (Windows COM API, Hunspell, macOS NSSpellChecker), Markdown context filtering, and `.zagorc` language directives.
+- [Spell Checker Architecture & Specification](spell_checker.md): multi-language design, platform engines (Windows COM API, Hunspell, macOS NSSpellChecker), Markdown context filtering, and `.zagorc` language directives.
 - [File Encoding & Auto-Detection Architecture](encoding.md): multi-encoding auto-detection, buffer encoding state preservation, and UTF-8 fallback workflow.
 - [Git Integration & Diff Gutter Specification](git_integration.md): non-Git-client design, title bar `[branch]` status, real-time diff against `HEAD`, and line number gutter colors (`+`, `~`, `-`).
-- [Buffer Rendering Performance Improvement Plan](rendering_performance_plan.md): analysis of current rendering bottlenecks and step-by-step optimization plan (Git Diff decoupling, Syntax Caching, Double Buffering, Virtual Line Caching).
+- [Terminal Rendering Performance Architecture](rendering_performance.md): rendering performance architecture, double buffering engine, line diffing algorithm, and layout caching specifications (Git Diff decoupling, Syntax Caching, VT100 Double Buffering, Virtual Line Caching).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
