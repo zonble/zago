@@ -25,6 +25,15 @@ private enum CanvasDrawDirection {
         case .left: return 8
         }
     }
+
+    var opposite: CanvasDrawDirection {
+        switch self {
+        case .up: return .down
+        case .down: return .up
+        case .left: return .right
+        case .right: return .left
+        }
+    }
 }
 
 extension Editor {
@@ -445,6 +454,17 @@ extension Editor {
             visualColumn: currentColumn,
             direction: direction,
             style: style)
+
+        if ensureCanvasLineExists(targetLine) {
+            let targetChar = canvasCharacter(atLine: targetLine, visualColumn: targetColumn)
+            if let targetChar, canvasMask(for: targetChar, style: style) != 0 {
+                writeCanvasLineSegment(
+                    lineIndex: targetLine,
+                    visualColumn: targetColumn,
+                    direction: direction.opposite,
+                    style: style)
+            }
+        }
 
         if drawsArrow {
             guard ensureCanvasLineExists(targetLine) else { return }

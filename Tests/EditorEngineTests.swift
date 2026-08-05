@@ -21,6 +21,132 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 1)
 }
 
+@Test func testCanvasModeLineFusionStepByStep() throws {
+    // shift + right case: ─│ -> ─┤ -> ─┼
+    do {
+        let editor = Editor()
+        editor.buffer.lines = ["─│"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        // 1st shift + right: moves from ─ to │. │ becomes ┤, cursor lands on ┤.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "─┤")
+        #expect(editor.canvasVisualColumn == 1)
+
+        // 2nd shift + right: moves from ┤ to right. ┤ becomes ┼, cursor lands on col 2.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "─┼")
+        #expect(editor.canvasVisualColumn == 2)
+    }
+
+    // shift + down case: │ over ─ -> ┴ -> ┼
+    do {
+        let editor = Editor()
+        editor.buffer.lines = ["│", "─"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        // 1st shift + down: moves from │ to ─. ─ becomes ┴, cursor lands on ┴.
+        editor.processKey(.shiftArrowDown)
+        #expect(editor.buffer.lines[0] == "│")
+        #expect(editor.buffer.lines[1] == "┴")
+        #expect(editor.buffer.lineIndex == 1)
+
+        // 2nd shift + down: moves from ┴ down. ┴ becomes ┼, cursor lands on line 2.
+        editor.processKey(.shiftArrowDown)
+        #expect(editor.buffer.lines[1] == "┼")
+        #expect(editor.buffer.lineIndex == 2)
+    }
+
+    // shift + left case: │─ -> ├─ -> ┼─
+    do {
+        let editor = Editor()
+        editor.buffer.lines = [" │─"]
+        editor.buffer.lineIndex = 0
+        editor.canvasVisualColumn = 2
+        editor.syncCanvasCursorToBuffer()
+        editor.switchToCanvasMode()
+
+        // 1st shift + left: moves from ─ to │. │ becomes ├, cursor lands on ├.
+        editor.processKey(.shiftArrowLeft)
+        #expect(editor.buffer.lines[0] == " ├─")
+        #expect(editor.canvasVisualColumn == 1)
+
+        // 2nd shift + left: moves from ├ left. ├ becomes ┼, cursor lands on col 0 (space).
+        editor.processKey(.shiftArrowLeft)
+        #expect(editor.buffer.lines[0] == " ┼─")
+        #expect(editor.canvasVisualColumn == 0)
+    }
+
+    // shift + up case: ─ under │ -> ┬ -> ┼
+    do {
+        let editor = Editor()
+        editor.buffer.lines = ["", "─", "│"]
+        editor.buffer.lineIndex = 2
+        editor.buffer.columnIndex = 0
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        // 1st shift + up: moves from │ to ─. ─ becomes ┬, cursor lands on ┬.
+        editor.processKey(.shiftArrowUp)
+        #expect(editor.buffer.lines[1] == "┬")
+        #expect(editor.buffer.lines[2] == "│")
+        #expect(editor.buffer.lineIndex == 1)
+
+        // 2nd shift + up: moves from ┬ up. ┬ becomes ┼, cursor lands on line 0.
+        editor.processKey(.shiftArrowUp)
+        #expect(editor.buffer.lines[1] == "┼")
+        #expect(editor.buffer.lineIndex == 0)
+    }
+
+    // Double border style case: ═║ -> ═╣ -> ═╬
+    do {
+        let editor = Editor()
+        editor.defaultBorderStyle = .double
+        editor.buffer.lines = ["═║"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        // 1st shift + right: moves from ═ to ║. ║ becomes ╣, cursor lands on ╣.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "═╣")
+        #expect(editor.canvasVisualColumn == 1)
+
+        // 2nd shift + right: moves from ╣ to right. ╣ becomes ╬, cursor lands on col 2.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "═╬")
+        #expect(editor.canvasVisualColumn == 2)
+    }
+
+    // ASCII border style case: -| -> -+ -> -+
+    do {
+        let editor = Editor()
+        editor.defaultBorderStyle = .ascii
+        editor.buffer.lines = ["-|"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        // 1st shift + right: moves from - to |. | becomes +, cursor lands on +.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "-+")
+        #expect(editor.canvasVisualColumn == 1)
+
+        // 2nd shift + right: moves from + to right. + remains +, cursor lands on col 2.
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "-+")
+        #expect(editor.canvasVisualColumn == 2)
+    }
+}
+
 @Test func testCanvasModeCtrlShiftArrowDrawsArrows() throws {
     let editor = Editor()
     editor.defaultBorderStyle = .ascii
