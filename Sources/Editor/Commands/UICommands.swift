@@ -30,6 +30,8 @@ public struct LogoReferenceCommand: Command {
             lines: LogoReferenceContent.lines(),
             footer: L10n["textview.footer"]
         ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
     }
 }
 
@@ -49,6 +51,8 @@ public struct LogoWorkspaceCommand: Command {
             lines: LogoWorkspaceContent.lines(engine: editor.logoEngine),
             footer: L10n["textview.footer"]
         ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
     }
 }
 
@@ -81,5 +85,7 @@ public struct ShowHelpCommand: Command {
             lines: HelpContent.lines(),
             footer: L10n["textview.footer"]
         ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
     }
 }

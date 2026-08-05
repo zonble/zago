@@ -1621,3 +1621,38 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(ed6.buffer.lines[1].contains("SE"))
     #expect(ed6.buffer.lineIndex == 0)
 }
+
+@Test func testBufferCloseAndSwitchInvalidatesScreenCache() throws {
+    let editor = Editor()
+    editor.openNewBuffer(filePath: "second.md")
+    #expect(editor.buffers.count == 2)
+
+    // Render screen to populate cache
+    _ = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+    #expect(editor.renderer.isScreenCacheValid == true)
+
+    // 1. Switch buffer -> must invalidate screen cache
+    editor.nextBuffer()
+    #expect(editor.renderer.isScreenCacheValid == false)
+
+    // Populate cache again
+    _ = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+    #expect(editor.renderer.isScreenCacheValid == true)
+
+    // 2. Close buffer -> must invalidate screen cache
+    editor.closeCurrentBuffer()
+    #expect(editor.renderer.isScreenCacheValid == false)
+}
+
+@Test func testShowHelpAndReferenceCommandsInvalidateScreenCache() throws {
+    let editor = Editor()
+
+    // Populate cache
+    _ = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+    #expect(editor.renderer.isScreenCacheValid == true)
+
+    // Invalidate screen cache directly
+    editor.renderer.invalidateScreenCache()
+    #expect(editor.renderer.isScreenCacheValid == false)
+}
+

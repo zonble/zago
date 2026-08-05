@@ -49,6 +49,7 @@ public final class TextDocumentView {
             case .unknown:
                 render()
             default:
+                terminal.clearScreen()
                 return
             }
         }

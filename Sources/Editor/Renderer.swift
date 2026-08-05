@@ -21,6 +21,11 @@ public final class Renderer {
     private var lastRows: Int = 0
     private var lastCols: Int = 0
 
+    /// Returns whether the screen line buffer cache is currently valid/populated.
+    public var isScreenCacheValid: Bool {
+        !lastRenderedLines.isEmpty
+    }
+
     /// Invalidates the screen line buffer cache, forcing a full redraw on the next render pass.
     public func invalidateScreenCache() {
         lastRenderedLines.removeAll()

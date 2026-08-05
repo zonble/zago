@@ -410,6 +410,7 @@ public final class Editor: @unchecked Sendable {
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 
     /// Switches to next open buffer in sequence.
@@ -448,6 +449,7 @@ public final class Editor: @unchecked Sendable {
         topVLineIndex = 0
         clearActiveMark()
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 
     /// Opens ~/.zagorc in a buffer for editing. Creates ~/.zagorc with default template if it does not exist.
@@ -517,6 +519,7 @@ public final class Editor: @unchecked Sendable {
             topVLineIndex = 0
             clearActiveMark()
             startFileWatcherForCurrentBuffer()
+            renderer.invalidateScreenCache()
         }
     }
 
