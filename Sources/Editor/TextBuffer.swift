@@ -2,6 +2,7 @@ import Foundation
 import Git
 import SpellChecker
 import TextMetrics
+import TextTransform
 
 /// Manages text buffer lines and cursor operations.
 open class TextBuffer: SpellCheckableBuffer {
@@ -359,6 +360,112 @@ open class TextBuffer: SpellCheckableBuffer {
         }
 
         return nil
+    }
+
+    /// Moves cursor forward by one word (M+F).
+    public func moveWordForward() {
+        ensureBounds()
+        let currentLine = lines[lineIndex]
+        let lineChars = Array(currentLine)
+
+        if columnIndex >= lineChars.count {
+            if lineIndex < lines.count - 1 {
+                lineIndex += 1
+                columnIndex = 0
+            }
+            return
+        }
+
+        var idx = columnIndex
+
+        enum CharCategory {
+            case asciiWord
+            case cjkScript
+            case nonWord
+        }
+
+        func category(at i: Int) -> CharCategory {
+            let ch = lineChars[i]
+            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
+                return .cjkScript
+            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
+                return .asciiWord
+            } else {
+                return .nonWord
+            }
+        }
+
+        while idx < lineChars.count && category(at: idx) == .nonWord {
+            idx += 1
+        }
+
+        if idx >= lineChars.count {
+            columnIndex = lineChars.count
+            return
+        }
+
+        let cat = category(at: idx)
+        if cat == .cjkScript {
+            columnIndex = idx + 1
+        } else if cat == .asciiWord {
+            while idx < lineChars.count && category(at: idx) == .asciiWord {
+                idx += 1
+            }
+            columnIndex = idx
+        }
+    }
+
+    /// Moves cursor backward by one word (M+B).
+    public func moveWordBackward() {
+        ensureBounds()
+
+        if columnIndex == 0 {
+            if lineIndex > 0 {
+                lineIndex -= 1
+                columnIndex = lines[lineIndex].count
+            }
+            return
+        }
+
+        let currentLine = lines[lineIndex]
+        let lineChars = Array(currentLine)
+        var idx = min(columnIndex, lineChars.count)
+
+        enum CharCategory {
+            case asciiWord
+            case cjkScript
+            case nonWord
+        }
+
+        func category(at i: Int) -> CharCategory {
+            let ch = lineChars[i]
+            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
+                return .cjkScript
+            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
+                return .asciiWord
+            } else {
+                return .nonWord
+            }
+        }
+
+        while idx > 0 && category(at: idx - 1) == .nonWord {
+            idx -= 1
+        }
+
+        if idx == 0 {
+            columnIndex = 0
+            return
+        }
+
+        let cat = category(at: idx - 1)
+        if cat == .cjkScript {
+            columnIndex = idx - 1
+        } else if cat == .asciiWord {
+            while idx > 0 && category(at: idx - 1) == .asciiWord {
+                idx -= 1
+            }
+            columnIndex = idx
+        }
     }
 
     /// Deletes the character preceding the cursor (Backspace).

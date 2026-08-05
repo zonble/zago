@@ -12,6 +12,8 @@ extension Editor {
         commandRegistry.register(MoveEndCommand())
         commandRegistry.register(MovePgdnCommand())
         commandRegistry.register(MovePgupCommand())
+        commandRegistry.register(MoveWordForwardCommand())
+        commandRegistry.register(MoveWordBackwardCommand())
 
         // Selection Commands
         commandRegistry.register(SelectLeftCommand())

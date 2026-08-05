@@ -257,6 +257,27 @@ import TextMetrics
     #expect(editor2.buffer.lines[0].contains("║"))
 }
 
+@Test func testLogoLineWithCJKTextDoesNotOverwriteCJKCharacters() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌──────────┐        ┌──────────┐",
+        "│ 你好谷歌 │        │ 你好嗎？ │",
+        "└──────────┘        └──────────┘"
+    ]
+    editor.buffer.lineIndex = 1
+    // Character index 7 is right after "你好谷歌 " inside the box:
+    editor.buffer.columnIndex = 7
+
+    logoEngine.execute("LINE")
+
+    let line1 = editor.buffer.lines[1]
+    #expect(line1.hasPrefix("│ 你好谷歌 "))
+    #expect(line1.contains("├────────┤"))
+    #expect(line1.contains("你好嗎？"))
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

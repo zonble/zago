@@ -50,17 +50,13 @@ extension LogoEngine {
             if isPenDown {
                 editor.logoEngine(self, performAction: .ensureLineExists(index: currLine))
                 let lineStr = (editor.logoEngine(self, queryState: .lineAt(currLine)) as? String) ?? ""
-                var lineChars = Array(lineStr)
-                while lineChars.count <= currCol {
-                    lineChars.append(" ")
-                }
-                let existingChar = lineChars[currCol]
+                let existingChar = displayCharAt(in: lineStr, visualColumn: currCol)
                 let defaultNewChar: Character = (dRow != 0) ? "│" : "─"
                 let isTerminalStep = step == steps - 1 || !nextIsInsideMinimumBounds
                 let maskToApply = (step == 0) ? exitBit : (isTerminalStep ? entryBit : (exitBit | entryBit))
                 let fusedChar = fuseCharContextual(line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar, moveMask: maskToApply)
-                lineChars[currCol] = fusedChar
-                editor.logoEngine(self, performAction: .setLine(index: currLine, text: String(lineChars)))
+                let updatedLineText = replaceDisplayColumns(in: lineStr, startCol: currCol, width: 1, replacement: String(fusedChar))
+                editor.logoEngine(self, performAction: .setLine(index: currLine, text: updatedLineText))
                 editor.logoEngine(self, performAction: .markModified)
             }
 
@@ -77,21 +73,15 @@ extension LogoEngine {
         let totalLines = (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
         guard line >= 0 && line < totalLines else { return " " }
         let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
-        let lineChars = Array(lineStr)
-        guard col >= 0 && col < lineChars.count else { return " " }
-        return lineChars[col]
+        return displayCharAt(in: lineStr, visualColumn: col)
     }
 
     internal func setLineCharAt(line: Int, col: Int, char: Character) {
         guard let editor = self.delegate else { return }
         editor.logoEngine(self, performAction: .ensureLineExists(index: line))
         let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
-        var lineChars = Array(lineStr)
-        while lineChars.count <= col {
-            lineChars.append(" ")
-        }
-        lineChars[col] = char
-        editor.logoEngine(self, performAction: .setLine(index: line, text: String(lineChars)))
+        let updated = replaceDisplayColumns(in: lineStr, startCol: col, width: 1, replacement: String(char))
+        editor.logoEngine(self, performAction: .setLine(index: line, text: updated))
         editor.logoEngine(self, performAction: .markModified)
     }
 

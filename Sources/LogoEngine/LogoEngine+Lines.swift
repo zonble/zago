@@ -180,19 +180,91 @@ extension LogoEngine {
         }
     }
 
+    private func findNextNonSpace(in line: String, from startCol: Int) -> (col: Int, char: Character)? {
+        let maxSearch = 200
+        for offset in 0..<maxSearch {
+            let col = startCol + offset
+            let ch = displayCharAt(in: line, visualColumn: col)
+            if ch != " " {
+                return (col, ch)
+            }
+        }
+        return nil
+    }
+
+    private func findPrevNonSpace(in line: String, from startCol: Int) -> (col: Int, char: Character)? {
+        let maxSearch = min(200, startCol + 1)
+        for offset in 1...maxSearch {
+            let col = startCol - offset
+            if col < 0 { break }
+            let ch = displayCharAt(in: line, visualColumn: col)
+            if ch != " " {
+                return (col, ch)
+            }
+        }
+        return nil
+    }
+
+    private func findNextNonSpaceVertical(fromLine startLine: Int, col: Int) -> (line: Int, char: Character)? {
+        let maxSearch = 100
+        for offset in 0..<maxSearch {
+            let line = startLine + offset
+            let ch = getLineCharAt(line: line, col: col)
+            if ch != " " {
+                return (line, ch)
+            }
+        }
+        return nil
+    }
+
+    private func findPrevNonSpaceVertical(fromLine startLine: Int, col: Int) -> (line: Int, char: Character)? {
+        let maxSearch = min(100, startLine + 1)
+        for offset in 1...maxSearch {
+            let line = startLine - offset
+            if line < 0 { break }
+            let ch = getLineCharAt(line: line, col: col)
+            if ch != " " {
+                return (line, ch)
+            }
+        }
+        return nil
+    }
+
     private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
-        let maxSearchLength = 200
+        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+
+        var realStartCol = startCol
+
+        if let next = findNextNonSpace(in: lineText, from: startCol == 0 ? 0 : startCol) {
+            if isMaskChar(next.char) {
+                if let afterNext = findNextNonSpace(in: lineText, from: next.col + 1) {
+                    if afterNext.col > next.col + 1 && isMaskChar(afterNext.char) {
+                        if startCol <= next.col {
+                            realStartCol = next.col
+                        }
+                    }
+                }
+            }
+        }
+
+        if let prev = findPrevNonSpace(in: lineText, from: startCol) {
+            if isMaskChar(prev.char) {
+                if let next = findNextNonSpace(in: lineText, from: startCol) {
+                    if isMaskChar(next.char) && next.col > prev.col + 1 {
+                        realStartCol = prev.col
+                    }
+                }
+            }
+        }
+
         var targetOffset: Int? = nil
         var targetChar: Character? = nil
+        let maxSearchLength = 200
 
-        for offset in 0..<maxSearchLength {
-            let col = startCol + offset
-            let existing = getLineCharAt(line: startLine, col: col)
-
-            if offset == 0 {
-                continue
-            }
+        for offset in 1..<maxSearchLength {
+            let col = realStartCol + offset
+            let existing = displayCharAt(in: lineText, visualColumn: col)
 
             if existing != " " {
                 targetOffset = offset
@@ -218,11 +290,11 @@ extension LogoEngine {
         guard !drawableOffsets.isEmpty else { return }
 
         editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
-        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
-            let col = startCol + offset
+            let col = realStartCol + offset
 
             let moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
             let existing = displayCharAt(in: lineText, visualColumn: col)
@@ -233,22 +305,43 @@ extension LogoEngine {
         }
 
         editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
-        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
+        editor.logoEngine(self, performAction: .updateColumnIndex(realStartCol + drawableOffsets.count))
     }
 
     private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
-        let maxSearchHeight = 100
+
+        var realStartLine = startLine
+
+        if let next = findNextNonSpaceVertical(fromLine: startLine, col: startCol) {
+            if isMaskChar(next.char) {
+                if let afterNext = findNextNonSpaceVertical(fromLine: next.line + 1, col: startCol) {
+                    if afterNext.line > next.line + 1 && isMaskChar(afterNext.char) {
+                        if startLine <= next.line {
+                            realStartLine = next.line
+                        }
+                    }
+                }
+            }
+        }
+
+        if let prev = findPrevNonSpaceVertical(fromLine: startLine, col: startCol) {
+            if isMaskChar(prev.char) {
+                if let next = findNextNonSpaceVertical(fromLine: startLine, col: startCol) {
+                    if isMaskChar(next.char) && next.line > prev.line + 1 {
+                        realStartLine = prev.line
+                    }
+                }
+            }
+        }
+
         var targetOffset: Int? = nil
         var targetChar: Character? = nil
+        let maxSearchHeight = 100
 
-        for offset in 0..<maxSearchHeight {
-            let line = startLine + offset
+        for offset in 1..<maxSearchHeight {
+            let line = realStartLine + offset
             let existing = getLineCharAt(line: line, col: startCol)
-
-            if offset == 0 {
-                continue
-            }
 
             if existing != " " {
                 targetOffset = offset
@@ -275,7 +368,7 @@ extension LogoEngine {
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
-            let line = startLine + offset
+            let line = realStartLine + offset
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
@@ -290,7 +383,7 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + max(0, drawableOffsets.count - 1)))
+        editor.logoEngine(self, performAction: .updateLineIndex(realStartLine + max(0, drawableOffsets.count - 1)))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 
@@ -388,7 +481,7 @@ extension LogoEngine {
         styleChar == "|" ? "^" : "↑"
     }
 
-    private func displayCharAt(in line: String, visualColumn: Int) -> Character {
+    internal func displayCharAt(in line: String, visualColumn: Int) -> Character {
         var col = 0
         for ch in line {
             if col == visualColumn {
@@ -402,7 +495,7 @@ extension LogoEngine {
         return " "
     }
 
-    private func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
+    internal func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
         let prefix = displayPrefix(in: line, before: startCol)
         let suffix = displaySuffix(in: line, after: startCol + width)
         let paddedPrefix = prefix + String(repeating: " ", count: max(0, startCol - prefix.displayWidth))

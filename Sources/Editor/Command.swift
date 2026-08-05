@@ -42,6 +42,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case moveEnd = "move.end"
     case movePgdn = "move.pgdn"
     case movePgup = "move.pgup"
+    case moveWordForward = "move.word_forward"
+    case moveWordBackward = "move.word_backward"
 
     // Selection
     case selectLeft = "select.left"

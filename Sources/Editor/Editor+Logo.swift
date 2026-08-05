@@ -81,7 +81,13 @@ extension Editor: LogoEngineDelegate {
                 canvasVisualColumn = max(0, columnIndex)
                 syncCanvasCursorToBuffer()
             } else {
-                buffer.columnIndex = columnIndex
+                let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+                let maxDisplayWidth = lineStr.displayWidth
+                if columnIndex <= maxDisplayWidth {
+                    buffer.columnIndex = getCharIndexForVisualColumn(in: lineStr, targetVisualCol: max(0, columnIndex))
+                } else {
+                    buffer.columnIndex = lineStr.count + (columnIndex - maxDisplayWidth)
+                }
             }
         case .setLine(let index, let text):
             if index >= 0 && index < buffer.lines.count {
@@ -118,7 +124,17 @@ extension Editor: LogoEngineDelegate {
         case .currentLineIndex:
             return buffer.lineIndex
         case .currentColumnIndex:
-            return isCanvasModeActive ? canvasVisualColumn : buffer.columnIndex
+            if isCanvasModeActive {
+                return canvasVisualColumn
+            } else {
+                let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+                let charCount = lineStr.count
+                if buffer.columnIndex <= charCount {
+                    return getVisualColumn(in: lineStr, col: buffer.columnIndex)
+                } else {
+                    return lineStr.displayWidth + (buffer.columnIndex - charCount)
+                }
+            }
         case .lineCount:
             return buffer.lines.count
         case .lineAt(let index):

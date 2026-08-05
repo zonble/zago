@@ -1,6 +1,7 @@
 import Foundation
 import LogoEngine
 import TextMetrics
+import TextTransform
 
 extension Editor {
     // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
@@ -212,6 +213,12 @@ extension Editor {
         case .arrowRight, .ctrl("F"):
             promptCursorIndex = min(promptInputText.count, promptCursorIndex + 1)
             return true
+        case .alt("b"), .alt("B"):
+            movePromptWordBackward()
+            return true
+        case .alt("f"), .alt("F"):
+            movePromptWordForward()
+            return true
         case .ctrl("A"), .home:
             promptCursorIndex = 0
             return true
@@ -228,6 +235,92 @@ extension Editor {
             return true
         default:
             return false
+        }
+    }
+
+    private func movePromptWordForward() {
+        let textChars = Array(promptInputText)
+        if promptCursorIndex >= textChars.count { return }
+
+        var idx = promptCursorIndex
+
+        enum CharCategory {
+            case asciiWord
+            case cjkScript
+            case nonWord
+        }
+
+        func category(at i: Int) -> CharCategory {
+            let ch = textChars[i]
+            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
+                return .cjkScript
+            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
+                return .asciiWord
+            } else {
+                return .nonWord
+            }
+        }
+
+        while idx < textChars.count && category(at: idx) == .nonWord {
+            idx += 1
+        }
+
+        if idx >= textChars.count {
+            promptCursorIndex = textChars.count
+            return
+        }
+
+        let cat = category(at: idx)
+        if cat == .cjkScript {
+            promptCursorIndex = idx + 1
+        } else if cat == .asciiWord {
+            while idx < textChars.count && category(at: idx) == .asciiWord {
+                idx += 1
+            }
+            promptCursorIndex = idx
+        }
+    }
+
+    private func movePromptWordBackward() {
+        let textChars = Array(promptInputText)
+        if promptCursorIndex == 0 { return }
+
+        var idx = min(promptCursorIndex, textChars.count)
+
+        enum CharCategory {
+            case asciiWord
+            case cjkScript
+            case nonWord
+        }
+
+        func category(at i: Int) -> CharCategory {
+            let ch = textChars[i]
+            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
+                return .cjkScript
+            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
+                return .asciiWord
+            } else {
+                return .nonWord
+            }
+        }
+
+        while idx > 0 && category(at: idx - 1) == .nonWord {
+            idx -= 1
+        }
+
+        if idx == 0 {
+            promptCursorIndex = 0
+            return
+        }
+
+        let cat = category(at: idx - 1)
+        if cat == .cjkScript {
+            promptCursorIndex = idx - 1
+        } else if cat == .asciiWord {
+            while idx > 0 && category(at: idx - 1) == .asciiWord {
+                idx -= 1
+            }
+            promptCursorIndex = idx
         }
     }
 

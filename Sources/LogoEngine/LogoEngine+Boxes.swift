@@ -564,44 +564,6 @@ extension LogoEngine {
         pattern.tiledToDisplayWidth(targetWidth)
     }
 
-    private func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
-        let prefix = displayPrefix(in: line, before: startCol)
-        let suffix = displaySuffix(in: line, after: startCol + width)
-        let paddedPrefix = prefix + String(repeating: " ", count: max(0, startCol - prefix.displayWidth))
-        return paddedPrefix + replacement + suffix
-    }
-
-    private func displayPrefix(in line: String, before targetCol: Int) -> String {
-        var result = ""
-        var col = 0
-        for ch in line {
-            let nextCol = col + ch.displayWidth
-            if nextCol <= targetCol {
-                result.append(ch)
-            } else {
-                break
-            }
-            col = nextCol
-        }
-        return result
-    }
-
-    private func displaySuffix(in line: String, after targetCol: Int) -> String {
-        var result = ""
-        var col = 0
-        for ch in line {
-            let nextCol = col + ch.displayWidth
-            if col >= targetCol {
-                result.append(ch)
-            } else if nextCol > targetCol {
-                let overflow = nextCol - targetCol
-                result += String(repeating: " ", count: overflow)
-            }
-            col = nextCol
-        }
-        return result
-    }
-
     private func performFloodFill(startLine: Int, startCol: Int, fillPattern: String) {
         guard let editor = self.delegate else { return }
 
@@ -620,18 +582,9 @@ extension LogoEngine {
         let maxRows = min(totalLines + 20, 200)
         let maxCols = 200
 
-        var lineMap: [Int: [Character]] = [:]
-
         func getCharAt(r: Int, c: Int) -> Character {
-            if lineMap[r] == nil {
-                let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
-                lineMap[r] = Array(lineStr)
-            }
-            let chars = lineMap[r]!
-            if c >= 0 && c < chars.count {
-                return chars[c]
-            }
-            return " "
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            return displayCharAt(in: lineStr, visualColumn: c)
         }
 
         func isBoundary(ch: Character) -> Bool {

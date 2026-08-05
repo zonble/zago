@@ -201,3 +201,65 @@ import Testing
     #expect(buffer.lineIndex == 1)
     #expect(buffer.columnIndex == 0)
 }
+
+@Test func testWordNavigationForwardAndBackward() {
+    let buffer = TextBuffer()
+    buffer.lines = ["Hello world, zago!"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 0
+
+    // Move forward past "Hello"
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 5)
+
+    // Move forward past "world"
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 11)
+
+    // Move forward past "zago"
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 17)
+
+    // Move backward past "zago"
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 13)
+
+    // Move backward past "world"
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 6)
+
+    // Move backward past "Hello"
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 0)
+}
+
+@Test func testCJKWordNavigation() {
+    let buffer = TextBuffer()
+    buffer.lines = ["「你好世界」"]
+    buffer.lineIndex = 0
+    buffer.columnIndex = 0
+
+    // Move forward skips 「 and stops after 你
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 2) // after 你
+
+    // Move forward stops after 好
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 3) // after 好
+
+    // Move forward stops after 世
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 4) // after 世
+
+    // Move forward stops after 界
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 5) // after 界
+
+    // Move backward moves before 界
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 4) // before 界
+
+    // Move backward moves before 世
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 3) // before 世
+}

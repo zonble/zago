@@ -41,8 +41,8 @@ extension Editor {
             }
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
             buffer.lineIndex = targetLine
-            let zeroBasedColumn = oneBasedColumn - 1
-            buffer.columnIndex = max(0, min(zeroBasedColumn, buffer.lines[targetLine].count))
+            let zeroBasedVisualColumn = oneBasedColumn - 1
+            buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[targetLine], targetVisualCol: zeroBasedVisualColumn)
         } else {
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
             buffer.lineIndex = targetLine

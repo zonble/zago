@@ -1,25 +1,25 @@
 import Foundation
 
-enum TextUnicodeClassifier {
-    static func isUnicodeWordCharacter(_ character: Character) -> Bool {
+public enum TextUnicodeClassifier {
+    public static func isUnicodeWordCharacter(_ character: Character) -> Bool {
         character.unicodeScalars.contains { scalar in
             CharacterSet.alphanumerics.contains(scalar) || scalar == "_"
         }
     }
 
-    static func isASCIIWordCharacter(_ character: Character) -> Bool {
+    public static func isASCIIWordCharacter(_ character: Character) -> Bool {
         character.unicodeScalars.allSatisfy { scalar in
             scalar.value < 128 && (CharacterSet.alphanumerics.contains(scalar) || scalar == "_")
         }
     }
 
-    static func isCJKProseCharacter(_ character: Character) -> Bool {
+    public static func isCJKProseCharacter(_ character: Character) -> Bool {
         character.unicodeScalars.contains { scalar in
             isCJKScriptScalar(scalar) || isCJKPunctuationScalar(scalar)
         }
     }
 
-    static func isCJKScriptCharacter(_ character: Character) -> Bool {
+    public static func isCJKScriptCharacter(_ character: Character) -> Bool {
         character.unicodeScalars.contains(where: isCJKScriptScalar)
     }
 

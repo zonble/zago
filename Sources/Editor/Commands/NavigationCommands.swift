@@ -218,3 +218,35 @@ public struct MovePgupCommand: Command {
     }
 }
 
+public struct MoveWordForwardCommand: Command {
+    public let id: CommandID = .moveWordForward
+    public let name = "Forward Word"
+    public let description = "Move forward one word"
+    public let keys: [Key] = [.alt("f"), .alt("F")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        if !editor.isCanvasModeActive {
+            editor.clearActiveMark()
+        }
+        editor.buffer.moveWordForward()
+    }
+}
+
+public struct MoveWordBackwardCommand: Command {
+    public let id: CommandID = .moveWordBackward
+    public let name = "Backward Word"
+    public let description = "Move backward one word"
+    public let keys: [Key] = [.alt("b"), .alt("B")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        if !editor.isCanvasModeActive {
+            editor.clearActiveMark()
+        }
+        editor.buffer.moveWordBackward()
+    }
+}
+
