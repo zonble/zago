@@ -23,7 +23,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          winget source update
+          # NOTE (Windows CI Flake Fix - Winget Source Corruption 0x8a15000f):
+          # GitHub Actions Windows runner VMs frequently experience corrupted winget source indexes or CDN timeouts.
+          # We forcefully reset winget sources and catch update errors to prevent CI pipeline failures when installing Swift.
+          try { winget source reset --force } catch {}
+          try { winget source update } catch {}
           winget install --id Swift.Toolchain --exact --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
 
           $swiftBin = Get-ChildItem -Path `
