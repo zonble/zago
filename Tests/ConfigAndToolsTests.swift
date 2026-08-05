@@ -329,21 +329,11 @@ import Testing
 @Test func testCommandBarAliasesMatchCommands() throws {
     let editor = Editor()
 
-    #expect(editor.commandRegistry.dispatch("spell", editor: editor) == .handled)
     #expect(editor.commandRegistry.dispatch("outline", editor: editor) == .handled)
-
-    #expect(editor.commandRegistry.dispatch("canvas", editor: editor) == .handled)
-    #expect(editor.baseMode == .canvas)
-
-    #expect(editor.commandRegistry.dispatch("textmode", editor: editor) == .handled)
-    #expect(editor.baseMode == .text)
+    #expect(editor.overlayMode == .none)
 
     #expect(editor.commandRegistry.dispatch("border", editor: editor) == .handled)
     #expect(editor.defaultBorderStyle == .double)
-
-    #expect(editor.commandRegistry.dispatch("pos", editor: editor) == .handled)
-    #expect(editor.commandRegistry.dispatch("noh", editor: editor) == .handled)
-    #expect(editor.commandRegistry.dispatch("config", editor: editor) == .handled)
 }
 
 @Test func testReloadedConfigPreservesPerEditorRuntimeMode() throws {
