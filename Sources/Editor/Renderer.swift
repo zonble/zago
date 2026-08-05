@@ -21,6 +21,7 @@ public final class Renderer {
 
     /// Renders the complete screen output ANSI string for given terminal rows and cols dimensions.
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
+        editor.updateGitDiff()
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
@@ -200,12 +201,13 @@ public final class Renderer {
                 // Render Gutter (Line Number or Softwrap Indicator ↳)
                 if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
                     let lineNumStr = renderLineNumberGutter(
+                        editor: editor,
                         lineNumber: vLine.bufferLineIndex + 1,
                         isFirstSubLine: isFirstSubLine,
                         showLineNumbers: true,
                         isMenuOverlay: editor.isMenuBarActive && boxIdx < dropdownBoxLines.count
                     )
-                    lineOutput += "\u{1B}[90m\(lineNumStr)\u{1B}[0m"  // Dim gray gutter
+                    lineOutput += lineNumStr
                 }
 
                 let renderedLineText: String
@@ -401,17 +403,49 @@ public final class Renderer {
 
     /// Formats line number string for gutter column.
     func renderLineNumberGutter(
+        editor: Editor,
         lineNumber: Int,
         isFirstSubLine: Bool,
         showLineNumbers: Bool,
         isMenuOverlay: Bool = false
     ) -> String {
         guard showLineNumbers else { return "" }
+        let lineIdx = lineNumber - 1
+
         if isMenuOverlay {
             guard lineNumber > 0 else { return "     " }
-            return isFirstSubLine ? String(format: "%4d ", lineNumber) : "   ↳ "
+            let fmt = String(format: "%4d ", lineNumber)
+            let sub = "   ↳ "
+            return isFirstSubLine ? "\u{1B}[90m\(fmt)\u{1B}[0m" : "\u{1B}[90m\(sub)\u{1B}[0m"
+        }
+
+        guard isFirstSubLine else {
+            return "\u{1B}[90m   ↳ \u{1B}[0m"
+        }
+
+        let numStr = String(format: "%4d ", lineNumber)
+        let hasGitDiff = editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers
+
+        if hasGitDiff {
+            let status = editor.gitDiffInfo.lineStatuses[lineIdx] ?? .unmodified
+            let isDeleted = editor.gitDiffInfo.deletedLineIndices.contains(lineIdx)
+
+            switch status {
+            case .added:
+                return "\u{1B}[92m\(numStr)\u{1B}[0m"
+            case .modified:
+                return "\u{1B}[93m\(numStr)\u{1B}[0m"
+            case .unmodified:
+                if isDeleted {
+                    return "\u{1B}[91m\(numStr)\u{1B}[0m"
+                } else {
+                    return "\u{1B}[90m\(numStr)\u{1B}[0m"
+                }
+            case .deletedBefore:
+                return "\u{1B}[91m\(numStr)\u{1B}[0m"
+            }
         } else {
-            return isFirstSubLine ? String(format: "%4d ", lineNumber) : "   ↳ "
+            return "\u{1B}[90m\(numStr)\u{1B}[0m"
         }
     }
 

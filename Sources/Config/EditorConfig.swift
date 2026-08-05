@@ -12,6 +12,7 @@ public struct EditorConfig {
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
     public var trimTrailingWhitespaceOnSave: Bool = false
+    public var showGitDiff: Bool = true
     public var language: Language? = nil
     public var spellLanguage: String = "en_US"
     public var defaultBorderStyle: BorderStyle = .single

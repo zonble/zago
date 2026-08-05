@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "Diagram", targets: ["Diagram"]),
         .library(name: "TextEncoding", targets: ["TextEncoding"]),
         .library(name: "SpellChecker", targets: ["SpellChecker"]),
+        .library(name: "Git", targets: ["Git"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -24,6 +25,9 @@ let package = Package(
         ),
         .target(
             name: "TextEncoding"
+        ),
+        .target(
+            name: "Git"
         ),
         .target(
             name: "SpellChecker",
@@ -52,7 +56,7 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",
@@ -65,7 +69,8 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "Editor", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
+            path: "Tests"
         ),
     ],
     swiftLanguageModes: [.v6]

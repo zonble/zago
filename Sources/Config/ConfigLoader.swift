@@ -121,6 +121,15 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "git-diff", "gitdiff", "git_diff":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.showGitDiff = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.showGitDiff = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "tabsize":
                         if let ts = Int(value), ts > 0 {
                             config.tabSize = ts
@@ -137,6 +146,8 @@ public final class ConfigLoader {
                             || value == "line-number" || value == "line_numbers" || value == "line_number"
                         {
                             config.showLineNumbers = false
+                        } else if value == "git-diff" || value == "gitdiff" || value == "git_diff" {
+                            config.showGitDiff = false
                         } else if value == "sublinenumbers" || value == "sublinenumber" || value == "subline-numbers"
                             || value == "subline-number" || value == "subline_numbers" || value == "subline_number"
                             || value == "sublines"

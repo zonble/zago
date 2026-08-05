@@ -1,5 +1,6 @@
 @_exported import Config
 import Foundation
+import Git
 import LogoEngine
 import SpellChecker
 import Syntax
@@ -59,7 +60,7 @@ public struct EditorConfigSource {
 }
 
 /// Nano-style UI state machine and core editor engine.
-public final class Editor {
+public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
     public var buffers: [TextBuffer] = []
     public var currentBufferIndex: Int = 0
@@ -108,6 +109,17 @@ public final class Editor {
     var topVLineIndex: Int = 0
 
     let spellChecker = SpellChecker()
+
+    /// Git Diff & Repository context for current buffer
+    public var gitDiffInfo: GitDiffInfo = .empty
+
+    public func updateGitDiff() {
+        guard displayConfig.showGitDiff else {
+            gitDiffInfo = .empty
+            return
+        }
+        gitDiffInfo = GitService.shared.computeDiffSync(filePath: buffer.filePath, currentLines: buffer.lines)
+    }
 
     // Persistent LOGO Macro Engine
     public lazy var logoEngine: LogoEngine = LogoEngine(delegate: self)
@@ -209,6 +221,7 @@ public final class Editor {
         public var autoReload: Bool
         public var tabSize: Int
         public var trimTrailingWhitespaceOnSave: Bool
+        public var showGitDiff: Bool
 
         public init(
             showRuler: Bool = false,
@@ -217,7 +230,8 @@ public final class Editor {
             enableSyntaxHighlight: Bool = true,
             autoReload: Bool = true,
             tabSize: Int = 4,
-            trimTrailingWhitespaceOnSave: Bool = false
+            trimTrailingWhitespaceOnSave: Bool = false,
+            showGitDiff: Bool = true
         ) {
             self.showRuler = showRuler
             self.showLineNumbers = showLineNumbers
@@ -226,6 +240,7 @@ public final class Editor {
             self.autoReload = autoReload
             self.tabSize = tabSize
             self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
+            self.showGitDiff = showGitDiff
         }
     }
 
@@ -250,7 +265,8 @@ public final class Editor {
             enableSyntaxHighlight: options.enableSyntax ?? config.enableSyntaxHighlight,
             autoReload: options.autoReload ?? config.autoReload,
             tabSize: config.tabSize,
-            trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave
+            trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
+            showGitDiff: config.showGitDiff
         )
 
         return ResolvedConfig(
@@ -311,6 +327,7 @@ public final class Editor {
     }
 
     func startFileWatcherForCurrentBuffer() {
+        updateGitDiff()
         if let oldPath = currentWatchedPath {
             fileIOStrategy.stopWatchingFile(at: oldPath)
             currentWatchedPath = nil

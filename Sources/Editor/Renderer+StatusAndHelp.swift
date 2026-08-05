@@ -37,7 +37,24 @@ extension Renderer {
                 editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
             let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
             let centerText = editor.buffer.filePath ?? L10n.newBuffer
-            let rightText = editor.buffer.isModified ? "\(L10n.modified)  " : "  "
+            let branchTextStr: String
+            if editor.displayConfig.showGitDiff, let branch = editor.gitDiffInfo.branchName, !branch.isEmpty {
+                branchTextStr = " [\(branch)]"
+            } else {
+                branchTextStr = ""
+            }
+
+            let modifiedBadgeStr = editor.buffer.isModified ? "\(L10n.modified)" : ""
+            let rightText: String
+            if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
+                rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
+            } else if !modifiedBadgeStr.isEmpty {
+                rightText = "\(modifiedBadgeStr)  "
+            } else if !branchTextStr.isEmpty {
+                rightText = "\(branchTextStr)  "
+            } else {
+                rightText = "  "
+            }
 
             let leftW = leftText.displayWidth
             let centerW = centerText.displayWidth

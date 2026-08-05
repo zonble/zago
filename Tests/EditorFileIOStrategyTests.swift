@@ -4,7 +4,7 @@ import TextEncoding
 
 @testable import Editor
 
-private final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
+final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
     var files: [String: String]
     var directories: Set<String>
     var writes: [String: String] = [:]

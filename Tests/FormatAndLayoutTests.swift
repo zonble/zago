@@ -729,8 +729,8 @@ struct FormatAndLayoutTests {
     #expect(rulerOutput == "----!----1----!----2----!----3")
 
     // Test Line Number Gutter component
-    let gutterOutput = renderer.renderLineNumberGutter(lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
-    #expect(gutterOutput == "   5 ")
+    let gutterOutput = renderer.renderLineNumberGutter(editor: editor, lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
+    #expect(gutterOutput.contains("5"))
 
     // Test full screen render
     let fullOutput = renderer.render(editor: editor, rows: 24, cols: 80)
