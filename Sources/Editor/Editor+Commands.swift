@@ -89,7 +89,8 @@ extension Editor {
                 id: .diagramMenu,
                 name: "diagram.menu",
                 description: "Open diagram snippet menu",
-                keys: []
+                keys: [],
+                commandBarAliases: ["diagram", "diagrams", "snippet", "snippets"]
             ) { editor in
                 editor.menuBar.updateCategories(for: editor)
                 if let idx = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.diagrams" }) {

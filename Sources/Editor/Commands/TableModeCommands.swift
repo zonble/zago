@@ -5,6 +5,7 @@ public struct SwitchTextModeCommand: Command {
     public let name = "Text Editing Mode"
     public let description = "Switch to Text Editing Mode"
     public let keys: [Key] = []
+    public let commandBarAliases = ["text-mode"]
 
     public init() {}
 
@@ -18,6 +19,7 @@ public struct ToggleCanvasModeCommand: Command {
     public let name = "Canvas Mode"
     public let description = "Toggle Canvas Mode"
     public let keys: [Key] = [.f8, .alt("v"), .alt("V")]
+    public let commandBarAliases = ["canvas-mode"]
 
     public init() {}
 
@@ -31,6 +33,7 @@ public struct ToggleTableModeCommand: Command {
     public let name = "Table Mode"
     public let description = "Toggle Table Mode for active cell"
     public let keys: [Key] = [.f7, .alt("t"), .alt("T")]
+    public let commandBarAliases = ["table-mode"]
 
     public init() {}
 
@@ -45,6 +48,7 @@ public struct CycleBorderStyleCommand: Command {
     public let description =
         "Switch default border style (Single -> Double -> Round -> Double Round -> ASCII -> Markdown)"
     public let keys: [Key] = [.alt("s"), .alt("S")]
+    public let commandBarAliases = ["border", "border-style"]
 
     public init() {}
 

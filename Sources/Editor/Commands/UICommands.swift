@@ -19,6 +19,7 @@ public struct LogoReferenceCommand: Command {
     public let name = "Editor LOGO Reference"
     public let description = "Show Editor LOGO command reference"
     public let keys: [Key] = []
+    public let commandBarAliases = ["help-logo"]
 
     public init() {}
 
@@ -37,6 +38,7 @@ public struct LogoWorkspaceCommand: Command {
     public let name = "Editor LOGO Workspace"
     public let description = "Show Editor LOGO user procedures and variables"
     public let keys: [Key] = []
+    public let commandBarAliases = ["logo-workspace"]
 
     public init() {}
 
@@ -68,6 +70,7 @@ public struct ShowHelpCommand: Command {
     public let name = "Get Help"
     public let description = "Show full-screen help"
     public let keys: [Key] = []
+    public let commandBarAliases = ["help-keys"]
 
     public init() {}
 

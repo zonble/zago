@@ -45,6 +45,7 @@ public struct ToggleMarkCommand: Command {
     public let name = "Mark"
     public let description = "Set or unset canvas block mark"
     public let keys: [Key] = [.mark, .alt("b"), .alt("B")]
+    public let commandBarAliases = ["mark", "mb"]
 
     public init() {}
 
@@ -246,6 +247,7 @@ public struct JustifyCommand: Command {
     public let name = "Justify"
     public let description = "Justify paragraph text or format table"
     public let keys: [Key] = [.ctrl("J"), .ctrl("j")]
+    public let commandBarAliases = ["justify"]
 
     public init() {}
 
@@ -281,6 +283,7 @@ public struct SpellCheckCommand: Command {
     public let name = "To Spell"
     public let description = "Check spelling"
     public let keys: [Key] = [.ctrl("T"), .f12]
+    public let commandBarAliases = ["spell-check"]
 
     public init() {}
 
@@ -294,6 +297,7 @@ public struct EvalLogoCommand: Command {
     public let name = "Eval Editor LOGO Code"
     public let description = "Evaluate Editor LOGO code at current line, selection, or code block"
     public let keys: [Key] = [.ctrl("Q"), .ctrl("q")]
+    public let commandBarAliases = ["eval", "evallogo", "run-logo"]
 
     public init() {}
 

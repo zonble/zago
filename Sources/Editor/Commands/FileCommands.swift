@@ -134,7 +134,7 @@ public struct SaveExitCommand: Command {
     public let name = "Save & Exit"
     public let description = "Save current file and close buffer"
     public let commandBarAliases: [String] = [
-        "file", "save-exit", "save_exit", "saveexit", "wq", ":wq", "wq!", ":wq!", "x", ":x"
+        "file", "save-exit", "saveexit", "wq", ":wq", "wq!", ":wq!", "x", ":x"
     ]
 
     public init() {}
@@ -209,6 +209,7 @@ public struct EditConfigCommand: Command {
     public let name = "Edit Config"
     public let description = "Edit ~/.zagorc configuration file"
     public let keys: [Key] = []
+    public let commandBarAliases = ["edit-config"]
 
     public init() {}
 
@@ -222,6 +223,7 @@ public struct ReloadConfigCommand: Command {
     public let name = "Reload Config"
     public let description = "Reload ~/.zagorc configuration file"
     public let keys: [Key] = []
+    public let commandBarAliases = ["reload-config"]
 
     public init() {}
 

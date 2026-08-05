@@ -246,6 +246,7 @@ public struct OpenDocumentLinkCommand: Command {
     public let name = "Open Link"
     public let description = "Open document link at cursor"
     public let keys: [Key] = [.alt("o"), .alt("O")]
+    public let commandBarAliases = ["openlink", "open-link", "follow"]
 
     public init() {}
 
@@ -259,6 +260,7 @@ public struct NextHeadingCommand: Command {
     public let name = "Next Heading"
     public let description = "Jump to next document heading"
     public let keys: [Key] = [.alt("]")]
+    public let commandBarAliases = ["nextheading", "next-heading"]
 
     public init() {}
 
@@ -272,6 +274,7 @@ public struct PreviousHeadingCommand: Command {
     public let name = "Previous Heading"
     public let description = "Jump to previous document heading"
     public let keys: [Key] = [.alt("[")]
+    public let commandBarAliases = ["prevheading", "prev-heading"]
 
     public init() {}
 
@@ -285,6 +288,7 @@ public struct DocumentOutlineCommand: Command {
     public let name = "Outline"
     public let description = "Open document outline"
     public let keys: [Key] = [.alt("\\")]
+    public let commandBarAliases = ["outline", "toc", "headings"]
 
     public init() {}
 
@@ -365,6 +369,7 @@ public struct ShowCursorPosCommand: Command {
     public let name = "Cur Pos"
     public let description = "Display cursor position"
     public let keys: [Key] = [.ctrl("C"), .f11]
+    public let commandBarAliases = ["pos", "cursorpos", "where"]
 
     public init() {}
 
