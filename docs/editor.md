@@ -8,20 +8,20 @@
 
 - [`zago` Editor Basics](#zago-editor-basics)
   - [Table of Contents](#table-of-contents)
-  - [Overview & Architecture](#overview--architecture)
+  - [Overview \& Architecture](#overview--architecture)
   - [Editor Modes](#editor-modes)
   - [Keybindings Reference](#keybindings-reference)
-    - [Navigation & Movement](#navigation--movement)
-    - [Text Selection & Clipboard](#text-selection--clipboard)
-    - [Editing & Formatting](#editing--formatting)
-    - [Search & Substitution](#search--substitution)
-    - [Document Links & Navigation](#document-links--navigation)
-    - [File & Buffer Operations](#file--buffer-operations)
-    - [Interface & Menus](#interface--menus)
-  - [Command Prompt & Shorthand](#command-prompt--shorthand)
+    - [Navigation \& Movement](#navigation--movement)
+    - [Text Selection \& Clipboard](#text-selection--clipboard)
+    - [Editing \& Formatting](#editing--formatting)
+    - [Search \& Substitution](#search--substitution)
+    - [Document Links \& Navigation](#document-links--navigation)
+    - [File \& Buffer Operations](#file--buffer-operations)
+    - [Interface \& Menus](#interface--menus)
+  - [Command Prompt \& Shorthand](#command-prompt--shorthand)
     - [Shorthand Commands](#shorthand-commands)
     - [Tab Completion](#tab-completion)
-    - [Editor LOGO Fallthrough](#logo-fallthrough)
+    - [LOGO Fallthrough](#logo-fallthrough)
   - [Multi-Buffer Workflow](#multi-buffer-workflow)
   - [Diagram Snippets](#diagram-snippets)
   - [Related Documentation](#related-documentation)
@@ -170,7 +170,7 @@ document metadata.
 The command prompt features intelligent context-aware `Tab` completion:
 
 - **Command Shorthands**: Completes `save`, `open`, `write`, `buffer`, `exit`, etc.
-- **Settings & Options**: Typing `set ` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `canvas-mode`, `trim-trailing-whitespace`, `syntax`, `language`, `border`).
+- **Settings & Options**: Typing `set` + `Tab` lists all configurable settings (`wrap`, `ruler`, `linenumbers`, `sublinenumbers`, `canvas-mode`, `trim-trailing-whitespace`, `syntax`, `language`, `border`).
 - **Save Cleanup**: `set trim-trailing-whitespace on` removes trailing spaces and tabs from each line before saving. It is off by default.
 - **File Paths**: Completes relative/absolute file system paths for `open` and `write`.
 - **LOGO Keywords & Macros**: Completes LOGO primitives (`BOX`, `TABLE`, `LINE`, `DRAWBOX`, `FILL`, `FD`, `RT`, `REPEAT`, etc.).

@@ -36,11 +36,12 @@ Rather than adding scattered `if isDirectoryMode` checks throughout the editor e
 ## 2. Directory Buffer Key Navigation Rules
 
 In Directory Mode:
+
 - **`Enter`**:
-  - On `.. (up a dir)`: Navigates up to parent directory.
-  - On `▸ folder/`: Navigates into child directory.
-  - On `  filename`: Opens the file as a standard editable `TextBuffer`.
-  - On empty or header lines: **Consumes key without modifying text** (never inserts a newline).
+    - On `.. (up a dir)`: Navigates up to parent directory.
+    - On `▸ folder/`: Navigates into child directory.
+    - On `filename`: Opens the file as a standard editable `TextBuffer`.
+    - On empty or header lines: **Consumes key without modifying text** (never inserts a newline).
 - **`Backspace` / `u` / `b`**: Navigates up to parent directory.
 - **`arrowUp` / `arrowDown` / `j` / `k`**: Navigates cursor through directory entries.
 - **Text Editing Keys**: Blocked with status message `"Directory buffer is read-only"`.
@@ -67,6 +68,7 @@ The Command Bar validates commands against `CommandBarCommand.isAvailable(in: ed
 ### Fallthrough LOGO Guard Rule
 
 When a user types an unmapped command into the Command Bar:
+
 ```swift
 guard editor.buffer.allowsLogoExecution else {
     editor.setStatusMessage(L10n["status.directory_buffer_readonly"])

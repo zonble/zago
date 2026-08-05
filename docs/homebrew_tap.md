@@ -61,21 +61,21 @@ git push origin main
 git push origin vX.Y.Z
 ```
 
-2. Convert the tag into a GitHub Release.
-3. Calculate the archive checksum:
+1. Convert the tag into a GitHub Release.
+2. Calculate the archive checksum:
 
 ```sh
 curl -L https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz | shasum -a 256
 ```
 
-4. Update `Formula/zago.rb` in `homebrew-zago`:
+1. Update `Formula/zago.rb` in `homebrew-zago`:
 
 ```ruby
 url "https://github.com/zonble/zago/archive/refs/tags/vX.Y.Z.tar.gz"
 sha256 "<sha256>"
 ```
 
-5. Validate and push the tap formula:
+1. Validate and push the tap formula:
 
 ```sh
 brew install --build-from-source Formula/zago.rb

@@ -21,6 +21,7 @@ The `Diagrams` menu category appears dynamically in the top **MenuBar** between 
 ## 📊 Supported Diagram Engines & Templates
 
 ### 1. Mermaid Snippets
+
 * **Sequence Diagram** (`sequenceDiagram`)
 * **Flowchart** (`flowchart TD`)
 * **Class Diagram** (`classDiagram`)
@@ -29,6 +30,7 @@ The `Diagrams` menu category appears dynamically in the top **MenuBar** between 
 * **Mindmap** (`mindmap`)
 
 ### 2. PlantUML Snippets
+
 * **Sequence Diagram** (`@startuml ... @enduml`)
 * **Flowchart / Activity Diagram** (`@startuml ... @enduml`)
 * **Class Diagram** (`@startuml ... @enduml`)
@@ -36,6 +38,7 @@ The `Diagrams` menu category appears dynamically in the top **MenuBar** between 
 * **ER Diagram** (`@startuml ... @enduml`)
 
 ### 3. Graphviz (DOT) Snippets
+
 * **Directed Graph** (`digraph G { ... }`)
 * **Undirected Graph** (`graph G { ... }`)
 
