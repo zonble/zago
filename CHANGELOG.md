@@ -2,9 +2,29 @@
 
 ## Unreleased
 
+## 1.0.5 - 2026-08-05
+
+Spell checker, text encoding auto-detection, and Canvas Mode line drawing release.
+
+### Added
+
+- Spell checker support with platform-specific engines and configurable language settings.
+- Text encoding auto-detection with UTF-8 fallback strategy.
+- Command bar auto-completion with longest-common-prefix (LCP) matching and candidate suggestions.
+- Command bar aliases for `diagram`, `snippets`, `border`, and `outline`.
+- Windows native file watching (`FindFirstChangeNotificationW`).
+- Expanded CJK Unicode scalar range to include CJK Extensions B through I (`0x20000` to `0x3FFFD`).
+
 ### Changed
 
 - Canvas Mode line drawing (`Shift+Arrow`) now performs step-by-step line fusion when entering existing box-drawing characters, forming T-junctions or corners on initial entry before creating crossings on subsequent extension steps.
+- Table Mode PageUp and PageDown navigation is now constrained within the current table cell boundaries.
+- Plain text code blocks in prose formats (Markdown, Org, AsciiDoc, ReST) now highlight in bright blue.
+
+### Fixed
+
+- Markdown syntax highlighting regexes for inline code and emphasis no longer match across table separators or backticks.
+- Line-wrapped text now preserves syntax highlighting across softwrapped segments.
 
 ## 1.0.4 - 2026-08-04
 
