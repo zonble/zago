@@ -1,6 +1,6 @@
 # `zago` Editor Basics
 
-`zago` is a modeless terminal text editor with built-in 2D diagramming capabilities, combining classic `nano` modeless typing and Emacs/WordStar keybindings with Editor LOGO macro drawing and structured table editing.
+`zago` is a modeless terminal text editor built on the lightweight foundation of `nano`, enhanced with Emacs/WordStar keybindings and major modes (Text, Canvas, Table) alongside a PE2-inspired interactive command line prompt (`Esc` / `Alt+:`), built-in Editor LOGO macro drawing, and structured table editing.
 
 ---
 
