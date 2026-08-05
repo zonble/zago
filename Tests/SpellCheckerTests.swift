@@ -5,7 +5,9 @@ import Testing
 @testable import Editor
 @testable import SpellChecker
 
-@Test func testSpellCheckerBasicCorrectness() throws {
+@Suite(.serialized)
+struct SpellCheckerTests {
+    @Test func testSpellCheckerBasicCorrectness() throws {
     let checker = SpellChecker()
     #expect(checker.isCorrect("hello") == true)
     #expect(checker.isCorrect("swift") == true)
@@ -141,14 +143,15 @@ import Testing
     }
 }
 
-@Test func testSpellLanguageConfigDirective() throws {
-    let loader = ConfigLoader()
-    var config = EditorConfig()
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_spell_lang_.zagorc").path
-    let sampleConfig = "set spell-language de_DE\n"
-    try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
-    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+    @Test func testSpellLanguageConfigDirective() throws {
+        let loader = ConfigLoader()
+        var config = EditorConfig()
+        let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_spell_lang_.zagorc").path
+        let sampleConfig = "set spell-language de_DE\n"
+        try sampleConfig.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
-    loader.parseConfigFile(at: tmpPath, into: &config)
-    #expect(config.spellLanguage.lowercased() == "de_de")
+        loader.parseConfigFile(at: tmpPath, into: &config)
+        #expect(config.spellLanguage.lowercased() == "de_de")
+    }
 }

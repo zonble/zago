@@ -408,6 +408,24 @@ struct FormatAndLayoutTests {
     #expect(lastRowWithCursor.contains("\u{1B}[K"))
 }
 
+@Test func testLayoutEngineLineCacheReusesVirtualLineChunks() throws {
+    let engine = LayoutEngine(wrapColumn: 20)
+    let longLine = "這是一行非常長的中文與英文混合文字，用來測試 LayoutEngine 佈局快取機制能否正確運作並且提升軟換行效能。"
+
+    let firstVirtualLines = engine.computeVirtualLines(from: [longLine], viewWidth: 80)
+    #expect(firstVirtualLines.count > 1)
+
+    let secondVirtualLines = engine.computeVirtualLines(from: [longLine], viewWidth: 80)
+    #expect(secondVirtualLines.count == firstVirtualLines.count)
+    for (v1, v2) in zip(firstVirtualLines, secondVirtualLines) {
+        #expect(v1.text == v2.text)
+        #expect(v1.startCol == v2.startCol)
+        #expect(v1.endCol == v2.endCol)
+    }
+
+    #expect(engine.lineCacheHitCount > 0)
+}
+
 @Test func testLocalizedHelpBarPromptAndCanvasLabels() throws {
     let previousLanguage = L10n.currentLanguage
     defer { L10n.currentLanguage = previousLanguage }

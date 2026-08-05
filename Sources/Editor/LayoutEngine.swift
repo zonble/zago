@@ -53,11 +53,34 @@ public struct VirtualViewport {
     }
 }
 
+public struct CachedVirtualChunk {
+    public let subLineIndex: Int
+    public let text: String
+    public let startCol: Int
+    public let endCol: Int
+
+    public init(subLineIndex: Int, text: String, startCol: Int, endCol: Int) {
+        self.subLineIndex = subLineIndex
+        self.text = text
+        self.startCol = startCol
+        self.endCol = endCol
+    }
+}
+
 /// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
 /// coordinate conversions.
 public final class LayoutEngine {
     public static let minimumWrapColumn = 10
     public var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
+
+    private struct LineCacheKey: Hashable {
+        let line: String
+        let effectiveWrap: Int
+    }
+
+    private var lineCache: [LineCacheKey: [CachedVirtualChunk]] = [:]
+    private let cacheLock = NSLock()
+    public private(set) var lineCacheHitCount: Int = 0
 
     public init(wrapColumn: Int? = nil) {
         self.wrapColumn = Self.normalizedWrapColumn(wrapColumn)
@@ -70,6 +93,15 @@ public final class LayoutEngine {
 
     public func setWrapColumn(_ column: Int?) {
         wrapColumn = Self.normalizedWrapColumn(column)
+        invalidateCache()
+    }
+
+    /// Invalidates the line layout cache.
+    public func invalidateCache() {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        lineCache.removeAll()
+        lineCacheHitCount = 0
     }
 
     private func effectiveWrap(for viewWidth: Int) -> Int {
@@ -179,28 +211,59 @@ public final class LayoutEngine {
     }
 
     private func wrapLine(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
-        if line.isEmpty {
-            return [
+        let key = LineCacheKey(line: line, effectiveWrap: effectiveWrap)
+
+        cacheLock.lock()
+        if let cachedChunks = lineCache[key] {
+            lineCacheHitCount += 1
+            cacheLock.unlock()
+            return cachedChunks.map { chunk in
                 VirtualLine(
                     bufferLineIndex: bufferLineIndex,
-                    subLineIndex: 0,
-                    text: "",
-                    startCol: 0,
-                    endCol: 0)
-            ]
+                    subLineIndex: chunk.subLineIndex,
+                    text: chunk.text,
+                    startCol: chunk.startCol,
+                    endCol: chunk.endCol
+                )
+            }
+        }
+        cacheLock.unlock()
+
+        let chunks = computeLineChunks(line, effectiveWrap: effectiveWrap)
+
+        cacheLock.lock()
+        if lineCache.count > 2000 {
+            lineCache.removeAll()
+        }
+        lineCache[key] = chunks
+        cacheLock.unlock()
+
+        return chunks.map { chunk in
+            VirtualLine(
+                bufferLineIndex: bufferLineIndex,
+                subLineIndex: chunk.subLineIndex,
+                text: chunk.text,
+                startCol: chunk.startCol,
+                endCol: chunk.endCol
+            )
+        }
+    }
+
+    private func computeLineChunks(_ line: String, effectiveWrap: Int) -> [CachedVirtualChunk] {
+        if line.isEmpty {
+            return [CachedVirtualChunk(subLineIndex: 0, text: "", startCol: 0, endCol: 0)]
         }
 
         if line.utf8.allSatisfy({ $0 < 0x80 }) {
-            return asciiWrappedLines(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap)
+            return asciiLineChunks(line, effectiveWrap: effectiveWrap)
         }
 
-        var virtualLines: [VirtualLine] = []
+        var chunks: [CachedVirtualChunk] = []
         var currentCharIndex = 0
         var subIndex = 0
         let chars = Array(line)
         let totalChars = chars.count
 
-        // Core Softwrap Loop: Iteratively slice a raw buffer line into one or more VirtualLines
         while currentCharIndex < totalChars {
             var currentWidth = 0
             var endIndex = currentCharIndex
@@ -228,19 +291,19 @@ public final class LayoutEngine {
                 endIndex = currentCharIndex + 1
             }
 
-            virtualLines.append(
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
+            chunks.append(
+                CachedVirtualChunk(
                     subLineIndex: subIndex,
                     text: String(chars[currentCharIndex..<endIndex]),
                     startCol: currentCharIndex,
                     endCol: endIndex
-                ))
+                )
+            )
 
             currentCharIndex = endIndex
             subIndex += 1
         }
-        return virtualLines
+        return chunks
     }
 
     @discardableResult
@@ -367,9 +430,9 @@ public final class LayoutEngine {
         return true
     }
 
-    private func asciiWrappedLines(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
+    private func asciiLineChunks(_ line: String, effectiveWrap: Int) -> [CachedVirtualChunk] {
         let bytes = Array(line.utf8)
-        var virtualLines: [VirtualLine] = []
+        var chunks: [CachedVirtualChunk] = []
         var currentIndex = 0
         var subIndex = 0
 
@@ -396,19 +459,19 @@ public final class LayoutEngine {
             }
 
             let text = String(decoding: bytes[currentIndex..<endIndex], as: UTF8.self)
-            virtualLines.append(
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
+            chunks.append(
+                CachedVirtualChunk(
                     subLineIndex: subIndex,
                     text: text,
                     startCol: currentIndex,
                     endCol: endIndex
-                ))
+                )
+            )
 
             currentIndex = endIndex
             subIndex += 1
         }
-        return virtualLines
+        return chunks
     }
 
     private func virtualCursorInWrappedLine(
