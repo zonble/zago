@@ -1511,6 +1511,35 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.currentBufferIndex == 0)
 }
 
+@Test func testCommandBarDiagramAndOutlineAndBorderAliases() throws {
+    let editor = Editor()
+
+    // Test "diagram" and "snippets" aliases open diagram menu
+    #expect(editor.isMenuBarActive == false)
+    submitCommandBar("diagram", editor: editor)
+    #expect(editor.isMenuBarActive == true)
+    editor.isMenuBarActive = false
+
+    submitCommandBar("snippets", editor: editor)
+    #expect(editor.isMenuBarActive == true)
+    editor.isMenuBarActive = false
+
+    // Test "border" and "border-style" aliases cycle border style
+    let initialStyle = editor.defaultBorderStyle
+    submitCommandBar("border", editor: editor)
+    #expect(editor.defaultBorderStyle != initialStyle)
+
+    let nextStyle = editor.defaultBorderStyle
+    submitCommandBar("border-style", editor: editor)
+    #expect(editor.defaultBorderStyle != nextStyle)
+
+    // Test "outline", "toc", "headings" aliases with heading document
+    editor.buffer.lines = ["# Title", "Content"]
+    submitCommandBar("toc", editor: editor)
+    submitCommandBar("headings", editor: editor)
+    submitCommandBar("outline", editor: editor)
+}
+
 @Test func testLastLineDownKeyMovesToEOL() throws {
     let editor = Editor()
     editor.buffer.lines = ["First Line", "Last Line"]
