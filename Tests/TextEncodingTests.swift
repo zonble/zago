@@ -149,3 +149,26 @@ import Testing
     let readResult = try fileIO.readTextFile(at: tmpPath)
     #expect(readResult.encoding == .utf8)
 }
+
+@Test func testCJKExtension4ByteUTF8CutOffAt8192ByteBoundary() throws {
+    // 𪚥 (U+2A6A5, 4-byte UTF-8: 0xF0 0xAA 0x9A 0xA5) & 𠮷 (U+20BB7, 4-byte UTF-8: 0xF0 0xA0 0xAE 0xB7)
+    let text = String(repeating: "𪚥𠮷罕見字與 Emoji 𩸽🚀", count: 400)
+    let data = Data(text.utf8)
+    #expect(data.count > 8192)
+
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpPath = fileIO.normalizePath(
+        FileManager.default.temporaryDirectory.appendingPathComponent("test_cjk_ext_\(UUID().uuidString).md").path,
+        isDirectory: false
+    )
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    try data.write(to: URL(fileURLWithPath: tmpPath))
+
+    let info = fileIO.fileInfo(at: tmpPath)
+    #expect(info.exists == true)
+    #expect(info.isBinary == false)
+
+    let readResult = try fileIO.readTextFile(at: tmpPath)
+    #expect(readResult.encoding == .utf8)
+}
