@@ -411,8 +411,8 @@ public struct TraditionalChineseStrings {
         "menu.edit.goto_line": "跳轉至指定行…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",
         "menu.edit.text_editing_mode": "一般模式",
-        "menu.edit.canvas_mode": "畫布模式\tF7",
-        "menu.edit.table_editing_mode": "表格模式\tF8",
+        "menu.edit.canvas_mode": "畫布模式\tF8",
+        "menu.edit.table_editing_mode": "表格模式\tF7",
 
         "menu.buffer.next": "下一個 Buffer\tM+.",
         "menu.buffer.prev": "上一個 Buffer\tM+,",

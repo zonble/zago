@@ -683,6 +683,63 @@ import Testing
     #expect(backspaceEditor.currentTableCell?.maxCol == 17)
 }
 
+@Test func testTableModeMultiLineSelectionDoesNotExceedCellBorders() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│line 1          │right cell      │",
+        "│line 2          │right cell      │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 7
+
+    #expect(!editor.isCharacterSelected(line: 1, col: 0))
+    #expect(editor.isCharacterSelected(line: 1, col: 1))
+    #expect(editor.isCharacterSelected(line: 1, col: 6))
+    #expect(!editor.isCharacterSelected(line: 1, col: 17))
+    #expect(!editor.isCharacterSelected(line: 1, col: 18))
+
+    #expect(!editor.isCharacterSelected(line: 2, col: 0))
+    #expect(editor.isCharacterSelected(line: 2, col: 1))
+    #expect(editor.isCharacterSelected(line: 2, col: 6))
+    #expect(!editor.isCharacterSelected(line: 2, col: 7))
+    #expect(!editor.isCharacterSelected(line: 2, col: 17))
+}
+
+@Test func testTableModeSingleLineSelectionInMultiLineCellDoesNotHighlightUnselectedLines() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│aaaa            │right cell      │",
+        "│                │right cell      │",
+        "│                │right cell      │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 1
+    editor.toggleTableMode()
+
+    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+
+    #expect(editor.isCharacterSelected(line: 1, col: 1))
+    #expect(editor.isCharacterSelected(line: 1, col: 2))
+    #expect(!editor.isCharacterSelected(line: 1, col: 3))
+    #expect(!editor.isCharacterSelected(line: 1, col: 4))
+
+    #expect(!editor.isCharacterSelected(line: 2, col: 1))
+    #expect(!editor.isCharacterSelected(line: 2, col: 2))
+    #expect(!editor.isCharacterSelected(line: 3, col: 1))
+    #expect(!editor.isCharacterSelected(line: 3, col: 2))
+}
+
 @Test func testTableModeCtrlKClearsCellTextWithoutDeletingTableRow() throws {
     let editor = Editor()
     editor.buffer.lines = [
@@ -1165,7 +1222,7 @@ import Testing
     let renderer = Renderer()
     let helpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
 
-    #expect(helpBar.contains("M+T"))
+    #expect(helpBar.contains("F7"))
     #expect(helpBar.contains("Tab"))
     #expect(helpBar.contains("C+⇧+←/→"))
     #expect(helpBar.contains("C+⇧+↑/↓"))

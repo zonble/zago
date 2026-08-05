@@ -411,8 +411,8 @@ public struct EnglishStrings {
         "menu.edit.goto_line": "Goto Line...\t^/",
         "menu.edit.justify": "Justify Paragraph\t^J",
         "menu.edit.text_editing_mode": "Text Editing Mode",
-        "menu.edit.canvas_mode": "Canvas Mode\tF7",
-        "menu.edit.table_editing_mode": "Table Editing Mode\tF8",
+        "menu.edit.canvas_mode": "Canvas Mode\tF8",
+        "menu.edit.table_editing_mode": "Table Editing Mode\tF7",
 
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",

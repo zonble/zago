@@ -204,9 +204,9 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `menu.show` | Toggle menu bar | `F1`, `^M`, `M+M` |
 | `help.show` | Full-screen help | Menu |
 | `mode.text` | Switch to text editing mode | Menu |
-| `mode.canvas.toggle` | Toggle canvas mode | `F7`, `M+V` |
+| `mode.canvas.toggle` | Toggle canvas mode | `F8`, `M+V` |
 | `mode.frame.toggle` | Toggle frame mode | Menu |
-| `table.toggle` | Toggle table mode | `F8`, `M+T` |
+| `table.toggle` | Toggle table mode | `F7`, `M+T` |
 | `border.style` | Cycle border style | `M+S` |
 
 ## Command Prompt Shorthand
