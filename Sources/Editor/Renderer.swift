@@ -329,20 +329,20 @@ public final class Renderer {
                     if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
                     {
-                        lineOutput += "\(ANSIStyle.inverse)\(ch)\(ANSIStyle.resetShort)"
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                     } else if !editor.isCanvasModeActive
                         && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += "\(ANSIStyle.inverse)\(ch)\(ANSIStyle.resetShort)"  // Inverse video for selection
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)  // Inverse video for selection
                     } else if !editor.isCanvasModeActive
                         && editor.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += "\(ANSIStyle.canvasCursor)\(ch)\(ANSIStyle.reset)"
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
                     } else if isCellActive {
-                        lineOutput += "\(ANSIStyle.canvasActiveCell)\(ch)\(ANSIStyle.reset)"  // Green bg for active cell
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)  // Green bg for active cell
                     } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
                         let tok = tokenTypes[realCol]
-                        lineOutput += tok.ansiColor + String(ch) + ANSIStyle.reset
+                        lineOutput += ch.ansiStyled(style: tok.ansiColor)
                     } else {
                         lineOutput += String(ch)
                     }
@@ -363,14 +363,14 @@ public final class Renderer {
                             selectedPad.append(" ")
                         } else {
                             if !selectedPad.isEmpty {
-                                lineOutput += "\(ANSIStyle.inverse)\(selectedPad)\(ANSIStyle.resetShort)"
+                                lineOutput += selectedPad.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                                 selectedPad = ""
                             }
                             normalPad.append(" ")
                         }
                     }
                     if !selectedPad.isEmpty {
-                        lineOutput += "\(ANSIStyle.inverse)\(selectedPad)\(ANSIStyle.resetShort)"
+                        lineOutput += selectedPad.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                     }
                     if !normalPad.isEmpty
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart)
@@ -378,7 +378,7 @@ public final class Renderer {
                         lineOutput += normalPad
                     }
                 } else if chars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
-                    lineOutput += "\(ANSIStyle.inverse)\(String(repeating: " ", count: visibleTextWidth))\(ANSIStyle.resetShort)"
+                    lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                 }
 
                 if let subLineInfo = renderSubLineInfo(
@@ -393,7 +393,7 @@ public final class Renderer {
                 }
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
-                lineOutput += "\(ANSIStyle.dimGray)\(gutter)~ \(editor.l10n["chrome.end_of_file"])\(ANSIStyle.reset)"
+                lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
@@ -455,7 +455,7 @@ public final class Renderer {
             label = "\(virtualLine.subLineIndex + 1)"
         }
 
-        return " \(ANSIStyle.dimGray)\(label)\(ANSIStyle.reset)"
+        return " " + label.ansiStyled(style: ANSIStyle.dimGray)
     }
 
     /// Formats line number string for gutter column.
@@ -473,11 +473,11 @@ public final class Renderer {
             guard lineNumber > 0 else { return "     " }
             let fmt = String(format: "%4d ", lineNumber)
             let sub = "   ↳ "
-            return isFirstSubLine ? "\(ANSIStyle.dimGray)\(fmt)\(ANSIStyle.reset)" : "\(ANSIStyle.dimGray)\(sub)\(ANSIStyle.reset)"
+            return isFirstSubLine ? fmt.ansiStyled(style: ANSIStyle.dimGray) : sub.ansiStyled(style: ANSIStyle.dimGray)
         }
 
         guard isFirstSubLine else {
-            return "\(ANSIStyle.dimGray)   ↳ \(ANSIStyle.reset)"
+            return "   ↳ ".ansiStyled(style: ANSIStyle.dimGray)
         }
 
         let numStr = String(format: "%4d ", lineNumber)
@@ -489,20 +489,20 @@ public final class Renderer {
 
             switch status {
             case .added:
-                return "\u{1B}[92m\(numStr)\u{1B}[0m"
+                return numStr.ansiStyled(color: .brightGreen)
             case .modified:
-                return "\u{1B}[93m\(numStr)\u{1B}[0m"
+                return numStr.ansiStyled(color: .brightYellow)
             case .unmodified:
                 if isDeleted {
-                    return "\u{1B}[91m\(numStr)\u{1B}[0m"
+                    return numStr.ansiStyled(color: .brightRed)
                 } else {
-                    return "\u{1B}[90m\(numStr)\u{1B}[0m"
+                    return numStr.ansiStyled(color: .brightBlack)
                 }
             case .deletedBefore:
-                return "\u{1B}[91m\(numStr)\u{1B}[0m"
+                return numStr.ansiStyled(color: .brightRed)
             }
         } else {
-            return "\u{1B}[90m\(numStr)\u{1B}[0m"
+            return numStr.ansiStyled(color: .brightBlack)
         }
     }
 

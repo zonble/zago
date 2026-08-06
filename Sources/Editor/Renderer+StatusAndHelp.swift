@@ -268,7 +268,7 @@ extension Renderer {
         } else {
             visibleText = text
         }
-        let styled = "\(ANSIStyle.boldYellow)\(visibleText)\(ANSIStyle.reset)"
+        let styled = visibleText.ansiStyled(style: ANSIStyle.boldYellow)
         let padCount = max(0, width - visibleText.displayWidth)
         return styled + String(repeating: " ", count: padCount)
     }
@@ -319,9 +319,9 @@ extension Renderer {
 
                 let itemStr: String
                 if items[i].label.isEmpty {
-                    itemStr = "\(ANSIStyle.boldCyan)\(items[i].key)\(ANSIStyle.reset)"
+                    itemStr = items[i].key.ansiStyled(style: ANSIStyle.boldCyan)
                 } else {
-                    itemStr = "\(ANSIStyle.boldCyan)\(items[i].key)\(ANSIStyle.reset) \(items[i].label)"
+                    itemStr = items[i].key.ansiStyled(style: ANSIStyle.boldCyan) + " \(items[i].label)"
                 }
 
                 let padCount = max(0, targetColWidth - rawWidth)
@@ -411,7 +411,7 @@ extension Renderer {
         }
 
         if isConfirmation {
-            let boldText = "\(ANSIStyle.boldYellow)\(promptPrefix)\(ANSIStyle.reset)"
+            let boldText = promptPrefix.ansiStyled(style: ANSIStyle.boldYellow)
             return RenderedPrompt(text: boldText, cursorCol: promptPrefix.displayWidth + 1)
         }
 
@@ -425,7 +425,7 @@ extension Renderer {
         let totalInputDisplayWidth = inputChars.reduce(0) { $0 + $1.displayWidth }
 
         if totalInputDisplayWidth < maxInputWidth {
-            let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(editor.promptInputText)\(ANSIStyle.reset)"
+            let styledText = "\(promptPrefix)\(editor.promptInputText)".ansiStyled(style: ANSIStyle.bold)
             let cursorCol = prefixWidth + cursorDisplayWidth + 1
             return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
         }
@@ -473,7 +473,7 @@ extension Renderer {
         }
 
         let visibleString = String(visibleChars)
-        let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(visibleString)\(ANSIStyle.reset)"
+        let styledText = "\(promptPrefix)\(visibleString)".ansiStyled(style: ANSIStyle.bold)
         let cursorCol = prefixWidth + cursorColInWindow + 1
 
         return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))

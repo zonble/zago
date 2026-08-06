@@ -76,7 +76,7 @@ extension Renderer {
         }
 
         if isDim {
-            leftStr = "\(ANSIStyle.dimGray)\(leftStr)\(ANSIStyle.reset)"
+            leftStr = leftStr.ansiStyled(style: ANSIStyle.dimGray)
         }
 
         let remainingRight = max(0, cols - rightStartCol - rightStr.displayWidth)
@@ -85,9 +85,9 @@ extension Renderer {
         }
 
         if isDim {
-            rightStr = "\(ANSIStyle.dimGray)\(rightStr)\(ANSIStyle.reset)"
+            rightStr = rightStr.ansiStyled(style: ANSIStyle.dimGray)
         } else if !activeAnsiStyle.isEmpty {
-            rightStr = "\(activeAnsiStyle)\(rightStr)\(ANSIStyle.reset)"
+            rightStr = rightStr.ansiStyled(style: activeAnsiStyle)
         }
 
         let boxStartCursor = "\u{1B}[\(dropdownStartCol + 1)G"

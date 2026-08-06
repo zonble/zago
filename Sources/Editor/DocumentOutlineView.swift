@@ -99,20 +99,20 @@ public final class DocumentOutlineView {
 
         let outlineRows = Self.rows(for: headings)
         var output = ANSIStyle.cursorHome
-        output += "\(ANSIStyle.inverse)\(title.paddedToDisplayWidth(cols))\(ANSIStyle.resetShort)\r\n"
+        output += title.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort) + "\r\n"
 
         for i in 0..<availableHeight {
             let rowIndex = topIndex + i
             let row = rowIndex < outlineRows.count ? outlineRows[rowIndex] : ""
             let padded = row.paddedToDisplayWidth(cols)
             if rowIndex == selectedIndex {
-                output += "\(ANSIStyle.inverse)\(padded)\(ANSIStyle.resetShort)\r\n"
+                output += padded.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort) + "\r\n"
             } else {
                 output += "\(ANSIStyle.clearLine)\(padded)\r\n"
             }
         }
 
-        output += "\(ANSIStyle.boldCyan)\(footer.paddedToDisplayWidth(cols))\(ANSIStyle.reset)"
+        output += footer.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.boldCyan)
         terminal.write(output)
         fflush(nil)
     }

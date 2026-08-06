@@ -46,6 +46,39 @@ public enum ANSIStyle {
 
     /// Disables terminal auto-wrap to prevent visual artifacts on exact edge drawing (`\u{1B}[?7l`).
     public static let disableLineWrap = "\u{1B}[?7l"
+
+    /// Wraps text with an ANSI start style and an optional ending style (defaults to `ANSIStyle.reset`).
+    public static func styled(_ text: String, style: String, endStyle: String = ANSIStyle.reset) -> String {
+        guard !text.isEmpty else { return "" }
+        return "\(style)\(text)\(endStyle)"
+    }
+}
+
+/// Helper extension on `String` for convenient ANSI text styling.
+extension String {
+    /// Wraps string with an ANSI start style and an optional ending style (defaults to `ANSIStyle.reset`).
+    public func ansiStyled(style: String, endStyle: String = ANSIStyle.reset) -> String {
+        guard !isEmpty else { return "" }
+        return "\(style)\(self)\(endStyle)"
+    }
+
+    /// Wraps string with an ANSI foreground color and an optional ending style (defaults to `ANSIStyle.reset`).
+    public func ansiStyled(color: ANSIColor.Foreground, endStyle: String = ANSIStyle.reset) -> String {
+        ansiStyled(style: color.rawValue, endStyle: endStyle)
+    }
+}
+
+/// Helper extension on `Character` for convenient ANSI character styling.
+extension Character {
+    /// Wraps character with an ANSI start style and an optional ending style (defaults to `ANSIStyle.reset`).
+    public func ansiStyled(style: String, endStyle: String = ANSIStyle.reset) -> String {
+        "\(style)\(self)\(endStyle)"
+    }
+
+    /// Wraps character with an ANSI foreground color and an optional ending style (defaults to `ANSIStyle.reset`).
+    public func ansiStyled(color: ANSIColor.Foreground, endStyle: String = ANSIStyle.reset) -> String {
+        ansiStyled(style: color.rawValue, endStyle: endStyle)
+    }
 }
 
 /// Strongly typed ANSI Color enumerations for TUI components and syntax highlighters.
