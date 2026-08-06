@@ -50,11 +50,6 @@ extension DiagramSnippets {
         return MenuCategory(titleKey: "menu.diagrams", hotkeyChar: "d", items: items)
     }
 
-    /// Detects if cursor is currently inside a Markdown-style code block.
-    public static func currentCodeBlockTag(editor: Editor) -> String? {
-        currentCodeBlockTag(lines: editor.buffer.lines, lineIndex: editor.buffer.lineIndex)
-    }
-
     /// Determines active diagram engine context based on file extension and code block position.
     public static func activeEngine(for editor: Editor) -> DiagramEngine? {
         activeEngine(filePath: editor.buffer.filePath, lines: editor.buffer.lines, lineIndex: editor.buffer.lineIndex)
@@ -68,10 +63,5 @@ extension DiagramSnippets {
             lineIndex: editor.buffer.lineIndex,
             allowsLogoExecution: editor.buffer.allowsLogoExecution
         )
-    }
-
-    /// Legacy alias helper for backward compatibility.
-    public static func detectCodeBlockEngine(editor: Editor) -> DiagramEngine? {
-        activeEngine(for: editor)
     }
 }

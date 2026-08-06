@@ -69,7 +69,7 @@ struct DiagramSnippetsTests {
         editor.openNewBuffer(filePath: "README.md")
 
         // Outside code block
-        #expect(DiagramSnippets.detectCodeBlockEngine(editor: editor) == nil)
+        #expect(DiagramSnippets.activeEngine(for: editor) == nil)
 
         // Inside ```mermaid block
         editor.buffer.lines = [
@@ -78,7 +78,7 @@ struct DiagramSnippetsTests {
             "",
         ]
         editor.buffer.lineIndex = 2
-        #expect(DiagramSnippets.detectCodeBlockEngine(editor: editor) == .mermaid)
+        #expect(DiagramSnippets.activeEngine(for: editor) == .mermaid)
         #expect(DiagramSnippets.shouldShowDiagramMenu(for: editor) == true)
 
         // Inside ```dot block
@@ -87,7 +87,7 @@ struct DiagramSnippetsTests {
             "",
         ]
         editor.buffer.lineIndex = 1
-        #expect(DiagramSnippets.detectCodeBlockEngine(editor: editor) == .dot)
+        #expect(DiagramSnippets.activeEngine(for: editor) == .dot)
         #expect(DiagramSnippets.shouldShowDiagramMenu(for: editor) == true)
     }
 

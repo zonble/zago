@@ -62,9 +62,4 @@ extension DiagramSnippets {
 
         return false
     }
-
-    /// Legacy alias helper for backward compatibility.
-    public static func detectCodeBlockEngine(filePath: String?, lines: [String], lineIndex: Int) -> DiagramEngine? {
-        activeEngine(filePath: filePath, lines: lines, lineIndex: lineIndex)
-    }
 }
