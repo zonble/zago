@@ -76,12 +76,12 @@ struct Zago: ParsableCommand {
             terminal: terminal,
             gitService: gitService
         )
-        let configProvider = { ConfigLoader().loadConfig() }
+        let configProvider = { ConfigLoader(provider: LocalConfigFileProvider()).loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
 
         if initConfig {
             let targetPath = files.first
-            let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath)
+            let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath, provider: LocalConfigFileProvider())
             terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
             return
         }

@@ -192,12 +192,17 @@ public final class Editor: @unchecked Sendable {
     private let configProvider: () -> EditorConfig
     var currentWatchedPath: String? = nil
 
-    public var displayConfig: DisplayConfig
+    public typealias DisplayConfig = RuntimeConfig
+    public var runtimeConfig: RuntimeConfig
+    public var displayConfig: RuntimeConfig {
+        get { runtimeConfig }
+        set { runtimeConfig = newValue }
+    }
     public var customBoundKeys: Set<Key> = []
 
     private struct ResolvedConfig {
         let wrapColumn: Int?
-        let display: DisplayConfig
+        let display: RuntimeConfig
         let language: Language
         let usesExplicitLanguage: Bool
         let spellLanguage: String
@@ -206,7 +211,7 @@ public final class Editor: @unchecked Sendable {
 
     private static func resolveConfig(options: EditorOptions, config: EditorConfig) -> ResolvedConfig {
         let configuredLanguage = options.language ?? config.language
-        let display = DisplayConfig(
+        let display = RuntimeConfig(
             showRuler: options.showRuler ?? config.showRuler,
             showLineNumbers: options.showLineNumbers ?? config.showLineNumbers,
             showSubLineNumbers: options.showSubLineNumbers ?? config.showSubLineNumbers,
@@ -251,7 +256,7 @@ public final class Editor: @unchecked Sendable {
         self.usesExplicitLanguage = resolved.usesExplicitLanguage
         self.spellChecker.setLanguage(resolved.spellLanguage)
         self.layoutEngine = LayoutEngine(wrapColumn: resolved.wrapColumn)
-        self.displayConfig = resolved.display
+        self.runtimeConfig = resolved.display
         self.defaultBaseMode = resolved.baseMode
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
@@ -290,7 +295,7 @@ public final class Editor: @unchecked Sendable {
         } else if fileIOStrategy.fileInfo(at: sercPath).exists {
             configPath = sercPath
         } else {
-            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: zagorcPath)
+            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: zagorcPath, provider: StrategyConfigFileProvider(strategy: fileIOStrategy))
             configPath = zagorcPath
         }
 

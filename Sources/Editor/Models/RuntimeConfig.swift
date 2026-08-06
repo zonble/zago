@@ -1,7 +1,7 @@
 import Foundation
 
-/// Value object storing display preferences and UI toggle options for the editor.
-public struct DisplayConfig: Sendable, Equatable {
+/// Value object storing runtime configuration settings and UI toggle options for the editor.
+public struct RuntimeConfig: Sendable, Equatable {
     /// Whether the WordStar ruler bar is enabled.
     public var showRuler: Bool
 

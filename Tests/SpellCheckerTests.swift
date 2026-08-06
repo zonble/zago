@@ -144,7 +144,20 @@ struct SpellCheckerTests {
 }
 
 @Test func testSpellLanguageConfigDirective() throws {
-    let loader = ConfigLoader()
+    struct TestLocalConfigFileProvider: ConfigFileProvider {
+        func homeDirectoryPath() -> String { FileManager.default.homeDirectoryForCurrentUser.path }
+        func currentDirectoryPath() -> String { FileManager.default.currentDirectoryPath }
+        func fileExists(atPath path: String) -> Bool {
+            FileManager.default.fileExists(atPath: path) || FileManager.default.fileExists(atPath: URL(fileURLWithPath: path).path)
+        }
+        func readString(atPath path: String) throws -> String {
+            try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
+        }
+        func writeString(_ content: String, toPath path: String) throws {
+            try content.write(to: URL(fileURLWithPath: path), atomically: true, encoding: .utf8)
+        }
+    }
+    let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
     var config = EditorConfig()
     let rawPath = FileManager.default.temporaryDirectory
         .appendingPathComponent("test_spell_lang_\(UUID().uuidString).zagorc").path

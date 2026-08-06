@@ -60,6 +60,25 @@ public struct EditorDirectoryEntry: Sendable, Equatable {
 /// - Local disk filesystem (`LocalEditorFileIOStrategy`)
 /// - In-memory mock filesystem for unit testing (`MemoryEditorFileIOStrategy`)
 /// - Remote filesystems (SSH/SFTP, Cloud Storage, WebDAV)
+/// Adapter bridging `EditorFileIOStrategy` to `ConfigFileProvider`.
+public struct StrategyConfigFileProvider: ConfigFileProvider, @unchecked Sendable {
+    private let strategy: any EditorFileIOStrategy
+
+    public init(strategy: any EditorFileIOStrategy) {
+        self.strategy = strategy
+    }
+
+    public func homeDirectoryPath() -> String { strategy.homeDirectoryPath() }
+    public func currentDirectoryPath() -> String { strategy.currentDirectoryPath() }
+    public func fileExists(atPath path: String) -> Bool { strategy.fileInfo(at: path).exists }
+    public func readString(atPath path: String) throws -> String {
+        try strategy.readTextFile(at: path).content
+    }
+    public func writeString(_ content: String, toPath path: String) throws {
+        try strategy.writeTextFile(content, to: path, encoding: .utf8)
+    }
+}
+
 public protocol EditorFileIOStrategy: AnyObject {
     /// Normalizes path string by expanding tildes (`~`), resolving relative components, and standardizing slashes.
     ///

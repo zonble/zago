@@ -7,6 +7,14 @@ import Testing
 
 @Suite(.serialized)
 struct ConfigAndToolsTests {
+    struct TestLocalConfigFileProvider: ConfigFileProvider {
+        init() {}
+        func homeDirectoryPath() -> String { FileManager.default.homeDirectoryForCurrentUser.path }
+        func currentDirectoryPath() -> String { FileManager.default.currentDirectoryPath }
+        func fileExists(atPath path: String) -> Bool { FileManager.default.fileExists(atPath: path) }
+        func readString(atPath path: String) throws -> String { try String(contentsOfFile: path, encoding: .utf8) }
+        func writeString(_ content: String, toPath path: String) throws { try content.write(toFile: path, atomically: true, encoding: .utf8) }
+    }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
     #expect(!ZagoVersion.current.isEmpty)
     #expect(ZagoVersion.current == "1.0.5")
@@ -18,6 +26,32 @@ struct ConfigAndToolsTests {
     editor.openNewBuffer(filePath: "test2.txt")
     let titleLineMulti = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
     #expect(titleLineMulti.contains("zago \(ZagoVersion.current) [2/2]"))
+}
+
+@Test func testInMemoryConfigFileProviderAndWasmAbstraction() throws {
+    let mockProvider = InMemoryConfigFileProvider(
+        homePath: "/home/wasm",
+        currentPath: "/home/wasm",
+        files: [
+            "/home/wasm/.zagorc": """
+            set wrap 100
+            set tab 2
+            set ruler on
+            set syntax off
+            set trim-trailing-whitespace on
+            """
+        ]
+    )
+
+    let loader = ConfigLoader(provider: mockProvider)
+    let config = loader.loadConfig()
+
+    #expect(config.wrapColumn == 100)
+    #expect(config.tabSize == 2)
+    #expect(config.showRuler == true)
+    #expect(config.enableSyntaxHighlight == false)
+    #expect(config.trimTrailingWhitespaceOnSave == true)
+    #expect(config.loadedFilePath == "/home/wasm/.zagorc")
 }
 
 @Test func testHelpContent() throws {
@@ -184,7 +218,7 @@ struct ConfigAndToolsTests {
 
     try configContent.write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
 
-    let loader = ConfigLoader()
+    let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
     var config = EditorConfig()
     loader.parseConfigFile(at: tmpFile, into: &config)
 
@@ -532,16 +566,15 @@ struct ConfigAndToolsTests {
         try? FileManager.default.removeItem(atPath: tmpPath)
     }
 
-    let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: tmpPath)
+    let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: tmpPath, provider: TestLocalConfigFileProvider())
     #expect(FileManager.default.fileExists(atPath: generatedPath) == true)
 
     let content = try String(contentsOfFile: generatedPath, encoding: .utf8)
-    #expect(content.contains("set showRuler off"))
-    #expect(content.contains("set lineNumbers on"))
-    #expect(content.contains("set subLineNumbers off"))
-    #expect(content.contains("# set canvas-mode off"))
-    #expect(content.contains("set tabSize 4"))
-    #expect(content.contains("set trimTrailingWhitespace off"))
+    #expect(content.contains("set ruler on"))
+    #expect(content.contains("set linenumbers on"))
+    #expect(content.contains("set sublinenumbers off"))
+    #expect(content.contains("set tab 4"))
+    #expect(content.contains("set trim-trailing-whitespace off"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
 }
@@ -597,7 +630,7 @@ struct ConfigAndToolsTests {
     try sampleConfig.write(to: URL(fileURLWithPath: tmpPath), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
-    let loader = ConfigLoader()
+    let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
     var config = EditorConfig()
     loader.parseConfigFile(at: tmpPath, into: &config)
 
@@ -655,7 +688,7 @@ struct ConfigAndToolsTests {
     try sampleConfig.write(to: URL(fileURLWithPath: tmpPath), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
-    let loader = ConfigLoader()
+    let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
     var config = EditorConfig()
     loader.parseConfigFile(at: tmpPath, into: &config)
 
@@ -850,7 +883,7 @@ struct ConfigAndToolsTests {
 }
 
 @Test func testDefaultBorderStyleConfig() throws {
-    let loader = ConfigLoader()
+    let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
     var config = EditorConfig()
     let configContent = """
         set border round
@@ -964,7 +997,7 @@ struct ConfigAndToolsTests {
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
-        let loader = ConfigLoader()
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
         var config = EditorConfig()
         loader.parseConfigFile(at: configPath, into: &config)
 
@@ -1026,7 +1059,7 @@ struct ConfigAndToolsTests {
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
-        let loader = ConfigLoader()
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
         var config = EditorConfig()
         loader.parseConfigFile(at: configPath, into: &config)
 
@@ -1074,7 +1107,7 @@ struct ConfigAndToolsTests {
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
-        let loader = ConfigLoader()
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
         var config = EditorConfig()
         loader.parseConfigFile(at: configPath, into: &config)
 
@@ -1108,7 +1141,7 @@ struct ConfigAndToolsTests {
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
-        let loader = ConfigLoader()
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
         var config = EditorConfig()
         loader.parseConfigFile(at: configPath, into: &config)
 
@@ -1164,7 +1197,7 @@ struct ConfigAndToolsTests {
             set border round
             """.write(to: URL(fileURLWithPath: localSerc), atomically: testAtomicallyOption, encoding: .utf8)
 
-        let loader = ConfigLoader()
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
 
         let zagorcConfig = loader.loadConfig()
         #expect(zagorcConfig.loadedFilePath == localZagorc)
