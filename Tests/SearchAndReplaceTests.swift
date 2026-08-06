@@ -21,7 +21,7 @@ import Testing
         #expect(editor.buffer.lineIndex == 2)
         #expect(editor.buffer.columnIndex == 9)
         #expect(editor.lastSearchQuery == "target")
-        #expect(editor.activeSearchMatch?.query == "target")
+        #expect(editor.buffer.activeSearchMatch?.query == "target")
 
         // Search again using empty / to repeat search
         editor.buffer.lineIndex = 0
@@ -43,7 +43,7 @@ import Testing
         editor.performSearch(query: "alpha")
         #expect(editor.buffer.lineIndex == 0)
         #expect(editor.buffer.columnIndex == 0)
-        #expect(editor.activeSearchMatch?.length == 5)
+        #expect(editor.buffer.activeSearchMatch?.length == 5)
 
         editor.processKey(.alt("n"))
         #expect(editor.buffer.lineIndex == 0)
@@ -74,14 +74,14 @@ import Testing
         let highlighted = editor.renderer.render(editor: editor, rows: 8, cols: 20)
         #expect(highlighted.contains("\u{1B}[43;30mb\u{1B}[0m"))
 
-        editor.selectionMark = (line: 0, column: 0)
+        editor.buffer.selectionMark = (line: 0, column: 0)
         editor.processKey(.ctrl("G"))
-        #expect(editor.activeSearchMatch == nil)
-        #expect(editor.selectionMark?.line == 0)
+        #expect(editor.buffer.activeSearchMatch == nil)
+        #expect(editor.buffer.selectionMark?.line == 0)
         #expect(editor.statusMessage == editor.l10n["status.search_cleared"])
 
         editor.processKey(.ctrl("G"))
-        #expect(editor.selectionMark == nil)
+        #expect(editor.buffer.selectionMark == nil)
         #expect(editor.statusMessage == editor.l10n["status.mark_unset"])
     }
 
@@ -132,7 +132,7 @@ import Testing
         ]
         editor.buffer.lineIndex = 1
         editor.buffer.columnIndex = 0
-        editor.selectionMark = (line: 2, column: 10)
+        editor.buffer.selectionMark = (line: 2, column: 10)
 
         // s/cat/dog/g within active selection (Lines 2 & 3)
         let res = editor.commandBarRegistry.dispatch("s/cat/dog/g", editor: editor)
@@ -217,4 +217,3 @@ import Testing
         #expect(editor.promptInputText == "transform.tohan")
     }
 }
-

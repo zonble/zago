@@ -160,8 +160,8 @@ extension Renderer {
     }
 
     func canvasMarkStatusText(editor: Editor) -> String? {
-        guard editor.isCanvasModeActive, let mark = editor.canvasBlockMark else { return nil }
-        let end = editor.canvasBlockMarkEnd ?? mark
+        guard editor.isCanvasModeActive, let mark = editor.buffer.canvasBlockMark else { return nil }
+        let end = editor.buffer.canvasBlockMarkEnd ?? mark
         let startRow = mark.line + 1
         let startCol = mark.visualColumn + 1
         let endRow = end.line + 1

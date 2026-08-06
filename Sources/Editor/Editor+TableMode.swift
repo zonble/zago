@@ -139,7 +139,7 @@ extension Editor {
         case .home, .ctrl("a"), .ctrl("A"):
             clearActiveMark()
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             buffer.columnIndex = leftBorder + 1
             clampTableModeCursor()
             return true
@@ -147,7 +147,7 @@ extension Editor {
         case .end, .ctrl("e"), .ctrl("E"):
             clearActiveMark()
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
             clampTableModeCursor()
             return true
@@ -175,7 +175,7 @@ extension Editor {
                 return true
             }
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
 
             if buffer.columnIndex > innerMinCol {
@@ -202,7 +202,7 @@ extension Editor {
                 return true
             }
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
 
             if buffer.columnIndex < rightBorder {
@@ -226,7 +226,7 @@ extension Editor {
         case .char(let ch):
             _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
             if insertCharacterInCurrentTableCell(ch, cell: cell, saveSnapshot: true) {
-                let (_, newRight) = findCellHorizontalBorders(
+                let (_, newRight) = Editor.findCellHorizontalBorders(
                     in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
                 if buffer.columnIndex >= newRight && buffer.lineIndex < cell.innerMaxLine {
                     moveToNextLineInCurrentTableCell(cell: cell)
@@ -247,20 +247,20 @@ extension Editor {
     }
 
     private func extendTableSelectionLeft(cell: TableCell) {
-        if selectionMark == nil {
-            selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+        if buffer.selectionMark == nil {
+            buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
             setStatusMessage(l10n["status.mark_set"])
         }
 
         let line = buffer.lines[buffer.lineIndex]
-        let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         let innerMinCol = leftBorder + 1
         if buffer.columnIndex > innerMinCol {
             buffer.columnIndex -= 1
         } else if buffer.lineIndex > cell.innerMinLine {
             buffer.lineIndex -= 1
             let previousLine = buffer.lines[buffer.lineIndex]
-            let (previousLeft, previousRight) = findCellHorizontalBorders(
+            let (previousLeft, previousRight) = Editor.findCellHorizontalBorders(
                 in: previousLine, nearCol: cell.innerMinCol, cell: cell)
             buffer.columnIndex = max(previousLeft + 1, previousRight - 1)
         }
@@ -268,19 +268,19 @@ extension Editor {
     }
 
     private func extendTableSelectionRight(cell: TableCell) {
-        if selectionMark == nil {
-            selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+        if buffer.selectionMark == nil {
+            buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
             setStatusMessage(l10n["status.mark_set"])
         }
 
         let line = buffer.lines[buffer.lineIndex]
-        let (_, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (_, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         if buffer.columnIndex < rightBorder {
             buffer.columnIndex += 1
         } else if buffer.lineIndex < cell.innerMaxLine {
             buffer.lineIndex += 1
             let nextLine = buffer.lines[buffer.lineIndex]
-            let (nextLeft, _) = findCellHorizontalBorders(in: nextLine, nearCol: cell.innerMinCol, cell: cell)
+            let (nextLeft, _) = Editor.findCellHorizontalBorders(in: nextLine, nearCol: cell.innerMinCol, cell: cell)
             buffer.columnIndex = nextLeft + 1
         }
         clampTableModeCursor()
@@ -293,9 +293,9 @@ extension Editor {
     }
 
     private func tableSelectionSegments(cell: TableCell) -> [TableSelectionSegment] {
-        guard let mark = selectionMark else { return [] }
+        guard let mark = buffer.selectionMark else { return [] }
         let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
-        let (start, end) = getOrderedRange(mark1: mark, mark2: cursor)
+        let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: cursor)
         guard start.line != end.line || start.column != end.column else { return [] }
 
         var segments: [TableSelectionSegment] = []
@@ -306,7 +306,7 @@ extension Editor {
         for lineIndex in startLine...endLine {
             guard lineIndex >= 0 && lineIndex < buffer.lines.count else { continue }
             let line = buffer.lines[lineIndex]
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
             let innerStart = leftBorder + 1
             let innerEnd = rightBorder
             let rawStart = lineIndex == start.line ? start.column : innerStart
@@ -356,7 +356,7 @@ extension Editor {
         let first = segments[0]
         buffer.lineIndex = first.line
         buffer.columnIndex = first.startCol
-        selectionMark = nil
+        buffer.selectionMark = nil
         clampTableModeCursor()
         setStatusMessage(updateClipboard ? l10n["status.cut_text"] : "[ Deleted selection ]")
         return true
@@ -370,7 +370,7 @@ extension Editor {
         let lineIndex = buffer.lineIndex
         guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
         let line = buffer.lines[lineIndex]
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         let start = leftBorder + 1
         let end = rightBorder
         guard start < end else { return }
@@ -383,7 +383,7 @@ extension Editor {
         buffer.lines[lineIndex] = String(chars)
         buffer.columnIndex = start
         buffer.isModified = true
-        selectionMark = nil
+        buffer.selectionMark = nil
         clampTableModeCursor()
         setStatusMessage(l10n["status.cut_text"])
     }
@@ -426,7 +426,7 @@ extension Editor {
         buffer.lineIndex = targetLine
         guard targetLine >= 0 && targetLine < buffer.lines.count else { return }
         let line = buffer.lines[targetLine]
-        let (cellLeft, cellRight) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        let (cellLeft, cellRight) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
         if buffer.columnIndex <= cellLeft || buffer.columnIndex >= cellRight {
             buffer.columnIndex = cellLeft + 1
         }

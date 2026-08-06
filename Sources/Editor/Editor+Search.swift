@@ -8,8 +8,8 @@ enum SearchDirection {
 extension Editor {
     @discardableResult
     func clearActiveSearch(setStatus: Bool = true) -> Bool {
-        guard activeSearchMatch != nil else { return false }
-        activeSearchMatch = nil
+        guard buffer.activeSearchMatch != nil else { return false }
+        buffer.activeSearchMatch = nil
         if setStatus {
             setStatusMessage(l10n["status.search_cleared"])
         }
@@ -17,7 +17,7 @@ extension Editor {
     }
 
     func isSearchMatchCharacter(line: Int, col: Int) -> Bool {
-        guard let match = activeSearchMatch else { return false }
+        guard let match = buffer.activeSearchMatch else { return false }
         return line == match.line && col >= match.column && col < match.column + match.length
     }
 
@@ -42,15 +42,15 @@ extension Editor {
     }
 
     private func repeatSearch(direction: SearchDirection) {
-        let query = activeSearchMatch?.query ?? lastSearchQuery
+        let query = buffer.activeSearchMatch?.query ?? lastSearchQuery
         guard !query.isEmpty else {
             setStatusMessage(l10n["status.no_active_search"])
             return
         }
 
-        let activeRegex = activeSearchMatch?.usesRegex ?? isRegexSearchEnabled
+        let activeRegex = buffer.activeSearchMatch?.usesRegex ?? isRegexSearchEnabled
         let anchor: (line: Int, column: Int)
-        if let match = activeSearchMatch {
+        if let match = buffer.activeSearchMatch {
             switch direction {
             case .forward:
                 anchor = (line: match.line, column: match.column + max(1, match.length))
@@ -85,7 +85,7 @@ extension Editor {
                 let regex = try NSRegularExpression(pattern: query, options: [.caseInsensitive])
                 candidates = regexSearchCandidates(regex: regex)
             } catch {
-                activeSearchMatch = nil
+                buffer.activeSearchMatch = nil
                 setStatusMessage(String(format: l10n["status.invalid_regex"], error.localizedDescription))
                 return
             }
@@ -94,7 +94,7 @@ extension Editor {
         }
 
         guard !candidates.isEmpty else {
-            activeSearchMatch = nil
+            buffer.activeSearchMatch = nil
             lastSearchQuery = query
             setStatusMessage(l10n.notFound(query: query))
             return
@@ -188,7 +188,7 @@ extension Editor {
     ) {
         buffer.lineIndex = candidate.line
         buffer.columnIndex = candidate.column
-        activeSearchMatch = SearchMatch(
+        buffer.activeSearchMatch = SearchMatch(
             query: query,
             line: candidate.line,
             column: candidate.column,

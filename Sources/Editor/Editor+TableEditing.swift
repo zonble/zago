@@ -21,7 +21,7 @@ extension Editor {
                 break
             }
 
-            let (_, rightBorder) = findCellHorizontalBorders(
+            let (_, rightBorder) = Editor.findCellHorizontalBorders(
                 in: buffer.lines[buffer.lineIndex], nearCol: buffer.columnIndex, cell: cell)
             if buffer.columnIndex >= rightBorder {
                 guard buffer.lineIndex < cell.innerMaxLine else { break }
@@ -41,7 +41,7 @@ extension Editor {
         _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
         insertTextInCurrentTableCell(text)
         let line = buffer.lines[buffer.lineIndex]
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         if buffer.columnIndex >= rightBorder {
             buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
         }
@@ -51,7 +51,7 @@ extension Editor {
         guard buffer.lineIndex < cell.innerMaxLine else { return }
         buffer.lineIndex += 1
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return }
-        let (nextLineLeft, _) = findCellHorizontalBorders(
+        let (nextLineLeft, _) = Editor.findCellHorizontalBorders(
             in: buffer.lines[buffer.lineIndex],
             nearCol: cell.innerMinCol,
             cell: cell)
@@ -63,7 +63,7 @@ extension Editor {
         guard buffer.lineIndex >= cell.innerMinLine && buffer.lineIndex <= cell.innerMaxLine else { return false }
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return false }
         let line = buffer.lines[buffer.lineIndex]
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         guard leftBorder >= 0 && rightBorder > leftBorder else { return false }
 
         let leftVisualCol = line.visualColumn(forCharacterOffset: leftBorder)
@@ -213,7 +213,7 @@ extension Editor {
             let fullLine = buffer.lines[lineIdx]
             let lineChars = Array(fullLine)
 
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(
                 in: fullLine, nearCol: cell.innerMinCol, cell: cell)
             let innerMinCol = leftBorder + 1
             let innerMaxCol = rightBorder - 1
@@ -257,7 +257,7 @@ extension Editor {
         replaceTableCellInnerText(on: buffer.lineIndex + 1, cell: cell, with: overflow)
 
         let line = buffer.lines[buffer.lineIndex]
-        let (_, rightBorder) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        let (_, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
         buffer.columnIndex = max(cell.innerMinCol, rightBorder - 1)
         buffer.isModified = true
         clampTableModeCursor()
@@ -312,7 +312,7 @@ extension Editor {
         buffer.lineIndex = startLine
         if buffer.lineIndex < buffer.lines.count {
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
             buffer.columnIndex = leftBorder + 1
         }
         buffer.isModified = true
@@ -324,7 +324,7 @@ extension Editor {
 
         let fullLine = buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
 
@@ -337,7 +337,7 @@ extension Editor {
 
         let fullLine = buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
 
@@ -355,7 +355,7 @@ extension Editor {
         guard lineIdx >= 0 && lineIdx < buffer.lines.count else { return 0 }
         let fullLine = buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
         guard innerMinCol <= innerMaxCol, innerMaxCol < lineChars.count else { return 0 }

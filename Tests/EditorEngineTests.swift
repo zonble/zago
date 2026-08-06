@@ -548,29 +548,29 @@ import TextMetrics
 
     // Set canvas block mark at (0, 0)
     editor.processKey(.mark)
-    #expect(editor.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
 
     // Move to (2, 5) and set block mark end
     editor.buffer.lineIndex = 2
     editor.canvasVisualColumn = 5
     editor.processKey(.mark)
-    #expect(editor.canvasBlockMark != nil)
-    #expect(editor.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
 
     // Typing a character should NOT clear the canvas block mark
     editor.processKey(.char("X"))
-    #expect(editor.canvasBlockMark != nil)
-    #expect(editor.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
 
     // Backspace should NOT clear the canvas block mark
     editor.processKey(.backspace)
-    #expect(editor.canvasBlockMark != nil)
-    #expect(editor.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
 
     // Delete should NOT clear the canvas block mark
     editor.processKey(.delete)
-    #expect(editor.canvasBlockMark != nil)
-    #expect(editor.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
 }
 
 @Test func testCanvasModeReplaceAndClearPreserveDisplayWidth() throws {
@@ -765,11 +765,11 @@ import TextMetrics
     editor.buffer.lines = ["abcdef"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 3
-    editor.selectionMark = (line: 0, column: 1)
+    editor.buffer.selectionMark = (line: 0, column: 1)
 
     editor.processKey(.ctrl("G"))
 
-    #expect(editor.selectionMark == nil)
+    #expect(editor.buffer.selectionMark == nil)
     if case .none = editor.currentPromptMode {
         #expect(Bool(true))
     } else {
@@ -810,8 +810,8 @@ import TextMetrics
 
     editor.processKey(.mark)
 
-    #expect(editor.selectionMark == nil)
-    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.buffer.selectionMark == nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
     #expect(editor.statusMessage == editor.l10n["status.block_mark_canvas_only"])
 }
 
@@ -819,17 +819,17 @@ import TextMetrics
     let editor = Editor()
     editor.buffer.lines = ["abcdef"]
     editor.clipboardText = "text"
-    editor.selectionMark = (line: 0, column: 1)
+    editor.buffer.selectionMark = (line: 0, column: 1)
     editor.canvasBlockClipboard = Editor.CanvasBlockClipboard(width: 2, rows: ["xy"])
 
     editor.switchToCanvasMode()
-    #expect(editor.selectionMark == nil)
+    #expect(editor.buffer.selectionMark == nil)
     #expect(editor.clipboardText == "text")
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
 
-    editor.canvasBlockMark = (line: 0, visualColumn: 1)
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 1)
     editor.switchToTextMode()
-    #expect(editor.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
     #expect(editor.clipboardText == "text")
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
 }
@@ -844,8 +844,8 @@ import TextMetrics
 
     editor.processKey(.shiftArrowDown)
     editor.processKey(.shiftArrowDown)
-    #expect(editor.selectionMark?.line == 0)
-    #expect(editor.selectionMark?.column == 1)
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 1)
     #expect(editor.buffer.lineIndex == 2)
     #expect(editor.buffer.columnIndex == 0)
 
@@ -853,7 +853,7 @@ import TextMetrics
     #expect(rendered.contains("\u{1B}[7m                   \u{1B}[m"))
 
     editor.processKey(.char("X"))
-    #expect(editor.selectionMark == nil)
+    #expect(editor.buffer.selectionMark == nil)
     #expect(editor.buffer.lines == ["aXdef"])
 }
 
@@ -876,8 +876,8 @@ import TextMetrics
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 1)
-    #expect(editor.canvasBlockMark == nil)
-    #expect(editor.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
 
     editor.buffer.lines = ["xxYY", "zzWW"]
     editor.buffer.lineIndex = 0
@@ -889,11 +889,11 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 2)
 
     editor.processKey(.mark)
-    #expect(editor.canvasBlockMark != nil)
-    #expect(editor.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
     editor.processKey(.ctrl("G"))
-    #expect(editor.canvasBlockMark == nil)
-    #expect(editor.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
 }
 
 @Test func testCanvasBlockCutWithoutMarkAndCJKBoundarySnap() throws {
@@ -939,16 +939,16 @@ import TextMetrics
     editor.buffer.lineIndex = 0
     editor.canvasVisualColumn = 1
     editor.processKey(.mark)
-    #expect(editor.canvasBlockMarkEnd?.line == 0)
-    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 1)
 
     editor.processKey(.arrowRight)
     editor.processKey(.arrowDown)
 
-    #expect(editor.canvasBlockMark?.line == 0)
-    #expect(editor.canvasBlockMark?.visualColumn == 1)
-    #expect(editor.canvasBlockMarkEnd?.line == 0)
-    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 1)
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.canvasVisualColumn == 2)
 
@@ -956,10 +956,10 @@ import TextMetrics
     #expect(status.contains("Mark Set (start 1,2 end 1,2)"))
 
     editor.processKey(.mark)
-    #expect(editor.canvasBlockMark?.line == 0)
-    #expect(editor.canvasBlockMark?.visualColumn == 1)
-    #expect(editor.canvasBlockMarkEnd?.line == 1)
-    #expect(editor.canvasBlockMarkEnd?.visualColumn == 2)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 2)
 }
 
 @Test func testCanvasEmptyLineHighlightsOnlyMarkedBlockWidth() throws {
@@ -1005,8 +1005,8 @@ import TextMetrics
     editor.runLogoScript("FILL \"x")
 
     #expect(editor.buffer.lines == ["axxxef", "1xxx56", "uvwxyz"])
-    #expect(editor.canvasBlockMark == nil)
-    #expect(editor.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.canvasVisualColumn == 3)
 }

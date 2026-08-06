@@ -3,6 +3,139 @@ import Testing
 
 @testable import Editor
 
+// MARK: - TextBuffer.getOrderedRange
+
+@Test func testGetOrderedRangeSameLine() {
+    let (start, end) = TextBuffer.getOrderedRange(
+        mark1: (line: 0, column: 3),
+        mark2: (line: 0, column: 7))
+    #expect(start.line == 0 && start.column == 3)
+    #expect(end.line == 0 && end.column == 7)
+}
+
+@Test func testGetOrderedRangeSameLineReversed() {
+    let (start, end) = TextBuffer.getOrderedRange(
+        mark1: (line: 0, column: 7),
+        mark2: (line: 0, column: 3))
+    #expect(start.column == 3)
+    #expect(end.column == 7)
+}
+
+@Test func testGetOrderedRangeMultiLine() {
+    let (start, end) = TextBuffer.getOrderedRange(
+        mark1: (line: 2, column: 0),
+        mark2: (line: 0, column: 5))
+    #expect(start.line == 0)
+    #expect(end.line == 2)
+}
+
+// MARK: - TextBuffer.isCharacterSelected (normal mode)
+
+@Test func testIsCharacterSelectedSingleLine() {
+    let buf = TextBuffer()
+    buf.lines = ["hello world"]
+    buf.lineIndex = 0
+    buf.columnIndex = 8  // cursor at col 8
+    buf.selectionMark = (line: 0, column: 3)  // mark at col 3 → selection [3,8)
+
+    #expect(!buf.isCharacterSelected(line: 0, col: 2))
+    #expect(buf.isCharacterSelected(line: 0, col: 3))
+    #expect(buf.isCharacterSelected(line: 0, col: 7))
+    #expect(!buf.isCharacterSelected(line: 0, col: 8))
+    #expect(!buf.isCharacterSelected(line: 1, col: 0))
+}
+
+@Test func testIsCharacterSelectedMultiLine() {
+    let buf = TextBuffer()
+    buf.lines = ["abc", "def", "ghi"]
+    buf.lineIndex = 2
+    buf.columnIndex = 2
+    buf.selectionMark = (line: 0, column: 1)
+
+    // line 0: from col 1 to end
+    #expect(!buf.isCharacterSelected(line: 0, col: 0))
+    #expect(buf.isCharacterSelected(line: 0, col: 1))
+    #expect(buf.isCharacterSelected(line: 0, col: 2))
+    // line 1: fully selected
+    #expect(buf.isCharacterSelected(line: 1, col: 0))
+    #expect(buf.isCharacterSelected(line: 1, col: 2))
+    // line 2: up to cursor col (exclusive)
+    #expect(buf.isCharacterSelected(line: 2, col: 0))
+    #expect(buf.isCharacterSelected(line: 2, col: 1))
+    #expect(!buf.isCharacterSelected(line: 2, col: 2))
+}
+
+@Test func testIsCharacterSelectedNoMark() {
+    let buf = TextBuffer()
+    buf.lines = ["hello"]
+    buf.lineIndex = 0
+    buf.columnIndex = 3
+    #expect(!buf.isCharacterSelected(line: 0, col: 1))
+}
+
+// MARK: - TextBuffer.isLineSelected
+
+@Test func testIsLineSelectedSingleLine() {
+    let buf = TextBuffer()
+    buf.lines = ["hello world"]
+    buf.lineIndex = 0
+    buf.columnIndex = 5
+    buf.selectionMark = (line: 0, column: 2)
+
+    #expect(buf.isLineSelected(line: 0))
+    #expect(!buf.isLineSelected(line: 1))
+}
+
+@Test func testIsLineSelectedMultiLine() {
+    let buf = TextBuffer()
+    buf.lines = ["abc", "def", "ghi"]
+    buf.lineIndex = 2
+    buf.columnIndex = 1
+    buf.selectionMark = (line: 0, column: 1)
+
+    #expect(buf.isLineSelected(line: 0))
+    #expect(buf.isLineSelected(line: 1))
+    #expect(buf.isLineSelected(line: 2))
+    #expect(!buf.isLineSelected(line: 3))
+}
+
+@Test func testIsLineSelectedNoMark() {
+    let buf = TextBuffer()
+    buf.lines = ["hello"]
+    buf.lineIndex = 0
+    buf.columnIndex = 3
+    #expect(!buf.isLineSelected(line: 0))
+}
+
+// MARK: - selectionMark is per-buffer
+
+@Test func testSelectionMarkPreservedAcrossBufferSwitch() {
+    let editor = Editor()
+
+    // Set mark in buffer A
+    editor.buffer.lines = ["buffer A content"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 8
+    editor.buffer.selectionMark = (line: 0, column: 2)
+
+    // Open buffer B
+    editor.openNewBuffer()
+    editor.buffer.lines = ["buffer B content"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 5
+    editor.buffer.selectionMark = (line: 0, column: 1)
+
+    // Switch back to buffer A — mark must be intact
+    editor.prevBuffer()
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 2)
+
+    // Switch to buffer B — mark must be intact
+    editor.nextBuffer()
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 1)
+}
+
 @Test func testShiftArrowKeyEnum() throws {
     let keyLeft: Key = .shiftArrowLeft
     let keyRight: Key = .shiftArrowRight
@@ -32,16 +165,16 @@ import Testing
 
     editor.processKey(.shiftHome)
 
-    #expect(editor.selectionMark?.line == 0)
-    #expect(editor.selectionMark?.column == 3)
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 3)
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.buffer.columnIndex == 0)
     #expect(editor.buffer.textRange(start: (line: 0, col: 0), end: (line: 0, col: 3)) == "abc")
 
     editor.processKey(.shiftEnd)
 
-    #expect(editor.selectionMark?.line == 0)
-    #expect(editor.selectionMark?.column == 3)
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 3)
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.buffer.columnIndex == 6)
     #expect(editor.buffer.textRange(start: (line: 0, col: 3), end: (line: 0, col: 6)) == "def")
@@ -55,7 +188,7 @@ import Testing
     canvasEditor.buffer.columnIndex = 3
 
     canvasEditor.processKey(.shiftHome)
-    #expect(canvasEditor.selectionMark == nil)
+    #expect(canvasEditor.buffer.selectionMark == nil)
     #expect(canvasEditor.buffer.columnIndex == 3)
 
     let tableEditor = Editor()
@@ -65,7 +198,7 @@ import Testing
     tableEditor.buffer.columnIndex = 3
 
     tableEditor.processKey(.shiftEnd)
-    #expect(tableEditor.selectionMark == nil)
+    #expect(tableEditor.buffer.selectionMark == nil)
     #expect(tableEditor.buffer.columnIndex == 3)
 }
 
@@ -74,7 +207,7 @@ import Testing
     editor.buffer.lines = ["abcdef"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 4
-    editor.selectionMark = (line: 0, column: 1)
+    editor.buffer.selectionMark = (line: 0, column: 1)
 
     editor.processKey(.alt("w"))
 
@@ -82,8 +215,8 @@ import Testing
     #expect(editor.buffer.lines == ["abcdef"])
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.buffer.columnIndex == 4)
-    #expect(editor.selectionMark?.line == 0)
-    #expect(editor.selectionMark?.column == 1)
+    #expect(editor.buffer.selectionMark?.line == 0)
+    #expect(editor.buffer.selectionMark?.column == 1)
     #expect(editor.buffer.isModified == false)
     #expect(editor.statusMessage == editor.l10n["status.copied_text"])
 }
@@ -102,14 +235,14 @@ import Testing
 @Test func testTransformSelectedTextReplacesSelectionAndSupportsUndo() throws {
     let editor = Editor()
     editor.buffer.lines = ["foo 中文API測試 bar"]
-    editor.selectionMark = (line: 0, column: 4)
+    editor.buffer.selectionMark = (line: 0, column: 4)
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 11
 
     editor.transformSelectedText(id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
 
     #expect(editor.buffer.lines == ["foo 中文 API 測試 bar"])
-    #expect(editor.selectionMark == nil)
+    #expect(editor.buffer.selectionMark == nil)
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.buffer.columnIndex == 13)
 
@@ -134,7 +267,7 @@ import Testing
     editor.showTextCounts()
     #expect(editor.statusMessage == "[ Document: 21 chars, 5 words, 4 CJK chars, 2 lines ]")
 
-    editor.selectionMark = (line: 0, column: 0)
+    editor.buffer.selectionMark = (line: 0, column: 0)
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 5
 
@@ -169,20 +302,20 @@ import Testing
 
     editor.processKey(.alt("b"))
 
-    #expect(editor.canvasBlockMark?.line == 0)
-    #expect(editor.canvasBlockMark?.visualColumn == 1)
-    #expect(editor.canvasBlockMarkEnd?.line == 0)
-    #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 1)
     #expect(editor.statusMessage == editor.l10n["status.mark_set"])
 
     editor.buffer.lineIndex = 1
     editor.canvasVisualColumn = 3
     editor.processKey(.alt("B"))
 
-    #expect(editor.canvasBlockMark?.line == 0)
-    #expect(editor.canvasBlockMark?.visualColumn == 1)
-    #expect(editor.canvasBlockMarkEnd?.line == 1)
-    #expect(editor.canvasBlockMarkEnd?.visualColumn == 3)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 1)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 3)
     #expect(editor.statusMessage == editor.l10n["status.mark_set"])
 }
 

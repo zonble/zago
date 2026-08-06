@@ -308,7 +308,7 @@ import Testing
     editor.buffer.columnIndex = 2
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 17
     editor.processKey(.ctrl("Q"))
 
@@ -355,7 +355,7 @@ import Testing
     editor.buffer.columnIndex = 2
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
     editor.processKey(.ctrl("Q"))
 
@@ -379,7 +379,7 @@ import Testing
     editor.buffer.columnIndex = 2
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
     editor.processKey(.ctrl("Q"))
 
@@ -392,7 +392,7 @@ import Testing
     #expect(editor.statusMessage == "[ BOX disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│DRAWBOX 8 3 │"
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 12
     editor.processKey(.ctrl("Q"))
 
@@ -405,7 +405,7 @@ import Testing
     #expect(editor.statusMessage == "[ DRAWBOX disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│TABLE       │"
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 6
     editor.processKey(.ctrl("Q"))
 
@@ -418,7 +418,7 @@ import Testing
     #expect(editor.statusMessage == "[ TABLE disabled in Table Mode ]")
 
     editor.buffer.lines[1] = "│GOTO 1 1    │"
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 11
     editor.processKey(.ctrl("Q"))
     #expect(editor.statusMessage == "[ GOTO disabled in Table Mode ]")
@@ -440,7 +440,7 @@ import Testing
     editor.buffer.columnIndex = 2
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
     editor.processKey(.ctrl("Q"))
 
@@ -454,7 +454,7 @@ import Testing
 
     editor.logoEngine.execute("TO PAINTBOX DRAWBOX 8 3 END")
     editor.buffer.lines[1] = "│PAINTBOX    │"
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 9
     editor.processKey(.ctrl("Q"))
 
@@ -628,15 +628,15 @@ import Testing
 
     #expect(editor.currentTableCell?.minLine == 2)
     #expect(editor.currentTableCell?.minCol == 0)
-    #expect(editor.selectionMark?.line == 3)
-    #expect(editor.selectionMark?.column == 2)
+    #expect(editor.buffer.selectionMark?.line == 3)
+    #expect(editor.buffer.selectionMark?.column == 2)
     #expect(editor.buffer.lineIndex == 3)
     #expect(editor.buffer.columnIndex == 1)
 
     editor.processKey(.shiftArrowRight)
 
-    #expect(editor.selectionMark?.line == 3)
-    #expect(editor.selectionMark?.column == 2)
+    #expect(editor.buffer.selectionMark?.line == 3)
+    #expect(editor.buffer.selectionMark?.column == 2)
     #expect(editor.buffer.lineIndex == 3)
     #expect(editor.buffer.columnIndex == 2)
 }
@@ -658,7 +658,7 @@ import Testing
     deleteEditor.processKey(.delete)
 
     #expect(deleteEditor.buffer.lines[1] == "│   def          │keep            │")
-    #expect(deleteEditor.selectionMark == nil)
+    #expect(deleteEditor.buffer.selectionMark == nil)
     #expect(deleteEditor.currentTableCell?.minCol == 0)
     #expect(deleteEditor.currentTableCell?.maxCol == 17)
 
@@ -678,7 +678,7 @@ import Testing
     backspaceEditor.processKey(.backspace)
 
     #expect(backspaceEditor.buffer.lines[1] == "│   def          │keep            │")
-    #expect(backspaceEditor.selectionMark == nil)
+    #expect(backspaceEditor.buffer.selectionMark == nil)
     #expect(backspaceEditor.currentTableCell?.minCol == 0)
     #expect(backspaceEditor.currentTableCell?.maxCol == 17)
 }
@@ -695,21 +695,21 @@ import Testing
     editor.buffer.columnIndex = 1
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.lineIndex = 2
     editor.buffer.columnIndex = 7
 
-    #expect(!editor.isCharacterSelected(line: 1, col: 0))
-    #expect(editor.isCharacterSelected(line: 1, col: 1))
-    #expect(editor.isCharacterSelected(line: 1, col: 6))
-    #expect(!editor.isCharacterSelected(line: 1, col: 17))
-    #expect(!editor.isCharacterSelected(line: 1, col: 18))
+    #expect(!editor.buffer.isCharacterSelected(line: 1, col: 0))
+    #expect(editor.buffer.isCharacterSelected(line: 1, col: 1))
+    #expect(editor.buffer.isCharacterSelected(line: 1, col: 6))
+    #expect(!editor.buffer.isCharacterSelected(line: 1, col: 17))
+    #expect(!editor.buffer.isCharacterSelected(line: 1, col: 18))
 
-    #expect(!editor.isCharacterSelected(line: 2, col: 0))
-    #expect(editor.isCharacterSelected(line: 2, col: 1))
-    #expect(editor.isCharacterSelected(line: 2, col: 6))
-    #expect(!editor.isCharacterSelected(line: 2, col: 7))
-    #expect(!editor.isCharacterSelected(line: 2, col: 17))
+    #expect(!editor.buffer.isCharacterSelected(line: 2, col: 0))
+    #expect(editor.buffer.isCharacterSelected(line: 2, col: 1))
+    #expect(editor.buffer.isCharacterSelected(line: 2, col: 6))
+    #expect(!editor.buffer.isCharacterSelected(line: 2, col: 7))
+    #expect(!editor.buffer.isCharacterSelected(line: 2, col: 17))
 }
 
 @Test func testTableModeSingleLineSelectionInMultiLineCellDoesNotHighlightUnselectedLines() throws {
@@ -725,19 +725,19 @@ import Testing
     editor.buffer.columnIndex = 1
     editor.toggleTableMode()
 
-    editor.selectionMark = (line: 1, column: 1)
+    editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 3
 
-    #expect(editor.isCharacterSelected(line: 1, col: 1))
-    #expect(editor.isCharacterSelected(line: 1, col: 2))
-    #expect(!editor.isCharacterSelected(line: 1, col: 3))
-    #expect(!editor.isCharacterSelected(line: 1, col: 4))
+    #expect(editor.buffer.isCharacterSelected(line: 1, col: 1))
+    #expect(editor.buffer.isCharacterSelected(line: 1, col: 2))
+    #expect(!editor.buffer.isCharacterSelected(line: 1, col: 3))
+    #expect(!editor.buffer.isCharacterSelected(line: 1, col: 4))
 
-    #expect(!editor.isCharacterSelected(line: 2, col: 1))
-    #expect(!editor.isCharacterSelected(line: 2, col: 2))
-    #expect(!editor.isCharacterSelected(line: 3, col: 1))
-    #expect(!editor.isCharacterSelected(line: 3, col: 2))
+    #expect(!editor.buffer.isCharacterSelected(line: 2, col: 1))
+    #expect(!editor.buffer.isCharacterSelected(line: 2, col: 2))
+    #expect(!editor.buffer.isCharacterSelected(line: 3, col: 1))
+    #expect(!editor.buffer.isCharacterSelected(line: 3, col: 2))
 }
 
 @Test func testTableModeCtrlKClearsCellTextWithoutDeletingTableRow() throws {
@@ -1407,4 +1407,3 @@ import Testing
     editor.processKey(.pageDown)
     #expect(editor.buffer.lineIndex == 3)
 }
-

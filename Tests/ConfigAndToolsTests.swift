@@ -259,7 +259,7 @@ struct ConfigAndToolsTests {
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
     #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
 
-    editor.selectionMark = (line: 0, column: 0)
+    editor.buffer.selectionMark = (line: 0, column: 0)
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = editor.buffer.lines[0].count
     editor.menuBar.updateCategories(for: editor)

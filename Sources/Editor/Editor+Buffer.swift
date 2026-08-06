@@ -97,7 +97,6 @@ extension Editor {
             dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
         }
         topVLineIndex = 0
-        clearActiveMark()
         startFileWatcherForCurrentBuffer()
         renderer.invalidateScreenCache()
     }

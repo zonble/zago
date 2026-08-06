@@ -23,6 +23,10 @@ open class TextBuffer: SpellCheckableBuffer {
     public var canvasHorizontalOffset: Int = 0
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil
+    public var selectionMark: (line: Int, column: Int)? = nil
+    public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
+    public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
+    public var activeSearchMatch: SearchMatch? = nil
     public var viewShowRuler: Bool = false
     public var viewShowLineNumbers: Bool = true
     public var viewShowSubLineNumbers: Bool = false
@@ -38,6 +42,23 @@ open class TextBuffer: SpellCheckableBuffer {
     public init(filePath: String, fileIO: EditorFileIOStrategy) {
         self.filePath = filePath
         loadFile(at: filePath, fileIO: fileIO)
+    }
+
+    public static func getOrderedRange(
+        mark1: (line: Int, column: Int),
+        mark2: (line: Int, column: Int)
+    ) -> (start: (line: Int, column: Int), end: (line: Int, column: Int)) {
+        if mark1.line < mark2.line {
+            return (start: mark1, end: mark2)
+        } else if mark1.line > mark2.line {
+            return (start: mark2, end: mark1)
+        } else {
+            if mark1.column <= mark2.column {
+                return (start: mark1, end: mark2)
+            } else {
+                return (start: mark2, end: mark1)
+            }
+        }
     }
 
     /// Factory method to create appropriate TextBuffer or DirectoryBuffer.

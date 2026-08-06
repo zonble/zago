@@ -102,7 +102,7 @@ private func makeEditor(
 
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.buffer.columnIndex == 0)
-        #expect(editor.activeSearchMatch?.query == "alpha")
+        #expect(editor.buffer.activeSearchMatch?.query == "alpha")
 
         editor.promptSearch()
         editor.processKey(.esc)
@@ -298,12 +298,12 @@ private func makeEditor(
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified) as? Bool == true)
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName) as? String == "first.txt")
 
-        editor.selectionMark = (line: 0, column: 1)
+        editor.buffer.selectionMark = (line: 0, column: 1)
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = 2
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText) as? String == "中")
 
-        editor.selectionMark = (line: 0, column: 0)
+        editor.buffer.selectionMark = (line: 0, column: 0)
         editor.buffer.lineIndex = 1
         editor.buffer.columnIndex = 4
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText) as? String == "A中B\ntail")

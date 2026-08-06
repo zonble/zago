@@ -306,7 +306,7 @@ public final class Renderer {
                     vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count
                 {
                     let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
-                    activeCellBounds = editor.findCellHorizontalBorders(
+                    activeCellBounds = Editor.findCellHorizontalBorders(
                         in: fullLine, nearCol: cell.innerMinCol, cell: cell)
                 }
 
@@ -331,7 +331,7 @@ public final class Renderer {
                     {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"
                     } else if !editor.isCanvasModeActive
-                        && editor.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
+                        && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
                         lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
                     } else if !editor.isCanvasModeActive
@@ -377,7 +377,7 @@ public final class Renderer {
                     {
                         lineOutput += normalPad
                     }
-                } else if chars.isEmpty && editor.isLineSelected(line: vLine.bufferLineIndex) {
+                } else if chars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
                     lineOutput += "\u{1B}[7m\(String(repeating: " ", count: visibleTextWidth))\u{1B}[m"
                 }
 
@@ -536,7 +536,7 @@ public final class Renderer {
                 let effectiveCol: Int
                 if editor.isTableModeActive, let cell = editor.currentTableCell,
                    editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine {
-                    let (leftBorder, rightBorder) = editor.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
+                    let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
                     if cursorVColIdx >= rightBorder {
                         effectiveCol = max(leftBorder + 1, rightBorder - 1)
                     } else {

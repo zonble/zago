@@ -4,7 +4,7 @@ import TextMetrics
 
 extension Editor {
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
-    func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
+    static func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
         let chars = Array(line)
         guard !chars.isEmpty else { return (0, 0) }
 
@@ -41,7 +41,7 @@ extension Editor {
         buffer.lineIndex = max(cell.innerMinLine, min(buffer.lineIndex, cell.innerMaxLine))
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else { return }
         let line = buffer.lines[buffer.lineIndex]
-        let (leftBorder, rightBorder) = findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: buffer.columnIndex, cell: cell)
         let innerMinCol = leftBorder + 1
         let maxCol = min(rightBorder, line.count)
         buffer.columnIndex = max(innerMinCol, min(buffer.columnIndex, maxCol))
@@ -204,7 +204,7 @@ extension Editor {
         if buffer.lineIndex < cell.innerMaxLine {
             buffer.lineIndex += 1
             let line = buffer.lines[buffer.lineIndex]
-            let (leftBorder, _) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
             buffer.columnIndex = leftBorder + 1
         } else {
             navigateNextTableCell()

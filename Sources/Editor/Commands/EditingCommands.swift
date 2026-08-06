@@ -56,19 +56,19 @@ public struct ToggleMarkCommand: Command {
         }
 
         let point = (line: editor.buffer.lineIndex, visualColumn: editor.canvasVisualColumn)
-        if editor.canvasBlockMark == nil {
-            editor.canvasBlockMark = point
-            editor.canvasBlockMarkEnd = point
+        if editor.buffer.canvasBlockMark == nil {
+            editor.buffer.canvasBlockMark = point
+            editor.buffer.canvasBlockMarkEnd = point
             editor.setStatusMessage(editor.l10n["status.mark_set"])
-        } else if let mark = editor.canvasBlockMark,
-            let end = editor.canvasBlockMarkEnd,
+        } else if let mark = editor.buffer.canvasBlockMark,
+            let end = editor.buffer.canvasBlockMarkEnd,
             end.line == mark.line && end.visualColumn == mark.visualColumn
         {
-            editor.canvasBlockMarkEnd = point
+            editor.buffer.canvasBlockMarkEnd = point
             editor.setStatusMessage(editor.l10n["status.mark_set"])
         } else {
-            editor.canvasBlockMark = point
-            editor.canvasBlockMarkEnd = point
+            editor.buffer.canvasBlockMark = point
+            editor.buffer.canvasBlockMarkEnd = point
             editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
     }
@@ -86,8 +86,8 @@ public struct CopyTextCommand: Command {
         editor.buffer.clampCursor()
         if editor.isCanvasModeActive && !editor.isTableModeActive {
             _ = editor.copyCanvasBlock()
-        } else if let mark = editor.selectionMark {
-            let (start, end) = editor.getOrderedRange(
+        } else if let mark = editor.buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
             guard start.line != end.line || start.column != end.column else {
                 editor.setStatusMessage(editor.l10n["status.no_selection"])
@@ -115,7 +115,7 @@ public struct CancelSelectionCommand: Command {
         if editor.clearActiveSearch() {
             return
         }
-        if editor.selectionMark != nil || editor.canvasBlockMark != nil {
+        if editor.buffer.selectionMark != nil || editor.buffer.canvasBlockMark != nil {
             editor.clearActiveMark()
             editor.setStatusMessage(editor.l10n["status.mark_unset"])
         } else if editor.isCanvasModeActive {
@@ -145,13 +145,13 @@ public struct CutTextCommand: Command {
         editor.buffer.clampCursor()
         if editor.isCanvasModeActive {
             editor.cutCanvasBlock()
-        } else if let mark = editor.selectionMark {
-            let (start, end) = editor.getOrderedRange(
+        } else if let mark = editor.buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
 
             editor.clipboardText = editor.buffer.cutRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
-            editor.selectionMark = nil
+            editor.buffer.selectionMark = nil
             editor.setStatusMessage(editor.l10n["status.cut_text"])
         } else {
             let currentLine = editor.buffer.lines[editor.buffer.lineIndex]

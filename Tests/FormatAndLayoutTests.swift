@@ -537,7 +537,7 @@ struct FormatAndLayoutTests {
     editor.buffer.lines = ["let value = 1"]
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 7
-    editor.selectionMark = (line: 0, column: 4)
+    editor.buffer.selectionMark = (line: 0, column: 4)
 
     let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
 

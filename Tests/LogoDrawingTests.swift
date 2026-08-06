@@ -211,8 +211,8 @@ import TextMetrics
     let editor = Editor()
     editor.switchToCanvasMode()
     editor.buffer.lines = ["", "", "", ""]
-    editor.canvasBlockMark = (line: 1, visualColumn: 2)
-    editor.canvasBlockMarkEnd = (line: 3, visualColumn: 8)
+    editor.buffer.canvasBlockMark = (line: 1, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 3, visualColumn: 8)
 
     editor.logoEngine.execute("BOX")
 
@@ -227,8 +227,8 @@ import TextMetrics
     let editor = Editor()
     editor.switchToCanvasMode()
     editor.buffer.lines = ["abcdefghij", "0123456789"]
-    editor.canvasBlockMark = (line: 0, visualColumn: 2)
-    editor.canvasBlockMarkEnd = (line: 1, visualColumn: 6)
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 6)
 
     editor.logoEngine.execute("DRAWBOX")
 

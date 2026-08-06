@@ -286,8 +286,8 @@ extension Editor {
     }
 
     func currentCanvasBlockRectangle() -> CanvasBlockRectangle? {
-        guard let mark = canvasBlockMark else { return nil }
-        let end = canvasBlockMarkEnd ?? mark
+        guard let mark = buffer.canvasBlockMark else { return nil }
+        let end = buffer.canvasBlockMarkEnd ?? mark
         let top = min(mark.line, end.line)
         let bottom = max(mark.line, end.line)
         let rawLeft = min(mark.visualColumn, end.visualColumn)

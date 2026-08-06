@@ -113,7 +113,7 @@ public struct SubstituteCommand: Command {
         let targetRange: ClosedRange<Int>
         if parsed.isPercent {
             targetRange = 0...(max(0, editor.buffer.lines.count - 1))
-        } else if let mark = editor.selectionMark {
+        } else if let mark = editor.buffer.selectionMark {
             let cursorLine = editor.buffer.lineIndex
             let startL = min(mark.line, cursorLine)
             let endL = max(mark.line, cursorLine)

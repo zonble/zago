@@ -140,7 +140,7 @@ extension Editor {
             buffer.lineIndex = range.start.line
             buffer.columnIndex = range.start.column
             buffer.insertString(transformed)
-            selectionMark = nil
+            buffer.selectionMark = nil
             if isTableModeActive {
                 clampTableModeCursor()
             } else {
@@ -193,9 +193,9 @@ extension Editor {
     }
 
     private func activeTextSelectionRange() -> (start: (line: Int, column: Int), end: (line: Int, column: Int))? {
-        guard !isCanvasModeActive, !buffer.isDirectoryBuffer, let mark = selectionMark else { return nil }
+        guard !isCanvasModeActive, !buffer.isDirectoryBuffer, let mark = buffer.selectionMark else { return nil }
         let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
-        let range = getOrderedRange(mark1: mark, mark2: cursor)
+        let range = TextBuffer.getOrderedRange(mark1: mark, mark2: cursor)
         guard range.start.line != range.end.line || range.start.column != range.end.column else { return nil }
         return range
     }

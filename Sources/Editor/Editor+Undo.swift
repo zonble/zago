@@ -25,7 +25,7 @@ extension Editor {
 
     /// Saves a snapshot of the buffer and cursor position to the undo stack before mutation.
     public func saveUndoSnapshot() {
-        activeSearchMatch = nil
+        buffer.activeSearchMatch = nil
         lastIsPaste = false
         let snapshot = UndoSnapshot(
             lines: buffer.lines,

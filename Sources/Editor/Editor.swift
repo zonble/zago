@@ -5,6 +5,8 @@ import LogoEngine
 import SpellChecker
 import Syntax
 
+public typealias SearchMatch = Editor.SearchMatch
+
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
@@ -37,9 +39,6 @@ public final class Editor: @unchecked Sendable {
     var statusMessageTime: Date?
 
     var clipboardText: String? = nil
-    var selectionMark: (line: Int, column: Int)? = nil
-    public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
-    public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
     public var canvasBlockClipboard: CanvasBlockClipboard? = nil
 
     // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
@@ -84,7 +83,7 @@ public final class Editor: @unchecked Sendable {
     var promptCursorIndex: Int = 0
     var promptCompletionText: String? = nil
     var lastSearchQuery: String = ""
-    struct SearchMatch: Sendable, Equatable {
+    public struct SearchMatch: Sendable, Equatable {
         let query: String
         let line: Int
         let column: Int
@@ -99,7 +98,6 @@ public final class Editor: @unchecked Sendable {
             self.usesRegex = usesRegex
         }
     }
-    var activeSearchMatch: SearchMatch? = nil
     var logoPromptHistory: [String] = []
     var logoHistoryIndex: Int = 0
 
@@ -405,95 +403,23 @@ public final class Editor: @unchecked Sendable {
         self.statusMessageTime = Date()
     }
 
-    /// Returns ordered start and end coordinates for selection range.
-    func getOrderedRange(mark1: (line: Int, column: Int), mark2: (line: Int, column: Int)) -> (
-        start: (line: Int, column: Int), end: (line: Int, column: Int)
-    ) {
-        if mark1.line < mark2.line {
-            return (start: mark1, end: mark2)
-        } else if mark1.line > mark2.line {
-            return (start: mark2, end: mark1)
-        } else {
-            if mark1.column <= mark2.column {
-                return (start: mark1, end: mark2)
-            } else {
-                return (start: mark2, end: mark1)
-            }
-        }
-    }
-
-    /// Checks if a buffer character (line, col) is within the current linear selection range.
-    func isCharacterSelected(line: Int, col: Int) -> Bool {
-        guard let mark = selectionMark else { return false }
-        if isTableModeActive, let cell = currentTableCell {
-            let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
-            let (start, end) = getOrderedRange(mark1: mark, mark2: cursor)
-            guard line >= start.line && line <= end.line else {
-                return false
-            }
-            guard line >= max(cell.innerMinLine, 0) && line <= min(cell.innerMaxLine, buffer.lines.count - 1) else {
-                return false
-            }
-            let fullLine = buffer.lines[line]
-            let (leftBorder, rightBorder) = findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
-            let innerStart = leftBorder + 1
-            let innerEnd = rightBorder
-            guard col >= innerStart && col < innerEnd else {
-                return false
-            }
-            let rawStart = line == start.line ? start.column : innerStart
-            let rawEnd = line == end.line ? end.column : innerEnd
-            let segStart = max(innerStart, min(rawStart, innerEnd))
-            let segEnd = max(innerStart, min(rawEnd, innerEnd))
-            return col >= segStart && col < segEnd
-        }
-
-        let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
-
-        if line < start.line || line > end.line {
-            return false
-        }
-        if line > start.line && line < end.line {
-            return true
-        }
-        if start.line == end.line {
-            return col >= start.column && col < end.column
-        }
-        if line == start.line {
-            return col >= start.column
-        }
-        if line == end.line {
-            return col < end.column
-        }
-        return false
-    }
-
-    func isLineSelected(line: Int) -> Bool {
-        guard let mark = selectionMark else { return false }
-        let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
-        if start.line == end.line {
-            return line == start.line && start.column != end.column
-        }
-        return line >= start.line && line <= end.line
-    }
-
     public func clearActiveMark() {
-        selectionMark = nil
-        canvasBlockMark = nil
-        canvasBlockMarkEnd = nil
-        activeSearchMatch = nil
+        buffer.selectionMark = nil
+        buffer.canvasBlockMark = nil
+        buffer.canvasBlockMarkEnd = nil
+        buffer.activeSearchMatch = nil
     }
 
     @discardableResult
     func deleteTextSelectionIfNeeded(updateClipboard: Bool, saveSnapshot: Bool = true) -> Bool {
-        guard let mark = selectionMark else { return false }
+        guard let mark = buffer.selectionMark else { return false }
         if isTableModeActive, let cell = currentTableCell {
             return deleteTableSelectionIfNeeded(cell: cell, updateClipboard: updateClipboard)
         }
         let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
-        let (start, end) = getOrderedRange(mark1: mark, mark2: cursor)
+        let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: cursor)
         guard start.line != end.line || start.column != end.column else {
-            selectionMark = nil
+            buffer.selectionMark = nil
             return false
         }
 
@@ -507,7 +433,7 @@ public final class Editor: @unchecked Sendable {
         }
         buffer.lineIndex = start.line
         buffer.columnIndex = start.column
-        selectionMark = nil
+        buffer.selectionMark = nil
         buffer.clampCursor()
         return true
     }

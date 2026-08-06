@@ -136,7 +136,7 @@ extension Editor {
             let pastedText = terminal.readPendingText(firstChar: ch)
             let isMultiChar = (pastedText.count > 1)
             let now = Date()
-            let replacedSelection = !isCanvasModeActive && selectionMark != nil
+            let replacedSelection = !isCanvasModeActive && buffer.selectionMark != nil
 
             let isCoalescedPaste =
                 isMultiChar && lastIsPaste

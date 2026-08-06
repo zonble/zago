@@ -143,7 +143,7 @@ extension Editor: LogoEngineDelegate {
         case .defaultBorderStyle:
             return defaultBorderStyle
         case .hasCanvasBlockMark:
-            return isCanvasModeActive && !isTableModeActive && canvasBlockMark != nil
+            return isCanvasModeActive && !isTableModeActive && buffer.canvasBlockMark != nil
         case .canvasBlockFrame:
             guard isCanvasModeActive, !isTableModeActive, let rect = currentCanvasBlockRectangle(), rect.width > 0
             else {
@@ -164,8 +164,8 @@ extension Editor: LogoEngineDelegate {
         case .bufferText:
             return buffer.lines.joined(separator: "\n")
         case .selectionText:
-            if let mark = selectionMark {
-                let (start, end) = getOrderedRange(
+            if let mark = buffer.selectionMark {
+                let (start, end) = TextBuffer.getOrderedRange(
                     mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
                 let lines = buffer.lines
                 if start.line == end.line && start.line < lines.count {
@@ -296,8 +296,8 @@ extension Editor: LogoEngineDelegate {
     }
 
     private func selectedOrCurrentLineRange() -> ClosedRange<Int> {
-        if let mark = selectionMark {
-            let (start, end) = getOrderedRange(
+        if let mark = buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
                 mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
             let startLine = max(0, min(start.line, buffer.lines.count - 1))
             let endLine = max(0, min(end.line, buffer.lines.count - 1))
@@ -343,7 +343,7 @@ extension Editor: LogoEngineDelegate {
         }
         if didReplace {
             buffer.isModified = true
-            selectionMark = nil
+            buffer.selectionMark = nil
         }
     }
 
@@ -457,13 +457,14 @@ extension Editor {
         let script: String
 
         // Priority 1: Selection Range
-        if let mark = selectionMark {
-            let (start, end) = getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+        if let mark = buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
+                mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
             script = buffer.cutRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             // Restore selection text back into buffer
             buffer.insertString(script)
-            selectionMark = mark
+            buffer.selectionMark = mark
         }
         // Priority 2: Markdown ```logo ... ``` code fence
         else if let fenceScript = extractMarkdownLogoFence() {

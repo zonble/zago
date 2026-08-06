@@ -20,7 +20,7 @@ extension Editor {
             for lineIdx in tableLines {
                 let line = buffer.lines[lineIdx]
                 let chars = Array(line)
-                let (leftB, rightB) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+                let (leftB, rightB) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
                 if isTableBorderLine(chars, colLeft: leftB, colRight: rightB) {
                     continue
                 }
@@ -43,7 +43,7 @@ extension Editor {
             for lineIdx in tableLines {
                 let line = buffer.lines[lineIdx]
                 let chars = Array(line)
-                let (leftB, rightB) = findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+                let (leftB, rightB) = Editor.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
                 if leftB == colLeft && rightB == colRight {
                     let nextIdx = rightB + 1
                     if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
@@ -60,7 +60,7 @@ extension Editor {
             var chars = Array(buffer.lines[lineIdx])
             if chars.count <= colLeft { continue }
 
-            let (leftB, rightB) = findCellHorizontalBorders(
+            let (leftB, rightB) = Editor.findCellHorizontalBorders(
                 in: buffer.lines[lineIdx], nearCol: cell.innerMinCol, cell: cell)
             if leftB != colLeft { continue }
 

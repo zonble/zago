@@ -99,7 +99,7 @@ public struct MoveHomeCommand: Command {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, _) = editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
             editor.clampTableModeCursor()
             return
@@ -127,7 +127,7 @@ public struct MoveEndCommand: Command {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, rightBorder) = editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
             editor.clampTableModeCursor()
             return
@@ -249,4 +249,3 @@ public struct MoveWordBackwardCommand: Command {
         editor.buffer.moveWordBackward()
     }
 }
-
