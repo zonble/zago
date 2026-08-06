@@ -98,21 +98,21 @@ public final class DocumentOutlineView {
         ensureSelectionVisible(availableHeight: availableHeight)
 
         let outlineRows = Self.rows(for: headings)
-        var output = "\u{1B}[H"
-        output += "\u{1B}[7m\(title.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
+        var output = ANSIStyle.cursorHome
+        output += "\(ANSIStyle.inverse)\(title.paddedToDisplayWidth(cols))\(ANSIStyle.resetShort)\r\n"
 
         for i in 0..<availableHeight {
             let rowIndex = topIndex + i
             let row = rowIndex < outlineRows.count ? outlineRows[rowIndex] : ""
             let padded = row.paddedToDisplayWidth(cols)
             if rowIndex == selectedIndex {
-                output += "\u{1B}[7m\(padded)\u{1B}[m\r\n"
+                output += "\(ANSIStyle.inverse)\(padded)\(ANSIStyle.resetShort)\r\n"
             } else {
-                output += "\u{1B}[K\(padded)\r\n"
+                output += "\(ANSIStyle.clearLine)\(padded)\r\n"
             }
         }
 
-        output += "\u{1B}[1;36m\(footer.paddedToDisplayWidth(cols))\u{1B}[0m"
+        output += "\(ANSIStyle.boldCyan)\(footer.paddedToDisplayWidth(cols))\(ANSIStyle.reset)"
         terminal.write(output)
         fflush(nil)
     }

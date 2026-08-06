@@ -34,7 +34,7 @@ public final class Renderer {
     /// Renders the complete static screen output ANSI string for given terminal rows and cols dimensions (used for unit tests and full redraws).
     public func render(editor: Editor, rows: Int, cols: Int) -> String {
         let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, rows: rows, cols: cols)
-        return "\u{1B}[?7l\u{1B}[H" + screenLines.joined(separator: "\r\n") + cursorPosStr
+        return ANSIStyle.disableLineWrap + ANSIStyle.cursorHome + screenLines.joined(separator: "\r\n") + cursorPosStr
     }
 
     /// Renders screen using Double Buffering / Screen Line Diffing for interactive terminal sessions.
@@ -44,9 +44,9 @@ public final class Renderer {
 
         var output = ""
         if !isDiffable {
-            output += "\u{1B}[?7l\u{1B}[H"
+            output += ANSIStyle.disableLineWrap + ANSIStyle.cursorHome
             for i in 0..<screenLines.count {
-                output += screenLines[i] + "\u{1B}[K"
+                output += screenLines[i] + ANSIStyle.clearLine
                 if i < screenLines.count - 1 {
                     output += "\r\n"
                 }
@@ -55,7 +55,7 @@ public final class Renderer {
         } else {
             for i in 0..<screenLines.count {
                 if screenLines[i] != lastRenderedLines[i] {
-                    output += "\u{1B}[?7l\u{1B}[\(i + 1);1H" + screenLines[i] + "\u{1B}[K"
+                    output += "\(ANSIStyle.disableLineWrap)\u{1B}[\(i + 1);1H" + screenLines[i] + ANSIStyle.clearLine
                 }
             }
             output += cursorPosStr
@@ -329,20 +329,20 @@ public final class Renderer {
                     if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
                     {
-                        lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"
+                        lineOutput += "\(ANSIStyle.inverse)\(ch)\(ANSIStyle.resetShort)"
                     } else if !editor.isCanvasModeActive
                         && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += "\u{1B}[7m\(ch)\u{1B}[m"  // Inverse video for selection
+                        lineOutput += "\(ANSIStyle.inverse)\(ch)\(ANSIStyle.resetShort)"  // Inverse video for selection
                     } else if !editor.isCanvasModeActive
                         && editor.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += "\u{1B}[43;30m\(ch)\u{1B}[0m"
+                        lineOutput += "\(ANSIStyle.canvasCursor)\(ch)\(ANSIStyle.reset)"
                     } else if isCellActive {
-                        lineOutput += "\u{1B}[42;97;1m\(ch)\u{1B}[0m"  // Green bg for active cell
+                        lineOutput += "\(ANSIStyle.canvasActiveCell)\(ch)\(ANSIStyle.reset)"  // Green bg for active cell
                     } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
                         let tok = tokenTypes[realCol]
-                        lineOutput += tok.ansiColor + String(ch) + "\u{1B}[0m"
+                        lineOutput += tok.ansiColor + String(ch) + ANSIStyle.reset
                     } else {
                         lineOutput += String(ch)
                     }
@@ -363,14 +363,14 @@ public final class Renderer {
                             selectedPad.append(" ")
                         } else {
                             if !selectedPad.isEmpty {
-                                lineOutput += "\u{1B}[7m\(selectedPad)\u{1B}[m"
+                                lineOutput += "\(ANSIStyle.inverse)\(selectedPad)\(ANSIStyle.resetShort)"
                                 selectedPad = ""
                             }
                             normalPad.append(" ")
                         }
                     }
                     if !selectedPad.isEmpty {
-                        lineOutput += "\u{1B}[7m\(selectedPad)\u{1B}[m"
+                        lineOutput += "\(ANSIStyle.inverse)\(selectedPad)\(ANSIStyle.resetShort)"
                     }
                     if !normalPad.isEmpty
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart)
@@ -378,7 +378,7 @@ public final class Renderer {
                         lineOutput += normalPad
                     }
                 } else if chars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
-                    lineOutput += "\u{1B}[7m\(String(repeating: " ", count: visibleTextWidth))\u{1B}[m"
+                    lineOutput += "\(ANSIStyle.inverse)\(String(repeating: " ", count: visibleTextWidth))\(ANSIStyle.resetShort)"
                 }
 
                 if let subLineInfo = renderSubLineInfo(
@@ -393,7 +393,7 @@ public final class Renderer {
                 }
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
-                lineOutput += "\u{1B}[90m\(gutter)~ \(editor.l10n["chrome.end_of_file"])\u{1B}[0m"
+                lineOutput += "\(ANSIStyle.dimGray)\(gutter)~ \(editor.l10n["chrome.end_of_file"])\(ANSIStyle.reset)"
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
@@ -455,7 +455,7 @@ public final class Renderer {
             label = "\(virtualLine.subLineIndex + 1)"
         }
 
-        return " \u{1B}[90m\(label)\u{1B}[0m"
+        return " \(ANSIStyle.dimGray)\(label)\(ANSIStyle.reset)"
     }
 
     /// Formats line number string for gutter column.
@@ -473,11 +473,11 @@ public final class Renderer {
             guard lineNumber > 0 else { return "     " }
             let fmt = String(format: "%4d ", lineNumber)
             let sub = "   ↳ "
-            return isFirstSubLine ? "\u{1B}[90m\(fmt)\u{1B}[0m" : "\u{1B}[90m\(sub)\u{1B}[0m"
+            return isFirstSubLine ? "\(ANSIStyle.dimGray)\(fmt)\(ANSIStyle.reset)" : "\(ANSIStyle.dimGray)\(sub)\(ANSIStyle.reset)"
         }
 
         guard isFirstSubLine else {
-            return "\u{1B}[90m   ↳ \u{1B}[0m"
+            return "\(ANSIStyle.dimGray)   ↳ \(ANSIStyle.reset)"
         }
 
         let numStr = String(format: "%4d ", lineNumber)

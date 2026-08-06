@@ -76,7 +76,7 @@ extension Renderer {
         }
 
         if isDim {
-            leftStr = "\u{1B}[90m\(leftStr)\u{1B}[0m"
+            leftStr = "\(ANSIStyle.dimGray)\(leftStr)\(ANSIStyle.reset)"
         }
 
         let remainingRight = max(0, cols - rightStartCol - rightStr.displayWidth)
@@ -85,14 +85,14 @@ extension Renderer {
         }
 
         if isDim {
-            rightStr = "\u{1B}[90m\(rightStr)\u{1B}[0m"
+            rightStr = "\(ANSIStyle.dimGray)\(rightStr)\(ANSIStyle.reset)"
         } else if !activeAnsiStyle.isEmpty {
-            rightStr = "\(activeAnsiStyle)\(rightStr)\u{1B}[0m"
+            rightStr = "\(activeAnsiStyle)\(rightStr)\(ANSIStyle.reset)"
         }
 
         let boxStartCursor = "\u{1B}[\(dropdownStartCol + 1)G"
         let rightStartCursor = "\u{1B}[\(rightStartCol + 1)G"
-        return leftStr + "\u{1B}[0m" + boxStartCursor + boxLine + "\u{1B}[0m" + rightStartCursor + rightStr
+        return leftStr + ANSIStyle.reset + boxStartCursor + boxLine + ANSIStyle.reset + rightStartCursor + rightStr
     }
 
     /// Generates 2D dropdown box overlay lines for active menu category.
@@ -126,8 +126,8 @@ extension Renderer {
         let innerWidth = max(20, maxLabelW + maxShortW + 4)
         let boxWidth = innerWidth + 2
 
-        let topBorder = "\u{1B}[47;30m┌" + String(repeating: "─", count: innerWidth) + "┐\u{1B}[0m"
-        let bottomBorder = "\u{1B}[47;30m└" + String(repeating: "─", count: innerWidth) + "┘\u{1B}[0m"
+        let topBorder = "\(ANSIStyle.menuDefault)┌" + String(repeating: "─", count: innerWidth) + "┐\(ANSIStyle.reset)"
+        let bottomBorder = "\(ANSIStyle.menuDefault)└" + String(repeating: "─", count: innerWidth) + "┘\(ANSIStyle.reset)"
 
         var boxLines: [String] = [topBorder]
         for (iIdx, item) in items.enumerated() {
@@ -141,9 +141,9 @@ extension Renderer {
             let itemLine = " " + label + String(repeating: " ", count: spaceCount) + shortcut + " "
 
             if iIdx == editor.menuBar.itemIndex {
-                boxLines.append("\u{1B}[47;30m│\u{1B}[1;37;44m\(itemLine)\u{1B}[0;47;30m│\u{1B}[0m")
+                boxLines.append("\(ANSIStyle.menuDefault)│\(ANSIStyle.menuSelected)\(itemLine)\(ANSIStyle.menuReset)│\(ANSIStyle.reset)")
             } else {
-                boxLines.append("\u{1B}[47;30m│\(itemLine)│\u{1B}[0m")
+                boxLines.append("\(ANSIStyle.menuDefault)│\(itemLine)│\(ANSIStyle.reset)")
             }
         }
         boxLines.append(bottomBorder)

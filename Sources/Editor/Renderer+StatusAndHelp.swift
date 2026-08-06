@@ -21,17 +21,17 @@ extension Renderer {
                 rawMenuStr += menuSegment(title: catTitle, isSelected: idx == editor.menuBar.categoryIndex)
             }
 
-            var formattedMenu = "\u{1B}[47;30m "
+            var formattedMenu = "\(ANSIStyle.menuDefault) "
             for (idx, cat) in editor.menuBar.categories.enumerated() {
                 let catTitle = editor.l10n[cat.titleKey]
                 if idx == editor.menuBar.categoryIndex {
-                    formattedMenu += "\u{1B}[1;37;44m\(menuSegment(title: catTitle, isSelected: true))\u{1B}[0;47;30m"
+                    formattedMenu += "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
                 } else {
                     formattedMenu += menuSegment(title: catTitle, isSelected: false)
                 }
             }
             let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
-            return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\u{1B}[0m\r\n"
+            return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\(ANSIStyle.reset)\r\n"
         } else {
             let bufCountStr =
                 editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
@@ -74,7 +74,7 @@ extension Renderer {
                 + rightText
 
             let paddedTitle = titleStr.paddedToDisplayWidth(cols)
-            return "\u{1B}[7m\(paddedTitle)\u{1B}[m\r\n"
+            return "\(ANSIStyle.inverse)\(paddedTitle)\(ANSIStyle.resetShort)\r\n"
         }
     }
 
@@ -94,7 +94,7 @@ extension Renderer {
             width: textWidth,
             startColumn: editor.isCanvasModeActive ? editor.canvasHorizontalOffset + 1 : 1,
             wrapColumn: editor.layoutEngine.wrapColumn)
-        var lineStr = "\u{1B}[K"
+        var lineStr = ANSIStyle.clearLine
         if editor.isMenuBarActive && dropdownBoxLines.count > 0 {
             let plainRulerLine = String(repeating: " ", count: gutterWidth) + rulerStr
             let sliced = sliceOverlayLine(
@@ -108,7 +108,7 @@ extension Renderer {
             lineStr += sliced + "\r\n"
         } else {
             let styledRulerStr = highlightWrapColumnMarker(in: rulerStr)
-            lineStr += "\u{1B}[90m\(String(repeating: " ", count: gutterWidth))\(styledRulerStr)\u{1B}[0m\r\n"
+            lineStr += "\(ANSIStyle.dimGray)\(String(repeating: " ", count: gutterWidth))\(styledRulerStr)\(ANSIStyle.reset)\r\n"
         }
         return lineStr
     }
@@ -268,7 +268,7 @@ extension Renderer {
         } else {
             visibleText = text
         }
-        let styled = "\u{1B}[1;33m\(visibleText)\u{1B}[0m"
+        let styled = "\(ANSIStyle.boldYellow)\(visibleText)\(ANSIStyle.reset)"
         let padCount = max(0, width - visibleText.displayWidth)
         return styled + String(repeating: " ", count: padCount)
     }
@@ -319,9 +319,9 @@ extension Renderer {
 
                 let itemStr: String
                 if items[i].label.isEmpty {
-                    itemStr = "\u{1B}[1;36m\(items[i].key)\u{1B}[0m"
+                    itemStr = "\(ANSIStyle.boldCyan)\(items[i].key)\(ANSIStyle.reset)"
                 } else {
-                    itemStr = "\u{1B}[1;36m\(items[i].key)\u{1B}[0m \(items[i].label)"
+                    itemStr = "\(ANSIStyle.boldCyan)\(items[i].key)\(ANSIStyle.reset) \(items[i].label)"
                 }
 
                 let padCount = max(0, targetColWidth - rawWidth)
@@ -350,8 +350,8 @@ extension Renderer {
             return result
         }
 
-        let line1 = "\u{1B}[K" + renderLine(items1)
-        let line2 = "\u{1B}[K" + renderLine(items2)
+        let line1 = ANSIStyle.clearLine + renderLine(items1)
+        let line2 = ANSIStyle.clearLine + renderLine(items2)
         return line1 + "\r\n" + line2
     }
 
@@ -411,7 +411,7 @@ extension Renderer {
         }
 
         if isConfirmation {
-            let boldText = "\u{1B}[1;33m\(promptPrefix)\u{1B}[0m"
+            let boldText = "\(ANSIStyle.boldYellow)\(promptPrefix)\(ANSIStyle.reset)"
             return RenderedPrompt(text: boldText, cursorCol: promptPrefix.displayWidth + 1)
         }
 
@@ -425,7 +425,7 @@ extension Renderer {
         let totalInputDisplayWidth = inputChars.reduce(0) { $0 + $1.displayWidth }
 
         if totalInputDisplayWidth < maxInputWidth {
-            let styledText = "\u{1B}[1m\(promptPrefix)\(editor.promptInputText)\u{1B}[0m"
+            let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(editor.promptInputText)\(ANSIStyle.reset)"
             let cursorCol = prefixWidth + cursorDisplayWidth + 1
             return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
         }
@@ -473,7 +473,7 @@ extension Renderer {
         }
 
         let visibleString = String(visibleChars)
-        let styledText = "\u{1B}[1m\(promptPrefix)\(visibleString)\u{1B}[0m"
+        let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(visibleString)\(ANSIStyle.reset)"
         let cursorCol = prefixWidth + cursorColInWindow + 1
 
         return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
@@ -504,6 +504,6 @@ extension Renderer {
     }
 
     func highlightWrapColumnMarker(in rulerStr: String) -> String {
-        rulerStr.replacingOccurrences(of: "<", with: "\u{1B}[1;33m<\u{1B}[90m")
+        rulerStr.replacingOccurrences(of: "<", with: "\(ANSIStyle.boldYellow)<\(ANSIStyle.dimGray)")
     }
 }
