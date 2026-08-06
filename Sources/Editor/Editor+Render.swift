@@ -5,6 +5,14 @@ extension Editor {
     /// Refreshes screen rendering directly using centralized Renderer with Double Buffering / Screen Line Diffing.
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
+        let showRuler = displayConfig.showRuler && !buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        let showGutter = displayConfig.showLineNumbers && !buffer.isDirectoryBuffer
+        let gutterWidth = showGutter ? 5 : 0
+        let textWidth = max(10, cols - gutterWidth)
+
+        adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
+
         let output = renderer.renderDiff(editor: self, rows: rows, cols: cols)
         terminal.write(output)
         fflush(nil)

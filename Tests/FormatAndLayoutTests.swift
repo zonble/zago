@@ -766,6 +766,26 @@ struct FormatAndLayoutTests {
     #expect(fullOutput.hasPrefix("\u{1B}[?7l\u{1B}[H"))
 }
 
+@Test func testRendererIsPureAndReadOnlyWithoutSideEffects() throws {
+    let editor = Editor()
+    let buffer = TextBuffer()
+    buffer.lines = (1...50).map { "Line \($0)" }
+    editor.buffer = buffer
+    editor.buffer.lineIndex = 40
+    editor.topVLineIndex = 0
+
+    let renderer = editor.renderer
+    let initialTop = editor.topVLineIndex
+
+    // Calling renderer.render directly should NOT mutate editor.topVLineIndex (Pure Read-Only)
+    _ = renderer.render(editor: editor, rows: 20, cols: 80)
+    #expect(editor.topVLineIndex == initialTop)
+
+    // Viewport adjustment is explicitly invoked by Editor
+    editor.adjustViewport(mainAreaHeight: 15, textWidth: 75)
+    #expect(editor.topVLineIndex > 0)
+}
+
 @Test func testMenuBarCategoryHighlightStability() throws {
     let editor = Editor()
     editor.isMenuBarActive = true

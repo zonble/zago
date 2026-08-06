@@ -663,6 +663,10 @@ import TextMetrics
     editor.canvasVisualColumn = 12
     editor.syncCanvasCursorToBuffer()
 
+    let mainAreaHeight = max(1, 8 - 4)
+    let textWidth = max(10, 15 - 5)
+    editor.adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
+
     let output = editor.renderer.render(editor: editor, rows: 8, cols: 15)
 
     #expect(editor.canvasHorizontalOffset == 10)

@@ -75,9 +75,6 @@ public final class Renderer {
         let textWidth = max(10, cols - gutterWidth)
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
-        // Adjust viewport scrolling bounds on Editor before read-only rendering
-        editor.adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
-
         let virtualLines: [VirtualLine]
         let virtualLineStartIndex: Int
         let totalVirtualLineCount: Int
