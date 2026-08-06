@@ -703,9 +703,6 @@ struct ConfigAndToolsTests {
 }
 
 @Test func testLocalization() throws {
-    let previousLanguage = L10n.currentLanguage
-    defer { L10n.currentLanguage = previousLanguage }
-    L10n.currentLanguage = .en
     #expect(L10n.string("help.get_help", language: .en) == "Get Help")
     #expect(L10n.string("help.exit", language: .en) == "Exit")
     #expect(L10n.readLines(10, language: .en) == "[ Read 10 line(s) ]")
@@ -755,7 +752,6 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("mode.canvas", language: .en) == "CANVAS")
     #expect(L10n.string("mode.table", language: .en) == "TABLE")
 
-    L10n.currentLanguage = .zh_TW
     #expect(L10n.string("help.get_help", language: .zh_TW) == "輔助說明")
     #expect(L10n.string("help.exit", language: .zh_TW) == "離開")
     #expect(L10n.readLines(10, language: .zh_TW) == "[ 已讀取 10 行 ]")
@@ -788,21 +784,22 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("help.mark_block", language: .zh_TW) == "標記區塊")
     #expect(L10n.string("help.uncut_block", language: .zh_TW) == "貼上區塊")
     #expect(L10n.string("help.open_link", language: .zh_TW) == "開啟連結")
-    #expect(L10n["helpview.search_2"].contains("AsciiDoc"))
-    #expect(L10n["helpview.search_3"].contains("文件大綱"))
-    #expect(L10n["menu.edit.outline"] == "文件大綱\tM+\\")
-    #expect(L10n["menu.edit.next_heading"] == "下一個標題\tM+]")
-    #expect(L10n["menu.edit.previous_heading"] == "上一個標題\tM+[")
-    #expect(L10n["status.no_headings"] == "[ 沒有標題 ]")
-    #expect(L10n["status.heading_nav_unsupported_format"] == "[ 目前檔案格式不支援文件大綱 ]")
-    #expect(String(format: L10n["status.heading_position"], 3, 18, "## Search") == "[ 標題 3/18：## Search ]")
-    #expect(L10n["outlineview.title"] == "  文件大綱")
-    #expect(L10n["menu.tools.word_count"] == "Word Count")
+    let l10nZH = L10n(language: .zh_TW)
+    #expect(l10nZH["helpview.search_2"].contains("AsciiDoc"))
+    #expect(l10nZH["helpview.search_3"].contains("文件大綱"))
+    #expect(l10nZH["menu.edit.outline"] == "文件大綱\tM+\\")
+    #expect(l10nZH["menu.edit.next_heading"] == "下一個標題\tM+]")
+    #expect(l10nZH["menu.edit.previous_heading"] == "上一個標題\tM+[")
+    #expect(l10nZH["status.no_headings"] == "[ 沒有標題 ]")
+    #expect(l10nZH["status.heading_nav_unsupported_format"] == "[ 目前檔案格式不支援文件大綱 ]")
+    #expect(String(format: l10nZH["status.heading_position"], 3, 18, "## Search") == "[ 標題 3/18：## Search ]")
+    #expect(l10nZH["outlineview.title"] == "  文件大綱")
+    #expect(l10nZH["menu.tools.word_count"] == "Word Count")
     #expect(
-        String(format: L10n["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
+        String(format: l10nZH["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
             == "[ 文件：21 chars, 5 words, 4 CJK chars, 2 lines ]")
-    #expect(L10n["menu.tools.transform_cjk_spacing"] == "轉換：CJK 空格")
-    #expect(L10n["transform.tohant"] == "繁體中文")
+    #expect(l10nZH["menu.tools.transform_cjk_spacing"] == "轉換：CJK 空格")
+    #expect(l10nZH["transform.tohant"] == "繁體中文")
 }
 
 @Test func testLogoReferenceAndWorkspaceContent() throws {

@@ -147,7 +147,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 - **Drafting & Border Detection**: `findTableRange` inspects both upward (`lineIndex - 1`) and downward (`lineIndex + 1`) lines for draft rows (`|-`, `+-`). reST Grid double lines (`|=` / `+=`) generate `+==========+==========+` separators.
 
 ### F. Swift Testing & Serialized Test Suites
-- When a test modifies global shared state (such as `L10n.currentLanguage`), annotate the enclosing test suite struct with `@Suite(.serialized)` to ensure serialized execution during parallel `swift test` runs.
+- When a test modifies global shared state, annotate the enclosing test suite struct with `@Suite(.serialized)` to ensure serialized execution during parallel `swift test` runs.
 - Note: `@Test(.serialized)` on an individual test function is ignored by Swift Testing; `.serialized` must be applied at `@Suite` level.
 
 ---

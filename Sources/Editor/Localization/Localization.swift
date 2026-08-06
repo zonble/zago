@@ -5,9 +5,6 @@ import Foundation
 public struct L10n: Sendable {
     public let language: Language
 
-    @available(*, deprecated, message: "Use editor.language or L10n(language:) instance instead of global singleton")
-    public static nonisolated(unsafe) var currentLanguage: Language = .detectSystemLanguage()
-
     public init(language: Language = .detectSystemLanguage()) {
         self.language = language
     }
@@ -28,9 +25,9 @@ public struct L10n: Sendable {
         tables[language]?[key] ?? tables[.en]?[key] ?? key
     }
 
-    /// Static subscript using deprecated currentLanguage for backward compatibility.
+    /// Static subscript for default system language string lookup.
     public static subscript(_ key: String) -> String {
-        string(key, language: currentLanguage)
+        string(key)
     }
 
     // MARK: - Strongly-Typed Help Bar Accessors
