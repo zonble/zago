@@ -170,11 +170,11 @@ import Testing
     @Test func testCommandBarCompletionForTr() throws {
         let editor = Editor()
         editor.promptLogoMacro()
-        editor.processPromptKey(.char("t"))
-        editor.processPromptKey(.char("r"))
+        editor.processKey(.char("t"))
+        editor.processKey(.char("r"))
         #expect(editor.promptInputText == "tr")
 
-        editor.processPromptKey(.tab)
+        editor.processKey(.tab)
         #expect(editor.promptCompletionText != nil)
         if let completionText = editor.promptCompletionText?.lowercased() {
             #expect(completionText.contains("translit") && completionText.contains("transform"))
@@ -185,9 +185,9 @@ import Testing
         let editor = Editor()
         let renderer = Renderer()
         editor.promptLogoMacro()
-        editor.processPromptKey(.char("t"))
-        editor.processPromptKey(.char("r"))
-        editor.processPromptKey(.tab)
+        editor.processKey(.char("t"))
+        editor.processKey(.char("r"))
+        editor.processKey(.tab)
         #expect(editor.promptCompletionText != nil)
 
         let helpBarOutput = renderer.renderHelpBar(cols: 80, promptMode: editor.currentPromptMode, editor: editor)
@@ -199,21 +199,21 @@ import Testing
         editor.promptLogoMacro()
 
         // Type "tra" and press Tab -> should auto-complete to "trans" (LCP of transform*, translit)
-        for ch in "tra" { editor.processPromptKey(.char(ch)) }
+        for ch in "tra" { editor.processKey(.char(ch)) }
         #expect(editor.promptInputText == "tra")
-        editor.processPromptKey(.tab)
+        editor.processKey(.tab)
         #expect(editor.promptInputText == "trans")
 
         // Type "f" ("transf") and press Tab -> should auto-complete to "transform"
-        editor.processPromptKey(.char("f"))
+        editor.processKey(.char("f"))
         #expect(editor.promptInputText == "transf")
-        editor.processPromptKey(.tab)
+        editor.processKey(.tab)
         #expect(editor.promptInputText == "transform")
 
         // Type ".toha" ("transform.toha") and press Tab -> should auto-complete to "transform.tohan"
-        for ch in ".toha" { editor.processPromptKey(.char(ch)) }
+        for ch in ".toha" { editor.processKey(.char(ch)) }
         #expect(editor.promptInputText == "transform.toha")
-        editor.processPromptKey(.tab)
+        editor.processKey(.tab)
         #expect(editor.promptInputText == "transform.tohan")
     }
 }

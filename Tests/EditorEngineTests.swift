@@ -1135,19 +1135,19 @@ import TextMetrics
 
     // Type "hello"
     for ch in "hello" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
     #expect(editor.promptInputText == "hello")
     #expect(editor.promptCursorIndex == 5)
 
     // Move cursor left 3 times (between 'e' and 'l')
-    editor.processPromptKey(.arrowLeft)
-    editor.processPromptKey(.arrowLeft)
-    editor.processPromptKey(.arrowLeft)
+    editor.processKey(.arrowLeft)
+    editor.processKey(.arrowLeft)
+    editor.processKey(.arrowLeft)
     #expect(editor.promptCursorIndex == 2)
 
     // Type space ' '
-    editor.processPromptKey(.char(" "))
+    editor.processKey(.char(" "))
 
     // Expect "he llo", NOT "hello "!
     #expect(editor.promptInputText == "he llo")
@@ -1157,9 +1157,9 @@ import TextMetrics
 private func submitCommandBar(_ text: String, editor: Editor) {
     editor.promptLogoMacro()
     for ch in text {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
-    editor.processPromptKey(.enter)
+    editor.processKey(.enter)
 }
 
 @Test func testCommandBarNumericGotoShorthand() throws {
@@ -1352,10 +1352,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "SET " {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "SET ")
     #expect(editor.promptCompletionText?.contains("wrap") == true)
@@ -1371,10 +1371,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "set li" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "set linenumbers ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
@@ -1384,10 +1384,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "set syntax " {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "set syntax ")
     #expect(editor.promptCompletionText?.contains("on") == true)
@@ -1398,10 +1398,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "set canvas-mode " {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "set canvas-mode ")
     #expect(editor.promptCompletionText?.contains("on") == true)
@@ -1412,10 +1412,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "drawb" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "drawbox ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
@@ -1425,10 +1425,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "QUI" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "QUIT ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
@@ -1438,10 +1438,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "save-" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "save-exit ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
@@ -1451,10 +1451,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "sa" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "save")
     #expect(editor.promptCompletionText?.contains("save") == true)
@@ -1466,13 +1466,13 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "sa" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
     #expect(editor.promptCompletionText != nil)
 
-    editor.processPromptKey(.esc)
+    editor.processKey(.esc)
     #expect(editor.promptCompletionText == nil)
     #expect(editor.statusMessage.contains("save") == false)
 }
@@ -1481,10 +1481,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "box 10 drawb" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "box 10 drawbox ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
@@ -1494,10 +1494,10 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     let editor = Editor()
     editor.promptLogoMacro()
     for ch in "REPEAT 5 [drawb" {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 
-    editor.processPromptKey(.tab)
+    editor.processKey(.tab)
 
     #expect(editor.promptInputText == "REPEAT 5 [drawbox ")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)

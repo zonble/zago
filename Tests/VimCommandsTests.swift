@@ -54,7 +54,7 @@ import Testing
         } else {
             Issue.record("Expected confirmExitSave prompt mode for modified buffer on :q")
         }
-        editor.cancelPrompt()
+        editor.promptController.cancel(editor: editor)
 
         // :q! or q! forces buffer to close without saving prompt
         let res2 = editor.commandBarRegistry.dispatch(":q!", editor: editor)

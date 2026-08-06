@@ -7,16 +7,11 @@ extension Editor {
         let (rows, cols) = terminal.getWindowSize()
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
-        adjustViewport(geometry: geometry)
+        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth)
 
         let output = renderer.renderDiff(editor: self, geometry: geometry)
         terminal.write(output)
         fflush(nil)
-    }
-
-    /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds using ScreenGeometry.
-    public func adjustViewport(geometry: ScreenGeometry) {
-        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth)
     }
 
     /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.

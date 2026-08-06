@@ -6,11 +6,6 @@ import TextTransform
 extension Editor {
     public typealias PromptMode = PromptController.Mode
 
-    /// Processes keyboard input when in prompt mode.
-    func processPromptKey(_ key: Key) {
-        promptController.processPromptKey(key, editor: self)
-    }
-
     /// Prompts user to input file path for saving (^O / ^S / F3).
     func promptWriteFilePath() {
         promptInputText = buffer.filePath ?? ""
@@ -131,11 +126,6 @@ extension Editor {
         } else {
             setStatusMessage(l10n["status.no_misspelled"])
         }
-    }
-
-    /// Cancels active prompt mode.
-    func cancelPrompt() {
-        promptController.cancel(editor: self)
     }
 
     /// Prompts user for LOGO macro script input (:logo / ^L).

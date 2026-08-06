@@ -488,8 +488,8 @@ struct ConfigAndToolsTests {
         #expect(Bool(false), "Fill menu item should ask for fill text before running FILL")
     }
 
-    editor.processPromptKey(.char("."))
-    editor.processPromptKey(.enter)
+    editor.processKey(.char("."))
+    editor.processKey(.enter)
 
     #expect(editor.buffer.lines[1] == "│...│")
     #expect(editor.buffer.lines[2] == "│...│")
@@ -514,7 +514,7 @@ struct ConfigAndToolsTests {
 
     editor.promptInputText = "2 2 4"
     editor.promptCursorIndex = editor.promptInputText.count
-    editor.processPromptKey(.enter)
+    editor.processKey(.enter)
 
     #expect(editor.buffer.lines[0] == "┌────┬────┐")
     #expect(editor.buffer.lines[1] == "│    │    │")

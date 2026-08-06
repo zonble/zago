@@ -25,7 +25,7 @@ private final class QueuedEditorTerminal: EditorTerminal, @unchecked Sendable {
 
 private func typePrompt(_ text: String, in editor: Editor) {
     for ch in text {
-        editor.processPromptKey(.char(ch))
+        editor.processKey(.char(ch))
     }
 }
 
@@ -48,18 +48,18 @@ private func makeEditor(
         editor.currentPromptMode = .saveFilePath(completion: { savedPath = $0 })
 
         typePrompt("old", in: editor)
-        editor.processPromptKey(.ctrl("U"))
+        editor.processKey(.ctrl("U"))
         #expect(editor.promptInputText.isEmpty)
 
         typePrompt("  draft.txt  ", in: editor)
-        editor.processPromptKey(.home)
+        editor.processKey(.home)
         #expect(editor.promptCursorIndex == 0)
-        editor.processPromptKey(.end)
+        editor.processKey(.end)
         #expect(editor.promptCursorIndex == editor.promptInputText.count)
-        editor.processPromptKey(.arrowLeft)
-        editor.processPromptKey(.delete)
-        editor.processPromptKey(.backspace)
-        editor.processPromptKey(.enter)
+        editor.processKey(.arrowLeft)
+        editor.processKey(.delete)
+        editor.processKey(.backspace)
+        editor.processKey(.enter)
 
         #expect(savedPath == "draft.txt")
         if case .none = editor.currentPromptMode {
@@ -75,17 +75,17 @@ private func makeEditor(
         editor.promptLogoMacro()
         typePrompt("alpha 測 beta", in: editor)
 
-        editor.processPromptKey(.ctrlShift("B"))
+        editor.processKey(.ctrlShift("B"))
         #expect(editor.promptCursorIndex == "alpha 測 ".count)
-        editor.processPromptKey(.ctrlShift("B"))
+        editor.processKey(.ctrlShift("B"))
         #expect(editor.promptCursorIndex == "alpha ".count)
-        editor.processPromptKey(.ctrlShift("F"))
+        editor.processKey(.ctrlShift("F"))
         #expect(editor.promptCursorIndex == "alpha 測".count)
-        editor.processPromptKey(.ctrlShift("F"))
+        editor.processKey(.ctrlShift("F"))
         #expect(editor.promptCursorIndex == "alpha 測 beta".count)
 
         editor.promptCompletionText = "Tab: beta"
-        editor.processPromptKey(.esc)
+        editor.processKey(.esc)
 
         #expect(editor.promptInputText.isEmpty)
         #expect(editor.promptCompletionText == nil)
@@ -98,7 +98,7 @@ private func makeEditor(
         editor.lastSearchQuery = "alpha"
 
         editor.promptSearch()
-        editor.processPromptKey(.enter)
+        editor.processKey(.enter)
 
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.buffer.columnIndex == 0)
@@ -147,14 +147,14 @@ private func makeEditor(
 
         editor.promptInsertFilePath()
         typePrompt("/snippet.txt", in: editor)
-        editor.processPromptKey(.enter)
+        editor.processKey(.enter)
 
         #expect(editor.buffer.lines == ["AA", "BB"])
         #expect(editor.statusMessage == editor.l10n.insertedLines(2))
 
         editor.promptInsertFilePath()
         typePrompt("/missing.txt", in: editor)
-        editor.processPromptKey(.enter)
+        editor.processKey(.enter)
         #expect(editor.statusMessage.contains("MemoryEditorFileIOStrategy"))
 
         editor.promptInsertFilePath()
@@ -175,15 +175,15 @@ private func makeEditor(
         editor.processKey(.mark)
 
         editor.promptFillText()
-        editor.processPromptKey(.char("\""))
-        editor.processPromptKey(.enter)
+        editor.processKey(.char("\""))
+        editor.processKey(.enter)
 
         #expect(editor.buffer.lines == ["a'''ef", "u'''yz"])
         #expect(editor.statusMessage == editor.l10n["status.filled_block"])
 
         editor.promptGotoLine()
         typePrompt("2, 5", in: editor)
-        editor.processPromptKey(.enter)
+        editor.processKey(.enter)
 
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.canvasVisualColumn == 4)
@@ -195,7 +195,7 @@ private func makeEditor(
         markdownEditor.promptTableDimensions()
         markdownEditor.promptInputText = "2 2"
         markdownEditor.promptCursorIndex = markdownEditor.promptInputText.count
-        markdownEditor.processPromptKey(.enter)
+        markdownEditor.processKey(.enter)
 
         #expect(markdownEditor.buffer.lines[0] == "| Header 1 | Header 2 |")
         #expect(markdownEditor.buffer.lines[1] == "| -------- | -------- |")
@@ -207,7 +207,7 @@ private func makeEditor(
         orgEditor.promptTableDimensions()
         orgEditor.promptInputText = "1 2"
         orgEditor.promptCursorIndex = orgEditor.promptInputText.count
-        orgEditor.processPromptKey(.enter)
+        orgEditor.processKey(.enter)
 
         #expect(orgEditor.buffer.lines[0] == "| Header 1 | Header 2 |")
         #expect(orgEditor.buffer.lines[1] == "|----------+----------|")
