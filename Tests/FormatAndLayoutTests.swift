@@ -786,15 +786,30 @@ struct FormatAndLayoutTests {
     #expect(editor.topVLineIndex > 0)
 }
 
-@Test func testUILayoutMetricsCalculations() throws {
-    #expect(UILayoutMetrics.chromeHeight(showRuler: false) == 4)
-    #expect(UILayoutMetrics.chromeHeight(showRuler: true) == 5)
-    #expect(UILayoutMetrics.mainAreaHeight(rows: 24, showRuler: false) == 20)
-    #expect(UILayoutMetrics.mainAreaHeight(rows: 24, showRuler: true) == 19)
-    #expect(UILayoutMetrics.effectiveGutterWidth(showGutter: false) == 0)
-    #expect(UILayoutMetrics.effectiveGutterWidth(showGutter: true) == 5)
-    #expect(UILayoutMetrics.textWidth(cols: 80, showGutter: true) == 75)
-    #expect(UILayoutMetrics.textWidth(cols: 80, showGutter: false) == 80)
+@Test func testScreenGeometryCalculationAndConsumption() throws {
+    let editor = Editor()
+    let geometryNoRuler = ScreenGeometry(rows: 24, cols: 80, showRuler: false, showGutter: true)
+    #expect(geometryNoRuler.mainAreaHeight == 20)
+    #expect(geometryNoRuler.gutterWidth == 5)
+    #expect(geometryNoRuler.textWidth == 75)
+
+    let geometryWithRuler = ScreenGeometry(rows: 24, cols: 80, showRuler: true, showGutter: false)
+    #expect(geometryWithRuler.mainAreaHeight == 19)
+    #expect(geometryWithRuler.gutterWidth == 0)
+    #expect(geometryWithRuler.textWidth == 80)
+
+    let geometry = ScreenGeometry(rows: 25, cols: 80, editor: editor)
+    #expect(geometry.rows == 25)
+    #expect(geometry.cols == 80)
+    #expect(geometry.showRuler == false)
+    #expect(geometry.showGutter == true)
+    #expect(geometry.mainAreaHeight == 21)
+    #expect(geometry.gutterWidth == 5)
+    #expect(geometry.textWidth == 75)
+
+    // Renderer accepts geometry without re-calculating layout
+    let output = editor.renderer.render(editor: editor, geometry: geometry)
+    #expect(!output.isEmpty)
 }
 
 @Test func testMenuBarCategoryHighlightStability() throws {

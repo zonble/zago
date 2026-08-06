@@ -31,16 +31,16 @@ public final class Renderer {
         lastRenderedLines.removeAll()
     }
 
-    /// Renders the complete static screen output ANSI string for given terminal rows and cols dimensions (used for unit tests and full redraws).
-    public func render(editor: Editor, rows: Int, cols: Int) -> String {
-        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, rows: rows, cols: cols)
+    /// Renders complete static screen ANSI output for given ScreenGeometry.
+    public func render(editor: Editor, geometry: ScreenGeometry) -> String {
+        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
         return ANSIStyle.disableLineWrap + ANSIStyle.cursorHome + screenLines.joined(separator: "\r\n") + cursorPosStr
     }
 
-    /// Renders screen using Double Buffering / Screen Line Diffing for interactive terminal sessions.
-    public func renderDiff(editor: Editor, rows: Int, cols: Int) -> String {
-        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, rows: rows, cols: cols)
-        let isDiffable = (rows == lastRows && cols == lastCols && lastRenderedLines.count == screenLines.count)
+    /// Renders screen using Double Buffering / Screen Line Diffing for given ScreenGeometry.
+    public func renderDiff(editor: Editor, geometry: ScreenGeometry) -> String {
+        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
+        let isDiffable = (geometry.rows == lastRows && geometry.cols == lastCols && lastRenderedLines.count == screenLines.count)
 
         var output = ""
         if !isDiffable {
@@ -62,18 +62,27 @@ public final class Renderer {
         }
 
         lastRenderedLines = screenLines
-        lastRows = rows
-        lastCols = cols
+        lastRows = geometry.rows
+        lastCols = geometry.cols
         return output
     }
 
-    private func renderScreenLines(editor: Editor, rows: Int, cols: Int) -> (screenLines: [String], cursorPosStr: String) {
-        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
+    /// Renders complete static screen output ANSI string for given terminal rows and cols.
+    public func render(editor: Editor, rows: Int, cols: Int) -> String {
+        render(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
+    }
 
-        let mainAreaHeight = UILayoutMetrics.mainAreaHeight(rows: rows, showRuler: showRuler)
-        let gutterWidth = UILayoutMetrics.effectiveGutterWidth(showGutter: showGutter)
-        let textWidth = UILayoutMetrics.textWidth(cols: cols, showGutter: showGutter)
+    /// Renders screen using Double Buffering for given terminal rows and cols.
+    public func renderDiff(editor: Editor, rows: Int, cols: Int) -> String {
+        renderDiff(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
+    }
+
+    private func renderScreenLines(editor: Editor, geometry: ScreenGeometry) -> (screenLines: [String], cursorPosStr: String) {
+        let rows = geometry.rows
+        let cols = geometry.cols
+        let mainAreaHeight = geometry.mainAreaHeight
+        let gutterWidth = geometry.gutterWidth
+        let textWidth = geometry.textWidth
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
         let virtualLines: [VirtualLine]
@@ -125,7 +134,7 @@ public final class Renderer {
             editor: editor, cols: cols)
 
         // 2. WordStar Ruler Bar Component (Optional)
-        if showRuler {
+        if geometry.showRuler {
             let rulerLineStr = renderRulerBar(
                 editor: editor,
                 textWidth: textWidth,

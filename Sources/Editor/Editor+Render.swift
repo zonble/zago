@@ -5,17 +5,18 @@ extension Editor {
     /// Refreshes screen rendering directly using centralized Renderer with Double Buffering / Screen Line Diffing.
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
-        let showRuler = displayConfig.showRuler && !buffer.isDirectoryBuffer
-        let showGutter = displayConfig.showLineNumbers && !buffer.isDirectoryBuffer
+        let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
-        let mainAreaHeight = UILayoutMetrics.mainAreaHeight(rows: rows, showRuler: showRuler)
-        let textWidth = UILayoutMetrics.textWidth(cols: cols, showGutter: showGutter)
+        adjustViewport(geometry: geometry)
 
-        adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
-
-        let output = renderer.renderDiff(editor: self, rows: rows, cols: cols)
+        let output = renderer.renderDiff(editor: self, geometry: geometry)
         terminal.write(output)
         fflush(nil)
+    }
+
+    /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds using ScreenGeometry.
+    public func adjustViewport(geometry: ScreenGeometry) {
+        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth)
     }
 
     /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.
