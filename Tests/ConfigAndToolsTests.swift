@@ -891,4 +891,31 @@ struct ConfigAndToolsTests {
         #expect(output.contains("┌──────────────────┐"))
         #expect(output.contains("└──────────────────┘"))
     }
+
+    /// Regression test: submenu item titles must respect the editor's configured language.
+    /// Previously, Renderer+Overlay used the static L10n[] subscript (which calls
+    /// detectSystemLanguage()) instead of editor.l10n[], so submenu items always rendered
+    /// in the system language even when the editor was configured to a different language.
+    @Test func testMenuSubitemsTitleRespectEditorLanguage() throws {
+        // --- English editor ---
+        let enEditor = Editor(language: .en)
+        enEditor.isMenuBarActive = true
+        enEditor.menuBar.updateCategories(for: enEditor)
+        // Select the File category (index 0)
+        enEditor.menuBar.categoryIndex = 0
+        let (_, _, enLines) = enEditor.renderer.generateDropdownOverlayLines(editor: enEditor, cols: 80)
+        let enJoined = enLines.joined()
+        #expect(enJoined.contains("New Buffer"), "English editor: expected English submenu items")
+        #expect(!enJoined.contains("新建空白頁"), "English editor: must not contain Chinese submenu items")
+
+        // --- Traditional Chinese editor ---
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.isMenuBarActive = true
+        zhEditor.menuBar.updateCategories(for: zhEditor)
+        zhEditor.menuBar.categoryIndex = 0
+        let (_, _, zhLines) = zhEditor.renderer.generateDropdownOverlayLines(editor: zhEditor, cols: 80)
+        let zhJoined = zhLines.joined()
+        #expect(zhJoined.contains("新建空白頁"), "zh_TW editor: expected Chinese submenu items")
+        #expect(!zhJoined.contains("New Buffer"), "zh_TW editor: must not contain English submenu items")
+    }
 }

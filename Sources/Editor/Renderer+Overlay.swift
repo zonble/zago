@@ -103,7 +103,7 @@ extension Renderer {
 
         var colOffset = 1
         for idx in 0..<editor.menuBar.categoryIndex {
-            let title = L10n[editor.menuBar.categories[idx].titleKey]
+            let title = editor.l10n[editor.menuBar.categories[idx].titleKey]
             colOffset += title.displayWidth + 2
         }
 
@@ -113,7 +113,7 @@ extension Renderer {
 
         var formattedItems: [String] = []
         for item in items {
-            let rawStr = L10n[item.titleKey]
+            let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
             let label = labelPrefix + parts[0]
@@ -131,7 +131,7 @@ extension Renderer {
 
         var boxLines: [String] = [topBorder]
         for (iIdx, item) in items.enumerated() {
-            let rawStr = L10n[item.titleKey]
+            let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
             let label = labelPrefix + parts[0]
