@@ -807,6 +807,7 @@ public final class LocalTerminal: EditorTerminal {
     public func readNonInteractiveLine(prompt: String) -> String? {
         if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
             FileHandle.standardError.write(data)
+            fflush(nil)
         }
         return readLine()
     }
@@ -814,6 +815,7 @@ public final class LocalTerminal: EditorTerminal {
     public func readNonInteractiveChar(prompt: String) -> String? {
         if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
             FileHandle.standardError.write(data)
+            fflush(nil)
         }
         guard let line = readLine(), let firstChar = line.first else { return nil }
         return String(firstChar)
