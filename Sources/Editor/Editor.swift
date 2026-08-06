@@ -106,11 +106,11 @@ public final class Editor: @unchecked Sendable {
     // Menu Bar state
     public var isMenuBarActive: Bool = false
     public let menuBar = MenuBar()
-    private var defaultBaseMode: EditorBaseMode = .text
-    private var defaultViewShowRuler = false
-    private var defaultViewShowLineNumbers = true
-    private var defaultViewShowSubLineNumbers = false
-    private var defaultViewWrapColumn: Int? = nil
+    var defaultBaseMode: EditorBaseMode = .text
+    var defaultViewShowRuler = false
+    var defaultViewShowLineNumbers = true
+    var defaultViewShowSubLineNumbers = false
+    var defaultViewWrapColumn: Int? = nil
 
     // Editor mode state
     public var baseMode: EditorBaseMode {
@@ -171,7 +171,7 @@ public final class Editor: @unchecked Sendable {
     public var usesExplicitLanguage: Bool = false
     public var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
-    private var currentWatchedPath: String? = nil
+    var currentWatchedPath: String? = nil
 
     public var displayConfig: DisplayConfig
     public var customBoundKeys: Set<Key> = []
@@ -255,109 +255,8 @@ public final class Editor: @unchecked Sendable {
         startFileWatcherForCurrentBuffer()
     }
 
-    func startFileWatcherForCurrentBuffer() {
-        updateGitDiff()
-        if let oldPath = currentWatchedPath {
-            fileIOStrategy.stopWatchingFile(at: oldPath)
-            currentWatchedPath = nil
-        }
-        if let path = buffer.filePath {
-            currentWatchedPath = path
-            fileIOStrategy.startWatchingFile(at: path) { [weak self] in
-                guard let self = self, self.displayConfig.autoReload else { return }
-                self.handleExternalFileChange()
-            }
-        }
-    }
-
-    public func stopFileWatcherForCurrentBuffer() {
-        if let oldPath = currentWatchedPath {
-            fileIOStrategy.stopWatchingFile(at: oldPath)
-            currentWatchedPath = nil
-        }
-    }
-
     deinit {
         stopFileWatcherForCurrentBuffer()
-    }
-
-    public var isListAutoIndentSupportedBuffer: Bool {
-        guard !buffer.isDirectoryBuffer else { return false }
-        if let currentSyntax = activeLanguageSyntax {
-            return currentSyntax.supportsListAutoIndent
-        }
-        return false
-    }
-
-    func saveCurrentViewSettingsToBuffer() {
-        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
-        let current = buffers[currentBufferIndex]
-        current.viewShowRuler = displayConfig.showRuler
-        current.viewShowLineNumbers = displayConfig.showLineNumbers
-        current.viewShowSubLineNumbers = displayConfig.showSubLineNumbers
-        current.viewWrapColumn = layoutEngine.wrapColumn
-    }
-
-    func loadCurrentViewSettingsFromBuffer() {
-        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
-        let current = buffers[currentBufferIndex]
-        displayConfig.showRuler = current.viewShowRuler
-        displayConfig.showLineNumbers = current.viewShowLineNumbers
-        displayConfig.showSubLineNumbers = current.viewShowSubLineNumbers
-        layoutEngine.setWrapColumn(current.viewWrapColumn)
-    }
-
-    func switchToBuffer(index: Int) {
-        guard index >= 0, index < buffers.count else { return }
-        saveCurrentViewSettingsToBuffer()
-        currentBufferIndex = index
-        loadCurrentViewSettingsFromBuffer()
-        if let dirBuffer = buffers[currentBufferIndex] as? DirectoryBuffer {
-            dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
-        }
-        topVLineIndex = 0
-        clearActiveMark()
-        startFileWatcherForCurrentBuffer()
-        renderer.invalidateScreenCache()
-    }
-
-    /// Switches to next open buffer in sequence.
-    public func nextBuffer() {
-        guard buffers.count > 1 else { return }
-        switchToBuffer(index: (currentBufferIndex + 1) % buffers.count)
-    }
-
-    /// Switches to previous open buffer in sequence.
-    public func prevBuffer() {
-        guard buffers.count > 1 else { return }
-        switchToBuffer(index: (currentBufferIndex - 1 + buffers.count) % buffers.count)
-    }
-
-    /// Opens a new buffer for given file path or empty buffer.
-    public func openNewBuffer(filePath: String? = nil) {
-        if let path = filePath, !path.isEmpty {
-            let normalized = fileIOStrategy.normalizePath(path, isDirectory: false)
-            let info = fileIOStrategy.fileInfo(at: normalized)
-            if info.exists && !info.isDirectory && info.isBinary {
-                let name = (path as NSString).lastPathComponent
-                setStatusMessage("Cannot open binary file '\(name)'")
-                return
-            }
-        }
-        saveCurrentViewSettingsToBuffer()
-        let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy)
-        newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
-        newBuf.viewShowRuler = defaultViewShowRuler
-        newBuf.viewShowLineNumbers = defaultViewShowLineNumbers
-        newBuf.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
-        newBuf.viewWrapColumn = defaultViewWrapColumn
-        buffers.append(newBuf)
-        currentBufferIndex = buffers.count - 1
-        loadCurrentViewSettingsFromBuffer()
-        topVLineIndex = 0
-        clearActiveMark()
-        startFileWatcherForCurrentBuffer()
-        renderer.invalidateScreenCache()
     }
 
     /// Opens ~/.zagorc in a buffer for editing. Creates ~/.zagorc with default template if it does not exist.
@@ -409,27 +308,6 @@ public final class Editor: @unchecked Sendable {
         applyCustomConfig(loadedConfig)
     }
 
-    /// Closes current active buffer. If no buffers remain, exits editor.
-    public func closeCurrentBuffer() {
-        guard !buffers.isEmpty else {
-            isRunning = false
-            return
-        }
-
-        saveCurrentViewSettingsToBuffer()
-        buffers.remove(at: currentBufferIndex)
-        if buffers.isEmpty {
-            isRunning = false
-        } else {
-            currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
-            loadCurrentViewSettingsFromBuffer()
-            topVLineIndex = 0
-            clearActiveMark()
-            startFileWatcherForCurrentBuffer()
-            renderer.invalidateScreenCache()
-        }
-    }
-
     /// Deletes current line with Undo snapshot tracking.
     public func deleteCurrentLine() {
         if isTableModeActive, currentTableCell != nil {
@@ -437,36 +315,6 @@ public final class Editor: @unchecked Sendable {
             return
         }
         buffer.deleteLine()
-    }
-
-    /// Handles external file system modifications detected by FileWatcher.
-    public func handleExternalFileChange() {
-        guard displayConfig.autoReload, buffer.filePath != nil else { return }
-
-        if buffer.isModified {
-            currentPromptMode = .confirmExternalReload(completion: { [weak self] reload in
-                guard let self = self else { return }
-                if reload {
-                    do {
-                        try self.buffer.reloadFile(fileIO: self.fileIOStrategy)
-                        self.buffer.isModified = false
-                        self.setStatusMessage(self.l10n["status.file_reloaded"])
-                    } catch {
-                        self.setStatusMessage(error.localizedDescription)
-                    }
-                } else {
-                    self.setStatusMessage(self.l10n["status.kept_local"])
-                }
-            })
-            setStatusMessage(l10n["prompt.confirm_reload"])
-        } else {
-            do {
-                try buffer.reloadFile(fileIO: fileIOStrategy)
-                setStatusMessage(l10n["status.file_reloaded"])
-            } catch {
-                setStatusMessage(error.localizedDescription)
-            }
-        }
     }
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
