@@ -127,6 +127,21 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
+### Install on Linux (x86\_64 / arm64)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
+zago notes.txt
+```
+
+This downloads the pre-built static binary for your architecture (`x86_64` or `aarch64`) to `~/.local/bin`. No Swift toolchain required.
+
+To install to a custom path, set `INSTALL_DIR`:
+
+```bash
+INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
+```
+
 ### Install on Arch Linux
 
 You can install the package by cloning the packaging source and building it locally:

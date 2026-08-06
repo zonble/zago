@@ -699,13 +699,18 @@ public final class LocalTerminal: EditorTerminal {
                             if idx < bytes.count { idx += 1 }
                         }
                     } else if b >= 32 || b == 9 {  // Printable character or Tab
+                        // Determine the byte length of the UTF-8 character from its leading byte:
+                        // 0x00–0x7F: 1-byte (ASCII)
+                        // 0xC0–0xDF: 2-byte sequence (U+0080–U+07FF)
+                        // 0xE0–0xEF: 3-byte sequence (U+0800–U+FFFF, includes CJK)
+                        // 0xF0–0xF7: 4-byte sequence (U+10000 and above)
                         let charLen: Int
                         switch b {
                         case 0..<0x80: charLen = 1
                         case 0xC0..<0xE0: charLen = 2
                         case 0xE0..<0xF0: charLen = 3
                         case 0xF0..<0xF8: charLen = 4
-                        default: charLen = 1
+                        default: charLen = 1  // Invalid leading byte; skip as single byte
                         }
 
                         if idx + charLen <= bytes.count {

@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-linux:
+    name: Build Linux (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner_arch: amd64
+            swift_platform: ubuntu22.04
+          - arch: aarch64
+            runner_arch: arm64
+            swift_platform: ubuntu22.04-aarch64
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for cross-arch emulation)
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build static binary in Swift Docker image
+        run: |
+          PLATFORM_TAG="${{ matrix.swift_platform }}"
+          docker run --rm --platform linux/${{ matrix.runner_arch }} \
+            -v "$PWD:/workspace" -w /workspace \
+            swift:6.0-$PLATFORM_TAG \
+            sh -c "
+              apt-get update -qq && apt-get install -y -qq wamerican > /dev/null 2>&1
+              swift build -c release --static-swift-stdlib
+              cp .build/release/zago /workspace/zago-linux-${{ matrix.arch }}
+            "
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zago-linux-${{ matrix.arch }}
+          path: zago-linux-${{ matrix.arch }}
+
+  build-windows:
+    name: Build Windows (x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift Toolchain
+        shell: pwsh
+        run: |
+          try { winget source reset --force } catch {}
+          try { winget source update } catch {}
+          winget install --id Swift.Toolchain --exact --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
+
+          $swiftBin = Get-ChildItem -Path `
+            "$env:LOCALAPPDATA\Programs\Swift\Toolchains\*\usr\bin", `
+            "$env:ProgramFiles\Swift\Toolchains\*\usr\bin" `
+            -Directory -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $swiftBin) {
+            throw "Swift toolchain was installed by winget, but no Swift usr\bin directory was found."
+          }
+
+          $swiftRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $swiftBin.FullName)))
+          $swiftSdk = Get-ChildItem -Path "$swiftRoot\Platforms\*\Windows.platform\Developer\SDKs\Windows.sdk" -Directory -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $swiftSdk) {
+            throw "Swift toolchain was installed by winget, but no Windows.sdk directory was found under $swiftRoot."
+          }
+
+          $swiftUsrBins = Get-ChildItem -Path $swiftRoot -Recurse -Directory -Filter bin -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -like "*\usr\bin" }
+          $swiftPathPrefix = ($swiftUsrBins | ForEach-Object { $_.FullName }) -join ";"
+
+          $swiftBin.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "$($swiftSdk.FullName)\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "SWIFT_BIN=$($swiftBin.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SWIFT_SDKROOT=$($swiftSdk.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SWIFT_PATH_PREFIX=$swiftPathPrefix" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build Release Binary
+        shell: pwsh
+        run: |
+          $pathValue = [Environment]::GetEnvironmentVariable('Path', 'Process')
+          if (-not $pathValue) { $pathValue = [Environment]::GetEnvironmentVariable('PATH', 'Process') }
+          Remove-Item Env:PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:Path -ErrorAction SilentlyContinue
+          $env:SDKROOT = $env:SWIFT_SDKROOT
+          $env:Path = "$env:SWIFT_PATH_PREFIX;$pathValue"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          & "$env:SWIFT_BIN\swift.exe" build -c release
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
+          Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago.exe" -Force
+          Compress-Archive -Path "artifacts\zago.exe" -DestinationPath "artifacts\zago-windows-x64.zip" -Force
+          Remove-Item "artifacts\zago.exe" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zago-windows-x64
+          path: artifacts/zago-windows-x64.zip
+
+  release:
+    name: Create GitHub Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh artifacts/
+
+      - name: Generate checksums
+        working-directory: artifacts
+        run: |
+          sha256sum zago-linux-x86_64 zago-linux-aarch64 zago-windows-x64.zip > checksums.txt
+          cat checksums.txt
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          # Extract the section for this version between ## [TAG] and the next ## [
+          awk "/^## \[$TAG\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md > release_notes.md
+          # Fallback to empty notes if nothing found
+          if [ ! -s release_notes.md ]; then
+            echo "Release $GITHUB_REF_NAME" > release_notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: zago ${{ github.ref_name }}
+          body_path: release_notes.md
+          files: |
+            artifacts/zago-linux-x86_64
+            artifacts/zago-linux-aarch64
+            artifacts/zago-windows-x64.zip
+            artifacts/checksums.txt
+          draft: false
+          prerelease: false

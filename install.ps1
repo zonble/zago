@@ -21,11 +21,11 @@ Write-Host "Fetching latest release information from GitHub..." -ForegroundColor
 
 try {
     $release = Invoke-RestMethod -Uri $apiUrl -Headers @{ "User-Agent" = "zago-installer" }
-    $asset = $release.assets | Where-Object { $_.name -like "*windows*.zip" -or $_.name -like "*win*.zip" } | Select-Object -First 1
+    $asset = $release.assets | Where-Object { $_.name -eq "zago-windows-x64.zip" } | Select-Object -First 1
 
     if (-not $asset) {
-        # Fallback to direct zago.exe asset if zip is not found
-        $asset = $release.assets | Where-Object { $_.name -eq "zago.exe" } | Select-Object -First 1
+        # Fallback: any windows zip or exe asset
+        $asset = $release.assets | Where-Object { $_.name -like "*windows*.zip" -or $_.name -like "*windows*.exe" -or $_.name -eq "zago.exe" } | Select-Object -First 1
     }
 
     if (-not $asset) {
