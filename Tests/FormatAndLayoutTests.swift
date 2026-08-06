@@ -812,6 +812,25 @@ struct FormatAndLayoutTests {
     #expect(!output.isEmpty)
 }
 
+@Test func testPromptControllerLifecycleAndHelpShortcuts() throws {
+    let editor = Editor()
+    let controller = editor.promptController
+
+    #expect(controller.isActive == false)
+    #expect(controller.promptHelpShortcuts(editor: editor) == nil)
+
+    controller.mode = .search(completion: { _ in })
+    #expect(controller.isActive == true)
+    let shortcuts = controller.promptHelpShortcuts(editor: editor)
+    #expect(shortcuts != nil)
+    #expect(shortcuts?.count == 3)
+
+    controller.reset()
+    #expect(controller.isActive == false)
+    #expect(controller.inputText.isEmpty)
+    #expect(controller.cursorIndex == 0)
+}
+
 @Test func testMenuBarCategoryHighlightStability() throws {
     let editor = Editor()
     editor.isMenuBarActive = true

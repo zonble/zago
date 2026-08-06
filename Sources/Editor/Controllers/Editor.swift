@@ -77,11 +77,34 @@ public final class Editor: @unchecked Sendable {
     // Persistent LOGO Macro Engine
     public lazy var logoEngine: LogoEngine = LogoEngine(delegate: self)
 
-    // Prompt state
-    var currentPromptMode: PromptMode = .none
-    var promptInputText: String = ""
-    var promptCursorIndex: Int = 0
-    var promptCompletionText: String? = nil
+    // Prompt Controller
+    public let promptController = PromptController()
+
+    public var currentPromptMode: PromptMode {
+        get { promptController.mode }
+        set { promptController.mode = newValue }
+    }
+    public var promptInputText: String {
+        get { promptController.inputText }
+        set { promptController.inputText = newValue }
+    }
+    public var promptCursorIndex: Int {
+        get { promptController.cursorIndex }
+        set { promptController.cursorIndex = newValue }
+    }
+    public var promptCompletionText: String? {
+        get { promptController.completionText }
+        set { promptController.completionText = newValue }
+    }
+    public var logoPromptHistory: [String] {
+        get { promptController.logoHistory }
+        set { promptController.logoHistory = newValue }
+    }
+    public var logoHistoryIndex: Int {
+        get { promptController.logoHistoryIndex }
+        set { promptController.logoHistoryIndex = newValue }
+    }
+
     var lastSearchQuery: String = ""
     public struct SearchMatch: Sendable, Equatable {
         let query: String
@@ -98,8 +121,6 @@ public final class Editor: @unchecked Sendable {
             self.usesRegex = usesRegex
         }
     }
-    var logoPromptHistory: [String] = []
-    var logoHistoryIndex: Int = 0
 
     // Menu Bar state
     public var isMenuBarActive: Bool = false

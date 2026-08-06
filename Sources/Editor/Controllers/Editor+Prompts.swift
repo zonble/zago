@@ -4,24 +4,7 @@ import TextMetrics
 import TextTransform
 
 extension Editor {
-    // Prompt state mode (handles Ctrl+O file path input, Ctrl+X exit
-    // confirmation, Ctrl+W search, Ctrl+R insert file, Ctrl+T spell check)
-    public enum PromptMode {
-        case none
-        case saveFilePath(completion: (String?) -> Void)
-        case confirmExitSave(completion: (Bool?) -> Void)
-        case confirmExternalReload(completion: (Bool) -> Void)
-        case confirmEncodingFallback(originalEncoding: String.Encoding, completion: (Bool) -> Void)
-        case search(completion: (String?) -> Void)
-        case insertFilePath(completion: (String?) -> Void)
-        case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
-        case logoMacro(completion: (String?) -> Void)
-        case fillText(completion: (String?) -> Void)
-        case tableDimensions(completion: (String?) -> Void)
-        case gotoLine(completion: (String?) -> Void)
-        case logoReadWord(prompt: String)
-        case logoReadChar(prompt: String)
-    }
+    public typealias PromptMode = PromptController.Mode
 
     /// Processes key input events.
     func processKey(_ key: Key) {
