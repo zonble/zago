@@ -223,10 +223,14 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case search
     case sort
     case fill
+    case readWord
+    case readChar
     case end
 
     private static let rawMappings: [([String], LogoPrimitive)] = [
         (["END"], .end),
+        (["READWORD", "RW", "READLINE", "READ"], .readWord),
+        (["READCHAR", "RC", "READKEY", "RK"], .readChar),
         (["FILL"], .fill),
         (["SORT"], .sort),
         (["MAKE", "VAR"], .make),

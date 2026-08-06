@@ -186,6 +186,115 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
+    public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String {
+        guard isInteractiveMode else {
+            if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            return readLine() ?? ""
+        }
+
+        promptInputText = ""
+        promptCursorIndex = 0
+        currentPromptMode = .logoReadWord(prompt: prompt)
+        refreshScreen()
+
+        defer {
+            currentPromptMode = .none
+            promptInputText = ""
+            promptCursorIndex = 0
+            refreshScreen()
+        }
+
+        while true {
+            let key = terminal.readKey()
+            switch key {
+            case .enter:
+                return promptInputText
+            case .esc, .ctrl("c"):
+                return ""
+            case .backspace:
+                if promptCursorIndex > 0 {
+                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex - 1)
+                    promptInputText.remove(at: idx)
+                    promptCursorIndex -= 1
+                    refreshScreen()
+                }
+            case .delete:
+                if promptCursorIndex < promptInputText.count {
+                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
+                    promptInputText.remove(at: idx)
+                    refreshScreen()
+                }
+            case .arrowLeft:
+                if promptCursorIndex > 0 {
+                    promptCursorIndex -= 1
+                    refreshScreen()
+                }
+            case .arrowRight:
+                if promptCursorIndex < promptInputText.count {
+                    promptCursorIndex += 1
+                    refreshScreen()
+                }
+            case .home, .ctrl("a"):
+                promptCursorIndex = 0
+                refreshScreen()
+            case .end, .ctrl("e"):
+                promptCursorIndex = promptInputText.count
+                refreshScreen()
+            case .ctrl("u"):
+                promptInputText = ""
+                promptCursorIndex = 0
+                refreshScreen()
+            case .char(let ch):
+                let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
+                promptInputText.insert(ch, at: idx)
+                promptCursorIndex += 1
+                refreshScreen()
+            default:
+                break
+            }
+        }
+    }
+
+    public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String {
+        guard isInteractiveMode else {
+            if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            guard let line = readLine(), let firstChar = line.first else { return "" }
+            return String(firstChar)
+        }
+
+        promptInputText = ""
+        promptCursorIndex = 0
+        currentPromptMode = .logoReadChar(prompt: prompt)
+        refreshScreen()
+
+        defer {
+            currentPromptMode = .none
+            promptInputText = ""
+            promptCursorIndex = 0
+            refreshScreen()
+        }
+
+        while true {
+            let key = terminal.readKey()
+            switch key {
+            case .char(let ch):
+                return String(ch)
+            case .enter:
+                return "\n"
+            case .esc, .ctrl("c"):
+                return ""
+            case .resize, .unknown:
+                continue
+            default:
+                continue
+            }
+        }
+    }
+
     private func selectedOrCurrentLineRange() -> ClosedRange<Int> {
         if let mark = selectionMark {
             let (start, end) = getOrderedRange(

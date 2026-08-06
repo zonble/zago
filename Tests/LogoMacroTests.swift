@@ -273,3 +273,15 @@ final class LogoTestResultBox: @unchecked Sendable {
         """)
     #expect(editor.buffer.lines[0] == "AB")
 }
+
+@Test func testHeadlessReadWordAndReadCharMode() {
+    let editor = Editor()
+    #expect(editor.isInteractiveMode == false)
+
+    // In headless mode without stdin, READWORD and READCHAR return empty string without hanging
+    editor.logoEngine.execute("MAKE \"w READWORD \"Prompt:")
+    #expect(editor.logoEngine.variables["w"] == "")
+
+    editor.logoEngine.execute("MAKE \"c READCHAR \"Prompt:")
+    #expect(editor.logoEngine.variables["c"] == "")
+}

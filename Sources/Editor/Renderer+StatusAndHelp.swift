@@ -211,7 +211,7 @@ extension Renderer {
                 ("N", tr("help.no"))
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck:
+        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck, .logoReadWord, .logoReadChar:
             helpItems1 = [
                 ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),
             ]
@@ -397,6 +397,14 @@ extension Renderer {
             isConfirmation = false
         case .gotoLine:
             promptPrefix = L10n["prompt.goto_line"]
+            isConfirmation = false
+        case .logoReadWord(let prompt):
+            let p = prompt.isEmpty ? "Input: " : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
+            promptPrefix = p
+            isConfirmation = false
+        case .logoReadChar(let prompt):
+            let p = prompt.isEmpty ? "Input [Key]: " : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
+            promptPrefix = p
             isConfirmation = false
         case .none:
             return RenderedPrompt(text: "", cursorCol: 1)

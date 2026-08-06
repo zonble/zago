@@ -283,10 +283,12 @@ After creating a table, move the cursor inside it and press **`M+T`** to activat
 
 ---
 
-### Step 4: Text Output & Message Display (`TYPE` and `SHOW`)
+### Step 4: Text Output & Interactive Input (`TYPE`, `SHOW`, `READWORD`, `READCHAR`)
 
 - **`TYPE "text"`** (or `PRINT`): Inserts text or calculated expressions directly at the cursor.
 - **`SHOW "message"`**: Displays a status bar notification message at the bottom of the screen.
+- **`READWORD "prompt"`** (or `RW`): Prompts the user for a line of text input (or reads from stdin in CLI mode).
+- **`READCHAR "prompt"`** (or `RC`): Prompts the user for a single keypress (or reads from stdin in CLI mode).
 - **`DATE "YYYY/MM/DD"`**: Inserts current date.
 - **`TIME "HH:mm"`**: Inserts current time.
 
@@ -452,6 +454,8 @@ TYPE "hello;world"
 | `APPEND` | - | `APPEND "text"` | Moves to current line end, then inserts text | `APPEND "."` |
 | `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
+| `READWORD` | `RW`, `READLINE`, `READ` | `READWORD [prompt]` | Reads a line of text input from user or stdin | `MAKE "name READWORD "Enter name: "` |
+| `READCHAR` | `RC`, `READKEY`, `RK` | `READCHAR [prompt]` | Reads a single keypress from user or stdin | `IF READCHAR "Confirm (y/n)? " = "y" [ DELETE ]` |
 | `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
 | `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
 | `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |

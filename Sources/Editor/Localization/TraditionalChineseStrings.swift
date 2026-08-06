@@ -78,6 +78,8 @@ public struct TraditionalChineseStrings {
             SHOW expr                    顯示狀態訊息
             MAKE "name value             定義變數
             :name                        讀取變數
+            READWORD [提示] / RW         讀取使用者或 stdin 輸入的整行文字
+            READCHAR [提示] / RC         讀取使用者或 stdin 輸入的單一按鍵
             MOVE UP|DOWN|LEFT|RIGHT      移動游標
             GOTO row [col]               跳到 1-based 列/欄
             FIND "query                  搜尋文字

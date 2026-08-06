@@ -141,6 +141,9 @@ public final class Editor: @unchecked Sendable {
         gitDiffInfo = gitService.computeDiffSync(filePath: buffer.filePath, currentLines: buffer.lines)
     }
 
+    /// Flag indicating whether the editor is running in interactive TUI mode.
+    public internal(set) var isInteractiveMode: Bool = false
+
     // Persistent LOGO Macro Engine
     public lazy var logoEngine: LogoEngine = LogoEngine(delegate: self)
 
@@ -613,6 +616,14 @@ public final class Editor: @unchecked Sendable {
 
     /// Starts the editor event loop.
     public func run() {
+        isInteractiveMode = true
+        defer {
+            isInteractiveMode = false
+            terminal.clearScreen()
+            terminal.showCursor()
+            terminal.disableRawMode()
+        }
+
         do {
             try terminal.enableRawMode()
         } catch {
@@ -623,12 +634,6 @@ public final class Editor: @unchecked Sendable {
             return
         }
         terminal.hideCursor()
-
-        defer {
-            terminal.clearScreen()
-            terminal.showCursor()
-            terminal.disableRawMode()
-        }
 
         while isRunning {
             refreshScreen()

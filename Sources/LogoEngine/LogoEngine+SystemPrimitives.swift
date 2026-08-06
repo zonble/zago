@@ -131,6 +131,26 @@ extension LogoEngine {
         case .headingPrimitive:
             return "\(heading)"
 
+        case .readWord:
+            index += 1
+            var prompt = ""
+            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" && tokens[index] != ")" {
+                prompt = unquote(evaluateExpression(tokens, index: &index))
+            } else {
+                index -= 1
+            }
+            return delegate?.logoEngine(self, readWordWithPrompt: prompt) ?? ""
+
+        case .readChar:
+            index += 1
+            var prompt = ""
+            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" && tokens[index] != ")" {
+                prompt = unquote(evaluateExpression(tokens, index: &index))
+            } else {
+                index -= 1
+            }
+            return delegate?.logoEngine(self, readCharWithPrompt: prompt) ?? ""
+
         default:
             return nil
         }

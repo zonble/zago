@@ -19,6 +19,8 @@ extension Editor {
         case fillText(completion: (String?) -> Void)
         case tableDimensions(completion: (String?) -> Void)
         case gotoLine(completion: (String?) -> Void)
+        case logoReadWord(prompt: String)
+        case logoReadChar(prompt: String)
     }
 
     /// Processes key input events.
@@ -522,6 +524,8 @@ extension Editor {
         }
 
         switch currentPromptMode {
+        case .logoReadWord, .logoReadChar:
+            break
         case .saveFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
@@ -775,6 +779,8 @@ extension Editor {
         case .gotoLine(let completion):
             currentPromptMode = .none
             completion(nil)
+        case .logoReadWord, .logoReadChar:
+            currentPromptMode = .none
         case .none:
             break
         }

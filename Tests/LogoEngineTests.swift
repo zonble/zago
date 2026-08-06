@@ -620,3 +620,49 @@ import TextMetrics
 
     logoEngine.execute("CLEAN")
 }
+
+private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
+    var wordResponse: String = "Hello World"
+    var charResponse: String = "y"
+    var lastPrompt: String = ""
+
+    func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {}
+    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? { nil }
+
+    func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String {
+        lastPrompt = prompt
+        return wordResponse
+    }
+
+    func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String {
+        lastPrompt = prompt
+        return charResponse
+    }
+}
+
+@Test func testReadWordAndReadCharPrimitives() throws {
+    let mockDelegate = MockReadDelegate()
+    let logoEngine = LogoEngine(delegate: mockDelegate)
+
+    // Test READWORD with prompt
+    mockDelegate.wordResponse = "Zago Editor"
+    logoEngine.execute("MAKE \"ans READWORD \"Name:")
+    #expect(mockDelegate.lastPrompt == "Name:")
+    #expect(logoEngine.variables["ans"] == "Zago Editor")
+
+    // Test RW shorthand without prompt
+    mockDelegate.wordResponse = "ShortInput"
+    logoEngine.execute("MAKE \"short RW")
+    #expect(logoEngine.variables["short"] == "ShortInput")
+
+    // Test READCHAR with prompt
+    mockDelegate.charResponse = "y"
+    logoEngine.execute("MAKE \"confirm READCHAR \"Confirm?")
+    #expect(mockDelegate.lastPrompt == "Confirm?")
+    #expect(logoEngine.variables["confirm"] == "y")
+
+    // Test RC shorthand without prompt
+    mockDelegate.charResponse = "n"
+    logoEngine.execute("MAKE \"cancel RC")
+    #expect(logoEngine.variables["cancel"] == "n")
+}

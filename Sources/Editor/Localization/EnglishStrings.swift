@@ -78,6 +78,8 @@ public struct EnglishStrings {
             SHOW expr                    Show a status message
             MAKE "name value             Define a variable
             :name                        Read a variable
+            READWORD [prompt] / RW       Read line input from user or stdin
+            READCHAR [prompt] / RC       Read single keypress from user or stdin
             MOVE UP|DOWN|LEFT|RIGHT      Move the cursor
             GOTO row [col]               Jump to 1-based row/column
             FIND "query                  Search text
