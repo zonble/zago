@@ -3,6 +3,7 @@ import Testing
 
 @testable import Config
 @testable import Editor
+@testable import Syntax
 
 @Suite(.serialized)
 struct ConfigAndToolsTests {

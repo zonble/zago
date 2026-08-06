@@ -5,66 +5,6 @@ import LogoEngine
 import SpellChecker
 import Syntax
 
-public struct EditorDependencies {
-    public let fileIOStrategy: EditorFileIOStrategy
-    public let terminal: EditorTerminal
-    public let gitService: GitServiceProtocol
-
-    public init(
-        fileIOStrategy: EditorFileIOStrategy,
-        terminal: EditorTerminal,
-        gitService: GitServiceProtocol = GitService()
-    ) {
-        self.fileIOStrategy = fileIOStrategy
-        self.terminal = terminal
-        self.gitService = gitService
-    }
-}
-
-public struct EditorOptions {
-    public var filePaths: [String]
-    public var wrapColumn: Int?
-    public var showRuler: Bool?
-    public var showLineNumbers: Bool?
-    public var showSubLineNumbers: Bool?
-    public var enableSyntax: Bool?
-    public var autoReload: Bool?
-    public var language: Language?
-    public var spellLanguage: String?
-
-    public init(
-        filePaths: [String] = [],
-        wrapColumn: Int? = nil,
-        showRuler: Bool? = nil,
-        showLineNumbers: Bool? = nil,
-        showSubLineNumbers: Bool? = nil,
-        enableSyntax: Bool? = nil,
-        autoReload: Bool? = nil,
-        language: Language? = nil,
-        spellLanguage: String? = nil
-    ) {
-        self.filePaths = filePaths
-        self.wrapColumn = wrapColumn
-        self.showRuler = showRuler
-        self.showLineNumbers = showLineNumbers
-        self.showSubLineNumbers = showSubLineNumbers
-        self.enableSyntax = enableSyntax
-        self.autoReload = autoReload
-        self.language = language
-        self.spellLanguage = spellLanguage
-    }
-}
-
-public struct EditorConfigSource {
-    public let initial: EditorConfig
-    public let reload: () -> EditorConfig
-
-    public init(initial: EditorConfig = EditorConfig(), reload: @escaping () -> EditorConfig = { EditorConfig() }) {
-        self.initial = initial
-        self.reload = reload
-    }
-}
-
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
@@ -98,15 +38,6 @@ public final class Editor: @unchecked Sendable {
 
     var clipboardText: String? = nil
     var selectionMark: (line: Int, column: Int)? = nil
-    public struct CanvasBlockClipboard: Sendable, Equatable {
-        public let width: Int
-        public let rows: [String]
-
-        public init(width: Int, rows: [String]) {
-            self.width = width
-            self.rows = rows
-        }
-    }
     public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
     public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
     public var canvasBlockClipboard: CanvasBlockClipboard? = nil
@@ -218,14 +149,19 @@ public final class Editor: @unchecked Sendable {
 
     let syntaxHighlighter = SyntaxHighlighter()
 
-    public var activeLanguageSyntax: LanguageSyntax? {
+    /// Returns the language syntax for a specific buffer line index.
+    public func syntaxForLine(at lineIndex: Int) -> LanguageSyntax? {
         syntaxHighlighter.getSyntaxForLine(
             filePath: buffer.filePath,
             isDirectoryBuffer: buffer.isDirectoryBuffer,
             lines: buffer.lines,
-            bufferLineIndex: buffer.lineIndex,
+            bufferLineIndex: lineIndex,
             isEnabled: displayConfig.enableSyntaxHighlight
         )
+    }
+
+    public var activeLanguageSyntax: LanguageSyntax? {
+        syntaxForLine(at: buffer.lineIndex)
     }
 
     public let commandRegistry = CommandRegistry()
@@ -236,37 +172,6 @@ public final class Editor: @unchecked Sendable {
     public var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
     private var currentWatchedPath: String? = nil
-
-    public struct DisplayConfig: Sendable, Equatable {
-        public var showRuler: Bool
-        public var showLineNumbers: Bool
-        public var showSubLineNumbers: Bool
-        public var enableSyntaxHighlight: Bool
-        public var autoReload: Bool
-        public var tabSize: Int
-        public var trimTrailingWhitespaceOnSave: Bool
-        public var showGitDiff: Bool
-
-        public init(
-            showRuler: Bool = false,
-            showLineNumbers: Bool = true,
-            showSubLineNumbers: Bool = false,
-            enableSyntaxHighlight: Bool = true,
-            autoReload: Bool = true,
-            tabSize: Int = 4,
-            trimTrailingWhitespaceOnSave: Bool = false,
-            showGitDiff: Bool = true
-        ) {
-            self.showRuler = showRuler
-            self.showLineNumbers = showLineNumbers
-            self.showSubLineNumbers = showSubLineNumbers
-            self.enableSyntaxHighlight = enableSyntaxHighlight
-            self.autoReload = autoReload
-            self.tabSize = tabSize
-            self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
-            self.showGitDiff = showGitDiff
-        }
-    }
 
     public var displayConfig: DisplayConfig
     public var customBoundKeys: Set<Key> = []
@@ -378,7 +283,7 @@ public final class Editor: @unchecked Sendable {
 
     public var isListAutoIndentSupportedBuffer: Bool {
         guard !buffer.isDirectoryBuffer else { return false }
-        if let currentSyntax = syntaxHighlighter.getSyntaxForLine(editor: self, bufferLineIndex: buffer.lineIndex) {
+        if let currentSyntax = activeLanguageSyntax {
             return currentSyntax.supportsListAutoIndent
         }
         return false

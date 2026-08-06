@@ -37,6 +37,16 @@ private enum CanvasDrawDirection {
 }
 
 extension Editor {
+    public struct CanvasBlockClipboard: Sendable, Equatable {
+        public let width: Int
+        public let rows: [String]
+
+        public init(width: Int, rows: [String]) {
+            self.width = width
+            self.rows = rows
+        }
+    }
+
     struct CanvasBlockRectangle: Sendable, Equatable {
         let topLine: Int
         let bottomLine: Int

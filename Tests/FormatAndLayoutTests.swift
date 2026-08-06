@@ -3,6 +3,7 @@ import Testing
 import TextMetrics
 
 @testable import Editor
+@testable import Syntax
 
 @Suite(.serialized)
 struct FormatAndLayoutTests {
@@ -586,10 +587,10 @@ struct FormatAndLayoutTests {
         "Normal markdown text",
     ]
 
-    let syntaxMdLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    let syntaxMdLogo = editor.syntaxForLine(at: 2)
     #expect(syntaxMdLogo?.name == "LOGO")
 
-    let syntaxMdText = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 5)
+    let syntaxMdText = editor.syntaxForLine(at: 5)
     #expect(syntaxMdText?.name == "Markdown")
 
     // 2. Org-mode embedded LOGO code block
@@ -600,7 +601,7 @@ struct FormatAndLayoutTests {
         "; comment inside logo org block",
         "#+END_SRC",
     ]
-    let syntaxOrgLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    let syntaxOrgLogo = editor.syntaxForLine(at: 2)
     #expect(syntaxOrgLogo?.name == "LOGO")
 
     // 3. RST embedded LOGO code block
@@ -612,7 +613,7 @@ struct FormatAndLayoutTests {
         "   ; comment inside logo rst block",
         "Unindented text",
     ]
-    let syntaxRstLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 3)
+    let syntaxRstLogo = editor.syntaxForLine(at: 3)
     #expect(syntaxRstLogo?.name == "LOGO")
 
     // 4. Markdown with multiple spaces after backticks (```   logo   )
@@ -622,7 +623,7 @@ struct FormatAndLayoutTests {
         "; comment inside multi-space logo block",
         "```",
     ]
-    let syntaxMultiSpaceLogo = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 1)
+    let syntaxMultiSpaceLogo = editor.syntaxForLine(at: 1)
     #expect(syntaxMultiSpaceLogo?.name == "LOGO")
 
     // 5. Org-mode with multiple spaces (#+BEGIN_SRC   logo  )
@@ -632,7 +633,7 @@ struct FormatAndLayoutTests {
         "; comment inside multi-space org logo block",
         "#+END_SRC",
     ]
-    let syntaxMultiSpaceOrg = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 1)
+    let syntaxMultiSpaceOrg = editor.syntaxForLine(at: 1)
     #expect(syntaxMultiSpaceOrg?.name == "LOGO")
 
     // 6. RST with multiple spaces (.. code-block::   logo  )
@@ -642,7 +643,7 @@ struct FormatAndLayoutTests {
         "",
         "   ; comment inside multi-space rst logo block",
     ]
-    let syntaxMultiSpaceRst = editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: 2)
+    let syntaxMultiSpaceRst = editor.syntaxForLine(at: 2)
     #expect(syntaxMultiSpaceRst?.name == "LOGO")
 }
 

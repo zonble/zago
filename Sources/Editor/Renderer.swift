@@ -287,7 +287,7 @@ public final class Renderer {
 
                 let currentLanguage =
                     editor.displayConfig.enableSyntaxHighlight
-                    ? editor.syntaxHighlighter.getSyntaxForLine(editor: editor, bufferLineIndex: vLine.bufferLineIndex)
+                    ? editor.syntaxForLine(at: vLine.bufferLineIndex)
                     : nil
                 let tokenTypes =
                     (currentLanguage != nil)
