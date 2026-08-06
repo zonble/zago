@@ -188,10 +188,7 @@ extension Editor: LogoEngineDelegate {
 
     public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String {
         guard isInteractiveMode else {
-            if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
-                FileHandle.standardError.write(data)
-            }
-            return readLine() ?? ""
+            return terminal.readNonInteractiveLine(prompt: prompt) ?? ""
         }
 
         promptInputText = ""
@@ -259,11 +256,7 @@ extension Editor: LogoEngineDelegate {
 
     public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String {
         guard isInteractiveMode else {
-            if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
-                FileHandle.standardError.write(data)
-            }
-            guard let line = readLine(), let firstChar = line.first else { return "" }
-            return String(firstChar)
+            return terminal.readNonInteractiveChar(prompt: prompt) ?? ""
         }
 
         promptInputText = ""
