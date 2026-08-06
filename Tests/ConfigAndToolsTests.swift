@@ -921,4 +921,260 @@ struct ConfigAndToolsTests {
         #expect(zhJoined.contains("新建空白頁"), "zh_TW editor: expected Chinese submenu items")
         #expect(!zhJoined.contains("New Buffer"), "zh_TW editor: must not contain English submenu items")
     }
+
+    @Test func testConfigLoaderParsesAliasesAndSetUnsetVariants() throws {
+        let testDir = FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-aliases-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: testDir, withIntermediateDirectories: true, attributes: nil)
+        let configPath = testDir + "/aliases.zagorc"
+        defer { try? FileManager.default.removeItem(atPath: testDir) }
+
+        let content = """
+            # Valid aliases and set/unset variants
+            set wrap 12
+            set wrap off
+            set wrap 9
+            set nowrap
+            set showRuler
+            set line_number off
+            set line_numbers
+            set subline-number off
+            set sublines
+            set canvas_mode
+            set git_diff off
+            set tabsize 8
+            set unset wrap
+            set unset ruler
+            set unset line-number
+            set unset git-diff
+            set unset sublines
+            set unset canvas-mode
+            set unset syntax
+            set unset autoreload
+            set unset trim_trailing_spaces
+            set syntaxhighlighting
+            set auto_reload 0
+            set trimtrailingspaces 1
+            set language english
+            set lang zh-hant
+            set spelllang en_GB
+            set default_border_style double_round
+            default-border-style ascii-rounded
+            """
+        try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let loader = ConfigLoader()
+        var config = EditorConfig()
+        loader.parseConfigFile(at: configPath, into: &config)
+
+        #expect(config.loadedFilePath == configPath)
+        #expect(config.wrapColumn == nil)
+        #expect(config.showRuler == false)
+        #expect(config.showLineNumbers == false)
+        #expect(config.showSubLineNumbers == false)
+        #expect(config.startInCanvasMode == false)
+        #expect(config.showGitDiff == false)
+        #expect(config.tabSize == 8)
+        #expect(config.enableSyntaxHighlight == true)
+        #expect(config.autoReload == false)
+        #expect(config.trimTrailingWhitespaceOnSave == true)
+        #expect(config.language == .zh_TW)
+        #expect(config.spellLanguage == "en_gb")
+        #expect(config.defaultBorderStyle == .asciiRound)
+        #expect(config.syntaxErrorCount == 0)
+    }
+
+    @Test func testConfigLoaderReportsMalformedAndUnknownDirectives() throws {
+        let testDir = FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-errors-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: testDir, withIntermediateDirectories: true, attributes: nil)
+        let configPath = testDir + "/errors.zagorc"
+        defer { try? FileManager.default.removeItem(atPath: testDir) }
+
+        let content = """
+            # Every non-comment directive below should count as a syntax error.
+            set
+            set wrap zero
+            set ruler maybe
+            set line-numbers maybe
+            set subline_number maybe
+            set canvas-mode maybe
+            set git-diff maybe
+            set tabsize 0
+            set unset nope
+            set syntax maybe
+            set auto-reload maybe
+            set trim-trailing-whitespace maybe
+            set lang klingon
+            set spell-lang
+            set border bubble
+            set mystery on
+            unset
+            unset nope
+            bind
+            bind nope cmd.run
+            unbind
+            unbind nope
+            logo-prelude extra
+            logo-script
+            border bubble
+            endlogo
+            unknown directive
+            logo-script named
+              PRINT "unterminated
+            """
+        try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let loader = ConfigLoader()
+        var config = EditorConfig()
+        loader.parseConfigFile(at: configPath, into: &config)
+
+        #expect(config.loadedFilePath == configPath)
+        #expect(config.syntaxErrorCount == 28)
+        #expect(config.wrapColumn == nil)
+        #expect(config.tabSize == 4)
+        #expect(config.spellLanguage == "en_US")
+        #expect(config.defaultBorderStyle == .single)
+        #expect(config.logoPrelude.isEmpty)
+        #expect(config.logoScripts["named"] == nil)
+        #expect(config.customKeyBinds.isEmpty)
+        #expect(config.unbindKeys.isEmpty)
+    }
+
+    @Test func testConfigLoaderHandlesLogoBlocksCommentsWhitespaceAndQuotedBindings() throws {
+        let testDir = FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-logo-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: testDir, withIntermediateDirectories: true, attributes: nil)
+        let configPath = testDir + "/logo.zagorc"
+        defer { try? FileManager.default.removeItem(atPath: testDir) }
+
+        let content = """
+              
+              # Leading comment with indentation
+              bind ctrl-y 'logo: MOVE HOME TYPE "# " MOVE END'
+              bind alt-k "macro.run"
+              unbind shift-home
+
+              logo-prelude
+                # ignored inside prelude
+                MAKE "boxWidth 30
+                PRINT :boxWidth
+              endlogo
+
+              logo-script  insert-title
+                # ignored inside script
+                BOX 40 3 ROUND
+                MOVE LEFT 38 MOVE UP 1
+              endlogo
+
+              logo-prelude
+                PRINT "SECOND
+              endlogo
+            """
+        try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let loader = ConfigLoader()
+        var config = EditorConfig()
+        loader.parseConfigFile(at: configPath, into: &config)
+
+        #expect(config.syntaxErrorCount == 0)
+        #expect(config.customKeyBinds[.ctrl("y")] == "logo: MOVE HOME TYPE \"# \" MOVE END")
+        #expect(config.customKeyBinds[.alt("k")] == "macro.run")
+        #expect(config.unbindKeys.contains(.shiftHome))
+        #expect(config.logoPrelude.contains("MAKE \"boxWidth 30"))
+        #expect(config.logoPrelude.contains("PRINT :boxWidth"))
+        #expect(config.logoPrelude.contains("PRINT \"SECOND"))
+        #expect(!config.logoPrelude.contains("ignored inside prelude"))
+        #expect(config.logoScripts["insert-title"]?.contains("BOX 40 3 ROUND") == true)
+        #expect(config.logoScripts["insert-title"]?.contains("MOVE LEFT 38 MOVE UP 1") == true)
+        #expect(config.logoScripts["insert-title"]?.contains("ignored inside script") == false)
+    }
+
+    @Test func testConfigLoaderSkipsWhitespaceCommentsAndEmptyFiles() throws {
+        let testDir = FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-empty-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: testDir, withIntermediateDirectories: true, attributes: nil)
+        let configPath = testDir + "/empty.zagorc"
+        defer { try? FileManager.default.removeItem(atPath: testDir) }
+
+        let content = """
+            
+             
+               # comment with leading spaces
+            
+            # plain comment
+            
+            """
+        try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let loader = ConfigLoader()
+        var config = EditorConfig()
+        loader.parseConfigFile(at: configPath, into: &config)
+
+        #expect(config.loadedFilePath == configPath)
+        #expect(config.syntaxErrorCount == 0)
+        #expect(config.wrapColumn == nil)
+        #expect(config.showRuler == false)
+        #expect(config.showLineNumbers == true)
+        #expect(config.showSubLineNumbers == false)
+        #expect(config.logoPrelude.isEmpty)
+        #expect(config.logoScripts.isEmpty)
+        #expect(config.customKeyBinds.isEmpty)
+    }
+
+    @Test func testConfigLoaderLoadConfigPrefersLocalZagorcThenLegacySerc() throws {
+        let repoRoot = FileManager.default.currentDirectoryPath
+        let localZagorc = repoRoot + "/.zagorc"
+        let localSerc = repoRoot + "/.serc"
+        let backupDir = repoRoot + "/.test-artifacts/config-loader-load-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: backupDir, withIntermediateDirectories: true, attributes: nil)
+
+        let backupZagorc = backupDir + "/.zagorc.backup"
+        let backupSerc = backupDir + "/.serc.backup"
+        let hadLocalZagorc = FileManager.default.fileExists(atPath: localZagorc)
+        let hadLocalSerc = FileManager.default.fileExists(atPath: localSerc)
+
+        if hadLocalZagorc {
+            try FileManager.default.moveItem(atPath: localZagorc, toPath: backupZagorc)
+        }
+        if hadLocalSerc {
+            try FileManager.default.moveItem(atPath: localSerc, toPath: backupSerc)
+        }
+
+        defer {
+            try? FileManager.default.removeItem(atPath: localZagorc)
+            try? FileManager.default.removeItem(atPath: localSerc)
+            if hadLocalZagorc {
+                try? FileManager.default.moveItem(atPath: backupZagorc, toPath: localZagorc)
+            }
+            if hadLocalSerc {
+                try? FileManager.default.moveItem(atPath: backupSerc, toPath: localSerc)
+            }
+            try? FileManager.default.removeItem(atPath: backupDir)
+        }
+
+        try """
+            set wrap 71
+            set border double
+            """.write(to: URL(fileURLWithPath: localZagorc), atomically: testAtomicallyOption, encoding: .utf8)
+        try """
+            set wrap 55
+            set border round
+            """.write(to: URL(fileURLWithPath: localSerc), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let loader = ConfigLoader()
+
+        let zagorcConfig = loader.loadConfig()
+        #expect(zagorcConfig.loadedFilePath == localZagorc)
+        #expect(zagorcConfig.wrapColumn == 71)
+        #expect(zagorcConfig.defaultBorderStyle == .double)
+
+        try FileManager.default.removeItem(atPath: localZagorc)
+
+        let sercConfig = loader.loadConfig()
+        #expect(sercConfig.loadedFilePath == localSerc)
+        #expect(sercConfig.wrapColumn == 55)
+        #expect(sercConfig.defaultBorderStyle == .round)
+    }
 }
