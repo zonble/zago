@@ -1,7 +1,7 @@
 import Foundation
 
 /// Encapsulates state management and key processing for command bar prompts and dialogs.
-public final class PromptController {
+public final class PromptController: KeyInputHandler {
     /// Interactive prompt state mode for command bar inputs and confirmation dialogs.
     public enum Mode {
         case none
@@ -51,6 +51,17 @@ public final class PromptController {
     /// Returns whether a prompt is currently active.
     public var isActive: Bool {
         if case .none = mode { return false }
+        return true
+    }
+
+    /// KeyInputHandler protocol implementation.
+    public func handleKey(_ key: Key, editor: Editor) -> Bool {
+        guard isActive else { return false }
+        if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
+            editor.cancelPrompt()
+            return true
+        }
+        editor.processPromptKey(key)
         return true
     }
 

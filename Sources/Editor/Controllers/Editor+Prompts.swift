@@ -19,22 +19,20 @@ extension Editor {
             return
         }
 
-        // Handle input if currently in bottom prompt mode
-        if case .none = currentPromptMode {
-            if isMenuBarActive {
-                processMenuBarKey(key)
+        // Priority-ordered mode handlers chain
+        let modeHandlers: [KeyInputHandler] = [
+            promptController,
+            menuBarController
+        ]
+
+        for handler in modeHandlers {
+            if handler.handleKey(key, editor: self) {
                 return
             }
-            if key == .f1 || key == .ctrl("M") {
-                toggleMenuBar()
-                return
-            }
-        } else {
-            if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
-                cancelPrompt()
-                return
-            }
-            processPromptKey(key)
+        }
+
+        if key == .f1 || key == .ctrl("M") {
+            toggleMenuBar()
             return
         }
 

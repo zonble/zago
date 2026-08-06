@@ -1,7 +1,7 @@
 import Foundation
 
 /// Controller handling Menu Bar UI activation, keyboard navigation, and menu item execution.
-public final class MenuBarController {
+public final class MenuBarController: KeyInputHandler {
     /// Whether the menu bar mode is currently active.
     public var isActive: Bool = false
 
@@ -18,6 +18,13 @@ public final class MenuBarController {
             menuBar.categoryIndex = 0
             menuBar.itemIndex = 0
         }
+    }
+
+    /// KeyInputHandler protocol implementation.
+    public func handleKey(_ key: Key, editor: Editor) -> Bool {
+        guard isActive else { return false }
+        processKey(key, editor: editor)
+        return true
     }
 
     /// Handles key input navigation when Menu Bar is active.
