@@ -165,7 +165,7 @@ extension Editor {
             break
 
         default:
-            setStatusMessage(L10n["status.unknown_command"])
+            setStatusMessage(l10n["status.unknown_command"])
         }
 
         if isCanvasModeActive {
@@ -372,9 +372,9 @@ extension Editor {
 
     private func showCommandBarCompletions(_ items: [String], label: String) {
         if items.isEmpty {
-            promptCompletionText = L10n["status.no_completions"]
+            promptCompletionText = l10n["status.no_completions"]
         } else {
-            let text = String(format: L10n["status.command_completions"], label, items.joined(separator: ", "))
+            let text = String(format: l10n["status.command_completions"], label, items.joined(separator: ", "))
             promptCompletionText = text
         }
     }
@@ -625,7 +625,7 @@ extension Editor {
         promptInputText = buffer.filePath ?? ""
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage(L10n["status.cancelled"])
+                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                 return
             }
             self.doSave(to: path)
@@ -641,7 +641,7 @@ extension Editor {
             promptInputText = ""
             currentPromptMode = .saveFilePath(completion: { [weak self] path in
                 guard let self = self, let path = path, !path.isEmpty else {
-                    self?.setStatusMessage(L10n["status.cancelled"])
+                    self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                     return
                 }
                 self.doSave(to: path)
@@ -654,7 +654,7 @@ extension Editor {
     func promptExitSaveConfirm() {
         currentPromptMode = .confirmExitSave(completion: { [weak self] save in
             guard let self = self, let save = save else {
-                self?.setStatusMessage(L10n["status.cancelled_exit"])
+                self?.setStatusMessage(self?.l10n["status.cancelled_exit"] ?? "")
                 return
             }
             if save {
@@ -675,7 +675,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .search(completion: { [weak self] query in
             guard let self = self, let query = query else {
-                self?.setStatusMessage(L10n["status.cancelled_search"])
+                self?.setStatusMessage(self?.l10n["status.cancelled_search"] ?? "")
                 return
             }
             let targetQuery: String
@@ -685,7 +685,7 @@ extension Editor {
             } else if !self.lastSearchQuery.isEmpty {
                 targetQuery = self.lastSearchQuery
             } else {
-                self.setStatusMessage(L10n["status.cancelled_search"])
+                self.setStatusMessage(self.l10n["status.cancelled_search"])
                 return
             }
             self.performSearch(query: targetQuery)
@@ -697,15 +697,15 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .insertFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage(L10n["status.cancelled_insert"])
+                self?.setStatusMessage(self?.l10n["status.cancelled_insert"] ?? "")
                 return
             }
             do {
                 self.saveUndoSnapshot()
                 let count = try self.buffer.insertFile(at: path, fileIO: self.fileIOStrategy)
-                self.setStatusMessage(L10n.insertedLines(count))
+                self.setStatusMessage(self.l10n.insertedLines(count))
             } catch {
-                self.setStatusMessage(L10n.errorInsertingFile(error: error.localizedDescription))
+                self.setStatusMessage(self.l10n.errorInsertingFile(error: error.localizedDescription))
             }
         })
     }
@@ -721,7 +721,7 @@ extension Editor {
                 word: target.word, line: target.line, col: target.col,
                 completion: { [weak self] replacement in
                     guard let self = self, let newWord = replacement, !newWord.isEmpty else {
-                        self?.setStatusMessage(L10n["status.spell_check_skipped"])
+                        self?.setStatusMessage(self?.l10n["status.spell_check_skipped"] ?? "")
                         return
                     }
                     if newWord != target.word {
@@ -732,13 +732,13 @@ extension Editor {
                         lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
                         self.buffer.lines[target.line] = lineStr
                         self.buffer.isModified = true
-                        self.setStatusMessage(L10n.replacedWord(target: target.word, newWord: newWord))
+                        self.setStatusMessage(self.l10n.replacedWord(target: target.word, newWord: newWord))
                     } else {
-                        self.setStatusMessage(L10n["status.word_kept"])
+                        self.setStatusMessage(self.l10n["status.word_kept"])
                     }
                 })
         } else {
-            setStatusMessage(L10n["status.no_misspelled"])
+            setStatusMessage(l10n["status.no_misspelled"])
         }
     }
 
@@ -748,7 +748,7 @@ extension Editor {
         case .saveFilePath(let completion):
             currentPromptMode = .none
             completion(nil)
-            setStatusMessage(L10n["status.cancelled"])
+            setStatusMessage(l10n["status.cancelled"])
         case .confirmExitSave(let completion):
             currentPromptMode = .none
             completion(nil)
@@ -795,7 +795,7 @@ extension Editor {
         logoHistoryIndex = logoPromptHistory.count
         currentPromptMode = .logoMacro(completion: { [weak self] script in
             guard let self = self, let script = script, !script.isEmpty else {
-                self?.setStatusMessage(L10n["status.cancelled"])
+                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                 return
             }
             switch self.commandBarRegistry.dispatch(script, editor: self) {
@@ -811,7 +811,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .fillText(completion: { [weak self] text in
             guard let self = self, let text = text, !text.isEmpty else {
-                self?.setStatusMessage(L10n["status.cancelled"])
+                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                 return
             }
             self.runLogoScript("FILL \(self.logoStringLiteral(text))")
@@ -824,7 +824,7 @@ extension Editor {
         currentPromptMode = .tableDimensions(completion: { [weak self] input in
             guard let self = self, let input = input?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty
             else {
-                self?.setStatusMessage(L10n["status.cancelled"])
+                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                 return
             }
             let parts = input.components(separatedBy: .whitespaces).compactMap { Int($0) }
@@ -876,7 +876,7 @@ extension Editor {
         buffer.lines.insert(contentsOf: tableLines, at: insertIdx)
         buffer.lineIndex = insertIdx
         buffer.columnIndex = 2
-        setStatusMessage(L10n["status.table_created"])
+        setStatusMessage(l10n["status.table_created"])
     }
 
     private func logoStringLiteral(_ text: String) -> String {
@@ -888,7 +888,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .gotoLine(completion: { [weak self] input in
             guard let self = self, let input = input, !input.isEmpty else {
-                self?.setStatusMessage(L10n["status.cancelled"])
+                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                 return
             }
             self.performGotoLine(input)
@@ -916,9 +916,9 @@ extension Editor {
                 }
             }
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
-                setStatusMessage(L10n["status.saved_as_utf8"])
+                setStatusMessage(l10n["status.saved_as_utf8"])
             } else {
-                setStatusMessage(L10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
+                setStatusMessage(l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
             }
         } catch EncodingError.unsupportedCharacters {
             let originalEncoding = buffer.fileEncoding
@@ -927,11 +927,11 @@ extension Editor {
                 if confirmed {
                     self.doSave(to: path, forcedEncoding: .utf8)
                 } else {
-                    self.setStatusMessage(L10n["status.save_cancelled"])
+                    self.setStatusMessage(self.l10n["status.save_cancelled"])
                 }
             }
         } catch {
-            setStatusMessage(L10n.errorSavingFile(error: error.localizedDescription))
+            setStatusMessage(l10n.errorSavingFile(error: error.localizedDescription))
         }
     }
 }

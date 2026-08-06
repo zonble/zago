@@ -269,14 +269,14 @@ public final class CommandRegistry {
 
         for command in commands where command.match(input) {
             guard command.isAvailable(in: editor) else {
-                editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+                editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
                 return .handled
             }
             return command.execute(with: input, on: editor)
         }
 
         guard editor.buffer.allowsLogoExecution else {
-            editor.setStatusMessage(L10n["status.directory_buffer_readonly"])
+            editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
             return .handled
         }
 

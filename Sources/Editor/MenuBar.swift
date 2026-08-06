@@ -136,42 +136,42 @@ public final class MenuBar {
                         titleKey: "menu.borders.single", hotkeyChar: "s",
                         action: { editor in
                             editor.defaultBorderStyle = .single
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.single.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.single.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .single }),
                     MenuItem(
                         titleKey: "menu.borders.double", hotkeyChar: "d",
                         action: { editor in
                             editor.defaultBorderStyle = .double
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.double.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.double.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .double }),
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
                             editor.defaultBorderStyle = .round
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.round.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.round.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .round }),
                     MenuItem(
                         titleKey: "menu.borders.double_round", hotkeyChar: "u",
                         action: { editor in
                             editor.defaultBorderStyle = .doubleRound
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.doubleRound.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .doubleRound }),
                     MenuItem(
                         titleKey: "menu.borders.ascii", hotkeyChar: "a",
                         action: { editor in
                             editor.defaultBorderStyle = .ascii
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.ascii.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.ascii.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
                     MenuItem(
                         titleKey: "menu.borders.ascii_round", hotkeyChar: "c",
                         action: { editor in
                             editor.defaultBorderStyle = .asciiRound
-                            editor.setStatusMessage(L10n.defaultBorder(BorderStyle.asciiRound.rawValue))
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue))
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
@@ -194,43 +194,43 @@ public final class MenuBar {
                     MenuItem(
                         titleKey: "menu.tools.transform_tohant", hotkeyChar: "h",
                         action: { editor in
-                            editor.transformSelectedText(id: "Hans-Hant", label: L10n["transform.tohant"])
+                            editor.transformSelectedText(id: "Hans-Hant", label: editor.l10n["transform.tohant"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_tohans", hotkeyChar: "s",
                         action: { editor in
-                            editor.transformSelectedText(id: "Hant-Hans", label: L10n["transform.tohans"])
+                            editor.transformSelectedText(id: "Hant-Hans", label: editor.l10n["transform.tohans"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_tolatin", hotkeyChar: "a",
                         action: { editor in
-                            editor.transformSelectedText(id: "Any-Latin", label: L10n["transform.tolatin"])
+                            editor.transformSelectedText(id: "Any-Latin", label: editor.l10n["transform.tolatin"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_hiragana", hotkeyChar: "i",
                         action: { editor in
-                            editor.transformSelectedText(id: "Any-Hiragana", label: L10n["transform.hiragana"])
+                            editor.transformSelectedText(id: "Any-Hiragana", label: editor.l10n["transform.hiragana"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_katakana", hotkeyChar: "k",
                         action: { editor in
-                            editor.transformSelectedText(id: "Any-Katakana", label: L10n["transform.katakana"])
+                            editor.transformSelectedText(id: "Any-Katakana", label: editor.l10n["transform.katakana"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_romaji", hotkeyChar: "j",
                         action: { editor in
-                            editor.transformSelectedText(id: "Any-Latin", label: L10n["transform.romaji"])
+                            editor.transformSelectedText(id: "Any-Latin", label: editor.l10n["transform.romaji"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
                         titleKey: "menu.tools.transform_cjk_spacing", hotkeyChar: "c",
                         action: { editor in
-                            editor.transformSelectedText(id: "Zago-CJK-Spacing", label: L10n["transform.cjk_spacing"])
+                            editor.transformSelectedText(id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(
@@ -238,7 +238,7 @@ public final class MenuBar {
                         action: { editor in
                             editor.displayConfig.showLineNumbers.toggle()
                             let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
-                            editor.setStatusMessage(L10n.lineNumbersState(state))
+                            editor.setStatusMessage(editor.l10n.lineNumbersState(state))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.sub_line_numbers", hotkeyChar: "u",
@@ -255,25 +255,25 @@ public final class MenuBar {
                         titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(80)
-                            editor.setStatusMessage(L10n.wrapColumnSet(80))
+                            editor.setStatusMessage(editor.l10n.wrapColumnSet(80))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(60)
-                            editor.setStatusMessage(L10n.wrapColumnSet(60))
+                            editor.setStatusMessage(editor.l10n.wrapColumnSet(60))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(40)
-                            editor.setStatusMessage(L10n.wrapColumnSet(40))
+                            editor.setStatusMessage(editor.l10n.wrapColumnSet(40))
                         }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(nil)
-                            editor.setStatusMessage(L10n["status.wrap_column_reset"])
+                            editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
                         }),
                 ]),
         ]

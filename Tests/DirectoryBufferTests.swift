@@ -23,9 +23,10 @@ import Testing
         #expect(buffer.allowsLogoExecution == false)
 
         let dirBuffer = buffer as! DirectoryBuffer
+        let l10n = L10n()
         #expect(dirBuffer.lines.count >= 5)
-        #expect(dirBuffer.lines[0].contains(L10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
-        #expect(dirBuffer.lines[3] == L10n.dirBufUpDir)
+        #expect(dirBuffer.lines[0].contains(l10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
+        #expect(dirBuffer.lines[3] == l10n.dirBufUpDir)
 
         // Contains subfolder and file
         #expect(dirBuffer.lines.contains("  ▸ subfolder/"))
@@ -170,11 +171,11 @@ import Testing
         // Typing character in DirectoryBuffer returns true (handled) and blocks mutation
         let handledChar = editor.buffer.handleKey(.char("a"), editor: editor)
         #expect(handledChar == true)
-        #expect(editor.statusMessage == L10n["status.directory_buffer_readonly"])
+        #expect(editor.statusMessage == editor.l10n["status.directory_buffer_readonly"])
 
         // Evaluating LOGO in DirectoryBuffer is blocked
         editor.evalLogoCode()
-        #expect(editor.statusMessage == L10n["status.directory_buffer_readonly"])
+        #expect(editor.statusMessage == editor.l10n["status.directory_buffer_readonly"])
     }
 
     @Test func testDirectoryBufferBinaryFileBlockingAndMenuVisibility() throws {
@@ -194,7 +195,7 @@ import Testing
         if let idx = dirBuffer.lines.firstIndex(where: { $0.contains("app.bin") }) {
             dirBuffer.lineIndex = idx
             dirBuffer.activateEntry(editor: editor)
-            #expect(editor.statusMessage == L10n["status.cannot_open_binary_file"])
+            #expect(editor.statusMessage == editor.l10n["status.cannot_open_binary_file"])
             #expect(editor.buffer.isDirectoryBuffer == true)
         } else {
             Issue.record("Expected app.bin entry in directory buffer")

@@ -81,9 +81,9 @@ public struct ShowHelpCommand: Command {
     public func execute(on editor: Editor) {
         TextDocumentView(
             terminal: editor.terminal,
-            title: L10n["helpview.title"],
+            title: editor.l10n["helpview.title"],
             lines: HelpContent.lines(),
-            footer: L10n["textview.footer"]
+            footer: editor.l10n["textview.footer"]
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()

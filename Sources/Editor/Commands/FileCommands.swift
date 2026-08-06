@@ -76,7 +76,7 @@ public struct OpenCommand: Command {
 
     public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
         guard !input.rest.isEmpty else {
-            editor.setStatusMessage(L10n["status.path_required"])
+            editor.setStatusMessage(editor.l10n["status.path_required"])
             return .handled
         }
 

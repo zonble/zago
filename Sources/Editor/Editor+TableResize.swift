@@ -29,14 +29,14 @@ extension Editor {
                         let endIdx = min(rightB, chars.count)
                         let textInside = String(chars[(leftB + 1)..<endIdx]).trimmingTrailingWhitespace()
                         if textInside.displayWidth >= currentWidth {
-                            setStatusMessage(L10n["status.cannot_shrink_width"])
+                            setStatusMessage(l10n["status.cannot_shrink_width"])
                             return
                         }
                     }
                 }
             }
             if currentWidth <= 1 {
-                setStatusMessage(L10n["status.cannot_shrink_width"])
+                setStatusMessage(l10n["status.cannot_shrink_width"])
                 return
             }
         } else if delta > 0 {
@@ -48,7 +48,7 @@ extension Editor {
                     let nextIdx = rightB + 1
                     if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
                         if !isSameGridTable {
-                            setStatusMessage(L10n["status.cannot_expand_width_collision"])
+                            setStatusMessage(l10n["status.cannot_expand_width_collision"])
                             return
                         }
                     }
@@ -108,7 +108,7 @@ extension Editor {
 
         if delta < 0 {
             if currentHeight <= 1 {
-                setStatusMessage(L10n["status.cannot_shrink_height"])
+                setStatusMessage(l10n["status.cannot_shrink_height"])
                 return
             }
 
@@ -121,7 +121,7 @@ extension Editor {
             }
 
             guard let removeLineIdx = lineToRemove else {
-                setStatusMessage(L10n["status.cannot_shrink_height"])
+                setStatusMessage(l10n["status.cannot_shrink_height"])
                 return
             }
 

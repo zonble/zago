@@ -6,28 +6,28 @@ import TextTransform
 extension Editor {
     public func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
         if isTableModeActive {
-            setStatusMessage(L10n["status.goto_disabled_in_table_mode"])
+            setStatusMessage(l10n["status.goto_disabled_in_table_mode"])
             return
         }
 
         guard oneBasedLine > 0 else {
-            setStatusMessage(L10n["status.invalid_line"])
+            setStatusMessage(l10n["status.invalid_line"])
             return
         }
 
         if isCanvasModeActive {
             if let oneBasedColumn, oneBasedColumn <= 0 {
-                setStatusMessage(L10n["status.invalid_column"])
+                setStatusMessage(l10n["status.invalid_column"])
                 return
             }
             let targetLine = oneBasedLine - 1
             guard isCanvasLineAllowed(targetLine) else {
-                setStatusMessage(L10n["status.canvas_row_limit_exceeded"])
+                setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
                 return
             }
             let targetColumn = (oneBasedColumn ?? 1) - 1
             guard isCanvasColumnAllowed(targetColumn) else {
-                setStatusMessage(L10n["status.canvas_column_limit_exceeded"])
+                setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
                 return
             }
             guard ensureCanvasLineExists(targetLine) else { return }
@@ -36,7 +36,7 @@ extension Editor {
             syncCanvasCursorToBuffer()
         } else if let oneBasedColumn {
             guard oneBasedColumn > 0 else {
-                setStatusMessage(L10n["status.invalid_column"])
+                setStatusMessage(l10n["status.invalid_column"])
                 return
             }
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
@@ -58,7 +58,7 @@ extension Editor {
             ? canvasVisualColumn + 1
             : line.visualColumn(forCharacterOffset: buffer.columnIndex) + 1
         setStatusMessage(
-            L10n.cursorInfo(
+            l10n.cursorInfo(
                 currentLine: currentLine, totalLines: buffer.lines.count,
                 percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
                 totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
@@ -91,7 +91,7 @@ extension Editor {
 
     public func openDocumentLinkAtCursor() {
         guard !buffer.isDirectoryBuffer else {
-            setStatusMessage(L10n["status.no_document_link"])
+            setStatusMessage(l10n["status.no_document_link"])
             return
         }
 
@@ -99,17 +99,17 @@ extension Editor {
         guard let link = DocumentLinkParser.link(atColumn: buffer.columnIndex, in: line),
             let path = DocumentLinkParser.resolvedPath(target: link.target, currentFilePath: buffer.filePath)
         else {
-            setStatusMessage(L10n["status.no_document_link"])
+            setStatusMessage(l10n["status.no_document_link"])
             return
         }
 
         if isCurrentDocumentPath(path) {
-            setStatusMessage(L10n["status.document_link_same_file"])
+            setStatusMessage(l10n["status.document_link_same_file"])
             return
         }
 
         openBuffer(path: path)
-        setStatusMessage(String(format: L10n["status.opened_document_link"], path))
+        setStatusMessage(String(format: l10n["status.opened_document_link"], path))
     }
 
     private func isCurrentDocumentPath(_ path: String) -> Bool {
@@ -123,7 +123,7 @@ extension Editor {
 
     public func transformSelectedText(id transformId: String, label: String) {
         guard let range = activeTextSelectionRange() else {
-            setStatusMessage(L10n["status.no_text_selection"])
+            setStatusMessage(l10n["status.no_text_selection"])
             return
         }
 
@@ -146,9 +146,9 @@ extension Editor {
             } else {
                 buffer.clampCursor()
             }
-            setStatusMessage(String(format: L10n["status.transformed_selection"], label))
+            setStatusMessage(String(format: l10n["status.transformed_selection"], label))
         } catch {
-            setStatusMessage(String(format: L10n["status.text_transform_failed"], "\(error)"))
+            setStatusMessage(String(format: l10n["status.text_transform_failed"], "\(error)"))
         }
     }
 
@@ -159,10 +159,10 @@ extension Editor {
                     buffer.textRange(
                         start: (line: range.start.line, col: range.start.column),
                         end: (line: range.end.line, col: range.end.column)),
-                    L10n["status.word_count_selection"]
+                    l10n["status.word_count_selection"]
                 )
             } else {
-                (buffer.lines.joined(separator: "\n"), L10n["status.word_count_document"])
+                (buffer.lines.joined(separator: "\n"), l10n["status.word_count_document"])
             }
         setStatusMessage(String(format: statusFormat, textCountSummary(for: text)))
     }
@@ -296,11 +296,11 @@ extension Editor {
             "default-border-style", "default_border_style":
             if let style = BorderStyle(arg) {
                 defaultBorderStyle = style
-                setStatusMessage(L10n.defaultBorder(style.rawValue))
+                setStatusMessage(l10n.defaultBorder(style.rawValue))
             } else if arg.isEmpty {
                 _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
             } else {
-                setStatusMessage(L10n.unknownBorderStyle(arg))
+                setStatusMessage(l10n.unknownBorderStyle(arg))
             }
         default:
             break
@@ -333,7 +333,7 @@ extension Editor {
     public func switchToBuffer(zeroBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
         guard index >= 0 && index < buffers.count else {
             if reportInvalid {
-                setStatusMessage(L10n["status.no_such_buffer"])
+                setStatusMessage(l10n["status.no_such_buffer"])
             }
             return false
         }

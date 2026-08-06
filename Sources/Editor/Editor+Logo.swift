@@ -75,7 +75,7 @@ extension Editor: LogoEngineDelegate {
         case .updateColumnIndex(let columnIndex):
             if isCanvasModeActive {
                 guard isCanvasColumnAllowed(columnIndex) else {
-                    setStatusMessage(L10n["status.canvas_column_limit_exceeded"])
+                    setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
                     return
                 }
                 canvasVisualColumn = max(0, columnIndex)
@@ -376,12 +376,12 @@ extension Editor: LogoEngineDelegate {
 
     private func setBorderStyle(_ style: String) {
         guard let borderStyle = BorderStyle(style) else {
-            setStatusMessage(L10n.unknownTableBorder(style))
+            setStatusMessage(l10n.unknownTableBorder(style))
             return
         }
 
         defaultBorderStyle = borderStyle
-        setStatusMessage(L10n.defaultBorder(borderStyle.rawValue))
+        setStatusMessage(l10n.defaultBorder(borderStyle.rawValue))
     }
 
 }
@@ -396,7 +396,7 @@ extension Editor {
     @discardableResult
     public func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
         if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
-            setStatusMessage(L10n.disabledInTableMode(blockedToken))
+            setStatusMessage(l10n.disabledInTableMode(blockedToken))
             return false
         }
 
@@ -475,14 +475,14 @@ extension Editor {
         }
 
         guard buffer.allowsLogoExecution else {
-            setStatusMessage(L10n["status.directory_buffer_readonly"])
+            setStatusMessage(l10n["status.directory_buffer_readonly"])
             return
         }
 
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
-        runLogoScript(cleanScript, resultPrefix: "[Eval] ", successStatus: L10n["status.logo_evaluated"])
+        runLogoScript(cleanScript, resultPrefix: "[Eval] ", successStatus: l10n["status.logo_evaluated"])
     }
 
     private func extractMarkdownLogoFence() -> String? {

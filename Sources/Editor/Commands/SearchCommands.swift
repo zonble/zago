@@ -37,7 +37,7 @@ public struct SearchCommand: Command {
         }
         let targetQuery = !query.isEmpty ? query : editor.lastSearchQuery
         if targetQuery.isEmpty {
-            editor.setStatusMessage(L10n["status.cancelled_search"])
+            editor.setStatusMessage(editor.l10n["status.cancelled_search"])
             return .handled
         }
 
@@ -97,12 +97,12 @@ public struct SubstituteCommand: Command {
     }
 
     public func execute(on editor: Editor) {
-        editor.setStatusMessage(L10n["status.path_required"])
+        editor.setStatusMessage(editor.l10n["status.path_required"])
     }
 
     public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
         guard let parsed = parse(input.text) else {
-            editor.setStatusMessage(L10n["status.path_required"])
+            editor.setStatusMessage(editor.l10n["status.path_required"])
             return .handled
         }
 
@@ -194,9 +194,9 @@ public struct SubstituteCommand: Command {
             editor.saveUndoSnapshot()
             editor.buffer.lines = newLines
             editor.buffer.isModified = true
-            editor.setStatusMessage(L10n.replacedOccurrences(totalReplacements))
+            editor.setStatusMessage(editor.l10n.replacedOccurrences(totalReplacements))
         } else {
-            editor.setStatusMessage(L10n.notFound(query: parsed.search))
+            editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
         }
 
         return .handled
@@ -331,17 +331,17 @@ public struct NumericGotoCommand: Command {
         let locationText = input.lowerFirstToken == "goto" ? input.rest : input.text
         let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
-            editor.setStatusMessage(L10n["status.invalid_line"])
+            editor.setStatusMessage(editor.l10n["status.invalid_line"])
             return .handled
         }
         guard parts.count <= 2 else {
-            editor.setStatusMessage(L10n["status.invalid_column"])
+            editor.setStatusMessage(editor.l10n["status.invalid_column"])
             return .handled
         }
 
         if parts.count == 2 {
             guard let col = Int(parts[1]), col > 0 else {
-                editor.setStatusMessage(L10n["status.invalid_column"])
+                editor.setStatusMessage(editor.l10n["status.invalid_column"])
                 return .handled
             }
             editor.goToLocation(line: line, column: col)
@@ -386,7 +386,7 @@ public struct ShowCursorPosCommand: Command {
             : line.visualColumn(forCharacterOffset: editor.buffer.columnIndex) + 1
         let totalVisualCol = line.displayWidth + 1
         editor.setStatusMessage(
-            L10n.cursorInfo(
+            editor.l10n.cursorInfo(
                 currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol,
                 totalCol: totalCol, visualCol: visualCol, totalVisualCol: totalVisualCol))
     }

@@ -137,7 +137,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 - To add a new string key:
   1. Add the string key to [`EnglishStrings.swift`](Sources/Editor/Localization/EnglishStrings.swift).
   2. Add the corresponding translation to [`TraditionalChineseStrings.swift`](Sources/Editor/Localization/TraditionalChineseStrings.swift).
-  3. Reference it via `L10n["your.key"]` or a strongly typed accessor in [`Localization.swift`](Sources/Editor/Localization/Localization.swift).
+  3. Reference it via `editor.l10n["your.key"]`, `l10n["your.key"]`, or a strongly typed instance accessor in [`Localization.swift`](Sources/Editor/Localization/Localization.swift).
 
 ### E. Table Formatting Engine Mechanics ([`PipeTableFormatter.swift`](Sources/Syntax/PipeTableFormatter.swift))
 - **Multi-Format Table Support**: Supports Markdown, Org Mode (`|---+---|`), reST Grid (`+---+---+`), and AsciiDoc (`[cols=...]` & `|===`).
@@ -155,7 +155,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 ## 5. Coding Standards & Agent Constraints
 
 1. **Preserve Documentation & Comments**: Do not remove existing docstrings or explanatory inline comments.
-2. **No Hardcoded User Strings**: Never pass raw English string literals directly to `setStatusMessage` or `PromptMode`. Always use `L10n[...]`.
+2. **No Hardcoded User Strings**: Never pass raw English string literals directly to `setStatusMessage` or `PromptMode`. Always use instance-based localization such as `editor.l10n[...]` or `l10n[...]`.
 3. **Swift 6 Safety**: Avoid nonisolated global state mutations unless explicitly marked as thread-safe or `@MainActor` isolated.
 4. **Sanity Check Terminal Output**: Output ANSI escape sequences using buffer concatenation and flush output efficiently with `fflush(nil)`.
 5. **No File Overcrowding**: If an extension file grows beyond 300 lines, evaluate splitting it into a dedicated helper module.
@@ -170,4 +170,3 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 - [ ] **Adding a syntax language**: Create a new class under `Sources/Editor/Syntax/` inheriting from `SyntaxDefinition`, and register it in `SyntaxHighlighter.swift`.
 - [ ] **Adding a new keybinding**: Register the command in `Editor+Commands.swift`, add help bar label in `Localization/`, and update `HelpView.swift`.
 - [ ] **Adding a user configuration flag**: Add property to `EditorConfig` in `ConfigLoader.swift`, update parser directives, and connect in `Editor.init`.
-

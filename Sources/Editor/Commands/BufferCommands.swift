@@ -72,14 +72,14 @@ public struct BufferCommand: Command {
         switch arg {
         case "":
             editor.setStatusMessage(
-                String(format: L10n["status.buffer_position"], editor.currentBufferIndex + 1, editor.buffers.count))
+                String(format: editor.l10n["status.buffer_position"], editor.currentBufferIndex + 1, editor.buffers.count))
         case "next":
             editor.nextBuffer()
         case "prev", "previous":
             editor.prevBuffer()
         default:
             guard let oneBasedIndex = Int(arg) else {
-                editor.setStatusMessage(L10n["status.no_such_buffer"])
+                editor.setStatusMessage(editor.l10n["status.no_such_buffer"])
                 return .handled
             }
             _ = editor.switchToBuffer(oneBasedIndex: oneBasedIndex, reportInvalid: true)

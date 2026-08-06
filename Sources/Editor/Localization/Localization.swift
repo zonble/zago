@@ -25,11 +25,6 @@ public struct L10n: Sendable {
         tables[language]?[key] ?? tables[.en]?[key] ?? key
     }
 
-    /// Static subscript for default system language string lookup.
-    public static subscript(_ key: String) -> String {
-        string(key)
-    }
-
     // MARK: - Strongly-Typed Help Bar Accessors
     public var helpGetHelp: String { self["help.get_help"] }
     public var helpMenu: String { self["help.menu"] }
@@ -152,104 +147,4 @@ public struct L10n: Sendable {
         String(format: self["status.replaced_occurrences"], count)
     }
 
-    // MARK: - Stateless Pure Forwarders
-    public static var newBuffer: String { L10n().newBuffer }
-    public static var modified: String { L10n().modified }
-    public static var cancelled: String { L10n().cancelled }
-    public static var dirBufHeaderInstructions: String { L10n().dirBufHeaderInstructions }
-    public static var dirBufUpDir: String { L10n().dirBufUpDir }
-    public static func dirBufHeaderDirectory(_ path: String, _ branch: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).dirBufHeaderDirectory(path, branch)
-    }
-
-    public static func readLines(_ count: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).readLines(count)
-    }
-
-    public static func wroteToFile(_ filename: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).wroteToFile(filename)
-    }
-
-    public static func configLoadedWithErrors(_ count: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).configLoadedWithErrors(count)
-    }
-
-    public static func cursorInfo(
-        currentLine: Int,
-        totalLines: Int,
-        percent: Int,
-        currentCol: Int,
-        totalCol: Int,
-        visualCol: Int,
-        totalVisualCol: Int,
-        language: Language = .detectSystemLanguage()
-    ) -> String {
-        L10n(language: language).cursorInfo(
-            currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol,
-            totalCol: totalCol, visualCol: visualCol, totalVisualCol: totalVisualCol)
-    }
-
-    public static func foundQueryAtLine(query: String, line: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).foundQueryAtLine(query: query, line: line)
-    }
-
-    public static func searchWrappedFound(query: String, line: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).searchWrappedFound(query: query, line: line)
-    }
-
-    public static func notFound(query: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).notFound(query: query)
-    }
-
-    public static func insertedLines(_ count: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).insertedLines(count)
-    }
-
-    public static func errorInsertingFile(error: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).errorInsertingFile(error: error)
-    }
-
-    public static func errorSavingFile(error: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).errorSavingFile(error: error)
-    }
-
-    public static func replacedWord(target: String, newWord: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).replacedWord(target: target, newWord: newWord)
-    }
-
-    public static func defaultBorder(_ style: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).defaultBorder(style)
-    }
-
-    public static func unknownBorderStyle(_ style: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).unknownBorderStyle(style)
-    }
-
-    public static func unknownTableBorder(_ style: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).unknownTableBorder(style)
-    }
-
-    public static func disabledInTableMode(_ token: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).disabledInTableMode(token)
-    }
-
-    public static func editingConfig(_ path: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).editingConfig(path)
-    }
-
-    public static func insertedDiagramSnippet(_ name: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).insertedDiagramSnippet(name)
-    }
-
-    public static func lineNumbersState(_ state: String, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).lineNumbersState(state)
-    }
-
-    public static func wrapColumnSet(_ col: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).wrapColumnSet(col)
-    }
-
-    public static func replacedOccurrences(_ count: Int, language: Language = .detectSystemLanguage()) -> String {
-        L10n(language: language).replacedOccurrences(count)
-    }
 }

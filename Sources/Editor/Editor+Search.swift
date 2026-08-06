@@ -11,7 +11,7 @@ extension Editor {
         guard activeSearchMatch != nil else { return false }
         activeSearchMatch = nil
         if setStatus {
-            setStatusMessage(L10n["status.search_cleared"])
+            setStatusMessage(l10n["status.search_cleared"])
         }
         return true
     }
@@ -44,7 +44,7 @@ extension Editor {
     private func repeatSearch(direction: SearchDirection) {
         let query = activeSearchMatch?.query ?? lastSearchQuery
         guard !query.isEmpty else {
-            setStatusMessage(L10n["status.no_active_search"])
+            setStatusMessage(l10n["status.no_active_search"])
             return
         }
 
@@ -86,7 +86,7 @@ extension Editor {
                 candidates = regexSearchCandidates(regex: regex)
             } catch {
                 activeSearchMatch = nil
-                setStatusMessage(String(format: L10n["status.invalid_regex"], error.localizedDescription))
+                setStatusMessage(String(format: l10n["status.invalid_regex"], error.localizedDescription))
                 return
             }
         } else {
@@ -96,7 +96,7 @@ extension Editor {
         guard !candidates.isEmpty else {
             activeSearchMatch = nil
             lastSearchQuery = query
-            setStatusMessage(L10n.notFound(query: query))
+            setStatusMessage(l10n.notFound(query: query))
             return
         }
 
@@ -197,9 +197,9 @@ extension Editor {
         )
         lastSearchQuery = query
         if wrapped {
-            setStatusMessage(L10n.searchWrappedFound(query: query, line: candidate.line + 1))
+            setStatusMessage(l10n.searchWrappedFound(query: query, line: candidate.line + 1))
         } else {
-            setStatusMessage(L10n.foundQueryAtLine(query: query, line: candidate.line + 1))
+            setStatusMessage(l10n.foundQueryAtLine(query: query, line: candidate.line + 1))
         }
     }
 }

@@ -26,7 +26,7 @@ extension DiagramSnippets {
         }
 
         editor.buffer.isModified = true
-        editor.setStatusMessage(L10n.insertedDiagramSnippet(snippet.engine.rawValue))
+        editor.setStatusMessage(editor.l10n.insertedDiagramSnippet(snippet.engine.rawValue))
     }
 
     /// Generates the `MenuCategory` for Diagrams to be placed between Tools and Help, filtering items by active engine context.

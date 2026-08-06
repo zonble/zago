@@ -11,7 +11,7 @@ public struct SelectLeftCommand: Command {
     public func execute(on editor: Editor) {
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         if editor.buffer.columnIndex > 0 {
             editor.buffer.columnIndex -= 1
@@ -33,7 +33,7 @@ public struct SelectRightCommand: Command {
     public func execute(on editor: Editor) {
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
         if editor.buffer.columnIndex < currentLineLength {
@@ -56,7 +56,7 @@ public struct SelectUpCommand: Command {
     public func execute(on editor: Editor) {
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         editor.moveCursorVirtual(deltaRow: -1)
     }
@@ -73,7 +73,7 @@ public struct SelectDownCommand: Command {
     public func execute(on editor: Editor) {
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         editor.moveCursorVirtual(deltaRow: 1)
     }
@@ -91,7 +91,7 @@ public struct SelectHomeCommand: Command {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return }
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         editor.buffer.columnIndex = 0
     }
@@ -109,7 +109,7 @@ public struct SelectEndCommand: Command {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return }
         if editor.selectionMark == nil {
             editor.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
         editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
     }

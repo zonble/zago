@@ -21,11 +21,12 @@ struct ConfigAndToolsTests {
 
 @Test func testHelpContent() throws {
     let terminal = TestEditorTerminal.shared
+    let l10n = L10n()
     let helpView = TextDocumentView(
         terminal: terminal,
-        title: L10n["helpview.title"],
+        title: l10n["helpview.title"],
         lines: HelpContent.lines(),
-        footer: L10n["helpview.footer"]
+        footer: l10n["helpview.footer"]
     )
     _ = helpView
     #expect(HelpContent.lines(language: .en).contains("  KEYBINDINGS & COMMANDS REFERENCE"))
@@ -519,7 +520,7 @@ struct ConfigAndToolsTests {
 
     // Test reloadConfig()
     editor.reloadConfig()
-    #expect(editor.statusMessage == L10n["status.config_reloaded"])
+    #expect(editor.statusMessage == editor.l10n["status.config_reloaded"])
 }
 
 
@@ -703,23 +704,26 @@ struct ConfigAndToolsTests {
 }
 
 @Test func testLocalization() throws {
+    let l10nEN = L10n(language: .en)
+    let l10nZH = L10n(language: .zh_TW)
+
     #expect(L10n.string("help.get_help", language: .en) == "Get Help")
     #expect(L10n.string("help.exit", language: .en) == "Exit")
-    #expect(L10n.readLines(10, language: .en) == "[ Read 10 line(s) ]")
-    #expect(L10n.wroteToFile("test.txt", language: .en) == "[ Wrote to test.txt ]")
-    #expect(L10n.configLoadedWithErrors(2, language: .en) == "[ Config loaded with 2 syntax error(s) ]")
+    #expect(l10nEN.readLines(10) == "[ Read 10 line(s) ]")
+    #expect(l10nEN.wroteToFile("test.txt") == "[ Wrote to test.txt ]")
+    #expect(l10nEN.configLoadedWithErrors(2) == "[ Config loaded with 2 syntax error(s) ]")
     #expect(
-        L10n.cursorInfo(
+        l10nEN.cursorInfo(
             currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10,
-            visualCol: 4, totalVisualCol: 12, language: .en)
+            visualCol: 4, totalVisualCol: 12)
             == "line 5/20 (25%), col 3/10, visual col 4/12")
-    #expect(L10n.foundQueryAtLine(query: "foo", line: 12, language: .en) == "Found \"foo\" at line 12")
-    #expect(L10n.searchWrappedFound(query: "foo", line: 12, language: .en) == "Search wrapped, found \"foo\" at line 12")
-    #expect(L10n.notFound(query: "bar", language: .en) == "\"bar\" not found")
-    #expect(L10n.insertedLines(5, language: .en) == "[ Inserted 5 lines ]")
-    #expect(L10n.errorInsertingFile(error: "Access denied", language: .en) == "Error inserting file: Access denied")
-    #expect(L10n.errorSavingFile(error: "Disk full", language: .en) == "Error saving file: Disk full")
-    #expect(L10n.replacedWord(target: "helo", newWord: "hello", language: .en) == "Replaced 'helo' with 'hello'")
+    #expect(l10nEN.foundQueryAtLine(query: "foo", line: 12) == "Found \"foo\" at line 12")
+    #expect(l10nEN.searchWrappedFound(query: "foo", line: 12) == "Search wrapped, found \"foo\" at line 12")
+    #expect(l10nEN.notFound(query: "bar") == "\"bar\" not found")
+    #expect(l10nEN.insertedLines(5) == "[ Inserted 5 lines ]")
+    #expect(l10nEN.errorInsertingFile(error: "Access denied") == "Error inserting file: Access denied")
+    #expect(l10nEN.errorSavingFile(error: "Disk full") == "Error saving file: Disk full")
+    #expect(l10nEN.replacedWord(target: "helo", newWord: "hello") == "Replaced 'helo' with 'hello'")
     #expect(L10n.string("helpview.sec_logo", language: .en) == "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:")
     #expect(L10n.string("helpview.logo_6", language: .en).contains("Turtle Graphics"))
     #expect(L10n.string("menu.help.logo_reference", language: .en) == "Editor LOGO Reference")
@@ -745,8 +749,8 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("menu.tools.transform_cjk_spacing", language: .en) == "Transform: CJK Spacing")
     #expect(L10n.string("transform.tohant", language: .en) == "Traditional Chinese")
 
-    #expect(L10n.defaultBorder("Round", language: .en) == "[ Default Border: Round ]")
-    #expect(L10n.disabledInTableMode("GOTO", language: .en) == "[ GOTO disabled in Table Mode ]")
+    #expect(l10nEN.defaultBorder("Round") == "[ Default Border: Round ]")
+    #expect(l10nEN.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
     #expect(L10n.string("status.table_mode_exited", language: .en) == "[ Table Mode Exited ]")
     #expect(L10n.string("status.canvas_mode_hint", language: .en) == "(F8 / M+V to exit)")
     #expect(L10n.string("mode.canvas", language: .en) == "CANVAS")
@@ -754,23 +758,23 @@ struct ConfigAndToolsTests {
 
     #expect(L10n.string("help.get_help", language: .zh_TW) == "輔助說明")
     #expect(L10n.string("help.exit", language: .zh_TW) == "離開")
-    #expect(L10n.readLines(10, language: .zh_TW) == "[ 已讀取 10 行 ]")
-    #expect(L10n.wroteToFile("test.txt", language: .zh_TW) == "[ 已儲存至 test.txt ]")
-    #expect(L10n.configLoadedWithErrors(2, language: .zh_TW) == "[ 已載入設定檔（含有 2 個語法錯誤）]")
+    #expect(l10nZH.readLines(10) == "[ 已讀取 10 行 ]")
+    #expect(l10nZH.wroteToFile("test.txt") == "[ 已儲存至 test.txt ]")
+    #expect(l10nZH.configLoadedWithErrors(2) == "[ 已載入設定檔（含有 2 個語法錯誤）]")
     #expect(
-        L10n.cursorInfo(
+        l10nZH.cursorInfo(
             currentLine: 5, totalLines: 20, percent: 25, currentCol: 3, totalCol: 10,
-            visualCol: 4, totalVisualCol: 12, language: .zh_TW)
+            visualCol: 4, totalVisualCol: 12)
             == "第 5/20 行 (25%), 第 3/10 欄, 視覺欄 4/12")
-    #expect(L10n.foundQueryAtLine(query: "foo", line: 12, language: .zh_TW) == "於第 12 行找到 \"foo\"")
-    #expect(L10n.searchWrappedFound(query: "foo", line: 12, language: .zh_TW) == "搜尋回到開頭，於第 12 行找到 \"foo\"")
-    #expect(L10n.notFound(query: "bar", language: .zh_TW) == "找不到 \"bar\"")
-    #expect(L10n.insertedLines(5, language: .zh_TW) == "[ 已插入 5 行內容 ]")
-    #expect(L10n.errorInsertingFile(error: "Access denied", language: .zh_TW) == "插入檔案錯誤：Access denied")
-    #expect(L10n.errorSavingFile(error: "Disk full", language: .zh_TW) == "儲存檔案錯誤：Disk full")
-    #expect(L10n.replacedWord(target: "helo", newWord: "hello", language: .zh_TW) == "已將 'helo' 替換為 'hello'")
-    #expect(L10n.defaultBorder("Round", language: .zh_TW) == "[ 預設框線：Round ]")
-    #expect(L10n.disabledInTableMode("GOTO", language: .zh_TW) == "[ 表格模式下停用 GOTO ]")
+    #expect(l10nZH.foundQueryAtLine(query: "foo", line: 12) == "於第 12 行找到 \"foo\"")
+    #expect(l10nZH.searchWrappedFound(query: "foo", line: 12) == "搜尋回到開頭，於第 12 行找到 \"foo\"")
+    #expect(l10nZH.notFound(query: "bar") == "找不到 \"bar\"")
+    #expect(l10nZH.insertedLines(5) == "[ 已插入 5 行內容 ]")
+    #expect(l10nZH.errorInsertingFile(error: "Access denied") == "插入檔案錯誤：Access denied")
+    #expect(l10nZH.errorSavingFile(error: "Disk full") == "儲存檔案錯誤：Disk full")
+    #expect(l10nZH.replacedWord(target: "helo", newWord: "hello") == "已將 'helo' 替換為 'hello'")
+    #expect(l10nZH.defaultBorder("Round") == "[ 預設框線：Round ]")
+    #expect(l10nZH.disabledInTableMode("GOTO") == "[ 表格模式下停用 GOTO ]")
     #expect(L10n.string("status.table_mode_exited", language: .zh_TW) == "[ 已退出表格模式 ]")
     #expect(L10n.string("status.canvas_mode_hint", language: .zh_TW) == "(F8 / M+V 退出)")
     #expect(L10n.string("mode.canvas", language: .zh_TW) == "畫布")
@@ -784,7 +788,6 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("help.mark_block", language: .zh_TW) == "標記區塊")
     #expect(L10n.string("help.uncut_block", language: .zh_TW) == "貼上區塊")
     #expect(L10n.string("help.open_link", language: .zh_TW) == "開啟連結")
-    let l10nZH = L10n(language: .zh_TW)
     #expect(l10nZH["helpview.search_2"].contains("AsciiDoc"))
     #expect(l10nZH["helpview.search_3"].contains("文件大綱"))
     #expect(l10nZH["menu.edit.outline"] == "文件大綱\tM+\\")
@@ -794,7 +797,7 @@ struct ConfigAndToolsTests {
     #expect(l10nZH["status.heading_nav_unsupported_format"] == "[ 目前檔案格式不支援文件大綱 ]")
     #expect(String(format: l10nZH["status.heading_position"], 3, 18, "## Search") == "[ 標題 3/18：## Search ]")
     #expect(l10nZH["outlineview.title"] == "  文件大綱")
-    #expect(l10nZH["menu.tools.word_count"] == "Word Count")
+    #expect(l10nZH["menu.tools.word_count"] == "字數統計")
     #expect(
         String(format: l10nZH["status.word_count_document"], "21 chars, 5 words, 4 CJK chars, 2 lines")
             == "[ 文件：21 chars, 5 words, 4 CJK chars, 2 lines ]")

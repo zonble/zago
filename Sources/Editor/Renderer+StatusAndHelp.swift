@@ -166,7 +166,7 @@ extension Renderer {
         let startCol = mark.visualColumn + 1
         let endRow = end.line + 1
         let endCol = end.visualColumn + 1
-        return "\(L10n["status.mark_set"]) (start \(startRow),\(startCol) end \(endRow),\(endCol))"
+        return "\(editor.l10n["status.mark_set"]) (start \(startRow),\(startCol) end \(endRow),\(endCol))"
     }
 
     // MARK: - Dynamic Contextual Help Bar
@@ -364,39 +364,39 @@ extension Renderer {
 
         switch editor.currentPromptMode {
         case .saveFilePath:
-            promptPrefix = L10n["prompt.write_name"]
+            promptPrefix = editor.l10n["prompt.write_name"]
             isConfirmation = false
         case .confirmExitSave:
-            promptPrefix = L10n["prompt.confirm_exit_save"]
+            promptPrefix = editor.l10n["prompt.confirm_exit_save"]
             isConfirmation = true
         case .confirmExternalReload:
-            promptPrefix = L10n["prompt.confirm_reload"]
+            promptPrefix = editor.l10n["prompt.confirm_reload"]
             isConfirmation = true
         case .confirmEncodingFallback(let originalEncoding, _):
             let name = TextEncodingDetector.displayName(for: originalEncoding)
-            promptPrefix = String(format: L10n["prompt.encoding_fallback"], name)
+            promptPrefix = String(format: editor.l10n["prompt.encoding_fallback"], name)
             isConfirmation = true
         case .search:
             let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"
-            promptPrefix = "\(L10n["prompt.search"])\(defaultHint): "
+            promptPrefix = "\(editor.l10n["prompt.search"])\(defaultHint): "
             isConfirmation = false
         case .insertFilePath:
-            promptPrefix = L10n["prompt.insert_file"]
+            promptPrefix = editor.l10n["prompt.insert_file"]
             isConfirmation = false
         case .spellCheck(let word, _, _, _):
-            promptPrefix = String(format: L10n["prompt.edit_spelled_word"], word)
+            promptPrefix = String(format: editor.l10n["prompt.edit_spelled_word"], word)
             isConfirmation = false
         case .logoMacro:
-            promptPrefix = L10n["prompt.logo"]
+            promptPrefix = editor.l10n["prompt.logo"]
             isConfirmation = false
         case .fillText:
-            promptPrefix = L10n["prompt.fill_text"]
+            promptPrefix = editor.l10n["prompt.fill_text"]
             isConfirmation = false
         case .tableDimensions:
-            promptPrefix = L10n["prompt.table_dimensions"]
+            promptPrefix = editor.l10n["prompt.table_dimensions"]
             isConfirmation = false
         case .gotoLine:
-            promptPrefix = L10n["prompt.goto_line"]
+            promptPrefix = editor.l10n["prompt.goto_line"]
             isConfirmation = false
         case .logoReadWord(let prompt):
             let p = prompt.isEmpty ? "Input: " : (prompt.hasSuffix(" ") ? prompt : prompt + " ")

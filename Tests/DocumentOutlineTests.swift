@@ -147,11 +147,11 @@ import Testing
         editor.buffer.lines = ["plain text"]
 
         #expect(editor.commandRegistry.dispatch(id: .documentHeadingNext, editor: editor))
-        #expect(editor.statusMessage == L10n["status.no_headings"])
+        #expect(editor.statusMessage == editor.l10n["status.no_headings"])
 
         editor.switchToCanvasMode()
         #expect(editor.commandRegistry.dispatch(id: .documentHeadingNext, editor: editor))
-        #expect(editor.statusMessage == L10n["status.heading_nav_disabled_canvas"])
+        #expect(editor.statusMessage == editor.l10n["status.heading_nav_disabled_canvas"])
     }
 
     @Test func testHeadingNavigationUnsupportedFormatDoesNotParseCommentsAsHeadings() throws {
@@ -165,7 +165,7 @@ import Testing
 
         #expect(editor.commandRegistry.dispatch(id: .documentHeadingNext, editor: editor))
         #expect(editor.buffer.lineIndex == 1)
-        #expect(editor.statusMessage == L10n["status.heading_nav_unsupported_format"])
+        #expect(editor.statusMessage == editor.l10n["status.heading_nav_unsupported_format"])
     }
 
     @Test func testOutlineRowsFormatLineNumbersAndIndentation() throws {

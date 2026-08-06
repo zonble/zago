@@ -393,7 +393,7 @@ public final class Renderer {
                 }
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
-                lineOutput += "\u{1B}[90m\(gutter)~ \(L10n["chrome.end_of_file"])\u{1B}[0m"
+                lineOutput += "\u{1B}[90m\(gutter)~ \(editor.l10n["chrome.end_of_file"])\u{1B}[0m"
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
@@ -450,7 +450,7 @@ public final class Renderer {
                 editor.buffer.lines.indices.contains(virtualLine.bufferLineIndex)
                 ? editor.buffer.lines[virtualLine.bufferLineIndex].count
                 : 0
-            label = "[\(String(format: L10n["subline.char_count"], charCount))]"
+            label = "[\(String(format: editor.l10n["subline.char_count"], charCount))]"
         } else {
             label = "\(virtualLine.subLineIndex + 1)"
         }

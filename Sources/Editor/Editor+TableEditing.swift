@@ -175,7 +175,7 @@ extension Editor {
                 enterTableMode(with: cell)
             }
         } else {
-            setStatusMessage(L10n["status.table_created"])
+            setStatusMessage(l10n["status.table_created"])
         }
     }
 
@@ -239,7 +239,7 @@ extension Editor {
                 buffer.lines[lineIdx] = prefix + newCellText + suffix
             }
         }
-        setStatusMessage(L10n["status.cell_text_centered"])
+        setStatusMessage(l10n["status.cell_text_centered"])
     }
 
     func joinCurrentTableCellLine(separator: String) {
@@ -268,7 +268,7 @@ extension Editor {
         guard isTableModeActive, let cell = currentTableCell else { return false }
         guard cell.innerMinLine <= cell.innerMaxLine else { return false }
         guard !fillText.isEmpty else {
-            setStatusMessage(L10n["status.fill_text_required"])
+            setStatusMessage(l10n["status.fill_text_required"])
             return true
         }
 
@@ -287,7 +287,7 @@ extension Editor {
 
         if didFill {
             buffer.isModified = true
-            setStatusMessage(L10n["status.filled_cell"])
+            setStatusMessage(l10n["status.filled_cell"])
             clampTableModeCursor()
         }
         return true

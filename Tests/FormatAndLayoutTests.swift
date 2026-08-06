@@ -707,7 +707,7 @@ struct FormatAndLayoutTests {
 
     let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
 
-    #expect(output.contains("~ \(L10n["chrome.end_of_file"])"))
+    #expect(output.contains("~ \(editor.l10n["chrome.end_of_file"])"))
     #expect(output.contains("\u{1B}[90m"))
 }
 
@@ -717,7 +717,7 @@ struct FormatAndLayoutTests {
 
     let output = editor.renderer.render(editor: editor, rows: 8, cols: 40)
 
-    #expect(!output.contains("~ \(L10n["chrome.end_of_file"])"))
+    #expect(!output.contains("~ \(editor.l10n["chrome.end_of_file"])"))
 }
 
 @Test func testIdleStatusLineModeIndicators() throws {
@@ -799,12 +799,12 @@ struct FormatAndLayoutTests {
 
     editor.menuBar.categoryIndex = 1
     let (startCol1, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
-    let title0Width = L10n[editor.menuBar.categories[0].titleKey].displayWidth
+    let title0Width = editor.l10n[editor.menuBar.categories[0].titleKey].displayWidth
     #expect(startCol1 == 1 + title0Width + 2)
 
     editor.menuBar.categoryIndex = 2
     let (startCol2, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
-    let title1Width = L10n[editor.menuBar.categories[1].titleKey].displayWidth
+    let title1Width = editor.l10n[editor.menuBar.categories[1].titleKey].displayWidth
     #expect(startCol2 == 1 + title0Width + 2 + title1Width + 2)
 }
 

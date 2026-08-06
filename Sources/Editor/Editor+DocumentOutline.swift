@@ -19,7 +19,7 @@ extension Editor {
         guard canNavigateHeadings() else { return }
         let outline = currentDocumentOutline()
         guard !outline.headings.isEmpty else {
-            setStatusMessage(L10n["status.no_headings"])
+            setStatusMessage(l10n["status.no_headings"])
             return
         }
 
@@ -27,13 +27,13 @@ extension Editor {
         guard
             let heading = DocumentOutlineView(
                 terminal: terminal,
-                title: L10n["outlineview.title"],
+                title: l10n["outlineview.title"],
                 headings: outline.headings,
-                footer: L10n["outlineview.footer"],
+                footer: l10n["outlineview.footer"],
                 initialSelectedIndex: selectedIndex
             ).show()
         else {
-            setStatusMessage(L10n["status.outline_cancelled"])
+            setStatusMessage(l10n["status.outline_cancelled"])
             return
         }
 
@@ -49,7 +49,7 @@ extension Editor {
         guard canNavigateHeadings() else { return }
         let outline = currentDocumentOutline()
         guard !outline.headings.isEmpty else {
-            setStatusMessage(L10n["status.no_headings"])
+            setStatusMessage(l10n["status.no_headings"])
             return
         }
 
@@ -72,19 +72,19 @@ extension Editor {
 
     private func canNavigateHeadings() -> Bool {
         if buffer.isDirectoryBuffer {
-            setStatusMessage(L10n["status.heading_nav_disabled_directory"])
+            setStatusMessage(l10n["status.heading_nav_disabled_directory"])
             return false
         }
         if isCanvasModeActive {
-            setStatusMessage(L10n["status.heading_nav_disabled_canvas"])
+            setStatusMessage(l10n["status.heading_nav_disabled_canvas"])
             return false
         }
         if isTableModeActive {
-            setStatusMessage(L10n["status.heading_nav_disabled_table"])
+            setStatusMessage(l10n["status.heading_nav_disabled_table"])
             return false
         }
         if !supportsDocumentOutlineForCurrentBuffer() {
-            setStatusMessage(L10n["status.heading_nav_unsupported_format"])
+            setStatusMessage(l10n["status.heading_nav_unsupported_format"])
             return false
         }
         return true
@@ -97,7 +97,7 @@ extension Editor {
         topVLineIndex = max(0, buffer.lineIndex - 1)
         let index = (outline.headings.firstIndex(of: heading) ?? 0) + 1
         let markerTitle = "\(heading.marker) \(heading.title)"
-        setStatusMessage(String(format: L10n["status.heading_position"], index, outline.headings.count, markerTitle))
+        setStatusMessage(String(format: l10n["status.heading_position"], index, outline.headings.count, markerTitle))
     }
 
     private func initialOutlineSelectionIndex(in outline: DocumentOutline) -> Int {

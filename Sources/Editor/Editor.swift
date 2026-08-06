@@ -476,14 +476,14 @@ public final class Editor: @unchecked Sendable {
         } else {
             openNewBuffer(filePath: configPath)
         }
-        setStatusMessage(L10n.editingConfig(configPath))
+        setStatusMessage(l10n.editingConfig(configPath))
     }
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.
     public func reloadConfig() {
         let loadedConfig = configProvider()
         applyReloadedConfig(loadedConfig)
-        setStatusMessage(L10n["status.config_reloaded"])
+        setStatusMessage(l10n["status.config_reloaded"])
     }
 
     /// Applies reloadable configuration without changing per-editor runtime modes.
@@ -545,19 +545,19 @@ public final class Editor: @unchecked Sendable {
                     do {
                         try self.buffer.reloadFile(fileIO: self.fileIOStrategy)
                         self.buffer.isModified = false
-                        self.setStatusMessage(L10n["status.file_reloaded"])
+                        self.setStatusMessage(self.l10n["status.file_reloaded"])
                     } catch {
                         self.setStatusMessage(error.localizedDescription)
                     }
                 } else {
-                    self.setStatusMessage(L10n["status.kept_local"])
+                    self.setStatusMessage(self.l10n["status.kept_local"])
                 }
             })
-            setStatusMessage(L10n["prompt.confirm_reload"])
+            setStatusMessage(l10n["prompt.confirm_reload"])
         } else {
             do {
                 try buffer.reloadFile(fileIO: fileIOStrategy)
-                setStatusMessage(L10n["status.file_reloaded"])
+                setStatusMessage(l10n["status.file_reloaded"])
             } catch {
                 setStatusMessage(error.localizedDescription)
             }
@@ -595,7 +595,7 @@ public final class Editor: @unchecked Sendable {
         }
 
         if config.syntaxErrorCount > 0 {
-            setStatusMessage(L10n.configLoadedWithErrors(config.syntaxErrorCount))
+            setStatusMessage(l10n.configLoadedWithErrors(config.syntaxErrorCount))
         }
     }
 

@@ -17,7 +17,7 @@ public struct SettingCommand: Command {
 
         let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
         guard let setting = parts.first, !setting.isEmpty else {
-            editor.setStatusMessage(L10n["status.path_required"])
+            editor.setStatusMessage(editor.l10n["status.path_required"])
             return .handled
         }
 

@@ -51,7 +51,7 @@ public struct ToggleMarkCommand: Command {
 
     public func execute(on editor: Editor) {
         guard editor.isCanvasModeActive && !editor.isTableModeActive else {
-            editor.setStatusMessage(L10n["status.block_mark_canvas_only"])
+            editor.setStatusMessage(editor.l10n["status.block_mark_canvas_only"])
             return
         }
 
@@ -59,17 +59,17 @@ public struct ToggleMarkCommand: Command {
         if editor.canvasBlockMark == nil {
             editor.canvasBlockMark = point
             editor.canvasBlockMarkEnd = point
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         } else if let mark = editor.canvasBlockMark,
             let end = editor.canvasBlockMarkEnd,
             end.line == mark.line && end.visualColumn == mark.visualColumn
         {
             editor.canvasBlockMarkEnd = point
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         } else {
             editor.canvasBlockMark = point
             editor.canvasBlockMarkEnd = point
-            editor.setStatusMessage(L10n["status.mark_set"])
+            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
     }
 }
@@ -90,15 +90,15 @@ public struct CopyTextCommand: Command {
             let (start, end) = editor.getOrderedRange(
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
             guard start.line != end.line || start.column != end.column else {
-                editor.setStatusMessage(L10n["status.no_selection"])
+                editor.setStatusMessage(editor.l10n["status.no_selection"])
                 return
             }
             editor.clipboardText = editor.buffer.textRange(
                 start: (line: start.line, col: start.column),
                 end: (line: end.line, col: end.column))
-            editor.setStatusMessage(L10n["status.copied_text"])
+            editor.setStatusMessage(editor.l10n["status.copied_text"])
         } else {
-            editor.setStatusMessage(L10n["status.no_selection"])
+            editor.setStatusMessage(editor.l10n["status.no_selection"])
         }
     }
 }
@@ -117,11 +117,11 @@ public struct CancelSelectionCommand: Command {
         }
         if editor.selectionMark != nil || editor.canvasBlockMark != nil {
             editor.clearActiveMark()
-            editor.setStatusMessage(L10n["status.mark_unset"])
+            editor.setStatusMessage(editor.l10n["status.mark_unset"])
         } else if editor.isCanvasModeActive {
-            editor.setStatusMessage(L10n["status.no_block_marked"])
+            editor.setStatusMessage(editor.l10n["status.no_block_marked"])
         } else {
-            editor.setStatusMessage(L10n["status.no_selection"])
+            editor.setStatusMessage(editor.l10n["status.no_selection"])
         }
     }
 }
@@ -152,7 +152,7 @@ public struct CutTextCommand: Command {
             editor.clipboardText = editor.buffer.cutRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             editor.selectionMark = nil
-            editor.setStatusMessage(L10n["status.cut_text"])
+            editor.setStatusMessage(editor.l10n["status.cut_text"])
         } else {
             let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
             editor.clipboardText = currentLine + "\n"
@@ -162,7 +162,7 @@ public struct CutTextCommand: Command {
                 editor.buffer.lines[0] = ""
             }
             editor.buffer.isModified = true
-            editor.setStatusMessage(L10n["status.cut_one_line"])
+            editor.setStatusMessage(editor.l10n["status.cut_one_line"])
         }
     }
 }
@@ -179,18 +179,18 @@ public struct UncutTextCommand: Command {
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.pasteTableCellText(text)
-                editor.setStatusMessage(L10n["status.uncut_text"])
+                editor.setStatusMessage(editor.l10n["status.uncut_text"])
             } else {
-                editor.setStatusMessage(L10n["status.clipboard_empty"])
+                editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
             }
         } else if editor.isCanvasModeActive {
             editor.pasteCanvasBlock()
         } else if let text = editor.clipboardText, !text.isEmpty {
             editor.saveUndoSnapshot()
             editor.buffer.insertString(text)
-            editor.setStatusMessage(L10n["status.uncut_text"])
+            editor.setStatusMessage(editor.l10n["status.uncut_text"])
         } else {
-            editor.setStatusMessage(L10n["status.clipboard_empty"])
+            editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
         }
     }
 }
@@ -257,7 +257,7 @@ public struct JustifyCommand: Command {
             return
         }
         guard !editor.isCanvasModeActive else {
-            editor.setStatusMessage(L10n["status.justify_disabled_in_canvas_mode"])
+            editor.setStatusMessage(editor.l10n["status.justify_disabled_in_canvas_mode"])
             return
         }
         editor.saveUndoSnapshot()
@@ -274,7 +274,7 @@ public struct JustifyCommand: Command {
         let (_, cols) = editor.terminal.getWindowSize()
         let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
         editor.buffer.justifyParagraph(targetWidth: targetWidth)
-        editor.setStatusMessage(L10n["status.justified_paragraph"])
+        editor.setStatusMessage(editor.l10n["status.justified_paragraph"])
     }
 }
 

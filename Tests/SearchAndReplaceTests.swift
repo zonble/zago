@@ -56,12 +56,12 @@ import Testing
         editor.processKey(.alt("n"))
         #expect(editor.buffer.lineIndex == 0)
         #expect(editor.buffer.columnIndex == 0)
-        #expect(editor.statusMessage == L10n.searchWrappedFound(query: "alpha", line: 1))
+        #expect(editor.statusMessage == editor.l10n.searchWrappedFound(query: "alpha", line: 1))
 
         editor.processKey(.alt("p"))
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.buffer.columnIndex == 5)
-        #expect(editor.statusMessage == L10n.searchWrappedFound(query: "alpha", line: 2))
+        #expect(editor.statusMessage == editor.l10n.searchWrappedFound(query: "alpha", line: 2))
     }
 
     @Test func testSearchHighlightAndClear() throws {
@@ -78,11 +78,11 @@ import Testing
         editor.processKey(.ctrl("G"))
         #expect(editor.activeSearchMatch == nil)
         #expect(editor.selectionMark?.line == 0)
-        #expect(editor.statusMessage == L10n["status.search_cleared"])
+        #expect(editor.statusMessage == editor.l10n["status.search_cleared"])
 
         editor.processKey(.ctrl("G"))
         #expect(editor.selectionMark == nil)
-        #expect(editor.statusMessage == L10n["status.mark_unset"])
+        #expect(editor.statusMessage == editor.l10n["status.mark_unset"])
     }
 
     @Test func testSubstituteCurrentLine() throws {
@@ -217,5 +217,4 @@ import Testing
         #expect(editor.promptInputText == "transform.tohan")
     }
 }
-
 

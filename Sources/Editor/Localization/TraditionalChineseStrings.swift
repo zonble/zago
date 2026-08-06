@@ -439,7 +439,7 @@ public struct TraditionalChineseStrings {
         "menu.borders.next_style": "下一種框線\tM+S",
 
         "menu.tools.logo": "指令列\tEsc",
-        "menu.tools.word_count": "Word Count",
+        "menu.tools.word_count": "字數統計",
         "menu.tools.transform_tohant": "轉換：繁體中文",
         "menu.tools.transform_tohans": "轉換：簡體中文",
         "menu.tools.transform_tolatin": "轉換：拉丁轉寫",

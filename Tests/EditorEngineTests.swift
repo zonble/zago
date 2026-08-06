@@ -345,7 +345,7 @@ import TextMetrics
     #expect(editor.buffer.filePath == indexPath)
     #expect(editor.buffer.lines == ["See [this](./index.md#section)", "unchanged"])
     #expect(editor.topVLineIndex == 3)
-    #expect(editor.statusMessage == L10n["status.document_link_same_file"])
+    #expect(editor.statusMessage == editor.l10n["status.document_link_same_file"])
 }
 
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
@@ -704,14 +704,14 @@ import TextMetrics
     #expect(editor.buffer.lines.count == 1)
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 0)
-    #expect(editor.statusMessage == L10n["status.canvas_row_limit_exceeded"])
+    #expect(editor.statusMessage == editor.l10n["status.canvas_row_limit_exceeded"])
 
     editor.goToLocation(line: 1, column: EditorLimits.maxCanvasAutoExtendColumns + 1)
 
     #expect(editor.buffer.lines.count == 1)
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 0)
-    #expect(editor.statusMessage == L10n["status.canvas_column_limit_exceeded"])
+    #expect(editor.statusMessage == editor.l10n["status.canvas_column_limit_exceeded"])
 }
 
 @Test func testCanvasModeDrawingStopsAtColumnLimit() throws {
@@ -723,7 +723,7 @@ import TextMetrics
 
     #expect(editor.canvasVisualColumn == EditorLimits.maxCanvasAutoExtendColumns - 1)
     #expect(editor.buffer.lines[0] == "")
-    #expect(editor.statusMessage == L10n["status.canvas_column_limit_exceeded"])
+    #expect(editor.statusMessage == editor.l10n["status.canvas_column_limit_exceeded"])
 }
 
 @Test func testCanvasModeRejectsJustification() throws {
@@ -775,7 +775,7 @@ import TextMetrics
     } else {
         #expect(Bool(false), "^G with selection should stay in editing mode")
     }
-    #expect(editor.statusMessage == L10n["status.mark_unset"])
+    #expect(editor.statusMessage == editor.l10n["status.mark_unset"])
 
     editor.processKey(.esc)
     if case .logoMacro = editor.currentPromptMode {
@@ -802,7 +802,7 @@ import TextMetrics
     } else {
         #expect(Bool(false), "Ctrl+G should cancel active prompt mode")
     }
-    #expect(editor.statusMessage == L10n["status.cancelled"])
+    #expect(editor.statusMessage == editor.l10n["status.cancelled"])
 }
 
 @Test func testCtrlMarkInTextModeReportsCanvasOnlyMessage() throws {
@@ -812,7 +812,7 @@ import TextMetrics
 
     #expect(editor.selectionMark == nil)
     #expect(editor.canvasBlockMark == nil)
-    #expect(editor.statusMessage == L10n["status.block_mark_canvas_only"])
+    #expect(editor.statusMessage == editor.l10n["status.block_mark_canvas_only"])
 }
 
 @Test func testModeSwitchClearsMarksButKeepsSeparateClipboards() throws {
@@ -903,7 +903,7 @@ import TextMetrics
     noMarkEditor.processKey(.ctrl("K"))
     #expect(noMarkEditor.buffer.lines == ["abcdef"])
     #expect(noMarkEditor.canvasBlockClipboard == nil)
-    #expect(noMarkEditor.statusMessage == L10n["status.no_block_marked"])
+    #expect(noMarkEditor.statusMessage == noMarkEditor.l10n["status.no_block_marked"])
 
     let cjkEditor = Editor()
     cjkEditor.buffer.lines = ["A中BC"]
@@ -1230,13 +1230,13 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.logoEngine.lastResult == nil)
-    #expect(editor.statusMessage == L10n["status.invalid_line"])
+    #expect(editor.statusMessage == editor.l10n["status.invalid_line"])
 
     submitCommandBar("0", editor: editor)
 
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.logoEngine.lastResult == nil)
-    #expect(editor.statusMessage == L10n["status.invalid_line"])
+    #expect(editor.statusMessage == editor.l10n["status.invalid_line"])
 }
 
 @Test func testCommandBarOpenNewAndBufferShorthand() throws {
@@ -1263,7 +1263,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     submitCommandBar("buffer 99", editor: editor)
     #expect(editor.currentBufferIndex == 0)
-    #expect(editor.statusMessage == L10n["status.no_such_buffer"])
+    #expect(editor.statusMessage == editor.l10n["status.no_such_buffer"])
 }
 
 @Test func testCommandBarUppercaseBufferUsesCommandBarCommand() throws {
@@ -1655,4 +1655,3 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.renderer.invalidateScreenCache()
     #expect(editor.renderer.isScreenCacheValid == false)
 }
-

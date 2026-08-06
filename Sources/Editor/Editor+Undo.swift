@@ -45,7 +45,7 @@ extension Editor {
     /// Performs Undo (^Z).
     public func performUndo() {
         guard let snapshot = undoStack.popLast() else {
-            setStatusMessage(L10n["status.already_oldest"])
+            setStatusMessage(l10n["status.already_oldest"])
             return
         }
         buffer.lines = snapshot.lines
@@ -60,6 +60,6 @@ extension Editor {
             }
         }
         buffer.isModified = snapshot.isModified
-        setStatusMessage(L10n["status.undo_performed"])
+        setStatusMessage(l10n["status.undo_performed"])
     }
 }

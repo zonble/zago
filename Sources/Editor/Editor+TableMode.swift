@@ -164,9 +164,9 @@ extension Editor {
         case .ctrl("u"), .ctrl("U"), .f10:
             if let text = clipboardText, !text.isEmpty {
                 pasteTableCellText(text)
-                setStatusMessage(L10n["status.uncut_text"])
+                setStatusMessage(l10n["status.uncut_text"])
             } else {
-                setStatusMessage(L10n["status.clipboard_empty"])
+                setStatusMessage(l10n["status.clipboard_empty"])
             }
             return true
 
@@ -249,7 +249,7 @@ extension Editor {
     private func extendTableSelectionLeft(cell: TableCell) {
         if selectionMark == nil {
             selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-            setStatusMessage(L10n["status.mark_set"])
+            setStatusMessage(l10n["status.mark_set"])
         }
 
         let line = buffer.lines[buffer.lineIndex]
@@ -270,7 +270,7 @@ extension Editor {
     private func extendTableSelectionRight(cell: TableCell) {
         if selectionMark == nil {
             selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-            setStatusMessage(L10n["status.mark_set"])
+            setStatusMessage(l10n["status.mark_set"])
         }
 
         let line = buffer.lines[buffer.lineIndex]
@@ -358,7 +358,7 @@ extension Editor {
         buffer.columnIndex = first.startCol
         selectionMark = nil
         clampTableModeCursor()
-        setStatusMessage(updateClipboard ? L10n["status.cut_text"] : "[ Deleted selection ]")
+        setStatusMessage(updateClipboard ? l10n["status.cut_text"] : "[ Deleted selection ]")
         return true
     }
 
@@ -385,7 +385,7 @@ extension Editor {
         buffer.isModified = true
         selectionMark = nil
         clampTableModeCursor()
-        setStatusMessage(L10n["status.cut_text"])
+        setStatusMessage(l10n["status.cut_text"])
     }
 
     // MARK: - Table Mode Toggle & Enter
@@ -396,7 +396,7 @@ extension Editor {
             isTableModeActive = false
             currentTableCell = nil
             overlayMode = .none
-            setStatusMessage(L10n["status.table_mode_exited"])
+            setStatusMessage(l10n["status.table_mode_exited"])
             return
         }
 
@@ -431,6 +431,6 @@ extension Editor {
             buffer.columnIndex = cellLeft + 1
         }
         clampTableModeCursor()
-        setStatusMessage(L10n["status.table_mode_hint"])
+        setStatusMessage(l10n["status.table_mode_hint"])
     }
 }

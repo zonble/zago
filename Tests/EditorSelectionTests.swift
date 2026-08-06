@@ -85,7 +85,7 @@ import Testing
     #expect(editor.selectionMark?.line == 0)
     #expect(editor.selectionMark?.column == 1)
     #expect(editor.buffer.isModified == false)
-    #expect(editor.statusMessage == L10n["status.copied_text"])
+    #expect(editor.statusMessage == editor.l10n["status.copied_text"])
 }
 
 @Test func testCopyWithoutSelectionReportsNoSelection() throws {
@@ -96,7 +96,7 @@ import Testing
 
     #expect(editor.clipboardText == nil)
     #expect(editor.buffer.lines == ["abcdef"])
-    #expect(editor.statusMessage == L10n["status.no_selection"])
+    #expect(editor.statusMessage == editor.l10n["status.no_selection"])
 }
 
 @Test func testTransformSelectedTextReplacesSelectionAndSupportsUndo() throws {
@@ -106,7 +106,7 @@ import Testing
     editor.buffer.lineIndex = 0
     editor.buffer.columnIndex = 11
 
-    editor.transformSelectedText(id: "Zago-CJK-Spacing", label: L10n["transform.cjk_spacing"])
+    editor.transformSelectedText(id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
 
     #expect(editor.buffer.lines == ["foo 中文 API 測試 bar"])
     #expect(editor.selectionMark == nil)
@@ -121,10 +121,10 @@ import Testing
     let editor = Editor()
     editor.buffer.lines = ["中文API測試"]
 
-    editor.transformSelectedText(id: "Zago-CJK-Spacing", label: L10n["transform.cjk_spacing"])
+    editor.transformSelectedText(id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
 
     #expect(editor.buffer.lines == ["中文API測試"])
-    #expect(editor.statusMessage == L10n["status.no_text_selection"])
+    #expect(editor.statusMessage == editor.l10n["status.no_text_selection"])
 }
 
 @Test func testTextCountsUseSelectionOrWholeDocument() throws {
@@ -157,7 +157,7 @@ import Testing
 
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
     #expect(editor.buffer.lines == ["abcdef", "123456"])
-    #expect(editor.statusMessage == L10n["status.copied_block"])
+    #expect(editor.statusMessage == editor.l10n["status.copied_block"])
 }
 
 @Test func testCanvasModeAltBTogglesBlockMarkLikeMarkKey() throws {
@@ -173,7 +173,7 @@ import Testing
     #expect(editor.canvasBlockMark?.visualColumn == 1)
     #expect(editor.canvasBlockMarkEnd?.line == 0)
     #expect(editor.canvasBlockMarkEnd?.visualColumn == 1)
-    #expect(editor.statusMessage == L10n["status.mark_set"])
+    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
 
     editor.buffer.lineIndex = 1
     editor.canvasVisualColumn = 3
@@ -183,7 +183,7 @@ import Testing
     #expect(editor.canvasBlockMark?.visualColumn == 1)
     #expect(editor.canvasBlockMarkEnd?.line == 1)
     #expect(editor.canvasBlockMarkEnd?.visualColumn == 3)
-    #expect(editor.statusMessage == L10n["status.mark_set"])
+    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
 }
 
 @Test func testNavigationAndSelectionCommands() throws {
