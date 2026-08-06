@@ -45,4 +45,20 @@ public protocol EditorTerminal: AnyObject {
 
     /// Clears terminal screen buffer and resets cursor position to top-left `(1,1)`.
     func clearScreen()
+
+    /// Reads a single line from input stream in non-interactive/headless mode.
+    func readNonInteractiveLine(prompt: String) -> String?
+
+    /// Reads a single character from input stream in non-interactive/headless mode.
+    func readNonInteractiveChar(prompt: String) -> String?
+}
+
+extension EditorTerminal {
+    public func readNonInteractiveLine(prompt: String) -> String? {
+        nil
+    }
+
+    public func readNonInteractiveChar(prompt: String) -> String? {
+        nil
+    }
 }

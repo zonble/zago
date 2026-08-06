@@ -803,4 +803,43 @@ public final class LocalTerminal: EditorTerminal {
         write("\u{1B}[2J\u{1B}[H")
         fflush(nil)
     }
+
+    public func readNonInteractiveLine(prompt: String) -> String? {
+        if isStandardInputATerminal() {
+            return ""
+        }
+        if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
+            FileHandle.standardError.write(data)
+        }
+        return readLine()
+    }
+
+    public func readNonInteractiveChar(prompt: String) -> String? {
+        if isStandardInputATerminal() {
+            return ""
+        }
+        if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
+            FileHandle.standardError.write(data)
+        }
+        guard let line = readLine(), let firstChar = line.first else { return nil }
+        return String(firstChar)
+    }
+
+    private func isStandardInputATerminal() -> Bool {
+        #if os(Windows)
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            if hInput == INVALID_HANDLE_VALUE || hInput == nil {
+                return false
+            }
+            return GetFileType(hInput) == FILE_TYPE_CHAR
+        #elseif canImport(Darwin)
+            return isatty(0) != 0
+        #elseif canImport(Glibc)
+            return isatty(0) != 0
+        #elseif canImport(Musl)
+            return isatty(0) != 0
+        #else
+            return false
+        #endif
+    }
 }
