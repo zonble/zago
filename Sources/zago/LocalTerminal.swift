@@ -782,8 +782,10 @@ public final class LocalTerminal: EditorTerminal {
     }
 
     /// ANSI cursor hiding and movement helper functions.
-    /// Note: Uses `fflush(nil)` instead of `fflush(stdout)` to safely flush all output streams
-    /// without referencing the C global mutable variable `stdout` in Swift 6 concurrency mode.
+    ///
+    /// Note: Uses `fflush(nil)` instead of `fflush(stdout)` to safely flush all
+    /// output streams without referencing the C global mutable variable
+    /// `stdout` in Swift 6 concurrency mode.
     public static func hideCursor() {
         write("\u{1B}[?25l")
         fflush(nil)
@@ -804,29 +806,95 @@ public final class LocalTerminal: EditorTerminal {
         fflush(nil)
     }
 
+    /// Reads a full line of text input in non-interactive / headless CLI mode
+    /// (`zago -e` / `-s`).
+    /// - Parameter prompt: Optional prompt message written to `stderr` and
+    ///   flushed prior to reading input.
+    /// - Returns: The input string read from the standard input stream or
+    ///   console.
     public func readNonInteractiveLine(prompt: String) -> String? {
         if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
             FileHandle.standardError.write(data)
+            // Explicitly flush C & OS-level stderr buffer to guarantee immediate display on terminal.
             fflush(nil)
         }
-        return readLine()
+        return readConsoleLine()
     }
 
+    /// Reads a single character input in non-interactive / headless CLI mode
+    /// (`zago -e` / `-s`).
+    /// - Parameter prompt: Optional prompt message written to `stderr` and
+    ///   flushed prior to reading input.
+    /// - Returns: The first character of input read as a String, or `nil` if
+    ///   input is empty or EOF.
     public func readNonInteractiveChar(prompt: String) -> String? {
         if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
             FileHandle.standardError.write(data)
+            // Explicitly flush C & OS-level stderr buffer to prevent prompt truncation/buffering.
             fflush(nil)
         }
-        guard let line = readLine(), let firstChar = line.first else { return nil }
+        guard let line = readConsoleLine(), let firstChar = line.first else { return nil }
         return String(firstChar)
     }
 
+    /// Reads a line from console or standard input.
+    ///
+    /// - Technical Note (Swift on Windows `readLine()` Issues):
+    ///   1. Encoding Mismatch: Swift's standard `readLine()` assumes UTF-8
+    ///      input from C runtime `stdin`. On Windows, the console input buffer
+    ///      (`CONIN$`) defaults to OEM Code Pages (e.g. CP950/Big5 or CP437)
+    ///      unless `SetConsoleCP(65001)` was called. Non-UTF-8 byte sequences
+    ///      cause Swift's strict `String` decoder to fail and return `nil` or
+    ///      produce garbled characters.
+    ///   2. Console Mode Buffering: Windows console input handles require
+    ///      `ENABLE_LINE_INPUT` mode to be explicitly enforced when reading in
+    ///      headless CLI mode (`zago -e` / `-s`); otherwise, reading from the
+    ///      input handle can return prematurely after a single keypress without
+    ///      waiting for Enter.
+    ///
+    /// To bypass these platform issues, we invoke Win32 `ReadConsoleW` directly
+    /// when `stdin` is an interactive console, reading native UTF-16 `WCHAR`
+    /// units that convert losslessly to Swift `String`.
+    private func readConsoleLine() -> String? {
+        #if os(Windows)
+            // Retrieve Windows standard input handle (STD_INPUT_HANDLE, DWORD value -10).
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+
+            // Ensure handle is valid and standard input originates from an interactive console (`FILE_TYPE_CHAR`), not a pipe/file.
+            if hInput != INVALID_HANDLE_VALUE && hInput != nil && GetFileType(hInput) == FILE_TYPE_CHAR {
+                var mode: DWORD = 0
+                if GetConsoleMode(hInput, &mode) {
+                    var newMode = mode
+                    // Enforce ENABLE_LINE_INPUT (canonical line buffering until
+                    // Enter), ENABLE_ECHO_INPUT, and ENABLE_PROCESSED_INPUT.
+                    newMode |= DWORD(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT)
+                    SetConsoleMode(hInput, newMode)
+                }
+
+                // Prepare UTF-16 WCHAR buffer.
+                var buffer = [WCHAR](repeating: 0, count: 1024)
+                var charsRead: DWORD = 0
+                // Invoke Win32 ReadConsoleW to read native Unicode characters directly from Windows console input buffer.
+                if ReadConsoleW(hInput, &buffer, DWORD(buffer.count), &charsRead, nil) && charsRead > 0 {
+                    // Decode UTF-16 WCHAR slice into a Swift String.
+                    let str = String(decoding: buffer.prefix(Int(charsRead)), as: UTF16.self)
+                    // Trim trailing newline sequences (\r\n) before returning.
+                    return str.trimmingCharacters(in: .newlines)
+                }
+            }
+        #endif
+        // Fall back to standard Swift readLine() on non-Windows OS (macOS/Linux) or when stdin is piped/redirected.
+        return readLine()
+    }
+
+    /// Checks if standard input (`stdin`) is attached to an interactive terminal console.
     private func isStandardInputATerminal() -> Bool {
         #if os(Windows)
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
             if hInput == INVALID_HANDLE_VALUE || hInput == nil {
                 return false
             }
+            // FILE_TYPE_CHAR represents an interactive keyboard console, FILE_TYPE_PIPE represents a redirected pipe.
             return GetFileType(hInput) == FILE_TYPE_CHAR
         #elseif canImport(Darwin)
             return isatty(0) != 0

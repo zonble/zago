@@ -18,6 +18,7 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Homebrew tap](homebrew_tap.md): personal tap layout, Formula template, release checksum workflow, and user install commands.
 - [Spell Checker Architecture & Specification](spell_checker.md): multi-language design, platform engines (Windows COM API, Hunspell, macOS NSSpellChecker), Markdown context filtering, and `.zagorc` language directives.
 - [File Encoding & Auto-Detection Architecture](encoding.md): multi-encoding auto-detection, buffer encoding state preservation, and UTF-8 fallback workflow.
+- [Windows Console I/O & Encoding Architecture](windows_console_architecture.md): Windows Console Subsystem, Code Page handling (CP950/Big5 vs UTF-8), Win32 `ReadConsoleW` API integration, and Cross-Platform I/O abstraction.
 - [Git Integration & Diff Gutter Specification](git_integration.md): non-Git-client design, title bar `[branch]` status, real-time diff against `HEAD`, and line number gutter colors (`+`, `~`, `-`).
 - [Terminal Rendering Performance Architecture](rendering_performance.md): rendering performance architecture, double buffering engine, line diffing algorithm, and layout caching specifications (Git Diff decoupling, Syntax Caching, VT100 Double Buffering, Virtual Line Caching).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
