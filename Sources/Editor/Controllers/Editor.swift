@@ -122,9 +122,17 @@ public final class Editor: @unchecked Sendable {
         }
     }
 
-    // Menu Bar state
-    public var isMenuBarActive: Bool = false
-    public let menuBar = MenuBar()
+    // Menu Bar controller and state
+    public let menuBarController = MenuBarController()
+
+    public var isMenuBarActive: Bool {
+        get { menuBarController.isActive }
+        set { menuBarController.isActive = newValue }
+    }
+
+    public var menuBar: MenuBar {
+        menuBarController.menuBar
+    }
     var defaultBaseMode: EditorBaseMode = .text
     var defaultViewShowRuler = false
     var defaultViewShowLineNumbers = true
