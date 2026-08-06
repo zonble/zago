@@ -10,6 +10,38 @@ extension Editor {
         fflush(nil)
     }
 
+    /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.
+    public func adjustViewport(mainAreaHeight: Int, textWidth: Int) {
+        updateGitDiffIfNeeded()
+
+        if isCanvasModeActive {
+            ensureCanvasViewport(textWidth: textWidth)
+            let virtualLines = layoutEngine.computeCanvasLines(from: buffer.lines)
+            let cursorVLineIdx = max(0, min(buffer.lineIndex, max(0, virtualLines.count - 1)))
+
+            if cursorVLineIdx < topVLineIndex {
+                topVLineIndex = cursorVLineIdx
+            } else if cursorVLineIdx >= topVLineIndex + max(1, mainAreaHeight - 1) {
+                topVLineIndex = cursorVLineIdx - max(0, mainAreaHeight - 2)
+            }
+            let maxCanvasTop = max(0, virtualLines.count - max(1, mainAreaHeight - 1))
+            topVLineIndex = max(0, min(topVLineIndex, maxCanvasTop))
+        } else {
+            let virtualLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
+            let (cursorVLineIdx, _) = layoutEngine.getVirtualCursor(
+                lineIndex: buffer.lineIndex,
+                columnIndex: buffer.columnIndex,
+                virtualLines: virtualLines
+            )
+
+            if cursorVLineIdx < topVLineIndex {
+                topVLineIndex = cursorVLineIdx
+            } else if cursorVLineIdx >= topVLineIndex + mainAreaHeight {
+                topVLineIndex = cursorVLineIdx - mainAreaHeight + 1
+            }
+        }
+    }
+
     /// Returns the VirtualLine structure containing current cursor.
     func getVirtualLineForCursor() -> VirtualLine {
         let (_, cols) = terminal.getWindowSize()

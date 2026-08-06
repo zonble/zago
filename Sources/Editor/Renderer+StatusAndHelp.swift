@@ -7,75 +7,85 @@ import TextMetrics
 extension Renderer {
     // MARK: - Title Bar or Top Menu Bar
 
-    /// Renders the top Title Bar (or active Menu Bar categories).
+    // MARK: - Title Bar & Menu Bar Component
+
+    /// Renders the top Title Bar or Menu Bar based on active state.
     func renderTitleOrMenuBar(editor: Editor, cols: Int) -> String {
-        if editor.isMenuBarActive {
-            editor.menuBar.updateCategories(for: editor)
-            func menuSegment(title: String, isSelected: Bool) -> String {
-                isSelected ? "[\(title)]" : " \(title) "
-            }
+        editor.isMenuBarActive
+            ? renderMenuBar(editor: editor, cols: cols)
+            : renderTitleBar(editor: editor, cols: cols)
+    }
 
-            var rawMenuStr = " "
-            for (idx, cat) in editor.menuBar.categories.enumerated() {
-                let catTitle = editor.l10n[cat.titleKey]
-                rawMenuStr += menuSegment(title: catTitle, isSelected: idx == editor.menuBar.categoryIndex)
-            }
-
-            var formattedMenu = "\(ANSIStyle.menuDefault) "
-            for (idx, cat) in editor.menuBar.categories.enumerated() {
-                let catTitle = editor.l10n[cat.titleKey]
-                if idx == editor.menuBar.categoryIndex {
-                    formattedMenu += "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
-                } else {
-                    formattedMenu += menuSegment(title: catTitle, isSelected: false)
-                }
-            }
-            let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
-            return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\(ANSIStyle.reset)\r\n"
-        } else {
-            let bufCountStr =
-                editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
-            let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
-            let centerText = editor.buffer.filePath ?? editor.l10n.newBuffer
-            let branchTextStr: String
-            if editor.displayConfig.showGitDiff, let branch = editor.gitDiffInfo.branchName, !branch.isEmpty {
-                branchTextStr = " [\(branch)]"
-            } else {
-                branchTextStr = ""
-            }
-
-            let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
-            let rightText: String
-            if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
-                rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
-            } else if !modifiedBadgeStr.isEmpty {
-                rightText = "\(modifiedBadgeStr)  "
-            } else if !branchTextStr.isEmpty {
-                rightText = "\(branchTextStr)  "
-            } else {
-                rightText = "  "
-            }
-
-            let leftW = leftText.displayWidth
-            let centerW = centerText.displayWidth
-            let rightW = rightText.displayWidth
-
-            let targetCenterStart = max(leftW + 1, (cols - centerW) / 2)
-            let leftPaddingCount = max(0, targetCenterStart - leftW)
-            let leftSideWidth = leftW + leftPaddingCount
-
-            let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
-
-            let titleStr =
-                leftText
-                + String(repeating: " ", count: leftPaddingCount)
-                + centerText
-                + String(repeating: " ", count: rightPaddingCount)
-                + rightText
-
-            let paddedTitle = titleStr.paddedToDisplayWidth(cols)
-            return "\(ANSIStyle.inverse)\(paddedTitle)\(ANSIStyle.resetShort)\r\n"
+    /// Renders active top Menu Bar categories line.
+    func renderMenuBar(editor: Editor, cols: Int) -> String {
+        editor.menuBar.updateCategories(for: editor)
+        func menuSegment(title: String, isSelected: Bool) -> String {
+            isSelected ? "[\(title)]" : " \(title) "
         }
+
+        var rawMenuStr = " "
+        for (idx, cat) in editor.menuBar.categories.enumerated() {
+            let catTitle = editor.l10n[cat.titleKey]
+            rawMenuStr += menuSegment(title: catTitle, isSelected: idx == editor.menuBar.categoryIndex)
+        }
+
+        var formattedMenu = "\(ANSIStyle.menuDefault) "
+        for (idx, cat) in editor.menuBar.categories.enumerated() {
+            let catTitle = editor.l10n[cat.titleKey]
+            if idx == editor.menuBar.categoryIndex {
+                formattedMenu += "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
+            } else {
+                formattedMenu += menuSegment(title: catTitle, isSelected: false)
+            }
+        }
+        let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
+        return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\(ANSIStyle.reset)\r\n"
+    }
+
+    /// Renders standard top Title Bar line containing app version, filename, modified badge, and git branch.
+    func renderTitleBar(editor: Editor, cols: Int) -> String {
+        let bufCountStr =
+            editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
+        let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
+        let centerText = editor.buffer.filePath ?? editor.l10n.newBuffer
+        let branchTextStr: String
+        if editor.displayConfig.showGitDiff, let branch = editor.gitDiffInfo.branchName, !branch.isEmpty {
+            branchTextStr = " [\(branch)]"
+        } else {
+            branchTextStr = ""
+        }
+
+        let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
+        let rightText: String
+        if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
+            rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
+        } else if !modifiedBadgeStr.isEmpty {
+            rightText = "\(modifiedBadgeStr)  "
+        } else if !branchTextStr.isEmpty {
+            rightText = "\(branchTextStr)  "
+        } else {
+            rightText = "  "
+        }
+
+        let leftW = leftText.displayWidth
+        let centerW = centerText.displayWidth
+        let rightW = rightText.displayWidth
+
+        let targetCenterStart = max(leftW + 1, (cols - centerW) / 2)
+        let leftPaddingCount = max(0, targetCenterStart - leftW)
+        let leftSideWidth = leftW + leftPaddingCount
+
+        let rightPaddingCount = max(0, cols - leftSideWidth - centerW - rightW)
+
+        let titleStr =
+            leftText
+            + String(repeating: " ", count: leftPaddingCount)
+            + centerText
+            + String(repeating: " ", count: rightPaddingCount)
+            + rightText
+
+        let paddedTitle = titleStr.paddedToDisplayWidth(cols)
+        return paddedTitle.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort) + "\r\n"
     }
 
     // MARK: - WordStar Ruler Bar
@@ -480,11 +490,7 @@ extension Renderer {
     }
 
     /// Generates WordStar-style ruler bar string.
-    func generateWordStarRuler(width: Int) -> String {
-        generateWordStarRuler(width: width, startColumn: 1, wrapColumn: nil)
-    }
-
-    func generateWordStarRuler(width: Int, startColumn: Int, wrapColumn: Int? = nil) -> String {
+    func generateWordStarRuler(width: Int, startColumn: Int = 1, wrapColumn: Int? = nil) -> String {
         guard width > 0 else { return "" }
         var result = ""
         let firstColumn = max(1, startColumn)

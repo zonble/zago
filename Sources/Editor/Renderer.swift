@@ -68,13 +68,15 @@ public final class Renderer {
     }
 
     private func renderScreenLines(editor: Editor, rows: Int, cols: Int) -> (screenLines: [String], cursorPosStr: String) {
-        editor.updateGitDiffIfNeeded()
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
         let gutterWidth = showGutter ? 5 : 0
         let textWidth = max(10, cols - gutterWidth)
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
+
+        // Adjust viewport scrolling bounds on Editor before read-only rendering
+        editor.adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
 
         let virtualLines: [VirtualLine]
         let virtualLineStartIndex: Int
@@ -86,7 +88,6 @@ public final class Renderer {
             totalVirtualLineCount = virtualLines.count
             cursorVLineIdx = max(0, min(editor.buffer.lineIndex, max(0, virtualLines.count - 1)))
             cursorVColIdx = editor.buffer.columnIndex
-            editor.ensureCanvasViewport(textWidth: textWidth)
         } else {
             if showSubLineInfo {
                 virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
@@ -113,43 +114,6 @@ public final class Renderer {
                 cursorVLineIdx = viewport.cursorVirtualLineIndex
                 cursorVColIdx = viewport.cursorVirtualColumnIndex
             }
-        }
-
-        // Adjust topVLineIndex viewport scrolling offset
-        let originalTopVLineIndex = editor.topVLineIndex
-        if cursorVLineIdx < editor.topVLineIndex {
-            editor.topVLineIndex = cursorVLineIdx
-        } else if editor.isCanvasModeActive && cursorVLineIdx >= editor.topVLineIndex + max(1, mainAreaHeight - 1) {
-            editor.topVLineIndex = cursorVLineIdx - max(0, mainAreaHeight - 2)
-        } else if !editor.isCanvasModeActive && cursorVLineIdx >= editor.topVLineIndex + mainAreaHeight {
-            editor.topVLineIndex = cursorVLineIdx - mainAreaHeight + 1
-        }
-        if editor.isCanvasModeActive {
-            let maxCanvasTop = max(0, virtualLines.count - max(1, mainAreaHeight - 1))
-            editor.topVLineIndex = max(0, min(editor.topVLineIndex, maxCanvasTop))
-        }
-        let displayedVirtualLines: [VirtualLine]
-        let displayedVirtualLineStartIndex: Int
-        if !editor.isCanvasModeActive && editor.topVLineIndex != originalTopVLineIndex {
-            if showSubLineInfo {
-                displayedVirtualLines = virtualLines
-                displayedVirtualLineStartIndex = 0
-            } else {
-                let viewport = editor.layoutEngine.computeVirtualViewport(
-                    from: editor.buffer.lines,
-                    viewWidth: textWidth,
-                    topVirtualLineIndex: editor.topVLineIndex,
-                    height: mainAreaHeight,
-                    cursorLineIndex: editor.buffer.lineIndex,
-                    cursorColumnIndex: editor.buffer.columnIndex,
-                    computeTotalLineCount: false
-                )
-                displayedVirtualLines = viewport.lines
-                displayedVirtualLineStartIndex = viewport.startVirtualIndex
-            }
-        } else {
-            displayedVirtualLines = virtualLines
-            displayedVirtualLineStartIndex = virtualLineStartIndex
         }
 
         var screenLines: [String] = []
@@ -183,8 +147,8 @@ public final class Renderer {
             mainAreaHeight: mainAreaHeight,
             gutterWidth: gutterWidth,
             showSubLineInfo: showSubLineInfo,
-            virtualLines: displayedVirtualLines,
-            virtualLineStartIndex: displayedVirtualLineStartIndex,
+            virtualLines: virtualLines,
+            virtualLineStartIndex: virtualLineStartIndex,
             totalVirtualLineCount: totalVirtualLineCount,
             cols: cols,
             dropdownStartCol: dropdownStartCol,
@@ -213,8 +177,8 @@ public final class Renderer {
             cursorVLineIdx: cursorVLineIdx,
             cursorVColIdx: cursorVColIdx,
             gutterWidth: gutterWidth,
-            virtualLines: displayedVirtualLines,
-            virtualLineStartIndex: displayedVirtualLineStartIndex,
+            virtualLines: virtualLines,
+            virtualLineStartIndex: virtualLineStartIndex,
             renderedPrompt: renderedPrompt
         )
 
