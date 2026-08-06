@@ -211,6 +211,7 @@ public struct BlockCommand: Command {
 /// Unified registry managing editor commands, keymaps, and CommandBar prompt dispatch.
 public final class CommandRegistry {
     private var keyMap: [Key: any Command] = [:]
+    private var commandMap: [CommandID: any Command] = [:]
     private(set) public var commands: [any Command] = []
 
     public init() {}
@@ -218,6 +219,7 @@ public final class CommandRegistry {
     /// Registers a command conforming to `Command` protocol and maps its associated keybindings.
     public func register(_ command: any Command) {
         commands.append(command)
+        commandMap[command.id] = command
         for key in command.keys {
             keyMap[key] = command
         }
@@ -236,7 +238,7 @@ public final class CommandRegistry {
     /// Dispatches a command by its type-safe `CommandID`.
     /// Returns `true` if a command was found and executed.
     public func dispatch(id: CommandID, editor: Editor) -> Bool {
-        if let command = commands.first(where: { $0.id == id }) {
+        if let command = commandMap[id] {
             command.execute(on: editor)
             return true
         }

@@ -831,6 +831,13 @@ struct FormatAndLayoutTests {
     #expect(controller.cursorIndex == 0)
 }
 
+@Test func testCommandRegistryFastLookupAndDispatch() throws {
+    let editor = Editor()
+    #expect(editor.commandRegistry.dispatch(id: .moveRight, editor: editor) == true)
+    #expect(editor.commandRegistry.dispatch(idString: "move.right", editor: editor) == true)
+    #expect(editor.commandRegistry.dispatch(idString: "nonExistentCommand", editor: editor) == false)
+}
+
 @Test func testMenuBarCategoryHighlightStability() throws {
     let editor = Editor()
     editor.isMenuBarActive = true
