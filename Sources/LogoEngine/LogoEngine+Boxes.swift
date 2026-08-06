@@ -148,7 +148,8 @@ extension LogoEngine {
 
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
         parseIntExpressionArgument(tokens, index: &index) { token in
-            LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+            let unquoted = unquote(token)
+            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")" || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil || BoxExitPosition(unquoted) != nil
         }
     }
 

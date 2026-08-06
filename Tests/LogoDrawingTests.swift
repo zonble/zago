@@ -325,3 +325,13 @@ import TextMetrics
     logoEngine4.execute("CATCH \"err [ THROW \"err ]")
     #expect(!logoEngine4.lastError.isEmpty)
 }
+
+@Test func testBoxWithCJKAndAsciiStyle() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("BOX \"奇怪\" ascii")
+    #expect(editor.buffer.lines[0] == "+------+")
+    #expect(editor.buffer.lines[1] == "| 奇怪 |")
+    #expect(editor.buffer.lines[2] == "+------+")
+}

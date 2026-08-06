@@ -127,6 +127,10 @@ extension LogoEngine {
     }
 
     internal func isIntExpressionArgumentStart(_ token: String) -> Bool {
+        let unquoted = unquote(token)
+        if BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil || BoxExitPosition(unquoted) != nil {
+            return false
+        }
         guard !isQuotedWordToken(token) else { return false }
         if token == "(" { return true }
         if Double(token) != nil { return true }
