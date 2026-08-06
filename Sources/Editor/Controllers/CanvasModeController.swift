@@ -2,7 +2,7 @@ import Foundation
 import LogoEngine
 import TextMetrics
 
-private enum CanvasDrawDirection {
+enum CanvasDrawDirection {
     case up
     case down
     case left
@@ -36,34 +36,147 @@ private enum CanvasDrawDirection {
     }
 }
 
-extension Editor {
-    public struct CanvasBlockClipboard: Sendable, Equatable {
-        public let width: Int
-        public let rows: [String]
+// MARK: - Pure Canvas Mask Utility Functions
 
-        public init(width: Int, rows: [String]) {
-            self.width = width
-            self.rows = rows
+func canvasMask(for character: Character?, style _: BorderStyle = .single) -> UInt8 {
+    guard let character else { return 0 }
+    switch character {
+    case "─", "═", "-": return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+    case "│", "║", "|": return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
+    case "┌", "╔", "╭": return CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┐", "╗", "╮": return CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
+    case "└", "╚", "╰": return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
+    case "┘", "╝", "╯": return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask
+    case "├", "╠":
+        return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┤", "╣":
+        return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
+    case "┬", "╦":
+        return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┴", "╩":
+        return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+    case "┼", "╬", "+": return 15
+    case "→", ">": return CanvasDrawDirection.left.mask
+    case "←", "<": return CanvasDrawDirection.right.mask
+    case "↑", "^": return CanvasDrawDirection.down.mask
+    case "↓", "v": return CanvasDrawDirection.up.mask
+    default: return 0
+    }
+}
+
+func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character {
+    let normalizedMask = mask == 0 ? CanvasDrawDirection.right.mask : mask
+    let chars = style.tableCharacters
+
+    if style == .ascii {
+        switch normalizedMask {
+        case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
+            CanvasDrawDirection.left.mask,
+            CanvasDrawDirection.right.mask:
+            return Character(chars.horizontal)
+        case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
+            CanvasDrawDirection.up.mask,
+            CanvasDrawDirection.down.mask:
+            return Character(chars.vertical)
+        default:
+            return "+"
         }
     }
 
-    struct CanvasBlockRectangle: Sendable, Equatable {
-        let topLine: Int
-        let bottomLine: Int
-        let leftColumn: Int
-        let rightColumnExclusive: Int
+    switch normalizedMask {
+    case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
+        CanvasDrawDirection.left.mask,
+        CanvasDrawDirection.right.mask:
+        return Character(chars.horizontal)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
+        CanvasDrawDirection.up.mask,
+        CanvasDrawDirection.down.mask:
+        return Character(chars.vertical)
+    case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
+        return Character(chars.topLeft)
+    case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask:
+        return Character(chars.topRight)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
+        return Character(chars.bottomLeft)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
+        return Character(chars.bottomRight)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
+        return Character(chars.midLeft)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask:
+        return Character(chars.midRight)
+    case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
+        return Character(chars.topJoin)
+    case CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask:
+        return Character(chars.bottomJoin)
+    default:
+        return Character(chars.midJoin)
+    }
+}
 
-        var width: Int {
-            max(0, rightColumnExclusive - leftColumn)
+func arrowHead(for direction: CanvasDrawDirection, style: BorderStyle) -> Character {
+    if style == .ascii {
+        switch direction {
+        case .up: return "^"
+        case .down: return "v"
+        case .left: return "<"
+        case .right: return ">"
         }
     }
 
-    func processCanvasDrawingKey(_ key: Key) -> Bool {
-        guard isCanvasModeActive, !isTableModeActive else { return false }
+    switch direction {
+    case .up: return "↑"
+    case .down: return "↓"
+    case .left: return "←"
+    case .right: return "→"
+    }
+}
+
+func isCanvasDrawableCharacter(_ character: Character?, style: BorderStyle) -> Bool {
+    guard let character else { return true }
+    return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0
+}
+
+func oppositeMask(for direction: CanvasDrawDirection) -> UInt8 {
+    switch direction {
+    case .up: return CanvasDrawDirection.down.mask
+    case .down: return CanvasDrawDirection.up.mask
+    case .left: return CanvasDrawDirection.right.mask
+    case .right: return CanvasDrawDirection.left.mask
+    }
+}
+
+// MARK: - CanvasModeController
+
+/// Controller handling Canvas Mode drawing keys, box drawing, and visual column navigation.
+public final class CanvasModeController: KeyInputHandler {
+    public init() {}
+
+    /// KeyInputHandler protocol implementation.
+    public func handleKey(_ key: Key, editor: Editor) -> Bool {
+        guard editor.isCanvasModeActive && !editor.isTableModeActive else { return false }
 
         let direction: CanvasDrawDirection
         let drawsArrow: Bool
         switch key {
+        case .pageUp:
+            editor.saveUndoSnapshot()
+            editor.clearActiveMark()
+            let pageStep = max(1, editor.terminal.getWindowSize().rows - (editor.displayConfig.showRuler ? 5 : 4))
+            let originalCanvasColumn = editor.canvasVisualColumn
+            editor.buffer.lineIndex = max(0, editor.buffer.lineIndex - pageStep)
+            editor.canvasVisualColumn = originalCanvasColumn
+            editor.syncCanvasCursorToBuffer()
+            return true
+        case .pageDown:
+            editor.saveUndoSnapshot()
+            editor.clearActiveMark()
+            let pageStep = max(1, editor.terminal.getWindowSize().rows - (editor.displayConfig.showRuler ? 5 : 4))
+            let targetLine = min(editor.buffer.lines.count - 1, editor.buffer.lineIndex + pageStep)
+            let originalCanvasColumn = editor.canvasVisualColumn
+            editor.buffer.lineIndex = max(0, targetLine)
+            editor.canvasVisualColumn = originalCanvasColumn
+            editor.syncCanvasCursorToBuffer()
+            return true
         case .shiftArrowLeft:
             direction = .left
             drawsArrow = false
@@ -92,10 +205,88 @@ extension Editor {
             return false
         }
 
-        saveUndoSnapshot()
-        clearActiveMark()
-        drawCanvasStep(direction: direction, drawsArrow: drawsArrow)
+        editor.saveUndoSnapshot()
+        editor.clearActiveMark()
+        drawCanvasStep(direction: direction, drawsArrow: drawsArrow, editor: editor)
         return true
+    }
+
+    /// Performs one step of canvas drawing in the specified direction.
+    func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool, editor: Editor) {
+        guard editor.ensureCanvasLineExists(editor.buffer.lineIndex) else { return }
+
+        let delta = direction.delta
+        let targetLine = editor.buffer.lineIndex + delta.line
+        let targetColumn = editor.canvasVisualColumn + delta.column
+        guard targetLine >= 0, targetColumn >= 0 else { return }
+        guard editor.isCanvasLineAllowed(targetLine) else {
+            editor.setStatusMessage(editor.l10n["status.canvas_row_limit_exceeded"])
+            return
+        }
+        guard editor.isCanvasColumnAllowed(editor.canvasVisualColumn), editor.isCanvasColumnAllowed(targetColumn) else {
+            editor.setStatusMessage(editor.l10n["status.canvas_column_limit_exceeded"])
+            return
+        }
+
+        let currentLine = editor.buffer.lineIndex
+        let currentColumn = editor.canvasVisualColumn
+        let style = editor.defaultBorderStyle
+
+        editor.writeCanvasLineSegment(
+            lineIndex: currentLine,
+            visualColumn: currentColumn,
+            direction: direction,
+            style: style)
+
+        if editor.ensureCanvasLineExists(targetLine) {
+            let targetChar = editor.canvasCharacter(atLine: targetLine, visualColumn: targetColumn)
+            if let targetChar, canvasMask(for: targetChar, style: style) != 0 {
+                editor.writeCanvasLineSegment(
+                    lineIndex: targetLine,
+                    visualColumn: targetColumn,
+                    direction: direction.opposite,
+                    style: style)
+            }
+        }
+
+        if drawsArrow {
+            guard editor.ensureCanvasLineExists(targetLine) else { return }
+            editor.writeCanvasCharacterIfDrawable(
+                arrowHead(for: direction, style: style),
+                lineIndex: targetLine,
+                visualColumn: targetColumn,
+                style: style)
+        }
+
+        editor.buffer.lineIndex = targetLine
+        editor.canvasVisualColumn = targetColumn
+        editor.syncCanvasCursorToBuffer()
+        editor.buffer.isModified = true
+    }
+}
+
+// MARK: - Editor Canvas Domain Extensions
+
+extension Editor {
+    public struct CanvasBlockClipboard: Sendable, Equatable {
+        public let width: Int
+        public let rows: [String]
+
+        public init(width: Int, rows: [String]) {
+            self.width = width
+            self.rows = rows
+        }
+    }
+
+    struct CanvasBlockRectangle: Sendable, Equatable {
+        let topLine: Int
+        let bottomLine: Int
+        let leftColumn: Int
+        let rightColumnExclusive: Int
+
+        var width: Int {
+            max(0, rightColumnExclusive - leftColumn)
+        }
     }
 
     func syncCanvasCursorFromBuffer() {
@@ -435,59 +626,7 @@ extension Editor {
         return true
     }
 
-    private func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool) {
-        guard ensureCanvasLineExists(buffer.lineIndex) else { return }
-
-        let delta = direction.delta
-        let targetLine = buffer.lineIndex + delta.line
-        let targetColumn = canvasVisualColumn + delta.column
-        guard targetLine >= 0, targetColumn >= 0 else { return }
-        guard isCanvasLineAllowed(targetLine) else {
-            setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
-            return
-        }
-        guard isCanvasColumnAllowed(canvasVisualColumn), isCanvasColumnAllowed(targetColumn) else {
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
-            return
-        }
-
-        let currentLine = buffer.lineIndex
-        let currentColumn = canvasVisualColumn
-        let style = defaultBorderStyle
-
-        writeCanvasLineSegment(
-            lineIndex: currentLine,
-            visualColumn: currentColumn,
-            direction: direction,
-            style: style)
-
-        if ensureCanvasLineExists(targetLine) {
-            let targetChar = canvasCharacter(atLine: targetLine, visualColumn: targetColumn)
-            if let targetChar, canvasMask(for: targetChar, style: style) != 0 {
-                writeCanvasLineSegment(
-                    lineIndex: targetLine,
-                    visualColumn: targetColumn,
-                    direction: direction.opposite,
-                    style: style)
-            }
-        }
-
-        if drawsArrow {
-            guard ensureCanvasLineExists(targetLine) else { return }
-            writeCanvasCharacterIfDrawable(
-                arrowHead(for: direction, style: style),
-                lineIndex: targetLine,
-                visualColumn: targetColumn,
-                style: style)
-        }
-
-        buffer.lineIndex = targetLine
-        canvasVisualColumn = targetColumn
-        syncCanvasCursorToBuffer()
-        buffer.isModified = true
-    }
-
-    private func writeCanvasLineSegment(
+    func writeCanvasLineSegment(
         lineIndex: Int,
         visualColumn: Int,
         direction: CanvasDrawDirection,
@@ -539,7 +678,7 @@ extension Editor {
         return (adjacentMask & oppositeMask(for: direction)) != 0
     }
 
-    private func canvasCharacter(atLine lineIndex: Int, visualColumn: Int) -> Character? {
+    func canvasCharacter(atLine lineIndex: Int, visualColumn: Int) -> Character? {
         guard lineIndex >= 0, lineIndex < buffer.lines.count else { return nil }
         let slice = buffer.lines[lineIndex].visualSlice(startVisualColumn: visualColumn, width: 1)
         return slice.text.first
@@ -555,7 +694,7 @@ extension Editor {
         buffer.lines[lineIndex] = result.text
     }
 
-    private func writeCanvasCharacterIfDrawable(
+    func writeCanvasCharacterIfDrawable(
         _ character: Character,
         lineIndex: Int,
         visualColumn: Int,
@@ -564,112 +703,5 @@ extension Editor {
         let existingCharacter = canvasCharacter(atLine: lineIndex, visualColumn: visualColumn)
         guard isCanvasDrawableCharacter(existingCharacter, style: style) else { return }
         writeCanvasCharacter(character, lineIndex: lineIndex, visualColumn: visualColumn)
-    }
-
-    private func isCanvasDrawableCharacter(_ character: Character?, style: BorderStyle) -> Bool {
-        guard let character else { return true }
-        return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0
-    }
-
-    private func oppositeMask(for direction: CanvasDrawDirection) -> UInt8 {
-        switch direction {
-        case .up: return CanvasDrawDirection.down.mask
-        case .down: return CanvasDrawDirection.up.mask
-        case .left: return CanvasDrawDirection.right.mask
-        case .right: return CanvasDrawDirection.left.mask
-        }
-    }
-
-    private func canvasMask(for character: Character?, style _: BorderStyle) -> UInt8 {
-        guard let character else { return 0 }
-        switch character {
-        case "─", "═", "-": return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
-        case "│", "║", "|": return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
-        case "┌", "╔", "╭": return CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-        case "┐", "╗", "╮": return CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
-        case "└", "╚", "╰": return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
-        case "┘", "╝", "╯": return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask
-        case "├", "╠":
-            return CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-        case "┤", "╣":
-            return CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
-        case "┬", "╦":
-            return CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-        case "┴", "╩":
-            return CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
-        case "┼", "╬", "+": return 15
-        case "→", ">": return CanvasDrawDirection.left.mask
-        case "←", "<": return CanvasDrawDirection.right.mask
-        case "↑", "^": return CanvasDrawDirection.down.mask
-        case "↓", "v": return CanvasDrawDirection.up.mask
-        default: return 0
-        }
-    }
-
-    private func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character {
-        let normalizedMask = mask == 0 ? CanvasDrawDirection.right.mask : mask
-        let chars = style.tableCharacters
-
-        if style == .ascii {
-            switch normalizedMask {
-            case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
-                CanvasDrawDirection.left.mask,
-                CanvasDrawDirection.right.mask:
-                return Character(chars.horizontal)
-            case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
-                CanvasDrawDirection.up.mask,
-                CanvasDrawDirection.down.mask:
-                return Character(chars.vertical)
-            default:
-                return "+"
-            }
-        }
-
-        switch normalizedMask {
-        case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
-            CanvasDrawDirection.left.mask,
-            CanvasDrawDirection.right.mask:
-            return Character(chars.horizontal)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
-            CanvasDrawDirection.up.mask,
-            CanvasDrawDirection.down.mask:
-            return Character(chars.vertical)
-        case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
-            return Character(chars.topLeft)
-        case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask:
-            return Character(chars.topRight)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
-            return Character(chars.bottomLeft)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
-            return Character(chars.bottomRight)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
-            return Character(chars.midLeft)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask:
-            return Character(chars.midRight)
-        case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
-            return Character(chars.topJoin)
-        case CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask:
-            return Character(chars.bottomJoin)
-        default:
-            return Character(chars.midJoin)
-        }
-    }
-
-    private func arrowHead(for direction: CanvasDrawDirection, style: BorderStyle) -> Character {
-        if style == .ascii {
-            switch direction {
-            case .up: return "^"
-            case .down: return "v"
-            case .left: return "<"
-            case .right: return ">"
-            }
-        }
-
-        switch direction {
-        case .up: return "↑"
-        case .down: return "↓"
-        case .left: return "←"
-        case .right: return "→"
-        }
     }
 }

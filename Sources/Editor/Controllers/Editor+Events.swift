@@ -17,7 +17,9 @@ extension Editor {
         // Priority-ordered mode handlers chain
         let modeHandlers: [KeyInputHandler] = [
             promptController,
-            menuBarController
+            menuBarController,
+            tableModeController,
+            canvasModeController
         ]
 
         for handler in modeHandlers {
@@ -27,7 +29,7 @@ extension Editor {
         }
 
         if key == .f1 || key == .ctrl("M") {
-            toggleMenuBar()
+            menuBarController.toggle(editor: self)
             return
         }
 
@@ -35,42 +37,8 @@ extension Editor {
             return
         }
 
-        if processTableModeKey(key) {
-            return
-        }
-
-        if processCanvasDrawingKey(key) {
-            return
-        }
-
         if (key == .shiftHome || key == .shiftEnd) && (isCanvasModeActive || isTableModeActive) {
             return
-        }
-
-        if isCanvasModeActive {
-            switch key {
-            case .pageUp:
-                saveUndoSnapshot()
-                clearActiveMark()
-                let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
-                let originalCanvasColumn = canvasVisualColumn
-                buffer.lineIndex = max(0, buffer.lineIndex - pageStep)
-                canvasVisualColumn = originalCanvasColumn
-                syncCanvasCursorToBuffer()
-                return
-            case .pageDown:
-                saveUndoSnapshot()
-                clearActiveMark()
-                let pageStep = max(1, terminal.getWindowSize().rows - (displayConfig.showRuler ? 5 : 4))
-                let targetLine = min(buffer.lines.count - 1, buffer.lineIndex + pageStep)
-                let originalCanvasColumn = canvasVisualColumn
-                buffer.lineIndex = max(0, targetLine)
-                canvasVisualColumn = originalCanvasColumn
-                syncCanvasCursorToBuffer()
-                return
-            default:
-                break
-            }
         }
 
         if commandRegistry.dispatch(key: key, editor: self) {

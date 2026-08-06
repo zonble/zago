@@ -122,8 +122,10 @@ public final class Editor: @unchecked Sendable {
         }
     }
 
-    // Menu Bar controller and state
+    // Mode & UI Controllers
     public let menuBarController = MenuBarController()
+    public let tableModeController = TableModeController()
+    public let canvasModeController = CanvasModeController()
 
     public var isMenuBarActive: Bool {
         get { menuBarController.isActive }
