@@ -6,10 +6,10 @@ extension Editor {
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
         let showRuler = displayConfig.showRuler && !buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
         let showGutter = displayConfig.showLineNumbers && !buffer.isDirectoryBuffer
-        let gutterWidth = showGutter ? 5 : 0
-        let textWidth = max(10, cols - gutterWidth)
+
+        let mainAreaHeight = UILayoutMetrics.mainAreaHeight(rows: rows, showRuler: showRuler)
+        let textWidth = UILayoutMetrics.textWidth(cols: cols, showGutter: showGutter)
 
         adjustViewport(mainAreaHeight: mainAreaHeight, textWidth: textWidth)
 

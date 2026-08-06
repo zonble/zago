@@ -69,10 +69,11 @@ public final class Renderer {
 
     private func renderScreenLines(editor: Editor, rows: Int, cols: Int) -> (screenLines: [String], cursorPosStr: String) {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))  // Reserve 1 title bar, (optional 1 ruler), 1 status line, 2 help bar
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
-        let gutterWidth = showGutter ? 5 : 0
-        let textWidth = max(10, cols - gutterWidth)
+
+        let mainAreaHeight = UILayoutMetrics.mainAreaHeight(rows: rows, showRuler: showRuler)
+        let gutterWidth = UILayoutMetrics.effectiveGutterWidth(showGutter: showGutter)
+        let textWidth = UILayoutMetrics.textWidth(cols: cols, showGutter: showGutter)
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
         let virtualLines: [VirtualLine]

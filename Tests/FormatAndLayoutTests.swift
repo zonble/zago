@@ -786,6 +786,17 @@ struct FormatAndLayoutTests {
     #expect(editor.topVLineIndex > 0)
 }
 
+@Test func testUILayoutMetricsCalculations() throws {
+    #expect(UILayoutMetrics.chromeHeight(showRuler: false) == 4)
+    #expect(UILayoutMetrics.chromeHeight(showRuler: true) == 5)
+    #expect(UILayoutMetrics.mainAreaHeight(rows: 24, showRuler: false) == 20)
+    #expect(UILayoutMetrics.mainAreaHeight(rows: 24, showRuler: true) == 19)
+    #expect(UILayoutMetrics.effectiveGutterWidth(showGutter: false) == 0)
+    #expect(UILayoutMetrics.effectiveGutterWidth(showGutter: true) == 5)
+    #expect(UILayoutMetrics.textWidth(cols: 80, showGutter: true) == 75)
+    #expect(UILayoutMetrics.textWidth(cols: 80, showGutter: false) == 80)
+}
+
 @Test func testMenuBarCategoryHighlightStability() throws {
     let editor = Editor()
     editor.isMenuBarActive = true
