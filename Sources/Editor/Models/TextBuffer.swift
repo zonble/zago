@@ -34,7 +34,11 @@ open class TextBuffer: SpellCheckableBuffer {
     public var undoStack: [UndoSnapshot] = []
     public var maxUndoStackSize: Int = 100
 
-    open var isReadOnly: Bool { false }
+    private var isReadOnlyStored: Bool = false
+    open var isReadOnly: Bool {
+        get { isReadOnlyStored }
+        set { isReadOnlyStored = newValue }
+    }
     open var allowsLogoExecution: Bool { true }
     open var isDirectoryBuffer: Bool { false }
 

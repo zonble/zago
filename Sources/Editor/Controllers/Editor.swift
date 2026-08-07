@@ -288,6 +288,16 @@ public final class Editor: @unchecked Sendable {
         self.canvasModeController.editor = self
 
         setupDefaultCommands()
+        if let piped = options.pipedInput {
+            buffer.lines = piped.components(separatedBy: .newlines)
+            buffer.isModified = false
+        }
+        if options.readOnly == true {
+            buffer.isReadOnly = true
+        }
+        if let initLine = options.initialLine {
+            goToLocation(line: initLine, column: options.initialColumn)
+        }
         if isCanvasModeActive {
             syncCanvasCursorFromBuffer()
         }

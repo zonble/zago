@@ -53,6 +53,11 @@ struct Zago: ParsableCommand {
     var spellLang: String?
 
     @Flag(
+        name: [.customShort("R"), .long],
+        help: "Open file(s) in read-only mode.")
+    var readonly: Bool = false
+
+    @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
@@ -79,8 +84,11 @@ struct Zago: ParsableCommand {
         let configProvider = { ConfigLoader(provider: LocalConfigFileProvider()).loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
 
+        var rawFiles = files
+        let (initialLine, initialColumn) = Self.parseInitialLineAndColumn(from: &rawFiles)
+
         if initConfig {
-            let targetPath = files.first
+            let targetPath = rawFiles.first
             let generatedPath = try ConfigLoader.generateDefaultConfigFile(
                 targetPath: targetPath, provider: LocalConfigFileProvider())
             terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
@@ -96,7 +104,10 @@ struct Zago: ParsableCommand {
             showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers,
             language: selectedLang,
-            spellLanguage: spellLang
+            spellLanguage: spellLang,
+            initialLine: initialLine,
+            initialColumn: initialColumn,
+            readOnly: readonly
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false
@@ -139,11 +150,29 @@ struct Zago: ParsableCommand {
         }
 
         var interactiveOptions = baseOptions
-        interactiveOptions.filePaths = files
+        var interactiveFiles = rawFiles
+
+        var pipedInputData: String? = nil
+        if isatty(STDIN_FILENO) == 0 || interactiveFiles == ["-"] {
+            if interactiveFiles == ["-"] { interactiveFiles = [] }
+            let handle = FileHandle.standardInput
+            let data = handle.readDataToEndOfFile()
+            if let str = String(data: data, encoding: .utf8), !str.isEmpty {
+                pipedInputData = str
+            }
+            #if os(macOS) || os(Linux)
+            if let ttyHandle = FileHandle(forReadingAtPath: "/dev/tty") {
+                dup2(ttyHandle.fileDescriptor, STDIN_FILENO)
+            }
+            #endif
+        }
+
+        interactiveOptions.filePaths = interactiveFiles
         interactiveOptions.showRuler = ruler
         interactiveOptions.enableSyntax = enableSyntax
+        interactiveOptions.pipedInput = pipedInputData
 
-        for file in files {
+        for file in interactiveFiles {
             let normalized = fileIOStrategy.normalizePath(file, isDirectory: false)
             let info = fileIOStrategy.fileInfo(at: normalized)
             if info.exists && !info.isDirectory && info.isBinary {
@@ -161,6 +190,29 @@ struct Zago: ParsableCommand {
             dependencies: dependencies
         )
         editor.run()
+    }
+
+    private static func parseInitialLineAndColumn(from files: inout [String]) -> (line: Int?, column: Int?) {
+        var targetLine: Int? = nil
+        var targetCol: Int? = nil
+        var remaining: [String] = []
+
+        for arg in files {
+            if arg.hasPrefix("+") && arg.count > 1 {
+                let spec = arg.dropFirst()
+                let parts = spec.components(separatedBy: ":")
+                if let lineVal = Int(parts[0]), lineVal > 0 {
+                    targetLine = lineVal
+                    if parts.count >= 2, let colVal = Int(parts[1]), colVal > 0 {
+                        targetCol = colVal
+                    }
+                    continue
+                }
+            }
+            remaining.append(arg)
+        }
+        files = remaining
+        return (targetLine, targetCol)
     }
 
     private static func parseBoolOption(_ value: String?) -> Bool? {

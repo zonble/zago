@@ -6,7 +6,10 @@ public final class DirectoryBuffer: TextBuffer {
     public let fileIO: EditorFileIOStrategy
     public let gitService: GitServiceProtocol
 
-    override public var isReadOnly: Bool { true }
+    override public var isReadOnly: Bool {
+        get { true }
+        set {}
+    }
     override public var allowsLogoExecution: Bool { false }
     override public var isDirectoryBuffer: Bool { true }
 
