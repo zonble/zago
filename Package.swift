@@ -7,6 +7,7 @@ let package = Package(
         .executable(name: "zago", targets: ["zago"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "Drawing", targets: ["Drawing"]),
+        .library(name: "DocumentOutline", targets: ["DocumentOutline"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
         .library(name: "TextTransform", targets: ["TextTransform"]),
         .library(name: "Config", targets: ["Config"]),
@@ -27,6 +28,9 @@ let package = Package(
         .target(
             name: "Drawing",
             dependencies: ["TextMetrics"]
+        ),
+        .target(
+            name: "DocumentOutline"
         ),
         .target(
             name: "TextEncoding"
@@ -54,19 +58,20 @@ let package = Package(
         ),
         .target(
             name: "Syntax",
-            dependencies: ["LogoEngine"]
+            dependencies: ["DocumentOutline", "LogoEngine"]
         ),
         .target(
             name: "Diagram"
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",
             dependencies: [
                 "Config",
+                "DocumentOutline",
                 "Drawing",
                 "Editor",
                 "Git",
@@ -76,7 +81,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
+            dependencies: ["Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
             path: "Tests"
         ),
     ],

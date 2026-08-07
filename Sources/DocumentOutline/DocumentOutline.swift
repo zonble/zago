@@ -17,14 +17,14 @@ public struct DocumentHeading: Equatable, Sendable {
 public struct DocumentOutline: Equatable, Sendable {
     public let headings: [DocumentHeading]
 
-    public init(headings: [DocumentHeading]) {
+    public init(headings: [DocumentHeading] = []) {
         self.headings = headings
     }
 }
 
 public enum DocumentOutlineParser {
-    public static func parse(lines: [String], language: LanguageSyntax?) -> DocumentOutline {
-        if let outline = language?.outlineParser?(lines) {
+    public static func parse(lines: [String], customParser: (@Sendable ([String]) -> DocumentOutline?)? = nil) -> DocumentOutline {
+        if let outline = customParser?(lines) {
             return outline
         }
 
@@ -48,8 +48,8 @@ public enum DocumentOutlineParser {
     }
 }
 
-enum MarkdownOutlineParser {
-    static func parse(lines: [String]) -> DocumentOutline {
+public enum MarkdownOutlineParser {
+    public static func parse(lines: [String]) -> DocumentOutline {
         var headings: [DocumentHeading] = []
         var fencedBlockMarker: String?
 
@@ -78,9 +78,9 @@ enum MarkdownOutlineParser {
     }
 
     private static func markdownFenceMarker(in trimmedLine: String) -> String? {
-        if trimmedLine.hasPrefix("```") { return "```" }
-        if trimmedLine.hasPrefix("~~~") { return "~~~" }
-        return nil
+        if trimmedLine.hasPrefix("```") { "```" }
+        else if trimmedLine.hasPrefix("~~~") { "~~~" }
+        else { nil }
     }
 
     private static func atxHeading(line: String, lineIndex: Int) -> DocumentHeading? {
@@ -120,8 +120,8 @@ enum MarkdownOutlineParser {
     }
 }
 
-enum OrgOutlineParser {
-    static func parse(lines: [String]) -> DocumentOutline {
+public enum OrgOutlineParser {
+    public static func parse(lines: [String]) -> DocumentOutline {
         let headings = lines.enumerated().compactMap { index, line -> DocumentHeading? in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             let marker = String(trimmed.prefix(while: { $0 == "*" }))
@@ -136,10 +136,10 @@ enum OrgOutlineParser {
     }
 }
 
-enum ReSTOutlineParser {
+public enum ReSTOutlineParser {
     private static let underlineCharacters = CharacterSet(charactersIn: "=-`:.'\"~^_*+#")
 
-    static func parse(lines: [String]) -> DocumentOutline {
+    public static func parse(lines: [String]) -> DocumentOutline {
         var levelByMarker: [Character: Int] = [:]
         var markerOrder: [Character] = []
         var headings: [DocumentHeading] = []
@@ -175,8 +175,8 @@ enum ReSTOutlineParser {
     }
 }
 
-enum AsciiDocOutlineParser {
-    static func parse(lines: [String]) -> DocumentOutline {
+public enum AsciiDocOutlineParser {
+    public static func parse(lines: [String]) -> DocumentOutline {
         let headings = lines.enumerated().compactMap { index, line -> DocumentHeading? in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             let marker = String(trimmed.prefix(while: { $0 == "=" }))

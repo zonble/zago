@@ -1,3 +1,4 @@
+@_exported import DocumentOutline
 import Foundation
 
 /// TokenType categories for syntax highlighting colors.

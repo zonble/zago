@@ -94,7 +94,7 @@ public final class DocumentOutlineController: KeyInputHandler {
     private func currentDocumentOutline() -> DocumentOutline {
         guard let editor else { return DocumentOutline(headings: []) }
         let language = editor.syntaxHighlighter.detectLanguage(for: editor.buffer.filePath)
-        return DocumentOutlineParser.parse(lines: editor.buffer.lines, language: language)
+        return DocumentOutlineParser.parse(lines: editor.buffer.lines, customParser: language?.outlineParser)
     }
 
     private func canNavigateHeadings() -> Bool {
