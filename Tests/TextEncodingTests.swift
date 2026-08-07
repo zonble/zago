@@ -47,7 +47,7 @@ import Testing
 @Test func testEditorOpensBig5AndPromptsFallbackOnUnsupportedChars() throws {
     let big5Text = "繁體中文檔案"
     let fileIO = TestLocalEditorFileIOStrategy.shared
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_big5_.txt").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_big5_\(UUID().uuidString).txt").path
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
     guard let big5Data = big5Text.data(using: .big5) else {

@@ -378,7 +378,7 @@ import TextMetrics
 }
 
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test.txt").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test_\(UUID().uuidString).txt").path
     let normalizedPath = TestLocalEditorFileIOStrategy().normalizePath(tmpPath, isDirectory: false)
     defer {
         try? FileManager.default.removeItem(atPath: normalizedPath)
@@ -1057,7 +1057,7 @@ import TextMetrics
 }
 
 @Test func testF4SaveAndExitCommand() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_f4_save_exit.txt").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_f4_save_exit_\(UUID().uuidString).txt").path
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
     let editor = Editor(filePath: tmpPath)
@@ -1311,7 +1311,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarWriteShorthandUsesEditorSavePath() throws {
-    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_write.txt").path
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_write_\(UUID().uuidString).txt").path
     defer { try? FileManager.default.removeItem(atPath: path) }
     let editor = Editor()
     editor.buffer.lines = ["command bar write"]
@@ -1325,7 +1325,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarUppercaseSaveUsesEditorCommand() throws {
-    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save.txt").path
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_\(UUID().uuidString).txt").path
     defer { try? FileManager.default.removeItem(atPath: path) }
     let editor = Editor(filePath: path)
     editor.buffer.lines = ["command bar save"]
@@ -1533,7 +1533,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarExitAndSaveExitCommands() throws {
-    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_exit.txt").path
+    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_exit_\(UUID().uuidString).txt").path
     defer { try? FileManager.default.removeItem(atPath: savePath) }
 
     let editor = Editor()

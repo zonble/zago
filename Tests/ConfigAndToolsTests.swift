@@ -184,7 +184,7 @@ struct ConfigAndToolsTests {
 }
 
 @Test func testConfigLoaderDirectivesAndLogoBlocks() throws {
-    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_zagorc_directives").path
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_zagorc_directives_\(UUID().uuidString)").path
     defer { try? FileManager.default.removeItem(atPath: tmpFile) }
 
     let configContent = """
@@ -561,7 +561,7 @@ struct ConfigAndToolsTests {
 
 
 @Test func testGenerateDefaultConfigFile() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_gen_.serc").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_gen_\(UUID().uuidString).serc").path
     if FileManager.default.fileExists(atPath: tmpPath) {
         try? FileManager.default.removeItem(atPath: tmpPath)
     }
@@ -599,7 +599,7 @@ struct ConfigAndToolsTests {
     #expect(KeyParser.parse("ctrl-shift-right") == .ctrlShiftArrowRight)
     #expect(KeyParser.parse("ctrl-shift-arrow-left") == .ctrlShiftArrowLeft)
 
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_.serc").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_\(UUID().uuidString).serc").path
     let sampleConfig = """
         # Sample serc configuration
         set wrap 80
@@ -699,7 +699,7 @@ struct ConfigAndToolsTests {
 }
 
 @Test func testFileWatcherAndAutoReload() throws {
-    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_fs_watcher.txt").path
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_fs_watcher_\(UUID().uuidString).txt").path
     try "Initial line\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
     let editor = Editor(filePath: tmpFile, autoReload: true)
     defer {
@@ -888,7 +888,7 @@ struct ConfigAndToolsTests {
     let configContent = """
         set border round
         """
-    let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_border_config.zagorc").path
+    let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_border_config_\(UUID().uuidString).zagorc").path
     try configContent.write(to: URL(fileURLWithPath: tempFile), atomically: testAtomicallyOption, encoding: .utf8)
     defer { try? FileManager.default.removeItem(atPath: tempFile) }
 
