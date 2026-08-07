@@ -1,5 +1,7 @@
 # `zago`: A Lean Terminal Forge for Markdown Writers
 
+[繁體中文 README](README.zh_TW.md) | [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
+
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
@@ -266,17 +268,47 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 
 ## Command Examples
 
-Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for quick text editing actions, box generation, and turtle graphics:
+Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for editing actions, shape generation, and turtle graphics:
 
-```logo
-BOX 30 5
-REPEAT 5 [ TYPE :# ". List item" NL ]
-TO TITLE :text
-  BOX :text CENTER ROUND
-END
-```
+- **Movement & Text Insertion**:
+  ```logo
+  MOVE HOME; TYPE "# "; MOVE END
+  ```
 
-For the full command reference and examples, see the [Editor LOGO Documentation](docs/logo.md) and the [User Manual (繁體中文使用手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
+- **Box & Fill**:
+  ```logo
+  BOX 30 5 CENTER ROUND
+  DRAWBOX 30 4 ROUND; GOTO 2 2; FILL "hi
+  ```
+
+- **Loops & Lists**:
+  ```logo
+  REPEAT 5 [ TYPE :# ". List item" NL ]
+  ```
+
+- **Procedures**:
+  ```logo
+  TO TITLE :text
+    BOX :text CENTER ROUND
+  END
+  ```
+
+- **ASCII Architecture Diagram**:
+  ```logo
+  DRAWBOX 18 3 "client" CENTER; GOTO 3 11; VLINE 3
+  GOTO 5 1; DRAWBOX 18 5; GOTO 6 2; TYPE "     server     "
+  ```
+  ```text
+  ┌────────────────┐
+  │     client     │
+  └─────────┬──────┘
+            │
+  ┌─────────┴──────┐
+  │     server     │
+  └────────────────┘
+  ```
+
+For the complete command reference, see [Editor LOGO Documentation](docs/logo.md) and the [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
 
 ## CLI Usage & Headless Scripting
 
