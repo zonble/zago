@@ -72,18 +72,42 @@ public struct CachedVirtualChunk {
 public final class LayoutEngine {
     public static let minimumWrapColumn = 10
     public var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
+    public var listWrapIndent: Bool = true
 
     private struct LineCacheKey: Hashable {
         let line: String
         let effectiveWrap: Int
+        let listWrapIndent: Bool
     }
 
     private var lineCache: [LineCacheKey: [CachedVirtualChunk]] = [:]
     private let cacheLock = NSLock()
     public private(set) var lineCacheHitCount: Int = 0
 
-    public init(wrapColumn: Int? = nil) {
+    public init(wrapColumn: Int? = nil, listWrapIndent: Bool = true) {
         self.wrapColumn = Self.normalizedWrapColumn(wrapColumn)
+        self.listWrapIndent = listWrapIndent
+    }
+
+    public static func calculateListHangingIndent(in line: String) -> Int {
+        let leadingSpaces = line.prefix(while: { $0 == " " || $0 == "\t" }).count
+        let trimmed = line.dropFirst(leadingSpaces)
+        if trimmed.isEmpty { return 0 }
+
+        if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") || trimmed.hasPrefix("+ ") ||
+            trimmed.hasPrefix(". ") || trimmed.hasPrefix(".. ") {
+            let firstSpaceOffset = trimmed.firstIndex(of: " ") ?? trimmed.endIndex
+            let markerLen = trimmed.distance(from: trimmed.startIndex, to: firstSpaceOffset) + 1
+            return leadingSpaces + markerLen
+        }
+
+        if let firstSpaceIndex = trimmed.firstIndex(of: " ") {
+            let firstWord = String(trimmed[..<firstSpaceIndex])
+            if firstWord.range(of: #"^(\d+[\.\)]|[a-zA-Z][\.\)]|#\.|::)$"#, options: .regularExpression) != nil {
+                return leadingSpaces + firstWord.count + 1
+            }
+        }
+        return 0
     }
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {
@@ -149,10 +173,11 @@ public final class LayoutEngine {
                         cursorColumnIndex >= vLine.startCol
                         && (cursorColumnIndex < vLine.endCol || (isAtLineEnd && cursorColumnIndex <= vLine.endCol))
 
-                    cursorFallback = (virtualIndex, vLine.text.count)
+                    let hangingIndent = (vLine.subLineIndex > 0 && listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: line) : 0
+                    cursorFallback = (virtualIndex, vLine.text.count + hangingIndent)
                     if cursorIsInChunk {
                         cursorVirtualLineIndex = virtualIndex
-                        cursorVirtualColumnIndex = cursorColumnIndex - vLine.startCol
+                        cursorVirtualColumnIndex = (cursorColumnIndex - vLine.startCol) + hangingIndent
                         cursorResolved = true
                     }
                 }
@@ -211,7 +236,7 @@ public final class LayoutEngine {
     }
 
     private func wrapLine(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
-        let key = LineCacheKey(line: line, effectiveWrap: effectiveWrap)
+        let key = LineCacheKey(line: line, effectiveWrap: effectiveWrap, listWrapIndent: listWrapIndent)
 
         cacheLock.lock()
         if let cachedChunks = lineCache[key] {
@@ -254,8 +279,10 @@ public final class LayoutEngine {
             return [CachedVirtualChunk(subLineIndex: 0, text: "", startCol: 0, endCol: 0)]
         }
 
+        let hangingIndent = listWrapIndent ? Self.calculateListHangingIndent(in: line) : 0
+
         if line.utf8.allSatisfy({ $0 < 0x80 }) {
-            return asciiLineChunks(line, effectiveWrap: effectiveWrap)
+            return asciiLineChunks(line, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent)
         }
 
         var chunks: [CachedVirtualChunk] = []
@@ -268,12 +295,13 @@ public final class LayoutEngine {
             var currentWidth = 0
             var endIndex = currentCharIndex
             var lastWordBoundary = -1
+            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < totalChars {
                 let ch = chars[endIndex]
                 let w = ch.displayWidth
 
-                if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
+                if currentWidth + w > chunkLimit && endIndex > currentCharIndex {
                     break
                 }
 
@@ -324,8 +352,10 @@ public final class LayoutEngine {
             )
         }
 
+        let hangingIndent = listWrapIndent ? Self.calculateListHangingIndent(in: line) : 0
+
         if line.utf8.allSatisfy({ $0 < 0x80 }) {
-            return visitASCIIWrappedLine(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, body)
+            return visitASCIIWrappedLine(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent, body)
         }
 
         var currentCharIndex = 0
@@ -337,12 +367,13 @@ public final class LayoutEngine {
             var currentWidth = 0
             var endIndex = currentCharIndex
             var lastWordBoundary = -1
+            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < totalChars {
                 let ch = chars[endIndex]
                 let w = ch.displayWidth
 
-                if currentWidth + w > effectiveWrap && endIndex > currentCharIndex {
+                if currentWidth + w > chunkLimit && endIndex > currentCharIndex {
                     break
                 }
 
@@ -383,6 +414,7 @@ public final class LayoutEngine {
         _ line: String,
         bufferLineIndex: Int,
         effectiveWrap: Int,
+        hangingIndent: Int,
         _ body: (VirtualLine) -> Bool
     ) -> Bool {
         let bytes = Array(line.utf8)
@@ -392,9 +424,10 @@ public final class LayoutEngine {
         while currentIndex < bytes.count {
             var endIndex = currentIndex
             var lastWordBoundary = -1
+            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < bytes.count {
-                if endIndex - currentIndex + 1 > effectiveWrap && endIndex > currentIndex {
+                if endIndex - currentIndex + 1 > chunkLimit && endIndex > currentIndex {
                     break
                 }
 
@@ -430,7 +463,7 @@ public final class LayoutEngine {
         return true
     }
 
-    private func asciiLineChunks(_ line: String, effectiveWrap: Int) -> [CachedVirtualChunk] {
+    private func asciiLineChunks(_ line: String, effectiveWrap: Int, hangingIndent: Int) -> [CachedVirtualChunk] {
         let bytes = Array(line.utf8)
         var chunks: [CachedVirtualChunk] = []
         var currentIndex = 0
@@ -439,9 +472,10 @@ public final class LayoutEngine {
         while currentIndex < bytes.count {
             var endIndex = currentIndex
             var lastWordBoundary = -1
+            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < bytes.count {
-                if endIndex - currentIndex + 1 > effectiveWrap && endIndex > currentIndex {
+                if endIndex - currentIndex + 1 > chunkLimit && endIndex > currentIndex {
                     break
                 }
 

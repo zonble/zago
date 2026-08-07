@@ -143,13 +143,17 @@ extension Editor {
     }
 
     private func bufferCursor(in targetVLine: VirtualLine, visualCol: Int) -> (lineIndex: Int, columnIndex: Int) {
+        let line = buffer.lines[targetVLine.bufferLineIndex]
+        let hangingIndent = (targetVLine.subLineIndex > 0 && displayConfig.listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: line) : 0
+        let adjustedVisualCol = max(0, visualCol - hangingIndent)
+
         let chars = Array(targetVLine.text)
         var curW = 0
         var charIdx = 0
 
         for (idx, ch) in chars.enumerated() {
             let w = ch.displayWidth
-            if curW + w > visualCol {
+            if curW + w > adjustedVisualCol {
                 break
             }
             curW += w

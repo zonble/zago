@@ -11,6 +11,7 @@ public struct EditorConfig {
     public var tabSize: Int = 4
     public var smartTab: Bool = true
     public var listIndentSize: Int = 2
+    public var listWrapIndent: Bool = true
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
     public var trimTrailingWhitespaceOnSave: Bool = false

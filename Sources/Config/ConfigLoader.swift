@@ -160,6 +160,15 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "listwrapindent", "list-wrap-indent", "list_wrap_indent", "list_wrap", "listwrap":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.listWrapIndent = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.listWrapIndent = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "autoreload", "auto-reload", "auto_reload":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.autoReload = true

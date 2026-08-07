@@ -151,3 +151,31 @@ import Testing
     #expect(editor.buffer.selectionMark?.line == originalMarkLine)
     #expect(editor.buffer.selectionMark?.column == originalMarkCol)
 }
+
+@Test func testListSoftWrapHangingIndentCalculationAndChunking() throws {
+    // 1. Calculate hanging indents for various list markers
+    #expect(LayoutEngine.calculateListHangingIndent(in: "- Markdown item") == 2)
+    #expect(LayoutEngine.calculateListHangingIndent(in: "  * Indented item") == 4)
+    #expect(LayoutEngine.calculateListHangingIndent(in: "10. Numbered item") == 4)
+    #expect(LayoutEngine.calculateListHangingIndent(in: "10) Org item") == 4)
+    #expect(LayoutEngine.calculateListHangingIndent(in: "a. Lettered item") == 3)
+    #expect(LayoutEngine.calculateListHangingIndent(in: "Not a list line") == 0)
+
+    // 2. Soft-wrap chunking with listWrapIndent
+    let layoutEngine = LayoutEngine(wrapColumn: 20, listWrapIndent: true)
+    let listLine = "- This is a long list item text that wraps"
+    let virtualLines = layoutEngine.computeVirtualLines(from: [listLine], viewWidth: 20)
+
+    #expect(virtualLines.count >= 2)
+    #expect(virtualLines[0].subLineIndex == 0)
+    #expect(virtualLines[0].text == "- This is a long") // subLine 0 uses wrap 20
+    #expect(virtualLines[1].subLineIndex == 1)
+    // subLine 1 capacity is (wrap 20 - hangingIndent 2 = 18 chars capacity)
+    #expect(virtualLines[1].text.count <= 18)
+
+    // 3. zagorc directive parsing for list_wrap_indent
+    let configStr = "set list_wrap_indent false"
+    let mockProvider = InMemoryConfigFileProvider(homePath: "/home/user", files: ["/home/user/.zagorc": configStr])
+    let config = ConfigLoader(provider: mockProvider).loadConfig()
+    #expect(config.listWrapIndent == false)
+}

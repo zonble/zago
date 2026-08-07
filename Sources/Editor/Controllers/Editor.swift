@@ -224,6 +224,7 @@ public final class Editor: @unchecked Sendable {
             tabSize: config.tabSize,
             smartTab: config.smartTab,
             listIndentSize: config.listIndentSize,
+            listWrapIndent: config.listWrapIndent,
             trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
             showGitDiff: config.showGitDiff
         )

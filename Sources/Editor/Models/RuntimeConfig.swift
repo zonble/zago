@@ -26,6 +26,9 @@ public struct RuntimeConfig: Sendable, Equatable {
     /// Number of spaces for list item indent nesting.
     public var listIndentSize: Int
 
+    /// Whether soft-wrapped list items use hanging indent on sub-lines.
+    public var listWrapIndent: Bool
+
     /// Whether trailing whitespace is automatically trimmed on save.
     public var trimTrailingWhitespaceOnSave: Bool
 
@@ -41,6 +44,7 @@ public struct RuntimeConfig: Sendable, Equatable {
         tabSize: Int = 4,
         smartTab: Bool = true,
         listIndentSize: Int = 2,
+        listWrapIndent: Bool = true,
         trimTrailingWhitespaceOnSave: Bool = false,
         showGitDiff: Bool = true
     ) {
@@ -52,6 +56,7 @@ public struct RuntimeConfig: Sendable, Equatable {
         self.tabSize = tabSize
         self.smartTab = smartTab
         self.listIndentSize = listIndentSize
+        self.listWrapIndent = listWrapIndent
         self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
         self.showGitDiff = showGitDiff
     }

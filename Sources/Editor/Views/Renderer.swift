@@ -284,9 +284,16 @@ public final class Renderer {
                         in: fullLine, nearCol: cell.innerMinCol, cell: cell)
                 }
 
-                let chars = Array(renderedLineText)
                 var renderedDisplayWidth = 0
                 let visibleTextWidth = max(0, cols - gutterWidth)
+
+                let hangingIndent = (vLine.subLineIndex > 0 && editor.displayConfig.listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: fullLineText) : 0
+                if hangingIndent > 0 {
+                    lineOutput += String(repeating: " ", count: hangingIndent)
+                    renderedDisplayWidth += hangingIndent
+                }
+
+                let chars = Array(renderedLineText)
                 for (cIdxInVLine, ch) in chars.enumerated() {
                     let realCol = renderedStartCol + cIdxInVLine
                     let charVisualColumn =
