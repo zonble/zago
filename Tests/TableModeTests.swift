@@ -29,7 +29,11 @@ import Testing
     editor.processKey(.tab)
     #expect(editor.currentTableCell?.minCol == 17)  // Moved to cell 2
 
-    // 4. Toggle Table Mode OFF (Alt+T)
+    // 4. Test Shift+Tab (Backtab) navigation back to previous cell
+    editor.processKey(.backtab)
+    #expect(editor.currentTableCell?.minCol == 0)  // Moved back to cell 1
+
+    // 5. Toggle Table Mode OFF (Alt+T)
     editor.processKey(.alt("t"))
     #expect(editor.isTableModeActive == false)
     #expect(editor.currentTableCell == nil)

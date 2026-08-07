@@ -230,6 +230,34 @@ public struct InsertTabCommand: Command {
     }
 }
 
+public struct InsertBacktabCommand: Command {
+    public let id: CommandID = .editBacktab
+    public let name = "Insert Backtab"
+    public let description = "Navigate to previous table cell or outdent"
+    public let keys: [Key] = [.backtab]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.saveUndoSnapshot()
+        if editor.isTableModeActive {
+            editor.tableModeController.navigatePrevTableCell()
+            return
+        }
+        if let syntax = editor.activeLanguageSyntax,
+            let navigator = syntax.tableNavigator,
+            let result = navigator(editor.buffer.lines, editor.buffer.lineIndex, editor.buffer.columnIndex, false)
+        {
+            if let updatedLines = result.updatedLines {
+                editor.buffer.lines = updatedLines
+            }
+            editor.buffer.lineIndex = result.newBufferLineIndex
+            editor.buffer.columnIndex = result.newCursorColumn
+            return
+        }
+    }
+}
+
 public struct UndoCommand: Command {
     public let id: CommandID = .editUndo
     public let name = "Undo"
