@@ -1,0 +1,28 @@
+; ==============================================================================
+; LeetCode 191: Number of 1 Bits / Hamming Weight (in zago Editor LOGO)
+; ==============================================================================
+; Write a function that takes an unsigned integer `n` and returns the number
+; of '1' bits it has (Hamming Weight) using `BIT.AND` and `BIT.SHR`.
+; ==============================================================================
+
+TO HAMMINGWEIGHT :n
+  MAKE "count 0
+  MAKE "val :n
+  WHILE [:val > 0] [
+    IF (BIT.AND :val 1) = 1 [ MAKE "count :count + 1 ]
+    MAKE "val BIT.SHR :val 1
+  ]
+  OUTPUT :count
+END
+
+; Test cases
+TYPE "===_LeetCode_191:_Number_of_1_Bits_===
+TYPE CHAR 10
+
+MAKE "n1 11 ; 11 in binary is 1011 (3 bits)
+TYPE FORMAT "n:_%d_1_bits:_%d (LIST :n1 (HAMMINGWEIGHT :n1))
+TYPE CHAR 10
+
+MAKE "n2 128 ; 128 in binary is 10000000 (1 bit)
+TYPE FORMAT "n:_%d_1_bits:_%d (LIST :n2 (HAMMINGWEIGHT :n2))
+TYPE CHAR 10

@@ -640,6 +640,12 @@ TYPE ITEM 2 :cells
 | `CHAR` / `CHR` | `CHR` | `CHAR code` \| `CHR code` | Returns character string for Unicode/ASCII code integer | `CHAR 65`, `CHR 23383` |
 | `UPPERCASE` | - | `UPPERCASE str` | Converts string to uppercase | `UPPERCASE "hello"` |
 | `LOWERCASE` | - | `LOWERCASE str` | Converts string to lowercase | `LOWERCASE "HELLO"` |
+| `BIT.AND` | - | `BIT.AND a b` | Bitwise AND operator | `BIT.AND 6 3` |
+| `BIT.OR` | - | `BIT.OR a b` | Bitwise OR operator | `BIT.OR 6 3` |
+| `BIT.XOR` | - | `BIT.XOR a b` | Bitwise XOR operator | `BIT.XOR 6 3` |
+| `BIT.NOT` | - | `BIT.NOT a` | Bitwise NOT (bitwise complement) operator | `BIT.NOT 0` |
+| `BIT.SHL` | - | `BIT.SHL a shift` | Bitwise Shift Left operator | `BIT.SHL 1 4` |
+| `BIT.SHR` | - | `BIT.SHR a shift` | Bitwise Shift Right operator | `BIT.SHR 16 2` |
 | `INDEXOF` | `INDEX_OF` | `INDEXOF needle haystack [startFrom]` | Returns 1-based index of first occurrence of `needle` in `haystack` (0 if not found) | `INDEXOF "a "banana` |
 | `LASTINDEXOF` | `LAST_INDEX_OF` | `LASTINDEXOF needle haystack` | Returns 1-based index of last occurrence of `needle` in `haystack` (0 if not found) | `LASTINDEXOF "a "banana` |
 | `INDEXESOF` | `INDICESOF`, `ALL_INDEXES` | `INDEXESOF needle haystack` | Returns a list of all 1-based match indices of `needle` in `haystack` | `INDEXESOF "a "banana` |

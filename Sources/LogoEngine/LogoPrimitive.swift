@@ -244,6 +244,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case bitNot
     case ashift
     case lshift
+    case rshift
     case date
     case time
     case search
@@ -491,12 +492,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["RANDOM"], .random),
         (["RERANDOM"], .rerandom),
         (["FORM"], .form),
-        (["BITAND"], .bitAnd),
-        (["BITOR"], .bitOr),
-        (["BITXOR"], .bitXor),
-        (["BITNOT"], .bitNot),
-        (["ASHIFT"], .ashift),
-        (["LSHIFT"], .lshift),
+        (["BIT.AND"], .bitAnd),
+        (["BIT.OR"], .bitOr),
+        (["BIT.XOR"], .bitXor),
+        (["BIT.NOT"], .bitNot),
+        (["BIT.SHL"], .lshift),
+        (["BIT.SHR"], .rshift),
         (["DATE"], .date),
         (["TIME"], .time),
         (["SEARCH"], .search),

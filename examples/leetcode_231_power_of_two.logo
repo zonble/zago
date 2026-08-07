@@ -1,0 +1,24 @@
+; ==============================================================================
+; LeetCode 231: Power of Two (in zago Editor LOGO)
+; ==============================================================================
+; Given an integer `n`, return `true` if it is a power of two.
+; Uses bitwise trick: `n > 0` and `(n & (n - 1)) == 0`.
+; ==============================================================================
+
+TO ISPOWEROFTWO :n
+  IF :n <= 0 [ OUTPUT "false ]
+  IF (BIT.AND :n (:n - 1)) = 0 [ OUTPUT "true ]
+  OUTPUT "false
+END
+
+; Test cases
+TYPE "===_LeetCode_231:_Power_of_Two_===
+TYPE CHAR 10
+
+MAKE "n1 16
+TYPE FORMAT "n:_%d_power_of_two:_%s (LIST :n1 (ISPOWEROFTWO :n1))
+TYPE CHAR 10
+
+MAKE "n2 18
+TYPE FORMAT "n:_%d_power_of_two:_%s (LIST :n2 (ISPOWEROFTWO :n2))
+TYPE CHAR 10

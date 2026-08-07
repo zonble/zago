@@ -293,6 +293,17 @@ extension LogoEngine {
                 return "\(a >> (-shift))"
             }
 
+        case .rshift:
+            index += 1
+            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            if shift >= 0 {
+                return "\(a >> shift)"
+            } else {
+                return "\(a << (-shift))"
+            }
+
         case .trueVal:
             return "true"
 
