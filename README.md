@@ -47,6 +47,7 @@ the file is on your laptop or on a server over SSH.
   - [Quick Start](#quick-start)
     - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
     - [Install with Mint](#install-with-mint)
+    - [Install on Linux (x86\_64 / arm64)](#install-on-linux-x86_64--arm64)
     - [Install on Arch Linux](#install-on-arch-linux)
     - [Install on Windows (PowerShell)](#install-on-windows-powershell)
   - [Build](#build)
@@ -265,90 +266,17 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 
 ## Command Examples
 
-The command language is Editor LOGO. Commands read like direct editing actions, but they can still be combined with variables, loops, and procedures when the work becomes repetitive.
+Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for quick text editing actions, box generation, and turtle graphics:
 
 ```logo
 BOX 30 5
-```
-
-```logo
-MOVE HOME
-TYPE "# "
-MOVE END
-```
-
-The same language is available from the command prompt, key bindings, and startup configuration. Variables and procedures stay available throughout your editing session, so they can live for the lifetime of the buffer session.
-
-Create a numbered list:
-
-```logo
-REPEAT 5 [ TYPE :# ". List item" NL]
-```
-
-or
-
-```logo
-FOREACH (ISEQ 1 5) [TYPE ? ". List item" NL]
-```
-
-or
-
-```logo
-MAKE "i" 1 REPEAT 5 [ TYPE :i TYPE ". List item" MOVE DOWN MOVE HOME MAKE "i" (:i + 1) ]
-```
-
-Define and reuse an editor-local procedure:
-
-```logo
+REPEAT 5 [ TYPE :# ". List item" NL ]
 TO TITLE :text
   BOX :text CENTER ROUND
 END
-
-TITLE "Release Notes"
 ```
 
-Draw and fill a canvas box:
-
-```logo
-DRAWBOX 30 4 ROUND
-GOTO 2 2
-FILL "hi
-```
-
-```text
-╭────────────────────────────╮
-│hihihihihihihihihihihihihihi│
-│hihihihihihihihihihihihihihi│
-╰────────────────────────────╯
-```
-
-Draw a small plain-text architecture diagram:
-
-```logo
-DRAWBOX 18 3 "client" CENTER
-GOTO 3 11
-VLINE 3
-GOTO 5 1
-DRAWBOX 18 5
-GOTO 6 2
-TYPE "     server     "
-GOTO 7 1
-LINE 18
-GOTO 8 2
-TYPE "    database    "
-```
-
-```text
-┌────────────────┐
-│     client     │
-└─────────┬──────┘
-          │
-┌─────────┴──────┐
-│     server     │
-├────────────────┤
-│    database    │
-└────────────────┘
-```
+For the full command reference and examples, see the [Editor LOGO Documentation](docs/logo.md) and the [User Manual (繁體中文使用手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
 
 ## CLI Usage & Headless Scripting
 
@@ -436,6 +364,7 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 
 ## Documentation
 
+- [User Manual / 繁體中文使用手冊](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
 - [Editor basics](docs/editor.md)
 - [Search behavior](docs/search.md)
 - [Mark, selection, and canvas behavior](docs/mark.md)
