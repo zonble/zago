@@ -100,14 +100,52 @@ If `roundtrip != contents`, `zago` aborts the save and prompts the user with an 
 
 ---
 
-## 5. CJK & Emoji Display Width Calculation (`wcwidth`)
+## 5. Line Endings & Path Normalization
 
-### Pitfall
-Terminal cell alignment (e.g., Table Mode borders, Canvas Mode cursor placement) depends on accurately calculating character display widths:
-- ASCII characters = 1 cell.
-- East Asian Fullwidth / CJK characters = 2 cells.
-- Emojis / Combining Sequences = 2 cells or 1 cell depending on Unicode standard.
+### A. Line Endings (`\n` LF vs `\r\n` CRLF)
+- **macOS / Linux**: Uses `\n` (LF).
+- **Windows**: Files and console stdout/stdin historically use `\r\n` (CRLF).
+- **Solution**:
+  - `TextBuffer` normalizes all line endings to `\n` in memory (`lines: [String]`).
+  - Upon opening a file, `zago` detects `buffer.fileLineEnding` (`.lf` or `.crlf`).
+  - Upon saving (`saveFile`), if `fileLineEnding == .crlf`, `zago` joins lines with `\r\n` to preserve original project formatting.
 
-### Solution
+### B. Path Separators (`/` POSIX vs `\` Windows)
+- **macOS / Linux**: Uses `/`.
+- **Windows**: Uses `\` (e.g., `C:\Users\foo\bar.txt`) or `\\?\` UNC long paths.
+- **Solution**:
+  - All internal buffer paths and prompt completions standardize on `/`.
+  - Disk operations normalize paths using `(path as NSString).standardizingPath`, supporting both `/` and `\` seamlessly on Windows.
+
+---
+
+## 6. Windows Console Virtual Terminal Processing & Window Pop Suppression
+
+### A. Enabling Virtual Terminal Processing on Windows
+- Legacy Windows `cmd.exe` does not enable ANSI escape sequence parsing by default.
+- **Solution**: On startup, `WindowsTerminal` invokes Win32 `SetConsoleMode` with `ENABLE_VIRTUAL_TERMINAL_PROCESSING` (stdout) and `ENABLE_VIRTUAL_TERMINAL_INPUT` (stdin). If virtual terminal mode cannot be enabled, `zago` falls back gracefully with a `.consoleModeUnavailable` error.
+
+### B. Git Child Process Console Window Pop Suppression (`CREATE_NO_WINDOW`)
+- On Windows, spawning sub-processes (e.g. `git diff` or `git status`) via default `Process` can trigger intrusive black `cmd.exe` console window pops.
+- **Solution**: The `Git` module sets `CREATE_NO_WINDOW` on Win32 process creation flags and searches `PATH` explicitly for `git.exe`.
+
+---
+
+## 7. Spell Check Engines Across Platforms
+
+Spell checking is abstracted behind the `SpellChecker` protocol:
+- **macOS**: Utilizes AppKit / Objective-C runtime `NSSpellChecker`.
+- **Windows**: Utilizes native Win32 COM API (`ISpellCheckerFactory` / `ISpellChecker` via `WinSDK`).
+- **Linux**: Dynamically links `Hunspell` (C API) or falls back to POSIX word lists (`/usr/share/dict/words`).
+
+---
+
+## 8. Executable Permissions & CJK Display Width
+
+### A. Executable File Permission Detection
+- **macOS / Linux**: Reads POSIX permission bits (`S_IXUSR`, `S_IXGRP`, `S_IXOTH`) via `stat()`.
+- **Windows**: Windows lacks POSIX `chmod +x` semantics. Execution capability is determined by file extension (`.exe`, `.bat`, `.cmd`, `.ps1`).
+
+### B. CJK & Emoji Display Width Calculation (`wcwidth`)
 - **macOS / Linux**: Calls `wcwidth()` from `Darwin` or `Glibc`/`Musl`.
-- **Windows**: `wcwidth()` is unavailable in Win32 C runtime. `TextMetrics` implements custom East Asian Width (EAW) rules and handles Emoji surrogate pairs to return exact terminal cell widths across all platforms.
+- **Windows**: Win32 C runtime lacks `wcwidth()`. `TextMetrics` calculates display widths based on Unicode East Asian Width (EAW) properties (Wide/Fullwidth = 2 columns, Narrow/Halfwidth = 1 column) and handles Emoji surrogate pair sequences.
