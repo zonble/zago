@@ -95,9 +95,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     }
 
     var watchedPath: String? = nil
-    var watcherCallback: (() -> Void)? = nil
+    var watcherCallback: (@Sendable () -> Void)? = nil
 
-    func startWatchingFile(at path: String, onChange: @escaping () -> Void) {
+    func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
         watchedPath = normalizePath(path, isDirectory: false)
         watcherCallback = onChange
     }

@@ -255,6 +255,7 @@ extension Editor {
                     dirBuf.loadDirectory(at: dirBuf.directoryPath)
                 }
             }
+            startFileWatcherForCurrentBuffer()
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
                 setStatusMessage(l10n["status.saved_as_utf8"])
             } else {

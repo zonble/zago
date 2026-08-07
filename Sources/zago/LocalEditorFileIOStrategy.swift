@@ -81,6 +81,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         #else
             try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         #endif
+        fileWatcher.recordCurrentModificationDate()
     }
 
     public func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
@@ -97,8 +98,12 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         }
     }
 
-    public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {
-        fileWatcher.onChange = onChange
+    public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
+        fileWatcher.onChange = {
+            DispatchQueue.main.async {
+                onChange()
+            }
+        }
         fileWatcher.start(path: normalizePath(path, isDirectory: false))
     }
 

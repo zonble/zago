@@ -38,6 +38,7 @@ extension Editor {
                         try self.buffer.reloadFile(fileIO: self.fileIOStrategy)
                         self.buffer.isModified = false
                         self.setStatusMessage(self.l10n["status.file_reloaded"])
+                        self.renderer.invalidateScreenCache()
                     } catch {
                         self.setStatusMessage(error.localizedDescription)
                     }
@@ -50,6 +51,7 @@ extension Editor {
             do {
                 try buffer.reloadFile(fileIO: fileIOStrategy)
                 setStatusMessage(l10n["status.file_reloaded"])
+                renderer.invalidateScreenCache()
             } catch {
                 setStatusMessage(error.localizedDescription)
             }

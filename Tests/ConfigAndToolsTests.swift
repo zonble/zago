@@ -712,6 +712,58 @@ struct ConfigAndToolsTests {
     #expect(editor.buffer.lines.first == "Modified externally")
 }
 
+@Test func testRealFileWatcherAtomicWrites() throws {
+    final class AtomicCounter: @unchecked Sendable { var value = 0 }
+    let counter = AtomicCounter()
+
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_real_watcher_\(UUID().uuidString).txt").path
+    try "v1\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+
+    let semaphore = DispatchSemaphore(value: 0)
+
+    fileIO.startWatchingFile(at: tmpFile) {
+        counter.value += 1
+        semaphore.signal()
+    }
+
+    // First atomic write
+    try "v2\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    _ = semaphore.wait(timeout: .now() + 2.0)
+    #expect(counter.value >= 1)
+
+    // Second atomic write (tests re-open / recovery after atomic replace/rename)
+    try "v3\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    _ = semaphore.wait(timeout: .now() + 2.0)
+    #expect(counter.value >= 2)
+
+    fileIO.stopWatchingFile(at: tmpFile)
+    try? FileManager.default.removeItem(atPath: tmpFile)
+}
+
+@Test func testRealFileWatcherNonExistentFile() throws {
+    final class AtomicCounter: @unchecked Sendable { var value = 0 }
+    let counter = AtomicCounter()
+
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_nonexistent_\(UUID().uuidString).txt").path
+    let semaphore = DispatchSemaphore(value: 0)
+
+    // Start watching before file exists
+    fileIO.startWatchingFile(at: tmpFile) {
+        counter.value += 1
+        semaphore.signal()
+    }
+
+    // Now create file externally
+    try "created!\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    _ = semaphore.wait(timeout: .now() + 2.0)
+    #expect(counter.value >= 1)
+
+    fileIO.stopWatchingFile(at: tmpFile)
+    try? FileManager.default.removeItem(atPath: tmpFile)
+}
+
 @Test func testNanoRCParser() throws {
     let rawPath = FileManager.default.temporaryDirectory
         .appendingPathComponent("test_\(UUID().uuidString).nanorc").path

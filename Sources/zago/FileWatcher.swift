@@ -16,22 +16,17 @@ import Foundation
 public final class FileWatcher: @unchecked Sendable {
     public var onChange: (() -> Void)? = nil
 
+    private var watchedPath: String? = nil
+    private var lastModificationDate: Date? = nil
+    private var timerSource: (any DispatchSourceTimer)? = nil
+    private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
+
     #if canImport(Darwin)
         private var fileDescriptor: Int32 = -1
         private var source: (any DispatchSourceFileSystemObject)? = nil
-        private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
     #elseif os(Windows)
         private var changeHandle: HANDLE? = nil
-        private var timerSource: (any DispatchSourceTimer)? = nil
         private var isWatchingWindows = false
-        private var watchedPath: String? = nil
-        private var lastModificationDate: Date? = nil
-        private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
-    #else
-        private var timerSource: (any DispatchSourceTimer)? = nil
-        private var watchedPath: String? = nil
-        private var lastModificationDate: Date? = nil
-        private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
     #endif
 
     public init() {}
@@ -40,36 +35,21 @@ public final class FileWatcher: @unchecked Sendable {
     public func start(path: String) {
         stop()
 
-        guard !path.isEmpty, FileManager.default.fileExists(atPath: path) else { return }
+        guard !path.isEmpty else { return }
+
+        let normalized = (path as NSString).standardizingPath
+        self.watchedPath = normalized
 
         #if canImport(Darwin)
-            fileDescriptor = open(path, O_EVTONLY)
-            guard fileDescriptor >= 0 else { return }
-
-            let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
-            let src = DispatchSource.makeFileSystemObjectSource(
-                fileDescriptor: fileDescriptor,
-                eventMask: eventMask,
-                queue: queue
-            )
-
-            src.setEventHandler { [weak self] in
-                self?.onChange?()
+            if FileManager.default.fileExists(atPath: normalized) {
+                startWatchingExistingFile(at: normalized)
+            } else {
+                startTimerFallback(for: normalized)
             }
-
-            src.setCancelHandler { [fd = fileDescriptor] in
-                if fd >= 0 {
-                    close(fd)
-                }
-            }
-
-            self.source = src
-            src.resume()
         #elseif os(Windows)
-            self.watchedPath = path
-            self.lastModificationDate = getModificationDate(for: path)
+            self.lastModificationDate = getModificationDate(for: normalized)
 
-            let parentDir = (path as NSString).deletingLastPathComponent
+            let parentDir = (normalized as NSString).deletingLastPathComponent
             let dirPath = parentDir.isEmpty ? "." : parentDir
 
             let handle = dirPath.withCString(encodedAs: UTF16.self) { pStr in
@@ -89,26 +69,94 @@ public final class FileWatcher: @unchecked Sendable {
                         let res = WaitForSingleObject(h, 100)
                         if res == WAIT_OBJECT_0 {
                             guard self.isWatchingWindows, let currentHandle = self.changeHandle else { break }
-                            let currentMTime = self.getModificationDate(for: path)
+                            let currentMTime = self.getModificationDate(for: normalized)
                             if currentMTime != self.lastModificationDate {
                                 self.lastModificationDate = currentMTime
-                                self.onChange?()
+                                self.notifyChange()
                             }
                             FindNextChangeNotification(currentHandle)
                         }
                     }
                 }
             } else {
-                // Fallback to mtime polling timer if Win32 handle creation fails
-                startTimerFallback(for: path)
+                startTimerFallback(for: normalized)
             }
         #else
-            startTimerFallback(for: path)
+            startTimerFallback(for: normalized)
         #endif
     }
 
+    #if canImport(Darwin)
+        private func startWatchingExistingFile(at path: String) {
+            fileDescriptor = open(path, O_EVTONLY)
+            guard fileDescriptor >= 0 else {
+                startTimerFallback(for: path)
+                return
+            }
+
+            self.lastModificationDate = getModificationDate(for: path)
+
+            let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
+            let src = DispatchSource.makeFileSystemObjectSource(
+                fileDescriptor: fileDescriptor,
+                eventMask: eventMask,
+                queue: queue
+            )
+
+            src.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                let events = src.data
+
+                if events.contains(.delete) || events.contains(.rename) {
+                    // Atomic replace by another editor (write temp -> rename to target file)
+                    self.reopenWatchedFile(at: path)
+                } else {
+                    let currentMTime = self.getModificationDate(for: path)
+                    if currentMTime != self.lastModificationDate {
+                        self.lastModificationDate = currentMTime
+                        self.notifyChange()
+                    }
+                }
+            }
+
+            src.setCancelHandler { [fd = fileDescriptor] in
+                if fd >= 0 {
+                    close(fd)
+                }
+            }
+
+            self.source = src
+            src.resume()
+        }
+
+        private func reopenWatchedFile(at path: String) {
+            if let src = source {
+                src.cancel()
+                source = nil
+            }
+            fileDescriptor = -1
+
+            // Short delay for atomic replace (write temp -> rename) to settle
+            queue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                guard let self = self, self.watchedPath == path else { return }
+                if FileManager.default.fileExists(atPath: path) {
+                    let currentMTime = self.getModificationDate(for: path)
+                    self.lastModificationDate = currentMTime
+                    self.notifyChange()
+                    self.startWatchingExistingFile(at: path)
+                } else {
+                    self.startTimerFallback(for: path)
+                }
+            }
+        }
+    #endif
+
     /// Stops watching the current file.
     public func stop() {
+        if let timer = timerSource {
+            timer.cancel()
+            timerSource = nil
+        }
         #if canImport(Darwin)
             if let src = source {
                 src.cancel()
@@ -117,45 +165,60 @@ public final class FileWatcher: @unchecked Sendable {
             fileDescriptor = -1
         #elseif os(Windows)
             isWatchingWindows = false
-            if let timer = timerSource {
-                timer.cancel()
-                timerSource = nil
-            }
             if let h = changeHandle, h != INVALID_HANDLE_VALUE {
                 FindCloseChangeNotification(h)
                 changeHandle = nil
             }
-            watchedPath = nil
-            lastModificationDate = nil
-        #else
-            if let timer = timerSource {
-                timer.cancel()
-                timerSource = nil
-            }
-            watchedPath = nil
-            lastModificationDate = nil
         #endif
+        watchedPath = nil
+        lastModificationDate = nil
     }
 
-    #if !canImport(Darwin)
-        private func startTimerFallback(for path: String) {
-            self.watchedPath = path
-            self.lastModificationDate = getModificationDate(for: path)
-
-            let timer = DispatchSource.makeTimerSource(queue: queue)
-            timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
-            timer.setEventHandler { [weak self] in
-                guard let self = self, let p = self.watchedPath else { return }
-                let currentMTime = self.getModificationDate(for: p)
-                if currentMTime != self.lastModificationDate {
-                    self.lastModificationDate = currentMTime
-                    self.onChange?()
-                }
-            }
-            self.timerSource = timer
-            timer.resume()
+    private func startTimerFallback(for path: String) {
+        if let timer = timerSource {
+            timer.cancel()
+            timerSource = nil
         }
-    #endif
+        self.lastModificationDate = getModificationDate(for: path)
+
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 0.5, repeating: 0.5)
+        timer.setEventHandler { [weak self] in
+            guard let self = self, let p = self.watchedPath, p == path else { return }
+
+            #if canImport(Darwin)
+                if FileManager.default.fileExists(atPath: path) {
+                    timer.cancel()
+                    self.timerSource = nil
+                    let currentMTime = self.getModificationDate(for: path)
+                    if currentMTime != self.lastModificationDate {
+                        self.lastModificationDate = currentMTime
+                        self.notifyChange()
+                    }
+                    self.startWatchingExistingFile(at: path)
+                    return
+                }
+            #endif
+
+            let currentMTime = self.getModificationDate(for: p)
+            if currentMTime != self.lastModificationDate {
+                self.lastModificationDate = currentMTime
+                self.notifyChange()
+            }
+        }
+        self.timerSource = timer
+        timer.resume()
+    }
+
+    private func notifyChange() {
+        onChange?()
+    }
+
+    /// Records current modification date of watched file to suppress self-save change notifications.
+    public func recordCurrentModificationDate() {
+        guard let path = watchedPath else { return }
+        self.lastModificationDate = getModificationDate(for: path)
+    }
 
     private func getModificationDate(for path: String) -> Date? {
         let attrs = try? FileManager.default.attributesOfItem(atPath: path)

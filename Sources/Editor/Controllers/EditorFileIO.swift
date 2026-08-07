@@ -142,7 +142,7 @@ public protocol EditorFileIOStrategy: AnyObject {
     /// - Parameters:
     ///   - path: Target file path to watch.
     ///   - onChange: Callback block invoked when external modification is detected.
-    func startWatchingFile(at path: String, onChange: @escaping () -> Void)
+    func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void)
 
     /// Stops watching external file system changes for specified path.
     ///
@@ -151,6 +151,6 @@ public protocol EditorFileIOStrategy: AnyObject {
 }
 
 extension EditorFileIOStrategy {
-    public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {}
+    public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {}
     public func stopWatchingFile(at path: String) {}
 }
