@@ -29,7 +29,7 @@ public struct SettingCommand: Command {
 
     public static let settingNames = [
         "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "regex", "tab",
-        "lang", "border", "trim-trailing-whitespace",
+        "lang", "border", "arrow", "trim-trailing-whitespace",
     ]
 
     public static func valueSuggestions(for setting: String) -> [String] {
@@ -54,6 +54,9 @@ public struct SettingCommand: Command {
         case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
             "default-border-style", "default_border_style":
             return ["single", "double", "round", "double-round", "ascii", "ascii-round"]
+        case "arrow", "arrowstyle", "arrow-style", "arrow_style", "defaultarrow", "defaultarrowstyle",
+            "default-arrow-style", "default_arrow_style":
+            return ["solid", "stemmed", "hollow", "small"]
         default:
             return []
         }

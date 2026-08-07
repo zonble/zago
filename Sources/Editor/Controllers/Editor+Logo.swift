@@ -46,6 +46,8 @@ extension Editor: LogoEngineDelegate {
             }
         case .setBorderStyle(let style):
             setBorderStyle(style)
+        case .setArrowStyle(let style):
+            setArrowStyle(style)
         case .nextBorderStyle:
             _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
         case .moveCursorVirtual(let delta):
@@ -148,6 +150,8 @@ extension Editor: LogoEngineDelegate {
             return buffer.lines[index]
         case .defaultBorderStyle:
             return defaultBorderStyle
+        case .defaultArrowStyle:
+            return defaultArrowStyle
         case .hasCanvasBlockMark:
             return isCanvasModeActive && !isTableModeActive && buffer.canvasBlockMark != nil
         case .canvasBlockFrame:
@@ -381,6 +385,13 @@ extension Editor: LogoEngineDelegate {
 
         defaultBorderStyle = borderStyle
         setStatusMessage(l10n.defaultBorder(borderStyle.rawValue))
+    }
+
+    private func setArrowStyle(_ style: String) {
+        guard let arrowStyle = ArrowStyle(style) else {
+            return
+        }
+        defaultArrowStyle = arrowStyle
     }
 
 }

@@ -48,10 +48,10 @@ public func canvasMask(for character: Character?, style _: BorderStyle = .single
     case "┬", "╦": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
     case "┴", "╩": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
     case "┼", "╬", "+": 15
-    case "→", ">": CanvasDrawDirection.left.mask
-    case "←", "<": CanvasDrawDirection.right.mask
-    case "↑", "^": CanvasDrawDirection.down.mask
-    case "↓", "v": CanvasDrawDirection.up.mask
+    case "→", ">", "▶", "►", "▷", "▸": CanvasDrawDirection.left.mask
+    case "←", "<", "◀", "◄", "◁", "◂": CanvasDrawDirection.right.mask
+    case "↑", "^", "▲", "△", "▴": CanvasDrawDirection.down.mask
+    case "↓", "v", "▼", "▽", "▾": CanvasDrawDirection.up.mask
     default: 0
     }
 }
@@ -105,7 +105,11 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character 
     }
 }
 
-public func arrowHead(for direction: CanvasDrawDirection, style: BorderStyle) -> Character {
+public func arrowHead(
+    for direction: CanvasDrawDirection,
+    style: BorderStyle,
+    arrowStyle: ArrowStyle = .solid
+) -> Character {
     if style == .ascii {
         return switch direction {
         case .up: "^"
@@ -115,11 +119,35 @@ public func arrowHead(for direction: CanvasDrawDirection, style: BorderStyle) ->
         }
     }
 
-    return switch direction {
-    case .up: "↑"
-    case .down: "↓"
-    case .left: "←"
-    case .right: "→"
+    return switch arrowStyle {
+    case .solid:
+        switch direction {
+        case .up: "▲"
+        case .down: "▼"
+        case .left: "◀"
+        case .right: "▶"
+        }
+    case .stemmed:
+        switch direction {
+        case .up: "↑"
+        case .down: "↓"
+        case .left: "←"
+        case .right: "→"
+        }
+    case .hollow:
+        switch direction {
+        case .up: "△"
+        case .down: "▽"
+        case .left: "◁"
+        case .right: "▷"
+        }
+    case .small:
+        switch direction {
+        case .up: "▴"
+        case .down: "▾"
+        case .left: "◂"
+        case .right: "▸"
+        }
     }
 }
 

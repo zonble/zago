@@ -115,7 +115,7 @@ public final class CanvasModeController: KeyInputHandler {
         if drawsArrow {
             guard editor.ensureCanvasLineExists(targetLine) else { return }
             editor.writeCanvasCharacterIfDrawable(
-                arrowHead(for: direction, style: style),
+                arrowHead(for: direction, style: style, arrowStyle: editor.defaultArrowStyle),
                 lineIndex: targetLine,
                 visualColumn: targetColumn,
                 style: style)

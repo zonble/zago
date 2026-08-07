@@ -16,6 +16,7 @@ public struct EditorConfig {
     public var language: Language? = nil
     public var spellLanguage: String = "en_US"
     public var defaultBorderStyle: BorderStyle = .single
+    public var defaultArrowStyle: ArrowStyle = .solid
     public var customKeyBinds: [Key: String] = [:]
     public var unbindKeys: Set<Key> = []
     public var logoPrelude: String = ""

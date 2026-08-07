@@ -12,7 +12,8 @@ public struct ArrowDrawer: Sendable {
         direction: CanvasDrawDirection,
         length: Int,
         hasArrow: Bool = false,
-        style: BorderStyle = .single
+        style: BorderStyle = .single,
+        arrowStyle: ArrowStyle = .solid
     ) {
         guard length > 0 else { return }
 
@@ -24,7 +25,7 @@ public struct ArrowDrawer: Sendable {
             var ch: Character
 
             if isEnd && hasArrow {
-                ch = arrowHead(for: direction, style: style)
+                ch = arrowHead(for: direction, style: style, arrowStyle: arrowStyle)
             } else {
                 let mask: UInt8
                 switch direction {

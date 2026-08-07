@@ -311,6 +311,11 @@ extension Editor {
             } else {
                 setStatusMessage(l10n.unknownBorderStyle(arg))
             }
+        case "arrow", "arrowstyle", "arrow-style", "arrow_style", "defaultarrow", "defaultarrowstyle",
+            "default-arrow-style", "default_arrow_style":
+            if let style = ArrowStyle(arg) {
+                defaultArrowStyle = style
+            }
         default:
             break
         }

@@ -164,6 +164,7 @@ public final class Editor: @unchecked Sendable {
         set { buffer.currentTableCell = newValue }
     }
     public var defaultBorderStyle: BorderStyle = .single
+    public var defaultArrowStyle: ArrowStyle = .solid
     public var isRegexSearchEnabled: Bool = false
 
     var lastMutationTime: Date?
@@ -359,6 +360,7 @@ public final class Editor: @unchecked Sendable {
     func applyCustomConfig(_ config: EditorConfig) {
         customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
+        defaultArrowStyle = config.defaultArrowStyle
         spellChecker.setLanguage(config.spellLanguage)
 
         let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -447,20 +447,28 @@ extension LogoEngine {
         return styleChar
     }
 
+    private var currentArrowStyle: ArrowStyle {
+        (delegate?.logoEngine(self, queryState: .defaultArrowStyle) as? ArrowStyle) ?? .solid
+    }
+
     private func horizontalForwardArrow(styleChar: Character) -> Character {
-        styleChar == "-" ? ">" : "→"
+        let borderStyle: BorderStyle = styleChar == "-" ? .ascii : .single
+        return arrowHead(for: .right, style: borderStyle, arrowStyle: currentArrowStyle)
     }
 
     private func horizontalBackwardArrow(styleChar: Character) -> Character {
-        styleChar == "-" ? "<" : "←"
+        let borderStyle: BorderStyle = styleChar == "-" ? .ascii : .single
+        return arrowHead(for: .left, style: borderStyle, arrowStyle: currentArrowStyle)
     }
 
     private func verticalForwardArrow(styleChar: Character) -> Character {
-        styleChar == "|" ? "v" : "↓"
+        let borderStyle: BorderStyle = styleChar == "|" ? .ascii : .single
+        return arrowHead(for: .down, style: borderStyle, arrowStyle: currentArrowStyle)
     }
 
     private func verticalBackwardArrow(styleChar: Character) -> Character {
-        styleChar == "|" ? "^" : "↑"
+        let borderStyle: BorderStyle = styleChar == "|" ? .ascii : .single
+        return arrowHead(for: .up, style: borderStyle, arrowStyle: currentArrowStyle)
     }
 
     internal func displayCharAt(in line: String, visualColumn: Int) -> Character {

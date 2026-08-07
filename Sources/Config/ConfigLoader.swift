@@ -195,6 +195,14 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "arrow", "arrowstyle", "arrow-style", "arrow_style", "defaultarrow",
+                        "defaultarrowstyle", "default-arrow-style", "default_arrow_style":
+                        if let style = ArrowStyle(value) {
+                            config.defaultArrowStyle = style
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "unset":
                         if tokens.count >= 3 {
                             let subOption = tokens[2].lowercased()

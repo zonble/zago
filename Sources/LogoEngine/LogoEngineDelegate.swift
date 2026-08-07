@@ -31,6 +31,7 @@ public enum LogoEditorAction {
     case createTable(rows: Int, cols: Int, cellWidth: Int?)
     case insertDiagramSnippet(type: String?)
     case setBorderStyle(String)
+    case setArrowStyle(String)
     case nextBorderStyle
     case moveCursorVirtual(Int)
     case search(String)
@@ -66,6 +67,7 @@ public enum LogoEditorQuery {
     case lineCount
     case lineAt(Int)
     case defaultBorderStyle
+    case defaultArrowStyle
     case hasCanvasBlockMark
     case canvasBlockFrame
     case hasTableCell

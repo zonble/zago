@@ -30,9 +30,14 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case box
     case drawBox
     case line
+    case arrow
     case hr
     case vline
     case vhr
+    case setBorderStyle
+    case setArrowStyle
+    case defaultBorderStyle
+    case defaultArrowStyle
     case table
     case diagram
     case newline
@@ -261,7 +266,12 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BOX"], .box),
         (["DRAWBOX"], .drawBox),
         (["LINE", "HR"], .line),
+        (["ARROW"], .arrow),
         (["VLINE", "VR", "VHR"], .vline),
+        (["SETBORDERSTYLE", "SETBORDER", "BORDERSTYLE"], .setBorderStyle),
+        (["SETARROWSTYLE", "SETARROW", "ARROWSTYLE"], .setArrowStyle),
+        (["DEFAULTBORDERSTYLE"], .defaultBorderStyle),
+        (["DEFAULTARROWSTYLE"], .defaultArrowStyle),
         (["TABLE"], .table),
         (["DIAGRAM", "SNIPPET"], .diagram),
         (["NEWLINE", "NL", "ENTER"], .newline),
