@@ -9,6 +9,7 @@ This document details the Model-View-Controller (MVC) architectural design, resp
 As `zago` grew from a simple terminal editor into a feature-rich terminal IDE supporting multiple editing paradigms (Text mode, Canvas drawing mode, Table structure editing, LOGO macro scripts, and Markdown Outline views), enforcing a strict **MVC & Layered Architecture** became paramount.
 
 The core design goals of `zago`'s architecture are:
+
 1. **Pure Read-Only Renderer (View)**: The rendering pipeline accepts a snapshot of `(Editor, ScreenGeometry)` and produces ANSI SGR escape sequences without mutating any domain model state or viewport offsets.
 2. **Single-Pass Frame Geometry**: Window layout calculations (header height, ruler visibility, line numbers gutter width, main text area bounds) are computed exactly **once per render frame** via an immutable `ScreenGeometry` value object.
 3. **Decoupled Input & Command Handling (Controller)**: Keyboard events are processed by specialized controllers (`PromptController`, `MenuBar`, and `CommandRegistry`) before mutating the underlying buffer models.
@@ -57,16 +58,16 @@ Sources/Editor/
 │   ├── SearchController.swift
 │   ├── TableModeController.swift
 │   ├── CanvasModeController.swift
+│   ├── Editor+Actions.swift
 │   ├── Editor+Buffer.swift
 │   ├── Editor+Commands.swift
 │   ├── Editor+DisplayConfig.swift
-│   ├── Editor+DomainCommands.swift
 │   ├── Editor+Events.swift
 │   ├── Editor+Logo.swift
 │   ├── Editor+Modes.swift
 │   ├── Editor+Prompts.swift
-│   ├── Editor+Render.swift
 │   ├── Editor+Undo.swift
+│   ├── Editor+Viewport.swift
 │   ├── EditorFileIO.swift
 │   └── EditorTerminal.swift
 │
@@ -93,24 +94,27 @@ Sources/Editor/
 ## 3. Tier Responsibilities
 
 ### 3.1 Model Layer (`Sources/Editor/Models/`)
+
 * **`TextBuffer`**: Stores raw document lines (`[String]`), cursor position (`lineIndex`, `columnIndex`), text selection ranges (`selectionMark`), and the undo/redo history stack (`undoStack`).
 * **`LayoutEngine`**: Pure mathematical line-wrapping engine. Computes virtual line chunks (`[VirtualLine]`) for soft-wrapped text and performs bidirectional coordinate transformations (`(bufferLine, bufferCol)` $\rightleftharpoons$ `(vLine, vCol)`).
 * **`ScreenGeometry`**: Immutable per-frame value object containing calculated terminal dimensions (`rows`, `cols`), UI chrome heights, gutter widths (`gutterWidth`), and effective text area bounds (`mainAreaHeight`, `textWidth`).
 * **`EditorOptions` / `EditorConfigSource`**: Value objects for launching editor instances and reading configuration files (`.zagorc`).
 
 ### 3.2 View Layer (`Sources/Editor/Views/`)
+
 * **`Renderer`**: Master double-buffering screen line diffing presenter. Compiles full ANSI screen output by assembling component strings.
 * **`ANSIStyle`**: Utility providing SGR ANSI escape code constants and chainable `.ansiStyled(style:)` extensions.
 * **`Views/Components/`**:
-  * `TitleAndMenuBar`: Renders header bar and interactive top menu categories.
-  * `Renderer+Overlay`: Renders 2D dropdown menu overlays and box-drawing character borders.
-  * `Renderer+StatusAndHelp`: Renders status indicator bar, prompt input line, WordStar ruler, and dynamic contextual help bar.
+    * `TitleAndMenuBar`: Renders header bar and interactive top menu categories.
+    * `Renderer+Overlay`: Renders 2D dropdown menu overlays and box-drawing character borders.
+    * `Renderer+StatusAndHelp`: Renders status indicator bar, prompt input line, WordStar ruler, and dynamic contextual help bar.
 * **`Views/Modals/`**: Full-screen or floating overlay views (`DocumentOutlineView`, `HelpContent`, `LogoReferenceContent`).
 
 ### 3.3 Controller Layer (`Sources/Editor/Controllers/`)
+
 * **`Editor`**: Central application state controller. Owns active buffers, runtime mode switches (`isTableModeActive`, `isCanvasModeActive`), language preferences, and prompt sessions.
-* **`PromptController`**: Manages interactive command bar prompts (e.g., Search, Goto Line, Save File Path, Exit Confirmation). Encapsulates prompt input buffer (`inputText`), completion ghosts, and dynamic shortcut definitions (`promptHelpShortcuts(editor:)`).
-* **`Editor+Render.swift`**: Coordinates frame refresh lifecycles (`refreshScreen()`, `adjustViewport()`).
+* **`PromptController`**: Manages interactive command bar prompts (e.g., Search, Goto Line, Save File Path, Exit Confirmation). Encapsulates prompt input buffer (`inputText`), completion ghosts, and dynamic shortcut definitions (`promptHelpShortcuts()`).
+* **`Editor+Viewport.swift`**: Coordinates frame refresh lifecycles and viewport bounds (`refreshScreen()`, `adjustViewport()`).
 
 ---
 

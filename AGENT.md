@@ -15,7 +15,7 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 2. **Dependency Injection & No Singletons**: Services (such as `GitService`, `EditorFileIOStrategy`, terminal drivers) MUST NOT use global mutable singletons (avoid `public static let shared`). Inject dependencies via protocols or container structs (`EditorDependencies`) from the entrypoint (`zago.swift`). Sub-services and helper modules MUST NOT hold direct dependencies on the monolithic `Editor` class.
 3. **CJK & Multi-Byte Visual Alignment**: Line wrapping, gutter alignment, status bar centering, table cell padding, and terminal cursor coordinates calculate visual display width (`displayWidth`) rather than byte/character counts. CJK characters have a visual width of `2`.
 4. **Editor LOGO Dialect & Safety**: Built upon UCBLogo syntax (`TO ... END`), but removes GUI turtle windows and unconstrained loops (`FOREVER`) to prevent editor lockup. Added native editor navigation, box/line/table drawing (`BOX`, `LINE`, `TABLE`), interactive input (`READWORD`, `READCHAR`), and text transform primitives (`TRANSLIT`, `Zago-CJK-Punctuation`).
-5. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Render.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
+5. **Modular File Extension Design**: Large controllers (such as `Editor.swift`) are partitioned into focused, single-responsibility Swift extensions (`Editor+Commands.swift`, `Editor+Viewport.swift`, `Editor+Prompts.swift`, `Editor+Undo.swift`).
 6. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
 7. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
 8. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, table formatting, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
@@ -48,7 +48,7 @@ zago/
 │       ├── SpellChecker.swift                 # Misspelled word identification & location scanning
 │       ├── Editor.swift                       # Core Editor lifecycle, state properties, & run loop
 │       ├── Editor+Commands.swift              # Default keybindings & command registrations
-│       ├── Editor+Render.swift                # Screen refresh, title bar, WordStar ruler, 2D help bar
+│       ├── Editor+Viewport.swift              # Viewport scrolling, virtual line cursor mapping, screen refresh
 │       ├── Editor+Prompts.swift               # Bottom prompt input modes (save, exit, search, insert, spell)
 │       ├── Editor+Undo.swift                  # UndoSnapshot stack management & restore
 │       ├── HelpView.swift                     # Full-screen ^G / F1 interactive help viewer
@@ -128,7 +128,7 @@ swift test
 ### C. Editor File Modularization Guidelines
 Keep `Editor.swift` clean and compact (under 200 lines). When adding new features to `Editor`, place them in the corresponding extension file:
 - **`Editor+Commands.swift`**: Adding or modifying keybindings and command registration logic.
-- **`Editor+Render.swift`**: Adjusting screen rendering, title bar, gutter, help bar, or ruler.
+- **`Editor+Viewport.swift`**: Viewport bounds calculation, soft-wrap virtual cursor mapping, and screen refresh trigger.
 - **`Editor+Prompts.swift`**: Adding new prompt modes, dialog inputs, or interactive queries.
 - **`Editor+Undo.swift`**: Modifying snapshot capture, undo/redo stacks, or buffer state restoration.
 
