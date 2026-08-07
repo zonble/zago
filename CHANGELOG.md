@@ -2,7 +2,25 @@
 
 ## Unreleased
 
-## 1.0.5 - 2026-08-05
+## 1.1.0 - 2026-08-07
+
+MVC controller architecture refactoring, per-buffer undo isolation, and automated Debian (.deb) release packaging.
+
+### Added
+
+- Automated Debian (`.deb`) package building and GitHub Release workflow (`build_deb.sh`) for x86_64 and aarch64 Linux targets.
+- Unit test for independent per-buffer undo history isolation (`testIndependentBufferUndoStack` and `testSwitchingBufferPreservesPerBufferUndoHistory`).
+
+### Changed
+
+- Refactored all 6 editor controllers (`DocumentOutlineController`, `CanvasModeController`, `SearchController`, `TableModeController`, `PromptController`, `MenuBarController`) to hold weak `editor` references initialized at `Editor.init()`, eliminating redundant `editor` parameter passing.
+- `DocumentOutlineController` and `SearchController` now conform to `KeyInputHandler` for keyboard event handling.
+- Split `TableModeController` into focused modular files (`TableModeController.swift`, `TableModeController+Navigation.swift`, `TableModeController+Operations.swift`).
+- Renamed `Editor+Render.swift` to `Editor+Viewport.swift` and `Editor+DomainCommands.swift` to `Editor+Actions.swift`.
+
+### Fixed
+
+- Moved `undoStack` from global `Editor` state into `TextBuffer`, ensuring each open buffer maintains its own isolated undo history without cross-buffer interference when switching tabs.
 
 Spell checker, text encoding auto-detection, and Canvas Mode line drawing release.
 
