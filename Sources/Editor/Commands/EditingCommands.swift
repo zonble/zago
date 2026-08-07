@@ -318,7 +318,7 @@ public struct UndoCommand: Command {
     public let id: CommandID = .editUndo
     public let name = "Undo"
     public let description = "Undo last edit"
-    public let keys: [Key] = [.ctrl("Z")]
+    public let keys: [Key] = [.ctrl("Z"), .ctrl("z")]
 
     public init() {}
 

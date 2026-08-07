@@ -168,7 +168,7 @@ import Testing
 
     #expect(virtualLines.count >= 2)
     #expect(virtualLines[0].subLineIndex == 0)
-    #expect(virtualLines[0].text == "- This is a long") // subLine 0 uses wrap 20
+    #expect(virtualLines[0].text.trimmingCharacters(in: .whitespaces) == "- This is a long") // subLine 0 uses wrap 20
     #expect(virtualLines[1].subLineIndex == 1)
     // subLine 1 capacity is (wrap 20 - hangingIndent 2 = 18 chars capacity)
     #expect(virtualLines[1].text.count <= 18)

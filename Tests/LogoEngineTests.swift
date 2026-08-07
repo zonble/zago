@@ -168,22 +168,22 @@ import TextMetrics
     #expect(logoEngine.lastResult == "     0.333")
 
     // Bitwise Operations
-    logoEngine.execute("BITAND 6 3")
+    logoEngine.execute("BIT.AND 6 3")
     #expect(logoEngine.lastResult == "2")
 
-    logoEngine.execute("BITOR 6 3")
+    logoEngine.execute("BIT.OR 6 3")
     #expect(logoEngine.lastResult == "7")
 
-    logoEngine.execute("BITXOR 6 3")
+    logoEngine.execute("BIT.XOR 6 3")
     #expect(logoEngine.lastResult == "5")
 
-    logoEngine.execute("BITNOT 0")
+    logoEngine.execute("BIT.NOT 0")
     #expect(logoEngine.lastResult == "-1")
 
-    logoEngine.execute("ASHIFT 1 3")
+    logoEngine.execute("BIT.SHL 1 3")
     #expect(logoEngine.lastResult == "8")
 
-    logoEngine.execute("LSHIFT 1 3")
+    logoEngine.execute("BIT.SHR 16 1")
     #expect(logoEngine.lastResult == "8")
 }
 

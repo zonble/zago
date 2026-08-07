@@ -189,7 +189,7 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
-                    case "tab", "tabsize":
+                    case "tab", "tabsize", "tab_size":
                         if let size = Int(value), size > 0 {
                             config.tabSize = size
                         } else {
@@ -417,7 +417,7 @@ public final class ConfigLoader {
                     "notrim_trailing_spaces":
                     config.trimTrailingWhitespaceOnSave = false
 
-                case "tab", "tabsize":
+                case "tab", "tabsize", "tab_size":
                     if let size = Int(value), size > 0 {
                         config.tabSize = size
                     } else {
