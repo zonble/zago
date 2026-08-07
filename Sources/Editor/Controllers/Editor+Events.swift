@@ -45,7 +45,7 @@ extension Editor {
 
         if commandRegistry.dispatch(key: key, editor: self) {
             if isTableModeActive {
-                clampTableModeCursor()
+                tableModeController.clampTableModeCursor()
             } else if isCanvasModeActive {
                 syncCanvasCursorToBuffer()
             } else {
@@ -95,7 +95,7 @@ extension Editor {
             }
 
             if isTableModeActive {
-                pasteTableCellText(pastedText)
+                tableModeController.pasteTableCellText(pastedText)
             } else if isCanvasModeActive {
                 insertCanvasString(pastedText)
             } else if !isMultiChar {

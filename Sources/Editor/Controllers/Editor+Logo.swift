@@ -11,7 +11,7 @@ extension Editor: LogoEngineDelegate {
             buffer.clampCursor()
         case .insertText(let text):
             if isTableModeActive, currentTableCell != nil {
-                insertTextInCurrentTableCell(text)
+                tableModeController.insertTextInCurrentTableCell(text)
             } else if isCanvasModeActive {
                 insertCanvasString(text)
             } else {
@@ -36,7 +36,7 @@ extension Editor: LogoEngineDelegate {
         case .outdentLines(let levels):
             outdentSelectedOrCurrentLines(levels: levels)
         case .createTable(let rows, let cols, let cellWidth):
-            createTable(rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
+            tableModeController.createTable(rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
         case .insertDiagramSnippet(let arg):
             if let typeStr = arg, let snippet = DiagramSnippets.findDiagramSnippet(by: typeStr) {
                 DiagramSnippets.insertSnippet(snippet, into: self)
@@ -84,7 +84,7 @@ extension Editor: LogoEngineDelegate {
                 let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
                 let maxDisplayWidth = lineStr.displayWidth
                 if columnIndex <= maxDisplayWidth {
-                    buffer.columnIndex = getCharIndexForVisualColumn(in: lineStr, targetVisualCol: max(0, columnIndex))
+                    buffer.columnIndex = tableModeController.getCharIndexForVisualColumn(in: lineStr, targetVisualCol: max(0, columnIndex))
                 } else {
                     buffer.columnIndex = lineStr.count + (columnIndex - maxDisplayWidth)
                 }
@@ -106,7 +106,7 @@ extension Editor: LogoEngineDelegate {
         case .fillCanvasBlock(let text):
             _ = fillCanvasBlock(with: text)
         case .fillTableCell(let text):
-            _ = fillCurrentTableCell(with: text)
+            _ = tableModeController.fillCurrentTableCell(with: text)
         case .gotoLine(let row):
             goToLocation(line: row + 1, column: nil)
         case .gotoCol(let col):
@@ -130,7 +130,7 @@ extension Editor: LogoEngineDelegate {
                 let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
                 let charCount = lineStr.count
                 if buffer.columnIndex <= charCount {
-                    return getVisualColumn(in: lineStr, col: buffer.columnIndex)
+                    return tableModeController.getVisualColumn(in: lineStr, col: buffer.columnIndex)
                 } else {
                     return lineStr.displayWidth + (buffer.columnIndex - charCount)
                 }
@@ -302,7 +302,7 @@ extension Editor: LogoEngineDelegate {
 
     private func insertNewlineForLogo() {
         if isTableModeActive, currentTableCell != nil {
-            moveToNextTableCellLineOrCell()
+            tableModeController.moveToNextTableCellLineOrCell()
         } else if isCanvasModeActive {
             insertCanvasNewline()
         } else {
@@ -312,7 +312,7 @@ extension Editor: LogoEngineDelegate {
 
     private func joinCurrentLine(separator: String) {
         if isTableModeActive, currentTableCell != nil {
-            joinCurrentTableCellLine(separator: separator)
+            tableModeController.joinCurrentTableCellLine(separator: separator)
             return
         }
         guard buffer.lineIndex + 1 < buffer.lines.count else { return }

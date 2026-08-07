@@ -38,7 +38,7 @@ public struct ToggleTableModeCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.toggleTableMode()
+        editor.tableModeController.toggleTableMode()
     }
 }
 

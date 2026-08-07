@@ -57,6 +57,8 @@ Sources/Editor/
 │   ├── PromptController.swift
 │   ├── SearchController.swift
 │   ├── TableModeController.swift
+│   ├── TableModeController+Navigation.swift
+│   ├── TableModeController+Operations.swift
 │   ├── CanvasModeController.swift
 │   ├── Editor+Actions.swift
 │   ├── Editor+Buffer.swift

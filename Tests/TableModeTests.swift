@@ -15,7 +15,7 @@ import Testing
     editor.buffer.columnIndex = 3
 
     // 1. Toggle Table Mode ON (Alt+T)
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
     #expect(editor.currentTableCell != nil)
     #expect(editor.currentTableCell?.minLine == 0)
@@ -67,7 +67,7 @@ import Testing
     editor.buffer.columnIndex = 1  // First position inside Cell 1
 
     // 1. Toggle Table Mode ON (Alt+T)
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
     let initialLine = editor.buffer.lines[1]
     #expect(initialLine.count == 35)
@@ -111,7 +111,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     let initialWidth = editor.buffer.lines[1].displayWidth
@@ -138,7 +138,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     let initialLineWidth = editor.buffer.lines[1].displayWidth
@@ -186,7 +186,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 20  // Inside Row1 Cell2 (last cell of row 1)
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.currentTableCell?.minCol == 17)  // Locked to Row1 Cell2
 
     // Press Tab from last cell of Row 1
@@ -215,7 +215,7 @@ import Testing
     editor.buffer.lineIndex = 2
     editor.buffer.columnIndex = 3
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.currentTableCell?.minCol == 0)
     #expect(editor.currentTableCell?.maxCol == 9)
 
@@ -238,7 +238,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     let screenOutput = editor.renderer.render(editor: editor, rows: 10, cols: 40)
@@ -256,7 +256,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Type CJK Chinese characters ("測試")
@@ -284,7 +284,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1  // 4 spaces inside cell (cols 1..4)
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Type 5 characters into cell of capacity 4
@@ -306,7 +306,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 17
@@ -327,7 +327,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     let didRun = editor.runLogoScript("FILL \"中")
 
@@ -353,7 +353,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
@@ -377,7 +377,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
@@ -438,7 +438,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.columnIndex = 8
@@ -477,7 +477,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 5  // Inside Cell 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Press Home (.home)
@@ -521,7 +521,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2  // Row 1 Cell 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.currentTableCell?.minLine == 0)
 
     // Press Down Arrow from Row 1 Cell 1
@@ -547,7 +547,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 16  // Rightmost col of Cell 1 (cell.innerMaxCol = 16)
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.currentTableCell?.minCol == 0)
 
     // Press Right Arrow at rightmost col
@@ -558,7 +558,7 @@ import Testing
 
     // Move cursor to leftmost col of Cell 2
     editor.buffer.columnIndex = 18
-    editor.clampTableModeCursor()
+    editor.tableModeController.clampTableModeCursor()
 
     // Press Left Arrow at leftmost col
     editor.processKey(.arrowLeft)
@@ -578,7 +578,7 @@ import Testing
     rightEditor.buffer.lineIndex = 2
     rightEditor.buffer.columnIndex = 8
 
-    rightEditor.toggleTableMode()
+    rightEditor.tableModeController.toggleTableMode()
     #expect(rightEditor.currentTableCell?.minCol == 0)
 
     rightEditor.processKey(.arrowRight)
@@ -599,7 +599,7 @@ import Testing
     downEditor.buffer.lineIndex = 1
     downEditor.buffer.columnIndex = 2
 
-    downEditor.toggleTableMode()
+    downEditor.tableModeController.toggleTableMode()
     #expect(downEditor.currentTableCell?.minLine == 0)
 
     downEditor.processKey(.arrowDown)
@@ -620,7 +620,7 @@ import Testing
     editor.buffer.lineIndex = 3
     editor.buffer.columnIndex = 2  // Row 2 Cell 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.currentTableCell?.minLine == 2)
 
     editor.processKey(.shiftArrowLeft)
@@ -650,7 +650,7 @@ import Testing
     ]
     deleteEditor.buffer.lineIndex = 1
     deleteEditor.buffer.columnIndex = 1
-    deleteEditor.toggleTableMode()
+    deleteEditor.tableModeController.toggleTableMode()
 
     deleteEditor.processKey(.shiftArrowRight)
     deleteEditor.processKey(.shiftArrowRight)
@@ -670,7 +670,7 @@ import Testing
     ]
     backspaceEditor.buffer.lineIndex = 1
     backspaceEditor.buffer.columnIndex = 1
-    backspaceEditor.toggleTableMode()
+    backspaceEditor.tableModeController.toggleTableMode()
 
     backspaceEditor.processKey(.shiftArrowRight)
     backspaceEditor.processKey(.shiftArrowRight)
@@ -693,7 +693,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.lineIndex = 2
@@ -723,7 +723,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.buffer.selectionMark = (line: 1, column: 1)
     editor.buffer.lineIndex = 1
@@ -749,7 +749,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.processKey(.ctrl("K"))
 
@@ -773,7 +773,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.processKey(.f9)
 
@@ -801,7 +801,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.processKey(.ctrl("F"))
     #expect(!editor.buffer.lines[1].contains("CUSTOM_MACRO"))
@@ -816,9 +816,9 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
-    editor.pasteTableCellText("12345678901234567890")
+    editor.tableModeController.pasteTableCellText("12345678901234567890")
 
     #expect(editor.buffer.columnIndex == 16)
     #expect(editor.buffer.lines[1] == "│1234567890123456│right cell      │")
@@ -858,7 +858,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Press Ctrl+J (^J) inside Table Mode to center text in cell
@@ -880,7 +880,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     editor.switchToCanvasMode()
 
     editor.processKey(.ctrl("J"))
@@ -904,7 +904,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1  // At left inner boundary 'H'
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // 1. Press Backspace at left inner boundary
@@ -933,7 +933,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     editor.deleteCurrentLine()
@@ -956,7 +956,7 @@ import Testing
     logoEditor.buffer.lineIndex = 1
     logoEditor.buffer.columnIndex = 6
 
-    logoEditor.toggleTableMode()
+    logoEditor.tableModeController.toggleTableMode()
     #expect(logoEditor.isTableModeActive == true)
 
     logoEditor.logoEngine.execute("DELETELINE")
@@ -979,7 +979,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     editor.logoEngine.execute("SPLITLINE")
@@ -1004,7 +1004,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     editor.logoEngine.execute("JOIN")
@@ -1025,7 +1025,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.enterTableMode(with: TableCell(minLine: 0, maxLine: 3, minCol: 0, maxCol: 5))
+    editor.tableModeController.enterTableMode(with: TableCell(minLine: 0, maxLine: 3, minCol: 0, maxCol: 5))
 
     editor.logoEngine.execute("JOIN \"-")
 
@@ -1045,7 +1045,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     let initialWidth = editor.buffer.lines[1].displayWidth
@@ -1085,7 +1085,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 8
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     editor.processKey(.char("b"))
@@ -1111,7 +1111,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     editor.switchToCanvasMode()
     editor.canvasVisualColumn = 20
     editor.syncCanvasCursorToBuffer()
@@ -1141,7 +1141,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     let initialWidth = editor.buffer.lines[1].displayWidth
@@ -1171,7 +1171,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     let initialWidth = editor.buffer.lines[1].displayWidth
 
     editor.processKey(.char("❌"))
@@ -1196,7 +1196,7 @@ import Testing
     editor.buffer.lineIndex = 3
     editor.buffer.columnIndex = 6
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Press Up Arrow (.arrowUp)
@@ -1227,7 +1227,7 @@ import Testing
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 3
 
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
     #expect(editor.isTableModeActive == true)
 
     // Initial maxCol of cell 1 is 9
@@ -1277,7 +1277,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 3
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     let renderer = Renderer()
     let helpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
@@ -1305,7 +1305,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     editor.clipboardText = "Hello"
 
@@ -1328,7 +1328,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 2
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     // Try to shrink height when both inner lines have text
     editor.processKey(.ctrlShiftArrowUp)
@@ -1349,7 +1349,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 1
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     // Expand Left Box 1 width -> Should consume 1 connector char '─' without moving Right Box 2
     editor.processKey(.ctrlShiftArrowRight)
@@ -1367,7 +1367,7 @@ import Testing
     ]
     collidingEditor.buffer.lineIndex = 1
     collidingEditor.buffer.columnIndex = 1
-    collidingEditor.toggleTableMode()
+    collidingEditor.tableModeController.toggleTableMode()
 
     collidingEditor.processKey(.ctrlShiftArrowRight)
     // Verify width was NOT expanded into colliding Box 2
@@ -1385,7 +1385,7 @@ import Testing
     ]
     editor.buffer.lineIndex = 2  // "│ Line 2         │"
     editor.buffer.columnIndex = 3
-    editor.toggleTableMode()
+    editor.tableModeController.toggleTableMode()
 
     #expect(editor.isTableModeActive == true)
     #expect(editor.currentTableCell?.innerMinLine == 1)

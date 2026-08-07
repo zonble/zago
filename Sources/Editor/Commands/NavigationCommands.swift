@@ -99,9 +99,9 @@ public struct MoveHomeCommand: Command {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, _) = Editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
-            editor.clampTableModeCursor()
+            editor.tableModeController.clampTableModeCursor()
             return
         }
         if editor.isCanvasModeActive {
@@ -127,9 +127,9 @@ public struct MoveEndCommand: Command {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
-            editor.clampTableModeCursor()
+            editor.tableModeController.clampTableModeCursor()
             return
         }
         if editor.isCanvasModeActive {
@@ -171,11 +171,11 @@ public struct MovePgdnCommand: Command {
     public func execute(on editor: Editor) {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
-            let vCol = editor.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+            let vCol = editor.tableModeController.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
             editor.buffer.lineIndex = cell.innerMaxLine
-            editor.buffer.columnIndex = editor.getCharIndexForVisualColumn(
+            editor.buffer.columnIndex = editor.tableModeController.getCharIndexForVisualColumn(
                 in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
-            editor.clampTableModeCursor()
+            editor.tableModeController.clampTableModeCursor()
             return
         }
         let (rows, _) = editor.terminal.getWindowSize()
@@ -200,11 +200,11 @@ public struct MovePgupCommand: Command {
     public func execute(on editor: Editor) {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
-            let vCol = editor.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+            let vCol = editor.tableModeController.getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
             editor.buffer.lineIndex = cell.innerMinLine
-            editor.buffer.columnIndex = editor.getCharIndexForVisualColumn(
+            editor.buffer.columnIndex = editor.tableModeController.getCharIndexForVisualColumn(
                 in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
-            editor.clampTableModeCursor()
+            editor.tableModeController.clampTableModeCursor()
             return
         }
         let (rows, _) = editor.terminal.getWindowSize()

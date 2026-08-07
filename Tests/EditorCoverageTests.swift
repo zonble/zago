@@ -322,7 +322,7 @@ private func makeEditor(
         )
 
         let tableEditor = Editor(language: .en)
-        tableEditor.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
+        tableEditor.tableModeController.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
         let tableDelegate: LogoEngineDelegate = tableEditor
         #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .hasTableCell) as? Bool == true)
         #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle) as? BorderStyle == .single)
@@ -339,7 +339,7 @@ private func makeEditor(
 
         let tableEditor = Editor(language: .en)
         tableEditor.logoEngine.execute("TO BOXIT BOX 1 1 END")
-        tableEditor.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
+        tableEditor.tableModeController.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
 
         #expect(tableEditor.runLogoScript("BOXIT") == false)
         #expect(tableEditor.statusMessage == tableEditor.l10n.disabledInTableMode("BOX"))

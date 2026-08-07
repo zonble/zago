@@ -42,7 +42,7 @@ extension Editor {
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
             buffer.lineIndex = targetLine
             let zeroBasedVisualColumn = oneBasedColumn - 1
-            buffer.columnIndex = getCharIndexForVisualColumn(in: buffer.lines[targetLine], targetVisualCol: zeroBasedVisualColumn)
+            buffer.columnIndex = tableModeController.getCharIndexForVisualColumn(in: buffer.lines[targetLine], targetVisualCol: zeroBasedVisualColumn)
         } else {
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
             buffer.lineIndex = targetLine
@@ -142,7 +142,7 @@ extension Editor {
             buffer.insertString(transformed)
             buffer.selectionMark = nil
             if isTableModeActive {
-                clampTableModeCursor()
+                tableModeController.clampTableModeCursor()
             } else {
                 buffer.clampCursor()
             }

@@ -194,7 +194,7 @@ import TextMetrics
     tableEditor.buffer.lineIndex = 1
     tableEditor.buffer.columnIndex = 1
     tableEditor.switchToCanvasMode()
-    tableEditor.toggleTableMode()
+    tableEditor.tableModeController.toggleTableMode()
 
     tableEditor.processKey(.ctrlShiftArrowRight)
 

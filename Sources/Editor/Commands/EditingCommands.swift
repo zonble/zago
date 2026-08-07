@@ -137,7 +137,7 @@ public struct CutTextCommand: Command {
     public func execute(on editor: Editor) {
         if editor.isTableModeActive {
             if let cell = editor.currentTableCell {
-                editor.cutTableCellText(cell: cell)
+                editor.tableModeController.cutTableCellText(cell: cell)
             }
             return
         }
@@ -178,7 +178,7 @@ public struct UncutTextCommand: Command {
     public func execute(on editor: Editor) {
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
-                editor.pasteTableCellText(text)
+                editor.tableModeController.pasteTableCellText(text)
                 editor.setStatusMessage(editor.l10n["status.uncut_text"])
             } else {
                 editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
@@ -253,7 +253,7 @@ public struct JustifyCommand: Command {
 
     public func execute(on editor: Editor) {
         if editor.isTableModeActive {
-            editor.centerCellText()
+            editor.tableModeController.centerCellText()
             return
         }
         guard !editor.isCanvasModeActive else {

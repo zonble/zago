@@ -347,7 +347,7 @@ public final class Editor: @unchecked Sendable {
     /// Deletes current line with Undo snapshot tracking.
     public func deleteCurrentLine() {
         if isTableModeActive, currentTableCell != nil {
-            deleteCurrentTableCellLine()
+            tableModeController.deleteCurrentTableCellLine()
             return
         }
         buffer.deleteLine()
@@ -452,7 +452,7 @@ public final class Editor: @unchecked Sendable {
     func deleteTextSelectionIfNeeded(updateClipboard: Bool, saveSnapshot: Bool = true) -> Bool {
         guard let mark = buffer.selectionMark else { return false }
         if isTableModeActive, let cell = currentTableCell {
-            return deleteTableSelectionIfNeeded(cell: cell, updateClipboard: updateClipboard)
+            return tableModeController.deleteTableSelectionIfNeeded(cell: cell, updateClipboard: updateClipboard)
         }
         let cursor = (line: buffer.lineIndex, column: buffer.columnIndex)
         let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: cursor)

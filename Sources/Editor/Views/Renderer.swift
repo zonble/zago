@@ -277,7 +277,7 @@ public final class Renderer {
                     vLine.bufferLineIndex >= 0 && vLine.bufferLineIndex < editor.buffer.lines.count
                 {
                     let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
-                    activeCellBounds = Editor.findCellHorizontalBorders(
+                    activeCellBounds = TableModeController.findCellHorizontalBorders(
                         in: fullLine, nearCol: cell.innerMinCol, cell: cell)
                 }
 
@@ -507,7 +507,7 @@ public final class Renderer {
                 let effectiveCol: Int
                 if editor.isTableModeActive, let cell = editor.currentTableCell,
                    editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine {
-                    let (leftBorder, rightBorder) = Editor.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
+                    let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
                     if cursorVColIdx >= rightBorder {
                         effectiveCol = max(leftBorder + 1, rightBorder - 1)
                     } else {
