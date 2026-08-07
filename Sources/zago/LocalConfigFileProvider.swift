@@ -22,6 +22,6 @@ public struct LocalConfigFileProvider: ConfigFileProvider {
     }
 
     public func writeString(_ content: String, toPath path: String) throws {
-        try content.write(toFile: path, atomically: true, encoding: .utf8)
+        try content.write(toFile: path, atomically: false, encoding: .utf8)
     }
 }

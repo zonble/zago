@@ -13,7 +13,7 @@ struct ConfigAndToolsTests {
         func currentDirectoryPath() -> String { FileManager.default.currentDirectoryPath }
         func fileExists(atPath path: String) -> Bool { FileManager.default.fileExists(atPath: path) }
         func readString(atPath path: String) throws -> String { try String(contentsOfFile: path, encoding: .utf8) }
-        func writeString(_ content: String, toPath path: String) throws { try content.write(toFile: path, atomically: true, encoding: .utf8) }
+        func writeString(_ content: String, toPath path: String) throws { try content.write(toFile: path, atomically: false, encoding: .utf8) }
     }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
     #expect(!ZagoVersion.current.isEmpty)
@@ -561,15 +561,11 @@ struct ConfigAndToolsTests {
 
 
 @Test func testGenerateDefaultConfigFile() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_gen_\(UUID().uuidString).serc").path
-    if FileManager.default.fileExists(atPath: tmpPath) {
-        try? FileManager.default.removeItem(atPath: tmpPath)
-    }
+    let provider = InMemoryConfigFileProvider(homePath: "/home/user", currentPath: "/home/user")
+    let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: "/home/user/.zagorc", provider: provider)
+    #expect(provider.fileExists(atPath: generatedPath) == true)
 
-    let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: tmpPath, provider: TestLocalConfigFileProvider())
-    #expect(FileManager.default.fileExists(atPath: generatedPath) == true)
-
-    let content = try String(contentsOfFile: generatedPath, encoding: .utf8)
+    let content = try provider.readString(atPath: generatedPath)
     #expect(content.contains("set ruler on"))
     #expect(content.contains("set linenumbers on"))
     #expect(content.contains("set sublinenumbers off"))
@@ -577,8 +573,6 @@ struct ConfigAndToolsTests {
     #expect(content.contains("set trim-trailing-whitespace off"))
     #expect(content.contains("set border single"))
     #expect(content.contains("set arrow solid"))
-
-    try? FileManager.default.removeItem(atPath: tmpPath)
 }
 
 @Test func testConfigLoaderAndKeyParser() throws {
