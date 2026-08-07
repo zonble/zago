@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## 1.1.1 - 2026-08-07
+
+Extracted `Drawing` & `DocumentOutline` SPM targets, added customizable `ArrowStyle` for Unicode arrows, decoupled `Config` dependencies, and enhanced help documentation.
+
+### Added
+
+- Dedicated SPM targets: `Drawing` (for box/arrow drawing algorithms, junction blending, border styles) and `DocumentOutline` (for heading parsing across Markdown, OrgMode, ReST, AsciiDoc).
+- Customizable `ArrowStyle` (`solid` ▲▼◀▶, `stemmed` ↑↓←→, `hollow` △▽◁▷, `small` ▴▾◂▸) for Unicode arrows with `.zagorc` directive (`set arrow <style>`), LOGO DSL integration (`SETARROWSTYLE`, `DEFAULTARROWSTYLE`, `ARROW`), and Menu Bar checkmarks.
+- New "CONFIGURABLE SETTINGS VIA 'set / unset' COMMANDS" section in Help Viewer listing all 14 configurable editor options.
+
+### Changed
+
+- Decoupled `Config` target from `LogoEngine` dependency, achieving a clean single-directional DAG architecture.
+- Refactored switch/case statements across the codebase to modern Swift 5.9+ switch expressions.
+- Updated Traditional Chinese localization to use "畫布模式" (Canvas Mode).
+- Cancel Selection menu item (`menu.edit.cancel_selection`) is now visible only when an active selection mark or canvas block mark exists.
+
 ## 1.1.0 - 2026-08-07
 
 MVC controller architecture refactoring, per-buffer undo isolation, and automated Debian (.deb) release packaging.
