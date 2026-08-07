@@ -932,7 +932,9 @@ extension LogoEngine {
                     posDigits.append(chars[i])
                     i += 1
                 }
-                if !posDigits.isEmpty, let posIdx = Int(posDigits), posIdx > 0 {
+                if !posDigits.isEmpty, let posIdx = Int(posDigits), posIdx > 0,
+                    i == chars.count || !("sSdfxX".contains(chars[i]))
+                {
                     let targetVal = posIdx <= args.count ? args[posIdx - 1] : ""
                     result.append(targetVal)
                     continue

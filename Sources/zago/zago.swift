@@ -101,7 +101,16 @@ struct Zago: ParsableCommand {
 
         var pipedInputData: String? = nil
         var targetFiles = rawFiles
-        let isStdinPiped = isatty(STDIN_FILENO) == 0 || targetFiles == ["-"]
+        let isStdinPiped: Bool
+        if targetFiles == ["-"] {
+            isStdinPiped = true
+        } else if isatty(STDIN_FILENO) == 0 {
+            var pfd = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+            isStdinPiped = poll(&pfd, 1, 0) > 0 && (pfd.revents & Int16(POLLIN)) != 0
+        } else {
+            isStdinPiped = false
+        }
+
         if isStdinPiped {
             if targetFiles == ["-"] { targetFiles = [] }
             let handle = FileHandle.standardInput

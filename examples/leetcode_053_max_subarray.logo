@@ -1,0 +1,31 @@
+; ==============================================================================
+; LeetCode 53: Maximum Subarray - Kadane's Algorithm (in zago Editor LOGO)
+; ==============================================================================
+; Given an integer array `nums`, find the subarray with the largest sum,
+; and return its sum.
+; ==============================================================================
+
+TO MAXSUBARRAY :nums
+  IF EMPTY? :nums [ OUTPUT 0 ]
+  MAKE "maxSoFar FIRST :nums
+  MAKE "currMax FIRST :nums
+  MAKE "rest BUTFIRST :nums
+
+  FOREACH :rest [
+    MAKE "currMax MAX ? (:currMax + ?)
+    MAKE "maxSoFar MAX :maxSoFar :currMax
+  ]
+  OUTPUT :maxSoFar
+END
+
+; Test cases
+TYPE "===_LeetCode_053:_Maximum_Subarray_(Kadane's_Algorithm)_===
+TYPE CHAR 10
+
+MAKE "arr1 [-2 1 -3 4 -1 2 1 -5 4]
+TYPE FORMAT "nums:_%s_max_sum:_%d (LIST :arr1 (MAXSUBARRAY :arr1))
+TYPE CHAR 10
+
+MAKE "arr2 [5 4 -1 7 8]
+TYPE FORMAT "nums:_%s_max_sum:_%d (LIST :arr2 (MAXSUBARRAY :arr2))
+TYPE CHAR 10

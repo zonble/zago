@@ -1,0 +1,39 @@
+; ==============================================================================
+; Brainfuck Interpreter in zago Editor LOGO
+; ==============================================================================
+; Usage in zago:
+;   1. Esc -> type: LOAD "examples/brainfuck.logo
+;   2. Esc -> type: TYPE BF (WORD (REPEATSTR 65 (CHAR 43)) (CHAR 46))
+; ==============================================================================
+
+TO BF :code
+  MAKE "tape ARRAY 3000
+  MAKE "ptr 1
+  MAKE "pc 1
+  MAKE "len COUNT :code
+  MAKE "out ""
+
+  WHILE [:pc <= :len] [
+    MAKE "cmd ITEM :pc :code
+    MAKE "codeVal ORD :cmd
+
+    ; 62='>' 60='<' 43='+' 45='-' 46='.'
+    IF :codeVal = 62 [ MAKE "ptr :ptr + 1 ]
+    IF :codeVal = 60 [ MAKE "ptr MAX 1 (:ptr - 1) ]
+    IF :codeVal = 43 [ SETITEM :ptr :tape ((ITEM :ptr :tape) + 1) ]
+    IF :codeVal = 45 [ SETITEM :ptr :tape ((ITEM :ptr :tape) - 1) ]
+    IF :codeVal = 46 [ MAKE "out WORD :out (CHAR ITEM :ptr :tape) ]
+
+    MAKE "pc :pc + 1
+  ]
+
+  OUTPUT :out
+END
+
+; Run Brainfuck test snippet (ASCII 65 = 'A')
+TYPE "===_Brainfuck_Interpreter_Demo_===
+TYPE CHAR 10
+
+MAKE "bfcode WORD (REPEATSTR 65 (CHAR 43)) (CHAR 46)
+TYPE FORMAT "Code:_%s_Output:_%s (LIST :bfcode (BF :bfcode))
+TYPE CHAR 10

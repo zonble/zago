@@ -1,0 +1,26 @@
+; ==============================================================================
+; FizzBuzz (in zago Editor LOGO)
+; ==============================================================================
+; Prints numbers from 1 to n.
+;   - For multiples of 3, print "Fizz" instead of the number.
+;   - For multiples of 5, print "Buzz" instead of the number.
+;   - For numbers which are multiples of both 3 and 5, print "FizzBuzz".
+; ==============================================================================
+
+TO FIZZBUZZ :n
+  MAKE "i 1
+  WHILE [:i <= :n] [
+    MAKE "res ""
+    IF (:i % 3) = 0 [ MAKE "res WORD :res "Fizz ]
+    IF (:i % 5) = 0 [ MAKE "res WORD :res "Buzz ]
+    IF EMPTY? :res [ MAKE "res :i ]
+    TYPE FORMAT "%2d:_%s (LIST :i :res)
+    TYPE CHAR 10
+    MAKE "i :i + 1
+  ]
+END
+
+; Run FizzBuzz for numbers 1 to 15
+TYPE "===_FizzBuzz_Demo_(1_to_15)_===
+TYPE CHAR 10
+FIZZBUZZ 15

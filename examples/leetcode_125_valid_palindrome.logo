@@ -1,0 +1,28 @@
+; ==============================================================================
+; LeetCode 125: Valid Palindrome (in zago Editor LOGO)
+; ==============================================================================
+; A phrase is a palindrome if, after converting all uppercase letters into
+; lowercase letters and removing all non-alphanumeric characters, it reads
+; the same forward and backward.
+; Uses new string primitives: `lowercase`, `regex_replace`, `reverse`.
+; ==============================================================================
+
+TO ISPALINDROME :s
+  MAKE "noPunct REGEX_REPLACE "\W+" "" :s
+  MAKE "clean LOWERCASE REGEX_REPLACE "_" "" :noPunct
+  MAKE "rev REVERSE :clean
+  IF :clean = :rev [ OUTPUT "true ]
+  OUTPUT "false
+END
+
+; Test cases
+TYPE "===_LeetCode_125:_Valid_Palindrome_===
+TYPE CHAR 10
+
+MAKE "t1 "A_man,_a_plan,_a_canal:_Panama
+TYPE FORMAT "str:_%s_palindrome:_%s (LIST :t1 (ISPALINDROME :t1))
+TYPE CHAR 10
+
+MAKE "t2 "race_a_car
+TYPE FORMAT "str:_%s_palindrome:_%s (LIST :t2 (ISPALINDROME :t2))
+TYPE CHAR 10

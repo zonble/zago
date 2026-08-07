@@ -5,15 +5,12 @@ extension LogoEngine {
     internal func evaluateCondition(_ conditionTokens: [String]) -> Bool {
         guard !conditionTokens.isEmpty else { return false }
 
-        if conditionTokens.count == 1 {
-            let token = conditionTokens[0]
-            var idx = 0
-            let val = evaluateExpression([token], index: &idx)
-            return logoIsTrue(val)
-        }
-
         var idx = 0
         let leftValStr = evaluateExpression(conditionTokens, index: &idx)
+
+        if idx >= conditionTokens.count - 1 {
+            return logoIsTrue(leftValStr)
+        }
 
         if idx + 1 < conditionTokens.count {
             let opToken = conditionTokens[idx + 1]

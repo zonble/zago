@@ -1,0 +1,53 @@
+; ==============================================================================
+; LeetCode 20: Valid Parentheses (in zago Editor LOGO)
+; ==============================================================================
+; Given a string `s` containing '(', ')', '{', '}', '[' and ']', determine
+; if the input string is valid using a stack.
+; ==============================================================================
+
+TO ISVALIDPARENS :s
+  MAKE "stack []
+  MAKE "n COUNT :s
+  MAKE "i 1
+  WHILE [:i <= :n] [
+    MAKE "ch ITEM :i :s
+    MAKE "code ORD :ch
+    IF :code = 40 [ MAKE "stack FPUT :code :stack ]
+    IF :code = 91 [ MAKE "stack FPUT :code :stack ]
+    IF :code = 123 [ MAKE "stack FPUT :code :stack ]
+
+    IF :code = 41 [
+      IF EMPTY? :stack [ OUTPUT "false ]
+      IF (FIRST :stack) != 40 [ OUTPUT "false ]
+      MAKE "stack BUTFIRST :stack
+    ]
+    IF :code = 93 [
+      IF EMPTY? :stack [ OUTPUT "false ]
+      IF (FIRST :stack) != 91 [ OUTPUT "false ]
+      MAKE "stack BUTFIRST :stack
+    ]
+    IF :code = 125 [
+      IF EMPTY? :stack [ OUTPUT "false ]
+      IF (FIRST :stack) != 123 [ OUTPUT "false ]
+      MAKE "stack BUTFIRST :stack
+    ]
+    MAKE "i :i + 1
+  ]
+  OUTPUT EMPTY? :stack
+END
+
+; Test cases
+TYPE "===_LeetCode_020:_Valid_Parentheses_===
+TYPE CHAR 10
+
+MAKE "p1 (WORD CHAR 40 CHAR 41 CHAR 91 CHAR 93 CHAR 123 CHAR 125)
+TYPE FORMAT "str:_%s_valid:_%s (LIST :p1 (ISVALIDPARENS :p1))
+TYPE CHAR 10
+
+MAKE "p2 (WORD CHAR 40 CHAR 93)
+TYPE FORMAT "str:_%s_valid:_%s (LIST :p2 (ISVALIDPARENS :p2))
+TYPE CHAR 10
+
+MAKE "p3 (WORD CHAR 40 CHAR 91 CHAR 123 CHAR 125 CHAR 93 CHAR 41)
+TYPE FORMAT "str:_%s_valid:_%s (LIST :p3 (ISVALIDPARENS :p3))
+TYPE CHAR 10
