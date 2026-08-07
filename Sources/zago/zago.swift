@@ -99,7 +99,20 @@ struct Zago: ParsableCommand {
         let enableSubLineNumbers = Self.parseBoolOption(subLineNumbers)
         let selectedLang = Self.parseLanguageOption(lang)
 
+        var pipedInputData: String? = nil
+        var targetFiles = rawFiles
+        let isStdinPiped = isatty(STDIN_FILENO) == 0 || targetFiles == ["-"]
+        if isStdinPiped {
+            if targetFiles == ["-"] { targetFiles = [] }
+            let handle = FileHandle.standardInput
+            let data = handle.readDataToEndOfFile()
+            if let str = String(data: data, encoding: .utf8), !str.isEmpty {
+                pipedInputData = str
+            }
+        }
+
         let baseOptions = EditorOptions(
+            filePaths: targetFiles,
             wrapColumn: wrap,
             showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers,
@@ -107,7 +120,8 @@ struct Zago: ParsableCommand {
             spellLanguage: spellLang,
             initialLine: initialLine,
             initialColumn: initialColumn,
-            readOnly: readonly
+            readOnly: readonly,
+            pipedInput: pipedInputData
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false
@@ -149,17 +163,7 @@ struct Zago: ParsableCommand {
             }
         }
 
-        var interactiveOptions = baseOptions
-        var interactiveFiles = rawFiles
-
-        var pipedInputData: String? = nil
-        if isatty(STDIN_FILENO) == 0 || interactiveFiles == ["-"] {
-            if interactiveFiles == ["-"] { interactiveFiles = [] }
-            let handle = FileHandle.standardInput
-            let data = handle.readDataToEndOfFile()
-            if let str = String(data: data, encoding: .utf8), !str.isEmpty {
-                pipedInputData = str
-            }
+        if isStdinPiped {
             #if os(macOS) || os(Linux)
             if let ttyHandle = FileHandle(forReadingAtPath: "/dev/tty") {
                 dup2(ttyHandle.fileDescriptor, STDIN_FILENO)
@@ -167,12 +171,11 @@ struct Zago: ParsableCommand {
             #endif
         }
 
-        interactiveOptions.filePaths = interactiveFiles
+        var interactiveOptions = baseOptions
         interactiveOptions.showRuler = ruler
         interactiveOptions.enableSyntax = enableSyntax
-        interactiveOptions.pipedInput = pipedInputData
 
-        for file in interactiveFiles {
+        for file in targetFiles {
             let normalized = fileIOStrategy.normalizePath(file, isDirectory: false)
             let info = fileIOStrategy.fileInfo(at: normalized)
             if info.exists && !info.isDirectory && info.isBinary {

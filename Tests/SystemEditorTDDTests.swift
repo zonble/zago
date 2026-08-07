@@ -40,3 +40,18 @@ import Testing
     #expect(editor.buffer.lines[1] == "Piped Line 2")
     #expect(editor.buffer.lines[2] == "Piped Line 3")
 }
+
+@Test func testHeadlessLogoExecutionOnPipedInputBuffer() throws {
+    let deps = EditorDependencies(
+        fileIOStrategy: MemoryEditorFileIOStrategy(),
+        terminal: TestEditorTerminal.shared
+    )
+    let options = EditorOptions(
+        pipedInput: "Line A\nLine B"
+    )
+    let editor = Editor(options: options, dependencies: deps)
+
+    // Execute LOGO script on the piped input buffer
+    editor.runLogoScript("fd 10")
+    #expect(editor.buffer.lines.count >= 2)
+}
