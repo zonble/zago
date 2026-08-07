@@ -9,6 +9,8 @@ public struct EditorConfig {
     public var showSubLineNumbers: Bool = false
     public var startInCanvasMode: Bool = false
     public var tabSize: Int = 4
+    public var smartTab: Bool = true
+    public var listIndentSize: Int = 2
     public var enableSyntaxHighlight: Bool = true
     public var autoReload: Bool = true
     public var trimTrailingWhitespaceOnSave: Bool = false

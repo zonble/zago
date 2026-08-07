@@ -20,6 +20,12 @@ public struct RuntimeConfig: Sendable, Equatable {
     /// Number of spaces representing a Tab character.
     public var tabSize: Int
 
+    /// Whether smart tab, list indent, and block indent are enabled.
+    public var smartTab: Bool
+
+    /// Number of spaces for list item indent nesting.
+    public var listIndentSize: Int
+
     /// Whether trailing whitespace is automatically trimmed on save.
     public var trimTrailingWhitespaceOnSave: Bool
 
@@ -33,6 +39,8 @@ public struct RuntimeConfig: Sendable, Equatable {
         enableSyntaxHighlight: Bool = true,
         autoReload: Bool = true,
         tabSize: Int = 4,
+        smartTab: Bool = true,
+        listIndentSize: Int = 2,
         trimTrailingWhitespaceOnSave: Bool = false,
         showGitDiff: Bool = true
     ) {
@@ -42,6 +50,8 @@ public struct RuntimeConfig: Sendable, Equatable {
         self.enableSyntaxHighlight = enableSyntaxHighlight
         self.autoReload = autoReload
         self.tabSize = tabSize
+        self.smartTab = smartTab
+        self.listIndentSize = listIndentSize
         self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
         self.showGitDiff = showGitDiff
     }

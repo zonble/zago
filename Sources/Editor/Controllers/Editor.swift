@@ -222,6 +222,8 @@ public final class Editor: @unchecked Sendable {
             enableSyntaxHighlight: options.enableSyntax ?? config.enableSyntaxHighlight,
             autoReload: options.autoReload ?? config.autoReload,
             tabSize: config.tabSize,
+            smartTab: config.smartTab,
+            listIndentSize: config.listIndentSize,
             trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
             showGitDiff: config.showGitDiff
         )

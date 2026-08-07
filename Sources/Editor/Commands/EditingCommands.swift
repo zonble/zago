@@ -199,13 +199,21 @@ public struct UncutTextCommand: Command {
 public struct InsertTabCommand: Command {
     public let id: CommandID = .editTab
     public let name = "Insert Tab"
-    public let description = "Insert tab spaces"
+    public let description = "Insert tab spaces or smart indent"
     public let keys: [Key] = [.tab, .ctrl("I"), .ctrl("i")]
 
     public init() {}
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+
+        // 1. Grid Table Mode Navigation
+        if editor.isTableModeActive {
+            editor.tableModeController.navigateNextTableCell()
+            return
+        }
+
+        // 2. Markup Language Table Cell Navigation
         if let syntax = editor.activeLanguageSyntax,
             let navigator = syntax.tableNavigator,
             let result = navigator(editor.buffer.lines, editor.buffer.lineIndex, editor.buffer.columnIndex, true)
@@ -217,16 +225,43 @@ public struct InsertTabCommand: Command {
             editor.buffer.columnIndex = result.newCursorColumn
             return
         }
-        if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
-        {
-            editor.buffer.insertString("    ")
+
+        // 3. Selection Active -> Block Indent
+        if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
+            editor.indentSelectedBlock(spaces: editor.displayConfig.tabSize)
             return
         }
+
+        // 4. Canvas Mode
         if editor.isCanvasModeActive {
-            editor.insertCanvasString("    ")
-        } else {
-            editor.buffer.insertString("    ")
+            editor.insertCanvasString(String(repeating: " ", count: editor.displayConfig.tabSize))
+            return
         }
+
+        // 5. Smart Tab (List Item line or Leading Whitespace or Word boundary)
+        if editor.displayConfig.smartTab {
+            let lineIndex = editor.buffer.lineIndex
+            let line = editor.buffer.lines[lineIndex]
+            let col = editor.buffer.columnIndex
+            let leadingSpaces = line.prefix(while: { $0 == " " || $0 == "\t" }).count
+
+            if editor.isListItemLine(at: lineIndex) {
+                editor.indentLine(at: lineIndex, spaces: editor.displayConfig.listIndentSize)
+                return
+            } else if col <= leadingSpaces {
+                editor.indentLine(at: lineIndex, spaces: editor.displayConfig.tabSize)
+                return
+            } else {
+                let tabStop = editor.displayConfig.tabSize
+                let remainder = col % tabStop
+                let insertCount = (remainder == 0) ? tabStop : (tabStop - remainder)
+                editor.buffer.insertString(String(repeating: " ", count: insertCount))
+                return
+            }
+        }
+
+        // 6. Fallback raw tab insertion
+        editor.buffer.insertString(String(repeating: " ", count: editor.displayConfig.tabSize))
     }
 }
 
@@ -240,10 +275,14 @@ public struct InsertBacktabCommand: Command {
 
     public func execute(on editor: Editor) {
         editor.saveUndoSnapshot()
+
+        // 1. Grid Table Mode Navigation
         if editor.isTableModeActive {
             editor.tableModeController.navigatePrevTableCell()
             return
         }
+
+        // 2. Markup Language Table Cell Navigation
         if let syntax = editor.activeLanguageSyntax,
             let navigator = syntax.tableNavigator,
             let result = navigator(editor.buffer.lines, editor.buffer.lineIndex, editor.buffer.columnIndex, false)
@@ -255,6 +294,23 @@ public struct InsertBacktabCommand: Command {
             editor.buffer.columnIndex = result.newCursorColumn
             return
         }
+
+        // 3. Selection Active -> Block Outdent
+        if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
+            editor.outdentSelectedBlock(spaces: editor.displayConfig.tabSize)
+            return
+        }
+
+        // 4. Smart Tab Line Outdent
+        if editor.displayConfig.smartTab {
+            let lineIndex = editor.buffer.lineIndex
+            let outdentSpaces = editor.isListItemLine(at: lineIndex) ? editor.displayConfig.listIndentSize : editor.displayConfig.tabSize
+            editor.outdentLine(at: lineIndex, spaces: outdentSpaces)
+            return
+        }
+
+        // 5. Fallback Line Outdent
+        editor.outdentLine(at: editor.buffer.lineIndex, spaces: editor.displayConfig.tabSize)
     }
 }
 

@@ -144,6 +144,22 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "smarttab", "smart-tab", "smart_tab":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.smartTab = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.smartTab = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "listindentsize", "list-indent-size", "list_indent_size", "list_indent", "listindent":
+                        if let s = Int(value), s > 0 {
+                            config.listIndentSize = s
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     case "autoreload", "auto-reload", "auto_reload":
                         if value == "true" || value == "on" || value == "1" || value.isEmpty {
                             config.autoReload = true

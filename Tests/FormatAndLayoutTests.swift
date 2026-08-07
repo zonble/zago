@@ -1007,4 +1007,52 @@ struct FormatAndLayoutTests {
     let outputActive = editor.renderer.render(editor: editor, rows: 24, cols: 80)
     #expect(outputActive.contains("\u{1B}[90m   1 \u{1B}[0m"))
 }
+
+@Test func testSmartTabBlockIndentOutdentAndListNesting() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "First line",
+        "Second line",
+        "- List item 1",
+        "  - Nested item",
+        "hello world",
+    ]
+
+    // 1. Test Block Indent on multi-line text selection
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    editor.buffer.selectionMark = (line: 1, column: 5)
+    #expect(editor.buffer.selectionMark != nil)
+
+    // Press Tab -> Block Indent by tabSize (4 spaces)
+    editor.processKey(.tab)
+    #expect(editor.buffer.lines[0] == "    First line")
+    #expect(editor.buffer.lines[1] == "    Second line")
+    #expect(editor.buffer.selectionMark != nil)
+
+    // Press Shift+Tab (Backtab) -> Block Outdent by 4 spaces
+    editor.processKey(.backtab)
+    #expect(editor.buffer.lines[0] == "First line")
+    #expect(editor.buffer.lines[1] == "Second line")
+
+    // Clear selection
+    editor.buffer.selectionMark = nil
+
+    // 2. Test Smart List Indent (adds listIndentSize = 2 spaces)
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 0
+    editor.processKey(.tab)
+    #expect(editor.buffer.lines[2] == "  - List item 1")
+
+    // Shift+Tab on list line -> Outdents by 2 spaces
+    editor.processKey(.backtab)
+    #expect(editor.buffer.lines[2] == "- List item 1")
+
+    // 3. Test Word Boundary Tab Stop Alignment
+    editor.buffer.lineIndex = 4
+    editor.buffer.columnIndex = 2 // "he|llo world" (col 2, tabSize 4 -> aligns to col 4)
+    editor.processKey(.tab)
+    #expect(editor.buffer.lines[4] == "he  llo world")
+    #expect(editor.buffer.columnIndex == 4)
+}
 }
