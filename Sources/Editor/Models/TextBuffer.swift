@@ -31,6 +31,8 @@ open class TextBuffer: SpellCheckableBuffer {
     public var viewShowLineNumbers: Bool = true
     public var viewShowSubLineNumbers: Bool = false
     public var viewWrapColumn: Int? = nil
+    public var undoStack: [UndoSnapshot] = []
+    public var maxUndoStackSize: Int = 100
 
     open var isReadOnly: Bool { false }
     open var allowsLogoExecution: Bool { true }

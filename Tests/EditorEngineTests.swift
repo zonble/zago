@@ -254,6 +254,35 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "")
 }
 
+@Test func testSwitchingBufferPreservesPerBufferUndoHistory() throws {
+    let editor = Editor()
+    editor.openNewBuffer()
+    let buf0Index = 0
+    let buf1Index = 1
+
+    editor.switchToBuffer(index: buf0Index)
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString("Buffer 0 Initial")
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString(" - Edit 1")
+
+    editor.switchToBuffer(index: buf1Index)
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString("Buffer 1 Initial")
+    editor.saveUndoSnapshot()
+    editor.buffer.insertString(" - Edit 2")
+
+    // Undo on Buffer 1
+    editor.performUndo()
+    #expect(editor.buffer.lines[0] == "Buffer 1 Initial")
+
+    // Switch back to Buffer 0 and Undo
+    editor.switchToBuffer(index: buf0Index)
+    #expect(editor.buffer.lines[0] == "Buffer 0 Initial - Edit 1")
+    editor.performUndo()
+    #expect(editor.buffer.lines[0] == "Buffer 0 Initial")
+}
+
 @Test func testCommandRegistry() throws {
     let editor = Editor()
     #expect(editor.commandRegistry.commands.count > 20)

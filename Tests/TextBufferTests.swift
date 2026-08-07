@@ -33,6 +33,29 @@ import Testing
     #expect(buffer.lines == ["Hello", "Worl"])
 }
 
+@Test func testIndependentBufferUndoStack() throws {
+    let buf1 = TextBuffer()
+    let buf2 = TextBuffer()
+
+    buf1.lines = ["Buffer 1 Original"]
+    buf1.saveUndoSnapshot()
+    buf1.lines = ["Buffer 1 Modified"]
+
+    buf2.lines = ["Buffer 2 Original"]
+    buf2.saveUndoSnapshot()
+    buf2.lines = ["Buffer 2 Modified"]
+
+    #expect(buf1.undoStack.count == 1)
+    #expect(buf2.undoStack.count == 1)
+
+    buf1.performUndo()
+    #expect(buf1.lines == ["Buffer 1 Original"])
+    #expect(buf2.lines == ["Buffer 2 Modified"])
+
+    buf2.performUndo()
+    #expect(buf2.lines == ["Buffer 2 Original"])
+}
+
 @Test func testVirtualLineHomeAndEndNavigation() throws {
     let engine = LayoutEngine(wrapColumn: 10)
     let lines = ["1234567890ABCDEFGHIJ12345"]  // 25 characters

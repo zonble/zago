@@ -26,6 +26,7 @@ Sources/Editor/
 ├── Models/                   # Domain Models & Geometry Math
 │   ├── TextBuffer.swift
 │   ├── TextBuffer+Selection.swift
+│   ├── TextBuffer+Undo.swift
 │   ├── DirectoryBuffer.swift
 │   ├── LayoutEngine.swift
 │   ├── ScreenGeometry.swift

@@ -166,8 +166,6 @@ public final class Editor: @unchecked Sendable {
     public var defaultBorderStyle: BorderStyle = .single
     public var isRegexSearchEnabled: Bool = false
 
-    var undoStack: [UndoSnapshot] = []
-    let maxUndoStackSize = 100
     var lastMutationTime: Date?
     var lastIsPaste: Bool = false
 
