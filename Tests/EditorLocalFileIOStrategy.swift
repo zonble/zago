@@ -106,23 +106,34 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
     func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
         stopWatchingFile(at: path)
         let normalized = normalizePath(path, isDirectory: false)
-        let initialMTime = fileInfo(at: normalized).modificationDate
+
+        func getSnapshot() -> (exists: Bool, mtime: Date?, size: UInt64?) {
+            let info = fileInfo(at: normalized)
+            guard info.exists else { return (false, nil, nil) }
+            let attrs = try? fileManager.attributesOfItem(atPath: normalized)
+            let size = attrs?[.size] as? UInt64
+            return (true, info.modificationDate, size)
+        }
+
+        let initialSnapshot = getSnapshot()
 
         let queue = DispatchQueue(label: "test.filewatcher.\(UUID().uuidString)")
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + 0.1, repeating: 0.1)
+        timer.schedule(deadline: .now() + 0.05, repeating: 0.05)
 
         final class State: @unchecked Sendable {
-            var lastMTime: Date?
-            init(lastMTime: Date?) { self.lastMTime = lastMTime }
+            var snapshot: (exists: Bool, mtime: Date?, size: UInt64?)
+            init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
         }
-        let state = State(lastMTime: initialMTime)
+        let state = State(snapshot: initialSnapshot)
 
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
-            let currentMTime = self.fileInfo(at: normalized).modificationDate
-            if currentMTime != state.lastMTime {
-                state.lastMTime = currentMTime
+            let current = getSnapshot()
+            if current.exists != state.snapshot.exists ||
+                current.mtime != state.snapshot.mtime ||
+                current.size != state.snapshot.size {
+                state.snapshot = current
                 DispatchQueue.main.async {
                     onChange()
                 }

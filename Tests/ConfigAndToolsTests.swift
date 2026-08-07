@@ -727,13 +727,13 @@ struct ConfigAndToolsTests {
         semaphore.signal()
     }
 
-    // First atomic write
-    try "v2\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    // First atomic write (different string length ensures size changes immediately without needing Thread.sleep)
+    try "v2 - modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
     _ = semaphore.wait(timeout: .now() + 2.0)
     #expect(counter.value >= 1)
 
     // Second atomic write (tests re-open / recovery after atomic replace/rename)
-    try "v3\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    try "v3 - further modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
     _ = semaphore.wait(timeout: .now() + 2.0)
     #expect(counter.value >= 2)
 
