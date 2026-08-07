@@ -37,7 +37,7 @@ public struct BorderCharacterSet: Sendable {
             let cornersAndJoins = [
                 tc.topLeft, tc.topJoin, tc.topRight,
                 tc.midLeft, tc.midJoin, tc.midRight,
-                tc.bottomLeft, tc.bottomJoin, tc.bottomRight
+                tc.bottomLeft, tc.bottomJoin, tc.bottomRight,
             ]
             for str in cornersAndJoins {
                 if let ch = str.first {
@@ -191,12 +191,18 @@ public struct BoxStyle: Sendable {
     let bottomChar: Character
     let bottomRight: Character
 
-    static let single = BoxStyle(topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
-    static let double = BoxStyle(topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
-    static let round  = BoxStyle(topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
-    static let doubleRound = BoxStyle(topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
-    static let ascii  = BoxStyle(topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
-    static let asciiRound = BoxStyle(topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
+    static let single = BoxStyle(
+        topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
+    static let double = BoxStyle(
+        topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
+    static let round = BoxStyle(
+        topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
+    static let doubleRound = BoxStyle(
+        topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
+    static let ascii = BoxStyle(
+        topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
+    static let asciiRound = BoxStyle(
+        topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
 
     static func from(_ str: String) -> BoxStyle {
         BorderStyle.from(str).boxStyle

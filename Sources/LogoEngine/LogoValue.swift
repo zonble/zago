@@ -81,7 +81,9 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             } else if c == "\"" && depth == 0 {
                 let nextIdx = str.index(after: idx)
                 let nextChar: Character = nextIdx < str.endIndex ? str[nextIdx] : " "
-                let isNewOpeningQuote = (prevChar.isWhitespace || prevChar == "[" || prevChar == "{") && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
+                let isNewOpeningQuote =
+                    (prevChar.isWhitespace || prevChar == "[" || prevChar == "{")
+                    && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
 
                 if isNewOpeningQuote && foundSpace {
                     return false

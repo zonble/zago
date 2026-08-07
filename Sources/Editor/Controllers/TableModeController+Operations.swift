@@ -27,7 +27,9 @@ extension TableModeController {
         }
 
         let detector = TableCellDetector()
-        if let cell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex) {
+        if let cell = detector.detectCell(
+            in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex)
+        {
             enterTableMode(with: cell)
         } else {
             editor.promptTableDimensions()
@@ -45,7 +47,8 @@ extension TableModeController {
         editor.buffer.lineIndex = targetLine
         guard targetLine >= 0 && targetLine < editor.buffer.lines.count else { return }
         let line = editor.buffer.lines[targetLine]
-        let (cellLeft, cellRight) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        let (cellLeft, cellRight) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: cell.innerMinCol, cell: cell)
         if editor.buffer.columnIndex <= cellLeft || editor.buffer.columnIndex >= cellRight {
             editor.buffer.columnIndex = cellLeft + 1
         }
@@ -94,7 +97,8 @@ extension TableModeController {
         _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
         insertTextInCurrentTableCell(text)
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         if editor.buffer.columnIndex >= rightBorder {
             editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
         }
@@ -113,12 +117,16 @@ extension TableModeController {
         clampTableModeCursor()
     }
 
-    public func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool {
+    public func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool
+    {
         guard let editor else { return false }
-        guard editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine else { return false }
+        guard editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine else {
+            return false
+        }
         guard editor.buffer.lineIndex >= 0 && editor.buffer.lineIndex < editor.buffer.lines.count else { return false }
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         guard leftBorder >= 0 && rightBorder > leftBorder else { return false }
 
         let leftVisualCol = line.visualColumn(forCharacterOffset: leftBorder)
@@ -221,7 +229,9 @@ extension TableModeController {
 
         if enterMode {
             let detector = TableCellDetector()
-            if let cell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex) {
+            if let cell = detector.detectCell(
+                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex)
+            {
                 enterTableMode(with: cell)
             } else {
                 let cell = TableCell(
@@ -314,7 +324,8 @@ extension TableModeController {
         replaceTableCellInnerText(on: editor.buffer.lineIndex + 1, cell: cell, with: overflow)
 
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (_, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+        let (_, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: cell.innerMinCol, cell: cell)
         editor.buffer.columnIndex = max(cell.innerMinCol, rightBorder - 1)
         editor.buffer.isModified = true
         clampTableModeCursor()
@@ -370,7 +381,8 @@ extension TableModeController {
         editor.buffer.lineIndex = startLine
         if editor.buffer.lineIndex < editor.buffer.lines.count {
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: cell.innerMinCol, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
         }
         editor.buffer.isModified = true
@@ -383,7 +395,8 @@ extension TableModeController {
 
         let fullLine = editor.buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
 
@@ -397,7 +410,8 @@ extension TableModeController {
 
         let fullLine = editor.buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
 
@@ -416,7 +430,8 @@ extension TableModeController {
         guard lineIdx >= 0 && lineIdx < editor.buffer.lines.count else { return 0 }
         let fullLine = editor.buffer.lines[lineIdx]
         let lineChars = Array(fullLine)
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: fullLine, nearCol: cell.innerMinCol, cell: cell)
         let innerMinCol = leftBorder + 1
         let innerMaxCol = rightBorder - 1
         guard innerMinCol <= innerMaxCol, innerMaxCol < lineChars.count else { return 0 }
@@ -442,7 +457,8 @@ extension TableModeController {
             for lineIdx in tableLines {
                 let line = editor.buffer.lines[lineIdx]
                 let chars = Array(line)
-                let (leftB, rightB) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+                let (leftB, rightB) = TableModeController.findCellHorizontalBorders(
+                    in: line, nearCol: cell.innerMinCol, cell: cell)
                 if isTableBorderLine(chars, colLeft: leftB, colRight: rightB) {
                     continue
                 }
@@ -465,7 +481,8 @@ extension TableModeController {
             for lineIdx in tableLines {
                 let line = editor.buffer.lines[lineIdx]
                 let chars = Array(line)
-                let (leftB, rightB) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+                let (leftB, rightB) = TableModeController.findCellHorizontalBorders(
+                    in: line, nearCol: cell.innerMinCol, cell: cell)
                 if leftB == colLeft && rightB == colRight {
                     let nextIdx = rightB + 1
                     if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
@@ -513,7 +530,9 @@ extension TableModeController {
 
         editor.buffer.isModified = true
 
-        if let newCell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex) {
+        if let newCell = detector.detectCell(
+            in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex)
+        {
             editor.currentTableCell = newCell
         }
         clampTableModeCursor()
@@ -568,7 +587,9 @@ extension TableModeController {
 
         editor.buffer.isModified = true
 
-        if let newCell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex) {
+        if let newCell = detector.detectCell(
+            in: editor.buffer.lines, line: editor.buffer.lineIndex, col: editor.buffer.columnIndex)
+        {
             editor.currentTableCell = newCell
         }
         clampTableModeCursor()
@@ -625,4 +646,3 @@ extension String {
         return result
     }
 }
-

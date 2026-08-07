@@ -144,7 +144,8 @@ import Foundation
                     if thirdByte >= UInt8(ascii: "1") && thirdByte <= UInt8(ascii: "9") {
                         var seqString = String(UnicodeScalar(thirdByte))
                         while let nextByte = readByte(timeoutMs: 50) {
-                            if nextByte == UInt8(ascii: "~") || (nextByte >= UInt8(ascii: "A") && nextByte <= UInt8(ascii: "Z"))
+                            if nextByte == UInt8(ascii: "~")
+                                || (nextByte >= UInt8(ascii: "A") && nextByte <= UInt8(ascii: "Z"))
                                 || (nextByte >= UInt8(ascii: "a") && nextByte <= UInt8(ascii: "z"))
                             {
                                 seqString.append(Character(UnicodeScalar(nextByte)))

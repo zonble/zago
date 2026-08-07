@@ -80,7 +80,8 @@ public final class TableModeController: KeyInputHandler {
             if editor.buffer.lineIndex == cell.innerMinLine {
                 navigateUpTableCell()
             } else {
-                let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+                let vCol = getVisualColumn(
+                    in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
                 editor.buffer.lineIndex -= 1
                 editor.buffer.columnIndex = getCharIndexForVisualColumn(
                     in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
@@ -93,7 +94,8 @@ public final class TableModeController: KeyInputHandler {
             if editor.buffer.lineIndex == cell.innerMaxLine {
                 navigateDownTableCell()
             } else {
-                let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+                let vCol = getVisualColumn(
+                    in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
                 editor.buffer.lineIndex += 1
                 editor.buffer.columnIndex = getCharIndexForVisualColumn(
                     in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
@@ -146,7 +148,8 @@ public final class TableModeController: KeyInputHandler {
         case .home, .ctrl("a"), .ctrl("A"):
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
             clampTableModeCursor()
             return true
@@ -154,7 +157,8 @@ public final class TableModeController: KeyInputHandler {
         case .end, .ctrl("e"), .ctrl("E"):
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
             clampTableModeCursor()
             return true
@@ -182,7 +186,8 @@ public final class TableModeController: KeyInputHandler {
                 return true
             }
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
 
             if editor.buffer.columnIndex > innerMinCol {
@@ -209,7 +214,8 @@ public final class TableModeController: KeyInputHandler {
                 return true
             }
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             let innerMinCol = leftBorder + 1
 
             if editor.buffer.columnIndex < rightBorder {

@@ -69,7 +69,7 @@ public final class LogoEngine {
 
     // Turtle graphics state
     public var isPenDown: Bool = true
-    public var heading: Int = 90 // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
+    public var heading: Int = 90  // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
     internal static let statementCommands: Set<LogoPrimitive> = [
@@ -82,7 +82,7 @@ public final class LogoEngine {
         .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
-        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL
+        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
     ]
 
     /// Set of built-in expression primitives (reporters/operations) that evaluate to value strings.
@@ -106,13 +106,14 @@ public final class LogoEngine {
         .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
         .iseq, .rseq, .random, .rerandom, .form, .bitAnd, .bitOr, .bitXor, .bitNot, .ashift, .lshift,
         .trueVal, .falseVal, .andLogic, .orLogic, .xorLogic, .notLogic,
-        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find, .sort
+        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find,
+        .sort,
     ]
 
     internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
 
     internal static let variadicPrimitives: Set<LogoPrimitive> = [
-        .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic
+        .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic,
     ]
 
     internal static func isKeyword(_ token: String) -> Bool {
@@ -191,7 +192,8 @@ public final class LogoEngine {
 
             // Step 1: Built-in Statement Command
             if let prim = LogoPrimitive.from(token),
-               executeStatementCommand(prim, tokens: tokens, index: &index, frameReturn: &frameReturn) {
+                executeStatementCommand(prim, tokens: tokens, index: &index, frameReturn: &frameReturn)
+            {
                 index += 1
                 continue
             }

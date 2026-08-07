@@ -52,7 +52,8 @@ public struct ScreenGeometry: Equatable {
         self.showRuler = showRuler
         self.showGutter = showGutter
 
-        let chrome = showRuler
+        let chrome =
+            showRuler
             ? (Self.titleBarHeight + Self.statusLineHeight + Self.helpBarHeight + Self.rulerBarHeight)
             : (Self.titleBarHeight + Self.statusLineHeight + Self.helpBarHeight)
 

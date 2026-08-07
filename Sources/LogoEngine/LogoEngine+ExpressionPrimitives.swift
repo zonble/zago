@@ -22,7 +22,8 @@ extension LogoEngine {
     internal func evaluateExpressionPrimitive(_ tokens: [String], index: inout Int) -> String? {
         guard index < tokens.count, let primitive = LogoPrimitive.from(tokens[index]) else { return nil }
 
-        let result = evaluateDataStructurePrimitives(tokens, index: &index)
+        let result =
+            evaluateDataStructurePrimitives(tokens, index: &index)
             ?? evaluateMathPrimitives(tokens, index: &index)
             ?? evaluateBufferPrimitives(tokens, index: &index)
             ?? evaluateTemplatePrimitives(tokens, index: &index)

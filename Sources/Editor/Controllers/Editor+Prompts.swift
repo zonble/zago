@@ -176,7 +176,8 @@ extension Editor {
             }
 
             let width = parts.count > 2 ? parts[2] : nil
-            self.tableModeController.createTable(rows: rows, cols: cols, cellWidth: width, enterMode: true, saveSnapshot: true)
+            self.tableModeController.createTable(
+                rows: rows, cols: cols, cellWidth: width, enterMode: true, saveSnapshot: true)
         })
     }
 

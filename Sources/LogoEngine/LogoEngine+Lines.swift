@@ -87,7 +87,8 @@ extension LogoEngine {
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
 
         if !hasExplicitHeight {
-            executeAutoVlineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar, arrowMode: arrowMode)
+            executeAutoVlineCommand(
+                startLine: startLine, startCol: startCol, styleChar: styleChar, arrowMode: arrowMode)
             return
         }
 
@@ -141,7 +142,9 @@ extension LogoEngine {
                 lastConsumedIndex = cursor
             } else if !LogoEngine.isStatementCommand(token) {
                 var evalIndex = cursor
-                if let parsedLength = parseIntExpressionArgument(tokens, index: &evalIndex, isBoundary: isLineArgumentBoundary) {
+                if let parsedLength = parseIntExpressionArgument(
+                    tokens, index: &evalIndex, isBoundary: isLineArgumentBoundary)
+                {
                     setLength(max(1, min(parsedLength, maxLength)))
                     consumedAny = true
                     cursor = evalIndex
@@ -296,7 +299,8 @@ extension LogoEngine {
         editor.logoEngine(self, performAction: .updateColumnIndex(realStartCol + drawableOffsets.count))
     }
 
-    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
+    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode)
+    {
         guard let editor = self.delegate else { return }
 
         var realStartLine = startLine
@@ -435,7 +439,9 @@ extension LogoEngine {
         return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
     }
 
-    private func horizontalLineChar(styleChar: Character, isStart: Bool, isEnd: Bool, arrowMode: LineArrowMode) -> Character {
+    private func horizontalLineChar(styleChar: Character, isStart: Bool, isEnd: Bool, arrowMode: LineArrowMode)
+        -> Character
+    {
         if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
         if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
         return styleChar

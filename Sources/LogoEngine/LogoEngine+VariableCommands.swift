@@ -170,12 +170,14 @@ extension LogoEngine {
                         switch value {
                         case .list(var items):
                             if zeroIdx >= 0 && zeroIdx < items.count {
-                                items[zeroIdx] = updateNested(value: items[zeroIdx], path: tail, replacement: replacement)
+                                items[zeroIdx] = updateNested(
+                                    value: items[zeroIdx], path: tail, replacement: replacement)
                                 return .list(items)
                             }
                         case .array(var items):
                             if zeroIdx >= 0 && zeroIdx < items.count {
-                                items[zeroIdx] = updateNested(value: items[zeroIdx], path: tail, replacement: replacement)
+                                items[zeroIdx] = updateNested(
+                                    value: items[zeroIdx], path: tail, replacement: replacement)
                                 return .array(items)
                             }
                         case .string(var s):

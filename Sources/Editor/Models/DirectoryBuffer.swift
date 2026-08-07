@@ -44,7 +44,8 @@ public final class DirectoryBuffer: TextBuffer {
         self.isModified = false
 
         let repoInfo = gitService.detectRepository(for: expandedPath)
-        let branchStr = (repoInfo?.branchName != nil && !repoInfo!.branchName!.isEmpty) ? " [\(repoInfo!.branchName!)]" : ""
+        let branchStr =
+            (repoInfo?.branchName != nil && !repoInfo!.branchName!.isEmpty) ? " [\(repoInfo!.branchName!)]" : ""
         let gitStatusMap: [String: String]
         if let repoRoot = repoInfo?.repoRootPath {
             gitStatusMap = gitService.fetchDirectoryGitStatus(repoRoot: repoRoot)
@@ -85,12 +86,19 @@ public final class DirectoryBuffer: TextBuffer {
                     badgePrefix = "  "
                 } else {
                     let code: String
-                    if rawBadge.contains("?") { code = "?" }
-                    else if rawBadge.contains("A") { code = "A" }
-                    else if rawBadge.contains("M") { code = "M" }
-                    else if rawBadge.contains("D") { code = "D" }
-                    else if rawBadge.contains("R") { code = "R" }
-                    else { code = "M" }
+                    if rawBadge.contains("?") {
+                        code = "?"
+                    } else if rawBadge.contains("A") {
+                        code = "A"
+                    } else if rawBadge.contains("M") {
+                        code = "M"
+                    } else if rawBadge.contains("D") {
+                        code = "D"
+                    } else if rawBadge.contains("R") {
+                        code = "R"
+                    } else {
+                        code = "M"
+                    }
                     badgePrefix = "\(code) "
                 }
 
@@ -169,7 +177,9 @@ public final class DirectoryBuffer: TextBuffer {
             var rawName = line.trimmingCharacters(in: .newlines)
             if rawName.count >= 2 {
                 let firstTwo = rawName.prefix(2)
-                if firstTwo == "M " || firstTwo == "? " || firstTwo == "A " || firstTwo == "D " || firstTwo == "R " || firstTwo == "  " {
+                if firstTwo == "M " || firstTwo == "? " || firstTwo == "A " || firstTwo == "D " || firstTwo == "R "
+                    || firstTwo == "  "
+                {
                     rawName = String(rawName.dropFirst(2))
                 }
             }

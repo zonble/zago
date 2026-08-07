@@ -30,7 +30,9 @@ extension LogoEngine {
 
         case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
-            if let n1Based = consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isBufferArgumentBoundary) {
+            if let n1Based = consumeNextIntExpressionArgument(
+                tokens, index: &index, isBoundary: isBufferArgumentBoundary)
+            {
                 lineIdx = max(0, n1Based - 1)
             }
             return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""

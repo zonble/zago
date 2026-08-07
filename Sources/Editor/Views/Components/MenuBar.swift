@@ -233,7 +233,8 @@ public final class MenuBar {
                     MenuItem(
                         titleKey: "menu.tools.transform_cjk_spacing", hotkeyChar: "c",
                         action: { editor in
-                            editor.transformSelectedText(id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
+                            editor.transformSelectedText(
+                                id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
                     MenuItem(

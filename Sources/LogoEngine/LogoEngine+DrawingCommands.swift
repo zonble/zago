@@ -79,19 +79,22 @@ extension LogoEngine {
 
         case .setHeading:
             if let dirStr = consumeOptionalHeadingArgument(tokens, index: &index),
-               let angle = parseHeadingValue(dirStr) {
+                let angle = parseHeadingValue(dirStr)
+            {
                 heading = ((angle % 360) + 360) % 360
             }
             return true
 
         case .forward:
-            let dist = consumeOptionalDrawingIntArgument(tokens, index: &index)
+            let dist =
+                consumeOptionalDrawingIntArgument(tokens, index: &index)
                 .map { max(1, min($0, 200)) } ?? 1
             executeTurtleMove(steps: dist, directionHeading: heading)
             return true
 
         case .back:
-            let dist = consumeOptionalDrawingIntArgument(tokens, index: &index)
+            let dist =
+                consumeOptionalDrawingIntArgument(tokens, index: &index)
                 .map { max(1, min($0, 200)) } ?? 1
             executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360)
             return true

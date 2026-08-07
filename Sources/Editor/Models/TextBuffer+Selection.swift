@@ -14,7 +14,8 @@ extension TextBuffer {
                 return false
             }
             let fullLine = lines[line]
-            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: fullLine, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: fullLine, nearCol: cell.innerMinCol, cell: cell)
             let innerStart = leftBorder + 1
             let innerEnd = rightBorder
             guard col >= innerStart && col < innerEnd else {

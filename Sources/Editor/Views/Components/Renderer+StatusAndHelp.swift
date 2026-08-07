@@ -33,7 +33,8 @@ extension Renderer {
         for (idx, cat) in editor.menuBar.categories.enumerated() {
             let catTitle = editor.l10n[cat.titleKey]
             if idx == editor.menuBar.categoryIndex {
-                formattedMenu += "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
+                formattedMenu +=
+                    "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
             } else {
                 formattedMenu += menuSegment(title: catTitle, isSelected: false)
             }
@@ -118,7 +119,8 @@ extension Renderer {
             lineStr += sliced + "\r\n"
         } else {
             let styledRulerStr = highlightWrapColumnMarker(in: rulerStr)
-            lineStr += "\(ANSIStyle.dimGray)\(String(repeating: " ", count: gutterWidth))\(styledRulerStr)\(ANSIStyle.reset)\r\n"
+            lineStr +=
+                "\(ANSIStyle.dimGray)\(String(repeating: " ", count: gutterWidth))\(styledRulerStr)\(ANSIStyle.reset)\r\n"
         }
         return lineStr
     }
@@ -221,7 +223,8 @@ extension Renderer {
                 ("N", tr("help.no"))
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck, .logoReadWord, .logoReadChar:
+        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck,
+            .logoReadWord, .logoReadChar:
             helpItems1 = [
                 ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),
             ]

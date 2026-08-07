@@ -121,7 +121,6 @@ public final class Editor: @unchecked Sendable {
     public let tableModeController = TableModeController()
     public let canvasModeController = CanvasModeController()
 
-
     public var isMenuBarActive: Bool {
         get { menuBarController.isActive }
         set { menuBarController.isActive = newValue }
@@ -308,7 +307,8 @@ public final class Editor: @unchecked Sendable {
         } else if fileIOStrategy.fileInfo(at: sercPath).exists {
             configPath = sercPath
         } else {
-            _ = try? ConfigLoader.generateDefaultConfigFile(targetPath: zagorcPath, provider: StrategyConfigFileProvider(strategy: fileIOStrategy))
+            _ = try? ConfigLoader.generateDefaultConfigFile(
+                targetPath: zagorcPath, provider: StrategyConfigFileProvider(strategy: fileIOStrategy))
             configPath = zagorcPath
         }
 

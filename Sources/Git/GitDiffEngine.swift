@@ -118,9 +118,10 @@ public enum GitDiffEngine: Sendable {
         var idx = 0
         while idx < edits.count {
             if idx + 1 < edits.count,
-               case .delete(let bIdx, let cIdx) = edits[idx],
-               case .add(let cIdx2) = edits[idx + 1],
-               cIdx == cIdx2 {
+                case .delete(let bIdx, let cIdx) = edits[idx],
+                case .add(let cIdx2) = edits[idx + 1],
+                cIdx == cIdx2
+            {
                 optimizedEdits.append(.modify(baseIdx: bIdx, currentIdx: cIdx2))
                 idx += 2
             } else {

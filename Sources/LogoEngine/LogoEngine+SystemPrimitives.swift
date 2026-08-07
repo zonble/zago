@@ -134,7 +134,9 @@ extension LogoEngine {
         case .readWord:
             index += 1
             var prompt = ""
-            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" && tokens[index] != ")" {
+            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]"
+                && tokens[index] != ")"
+            {
                 prompt = unquote(evaluateExpression(tokens, index: &index))
             } else {
                 index -= 1
@@ -144,7 +146,9 @@ extension LogoEngine {
         case .readChar:
             index += 1
             var prompt = ""
-            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]" && tokens[index] != ")" {
+            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]"
+                && tokens[index] != ")"
+            {
                 prompt = unquote(evaluateExpression(tokens, index: &index))
             } else {
                 index -= 1

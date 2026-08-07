@@ -107,7 +107,8 @@ extension LogoEngine {
         case .minus:
             index += 1
             let a = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+            if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]"
+            {
                 index += 1
                 let b = Double(evaluateExpression(tokens, index: &index)) ?? 0
                 return formatNum(a - b)

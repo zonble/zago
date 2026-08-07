@@ -81,7 +81,8 @@ struct Zago: ParsableCommand {
 
         if initConfig {
             let targetPath = files.first
-            let generatedPath = try ConfigLoader.generateDefaultConfigFile(targetPath: targetPath, provider: LocalConfigFileProvider())
+            let generatedPath = try ConfigLoader.generateDefaultConfigFile(
+                targetPath: targetPath, provider: LocalConfigFileProvider())
             terminal.write("Successfully generated default configuration file at: \(generatedPath)\n")
             return
         }
@@ -106,7 +107,7 @@ struct Zago: ParsableCommand {
                 options: headlessOptions,
                 configSource: configSource,
                 dependencies: dependencies
-                )
+            )
 
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
@@ -122,7 +123,7 @@ struct Zago: ParsableCommand {
                     options: headlessOptions,
                     configSource: configSource,
                     dependencies: dependencies
-                    )
+                )
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 terminal.write(output + "\n")
@@ -158,7 +159,7 @@ struct Zago: ParsableCommand {
             options: interactiveOptions,
             configSource: configSource,
             dependencies: dependencies
-            )
+        )
         editor.run()
     }
 

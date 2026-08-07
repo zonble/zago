@@ -74,7 +74,8 @@ open class TextBuffer: SpellCheckableBuffer {
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
         let info = fileIO.fileInfo(at: expandedPath)
         if info.exists, info.isDirectory {
-            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO, gitService: gitService, language: language)
+            return DirectoryBuffer(
+                directoryPath: expandedPath, fileIO: fileIO, gitService: gitService, language: language)
         }
         return TextBuffer(filePath: expandedPath, fileIO: fileIO)
     }
@@ -346,7 +347,8 @@ open class TextBuffer: SpellCheckableBuffer {
         let rest = String(text.dropFirst(leading.count))
 
         // 1. Task List: - [ ] or - [x] or * [ ] or * [x]
-        if rest.hasPrefix("- [ ] ") || rest.hasPrefix("- [x] ") || rest.hasPrefix("* [ ] ") || rest.hasPrefix("* [x] ") {
+        if rest.hasPrefix("- [ ] ") || rest.hasPrefix("- [x] ") || rest.hasPrefix("* [ ] ") || rest.hasPrefix("* [x] ")
+        {
             let afterPrefix = rest.dropFirst(6)
             let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             return ListPrefixInfo(
@@ -371,7 +373,7 @@ open class TextBuffer: SpellCheckableBuffer {
             }
         }
 
-        // 3. Bullet List: - , * , + 
+        // 3. Bullet List: - , * , +
         if rest.hasPrefix("- ") || rest.hasPrefix("* ") || rest.hasPrefix("+ ") {
             let symbol = String(rest.prefix(2))
             let afterPrefix = rest.dropFirst(2)

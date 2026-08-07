@@ -59,7 +59,8 @@ extension LogoEngine {
         if tokens[index] == "(" {
             index += 1
             if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
-               LogoEngine.isVariadicPrimitive(variadicPrim) {
+                LogoEngine.isVariadicPrimitive(variadicPrim)
+            {
                 index += 1
                 var args: [String] = []
                 while index < tokens.count && tokens[index] != ")" && tokens[index] != "]" {
@@ -174,7 +175,9 @@ extension LogoEngine {
                         case .power: resDouble = pow(num1, num2)
                         default: resDouble = 0.0
                         }
-                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min) && resDouble <= Double(Int.max) {
+                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min)
+                            && resDouble <= Double(Int.max)
+                        {
                             leftVal = "\(Int(resDouble))"
                         } else {
                             leftVal = "\(resDouble)"
@@ -211,8 +214,7 @@ extension LogoEngine {
             while currIndex < tokens.count {
                 let t = tokens[currIndex]
                 for ch in t {
-                    if ch == token.first! { depth += 1 }
-                    else if ch == closingChar { depth -= 1 }
+                    if ch == token.first! { depth += 1 } else if ch == closingChar { depth -= 1 }
                 }
                 listTokens.append(t)
                 if depth <= 0 { break }
@@ -302,8 +304,9 @@ extension LogoEngine {
         var block: [String] = []
         while index < tokens.count && depth > 0 {
             let t = tokens[index]
-            if t == "[" { depth += 1 }
-            else if t == "]" {
+            if t == "[" {
+                depth += 1
+            } else if t == "]" {
                 depth -= 1
                 if depth == 0 { break }
             }
@@ -362,7 +365,9 @@ extension LogoEngine {
         return nil
     }
 
-    public func applyTemplate(templateStr: String, args: [String], indexInLoop: Int = 1, restList: [String] = []) -> String {
+    public func applyTemplate(templateStr: String, args: [String], indexInLoop: Int = 1, restList: [String] = [])
+        -> String
+    {
         let clean = templateStr.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let prevHash = variables["#"]
@@ -415,7 +420,9 @@ extension LogoEngine {
                             executeTokens(inner, index: &sIdx, frameReturn: &subReturn)
                             return subReturn ?? lastResult ?? ""
                         } else {
-                            let hasComparison = inner.contains { $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<=" || $0 == ">=" }
+                            let hasComparison = inner.contains {
+                                $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<=" || $0 == ">="
+                            }
                             if hasComparison {
                                 return evaluateCondition(inner) ? "1" : "0"
                             } else {

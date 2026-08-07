@@ -34,7 +34,9 @@ extension LogoEngine {
             let templateStr = evaluateExpression(tokens, index: &index)
             var args: [String] = []
             while index + 1 < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]" || tokens[index + 1] == ")" {
+                if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]"
+                    || tokens[index + 1] == ")"
+                {
                     break
                 }
                 index += 1
@@ -132,7 +134,8 @@ extension LogoEngine {
             var accum = items[0]
             for i in 1..<items.count {
                 let rest = Array(items[(i + 1)...])
-                accum = applyTemplate(templateStr: templateStr, args: [accum, items[i]], indexInLoop: i, restList: rest)
+                accum = applyTemplate(
+                    templateStr: templateStr, args: [accum, items[i]], indexInLoop: i, restList: rest)
             }
             return accum
 

@@ -591,7 +591,10 @@ public final class PromptController: KeyInputHandler {
         case .gotoLine, .tableDimensions, .fillText, .spellCheck:
             return [("^C", tr("help.cancel")), ("^M", tr("help.confirm"))]
         case .logoMacro:
-            return [("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.execute")), ("↑↓", tr("help.history"))]
+            return [
+                ("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.execute")),
+                ("↑↓", tr("help.history")),
+            ]
         case .logoReadWord, .logoReadChar:
             return [("^C", tr("help.cancel")), ("^M", tr("help.submit"))]
         }

@@ -99,7 +99,9 @@ public final class DocumentOutlineView {
 
         let outlineRows = Self.rows(for: headings)
         var output = ANSIStyle.cursorHome
-        output += title.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort) + "\r\n"
+        output +=
+            title.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+            + "\r\n"
 
         for i in 0..<availableHeight {
             let rowIndex = topIndex + i

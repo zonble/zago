@@ -13,7 +13,8 @@ extension TableModeController {
         }
 
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (leftBorder, _) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         let innerMinCol = leftBorder + 1
         if editor.buffer.columnIndex > innerMinCol {
             editor.buffer.columnIndex -= 1
@@ -35,13 +36,15 @@ extension TableModeController {
         }
 
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (_, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (_, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         if editor.buffer.columnIndex < rightBorder {
             editor.buffer.columnIndex += 1
         } else if editor.buffer.lineIndex < cell.innerMaxLine {
             editor.buffer.lineIndex += 1
             let nextLine = editor.buffer.lines[editor.buffer.lineIndex]
-            let (nextLeft, _) = TableModeController.findCellHorizontalBorders(in: nextLine, nearCol: cell.innerMinCol, cell: cell)
+            let (nextLeft, _) = TableModeController.findCellHorizontalBorders(
+                in: nextLine, nearCol: cell.innerMinCol, cell: cell)
             editor.buffer.columnIndex = nextLeft + 1
         }
         clampTableModeCursor()
@@ -67,7 +70,8 @@ extension TableModeController {
         for lineIndex in startLine...endLine {
             guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { continue }
             let line = editor.buffer.lines[lineIndex]
-            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: cell.innerMinCol, cell: cell)
             let innerStart = leftBorder + 1
             let innerEnd = rightBorder
             let rawStart = lineIndex == start.line ? start.column : innerStart
@@ -136,7 +140,8 @@ extension TableModeController {
         let lineIndex = editor.buffer.lineIndex
         guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return }
         let line = editor.buffer.lines[lineIndex]
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         let start = leftBorder + 1
         let end = rightBorder
         guard start < end else { return }
@@ -157,7 +162,9 @@ extension TableModeController {
     // MARK: - Table Navigation Operations
 
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
-    public static func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (left: Int, right: Int) {
+    public static func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (
+        left: Int, right: Int
+    ) {
         let chars = Array(line)
         guard !chars.isEmpty else { return (0, 0) }
 
@@ -194,7 +201,8 @@ extension TableModeController {
         editor.buffer.lineIndex = max(cell.innerMinLine, min(editor.buffer.lineIndex, cell.innerMaxLine))
         guard editor.buffer.lineIndex >= 0 && editor.buffer.lineIndex < editor.buffer.lines.count else { return }
         let line = editor.buffer.lines[editor.buffer.lineIndex]
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
         let innerMinCol = leftBorder + 1
         let maxCol = min(rightBorder, line.count)
         editor.buffer.columnIndex = max(innerMinCol, min(editor.buffer.columnIndex, maxCol))
@@ -248,7 +256,9 @@ extension TableModeController {
     public func navigateRightAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
-        guard let rightCell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.maxCol + 1),
+        guard
+            let rightCell = detector.detectCell(
+                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.maxCol + 1),
             rightCell.minLine == cell.minLine,
             rightCell.maxLine == cell.maxLine,
             rightCell.minCol == cell.maxCol
@@ -260,7 +270,9 @@ extension TableModeController {
     public func navigateLeftAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell, cell.minCol > 0 else { return }
         let detector = TableCellDetector()
-        guard let leftCell = detector.detectCell(in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.minCol - 1),
+        guard
+            let leftCell = detector.detectCell(
+                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.minCol - 1),
             leftCell.minLine == cell.minLine,
             leftCell.maxLine == cell.maxLine,
             leftCell.maxCol == cell.minCol
@@ -358,7 +370,8 @@ extension TableModeController {
         if editor.buffer.lineIndex < cell.innerMaxLine {
             editor.buffer.lineIndex += 1
             let line = editor.buffer.lines[editor.buffer.lineIndex]
-            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: cell.innerMinCol, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
         } else {
             navigateNextTableCell()

@@ -71,14 +71,15 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         // We perform a strict roundtrip equality check (roundtrip == contents) to ensure non-lossy
         // encoding validation consistently across macOS, Linux, and Windows.
         guard let data = contents.data(using: encoding, allowLossyConversion: false),
-              let roundtrip = String(data: data, encoding: encoding),
-              roundtrip == contents else {
+            let roundtrip = String(data: data, encoding: encoding),
+            roundtrip == contents
+        else {
             throw EncodingError.unsupportedCharacters
         }
         #if os(Windows)
-        try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            try data.write(to: URL(fileURLWithPath: normalized), options: [])
         #else
-        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+            try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         #endif
     }
 
@@ -138,7 +139,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         }
         let data = Data(fileData.prefix(8192))
         if data.isEmpty { return false }
-        let hasUTF16BOM = (data.count >= 2 && ((data[0] == 0xFE && data[1] == 0xFF) || (data[0] == 0xFF && data[1] == 0xFE)))
+        let hasUTF16BOM =
+            (data.count >= 2 && ((data[0] == 0xFE && data[1] == 0xFF) || (data[0] == 0xFF && data[1] == 0xFE)))
         if !hasUTF16BOM && data.contains(0) {
             return true
         }

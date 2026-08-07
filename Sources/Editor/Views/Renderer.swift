@@ -40,7 +40,8 @@ public final class Renderer {
     /// Renders screen using Double Buffering / Screen Line Diffing for given ScreenGeometry.
     public func renderDiff(editor: Editor, geometry: ScreenGeometry) -> String {
         let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
-        let isDiffable = (geometry.rows == lastRows && geometry.cols == lastCols && lastRenderedLines.count == screenLines.count)
+        let isDiffable =
+            (geometry.rows == lastRows && geometry.cols == lastCols && lastRenderedLines.count == screenLines.count)
 
         var output = ""
         if !isDiffable {
@@ -77,7 +78,9 @@ public final class Renderer {
         renderDiff(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
     }
 
-    private func renderScreenLines(editor: Editor, geometry: ScreenGeometry) -> (screenLines: [String], cursorPosStr: String) {
+    private func renderScreenLines(editor: Editor, geometry: ScreenGeometry) -> (
+        screenLines: [String], cursorPosStr: String
+    ) {
         let rows = geometry.rows
         let cols = geometry.cols
         let mainAreaHeight = geometry.mainAreaHeight
@@ -334,7 +337,8 @@ public final class Renderer {
                             selectedPad.append(" ")
                         } else {
                             if !selectedPad.isEmpty {
-                                lineOutput += selectedPad.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                                lineOutput += selectedPad.ansiStyled(
+                                    style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                                 selectedPad = ""
                             }
                             normalPad.append(" ")
@@ -349,7 +353,8 @@ public final class Renderer {
                         lineOutput += normalPad
                     }
                 } else if chars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
-                    lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                    lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(
+                        style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                 }
 
                 if let subLineInfo = renderSubLineInfo(
@@ -506,8 +511,10 @@ public final class Renderer {
                 let vLineChars = Array(vLineText)
                 let effectiveCol: Int
                 if editor.isTableModeActive, let cell = editor.currentTableCell,
-                   editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine {
-                    let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(in: vLineText, nearCol: cursorVColIdx, cell: cell)
+                    editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine
+                {
+                    let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                        in: vLineText, nearCol: cursorVColIdx, cell: cell)
                     if cursorVColIdx >= rightBorder {
                         effectiveCol = max(leftBorder + 1, rightBorder - 1)
                     } else {

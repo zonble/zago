@@ -35,8 +35,7 @@ extension LogoEngine {
                 } else {
                     var depth = 1
                     while index < tokens.count && depth > 0 {
-                        if tokens[index] == "[" { depth += 1 }
-                        else if tokens[index] == "]" { depth -= 1 }
+                        if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
                         if depth == 0 { break }
                         index += 1
                     }
@@ -56,32 +55,30 @@ extension LogoEngine {
 
             if index < tokens.count && tokens[index] == "[" {
                 if isTrue {
-                    index += 1 // Advance past first "["
+                    index += 1  // Advance past first "["
                     executeTokens(tokens, index: &index, frameReturn: &frameReturn)
                     if frameReturn != nil { return true }
-                    index += 1 // Advance past first "]"
+                    index += 1  // Advance past first "]"
                     if index < tokens.count && tokens[index] == "[" {
                         var depth = 1
                         index += 1
                         while index < tokens.count && depth > 0 {
-                            if tokens[index] == "[" { depth += 1 }
-                            else if tokens[index] == "]" { depth -= 1 }
+                            if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
                             if depth == 0 { break }
                             index += 1
                         }
                     }
                 } else {
                     var depth = 1
-                    index += 1 // Advance past first "["
+                    index += 1  // Advance past first "["
                     while index < tokens.count && depth > 0 {
-                        if tokens[index] == "[" { depth += 1 }
-                        else if tokens[index] == "]" { depth -= 1 }
+                        if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
                         if depth == 0 { break }
                         index += 1
                     }
-                    index += 1 // Advance past first "]"
+                    index += 1  // Advance past first "]"
                     if index < tokens.count && tokens[index] == "[" {
-                        index += 1 // Advance past second "["
+                        index += 1  // Advance past second "["
                         executeTokens(tokens, index: &index, frameReturn: &frameReturn)
                     }
                 }
@@ -129,7 +126,7 @@ extension LogoEngine {
             index += 1
             let countStr = evaluateExpression(tokens, index: &index)
             let count = Int(countStr) ?? 1
-            index += 1 // Advance to "["
+            index += 1  // Advance to "["
             if index < tokens.count && tokens[index] == "[" {
                 let block = extractBlockTokens(tokens: tokens, index: &index)
                 guard count > 0 else { return true }
@@ -159,7 +156,10 @@ extension LogoEngine {
                 let timeStr = evaluateExpression(tokens, index: &index)
                 if let val = Double(timeStr), val > 0 {
                     delegate?.logoEngine(self, performAction: .refreshScreen)
-                    let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || ProcessInfo.processInfo.processName.contains("XCTest") || ProcessInfo.processInfo.processName.contains("swiftpm-testing-helper")
+                    let isTesting =
+                        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+                        || ProcessInfo.processInfo.processName.contains("XCTest")
+                        || ProcessInfo.processInfo.processName.contains("swiftpm-testing-helper")
                     let delay = isTesting ? min(val / 60000.0, 0.001) : val / 60.0
                     Thread.sleep(forTimeInterval: delay)
                 }
@@ -171,7 +171,9 @@ extension LogoEngine {
             var condTokens: [String] = []
             while index < tokens.count {
                 let upperNext = tokens[index].uppercased()
-                if upperNext == "IFTRUE" || upperNext == "IFT" || upperNext == "IFFALSE" || upperNext == "IFF" || upperNext == "[" || upperNext == "]" {
+                if upperNext == "IFTRUE" || upperNext == "IFT" || upperNext == "IFFALSE" || upperNext == "IFF"
+                    || upperNext == "[" || upperNext == "]"
+                {
                     break
                 }
                 condTokens.append(tokens[index])
@@ -265,7 +267,9 @@ extension LogoEngine {
                         }
                         var cur = startVal
                         var iteration = 0
-                        while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                        while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil
+                            && currentThrowTag == nil
+                        {
                             iteration += 1
                             guard guardLoopIteration("FOR", iteration: iteration) else { break }
                             variables[varName] = "\(cur)"
@@ -432,7 +436,9 @@ extension LogoEngine {
         }
     }
 
-    private func extractLoopConditionAndBody(tokens: [String], index: inout Int) -> (condition: [String], body: [String])? {
+    private func extractLoopConditionAndBody(tokens: [String], index: inout Int) -> (
+        condition: [String], body: [String]
+    )? {
         guard index < tokens.count else { return nil }
 
         if tokens[index] == "[" {

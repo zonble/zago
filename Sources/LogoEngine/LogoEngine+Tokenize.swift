@@ -47,7 +47,9 @@ extension LogoEngine {
                     i = script.index(after: i)
                 }
                 continue
-            } else if ch == "-", current.isEmpty, let next = script.index(i, offsetBy: 1, limitedBy: script.endIndex), next < script.endIndex, script[next].isNumber {
+            } else if ch == "-", current.isEmpty, let next = script.index(i, offsetBy: 1, limitedBy: script.endIndex),
+                next < script.endIndex, script[next].isNumber
+            {
                 current.append(ch)
             } else if delims.contains(ch) {
                 if !current.isEmpty {
@@ -128,7 +130,9 @@ extension LogoEngine {
                 let ch = token[i]
                 let remaining = String(token[i...])
 
-                if remaining.hasPrefix("==") || remaining.hasPrefix("!=") || remaining.hasPrefix("<=") || remaining.hasPrefix(">=") {
+                if remaining.hasPrefix("==") || remaining.hasPrefix("!=") || remaining.hasPrefix("<=")
+                    || remaining.hasPrefix(">=")
+                {
                     if !current.isEmpty {
                         result.append(current)
                         current = ""

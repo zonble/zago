@@ -120,7 +120,9 @@ extension LogoEngine {
             index += 1
             if index < tokens.count {
                 let oldText = evaluateExpression(tokens, index: &index)
-                if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1]) && tokens[index + 1] != "]" {
+                if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1])
+                    && tokens[index + 1] != "]"
+                {
                     index += 1
                     let newText = evaluateExpression(tokens, index: &index)
                     delegate.logoEngine(self, performAction: .replaceText(old: oldText, new: newText))
@@ -191,7 +193,9 @@ extension LogoEngine {
             index += 1
             if index < tokens.count {
                 let nextToken = tokens[index]
-                if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil || (index + 1 < tokens.count && tokens[index + 1].hasPrefix("[")) {
+                if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil
+                    || (index + 1 < tokens.count && tokens[index + 1].hasPrefix("["))
+                {
                     index -= 1
                     let val = evaluateExpression(tokens, index: &index)
                     lastResult = val
@@ -223,7 +227,8 @@ extension LogoEngine {
             if index < tokens.count {
                 let firstVal = evaluateExpression(tokens, index: &index)
                 if !isQuotedWordToken(tokens[index]), let line1Based = Int(firstVal),
-                   index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]" {
+                    index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]"
+                {
                     index += 1
                     let textVal = unquote(evaluateExpression(tokens, index: &index))
                     delegate.logoEngine(self, performAction: .setLine(index: max(0, line1Based - 1), text: textVal))

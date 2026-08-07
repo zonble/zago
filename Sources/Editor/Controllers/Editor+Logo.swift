@@ -36,7 +36,8 @@ extension Editor: LogoEngineDelegate {
         case .outdentLines(let levels):
             outdentSelectedOrCurrentLines(levels: levels)
         case .createTable(let rows, let cols, let cellWidth):
-            tableModeController.createTable(rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
+            tableModeController.createTable(
+                rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
         case .insertDiagramSnippet(let arg):
             if let typeStr = arg, let snippet = DiagramSnippets.findDiagramSnippet(by: typeStr) {
                 DiagramSnippets.insertSnippet(snippet, into: self)
@@ -81,10 +82,13 @@ extension Editor: LogoEngineDelegate {
                 canvasVisualColumn = max(0, columnIndex)
                 syncCanvasCursorToBuffer()
             } else {
-                let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+                let lineStr =
+                    (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
+                    ? buffer.lines[buffer.lineIndex] : ""
                 let maxDisplayWidth = lineStr.displayWidth
                 if columnIndex <= maxDisplayWidth {
-                    buffer.columnIndex = tableModeController.getCharIndexForVisualColumn(in: lineStr, targetVisualCol: max(0, columnIndex))
+                    buffer.columnIndex = tableModeController.getCharIndexForVisualColumn(
+                        in: lineStr, targetVisualCol: max(0, columnIndex))
                 } else {
                     buffer.columnIndex = lineStr.count + (columnIndex - maxDisplayWidth)
                 }
@@ -127,7 +131,9 @@ extension Editor: LogoEngineDelegate {
             if isCanvasModeActive {
                 return canvasVisualColumn
             } else {
-                let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count) ? buffer.lines[buffer.lineIndex] : ""
+                let lineStr =
+                    (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
+                    ? buffer.lines[buffer.lineIndex] : ""
                 let charCount = lineStr.count
                 if buffer.columnIndex <= charCount {
                     return tableModeController.getVisualColumn(in: lineStr, col: buffer.columnIndex)

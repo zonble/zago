@@ -126,7 +126,8 @@ public final class DocumentOutlineController: KeyInputHandler {
         editor.topVLineIndex = max(0, editor.buffer.lineIndex - 1)
         let index = (outline.headings.firstIndex(of: heading) ?? 0) + 1
         let markerTitle = "\(heading.marker) \(heading.title)"
-        editor.setStatusMessage(String(format: editor.l10n["status.heading_position"], index, outline.headings.count, markerTitle))
+        editor.setStatusMessage(
+            String(format: editor.l10n["status.heading_position"], index, outline.headings.count, markerTitle))
     }
 
     private func initialOutlineSelectionIndex(in outline: DocumentOutline) -> Int {

@@ -103,9 +103,12 @@ extension LogoEngine {
                 if !hasExplicitAlign {
                     align = "center"
                 }
-                drawBoxAroundText(text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
+                drawBoxAroundText(
+                    text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName),
+                    mode: mode, exitPos: exitPos)
             } else {
-                drawBoxFrame(width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
+                drawBoxFrame(
+                    width: width, height: height ?? 5, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
             }
             return
         }
@@ -143,23 +146,31 @@ extension LogoEngine {
             }
         }
 
-        drawBoxAroundText(textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName), mode: mode, exitPos: exitPos)
+        drawBoxAroundText(
+            textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName),
+            mode: mode, exitPos: exitPos)
     }
 
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
         parseIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
-            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")" || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil || BoxExitPosition(unquoted) != nil
+            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+                || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
+                || BoxExitPosition(unquoted) != nil
         }
     }
 
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
         if token == "]" || token == ")" { return true }
-        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) || BoxExitPosition(token) != nil { return false }
+        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) || BoxExitPosition(token) != nil {
+            return false
+        }
         return LogoEngine.isKeyword(token)
     }
 
-    private func drawBoxFrame(width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne) {
+    private func drawBoxFrame(
+        width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne
+    ) {
         guard let editor = self.delegate else { return }
         let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
         let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
@@ -201,13 +212,21 @@ extension LogoEngine {
 
                 var ch: Character = " "
 
-                if isTop && isLeft { ch = style.topLeft }
-                else if isTop && isRight { ch = style.topRight }
-                else if isBottom && isLeft { ch = style.bottomLeft }
-                else if isBottom && isRight { ch = style.bottomRight }
-                else if isTop { ch = style.topChar }
-                else if isBottom { ch = style.bottomChar }
-                else if isLeft || isRight { ch = style.sideChar }
+                if isTop && isLeft {
+                    ch = style.topLeft
+                } else if isTop && isRight {
+                    ch = style.topRight
+                } else if isBottom && isLeft {
+                    ch = style.bottomLeft
+                } else if isBottom && isRight {
+                    ch = style.bottomRight
+                } else if isTop {
+                    ch = style.topChar
+                } else if isBottom {
+                    ch = style.bottomChar
+                } else if isLeft || isRight {
+                    ch = style.sideChar
+                }
 
                 rowStr.append(ch)
             }
@@ -221,7 +240,10 @@ extension LogoEngine {
         updateCursorAfterBox(startLine: startLine, startCol: startCol, width: width, height: height, exitPos: exitPos)
     }
 
-    private func drawBoxAroundText(_ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne) {
+    private func drawBoxAroundText(
+        _ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, mode: BoxDrawMode,
+        exitPos: BoxExitPosition = .ne
+    ) {
         guard let editor = self.delegate else { return }
         let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
         let maxVisualWidth = rawLines.map { $0.displayWidth }.max() ?? 0
@@ -247,9 +269,12 @@ extension LogoEngine {
 
             let rowStr: String
             if isTop {
-                rowStr = String(style.topLeft) + String(repeating: style.topChar, count: innerWidth) + String(style.topRight)
+                rowStr =
+                    String(style.topLeft) + String(repeating: style.topChar, count: innerWidth) + String(style.topRight)
             } else if isBottom {
-                rowStr = String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth) + String(style.bottomRight)
+                rowStr =
+                    String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth)
+                    + String(style.bottomRight)
             } else {
                 let lineStr = (r >= 1 && (r - 1) < textLines.count) ? textLines[r - 1] : ""
                 let textWidth = lineStr.displayWidth
@@ -275,10 +300,12 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        updateCursorAfterBox(startLine: startLine, startCol: startCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
+        updateCursorAfterBox(
+            startLine: startLine, startCol: startCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
     }
 
-    private func updateCursorAfterBox(startLine: Int, startCol: Int, width: Int, height: Int, exitPos: BoxExitPosition) {
+    private func updateCursorAfterBox(startLine: Int, startCol: Int, width: Int, height: Int, exitPos: BoxExitPosition)
+    {
         guard let editor = self.delegate else { return }
         switch exitPos {
         case .ne:
@@ -310,13 +337,17 @@ extension LogoEngine {
     ) -> String {
         switch mode {
         case .insert:
-            return buildInsertedRowText(existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
+            return buildInsertedRowText(
+                existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
         case .overlay:
-            return buildOverlayRowText(existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
+            return buildOverlayRowText(
+                existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
         }
     }
 
-    private func buildInsertedRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool) -> String {
+    private func buildInsertedRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool)
+        -> String
+    {
         var prefix = ""
         var suffix = ""
         var firstOverlap: Character? = nil
@@ -334,7 +365,7 @@ extension LogoEngine {
             }
             currentW += w
         }
-        
+
         if prefix.displayWidth < startCol {
             prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
         }
@@ -348,13 +379,21 @@ extension LogoEngine {
             let isRight = (currentVisualCol + w == rowStr.displayWidth)
 
             var moveMask = 0
-            if isTop && isLeft { moveMask = 6 }
-            else if isTop && isRight { moveMask = 12 }
-            else if isBottom && isLeft { moveMask = 3 }
-            else if isBottom && isRight { moveMask = 9 }
-            else if isTop { moveMask = 10 }
-            else if isBottom { moveMask = 10 }
-            else if isLeft || isRight { moveMask = 5 }
+            if isTop && isLeft {
+                moveMask = 6
+            } else if isTop && isRight {
+                moveMask = 12
+            } else if isBottom && isLeft {
+                moveMask = 3
+            } else if isBottom && isRight {
+                moveMask = 9
+            } else if isTop {
+                moveMask = 10
+            } else if isBottom {
+                moveMask = 10
+            } else if isLeft || isRight {
+                moveMask = 5
+            }
 
             if currentVisualCol == 0, moveMask != 0, let existingCh = firstOverlap {
                 let fused = fuseChar(existing: existingCh, defaultNewChar: ch, moveMask: moveMask)
@@ -369,7 +408,9 @@ extension LogoEngine {
         return prefix + resultRow + suffix
     }
 
-    private func buildOverlayRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool) -> String {
+    private func buildOverlayRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool)
+        -> String
+    {
         var prefix = ""
         var suffix = ""
         var existingBoxRegion: [Character] = []
@@ -401,13 +442,21 @@ extension LogoEngine {
             let isRight = (currentVisualCol + w == rowWidth)
 
             var moveMask = 0
-            if isTop && isLeft { moveMask = 6 }
-            else if isTop && isRight { moveMask = 12 }
-            else if isBottom && isLeft { moveMask = 3 }
-            else if isBottom && isRight { moveMask = 9 }
-            else if isTop { moveMask = 10 }
-            else if isBottom { moveMask = 10 }
-            else if isLeft || isRight { moveMask = 5 }
+            if isTop && isLeft {
+                moveMask = 6
+            } else if isTop && isRight {
+                moveMask = 12
+            } else if isBottom && isLeft {
+                moveMask = 3
+            } else if isBottom && isRight {
+                moveMask = 9
+            } else if isTop {
+                moveMask = 10
+            } else if isBottom {
+                moveMask = 10
+            } else if isLeft || isRight {
+                moveMask = 5
+            }
 
             if moveMask != 0 && !existingBoxRegion.isEmpty {
                 var regionW = 0
@@ -489,7 +538,9 @@ extension LogoEngine {
             widthVal = w
             if index + 1 < tokens.count {
                 var heightIndex = index + 1
-                if let h = parseIntExpressionArgument(tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan) {
+                if let h = parseIntExpressionArgument(
+                    tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan)
+                {
                     index = heightIndex
                     heightVal = h
                 }
@@ -571,7 +622,7 @@ extension LogoEngine {
         let boxBorderChars: Set<Character> = [
             "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
             "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
-            "+", "-", "|", "│"
+            "+", "-", "|", "│",
         ]
 
         let totalLines = max(startLine + 1, (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0)

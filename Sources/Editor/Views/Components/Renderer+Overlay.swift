@@ -127,7 +127,8 @@ extension Renderer {
         let boxWidth = innerWidth + 2
 
         let topBorder = "\(ANSIStyle.menuDefault)┌" + String(repeating: "─", count: innerWidth) + "┐\(ANSIStyle.reset)"
-        let bottomBorder = "\(ANSIStyle.menuDefault)└" + String(repeating: "─", count: innerWidth) + "┘\(ANSIStyle.reset)"
+        let bottomBorder =
+            "\(ANSIStyle.menuDefault)└" + String(repeating: "─", count: innerWidth) + "┘\(ANSIStyle.reset)"
 
         var boxLines: [String] = [topBorder]
         for (iIdx, item) in items.enumerated() {
@@ -141,7 +142,9 @@ extension Renderer {
             let itemLine = " " + label + String(repeating: " ", count: spaceCount) + shortcut + " "
 
             if iIdx == editor.menuBar.itemIndex {
-                boxLines.append("\(ANSIStyle.menuDefault)│\(ANSIStyle.menuSelected)\(itemLine)\(ANSIStyle.menuReset)│\(ANSIStyle.reset)")
+                boxLines.append(
+                    "\(ANSIStyle.menuDefault)│\(ANSIStyle.menuSelected)\(itemLine)\(ANSIStyle.menuReset)│\(ANSIStyle.reset)"
+                )
             } else {
                 boxLines.append("\(ANSIStyle.menuDefault)│\(itemLine)│\(ANSIStyle.reset)")
             }

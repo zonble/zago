@@ -448,7 +448,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["LSHIFT"], .lshift),
         (["DATE"], .date),
         (["TIME"], .time),
-        (["SEARCH"], .search)
+        (["SEARCH"], .search),
     ]
 
     private static let primitiveMap: [String: LogoPrimitive] = {

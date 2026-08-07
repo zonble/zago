@@ -21,7 +21,8 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         let pathToInspect: String
 
         if let filePath = filePath, !filePath.isEmpty, filePath != "Untitled" {
-            let expanded = (filePath as NSString).isAbsolutePath
+            let expanded =
+                (filePath as NSString).isAbsolutePath
                 ? filePath
                 : (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent(filePath)
             absFilePath = expanded
@@ -135,7 +136,8 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
                 return String(trimmed.prefix(7))
             }
         }
-        return runGitCommand(args: ["branch", "--show-current"], cwd: repoRoot)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return runGitCommand(args: ["branch", "--show-current"], cwd: repoRoot)?.trimmingCharacters(
+            in: .whitespacesAndNewlines)
     }
 
     /// Fetches Git status badges for files in a repository directory via `git status --porcelain`.
@@ -173,7 +175,9 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
 
     private func fetchHEADLinesSync(repoInfo: GitRepositoryInfo) -> [String]? {
         guard !repoInfo.relativeFilePath.isEmpty else { return nil }
-        guard let output = runGitCommand(args: ["show", "HEAD:\(repoInfo.relativeFilePath)"], cwd: repoInfo.repoRootPath) else {
+        guard
+            let output = runGitCommand(args: ["show", "HEAD:\(repoInfo.relativeFilePath)"], cwd: repoInfo.repoRootPath)
+        else {
             return nil
         }
         return output.components(separatedBy: "\n").map { line in
@@ -183,44 +187,44 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
 
     private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
         #if os(Windows)
-        let gitNames = ["git.exe", "git", "git.cmd"]
-        let pathSeparator = ";"
+            let gitNames = ["git.exe", "git", "git.cmd"]
+            let pathSeparator = ";"
         #else
-        let gitNames = ["git"]
-        let pathSeparator = ":"
+            let gitNames = ["git"]
+            let pathSeparator = ":"
         #endif
 
         let envPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
         var searchDirs = envPath.components(separatedBy: pathSeparator)
         #if os(Windows)
-        searchDirs.append(contentsOf: [
-            "C:\\Program Files\\Git\\cmd",
-            "C:\\Program Files\\Git\\bin",
-            "C:\\Program Files (x86)\\Git\\cmd"
-        ])
+            searchDirs.append(contentsOf: [
+                "C:\\Program Files\\Git\\cmd",
+                "C:\\Program Files\\Git\\bin",
+                "C:\\Program Files (x86)\\Git\\cmd",
+            ])
         #else
-        searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
+            searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
         #endif
 
         for dir in searchDirs where !dir.isEmpty {
             for name in gitNames {
                 let candidate = (dir as NSString).appendingPathComponent(name)
                 #if os(Windows)
-                if FileManager.default.fileExists(atPath: candidate) {
-                    return (URL(fileURLWithPath: candidate), [])
-                }
+                    if FileManager.default.fileExists(atPath: candidate) {
+                        return (URL(fileURLWithPath: candidate), [])
+                    }
                 #else
-                if FileManager.default.isExecutableFile(atPath: candidate) {
-                    return (URL(fileURLWithPath: candidate), [])
-                }
+                    if FileManager.default.isExecutableFile(atPath: candidate) {
+                        return (URL(fileURLWithPath: candidate), [])
+                    }
                 #endif
             }
         }
 
         #if os(Windows)
-        return (URL(fileURLWithPath: "C:\\Program Files\\Git\\cmd\\git.exe"), [])
+            return (URL(fileURLWithPath: "C:\\Program Files\\Git\\cmd\\git.exe"), [])
         #else
-        return (URL(fileURLWithPath: "/usr/bin/env"), ["git"])
+            return (URL(fileURLWithPath: "/usr/bin/env"), ["git"])
         #endif
     }
 

@@ -21,7 +21,7 @@ extension Editor {
             tableModeController,
             canvasModeController,
             searchController,
-            documentOutlineController
+            documentOutlineController,
         ]
 
         for handler in modeHandlers {
