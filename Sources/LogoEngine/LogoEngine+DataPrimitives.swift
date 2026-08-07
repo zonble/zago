@@ -133,18 +133,18 @@ extension LogoEngine {
             index += 1
             let val = evaluateExpression(tokens, index: &index)
             let parsed = LogoValue.parse(val)
-            switch parsed {
-            case .list(let items): return LogoValue.array(items).description
-            default: return LogoValue.array([parsed]).description
+            return switch parsed {
+            case .list(let items): LogoValue.array(items).description
+            default: LogoValue.array([parsed]).description
             }
 
         case .arrayToList:
             index += 1
             let val = evaluateExpression(tokens, index: &index)
             let parsed = LogoValue.parse(val)
-            switch parsed {
-            case .array(let items): return LogoValue.list(items).description
-            default: return LogoValue.list([parsed]).description
+            return switch parsed {
+            case .array(let items): LogoValue.list(items).description
+            default: LogoValue.list([parsed]).description
             }
 
         case .combine:
@@ -165,10 +165,10 @@ extension LogoEngine {
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
-            switch p {
-            case .list(let items): return LogoValue.list(items.reversed()).description
-            case .array(let items): return LogoValue.array(items.reversed()).description
-            case .string(let s): return String(s.reversed())
+            return switch p {
+            case .list(let items): LogoValue.list(items.reversed()).description
+            case .array(let items): LogoValue.array(items.reversed()).description
+            case .string(let s): String(s.reversed())
             }
 
         case .gensym:

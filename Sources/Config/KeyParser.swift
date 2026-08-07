@@ -47,45 +47,46 @@ public enum KeyParser {
             }
         }
 
-        switch normalized {
-        case "up", "arrow-up", "arrowdown": return .arrowUp
-        case "down", "arrow-down": return .arrowDown
-        case "left", "arrow-left", "arrowleft": return .arrowLeft
-        case "right", "arrow-right", "arrowright": return .arrowRight
-        case "home": return .home
-        case "end": return .end
-        case "pageup", "page-up", "pgup": return .pageUp
-        case "pagedown", "page-down", "pgdn": return .pageDown
-        case "backspace", "bs": return .backspace
-        case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs": return .ctrlBackspace
-        case "delete", "del": return .delete
-        case "enter", "return": return .enter
-        case "tab": return .tab
-        case "mark": return .mark
-        case "esc", "escape": return .esc
-        case "shift-left", "shift-arrow-left": return .shiftArrowLeft
-        case "shift-right", "shift-arrow-right": return .shiftArrowRight
-        case "shift-up", "shift-arrow-up": return .shiftArrowUp
-        case "shift-down", "shift-arrow-down": return .shiftArrowDown
-        case "shift-home", "s-home": return .shiftHome
-        case "shift-end", "s-end": return .shiftEnd
-        case "f1": return .f1
-        case "f2": return .f2
-        case "f3": return .f3
-        case "f4": return .f4
-        case "f5": return .f5
-        case "f6": return .f6
-        case "f7": return .f7
-        case "f8": return .f8
-        case "f9": return .f9
-        case "f10": return .f10
-        case "f11": return .f11
-        case "f12": return .f12
+        return switch normalized {
+        case "up", "arrow-up", "arrowdown": .arrowUp
+        case "down", "arrow-down": .arrowDown
+        case "left", "arrow-left", "arrowleft": .arrowLeft
+        case "right", "arrow-right", "arrowright": .arrowRight
+        case "home": .home
+        case "end": .end
+        case "pageup", "page-up", "pgup": .pageUp
+        case "pagedown", "page-down", "pgdn": .pageDown
+        case "backspace", "bs": .backspace
+        case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs": .ctrlBackspace
+        case "delete", "del": .delete
+        case "enter", "return": .enter
+        case "tab": .tab
+        case "mark": .mark
+        case "esc", "escape": .esc
+        case "shift-left", "shift-arrow-left": .shiftArrowLeft
+        case "shift-right", "shift-arrow-right": .shiftArrowRight
+        case "shift-up", "shift-arrow-up": .shiftArrowUp
+        case "shift-down", "shift-arrow-down": .shiftArrowDown
+        case "shift-home", "s-home": .shiftHome
+        case "shift-end", "s-end": .shiftEnd
+        case "f1": .f1
+        case "f2": .f2
+        case "f3": .f3
+        case "f4": .f4
+        case "f5": .f5
+        case "f6": .f6
+        case "f7": .f7
+        case "f8": .f8
+        case "f9": .f9
+        case "f10": .f10
+        case "f11": .f11
+        case "f12": .f12
         default:
             if normalized.count == 1, let ch = normalized.first {
-                return .char(ch)
+                .char(ch)
+            } else {
+                nil
             }
-            return nil
         }
     }
 }

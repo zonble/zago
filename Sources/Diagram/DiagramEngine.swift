@@ -9,18 +9,18 @@ public enum DiagramEngine: String, CaseIterable, Sendable {
     /// File extensions associated with this diagram engine.
     public var fileExtensions: [String] {
         switch self {
-        case .mermaid: return ["mermaid", "mmd"]
-        case .plantuml: return ["puml", "plantuml", "iuml"]
-        case .dot: return ["dot", "gv"]
+        case .mermaid: ["mermaid", "mmd"]
+        case .plantuml: ["puml", "plantuml", "iuml"]
+        case .dot: ["dot", "gv"]
         }
     }
 
     /// Code block tags associated with this diagram engine. Primary tag is the first element.
     public var codeBlockTags: [String] {
         switch self {
-        case .mermaid: return ["mermaid", "mmd"]
-        case .plantuml: return ["puml", "plantuml", "iuml"]
-        case .dot: return ["dot", "graphviz", "gv"]
+        case .mermaid: ["mermaid", "mmd"]
+        case .plantuml: ["puml", "plantuml", "iuml"]
+        case .dot: ["dot", "graphviz", "gv"]
         }
     }
 

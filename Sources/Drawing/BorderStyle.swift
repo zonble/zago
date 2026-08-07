@@ -144,55 +144,49 @@ public enum BorderStyle: String, CaseIterable, Sendable {
 
     public var boxStyle: BoxStyle {
         switch self {
-        case .single:
-            return .single
-        case .double:
-            return .double
-        case .round:
-            return .round
-        case .doubleRound:
-            return .doubleRound
-        case .ascii:
-            return .ascii
-        case .asciiRound:
-            return .asciiRound
+        case .single: .single
+        case .double: .double
+        case .round: .round
+        case .doubleRound: .doubleRound
+        case .ascii: .ascii
+        case .asciiRound: .asciiRound
         }
     }
 
     public var tableCharacters: TableBorderCharacters {
         switch self {
         case .double:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "╔", topJoin: "╦", topRight: "╗",
                 midLeft: "╠", midJoin: "╬", midRight: "╣",
                 bottomLeft: "╚", bottomJoin: "╩", bottomRight: "╝",
                 horizontal: "═", vertical: "║")
         case .round:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "╭", topJoin: "┬", topRight: "╮",
                 midLeft: "├", midJoin: "┼", midRight: "┤",
                 bottomLeft: "╰", bottomJoin: "┴", bottomRight: "╯",
                 horizontal: "─", vertical: "│")
         case .doubleRound:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "╭", topJoin: "╦", topRight: "╮",
                 midLeft: "╠", midJoin: "╬", midRight: "╣",
                 bottomLeft: "╰", bottomJoin: "╩", bottomRight: "╯",
                 horizontal: "═", vertical: "║")
         case .ascii:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "+", topJoin: "+", topRight: "+",
                 midLeft: "+", midJoin: "+", midRight: "+",
                 bottomLeft: "+", bottomJoin: "+", bottomRight: "+",
                 horizontal: "-", vertical: "|")
         case .asciiRound:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "/", topJoin: "+", topRight: "\\",
                 midLeft: "+", midJoin: "+", midRight: "+",
                 bottomLeft: "\\", bottomJoin: "+", bottomRight: "/",
                 horizontal: "-", vertical: "|")
         case .single:
-            return TableBorderCharacters(
+            TableBorderCharacters(
                 topLeft: "┌", topJoin: "┬", topRight: "┐",
                 midLeft: "├", midJoin: "┼", midRight: "┤",
                 bottomLeft: "└", bottomJoin: "┴", bottomRight: "┘",
