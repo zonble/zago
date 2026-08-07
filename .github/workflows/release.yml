@@ -15,10 +15,10 @@ jobs:
         include:
           - arch: x86_64
             runner_arch: amd64
-            swift_platform: ubuntu22.04
+            swift_image: swift:6.0-jammy
           - arch: aarch64
             runner_arch: arm64
-            swift_platform: ubuntu22.04-aarch64
+            swift_image: swift:6.0-jammy
 
     steps:
       - name: Checkout Repository
@@ -32,12 +32,11 @@ jobs:
 
       - name: Build static binary and .deb package in Swift Docker image
         run: |
-          PLATFORM_TAG="${{ matrix.swift_platform }}"
           VERSION="${GITHUB_REF_NAME#v}"
           if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF_NAME" ]; then VERSION="0.1.0"; fi
           docker run --rm --platform linux/${{ matrix.runner_arch }} \
             -v "$PWD:/workspace" -w /workspace \
-            swift:6.0-$PLATFORM_TAG \
+            ${{ matrix.swift_image }} \
             sh -c "
               apt-get update -qq && apt-get install -y -qq wamerican > /dev/null 2>&1
               swift build -c release --static-swift-stdlib
