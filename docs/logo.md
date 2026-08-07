@@ -640,6 +640,25 @@ TYPE ITEM 2 :cells
 | `CHAR` / `CHR` | `CHR` | `CHAR code` \| `CHR code` | Returns character string for Unicode/ASCII code integer | `CHAR 65`, `CHR 23383` |
 | `UPPERCASE` | - | `UPPERCASE str` | Converts string to uppercase | `UPPERCASE "hello"` |
 | `LOWERCASE` | - | `LOWERCASE str` | Converts string to lowercase | `LOWERCASE "HELLO"` |
+| `INDEXOF` | `INDEX_OF` | `INDEXOF needle haystack [startFrom]` | Returns 1-based index of first occurrence of `needle` in `haystack` (0 if not found) | `INDEXOF "a "banana` |
+| `LASTINDEXOF` | `LAST_INDEX_OF` | `LASTINDEXOF needle haystack` | Returns 1-based index of last occurrence of `needle` in `haystack` (0 if not found) | `LASTINDEXOF "a "banana` |
+| `INDEXESOF` | `INDICESOF`, `ALL_INDEXES` | `INDEXESOF needle haystack` | Returns a list of all 1-based match indices of `needle` in `haystack` | `INDEXESOF "a "banana` |
+| `CONTAINS?` | `CONTAINSP`, `INCLUDES?` | `CONTAINS? needle haystack` | Returns true if `haystack` contains `needle` | `CONTAINS? "world "hello_world` |
+| `STARTSWITH?` | `STARTSP`, `HAS_PREFIX?` | `STARTSWITH? prefix string` | Returns true if `string` starts with `prefix` | `STARTSWITH? "# "#_Title` |
+| `ENDSWITH?` | `ENDSP`, `HAS_SUFFIX?` | `ENDSWITH? suffix string` | Returns true if `string` ends with `suffix` | `ENDSWITH? ".md "file.md` |
+| `SUBSTRING` | `SUBSTR`, `SLICE` | `SUBSTRING string start [length]` | Extracts substring starting at 1-based `start` position | `SUBSTRING "Hello_World 1 5` |
+| `REPLACE` | `SUBSTITUTE` | `REPLACE old new string` | Replaces all occurrences of `old` with `new` in `string` | `REPLACE "foo "bar "foo_text` |
+| `TRIM` | `STRIP` | `TRIM string` | Removes leading and trailing whitespace from string | `TRIM "  hello  ` |
+| `REPEATSTR` | `STR_REPEAT` | `REPEATSTR count string` | Repeats string for `count` times | `REPEATSTR 5 "=` |
+| `IMPLODE` | `JOINSTR`, `JOIN_LIST` | `IMPLODE delimiter list` | Joins a list of values into a single string separated by `delimiter` | `IMPLODE ", " [apple banana]` |
+| `LINES` | `TO_LINES` | `LINES string` | Splits multiline string into a list of individual lines | `LINES :multilineText` |
+| `UNLINES` | `FROM_LINES` | `UNLINES list` | Joins a list of lines into a multiline string with newlines | `UNLINES :lineList` |
+| `FORMAT` | `SPRINTF` | `FORMAT pattern argList` | Formats string pattern with placeholders (`%s`, `%d`, `%f`, `%x`, `%0Nd`, `%-Ns`, `%1`) | `FORMAT "Line_%d:_%s [42 "Text]` |
+| `PADLEFT` | `RJUST` | `PADLEFT width [padChar] string` | Left-pads string to specified display width | `PADLEFT 5 "0 "42` |
+| `PADRIGHT` | `LJUST` | `PADRIGHT width [padChar] string` | Right-pads string to specified display width | `PADRIGHT 10 ". "item` |
+| `REGEX_MATCH?` | `REGEX_MATCH`, `REMATCH?` | `REGEX_MATCH? pattern string` | Returns true if `string` matches regex `pattern` | `REGEX_MATCH? "^#+ "#_Title` |
+| `REGEX_REPLACE` | `RREPLACE`, `RSUBSTITUTE` | `REGEX_REPLACE pattern replacement string` | Replaces all regex matches in `string` with `replacement` | `REGEX_REPLACE "\s+ "_ "a   b` |
+| `REGEX_FIND` | `RFIND`, `RFINDALL` | `REGEX_FIND pattern string` | Returns a list of all substrings matching regex `pattern` | `REGEX_FIND "\d+ "Item_42_and_100` |
 | `TRANSLIT` | `TRANSFORM` | `TRANSLIT transform-id text` | Applies an ICU String Transform or zago `Zago-*` writing transform | `TRANSLIT "Any-Hiragana "Sakura`, `TRANSLIT "Zago-CJK-Punctuation "Hello,` |
 | `SPACING.CJK` | - | `SPACING.CJK text` | Normalizes spacing between CJK script characters and ASCII words/numbers without changing punctuation | `SPACING.CJK "中文API測試` |
 | `TOHANS` | `TRANSFORM.TOHANS` | `TOHANS text` | Converts Traditional Chinese text to Simplified Chinese via `Hant-Hans` | `TOHANS "繁體中文` |
