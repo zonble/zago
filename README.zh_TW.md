@@ -174,6 +174,57 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 
 ---
 
+## CLI 命令列與管道 (Pipe) 過濾器
+
+`zago` 支援全螢幕 TUI 互動編輯器、系統 `$EDITOR`、以及無介面 CLI 管道過濾器 (Unix Pipe Filter)：
+
+### 1. 互動編輯器與系統 `$EDITOR`
+
+可設定 `export EDITOR=zago`，支援開啟檔案、指定跳轉行號、或直接將 `stdin` 管道傳入編輯器：
+
+```bash
+# 在 TUI 編輯器中開啟檔案
+zago notes.txt --wrap 80 --ruler
+
+# 開啟檔案並直接跳轉至第 42 行第 10 欄
+zago +42:10 notes.txt
+
+# 將管道資料傳入互動編輯器 Buffer
+cat server.log | zago
+
+# 以唯讀模式開啟檔案
+zago -R /var/log/syslog
+```
+
+### 2. Headless 無介面指令與管道過濾器
+
+無需開啟 TUI 畫面，直接將 `stdin` 管道資料經由 LOGO 腳本處理後輸出至 `stdout`：
+
+```bash
+# 將管道文字自動畫上 ASCII 外框
+uptime | zago -e "box buffertext"
+
+# 執行單行 LOGO 指令並將結果輸出至 stdout
+zago -e "BOX 20 4; MOVE DOWN MOVE RIGHT; FILL \"Hello World\""
+
+# 利用 LOGO 腳本處理輸入檔案並重導向輸出
+cat data.txt | zago -s format_report.logo > diagram.txt
+```
+
+### 命令列選項說明
+
+| 選項 | 旗標 | 說明 |
+| :--- | :--- | :--- |
+| `files` | | 開啟檔案，`-` 代表 stdin 管道，或傳入 `+LINE[:COL]` 指定跳轉行號/欄號。 |
+| `-w`, `--wrap <col>` | | 指定軟換行欄寬 (例如 80)。 |
+| `-r`, `--ruler` | | 在視窗上方顯示經典 WordStar 風格標尺。 |
+| `-R`, `--readonly` | | 以唯讀模式開啟檔案。 |
+| `-e`, `--eval <code>` | | 無介面模式下執行單行 LOGO 程式碼並輸出至 stdout (支援 Pipe 輸入)。 |
+| `-s`, `--run`, `--script <file>` | | 無介面模式下執行 LOGO 腳本檔並輸出至 stdout (支援 Pipe 輸入)。 |
+| `--init` | | 產生預設的 `~/.zagorc` 設定檔。 |
+
+---
+
 ## 文件連結
 
 - [繁體中文使用手冊 (Wiki)](https://github.com/zonble/zago/wiki/zago-help-zh-tw)

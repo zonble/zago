@@ -312,27 +312,39 @@ For the complete command reference, see [Editor LOGO Documentation](docs/logo.md
 
 ## CLI Usage & Headless Scripting
 
-`zago` operates both as an interactive TUI editor and as a headless CLI diagram/table generator.
+`zago` operates as an interactive TUI editor, a system `$EDITOR`, and a headless Unix pipe filter.
 
-### 1. Interactive Editor Mode
+### 1. Interactive Editor & System `$EDITOR` Mode
 
-Open one or more files in the terminal TUI editor:
+Open files, jump to specific lines, edit piped stdin streams, or use `zago` as `export EDITOR=zago`:
 
 ```bash
-zago notes.txt
-zago file1.txt file2.txt --wrap 80 --ruler
+# Open one or more files in the terminal TUI editor
+zago notes.txt file2.txt --wrap 80 --ruler
+
+# Open file and jump directly to line 42, column 10
+zago +42:10 notes.txt
+
+# Pipe stdin stream directly into interactive TUI editor
+cat server.log | zago
+
+# Open files in read-only mode
+zago -R /var/log/syslog
 ```
 
-### 2. Headless Scripting Mode
+### 2. Headless Scripting & Unix Pipe Filter
 
-Execute LOGO scripts or inline LOGO code from the command line, render the canvas to a text buffer, and print the resulting ASCII output directly to stdout:
+Execute LOGO scripts or inline LOGO code on stdin piped text or files without opening a TUI window, printing the resulting ASCII output directly to `stdout`:
 
 ```bash
+# Pipe stdin text into LOGO filter and wrap it in an ASCII box
+uptime | zago -e "box buffertext"
+
 # Execute inline LOGO code and print output
 zago -e "BOX 20 4; MOVE DOWN MOVE RIGHT; FILL \"Hello World\""
 
-# Execute a LOGO script file and redirect output to a file
-zago -s myscript.logo > diagram.txt
+# Process input file with a LOGO script and redirect output
+cat data.txt | zago -s format_report.logo > diagram.txt
 
 # Pipe generated diagram directly to clipboard
 zago --run generate_architecture.logo | pbcopy
@@ -342,11 +354,12 @@ zago --run generate_architecture.logo | pbcopy
 
 | Option | Flag | Description |
 | :--- | :--- | :--- |
-| `files` | | File(s) to open in interactive editor mode. |
+| `files` | | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump. |
 | `-w`, `--wrap <col>` | | Specify softwrap column width (e.g. 80). |
 | `-r`, `--ruler` | | Display WordStar-style ruler bar above viewport. |
-| `-e`, `--eval <code>` | | Execute inline LOGO code in headless mode and print to stdout. |
-| `-s`, `--run`, `--script <file>` | | Execute a LOGO script file in headless mode and print to stdout. |
+| `-R`, `--readonly` | | Open file(s) in read-only mode. |
+| `-e`, `--eval <code>` | | Execute inline LOGO code in headless mode (supports Unix stdin pipe). |
+| `-s`, `--run`, `--script <file>` | | Execute a LOGO script file in headless mode (supports Unix stdin pipe). |
 | `--init` | | Generate default `~/.zagorc` configuration file. |
 | `--syntax <true/false>` | | Enable or disable syntax highlighting. |
 | `--lang <en/zh_TW>` | | Set interface language. |
