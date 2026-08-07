@@ -85,6 +85,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         #else
         try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         #endif
+        recordCurrentModificationDate(for: normalized)
     }
 
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
@@ -101,35 +102,42 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         }
     }
 
-    private var watchedPaths: [String: (timer: any DispatchSourceTimer, callback: @Sendable () -> Void)] = [:]
+    private final class WatcherState: @unchecked Sendable {
+        var snapshot: (exists: Bool, mtime: Date?, size: UInt64?)
+        init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
+    }
+
+    private var watchedPaths: [String: (timer: any DispatchSourceTimer, state: WatcherState, callback: @Sendable () -> Void)] = [:]
+
+    private func getSnapshot(for normalized: String) -> (exists: Bool, mtime: Date?, size: UInt64?) {
+        let info = fileInfo(at: normalized)
+        guard info.exists else { return (false, nil, nil) }
+        let attrs = try? fileManager.attributesOfItem(atPath: normalized)
+        let size = attrs?[.size] as? UInt64
+        return (true, info.modificationDate, size)
+    }
+
+    private func recordCurrentModificationDate(for normalized: String) {
+        if let entry = watchedPaths[normalized] {
+            entry.state.snapshot = getSnapshot(for: normalized)
+        }
+    }
 
     func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
         stopWatchingFile(at: path)
         let normalized = normalizePath(path, isDirectory: false)
 
-        func getSnapshot() -> (exists: Bool, mtime: Date?, size: UInt64?) {
-            let info = fileInfo(at: normalized)
-            guard info.exists else { return (false, nil, nil) }
-            let attrs = try? fileManager.attributesOfItem(atPath: normalized)
-            let size = attrs?[.size] as? UInt64
-            return (true, info.modificationDate, size)
-        }
-
-        let initialSnapshot = getSnapshot()
+        let initialSnapshot = getSnapshot(for: normalized)
 
         let queue = DispatchQueue(label: "test.filewatcher.\(UUID().uuidString)")
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + 0.05, repeating: 0.05)
 
-        final class State: @unchecked Sendable {
-            var snapshot: (exists: Bool, mtime: Date?, size: UInt64?)
-            init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
-        }
-        let state = State(snapshot: initialSnapshot)
+        let state = WatcherState(snapshot: initialSnapshot)
 
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
-            let current = getSnapshot()
+            let current = self.getSnapshot(for: normalized)
             if current.exists != state.snapshot.exists ||
                 current.mtime != state.snapshot.mtime ||
                 current.size != state.snapshot.size {
@@ -140,7 +148,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             }
         }
         timer.resume()
-        watchedPaths[normalized] = (timer, onChange)
+        watchedPaths[normalized] = (timer, state, onChange)
     }
 
     func stopWatchingFile(at path: String) {
