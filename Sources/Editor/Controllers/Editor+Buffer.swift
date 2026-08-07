@@ -127,7 +127,7 @@ extension Editor {
             }
         }
         saveCurrentViewSettingsToBuffer()
-        let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy)
+        let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy, language: self.language)
         newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
         newBuf.viewShowRuler = defaultViewShowRuler
         newBuf.viewShowLineNumbers = defaultViewShowLineNumbers

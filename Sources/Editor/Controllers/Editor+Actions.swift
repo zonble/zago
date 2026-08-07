@@ -292,6 +292,11 @@ extension Editor {
                 language = .en
                 usesExplicitLanguage = true
             }
+            for buf in buffers {
+                if let dirBuf = buf as? DirectoryBuffer {
+                    dirBuf.loadDirectory(at: dirBuf.directoryPath, language: language)
+                }
+            }
         case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
             "default-border-style", "default_border_style":
             if let style = BorderStyle(arg) {

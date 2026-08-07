@@ -67,13 +67,14 @@ open class TextBuffer: SpellCheckableBuffer {
     public static func makeBuffer(
         filePath: String?,
         fileIO: EditorFileIOStrategy,
-        gitService: GitServiceProtocol = GitService()
+        gitService: GitServiceProtocol = GitService(),
+        language: Language = .detectSystemLanguage()
     ) -> TextBuffer {
         guard let path = filePath, !path.isEmpty else { return TextBuffer() }
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
         let info = fileIO.fileInfo(at: expandedPath)
         if info.exists, info.isDirectory {
-            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO, gitService: gitService)
+            return DirectoryBuffer(directoryPath: expandedPath, fileIO: fileIO, gitService: gitService, language: language)
         }
         return TextBuffer(filePath: expandedPath, fileIO: fileIO)
     }

@@ -271,6 +271,9 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
             buffer.viewWrapColumn = defaultViewWrapColumn
+            if let dirBuf = buffer as? DirectoryBuffer {
+                dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
+            }
         }
 
         self.promptController.editor = self

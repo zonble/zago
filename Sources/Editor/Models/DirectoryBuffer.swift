@@ -10,6 +10,8 @@ public final class DirectoryBuffer: TextBuffer {
     override public var allowsLogoExecution: Bool { false }
     override public var isDirectoryBuffer: Bool { true }
 
+    public var currentLanguage: Language
+
     public init(
         directoryPath: String,
         fileIO: EditorFileIOStrategy,
@@ -20,12 +22,16 @@ public final class DirectoryBuffer: TextBuffer {
         self.directoryPath = expandedPath
         self.fileIO = fileIO
         self.gitService = gitService
+        self.currentLanguage = language
         super.init()
         self.filePath = expandedPath
         loadDirectory(at: expandedPath, language: language)
     }
 
-    public func loadDirectory(at path: String, language: Language = .detectSystemLanguage()) {
+    public func loadDirectory(at path: String, language: Language? = nil) {
+        if let lang = language {
+            self.currentLanguage = lang
+        }
         let expandedPath = fileIO.normalizePath(path, isDirectory: true)
 
         let info = fileIO.fileInfo(at: expandedPath)
@@ -46,7 +52,7 @@ public final class DirectoryBuffer: TextBuffer {
             gitStatusMap = [:]
         }
 
-        let l10n = L10n(language: language)
+        let l10n = L10n(language: currentLanguage)
         var newLines: [String] = []
         newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr))
         newLines.append(l10n.dirBufHeaderInstructions)
@@ -151,7 +157,7 @@ public final class DirectoryBuffer: TextBuffer {
                     folderName = String(folderName.dropLast())
                 }
                 let childDir = fileIO.childPath(folderName, in: directoryPath)
-                loadDirectory(at: childDir)
+                loadDirectory(at: childDir, language: currentLanguage)
                 editor.topVLineIndex = 0
                 editor.clearActiveMark()
                 editor.startFileWatcherForCurrentBuffer()
@@ -188,7 +194,7 @@ public final class DirectoryBuffer: TextBuffer {
     public func navigateUp(editor: Editor) -> Bool {
         let parentDir = fileIO.parentDirectory(of: directoryPath)
         if !parentDir.isEmpty && parentDir != directoryPath {
-            loadDirectory(at: parentDir)
+            loadDirectory(at: parentDir, language: currentLanguage)
             editor.topVLineIndex = 0
             editor.clearActiveMark()
             editor.startFileWatcherForCurrentBuffer()

@@ -33,6 +33,22 @@ import Testing
         #expect(dirBuffer.lines.contains("  notes.md"))
     }
 
+    @Test func testDirectoryBufferTraditionalChineseLocalization() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_tc_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let fileIO = TestLocalEditorFileIOStrategy.shared
+        let dirBuffer = DirectoryBuffer(directoryPath: workDir.path, fileIO: fileIO, language: .zh_TW)
+        let l10n = L10n(language: .zh_TW)
+
+        #expect(dirBuffer.lines.count >= 4)
+        #expect(dirBuffer.lines[0].contains("目錄:"))
+        #expect(dirBuffer.lines[1] == l10n.dirBufHeaderInstructions)
+        #expect(dirBuffer.lines[3] == l10n.dirBufUpDir)
+    }
+
     @Test func testDirectoryBufferNavigationAndFileOpening() throws {
         let tempDir = FileManager.default.temporaryDirectory
         let workDir = tempDir.appendingPathComponent("test_dir_nav_\(UUID().uuidString)")
