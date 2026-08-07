@@ -33,8 +33,22 @@ When a user pipes input into `zago` (e.g. `echo "hello" | zago` or `zago < input
 - **Windows**: Win32 `GetFileType(GetStdHandle(STD_INPUT_HANDLE))` distinguishes `FILE_TYPE_CHAR` (interactive console) from `FILE_TYPE_PIPE` or `FILE_TYPE_DISK`.
 
 #### B. Code Page & Line Ending Normalization
-- **Windows Console Default Code Page**: Traditional Chinese Windows defaults to **CP950 (Big5)** or OEM Code Pages. Reading `stdin` directly yields garbled text if input is UTF-8.
-  - **Solution**: Explicitly set console CP to UTF-8 (`SetConsoleCP(65001)`) and normalize `\r\n` (CRLF) to `\n` (LF) upon reading into `TextBuffer`.
+
+##### 1. Interactive Console Input (`SetConsoleCP(65001)`)
+The Win32 Console Subsystem maintains two **independent** Code Pages per process:
+- `GetConsoleOutputCP()` / `SetConsoleOutputCP()` (Output rendering Code Page)
+- `GetConsoleCP()` / `SetConsoleCP()` (Input keyboard/paste Code Page)
+
+**The Gotcha**: Even if the terminal window is configured to render UTF-8 (`SetConsoleOutputCP(65001)`), if `GetConsoleCP()` remains at legacy **CP950 (Big5)** or OEM Code Pages, the OS console layer converts user keyboard entries and pasted text into Big5 bytes before passing them to `stdin`!
+- **Solution**: `zago` explicitly calls `SetConsoleCP(65001)` on startup to force the Win32 console subsystem to pass native UTF-8 bytes for interactive input.
+
+##### 2. Redirected Pipe Input (`FILE_TYPE_PIPE`)
+Data piped from another process (e.g. `cmd.exe` `type file.txt | zago` or PowerShell `echo "中文" | zago`) is a **raw byte stream** passed directly from the parent process.
+- Setting `SetConsoleCP` does **NOT** modify bytes emitted by external parent processes.
+- Legacy CMD (`type`) outputs raw Big5 bytes on Traditional Chinese Windows.
+- PowerShell 5.1 outputs text encoded in `$OutputEncoding` (often UTF-16 / OEM CP950).
+- PowerShell Core 7+ and Git Bash output UTF-8.
+- **Solution**: `zago` passes redirected pipe input through its **Multi-Encoding Auto-Detector** ([`encoding.md`](file:///Users/zonble/Work/zago/docs/encoding.md)). It inspects byte signatures (BOM, UTF-8 validity, CP950 double-byte sequences), auto-detects the exact stream encoding, and normalizes line endings (`\r\n` CRLF -> `\n` LF) when building the `TextBuffer`.
 
 ---
 
