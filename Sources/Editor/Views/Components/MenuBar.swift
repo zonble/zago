@@ -91,13 +91,13 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.edit.open_link", hotkeyChar: "l", commandId: .documentOpenLink),
                     MenuItem(
                         titleKey: "menu.edit.outline", hotkeyChar: "i", commandId: .documentOutline,
-                        isVisible: { $0.supportsDocumentOutlineForCurrentBuffer() }),
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(
                         titleKey: "menu.edit.next_heading", hotkeyChar: "]", commandId: .documentHeadingNext,
-                        isVisible: { $0.supportsDocumentOutlineForCurrentBuffer() }),
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(
                         titleKey: "menu.edit.previous_heading", hotkeyChar: "[", commandId: .documentHeadingPrevious,
-                        isVisible: { $0.supportsDocumentOutlineForCurrentBuffer() }),
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),

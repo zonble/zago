@@ -40,7 +40,7 @@ import Testing
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = 0
 
-        editor.performSearch(query: "alpha")
+        editor.searchController.performSearch(query: "alpha")
         #expect(editor.buffer.lineIndex == 0)
         #expect(editor.buffer.columnIndex == 0)
         #expect(editor.buffer.activeSearchMatch?.length == 5)
@@ -70,7 +70,7 @@ import Testing
         editor.displayConfig.showLineNumbers = false
         editor.displayConfig.showRuler = false
 
-        editor.performSearch(query: "b")
+        editor.searchController.performSearch(query: "b")
         let highlighted = editor.renderer.render(editor: editor, rows: 8, cols: 20)
         #expect(highlighted.contains("\u{1B}[43;30mb\u{1B}[0m"))
 

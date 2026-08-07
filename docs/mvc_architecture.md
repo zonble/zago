@@ -51,23 +51,21 @@ Sources/Editor/
 │
 ├── Controllers/              # State Coordinators & Input Controllers
 │   ├── Editor.swift
+│   ├── DocumentOutlineController.swift
+│   ├── MenuBarController.swift
 │   ├── PromptController.swift
+│   ├── SearchController.swift
+│   ├── TableModeController.swift
+│   ├── CanvasModeController.swift
 │   ├── Editor+Buffer.swift
-│   ├── Editor+Canvas.swift
 │   ├── Editor+Commands.swift
 │   ├── Editor+DisplayConfig.swift
-│   ├── Editor+DocumentOutline.swift
 │   ├── Editor+DomainCommands.swift
+│   ├── Editor+Events.swift
 │   ├── Editor+Logo.swift
-│   ├── Editor+MenuBar.swift
 │   ├── Editor+Modes.swift
 │   ├── Editor+Prompts.swift
 │   ├── Editor+Render.swift
-│   ├── Editor+Search.swift
-│   ├── Editor+TableEditing.swift
-│   ├── Editor+TableMode.swift
-│   ├── Editor+TableNavigation.swift
-│   ├── Editor+TableResize.swift
 │   ├── Editor+Undo.swift
 │   ├── EditorFileIO.swift
 │   └── EditorTerminal.swift

@@ -817,11 +817,11 @@ struct FormatAndLayoutTests {
     let controller = editor.promptController
 
     #expect(controller.isActive == false)
-    #expect(controller.promptHelpShortcuts(editor: editor) == nil)
+    #expect(controller.promptHelpShortcuts() == nil)
 
     controller.mode = .search(completion: { _ in })
     #expect(controller.isActive == true)
-    let shortcuts = controller.promptHelpShortcuts(editor: editor)
+    let shortcuts = controller.promptHelpShortcuts()
     #expect(shortcuts != nil)
     #expect(shortcuts?.count == 3)
 

@@ -19,17 +19,19 @@ extension Editor {
             promptController,
             menuBarController,
             tableModeController,
-            canvasModeController
+            canvasModeController,
+            searchController,
+            documentOutlineController
         ]
 
         for handler in modeHandlers {
-            if handler.handleKey(key, editor: self) {
+            if handler.handleKey(key) {
                 return
             }
         }
 
         if key == .f1 || key == .ctrl("M") {
-            menuBarController.toggle(editor: self)
+            menuBarController.toggle()
             return
         }
 

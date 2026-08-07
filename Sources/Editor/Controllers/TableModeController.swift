@@ -14,11 +14,15 @@ enum TableLimits {
 
 /// Controller handling Table Mode keyboard events, navigation, and cell editing constraints.
 public final class TableModeController: KeyInputHandler {
-    public init() {}
+    public weak var editor: Editor?
+
+    public init(editor: Editor? = nil) {
+        self.editor = editor
+    }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key, editor: Editor) -> Bool {
-        guard editor.isTableModeActive, let cell = editor.currentTableCell else { return false }
+    public func handleKey(_ key: Key) -> Bool {
+        guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return false }
 
         if editor.isCanvasModeActive {
             editor.syncCanvasCursorToBuffer()

@@ -1,56 +1,104 @@
 import Foundation
 
-enum SearchDirection {
+public enum SearchDirection {
     case forward
     case backward
 }
 
-extension Editor {
+/// Controller managing text search state and search candidate execution.
+public final class SearchController: KeyInputHandler {
+    public weak var editor: Editor?
+
+    public struct SearchMatch: Sendable, Equatable {
+        public let query: String
+        public let line: Int
+        public let column: Int
+        public let length: Int
+        public let usesRegex: Bool
+
+        public init(query: String, line: Int, column: Int, length: Int, usesRegex: Bool) {
+            self.query = query
+            self.line = line
+            self.column = column
+            self.length = length
+            self.usesRegex = usesRegex
+        }
+    }
+
+    public var lastSearchQuery: String = ""
+
+    public init(editor: Editor? = nil) {
+        self.editor = editor
+    }
+
+    /// KeyInputHandler protocol implementation.
+    public func handleKey(_ key: Key) -> Bool {
+        switch key {
+        case .ctrl("W"), .f6:
+            editor?.promptSearch()
+            return true
+        case .alt("n"), .alt("N"):
+            findNextSearchMatch()
+            return true
+        case .alt("p"), .alt("P"):
+            findPreviousSearchMatch()
+            return true
+        default:
+            return false
+        }
+    }
+
     @discardableResult
-    func clearActiveSearch(setStatus: Bool = true) -> Bool {
-        guard buffer.activeSearchMatch != nil else { return false }
-        buffer.activeSearchMatch = nil
+    public func clearActiveSearch(setStatus: Bool = true) -> Bool {
+        guard let editor, editor.buffer.activeSearchMatch != nil else { return false }
+        editor.buffer.activeSearchMatch = nil
         if setStatus {
-            setStatusMessage(l10n["status.search_cleared"])
+            editor.setStatusMessage(editor.l10n["status.search_cleared"])
         }
         return true
     }
 
-    func isSearchMatchCharacter(line: Int, col: Int) -> Bool {
-        guard let match = buffer.activeSearchMatch else { return false }
+    public func isSearchMatchCharacter(line: Int, col: Int) -> Bool {
+        guard let editor, let match = editor.buffer.activeSearchMatch else { return false }
         return line == match.line && col >= match.column && col < match.column + match.length
     }
 
-    func findNextSearchMatch() {
+    public func findNextSearchMatch() {
         repeatSearch(direction: .forward)
     }
 
-    func findPreviousSearchMatch() {
+    public func findPreviousSearchMatch() {
         repeatSearch(direction: .backward)
     }
 
     /// Performs search operation for target query string.
-    func performSearch(query: String, useRegex: Bool = false, direction: SearchDirection = .forward) {
-        let activeRegex = useRegex || isRegexSearchEnabled
+    public func performSearch(
+        query: String,
+        useRegex: Bool = false,
+        direction: SearchDirection = .forward
+    ) {
+        guard let editor else { return }
+        let activeRegex = useRegex || editor.isRegexSearchEnabled
         search(
             query: query,
             useRegex: activeRegex,
             direction: direction,
-            anchor: (line: buffer.lineIndex, column: buffer.columnIndex),
+            anchor: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex),
             includeAnchor: true
         )
     }
 
     private func repeatSearch(direction: SearchDirection) {
-        let query = buffer.activeSearchMatch?.query ?? lastSearchQuery
+        guard let editor else { return }
+        let query = editor.buffer.activeSearchMatch?.query ?? lastSearchQuery
         guard !query.isEmpty else {
-            setStatusMessage(l10n["status.no_active_search"])
+            editor.setStatusMessage(editor.l10n["status.no_active_search"])
             return
         }
 
-        let activeRegex = buffer.activeSearchMatch?.usesRegex ?? isRegexSearchEnabled
+        let activeRegex = editor.buffer.activeSearchMatch?.usesRegex ?? editor.isRegexSearchEnabled
         let anchor: (line: Int, column: Int)
-        if let match = buffer.activeSearchMatch {
+        if let match = editor.buffer.activeSearchMatch {
             switch direction {
             case .forward:
                 anchor = (line: match.line, column: match.column + max(1, match.length))
@@ -58,7 +106,7 @@ extension Editor {
                 anchor = (line: match.line, column: match.column)
             }
         } else {
-            anchor = (line: buffer.lineIndex, column: buffer.columnIndex)
+            anchor = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
         }
 
         search(query: query, useRegex: activeRegex, direction: direction, anchor: anchor, includeAnchor: false)
@@ -77,7 +125,7 @@ extension Editor {
         anchor: (line: Int, column: Int),
         includeAnchor: Bool
     ) {
-        guard !query.isEmpty else { return }
+        guard let editor, !query.isEmpty else { return }
 
         let candidates: [SearchCandidate]
         if useRegex {
@@ -85,8 +133,8 @@ extension Editor {
                 let regex = try NSRegularExpression(pattern: query, options: [.caseInsensitive])
                 candidates = regexSearchCandidates(regex: regex)
             } catch {
-                buffer.activeSearchMatch = nil
-                setStatusMessage(String(format: l10n["status.invalid_regex"], error.localizedDescription))
+                editor.buffer.activeSearchMatch = nil
+                editor.setStatusMessage(String(format: editor.l10n["status.invalid_regex"], error.localizedDescription))
                 return
             }
         } else {
@@ -94,13 +142,13 @@ extension Editor {
         }
 
         guard !candidates.isEmpty else {
-            buffer.activeSearchMatch = nil
+            editor.buffer.activeSearchMatch = nil
             lastSearchQuery = query
-            setStatusMessage(l10n.notFound(query: query))
+            editor.setStatusMessage(editor.l10n.notFound(query: query))
             return
         }
 
-        let clampedAnchorLine = max(0, min(anchor.line, max(0, buffer.lines.count - 1)))
+        let clampedAnchorLine = max(0, min(anchor.line, max(0, editor.buffer.lines.count - 1)))
         let clampedAnchorColumn = max(0, anchor.column)
         let selected: (candidate: SearchCandidate, wrapped: Bool)
         switch direction {
@@ -126,8 +174,9 @@ extension Editor {
     }
 
     private func plainSearchCandidates(query: String) -> [SearchCandidate] {
+        guard let editor else { return [] }
         var candidates: [SearchCandidate] = []
-        for (lineIndex, line) in buffer.lines.enumerated() {
+        for (lineIndex, line) in editor.buffer.lines.enumerated() {
             var searchStart = line.startIndex
             while searchStart < line.endIndex,
                 let range = line.range(of: query, options: [.caseInsensitive], range: searchStart..<line.endIndex)
@@ -144,8 +193,9 @@ extension Editor {
     }
 
     private func regexSearchCandidates(regex: NSRegularExpression) -> [SearchCandidate] {
+        guard let editor else { return [] }
         var candidates: [SearchCandidate] = []
-        for (lineIndex, line) in buffer.lines.enumerated() {
+        for (lineIndex, line) in editor.buffer.lines.enumerated() {
             let nsRange = NSRange(line.startIndex..<line.endIndex, in: line)
             let matches = regex.matches(in: line, options: [], range: nsRange)
             for match in matches {
@@ -186,9 +236,10 @@ extension Editor {
         useRegex: Bool,
         wrapped: Bool
     ) {
-        buffer.lineIndex = candidate.line
-        buffer.columnIndex = candidate.column
-        buffer.activeSearchMatch = SearchMatch(
+        guard let editor else { return }
+        editor.buffer.lineIndex = candidate.line
+        editor.buffer.columnIndex = candidate.column
+        editor.buffer.activeSearchMatch = SearchMatch(
             query: query,
             line: candidate.line,
             column: candidate.column,
@@ -197,9 +248,9 @@ extension Editor {
         )
         lastSearchQuery = query
         if wrapped {
-            setStatusMessage(l10n.searchWrappedFound(query: query, line: candidate.line + 1))
+            editor.setStatusMessage(editor.l10n.searchWrappedFound(query: query, line: candidate.line + 1))
         } else {
-            setStatusMessage(l10n.foundQueryAtLine(query: query, line: candidate.line + 1))
+            editor.setStatusMessage(editor.l10n.foundQueryAtLine(query: query, line: candidate.line + 1))
         }
     }
 }

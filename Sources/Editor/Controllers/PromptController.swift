@@ -41,7 +41,11 @@ public final class PromptController: KeyInputHandler {
     /// Logo script history navigation index.
     public var logoHistoryIndex: Int = 0
 
-    public init() {}
+    public weak var editor: Editor?
+
+    public init(editor: Editor? = nil) {
+        self.editor = editor
+    }
 
     /// Resets all transient prompt input states.
     public func reset() {
@@ -58,23 +62,23 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key, editor: Editor) -> Bool {
+    public func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
         if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
-            cancel(editor: editor)
+            cancel()
             return true
         }
-        processPromptKey(key, editor: editor)
+        processPromptKey(key)
         return true
     }
 
     /// Cancels active prompt mode.
-    public func cancel(editor: Editor) {
+    public func cancel() {
         switch mode {
         case .saveFilePath(let completion):
             mode = .none
             completion(nil)
-            editor.setStatusMessage(editor.l10n["status.cancelled"])
+            editor?.setStatusMessage(editor?.l10n["status.cancelled"] ?? "")
         case .confirmExitSave(let completion):
             mode = .none
             completion(nil)
@@ -117,13 +121,13 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Processes keyboard input when in prompt mode.
-    public func processPromptKey(_ key: Key, editor: Editor) {
+    public func processPromptKey(_ key: Key) {
         if handlePromptNavigationKeys(key) {
             return
         }
 
         if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
-            cancel(editor: editor)
+            cancel()
             return
         }
 
@@ -181,7 +185,7 @@ public final class PromptController: KeyInputHandler {
         case .logoMacro(let completion):
             switch key {
             case .tab:
-                _ = completeCommandBarPrompt(editor: editor)
+                _ = completeCommandBarPrompt()
             case .enter:
                 let script = inputText
                 completionText = nil
@@ -413,7 +417,8 @@ public final class PromptController: KeyInputHandler {
         cursorIndex = replacement.count
     }
 
-    private func showCommandBarCompletions(_ items: [String], label: String, editor: Editor) {
+    private func showCommandBarCompletions(_ items: [String], label: String) {
+        guard let editor else { return }
         if items.isEmpty {
             completionText = editor.l10n["status.no_completions"]
         } else {
@@ -422,7 +427,8 @@ public final class PromptController: KeyInputHandler {
         }
     }
 
-    private func completeSettingCommandPrompt(editor: Editor) -> Bool {
+    private func completeSettingCommandPrompt() -> Bool {
+        guard editor != nil else { return false }
         let clamped = max(0, min(cursorIndex, inputText.count))
         let splitIdx = inputText.index(inputText.startIndex, offsetBy: clamped)
         let prefix = String(inputText[..<splitIdx])
@@ -434,7 +440,7 @@ public final class PromptController: KeyInputHandler {
 
         guard prefix.contains(where: \.isWhitespace) else {
             replacePromptPrefix(command + " ")
-            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased(), editor: editor)
+            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased())
             return true
         }
 
@@ -443,7 +449,7 @@ public final class PromptController: KeyInputHandler {
         let rest = String(prefix[restStart...])
 
         guard !rest.isEmpty else {
-            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased(), editor: editor)
+            showCommandBarCompletions(SettingCommand.settingNames, label: command.uppercased())
             return true
         }
 
@@ -461,9 +467,9 @@ public final class PromptController: KeyInputHandler {
                 if lcp.count > valuePrefix.count {
                     replacePromptPrefix("\(command) \(setting) \(lcp)")
                 }
-                showCommandBarCompletions(matches, label: setting, editor: editor)
+                showCommandBarCompletions(matches, label: setting)
             } else {
-                showCommandBarCompletions(matches, label: setting, editor: editor)
+                showCommandBarCompletions(matches, label: setting)
             }
             return true
         }
@@ -477,20 +483,21 @@ public final class PromptController: KeyInputHandler {
             if lcp.count > settingPrefix.count {
                 replacePromptPrefix("\(command) \(lcp)")
             }
-            showCommandBarCompletions(matches, label: command.uppercased(), editor: editor)
+            showCommandBarCompletions(matches, label: command.uppercased())
         } else {
-            showCommandBarCompletions(matches, label: command.uppercased(), editor: editor)
+            showCommandBarCompletions(matches, label: command.uppercased())
         }
 
         return true
     }
 
-    private func completeCommandBarPrompt(editor: Editor) -> Bool {
+    private func completeCommandBarPrompt() -> Bool {
+        guard let editor else { return false }
         let clamped = max(0, min(cursorIndex, inputText.count))
         let splitIdx = inputText.index(inputText.startIndex, offsetBy: clamped)
         let prefix = String(inputText[..<splitIdx])
 
-        if completeSettingCommandPrompt(editor: editor) {
+        if completeSettingCommandPrompt() {
             return true
         }
 
@@ -522,9 +529,9 @@ public final class PromptController: KeyInputHandler {
             if lcp.count > token.count {
                 replacePromptPrefix(leadingContext + lcp)
             }
-            showCommandBarCompletions(matches, label: "Tab", editor: editor)
+            showCommandBarCompletions(matches, label: "Tab")
         } else {
-            showCommandBarCompletions([], label: "Tab", editor: editor)
+            showCommandBarCompletions([], label: "Tab")
         }
         return true
     }
@@ -560,8 +567,8 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Provides shortcut hints for the active prompt mode.
-    public func promptHelpShortcuts(editor: Editor) -> [(key: String, label: String)]? {
-        guard isActive else { return nil }
+    public func promptHelpShortcuts() -> [(key: String, label: String)]? {
+        guard let editor, isActive else { return nil }
 
         let lang = editor.language
         func tr(_ key: String) -> String {

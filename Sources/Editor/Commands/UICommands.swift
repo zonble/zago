@@ -65,7 +65,7 @@ public struct ToggleMenuBarCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.menuBarController.toggle(editor: editor)
+        editor.menuBarController.toggle()
     }
 }
 

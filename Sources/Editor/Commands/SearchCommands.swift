@@ -41,7 +41,7 @@ public struct SearchCommand: Command {
             return .handled
         }
 
-        editor.performSearch(query: targetQuery, useRegex: editor.isRegexSearchEnabled)
+        editor.searchController.performSearch(query: targetQuery, useRegex: editor.isRegexSearchEnabled)
         return .handled
     }
 }
@@ -55,7 +55,7 @@ public struct SearchNextCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.findNextSearchMatch()
+        editor.searchController.findNextSearchMatch()
     }
 }
 
@@ -68,7 +68,7 @@ public struct SearchPreviousCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.findPreviousSearchMatch()
+        editor.searchController.findPreviousSearchMatch()
     }
 }
 
@@ -265,7 +265,7 @@ public struct NextHeadingCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.goToNextHeading()
+        editor.documentOutlineController.goToNextHeading()
     }
 }
 
@@ -279,7 +279,7 @@ public struct PreviousHeadingCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.goToPreviousHeading()
+        editor.documentOutlineController.goToPreviousHeading()
     }
 }
 
@@ -293,7 +293,7 @@ public struct DocumentOutlineCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        editor.showDocumentOutline()
+        editor.documentOutlineController.showDocumentOutline()
     }
 }
 

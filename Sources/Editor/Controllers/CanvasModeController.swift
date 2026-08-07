@@ -149,11 +149,15 @@ func oppositeMask(for direction: CanvasDrawDirection) -> UInt8 {
 
 /// Controller handling Canvas Mode drawing keys, box drawing, and visual column navigation.
 public final class CanvasModeController: KeyInputHandler {
-    public init() {}
+    public weak var editor: Editor?
+
+    public init(editor: Editor? = nil) {
+        self.editor = editor
+    }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key, editor: Editor) -> Bool {
-        guard editor.isCanvasModeActive && !editor.isTableModeActive else { return false }
+    public func handleKey(_ key: Key) -> Bool {
+        guard let editor, editor.isCanvasModeActive && !editor.isTableModeActive else { return false }
 
         let direction: CanvasDrawDirection
         let drawsArrow: Bool
@@ -207,12 +211,13 @@ public final class CanvasModeController: KeyInputHandler {
 
         editor.saveUndoSnapshot()
         editor.clearActiveMark()
-        drawCanvasStep(direction: direction, drawsArrow: drawsArrow, editor: editor)
+        drawCanvasStep(direction: direction, drawsArrow: drawsArrow)
         return true
     }
 
     /// Performs one step of canvas drawing in the specified direction.
-    func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool, editor: Editor) {
+    func drawCanvasStep(direction: CanvasDrawDirection, drawsArrow: Bool) {
+        guard let editor else { return }
         guard editor.ensureCanvasLineExists(editor.buffer.lineIndex) else { return }
 
         let delta = direction.delta

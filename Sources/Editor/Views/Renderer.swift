@@ -306,7 +306,7 @@ public final class Renderer {
                     {
                         lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)  // Inverse video for selection
                     } else if !editor.isCanvasModeActive
-                        && editor.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
+                        && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
                         lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
                     } else if isCellActive {

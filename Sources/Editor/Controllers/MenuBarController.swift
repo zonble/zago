@@ -2,16 +2,21 @@ import Foundation
 
 /// Controller handling Menu Bar UI activation, keyboard navigation, and menu item execution.
 public final class MenuBarController: KeyInputHandler {
+    public weak var editor: Editor?
+
     /// Whether the menu bar mode is currently active.
     public var isActive: Bool = false
 
     /// Underlying MenuBar model storing category and item state.
     public let menuBar = MenuBar()
 
-    public init() {}
+    public init(editor: Editor? = nil) {
+        self.editor = editor
+    }
 
     /// Toggles Menu Bar mode on ESC key in normal edit mode.
-    public func toggle(editor: Editor) {
+    public func toggle() {
+        guard let editor else { return }
         isActive.toggle()
         if isActive {
             menuBar.updateCategories(for: editor)
@@ -21,14 +26,14 @@ public final class MenuBarController: KeyInputHandler {
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key, editor: Editor) -> Bool {
+    public func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
-        processKey(key, editor: editor)
+        processKey(key)
         return true
     }
 
     /// Handles key input navigation when Menu Bar is active.
-    public func processKey(_ key: Key, editor: Editor) {
+    public func processKey(_ key: Key) {
         switch key {
         case .esc, .ctrl("C"), .ctrl("G"):
             isActive = false
@@ -68,7 +73,7 @@ public final class MenuBarController: KeyInputHandler {
             menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
 
         case .enter:
-            executeCurrentMenuItem(editor: editor)
+            executeCurrentMenuItem()
 
         case .char(let ch):
             let lowerCh = Character(String(ch).lowercased())
@@ -81,7 +86,7 @@ public final class MenuBarController: KeyInputHandler {
                 let items = menuBar.currentCategory.items
                 if let itemIdx = items.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
                     menuBar.itemIndex = itemIdx
-                    executeCurrentMenuItem(editor: editor)
+                    executeCurrentMenuItem()
                 }
             }
 
@@ -91,8 +96,8 @@ public final class MenuBarController: KeyInputHandler {
     }
 
     /// Executes current selected menu item action.
-    public func executeCurrentMenuItem(editor: Editor) {
-        guard let item = menuBar.currentItem else { return }
+    public func executeCurrentMenuItem() {
+        guard let editor, let item = menuBar.currentItem else { return }
         isActive = false
 
         if let cmdId = item.commandId {

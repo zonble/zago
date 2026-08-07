@@ -5,7 +5,7 @@ import LogoEngine
 import SpellChecker
 import Syntax
 
-public typealias SearchMatch = Editor.SearchMatch
+public typealias SearchMatch = SearchController.SearchMatch
 
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
@@ -105,27 +105,22 @@ public final class Editor: @unchecked Sendable {
         set { promptController.logoHistoryIndex = newValue }
     }
 
-    var lastSearchQuery: String = ""
-    public struct SearchMatch: Sendable, Equatable {
-        let query: String
-        let line: Int
-        let column: Int
-        let length: Int
-        let usesRegex: Bool
+    // Search Controller
+    public let searchController = SearchController()
 
-        init(query: String, line: Int, column: Int, length: Int, usesRegex: Bool) {
-            self.query = query
-            self.line = line
-            self.column = column
-            self.length = length
-            self.usesRegex = usesRegex
-        }
+    public var lastSearchQuery: String {
+        get { searchController.lastSearchQuery }
+        set { searchController.lastSearchQuery = newValue }
     }
+
+    // Document Outline Controller
+    public let documentOutlineController = DocumentOutlineController()
 
     // Mode & UI Controllers
     public let menuBarController = MenuBarController()
     public let tableModeController = TableModeController()
     public let canvasModeController = CanvasModeController()
+
 
     public var isMenuBarActive: Bool {
         get { menuBarController.isActive }
@@ -279,6 +274,13 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
             buffer.viewWrapColumn = defaultViewWrapColumn
         }
+
+        self.promptController.editor = self
+        self.searchController.editor = self
+        self.documentOutlineController.editor = self
+        self.menuBarController.editor = self
+        self.tableModeController.editor = self
+        self.canvasModeController.editor = self
 
         setupDefaultCommands()
         if isCanvasModeActive {

@@ -74,7 +74,7 @@ extension Editor {
                 self.setStatusMessage(self.l10n["status.cancelled_search"])
                 return
             }
-            self.performSearch(query: targetQuery)
+            self.searchController.performSearch(query: targetQuery)
         })
     }
 

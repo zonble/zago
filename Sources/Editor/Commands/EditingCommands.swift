@@ -112,7 +112,7 @@ public struct CancelSelectionCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
-        if editor.clearActiveSearch() {
+        if editor.searchController.clearActiveSearch() {
             return
         }
         if editor.buffer.selectionMark != nil || editor.buffer.canvasBlockMark != nil {
