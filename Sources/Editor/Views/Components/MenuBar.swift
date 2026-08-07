@@ -178,6 +178,30 @@ public final class MenuBar {
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                    MenuItem(
+                        titleKey: "menu.borders.arrow_solid", hotkeyChar: "1",
+                        action: { editor in
+                            editor.defaultArrowStyle = .solid
+                        },
+                        isChecked: { $0.defaultArrowStyle == .solid }),
+                    MenuItem(
+                        titleKey: "menu.borders.arrow_stemmed", hotkeyChar: "2",
+                        action: { editor in
+                            editor.defaultArrowStyle = .stemmed
+                        },
+                        isChecked: { $0.defaultArrowStyle == .stemmed }),
+                    MenuItem(
+                        titleKey: "menu.borders.arrow_hollow", hotkeyChar: "3",
+                        action: { editor in
+                            editor.defaultArrowStyle = .hollow
+                        },
+                        isChecked: { $0.defaultArrowStyle == .hollow }),
+                    MenuItem(
+                        titleKey: "menu.borders.arrow_small", hotkeyChar: "4",
+                        action: { editor in
+                            editor.defaultArrowStyle = .small
+                        },
+                        isChecked: { $0.defaultArrowStyle == .small }),
                 ]),
             MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",

@@ -438,6 +438,10 @@ public struct TraditionalChineseStrings {
         "menu.borders.ascii_round": "ASCII 圓角",
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "下一種框線\tM+S",
+        "menu.borders.arrow_solid": "箭頭：實心 ▲▼◀▶",
+        "menu.borders.arrow_stemmed": "箭頭：細箭頭 ↑↓←→",
+        "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
+        "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
 
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.word_count": "字數統計",
