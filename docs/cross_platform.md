@@ -58,6 +58,12 @@ When a user pipes input into `zago` (e.g. `echo "hello" | zago` or `zago < input
   - `TestLocalEditorFileIOStrategy` monitors a composite snapshot: `(exists, mtime, size)`.
   - Unit tests vary written string lengths (`"v1"`, `"v2 - modified content"`) so file size changes trigger change detection immediately without requiring artificial `Thread.sleep` delays.
 
+### Gotcha D: Windows NTFS Directory Attribute Flush Delay & Self-Save Suppression
+- **Pitfall**: On Windows NTFS, writing data to a file updates the file stream immediately, but the OS directory entry metadata (such as `.size` and `.modificationDate` returned by `attributesOfItem(atPath:)`) can have a slight flush delay of a few milliseconds in Win32 directory indices.
+  If an editor saves a buffer and restarts file watching, the watcher's background thread (polling 50ms later) reads the newly flushed directory index and misinterprets the editor's **own save** as an "external modification", causing false-alarm reload prompts!
+- **Solution**:
+  Both [`LocalEditorFileIOStrategy`](file:///Users/zonble/Work/zago/Sources/zago/LocalEditorFileIOStrategy.swift) and `TestLocalEditorFileIOStrategy` invoke `recordCurrentModificationDate()` immediately upon completing `writeTextFile`. This updates the watcher's baseline snapshot `(exists, mtime, size)` to match the post-write state, suppressing self-save false positives consistently across Windows, macOS, and Linux.
+
 ---
 
 ## 4. Encoding Pitfalls: Big5 / CP950, Emojis, and Silent Data Loss
