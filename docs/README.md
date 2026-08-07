@@ -22,3 +22,4 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Git Integration & Diff Gutter Specification](git_integration.md): non-Git-client design, title bar `[branch]` status, real-time diff against `HEAD`, and line number gutter colors (`+`, `~`, `-`).
 - [Terminal Rendering Performance Architecture](rendering_performance.md): rendering performance architecture, double buffering engine, line diffing algorithm, and layout caching specifications (Git Diff decoupling, Syntax Caching, VT100 Double Buffering, Virtual Line Caching).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
+- [Testing Guidelines & Best Practices](test.md): Windows file locking rules (`Win32Error 32`), mandatory `UUID().uuidString` temporary file paths, and unit test teardown guidelines.
