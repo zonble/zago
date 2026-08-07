@@ -1110,14 +1110,14 @@ import TextMetrics
     editor.processKey(.char("s"))
     #expect(editor.menuBar.currentCategory.titleKey == "menu.shapes")
 
-    // 4b. Home/End jump within menu items; PageUp/PageDown jump across menu categories
-    editor.processKey(.end)
-    #expect(editor.menuBar.itemIndex == editor.menuBar.currentCategory.items.count - 1)
-    editor.processKey(.home)
-    #expect(editor.menuBar.itemIndex == 0)
+    // 4b. PageUp/PageDown jump within menu items (vertical dropdown list); Home/End jump across menu categories (horizontal bar)
     editor.processKey(.pageDown)
-    #expect(editor.menuBar.categoryIndex == editor.menuBar.categories.count - 1)
+    #expect(editor.menuBar.itemIndex == editor.menuBar.currentCategory.items.count - 1)
     editor.processKey(.pageUp)
+    #expect(editor.menuBar.itemIndex == 0)
+    editor.processKey(.end)
+    #expect(editor.menuBar.categoryIndex == editor.menuBar.categories.count - 1)
+    editor.processKey(.home)
     #expect(editor.menuBar.categoryIndex == 0)
 
     // 5. Press ESC to close Menu Bar
