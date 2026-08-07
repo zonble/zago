@@ -107,7 +107,8 @@ public struct CancelSelectionCommand: Command {
     public let id: CommandID = .editCancelSelection
     public let name = "Cancel Selection"
     public let description = "Cancel active selection or mark"
-    public let keys: [Key] = [.ctrl("G")]
+    public let keys: [Key] = [.ctrl("G"), .alt("u"), .alt("U")]
+    public let commandBarAliases = ["unmark", "cancelmark", "clearmark"]
 
     public init() {}
 

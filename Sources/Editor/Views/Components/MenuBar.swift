@@ -83,6 +83,9 @@ public final class MenuBar {
                     MenuItem(
                         titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark,
                         isVisible: { $0.baseMode == .canvas }),
+                    MenuItem(
+                        titleKey: "menu.edit.cancel_selection", hotkeyChar: "k", commandId: .editCancelSelection,
+                        isVisible: { $0.buffer.selectionMark != nil || $0.buffer.canvasBlockMark != nil }),
                     MenuItem(titleKey: "menu.edit.copy", hotkeyChar: "o", commandId: .editCopy),
                     MenuItem(titleKey: "menu.edit.cut", hotkeyChar: "c", commandId: .editCut),
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),

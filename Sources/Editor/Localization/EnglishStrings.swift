@@ -403,7 +403,8 @@ public struct EnglishStrings {
         "menu.file.reload_config": "Reload Config",
 
         "menu.edit.undo": "Undo\t^Z",
-        "menu.edit.mark": "Toggle Canvas Mark\t^^ / M+B",
+        "menu.edit.mark": "Toggle Mark\t^^ / M+B",
+        "menu.edit.cancel_selection": "Cancel Mark / Selection\t^G / M+U",
         "menu.edit.cut": "Cut Text\t^K",
         "menu.edit.paste": "UnCut (Paste)\t^U",
         "menu.edit.delete_line": "Delete Line\t^BS",

@@ -381,3 +381,26 @@ import Testing
     toggleMenuCmd.execute(on: editor)
     #expect(editor.isMenuBarActive == true)
 }
+
+@Test func testToggleMarkAndCancelMarkCommands() throws {
+    let editor = Editor()
+    editor.baseMode = .canvas
+    #expect(editor.buffer.canvasBlockMark == nil)
+
+    let toggleCmd = ToggleMarkCommand()
+    // 1st press: set start point
+    toggleCmd.execute(on: editor)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
+
+    // 2nd press: set end point
+    toggleCmd.execute(on: editor)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
+
+    // Cancel mark using CancelSelectionCommand (^G / :unmark)
+    let cancelCmd = CancelSelectionCommand()
+    cancelCmd.execute(on: editor)
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.statusMessage == editor.l10n["status.mark_unset"])
+}

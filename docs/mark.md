@@ -76,6 +76,7 @@ Canvas mode follows a PE2-style rectangular block mark model.
   the current cursor position.
 - Cursor movement does not change the active block mark. Only `^^` / `Ctrl+^` or `M+B`
   changes the block start or end point.
+- To cancel/unset an active mark, use `^G`, `M+U` (`Alt+U`), or command `:unmark`.
 - The active block is the rectangle between the fixed start and end points.
 - Block bounds are visual-cell based and inclusive.
 - The block may include empty cells and trailing blank space.
