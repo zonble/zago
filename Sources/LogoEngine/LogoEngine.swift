@@ -1,3 +1,4 @@
+@_exported import Drawing
 import Foundation
 
 /// Represents a user-defined LOGO procedure defined via `TO procName :param1 ... body ... END`.

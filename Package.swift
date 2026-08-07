@@ -6,6 +6,7 @@ let package = Package(
     products: [
         .executable(name: "zago", targets: ["zago"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
+        .library(name: "Drawing", targets: ["Drawing"]),
         .library(name: "LogoEngine", targets: ["LogoEngine"]),
         .library(name: "TextTransform", targets: ["TextTransform"]),
         .library(name: "Config", targets: ["Config"]),
@@ -24,6 +25,10 @@ let package = Package(
             name: "TextMetrics"
         ),
         .target(
+            name: "Drawing",
+            dependencies: ["TextMetrics"]
+        ),
+        .target(
             name: "TextEncoding"
         ),
         .target(
@@ -38,14 +43,14 @@ let package = Package(
         ),
         .target(
             name: "LogoEngine",
-            dependencies: ["TextMetrics", "TextTransform"]
+            dependencies: ["Drawing", "TextMetrics", "TextTransform"]
         ),
         .target(
             name: "TextTransform"
         ),
         .target(
             name: "Config",
-            dependencies: ["LogoEngine"]
+            dependencies: ["Drawing", "LogoEngine"]
         ),
         .target(
             name: "Syntax",
@@ -56,12 +61,13 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: ["Config", "Diagram", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
         ),
         .executableTarget(
             name: "zago",
             dependencies: [
                 "Config",
+                "Drawing",
                 "Editor",
                 "Git",
                 "LogoEngine",
@@ -70,7 +76,7 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
+            dependencies: ["Config", "Diagram", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
             path: "Tests"
         ),
     ],

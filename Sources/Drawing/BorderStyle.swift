@@ -12,9 +12,28 @@ public struct TableBorderCharacters: Sendable {
     public let bottomRight: String
     public let horizontal: String
     public let vertical: String
+
+    public init(
+        topLeft: String, topJoin: String, topRight: String,
+        midLeft: String, midJoin: String, midRight: String,
+        bottomLeft: String, bottomJoin: String, bottomRight: String,
+        horizontal: String, vertical: String
+    ) {
+        self.topLeft = topLeft
+        self.topJoin = topJoin
+        self.topRight = topRight
+        self.midLeft = midLeft
+        self.midJoin = midJoin
+        self.midRight = midRight
+        self.bottomLeft = bottomLeft
+        self.bottomJoin = bottomJoin
+        self.bottomRight = bottomRight
+        self.horizontal = horizontal
+        self.vertical = vertical
+    }
 }
 
-/// Unified source-of-truth for border, junction, and corner characters across the entire editor and Logo engine.
+/// Unified source-of-truth for border, junction, and corner characters across the entire editor, drawing engine, and Logo engine.
 public struct BorderCharacterSet: Sendable {
     /// All vertical border characters (`│`, `║`, `|`, `/`, `\`).
     public static let verticalBorderChars: Set<Character> = {
@@ -87,7 +106,7 @@ public struct BorderCharacterSet: Sendable {
     }
 }
 
-/// Shared border style used by LOGO boxes, editor tables, and menu state.
+/// Shared border style used by LOGO boxes, editor tables, canvas drawing, and menu state.
 public enum BorderStyle: String, CaseIterable, Sendable {
     case single = "single"
     case double = "double"
@@ -123,7 +142,7 @@ public enum BorderStyle: String, CaseIterable, Sendable {
         BorderStyle(token) != nil
     }
 
-    var boxStyle: BoxStyle {
+    public var boxStyle: BoxStyle {
         switch self {
         case .single:
             return .single
@@ -183,42 +202,55 @@ public enum BorderStyle: String, CaseIterable, Sendable {
 }
 
 public struct BoxStyle: Sendable {
-    let topLeft: Character
-    let topChar: Character
-    let topRight: Character
-    let sideChar: Character
-    let bottomLeft: Character
-    let bottomChar: Character
-    let bottomRight: Character
+    public let topLeft: Character
+    public let topChar: Character
+    public let topRight: Character
+    public let sideChar: Character
+    public let bottomLeft: Character
+    public let bottomChar: Character
+    public let bottomRight: Character
 
-    static let single = BoxStyle(
+    public init(
+        topLeft: Character, topChar: Character, topRight: Character,
+        sideChar: Character, bottomLeft: Character, bottomChar: Character, bottomRight: Character
+    ) {
+        self.topLeft = topLeft
+        self.topChar = topChar
+        self.topRight = topRight
+        self.sideChar = sideChar
+        self.bottomLeft = bottomLeft
+        self.bottomChar = bottomChar
+        self.bottomRight = bottomRight
+    }
+
+    public static let single = BoxStyle(
         topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
-    static let double = BoxStyle(
+    public static let double = BoxStyle(
         topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
-    static let round = BoxStyle(
+    public static let round = BoxStyle(
         topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
-    static let doubleRound = BoxStyle(
+    public static let doubleRound = BoxStyle(
         topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
-    static let ascii = BoxStyle(
+    public static let ascii = BoxStyle(
         topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
-    static let asciiRound = BoxStyle(
+    public static let asciiRound = BoxStyle(
         topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
 
-    static func from(_ str: String) -> BoxStyle {
+    public static func from(_ str: String) -> BoxStyle {
         BorderStyle.from(str).boxStyle
     }
 
-    static func isStyleToken(_ token: String) -> Bool {
+    public static func isStyleToken(_ token: String) -> Bool {
         BorderStyle.isStyleToken(token)
     }
 }
 
-enum BoxAlignment: String, Sendable {
+public enum BoxAlignment: String, Sendable {
     case left
     case center
     case right
 
-    init?(_ token: String) {
+    public init?(_ token: String) {
         switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
         case "left":
             self = .left

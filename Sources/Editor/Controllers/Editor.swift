@@ -1,4 +1,5 @@
 @_exported import Config
+@_exported import Drawing
 import Foundation
 import Git
 import LogoEngine

@@ -1,5 +1,4 @@
 import Foundation
-import LogoEngine
 
 /// Represents a detected rectangular cell boundary within a table.
 public struct TableCell: Equatable, Sendable {
@@ -29,7 +28,7 @@ public struct TableCell: Equatable, Sendable {
 }
 
 /// Engine to scan 4 directions for box and table cell borders (Unicode, ASCII, Markdown).
-public final class TableCellDetector {
+public final class TableCellDetector: Sendable {
     public init() {}
 
     /// Detects enclosing table cell around (line, col) in lines buffer.
