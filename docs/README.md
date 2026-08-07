@@ -23,4 +23,5 @@ This directory holds the detailed user and language documentation. The root [REA
 - [Terminal Rendering Performance Architecture](rendering_performance.md): rendering performance architecture, double buffering engine, line diffing algorithm, and layout caching specifications (Git Diff decoupling, Syntax Caching, VT100 Double Buffering, Virtual Line Caching).
 - [Release & preview builds](release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
 - [File System Watcher & External Modification Architecture](file_watcher.md): cross-platform FileWatcher design, kernel event monitoring (macOS kqueue, Windows Win32 FindFirstChangeNotificationW), atomic save recovery, and UI reload pipeline.
+- [Cross-Platform Architecture, Pitfalls & Solutions](cross_platform.md): comprehensive guide to cross-platform terminal input, readline/pipe handling, file I/O locks, Big5/CP950 Emoji encoding gotchas, and display width calculations.
 - [Testing Guidelines & Best Practices](test.md): Windows file locking rules (`Win32Error 32`), mandatory `UUID().uuidString` temporary file paths, and unit test teardown guidelines.
