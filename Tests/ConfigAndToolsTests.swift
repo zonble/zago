@@ -69,7 +69,7 @@ struct ConfigAndToolsTests {
     #expect(HelpContent.lines(language: .en).contains("    Shift+Arrow        Draw box lines and move the canvas cursor"))
     #expect(HelpContent.lines(language: .en).contains("    Ctrl+Shift+Arrow   Draw arrow lines with an arrowhead at the endpoint"))
     #expect(HelpContent.lines(language: .zh_TW).contains("  快捷鍵與指令對照表"))
-    #expect(HelpContent.lines(language: .zh_TW).contains("  Canvas 模式："))
+    #expect(HelpContent.lines(language: .zh_TW).contains("  畫布模式："))
     #expect(HelpContent.lines(language: .zh_TW).contains("    Shift+方向鍵       畫出框線並移動畫布游標"))
     #expect(HelpContent.lines(language: .zh_TW).contains("    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭"))
 }
@@ -575,6 +575,8 @@ struct ConfigAndToolsTests {
     #expect(content.contains("set sublinenumbers off"))
     #expect(content.contains("set tab 4"))
     #expect(content.contains("set trim-trailing-whitespace off"))
+    #expect(content.contains("set border single"))
+    #expect(content.contains("set arrow solid"))
 
     try? FileManager.default.removeItem(atPath: tmpPath)
 }

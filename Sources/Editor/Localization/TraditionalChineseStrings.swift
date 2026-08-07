@@ -70,8 +70,8 @@ public struct TraditionalChineseStrings {
           Editor LOGO 指令參考
           ================================================================
 
-          Editor LOGO 是編輯器巨集語言。指令會操作目前文字 buffer、
-          游標、選取範圍、表格、狀態列與多 buffer。
+          Editor LOGO 是編輯器巨集語言。指令會操作目前文件
+          游標、選取範圍、表格、狀態列與多文件操作。
 
           基本編輯
             TYPE text                    插入文字或運算結果
@@ -85,8 +85,8 @@ public struct TraditionalChineseStrings {
             FIND "query                  搜尋文字
 
           圖形與表格
-            BOX [文字|寬 高]             插入方框；無參數時框住 canvas mark
-            DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住 mark
+            BOX [文字|寬 高]             插入方框；無參數時框住目前的畫布標記
+            DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住目前的畫布標記
             LINE [len] [style] [arrow]   繪製/連接水平線
             VLINE [height] [style]       繪製/連接垂直線
             FILL text                    填滿選取範圍、表格儲存格或方框內部
@@ -106,7 +106,7 @@ public struct TraditionalChineseStrings {
             SETHEADING direction         設定方向 (UP, RIGHT, DOWN, LEFT)；可不加引號
             HEADING                      回傳目前方向
             Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
-            往下/右移動可延伸 buffer。
+            往下/右移動可延伸文件高度。
 
           控制流程與 procedure
             REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
@@ -315,16 +315,16 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_edit": "  編輯、剪貼與選取：",
         "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
-        "helpview.edit_2": "    Shift+方向鍵/Home/End 延伸 text/table 選取範圍",
-        "helpview.edit_3": "    ^K / F9            剪下選取文字、canvas 區塊或目前行",
+        "helpview.edit_2": "    Shift+方向鍵/Home/End 延伸選取文字範圍",
+        "helpview.edit_3": "    ^K / F9            剪下選取文字、畫布區塊或目前行",
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
 
-        "helpview.sec_canvas": "  Canvas 模式：",
-        "helpview.canvas_1": "    F7 / M+V           切換 Canvas Mode，進行固定位置編輯",
+        "helpview.sec_canvas": "  畫布模式：",
+        "helpview.canvas_1": "    F7 / M+V           切換畫布",
         "helpview.canvas_2": "    Shift+方向鍵       畫出框線並移動畫布游標",
         "helpview.canvas_3": "    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭",
-        "helpview.canvas_4": "    ^^ / M+B           設定/取消矩形 canvas 區塊標記",
+        "helpview.canvas_4": "    ^^ / M+B           設定畫布區塊標記",
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
         "helpview.search_1": "    ^W / F6, M+N/P    搜尋；跳到下一個/上一個結果",
@@ -339,30 +339,30 @@ public struct TraditionalChineseStrings {
         "outlineview.footer": "  Up/Down 移動  Enter 跳轉  Esc/^G 關閉",
 
         "helpview.sec_file": "  檔案與 Buffer 操作指令：",
-        "helpview.file_1": "    ^S                 儲存目前檔案；^O / F3 WriteOut (選擇路徑)",
-        "helpview.file_2": "    ^R / F5            Read file (插入外部檔案內容至當前 Buffer)",
-        "helpview.file_3": "    ^N                 New Buffer (開啟新的空白 Buffer)",
-        "helpview.file_4": "    M+. / M+>          Next Buffer (切換至下一個 Buffer)",
-        "helpview.file_5": "    M+, / M+<          Previous Buffer (切換至上一個 Buffer)",
-        "helpview.file_6": "    ^X / F2            關閉當前 Buffer / 退出編輯器",
-        "helpview.file_7": "    F4                 儲存並關閉編輯器（Save & Exit）",
-        "helpview.file_8": "    ^G                 取消目前選取範圍或 canvas mark",
-        "helpview.file_10": "    ^^ / M+B (Canvas)  設定/取消矩形 canvas 區塊標記",
-        "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列 (Menu Bar)",
+        "helpview.file_1": "    ^S                 儲存目前文件；^O / F3 可選擇路徑",
+        "helpview.file_2": "    ^R / F5            插入外部檔案內容至當前文件中",
+        "helpview.file_3": "    ^N                 開啟新的空白頁",
+        "helpview.file_4": "    M+. / M+>          切換至下一個文件",
+        "helpview.file_5": "    M+, / M+<          切換至上一個文件",
+        "helpview.file_6": "    ^X / F2            關閉當前文件 / 退出編輯器",
+        "helpview.file_7": "    F4                 儲存並關閉編輯器",
+        "helpview.file_8": "    ^G                 取消目前選取範圍或畫布標記",
+        "helpview.file_10": "    ^^ / M+B           設定/取消矩形畫布區塊標記 (僅適用畫布模式)",
+        "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列",
 
         "helpview.sec_set": "  使用 'set / unset' 指令可調整的設定選項：",
         "helpview.set_1": "    set wrap <col|off>      自動換行欄位上限（例如 set wrap 80 或 set wrap off）",
-        "helpview.set_2": "    set ruler <on|off>      開啟/關閉欄位尺規列 (Ruler Bar)",
-        "helpview.set_3": "    set linenumbers <on|off> 開啟/關閉行號欄位 (Line Numbers)",
-        "helpview.set_4": "    set sublinenumbers <on|off> 開啟/關閉自動換行子行號 (Sub-Line Numbers)",
-        "helpview.set_5": "    set canvas-mode <on|off> 預設啟動 2D Canvas 模式",
+        "helpview.set_2": "    set ruler <on|off>      開啟/關閉欄位尺規列",
+        "helpview.set_3": "    set linenumbers <on|off> 開啟/關閉行號欄位",
+        "helpview.set_4": "    set sublinenumbers <on|off> 開啟/關閉自動換行子行號",
+        "helpview.set_5": "    set canvas-mode <on|off> 啟動畫布模式",
         "helpview.set_6": "    set syntax <on|off>     開啟/關閉語法高亮",
         "helpview.set_7": "    set tab <size>          設定 Tab 縮排寬度（例如 set tab 4）",
         "helpview.set_8": "    set auto-reload <on|off> 自動重新載入外部修改的檔案",
         "helpview.set_9": "    set border <style>      預設繪圖/表格框線樣式 (single/double/round/ascii)",
         "helpview.set_10": "    set arrow <style>       預設箭頭樣式 (solid/stemmed/hollow/small)",
         "helpview.set_11": "    set regex <on|off>      開啟/關閉正則表達式搜尋模式",
-        "helpview.set_12": "    set lang <en|zh_TW>     設定介面語言 (en / zh_TW)",
+        "helpview.set_12": "    set lang <en|zh_TW>     設定介面語言",
         "helpview.set_13": "    set spell <lang>        設定拼字檢查字典語言（例如 set spell en_US）",
         "helpview.set_14": "    set trim-trailing-whitespace <on|off> 儲存時自動清除行尾空白",
 
@@ -455,7 +455,7 @@ public struct TraditionalChineseStrings {
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "下一種框線\tM+S",
         "menu.borders.arrow_solid": "箭頭：實心 ▲▼◀▶",
-        "menu.borders.arrow_stemmed": "箭頭：細箭頭 ↑↓←→",
+        "menu.borders.arrow_stemmed": "箭頭：細線 ↑↓←→",
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
         "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
 

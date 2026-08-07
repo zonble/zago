@@ -329,7 +329,7 @@ public struct EnglishStrings {
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
         "helpview.search_1": "    ^W / F6, M+N/P    Search; repeat next/previous match",
         "helpview.search_2": "    M+O                Open Markdown/Org/rst/AsciiDoc document link at cursor",
-        "helpview.search_3": "    M+[ / M+] / M+\\   Previous/next heading; open outline",
+        "helpview.search_3": "    M+[ / M+] / M+\\    Previous/next heading; open outline",
         "helpview.search_4": "    ^L                 Refresh screen display",
         "helpview.search_5": "    ^C / F11           Display current cursor position info",
         "helpview.search_6": "    ^T / F12           Spell checker status",
