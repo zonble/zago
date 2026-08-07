@@ -31,7 +31,7 @@ extension LogoEngine {
         case .getline:
             var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
             if let n1Based = consumeNextIntExpressionArgument(
-                tokens, index: &index, isBoundary: isBufferArgumentBoundary)
+                tokens, index: &index, isBoundary: Self.isArgumentBoundary)
             {
                 lineIdx = max(0, n1Based - 1)
             }
@@ -55,7 +55,7 @@ extension LogoEngine {
         }
     }
 
-    private func isBufferArgumentBoundary(_ token: String) -> Bool {
+    internal static func isArgumentBoundary(_ token: String) -> Bool {
         LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 }

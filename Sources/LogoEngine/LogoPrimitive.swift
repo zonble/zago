@@ -172,6 +172,27 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case parse
     case runparse
 
+    // String & Regex Primitives
+    case indexof
+    case lastindexof
+    case indexesof
+    case contains
+    case startswith
+    case endswith
+    case substring
+    case replace
+    case trim
+    case repeatstr
+    case join
+    case lines
+    case unlines
+    case format
+    case padleft
+    case padright
+    case regexMatch
+    case regexReplace
+    case regexFind
+
     // Comparison Primitives
     case less
     case greater
@@ -410,6 +431,26 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["CHARCOUNT.LINES"], .charCountLines),
         (["PARSE"], .parse),
         (["RUNPARSE"], .runparse),
+        (["INDEXOF", "INDEX_OF"], .indexof),
+        (["LASTINDEXOF", "LAST_INDEX_OF"], .lastindexof),
+        (["INDEXESOF", "INDICESOF", "ALL_INDEXES"], .indexesof),
+        (["CONTAINS?", "CONTAINSP", "INCLUDES?"], .contains),
+        (["STARTSWITH?", "STARTSP", "HAS_PREFIX?"], .startswith),
+        (["ENDSWITH?", "ENDSP", "HAS_SUFFIX?"], .endswith),
+        (["SUBSTRING", "SUBSTR", "SLICE"], .substring),
+        (["REPLACE", "SUBSTITUTE"], .replace),
+        (["TRIM", "STRIP"], .trim),
+        (["REPEATSTR", "STR_REPEAT"], .repeatstr),
+        (["TOKENIZE_BY"], .split),
+        (["IMPLODE", "JOINSTR", "JOIN_LIST"], .join),
+        (["LINES", "TO_LINES"], .lines),
+        (["UNLINES", "FROM_LINES"], .unlines),
+        (["FORMAT", "SPRINTF"], .format),
+        (["PADLEFT", "RJUST"], .padleft),
+        (["PADRIGHT", "LJUST"], .padright),
+        (["REGEX_MATCH?", "REGEX_MATCH", "REMATCH?"], .regexMatch),
+        (["REGEX_REPLACE", "RREPLACE", "RSUBSTITUTE"], .regexReplace),
+        (["REGEX_FIND", "RFIND", "RFINDALL"], .regexFind),
 
         // Logical
         (["TRUE"], .trueVal),

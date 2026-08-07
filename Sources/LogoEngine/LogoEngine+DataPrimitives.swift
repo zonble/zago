@@ -688,8 +688,302 @@ extension LogoEngine {
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             return n1 >= n2 ? "true" : "false"
 
+        case .indexof:
+            index += 1
+            let needle = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let haystack = unquote(evaluateExpression(tokens, index: &index))
+            var startFrom = 1
+            if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                var nextIdx = index + 1
+                if let startVal = Int(evaluateExpression(tokens, index: &nextIdx)), startVal > 0 {
+                    index = nextIdx
+                    startFrom = startVal
+                }
+            }
+            let chars = Array(haystack)
+            if startFrom <= chars.count {
+                let searchSub = String(chars[(startFrom - 1)...])
+                if let range = searchSub.range(of: needle) {
+                    let offset = searchSub.distance(from: searchSub.startIndex, to: range.lowerBound)
+                    return "\(startFrom + offset)"
+                }
+            }
+            return "0"
+
+        case .lastindexof:
+            index += 1
+            let needle = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let haystack = unquote(evaluateExpression(tokens, index: &index))
+            if let range = haystack.range(of: needle, options: .backwards) {
+                let idx = haystack.distance(from: haystack.startIndex, to: range.lowerBound) + 1
+                return "\(idx)"
+            }
+            return "0"
+
+        case .indexesof:
+            index += 1
+            let needle = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let haystack = unquote(evaluateExpression(tokens, index: &index))
+            guard !needle.isEmpty else { return "[]" }
+            var matches: [Int] = []
+            var searchRange = haystack.startIndex..<haystack.endIndex
+            while let range = haystack.range(of: needle, options: [], range: searchRange) {
+                let idx = haystack.distance(from: haystack.startIndex, to: range.lowerBound) + 1
+                matches.append(idx)
+                searchRange = range.upperBound..<haystack.endIndex
+            }
+            return LogoValue.list(matches.map { LogoValue.string("\($0)") }).description
+
+        case .contains:
+            index += 1
+            let needle = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let haystack = unquote(evaluateExpression(tokens, index: &index))
+            return haystack.contains(needle) ? "true" : "false"
+
+        case .startswith:
+            index += 1
+            let prefix = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let string = unquote(evaluateExpression(tokens, index: &index))
+            return string.hasPrefix(prefix) ? "true" : "false"
+
+        case .endswith:
+            index += 1
+            let suffix = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let string = unquote(evaluateExpression(tokens, index: &index))
+            return string.hasSuffix(suffix) ? "true" : "false"
+
+        case .substring:
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let startVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
+            var lengthVal: Int? = nil
+            if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                var nextIdx = index + 1
+                if let len = Int(evaluateExpression(tokens, index: &nextIdx)), len >= 0 {
+                    index = nextIdx
+                    lengthVal = len
+                }
+            }
+            let chars = Array(str)
+            let zeroStart = max(0, startVal - 1)
+            guard zeroStart < chars.count else { return "" }
+            let maxLen = chars.count - zeroStart
+            let effectiveLen = min(lengthVal ?? maxLen, maxLen)
+            return String(chars[zeroStart..<(zeroStart + effectiveLen)])
+
+        case .replace:
+            index += 1
+            let target = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let replacement = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            return str.replacingOccurrences(of: target, with: replacement)
+
+        case .trim:
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            return str.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        case .repeatstr:
+            index += 1
+            let countVal = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            guard countVal > 0 else { return "" }
+            return String(repeating: str, count: countVal)
+
+        case .join:
+            index += 1
+            let delim = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            return items.joined(separator: delim)
+
+        case .lines:
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            let lineItems = str.components(separatedBy: .newlines)
+            return LogoValue.list(lineItems.map { LogoValue.string($0) }).description
+
+        case .unlines:
+            index += 1
+            let listStr = evaluateExpression(tokens, index: &index)
+            let items = LogoValue.parse(listStr).toListItems().map { $0.description }
+            return items.joined(separator: "\n")
+
+        case .format:
+            index += 1
+            let pattern = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let argVal = evaluateExpression(tokens, index: &index)
+            let rawArgs = LogoValue.parse(argVal).toListItems().map { $0.description }
+            return formatStringPattern(pattern: pattern, args: rawArgs)
+
+        case .padleft:
+            index += 1
+            let width = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            var padChar = " "
+            if index + 2 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) && !Self.isArgumentBoundary(tokens[index + 2]) {
+                var nextIdx = index + 1
+                let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
+                if !chCandidate.isEmpty {
+                    index = nextIdx
+                    padChar = String(chCandidate.prefix(1))
+                }
+            }
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
+            if currentWidth >= width { return str }
+            let padCount = width - currentWidth
+            return String(repeating: padChar, count: padCount) + str
+
+        case .padright:
+            index += 1
+            let width = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            var padChar = " "
+            if index + 2 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) && !Self.isArgumentBoundary(tokens[index + 2]) {
+                var nextIdx = index + 1
+                let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
+                if !chCandidate.isEmpty {
+                    index = nextIdx
+                    padChar = String(chCandidate.prefix(1))
+                }
+            }
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
+            if currentWidth >= width { return str }
+            let padCount = width - currentWidth
+            return str + String(repeating: padChar, count: padCount)
+
+        case .regexMatch:
+            index += 1
+            let pattern = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            if let regex = try? NSRegularExpression(pattern: pattern) {
+                let range = NSRange(str.startIndex..., in: str)
+                return regex.firstMatch(in: str, range: range) != nil ? "true" : "false"
+            }
+            return "false"
+
+        case .regexReplace:
+            index += 1
+            let pattern = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let replacement = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            if let regex = try? NSRegularExpression(pattern: pattern) {
+                let range = NSRange(str.startIndex..., in: str)
+                return regex.stringByReplacingMatches(in: str, range: range, withTemplate: replacement)
+            }
+            return str
+
+        case .regexFind:
+            index += 1
+            let pattern = unquote(evaluateExpression(tokens, index: &index))
+            index += 1
+            let str = unquote(evaluateExpression(tokens, index: &index))
+            if let regex = try? NSRegularExpression(pattern: pattern) {
+                let range = NSRange(str.startIndex..., in: str)
+                let matches = regex.matches(in: str, range: range)
+                let items = matches.compactMap { match -> String? in
+                    guard let r = Range(match.range, in: str) else { return nil }
+                    return String(str[r])
+                }
+                return LogoValue.list(items.map { LogoValue.string($0) }).description
+            }
+            return "[]"
+
         default:
             return nil
         }
+    }
+
+    private func formatStringPattern(pattern: String, args: [String]) -> String {
+        var result = ""
+        var argIndex = 0
+        let chars = Array(pattern)
+        var i = 0
+
+        while i < chars.count {
+            if chars[i] == "%" && i + 1 < chars.count {
+                i += 1
+                if chars[i] == "%" {
+                    result.append("%")
+                    i += 1
+                    continue
+                }
+
+                var posDigits = ""
+                let posStart = i
+                while i < chars.count && chars[i].isNumber {
+                    posDigits.append(chars[i])
+                    i += 1
+                }
+                if !posDigits.isEmpty, let posIdx = Int(posDigits), posIdx > 0 {
+                    let targetVal = posIdx <= args.count ? args[posIdx - 1] : ""
+                    result.append(targetVal)
+                    continue
+                } else {
+                    i = posStart
+                }
+
+                var specifier = "%"
+                while i < chars.count {
+                    let ch = chars[i]
+                    specifier.append(ch)
+                    i += 1
+                    if "sSdfxX".contains(ch) {
+                        break
+                    }
+                }
+
+                let currentArg = argIndex < args.count ? args[argIndex] : ""
+                argIndex += 1
+
+                let lastChar = specifier.last ?? "s"
+                if lastChar == "d" || lastChar == "D" {
+                    let intVal = Int(currentArg) ?? 0
+                    result.append(String(format: specifier, intVal))
+                } else if lastChar == "x" || lastChar == "X" {
+                    let intVal = Int(currentArg) ?? 0
+                    result.append(String(format: specifier, intVal))
+                } else if lastChar == "f" {
+                    let dblVal = Double(currentArg) ?? 0.0
+                    result.append(String(format: specifier, dblVal))
+                } else {
+                    if specifier.contains("-") || specifier.contains("0") || specifier.count > 2 {
+                        let widthStr = specifier.dropFirst().dropLast()
+                        let alignLeft = widthStr.hasPrefix("-")
+                        let cleanWidth = Int(widthStr.replacingOccurrences(of: "-", with: "")) ?? 0
+                        let dispW = currentArg.reduce(0) { $0 + $1.displayWidth }
+                        if dispW < cleanWidth {
+                            let pad = String(repeating: " ", count: cleanWidth - dispW)
+                            result.append(alignLeft ? currentArg + pad : pad + currentArg)
+                        } else {
+                            result.append(currentArg)
+                        }
+                    } else {
+                        result.append(currentArg)
+                    }
+                }
+            } else {
+                result.append(chars[i])
+                i += 1
+            }
+        }
+        return result
     }
 }
