@@ -101,6 +101,44 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         }
     }
 
+    private var watchedPaths: [String: (timer: any DispatchSourceTimer, callback: @Sendable () -> Void)] = [:]
+
+    func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
+        stopWatchingFile(at: path)
+        let normalized = normalizePath(path, isDirectory: false)
+        let initialMTime = fileInfo(at: normalized).modificationDate
+
+        let queue = DispatchQueue(label: "test.filewatcher.\(UUID().uuidString)")
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 0.1, repeating: 0.1)
+
+        final class State: @unchecked Sendable {
+            var lastMTime: Date?
+            init(lastMTime: Date?) { self.lastMTime = lastMTime }
+        }
+        let state = State(lastMTime: initialMTime)
+
+        timer.setEventHandler { [weak self] in
+            guard let self = self else { return }
+            let currentMTime = self.fileInfo(at: normalized).modificationDate
+            if currentMTime != state.lastMTime {
+                state.lastMTime = currentMTime
+                DispatchQueue.main.async {
+                    onChange()
+                }
+            }
+        }
+        timer.resume()
+        watchedPaths[normalized] = (timer, onChange)
+    }
+
+    func stopWatchingFile(at path: String) {
+        let normalized = normalizePath(path, isDirectory: false)
+        if let entry = watchedPaths.removeValue(forKey: normalized) {
+            entry.timer.cancel()
+        }
+    }
+
     private func expandTilde(_ path: String) -> String {
         #if os(Windows)
             let hasTildePrefix = path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\")
