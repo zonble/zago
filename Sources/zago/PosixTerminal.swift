@@ -155,7 +155,7 @@ import Foundation
                         }
                         return ANSIKeyMapping.resolve(seqString)
                     }
-                    return .esc
+                    return .unknown
 
                 case UInt8(ascii: "O"):
                     guard let thirdByte = readByte(timeoutMs: 50) else { return .esc }

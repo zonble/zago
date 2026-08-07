@@ -19,6 +19,7 @@ public enum Key: Equatable, Hashable, Sendable {
     case delete
     case enter
     case tab
+    case backtab
     case mark
     case esc
     case f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12
@@ -26,6 +27,12 @@ public enum Key: Equatable, Hashable, Sendable {
     case shiftArrowRight
     case shiftArrowUp
     case shiftArrowDown
+    case altArrowLeft
+    case altArrowRight
+    case altArrowUp
+    case altArrowDown
+    case ctrlArrowUp
+    case ctrlArrowDown
     case shiftHome
     case shiftEnd
     case ctrlShiftArrowLeft

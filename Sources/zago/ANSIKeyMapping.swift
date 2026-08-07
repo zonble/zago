@@ -30,6 +30,19 @@ public enum ANSIKeyMapping {
         "1;2H": .shiftHome, "2H": .shiftHome, "1;2~": .shiftHome, "2~": .shiftHome,
         "1;2F": .shiftEnd, "2F": .shiftEnd, "4;2~": .shiftEnd,
 
+        // Backtab / Shift + Tab
+        "Z": .backtab, "1;2Z": .backtab, "2Z": .backtab, "9;2u": .backtab,
+
+        // Alt + Arrow Navigation
+        "1;3D": .altArrowLeft, "3D": .altArrowLeft,
+        "1;3C": .altArrowRight, "3C": .altArrowRight,
+        "1;3A": .altArrowUp, "3A": .altArrowUp,
+        "1;3B": .altArrowDown, "3B": .altArrowDown,
+
+        // Ctrl + Arrow Navigation
+        "1;5A": .ctrlArrowUp,
+        "1;5B": .ctrlArrowDown,
+
         // Ctrl + Shift + Arrow & Shortcuts
         "1;6D": .ctrlShiftArrowLeft, "6D": .ctrlShiftArrowLeft,
         "1;6C": .ctrlShiftArrowRight, "6C": .ctrlShiftArrowRight,
@@ -54,6 +67,7 @@ public enum ANSIKeyMapping {
         UInt8(ascii: "d"): .shiftArrowLeft,
         UInt8(ascii: "H"): .home,
         UInt8(ascii: "F"): .end,
+        UInt8(ascii: "Z"): .backtab,
     ]
 
     private static let singleCharSS3Table: [UInt8: Key] = [

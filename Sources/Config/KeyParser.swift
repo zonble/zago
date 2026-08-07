@@ -61,6 +61,7 @@ public enum KeyParser {
         case "delete", "del": .delete
         case "enter", "return": .enter
         case "tab": .tab
+        case "shift-tab", "backtab", "s-tab": .backtab
         case "mark": .mark
         case "esc", "escape": .esc
         case "shift-left", "shift-arrow-left": .shiftArrowLeft
