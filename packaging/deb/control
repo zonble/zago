@@ -1,0 +1,9 @@
+Package: zago
+Version: VERSION
+Section: utils
+Priority: optional
+Architecture: ARCH
+Maintainer: zonble <zonble@gmail.com>
+Description: Terminal text editor with LOGO canvas graphics & org/markdown support
+ zago is a modern, modal-capable terminal text editor featuring integrated
+ LOGO canvas drawing, table editing, document outline, and syntax highlighting.

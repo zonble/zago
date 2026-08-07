@@ -30,9 +30,11 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Build static binary in Swift Docker image
+      - name: Build static binary and .deb package in Swift Docker image
         run: |
           PLATFORM_TAG="${{ matrix.swift_platform }}"
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF_NAME" ]; then VERSION="0.1.0"; fi
           docker run --rm --platform linux/${{ matrix.runner_arch }} \
             -v "$PWD:/workspace" -w /workspace \
             swift:6.0-$PLATFORM_TAG \
@@ -40,13 +42,21 @@ jobs:
               apt-get update -qq && apt-get install -y -qq wamerican > /dev/null 2>&1
               swift build -c release --static-swift-stdlib
               cp .build/release/zago /workspace/zago-linux-${{ matrix.arch }}
+              chmod +x /workspace/packaging/deb/build_deb.sh
+              /workspace/packaging/deb/build_deb.sh .build/release/zago \"$VERSION\" \"${{ matrix.arch }}\"
             "
 
-      - name: Upload artifact
+      - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
           name: zago-linux-${{ matrix.arch }}
           path: zago-linux-${{ matrix.arch }}
+
+      - name: Upload deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zago-deb-${{ matrix.arch }}
+          path: zago_*.deb
 
   build-windows:
     name: Build Windows (x64)
@@ -140,7 +150,7 @@ jobs:
       - name: Generate checksums
         working-directory: artifacts
         run: |
-          sha256sum zago-linux-x86_64 zago-linux-aarch64 zago-windows-x64.zip > checksums.txt
+          sha256sum zago-linux-x86_64 zago-linux-aarch64 zago-windows-x64.zip zago_*.deb > checksums.txt
           cat checksums.txt
 
       - name: Extract release notes from CHANGELOG.md
@@ -163,6 +173,7 @@ jobs:
             artifacts/zago-linux-x86_64
             artifacts/zago-linux-aarch64
             artifacts/zago-windows-x64.zip
+            artifacts/zago_*.deb
             artifacts/checksums.txt
           draft: false
           prerelease: false
