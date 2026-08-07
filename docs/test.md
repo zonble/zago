@@ -51,3 +51,10 @@ defer {
 ### 2. Use Mock / Strategy Classes for Headless Tests
 - For pure editor state and buffer tests, prefer `MemoryEditorFileIOStrategy` or `TestLocalEditorFileIOStrategy.shared`.
 - Pass `language: .zh_TW` or `language: .en` explicitly when testing localized strings or UI modals to prevent reliance on the host OS `LANG` environment variable.
+
+### 3. Linux Filesystem `mtime` Resolution & Fast File Write Tests
+On Linux (ext4 / tmpfs in Linux Docker & CI environments), Foundation's `FileManager.default.attributesOfItem(atPath:)[.modificationDate]` has **1-second timestamp resolution** (`time_t` integer seconds).
+
+When writing fast consecutive file modification tests (e.g. testing `FileWatcher` auto-reload):
+- **Vary written string content lengths** (e.g. `"v1"`, `"v2 - modified content"`) so file size changes alongside `mtime`.
+- `TestLocalEditorFileIOStrategy` checks a composite snapshot `(exists, mtime, size)`, allowing fast tests to detect file changes instantly across macOS, Linux, and Windows without adding artificial `Thread.sleep` delays.

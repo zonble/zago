@@ -174,6 +174,11 @@ public final class FileWatcher: @unchecked Sendable {
         lastModificationDate = nil
     }
 
+    /// Fallback timer monitoring for Linux / Glibc / Musl or non-Darwin platforms where native kqueue / Win32 handles are unavailable.
+    ///
+    /// Note on Linux (Glibc/Musl Foundation): `FileManager.default.attributesOfItem(atPath:)[.modificationDate]`
+    /// evaluates file modification timestamps with 1-second time_t resolution. Comparing both `mtime` and file existence
+    /// ensures reliable modification detection across fast background file edits on Linux ext4 / tmpfs filesystems.
     private func startTimerFallback(for path: String) {
         if let timer = timerSource {
             timer.cancel()
