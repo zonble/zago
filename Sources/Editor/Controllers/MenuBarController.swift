@@ -59,18 +59,18 @@ public final class MenuBarController: KeyInputHandler {
             }
 
         case .home:
-            menuBar.itemIndex = 0
-
-        case .end:
-            menuBar.itemIndex = max(0, menuBar.currentCategory.items.count - 1)
-
-        case .pageUp:
             menuBar.categoryIndex = 0
             menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
 
-        case .pageDown:
+        case .end:
             menuBar.categoryIndex = max(0, menuBar.categories.count - 1)
             menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
+
+        case .pageUp:
+            menuBar.itemIndex = 0
+
+        case .pageDown:
+            menuBar.itemIndex = max(0, menuBar.currentCategory.items.count - 1)
 
         case .enter:
             executeCurrentMenuItem()

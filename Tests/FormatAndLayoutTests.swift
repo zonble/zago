@@ -403,6 +403,32 @@ struct FormatAndLayoutTests {
     #expect(lastRowWithCursor.contains("\u{1B}[K"))
 }
 
+@Test func testMenuBarHomeEndPageUpPageDownKeyNavigation() throws {
+    let editor = Editor()
+    editor.isMenuBarActive = true
+    #expect(editor.isMenuBarActive == true)
+    #expect(editor.menuBar.categoryIndex == 0)
+    #expect(editor.menuBar.itemIndex == 0)
+
+    // PageDown moves itemIndex to bottom of active category
+    _ = editor.menuBarController.handleKey(.pageDown)
+    #expect(editor.menuBar.categoryIndex == 0)
+    #expect(editor.menuBar.itemIndex == editor.menuBar.currentCategory.items.count - 1)
+
+    // PageUp moves itemIndex to top (0)
+    _ = editor.menuBarController.handleKey(.pageUp)
+    #expect(editor.menuBar.categoryIndex == 0)
+    #expect(editor.menuBar.itemIndex == 0)
+
+    // End moves categoryIndex to last category
+    _ = editor.menuBarController.handleKey(.end)
+    #expect(editor.menuBar.categoryIndex == editor.menuBar.categories.count - 1)
+
+    // Home moves categoryIndex back to first category
+    _ = editor.menuBarController.handleKey(.home)
+    #expect(editor.menuBar.categoryIndex == 0)
+}
+
 @Test func testLayoutEngineLineCacheReusesVirtualLineChunks() throws {
     let engine = LayoutEngine(wrapColumn: 20)
     let longLine = "這是一行非常長的中文與英文混合文字，用來測試 LayoutEngine 佈局快取機制能否正確運作並且提升軟換行效能。"
