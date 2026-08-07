@@ -454,6 +454,7 @@ public final class ConfigLoader {
             set auto-reload on
             set trim-trailing-whitespace off
             set border single
+            set arrow solid
 
             # Custom Key Bindings
             # bind <key> <command_or_macro>

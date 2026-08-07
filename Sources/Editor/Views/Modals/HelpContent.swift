@@ -15,6 +15,7 @@ public enum HelpContent {
         Section(titleKey: "helpview.sec_canvas", itemPrefix: "helpview.canvas", itemRange: 1...4),
         Section(titleKey: "helpview.sec_search", itemPrefix: "helpview.search", itemRange: 1...7),
         Section(titleKey: "helpview.sec_file", itemPrefix: "helpview.file", itemRange: 1...10),
+        Section(titleKey: "helpview.sec_set", itemPrefix: "helpview.set", itemRange: 1...14),
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
     ]
 
