@@ -62,6 +62,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case editUncut = "edit.uncut"
     case editCancelSelection = "edit.cancel_selection"
     case editTab = "edit.tab"
+    case editBacktab = "edit.backtab"
     case editUndo = "edit.undo"
     case editJustify = "edit.justify"
     case editSpell = "edit.spell"

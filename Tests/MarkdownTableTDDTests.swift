@@ -39,6 +39,38 @@ struct MarkdownTableTDDTests {
         #expect(res?.newCursorColumn == 2)
     }
 
+    @Test func testBacktabNavigatesToPreviousTableCellAndEditorKeyIntegration() throws {
+        let mdSyntax = MarkdownSyntaxDefinition().buildLanguageSyntax()
+        let lines = [
+            "| Header 1 | Header 2 |",
+            "| :--- | :--- |",
+            "| Cell 1 | Cell 2 |",
+            "| Cell 3 | Cell 4 |",
+        ]
+
+        // Backtab from Cell 2 (line 2, col 11) moves back to Cell 1 (line 2, col 2)
+        let res1 = mdSyntax.tableNavigator?(lines, 2, 11, false)
+        #expect(res1 != nil)
+        #expect(res1?.newBufferLineIndex == 2)
+        #expect(res1?.newCursorColumn == 2)
+
+        // Backtab from Cell 1 (line 2, col 2) moves back to Header 2 (line 0, col 13) skipping separator
+        let res2 = mdSyntax.tableNavigator?(lines, 2, 2, false)
+        #expect(res2 != nil)
+        #expect(res2?.newBufferLineIndex == 0)
+
+        // Key.backtab dispatch on Editor
+        let editor = Editor(filePath: "test.md")
+        editor.buffer.lines = lines
+        editor.buffer.lineIndex = 2
+        editor.buffer.columnIndex = 11
+
+        let handled = editor.commandRegistry.dispatch(key: Key.backtab, editor: editor)
+        #expect(handled == true)
+        #expect(editor.buffer.lineIndex == 2)
+        #expect(editor.buffer.columnIndex == 2)
+    }
+
     @Test func testDataRowTabNavigatesCellsAndAppendsNewRowAtBottom() throws {
         let mdSyntax = MarkdownSyntaxDefinition().buildLanguageSyntax()
         let lines = [
