@@ -16,13 +16,15 @@ TO BF :code
   WHILE [:pc <= :len] [
     MAKE "cmd ITEM :pc :code
     MAKE "codeVal ORD :cmd
+    MAKE "curVal ITEM :ptr :tape
+    IF :curVal = "" [ MAKE "curVal 0 ]
 
     ; 62='>' 60='<' 43='+' 45='-' 46='.'
     IF :codeVal = 62 [ MAKE "ptr :ptr + 1 ]
     IF :codeVal = 60 [ MAKE "ptr MAX 1 (:ptr - 1) ]
-    IF :codeVal = 43 [ SETITEM :ptr :tape ((ITEM :ptr :tape) + 1) ]
-    IF :codeVal = 45 [ SETITEM :ptr :tape ((ITEM :ptr :tape) - 1) ]
-    IF :codeVal = 46 [ MAKE "out WORD :out (CHAR ITEM :ptr :tape) ]
+    IF :codeVal = 43 [ SETITEM :ptr :tape (:curVal + 1) ]
+    IF :codeVal = 45 [ SETITEM :ptr :tape (:curVal - 1) ]
+    IF :codeVal = 46 [ MAKE "out WORD :out (CHAR :curVal) ]
 
     MAKE "pc :pc + 1
   ]

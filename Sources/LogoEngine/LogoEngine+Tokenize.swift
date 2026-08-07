@@ -29,7 +29,7 @@ extension LogoEngine {
                     current = ""
                 } else {
                     i = script.index(after: i)
-                    while i < script.endIndex && !script[i].isWhitespace && !isStructuralDelimiter(script[i]) {
+                    while i < script.endIndex && !script[i].isWhitespace {
                         current.append(script[i])
                         i = script.index(after: i)
                     }

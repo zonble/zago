@@ -120,10 +120,10 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             } else if (ch == "[" || ch == "{") && !inMultiWordString {
                 depth += 1
                 current.append(ch)
-            } else if (ch == "]" || ch == "}") && !inMultiWordString {
+            } else if (ch == "]" || ch == "}") && !inMultiWordString && depth > 0 {
                 depth -= 1
                 current.append(ch)
-            } else if ch.isWhitespace && depth == 0 && !inMultiWordString {
+            } else if ch.isWhitespace && depth <= 0 && !inMultiWordString {
                 if !current.isEmpty {
                     tokens.append(current)
                     current = ""

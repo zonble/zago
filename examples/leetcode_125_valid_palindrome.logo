@@ -8,8 +8,7 @@
 ; ==============================================================================
 
 TO ISPALINDROME :s
-  MAKE "noPunct REGEX_REPLACE "\W+" "" :s
-  MAKE "clean LOWERCASE REGEX_REPLACE "_" "" :noPunct
+  MAKE "clean LOWERCASE REGEX_REPLACE "[^a-zA-Z0-9]" "" :s
   MAKE "rev REVERSE :clean
   IF :clean = :rev [ OUTPUT "true ]
   OUTPUT "false
