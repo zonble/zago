@@ -1,0 +1,25 @@
+; ==============================================================================
+; LeetCode 217: Contains Duplicate (in zago Editor LOGO)
+; ==============================================================================
+; Given an integer array `nums`, return `true` if any value appears at least
+; twice in the array, and return `false` if every element is distinct.
+; Uses LOGO `COUNT` and `REMDUP` (remove duplicates) primitive.
+; ==============================================================================
+
+TO CONTAINSDUPLICATE :nums
+  MAKE "dedup REMDUP :nums
+  IF (COUNT :nums) != (COUNT :dedup) [ OUTPUT "true ]
+  OUTPUT "false
+END
+
+; Test cases
+TYPE "===_LeetCode_217:_Contains_Duplicate_===
+TYPE CHAR 10
+
+MAKE "nums1 [1 2 3 1]
+TYPE FORMAT "nums:_%s_duplicate:_%s (LIST :nums1 (CONTAINSDUPLICATE :nums1))
+TYPE CHAR 10
+
+MAKE "nums2 [1 2 3 4]
+TYPE FORMAT "nums:_%s_duplicate:_%s (LIST :nums2 (CONTAINSDUPLICATE :nums2))
+TYPE CHAR 10

@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, FizzBuzz).
 
 ---
 
@@ -8,12 +8,15 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 
 | File | Category | Description | Key LOGO Features Demonstrated |
 | :--- | :--- | :--- | :--- |
-| [`brainfuck.logo`](file:///Users/zonble/Work/zago/examples/brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ASCII`, `SETITEM` |
+| [`brainfuck.logo`](file:///Users/zonble/Work/zago/examples/brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](file:///Users/zonble/Work/zago/examples/fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
+| [`caesar_cipher.logo`](file:///Users/zonble/Work/zago/examples/caesar_cipher.logo) | Cryptography | **Caesar Cipher** encryption/decryption | `ORD`, `CHAR`, modulo arithmetic, `WORD` |
 | [`leetcode_001_two_sum.logo`](file:///Users/zonble/Work/zago/examples/leetcode_001_two_sum.logo) | LeetCode #1 | Two Sum problem | Nested `WHILE` loops, `ITEM`, `LIST` construction |
 | [`leetcode_020_valid_parentheses.logo`](file:///Users/zonble/Work/zago/examples/leetcode_020_valid_parentheses.logo) | LeetCode #20 | Valid Parentheses string matching using a stack | `FPUT`, `FIRST`, `BUTFIRST` (List-as-Stack) |
-| [`leetcode_125_valid_palindrome.logo`](file:///Users/zonble/Work/zago/examples/leetcode_125_valid_palindrome.logo) | LeetCode #125 | Valid Palindrome string cleaner | `LOWERCASE`, `REGEX_REPLACE`, `REVERSE` |
 | [`leetcode_053_max_subarray.logo`](file:///Users/zonble/Work/zago/examples/leetcode_053_max_subarray.logo) | LeetCode #53 | Maximum Subarray (Kadane's Algorithm) | `FOREACH` higher-order iterator, `MAX` math |
+| [`leetcode_070_climbing_stairs.logo`](file:///Users/zonble/Work/zago/examples/leetcode_070_climbing_stairs.logo) | LeetCode #70 | Climbing Stairs (Dynamic Programming / Fibonacci) | `WHILE` loop, DP state variables |
+| [`leetcode_125_valid_palindrome.logo`](file:///Users/zonble/Work/zago/examples/leetcode_125_valid_palindrome.logo) | LeetCode #125 | Valid Palindrome string cleaner | `LOWERCASE`, `REGEX_REPLACE`, `REVERSE` |
+| [`leetcode_217_contains_duplicate.logo`](file:///Users/zonble/Work/zago/examples/leetcode_217_contains_duplicate.logo) | LeetCode #217 | Contains Duplicate array check | `COUNT`, `REMDUP` list deduplication |
 
 ---
 
@@ -26,11 +29,11 @@ You can run any `.logo` script directly from your terminal using `zago -e`:
 # Run Brainfuck Interpreter
 zago -e "$(cat examples/brainfuck.logo)"
 
+# Run Caesar Cipher
+zago -e "$(cat examples/caesar_cipher.logo)"
+
 # Run Two Sum LeetCode solution
 zago -e "$(cat examples/leetcode_001_two_sum.logo)"
-
-# Run Valid Palindrome solution
-zago -e "$(cat examples/leetcode_125_valid_palindrome.logo)"
 ```
 
 ---

@@ -1,0 +1,43 @@
+; ==============================================================================
+; Caesar Cipher Encryption / Decryption (in zago Editor LOGO)
+; ==============================================================================
+; Encrypts alphabetic text using Caesar Cipher shift using ORD / CHAR arithmetic.
+; ==============================================================================
+
+TO CAESARENCRYPT :text :shift
+  MAKE "n COUNT :text
+  MAKE "res ""
+  MAKE "i 1
+  WHILE [:i <= :n] [
+    MAKE "ch ITEM :i :text
+    MAKE "code ORD :ch
+    ; Uppercase A-Z (65 - 90)
+    IF AND (:code >= 65) (:code <= 90) [
+      MAKE "base 65
+      MAKE "offset ((:code - :base) + :shift)
+      MAKE "codeVal ((:offset % 26) + :base)
+      MAKE "ch CHAR :codeVal
+    ]
+    ; Lowercase a-z (97 - 122)
+    IF AND (:code >= 97) (:code <= 122) [
+      MAKE "base 97
+      MAKE "offset ((:code - :base) + :shift)
+      MAKE "codeVal ((:offset % 26) + :base)
+      MAKE "ch CHAR :codeVal
+    ]
+    IF :code = 95 [ MAKE "ch "_ ]
+    MAKE "res WORD :res :ch
+    MAKE "i :i + 1
+  ]
+  OUTPUT :res
+END
+
+; Test cases
+TYPE "===_Caesar_Cipher_Demo_===
+TYPE CHAR 10
+
+MAKE "msg "Hello_World
+MAKE "shift 3
+MAKE "cipher CAESARENCRYPT :msg :shift
+TYPE FORMAT "original:_%s_shift:_%d_cipher:_%s (LIST :msg :shift :cipher)
+TYPE CHAR 10
