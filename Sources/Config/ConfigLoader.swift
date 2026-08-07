@@ -1,5 +1,5 @@
+import Drawing
 import Foundation
-import LogoEngine
 
 /// Loads and parses Nano/Vim-style directives from ~/.zagorc and ./.zagorc configuration files.
 public final class ConfigLoader {

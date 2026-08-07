@@ -54,7 +54,7 @@ let package = Package(
         ),
         .target(
             name: "Config",
-            dependencies: ["Drawing", "LogoEngine"]
+            dependencies: ["Drawing"]
         ),
         .target(
             name: "Syntax",

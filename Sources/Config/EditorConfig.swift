@@ -1,5 +1,5 @@
+import Drawing
 import Foundation
-import LogoEngine
 
 /// Parsed configuration settings loaded from ~/.zagorc or ./.zagorc files.
 public struct EditorConfig {
