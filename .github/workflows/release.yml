@@ -119,12 +119,15 @@ jobs:
           $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
           Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago.exe" -Force
 
-          # Bundle Swift Runtime DLLs into release directory so Windows users can run zago without installing Swift Toolchain
+          # Bundle ONLY essential Swift Runtime DLLs into release directory (excluding 250MB+ compiler/toolchain DLLs)
           $dllSources = @($env:SWIFT_BIN, "$env:SWIFT_SDKROOT\usr\bin")
+          $runtimePatterns = @("swiftCore*.dll", "swiftFoundation*.dll", "swiftDispatch*.dll", "swiftWinSDK*.dll", "swiftCRT*.dll", "blocksRuntime*.dll", "swiftRemoteMirror*.dll")
           foreach ($src in $dllSources) {
               if (Test-Path $src) {
-                  Get-ChildItem -Path $src -Filter "*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
-                      Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+                  foreach ($pattern in $runtimePatterns) {
+                      Get-ChildItem -Path $src -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                          Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+                      }
                   }
               }
           }
