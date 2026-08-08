@@ -50,6 +50,13 @@ try {
             throw "No zago*.exe executable was found inside the downloaded zip package."
         }
 
+        # Copy all accompanying Swift runtime DLLs to installDir
+        $exeDir = $extractedExe.DirectoryName
+        Get-ChildItem -Path $exeDir -Filter "*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $installDir -Force
+        }
+
+        # Copy executable and ensure it is named zago.exe (targetExe)
         Copy-Item -Path $extractedExe.FullName -Destination $targetExe -Force
         Remove-Item -Path $tempExtractDir -Recurse -Force -ErrorAction SilentlyContinue
     } else {
