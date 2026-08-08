@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.2.3 - 2026-08-09
+
+Optimized Windows release archive size by filtering only essential Swift Runtime DLLs.
+
+### Fixed
+
+- **Windows Release Size Optimization (`release.yml`)**: Filtered Windows `.zip` archive to bundle strictly essential Swift Runtime DLLs (`swiftCore`, `swiftFoundation`, `swiftDispatch`, `swiftWinSDK`, `swiftCRT`, `blocksRuntime`), reducing release zip size from ~300MB down to ~12MB by excluding toolchain/compiler binaries.
+- **Windows Installer Script (`install.ps1`)**: Ensured all runtime DLLs are copied to `$installDir` and the executable is copied and renamed to `$targetExe` (`zago.exe`).
+
 ## 1.2.2 - 2026-08-09
 
 Standalone Windows distribution bundling Swift Runtime DLLs and installer script enhancements.
