@@ -412,6 +412,19 @@ extension Editor {
             return false
         }
 
+        let isLogoFile = buffer.filePath?.lowercased().hasSuffix(".logo") == true
+
+        if isLogoFile {
+            let canvasBuf = ensureLogoCanvasBuffer()
+            if let idx = findLogoCanvasBufferIndex() {
+                switchToBuffer(index: idx)
+                canvasBuf.lines = Array(repeating: String(repeating: " ", count: 80), count: 24)
+                canvasBuf.lineIndex = 0
+                canvasBuf.columnIndex = 0
+                canvasVisualColumn = 0
+            }
+        }
+
         let scriptName = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "Untitled"
         appendLogoOutputHeader(scriptName)
 

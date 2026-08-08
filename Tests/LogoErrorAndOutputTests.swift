@@ -80,4 +80,37 @@ import Testing
         #expect(outputLines.contains { $0.contains("5") })
         #expect(outputLines.contains { $0.contains("NaN") })
     }
+
+    @Test func testLogoFileExecutionTargetsLogoCanvasBufferAndPreservesSourceCode() {
+        let editor = Editor(filePath: "demo.logo")
+        editor.buffer.lines = ["BOX 4 4"]
+        
+        let ok = editor.runLogoScript("BOX 4 4")
+        #expect(ok)
+
+        let sourceBuf = editor.buffers[0]
+        #expect(sourceBuf.filePath == "demo.logo")
+        #expect(sourceBuf.lines == ["BOX 4 4"])
+
+        let canvasIdx = editor.findLogoCanvasBufferIndex()
+        #expect(canvasIdx != nil)
+        #expect(editor.currentBufferIndex == canvasIdx!)
+        
+        let canvasBuf = editor.buffers[canvasIdx!]
+        #expect(canvasBuf.filePath == "*LOGO Canvas*")
+        #expect(canvasBuf.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
+
+        editor.toggleLogoCanvasBuffer()
+        #expect(editor.currentBufferIndex == 0)
+    }
+
+    @Test func testRunMenuVisibilityOnLogoFilesOnly() {
+        let mdEditor = Editor(filePath: "test.md")
+        mdEditor.menuBar.updateCategories(for: mdEditor)
+        #expect(!mdEditor.menuBar.categories.contains { $0.titleKey == "menu.run" })
+
+        let logoEditor = Editor(filePath: "test.logo")
+        logoEditor.menuBar.updateCategories(for: logoEditor)
+        #expect(logoEditor.menuBar.categories.contains { $0.titleKey == "menu.run" })
+    }
 }

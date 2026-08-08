@@ -122,6 +122,16 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput),
                 ]),
             MenuCategory(
+                titleKey: "menu.run", hotkeyChar: "r",
+                items: [
+                    MenuItem(titleKey: "menu.run.script", hotkeyChar: "r", commandId: .fileRunLogo),
+                    MenuItem(titleKey: "menu.run.eval", hotkeyChar: "e", commandId: .editEvalLogo),
+                    MenuItem(titleKey: "menu.run.output", hotkeyChar: "o", commandId: .logoOutput),
+                    MenuItem(titleKey: "menu.run.canvas", hotkeyChar: "c", commandId: .logoCanvas),
+                    MenuItem(titleKey: "menu.run.clear", hotkeyChar: "k", commandId: .logoClearOutput),
+                ],
+                isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true }),
+            MenuCategory(
                 titleKey: "menu.shapes", hotkeyChar: "s",
                 items: [
                     MenuItem(titleKey: "menu.shapes.box", hotkeyChar: "b", action: { $0.runLogoScript("BOX") }),

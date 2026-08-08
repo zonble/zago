@@ -6,19 +6,17 @@
 ; ==============================================================================
 
 TYPE "===_ASCII_Drawing_&_Diagram_Demo_==="
+NL
 TYPE CHAR 10
 
 ; 1. Draw Web Server Box (Double Border)
-SETBORDERSTYLE "double"
-SETARROWSTYLE "simple"
 BOX 24 4 "API_Gateway"
 
 ; 2. Connect vertical line
 VLINE 2
 
 ; 3. Draw Database Cluster Box (Rounded Border)
-SETBORDERSTYLE "rounded"
-BOX 24 4 "Database_Node"
+BOX 24 4 "Database_Node" "round"
 
 ; 4. Horizontal separator line
 LINE 24

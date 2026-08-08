@@ -94,6 +94,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileExit = "file.exit"
     case fileEditConfig = "file.edit_config"
     case fileReloadConfig = "file.reload_config"
+    case fileRunLogo = "file.run_logo"
 
     // Macro & UI
     case macroLogo = "macro.logo"
@@ -101,6 +102,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case logoWorkspace = "logo.workspace"
     case logoOutput = "logo.output"
     case logoClearOutput = "logo.clear_output"
+    case logoCanvas = "logo.canvas"
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case textMode = "mode.text"

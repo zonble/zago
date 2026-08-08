@@ -401,6 +401,7 @@ public struct EnglishStrings {
         "menu.file": "File",
         "menu.edit": "Edit",
         "menu.buffer": "Buffer",
+        "menu.run": "Run",
         "menu.shapes": "Shapes",
         "menu.borders": "Borders",
         "menu.tools": "Tools",
@@ -439,6 +440,12 @@ public struct EnglishStrings {
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",
         "menu.buffer.output": "LOGO Output\tM+L",
+
+        "menu.run.script": "Run Script\tF5",
+        "menu.run.eval": "Evaluate Line/Selection\t^Q",
+        "menu.run.output": "LOGO Output\tM+L",
+        "menu.run.canvas": "LOGO Canvas\tM+C",
+        "menu.run.clear": "Clear Canvas & Output",
 
         "menu.shapes.box": "Box",
         "menu.shapes.draw_box": "Draw Box",

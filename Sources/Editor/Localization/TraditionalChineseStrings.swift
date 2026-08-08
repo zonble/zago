@@ -401,6 +401,7 @@ public struct TraditionalChineseStrings {
         "menu.file": "檔案(F)",
         "menu.edit": "編輯(E)",
         "menu.buffer": "Buffer(B)",
+        "menu.run": "執行(R)",
         "menu.shapes": "圖形(S)",
         "menu.borders": "框線(O)",
         "menu.tools": "工具(T)",
@@ -439,6 +440,12 @@ public struct TraditionalChineseStrings {
         "menu.buffer.next": "下一個 Buffer\tM+.",
         "menu.buffer.prev": "上一個 Buffer\tM+,",
         "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
+
+        "menu.run.script": "執行腳本\tF5",
+        "menu.run.eval": "求值行/選取區\t^Q",
+        "menu.run.output": "LOGO 輸出紀錄\tM+L",
+        "menu.run.canvas": "LOGO 繪圖畫布\tM+C",
+        "menu.run.clear": "清除畫布與輸出",
 
         "menu.shapes.box": "方框",
         "menu.shapes.draw_box": "繪製方框",

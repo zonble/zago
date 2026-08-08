@@ -163,8 +163,14 @@ public final class Editor: @unchecked Sendable {
         get { buffer.currentTableCell }
         set { buffer.currentTableCell = newValue }
     }
-    public var defaultBorderStyle: BorderStyle = .single
-    public var defaultArrowStyle: ArrowStyle = .solid
+    public var defaultBorderStyle: BorderStyle {
+        get { buffer.borderStyle }
+        set { buffer.borderStyle = newValue }
+    }
+    public var defaultArrowStyle: ArrowStyle {
+        get { buffer.arrowStyle }
+        set { buffer.arrowStyle = newValue }
+    }
     public var isRegexSearchEnabled: Bool = false
 
     var lastMutationTime: Date?
@@ -275,6 +281,8 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
             buffer.viewWrapColumn = defaultViewWrapColumn
+            buffer.borderStyle = configSource.initial.defaultBorderStyle
+            buffer.arrowStyle = configSource.initial.defaultArrowStyle
             if let dirBuf = buffer as? DirectoryBuffer {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
             }

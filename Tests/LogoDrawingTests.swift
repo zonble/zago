@@ -38,6 +38,7 @@ import TextMetrics
     #expect(editor.buffer.lines[2] == "╚═╩══╝")
 }
 
+
 @Test func testTurtleVariableLoopCombo() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

@@ -73,4 +73,53 @@ extension Editor {
         ]
         setStatusMessage("Cleared *LOGO Output* buffer.")
     }
+
+    public static let logoCanvasBufferTitle = "*LOGO Canvas*"
+
+    public func findLogoCanvasBufferIndex() -> Int? {
+        buffers.firstIndex { $0.filePath == Self.logoCanvasBufferTitle }
+    }
+
+    @discardableResult
+    public func ensureLogoCanvasBuffer() -> TextBuffer {
+        if let idx = findLogoCanvasBufferIndex() {
+            return buffers[idx]
+        }
+        let buf = TextBuffer()
+        buf.filePath = Self.logoCanvasBufferTitle
+        buf.baseMode = .canvas
+        buf.viewShowRuler = false
+        buf.viewShowLineNumbers = true
+        buf.lines = Array(repeating: String(repeating: " ", count: 80), count: 24)
+        buffers.append(buf)
+        return buf
+    }
+
+    public func toggleLogoCanvasBuffer() {
+        if let idx = findLogoCanvasBufferIndex() {
+            if currentBufferIndex == idx {
+                let prevIdx = (idx - 1 + buffers.count) % buffers.count
+                switchToBuffer(index: prevIdx)
+            } else {
+                switchToBuffer(index: idx)
+            }
+        } else {
+            ensureLogoCanvasBuffer()
+            if let idx = findLogoCanvasBufferIndex() {
+                switchToBuffer(index: idx)
+            }
+        }
+    }
+
+    public func clearLogoCanvasBuffer() {
+        let buf = ensureLogoCanvasBuffer()
+        buf.lines = Array(repeating: String(repeating: " ", count: 80), count: 24)
+        setStatusMessage("Cleared *LOGO Canvas* buffer.")
+    }
+
+    public func clearLogoOutputAndCanvasBuffers() {
+        clearLogoOutputBuffer()
+        clearLogoCanvasBuffer()
+        setStatusMessage("Cleared LOGO Output & Canvas buffers.")
+    }
 }
