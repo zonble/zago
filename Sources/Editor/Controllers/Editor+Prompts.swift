@@ -147,6 +147,7 @@ extension Editor {
     }
 
     func promptFillText() {
+        menuBarController.isActive = false
         promptInputText = ""
         currentPromptMode = .fillText(completion: { [weak self] text in
             guard let self = self, let text = text, !text.isEmpty else {
@@ -158,6 +159,7 @@ extension Editor {
     }
 
     func promptTableDimensions() {
+        menuBarController.isActive = false
         guard !buffer.isReadOnly else {
             setStatusMessage("[ Buffer is read-only ]")
             return

@@ -111,6 +111,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case borderStyle = "border.style"
     case diagramInsert = "diagram.insert"
     case diagramMenu = "diagram.menu"
+    case symbolPicker = "symbol.picker"
 
     // Test & Custom
     case testCmd = "test.cmd"

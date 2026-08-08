@@ -89,3 +89,35 @@ public struct ShowHelpCommand: Command {
         editor.refreshScreen()
     }
 }
+
+public struct SymbolPickerCommand: Command {
+    public let id: CommandID = .symbolPicker
+    public let name = "Insert Symbol"
+    public let description = "Show modern Markdown symbol picker dialog window"
+    public let keys: [Key] = []
+    public let commandBarAliases = ["symbol", "symbols", "insert-symbol"]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.menuBarController.isActive = false
+        SymbolPickerView(
+            terminal: editor.terminal,
+            editor: editor,
+            language: editor.language,
+            onSelect: { chosenSymbol in
+                editor.saveUndoSnapshot()
+                if editor.isTableModeActive {
+                    editor.tableModeController.pasteTableCellText(chosenSymbol)
+                } else if editor.isCanvasModeActive {
+                    editor.insertCanvasString(chosenSymbol)
+                } else {
+                    editor.buffer.insertString(chosenSymbol)
+                }
+            }
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+    }
+}
+

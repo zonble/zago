@@ -141,6 +141,7 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
                     MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
                     MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
+                    MenuItem(titleKey: "menu.shapes.symbols", hotkeyChar: "s", commandId: .symbolPicker),
                 ],
                 isVisible: { $0.buffer.allowsLogoExecution }),
             MenuCategory(
