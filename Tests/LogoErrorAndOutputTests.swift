@@ -39,10 +39,11 @@ import Testing
         #expect(editor.findLogoOutputBufferIndex() == nil)
 
         editor.appendLogoOutput("Line 1 Output", scriptName: "test.logo")
+        #expect(editor.findLogoOutputBufferIndex() == nil)
+
+        let buf = editor.ensureLogoOutputBuffer()
         let idx = editor.findLogoOutputBufferIndex()
         #expect(idx != nil)
-
-        let buf = editor.buffers[idx!]
         #expect(buf.filePath == "*LOGO Output*")
         #expect(buf.isReadOnly == true)
         #expect(buf.lines.contains { $0.contains("Line 1 Output") })
@@ -59,10 +60,10 @@ import Testing
         #expect(editor.statusMessage == "[ Buffer is read-only ]")
 
         editor.toggleLogoOutputBuffer()
-        #expect(editor.currentBufferIndex != idx!)
+        #expect(editor.findLogoOutputBufferIndex() == nil)
 
         editor.clearLogoOutputBuffer()
-        #expect(!editor.buffers[idx!].lines.contains { $0.contains("Line 1 Output") })
+        #expect(!editor.logoOutputHistory.contains { $0.contains("Line 1 Output") })
     }
 
     @Test func testErrorHandlingDemoExampleScript() {
@@ -74,6 +75,7 @@ import Testing
         let ok = editor.runLogoScript(content)
         #expect(ok)
 
+        editor.ensureLogoOutputBuffer()
         let outputIdx = editor.findLogoOutputBufferIndex()
         #expect(outputIdx != nil)
         let outputLines = editor.buffers[outputIdx!].lines
@@ -162,6 +164,9 @@ import Testing
         editor.appendLogoOutput("Some output message")
 
         #expect(editor.findLogoCanvasBufferIndex() != nil)
+        #expect(editor.findLogoOutputBufferIndex() == nil)
+
+        editor.ensureLogoOutputBuffer()
         #expect(editor.findLogoOutputBufferIndex() != nil)
 
         editor.clearLogoOutputAndCanvasBuffers()

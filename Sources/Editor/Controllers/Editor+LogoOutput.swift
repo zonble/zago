@@ -24,34 +24,45 @@ extension Editor {
             "================================================================================",
             "",
         ]
+        if !logoOutputHistory.isEmpty {
+            buf.lines.append(contentsOf: logoOutputHistory)
+        }
         buffers.append(buf)
         return buf
     }
 
     public func appendLogoOutputHeader(_ scriptName: String) {
-        let buf = ensureLogoOutputBuffer()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let timestamp = formatter.string(from: Date())
         let header = "--- [\(timestamp)] Run: \(scriptName) ---"
-        buf.lines.append(header)
+        logoOutputHistory.append(header)
+        if let idx = findLogoOutputBufferIndex() {
+            buffers[idx].lines.append(header)
+        }
     }
 
     public func appendLogoOutput(_ text: String, scriptName: String? = nil) {
         guard !text.isEmpty else { return }
-        let buf = ensureLogoOutputBuffer()
         if let scriptName {
             appendLogoOutputHeader(scriptName)
         }
         let split = text.components(separatedBy: "\n")
-        buf.lines.append(contentsOf: split)
+        logoOutputHistory.append(contentsOf: split)
+        if let idx = findLogoOutputBufferIndex() {
+            buffers[idx].lines.append(contentsOf: split)
+        }
     }
 
     public func toggleLogoOutputBuffer() {
         if let idx = findLogoOutputBufferIndex() {
             if currentBufferIndex == idx {
                 let prevIdx = (idx - 1 + buffers.count) % buffers.count
-                switchToBuffer(index: prevIdx)
+                buffers.remove(at: idx)
+                if buffers.isEmpty {
+                    buffers.append(TextBuffer())
+                }
+                switchToBuffer(index: max(0, min(prevIdx, buffers.count - 1)))
             } else {
                 switchToBuffer(index: idx)
             }
@@ -64,13 +75,16 @@ extension Editor {
     }
 
     public func clearLogoOutputBuffer() {
-        let buf = ensureLogoOutputBuffer()
-        buf.lines = [
-            "================================================================================",
-            " zago LOGO Output History Log",
-            "================================================================================",
-            "",
-        ]
+        logoOutputHistory.removeAll()
+        if let idx = findLogoOutputBufferIndex() {
+            let buf = buffers[idx]
+            buf.lines = [
+                "================================================================================",
+                " zago LOGO Output History Log",
+                "================================================================================",
+                "",
+            ]
+        }
         setStatusMessage("Cleared *LOGO Output* buffer.")
     }
 

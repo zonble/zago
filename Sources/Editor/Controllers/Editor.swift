@@ -42,6 +42,9 @@ public final class Editor: @unchecked Sendable {
     var clipboardText: String? = nil
     public var canvasBlockClipboard: CanvasBlockClipboard? = nil
 
+    /// History log lines recorded by LOGO commands, stored internally until user opens *LOGO Output* buffer.
+    public var logoOutputHistory: [String] = []
+
     // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
     var topVLineIndex: Int = 0
 
