@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.2.0 - 2026-08-09
+
+Interactive TUI Markdown Symbol Picker, Logo string manipulation primitives, dedicated Logo Run Menu, and Views directory architecture refactoring.
+
+### Added
+
+- **Markdown Symbol Picker (`SymbolPickerView`)**: Interactive TUI modal dialog window for inserting modern Markdown symbols and GFM callout blocks under Shapes menu (`Insert Symbol...` / `Alt+S` or `symbol` prompt command).
+- 4 symbol categories: GFM Callouts (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), Step Indicators (circled numbers/letters, pointers), Status Badges (checkmarks, emojis, rocket, package, inbox, books, team, handshake), Math & UI Keys (`±`, `≠`, `⌘`, `⌥`, `⇧`, `⌃`).
+- Quick selection via `a`-`z` direct keyboard shortcuts and uniform selection bar highlight rendering.
+- **Logo Engine String Primitives**: `STRING.LEN`, `STRING.SUB`, `STRING.UPPER`, `STRING.LOWER`, `STRING.TITLE`, `STRING.REPLACE`, `STRING.SPLIT`, `STRING.JOIN`, `STRING.TRIM`, `STRING.INDEXOF`, `STRING.CONCAT`.
+- **Dedicated Logo Run Menu**: Added `Run` menu bar item for `.logo` files (`Run Script`, `Eval`, `Output Buffer`, `Canvas Buffer`, `Clear`).
+
+### Changed
+
+- Top menu bar automatically deactivates/collapses before presenting modal dialog windows or prompt inputs.
+- Refactored modal views directory structure into `Sources/Editor/Views/Dialogs/`.
+- Complete internationalization (`L10n`) for all symbol descriptions, dialog labels, categories, and titles in English and Traditional Chinese.
+
+### Fixed
+
+- Fixed file watcher self-save race condition on Windows by synchronizing baseline modification date snapshot updates on serial queues (`queue.sync`).
+- Cleaned up documentation, updated `AGENT.md`, and enforced relative markdown links across all documentation files.
+
 ## 1.1.1 - 2026-08-07
 
 Extracted `Drawing` & `DocumentOutline` SPM targets, added customizable `ArrowStyle` for Unicode arrows, decoupled `Config` dependencies, and enhanced help documentation.
