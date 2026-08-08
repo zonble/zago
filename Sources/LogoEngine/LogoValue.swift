@@ -124,8 +124,9 @@ public enum LogoValue: Equatable, CustomStringConvertible {
                 depth -= 1
                 current.append(ch)
             } else if ch.isWhitespace && depth <= 0 && !inMultiWordString {
-                if !current.isEmpty {
-                    tokens.append(current)
+                let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    tokens.append(trimmed)
                     current = ""
                 }
             } else {
@@ -133,8 +134,9 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             }
             idx = str.index(after: idx)
         }
-        if !current.isEmpty {
-            tokens.append(current)
+        let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            tokens.append(trimmed)
         }
         return tokens
     }

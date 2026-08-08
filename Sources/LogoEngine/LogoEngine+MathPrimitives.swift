@@ -258,35 +258,35 @@ extension LogoEngine {
 
         case .bitAnd:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             index += 1
-            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let b = parseIntegerArg(tokens, index: &index)
             return "\(a & b)"
 
         case .bitOr:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             index += 1
-            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let b = parseIntegerArg(tokens, index: &index)
             return "\(a | b)"
 
         case .bitXor:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             index += 1
-            let b = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let b = parseIntegerArg(tokens, index: &index)
             return "\(a ^ b)"
 
         case .bitNot:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             return "\( ~a )"
 
         case .ashift, .lshift:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             index += 1
-            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let shift = parseIntegerArg(tokens, index: &index)
             if shift >= 0 {
                 return "\(a << shift)"
             } else {
@@ -295,9 +295,9 @@ extension LogoEngine {
 
         case .rshift:
             index += 1
-            let a = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let a = parseIntegerArg(tokens, index: &index)
             index += 1
-            let shift = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let shift = parseIntegerArg(tokens, index: &index)
             if shift >= 0 {
                 return "\(a >> shift)"
             } else {
@@ -339,5 +339,13 @@ extension LogoEngine {
         default:
             return nil
         }
+    }
+
+    private func parseIntegerArg(_ tokens: [String], index: inout Int) -> Int {
+        let raw = evaluateExpression(tokens, index: &index)
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let val = Int(trimmed) { return val }
+        if let d = Double(trimmed) { return Int(d) }
+        return 0
     }
 }
