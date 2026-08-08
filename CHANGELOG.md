@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.2.2 - 2026-08-09
+
+Standalone Windows distribution bundling Swift Runtime DLLs and installer script enhancements.
+
+### Fixed
+
+- **Windows Standalone Packaging (`release.yml`)**: Automated bundling of Swift Runtime DLLs (`swiftCore.dll`, `swiftFoundation.dll`, `swiftDispatch.dll`, etc.) into `zago-windows-x64.zip` for standalone execution on Windows environments without Swift installed.
+- **Windows Installer Script (`install.ps1`)**: Updated installer script to copy all bundled DLLs to `$installDir` alongside `zago.exe` and ensure the binary is always renamed to `zago.exe`.
+
 ## 1.2.1 - 2026-08-09
 
 On-demand LOGO Output logging and automatic buffer list removal on toggle off.
