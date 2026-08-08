@@ -830,18 +830,35 @@ extension LogoEngine {
 
         case .padleft:
             index += 1
-            let str = unquote(evaluateExpression(tokens, index: &index))
+            let arg1 = unquote(evaluateExpression(tokens, index: &index))
             index += 1
-            let width = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let arg2 = unquote(evaluateExpression(tokens, index: &index))
+            var str = ""
+            var width = 0
             var padChar = " "
-            if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
-                var nextIdx = index + 1
-                let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
-                if !chCandidate.isEmpty && chCandidate.count == 1 {
-                    index = nextIdx
-                    padChar = chCandidate
+
+            if let w1 = Int(arg1) {
+                width = w1
+                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                    padChar = arg2
+                    index += 1
+                    str = unquote(evaluateExpression(tokens, index: &index))
+                } else {
+                    str = arg2
+                }
+            } else {
+                str = arg1
+                width = Int(arg2) ?? 0
+                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                    var nextIdx = index + 1
+                    let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
+                    if !chCandidate.isEmpty && chCandidate.count == 1 {
+                        index = nextIdx
+                        padChar = chCandidate
+                    }
                 }
             }
+
             let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
             if currentWidth >= width { return str }
             let padCount = width - currentWidth
@@ -849,18 +866,35 @@ extension LogoEngine {
 
         case .padright:
             index += 1
-            let str = unquote(evaluateExpression(tokens, index: &index))
+            let arg1 = unquote(evaluateExpression(tokens, index: &index))
             index += 1
-            let width = Int(evaluateExpression(tokens, index: &index)) ?? 0
+            let arg2 = unquote(evaluateExpression(tokens, index: &index))
+            var str = ""
+            var width = 0
             var padChar = " "
-            if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
-                var nextIdx = index + 1
-                let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
-                if !chCandidate.isEmpty && chCandidate.count == 1 {
-                    index = nextIdx
-                    padChar = chCandidate
+
+            if let w1 = Int(arg1) {
+                width = w1
+                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                    padChar = arg2
+                    index += 1
+                    str = unquote(evaluateExpression(tokens, index: &index))
+                } else {
+                    str = arg2
+                }
+            } else {
+                str = arg1
+                width = Int(arg2) ?? 0
+                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                    var nextIdx = index + 1
+                    let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
+                    if !chCandidate.isEmpty && chCandidate.count == 1 {
+                        index = nextIdx
+                        padChar = chCandidate
+                    }
                 }
             }
+
             let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
             if currentWidth >= width { return str }
             let padCount = width - currentWidth

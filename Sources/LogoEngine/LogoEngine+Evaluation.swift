@@ -132,6 +132,9 @@ extension LogoEngine {
                 }
             } else {
                 leftVal = evaluateExpression(tokens, index: &index)
+                if index + 1 < tokens.count && tokens[index + 1] == ")" {
+                    index += 1
+                }
             }
         } else {
             leftVal = evaluateTokenOrCommand(tokens, index: &index)
@@ -144,44 +147,45 @@ extension LogoEngine {
             if nextToken == ")" || nextToken == "]" {
                 break
             }
-            if let op = LogoOperator.from(nextToken), op.isArithmetic {
-                index += 2
-                guard index < tokens.count else { break }
-                let rightVal = evaluateExpression(tokens, index: &index)
+            if let op = LogoOperator.from(nextToken) {
+                if op.isArithmetic {
+                    index += 2
+                    guard index < tokens.count else { break }
+                    let rightVal = evaluateExpression(tokens, index: &index)
 
-                if let num1 = Double(leftVal), let num2 = Double(rightVal) {
-                    if let n1 = Int(leftVal), let n2 = Int(rightVal), op != .power && op != .divide {
-                        let resNum: Int
-                        switch op {
-                        case .add: resNum = n1 + n2
-                        case .subtract: resNum = n1 - n2
-                        case .multiply: resNum = n1 * n2
-                        case .modulo: resNum = (n2 != 0) ? n1 % n2 : 0
-                        default: resNum = 0
-                        }
-                        leftVal = "\(resNum)"
-                    } else {
-                        let resDouble: Double
-                        switch op {
-                        case .add: resDouble = num1 + num2
-                        case .subtract: resDouble = num1 - num2
-                        case .multiply: resDouble = num1 * num2
-                        case .divide: resDouble = (num2 != 0) ? num1 / num2 : 0.0
-                        case .modulo: resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
-                        case .power: resDouble = pow(num1, num2)
-                        default: resDouble = 0.0
-                        }
-                        if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min)
-                            && resDouble <= Double(Int.max)
-                        {
-                            leftVal = "\(Int(resDouble))"
+                    if let num1 = Double(leftVal), let num2 = Double(rightVal) {
+                        if let n1 = Int(leftVal), let n2 = Int(rightVal), op != .power && op != .divide {
+                            let resNum: Int
+                            switch op {
+                            case .add: resNum = n1 + n2
+                            case .subtract: resNum = n1 - n2
+                            case .multiply: resNum = n1 * n2
+                            case .modulo: resNum = (n2 != 0) ? n1 % n2 : 0
+                            default: resNum = 0
+                            }
+                            leftVal = "\(resNum)"
                         } else {
-                            leftVal = "\(resDouble)"
+                            let resDouble: Double
+                            switch op {
+                            case .add: resDouble = num1 + num2
+                            case .subtract: resDouble = num1 - num2
+                            case .multiply: resDouble = num1 * num2
+                            case .divide: resDouble = (num2 != 0) ? num1 / num2 : 0.0
+                            case .modulo: resDouble = (num2 != 0) ? num1.truncatingRemainder(dividingBy: num2) : 0.0
+                            case .power: resDouble = pow(num1, num2)
+                            default: resDouble = 0.0
+                            }
+                            if resDouble.truncatingRemainder(dividingBy: 1) == 0 && resDouble >= Double(Int.min)
+                                && resDouble <= Double(Int.max)
+                            {
+                                leftVal = "\(Int(resDouble))"
+                            } else {
+                                leftVal = "\(resDouble)"
+                            }
                         }
+                    } else if op == .add {
+                        leftVal = leftVal + rightVal
                     }
-                } else if op == .add {
-                    // String concatenation
-                    leftVal = leftVal + rightVal
                 } else {
                     break
                 }
@@ -289,6 +293,9 @@ extension LogoEngine {
         var procIndex = 0
         var procReturn: String? = nil
         executeTokens(proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
+        if currentThrowTag != nil {
+            return currentThrowValue ?? ""
+        }
         if let ret = procReturn, !ret.isEmpty {
             lastResult = ret
         }
@@ -323,13 +330,17 @@ extension LogoEngine {
                     var cIdx = 0
                     if clause[cIdx].uppercased() == "ELSE" {
                         cIdx += 1
-                        return evaluateExpression(clause, index: &cIdx)
+                        var dummyFrameReturn: String? = nil
+                        executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
+                        return dummyFrameReturn ?? lastResult ?? ""
                     } else if clause[cIdx] == "[" {
                         let matches = extractBlockTokens(tokens: clause, index: &cIdx)
                         cIdx += 1
                         let isMatch = matches.contains { unquote($0) == targetVal }
                         if isMatch {
-                            return evaluateExpression(clause, index: &cIdx)
+                            var dummyFrameReturn: String? = nil
+                            executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
+                            return dummyFrameReturn ?? lastResult ?? ""
                         }
                     }
                 }
@@ -348,12 +359,16 @@ extension LogoEngine {
                     var cIdx = 0
                     if clause[cIdx].uppercased() == "ELSE" {
                         cIdx += 1
-                        return evaluateExpression(clause, index: &cIdx)
+                        var dummyFrameReturn: String? = nil
+                        executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
+                        return dummyFrameReturn ?? lastResult ?? ""
                     } else if clause[cIdx] == "[" {
                         let condTokens = extractBlockTokens(tokens: clause, index: &cIdx)
                         cIdx += 1
                         if evaluateCondition(condTokens) {
-                            return evaluateExpression(clause, index: &cIdx)
+                            var dummyFrameReturn: String? = nil
+                            executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
+                            return dummyFrameReturn ?? lastResult ?? ""
                         }
                     }
                 }
@@ -418,7 +433,7 @@ extension LogoEngine {
                             return subReturn ?? lastResult ?? ""
                         } else {
                             let hasComparison = inner.contains {
-                                $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<=" || $0 == ">="
+                                $0 == "=" || $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<=" || $0 == ">=" || $0 == "EQUAL?" || $0 == "NOTEQUAL?"
                             }
                             if hasComparison {
                                 return evaluateCondition(inner) ? "1" : "0"

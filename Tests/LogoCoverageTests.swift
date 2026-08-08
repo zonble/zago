@@ -235,6 +235,8 @@ struct LogoCoverageTests {
         #expect(engine.executeControlCommand(.throwTag, tokens: ["THROW", "\"justTag"], index: &throwIndex, frameReturn: &frameReturn))
         #expect(engine.currentThrowTag == "justtag")
         #expect(engine.currentThrowValue == "")
+        engine.currentThrowTag = nil
+        engine.currentThrowValue = nil
 
         engine.execute("TO ADDONE :x OUTPUT :x + 1 END EXEC ADDONE 4")
         #expect(engine.lastResult == "5")

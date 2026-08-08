@@ -1,0 +1,77 @@
+; ==============================================================================
+; Control Flow & Exception Handling Example (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO primitives: `CASE`, `COND`, `TEST`, `IFTRUE`, `IFFALSE`,
+; `CATCH`, `THROW`, `DOTIMES`.
+; ==============================================================================
+
+TYPE "===_Control_Flow_&_Exception_Demo_==="
+TYPE CHAR 10
+
+; 1. CASE multi-branch selector
+MAKE "grades [95 82 58]
+MAKE "i 1
+MAKE "n COUNT :grades
+
+WHILE [:i <= :n] [
+  MAKE "score ITEM :i :grades
+  TYPE FORMAT "score:_%d_level:_" (LIST :score)
+  CASE :score [
+    [[ 90 91 92 93 94 95 96 97 98 99 100 ] TYPE "A" ]
+    [[ 80 81 82 83 84 85 86 87 88 89 ] TYPE "B" ]
+    [ ELSE TYPE "F" ]
+  ]
+  TYPE CHAR 10
+  MAKE "i :i + 1
+]
+
+TYPE CHAR 10
+
+; 2. COND multi-condition branch
+MAKE "temp 32
+TYPE FORMAT "temperature:_%d_state:_" (LIST :temp)
+COND [
+  [[ :temp >= 100 ] TYPE "Steam" ]
+  [[ :temp <= 0 ] TYPE "Ice" ]
+  [ ELSE TYPE "Liquid" ]
+]
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. TEST / IFTRUE / IFFALSE conditional flags
+TEST 10 > 5
+IFTRUE [ TYPE "TEST_passed" ]
+IFFALSE [ TYPE "TEST_failed" ]
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 4. CATCH & THROW non-local exception exit
+TO SEARCHITEM :target :list
+  MAKE "idx 1
+  MAKE "total COUNT :list
+  WHILE [:idx <= :total] [
+    IF (ITEM :idx :list) = :target [
+      THROW "found_tag :idx
+    ]
+    MAKE "idx :idx + 1
+  ]
+  OUTPUT -1
+END
+
+MAKE "items [apple banana cherry date]
+CATCH "found_tag [
+  MAKE "found_idx SEARCHITEM "cherry :items
+]
+TYPE FORMAT "found_'cherry'_at_index:_%s" (LIST :found_idx)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 5. DOTIMES loop
+TYPE "dotimes_counter:_"
+DOTIMES [k 3] [
+  TYPE FORMAT "%d_" (LIST :k)
+]
+TYPE CHAR 10

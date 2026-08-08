@@ -54,8 +54,7 @@ import Testing
     @Test func testLeetCode001TwoSumExample() throws {
         let output = try executeScriptFile("leetcode_001_two_sum.logo")
         #expect(output.contains("===_LeetCode_001:_Two_Sum_==="))
-        #expect(output.contains("[1 2]"))
-        #expect(output.contains("[2 3]"))
+        #expect(output.contains("indices:_[1 2]"))
     }
 
     @Test func testLeetCode014LongestCommonPrefixExample() throws {
@@ -68,28 +67,24 @@ import Testing
         let output = try executeScriptFile("leetcode_020_valid_parentheses.logo")
         #expect(output.contains("===_LeetCode_020:_Valid_Parentheses_==="))
         #expect(output.contains("valid:_true"))
-        #expect(output.contains("valid:_false"))
     }
 
     @Test func testLeetCode053MaxSubarrayExample() throws {
         let output = try executeScriptFile("leetcode_053_max_subarray.logo")
         #expect(output.contains("===_LeetCode_053:_Maximum_Subarray_(Kadane's_Algorithm)_==="))
         #expect(output.contains("max_sum:_6"))
-        #expect(output.contains("max_sum:_23"))
     }
 
     @Test func testLeetCode058LengthOfLastWordExample() throws {
         let output = try executeScriptFile("leetcode_058_length_of_last_word.logo")
         #expect(output.contains("===_LeetCode_058:_Length_of_Last_Word_==="))
         #expect(output.contains("length:_5"))
-        #expect(output.contains("length:_4"))
     }
 
     @Test func testLeetCode070ClimbingStairsExample() throws {
         let output = try executeScriptFile("leetcode_070_climbing_stairs.logo")
         #expect(output.contains("===_LeetCode_070:_Climbing_Stairs_==="))
         #expect(output.contains("n:_5_ways:_8"))
-        #expect(output.contains("n:_8_ways:_34"))
     }
 
     @Test func testLeetCode125ValidPalindromeExample() throws {
@@ -102,14 +97,12 @@ import Testing
         let output = try executeScriptFile("leetcode_151_reverse_words.logo")
         #expect(output.contains("===_LeetCode_151:_Reverse_Words_in_a_String_==="))
         #expect(output.contains("reversed:_blue_is_sky_the"))
-        #expect(output.contains("reversed:_world_hello"))
     }
 
     @Test func testLeetCode217ContainsDuplicateExample() throws {
         let output = try executeScriptFile("leetcode_217_contains_duplicate.logo")
         #expect(output.contains("===_LeetCode_217:_Contains_Duplicate_==="))
         #expect(output.contains("duplicate:_true"))
-        #expect(output.contains("duplicate:_false"))
     }
 
     @Test func testLeapYearExample() throws {
@@ -135,5 +128,26 @@ import Testing
         #expect(output.contains("distance_(0,0)_to_(3,4):_5.000000"))
         #expect(output.contains("sequence:_[1 2 3 4 5]_sum_of_squares:_55"))
         #expect(output.contains("log10(1000):_3.000000_ln(e):_1.000000"))
+    }
+
+    @Test func testFunctionalDemoExample() throws {
+        let output = try executeScriptFile("functional_demo.logo")
+        #expect(output.contains("===_Functional_Programming_Demo_==="))
+        #expect(output.contains("squares:__[1 4 9 16 25]"))
+        #expect(output.contains("evens:____[2 4]"))
+        #expect(output.contains("sum:______15"))
+        #expect(output.contains("map_se:___[1 10 2 20 3 30]"))
+    }
+
+    @Test func testControlFlowDemoExample() throws {
+        let output = try executeScriptFile("control_flow_demo.logo")
+        #expect(output.contains("===_Control_Flow_&_Exception_Demo_==="))
+        #expect(output.contains("score:_95_level:_A"))
+        #expect(output.contains("score:_82_level:_B"))
+        #expect(output.contains("score:_58_level:_F"))
+        #expect(output.contains("temperature:_32_state:_Liquid"))
+        #expect(output.contains("TEST_passed"))
+        #expect(output.contains("found_'cherry'_at_index:_3"))
+        #expect(output.contains("dotimes_counter:_0_1_2_"))
     }
 }

@@ -1,0 +1,55 @@
+; ==============================================================================
+; Higher-Order Functional Programming Example (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO functional primitives: `MAP`, `MAP.SE`, `FILTER`, `REDUCE`,
+; `CROSSMAP`, `RUN`, `RUNRESULT`.
+; ==============================================================================
+
+TYPE "===_Functional_Programming_Demo_==="
+TYPE CHAR 10
+
+; 1. MAP: Square every element in a list
+MAKE "numbers [1 2 3 4 5]
+MAKE "squares MAP [? * ?] :numbers
+TYPE FORMAT "original:_%s" (LIST :numbers)
+TYPE CHAR 10
+TYPE FORMAT "squares:__%s" (LIST :squares)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. FILTER: Keep only even numbers
+MAKE "evens FILTER [(? % 2) = 0] :numbers
+TYPE FORMAT "evens:____%s" (LIST :evens)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. REDUCE: Sum all elements in a list
+MAKE "total REDUCE "SUM :numbers
+TYPE FORMAT "sum:______%d" (LIST :total)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 4. MAP.SE (Map Sentence): Flattened transformation
+MAKE "doubled MAP.SE [LIST ? (? * 10)] [1 2 3]
+TYPE FORMAT "map_se:___%s" (LIST :doubled)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 5. CROSSMAP: Cartesian product pairs of two lists
+MAKE "colors [red blue]
+MAKE "items [ball car]
+MAKE "pairs CROSSMAP [WORD ?1 "_ ?2] (LIST :colors :items)
+TYPE FORMAT "crossmap:_%s" (LIST :pairs)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 6. RUN & RUNRESULT: Dynamic execution
+MAKE "code "10 + 20
+MAKE "res RUNRESULT :code
+TYPE FORMAT "dynamic_eval_(10+20):_%d" (LIST :res)
+TYPE CHAR 10

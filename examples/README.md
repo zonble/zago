@@ -13,6 +13,8 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`leap_year.logo`](leap_year.logo) | Classic Algo | **Leap Year Checker** | Modulo `%` logic, `IF`, `FORMAT` |
 | [`regex_demo.logo`](regex_demo.logo) | Regex & String | **Regex & Text Search** (Pattern matching, masking, padding) | `REGEX_MATCH?`, `REGEX_REPLACE`, `PADLEFT`, `PADRIGHT` |
 | [`math_demo.logo`](math_demo.logo) | Math & Sequences | **Math & Trigonometry** (Euclidean distance, log, power, series) | `SQRT`, `POWER`, `LOG10`, `LN`, `ABS`, `ISEQ`, `RANDOM` |
+| [`functional_demo.logo`](functional_demo.logo) | Functional Programming | **Higher-Order Functions** (Map, Filter, Reduce, Crossmap) | `MAP`, `MAP.SE`, `FILTER`, `REDUCE`, `CROSSMAP`, `RUNRESULT` |
+| [`control_flow_demo.logo`](control_flow_demo.logo) | Control Flow & Exceptions | **Control Flow & Non-local Exit** (Case, Cond, Test, Catch/Throw) | `CASE`, `COND`, `TEST`, `IFTRUE`, `CATCH`, `THROW`, `DOTIMES` |
 | [`caesar_cipher.logo`](caesar_cipher.logo) | Cryptography | **Caesar Cipher** encryption/decryption | `ORD`, `CHAR`, modulo arithmetic, `WORD` |
 | [`leetcode_001_two_sum.logo`](leetcode_001_two_sum.logo) | LeetCode #1 | Two Sum problem | Nested `WHILE` loops, `ITEM`, `LIST` construction |
 | [`leetcode_014_longest_common_prefix.logo`](leetcode_014_longest_common_prefix.logo) | LeetCode #14 | Longest Common Prefix | `STARTSWITH?`, `SUBSTRING`, `COUNT`, `WHILE` |
