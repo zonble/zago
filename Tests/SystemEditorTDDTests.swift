@@ -55,3 +55,20 @@ import Testing
     editor.runLogoScript("fd 10")
     #expect(editor.buffer.lines.count >= 2)
 }
+
+@Test func testPipedInputBufferInitializationAndEditing() throws {
+    let deps = EditorDependencies(
+        fileIOStrategy: MemoryEditorFileIOStrategy(),
+        terminal: TestEditorTerminal.shared
+    )
+    let options = EditorOptions(
+        pipedInput: "First Piped Line\nSecond Piped Line"
+    )
+    let editor = Editor(options: options, dependencies: deps)
+
+    #expect(editor.buffer.filePath == nil)
+    #expect(editor.buffer.lines == ["First Piped Line", "Second Piped Line"])
+
+    editor.evalLogoCode()
+    #expect(editor.findLogoCanvasBufferIndex() == nil)
+}

@@ -3,6 +3,9 @@ import Config
 import Editor
 import Foundation
 import Git
+#if os(Windows)
+import WinSDK
+#endif
 
 @main
 struct Zago: ParsableCommand {
@@ -99,27 +102,34 @@ struct Zago: ParsableCommand {
         let enableSubLineNumbers = Self.parseBoolOption(subLineNumbers)
         let selectedLang = Self.parseLanguageOption(lang)
 
+        let isExplicitDash = rawFiles.contains("-")
         var pipedInputData: String? = nil
         var targetFiles = rawFiles
         let isStdinPiped: Bool
         #if os(Windows)
-        isStdinPiped = false
+        let hStdIn = GetStdHandle(DWORD(STD_INPUT_HANDLE))
+        let fileType = GetFileType(hStdIn)
+        isStdinPiped = isExplicitDash || fileType == FILE_TYPE_PIPE || fileType == FILE_TYPE_DISK
         #else
-        if targetFiles == ["-"] {
+        if isExplicitDash || isatty(STDIN_FILENO) == 0 {
             isStdinPiped = true
-        } else if isatty(STDIN_FILENO) == 0 {
-            var pfd = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
-            isStdinPiped = poll(&pfd, 1, 0) > 0 && (pfd.revents & Int16(POLLIN)) != 0
         } else {
             isStdinPiped = false
         }
         #endif
 
         if isStdinPiped {
-            if targetFiles == ["-"] { targetFiles = [] }
-            let handle = FileHandle.standardInput
-            let data = handle.readDataToEndOfFile()
-            if let str = String(data: data, encoding: .utf8), !str.isEmpty {
+            if targetFiles.contains("-") {
+                targetFiles.removeAll(where: { $0 == "-" })
+            }
+            var pipedData = Data()
+            var buf = [UInt8](repeating: 0, count: 4096)
+            while true {
+                let n = read(STDIN_FILENO, &buf, buf.count)
+                if n <= 0 { break }
+                pipedData.append(buf, count: n)
+            }
+            if let str = String(data: pipedData, encoding: .utf8), !str.isEmpty {
                 pipedInputData = str
             }
         }
@@ -177,10 +187,53 @@ struct Zago: ParsableCommand {
         }
 
         if isStdinPiped {
-            #if os(macOS) || os(Linux)
-            if let ttyHandle = FileHandle(forReadingAtPath: "/dev/tty") {
-                dup2(ttyHandle.fileDescriptor, STDIN_FILENO)
+            if !isExplicitDash {
+                if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                    FileHandle.standardError.write(data)
+                }
+                throw ExitCode.failure
             }
+
+            #if os(macOS) || os(Linux)
+            var ttyOpened = false
+            let ttyFd = open("/dev/tty", O_RDWR)
+            if ttyFd >= 0 {
+                dup2(ttyFd, STDIN_FILENO)
+                close(ttyFd)
+                ttyOpened = true
+            }
+            if !ttyOpened {
+                if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                    FileHandle.standardError.write(data)
+                }
+                throw ExitCode.failure
+            }
+            #elseif os(Windows)
+            var ttyOpened = false
+            let hConIn = CreateFileW(
+                "CONIN$".withCString(encodedAs: UTF16.self) { $0 },
+                DWORD(GENERIC_READ | GENERIC_WRITE),
+                DWORD(FILE_SHARE_READ | FILE_SHARE_WRITE),
+                nil,
+                DWORD(OPEN_EXISTING),
+                0,
+                nil
+            )
+            if hConIn != INVALID_HANDLE_VALUE {
+                SetStdHandle(DWORD(STD_INPUT_HANDLE), hConIn)
+                ttyOpened = true
+            }
+            if !ttyOpened {
+                if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                    FileHandle.standardError.write(data)
+                }
+                throw ExitCode.failure
+            }
+            #else
+            if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            throw ExitCode.failure
             #endif
         }
 
