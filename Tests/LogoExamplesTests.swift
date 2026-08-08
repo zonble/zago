@@ -214,7 +214,17 @@ import Testing
         #expect(output.contains("time:_"))
         #expect(output.contains("rseq_0_to_10_count_5:_[0 2.5 5 7.5 10]"))
     }
+
+    @Test func testLogoInLogoInterpreterExample() throws {
+        let output = try executeScriptFile("logo_in_logo_interpreter.logo")
+        #expect(output.contains("===_Meta-Logo:_A_Self-Hosting_LOGO_Interpreter_in_LOGO_==="))
+        #expect(output.contains("META_LOGO_OUT:_===_Hello_From_Meta-Logo_Interpreter!_==="))
+        #expect(output.contains("META_LOGO_OUT:_30"))
+        #expect(output.contains("META_LOGO_OUT:_200"))
+        #expect(output.contains("META_LOGO_OUT:_3"))
+    }
 }
+
 
 
 

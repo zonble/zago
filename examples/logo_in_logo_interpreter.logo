@@ -1,0 +1,141 @@
+; ==============================================================================
+; Meta-Logo: A Self-Hosting Mini LOGO Interpreter Written Entirely in LOGO!
+; ==============================================================================
+; Demonstrates self-hosting interpreter evaluation, environment tables, procedure
+; definitions (`DEF`), invocations (`CALL`), expressions, loops (`WHILE_LE`), and
+; state mutation.
+; ==============================================================================
+
+TYPE "===_Meta-Logo:_A_Self-Hosting_LOGO_Interpreter_in_LOGO_==="
+TYPE CHAR 10
+
+; Global Symbol Tables for Meta-Logo Interpreter State
+MAKE "ENV_KEYS []
+MAKE "ENV_VALS []
+MAKE "PROC_NAMES []
+MAKE "PROC_BODIES []
+
+; Environment Setter
+TO ENV_SET :k :v
+    MAKE "ENV_KEYS LPUT :k :ENV_KEYS
+    MAKE "ENV_VALS LPUT :v :ENV_VALS
+END
+
+; Environment Getter
+TO ENV_GET :k
+    MAKE "idx 1
+    MAKE "res 0
+    WHILE [ :idx <= COUNT :ENV_KEYS ] [
+        IF ( (ITEM :idx :ENV_KEYS) = :k ) [
+            MAKE "res ITEM :idx :ENV_VALS
+        ]
+        MAKE "idx :idx + 1
+    ]
+    OUTPUT :res
+END
+
+; Expression Evaluator (supports dereferencing `:var` or literal values)
+TO EVAL_VAL :v
+    IF ( STARTSWITH? ":" :v ) [
+        OUTPUT ENV_GET (BUTFIRST :v)
+    ]
+    OUTPUT :v
+END
+
+; Core AST Interpreter / Walker
+TO RUN_AST :ast :i
+    WHILE [ :i <= COUNT :ast ] [
+        MAKE "cmd ITEM :i :ast
+        
+        ; 1. SET "var expr
+        IF ( :cmd = "SET ) [
+            MAKE "k ITEM (:i + 1) :ast
+            MAKE "v EVAL_VAL (ITEM (:i + 2) :ast)
+            EXEC ENV_SET :k :v
+            MAKE "i :i + 3
+        ]
+        
+        ; 2. ADD "var :v1 :v2
+        IF ( :cmd = "ADD ) [
+            MAKE "k ITEM (:i + 1) :ast
+            MAKE "v1 EVAL_VAL (ITEM (:i + 2) :ast)
+            MAKE "v2 EVAL_VAL (ITEM (:i + 3) :ast)
+            EXEC ENV_SET :k (:v1 + :v2)
+            MAKE "i :i + 4
+        ]
+        
+        ; 3. MUL "var :v1 :v2
+        IF ( :cmd = "MUL ) [
+            MAKE "k ITEM (:i + 1) :ast
+            MAKE "v1 EVAL_VAL (ITEM (:i + 2) :ast)
+            MAKE "v2 EVAL_VAL (ITEM (:i + 3) :ast)
+            EXEC ENV_SET :k (:v1 * :v2)
+            MAKE "i :i + 4
+        ]
+        
+        ; 4. PRINT expr
+        IF ( :cmd = "PRINT ) [
+            MAKE "v EVAL_VAL (ITEM (:i + 1) :ast)
+            TYPE "META_LOGO_OUT:_ TYPE :v TYPE CHAR 10
+            MAKE "i :i + 2
+        ]
+        
+        ; 5. DEF "proc_name [ body_tokens ]
+        IF ( :cmd = "DEF ) [
+            MAKE "pname ITEM (:i + 1) :ast
+            MAKE "pbody ITEM (:i + 2) :ast
+            MAKE "PROC_NAMES LPUT :pname :PROC_NAMES
+            MAKE "PROC_BODIES LPUT :pbody :PROC_BODIES
+            MAKE "i :i + 3
+        ]
+        
+        ; 6. CALL "proc_name
+        IF ( :cmd = "CALL ) [
+            MAKE "pname ITEM (:i + 1) :ast
+            MAKE "pidx 1
+            WHILE [ :pidx <= COUNT :PROC_NAMES ] [
+                IF ( (ITEM :pidx :PROC_NAMES) = :pname ) [
+                    EXEC RUN_AST (ITEM :pidx :PROC_BODIES) 1
+                ]
+                MAKE "pidx :pidx + 1
+            ]
+            MAKE "i :i + 2
+        ]
+        
+        ; 7. WHILE_LE "var limit [ body_tokens ]
+        IF ( :cmd = "WHILE_LE ) [
+            MAKE "var_name ITEM (:i + 1) :ast
+            MAKE "limit EVAL_VAL (ITEM (:i + 2) :ast)
+            MAKE "body ITEM (:i + 3) :ast
+            WHILE [ (ENV_GET :var_name) <= :limit ] [
+                EXEC RUN_AST :body 1
+            ]
+            MAKE "i :i + 4
+        ]
+    ]
+END
+
+; Mini-Logo Sample Program AST to be interpreted by Meta-Logo
+MAKE "program [
+    DEF "WELCOME [
+        PRINT "===_Hello_From_Meta-Logo_Interpreter!_==="
+    ]
+    CALL "WELCOME
+    
+    SET "x 10
+    SET "y 20
+    ADD "sum :x :y
+    PRINT :sum
+    
+    MUL "product :x :y
+    PRINT :product
+    
+    SET "counter 1
+    WHILE_LE "counter 3 [
+        PRINT :counter
+        ADD "counter :counter 1
+    ]
+]
+
+; Execute Meta-Logo Interpreter on the Mini-Logo program
+EXEC RUN_AST :program 1

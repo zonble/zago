@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms, System Date/Time & Sequences).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck, Self-Hosting LOGO Interpreter) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms, System Date/Time & Sequences).
 
 ---
 
@@ -8,6 +8,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 
 | File | Category | Description | Key LOGO Features Demonstrated |
 | :--- | :--- | :--- | :--- |
+| [`logo_in_logo_interpreter.logo`](logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
 | [`leap_year.logo`](leap_year.logo) | Classic Algo | **Leap Year Checker** | Modulo `%` logic, `IF`, `FORMAT` |
@@ -46,6 +47,9 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 You can run any `.logo` script directly from your terminal using `zago -e`:
 
 ```bash
+# Run Self-Hosting LOGO Interpreter in LOGO Demo
+zago -e "$(cat examples/logo_in_logo_interpreter.logo)"
+
 # Run System Date, Time & Sequences Demo
 zago -e "$(cat examples/system_time_demo.logo)"
 
@@ -81,6 +85,6 @@ zago -e "$(cat examples/turtle_demo.logo)"
 2. Press **`Esc`** to open the bottom LOGO command prompt.
 3. Type:
    ```logo
-   LOAD "examples/system_time_demo.logo
+   LOAD "examples/logo_in_logo_interpreter.logo
    ```
 4. Output will render directly inside your buffer!
