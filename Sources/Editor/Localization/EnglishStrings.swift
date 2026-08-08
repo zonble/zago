@@ -70,151 +70,213 @@ public struct EnglishStrings {
           Editor LOGO Reference
           ================================================================
 
-          Editor LOGO is an editor macro language. Commands edit the current
-          text buffer, cursor, selection, tables, status bar, and buffers.
+          Editor LOGO is an editor macro language. Commands edit text buffers,
+          cursors, selections, tables, status bar, and multi-buffer state.
 
-          Essential editing
-            TYPE text                    Insert text or expression result
-            SHOW expr                    Show a status message
-            MAKE "name value             Define a variable
-            :name                        Read a variable
-            READWORD [prompt] / RW       Read line input from user or stdin
-            READCHAR [prompt] / RC       Read single keypress from user or stdin
-            MOVE UP|DOWN|LEFT|RIGHT      Move the cursor
-            GOTO row [col]               Jump to 1-based row/column
-            FIND "query                  Search text
-
-          Shapes and tables
-            BOX [text|width height [style]]      Insert a framed box; no args frames canvas mark
-            DRAWBOX [text|width height [style]]  Draw overlay frame; no args frames canvas mark
+          1. Shapes, lines & tables
+            BOX [text|width height [style]]      Insert a framed box (auto-centered text)
+            DRAWBOX [text|width height [style]]  Draw overlay box (frames canvas mark)
             LINE [len] [style] [arrow]           Draw/connect a horizontal line
             VLINE [height] [style]               Draw/connect a vertical line
-            FILL text                            Fill selected region, table cell, or box interior
-            TABLE [rows cols width]              Insert a table
+            FILL text                            Fill selection region, table cell,
+                                                 or box interior
+            TABLE [rows cols width]              Insert ASCII table
+
             Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
-                    LINE clamps to 1...200 and VLINE clamps to 1...100.
+                    LINE/VLINE clamp to length 1...200.
+            Borders: single, double, round, double-round, ascii, markdown
+            Arrows:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
-          Styles
-            Border: single, double, round, double-round, ascii, markdown
-            Arrow:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+          2. Basic arithmetic & infix operators
+            +  -  *  /  %  ^                     Infix math operators
+                                                 (add, sub, mul, div, mod, pow)
+            =  <>  !=  <  >  <=  >=              Infix comparison operators 
+                                                 (eq, ne, lt, gt, le, ge)
+            SUM a b                              Addition (+)
+            DIFFERENCE a b                       Subtraction (-)
+            PRODUCT a b                          Multiplication (*)
+            QUOTIENT a b                         Division (/)
+            MODULO a b                           Modulo (%)
+            POWER base exp                       Exponentiation (^)
 
-          String, RegEx, and Bitwise operations
-            SUBSTRING s start len / TRANS s mode Substring or upper/lower/capitalized/trim
-            SEARCH s "pattern" / INDEXOF s "sub" Pattern search / index lookup
-            REGEX_MATCH s "pat" / REGEX_REPLACE  RegEx matching and replacement
-            BITAND / BITOR / BITXOR / BITNOT     Bitwise logic operations
-            LSHIFT / RSHIFT                      Bitwise shift operations
+          3. Core editing
+            TYPE text                            Insert text or expression result
+            SHOW expr                            Show status message
+            MAKE "name value                     Define a global variable
+            :name                                Read variable value
+            MOVE direction [n]                   Move cursor (UP, DOWN, LEFT, RIGHT)
+            GOTO row [col]                       Jump to 1-based row/column
+            FIND "query                          Search text
+            INDENT / OUTDENT                     Indent / outdent line (4 spaces)
+            JOINLINE / SPLITLINE                 Join next line / split current line
+            MARK / CUT / UNCUT                   Mark selection / cut / paste clipboard
 
-          Error handling
-            CATCH "ERROR [ commands ]            Catch uncaught LOGO runtime errors
-            THROW "tag / ERROR                   Throw exception / query last error info
+          4. String operations
+            WORD a b ...                         Concatenate values into a single word
+            SUBSTRING s start len / SUBSTR       Extract substring (1-based start index)
+            INDEXOF s "sub"                      Find first index of substring (1-based)
+            LASTINDEXOF s "sub"                  Find last index of substring
+            STARTSWITH? s "prefix"               Check if string starts with prefix
+            ENDSWITH? s "suffix"                 Check if string ends with suffix
+            CONTAINS? s "sub"                    Check if string contains substring
+            UPPERCASE s / LOWERCASE s            Convert string to uppercase / lowercase
+            TRIM s                               Trim whitespace from both ends
+            REPLACE s "old" "new"                Replace all occurrences of target substring
+            REPEATSTR s count                    Repeat string n times
+            SPLIT s "delim"                      Split string into list by delimiter
+            JOIN list "delim"                    Join list items into string with delimiter
+            PADLEFT s len [char]                 Pad string on left to target length
+            PADRIGHT s len [char]                Pad string on right to target length
+            FORMAT "fmt" val ...                 Format string using printf-style specifier
+            COUNT item                           Count length of string or list
+            ASCII char / CHAR code               ASCII code / character by ASCII code
 
-          Turtle-like drawing
-            PD / PU                      Pen down/up
-            FD expr / BK expr            Move forward/back
-            RT / LT                      Turn right/left
-            SETHEADING direction         Set heading (UP, RIGHT, DOWN, LEFT); bare or quoted
-            HEADING                      Return current heading
-            Turtle stops at the top/left minimum edges; outward moves from
-            those edges draw nothing. Down/right moves may extend the buffer.
+          5. Lists, Arrays & Plist
+            LIST a b ...                         Build a list, preserving each item
+            SENTENCE a b / SE                    Merge words/lists into a flat list
+            FIRST data / LAST data               First or last item from word/list
+            BUTFIRST data / BUTLAST data         Remove first or last item
+            ITEM n data                          1-based item from word/list/array
+            FPUT item list / LPUT item list      Add item to front / end of list
+            FIRSTS list / BUTFIRSTS list         First items / remaining items of sublists
+            COMBINE a b / REVERSE list           Combine or reverse list
+            PICK list|array                      Random item from list or array
+            REMOVE item list                     Remove items matching target from list
+            REMDUP list                          Remove duplicates from list
+            SORT list [template]                 Sort list items
+            ARRAY size / MDARRAY dims            Create 1D or multi-dimensional arrays
+            MDITEM dims arr / MDSETITEM dims v   Get/set multi-dimensional array element
+            LISTTOARRAY list / ARRAYTOLIST arr   Convert list to array / array to list
+            PPROP "plist "prop val               Set property value on property list
+            GPROP "plist "prop                   Get property value from property list
+            REMPROP "plist "prop                 Remove property from property list
+            PLIST "plist / PLISTS                Get full property list / list all plists
 
-          Control flow and procedures
-            REPEAT n [ commands ]        Repeat block; # and repcount are 1-based
-            IF test [ commands ]         Conditional execution
-            IFELSE test [ yes ] [ no ]   Conditional branch
-            FOREACH list [ commands ]    Iterate with ? as current item
-            TO name :arg ... END         Define a user procedure
-            OUTPUT value                 Return from a reporter procedure
-            STOP                         Return from a procedure
+            • List: Enclosed in square brackets [ ... ], with elements separated by spaces.
+              • Example: [apple banana orange] or [1 2 3]
+              • Dynamic List: Resizable length; ideal for prepending, appending, and list
+                concatenation.
+              • Commonly used creation & manipulation primitives: LIST, SENTENCE (or SE), 
+                FPUT (prepend), LPUT (append), FIRST / BUTFIRST.
+           • Array: Enclosed in curly braces { ... }, with elements separated by spaces.
+              • Example: {1 2 3} or {"apple" "banana"}
+              • Fixed-size / Matrix Space: Typically initialized with a specific size
+                or dimensions; ideal for indexed random access or multi-dimensional 
+                calculations.
+              • Commonly used creation primitives:
+                • ARRAY size (Creates a 1D array of specified size, e.g., 
+                  ARRAY 3 produces {"" "" ""})
+                • MDARRAY dims (Creates a multi-dimensional array of specified dimensions, 
+                  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
-          Useful predicates
-            PROCEDURE? name              Built-in or user-defined procedure exists
-            PRIMITIVE? name              Built-in primitive exists
-            DEFINED? name                User-defined procedure exists
-            NAME? name                   Variable exists
-            WORD? LIST? ARRAY? NUMBER? EMPTY?
+          6. Date / Datetime
+            DATE                                 Get current date string ("YYYY-MM-DD")
+            TIME                                 Get current time string ("HH:MM:SS")
 
-          Data operations
-            WORD a b ...                Join values into one word/string
-            LIST a b ...                Build a list, preserving each item
-            SENTENCE a b                Merge words/lists into one flat list
-            FIRST / LAST data           First or last item from word/list
-            BUTFIRST / BUTLAST data     Remove first or last item
-            ITEM n data                 1-based item from word/list/array
-            PICK data                   Random item from list or array
-            REMOVE item list            Return list without matching items
-            REMDUP list                 Return list with duplicates removed
-            SPLIT text delimiter        Split text into a LOGO list
-            SORT data [template]        Sort word/list/array, optionally custom
-            ARRAY n / MDARRAY dims      Create fixed-size arrays
-            SETITEM n array value       Mutate 1-based array item
-            MDSETITEM indexes array val Mutate multidimensional array item
-            ARRAYTOLIST / LISTTOARRAY   Convert between array and list values
+          7. CJK text transforms & metrics
+            TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.
+            TRANSFORM.TOHANT s / TOHANT          Convert Simp. Chinese to Trad.
+            TRANSFORM.TOHIRAGANA s               Convert to Hiragana
+            TRANSFORM.TOKATAKANA s               Convert to Katakana
+            TRANSFORM.TOROMAJI s                 Convert to Romaji
+            SPACING.CJK s                        Add space between CJK and Latin/digits
+            CHARCOUNT.CJK s                      Count CJK characters (ignore Latin/digits)
+            CHARCOUNT.EMOJI s                    Count Emoji symbols
+            CHARCOUNT.WORDS s                    Count words
+            CHARCOUNT.LINES s                    Count total lines
 
-          Text transforms
-            TRANSLIT transform text      Apply ICU or zago text transform
-            TRANSFORM transform text     Alias of TRANSLIT
-            TOHANS text                  Traditional Chinese to Simplified Chinese
-            TOHANT text                  Simplified Chinese to Traditional Chinese
-            TOLATIN text                 Romanize text
-            TOHIRAGANA text              Convert text to Hiragana
-            TOKATAKANA text              Convert text to Katakana
-            TOROMAJI text                Romanize Japanese text
-            SPACING.CJK text             Normalize CJK/ASCII word spacing
-            Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
-                            TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
-                            TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+          8. Turtle drawing
+            PD / PU                              Pen down / pen up
+            FD len / BK len                      Move forward / back
+            RT / LT                              Turn right / left
+            SETHEADING dir                       Set heading (UP, DOWN, LEFT, RIGHT)
+            HEADING                              Return current heading
 
-          Text counts
-            CHARCOUNT text               Count Unicode grapheme characters
-            CHARCOUNT.CJK text           Count CJK scripts and CJK punctuation
-            CHARCOUNT.WORDS text         Count alphanumeric word runs
-            CHARCOUNT.EMOJI text         Count emoji grapheme clusters
-            CHARCOUNT.LINES text         Count logical newline-separated lines
-            ASCII / ORD char             Unicode scalar code of first character
-            CHAR / CHR code              Character from Unicode scalar code
+          9. RegEx operations
+            REGEX_MATCH s "pattern"              Full string regex match (REMATCH?)
+            REGEX_REPLACE s "pat" "repl"         Global regex find and replace (RREPLACE)
+            REGEX_FIND s "pattern"               Find all regex match strings as a list (RFIND)
 
-          Math and logic
-            SUM a b ...                 Add numbers
-            DIFFERENCE a b / MINUS a    Subtract, or negate one number
-            PRODUCT a b ...             Multiply numbers
-            QUOTIENT a b                Divide a by b
-            POWER a b                   a raised to b
-            REMAINDER a b               Integer remainder
-            MODULO a b                  Mathematical modulo
-            ABS / INT / ROUND n         Absolute value, truncate, round
-            SQRT / EXP n                Square root, e raised to n
-            LN / LOG10 n                Natural log or base-10 log
-            SIN / COS / TAN degrees     Trig functions using degrees
-            ARCTAN y [x]                Angle in degrees
-            RADSIN / RADCOS / RADTAN r  Trig functions using radians
-            RADARCTAN y [x]             Angle in radians
-            RANGE / ISEQ start end [step]
-                                        Inclusive integer sequence list
-            RSEQ start end count         Real-number sequence list
-            LESS? / GREATER? a b        Numeric comparison
-            LESSEQUAL? / GREATEREQUAL?  Numeric <= or >= comparison
-            EQUAL? / NOTEQUAL? a b      Equality comparison
-            TRUE / FALSE                Boolean constants
-            AND / OR / XOR a b ...      Boolean combination
-            NOT value                   Boolean negation
+          10. Control flow
+            REPEAT n [ commands ]                Repeat block n times (repcount or #)
+            FOR [ var start end step ] [ ]       Numeric loop control
+            DOTIMES [ var n ] [ commands ]       Repeat n times (var 0 to n-1)
+            WHILE [ test ] [ commands ]          Execute loop while condition is true
+            DO.WHILE [ commands ] [ test ]       Execute once, repeat while condition true
+            UNTIL [ test ] [ commands ]          Execute loop until condition is true
+            DO.UNTIL [ commands ] [ test ]       Execute once, repeat until condition true
+            IF test [ commands ]                 Single-branch conditional execution
+            IFELSE test [ yes ] [ no ]           Two-branch conditional execution
+            CASE val [ [ match [cmds] ] ]        Multi-case pattern matching
 
-          Buffers and files
-            BUFFERS                     List open buffer names
-            BUFFER                      Current 1-based buffer index
-            CLEARBUFFER                 Empty active buffer and reset cursor
-            GETLINE [row]               Read logical line; default current row
-            SETLINE [row] text          Replace logical line; default current row
-            BUFFERTEXT                  Full active buffer text joined by newlines
-            ROW / COL                   Current 1-based logical row and column
-            LINECOUNT                   Number of logical lines in active buffer
-            FILENAME                    Active buffer filename or display name
-            MODIFIED?                   1 if buffer has unsaved changes, else 0
-            Note: GETLINE, SETLINE, ROW, and LINECOUNT use logical buffer lines,
-                  not soft-wrapped visual lines.
+          11. Interactive input (RC/RW)
+            READWORD [prompt] / RW               Read line input from user or stdin
+            READCHAR [prompt] / RC               Read single keypress from user or stdin
 
-          All primitive aliases
+          12. Math & Bitwise operations
+            ABS / INT / ROUND / SQRT             Absolute / floor / round / square root
+            MIN a b ... / MAX a b ...            Minimum / maximum value
+            SIN / COS / TAN degrees              Trigonometric functions (degrees)
+            RANDOM n / RERANDOM [seed]           Random integer 0...n-1 / seed generator
+            ISEQ start end                       Generate list of sequential integers
+            BITAND a b / BIT.AND                 Bitwise logic AND
+            BITOR a b / BIT.OR                   Bitwise logic OR
+            BITXOR a b / BIT.XOR                 Bitwise logic XOR
+            BITNOT a / BIT.NOT                   Bitwise logic NOT
+            LSHIFT a bits / BIT.SHL              Bitwise logical shift left
+            RSHIFT a bits / BIT.SHR              Bitwise logical shift right
+
+          13. Program & workspace management
+            TO name :arg ... END                 Define custom user procedure
+            DEFINE "name [[args] [body]]         Define procedure dynamically from list
+            TEXT "name                           Get procedure text representation / body
+            ARITY "name                          Get procedure argument count (arity)
+            PROCEDURES / PROCS                   List all user-defined procedure names
+            PRIMITIVES / PRIMS                   List all built-in primitive names
+            NAMES                                List all global variable names
+            CONTENTS                             List workspace contents 
+                                                 (procedures, vars, plists)
+            ERASE "name / ER                     Erase procedure or variable
+            ERPS / ERNS / ERALL                  Erase all user procedures / variables
+
+          14. Higher-order functions
+            MAP template list                    Map list items using template
+                                                 (? is current item)
+            MAPSE template list                  Map list items and flatten results
+            FILTER template list                 Filter list items matching template condition
+            REDUCE template list                 Reduce list items using template (?1, ?2)
+            CROSSMAP template lists              Cartesian product map over lists
+            APPLY "proc args                     Dynamically apply procedure with arg list
+            INVOKE "proc arg1 arg2               Dynamically invoke procedure with arguments
+
+          15. Exception handling
+            CATCH "tag [ commands ]              Catch exception tag 
+                                                 ("ERROR catches runtime errors)
+            THROW "tag                           Throw exception tag
+            ERROR                                Query last caught error info object
+
+          16. Predicates
+            WORD? LIST? ARRAY? NUMBER?           Check data type of value
+            EMPTY? val                           Check if string or list is empty
+            EQUAL? a b / NOTEQUAL? a b           Check equality / inequality
+            LESS? a b / GREATER? a b             Compare values (less / greater)
+            PROCEDURE? name                      Check if procedure exists (built-in or user)
+            PRIMITIVE? name                      Check if built-in primitive exists
+            DEFINED? name                        Check if user-defined procedure exists
+            NAME? name                           Check if variable exists
+
+          17. Buffer & multi-document operations
+            BUFFERS / BUFFERLIST                 List all open buffer names
+            BUFFER "name / BUFFER index          Switch to specified buffer by name or index
+            CLEARBUFFER                          Clear all text in current active buffer
+            GETLINE [row]                        Get logical line text (default current row)
+            SETLINE row "text"                   Set logical line text at specified row
+            LINECOUNT                            Return total line count of active buffer
+            BUFFERTEXT                           Return full text of active buffer
+            SELECTION                            Return currently selected text
+            FILENAME                             Return active buffer file path
         """,
+        "logoref.all_aliases_header": "All Primitive Keywords & Aliases",
         "logoworkspace.heading": "  Editor LOGO Workspace",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  Variables:",

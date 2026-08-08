@@ -70,151 +70,201 @@ public struct TraditionalChineseStrings {
           Editor LOGO 指令參考
           ================================================================
 
-          Editor LOGO 是編輯器巨集語言。指令會操作目前文件
-          游標、選取範圍、表格、狀態列與多文件操作。
+          Editor LOGO 是編輯器巨集語言。指令會操作目前文件、
+          游標、選取範圍、表格、狀態列與多文件 Buffer 狀態。
 
-          基本編輯
-            TYPE text                    插入文字或運算結果
-            SHOW expr                    顯示狀態訊息
-            MAKE "name value             定義變數
-            :name                        讀取變數
-            READWORD [提示] / RW         讀取使用者或 stdin 輸入的整行文字
-            READCHAR [提示] / RC         讀取使用者或 stdin 輸入的單一按鍵
-            MOVE UP|DOWN|LEFT|RIGHT      移動游標
-            GOTO row [col]               跳到 1-based 列/欄
-            FIND "query                  搜尋文字
+          1. 文字圖形與樣式
+            BOX [text|width height [style]]      插入邊框（自動置中/內嵌文字）
+            DRAWBOX [text|w h [style]]           覆蓋繪製邊框（框住畫布標記）
+            LINE [len] [style] [arrow]           繪製/連接水平線
+            VLINE [height] [style]               繪製/連接垂直線
+            FILL text                            填滿選取區、表格儲存格或方框內部
+            TABLE [rows cols width]              插入 ASCII 表格
 
-          圖形與表格
-            BOX [文字|寬 高 [樣式]]       插入方框；無參數時框住目前的畫布標記
-            DRAWBOX [文字|寬 高 [樣式]]   覆蓋繪製方框；無參數時框住目前的畫布標記
-            LINE [長度] [樣式] [箭頭]    繪製/連接水平線
-            VLINE [高度] [樣式]          繪製/連接垂直線
-            FILL text                    填滿選取範圍、表格儲存格或方框內部
-            TABLE [rows cols width]      插入表格
-            邊界：BOX/DRAWBOX 限制為寬 3...200、高 2...100；
-                  LINE 限制為 1...200，VLINE 限制為 1...100。
-
-          樣式種類
+            邊界限制：BOX/DRAWBOX 寬 3...200、高 2...100；LINE/VLINE 1...200
             框線樣式：single, double, round, double-round, ascii, markdown
             箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
-          字串、正規表達式與位元運算
-            SUBSTRING s start len / TRANS s mode 子字串切片或轉大小寫/Trim
-            SEARCH s "pattern" / INDEXOF s "sub" 字樣搜尋 / 索引查找
-            REGEX_MATCH s "pat" / REGEX_REPLACE  正規表達式比對與取代
-            BITAND / BITOR / BITXOR / BITNOT     位元邏輯運算
-            LSHIFT / RSHIFT                      位元移位運算
+          2. 四則運算與運算子
+            +  -  *  /  %  ^                     加、減、乘、除、取餘數、次方
+            =  <>  !=   <  >  <=  >=             等於、不等於、小於、大於、小於等於、大於等於
+            SUM a b                              加法運算 (+)
+            DIFFERENCE a b                       減法運算 (-)
+            PRODUCT a b                          乘法運算 (*)
+            QUOTIENT a b                         除法運算 (/)
+            MODULO a b                           取餘數運算 (%)
+            POWER base exp                       次方運算 (^)
 
-          錯誤處理與例外控制
-            CATCH "ERROR [ commands ]            捕捉 LOGO 執行時期錯誤
-            THROW "tag / ERROR                   拋出例外 tag / 讀取最後錯誤資訊
+          3. 核心功能
+            TYPE text                            插入文字或運算結果
+            SHOW expr                            在狀態列顯示狀態訊息
+            MAKE "name value                     定義全域變數
+            :name                                讀取變數值
+            MOVE direction [n]                   移動游標 (UP, DOWN, LEFT, RIGHT)
+            GOTO row [col]                       跳轉至 1-based 指定列/欄
+            FIND "query                          搜尋指定文字
+            INDENT / OUTDENT                     增加 / 減少縮排 (4 個空格)
+            JOINLINE / SPLITLINE                 接合下一行 / 拆分當前行
+            MARK / CUT / UNCUT                   標記選取區 / 剪下 / 貼上剪貼簿
 
-          類海龜繪圖
-            PD / PU                      落筆/提筆
-            FD expr / BK expr            前進/後退
-            RT / LT                      右轉/左轉
-            SETHEADING direction         設定方向 (UP, RIGHT, DOWN, LEFT)；可不加引號
-            HEADING                      回傳目前方向
-            Turtle 會停在上/左最小邊界；從邊界往外移動不會繪製。
-            往下/右移動可延伸文件高度。
+          4. 字串處理
+            WORD a b ...                         串接多個值為單一字串
+            SUBSTRING s start len / SUBSTR       取出子字串 (1-based 起始索引)
+            INDEXOF s "sub"                      搜尋子字串第一次出現的位置 (1-based)
+            LASTINDEXOF s "sub"                  搜尋子字串最後一次出現的位置
+            STARTSWITH? s "prefix"               檢查字串是否以指定前綴開頭
+            ENDSWITH? s "suffix"                 檢查字串是否以指定後綴結尾
+            CONTAINS? s "sub"                    檢查字串是否包含指定子字串
+            UPPERCASE s / LOWERCASE s            轉換字串為全大寫 / 全小寫
+            TRIM s                               去除字串前後空白字元
+            REPLACE s "old" "new"                取代字串中所有匹配字樣
+            REPEATSTR s count                    重複字串指定次數
+            SPLIT s "delim"                      依分隔符拆分字串為 List
+            JOIN list "delim"                    以分隔符將 List 項目合併為字串
+            PADLEFT s len [char]                 左側對齊填補字元至指定長度
+            PADRIGHT s len [char]                右側對齊填補字元至指定長度
+            FORMAT "fmt" val ...                 依照 C 語言 printf 格式化字串
+            COUNT item                           計算字串長度或清單項目數
+            ASCII char / CHAR code               取得 ASCII 碼 / 依 ASCII 碼產生字元
 
-          控制流程與 procedure
-            REPEAT n [ commands ]        重複執行；# 與 repcount 從 1 開始
-            IF test [ commands ]         條件執行
-            IFELSE test [ yes ] [ no ]   條件分支
-            FOREACH list [ commands ]    逐項執行，? 是目前項目
-            TO name :arg ... END         定義 user procedure
-            OUTPUT value                 從 reporter procedure 回傳值
-            STOP                         從 procedure 返回
+          5. Lists, Arrays & Plist
+            LIST a b ...                         建立 List
+            SENTENCE a b / SE                    合併多個字串或清單為扁平 List
+            FIRST data / LAST data               取得第一項或最後一項
+            BUTFIRST data / BUTLAST data         除去第一項或最後一項
+            ITEM n data                          取得 1-based 指定位置項目
+            FPUT item list / LPUT item list      於清單首位或末位插入項目
+            FIRSTS list / BUTFIRSTS list         取得子清單首項集 / 其餘項集
+            COMBINE a b / REVERSE list           接合或反轉清單
+            PICK list|array                      隨機抽樣單一項目
+            REMOVE item list / REMDUP list       移除指定項目 / 移除重複項目
+            SORT list [template]                 排序清單項目
+            ARRAY size / MDARRAY dims            建立一維或多維 Array 陣列
+            MDITEM dims arr / MDSETITEM dims v   存取/修改多維陣列元素
+            LISTTOARRAY list / ARRAYTOLIST arr   List 與 Array 轉置
+            PPROP "plist "prop val               設定屬性清單數值
+            GPROP "plist "prop                   讀取屬性清單數值
+            REMPROP "plist "prop                 從屬性清單移除屬性
+            PLIST "plist / PLISTS                取得完整屬性清單 / 列出所有屬性清單
 
-          常用 predicate
-            PROCEDURE? name              built-in 或 user-defined procedure 是否存在
-            PRIMITIVE? name              built-in primitive 是否存在
-            DEFINED? name                user-defined procedure 是否存在
-            NAME? name                   變數是否存在
-            WORD? LIST? ARRAY? NUMBER? EMPTY?
+            • List (清單)：使用 中括號 [ ... ] 包裹，元素間以空格分隔。
+              • 例如：[apple banana orange] 或 [1 2 3]
+              • 動態列表：長度可隨時伸縮，適合做首尾增刪與列表拼接。
+              • 常用建立與操作 Primitives：LIST、SENTENCE (或 SE)、FPUT (頭部插入)、
+                LPUT (尾部插入)、FIRST / BUTFIRST。
+            • Array (陣列)：使用 大括號 { ... } 包裹，元素間以空格分隔。
+              • 例如：{1 2 3} 或 {"apple" "banana"}
+              • 固定長度 / 矩陣空間：通常先宣告大小或維度，適合需要依索引隨機存取或
+                進行多維計算的情境。
+              • 常用建立 Primitives：
+                • ARRAY size（建立指定大小的一維陣列，如 ARRAY 3 產生 {"" "" ""}）
+                • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生 3 × 3 矩陣）
 
-          資料操作
-            WORD a b ...                串接成一個 word/string
-            LIST a b ...                建立 list，保留每個項目
-            SENTENCE a b                合併 word/list 成扁平 list
-            FIRST / LAST data           取 word/list 的第一或最後項目
-            BUTFIRST / BUTLAST data     去掉第一或最後項目
-            ITEM n data                 取 word/list/array 的 1-based 項目
-            PICK data                   從 list 或 array 隨機取一項
-            REMOVE item list            回傳移除指定項目的 list
-            REMDUP list                 回傳去除重複項目的 list
-            SPLIT text delimiter        將文字切成 LOGO list
-            SORT data [template]        排序 word/list/array，可給自訂 template
-            ARRAY n / MDARRAY dims      建立固定大小 array / 多維 array
-            SETITEM n array value       修改 array 的 1-based 項目
-            MDSETITEM indexes array val 修改多維 array 的項目
-            ARRAYTOLIST / LISTTOARRAY   在 array 與 list 之間轉換
+          6. Date / Datetime
+            DATE                                 取得當前系統日期字串 ("YYYY-MM-DD")
+            TIME                                 取得當前系統時間字串 ("HH:MM:SS")
 
-          文字轉換
-            TRANSLIT transform text      套用 ICU 或 zago 文字轉換
-            TRANSFORM transform text     TRANSLIT 的別名
-            TOHANS text                  繁體中文轉簡體中文
-            TOHANT text                  簡體中文轉繁體中文
-            TOLATIN text                 轉為拉丁文字
-            TOHIRAGANA text              轉為平假名
-            TOKATAKANA text              轉為片假名
-            TOROMAJI text                日文轉羅馬字
-            SPACING.CJK text             正規化 CJK 與 ASCII 字詞間距
-            Dotted aliases: TRANSFORM.TOHANS, TRANSFORM.TOHANT,
-                            TRANSFORM.TOLATIN, TRANSFORM.TOHIRAGANA,
-                            TRANSFORM.TOKATAKANA, TRANSFORM.TOROMAJI
+          7. CJK
+            TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文
+            TRANSFORM.TOHANT text / TOHANT       簡體中文轉繁體中文
+            TRANSFORM.TOHIRAGANA text            轉日文平假名
+            TRANSFORM.TOKATAKANA text            轉日文片假名
+            TRANSFORM.TOROMAJI text              轉日文羅馬字
+            SPACING.CJK text                     自動於中英/數字交界處補空格
+            CHARCOUNT.CJK text                   精準統計中文字數 (忽略英數)
+            CHARCOUNT.EMOJI text                 統計 Emoji 圖像符號個數
+            CHARCOUNT.WORDS text                 統計英文單字數量
+            CHARCOUNT.LINES text                 統計總行數
 
-          文字計數
-            CHARCOUNT text               計算 Unicode grapheme 字元數
-            CHARCOUNT.CJK text           計算 CJK script 與 CJK 標點
-            CHARCOUNT.WORDS text         計算英數 word runs
-            CHARCOUNT.EMOJI text         計算 emoji grapheme clusters
-            CHARCOUNT.LINES text         計算以換行分隔的邏輯行數
-            ASCII / ORD char             第一個字元的 Unicode scalar code
-            CHAR / CHR code              從 Unicode scalar code 取得字元
+          8. Turtle
+            PD / PU                              落筆 / 提筆 (Pen Down / Pen Up)
+            FD len / BK len                      前進 / 後退指定長度
+            RT / LT                              右轉 90° / 左轉 90° (無參數)
+            SETHEADING dir                       設定繪圖方向 (UP, DOWN, LEFT, RIGHT)
+            HEADING                              回傳目前繪圖方向
 
-          數學與邏輯
-            SUM a b ...                 數字相加
-            DIFFERENCE a b / MINUS a    相減，或將單一數字轉負
-            PRODUCT a b ...             數字相乘
-            QUOTIENT a b                a 除以 b
-            POWER a b                   a 的 b 次方
-            REMAINDER a b               整數餘數
-            MODULO a b                  數學 modulo
-            ABS / INT / ROUND n         絕對值、截斷、四捨五入
-            SQRT / EXP n                平方根、e 的 n 次方
-            LN / LOG10 n                自然對數、10 為底對數
-            SIN / COS / TAN degrees     以角度為單位的三角函數
-            ARCTAN y [x]                回傳角度
-            RADSIN / RADCOS / RADTAN r  以弧度為單位的三角函數
-            RADARCTAN y [x]             回傳弧度
-            RANGE / ISEQ start end [step]
-                                        產生 inclusive 整數序列 list
-            RSEQ start end count         產生實數序列 list
-            LESS? / GREATER? a b        數字大小比較
-            LESSEQUAL? / GREATEREQUAL?  數字 <= 或 >= 比較
-            EQUAL? / NOTEQUAL? a b      相等/不相等比較
-            TRUE / FALSE                布林常數
-            AND / OR / XOR a b ...      布林組合
-            NOT value                   布林反相
+          9. Regex
+            REGEX_MATCH s "pattern"              正規表達式全字串匹配 (REMATCH?)
+            REGEX_REPLACE s "pat" "repl"         正規表達式全域搜尋與取代 (RREPLACE)
+            REGEX_FIND s "pattern"               正規表達式搜尋並回傳匹配項清單 (RFIND)
 
-          Buffer 與檔案
-            BUFFERS                     列出已開啟 buffer 名稱
-            BUFFER                      目前 buffer 的 1-based 編號
-            CLEARBUFFER                 清空目前 buffer 並重設游標
-            GETLINE [row]               讀取邏輯行；省略時讀目前行
-            SETLINE [row] text          取代邏輯行；省略時改目前行
-            BUFFERTEXT                  目前 buffer 全文，以換行串接
-            ROW / COL                   目前 1-based 邏輯列與欄
-            LINECOUNT                   目前 buffer 的邏輯行數
-            FILENAME                    目前 buffer 的檔名或顯示名稱
-            MODIFIED?                   有未儲存修改回傳 1，否則回傳 0
-            注意：GETLINE、SETLINE、ROW、LINECOUNT 使用邏輯行，
-                  不是 soft wrap 後的視覺行。
+          10. Flow
+            REPEAT n [ commands ]                重複執行 n 次（可用 # 或 repcount）
+            FOR [ var start end step ] [ ]       數值迴圈控制
+            DOTIMES [ var n ] [ commands ]       執行 n 次 (var 從 0 至 n-1)
+            WHILE [ test ] [ commands ]          條件成立時持續執行
+            DO.WHILE [ commands ] [ test ]       先執行一次，條件成立時持續執行
+            UNTIL [ test ] [ commands ]          直到條件成立前持續執行
+            DO.UNTIL [ commands ] [ test ]       先執行一次，直到條件成立前持續執行
+            IF test [ commands ]                 單向條件分支
+            IFELSE test [ yes ] [ no ]           雙向條件分支
+            CASE val [ [ match [cmds] ] ]        多重模式匹配分支
 
-          所有 primitive alias
+          11. RC/RW
+            READWORD [prompt] / RW               讀取整行文字輸入 (預設從 console/stdin)
+            READCHAR [prompt] / RC               讀取單一字元按鍵 (預設從 console/stdin)
+
+          12. Math/Bitwise
+            ABS / INT / ROUND / SQRT             絕對值 / 無條件捨去 / 四捨五入 / 平方根
+            MIN a b ... / MAX a b ...            取得極小值 / 極大值
+            SIN / COS / TAN degrees              以角度為單位的三角函數
+            RANDOM n / RERANDOM [seed]           產生 0...n-1 隨機整數 / 重置隨機種子
+            ISEQ start end                       產生連續整數 List (例如 ISEQ 1 5)
+            BITAND a b / BIT.AND                 整數位元 logic AND 運算
+            BITOR a b / BIT.OR                   整數位元 logic OR 運算
+            BITXOR a b / BIT.XOR                 整數位元 logic XOR 運算
+            BITNOT a / BIT.NOT                   整數位元邏輯反轉運算
+            LSHIFT a bits / BIT.SHL              整數位元邏輯左移
+            RSHIFT a bits / BIT.SHR              整數位元邏輯右移
+
+          13. Program
+            TO name :arg ... END                 定義自訂 User Procedure
+            DEFINE "name [[args] [body]]         動態由 List 結構建立 User Procedure
+            TEXT "name                           取得 Procedure 的原始定義文字/結構
+            ARITY "name                          取得 Procedure 的參數個數 (Arity)
+            PROCEDURES / PROCS                   列出所有自訂 Procedure 名稱清單
+            PRIMITIVES / PRIMS                   列出所有 Built-in Primitive 名稱清單
+            NAMES                                列出所有全域變數名稱清單
+            CONTENTS                             列出工作區完整內容 (Procedures, Vars, Plists)
+            ERASE "name / ER                     清除指定 Procedure 或變數
+            ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 全域工作區
+
+          14. Higher function
+            MAP template list                    對 List 項目進行 Map 映射 (可用 ? 表示項目)
+            MAPSE template list                  對 List 項目進行 Map 映射並扁平化
+            FILTER template list                 過濾符合條件的 List 項目
+            REDUCE template list                 對 List 項目進行累加歸納 (可用 ?1, ?2)
+            CROSSMAP template lists              對多組 List 計算笛卡兒積映射
+            APPLY "proc args                     以名稱與參數 List 動態呼叫 Procedure
+            INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫 Procedure
+
+          15. Exception
+            CATCH "tag [ commands ]              捕捉指定 Tag 的例外（"ERROR 捕捉執行時期錯誤）
+            THROW "tag                           主動拋出指定 Tag 的例外
+            ERROR                                取得最後一次捕捉到的錯誤細節資訊物件
+
+          16. Predicate
+            WORD? LIST? ARRAY? NUMBER?           檢查資料型別是否為字串/清單/陣列/數值
+            EMPTY? val                           檢查字串或清單是否為空
+            EQUAL? a b / NOTEQUAL? a b           比較兩值是否相等 / 不相等
+            LESS? a b / GREATER? a b             比較大小 (小於 / 大於)
+            PROCEDURE? name                      檢查 built-in 或自訂 Procedure 是否存在
+            PRIMITIVE? name                      檢查 built-in Primitive 是否存在
+            DEFINED? name                        檢查自訂 Procedure 是否存在
+            NAME? name                           檢查指定名稱的變數是否存在
+
+          17. Buffer
+            BUFFERS / BUFFERLIST                 列出所有已開啟的 Buffer 列表
+            BUFFER "name / BUFFER index          切換至指定名稱或索引的 Buffer
+            CLEARBUFFER                          清空當前 Buffer 的全部內容
+            GETLINE [row]                        取得指定列 (預設當前列) 的邏輯行文字
+            SETLINE row "text"                   設定指定列的邏輯行文字
+            LINECOUNT                            回傳當前 Buffer 的總行數
+            BUFFERTEXT                           回傳當前 Buffer 的完整內文
+            SELECTION                            回傳當前選取範圍的文字
+            FILENAME                             回傳當前 Buffer 的檔案路徑
         """,
+        "logoref.all_aliases_header": "所有 Primitive 別名與關鍵字 (All Primitive Keywords & Aliases)",
         "logoworkspace.heading": "  Editor LOGO 工作區",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  變數：",

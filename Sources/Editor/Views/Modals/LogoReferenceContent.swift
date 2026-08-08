@@ -3,7 +3,16 @@ import LogoEngine
 
 public enum LogoReferenceContent {
     public static func lines(language: Language = .detectSystemLanguage()) -> [String] {
-        L10n.string("logoref.content", language: language).components(separatedBy: "\n") + wrappedAliases(width: 68)
+        let contentLines = L10n.string("logoref.content", language: language).components(separatedBy: "\n")
+        let headerText = L10n.string("logoref.all_aliases_header", language: language)
+        let separatorLines = [
+            "",
+            "",
+            "\(headerText)",
+            "================================================================",
+            ""
+        ]
+        return contentLines + separatorLines + wrappedAliases(width: 68)
     }
 
     private static func wrappedAliases(width: Int) -> [String] {
