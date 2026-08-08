@@ -150,4 +150,27 @@ import Testing
         #expect(output.contains("found_'cherry'_at_index:_3"))
         #expect(output.contains("dotimes_counter:_0_1_2_"))
     }
+
+    @Test func testAsciiDrawingDemoExample() throws {
+        let output = try executeScriptFile("ascii_drawing_demo.logo")
+        #expect(output.contains("===_ASCII_Drawing_&_Diagram_Demo_==="))
+        #expect(output.contains("API_Gateway"))
+        #expect(output.contains("Database_Node"))
+    }
+
+    @Test func testCJKTextDemoExample() throws {
+        let output = try executeScriptFile("cjk_text_demo.logo")
+        #expect(output.contains("===_CJK_Text_Transformation_Demo_==="))
+        #expect(output.contains("hans:_高阶语言与函数式编程"))
+        #expect(output.contains("back:_高階語言與函數式編程"))
+        #expect(output.contains("spaced:_zago 編輯器 LOGO 語言"))
+        #expect(output.contains("kata:_トウキョウ"))
+        #expect(output.contains("emojis:_2"))
+    }
+
+    @Test func testTurtleDemoExample() throws {
+        let output = try executeScriptFile("turtle_demo.logo")
+        #expect(output.contains("===_Turtle_Graphics_Demo_==="))
+    }
 }
+

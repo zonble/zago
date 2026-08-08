@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics).
 
 ---
 
@@ -15,6 +15,9 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`math_demo.logo`](math_demo.logo) | Math & Sequences | **Math & Trigonometry** (Euclidean distance, log, power, series) | `SQRT`, `POWER`, `LOG10`, `LN`, `ABS`, `ISEQ`, `RANDOM` |
 | [`functional_demo.logo`](functional_demo.logo) | Functional Programming | **Higher-Order Functions** (Map, Filter, Reduce, Crossmap) | `MAP`, `MAP.SE`, `FILTER`, `REDUCE`, `CROSSMAP`, `RUNRESULT` |
 | [`control_flow_demo.logo`](control_flow_demo.logo) | Control Flow & Exceptions | **Control Flow & Non-local Exit** (Case, Cond, Test, Catch/Throw) | `CASE`, `COND`, `TEST`, `IFTRUE`, `CATCH`, `THROW`, `DOTIMES` |
+| [`ascii_drawing_demo.logo`](ascii_drawing_demo.logo) | ASCII Canvas & Diagrams | **ASCII Canvas Drawing** (Boxes, lines, border & arrow styles) | `SETBORDERSTYLE`, `SETARROWSTYLE`, `BOX`, `LINE`, `VLINE` |
+| [`cjk_text_demo.logo`](cjk_text_demo.logo) | CJK Linguistics | **CJK Text Transformation & Transliteration** (Simplified/Traditional, Kana, Emoji) | `TOHANS`, `TOHANT`, `SPACING.CJK`, `TOKATAKANA`, `CHARCOUNT.EMOJI` |
+| [`turtle_demo.logo`](turtle_demo.logo) | Turtle Graphics | **Classic LOGO Turtle Graphics** (Heading, pen up/down, move) | `PENDOWN`, `PENUP`, `FORWARD`, `BACK`, `TURNRIGHT`, `SETHEADING` |
 | [`caesar_cipher.logo`](caesar_cipher.logo) | Cryptography | **Caesar Cipher** encryption/decryption | `ORD`, `CHAR`, modulo arithmetic, `WORD` |
 | [`leetcode_001_two_sum.logo`](leetcode_001_two_sum.logo) | LeetCode #1 | Two Sum problem | Nested `WHILE` loops, `ITEM`, `LIST` construction |
 | [`leetcode_014_longest_common_prefix.logo`](leetcode_014_longest_common_prefix.logo) | LeetCode #14 | Longest Common Prefix | `STARTSWITH?`, `SUBSTRING`, `COUNT`, `WHILE` |
@@ -37,6 +40,15 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 You can run any `.logo` script directly from your terminal using `zago -e`:
 
 ```bash
+# Run ASCII Drawing & Diagram Demo
+zago -e "$(cat examples/ascii_drawing_demo.logo)"
+
+# Run CJK Text Transformation Demo
+zago -e "$(cat examples/cjk_text_demo.logo)"
+
+# Run Turtle Graphics Demo
+zago -e "$(cat examples/turtle_demo.logo)"
+
 # Run Longest Common Prefix (LeetCode #14)
 zago -e "$(cat examples/leetcode_014_longest_common_prefix.logo)"
 
@@ -60,6 +72,6 @@ zago -e "$(cat examples/math_demo.logo)"
 2. Press **`Esc`** to open the bottom LOGO command prompt.
 3. Type:
    ```logo
-   LOAD "examples/leetcode_014_longest_common_prefix.logo
+   LOAD "examples/ascii_drawing_demo.logo
    ```
 4. Output will render directly inside your buffer!

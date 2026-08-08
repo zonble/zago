@@ -1,0 +1,42 @@
+; ==============================================================================
+; CJK Linguistics & Text Transformation Example (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO CJK primitives: `TOHANS`, `TOHANT`, `SPACING.CJK`,
+; `TOKATAKANA`, `CHARCOUNT.CJK`, `CHARCOUNT.EMOJI`.
+; ==============================================================================
+
+TYPE "===_CJK_Text_Transformation_Demo_==="
+TYPE CHAR 10
+
+; 1. Traditional to Simplified Chinese Transformation
+MAKE "hant "高階語言與函數式編程
+MAKE "hans TOHANS :hant
+TYPE "hant:_ TYPE :hant TYPE CHAR 10
+TYPE "hans:_ TYPE :hans TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. Simplified to Traditional Chinese Transformation
+MAKE "hant_back TOHANT :hans
+TYPE "back:_ TYPE :hant_back TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. CJK & Latin Auto Spacing (Insert space between CJK and English)
+MAKE "mixed "zago編輯器LOGO語言
+MAKE "spaced SPACING.CJK :mixed
+TYPE "spaced:_ TYPE :spaced TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 4. Japanese Kana Transliteration (Hiragana -> Katakana)
+MAKE "kana "とうきょう
+MAKE "kata TOKATAKANA :kana
+TYPE "kana:_ TYPE :kana TYPE "_=>_kata:_ TYPE :kata TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 5. Emoji & CJK Character Counter
+MAKE "text "Hello_😀🎉_世界
+MAKE "emojis CHARCOUNT.EMOJI :text
+TYPE "text:_ TYPE :text TYPE "_emojis:_ TYPE :emojis TYPE CHAR 10
