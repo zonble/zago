@@ -222,7 +222,9 @@ public final class FileWatcher: @unchecked Sendable {
     /// Records current modification date of watched file to suppress self-save change notifications.
     public func recordCurrentModificationDate() {
         guard let path = watchedPath else { return }
-        self.lastModificationDate = getModificationDate(for: path)
+        queue.sync {
+            self.lastModificationDate = self.getModificationDate(for: path)
+        }
     }
 
     private func getModificationDate(for path: String) -> Date? {

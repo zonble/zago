@@ -107,7 +107,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
     }
 
-    private var watchedPaths: [String: (timer: any DispatchSourceTimer, state: WatcherState, callback: @Sendable () -> Void)] = [:]
+    private var watchedPaths: [String: (timer: any DispatchSourceTimer, state: WatcherState, queue: DispatchQueue, callback: @Sendable () -> Void)] = [:]
 
     private func getSnapshot(for normalized: String) -> (exists: Bool, mtime: Date?, size: UInt64?) {
         let info = fileInfo(at: normalized)
@@ -119,7 +119,9 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
 
     private func recordCurrentModificationDate(for normalized: String) {
         if let entry = watchedPaths[normalized] {
-            entry.state.snapshot = getSnapshot(for: normalized)
+            entry.queue.sync {
+                entry.state.snapshot = self.getSnapshot(for: normalized)
+            }
         }
     }
 
@@ -148,7 +150,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             }
         }
         timer.resume()
-        watchedPaths[normalized] = (timer, state, onChange)
+        watchedPaths[normalized] = (timer, state, queue, onChange)
     }
 
     func stopWatchingFile(at path: String) {

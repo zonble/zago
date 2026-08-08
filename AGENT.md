@@ -163,6 +163,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 7. **No Unsolicited Git Commits**: AI agents MUST NOT execute `git commit` unless the user explicitly requests a commit (e.g., "commit", "git commit"). Leave code changes in the working directory for user review.
 8. **Avoid Singletons & Direct Editor Class Dependencies**: Avoid global mutable singletons (`public static let shared`). Services MUST be passed via protocol abstractions or `EditorDependencies`. Secondary components, background services, and sub-systems MUST NOT depend directly on the monolithic `Editor` class.
 9. **Mandatory Unique Temporary File Paths for Windows CI**: When writing unit tests that create temporary files in `FileManager.default.temporaryDirectory`, AI agents MUST ALWAYS append `UUID().uuidString` to the temporary file path (e.g., `"test_gen_\(UUID().uuidString).serc"`). Hardcoded static file names cause Win32 Error 32 (`ERROR_SHARING_VIOLATION`) on Windows when tests execute concurrently or when file watchers hold open file handles. See [Testing Guidelines & Best Practices](docs/test.md).
+10. **Relative Paths Only in Markdown Documentation**: AI agents MUST NOT use local machine absolute paths (such as `file:///Users/...` or `/Users/...`) in Markdown documentation (`docs/*.md`, `README.md`, `AGENT.md`, etc.). Always use clean, relative Markdown file links (e.g. `[PosixTerminal](Sources/zago/PosixTerminal.swift)` or `[encoding.md](docs/encoding.md)`).
 
 ---
 
