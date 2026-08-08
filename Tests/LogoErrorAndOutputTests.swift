@@ -50,6 +50,14 @@ import Testing
         editor.toggleLogoOutputBuffer()
         #expect(editor.currentBufferIndex == idx!)
 
+        editor.tableModeController.toggleTableMode()
+        #expect(editor.isTableModeActive == false)
+        #expect(editor.statusMessage == "[ Buffer is read-only ]")
+
+        editor.switchToCanvasMode()
+        #expect(editor.isCanvasModeActive == false)
+        #expect(editor.statusMessage == "[ Buffer is read-only ]")
+
         editor.toggleLogoOutputBuffer()
         #expect(editor.currentBufferIndex != idx!)
 

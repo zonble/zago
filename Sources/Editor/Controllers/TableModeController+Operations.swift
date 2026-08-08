@@ -10,6 +10,10 @@ extension TableModeController {
     /// Toggles Table Mode on/off.
     public func toggleTableMode() {
         guard let editor else { return }
+        if !editor.isTableModeActive && editor.buffer.isReadOnly {
+            editor.setStatusMessage("[ Buffer is read-only ]")
+            return
+        }
         if editor.isTableModeActive {
             editor.isTableModeActive = false
             editor.currentTableCell = nil

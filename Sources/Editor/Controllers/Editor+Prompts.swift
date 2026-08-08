@@ -158,6 +158,10 @@ extension Editor {
     }
 
     func promptTableDimensions() {
+        guard !buffer.isReadOnly else {
+            setStatusMessage("[ Buffer is read-only ]")
+            return
+        }
         promptInputText = "3 3 16"
         promptCursorIndex = promptInputText.count
         currentPromptMode = .tableDimensions(completion: { [weak self] input in

@@ -25,6 +25,10 @@ extension Editor {
     }
 
     public func switchToCanvasMode() {
+        guard !buffer.isReadOnly else {
+            setStatusMessage("[ Buffer is read-only ]")
+            return
+        }
         let wasCanvasMode = baseMode == .canvas
         clearActiveMark()
         baseMode = .canvas
