@@ -54,7 +54,6 @@ extension LogoEngine {
         guard lastError == "[]" else { return "" }
 
         var leftVal: String
-        var didApplyOperator = false
         var isParenthesized = false
         if tokens[index] == "(" {
             isParenthesized = true
@@ -146,7 +145,6 @@ extension LogoEngine {
                 break
             }
             if let op = LogoOperator.from(nextToken), op.isArithmetic {
-                didApplyOperator = true
                 index += 2
                 guard index < tokens.count else { break }
                 let rightVal = evaluateExpression(tokens, index: &index)
