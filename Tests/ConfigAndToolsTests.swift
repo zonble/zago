@@ -718,7 +718,7 @@ struct ConfigAndToolsTests {
 
     let fileIO = TestLocalEditorFileIOStrategy.shared
     let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_real_watcher_\(UUID().uuidString).txt").path
-    try "v1\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    try "v1\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
 
     let semaphore = DispatchSemaphore(value: 0)
 
@@ -728,12 +728,12 @@ struct ConfigAndToolsTests {
     }
 
     // First atomic write (different string length ensures size changes immediately without needing Thread.sleep)
-    try "v2 - modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    try "v2 - modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
     _ = semaphore.wait(timeout: .now() + 2.0)
     #expect(counter.value >= 1)
 
     // Second atomic write (tests re-open / recovery after atomic replace/rename)
-    try "v3 - further modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    try "v3 - further modified content\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
     _ = semaphore.wait(timeout: .now() + 2.0)
     #expect(counter.value >= 2)
 
@@ -756,7 +756,7 @@ struct ConfigAndToolsTests {
     }
 
     // Now create file externally
-    try "created!\n".write(to: URL(fileURLWithPath: tmpFile), atomically: true, encoding: .utf8)
+    try "created!\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
     _ = semaphore.wait(timeout: .now() + 2.0)
     #expect(counter.value >= 1)
 

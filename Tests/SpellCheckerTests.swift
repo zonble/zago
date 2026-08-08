@@ -154,7 +154,7 @@ struct SpellCheckerTests {
             try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
         }
         func writeString(_ content: String, toPath path: String) throws {
-            try content.write(to: URL(fileURLWithPath: path), atomically: true, encoding: .utf8)
+            try content.write(to: URL(fileURLWithPath: path), atomically: testAtomicallyOption, encoding: .utf8)
         }
     }
     let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
