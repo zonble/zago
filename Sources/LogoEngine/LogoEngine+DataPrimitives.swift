@@ -580,6 +580,42 @@ extension LogoEngine {
             let keys = Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted()
             return LogoValue.list(keys.map { .string($0) }).description
 
+        case .names:
+            let keys = Array(variables.keys).sorted()
+            return LogoValue.list(keys.map { .string($0) }).description
+
+        case .procedures:
+            let keys = Array(customProcedures.keys).sorted()
+            return LogoValue.list(keys.map { .string($0) }).description
+
+        case .primitives:
+            let keys = LogoPrimitive.keywordAliases
+            return LogoValue.list(keys.map { .string($0) }).description
+
+        case .contents:
+            let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
+            let vars = LogoValue.list(Array(variables.keys).sorted().map { .string($0) })
+            let plists = LogoValue.list(Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted().map { .string($0) })
+            return LogoValue.list([procs, vars, plists]).description
+
+        case .text:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).uppercased()
+            guard let proc = customProcedures[name] else { return "[]" }
+            let paramsList = LogoValue.list(proc.parameters.map { .string(":" + $0) })
+            let bodyList = LogoValue.list(proc.bodyTokens.map { .string($0) })
+            return LogoValue.list([paramsList, bodyList]).description
+
+        case .arity:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).uppercased()
+            if let proc = customProcedures[name] {
+                return "\(proc.parameters.count)"
+            }
+            return "1"
+
         case .isWord:
             index += 1
             let v = evaluateExpression(tokens, index: &index)

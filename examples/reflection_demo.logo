@@ -1,0 +1,43 @@
+; ==============================================================================
+; Reflection & Metaprogramming Demo (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates UCB LOGO Workspace Inspection & Dynamic Procedure Creation:
+; `NAMES` (List all variable names)
+; `PROCEDURES` (List all user-defined procedure names)
+; `CONTENTS` (List workspace contents: [procedures names plists])
+; `TEXT` (Get AST / code definition of a procedure)
+; `DEFINE` (Dynamically define a procedure from list structures)
+; `ARITY` (Get parameter count of a procedure)
+; `ERASE` / `ERALL` (Clear variables / procedures)
+; ==============================================================================
+
+TYPE "===_Reflection_&_Metaprogramming_Demo_==="
+TYPE CHAR 10
+
+; 1. Create variables and property lists
+MAKE "x 100
+MAKE "y 200
+PPROP "config "theme "dark
+
+; 2. Dynamically define a procedure "multiply" from LOGO list structure
+DEFINE "multiply [[:a :b] [OUTPUT :a * :b]]
+
+; 3. Inspect Workspace Reflection
+TYPE "procedures:_ TYPE PROCEDURES TYPE CHAR 10
+TYPE "names:_ TYPE NAMES TYPE CHAR 10
+TYPE "contents:_ TYPE CONTENTS TYPE CHAR 10
+TYPE "text_multiply:_ TYPE TEXT "multiply TYPE CHAR 10
+TYPE "arity_multiply:_ TYPE ARITY "multiply TYPE CHAR 10
+
+; 4. Execute dynamically defined procedure
+TYPE "multiply_3_7:_ TYPE (multiply 3 7) TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 5. Workspace Cleanup
+ERASE "x
+TYPE "names_after_erase_x:_ TYPE NAMES TYPE CHAR 10
+
+ERALL
+TYPE "names_after_erall:_ TYPE NAMES TYPE CHAR 10
+TYPE "procs_after_erall:_ TYPE PROCEDURES TYPE CHAR 10

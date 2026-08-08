@@ -10,6 +10,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | :--- | :--- | :--- | :--- |
 | [`advanced_utils_demo.logo`](advanced_utils_demo.logo) | Utilities & Linguistics | **Sorting, Radians Trig & Hiragana Transliteration** | `SORT`, `FORM`, `INDEXESOF`, `RADSIN`, `RADCOS`, `TOHIRAGANA` |
 | [`property_list_demo.logo`](property_list_demo.logo) | Dictionary & Key-Value | **Property Lists / Key-Value Objects** | `PPROP`, `GPROP`, `REMPROP`, `PLIST`, `PLISTS` |
+| [`reflection_demo.logo`](reflection_demo.logo) | Workspace & Reflection | **Reflection & Dynamic Metaprogramming** | `NAMES`, `PROCEDURES`, `CONTENTS`, `TEXT`, `DEFINE`, `ARITY`, `ERASE`, `ERALL` |
 | [`logo_in_logo_interpreter.logo`](logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |

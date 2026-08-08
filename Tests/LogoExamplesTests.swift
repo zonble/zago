@@ -240,6 +240,15 @@ import Testing
         #expect(output.contains("doc1_author:_Zonble"))
         #expect(output.contains("all_plists_symbols:_[doc1 node_start]"))
     }
+
+    @Test func testReflectionDemoExample() throws {
+        let output = try executeScriptFile("reflection_demo.logo")
+        #expect(output.contains("===_Reflection_&_Metaprogramming_Demo_==="))
+        #expect(output.contains("procedures:_[MULTIPLY]"))
+        #expect(output.contains("arity_multiply:_2"))
+        #expect(output.contains("multiply_3_7:_21"))
+        #expect(output.contains("names_after_erase_x:_[y]"))
+    }
 }
 
 

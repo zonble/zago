@@ -640,6 +640,15 @@ TYPE ITEM 2 :cells
 | `REMPROP` | `ERASEPROP` | `REMPROP name prop` | Removes property key-value from object symbol | `REMPROP "car "color` |
 | `PLIST` | `PROPLIST` | `PLIST name` | Returns flat list of key-value pairs for object symbol | `PLIST "car` $\rightarrow$ `[color red year 2026]` |
 | `PLISTS` | `PROPLISTS` | `PLISTS` | Returns list of all object symbol names having property lists | `PLISTS` $\rightarrow$ `[car]` |
+| `NAMES` | - | `NAMES` | Returns list of all defined variable names | `NAMES` $\rightarrow$ `[x y]` |
+| `PROCEDURES` | `PROCS` | `PROCEDURES` | Returns list of all user-defined procedure names | `PROCEDURES` $\rightarrow$ `[ADD MULTIPLY]` |
+| `PRIMITIVES` | `PRIMS` | `PRIMITIVES` | Returns list of all built-in primitive keyword aliases | `PRIMITIVES` |
+| `CONTENTS` | - | `CONTENTS` | Returns workspace contents list `[[procedures] [names] [plists]]` | `CONTENTS` |
+| `TEXT` | `FULLTEXT` | `TEXT name` | Returns AST representation list of specified procedure | `TEXT "add` $\rightarrow$ `[[:a :b] [OUTPUT :a + :b]]` |
+| `DEFINE` | - | `DEFINE name specList` | Dynamically defines procedure from AST list structure | `DEFINE "add [[:a :b] [OUTPUT :a + :b]]` |
+| `ARITY` | - | `ARITY name` | Returns required parameter count of procedure | `ARITY "add` $\rightarrow$ `2` |
+| `ERASE` | `ER` | `ERASE name` | Erases specified variable, procedure, or property list | `ERASE "x` |
+| `ERALL` | - | `ERALL` | Erases all variables, user procedures, and property lists | `ERALL` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
 | `CHARCOUNT` | - | `CHARCOUNT text` | Counts Unicode grapheme characters in text | `CHARCOUNT "a👍中` |
 | `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK text` | Counts CJK scripts and CJK/fullwidth punctuation, excluding ASCII words and spaces | `CHARCOUNT.CJK "中文，API。` |

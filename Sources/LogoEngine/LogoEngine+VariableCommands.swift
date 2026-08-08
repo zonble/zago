@@ -297,6 +297,61 @@ extension LogoEngine {
             }
             return true
 
+        case .define:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let specVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).uppercased()
+            let parsed = LogoValue.parse(specVal)
+            if case .list(let subLists) = parsed, subLists.count >= 2 {
+                var params: [String] = []
+                var bodyTokens: [String] = []
+                if case .list(let paramItems) = subLists[0] {
+                    params = paramItems.map { $0.description.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")) }
+                } else if case .string(let s) = subLists[0], !s.isEmpty {
+                    params = [s.trimmingCharacters(in: CharacterSet(charactersIn: ":\""))]
+                }
+
+                if case .list(let bodyItems) = subLists[1] {
+                    bodyTokens = bodyItems.map { $0.description }
+                } else if case .string(let s) = subLists[1] {
+                    bodyTokens = tokenize(s)
+                }
+
+                customProcedures[name] = LogoProcedure(name: name, parameters: params, bodyTokens: bodyTokens)
+            }
+            return true
+
+        case .erase:
+            index += 1
+            if index < tokens.count {
+                let targetRaw = unquote(evaluateExpression(tokens, index: &index))
+                let targetUpper = targetRaw.uppercased()
+                let targetLower = targetRaw.lowercased()
+                customProcedures.removeValue(forKey: targetUpper)
+                variables.removeValue(forKey: targetLower)
+                variableValues.removeValue(forKey: targetLower)
+                propertyLists.removeValue(forKey: targetLower)
+            }
+            return true
+
+        case .erps:
+            customProcedures.removeAll()
+            return true
+
+        case .erns:
+            variables.removeAll()
+            variableValues.removeAll()
+            return true
+
+        case .erall:
+            customProcedures.removeAll()
+            variables.removeAll()
+            variableValues.removeAll()
+            propertyLists.removeAll()
+            return true
+
         default:
             return false
         }

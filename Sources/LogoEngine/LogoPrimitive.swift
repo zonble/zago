@@ -257,12 +257,34 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case fill
     case readWord
     case readChar
+    case names
+    case procedures
+    case primitives
+    case contents
+    case text
+    case define
+    case erase
+    case erps
+    case erns
+    case erall
+    case arity
     case end
 
     private static let rawMappings: [([String], LogoPrimitive)] = [
         (["END"], .end),
         (["READWORD", "RW", "READLINE", "READ"], .readWord),
         (["READCHAR", "RC", "READKEY", "RK"], .readChar),
+        (["NAMES"], .names),
+        (["PROCEDURES", "PROCS"], .procedures),
+        (["PRIMITIVES", "PRIMS"], .primitives),
+        (["CONTENTS"], .contents),
+        (["TEXT", "FULLTEXT"], .text),
+        (["DEFINE"], .define),
+        (["ERASE", "ER"], .erase),
+        (["ERPS", "ERASEPROCS"], .erps),
+        (["ERNS", "ERASENAMES"], .erns),
+        (["ERALL"], .erall),
+        (["ARITY"], .arity),
         (["FILL"], .fill),
         (["SORT"], .sort),
         (["MAKE", "VAR"], .make),

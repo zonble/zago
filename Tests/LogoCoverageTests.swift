@@ -271,4 +271,35 @@ struct LogoCoverageTests {
         #expect(engine.lastError.contains("recursion limit exceeded"))
         #expect(delegate.statusMessages.last == engine.lastError)
     }
+
+    @Test func testReflectionAndMetaprogrammingPrimitives() {
+        let delegate = CoverageDelegate()
+        let engine = LogoEngine(delegate: delegate)
+
+        engine.execute("MAKE \"varA 10 MAKE \"varB 20")
+        #expect(evaluate("NAMES", engine: engine) == "[vara varb]")
+
+        engine.execute("DEFINE \"addTwo [[:a :b] [OUTPUT :a + :b]]")
+        #expect(engine.customProcedures["ADDTWO"] != nil)
+        #expect(evaluate("PROCEDURES", engine: engine) == "[ADDTWO]")
+        #expect(evaluate("TEXT \"addTwo", engine: engine) == "[[:a :b] [OUTPUT :a + :b]]")
+        #expect(evaluate("ARITY \"addTwo", engine: engine) == "2")
+        #expect(evaluate("(addTwo 5 8)", engine: engine) == "13")
+
+        engine.execute("PPROP \"obj \"prop1 \"val1")
+        let contents = evaluate("CONTENTS", engine: engine)
+        #expect(contents.contains("[ADDTWO]"))
+        #expect(contents.contains("[vara varb]"))
+        #expect(contents.contains("[obj]"))
+
+        #expect(evaluate("PRIMITIVES", engine: engine).contains("NAMES"))
+
+        engine.execute("ERASE \"varA")
+        #expect(engine.variables["vara"] == nil)
+
+        engine.execute("ERALL")
+        #expect(engine.variables.isEmpty)
+        #expect(engine.customProcedures.isEmpty)
+        #expect(engine.propertyLists.isEmpty)
+    }
 }

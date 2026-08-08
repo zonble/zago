@@ -85,7 +85,7 @@ public final class LogoEngine {
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
-        .pprop, .remprop,
+        .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
 
     /// Set of built-in expression primitives (reporters/operations) that evaluate to value strings.
@@ -95,7 +95,8 @@ public final class LogoEngine {
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
-        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists, .isWord, .isList, .isArray,
+        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists,
+        .names, .procedures, .primitives, .contents, .text, .arity, .isWord, .isList, .isArray,
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
         .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
         .count, .ascii, .char, .member, .uppercase, .lowercase,
