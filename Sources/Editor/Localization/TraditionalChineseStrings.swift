@@ -67,8 +67,6 @@ public struct TraditionalChineseStrings {
         "logoview.reference_title": "  zago - Editor LOGO 指令參考",
         "logoview.workspace_title": "  zago - Editor LOGO 工作區",
         "logoref.content": """
-          Editor LOGO 指令參考
-          ================================================================
 
           Editor LOGO 是編輯器巨集語言。指令會操作目前文件、
           游標、選取範圍、表格、狀態列與多文件 Buffer 狀態。
@@ -285,7 +283,7 @@ public struct TraditionalChineseStrings {
         "status.copied_text": "文字已複製",
         "status.copied_block": "區塊已複製",
         "status.path_required": "需要路徑",
-        "status.no_such_buffer": "沒有這個 buffer",
+        "status.no_such_buffer": "沒有這份文件",
         "status.buffer_position": "Buffer %d / %d",
         "status.invalid_line": "無效的列號",
         "status.invalid_column": "無效的欄號",
@@ -375,15 +373,15 @@ public struct TraditionalChineseStrings {
 
         "helpview.sec_edit": "  編輯、剪貼與選取：",
         "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
-        "helpview.edit_2": "    Shift+方向鍵/Home/End 延伸選取文字範圍",
+        "helpview.edit_2": "    ⇧+方向鍵/Home/End   延伸選取文字範圍",
         "helpview.edit_3": "    ^K / F9            剪下選取文字、畫布區塊或目前行",
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
 
         "helpview.sec_canvas": "  畫布模式：",
-        "helpview.canvas_1": "    F7 / M+V           切換畫布",
-        "helpview.canvas_2": "    Shift+方向鍵       畫出框線並移動畫布游標",
-        "helpview.canvas_3": "    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭",
+        "helpview.canvas_1": "    F8 / M+V           切到畫布模式",
+        "helpview.canvas_2": "    ⇧+方向鍵           畫出框線並移動畫布游標",
+        "helpview.canvas_3": "    ^⇧+方向鍵          畫出框線並在終點放置箭頭",
         "helpview.canvas_4": "    ^^ / M+B           設定畫布區塊標記",
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
@@ -411,20 +409,20 @@ public struct TraditionalChineseStrings {
         "helpview.file_9": "    F1 / M+M / ^M      開啟/關閉頂端選單列",
 
         "helpview.sec_set": "  使用 'set / unset' 指令可調整的設定選項：",
-        "helpview.set_1": "    set wrap <col|off>      自動換行欄位上限（例如 set wrap 80 或 set wrap off）",
-        "helpview.set_2": "    set ruler <on|off>      開啟/關閉欄位尺規列",
-        "helpview.set_3": "    set linenumbers <on|off> 開啟/關閉行號欄位",
-        "helpview.set_4": "    set sublinenumbers <on|off> 開啟/關閉自動換行子行號",
-        "helpview.set_5": "    set canvas-mode <on|off> 啟動畫布模式",
-        "helpview.set_6": "    set syntax <on|off>     開啟/關閉語法高亮",
-        "helpview.set_7": "    set tab <size>          設定 Tab 縮排寬度（例如 set tab 4）",
-        "helpview.set_8": "    set auto-reload <on|off> 自動重新載入外部修改的檔案",
-        "helpview.set_9": "    set border <style>      預設繪圖/表格框線樣式 (single/double/round/ascii)",
-        "helpview.set_10": "    set arrow <style>       預設箭頭樣式 (solid/stemmed/hollow/small)",
-        "helpview.set_11": "    set regex <on|off>      開啟/關閉正則表達式搜尋模式",
-        "helpview.set_12": "    set lang <en|zh_TW>     設定介面語言",
-        "helpview.set_13": "    set spell <lang>        設定拼字檢查字典語言（例如 set spell en_US）",
-        "helpview.set_14": "    set trim-trailing-whitespace <on|off> 儲存時自動清除行尾空白",
+        "helpview.set_1": "    wrap <col|off>            自動換行欄位上限（例如 set wrap 80/off）",
+        "helpview.set_2": "    ruler <on|off>            開啟/關閉欄位尺規列",
+        "helpview.set_3": "    linenumbers <on|off>.     開啟/關閉行號欄位",
+        "helpview.set_4": "    sublinenumbers <on|off>   開啟/關閉自動換行子行號",
+        "helpview.set_5": "    canvas-mode <on|off>.     啟動畫布模式",
+        "helpview.set_6": "    syntax <on|off>           開啟/關閉語法上色",
+        "helpview.set_7": "    tab <size>                設定 Tab 縮排寬度（例如 set tab 4）",
+        "helpview.set_8": "    auto-reload <on|off>      自動重新載入外部修改的檔案",
+        "helpview.set_9": "    border <style>            預設繪框線樣式 (single/double/round/ascii)",
+        "helpview.set_10": "    arrow <style>            預設箭頭樣式 (solid/stemmed/hollow/small)",
+        "helpview.set_11": "    regex <on|off>           開啟/關閉正則表達式搜尋模式",
+        "helpview.set_12": "    lang <en|zh_TW>          設定介面語言",
+        "helpview.set_13": "    spell <lang>             設定拼字檢查字典語言（例如 en_US）",
+        "helpview.set_14": "    trim-trailing-whitespace 儲存時自動清除行尾空白",
 
         "helpview.sec_logo": "  Editor LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Esc / M+:          移動到指令列",
@@ -460,7 +458,7 @@ public struct TraditionalChineseStrings {
         // Menu Bar Titles
         "menu.file": "檔案(F)",
         "menu.edit": "編輯(E)",
-        "menu.buffer": "Buffer(B)",
+        "menu.buffer": "文件(B)",
         "menu.run": "執行(R)",
         "menu.shapes": "圖形(S)",
         "menu.borders": "框線(O)",
@@ -484,7 +482,7 @@ public struct TraditionalChineseStrings {
         "menu.edit.cancel_selection": "取消標記\t^G / M+U",
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
-        "menu.edit.delete_line": "刪除整行\t^BS",
+        "menu.edit.delete_line": "刪除整行\t^⌫",
         "menu.edit.search": "搜尋文字…\t^W",
         "menu.edit.open_link": "開啟連結\tM+O",
         "menu.edit.outline": "文件大綱\tM+\\",
@@ -497,8 +495,8 @@ public struct TraditionalChineseStrings {
         "menu.edit.canvas_mode": "畫布模式\tF8",
         "menu.edit.table_editing_mode": "表格模式\tF7",
 
-        "menu.buffer.next": "下一個 Buffer\tM+.",
-        "menu.buffer.prev": "上一個 Buffer\tM+,",
+        "menu.buffer.next": "下一份文件\tM+.",
+        "menu.buffer.prev": "上一份文件\tM+,",
         "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
 
         "menu.run.script": "執行腳本\tF5",
@@ -560,9 +558,9 @@ public struct TraditionalChineseStrings {
         "menu.diagrams.dot_digraph": "Graphviz 有向圖 (digraph)",
         "menu.diagrams.dot_graph": "Graphviz 無向圖 (graph)",
 
-        "menu.help.show": "顯示完整說明手冊 (Help)",
+        "menu.help.show": "使用手冊手冊",
         "menu.help.logo_reference": "Editor LOGO 指令參考",
-        "menu.help.logo_workspace": "Procedures 與變數",
+        "menu.help.logo_workspace": "Editor LOGO 工作區",
 
         "transform.tohant": "繁體中文",
         "transform.tohans": "簡體中文",

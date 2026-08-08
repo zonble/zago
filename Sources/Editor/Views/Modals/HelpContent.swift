@@ -20,7 +20,7 @@ public enum HelpContent {
     ]
 
     public static func lines(language: Language = .detectSystemLanguage()) -> [String] {
-        [L10n.string("helpview.header", language: language), divider] + sectionLines(language: language)
+        [""] + sectionLines(language: language)
     }
 
     private static func sectionLines(language: Language) -> [String] {

@@ -4,9 +4,7 @@ import LogoEngine
 public enum LogoWorkspaceContent {
     public static func lines(engine: LogoEngine, language: Language = .detectSystemLanguage()) -> [String] {
         var output = [
-            L10n.string("logoworkspace.heading", language: language),
-            "  ================================================================",
-            "",
+            "" ,
             L10n.string("logoworkspace.procedures", language: language),
         ]
 
