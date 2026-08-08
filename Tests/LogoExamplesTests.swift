@@ -111,4 +111,13 @@ import Testing
         #expect(output.contains("duplicate:_true"))
         #expect(output.contains("duplicate:_false"))
     }
+
+    @Test func testLeapYearExample() throws {
+        let output = try executeScriptFile("leap_year.logo")
+        #expect(output.contains("===_Leap_Year_Checker_==="))
+        #expect(output.contains("year:_2000_leap:_true"))
+        #expect(output.contains("year:_1900_leap:_false"))
+        #expect(output.contains("year:_2024_leap:_true"))
+        #expect(output.contains("year:_2023_leap:_false"))
+    }
 }

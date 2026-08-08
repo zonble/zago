@@ -1,0 +1,29 @@
+; ==============================================================================
+; Leap Year Checker Example (in zago Editor LOGO)
+; ==============================================================================
+; A year is a leap year if it is divisible by 4, except for end-of-century
+; years, which must be divisible by 400.
+; ==============================================================================
+
+TO ISLEAPYEAR :year
+  IF (:year % 400 = 0) [ OUTPUT "true" ]
+  IF (:year % 100 = 0) [ OUTPUT "false" ]
+  IF (:year % 4 = 0) [ OUTPUT "true" ]
+  OUTPUT "false"
+END
+
+; Test cases
+TYPE "===_Leap_Year_Checker_==="
+TYPE CHAR 10
+
+MAKE "years [2000 2004 1900 2024 2023]
+MAKE "i 1
+MAKE "n COUNT :years
+
+WHILE [:i <= :n] [
+  MAKE "y ITEM :i :years
+  MAKE "leap ISLEAPYEAR :y
+  TYPE FORMAT "year:_%d_leap:_%s" (LIST :y :leap)
+  TYPE CHAR 10
+  MAKE "i :i + 1
+]
