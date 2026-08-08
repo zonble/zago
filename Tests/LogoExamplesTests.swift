@@ -232,6 +232,14 @@ import Testing
         #expect(output.contains("indexes_of_a_in_banana:_[2 4 6]"))
         #expect(output.contains("to_hiragana(katakana):_かたかな"))
     }
+
+    @Test func testPropertyListDemoExample() throws {
+        let output = try executeScriptFile("property_list_demo.logo")
+        #expect(output.contains("===_Property_Lists_(Dictionary_/_Key-Value_Objects)_Demo_==="))
+        #expect(output.contains("doc1_title:_Project_Zago_Architecture"))
+        #expect(output.contains("doc1_author:_Zonble"))
+        #expect(output.contains("all_plists_symbols:_[doc1 node_start]"))
+    }
 }
 
 

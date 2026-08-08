@@ -521,6 +521,65 @@ extension LogoEngine {
                 return ""
             }
 
+        case .pprop:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let propVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let valStr = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            let propName = unquote(propVal).lowercased()
+            let val = LogoValue.parse(valStr)
+            if propertyLists[name] == nil {
+                propertyLists[name] = [:]
+            }
+            propertyLists[name]?[propName] = val
+            return val.description
+
+        case .gprop:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let propVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            let propName = unquote(propVal).lowercased()
+            if let val = propertyLists[name]?[propName] {
+                return val.description
+            }
+            return "[]"
+
+        case .remprop:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let propVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            let propName = unquote(propVal).lowercased()
+            propertyLists[name]?.removeValue(forKey: propName)
+            if propertyLists[name]?.isEmpty == true {
+                propertyLists.removeValue(forKey: name)
+            }
+            return ""
+
+        case .plist:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            guard let props = propertyLists[name], !props.isEmpty else {
+                return "[]"
+            }
+            var items: [LogoValue] = []
+            for (k, v) in props {
+                items.append(.string(k))
+                items.append(v)
+            }
+            return LogoValue.list(items).description
+
+        case .plists:
+            let keys = Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted()
+            return LogoValue.list(keys.map { .string($0) }).description
+
         case .isWord:
             index += 1
             let v = evaluateExpression(tokens, index: &index)

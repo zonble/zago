@@ -1,0 +1,39 @@
+; ==============================================================================
+; Property Lists (Dictionary / Key-Value Objects) Demo (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates UCB LOGO Property List primitives:
+; `PPROP` (Put Property / Set Key-Value)
+; `GPROP` (Get Property / Get Key Value)
+; `REMPROP` (Remove Property)
+; `PLIST` (Get all key-value pairs of a symbol as a list)
+; `PLISTS` (Get list of all symbol names having property lists)
+; ==============================================================================
+
+TYPE "===_Property_Lists_(Dictionary_/_Key-Value_Objects)_Demo_==="
+TYPE CHAR 10
+
+; 1. Attach Key-Value properties to an object symbol ("doc1")
+PPROP "doc1 "title "Project_Zago_Architecture
+PPROP "doc1 "author "Zonble
+PPROP "doc1 "version "2.0
+PPROP "doc1 "tags ["swift" "logo" "terminal"]
+
+TYPE "doc1_title:_ TYPE GPROP "doc1 "title TYPE CHAR 10
+TYPE "doc1_author:_ TYPE GPROP "doc1 "author TYPE CHAR 10
+TYPE "doc1_tags:_ TYPE GPROP "doc1 "tags TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. Attach Key-Value properties to another object symbol ("node_start")
+PPROP "node_start "label "Initialize_Engine
+PPROP "node_start "type "process_box
+
+; 3. Inspect Property List of "doc1" and list of all symbols with Property Lists
+TYPE "plist_of_doc1:_ TYPE PLIST "doc1 TYPE CHAR 10
+TYPE "all_plists_symbols:_ TYPE PLISTS TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 4. Remove a property from "doc1"
+REMPROP "doc1 "version
+TYPE "doc1_plist_after_remprop:_ TYPE PLIST "doc1 TYPE CHAR 10

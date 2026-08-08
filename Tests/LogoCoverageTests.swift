@@ -124,8 +124,8 @@ struct LogoCoverageTests {
         engine.execute("MAKE \"word \"bc PUSH \"word \"a")
         #expect(engine.variables["word"] == "abc")
 
-        engine.execute("MAKE \"tailWord \"ab DEQUEUE \"tailWord \"c")
-        #expect(engine.variables["tailword"] == "abc")
+        engine.execute("MAKE \"tailWord \"ab DEQUEUE \"tailWord")
+        #expect(engine.variables["tailword"] == "b")
     }
 
     @Test func testControlCommandsHandleRunRunresultStopByeAndWait() {

@@ -221,7 +221,7 @@ extension LogoEngine {
             }
             return true
 
-        case .lput, .dequeue:
+        case .lput:
             index += 1
             if index < tokens.count {
                 let varToken = tokens[index]
@@ -241,6 +241,59 @@ extension LogoEngine {
                 case .string(let s):
                     variables[varName] = s + itemVal
                 }
+            }
+            return true
+
+        case .dequeue:
+            index += 1
+            let varToken = tokens[index]
+            let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+            let currentVal = variables[varName] ?? ""
+            let parsed = LogoValue.parse(currentVal)
+            switch parsed {
+            case .list(var items):
+                if !items.isEmpty {
+                    items.removeFirst()
+                    variables[varName] = LogoValue.list(items).description
+                }
+            case .string(let s):
+                if !s.isEmpty {
+                    variables[varName] = String(s.dropFirst())
+                }
+            case .array(var items):
+                if !items.isEmpty {
+                    items.removeFirst()
+                    variables[varName] = LogoValue.array(items).description
+                }
+            }
+            return true
+
+        case .pprop:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let propVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let valStr = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            let propName = unquote(propVal).lowercased()
+            let val = LogoValue.parse(valStr)
+            if propertyLists[name] == nil {
+                propertyLists[name] = [:]
+            }
+            propertyLists[name]?[propName] = val
+            return true
+
+        case .remprop:
+            index += 1
+            let nameVal = evaluateExpression(tokens, index: &index)
+            index += 1
+            let propVal = evaluateExpression(tokens, index: &index)
+            let name = unquote(nameVal).lowercased()
+            let propName = unquote(propVal).lowercased()
+            propertyLists[name]?.removeValue(forKey: propName)
+            if propertyLists[name]?.isEmpty == true {
+                propertyLists.removeValue(forKey: name)
             }
             return true
 

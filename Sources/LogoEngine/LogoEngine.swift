@@ -63,6 +63,7 @@ internal enum LogoRuntimeValue: Equatable {
 public final class LogoEngine {
     public var customProcedures: [String: LogoProcedure] = [:]
     public var variables: [String: String] = [:]
+    public var propertyLists: [String: [String: LogoValue]] = [:]
     internal var variableValues: [String: LogoRuntimeValue] = [:]
     internal var lastExpressionValue: LogoRuntimeValue? = nil
     public var hasSetStatusMessage: Bool = false
@@ -84,6 +85,7 @@ public final class LogoEngine {
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
+        .pprop, .remprop,
     ]
 
     /// Set of built-in expression primitives (reporters/operations) that evaluate to value strings.
@@ -93,7 +95,7 @@ public final class LogoEngine {
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
-        .push, .pop, .dequeue, .isWord, .isList, .isArray,
+        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists, .isWord, .isList, .isArray,
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
         .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
         .count, .ascii, .char, .member, .uppercase, .lowercase,

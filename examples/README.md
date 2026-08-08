@@ -9,6 +9,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | File | Category | Description | Key LOGO Features Demonstrated |
 | :--- | :--- | :--- | :--- |
 | [`advanced_utils_demo.logo`](advanced_utils_demo.logo) | Utilities & Linguistics | **Sorting, Radians Trig & Hiragana Transliteration** | `SORT`, `FORM`, `INDEXESOF`, `RADSIN`, `RADCOS`, `TOHIRAGANA` |
+| [`property_list_demo.logo`](property_list_demo.logo) | Dictionary & Key-Value | **Property Lists / Key-Value Objects** | `PPROP`, `GPROP`, `REMPROP`, `PLIST`, `PLISTS` |
 | [`logo_in_logo_interpreter.logo`](logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |

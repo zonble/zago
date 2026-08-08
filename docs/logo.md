@@ -635,6 +635,11 @@ TYPE ITEM 2 :cells
 | `PUSH` | - | `PUSH val list` | Pushes element to list variable | `PUSH 1 "myList"` |
 | `POP` | - | `POP list` | Pops element from list variable | `POP "myList"` |
 | `DEQUEUE` | - | `DEQUEUE list` | Removes and returns first element from list variable | `DEQUEUE "myQueue"` |
+| `PPROP` | `PUTPROP` | `PPROP name prop val` | Associates property key-value with object symbol | `PPROP "car "color "red` |
+| `GPROP` | `GETPROP` | `GPROP name prop` | Retrieves property value associated with object symbol | `GPROP "car "color` $\rightarrow$ `"red"` |
+| `REMPROP` | `ERASEPROP` | `REMPROP name prop` | Removes property key-value from object symbol | `REMPROP "car "color` |
+| `PLIST` | `PROPLIST` | `PLIST name` | Returns flat list of key-value pairs for object symbol | `PLIST "car` $\rightarrow$ `[color red year 2026]` |
+| `PLISTS` | `PROPLISTS` | `PLISTS` | Returns list of all object symbol names having property lists | `PLISTS` $\rightarrow$ `[car]` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
 | `CHARCOUNT` | - | `CHARCOUNT text` | Counts Unicode grapheme characters in text | `CHARCOUNT "a👍中` |
 | `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK text` | Counts CJK scripts and CJK/fullwidth punctuation, excluding ASCII words and spaces | `CHARCOUNT.CJK "中文，API。` |

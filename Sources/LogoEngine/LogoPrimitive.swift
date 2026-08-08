@@ -134,6 +134,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case push
     case pop
     case dequeue
+    case pprop
+    case gprop
+    case remprop
+    case plist
+    case plists
     case isWord
     case isList
     case isArray
@@ -389,6 +394,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["PUSH"], .push),
         (["POP"], .pop),
         (["DEQUEUE"], .dequeue),
+        (["PPROP", "PUTPROP"], .pprop),
+        (["GPROP", "GETPROP"], .gprop),
+        (["REMPROP", "ERASEPROP"], .remprop),
+        (["PLIST", "PROPLIST"], .plist),
+        (["PLISTS", "PROPLISTS"], .plists),
 
         // Predicates & Comparisons
         (["WORD?", "WORDP"], .isWord),
