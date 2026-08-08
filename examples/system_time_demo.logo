@@ -1,0 +1,30 @@
+; ==============================================================================
+; System Date, Time, Sequences & Random Seed Demo (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates system primitives: `DATE`, `TIME`, `RSEQ`, `RERANDOM`, `RANDOM`, `IGNORE`.
+; ==============================================================================
+
+TYPE "===_System_Date,_Time_&_Numeric_Sequences_Demo_==="
+TYPE CHAR 10
+
+; 1. Date and Time Primitives
+MAKE "today DATE
+MAKE "now TIME
+TYPE "date:_ TYPE :today TYPE CHAR 10
+TYPE "time:_ TYPE :now TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. Floating-Point Equal-Step Sequence (RSEQ)
+MAKE "seq RSEQ 0 10 5
+TYPE "rseq_0_to_10_count_5:_ TYPE :seq TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. Deterministic Random Number Generation with RERANDOM Seed & IGNORE
+IGNORE (RERANDOM 42)
+MAKE "r1 RANDOM 1000
+IGNORE (RERANDOM 42)
+MAKE "r2 RANDOM 1000
+TYPE "r1_with_seed_42:_ TYPE :r1 TYPE CHAR 10
+TYPE "r2_with_seed_42:_ TYPE :r2 TYPE CHAR 10

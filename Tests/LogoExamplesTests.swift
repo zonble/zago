@@ -206,7 +206,16 @@ import Testing
         #expect(output.contains("===_LeetCode_#200:_Number_of_Islands_(2D_BFS)_==="))
         #expect(output.contains("grid:_3x3_islands_count:_2"))
     }
+
+    @Test func testSystemTimeDemoExample() throws {
+        let output = try executeScriptFile("system_time_demo.logo")
+        #expect(output.contains("===_System_Date,_Time_&_Numeric_Sequences_Demo_==="))
+        #expect(output.contains("date:_"))
+        #expect(output.contains("time:_"))
+        #expect(output.contains("rseq_0_to_10_count_5:_[0 2.5 5 7.5 10]"))
+    }
 }
+
 
 
 

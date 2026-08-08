@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms, System Date/Time & Sequences).
 
 ---
 
@@ -11,6 +11,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
 | [`leap_year.logo`](leap_year.logo) | Classic Algo | **Leap Year Checker** | Modulo `%` logic, `IF`, `FORMAT` |
+| [`system_time_demo.logo`](system_time_demo.logo) | System & Sequences | **System Date, Time, Sequences & Seed** | `DATE`, `TIME`, `RSEQ`, `RERANDOM`, `RANDOM`, `IGNORE` |
 | [`regex_demo.logo`](regex_demo.logo) | Regex & String | **Regex & Text Search** (Pattern matching, masking, padding) | `REGEX_MATCH?`, `REGEX_REPLACE`, `PADLEFT`, `PADRIGHT` |
 | [`math_demo.logo`](math_demo.logo) | Math & Sequences | **Math & Trigonometry** (Euclidean distance, log, power, series) | `SQRT`, `POWER`, `LOG10`, `LN`, `ABS`, `ISEQ`, `RANDOM` |
 | [`functional_demo.logo`](functional_demo.logo) | Functional Programming | **Higher-Order Functions** (Map, Filter, Reduce, Crossmap) | `MAP`, `MAP.SE`, `FILTER`, `REDUCE`, `CROSSMAP`, `RUNRESULT` |
@@ -45,6 +46,9 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 You can run any `.logo` script directly from your terminal using `zago -e`:
 
 ```bash
+# Run System Date, Time & Sequences Demo
+zago -e "$(cat examples/system_time_demo.logo)"
+
 # Run Spiral Matrix (LeetCode #54 / #59)
 zago -e "$(cat examples/leetcode_054_spiral_matrix.logo)"
 
@@ -77,6 +81,6 @@ zago -e "$(cat examples/turtle_demo.logo)"
 2. Press **`Esc`** to open the bottom LOGO command prompt.
 3. Type:
    ```logo
-   LOAD "examples/leetcode_054_spiral_matrix.logo
+   LOAD "examples/system_time_demo.logo
    ```
 4. Output will render directly inside your buffer!
