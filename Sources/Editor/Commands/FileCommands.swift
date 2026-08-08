@@ -4,7 +4,7 @@ public struct SaveFileCommand: Command {
     public let id: CommandID = .fileSave
     public let name = "Save File"
     public let description = "Save current file"
-    public let keys: [Key] = [.ctrl("S")]
+    public let keys: [Key] = [.ctrl("S"), .ctrl("s")]
     public let commandBarAliases = ["save"]
 
     public init() {}
@@ -18,7 +18,7 @@ public struct WriteOutCommand: Command {
     public let id: CommandID = .fileWriteOut
     public let name = "WriteOut"
     public let description = "Save file to a chosen path"
-    public let keys: [Key] = [.ctrl("O"), .f3]
+    public let keys: [Key] = [.ctrl("O"), .ctrl("o"), .f3]
 
     public init() {}
 
