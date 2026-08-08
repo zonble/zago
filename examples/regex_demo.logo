@@ -1,0 +1,51 @@
+; ==============================================================================
+; Regular Expression & String Search Example (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO regex primitives: `REGEX_MATCH?`, `REGEX_REPLACE`,
+; `PADLEFT`, `PADRIGHT`.
+; ==============================================================================
+
+TYPE "===_Regex_&_String_Search_Demo_==="
+TYPE CHAR 10
+
+; 1. REGEX_MATCH? Check valid email format
+MAKE "emails [user@example.com invalid_email dev.logo@zago.org]
+MAKE "email_pattern "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+MAKE "i 1
+MAKE "n COUNT :emails
+
+WHILE [:i <= :n] [
+  MAKE "em ITEM :i :emails
+  MAKE "valid REGEX_MATCH? :email_pattern :em
+  TYPE FORMAT "email:_%s_valid:_%s" (LIST :em :valid)
+  TYPE CHAR 10
+  MAKE "i :i + 1
+]
+
+TYPE CHAR 10
+
+; 2. REGEX_REPLACE Mask IP addresses and numbers
+MAKE "raw_text "Server_192.168.1.100_date_2026-08-08"
+MAKE "masked REGEX_REPLACE "\d+" "***" :raw_text
+TYPE FORMAT "original:_%s" (LIST :raw_text)
+TYPE CHAR 10
+TYPE FORMAT "masked:___%s" (LIST :masked)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. PADLEFT / PADRIGHT Formatted text alignment
+MAKE "item1 "Apple"
+MAKE "price1 "15"
+MAKE "item2 "Banana"
+MAKE "price2 "8"
+
+MAKE "p1 PADLEFT :price1 5 "0"
+MAKE "p2 PADLEFT :price2 5 "0"
+MAKE "padded_item1 PADRIGHT :item1 10 "."
+MAKE "padded_item2 PADRIGHT :item2 10 "."
+
+TYPE FORMAT "%s_$%s" (LIST :padded_item1 :p1)
+TYPE CHAR 10
+TYPE FORMAT "%s_$%s" (LIST :padded_item2 :p2)
+TYPE CHAR 10

@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, String Manipulation).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics).
 
 ---
 
@@ -10,7 +10,9 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | :--- | :--- | :--- | :--- |
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
-| [`leap_year.logo`](leap_year.logo) | Classic Algo | **Leap Year Checker** (閏年判斷) | Modulo `%` logic, `IF`, `FORMAT` |
+| [`leap_year.logo`](leap_year.logo) | Classic Algo | **Leap Year Checker** | Modulo `%` logic, `IF`, `FORMAT` |
+| [`regex_demo.logo`](regex_demo.logo) | Regex & String | **Regex & Text Search** (Pattern matching, masking, padding) | `REGEX_MATCH?`, `REGEX_REPLACE`, `PADLEFT`, `PADRIGHT` |
+| [`math_demo.logo`](math_demo.logo) | Math & Sequences | **Math & Trigonometry** (Euclidean distance, log, power, series) | `SQRT`, `POWER`, `LOG10`, `LN`, `ABS`, `ISEQ`, `RANDOM` |
 | [`caesar_cipher.logo`](caesar_cipher.logo) | Cryptography | **Caesar Cipher** encryption/decryption | `ORD`, `CHAR`, modulo arithmetic, `WORD` |
 | [`leetcode_001_two_sum.logo`](leetcode_001_two_sum.logo) | LeetCode #1 | Two Sum problem | Nested `WHILE` loops, `ITEM`, `LIST` construction |
 | [`leetcode_014_longest_common_prefix.logo`](leetcode_014_longest_common_prefix.logo) | LeetCode #14 | Longest Common Prefix | `STARTSWITH?`, `SUBSTRING`, `COUNT`, `WHILE` |
@@ -41,6 +43,12 @@ zago -e "$(cat examples/leetcode_058_length_of_last_word.logo)"
 
 # Run Reverse Words (LeetCode #151)
 zago -e "$(cat examples/leetcode_151_reverse_words.logo)"
+
+# Run Regex Demo
+zago -e "$(cat examples/regex_demo.logo)"
+
+# Run Math Demo
+zago -e "$(cat examples/math_demo.logo)"
 ```
 
 ---

@@ -120,4 +120,20 @@ import Testing
         #expect(output.contains("year:_2024_leap:_true"))
         #expect(output.contains("year:_2023_leap:_false"))
     }
+
+    @Test func testRegexDemoExample() throws {
+        let output = try executeScriptFile("regex_demo.logo")
+        #expect(output.contains("===_Regex_&_String_Search_Demo_==="))
+        #expect(output.contains("email:_user@example.com_valid:_true"))
+        #expect(output.contains("email:_invalid_email_valid:_false"))
+        #expect(output.contains("masked:___Server_***.***.***.***_date_***-***-***"))
+    }
+
+    @Test func testMathDemoExample() throws {
+        let output = try executeScriptFile("math_demo.logo")
+        #expect(output.contains("===_Math_&_Trigonometry_Demo_==="))
+        #expect(output.contains("distance_(0,0)_to_(3,4):_5.000000"))
+        #expect(output.contains("sequence:_[1 2 3 4 5]_sum_of_squares:_55"))
+        #expect(output.contains("log10(1000):_3.000000_ln(e):_1.000000"))
+    }
 }

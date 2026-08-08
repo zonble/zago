@@ -1,0 +1,54 @@
+; ==============================================================================
+; Math, Trigonometry & Sequence Example (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO math primitives: `SQRT`, `POWER`, `ABS`, `ROUND`,
+; `SIN`, `COS`, `LOG10`, `LN`, `ISEQ`, `RANDOM`.
+; ==============================================================================
+
+TYPE "===_Math_&_Trigonometry_Demo_==="
+TYPE CHAR 10
+
+; 1. Euclidean Distance: sqrt((x2 - x1)^2 + (y2 - y1)^2)
+TO DISTANCE :x1 :y1 :x2 :y2
+  MAKE "dx :x2 - :x1
+  MAKE "dy :y2 - :y1
+  MAKE "dx2 POWER :dx 2
+  MAKE "dy2 POWER :dy 2
+  OUTPUT SQRT (:dx2 + :dy2)
+END
+
+MAKE "d DISTANCE 0 0 3 4
+TYPE FORMAT "distance_(0,0)_to_(3,4):_%f" (LIST :d)
+TYPE CHAR 10
+
+; 2. Sequence generation with ISEQ (1 to 5) and Sum of Squares
+MAKE "seq ISEQ 1 5
+MAKE "sum_sq 0
+MAKE "i 1
+MAKE "n COUNT :seq
+
+WHILE [:i <= :n] [
+  MAKE "val ITEM :i :seq
+  MAKE "sum_sq :sum_sq + (POWER :val 2)
+  MAKE "i :i + 1
+]
+
+TYPE FORMAT "sequence:_%s_sum_of_squares:_%d" (LIST :seq :sum_sq)
+TYPE CHAR 10
+
+; 3. Math functions (LOG10, LN, ABS, ROUND)
+MAKE "val -12.75
+MAKE "abs_val ABS :val
+MAKE "round_val ROUND :val
+MAKE "log_val LOG10 1000
+MAKE "ln_val LN 2.718281828459045
+
+TYPE FORMAT "abs(-12.75):_%f_round(-12.75):_%d" (LIST :abs_val :round_val)
+TYPE CHAR 10
+TYPE FORMAT "log10(1000):_%f_ln(e):_%f" (LIST :log_val :ln_val)
+TYPE CHAR 10
+
+; 4. Random Sampling
+MAKE "rand_val RANDOM 100
+TYPE FORMAT "random_number_(0..99):_%d" (LIST :rand_val)
+TYPE CHAR 10
