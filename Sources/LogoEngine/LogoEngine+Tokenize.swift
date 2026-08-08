@@ -99,7 +99,7 @@ extension LogoEngine {
                 let nextChar: Character = nextIdx < script.endIndex ? script[nextIdx] : " "
                 let isNewOpeningQuote =
                     (prevChar.isWhitespace || prevChar == "[" || prevChar == "{")
-                    && (nextChar.isLetter || nextChar.isNumber || nextChar == ":" || nextChar == "\"")
+                    && (!nextChar.isWhitespace && nextChar != "]" && nextChar != "}")
 
                 if isNewOpeningQuote && foundSpace {
                     return false

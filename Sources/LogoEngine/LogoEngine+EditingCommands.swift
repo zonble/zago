@@ -43,6 +43,7 @@ extension LogoEngine {
             consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
             }
+            hasSetStatusMessage = true
             return true
 
         case .show:

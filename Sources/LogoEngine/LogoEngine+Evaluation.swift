@@ -4,12 +4,15 @@ extension LogoEngine {
     /// Evaluates condition expressions for IF, WHILE, UNTIL, etc.
     internal func evaluateCondition(_ conditionTokens: [String]) -> Bool {
         guard !conditionTokens.isEmpty else { return false }
+        let savedLastResult = lastResult
+        defer { lastResult = savedLastResult }
 
         var idx = 0
         let leftValStr = evaluateExpression(conditionTokens, index: &idx)
+        let resBool = logoIsTrue(leftValStr)
 
         if idx >= conditionTokens.count - 1 {
-            return logoIsTrue(leftValStr)
+            return resBool
         }
 
         if idx + 1 < conditionTokens.count {
@@ -23,8 +26,8 @@ extension LogoEngine {
                     case .equal, .aliasEqual: return num1 == num2
                     case .notEqual, .aliasNotEqual: return num1 != num2
                     case .lessThan: return num1 < num2
-                    case .lessOrEqual: return num1 <= num2
                     case .greaterThan: return num1 > num2
+                    case .lessOrEqual: return num1 <= num2
                     case .greaterOrEqual: return num1 >= num2
                     default: return false
                     }
@@ -33,8 +36,8 @@ extension LogoEngine {
                     case .equal, .aliasEqual: return leftValStr == rightValStr
                     case .notEqual, .aliasNotEqual: return leftValStr != rightValStr
                     case .lessThan: return leftValStr < rightValStr
-                    case .lessOrEqual: return leftValStr <= rightValStr
                     case .greaterThan: return leftValStr > rightValStr
+                    case .lessOrEqual: return leftValStr <= rightValStr
                     case .greaterOrEqual: return leftValStr >= rightValStr
                     default: return false
                     }
@@ -42,8 +45,7 @@ extension LogoEngine {
             }
         }
 
-        let valStr = conditionTokens.joined(separator: " ")
-        return logoIsTrue(valStr)
+        return logoIsTrue(leftValStr)
     }
 
     /// Evaluates expression tokens, variadic function calls, and binary arithmetic expressions (+, -, *, /, %).
@@ -53,7 +55,9 @@ extension LogoEngine {
 
         var leftVal: String
         var didApplyOperator = false
+        var isParenthesized = false
         if tokens[index] == "(" {
+            isParenthesized = true
             index += 1
             if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
                 LogoEngine.isVariadicPrimitive(variadicPrim)
@@ -130,9 +134,6 @@ extension LogoEngine {
             } else {
                 leftVal = evaluateExpression(tokens, index: &index)
             }
-            if index + 1 < tokens.count && tokens[index + 1] == ")" {
-                index += 1
-            }
         } else {
             leftVal = evaluateTokenOrCommand(tokens, index: &index)
         }
@@ -191,9 +192,11 @@ extension LogoEngine {
             }
         }
 
-        if didApplyOperator || lastExpressionValue?.description != leftVal {
-            setLastExpressionString(leftVal)
+        if isParenthesized && index + 1 < tokens.count && tokens[index + 1] == ")" {
+            index += 1
         }
+
+        setLastExpressionString(leftVal)
         return leftVal
     }
 
@@ -410,8 +413,7 @@ extension LogoEngine {
                         variables["?\(i + 1)"] = arg
                     }
                     if !inner.isEmpty {
-                        let firstUpper = inner[0].uppercased()
-                        if LogoEngine.isKeyword(inner[0]) && firstUpper != "DATE" && firstUpper != "TIME" {
+                        if LogoEngine.isStatementCommand(inner[0]) {
                             var subReturn: String? = nil
                             var sIdx = 0
                             executeTokens(inner, index: &sIdx, frameReturn: &subReturn)

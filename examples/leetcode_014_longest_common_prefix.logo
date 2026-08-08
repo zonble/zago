@@ -1,0 +1,38 @@
+; ==============================================================================
+; LeetCode 14: Longest Common Prefix (in zago Editor LOGO)
+; ==============================================================================
+; Write a function to find the longest common prefix string amongst an array
+; of strings. If there is no common prefix, return an empty string "".
+; Uses LOGO string primitives: `STARTSWITH?`, `SUBSTRING`, `COUNT`.
+; ==============================================================================
+
+TO LONGESTCOMMONPREFIX :strs
+  IF (COUNT :strs) = 0 [ OUTPUT "" ]
+  MAKE "prefix ITEM 1 :strs
+  MAKE "i 2
+  MAKE "n COUNT :strs
+
+  WHILE [:i <= :n] [
+    MAKE "target ITEM :i :strs
+    WHILE [NOT (STARTSWITH? :prefix :target)] [
+      MAKE "prefix SUBSTRING :prefix 1 ((COUNT :prefix) - 1)
+    ]
+    MAKE "i :i + 1
+  ]
+
+  OUTPUT :prefix
+END
+
+; Test cases
+TYPE "===_LeetCode_014:_Longest_Common_Prefix_==="
+TYPE CHAR 10
+
+MAKE "strs1 [flower flow flight]
+MAKE "res1 LONGESTCOMMONPREFIX :strs1
+TYPE FORMAT "strs:_%s_prefix:_%s" (LIST :strs1 :res1)
+TYPE CHAR 10
+
+MAKE "strs2 [dog racecar car]
+MAKE "res2 LONGESTCOMMONPREFIX :strs2
+TYPE FORMAT "strs:_%s_prefix:_%s" (LIST :strs2 :res2)
+TYPE CHAR 10

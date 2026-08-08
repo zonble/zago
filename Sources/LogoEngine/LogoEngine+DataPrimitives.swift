@@ -379,7 +379,7 @@ extension LogoEngine {
             index += 1
             let dataVal = evaluateExpression(tokens, index: &index)
 
-            let delimStr = LogoValue.parse(delimVal).description
+            let delimStr = unquote(delimVal)
             let dataParsed = LogoValue.parse(dataVal)
 
             switch dataParsed {
@@ -956,14 +956,15 @@ extension LogoEngine {
                 argIndex += 1
 
                 let lastChar = specifier.last ?? "s"
+                let trimmedArg = currentArg.trimmingCharacters(in: .whitespacesAndNewlines)
                 if lastChar == "d" || lastChar == "D" {
-                    let intVal = Int(currentArg) ?? 0
-                    result.append(String(format: specifier, intVal))
+                    let intVal = Int(trimmedArg) ?? Int(Double(trimmedArg) ?? 0.0)
+                    result.append(String(format: specifier, CInt(intVal)))
                 } else if lastChar == "x" || lastChar == "X" {
-                    let intVal = Int(currentArg) ?? 0
-                    result.append(String(format: specifier, intVal))
+                    let intVal = Int(trimmedArg) ?? Int(Double(trimmedArg) ?? 0.0)
+                    result.append(String(format: specifier, CInt(intVal)))
                 } else if lastChar == "f" {
-                    let dblVal = Double(currentArg) ?? 0.0
+                    let dblVal = Double(trimmedArg) ?? 0.0
                     result.append(String(format: specifier, dblVal))
                 } else {
                     if specifier.contains("-") || specifier.contains("0") || specifier.count > 2 {

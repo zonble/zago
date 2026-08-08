@@ -1,0 +1,27 @@
+; ==============================================================================
+; LeetCode 58: Length of Last Word (in zago Editor LOGO)
+; ==============================================================================
+; Given a string `s` consisting of words and spaces, return the length of the
+; last word in the string.
+; Uses LOGO string primitives: `TRIM`, `SPLIT`, `LAST`, `COUNT`.
+; ==============================================================================
+
+TO LENGTHOFLASTWORD :s
+  MAKE "clean TRIM :s
+  MAKE "words SPLIT "_ :clean
+  OUTPUT COUNT (LAST :words)
+END
+
+; Test cases
+TYPE "===_LeetCode_058:_Length_of_Last_Word_==="
+TYPE CHAR 10
+
+MAKE "s1 "Hello_World
+MAKE "len1 LENGTHOFLASTWORD :s1
+TYPE FORMAT "str:_%s_length:_%d" (LIST :s1 :len1)
+TYPE CHAR 10
+
+MAKE "s2 "fly_me_to_the_moon
+MAKE "len2 LENGTHOFLASTWORD :s2
+TYPE FORMAT "str:_%s_length:_%d" (LIST :s2 :len2)
+TYPE CHAR 10

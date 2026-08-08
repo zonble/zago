@@ -56,10 +56,13 @@ extension LogoEngine {
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
+            let res: String
             switch p {
-            case .list(let items), .array(let items): return "\(items.count)"
-            case .string(let s): return "\(s.count)"
+            case .list(let items), .array(let items): res = "\(items.count)"
+            case .string(let s): res = "\(s.count)"
             }
+            setLastExpressionString(res)
+            return res
 
         case .ascii:
             index += 1

@@ -1,0 +1,25 @@
+; ==============================================================================
+; LeetCode 151: Reverse Words in a String (in zago Editor LOGO)
+; ==============================================================================
+; Given an input string `s`, reverse the order of the words.
+; Uses LOGO string primitives: `TRIM`, `SPLIT`, `FILTER`, `REVERSE`, `JOINSTR`.
+; ==============================================================================
+
+TO REVERSEWORDS :s
+  MAKE "clean TRIM :s
+  MAKE "words SPLIT "_ :clean
+  MAKE "nonEmpty FILTER [NOT EMPTY? ?] :words
+  OUTPUT JOINSTR "_ (REVERSE :nonEmpty)
+END
+
+; Test cases
+TYPE "===_LeetCode_151:_Reverse_Words_in_a_String_===
+TYPE CHAR 10
+
+MAKE "s1 "the_sky_is_blue
+TYPE FORMAT "original:_%s_reversed:_%s (LIST :s1 (REVERSEWORDS :s1))
+TYPE CHAR 10
+
+MAKE "s2 "hello_world
+TYPE FORMAT "original:_%s_reversed:_%s (LIST :s2 (REVERSEWORDS :s2))
+TYPE CHAR 10

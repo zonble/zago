@@ -48,7 +48,7 @@ import Testing
         let output = try executeScriptFile("caesar_cipher.logo")
         #expect(output.contains("===_Caesar_Cipher_Demo_==="))
         #expect(output.contains("original:_Hello_World"))
-        #expect(output.contains("cipher:_KhoorbZruog"))
+        #expect(output.contains("cipher:_Khoor_Zruog"))
     }
 
     @Test func testLeetCode001TwoSumExample() throws {
@@ -56,6 +56,12 @@ import Testing
         #expect(output.contains("===_LeetCode_001:_Two_Sum_==="))
         #expect(output.contains("[1 2]"))
         #expect(output.contains("[2 3]"))
+    }
+
+    @Test func testLeetCode014LongestCommonPrefixExample() throws {
+        let output = try executeScriptFile("leetcode_014_longest_common_prefix.logo")
+        #expect(output.contains("===_LeetCode_014:_Longest_Common_Prefix_==="))
+        #expect(output.contains("prefix:_fl"))
     }
 
     @Test func testLeetCode020ValidParenthesesExample() throws {
@@ -72,6 +78,13 @@ import Testing
         #expect(output.contains("max_sum:_23"))
     }
 
+    @Test func testLeetCode058LengthOfLastWordExample() throws {
+        let output = try executeScriptFile("leetcode_058_length_of_last_word.logo")
+        #expect(output.contains("===_LeetCode_058:_Length_of_Last_Word_==="))
+        #expect(output.contains("length:_5"))
+        #expect(output.contains("length:_4"))
+    }
+
     @Test func testLeetCode070ClimbingStairsExample() throws {
         let output = try executeScriptFile("leetcode_070_climbing_stairs.logo")
         #expect(output.contains("===_LeetCode_070:_Climbing_Stairs_==="))
@@ -83,6 +96,13 @@ import Testing
         let output = try executeScriptFile("leetcode_125_valid_palindrome.logo")
         #expect(output.contains("===_LeetCode_125:_Valid_Palindrome_==="))
         #expect(output.contains("palindrome:_true"))
+    }
+
+    @Test func testLeetCode151ReverseWordsExample() throws {
+        let output = try executeScriptFile("leetcode_151_reverse_words.logo")
+        #expect(output.contains("===_LeetCode_151:_Reverse_Words_in_a_String_==="))
+        #expect(output.contains("reversed:_blue_is_sky_the"))
+        #expect(output.contains("reversed:_world_hello"))
     }
 
     @Test func testLeetCode217ContainsDuplicateExample() throws {
