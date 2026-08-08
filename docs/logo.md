@@ -612,9 +612,13 @@ TYPE ITEM 2 :cells
 | `FPUT` | - | `FPUT item list` | Prepends item to front of list | `FPUT 0 [1 2]` |
 | `LPUT` | `QUEUE` | `LPUT item list` | Appends item to end of list | `LPUT 3 [1 2]` |
 | `ARRAY` | - | `ARRAY size` | Allocates array of specified size | `MAKE "a" ARRAY 5` |
+| `MDARRAY` | - | `MDARRAY dimsList` | Allocates multi-dimensional array with specified dimension bounds | `MAKE "m MDARRAY [3 3]` |
+| `MDITEM` | - | `MDITEM idxList mdarray` | Retrieves 1-indexed element from multi-dimensional array | `MDITEM [2 1] :m` |
+| `MDSETITEM` | - | `MDSETITEM idxList mdarray val` | Sets 1-indexed element in multi-dimensional array in-place | `MDSETITEM [2 1] "m "Z` |
 | `LISTTOARRAY` | - | `LISTTOARRAY list` | Converts list to array | `LISTTOARRAY [1 2 3]` |
 | `ARRAYTOLIST` | - | `ARRAYTOLIST array` | Converts array to list | `ARRAYTOLIST :arr` |
 | `COMBINE` | - | `COMBINE a b` | Combines two lists or words | `COMBINE "a" "b"` |
+| `GENSYM` | - | `GENSYM` | Generates a unique, non-clashing symbol name | `GENSYM` $\rightarrow$ `"G1"` |
 | `REVERSE` | - | `REVERSE list\|word` | Reverses order of list or word | `REVERSE [1 2 3]` |
 | `FIRST` | - | `FIRST list\|word` | Returns first element or character | `FIRST [10 20 30]` |
 | `LAST` | - | `LAST list\|word` | Returns last element or character | `LAST "hello"` |
@@ -630,6 +634,7 @@ TYPE ITEM 2 :cells
 | `SETITEM` | - | `SETITEM idx array val` | Sets 1-indexed element in array | `SETITEM 1 :arr "val"` |
 | `PUSH` | - | `PUSH val list` | Pushes element to list variable | `PUSH 1 "myList"` |
 | `POP` | - | `POP list` | Pops element from list variable | `POP "myList"` |
+| `DEQUEUE` | - | `DEQUEUE list` | Removes and returns first element from list variable | `DEQUEUE "myQueue"` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
 | `CHARCOUNT` | - | `CHARCOUNT text` | Counts Unicode grapheme characters in text | `CHARCOUNT "a👍中` |
 | `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK text` | Counts CJK scripts and CJK/fullwidth punctuation, excluding ASCII words and spaces | `CHARCOUNT.CJK "中文，API。` |
@@ -653,6 +658,7 @@ TYPE ITEM 2 :cells
 | `STARTSWITH?` | `STARTSP`, `HAS_PREFIX?` | `STARTSWITH? prefix string` | Returns true if `string` starts with `prefix` | `STARTSWITH? "# "#_Title` |
 | `ENDSWITH?` | `ENDSP`, `HAS_SUFFIX?` | `ENDSWITH? suffix string` | Returns true if `string` ends with `suffix` | `ENDSWITH? ".md "file.md` |
 | `SUBSTRING` | `SUBSTR`, `SLICE` | `SUBSTRING string start [length]` | Extracts substring starting at 1-based `start` position | `SUBSTRING "Hello_World 1 5` |
+| `SEARCH` | - | `SEARCH haystack needle` | Searches string or list for occurrence of needle | `SEARCH "banana "an` |
 | `REPLACE` | `SUBSTITUTE` | `REPLACE old new string` | Replaces all occurrences of `old` with `new` in `string` | `REPLACE "foo "bar "foo_text` |
 | `TRIM` | `STRIP` | `TRIM string` | Removes leading and trailing whitespace from string | `TRIM "  hello  ` |
 | `REPEATSTR` | `STR_REPEAT` | `REPEATSTR count string` | Repeats string for `count` times | `REPEATSTR 5 "=` |
@@ -721,10 +727,13 @@ TYPE ITEM 2 :cells
 | `SQRT`, `EXP` | - | `SQRT a`, `EXP a` | Square root and exponential $e^a$ | `SQRT 16` |
 | `LOG10`, `LN` | - | `LOG10 a`, `LN a` | Logarithm base 10 and natural log | `LOG10 100` |
 | `SIN`, `COS`, `TAN` | - | `SIN deg`, `COS deg` | Trigonometric functions (degrees) | `SIN 90` |
+| `RADSIN`, `RADCOS`, `RADTAN` | - | `RADSIN rad`, `RADCOS rad`, `RADTAN rad` | Trigonometric functions (radians) | `RADSIN 1.570796` |
 | `ARCTAN`, `RADARCTAN` | - | `ARCTAN num`, `(ARCTAN x y)` | Arctangent in degrees or radians; two-input form uses `atan2(y, x)` | `(ARCTAN 0 1)` |
+| `FORM` | - | `FORM val width precision` | Formats number into string with width and decimal precision | `FORM 3.14159 8 4` |
 | `RANGE` | `ISEQ` | `RANGE start end [step]` | Generates inclusive integer sequence list | `RANGE 1 5` $\rightarrow$ `[1 2 3 4 5]`, `RANGE 1 10 2` |
 | `RSEQ` | - | `RSEQ start end count` | Generates real number sequence list | `RSEQ 0 1 5` |
 | `RANDOM` | - | `RANDOM max [min]` | Generates random integer in range | `RANDOM 100`, `RANDOM 10 20` |
+| `RERANDOM` | - | `RERANDOM seed` | Resets pseudo-random number generator seed for reproducibility | `RERANDOM 42` |
 | `BITAND`, `BITOR`, `BITXOR`, `BITNOT` | - | `BITAND a b` | Bitwise logic operations | `BITAND 5 3` |
 | `ASHIFT`, `LSHIFT` | - | `ASHIFT val shift` | Arithmetic and logical bit shifts | `LSHIFT 1 4` |
 
