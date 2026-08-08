@@ -6,7 +6,7 @@
 ; ==============================================================================
 
 TYPE "===_Regex_&_String_Search_Demo_==="
-TYPE CHAR 10
+NL
 
 ; 1. REGEX_MATCH? Check valid email format
 MAKE "emails [user@example.com invalid_email dev.logo@zago.org]
@@ -18,21 +18,20 @@ WHILE [:i <= :n] [
   MAKE "em ITEM :i :emails
   MAKE "valid REGEX_MATCH? :email_pattern :em
   TYPE FORMAT "email:_%s_valid:_%s" (LIST :em :valid)
-  TYPE CHAR 10
+  NL
   MAKE "i :i + 1
 ]
 
-TYPE CHAR 10
+NL
 
 ; 2. REGEX_REPLACE Mask IP addresses and numbers
 MAKE "raw_text "Server_192.168.1.100_date_2026-08-08"
 MAKE "masked REGEX_REPLACE "\d+" "***" :raw_text
 TYPE FORMAT "original:_%s" (LIST :raw_text)
-TYPE CHAR 10
+NL
 TYPE FORMAT "masked:___%s" (LIST :masked)
-TYPE CHAR 10
-
-TYPE CHAR 10
+NL
+NL
 
 ; 3. PADLEFT / PADRIGHT Formatted text alignment
 MAKE "item1 "Apple"
@@ -46,6 +45,8 @@ MAKE "padded_item1 PADRIGHT :item1 10 "."
 MAKE "padded_item2 PADRIGHT :item2 10 "."
 
 TYPE FORMAT "%s_$%s" (LIST :padded_item1 :p1)
-TYPE CHAR 10
+NL
 TYPE FORMAT "%s_$%s" (LIST :padded_item2 :p2)
-TYPE CHAR 10
+NL
+
+type FORMAT "%s" "zonble"

@@ -889,7 +889,7 @@ struct ConfigAndToolsTests {
 
 @Test func testLogoReferenceAndWorkspaceContent() throws {
     let reference = LogoReferenceContent.lines(language: .en).joined(separator: "\n")
-    #expect(reference.contains("TABLE BORDER style"))
+    #expect(reference.contains("SUBSTRING s start len"))
     #expect(reference.contains("PROCEDURE? name"))
     #expect(reference.contains("GETLINE [row]"))
     #expect(reference.contains("logical buffer lines"))
@@ -913,7 +913,7 @@ struct ConfigAndToolsTests {
 
     let zhReference = LogoReferenceContent.lines(language: .zh_TW).joined(separator: "\n")
     #expect(zhReference.contains("LOGO 指令參考"))
-    #expect(zhReference.contains("設定預設框線樣式"))
+    #expect(zhReference.contains("框線樣式"))
     #expect(zhReference.contains("讀取邏輯行"))
     #expect(zhReference.contains("不是 soft wrap 後的視覺行"))
     #expect(zhReference.contains("數字相加"))

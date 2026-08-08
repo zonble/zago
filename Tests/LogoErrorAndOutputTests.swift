@@ -104,6 +104,17 @@ import Testing
         #expect(editor.currentBufferIndex == 0)
     }
 
+    @Test func testNonLogoFileEvalExecutesInCurrentBuffer() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = ["BOX 4 4"]
+
+        editor.evalLogoCode()
+
+        #expect(editor.buffer.filePath == "document.md")
+        #expect(editor.findLogoCanvasBufferIndex() == nil)
+        #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
+    }
+
     @Test func testRunMenuVisibilityOnLogoFilesOnly() {
         let mdEditor = Editor(filePath: "test.md")
         mdEditor.menuBar.updateCategories(for: mdEditor)
@@ -112,5 +123,60 @@ import Testing
         let logoEditor = Editor(filePath: "test.logo")
         logoEditor.menuBar.updateCategories(for: logoEditor)
         #expect(logoEditor.menuBar.categories.contains { $0.titleKey == "menu.run" })
+    }
+
+    @Test func testLogoCanvasCommandAndAltCSShortcut() {
+        let editor = Editor(filePath: "test.logo")
+        #expect(editor.findLogoCanvasBufferIndex() == nil)
+
+        let handled = editor.commandRegistry.dispatch(key: .alt("C"), editor: editor)
+        #expect(handled)
+
+        let idx = editor.findLogoCanvasBufferIndex()
+        #expect(idx != nil)
+        #expect(editor.currentBufferIndex == idx!)
+
+        let canvasBuf = editor.buffers[idx!]
+        #expect(canvasBuf.baseMode == .canvas)
+
+        editor.commandRegistry.dispatch(key: .alt("C"), editor: editor)
+        #expect(editor.currentBufferIndex != idx!)
+    }
+
+    @Test func testRunLogoScriptCommandF5Shortcut() {
+        let editor = Editor(filePath: "diagram.logo")
+        editor.buffer.lines = ["BOX 4 4"]
+
+        let handled = editor.commandRegistry.dispatch(key: .f5, editor: editor)
+        #expect(handled)
+
+        #expect(editor.buffers[0].lines == ["BOX 4 4"])
+        let idx = editor.findLogoCanvasBufferIndex()
+        #expect(idx != nil)
+        #expect(editor.currentBufferIndex == idx!)
+    }
+
+    @Test func testClearLogoOutputAndCanvasCommand() {
+        let editor = Editor(filePath: "diagram.logo")
+        editor.runLogoScript("BOX 4 4")
+        editor.appendLogoOutput("Some output message")
+
+        #expect(editor.findLogoCanvasBufferIndex() != nil)
+        #expect(editor.findLogoOutputBufferIndex() != nil)
+
+        editor.clearLogoOutputAndCanvasBuffers()
+
+        let outputIdx = editor.findLogoOutputBufferIndex()!
+        #expect(!editor.buffers[outputIdx].lines.contains { $0.contains("Some output message") })
+    }
+
+    @Test func testUnsavedBufferEvalInCurrentBuffer() {
+        let editor = Editor()
+        editor.buffer.lines = ["BOX 4 4"]
+
+        editor.evalLogoCode()
+
+        #expect(editor.findLogoCanvasBufferIndex() == nil)
+        #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
     }
 }

@@ -7,24 +7,25 @@
 ; ==============================================================================
 
 TYPE "===_Turtle_Graphics_Demo_==="
+NL
 TYPE CHAR 10
 
 ; 1. Lower the pen and draw a 5x5 square box using REPEAT loop
 PENDOWN
 REPEAT 4 [
     FORWARD 5
-    TURNRIGHT 90
+    RIGHT
 ]
 
 ; 2. Lift the pen, move turtle back and change heading
 PENUP
 BACK 2
-SETHEADING "RIGHT"
+SETHEADING "RIGHT
 
 ; 3. Draw a second box starting from new heading
 PENDOWN
 REPEAT 4 [
     FORWARD 4
-    TURNRIGHT 90
+    RIGHT
 ]
 PENUP

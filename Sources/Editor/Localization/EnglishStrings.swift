@@ -85,19 +85,29 @@ public struct EnglishStrings {
             FIND "query                  Search text
 
           Shapes and tables
-            BOX [text|width height]      Insert a framed box; no args frames canvas mark
-            DRAWBOX [text|width height]  Draw overlay frame; no args frames canvas mark
-            LINE [len] [style] [arrow]   Draw/connect a horizontal line
-            VLINE [height] [style]       Draw/connect a vertical line
-            FILL text                    Fill selected region, table cell, or box interior
-            TABLE [rows cols width]      Insert a table
-            TABLE BORDER style           Set default border style
-            TABLE NEXTSTYLE              Cycle border style
+            BOX [text|width height [style]]      Insert a framed box; no args frames canvas mark
+            DRAWBOX [text|width height [style]]  Draw overlay frame; no args frames canvas mark
+            LINE [len] [style] [arrow]           Draw/connect a horizontal line
+            VLINE [height] [style]               Draw/connect a vertical line
+            FILL text                            Fill selected region, table cell, or box interior
+            TABLE [rows cols width]              Insert a table
             Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
                     LINE clamps to 1...200 and VLINE clamps to 1...100.
 
-          Border styles
-            single, double, round, double-round, ascii, markdown
+          Styles
+            Border: single, double, round, double-round, ascii, markdown
+            Arrow:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+
+          String, RegEx, and Bitwise operations
+            SUBSTRING s start len / TRANS s mode Substring or upper/lower/capitalized/trim
+            SEARCH s "pattern" / INDEXOF s "sub" Pattern search / index lookup
+            REGEX_MATCH s "pat" / REGEX_REPLACE  RegEx matching and replacement
+            BITAND / BITOR / BITXOR / BITNOT     Bitwise logic operations
+            LSHIFT / RSHIFT                      Bitwise shift operations
+
+          Error handling
+            CATCH "ERROR [ commands ]            Catch uncaught LOGO runtime errors
+            THROW "tag / ERROR                   Throw exception / query last error info
 
           Turtle-like drawing
             PD / PU                      Pen down/up

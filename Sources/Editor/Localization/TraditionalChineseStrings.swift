@@ -85,19 +85,29 @@ public struct TraditionalChineseStrings {
             FIND "query                  搜尋文字
 
           圖形與表格
-            BOX [文字|寬 高]             插入方框；無參數時框住目前的畫布標記
-            DRAWBOX [文字|寬 高]         覆蓋繪製方框；無參數時框住目前的畫布標記
-            LINE [len] [style] [arrow]   繪製/連接水平線
-            VLINE [height] [style]       繪製/連接垂直線
+            BOX [文字|寬 高 [樣式]]       插入方框；無參數時框住目前的畫布標記
+            DRAWBOX [文字|寬 高 [樣式]]   覆蓋繪製方框；無參數時框住目前的畫布標記
+            LINE [長度] [樣式] [箭頭]    繪製/連接水平線
+            VLINE [高度] [樣式]          繪製/連接垂直線
             FILL text                    填滿選取範圍、表格儲存格或方框內部
             TABLE [rows cols width]      插入表格
-            TABLE BORDER style           設定預設框線樣式
-            TABLE NEXTSTYLE              切換下一個框線樣式
             邊界：BOX/DRAWBOX 限制為寬 3...200、高 2...100；
                   LINE 限制為 1...200，VLINE 限制為 1...100。
 
-          框線樣式
-            single, double, round, double-round, ascii, markdown
+          樣式種類
+            框線樣式：single, double, round, double-round, ascii, markdown
+            箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+
+          字串、正規表達式與位元運算
+            SUBSTRING s start len / TRANS s mode 子字串切片或轉大小寫/Trim
+            SEARCH s "pattern" / INDEXOF s "sub" 字樣搜尋 / 索引查找
+            REGEX_MATCH s "pat" / REGEX_REPLACE  正規表達式比對與取代
+            BITAND / BITOR / BITXOR / BITNOT     位元邏輯運算
+            LSHIFT / RSHIFT                      位元移位運算
+
+          錯誤處理與例外控制
+            CATCH "ERROR [ commands ]            捕捉 LOGO 執行時期錯誤
+            THROW "tag / ERROR                   拋出例外 tag / 讀取最後錯誤資訊
 
           類海龜繪圖
             PD / PU                      落筆/提筆
