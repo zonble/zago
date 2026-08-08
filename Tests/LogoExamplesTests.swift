@@ -172,5 +172,41 @@ import Testing
         let output = try executeScriptFile("turtle_demo.logo")
         #expect(output.contains("===_Turtle_Graphics_Demo_==="))
     }
+
+    @Test func testMatrixDemoExample() throws {
+        let output = try executeScriptFile("matrix_demo.logo")
+        #expect(output.contains("===_Multidimensional_Arrays_&_Reflection_Demo_==="))
+        #expect(output.contains("matrix_elem_[2,1]:_Z"))
+        #expect(output.contains("stack_after_push:_[30 10 20]"))
+        #expect(output.contains("popped_val:_30_stack_remaining:_[10 20]"))
+        #expect(output.contains("is_print_primitive:_true"))
+        #expect(output.contains("is_addone_procedure:_false"))
+    }
+
+    @Test func testBufferEditorDemoExample() throws {
+        let output = try executeScriptFile("buffer_editor_demo.logo")
+        #expect(output.contains("===_Editor_Buffer_Automation_Demo_==="))
+        #expect(output.contains("line_1_after_setline:_Updated_Header_Line"))
+    }
+
+    @Test func testLeetCode054SpiralMatrixExample() throws {
+        let output = try executeScriptFile("leetcode_054_spiral_matrix.logo")
+        #expect(output.contains("===_LeetCode_#054_/_#059:_Spiral_Matrix_==="))
+        #expect(output.contains("spiral_matrix:_{{1 6 9} {2 7 8} {3 4 5}}"))
+    }
+
+    @Test func testLeetCode062UniquePathsExample() throws {
+        let output = try executeScriptFile("leetcode_062_unique_paths.logo")
+        #expect(output.contains("===_LeetCode_#062:_Unique_Paths_(2D_DP)_==="))
+        #expect(output.contains("grid:_3x7_unique_paths:_28"))
+    }
+
+    @Test func testLeetCode200NumberOfIslandsExample() throws {
+        let output = try executeScriptFile("leetcode_200_number_of_islands.logo")
+        #expect(output.contains("===_LeetCode_#200:_Number_of_Islands_(2D_BFS)_==="))
+        #expect(output.contains("grid:_3x3_islands_count:_2"))
+    }
 }
+
+
 

@@ -1,0 +1,67 @@
+; ==============================================================================
+; LeetCode #54 / #59: Spiral Matrix II (in zago Editor LOGO)
+; ==============================================================================
+; Given an integer n, generate an n x n matrix filled with elements from 1 to n^2
+; in spiral order using 2D MDARRAY and MDSETITEM primitives.
+; ==============================================================================
+
+TYPE "===_LeetCode_#054_/_#059:_Spiral_Matrix_==="
+TYPE CHAR 10
+
+MAKE "n 3
+MAKE "grid MDARRAY [3 3]
+
+MAKE "top 1
+MAKE "bottom :n
+MAKE "left 1
+MAKE "right :n
+MAKE "val 1
+
+WHILE [:val <= (:n * :n)] [
+    ; 1. Move Right across top row
+    MAKE "c :left
+    WHILE [:c <= :right] [
+        MAKE "pos LIST :c :top
+        MDSETITEM :pos "grid :val
+        MAKE "val :val + 1
+        MAKE "c :c + 1
+    ]
+    MAKE "top :top + 1
+
+    ; 2. Move Down along right column
+    MAKE "r :top
+    WHILE [:r <= :bottom] [
+        MAKE "pos LIST :right :r
+        MDSETITEM :pos "grid :val
+        MAKE "val :val + 1
+        MAKE "r :r + 1
+    ]
+    MAKE "right :right - 1
+
+    ; 3. Move Left across bottom row
+    IF [:top <= :bottom] [
+        MAKE "c :right
+        WHILE [:c >= :left] [
+            MAKE "pos LIST :c :bottom
+            MDSETITEM :pos "grid :val
+            MAKE "val :val + 1
+            MAKE "c :c - 1
+        ]
+        MAKE "bottom :bottom - 1
+    ]
+
+    ; 4. Move Up along left column
+    IF [:left <= :right] [
+        MAKE "r :bottom
+        WHILE [:r >= :top] [
+            MAKE "pos LIST :left :r
+            MDSETITEM :pos "grid :val
+            MAKE "val :val + 1
+            MAKE "r :r - 1
+        ]
+        MAKE "left :left + 1
+    ]
+]
+
+TYPE FORMAT "n:_%d_spiral_matrix:_%s" (LIST :n :grid)
+TYPE CHAR 10

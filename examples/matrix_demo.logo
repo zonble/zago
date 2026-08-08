@@ -1,0 +1,40 @@
+; ==============================================================================
+; Multidimensional Arrays, Queues & Reflection Demo (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates LOGO primitives: `MDARRAY`, `MDITEM`, `MDSETITEM`, `PUSH`,
+; `POP`, `GENSYM`, `DEFINED?`, `PROCEDURE?`, `PRIMITIVE?`, `NAME?`.
+; ==============================================================================
+
+TYPE "===_Multidimensional_Arrays_&_Reflection_Demo_==="
+TYPE CHAR 10
+
+; 1. 2D Matrix Creation and Mutation
+MAKE "grid {{a b} {c d}}
+MDSETITEM [2 1] "grid "Z
+MAKE "val MDITEM [2 1] :grid
+TYPE FORMAT "matrix_elem_[2,1]:_%s" (LIST :val)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. Stack / Queue Operations (PUSH & POP)
+MAKE "stack [10 20]
+PUSH "stack 30
+TYPE "stack_after_push:_ TYPE :stack TYPE CHAR 10
+MAKE "popped POP "stack
+TYPE FORMAT "popped_val:_%s_stack_remaining:_%s" (LIST :popped :stack)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. Reflection & Introspection
+MAKE "sym GENSYM
+TYPE FORMAT "generated_symbol:_%s" (LIST :sym)
+TYPE CHAR 10
+
+MAKE "is_prim PRIMITIVE? "PRINT
+MAKE "is_proc PROCEDURE? "ADDONE
+TYPE FORMAT "is_print_primitive:_%s" (LIST :is_prim)
+TYPE CHAR 10
+TYPE FORMAT "is_addone_procedure:_%s" (LIST :is_proc)
+TYPE CHAR 10

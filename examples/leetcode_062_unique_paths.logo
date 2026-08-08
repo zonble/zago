@@ -1,0 +1,40 @@
+; ==============================================================================
+; LeetCode #62: Unique Paths 2D Dynamic Programming (in zago Editor LOGO)
+; ==============================================================================
+; There is a robot on an m x n grid starting at top-left (1,1) and moving to
+; bottom-right (m,n). The robot can only move right or down.
+; 2D DP Formula: dp[r][c] = dp[r-1][c] + dp[r][c-1].
+; ==============================================================================
+
+TYPE "===_LeetCode_#062:_Unique_Paths_(2D_DP)_==="
+TYPE CHAR 10
+
+MAKE "m 3
+MAKE "n 7
+MAKE "dp MDARRAY [3 7]
+
+MAKE "r 1
+WHILE [:r <= :m] [
+    MAKE "c 1
+    WHILE [:c <= :n] [
+        IFELSE ((:r = 1) OR (:c = 1)) [
+            MAKE "pos LIST :r :c
+            MDSETITEM :pos "dp 1
+        ] [
+            MAKE "pos_up LIST (:r - 1) :c
+            MAKE "pos_left LIST :r (:c - 1)
+            MAKE "val_up MDITEM :pos_up :dp
+            MAKE "val_left MDITEM :pos_left :dp
+            MAKE "pos LIST :r :c
+            MDSETITEM :pos "dp (:val_up + :val_left)
+        ]
+        MAKE "c :c + 1
+    ]
+    MAKE "r :r + 1
+]
+
+MAKE "ans_pos LIST :m :n
+MAKE "ans MDITEM :ans_pos :dp
+
+TYPE FORMAT "grid:_%dx%d_unique_paths:_%d" (LIST :m :n :ans)
+TYPE CHAR 10

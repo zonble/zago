@@ -111,14 +111,13 @@ extension LogoEngine {
                     dimensions = [single]
                 }
             }
-            let _ = optionalCommandArgument(tokens, index: &index)
-
             func createMDArray(dims: [Int]) -> LogoValue {
-                guard let first = dims.first else { return .string("") }
-                let count = max(1, first)
+                guard let first = dims.first else { return .string("0") }
+                let count = max(0, first)
+                if count == 0 { return .array([]) }
                 let rest = Array(dims.dropFirst())
                 if rest.isEmpty {
-                    let items = Array(repeating: LogoValue.string(""), count: count)
+                    let items = Array(repeating: LogoValue.string("0"), count: count)
                     return .array(items)
                 } else {
                     let inner = createMDArray(dims: rest)
@@ -442,6 +441,8 @@ extension LogoEngine {
             default:
                 if let single = Int(idxVal) {
                     indices = [single]
+                } else {
+                    indices = idxVal.split(separator: " ").compactMap { Int($0) }
                 }
             }
 

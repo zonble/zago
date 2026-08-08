@@ -156,6 +156,8 @@ extension LogoEngine {
                 default:
                     if let single = Int(idxVal) {
                         indices = [single]
+                    } else {
+                        indices = idxVal.split(separator: " ").compactMap { Int($0) }
                     }
                 }
 

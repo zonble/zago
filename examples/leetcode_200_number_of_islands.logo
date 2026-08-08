@@ -1,0 +1,60 @@
+; ==============================================================================
+; LeetCode #200: Number of Islands 2D Grid Flood Fill (in zago Editor LOGO)
+; ==============================================================================
+; Given an m x n 2D binary grid map of 1s (land) and 0s (water), count the number
+; of islands. An island is surrounded by water and is formed by connecting
+; adjacent lands horizontally or vertically.
+; ==============================================================================
+
+TYPE "===_LeetCode_#200:_Number_of_Islands_(2D_BFS)_==="
+TYPE CHAR 10
+
+MAKE "grid {{1 1 0} {1 0 0} {0 0 1}}
+
+; BFS Flood Fill Procedure to sink an island starting at (:sr, :sc)
+TO SINK :sr :sc
+    MAKE "init LIST :sr :sc
+    MAKE "q LIST :init "()
+    WHILE [NOT (EMPTY? :q)] [
+        MAKE "curr FIRST :q
+        MAKE "q BUTFIRST :q
+        MAKE "cr FIRST :curr
+        MAKE "cc LAST :curr
+        MAKE "in_row AND ( :cr >= 1 ) ( :cr <= 3 )
+        MAKE "in_col AND ( :cc >= 1 ) ( :cc <= 3 )
+        IF ( AND :in_row :in_col ) [
+            MAKE "pos LIST :cr :cc
+            MAKE "val MDITEM :pos :grid
+            IF ( :val = 1 ) [
+                MDSETITEM :pos "grid 0
+                MAKE "p1 LIST ( :cr + 1 ) :cc
+                MAKE "q FPUT :p1 :q
+                MAKE "p2 LIST ( :cr - 1 ) :cc
+                MAKE "q FPUT :p2 :q
+                MAKE "p3 LIST :cr ( :cc + 1 )
+                MAKE "q FPUT :p3 :q
+                MAKE "p4 LIST :cr ( :cc - 1 )
+                MAKE "q FPUT :p4 :q
+            ]
+        ]
+    ]
+END
+
+MAKE "islands 0
+MAKE "r 1
+WHILE [ :r <= 3 ] [
+    MAKE "c 1
+    WHILE [ :c <= 3 ] [
+        MAKE "pos LIST :r :c
+        MAKE "val MDITEM :pos :grid
+        IF ( :val = 1 ) [
+            MAKE "islands :islands + 1
+            EXEC SINK :r :c
+        ]
+        MAKE "c :c + 1
+    ]
+    MAKE "r :r + 1
+]
+
+TYPE FORMAT "grid:_3x3_islands_count:_%d" (LIST :islands)
+TYPE CHAR 10
