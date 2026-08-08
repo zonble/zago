@@ -9,7 +9,16 @@ import Testing
         let repoRoot = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        return repoRoot.appendingPathComponent("examples").appendingPathComponent(filename).path
+        let fileURL = repoRoot.appendingPathComponent("examples").appendingPathComponent(filename)
+        var path = fileURL.path
+        #if os(Windows)
+        if path.hasPrefix("/") && path.contains(":") {
+            path.removeFirst()
+        }
+        return path.replacingOccurrences(of: "/", with: "\\")
+        #else
+        return path
+        #endif
     }
 
     private func executeScriptFile(_ filename: String) throws -> String {
