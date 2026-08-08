@@ -197,7 +197,9 @@ public final class ConfigLoader {
                         }
 
                     case "language", "lang":
-                        if value == "zh_tw" || value == "zh-tw" || value == "zh_hant" || value == "zh-hant" || value == "zh" || value == "chinese" || value == "traditionalchinese" {
+                        if value == "zh_tw" || value == "zh-tw" || value == "zh_hant" || value == "zh-hant"
+                            || value == "zh" || value == "chinese" || value == "traditionalchinese"
+                        {
                             config.language = .zh_TW
                         } else if value == "en" || value == "english" {
                             config.language = .en
@@ -205,7 +207,8 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
-                    case "spell", "spell-lang", "spell_lang", "spelllang", "spelllanguage", "spell_language", "spell-language":
+                    case "spell", "spell-lang", "spell_lang", "spelllang", "spelllanguage", "spell_language",
+                        "spell-language":
                         if !value.isEmpty {
                             config.spellLanguage = value
                         } else {
@@ -425,7 +428,9 @@ public final class ConfigLoader {
                     }
 
                 case "language", "lang":
-                    if value == "zh_tw" || value == "zh-tw" || value == "zh_hant" || value == "zh-hant" || value == "zh" || value == "chinese" || value == "traditionalchinese" {
+                    if value == "zh_tw" || value == "zh-tw" || value == "zh_hant" || value == "zh-hant" || value == "zh"
+                        || value == "chinese" || value == "traditionalchinese"
+                    {
                         config.language = .zh_TW
                     } else if value == "en" || value == "english" {
                         config.language = .en
@@ -433,7 +438,8 @@ public final class ConfigLoader {
                         config.syntaxErrorCount += 1
                     }
 
-                case "spell", "spell-lang", "spell_lang", "spelllang", "spelllanguage", "spell_language", "spell-language":
+                case "spell", "spell-lang", "spell_lang", "spelllang", "spelllanguage", "spell_language",
+                    "spell-language":
                     if !value.isEmpty {
                         config.spellLanguage = value
                     } else {
@@ -499,7 +505,8 @@ public final class ConfigLoader {
             config.showRuler = false
         case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
             config.showLineNumbers = false
-        case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers", "subline_number", "sublines":
+        case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
+            "subline_number", "sublines":
             config.showSubLineNumbers = false
         case "canvas-mode", "canvasmode", "canvas_mode":
             config.startInCanvasMode = false
@@ -507,7 +514,8 @@ public final class ConfigLoader {
             config.enableSyntaxHighlight = false
         case "autoreload", "auto-reload", "auto_reload":
             config.autoReload = false
-        case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace", "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces":
+        case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace", "trim-trailing-spaces",
+            "trimtrailingspaces", "trim_trailing_spaces":
             config.trimTrailingWhitespaceOnSave = false
         case "git-diff", "git_diff", "gitdiff":
             config.showGitDiff = false

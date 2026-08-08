@@ -653,10 +653,10 @@ public struct EnglishStrings {
         "menu.borders.ascii_round": "ASCII Rounded",
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "Next Style\tM+S",
-        "menu.borders.arrow_solid": "Arrow: Solid ▲▼◀▶",
+        "menu.borders.arrow_solid": "Arrow: Solid   ▲▼◀▶",
         "menu.borders.arrow_stemmed": "Arrow: Stemmed ↑↓←→",
-        "menu.borders.arrow_hollow": "Arrow: Hollow △▽◁▷",
-        "menu.borders.arrow_small": "Arrow: Small ▴▾◂▸",
+        "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
+        "menu.borders.arrow_small": "Arrow: Small   ▴▾◂▸",
 
         "menu.tools.logo": "Command Prompt...\tEsc",
         "menu.tools.word_count": "Word Count",

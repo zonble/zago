@@ -72,7 +72,8 @@ public struct BufferCommand: Command {
         switch arg {
         case "":
             editor.setStatusMessage(
-                String(format: editor.l10n["status.buffer_position"], editor.currentBufferIndex + 1, editor.buffers.count))
+                String(
+                    format: editor.l10n["status.buffer_position"], editor.currentBufferIndex + 1, editor.buffers.count))
         case "next":
             editor.nextBuffer()
         case "prev", "previous":

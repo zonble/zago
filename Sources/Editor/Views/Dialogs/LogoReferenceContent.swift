@@ -10,7 +10,7 @@ public enum LogoReferenceContent {
             "",
             "\(headerText)",
             "================================================================",
-            ""
+            "",
         ]
         return contentLines + separatorLines + wrappedAliases(width: 68)
     }

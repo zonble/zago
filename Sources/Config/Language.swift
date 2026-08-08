@@ -12,7 +12,7 @@ public enum Language: String, CaseIterable, Sendable {
             ProcessInfo.processInfo.environment["LC_MESSAGES"],
             ProcessInfo.processInfo.environment["LANG"],
             ProcessInfo.processInfo.environment["LANGUAGE"],
-            Locale.current.identifier
+            Locale.current.identifier,
         ].compactMap { $0 }
 
         let keywords = ["zh", "tw", "hant", "hk"]

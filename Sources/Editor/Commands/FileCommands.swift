@@ -134,7 +134,7 @@ public struct SaveExitCommand: Command {
     public let name = "Save & Exit"
     public let description = "Save current file and close buffer"
     public let commandBarAliases: [String] = [
-        "file", "save-exit", "saveexit", "wq", ":wq", "wq!", ":wq!", "x", ":x"
+        "file", "save-exit", "saveexit", "wq", ":wq", "wq!", ":wq!", "x", ":x",
     ]
 
     public init() {}

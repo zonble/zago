@@ -1,5 +1,5 @@
-import Foundation
 @_exported import Diagram
+import Foundation
 
 extension DiagramSnippets {
     /// Inserts a diagram snippet into the editor buffer with context-aware wrapping.

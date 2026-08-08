@@ -304,7 +304,9 @@ public struct InsertBacktabCommand: Command {
         // 4. Smart Tab Line Outdent
         if editor.displayConfig.smartTab {
             let lineIndex = editor.buffer.lineIndex
-            let outdentSpaces = editor.isListItemLine(at: lineIndex) ? editor.displayConfig.listIndentSize : editor.displayConfig.tabSize
+            let outdentSpaces =
+                editor.isListItemLine(at: lineIndex)
+                ? editor.displayConfig.listIndentSize : editor.displayConfig.tabSize
             editor.outdentLine(at: lineIndex, spaces: outdentSpaces)
             return
         }

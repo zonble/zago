@@ -287,7 +287,9 @@ public final class Renderer {
                 var renderedDisplayWidth = 0
                 let visibleTextWidth = max(0, cols - gutterWidth)
 
-                let hangingIndent = (vLine.subLineIndex > 0 && editor.displayConfig.listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: fullLineText) : 0
+                let hangingIndent =
+                    (vLine.subLineIndex > 0 && editor.displayConfig.listWrapIndent)
+                    ? LayoutEngine.calculateListHangingIndent(in: fullLineText) : 0
                 if hangingIndent > 0 {
                     lineOutput += String(repeating: " ", count: hangingIndent)
                     renderedDisplayWidth += hangingIndent
@@ -464,7 +466,8 @@ public final class Renderer {
         }
 
         let numStr = String(format: "%4d ", lineNumber)
-        let hasGitDiff = editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
+        let hasGitDiff =
+            editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
 
         if hasGitDiff {
             let status = editor.gitDiffInfo.lineStatuses[lineIdx] ?? .unmodified

@@ -431,7 +431,8 @@ extension Editor {
         logoEngine.execute(script)
 
         if logoEngine.hasUncaughtError, let err = logoEngine.lastError {
-            let errText = "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
+            let errText =
+                "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
             appendLogoOutput(errText)
             setStatusMessage("Error in LOGO execution. Press Alt+L or type :output to view.")
         } else if logoEngine.hasSetStatusMessage {

@@ -11,8 +11,9 @@ extension Editor {
 
         // Markdown / Org / reST / AsciiDoc list prefixes:
         // - item, * item, + item, . item, .. item
-        if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") || trimmed.hasPrefix("+ ") ||
-            trimmed.hasPrefix(". ") || trimmed.hasPrefix(".. ") {
+        if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") || trimmed.hasPrefix("+ ") || trimmed.hasPrefix(". ")
+            || trimmed.hasPrefix(".. ")
+        {
             return true
         }
 
@@ -27,7 +28,8 @@ extension Editor {
     /// Indents the currently selected text block by injecting spaces at line starts.
     public func indentSelectedBlock(spaces: Int) {
         guard let mark = buffer.selectionMark else { return }
-        let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+        let (start, end) = TextBuffer.getOrderedRange(
+            mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
         let startLine = start.line
         let endLine = end.line
 
@@ -43,7 +45,8 @@ extension Editor {
     /// Outdents the currently selected text block by removing up to `spaces` leading spaces from line starts.
     public func outdentSelectedBlock(spaces: Int) {
         guard let mark = buffer.selectionMark else { return }
-        let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+        let (start, end) = TextBuffer.getOrderedRange(
+            mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
         let startLine = start.line
         let endLine = end.line
 

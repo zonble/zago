@@ -3,8 +3,9 @@ import Config
 import Editor
 import Foundation
 import Git
+
 #if os(Windows)
-import WinSDK
+    import WinSDK
 #endif
 
 @main
@@ -107,15 +108,15 @@ struct Zago: ParsableCommand {
         var targetFiles = rawFiles
         let isStdinPiped: Bool
         #if os(Windows)
-        let hStdIn = GetStdHandle(DWORD(STD_INPUT_HANDLE))
-        let fileType = GetFileType(hStdIn)
-        isStdinPiped = isExplicitDash || fileType == FILE_TYPE_PIPE || fileType == FILE_TYPE_DISK
+            let hStdIn = GetStdHandle(DWORD(STD_INPUT_HANDLE))
+            let fileType = GetFileType(hStdIn)
+            isStdinPiped = isExplicitDash || fileType == FILE_TYPE_PIPE || fileType == FILE_TYPE_DISK
         #else
-        if isExplicitDash || isatty(STDIN_FILENO) == 0 {
-            isStdinPiped = true
-        } else {
-            isStdinPiped = false
-        }
+            if isExplicitDash || isatty(STDIN_FILENO) == 0 {
+                isStdinPiped = true
+            } else {
+                isStdinPiped = false
+            }
         #endif
 
         if isStdinPiped {
@@ -126,9 +127,9 @@ struct Zago: ParsableCommand {
             var buf = [UInt8](repeating: 0, count: 4096)
             while true {
                 #if os(Windows)
-                let n = read(STDIN_FILENO, &buf, UInt32(buf.count))
+                    let n = read(STDIN_FILENO, &buf, UInt32(buf.count))
                 #else
-                let n = read(STDIN_FILENO, &buf, buf.count)
+                    let n = read(STDIN_FILENO, &buf, buf.count)
                 #endif
                 if n <= 0 { break }
                 pipedData.append(buf, count: Int(n))
@@ -199,47 +200,47 @@ struct Zago: ParsableCommand {
             }
 
             #if os(macOS) || os(Linux)
-            var ttyOpened = false
-            let ttyFd = open("/dev/tty", O_RDWR)
-            if ttyFd >= 0 {
-                dup2(ttyFd, STDIN_FILENO)
-                close(ttyFd)
-                ttyOpened = true
-            }
-            if !ttyOpened {
-                if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
-                    FileHandle.standardError.write(data)
+                var ttyOpened = false
+                let ttyFd = open("/dev/tty", O_RDWR)
+                if ttyFd >= 0 {
+                    dup2(ttyFd, STDIN_FILENO)
+                    close(ttyFd)
+                    ttyOpened = true
                 }
-                throw ExitCode.failure
-            }
+                if !ttyOpened {
+                    if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                        FileHandle.standardError.write(data)
+                    }
+                    throw ExitCode.failure
+                }
             #elseif os(Windows)
-            var ttyOpened = false
-            let access = DWORD(UInt32(GENERIC_READ) | UInt32(GENERIC_WRITE))
-            let share = DWORD(UInt32(FILE_SHARE_READ) | UInt32(FILE_SHARE_WRITE))
-            let hConIn = CreateFileW(
-                "CONIN$".withCString(encodedAs: UTF16.self) { $0 },
-                access,
-                share,
-                nil,
-                DWORD(OPEN_EXISTING),
-                0,
-                nil
-            )
-            if hConIn != INVALID_HANDLE_VALUE {
-                SetStdHandle(DWORD(STD_INPUT_HANDLE), hConIn)
-                ttyOpened = true
-            }
-            if !ttyOpened {
+                var ttyOpened = false
+                let access = DWORD(UInt32(GENERIC_READ) | UInt32(GENERIC_WRITE))
+                let share = DWORD(UInt32(FILE_SHARE_READ) | UInt32(FILE_SHARE_WRITE))
+                let hConIn = CreateFileW(
+                    "CONIN$".withCString(encodedAs: UTF16.self) { $0 },
+                    access,
+                    share,
+                    nil,
+                    DWORD(OPEN_EXISTING),
+                    0,
+                    nil
+                )
+                if hConIn != INVALID_HANDLE_VALUE {
+                    SetStdHandle(DWORD(STD_INPUT_HANDLE), hConIn)
+                    ttyOpened = true
+                }
+                if !ttyOpened {
+                    if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
+                        FileHandle.standardError.write(data)
+                    }
+                    throw ExitCode.failure
+                }
+            #else
                 if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
                     FileHandle.standardError.write(data)
                 }
                 throw ExitCode.failure
-            }
-            #else
-            if let data = "zago: standard input is not a tty\n".data(using: .utf8) {
-                FileHandle.standardError.write(data)
-            }
-            throw ExitCode.failure
             #endif
         }
 

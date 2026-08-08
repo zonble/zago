@@ -331,7 +331,8 @@ private final class CommandLineSpellChecker {
 
         guard process.terminationStatus == 0 else { return nil }
         let data = output.fileHandleForReading.readDataToEndOfFile()
-        let misspellings = String(data: data, encoding: .utf8)?
+        let misspellings =
+            String(data: data, encoding: .utf8)?
             .components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
             .filter { !$0.isEmpty } ?? []
@@ -362,31 +363,31 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
         didSet {
             fallbackEngine.language = language
             #if os(Windows)
-            configureSystemChecker()
+                configureSystemChecker()
             #endif
         }
     }
 
     private let fallbackEngine: FallbackCheckerEngine
     #if os(Windows)
-    private var checker: UnsafeMutablePointer<WindowsISpellChecker>? = nil
-    private var didInitializeCOM = false
+        private var checker: UnsafeMutablePointer<WindowsISpellChecker>? = nil
+        private var didInitializeCOM = false
     #endif
 
     public init(language: String = "en_US") {
         self.language = language
         self.fallbackEngine = FallbackCheckerEngine(language: language)
         #if os(Windows)
-        configureSystemChecker()
+            configureSystemChecker()
         #endif
     }
 
     deinit {
         #if os(Windows)
-        releaseSystemChecker()
-        if didInitializeCOM {
-            CoUninitialize()
-        }
+            releaseSystemChecker()
+            if didInitializeCOM {
+                CoUninitialize()
+            }
         #endif
     }
 
@@ -395,9 +396,9 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
             return true
         }
         #if os(Windows)
-        if let systemResult = systemIsCorrect(word) {
-            return systemResult
-        }
+            if let systemResult = systemIsCorrect(word) {
+                return systemResult
+            }
         #endif
         return fallbackEngine.isCorrect(word)
     }
@@ -408,93 +409,93 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
 
     public func ignoreWord(_ word: String) {
         #if os(Windows)
-        if let checker {
-            word.withCString(encodedAs: UTF16.self) { pWord in
-                _ = checker.pointee.lpVtbl.pointee.Ignore(UnsafeMutableRawPointer(checker), pWord)
+            if let checker {
+                word.withCString(encodedAs: UTF16.self) { pWord in
+                    _ = checker.pointee.lpVtbl.pointee.Ignore(UnsafeMutableRawPointer(checker), pWord)
+                }
             }
-        }
         #endif
         fallbackEngine.ignoreWord(word)
     }
 
     public func addWordToDictionary(_ word: String) {
         #if os(Windows)
-        if let checker {
-            word.withCString(encodedAs: UTF16.self) { pWord in
-                _ = checker.pointee.lpVtbl.pointee.Add(UnsafeMutableRawPointer(checker), pWord)
+            if let checker {
+                word.withCString(encodedAs: UTF16.self) { pWord in
+                    _ = checker.pointee.lpVtbl.pointee.Add(UnsafeMutableRawPointer(checker), pWord)
+                }
             }
-        }
         #endif
         fallbackEngine.addWordToDictionary(word)
     }
 
     #if os(Windows)
-    private func configureSystemChecker() {
-        releaseSystemChecker()
+        private func configureSystemChecker() {
+            releaseSystemChecker()
 
-        let hr = CoInitializeEx(nil, DWORD(2))
-        if hr >= 0 {
-            didInitializeCOM = true
-        } else if hr != HRESULT(bitPattern: 0x80010106) {
-            return
+            let hr = CoInitializeEx(nil, DWORD(2))
+            if hr >= 0 {
+                didInitializeCOM = true
+            } else if hr != HRESULT(bitPattern: 0x8001_0106) {
+                return
+            }
+
+            var clsid = spellCheckerFactoryCLSID()
+            var iid = spellCheckerFactoryIID()
+            var rawFactory: UnsafeMutableRawPointer? = nil
+            guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER.rawValue), &iid, &rawFactory) >= 0,
+                let rawFactory
+            else {
+                return
+            }
+
+            let factory = rawFactory.assumingMemoryBound(to: WindowsISpellCheckerFactory.self)
+            defer { _ = factory.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(factory)) }
+
+            let tag = bcp47LanguageTag(language)
+            var supported = WindowsBool(false)
+            let supportHR = tag.withCString(encodedAs: UTF16.self) { pTag in
+                factory.pointee.lpVtbl.pointee.IsSupported(UnsafeMutableRawPointer(factory), pTag, &supported)
+            }
+            guard supportHR >= 0, supported.boolValue else { return }
+
+            var rawChecker: UnsafeMutableRawPointer? = nil
+            let createHR = tag.withCString(encodedAs: UTF16.self) { pTag in
+                factory.pointee.lpVtbl.pointee.CreateSpellChecker(UnsafeMutableRawPointer(factory), pTag, &rawChecker)
+            }
+            guard createHR >= 0, let rawChecker else { return }
+            checker = rawChecker.assumingMemoryBound(to: WindowsISpellChecker.self)
         }
 
-        var clsid = spellCheckerFactoryCLSID()
-        var iid = spellCheckerFactoryIID()
-        var rawFactory: UnsafeMutableRawPointer? = nil
-        guard CoCreateInstance(&clsid, nil, DWORD(CLSCTX_INPROC_SERVER.rawValue), &iid, &rawFactory) >= 0,
-            let rawFactory
-        else {
-            return
+        private func releaseSystemChecker() {
+            if let checker {
+                _ = checker.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(checker))
+                self.checker = nil
+            }
         }
 
-        let factory = rawFactory.assumingMemoryBound(to: WindowsISpellCheckerFactory.self)
-        defer { _ = factory.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(factory)) }
+        private func systemIsCorrect(_ word: String) -> Bool? {
+            guard let checker else { return nil }
 
-        let tag = bcp47LanguageTag(language)
-        var supported = WindowsBool(false)
-        let supportHR = tag.withCString(encodedAs: UTF16.self) { pTag in
-            factory.pointee.lpVtbl.pointee.IsSupported(UnsafeMutableRawPointer(factory), pTag, &supported)
+            var rawErrors: UnsafeMutableRawPointer? = nil
+            let checkHR = word.withCString(encodedAs: UTF16.self) { pWord in
+                checker.pointee.lpVtbl.pointee.Check(UnsafeMutableRawPointer(checker), pWord, &rawErrors)
+            }
+            guard checkHR >= 0, let rawErrors else { return nil }
+            let errors = rawErrors.assumingMemoryBound(to: WindowsIEnumSpellingError.self)
+            defer { _ = errors.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(errors)) }
+
+            var rawSpellingError: UnsafeMutableRawPointer? = nil
+            let nextHR = errors.pointee.lpVtbl.pointee.Next(UnsafeMutableRawPointer(errors), &rawSpellingError)
+            guard nextHR >= 0 else { return nil }
+
+            if let rawSpellingError {
+                let spellingError = rawSpellingError.assumingMemoryBound(to: WindowsISpellingError.self)
+                _ = spellingError.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(spellingError))
+                return false
+            }
+            return true
         }
-        guard supportHR >= 0, supported.boolValue else { return }
-
-        var rawChecker: UnsafeMutableRawPointer? = nil
-        let createHR = tag.withCString(encodedAs: UTF16.self) { pTag in
-            factory.pointee.lpVtbl.pointee.CreateSpellChecker(UnsafeMutableRawPointer(factory), pTag, &rawChecker)
-        }
-        guard createHR >= 0, let rawChecker else { return }
-        checker = rawChecker.assumingMemoryBound(to: WindowsISpellChecker.self)
-    }
-
-    private func releaseSystemChecker() {
-        if let checker {
-            _ = checker.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(checker))
-            self.checker = nil
-        }
-    }
-
-    private func systemIsCorrect(_ word: String) -> Bool? {
-        guard let checker else { return nil }
-
-        var rawErrors: UnsafeMutableRawPointer? = nil
-        let checkHR = word.withCString(encodedAs: UTF16.self) { pWord in
-            checker.pointee.lpVtbl.pointee.Check(UnsafeMutableRawPointer(checker), pWord, &rawErrors)
-        }
-        guard checkHR >= 0, let rawErrors else { return nil }
-        let errors = rawErrors.assumingMemoryBound(to: WindowsIEnumSpellingError.self)
-        defer { _ = errors.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(errors)) }
-
-        var rawSpellingError: UnsafeMutableRawPointer? = nil
-        let nextHR = errors.pointee.lpVtbl.pointee.Next(UnsafeMutableRawPointer(errors), &rawSpellingError)
-        guard nextHR >= 0 else { return nil }
-
-        if let rawSpellingError {
-            let spellingError = rawSpellingError.assumingMemoryBound(to: WindowsISpellingError.self)
-            _ = spellingError.pointee.lpVtbl.pointee.Release(UnsafeMutableRawPointer(spellingError))
-            return false
-        }
-        return true
-    }
     #endif
 }
 
@@ -582,7 +583,7 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
 
     private func spellCheckerFactoryCLSID() -> GUID {
         makeGUID(
-            data1: 0x7ab36653,
+            data1: 0x7ab3_6653,
             data2: 0x1796,
             data3: 0x484b,
             data4: (0xbd, 0xfa, 0xe7, 0x4f, 0x1d, 0xb7, 0xc1, 0xdc)
@@ -591,7 +592,7 @@ public final class WindowsSpellCheckerEngine: SpellCheckerEngine {
 
     private func spellCheckerFactoryIID() -> GUID {
         makeGUID(
-            data1: 0x8e018a9d,
+            data1: 0x8e01_8a9d,
             data2: 0x2415,
             data3: 0x4677,
             data4: (0xbf, 0x08, 0x79, 0x4e, 0xa6, 0x1f, 0x94, 0xbb)

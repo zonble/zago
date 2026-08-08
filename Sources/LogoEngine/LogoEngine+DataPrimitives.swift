@@ -601,7 +601,8 @@ extension LogoEngine {
         case .contents:
             let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
             let vars = LogoValue.list(Array(variables.keys).sorted().map { .string($0) })
-            let plists = LogoValue.list(Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted().map { .string($0) })
+            let plists = LogoValue.list(
+                Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted().map { .string($0) })
             return LogoValue.list([procs, vars, plists]).description
 
         case .text:

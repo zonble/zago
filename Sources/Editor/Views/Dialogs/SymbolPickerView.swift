@@ -31,7 +31,7 @@ public enum SymbolCategories {
                 SymbolItem(symbol: "> [!TIP]", descriptionKey: "symbol.callout.tip"),
                 SymbolItem(symbol: "> [!IMPORTANT]", descriptionKey: "symbol.callout.important"),
                 SymbolItem(symbol: "> [!WARNING]", descriptionKey: "symbol.callout.warning"),
-                SymbolItem(symbol: "> [!CAUTION]", descriptionKey: "symbol.callout.caution")
+                SymbolItem(symbol: "> [!CAUTION]", descriptionKey: "symbol.callout.caution"),
             ]
         ),
         SymbolCategory(
@@ -79,7 +79,7 @@ public enum SymbolCategories {
                 SymbolItem(symbol: "▸", descriptionKey: "symbol.step.right_pointer_small"),
                 SymbolItem(symbol: "▹", descriptionKey: "symbol.step.right_pointer_small_hollow"),
                 SymbolItem(symbol: "►", descriptionKey: "symbol.step.right_pointer_med"),
-                SymbolItem(symbol: "▻", descriptionKey: "symbol.step.right_pointer_med_hollow")
+                SymbolItem(symbol: "▻", descriptionKey: "symbol.step.right_pointer_med_hollow"),
             ]
         ),
         SymbolCategory(
@@ -111,7 +111,7 @@ public enum SymbolCategories {
                 SymbolItem(symbol: "🤝", descriptionKey: "symbol.badge.handshake"),
                 SymbolItem(symbol: "👥", descriptionKey: "symbol.badge.team"),
                 SymbolItem(symbol: "🔒", descriptionKey: "symbol.badge.lock"),
-                SymbolItem(symbol: "⚡", descriptionKey: "symbol.badge.lightning")
+                SymbolItem(symbol: "⚡", descriptionKey: "symbol.badge.lightning"),
             ]
         ),
         SymbolCategory(
@@ -140,9 +140,9 @@ public enum SymbolCategories {
                 SymbolItem(symbol: "⌃", descriptionKey: "symbol.key.control"),
                 SymbolItem(symbol: "⎋", descriptionKey: "symbol.key.escape"),
                 SymbolItem(symbol: "⏎", descriptionKey: "symbol.key.return"),
-                SymbolItem(symbol: "⌫", descriptionKey: "symbol.key.backspace")
+                SymbolItem(symbol: "⌫", descriptionKey: "symbol.key.backspace"),
             ]
-        )
+        ),
     ]
 }
 
@@ -192,9 +192,10 @@ public final class SymbolPickerView {
                     setCategory(3)
                     render()
                 } else if let firstChar = lowerStr.first,
-                          let ascii = firstChar.asciiValue,
-                          let aVal = Character("a").asciiValue,
-                          ascii >= aVal && ascii <= Character("z").asciiValue! {
+                    let ascii = firstChar.asciiValue,
+                    let aVal = Character("a").asciiValue,
+                    ascii >= aVal && ascii <= Character("z").asciiValue!
+                {
                     let idx = Int(ascii - aVal)
                     let itemsCount = currentCategoryItems().count
                     if idx >= 0 && idx < itemsCount {

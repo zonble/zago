@@ -120,4 +120,3 @@ public struct SymbolPickerCommand: Command {
         editor.refreshScreen()
     }
 }
-

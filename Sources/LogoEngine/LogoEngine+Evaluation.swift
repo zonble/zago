@@ -433,7 +433,8 @@ extension LogoEngine {
                             return subReturn ?? lastResult ?? ""
                         } else {
                             let hasComparison = inner.contains {
-                                $0 == "=" || $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<=" || $0 == ">=" || $0 == "EQUAL?" || $0 == "NOTEQUAL?"
+                                $0 == "=" || $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<="
+                                    || $0 == ">=" || $0 == "EQUAL?" || $0 == "NOTEQUAL?"
                             }
                             if hasComparison {
                                 return evaluateCondition(inner) ? "1" : "0"
