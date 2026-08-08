@@ -134,7 +134,7 @@ jobs:
           $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
-          & "$env:SWIFT_BIN\swift.exe" test --enable-code-coverage
+          & "$env:SWIFT_BIN\swift.exe" test
 
       - name: Build Package (Release)
         if: runner.os != 'Windows'
