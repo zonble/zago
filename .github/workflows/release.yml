@@ -118,8 +118,19 @@ jobs:
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
           $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
           Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago.exe" -Force
-          Compress-Archive -Path "artifacts\zago.exe" -DestinationPath "artifacts\zago-windows-x64.zip" -Force
-          Remove-Item "artifacts\zago.exe" -Force
+
+          # Bundle Swift Runtime DLLs into release directory so Windows users can run zago without installing Swift Toolchain
+          $dllSources = @($env:SWIFT_BIN, "$env:SWIFT_SDKROOT\usr\bin")
+          foreach ($src in $dllSources) {
+              if (Test-Path $src) {
+                  Get-ChildItem -Path $src -Filter "*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+                      Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+                  }
+              }
+          }
+
+          Compress-Archive -Path "artifacts\*" -DestinationPath "artifacts\zago-windows-x64.zip" -Force
+          Get-ChildItem -Path artifacts -Exclude "zago-windows-x64.zip" | Remove-Item -Recurse -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
