@@ -119,6 +119,7 @@ public final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.buffer.next", hotkeyChar: "n", commandId: .bufferNext),
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
+                    MenuItem(titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput),
                 ]),
             MenuCategory(
                 titleKey: "menu.shapes", hotkeyChar: "s",

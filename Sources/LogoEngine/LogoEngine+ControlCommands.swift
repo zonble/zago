@@ -29,16 +29,10 @@ extension LogoEngine {
             let isTrue = evaluateCondition(condTokens)
 
             if index < tokens.count && tokens[index] == "[" {
-                index += 1
+                let trueBlock = extractBlockTokens(tokens: tokens, index: &index)
                 if isTrue {
-                    executeTokens(tokens, index: &index, frameReturn: &frameReturn)
-                } else {
-                    var depth = 1
-                    while index < tokens.count && depth > 0 {
-                        if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
-                        if depth == 0 { break }
-                        index += 1
-                    }
+                    var bIdx = 0
+                    executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
             return true
@@ -54,33 +48,17 @@ extension LogoEngine {
             let isTrue = evaluateCondition(condTokens)
 
             if index < tokens.count && tokens[index] == "[" {
+                let trueBlock = extractBlockTokens(tokens: tokens, index: &index)
+                var falseBlock: [String] = []
+                if index + 1 < tokens.count && tokens[index + 1] == "[" {
+                    index += 1
+                    falseBlock = extractBlockTokens(tokens: tokens, index: &index)
+                }
+                var bIdx = 0
                 if isTrue {
-                    index += 1  // Advance past first "["
-                    executeTokens(tokens, index: &index, frameReturn: &frameReturn)
-                    if frameReturn != nil { return true }
-                    index += 1  // Advance past first "]"
-                    if index < tokens.count && tokens[index] == "[" {
-                        var depth = 1
-                        index += 1
-                        while index < tokens.count && depth > 0 {
-                            if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
-                            if depth == 0 { break }
-                            index += 1
-                        }
-                    }
+                    executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
                 } else {
-                    var depth = 1
-                    index += 1  // Advance past first "["
-                    while index < tokens.count && depth > 0 {
-                        if tokens[index] == "[" { depth += 1 } else if tokens[index] == "]" { depth -= 1 }
-                        if depth == 0 { break }
-                        index += 1
-                    }
-                    index += 1  // Advance past first "]"
-                    if index < tokens.count && tokens[index] == "[" {
-                        index += 1  // Advance past second "["
-                        executeTokens(tokens, index: &index, frameReturn: &frameReturn)
-                    }
+                    executeTokens(falseBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
             return true
@@ -225,6 +203,8 @@ extension LogoEngine {
                         let thrownVal = currentThrowValue ?? ""
                         currentThrowTag = nil
                         currentThrowValue = nil
+                        lastError = LogoError(code: 1, message: thrownVal.isEmpty ? "Error" : thrownVal)
+                        hasUncaughtError = false
                         if !thrownVal.isEmpty {
                             lastResult = thrownVal
                         }

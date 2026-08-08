@@ -54,6 +54,16 @@ extension Editor {
             return
         }
 
+        if buffer.isReadOnly {
+            switch key {
+            case .backspace, .enter, .char:
+                setStatusMessage("[ Buffer is read-only ]")
+                return
+            default:
+                break
+            }
+        }
+
         switch key {
         case .backspace:
             if !isCanvasModeActive && deleteTextSelectionIfNeeded(updateClipboard: false) {

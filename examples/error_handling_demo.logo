@@ -1,0 +1,21 @@
+; ==============================================================================
+; zago LOGO Error Handling & Output Demo
+; Demonstrates CATCH "ERROR, THROW "ERROR, ERROR reporter, and *LOGO Output* logging
+; ==============================================================================
+
+; Define a procedure that calculates division with error handling
+TO SAFE_DIV :a :b
+    CATCH "ERROR [
+        IF :b = 0 [ THROW "ERROR "DivisionByZero ]
+        OUTPUT :a / :b
+    ]
+    PRINT (SENTENCE "CaughtError: ERROR)
+    OUTPUT "NaN
+END
+
+; Run test executions
+MAKE "res1 SAFE_DIV 10 2
+PRINT (SENTENCE "10 / 2 = :res1)
+
+MAKE "res2 SAFE_DIV 10 0
+PRINT (SENTENCE "10 / 0 = :res2)

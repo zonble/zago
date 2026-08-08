@@ -464,7 +464,7 @@ public final class Renderer {
         }
 
         let numStr = String(format: "%4d ", lineNumber)
-        let hasGitDiff = editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers
+        let hasGitDiff = editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
 
         if hasGitDiff {
             let status = editor.gitDiffInfo.lineStatuses[lineIdx] ?? .unmodified

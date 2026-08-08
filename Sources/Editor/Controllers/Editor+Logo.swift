@@ -17,10 +17,12 @@ extension Editor: LogoEngineDelegate {
             } else {
                 buffer.insertString(text)
             }
+            appendLogoOutput(text)
         case .insertNewline:
             insertNewlineForLogo()
         case .setStatusMessage(let msg):
             setStatusMessage(msg)
+            appendLogoOutput(msg)
         case .deleteChar:
             buffer.delete()
         case .backspaceChar:
@@ -410,20 +412,25 @@ extension Editor {
             return false
         }
 
+        let scriptName = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "Untitled"
+        appendLogoOutputHeader(scriptName)
+
         logoEngine.execute(script)
 
-        if !logoEngine.hasSetStatusMessage {
-            if let result = logoEngine.lastResult, !result.isEmpty {
-                if let resultPrefix {
-                    setStatusMessage("\(resultPrefix)\(result)")
-                } else {
-                    setStatusMessage(result)
-                }
-            } else if let successStatus {
-                setStatusMessage(successStatus)
-            } else {
-                setStatusMessage("")
-            }
+        if logoEngine.hasUncaughtError, let err = logoEngine.lastError {
+            let errText = "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
+            appendLogoOutput(errText)
+            setStatusMessage("Error in LOGO execution. Press Alt+L or type :output to view.")
+        } else if logoEngine.hasSetStatusMessage {
+            // Status message set by engine
+        } else if let resultPrefix, let result = logoEngine.lastResult, !result.isEmpty {
+            appendLogoOutput(result)
+            setStatusMessage("\(resultPrefix)\(result)")
+        } else if let successStatus {
+            setStatusMessage(successStatus)
+        } else if let result = logoEngine.lastResult, !result.isEmpty {
+            appendLogoOutput(result)
+            setStatusMessage(result)
         }
 
         return true

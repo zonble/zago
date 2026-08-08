@@ -438,6 +438,7 @@ public struct TraditionalChineseStrings {
 
         "menu.buffer.next": "下一個 Buffer\tM+.",
         "menu.buffer.prev": "上一個 Buffer\tM+,",
+        "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
 
         "menu.shapes.box": "方框",
         "menu.shapes.draw_box": "繪製方框",

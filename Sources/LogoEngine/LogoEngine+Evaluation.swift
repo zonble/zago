@@ -51,7 +51,7 @@ extension LogoEngine {
     /// Evaluates expression tokens, variadic function calls, and binary arithmetic expressions (+, -, *, /, %).
     internal func evaluateExpression(_ tokens: [String], index: inout Int) -> String {
         guard index < tokens.count else { return "" }
-        guard lastError == "[]" else { return "" }
+        guard !hasUncaughtError else { return "" }
 
         var leftVal: String
         var isParenthesized = false
@@ -142,7 +142,7 @@ extension LogoEngine {
 
         // Peek next operator if present
         while index + 1 < tokens.count {
-            guard lastError == "[]" else { return "" }
+            guard !hasUncaughtError else { return "" }
             let nextToken = tokens[index + 1]
             if nextToken == ")" || nextToken == "]" {
                 break
@@ -259,7 +259,7 @@ extension LogoEngine {
     internal func invokeProcedure(_ proc: LogoProcedure, tokens: [String], index: inout Int) -> String? {
         guard procedureCallDepth < maxProcedureCallDepth else {
             let message = "[Procedure recursion limit exceeded: \(proc.name)]"
-            lastError = message
+            lastError = LogoError(code: 1, message: message, procedureName: proc.name)
             delegate?.logoEngine(self, performAction: .setStatusMessage(message))
             hasSetStatusMessage = true
             return nil
@@ -267,7 +267,7 @@ extension LogoEngine {
 
         var args: [String] = []
         for _ in 0..<proc.parameters.count {
-            guard lastError == "[]" else { return nil }
+            guard !hasUncaughtError else { return nil }
             index += 1
             let arg = evaluateExpression(tokens, index: &index)
             args.append(arg)

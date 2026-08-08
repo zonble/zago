@@ -268,8 +268,8 @@ struct LogoCoverageTests {
         engine.procedureCallDepth = engine.maxProcedureCallDepth
         var recursionIndex = 0
         #expect(engine.invokeProcedure(proc, tokens: ["JOIN", "\"a", "\"b"], index: &recursionIndex) == nil)
-        #expect(engine.lastError.contains("recursion limit exceeded"))
-        #expect(delegate.statusMessages.last == engine.lastError)
+        #expect(engine.lastError?.message.contains("recursion limit exceeded") == true)
+        #expect(delegate.statusMessages.last?.contains("recursion limit exceeded") == true)
     }
 
     @Test func testReflectionAndMetaprogrammingPrimitives() {

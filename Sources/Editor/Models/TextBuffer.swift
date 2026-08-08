@@ -41,6 +41,10 @@ open class TextBuffer: SpellCheckableBuffer {
     }
     open var allowsLogoExecution: Bool { true }
     open var isDirectoryBuffer: Bool { false }
+    open var isScratchBuffer: Bool {
+        guard let path = filePath else { return true }
+        return path.hasPrefix("*")
+    }
 
     public init() {
     }

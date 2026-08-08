@@ -174,7 +174,7 @@ extension LogoEngine {
             return try TextTransformer.apply(transformId, to: inputText)
         } catch {
             let message = "[\(error)]"
-            lastError = message
+            lastError = LogoError(code: 1, message: message)
             delegate?.logoEngine(self, performAction: .setStatusMessage(message))
             hasSetStatusMessage = true
             return ""

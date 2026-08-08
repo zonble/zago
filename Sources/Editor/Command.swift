@@ -99,6 +99,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case macroLogo = "macro.logo"
     case logoReference = "logo.reference"
     case logoWorkspace = "logo.workspace"
+    case logoOutput = "logo.output"
+    case logoClearOutput = "logo.clear_output"
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case textMode = "mode.text"

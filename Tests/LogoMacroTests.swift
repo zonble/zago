@@ -73,7 +73,7 @@ final class LogoTestResultBox: @unchecked Sendable {
     #expect(logoEngine.lastResult == "1")
 
     logoEngine.execute("TRANSLIT \"Zago-Does-Not-Exist \"text")
-    #expect(logoEngine.lastError == "[Unknown text transform: Zago-Does-Not-Exist]")
+    #expect(logoEngine.lastError?.message.contains("Zago-Does-Not-Exist") == true)
     #expect(editor.statusMessage == "[Unknown text transform: Zago-Does-Not-Exist]")
 }
 

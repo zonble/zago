@@ -139,6 +139,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case remprop
     case plist
     case plists
+    case error
     case isWord
     case isList
     case isArray
@@ -421,6 +422,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["REMPROP", "ERASEPROP"], .remprop),
         (["PLIST", "PROPLIST"], .plist),
         (["PLISTS", "PROPLISTS"], .plists),
+        (["ERROR"], .error),
 
         // Predicates & Comparisons
         (["WORD?", "WORDP"], .isWord),

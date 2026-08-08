@@ -64,6 +64,7 @@ public final class LogoEngine {
     public var customProcedures: [String: LogoProcedure] = [:]
     public var variables: [String: String] = [:]
     public var propertyLists: [String: [String: LogoValue]] = [:]
+    internal var callStack: [String] = []
     internal var variableValues: [String: LogoRuntimeValue] = [:]
     internal var lastExpressionValue: LogoRuntimeValue? = nil
     public var hasSetStatusMessage: Bool = false
@@ -95,7 +96,7 @@ public final class LogoEngine {
         .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
         .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
         .pick, .remove, .remdup, .quoted, .split, .setItem,
-        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists,
+        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists, .error,
         .names, .procedures, .primitives, .contents, .text, .arity, .isWord, .isList, .isArray,
         .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
         .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
@@ -147,7 +148,8 @@ public final class LogoEngine {
     public var lastResult: String? = nil
     public var repCount: Int = 0
     public var testResult: Bool? = nil
-    public var lastError: String = "[]"
+    public var lastError: LogoError? = nil
+    public var hasUncaughtError: Bool = false
     public var byeFlag: Bool = false
     public var currentThrowTag: String? = nil
     public var currentThrowValue: String? = nil
@@ -166,7 +168,8 @@ public final class LogoEngine {
     public func execute(_ script: String) {
         guard let delegate = self.delegate else { return }
         lastResult = nil
-        lastError = "[]"
+        lastError = nil
+        hasUncaughtError = false
         hasSetStatusMessage = false
 
         let tokens = tokenize(script)
@@ -187,7 +190,7 @@ public final class LogoEngine {
     /// Step-by-step 3-stage statement execution loop for tokenized scripts.
     internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
         guard self.delegate != nil else { return }
-        while index < tokens.count && frameReturn == nil && !byeFlag && lastError == "[]" {
+        while index < tokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
             let token = tokens[index]
 
             if token == "]" {
@@ -225,7 +228,8 @@ public final class LogoEngine {
         let limit = max(1, maxLoopIterations)
         guard iteration <= limit else {
             let message = "[LOGO loop iteration limit exceeded: \(loopName) (\(limit) iterations)]"
-            lastError = message
+            lastError = LogoError(code: 1, message: message)
+            hasUncaughtError = true
             delegate?.logoEngine(self, performAction: .setStatusMessage(message))
             hasSetStatusMessage = true
             return false

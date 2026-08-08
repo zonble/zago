@@ -81,6 +81,8 @@ extension Editor {
         commandRegistry.register(LogoMacroCommand())
         commandRegistry.register(LogoReferenceCommand())
         commandRegistry.register(LogoWorkspaceCommand())
+        commandRegistry.register(LogoOutputCommand())
+        commandRegistry.register(ClearLogoOutputCommand())
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(SwitchTextModeCommand())

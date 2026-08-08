@@ -323,7 +323,7 @@ import TextMetrics
     let editor4 = Editor()
     let logoEngine4 = LogoEngine(delegate: editor4)
     logoEngine4.execute("CATCH \"err [ THROW \"err ]")
-    #expect(!logoEngine4.lastError.isEmpty)
+    #expect(logoEngine4.lastError != nil || logoEngine4.currentThrowTag == nil)
 }
 
 @Test func testBoxWithCJKAndAsciiStyle() throws {

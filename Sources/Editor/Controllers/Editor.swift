@@ -65,7 +65,7 @@ public final class Editor: @unchecked Sendable {
 
     public func updateGitDiff() {
         isGitDiffDirty = false
-        guard displayConfig.showGitDiff else {
+        guard displayConfig.showGitDiff, !buffer.isScratchBuffer else {
             gitDiffInfo = .empty
             return
         }

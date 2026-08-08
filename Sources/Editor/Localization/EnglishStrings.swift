@@ -438,6 +438,7 @@ public struct EnglishStrings {
 
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",
+        "menu.buffer.output": "LOGO Output\tM+L",
 
         "menu.shapes.box": "Box",
         "menu.shapes.draw_box": "Draw Box",

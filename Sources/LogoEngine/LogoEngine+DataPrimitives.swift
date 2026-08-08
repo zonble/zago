@@ -580,6 +580,12 @@ extension LogoEngine {
             let keys = Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted()
             return LogoValue.list(keys.map { .string($0) }).description
 
+        case .error:
+            if let err = lastError {
+                return err.toLogoListString
+            }
+            return "[]"
+
         case .names:
             let keys = Array(variables.keys).sorted()
             return LogoValue.list(keys.map { .string($0) }).description
