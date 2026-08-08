@@ -139,7 +139,7 @@ import Testing
         let canvasBuf = editor.buffers[idx!]
         #expect(canvasBuf.baseMode == .canvas)
 
-        editor.commandRegistry.dispatch(key: .alt("C"), editor: editor)
+        #expect(editor.commandRegistry.dispatch(key: .alt("C"), editor: editor))
         #expect(editor.currentBufferIndex != idx!)
     }
 
