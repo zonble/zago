@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.2.1 - 2026-08-09
+
+On-demand LOGO Output logging and automatic buffer list removal on toggle off.
+
+### Changed
+
+- **On-Demand LOGO Output Buffer**: Running LOGO scripts or commands now logs output history silently in the background without automatically adding `*LOGO Output*` buffer to the active buffer tab list.
+- **Auto-Remove on Toggle Off**: Toggling off `*LOGO Output*` (`Alt+L` / `M+L`) switches back to the primary file and removes `*LOGO Output*` from the buffer list, preventing tab bar clutter and exit prompt friction (`^X`).
+
 ## 1.2.0 - 2026-08-09
 
 Interactive TUI Markdown Symbol Picker, Logo string manipulation primitives, dedicated Logo Run Menu, and Views directory architecture refactoring.
