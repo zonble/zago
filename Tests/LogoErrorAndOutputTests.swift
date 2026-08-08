@@ -66,6 +66,32 @@ import Testing
         #expect(!editor.logoOutputHistory.contains { $0.contains("Line 1 Output") })
     }
 
+    @Test func testLogoOutputOnDemandLoggingAndAutoRemoval() {
+        let editor = Editor(filePath: "document.md")
+        #expect(editor.buffers.count == 1)
+        #expect(editor.findLogoOutputBufferIndex() == nil)
+
+        // Running LOGO commands logs output in background history without polluting buffers list
+        editor.runLogoScript("PRINT \"Background Output Log\"")
+        #expect(editor.buffers.count == 1)
+        #expect(editor.findLogoOutputBufferIndex() == nil)
+        #expect(editor.logoOutputHistory.contains { $0.contains("Background Output Log") })
+
+        // Toggle ON (Alt+L): Dynamically creates *LOGO Output* buffer and switches to it
+        editor.toggleLogoOutputBuffer()
+        #expect(editor.buffers.count == 2)
+        let outputIdx = editor.findLogoOutputBufferIndex()
+        #expect(outputIdx != nil)
+        #expect(editor.currentBufferIndex == outputIdx!)
+        #expect(editor.buffer.lines.contains { $0.contains("Background Output Log") })
+
+        // Toggle OFF (Alt+L): Switches back to document.md AND removes *LOGO Output* from buffers list
+        editor.toggleLogoOutputBuffer()
+        #expect(editor.buffers.count == 1)
+        #expect(editor.findLogoOutputBufferIndex() == nil)
+        #expect(editor.buffer.filePath == "document.md")
+    }
+
     @Test func testErrorHandlingDemoExampleScript() {
         let editor = Editor()
         let scriptPath = (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent("examples/error_handling_demo.logo")
