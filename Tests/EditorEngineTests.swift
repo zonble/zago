@@ -385,6 +385,7 @@ import TextMetrics
     }
 
     let editor = Editor(filePath: normalizedPath)
+    editor.displayConfig.autoReload = false
     editor.buffer.lines = ["saved without prompt"]
     editor.buffer.isModified = true
 
