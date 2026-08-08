@@ -31,7 +31,7 @@ This document defines the architectural division of responsibilities between **E
 ## 2. Component Details
 
 ### A. Unified Editor Commands (`Command`)
-Defined under `Sources/Editor/Commands/` (organized by domain into `FileCommands.swift`, `SearchCommands.swift`, `NavigationCommands.swift`, `BufferCommands.swift`, `SettingCommands.swift`, `EditingCommands.swift`, `SelectionCommands.swift`, `TableModeCommands.swift`, `UICommands.swift`).
+Protocol defined at `Sources/Editor/Command.swift`, with domain commands organized under `Sources/Editor/Commands/` (`FileCommands.swift`, `SearchCommands.swift`, `NavigationCommands.swift`, `BufferCommands.swift`, `SettingCommands.swift`, `EditingCommands.swift`, `SelectionCommands.swift`, `TableModeCommands.swift`, `LogoOutputCommands.swift`, `UICommands.swift`).
 
 - **Role**: Single protocol defining all editor actions, supporting both keybindings (`keys: [Key]`) and CommandBar text aliases (`commandBarAliases: [String]`).
 - **Key Responsibilities**:

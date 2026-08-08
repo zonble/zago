@@ -61,7 +61,7 @@ by the command prompt before LOGO evaluation.
 
 # 📚 PART 1: Quick Start & Essential Diagramming Guide
 
-Most of the time in `se`, you only need a handful of essential commands to shape structured text: **`BOX`**, **`DRAWBOX`**, **`LINE`**, **`VLINE`**, **`TABLE`**, **`TYPE`**, and **`SHOW`**.
+Most of the time in `zago`, you only need a handful of essential commands to shape structured text: **`BOX`**, **`DRAWBOX`**, **`LINE`**, **`VLINE`**, **`TABLE`**, **`TYPE`**, and **`SHOW`**.
 
 ---
 

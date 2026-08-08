@@ -130,6 +130,7 @@ lines.
 | Key | Action |
 | :--- | :--- |
 | `F1` | Toggle top drop-down Menu Bar |
+| Menu → Shapes → Insert Symbol... (`Alt+S`) | Open interactive Markdown Symbol Picker dialog (GFM Callouts, Steps, Badges, Math/UI Symbols) |
 | `ruler` command | Toggle WordStar-style column ruler bar (`----!----1----!----2...`) |
 | `linenumbers` command | Toggle line numbers gutter |
 | `sublinenumbers` command | Toggle soft-wrap sub-line indicator numbers |

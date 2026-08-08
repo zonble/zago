@@ -30,7 +30,7 @@ Sources/Editor/
 │   ├── DirectoryBuffer.swift
 │   ├── LayoutEngine.swift
 │   ├── ScreenGeometry.swift
-│   ├── TableCellDetector.swift
+│   ├── RuntimeConfig.swift
 │   ├── DocumentLink.swift
 │   ├── EditorOptions.swift
 │   ├── EditorConfigSource.swift
@@ -45,11 +45,12 @@ Sources/Editor/
 │   │   ├── MenuBar.swift
 │   │   ├── Renderer+Overlay.swift
 │   │   └── Renderer+StatusAndHelp.swift
-│   └── Modals/
+│   └── Dialogs/
 │       ├── DocumentOutlineView.swift
 │       ├── HelpContent.swift
 │       ├── LogoReferenceContent.swift
-│       └── LogoWorkspaceContent.swift
+│       ├── LogoWorkspaceContent.swift
+│       └── SymbolPickerView.swift
 │
 ├── Controllers/              # State Coordinators & Input Controllers
 │   ├── Editor.swift
@@ -61,12 +62,14 @@ Sources/Editor/
 │   ├── TableModeController+Navigation.swift
 │   ├── TableModeController+Operations.swift
 │   ├── CanvasModeController.swift
+│   ├── KeyInputHandler.swift
 │   ├── Editor+Actions.swift
 │   ├── Editor+Buffer.swift
 │   ├── Editor+Commands.swift
-│   ├── Editor+DisplayConfig.swift
 │   ├── Editor+Events.swift
+│   ├── Editor+Indent.swift
 │   ├── Editor+Logo.swift
+│   ├── Editor+LogoOutput.swift
 │   ├── Editor+Modes.swift
 │   ├── Editor+Prompts.swift
 │   ├── Editor+Undo.swift
@@ -75,16 +78,18 @@ Sources/Editor/
 │   └── EditorTerminal.swift
 │
 ├── Commands/                 # Command Pattern Definitions
-│   ├── Command.swift
 │   ├── BufferCommands.swift
 │   ├── EditingCommands.swift
 │   ├── FileCommands.swift
+│   ├── LogoOutputCommands.swift
 │   ├── NavigationCommands.swift
 │   ├── SearchCommands.swift
 │   ├── SelectionCommands.swift
 │   ├── SettingCommands.swift
 │   ├── TableModeCommands.swift
 │   └── UICommands.swift
+│
+├── Command.swift             # Command Pattern Protocols & Registry
 │
 └── Localization/             # Internationalization & String Resources
     ├── Localization.swift
@@ -111,7 +116,7 @@ Sources/Editor/
     * `TitleAndMenuBar`: Renders header bar and interactive top menu categories.
     * `Renderer+Overlay`: Renders 2D dropdown menu overlays and box-drawing character borders.
     * `Renderer+StatusAndHelp`: Renders status indicator bar, prompt input line, WordStar ruler, and dynamic contextual help bar.
-* **`Views/Modals/`**: Full-screen or floating overlay views (`DocumentOutlineView`, `HelpContent`, `LogoReferenceContent`).
+* **`Views/Dialogs/`**: Floating modal dialog and overlay views (`SymbolPickerView`, `DocumentOutlineView`, `HelpContent`, `LogoReferenceContent`, `LogoWorkspaceContent`).
 
 ### 3.3 Controller Layer (`Sources/Editor/Controllers/`)
 
