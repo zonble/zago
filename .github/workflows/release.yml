@@ -39,7 +39,7 @@ jobs:
             ${{ matrix.swift_image }} \
             sh -c "
               apt-get update -qq && apt-get install -y -qq wamerican binutils > /dev/null 2>&1
-              swift build -c release --static-swift-stdlib
+              swift build -c release --static-swift-stdlib -Xswiftc -Osize
               strip --strip-all .build/release/zago
               cp .build/release/zago /workspace/zago-linux-${{ matrix.arch }}
               chmod +x /workspace/packaging/deb/build_deb.sh
@@ -114,7 +114,7 @@ jobs:
           $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
-          & "$env:SWIFT_BIN\swift.exe" build -c release
+          & "$env:SWIFT_BIN\swift.exe" build -c release -Xswiftc -Osize
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
           $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
           Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago.exe" -Force
