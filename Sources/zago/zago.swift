@@ -125,9 +125,13 @@ struct Zago: ParsableCommand {
             var pipedData = Data()
             var buf = [UInt8](repeating: 0, count: 4096)
             while true {
+                #if os(Windows)
+                let n = read(STDIN_FILENO, &buf, UInt32(buf.count))
+                #else
                 let n = read(STDIN_FILENO, &buf, buf.count)
+                #endif
                 if n <= 0 { break }
-                pipedData.append(buf, count: n)
+                pipedData.append(buf, count: Int(n))
             }
             if let str = String(data: pipedData, encoding: .utf8), !str.isEmpty {
                 pipedInputData = str
@@ -210,10 +214,12 @@ struct Zago: ParsableCommand {
             }
             #elseif os(Windows)
             var ttyOpened = false
+            let access = DWORD(UInt32(GENERIC_READ) | UInt32(GENERIC_WRITE))
+            let share = DWORD(UInt32(FILE_SHARE_READ) | UInt32(FILE_SHARE_WRITE))
             let hConIn = CreateFileW(
                 "CONIN$".withCString(encodedAs: UTF16.self) { $0 },
-                DWORD(GENERIC_READ | GENERIC_WRITE),
-                DWORD(FILE_SHARE_READ | FILE_SHARE_WRITE),
+                access,
+                share,
                 nil,
                 DWORD(OPEN_EXISTING),
                 0,
