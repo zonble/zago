@@ -9,8 +9,7 @@ import Testing
         let repoRoot = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-            .path
-        return (repoRoot as NSString).appendingPathComponent("examples/\(filename)")
+        return repoRoot.appendingPathComponent("examples").appendingPathComponent(filename).path
     }
 
     private func executeScriptFile(_ filename: String) throws -> String {
