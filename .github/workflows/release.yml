@@ -41,16 +41,16 @@ jobs:
               apt-get update -qq && apt-get install -y -qq wamerican binutils > /dev/null 2>&1
               swift build -c release --static-swift-stdlib -Xswiftc -Osize
               strip --strip-all .build/release/zago
-              cp .build/release/zago /workspace/zago-linux-${{ matrix.arch }}
+              tar -czvf /workspace/zago-linux-${{ matrix.arch }}.tar.gz -C .build/release zago
               chmod +x /workspace/packaging/deb/build_deb.sh
               /workspace/packaging/deb/build_deb.sh .build/release/zago \"$VERSION\" \"${{ matrix.arch }}\"
             "
 
-      - name: Upload binary artifact
+      - name: Upload binary archive artifact
         uses: actions/upload-artifact@v4
         with:
           name: zago-linux-${{ matrix.arch }}
-          path: zago-linux-${{ matrix.arch }}
+          path: zago-linux-${{ matrix.arch }}.tar.gz
 
       - name: Upload deb artifact
         uses: actions/upload-artifact@v4
@@ -178,7 +178,7 @@ jobs:
       - name: Generate checksums
         working-directory: artifacts
         run: |
-          sha256sum zago-linux-x86_64 zago-linux-aarch64 zago-windows-x64.zip zago_*.deb > checksums.txt
+          sha256sum zago-linux-*.tar.gz zago-windows-x64.zip zago_*.deb > checksums.txt
           cat checksums.txt
 
       - name: Extract release notes from CHANGELOG.md
@@ -198,8 +198,7 @@ jobs:
           name: zago ${{ github.ref_name }}
           body_path: release_notes.md
           files: |
-            artifacts/zago-linux-x86_64
-            artifacts/zago-linux-aarch64
+            artifacts/zago-linux-*.tar.gz
             artifacts/zago-windows-x64.zip
             artifacts/zago_*.deb
             artifacts/checksums.txt

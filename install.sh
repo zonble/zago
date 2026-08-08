@@ -11,9 +11,9 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 # Detect architecture
 ARCH="$(uname -m)"
 case "$ARCH" in
-    x86_64)  ASSET_NAME="zago-linux-x86_64" ;;
-    aarch64) ASSET_NAME="zago-linux-aarch64" ;;
-    arm64)   ASSET_NAME="zago-linux-aarch64" ;;
+    x86_64)  ASSET_NAME="zago-linux-x86_64.tar.gz" ;;
+    aarch64) ASSET_NAME="zago-linux-aarch64.tar.gz" ;;
+    arm64)   ASSET_NAME="zago-linux-aarch64.tar.gz" ;;
     *)
         echo "Unsupported architecture: $ARCH"
         echo "Please build from source: https://github.com/$REPO"
@@ -38,6 +38,15 @@ DOWNLOAD_URL=$(curl -fsSL "$API_URL" \
     | grep -o "https://[^\"]*")
 
 if [ -z "$DOWNLOAD_URL" ]; then
+    # Fallback to uncompressed asset name for backward compatibility
+    RAW_ASSET_NAME="$(echo "$ASSET_NAME" | sed 's/\.tar\.gz$//')"
+    DOWNLOAD_URL=$(curl -fsSL "$API_URL" \
+        -H "Accept: application/vnd.github+json" \
+        | grep -o "\"browser_download_url\": *\"[^\"]*$RAW_ASSET_NAME\"" \
+        | grep -o "https://[^\"]*")
+fi
+
+if [ -z "$DOWNLOAD_URL" ]; then
     echo "Could not find release asset '$ASSET_NAME' in the latest release."
     echo "Check: https://github.com/$REPO/releases/latest"
     exit 1
@@ -47,13 +56,30 @@ fi
 mkdir -p "$INSTALL_DIR"
 
 INSTALL_PATH="$INSTALL_DIR/$BINARY_NAME"
-TEMP_FILE="$(mktemp)"
+TEMP_DIR="$(mktemp -d)"
+TEMP_FILE="$TEMP_DIR/download_asset"
+
+cleanup() {
+    rm -rf "$TEMP_DIR"
+}
+trap cleanup EXIT INT TERM
 
 echo "Downloading $ASSET_NAME..."
 curl -fsSL --progress-bar "$DOWNLOAD_URL" -o "$TEMP_FILE"
 
-chmod +x "$TEMP_FILE"
-mv "$TEMP_FILE" "$INSTALL_PATH"
+if echo "$DOWNLOAD_URL" | grep -q "\.tar\.gz$"; then
+    tar -xzf "$TEMP_FILE" -C "$TEMP_DIR"
+    EXTRACTED_BIN=$(find "$TEMP_DIR" -type f -name "zago" | head -n 1)
+    if [ -z "$EXTRACTED_BIN" ]; then
+        echo "Error: Could not find 'zago' binary inside downloaded package."
+        exit 1
+    fi
+    chmod +x "$EXTRACTED_BIN"
+    mv "$EXTRACTED_BIN" "$INSTALL_PATH"
+else
+    chmod +x "$TEMP_FILE"
+    mv "$TEMP_FILE" "$INSTALL_PATH"
+fi
 
 echo ""
 echo "zago installed to: $INSTALL_PATH"
