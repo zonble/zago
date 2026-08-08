@@ -223,7 +223,17 @@ import Testing
         #expect(output.contains("META_LOGO_OUT:_200"))
         #expect(output.contains("META_LOGO_OUT:_3"))
     }
+
+    @Test func testAdvancedUtilsDemoExample() throws {
+        let output = try executeScriptFile("advanced_utils_demo.logo")
+        #expect(output.contains("===_Advanced_Utilities_&_Linguistics_Demo_==="))
+        #expect(output.contains("sorted_list:_[10 20 30 40 50]"))
+        #expect(output.contains("formatted_pi:_    3.1416"))
+        #expect(output.contains("indexes_of_a_in_banana:_[2 4 6]"))
+        #expect(output.contains("to_hiragana(katakana):_かたかな"))
+    }
 }
+
 
 
 

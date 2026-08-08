@@ -1,6 +1,6 @@
 # zago Editor LOGO Examples & LeetCode Samples
 
-This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck, Self-Hosting LOGO Interpreter) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms, System Date/Time & Sequences).
+This directory contains standalone **Editor LOGO (.logo)** scripts showcasing the expressive power of `zago`'s built-in LOGO engine, ranging from esoteric language interpreters (Brainfuck, Self-Hosting LOGO Interpreter) to classic algorithm solutions (LeetCode, Caesar Cipher, Bitwise Algorithms, Regular Expressions, Mathematics, ASCII Canvas, CJK Linguistics, Turtle Graphics, Multidimensional Matrices, Buffer Automation, 2D Grid Algorithms, System Date/Time & Advanced Utilities).
 
 ---
 
@@ -8,6 +8,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 
 | File | Category | Description | Key LOGO Features Demonstrated |
 | :--- | :--- | :--- | :--- |
+| [`advanced_utils_demo.logo`](advanced_utils_demo.logo) | Utilities & Linguistics | **Sorting, Radians Trig & Hiragana Transliteration** | `SORT`, `FORM`, `INDEXESOF`, `RADSIN`, `RADCOS`, `TOHIRAGANA` |
 | [`logo_in_logo_interpreter.logo`](logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
 | [`fizzbuzz.logo`](fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
@@ -47,6 +48,9 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 You can run any `.logo` script directly from your terminal using `zago -e`:
 
 ```bash
+# Run Advanced Utilities & Linguistics Demo
+zago -e "$(cat examples/advanced_utils_demo.logo)"
+
 # Run Self-Hosting LOGO Interpreter in LOGO Demo
 zago -e "$(cat examples/logo_in_logo_interpreter.logo)"
 
@@ -85,6 +89,6 @@ zago -e "$(cat examples/turtle_demo.logo)"
 2. Press **`Esc`** to open the bottom LOGO command prompt.
 3. Type:
    ```logo
-   LOAD "examples/logo_in_logo_interpreter.logo
+   LOAD "examples/advanced_utils_demo.logo
    ```
 4. Output will render directly inside your buffer!

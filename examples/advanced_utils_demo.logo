@@ -1,0 +1,49 @@
+; ==============================================================================
+; Advanced Utilities Demo (in zago Editor LOGO)
+; ==============================================================================
+; Demonstrates remaining Logo primitives: `SORT`, `FORM`, `INDEXESOF`,
+; `RADSIN`, `RADCOS`, `RADTAN`, `TOHIRAGANA`, `SEARCH`, `FILL`.
+; ==============================================================================
+
+TYPE "===_Advanced_Utilities_&_Linguistics_Demo_==="
+TYPE CHAR 10
+
+; 1. List Sorting (SORT)
+MAKE "nums [30 10 50 20 40]
+MAKE "sorted SORT :nums
+TYPE "original_list:_ TYPE :nums TYPE CHAR 10
+TYPE "sorted_list:_ TYPE :sorted TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 2. Floating-Point Formatting (FORM val width precision)
+MAKE "formatted FORM 3.1415926535 10 4
+TYPE "formatted_pi:_ TYPE :formatted TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 3. Multiple Indexes Search (INDEXESOF needle haystack)
+MAKE "indices INDEXESOF "a "banana
+TYPE "indexes_of_a_in_banana:_ TYPE :indices TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 4. Radians Trigonometry (RADSIN, RADCOS, RADTAN)
+MAKE "r_sin RADSIN 1.5707963267948966
+MAKE "r_cos RADCOS 0
+MAKE "r_tan RADTAN 0.7853981633974483
+TYPE "rad_sin(pi/2):_ TYPE :r_sin TYPE CHAR 10
+TYPE "rad_cos(0):_ TYPE :r_cos TYPE CHAR 10
+TYPE "rad_tan(pi/4):_ TYPE :r_tan TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 5. Japanese Hiragana Transliteration (TOHIRAGANA / TRANSFORM_HIRAGANA)
+MAKE "hiragana TOHIRAGANA "katakana
+TYPE "to_hiragana(katakana):_ TYPE :hiragana TYPE CHAR 10
+
+TYPE CHAR 10
+
+; 6. String/List Search (SEARCH)
+MAKE "search_res SEARCH "banana "an
+TYPE "search_res:_ TYPE :search_res TYPE CHAR 10
