@@ -64,14 +64,14 @@ struct ConfigAndToolsTests {
         footer: l10n["helpview.footer"]
     )
     _ = helpView
-    #expect(HelpContent.lines(language: .en).contains("  KEYBINDINGS & COMMANDS REFERENCE"))
+    #expect(HelpContent.lines(language: .en).contains("  NAVIGATION & CURSOR MOVEMENT:"))
     #expect(HelpContent.lines(language: .en).contains("  CANVAS MODE:"))
-    #expect(HelpContent.lines(language: .en).contains("    Shift+Arrow        Draw box lines and move the canvas cursor"))
-    #expect(HelpContent.lines(language: .en).contains("    Ctrl+Shift+Arrow   Draw arrow lines with an arrowhead at the endpoint"))
-    #expect(HelpContent.lines(language: .zh_TW).contains("  快捷鍵與指令對照表"))
+    #expect(HelpContent.lines(language: .en).contains("    ⇧+Arrow            Draw box lines and move the canvas cursor"))
+    #expect(HelpContent.lines(language: .en).contains("    ^⇧+Arrow.          Draw arrow lines with an arrowhead at the endpoint"))
+    #expect(HelpContent.lines(language: .zh_TW).contains("  游標移動與導航："))
     #expect(HelpContent.lines(language: .zh_TW).contains("  畫布模式："))
-    #expect(HelpContent.lines(language: .zh_TW).contains("    Shift+方向鍵       畫出框線並移動畫布游標"))
-    #expect(HelpContent.lines(language: .zh_TW).contains("    Ctrl+Shift+方向鍵  畫出箭頭線，並在終點放置箭頭"))
+    #expect(HelpContent.lines(language: .zh_TW).contains("    ⇧+方向鍵           畫出框線並移動畫布游標"))
+    #expect(HelpContent.lines(language: .zh_TW).contains("    ^⇧+方向鍵          畫出框線並在終點放置箭頭"))
 }
 
 @Test func testWrapColumnMenuActions() throws {
@@ -809,7 +809,7 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("helpview.sec_logo", language: .en) == "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:")
     #expect(L10n.string("helpview.logo_6", language: .en).contains("Turtle Graphics"))
     #expect(L10n.string("menu.help.logo_reference", language: .en) == "Editor LOGO Reference")
-    #expect(L10n.string("menu.help.logo_workspace", language: .en) == "Procedures & Variables")
+    #expect(L10n.string("menu.help.logo_workspace", language: .en) == "Editor LOGO Workspace")
     #expect(L10n.string("help.confirm", language: .en) == "Confirm")
     #expect(L10n.string("help.complete", language: .en) == "Complete")
     #expect(L10n.string("help.mark_block", language: .en) == "Mark Block")
@@ -864,7 +864,7 @@ struct ConfigAndToolsTests {
     #expect(L10n.string("helpview.sec_logo", language: .zh_TW) == "  Editor LOGO 巨集語言與海龜繪圖指令：")
     #expect(L10n.string("helpview.logo_6", language: .zh_TW).contains("海龜繪圖"))
     #expect(L10n.string("menu.help.logo_reference", language: .zh_TW) == "Editor LOGO 指令參考")
-    #expect(L10n.string("menu.help.logo_workspace", language: .zh_TW) == "Procedures 與變數")
+    #expect(L10n.string("menu.help.logo_workspace", language: .zh_TW) == "Editor LOGO 工作區")
     #expect(L10n.string("help.confirm", language: .zh_TW) == "確認")
     #expect(L10n.string("help.complete", language: .zh_TW) == "補完")
     #expect(L10n.string("help.mark_block", language: .zh_TW) == "標記區塊")
@@ -912,7 +912,7 @@ struct ConfigAndToolsTests {
     #expect(zhReference.contains("REGEX_MATCH s \"pattern\""))
 
     let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(separator: "\n")
-    #expect(zhWorkspace.contains("LOGO 工作區"))
+    #expect(zhWorkspace.contains("變數："))
     #expect(zhWorkspace.contains("（無）"))
 }
 

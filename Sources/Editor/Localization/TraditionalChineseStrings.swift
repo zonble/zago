@@ -67,6 +67,8 @@ public struct TraditionalChineseStrings {
         "logoview.reference_title": "  zago - Editor LOGO 指令參考",
         "logoview.workspace_title": "  zago - Editor LOGO 工作區",
         "logoref.content": """
+          Editor LOGO 指令參考
+          ================================================================
 
           Editor LOGO 是編輯器巨集語言。指令會操作目前文件、
           游標、選取範圍、表格、狀態列與多文件 Buffer 狀態。
