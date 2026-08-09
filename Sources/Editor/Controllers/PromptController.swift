@@ -139,10 +139,10 @@ public final class PromptController: KeyInputHandler {
 
         case .confirmExitSave(let completion):
             switch key {
-            case .char("y"), .char("Y"):
+            case .char("y"), .char("Y"), .enter:
                 mode = .none
                 completion(true)
-            case .char("n"), .char("N"):
+            case .char("n"), .char("N"), .ctrl("X"), .ctrl("x"):
                 mode = .none
                 completion(false)
             default:

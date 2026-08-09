@@ -164,7 +164,7 @@ public struct ExitEditorCommand: Command {
     public let id: CommandID = .fileExit
     public let name = "Exit"
     public let description = "Exit editor or close current buffer"
-    public let keys: [Key] = [.ctrl("X"), .f2]
+    public let keys: [Key] = [.ctrl("X"), .ctrl("x"), .f2]
 
     public init() {}
 
@@ -172,7 +172,11 @@ public struct ExitEditorCommand: Command {
         if editor.buffer.isModified {
             editor.promptExitSaveConfirm()
         } else {
-            editor.closeCurrentBuffer()
+            if editor.buffers.count <= 1 {
+                editor.isRunning = false
+            } else {
+                editor.closeCurrentBuffer()
+            }
         }
     }
 }
