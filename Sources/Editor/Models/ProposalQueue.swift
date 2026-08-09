@@ -31,10 +31,8 @@ public final class ProposalQueue: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         pendingProposals.append(proposal)
-        if pendingProposals.count == 1 {
-            activeIndex = 0
-            activeChunkIndex = 0
-        }
+        activeIndex = pendingProposals.count - 1
+        activeChunkIndex = 0
     }
 
     public func nextProposal() {
