@@ -49,7 +49,7 @@ the file is on your laptop or on a server over SSH.
   - [Quick Start](#quick-start)
     - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
     - [Install with Mint](#install-with-mint)
-    - [Install on Linux (x86\_64 / arm64)](#install-on-linux-x86_64--arm64)
+    - [Install on Linux (x86_64 / arm64)](#install-on-linux-x86_64--arm64)
     - [Install on Arch Linux](#install-on-arch-linux)
     - [Install on Windows (PowerShell)](#install-on-windows-powershell)
   - [Build](#build)
@@ -60,8 +60,8 @@ the file is on your laptop or on a server over SSH.
   - [Text Processing](#text-processing)
   - [Command Examples](#command-examples)
   - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
-    - [1. Interactive Editor Mode](#1-interactive-editor-mode)
-    - [2. Headless Scripting Mode](#2-headless-scripting-mode)
+    - [1. Interactive Editor \& System `$EDITOR` Mode](#1-interactive-editor--system-editor-mode)
+    - [2. Headless Scripting \& Unix Pipe Filter](#2-headless-scripting--unix-pipe-filter)
     - [Command-Line Options](#command-line-options)
   - [FAQ, Sort Of](#faq-sort-of)
     - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
@@ -98,7 +98,7 @@ the file is on your laptop or on a server over SSH.
 ## Requirements
 
 - macOS 14.0+, Linux, or Windows
-- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled *(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may be intercepted by Windows Terminal's default hotkeys; disable them in **Settings -> Actions** to avoid conflicts with Canvas Mode arrow drawing)*
+- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled _(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may be intercepted by Windows Terminal's default hotkeys; disable them in **Settings -> Actions** to avoid conflicts with Canvas Mode arrow drawing)_
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
 
@@ -130,7 +130,7 @@ Or run without installing:
 mint run zonble/zago notes.txt
 ```
 
-### Install on Linux (x86\_64 / arm64)
+### Install on Linux (x86_64 / arm64)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
@@ -212,7 +212,7 @@ swift build -c release
 
 ### Windows / Developers
 
-*(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)*
+_(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)_
 
 1. Install the Swift SDK using `winget`:
 
@@ -271,22 +271,26 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for editing actions, shape generation, and turtle graphics:
 
 - **Movement & Text Insertion**:
+
   ```logo
   MOVE HOME; TYPE "# "; MOVE END
   ```
 
 - **Box & Fill**:
+
   ```logo
   BOX 30 5 CENTER ROUND
   DRAWBOX 30 4 ROUND; GOTO 2 2; FILL "hi
   ```
 
 - **Loops & Lists**:
+
   ```logo
   REPEAT 5 [ TYPE :# ". List item" NL ]
   ```
 
 - **Procedures**:
+
   ```logo
   TO TITLE :text
     BOX :text CENTER ROUND
@@ -352,18 +356,18 @@ zago --run generate_architecture.logo | pbcopy
 
 ### Command-Line Options
 
-| Option | Flag | Description |
-| :--- | :--- | :--- |
-| `files` | | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump. |
-| `-w`, `--wrap <col>` | | Specify softwrap column width (e.g. 80). |
-| `-r`, `--ruler` | | Display WordStar-style ruler bar above viewport. |
-| `-R`, `--readonly` | | Open file(s) in read-only mode. |
-| `-e`, `--eval <code>` | | Execute inline LOGO code in headless mode (supports Unix stdin pipe). |
-| `-s`, `--run`, `--script <file>` | | Execute a LOGO script file in headless mode (supports Unix stdin pipe). |
-| `--init` | | Generate default `~/.zagorc` configuration file. |
-| `--syntax <true/false>` | | Enable or disable syntax highlighting. |
-| `--lang <en/zh_TW>` | | Set interface language. |
-| `--spell-lang <lang>` | | Set spell checker language (e.g. en_US, de_DE, fr_FR). |
+| Option                           | Flag | Description                                                             |
+| :------------------------------- | :--- | :---------------------------------------------------------------------- |
+| `files`                          |      | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump.      |
+| `-w`, `--wrap <col>`             |      | Specify softwrap column width (e.g. 80).                                |
+| `-r`, `--ruler`                  |      | Display WordStar-style ruler bar above viewport.                        |
+| `-R`, `--readonly`               |      | Open file(s) in read-only mode.                                         |
+| `-e`, `--eval <code>`            |      | Execute inline LOGO code in headless mode (supports Unix stdin pipe).   |
+| `-s`, `--run`, `--script <file>` |      | Execute a LOGO script file in headless mode (supports Unix stdin pipe). |
+| `--init`                         |      | Generate default `~/.zagorc` configuration file.                        |
+| `--syntax <true/false>`          |      | Enable or disable syntax highlighting.                                  |
+| `--lang <en/zh_TW>`              |      | Set interface language.                                                 |
+| `--spell-lang <lang>`            |      | Set spell checker language (e.g. en_US, de_DE, fr_FR).                  |
 
 ## FAQ, Sort Of
 
@@ -420,41 +424,6 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 - [Spell checker architecture & plan](docs/spell_checker.md)
 - [File encoding & auto-detection](docs/encoding.md)
 - [Homebrew tap](docs/homebrew_tap.md)
-
-### Homebrew Installation Flowchart
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│              1. Check System Environment                │
-│          (macOS Apple Silicon / Intel / Linux)          │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│              2. Execute Installation Script             │
-│   /bin/bash -c "$(curl -fsSL https://raw.github...)"    │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│             3. Download & Install Core & Tools          │
-│       (Homebrew Core, Cask & Xcode Command Line Tools)  │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│             4. Configure Environment & PATH             │
-│     echo 'eval "$(/opt/homebrew/bin/brew shellenv)"'    │
-│     >> ~/.zprofile                                      │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│             5. Verify Installation Status               │
-│          brew doctor  &&  brew --version                │
-└────────────────────────────┬────────────────────────────┘
-```
-
 - [Release & preview builds](docs/release.md)
 - [Changelog](CHANGELOG.md)
 
@@ -466,4 +435,4 @@ Run `swift test`.
 
 MIT License. Copyright (c) 2026 Weizhong Yang a.k.a. zonble.
 
-*Note: The name `zago` stands for "zonble's nano + LOGO".*
+_Note: The name `zago` stands for "zonble's nano + LOGO"._
