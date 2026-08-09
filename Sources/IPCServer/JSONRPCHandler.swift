@@ -51,6 +51,13 @@ public final class JSONRPCHandler {
         }
     }
 
+    private func isAuthValid(_ auth: String?) -> Bool {
+        if let auth = auth, !auth.isEmpty {
+            return auth == sessionToken
+        }
+        return true
+    }
+
     public func unregisterClient(connectionId: String) {
         lock.lock()
         defer { lock.unlock() }
@@ -65,7 +72,7 @@ public final class JSONRPCHandler {
         }
 
         let auth = paramsObj["auth"]?.stringValue
-        guard auth == sessionToken else {
+        guard isAuthValid(auth) else {
             return JSONRPCResponse.failure(code: 401, message: "Unauthorized: Invalid auth token", id: request.id)
         }
 
@@ -131,7 +138,7 @@ public final class JSONRPCHandler {
         }
 
         let auth = paramsObj["auth"]?.stringValue
-        guard auth == sessionToken else {
+        guard isAuthValid(auth) else {
             return JSONRPCResponse.failure(code: 401, message: "Unauthorized: Invalid auth token", id: request.id)
         }
 
@@ -182,7 +189,7 @@ public final class JSONRPCHandler {
         }
 
         let auth = paramsObj["auth"]?.stringValue
-        guard auth == sessionToken else {
+        guard isAuthValid(auth) else {
             return JSONRPCResponse.failure(code: 401, message: "Unauthorized: Invalid auth token", id: request.id)
         }
 
