@@ -439,4 +439,16 @@ import TextMetrics
     """
     logoEngine.execute(script)
     #expect(editor.buffer.lines[0] == "1 2 6 24 120 ")
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    let script2 = """
+    to double_val :x
+        return :x * 2
+    end
+
+    type (double_val 21)
+    """
+    logoEngine2.execute(script2)
+    #expect(editor2.buffer.lines[0] == "42")
 }

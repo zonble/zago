@@ -74,6 +74,7 @@ public struct EnglishStrings {
           1. Shapes, lines & tables
             BOX [text|width height [style]]      Insert a framed box (auto-centered text)
             DRAWBOX [text|width height [style]]  Draw overlay box (frames canvas mark)
+            INSET [text|width height text]       Insert centered text inside box/region
             LINE [len] [style] [arrow]           Draw/connect a horizontal line
             VLINE [height] [style]               Draw/connect a vertical line
             FILL text                            Fill selection region, table cell,
@@ -206,6 +207,7 @@ public struct EnglishStrings {
             IF test [ commands ]                 Single-branch conditional execution
             IFELSE test [ yes ] [ no ]           Two-branch conditional execution
             CASE val [ [ match [cmds] ] ]        Multi-case pattern matching
+            OUTPUT expr / OP / RETURN            Return value from procedure (reporter)
 
           11. Interactive input (RC/RW)
             READWORD [prompt] / RW               Read line input from user or stdin

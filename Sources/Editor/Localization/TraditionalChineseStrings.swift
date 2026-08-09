@@ -76,6 +76,7 @@ public struct TraditionalChineseStrings {
           1. 文字圖形與樣式
             BOX [text|width height [style]]      插入邊框（自動置中/內嵌文字）
             DRAWBOX [text|w h [style]]           覆蓋繪製邊框（框住畫布標記）
+            INSET [text|width height text]       在框線或指定區域內部居中置入文字
             LINE [len] [style] [arrow]           繪製/連接水平線
             VLINE [height] [style]               繪製/連接垂直線
             FILL text                            填滿選取區、表格儲存格或方框內部
@@ -199,6 +200,7 @@ public struct TraditionalChineseStrings {
             IF test [ commands ]                 單向條件分支
             IFELSE test [ yes ] [ no ]           雙向條件分支
             CASE val [ [ match [cmds] ] ]        多重模式匹配分支
+            OUTPUT expr / OP / RETURN            自訂回傳值 (使 Procedure 成為 Reporter)
 
           11. RC/RW
             READWORD [prompt] / RW               讀取整行文字輸入 (預設從 console/stdin)

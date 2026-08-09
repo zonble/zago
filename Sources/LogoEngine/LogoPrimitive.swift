@@ -327,7 +327,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["HEADING"], .headingPrimitive),
         (["IF"], .ifCondition),
         (["IFELSE"], .ifElseCondition),
-        (["OUTPUT", "OP"], .output),
+        (["OUTPUT", "OP", "RETURN"], .output),
         (["REPEAT"], .repeatLoop),
         (["FOR"], .forLoop),
         (["DOTIMES"], .dotimesLoop),
