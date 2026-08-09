@@ -119,28 +119,44 @@ jobs:
           $releaseBinPath = & "$env:SWIFT_BIN\swift.exe" build -c release --show-bin-path
           Copy-Item -Path "$releaseBinPath\zago.exe" -Destination "artifacts\zago.exe" -Force
 
-          # Bundle ONLY essential Swift Runtime DLLs into release directory (excluding 250MB+ compiler/toolchain DLLs)
-          $dllSources = Get-ChildItem -Path "$env:LOCALAPPDATA\Programs\Swift", "$env:ProgramFiles\Swift" -Recurse -Directory -Filter bin -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
-          if (-not $dllSources) {
-              $dllSources = @($env:SWIFT_BIN, "$env:SWIFT_SDKROOT\usr\bin")
+          # Bundle essential Swift, Foundation, Concurrency & VC++ Runtime DLLs into release directory
+          $dllSources = @(
+              "$env:SWIFT_BIN",
+              "$env:SWIFT_SDKROOT\usr\bin",
+              "$env:SWIFT_SDKROOT\bin",
+              "$env:SWIFT_SDKROOT\..\bin"
+          )
+          $dllSources += Get-ChildItem -Path "$env:LOCALAPPDATA\Programs\Swift", "$env:ProgramFiles\Swift" -Recurse -Directory -Filter bin -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+          if ($vsInstallPath) {
+              $vcRedistDirs = Get-ChildItem -Path "$vsInstallPath\VC\Redist\MSVC" -Recurse -Directory -Filter "x64" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+              $dllSources += $vcRedistDirs
           }
+          $dllSources += "$env:SystemRoot\System32"
+
           $runtimePatterns = @(
-              "swiftCore*.dll",
-              "swiftFoundation*.dll",
-              "swiftWinSDK*.dll",
-              "swiftCRT*.dll",
-              "swiftRemoteMirror*.dll",
+              "swift*.dll",
+              "Foundation*.dll",
               "dispatch*.dll",
               "BlocksRuntime*.dll",
+              "icudt*.dll",
+              "icuin*.dll",
+              "icuuc*.dll",
+              "vcruntime*.dll",
+              "msvcp*.dll",
               "mimalloc*.dll",
               "z*.dll",
               "cmark*.dll"
           )
+
+          $copiedDlls = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
           foreach ($src in $dllSources) {
               if (Test-Path $src) {
                   foreach ($pattern in $runtimePatterns) {
                       Get-ChildItem -Path $src -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                          Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+                          if (-not $copiedDlls.Contains($_.Name)) {
+                              Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+                              [void]$copiedDlls.Add($_.Name)
+                          }
                       }
                   }
               }

@@ -1763,3 +1763,19 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     editor.renderer.invalidateScreenCache()
     #expect(editor.renderer.isScreenCacheValid == false)
 }
+
+@Test func testCanvasModeCtrlArrowDrawsArrowLines() throws {
+    let editor = Editor()
+    editor.buffer.baseMode = .canvas
+    editor.buffer.lines = ["", "", ""]
+
+    let controller = CanvasModeController(editor: editor)
+
+    // Ctrl+Right (or Ctrl+F) draws arrow line to the right
+    #expect(controller.handleKey(.ctrlArrowRight) == true)
+    #expect(editor.buffer.lines[0].contains("▶") || editor.buffer.lines[0].contains(">"))
+
+    // Ctrl+Down (or Ctrl+N) draws arrow line downward
+    #expect(controller.handleKey(.ctrlArrowDown) == true)
+    #expect(editor.buffer.lines[1].contains("▼") || editor.buffer.lines[1].contains("v"))
+}

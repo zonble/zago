@@ -31,6 +31,8 @@ public enum Key: Equatable, Hashable, Sendable {
     case altArrowRight
     case altArrowUp
     case altArrowDown
+    case ctrlArrowLeft
+    case ctrlArrowRight
     case ctrlArrowUp
     case ctrlArrowDown
     case shiftHome
