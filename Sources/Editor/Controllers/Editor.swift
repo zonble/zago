@@ -2,6 +2,7 @@
 @_exported import Drawing
 import Foundation
 import Git
+import IPCServer
 import LogoEngine
 import SpellChecker
 import Syntax
@@ -212,6 +213,9 @@ public final class Editor: @unchecked Sendable {
         set { runtimeConfig = newValue }
     }
     public var customBoundKeys: Set<Key> = []
+    public var ipcServer: ZagoIPCServer? = nil
+    public var jsonRpcHandler: JSONRPCHandler? = nil
+    public let proposalQueue = ProposalQueue()
 
     private struct ResolvedConfig {
         let wrapColumn: Int?
@@ -437,6 +441,7 @@ public final class Editor: @unchecked Sendable {
         isInteractiveMode = true
         defer {
             isInteractiveMode = false
+            stopIPCServer()
             terminal.clearScreen()
             terminal.showCursor()
             terminal.disableRawMode()
@@ -452,6 +457,8 @@ public final class Editor: @unchecked Sendable {
             return
         }
         terminal.hideCursor()
+
+        startIPCServerIfNeeded()
 
         while isRunning {
             refreshScreen()
