@@ -34,8 +34,22 @@ extension Editor: JSONRPCDelegateTarget {
 
     // MARK: - JSONRPCDelegateTarget
 
+    public func handleGetBuffers() -> [BufferInfo] {
+        return buffers.enumerated().map { (index, buf) in
+            let fName = buf.filePath.map { NSString(string: $0).lastPathComponent } ?? "Untitled"
+            return BufferInfo(
+                bufferId: buf.id,
+                filePath: buf.filePath,
+                fileName: fName,
+                isModified: buf.isModified,
+                isFocused: index == currentBufferIndex
+            )
+        }
+    }
+
     public func handleGetText(bufferTarget: String?, startLine: Int?, endLine: Int?) -> (lines: [String], totalLines: Int)? {
-        let allLines = buffer.lines
+        let targetBuf = resolveBufferTarget(bufferTarget) ?? buffer
+        let allLines = targetBuf.lines
         let total = allLines.count
         guard total > 0 else { return (lines: [], totalLines: 0) }
 
@@ -51,11 +65,17 @@ extension Editor: JSONRPCDelegateTarget {
     }
 
     public func handleGetCursor(bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
-        let currentLine = buffer.lineIndex + 1
-        let currentCol = buffer.columnIndex + 1
+        let targetBuf = resolveBufferTarget(bufferTarget) ?? buffer
+        let currentLine = targetBuf.lineIndex + 1
+        let currentCol = targetBuf.columnIndex + 1
         let modeStr = isCanvasModeActive ? "canvas" : (isTableModeActive ? "table" : "text")
-        let visualCol = isCanvasModeActive ? canvasVisualColumn + 1 : buffer.lines[buffer.lineIndex].visualColumn(forCharacterOffset: buffer.columnIndex) + 1
+        let visualCol = isCanvasModeActive ? canvasVisualColumn + 1 : targetBuf.lines[targetBuf.lineIndex].visualColumn(forCharacterOffset: targetBuf.columnIndex) + 1
         return (line: currentLine, column: currentCol, visualCol: visualCol, mode: modeStr)
+    }
+
+    private func resolveBufferTarget(_ target: String?) -> TextBuffer? {
+        guard let target = target, !target.isEmpty, target != "active" else { return buffer }
+        return buffers.first(where: { $0.id == target || $0.filePath == target || ($0.filePath != nil && NSString(string: $0.filePath!).lastPathComponent == target) })
     }
 
     public func handleShowPreview(clientId: String, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
@@ -71,7 +91,7 @@ extension Editor: JSONRPCDelegateTarget {
                     insertMode: mode
                 ))
             }
-            affectedProposals.append(AffectedFileProposal(filePath: file.filePath, chunks: chunks))
+            affectedProposals.append(AffectedFileProposal(filePath: file.filePath, bufferId: file.bufferId, chunks: chunks))
         }
 
         let proposal = AIProposal(

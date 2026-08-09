@@ -159,7 +159,8 @@ public struct ProposalChunkPayload: Codable {
 }
 
 public struct AffectedFilePayload: Codable {
-    public let filePath: String
+    public let filePath: String?
+    public let bufferId: String?
     public let chunks: [ProposalChunkPayload]
 }
 
