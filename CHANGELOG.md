@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.2.5 - 2026-08-09
+
+Fix CJK Markdown list softwrap hanging indent terminal cursor positioning and bundle missing `_FoundationICU.dll` in Windows release package.
+
+### Fixed
+
+- **CJK Markdown List Softwrap Cursor (`Renderer.swift`)**: Fixed terminal ANSI cursor positioning for softwrapped Markdown list sublines when `listWrapIndent` is enabled. Correctly added `hangingIndent` width to subline display width calculation so the cursor lands right after line-ending CJK characters.
+- **Windows Release Packaging (`release.yml`)**: Added `_Foundation*.dll` and `*icu*.dll` pattern matching to bundle `_FoundationICU.dll` into `zago-windows-x64.zip` release archives.
+
 ## 1.2.4 - 2026-08-09
 
 Windows release DLL bundling fix, cross-platform AI skill installer, Canvas mode Ctrl+Arrow arrow line drawing, and outline title truncation.
