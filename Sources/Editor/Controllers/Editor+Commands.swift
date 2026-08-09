@@ -37,6 +37,9 @@ extension Editor {
         commandRegistry.register(JustifyCommand())
         commandRegistry.register(SpellCheckCommand())
         commandRegistry.register(EvalLogoCommand())
+        commandRegistry.register(ToggleCommentCommand())
+        commandRegistry.register(JoinLineCommand())
+        commandRegistry.register(SplitLineCommand())
 
         // Search & Cursor Commands
         commandRegistry.register(WhereIsCommand())

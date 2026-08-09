@@ -406,3 +406,51 @@ public struct ToggleCommentCommand: Command {
         editor.toggleComment()
     }
 }
+
+public struct JoinLineCommand: Command {
+    public let id: CommandID = .editJoinLine
+    public let name = "Join Line"
+    public let description = "Join next line with current line"
+    public let keys: [Key] = [.alt("j"), .alt("J")]
+    public let commandBarAliases = ["joinline", "join"]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.saveUndoSnapshot()
+        guard editor.buffer.lineIndex + 1 < editor.buffer.lines.count else { return }
+
+        let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
+        let nextLine = editor.buffer.lines.remove(at: editor.buffer.lineIndex + 1)
+        let trimmedNext = nextLine.trimmingCharacters(in: .whitespaces)
+
+        let separator = (currentLine.hasSuffix(" ") || currentLine.isEmpty || trimmedNext.isEmpty) ? "" : " "
+        editor.buffer.lines[editor.buffer.lineIndex] = currentLine + separator + trimmedNext
+        editor.buffer.columnIndex = currentLine.count + separator.count
+        editor.buffer.isModified = true
+    }
+}
+
+public struct SplitLineCommand: Command {
+    public let id: CommandID = .editSplitLine
+    public let name = "Split Line"
+    public let description = "Split current line at cursor position"
+    public let keys: [Key] = [.alt("k"), .alt("K")]
+    public let commandBarAliases = ["splitline", "split"]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.saveUndoSnapshot()
+        let line = editor.buffer.lines[editor.buffer.lineIndex]
+        let col = min(editor.buffer.columnIndex, line.count)
+        let firstPart = String(line.prefix(col))
+        let secondPart = String(line.dropFirst(col))
+
+        editor.buffer.lines[editor.buffer.lineIndex] = firstPart
+        editor.buffer.lines.insert(secondPart, at: editor.buffer.lineIndex + 1)
+        editor.buffer.lineIndex += 1
+        editor.buffer.columnIndex = 0
+        editor.buffer.isModified = true
+    }
+}
