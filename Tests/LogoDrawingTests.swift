@@ -457,6 +457,19 @@ import TextMetrics
     #expect(editor.buffer.lines[11] == "┌───────┐")
 }
 
+@Test func testPadLeftWithNumericStringAndCustomChar() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("""
+    MAKE "price1 "15"
+    MAKE "p1 PADLEFT :price1 5 "0"
+    TYPE :p1
+    """)
+
+    #expect(editor.buffer.lines[0] == "00015")
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

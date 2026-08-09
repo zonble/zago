@@ -931,7 +931,8 @@ extension LogoEngine {
             let rawArgs = LogoValue.parse(argVal).toListItems().map { $0.description }
             return formatStringPattern(pattern: pattern, args: rawArgs)
 
-        case .padleft:
+        case .padleft, .padright:
+            let isRight = prim == .padright
             index += 1
             let arg1 = unquote(evaluateExpression(tokens, index: &index))
             index += 1
@@ -940,68 +941,50 @@ extension LogoEngine {
             var width = 0
             var padChar = " "
 
-            if let w1 = Int(arg1) {
-                width = w1
-                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+            let hasThirdToken = index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1])
+
+            if hasThirdToken {
+                var nextIdx = index + 1
+                let arg3 = unquote(evaluateExpression(tokens, index: &nextIdx))
+
+                if arg2.count == 1 && arg3.count != 1, let w1 = Int(arg1) {
+                    width = w1
                     padChar = arg2
-                    index += 1
-                    str = unquote(evaluateExpression(tokens, index: &index))
+                    str = arg3
+                    index = nextIdx
+                } else if let w2 = Int(arg2) {
+                    str = arg1
+                    width = w2
+                    padChar = arg3
+                    index = nextIdx
+                } else if let w1 = Int(arg1) {
+                    width = w1
+                    padChar = arg2
+                    str = arg3
+                    index = nextIdx
                 } else {
-                    str = arg2
+                    str = arg1
+                    width = Int(arg2) ?? 0
                 }
             } else {
-                str = arg1
-                width = Int(arg2) ?? 0
-                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
-                    var nextIdx = index + 1
-                    let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
-                    if !chCandidate.isEmpty && chCandidate.count == 1 {
-                        index = nextIdx
-                        padChar = chCandidate
-                    }
+                if let w2 = Int(arg2) {
+                    str = arg1
+                    width = w2
+                } else if let w1 = Int(arg1) {
+                    width = w1
+                    str = arg2
+                } else {
+                    str = arg1
+                    width = Int(arg2) ?? 0
                 }
             }
 
+            if padChar.isEmpty { padChar = " " }
             let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
             if currentWidth >= width { return str }
             let padCount = width - currentWidth
-            return String(repeating: padChar, count: padCount) + str
-
-        case .padright:
-            index += 1
-            let arg1 = unquote(evaluateExpression(tokens, index: &index))
-            index += 1
-            let arg2 = unquote(evaluateExpression(tokens, index: &index))
-            var str = ""
-            var width = 0
-            var padChar = " "
-
-            if let w1 = Int(arg1) {
-                width = w1
-                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
-                    padChar = arg2
-                    index += 1
-                    str = unquote(evaluateExpression(tokens, index: &index))
-                } else {
-                    str = arg2
-                }
-            } else {
-                str = arg1
-                width = Int(arg2) ?? 0
-                if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
-                    var nextIdx = index + 1
-                    let chCandidate = unquote(evaluateExpression(tokens, index: &nextIdx))
-                    if !chCandidate.isEmpty && chCandidate.count == 1 {
-                        index = nextIdx
-                        padChar = chCandidate
-                    }
-                }
-            }
-
-            let currentWidth = str.reduce(0) { $0 + $1.displayWidth }
-            if currentWidth >= width { return str }
-            let padCount = width - currentWidth
-            return str + String(repeating: padChar, count: padCount)
+            let padding = String(repeating: padChar, count: padCount)
+            return isRight ? (str + padding) : (padding + str)
 
         case .regexMatch:
             index += 1
