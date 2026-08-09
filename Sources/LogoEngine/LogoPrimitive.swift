@@ -58,6 +58,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case caseSwitch
     case condSwitch
     case testCondition
+    case assertCondition
+    case local
+    case pons
+    case pops
+    case povas
     case ifTrue
     case ifFalse
     case stop
@@ -338,6 +343,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["CASE"], .caseSwitch),
         (["COND"], .condSwitch),
         (["TEST"], .testCondition),
+        (["ASSERT", "EXPECT"], .assertCondition),
+        (["LOCAL"], .local),
+        (["PONS"], .pons),
+        (["POPS"], .pops),
+        (["POVAS"], .povas),
         (["IFTRUE", "IFT"], .ifTrue),
         (["IFFALSE", "IFF"], .ifFalse),
         (["STOP"], .stop),
@@ -349,7 +359,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["INVOKE"], .invoke),
         (["FOREACH"], .foreach),
         (["MAP"], .map),
-        (["MAP.SE"], .mapSe),
+        (["MAP.SE", "MAPSE"], .mapSe),
         (["FILTER"], .filter),
         (["FIND"], .find),
         (["REDUCE"], .reduce),

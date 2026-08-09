@@ -250,10 +250,11 @@ public struct EnglishStrings {
             APPLY "proc args                     Dynamically apply procedure with arg list
             INVOKE "proc arg1 arg2               Dynamically invoke procedure with arguments
 
-          15. Exception handling
+          15. Exception handling & Assertions
             CATCH "tag [ commands ]              Catch exception tag 
                                                  ("ERROR catches runtime errors)
             THROW "tag                           Throw exception tag
+            ASSERT cond [msg]                    Assert condition (halts execution on false)
             ERROR                                Query last caught error info object
 
           16. Predicates

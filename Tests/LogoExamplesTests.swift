@@ -192,7 +192,7 @@ import Testing
     @Test func testLeetCode054SpiralMatrixExample() throws {
         let output = try executeScriptFile("leetcode_054_spiral_matrix.logo")
         #expect(output.contains("===_LeetCode_#054_/_#059:_Spiral_Matrix_==="))
-        #expect(output.contains("spiral_matrix:_{{1 6 9} {2 7 8} {3 4 5}}"))
+        #expect(output.contains("spiral_matrix:_{{1 8 7} {2 9 6} {3 4 5}}"))
     }
 
     @Test func testLeetCode062UniquePathsExample() throws {

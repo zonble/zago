@@ -211,4 +211,31 @@ import Testing
         #expect(editor.findLogoCanvasBufferIndex() == nil)
         #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
     }
+
+    @Test func testAssertPrimitiveSuccessAndFailure() {
+        let editor = Editor()
+        let logoEngine = LogoEngine(delegate: editor)
+
+        // 1. ASSERT pass
+        logoEngine.execute("MAKE \"x 10 ASSERT :x = 10 \"x must be 10")
+        #expect(!logoEngine.hasUncaughtError)
+
+        // 2. ASSERT failure with custom message
+        let editor2 = Editor()
+        let logoEngine2 = LogoEngine(delegate: editor2)
+        logoEngine2.execute("MAKE \"x 5 ASSERT :x > 10 \"x is too small")
+        #expect(logoEngine2.hasUncaughtError)
+        #expect(logoEngine2.lastError?.message == "[LOGO Assertion Failed: x is too small]")
+
+        // 3. ASSERT failure trapped inside CATCH "ERROR
+        let editor3 = Editor()
+        let logoEngine3 = LogoEngine(delegate: editor3)
+        logoEngine3.execute(
+            """
+            CATCH "ERROR [
+                ASSERT 1 = 2 "math is broken
+            ]
+            """)
+        #expect(logoEngine3.lastError != nil)
+    }
 }
