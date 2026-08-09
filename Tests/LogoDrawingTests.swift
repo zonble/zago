@@ -332,6 +332,83 @@ import TextMetrics
     #expect(editor.buffer.lines[8].contains("╩"))
 }
 
+@Test func testAutoVlineBetweenSingleStyleBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌──────┐",
+        "│ 你好 │",
+        "└──────┘",
+        "   x",
+        "",
+        "",
+        "┌──────┐",
+        "│ 你好 │",
+        "└──────┘"
+    ]
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 3
+
+    logoEngine.execute("VLINE")
+
+    #expect(editor.buffer.lines[2].contains("┬"))
+    #expect(editor.buffer.lines[3] == "   │")
+    #expect(editor.buffer.lines[4] == "   │")
+    #expect(editor.buffer.lines[6].contains("┴"))
+}
+
+@Test func testAutoLineBetweenLeftAndRightSingleBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌───┐       ┌───┐",
+        "│ A │       │ B │",
+        "└───┘       └───┘"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 5
+
+    logoEngine.execute("LINE")
+
+    #expect(editor.buffer.lines[1] == "│ A ├───────┤ B │")
+}
+
+@Test func testAutoLineBetweenLeftAndRightDoubleBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "╔═══╗       ╔═══╗",
+        "║ A ║       ║ B ║",
+        "╚═══╝       ╚═══╝"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 5
+
+    logoEngine.execute("LINE \"double\"")
+
+    #expect(editor.buffer.lines[1] == "║ A ╠═══════╣ B ║")
+}
+
+@Test func testAutoLineWithArrowBetweenBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌───┐       ┌───┐",
+        "│ A │       │ B │",
+        "└───┘       └───┘"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 5
+
+    logoEngine.execute("LINE ARROW")
+
+    #expect(editor.buffer.lines[1] == "│ A ├──────▶│ B │")
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
