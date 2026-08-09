@@ -174,10 +174,10 @@ public final class LayoutEngine {
                         && (cursorColumnIndex < vLine.endCol || (isAtLineEnd && cursorColumnIndex <= vLine.endCol))
 
                     let hangingIndent = (vLine.subLineIndex > 0 && listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: line) : 0
-                    cursorFallback = (virtualIndex, vLine.text.count + hangingIndent)
+                    cursorFallback = (virtualIndex, vLine.text.count)
                     if cursorIsInChunk {
                         cursorVirtualLineIndex = virtualIndex
-                        cursorVirtualColumnIndex = (cursorColumnIndex - vLine.startCol) + hangingIndent
+                        cursorVirtualColumnIndex = cursorColumnIndex - vLine.startCol
                         cursorResolved = true
                     }
                 }
@@ -578,13 +578,11 @@ public final class LayoutEngine {
 
             if isLastSubline {
                 if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
-                    let colInVLine = columnIndex - vLine.startCol
-                    return (vIdx, colInVLine)
+                    return (vIdx, columnIndex - vLine.startCol)
                 }
             } else {
                 if columnIndex >= vLine.startCol && columnIndex < vLine.endCol {
-                    let colInVLine = columnIndex - vLine.startCol
-                    return (vIdx, colInVLine)
+                    return (vIdx, columnIndex - vLine.startCol)
                 }
             }
         }

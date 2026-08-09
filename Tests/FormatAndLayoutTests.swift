@@ -101,6 +101,23 @@ struct FormatAndLayoutTests {
     #expect(virtualLines[1].text == "六")
 }
 
+@Test func testCJKMarkdownListWrapIndentCursorPosition() throws {
+    let editor = Editor(wrapColumn: 35, enableSyntax: false)
+    editor.displayConfig.showLineNumbers = false
+    editor.displayConfig.listWrapIndent = true
+    let line = "- 有一般編輯模式與畫布模式，畫布模式下可以用 Shift + 方向按鍵拉出框線"
+    editor.buffer.lines = [line]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = line.count
+
+    let hangingIndent = LayoutEngine.calculateListHangingIndent(in: line)
+    #expect(hangingIndent == 2)
+
+    let output = editor.renderer.render(editor: editor, rows: 8, cols: 80)
+    // Row 4, Column 5 (1-based ANSI escape \u{1B}[4;5H: 2 space indent + 2 CJK width + 1)
+    #expect(output.contains("\u{1B}[4;5H"))
+}
+
 @Test func testSubLineNumbersRenderForWrappedProse() throws {
 
     let editor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
