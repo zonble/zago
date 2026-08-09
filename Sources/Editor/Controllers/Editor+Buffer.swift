@@ -98,70 +98,50 @@ extension Editor {
         if let dirBuffer = buffers[currentBufferIndex] as? DirectoryBuffer {
             dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
         }
-        topVLineIndex = 0
         startFileWatcherForCurrentBuffer()
-        renderer.invalidateScreenCache()
     }
 
-    /// Switches to next open buffer in sequence.
     public func nextBuffer() {
         guard buffers.count > 1 else { return }
-        switchToBuffer(index: (currentBufferIndex + 1) % buffers.count)
+        let nextIndex = (currentBufferIndex + 1) % buffers.count
+        switchToBuffer(index: nextIndex)
     }
 
-    /// Switches to previous open buffer in sequence.
     public func prevBuffer() {
         guard buffers.count > 1 else { return }
-        switchToBuffer(index: (currentBufferIndex - 1 + buffers.count) % buffers.count)
+        let prevIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
+        switchToBuffer(index: prevIndex)
     }
 
-    // MARK: - Buffer Lifecycle
-
-    /// Opens a new buffer for given file path or empty buffer.
     public func openNewBuffer(filePath: String? = nil) {
-        if let path = filePath, !path.isEmpty {
-            let normalized = fileIOStrategy.normalizePath(path, isDirectory: false)
-            let info = fileIOStrategy.fileInfo(at: normalized)
-            if info.exists && !info.isDirectory && info.isBinary {
-                let name = (path as NSString).lastPathComponent
-                setStatusMessage("Cannot open binary file '\(name)'")
-                return
-            }
-        }
         saveCurrentViewSettingsToBuffer()
-        let newBuf = TextBuffer.makeBuffer(filePath: filePath, fileIO: fileIOStrategy, language: self.language)
-        newBuf.baseMode = newBuf.isDirectoryBuffer ? .text : defaultBaseMode
-        newBuf.viewShowRuler = defaultViewShowRuler
-        newBuf.viewShowLineNumbers = defaultViewShowLineNumbers
-        newBuf.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
-        newBuf.viewWrapColumn = defaultViewWrapColumn
-        buffers.append(newBuf)
+        let newBuffer = TextBuffer.makeBuffer(
+            filePath: filePath,
+            fileIO: fileIOStrategy,
+            gitService: gitService,
+            language: language
+        )
+        buffers.append(newBuffer)
         currentBufferIndex = buffers.count - 1
         loadCurrentViewSettingsFromBuffer()
-        topVLineIndex = 0
-        clearActiveMark()
         startFileWatcherForCurrentBuffer()
-        renderer.invalidateScreenCache()
     }
 
-    /// Closes current active buffer. If no buffers remain, exits editor.
     public func closeCurrentBuffer() {
-        guard !buffers.isEmpty else {
-            isRunning = false
+        guard buffers.count > 1 else {
+            // Last buffer: replace with empty untitled scratch buffer
+            stopFileWatcherForCurrentBuffer()
+            buffers[0] = TextBuffer()
+            currentBufferIndex = 0
             return
         }
 
-        saveCurrentViewSettingsToBuffer()
+        stopFileWatcherForCurrentBuffer()
         buffers.remove(at: currentBufferIndex)
-        if buffers.isEmpty {
-            isRunning = false
-        } else {
-            currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
-            loadCurrentViewSettingsFromBuffer()
-            topVLineIndex = 0
-            clearActiveMark()
-            startFileWatcherForCurrentBuffer()
-            renderer.invalidateScreenCache()
+        if currentBufferIndex >= buffers.count {
+            currentBufferIndex = max(0, buffers.count - 1)
         }
+        loadCurrentViewSettingsFromBuffer()
+        startFileWatcherForCurrentBuffer()
     }
 }
