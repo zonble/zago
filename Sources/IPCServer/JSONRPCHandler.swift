@@ -213,7 +213,8 @@ public final class JSONRPCHandler {
                 }
                 let lines = linesArr.compactMap { $0.stringValue }
                 let insertMode = chunkObj["insertMode"]?.stringValue
-                chunks.append(ProposalChunkPayload(targetLine: targetLine, targetCol: targetCol, lines: lines, insertMode: insertMode))
+                let type = chunkObj["type"]?.stringValue ?? chunkObj["chunkType"]?.stringValue ?? chunkObj["contentType"]?.stringValue
+                chunks.append(ProposalChunkPayload(targetLine: targetLine, targetCol: targetCol, lines: lines, insertMode: insertMode, type: type))
             }
             affectedFiles.append(AffectedFilePayload(filePath: filePath, bufferId: bufferId, chunks: chunks))
         }

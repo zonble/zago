@@ -643,9 +643,13 @@ public final class Renderer {
         for lineIdx in 0...maxLineIdx {
             if let chunk = matchingChunks.first(where: { ($0.targetLine - 1) == lineIdx }) {
                 var wrappedBoxContent: [String] = []
-                for rawLine in chunk.lines {
-                    let subLines = wrapTextLine(rawLine, width: innerWidth)
-                    wrappedBoxContent.append(contentsOf: subLines)
+                if chunk.type == .diagram {
+                    wrappedBoxContent = chunk.lines
+                } else {
+                    for rawLine in chunk.lines {
+                        let subLines = wrapTextLine(rawLine, width: innerWidth)
+                        wrappedBoxContent.append(contentsOf: subLines)
+                    }
                 }
 
                 let contentMaxW = wrappedBoxContent.map { $0.displayWidth }.max() ?? 20
@@ -669,8 +673,8 @@ public final class Renderer {
 
                 // Inner content lines
                 for contentStr in wrappedBoxContent {
-                    let padCount = max(0, boxWidth - 2 - 2 - contentStr.displayWidth)
-                    let boxContentLine = "│  " + contentStr + String(repeating: " ", count: padCount) + "│"
+                    let padCount = max(0, boxWidth - 2 - 1 - contentStr.displayWidth)
+                    let boxContentLine = "│ " + contentStr + String(repeating: " ", count: padCount) + "│"
                     expanded.append(VirtualLine(
                         bufferLineIndex: lineIdx,
                         subLineIndex: 0,
@@ -729,9 +733,13 @@ public final class Renderer {
                     let innerWidth = max(10, maxBoxWidth - 6)
 
                     var wrappedBoxContent: [String] = []
-                    for rawLine in chunk.lines {
-                        let subLines = wrapTextLine(rawLine, width: innerWidth)
-                        wrappedBoxContent.append(contentsOf: subLines)
+                    if chunk.type == .diagram {
+                        wrappedBoxContent = chunk.lines
+                    } else {
+                        for rawLine in chunk.lines {
+                            let subLines = wrapTextLine(rawLine, width: innerWidth)
+                            wrappedBoxContent.append(contentsOf: subLines)
+                        }
                     }
 
                     let startLine = chunk.targetLine - 1
@@ -756,10 +764,10 @@ public final class Renderer {
                             let line = "└" + hintText + String(repeating: "─", count: remDashCount) + "┘"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         } else {
-                            // Inner content: │  softwrapped content line        │
+                            // Inner content: │ content line        │
                             let content = wrappedBoxContent[lineOffset - 1]
-                            let padCount = max(0, boxWidth - 2 - 2 - content.displayWidth)
-                            let line = "│  " + content + String(repeating: " ", count: padCount) + "│"
+                            let padCount = max(0, boxWidth - 2 - 1 - content.displayWidth)
+                            let line = "│ " + content + String(repeating: " ", count: padCount) + "│"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         }
                     }

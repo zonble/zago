@@ -156,6 +156,7 @@ public struct ProposalChunkPayload: Codable {
     public let targetCol: Int
     public let lines: [String]
     public let insertMode: String? // "1d_insert", "1d_overwrite", "2d_insert", "2d_overwrite", "2d_transparent", "2d_fuse_corners"
+    public let type: String? // "text" (default) or "diagram"
 }
 
 public struct AffectedFilePayload: Codable {
