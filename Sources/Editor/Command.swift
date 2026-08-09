@@ -119,6 +119,12 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     // Test & Custom
     case testCmd = "test.cmd"
     case customMacro = "custom.macro"
+
+    // AI Proposal
+    case proposalAccept = "proposal.accept"
+    case proposalReject = "proposal.reject"
+    case proposalNext = "proposal.next"
+    case proposalPrev = "proposal.prev"
 }
 
 /// Unified protocol defining an editor command with metadata, keybindings, CommandBar aliases, and execution logic.

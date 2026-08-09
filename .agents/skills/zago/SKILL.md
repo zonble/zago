@@ -88,14 +88,11 @@ When `zago` runs with `--ipc` or `set ipc.enabled true`, external AI agents can 
 
 ## ⌨️ Dedicated Modifier Keybindings Reference
 
-- **`Alt+Y` / `Ctrl+Y`**: Accept active ghost text proposal.
-- **`Alt+N` / `Esc`**: Reject active proposal.
-- **`Alt+R`**: Refine active proposal.
-- **`Alt+i`**: View full AI rationale explanation (`reason`).
-- **`Alt+]` / `Alt+[`**: Next / Previous proposal in queue.
-- **`Alt+Shift+Y`**: Accept ALL proposals in queue.
-- **`Alt+m`**: Jump to next file in multi-file proposal.
-- **`Alt+n` / `Alt+p`**: Jump to next / previous chunk in multi-chunk proposal.
+- **`Alt+A` / `Alt+a` / `:accept`**: Accept active ghost text proposal and write to buffer.
+- **`Alt+R` / `Alt+r` / `:reject`**: Reject and dismiss active proposal.
+- **`Alt+p` / `:nextproposal`**: Preview next proposal in queue.
+- **`Alt+Shift+P` (`Alt+P`) / `:prevproposal`**: Preview previous proposal in queue.
+- **`Alt+]` / `Alt+[`**: Reserved for **Markdown Title / Document Heading Navigation** (`NextHeadingCommand` / `PreviousHeadingCommand`).
 
 ---
 

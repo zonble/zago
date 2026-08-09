@@ -84,7 +84,7 @@ extension Editor: JSONRPCDelegateTarget {
         proposalQueue.pushProposal(proposal)
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.setStatusMessage("[AI Proposal] Received: '\(reason)' (Press Alt+] to view)")
+            self.setStatusMessage("[AI Proposal] Received: '\(reason)' (Press Alt+p preview, Alt+a accept)")
             self.renderer.invalidateScreenCache()
         }
         return true
