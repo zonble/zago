@@ -78,6 +78,16 @@ struct Zago: ParsableCommand {
         help: "Display author signature, credits, and version banner.")
     var showAuthor: Bool = false
 
+    @Flag(
+        name: [.customLong("ipc")],
+        help: "Enable cross-platform IPC socket server for AI co-pilot integration.")
+    var ipc: Bool = false
+
+    @Flag(
+        name: [.customLong("no-ipc")],
+        help: "Force disable IPC socket server.")
+    var noIpc: Bool = false
+
     @Option(
         name: [.customShort("e"), .customLong("eval")],
         help: "Execute inline LOGO code string in headless mode and print output to stdout.")
