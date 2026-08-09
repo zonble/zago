@@ -93,21 +93,6 @@ extension Editor {
         commandRegistry.register(ToggleCanvasModeCommand())
         commandRegistry.register(ToggleTableModeCommand())
         commandRegistry.register(CycleBorderStyleCommand())
-        commandRegistry.register(
-            BlockCommand(
-                id: .diagramMenu,
-                name: "diagram.menu",
-                description: "Open diagram snippet menu",
-                keys: [],
-                commandBarAliases: ["diagram", "diagrams", "snippet", "snippets"]
-            ) { editor in
-                editor.menuBar.updateCategories(for: editor)
-                if let idx = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.diagrams" }) {
-                    editor.menuBar.categoryIndex = idx
-                    editor.menuBar.itemIndex = 0
-                }
-                editor.isMenuBarActive = true
-            }
-        )
+        commandRegistry.register(DiagramMenuCommand())
     }
 }
