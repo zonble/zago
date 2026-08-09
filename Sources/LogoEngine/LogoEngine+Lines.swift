@@ -25,14 +25,25 @@ extension LogoEngine {
         var arrowMode: LineArrowMode = .none
 
         if index < tokens.count {
-            parseLineArguments(tokens, index: &index, maxLength: 200, defaultLength: 40) { value in
-                length = value
-                hasExplicitLength = true
-            } setStyle: { style in
-                styleChar = (style == "double") ? "═" : "-"
-            } setArrowMode: { mode in
-                arrowMode = mode
-            }
+            parseLineArguments(
+                tokens, index: &index, maxLength: 200, defaultLength: 40,
+                setLength: { value in
+                    length = value
+                    hasExplicitLength = true
+                }, setStyle: { style in
+                    if style == "double" {
+                        styleChar = "═"
+                    } else if style == "ascii" {
+                        styleChar = "-"
+                    } else {
+                        styleChar = "─"
+                    }
+                }, setArrowMode: { mode in
+                    arrowMode = mode
+                }, setArrowHeadStyle: { arrowStyle in
+                    editor.logoEngine(self, performAction: .setArrowStyle(arrowStyle.rawValue))
+                }
+            )
         } else {
             index -= 1
         }
@@ -71,14 +82,25 @@ extension LogoEngine {
         var arrowMode: LineArrowMode = .none
 
         if index < tokens.count {
-            parseLineArguments(tokens, index: &index, maxLength: 100, defaultLength: 5) { value in
-                height = value
-                hasExplicitHeight = true
-            } setStyle: { style in
-                styleChar = (style == "double") ? "║" : "|"
-            } setArrowMode: { mode in
-                arrowMode = mode
-            }
+            parseLineArguments(
+                tokens, index: &index, maxLength: 100, defaultLength: 5,
+                setLength: { value in
+                    height = value
+                    hasExplicitHeight = true
+                }, setStyle: { style in
+                    if style == "double" {
+                        styleChar = "║"
+                    } else if style == "ascii" {
+                        styleChar = "|"
+                    } else {
+                        styleChar = "│"
+                    }
+                }, setArrowMode: { mode in
+                    arrowMode = mode
+                }, setArrowHeadStyle: { arrowStyle in
+                    editor.logoEngine(self, performAction: .setArrowStyle(arrowStyle.rawValue))
+                }
+            )
         } else {
             index -= 1
         }
@@ -119,7 +141,8 @@ extension LogoEngine {
         defaultLength: Int,
         setLength: (Int) -> Void,
         setStyle: (String) -> Void,
-        setArrowMode: (LineArrowMode) -> Void
+        setArrowMode: (LineArrowMode) -> Void,
+        setArrowHeadStyle: ((ArrowStyle) -> Void)? = nil
     ) {
         var consumedAny = false
         var cursor = index
@@ -135,6 +158,11 @@ extension LogoEngine {
 
             if let arrowMode = lineArrowMode(for: upper) {
                 setArrowMode(arrowMode)
+                consumedAny = true
+                cursor = evalIndex
+                lastConsumedIndex = cursor
+            } else if let arrowHeadStyle = ArrowStyle(evalRaw) {
+                setArrowHeadStyle?(arrowHeadStyle)
                 consumedAny = true
                 cursor = evalIndex
                 lastConsumedIndex = cursor
@@ -170,7 +198,10 @@ extension LogoEngine {
     }
 
     private func isLineArgumentBoundary(_ token: String) -> Bool {
-        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+        let unquoted = unquote(token)
+        return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+            || lineArrowMode(for: unquoted.uppercased()) != nil
+            || BorderStyle.isStyleToken(unquoted) || ArrowStyle.isStyleToken(unquoted)
     }
 
     private func lineArrowMode(for uppercasedToken: String) -> LineArrowMode? {
