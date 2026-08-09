@@ -586,7 +586,9 @@ enum PipeTableFormatter {
         return min(pipePos + 2, line.count)
     }
 
-    private static func calculateNewColumn(originalLine: String, formattedLine: String, cursorColumn: Int, style: TableStyle) -> Int {
+    private static func calculateNewColumn(
+        originalLine: String, formattedLine: String, cursorColumn: Int, style: TableStyle
+    ) -> Int {
         let origChars = Array(originalLine)
         var origPipes: [Int] = []
         for idx in 0..<origChars.count {

@@ -50,7 +50,7 @@ extension DiagramSnippets {
             return true
         }
 
-        if let _ = currentCodeBlockTag(lines: lines, lineIndex: lineIndex) {
+        if currentCodeBlockTag(lines: lines, lineIndex: lineIndex) != nil {
             return true
         }
 

@@ -12,12 +12,12 @@ import Testing
         let fileURL = repoRoot.appendingPathComponent("examples").appendingPathComponent(filename)
         var path = fileURL.path
         #if os(Windows)
-        if path.hasPrefix("/") && path.contains(":") {
-            path.removeFirst()
-        }
-        return path.replacingOccurrences(of: "/", with: "\\")
+            if path.hasPrefix("/") && path.contains(":") {
+                path.removeFirst()
+            }
+            return path.replacingOccurrences(of: "/", with: "\\")
         #else
-        return path
+            return path
         #endif
     }
 
@@ -250,9 +250,3 @@ import Testing
         #expect(output.contains("names_after_erase_x:_[y]"))
     }
 }
-
-
-
-
-
-

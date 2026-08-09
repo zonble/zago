@@ -515,7 +515,9 @@ public final class Renderer {
                 cursorDisplayWidth = max(0, editor.canvasVisualColumn - editor.canvasHorizontalOffset)
             } else {
                 let localCursorVLineIdx = cursorVLineIdx - virtualLineStartIndex
-                let vLine = (localCursorVLineIdx >= 0 && localCursorVLineIdx < virtualLines.count) ? virtualLines[localCursorVLineIdx] : nil
+                let vLine =
+                    (localCursorVLineIdx >= 0 && localCursorVLineIdx < virtualLines.count)
+                    ? virtualLines[localCursorVLineIdx] : nil
                 let vLineText = vLine?.text ?? ""
                 let vLineChars = Array(vLineText)
                 let effectiveCol: Int

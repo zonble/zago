@@ -292,7 +292,8 @@ private func makeEditor(
         let delegate: LogoEngineDelegate = editor
 
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex) as? Int == 5)
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferList) as? [String] == ["first.txt", "second.txt"])
+        #expect(
+            delegate.logoEngine(editor.logoEngine, queryState: .bufferList) as? [String] == ["first.txt", "second.txt"])
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex) as? Int == 0)
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText) as? String == "A中B\ntail")
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified) as? Bool == true)
@@ -322,10 +323,13 @@ private func makeEditor(
         )
 
         let tableEditor = Editor(language: .en)
-        tableEditor.tableModeController.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
+        tableEditor.tableModeController.createTable(
+            rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
         let tableDelegate: LogoEngineDelegate = tableEditor
         #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .hasTableCell) as? Bool == true)
-        #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle) as? BorderStyle == .single)
+        #expect(
+            tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle) as? BorderStyle == .single
+        )
     }
 
     @Test func testRunLogoScriptUsesStatusesAndBlocksTableOnlyPrimitives() {
@@ -339,7 +343,8 @@ private func makeEditor(
 
         let tableEditor = Editor(language: .en)
         tableEditor.logoEngine.execute("TO BOXIT BOX 1 1 END")
-        tableEditor.tableModeController.createTable(rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
+        tableEditor.tableModeController.createTable(
+            rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
 
         #expect(tableEditor.runLogoScript("BOXIT") == false)
         #expect(tableEditor.statusMessage == tableEditor.l10n.disabledInTableMode("BOX"))

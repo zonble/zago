@@ -43,7 +43,7 @@ import Testing
             "## Heading 2",
             "More content.",
             "### Heading 3",
-            "End content."
+            "End content.",
         ]
         let controller = DocumentOutlineController(editor: editor)
 
@@ -83,7 +83,9 @@ import Testing
         #expect(editor.buffer.lines.count == 3)
 
         engine.execute("INDENT 1")
-        #expect(editor.buffer.lines[editor.buffer.lineIndex].hasPrefix(" ") || editor.buffer.lines[editor.buffer.lineIndex].hasPrefix("\t"))
+        #expect(
+            editor.buffer.lines[editor.buffer.lineIndex].hasPrefix(" ")
+                || editor.buffer.lines[editor.buffer.lineIndex].hasPrefix("\t"))
 
         engine.execute("OUTDENT 1")
         #expect(!editor.buffer.lines[editor.buffer.lineIndex].hasPrefix("\t"))
@@ -132,7 +134,9 @@ import Testing
     // 7. GitService Coverage
     @Test func testGitServiceCoverage() {
         let gitService = GitService()
-        #expect(gitService.detectRepository(for: "/nonexistent/path") == nil || gitService.detectRepository(for: "/nonexistent/path") != nil)
+        #expect(
+            gitService.detectRepository(for: "/nonexistent/path") == nil
+                || gitService.detectRepository(for: "/nonexistent/path") != nil)
         let diff = gitService.computeDiffSync(filePath: nil, currentLines: ["a", "b"])
         #expect(diff.lineStatuses.isEmpty || !diff.lineStatuses.isEmpty)
     }

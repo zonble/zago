@@ -4,8 +4,6 @@ import TextMetrics
 
 @testable import Editor
 
-
-
 @Test func testCanvasModeShiftArrowDrawsBoxLines() throws {
     let editor = Editor()
     editor.switchToCanvasMode()
@@ -452,7 +450,9 @@ import TextMetrics
 }
 
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_direct_save_test_\(UUID().uuidString).txt").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_direct_save_test_\(UUID().uuidString).txt"
+    ).path
     let normalizedPath = TestLocalEditorFileIOStrategy().normalizePath(tmpPath, isDirectory: false)
     defer {
         try? FileManager.default.removeItem(atPath: normalizedPath)
@@ -942,8 +942,6 @@ import TextMetrics
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["xy"]))
 }
 
-
-
 @Test func testTextSelectionReplacementAndEmptyLineHighlight() throws {
     let editor = Editor()
     editor.buffer.lines = ["abc", "", "def"]
@@ -964,8 +962,6 @@ import TextMetrics
     #expect(editor.buffer.selectionMark == nil)
     #expect(editor.buffer.lines == ["aXdef"])
 }
-
-
 
 @Test func testCanvasBlockCutPasteAndCancel() throws {
     let editor = Editor()
@@ -1132,7 +1128,9 @@ import TextMetrics
 }
 
 @Test func testF4SaveAndExitCommand() throws {
-    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent("test_f4_save_exit_\(UUID().uuidString).txt").path
+    let tmpPath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "test_f4_save_exit_\(UUID().uuidString).txt"
+    ).path
     defer { try? FileManager.default.removeItem(atPath: tmpPath) }
 
     let editor = Editor(filePath: tmpPath)
@@ -1386,7 +1384,9 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarWriteShorthandUsesEditorSavePath() throws {
-    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_write_\(UUID().uuidString).txt").path
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_command_bar_write_\(UUID().uuidString).txt"
+    ).path
     defer { try? FileManager.default.removeItem(atPath: path) }
     let editor = Editor()
     editor.buffer.lines = ["command bar write"]
@@ -1400,7 +1400,9 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarUppercaseSaveUsesEditorCommand() throws {
-    let path = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_\(UUID().uuidString).txt").path
+    let path = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_command_bar_save_\(UUID().uuidString).txt"
+    ).path
     defer { try? FileManager.default.removeItem(atPath: path) }
     let editor = Editor(filePath: path)
     editor.buffer.lines = ["command bar save"]
@@ -1565,7 +1567,6 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.promptCompletionText?.contains("save-exit") == true)
 }
 
-
 @Test func testCommandBarCompletionClearsOnEsc() throws {
     let editor = Editor()
     editor.promptLogoMacro()
@@ -1608,7 +1609,9 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 }
 
 @Test func testCommandBarExitAndSaveExitCommands() throws {
-    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent("zago_command_bar_save_exit_\(UUID().uuidString).txt").path
+    let savePath = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "zago_command_bar_save_exit_\(UUID().uuidString).txt"
+    ).path
     defer { try? FileManager.default.removeItem(atPath: savePath) }
 
     let editor = Editor()
@@ -1836,7 +1839,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
             "",
             "```logo",
             "fd 100",
-            "```"
+            "```",
         ]
 
         // Inside ```python block (line 3: val = 42)
@@ -1895,7 +1898,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
             "│ hi │",
             "└────┘",
             "  ",
-            ""
+            "",
         ]
         // Select lines 0..3 (lines 1-4)
         editor.buffer.selectionMark = (line: 0, column: 0)

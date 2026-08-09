@@ -22,7 +22,7 @@ public struct DiagramSnippetFactory {
 
         // Graphviz (DOT)
         DOTDigraphSnippet(),
-        DOTGraphSnippet()
+        DOTGraphSnippet(),
     ]
 
     /// Returns all snippet instances for a specified diagram engine.

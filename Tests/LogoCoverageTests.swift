@@ -134,22 +134,32 @@ struct LogoCoverageTests {
         var frameReturn: String?
 
         var runBlockIndex = 0
-        #expect(engine.executeControlCommand(.run, tokens: ["RUN", "[", "MAKE", "\"x", "5", "]"], index: &runBlockIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(
+                .run, tokens: ["RUN", "[", "MAKE", "\"x", "5", "]"], index: &runBlockIndex, frameReturn: &frameReturn))
         #expect(engine.variables["x"] == "5")
 
         frameReturn = nil
         var runStringIndex = 0
-        #expect(engine.executeControlCommand(.run, tokens: ["RUN", "OUTPUT 7"], index: &runStringIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(
+                .run, tokens: ["RUN", "OUTPUT 7"], index: &runStringIndex, frameReturn: &frameReturn))
         #expect(frameReturn == "7")
 
         frameReturn = nil
         var runResultIndex = 0
-        #expect(engine.executeControlCommand(.runResult, tokens: ["RUNRESULT", "[", "OUTPUT", "42", "]"], index: &runResultIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(
+                .runResult, tokens: ["RUNRESULT", "[", "OUTPUT", "42", "]"], index: &runResultIndex,
+                frameReturn: &frameReturn))
         #expect(engine.lastResult == "[42]")
 
         frameReturn = nil
         var emptyRunResultIndex = 0
-        #expect(engine.executeControlCommand(.runResult, tokens: ["RUNRESULT", "[", "MAKE", "\"z", "1", "]"], index: &emptyRunResultIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(
+                .runResult, tokens: ["RUNRESULT", "[", "MAKE", "\"z", "1", "]"], index: &emptyRunResultIndex,
+                frameReturn: &frameReturn))
         #expect(engine.lastResult == "[]")
 
         frameReturn = nil
@@ -159,7 +169,8 @@ struct LogoCoverageTests {
 
         frameReturn = nil
         var waitIndex = 0
-        #expect(engine.executeControlCommand(.wait, tokens: ["WAIT", "60"], index: &waitIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(.wait, tokens: ["WAIT", "60"], index: &waitIndex, frameReturn: &frameReturn))
         #expect(delegate.refreshCount == 1)
 
         engine.byeFlag = false
@@ -218,11 +229,17 @@ struct LogoCoverageTests {
         let delegate = CoverageDelegate()
         let engine = LogoEngine(delegate: delegate)
 
-        let caseClauses = ["[", "[", "a", "]", "\"first", "]", "[", "[", "b", "c", "]", "\"second", "]", "[", "ELSE", "\"fallback", "]"]
+        let caseClauses = [
+            "[", "[", "a", "]", "\"first", "]", "[", "[", "b", "c", "]", "\"second", "]", "[", "ELSE", "\"fallback",
+            "]",
+        ]
         #expect(engine.evaluateCaseClauses(targetVal: "c", clausesBlock: caseClauses) == "second")
         #expect(engine.evaluateCaseClauses(targetVal: "z", clausesBlock: caseClauses) == "fallback")
 
-        let condClauses = ["[", "[", "1", ">", "2", "]", "\"bad", "]", "[", "[", "2", ">", "1", "]", "\"good", "]", "[", "ELSE", "\"fallback", "]"]
+        let condClauses = [
+            "[", "[", "1", ">", "2", "]", "\"bad", "]", "[", "[", "2", ">", "1", "]", "\"good", "]", "[", "ELSE",
+            "\"fallback", "]",
+        ]
         #expect(engine.evaluateCondClauses(clausesBlock: condClauses) == "good")
 
         engine.execute("CATCH \"error [ THROW \"custom \"boom ]")
@@ -232,7 +249,9 @@ struct LogoCoverageTests {
 
         var frameReturn: String?
         var throwIndex = 0
-        #expect(engine.executeControlCommand(.throwTag, tokens: ["THROW", "\"justTag"], index: &throwIndex, frameReturn: &frameReturn))
+        #expect(
+            engine.executeControlCommand(
+                .throwTag, tokens: ["THROW", "\"justTag"], index: &throwIndex, frameReturn: &frameReturn))
         #expect(engine.currentThrowTag == "justtag")
         #expect(engine.currentThrowValue == "")
         engine.currentThrowTag = nil
@@ -262,7 +281,8 @@ struct LogoCoverageTests {
         engine.variables["x"] = "outer"
         let proc = LogoProcedure(name: "JOIN", parameters: ["x", "y"], bodyTokens: ["OUTPUT", "WORD", ":x", ":y"])
         var invokeIndex = 0
-        #expect(engine.invokeProcedure(proc, tokens: ["JOIN", "\"left", "\"right"], index: &invokeIndex) == "leftright")
+        #expect(
+            engine.invokeProcedure(proc, tokens: ["JOIN", "\"left", "\"right"], index: &invokeIndex) == "leftright")
         #expect(engine.variables["x"] == "outer")
 
         engine.procedureCallDepth = engine.maxProcedureCallDepth

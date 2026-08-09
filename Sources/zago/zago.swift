@@ -68,7 +68,9 @@ struct Zago: ParsableCommand {
 
     @Flag(
         name: [.customLong("install-skill"), .customLong("install-agent-skill")],
-        help: "Install the zago AI skill definition into local user AI directories (~/.gemini/config/skills/zago and ~/.agents/skills/zago).")
+        help:
+            "Install the zago AI skill definition into local user AI directories (~/.gemini/config/skills/zago and ~/.agents/skills/zago)."
+    )
     var installSkill: Bool = false
 
     @Option(

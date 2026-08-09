@@ -19,7 +19,7 @@ let package = Package(
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
     ],
     targets: [
         .target(
@@ -65,7 +65,10 @@ let package = Package(
         ),
         .target(
             name: "Editor",
-            dependencies: ["Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"]
+            dependencies: [
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax",
+                "TextEncoding", "TextMetrics", "TextTransform",
+            ]
         ),
         .executableTarget(
             name: "zago",
@@ -81,7 +84,10 @@ let package = Package(
         ),
         .testTarget(
             name: "zagoTests",
-            dependencies: ["Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker", "Syntax", "TextEncoding", "TextMetrics", "TextTransform"],
+            dependencies: [
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker",
+                "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
+            ],
             path: "Tests"
         ),
     ],

@@ -349,7 +349,7 @@ struct MarkdownTableTDDTests {
         let navResult = mdSyntax.tableNavigator?(lines, 2, 4, true)
         #expect(navResult != nil)
         #expect(navResult?.newBufferLineIndex == 2)
-        #expect(navResult?.newCursorColumn == 10) // start column of cell "3" in formatted line "| 1 + 2 | 3      |"
+        #expect(navResult?.newCursorColumn == 10)  // start column of cell "3" in formatted line "| 1 + 2 | 3      |"
 
         if let updatedNav = navResult?.updatedLines {
             #expect(updatedNav[2] == "| 1 + 2 | 3      |")
@@ -375,16 +375,14 @@ struct MarkdownTableTDDTests {
         }
 
         // 2. Navigation from cell 0 ("foo") to cell 1 ("Escaped \| pipe") to cell 2 ("ok")
-        let nav1 = mdSyntax.tableNavigator?(lines, 2, 2, true) // Tab from cell 0
+        let nav1 = mdSyntax.tableNavigator?(lines, 2, 2, true)  // Tab from cell 0
         #expect(nav1 != nil)
         #expect(nav1?.newBufferLineIndex == 2)
-        #expect(nav1?.newCursorColumn == 9) // start of cell 1 "Escaped \| pipe"
+        #expect(nav1?.newCursorColumn == 9)  // start of cell 1 "Escaped \| pipe"
 
-        let nav2 = mdSyntax.tableNavigator?(lines, 2, 18, true) // Tab from cell 1 (at escaped \|)
+        let nav2 = mdSyntax.tableNavigator?(lines, 2, 18, true)  // Tab from cell 1 (at escaped \|)
         #expect(nav2 != nil)
         #expect(nav2?.newBufferLineIndex == 2)
-        #expect(nav2?.newCursorColumn == 27) // start of cell 2 "ok"
+        #expect(nav2?.newCursorColumn == 27)  // start of cell 2 "ok"
     }
 }
-
-

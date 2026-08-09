@@ -30,7 +30,8 @@ extension LogoEngine {
                 setLength: { value in
                     length = value
                     hasExplicitLength = true
-                }, setStyle: { style in
+                },
+                setStyle: { style in
                     if style == "double" {
                         styleChar = "═"
                     } else if style == "ascii" {
@@ -38,9 +39,11 @@ extension LogoEngine {
                     } else {
                         styleChar = "─"
                     }
-                }, setArrowMode: { mode in
+                },
+                setArrowMode: { mode in
                     arrowMode = mode
-                }, setArrowHeadStyle: { arrowStyle in
+                },
+                setArrowHeadStyle: { arrowStyle in
                     editor.logoEngine(self, performAction: .setArrowStyle(arrowStyle.rawValue))
                 }
             )
@@ -87,7 +90,8 @@ extension LogoEngine {
                 setLength: { value in
                     height = value
                     hasExplicitHeight = true
-                }, setStyle: { style in
+                },
+                setStyle: { style in
                     if style == "double" {
                         styleChar = "║"
                     } else if style == "ascii" {
@@ -95,9 +99,11 @@ extension LogoEngine {
                     } else {
                         styleChar = "│"
                     }
-                }, setArrowMode: { mode in
+                },
+                setArrowMode: { mode in
                     arrowMode = mode
-                }, setArrowHeadStyle: { arrowStyle in
+                },
+                setArrowHeadStyle: { arrowStyle in
                     editor.logoEngine(self, performAction: .setArrowStyle(arrowStyle.rawValue))
                 }
             )
@@ -272,7 +278,9 @@ extension LogoEngine {
         var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
 
         let prevCol = startCol - 1
-        let connectLeft = prevCol >= 0 && !arrowMode.hasBackwardArrow && isMaskChar(displayCharAt(in: lineText, visualColumn: prevCol))
+        let connectLeft =
+            prevCol >= 0 && !arrowMode.hasBackwardArrow
+            && isMaskChar(displayCharAt(in: lineText, visualColumn: prevCol))
         if connectLeft {
             let existingPrev = displayCharAt(in: lineText, visualColumn: prevCol)
             let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 2)
@@ -326,7 +334,8 @@ extension LogoEngine {
             let existing = displayCharAt(in: lineText, visualColumn: col)
             let char = autoHorizontalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0 && (!connectLeft || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset, arrowMode: arrowMode)
+                isStart: offset == 0 && (!connectLeft || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset,
+                arrowMode: arrowMode)
             lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
         }
 
@@ -339,12 +348,14 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
 
         let prevLine = startLine - 1
-        let connectAbove = prevLine >= 0 && !arrowMode.hasBackwardArrow && isMaskChar(getLineCharAt(line: prevLine, col: startCol))
+        let connectAbove =
+            prevLine >= 0 && !arrowMode.hasBackwardArrow && isMaskChar(getLineCharAt(line: prevLine, col: startCol))
         if connectAbove {
             let prevStr = (editor.logoEngine(self, queryState: .lineAt(prevLine)) as? String) ?? ""
             let existingPrev = displayCharAt(in: prevStr, visualColumn: startCol)
             let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 4)
-            let updatedPrev = replaceDisplayColumns(in: prevStr, startCol: startCol, width: 1, replacement: String(fusedPrev))
+            let updatedPrev = replaceDisplayColumns(
+                in: prevStr, startCol: startCol, width: 1, replacement: String(fusedPrev))
             editor.logoEngine(self, performAction: .setLine(index: prevLine, text: updatedPrev))
         }
 
@@ -394,7 +405,8 @@ extension LogoEngine {
             let existing = displayCharAt(in: lineStr, visualColumn: startCol)
             let char = autoVerticalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0 && (!connectAbove || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset, arrowMode: arrowMode)
+                isStart: offset == 0 && (!connectAbove || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset,
+                arrowMode: arrowMode)
             let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
 
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))

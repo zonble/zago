@@ -68,8 +68,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws {
         let normalized = normalizePath(path, isDirectory: false)
         guard let data = contents.data(using: encoding, allowLossyConversion: false),
-              let roundtrip = String(data: data, encoding: encoding),
-              roundtrip == contents else {
+            let roundtrip = String(data: data, encoding: encoding),
+            roundtrip == contents
+        else {
             throw EncodingError.unsupportedCharacters
         }
         files[normalized] = contents

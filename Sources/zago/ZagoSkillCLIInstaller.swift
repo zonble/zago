@@ -1,5 +1,5 @@
-import Foundation
 import Config
+import Foundation
 
 public enum ZagoSkillCLIInstaller {
     public static func installSkill(
@@ -16,7 +16,7 @@ public enum ZagoSkillCLIInstaller {
         let targetRelativePaths = [
             ".gemini/config/skills/zago",
             ".agents/skills/zago",
-            ".claude/skills/zago"
+            ".claude/skills/zago",
         ]
 
         var installedPaths: [String] = []
