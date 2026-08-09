@@ -420,6 +420,41 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 - [Spell checker architecture & plan](docs/spell_checker.md)
 - [File encoding & auto-detection](docs/encoding.md)
 - [Homebrew tap](docs/homebrew_tap.md)
+
+### Homebrew Installation Flowchart
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│              1. Check System Environment                │
+│          (macOS Apple Silicon / Intel / Linux)          │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│              2. Execute Installation Script             │
+│   /bin/bash -c "$(curl -fsSL https://raw.github...)"    │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│             3. Download & Install Core & Tools          │
+│       (Homebrew Core, Cask & Xcode Command Line Tools)  │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│             4. Configure Environment & PATH             │
+│     echo 'eval "$(/opt/homebrew/bin/brew shellenv)"'    │
+│     >> ~/.zprofile                                      │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│             5. Verify Installation Status               │
+│          brew doctor  &&  brew --version                │
+└────────────────────────────┬────────────────────────────┘
+```
+
 - [Release & preview builds](docs/release.md)
 - [Changelog](CHANGELOG.md)
 
