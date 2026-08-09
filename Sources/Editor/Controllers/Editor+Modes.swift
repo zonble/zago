@@ -22,6 +22,7 @@ extension Editor {
         clearActiveMark()
         baseMode = .text
         clearModeStatusMessage()
+        renderer.invalidateScreenCache()
     }
 
     public func switchToCanvasMode() {
@@ -36,6 +37,7 @@ extension Editor {
             syncCanvasCursorFromBuffer()
         }
         clearModeStatusMessage()
+        renderer.invalidateScreenCache()
     }
 
     private func clearModeStatusMessage() {

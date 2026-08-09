@@ -329,7 +329,7 @@ public final class Renderer {
                 }
             }
 
-                if editor.isCanvasModeActive {
+                if editor.isCanvasModeActive && !vLine.isProposalOverlay {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
                     var selectedPad = ""
                     var normalPad = ""
