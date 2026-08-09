@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 1.2.4 - 2026-08-09
+
+Windows release DLL bundling fix, cross-platform AI skill installer, Canvas mode Ctrl+Arrow arrow line drawing, and outline title truncation.
+
+### Added
+
+- **AI Agent Skill & Installer (`SKILL.md` & `zago --install-skill`)**: Added `zago --install-skill` CLI command to automatically install Editor LOGO AI skill definitions into local user AI directories (`.gemini/config/skills`, `.agents/skills`, `.claude/skills`). Added `.agents/skills/zago/SKILL.md` in repository root.
+
+### Fixed
+
+- **Windows Standalone Packaging & Release DLL Fix (`release.yml`)**: Bundled essential `swift_Concurrency.dll`, `Foundation.dll`, `FoundationEssentials.dll`, `swiftDispatch.dll`, `icudt*.dll`, `icuin*.dll`, `icuuc*.dll`, `vcruntime140.dll`, `vcruntime140_1.dll`, and `msvcp140.dll` into release ZIP archive so `zago.exe` runs seamlessly on clean Windows environments without Swift installed.
+- **Canvas Mode (`CanvasModeController.swift`)**: Mapped `Ctrl + Arrow` keys (`Ctrl+Left`, `Ctrl+Right`, `Ctrl+Up`, `Ctrl+Down` and `Ctrl+b/f/p/n`) to draw arrow lines in Canvas mode for Linux and terminal environments.
+- **Document Outline View (`DocumentOutlineView.swift`)**: Added automatic ellipsis truncation (`…`) for long heading titles exceeding terminal width, and ensured ESC key exits cleanly without screen artifacts.
+- **Markdown Pipe Table Formatting (`PipeTableFormatter.swift`)**: Ignored `+` as border column separator and supported escaped pipes (`\|`).
+
 ## 1.2.3 - 2026-08-09
 
 Optimized Windows release archive size by filtering only essential Swift Runtime DLLs.
