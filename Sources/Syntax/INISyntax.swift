@@ -3,6 +3,7 @@ import Foundation
 public struct INISyntaxDefinition: SyntaxDefinition {
     public let name = "INI"
     public let fileExtensions = ["ini", "conf", "cfg", "properties"]
+    public var commentPrefix: String { "; " }
 
     public var rules: [SyntaxRule] {
         [

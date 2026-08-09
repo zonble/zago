@@ -1822,4 +1822,67 @@ private func submitCommandBar(_ text: String, editor: Editor) {
         _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
         #expect(editor.buffer.lines[0] == "line 4 double")
     }
+
+    // 4. Markdown file with embedded Python and LOGO code blocks
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "README.md")
+        editor.buffer.lines = [
+            "# Markdown Title",
+            "",
+            "```python",
+            "val = 42",
+            "```",
+            "",
+            "```logo",
+            "fd 100",
+            "```"
+        ]
+
+        // Inside ```python block (line 3: val = 42)
+        editor.buffer.lineIndex = 3
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[3] == "# val = 42")
+
+        // Inside ```logo block (line 7: fd 100)
+        editor.buffer.lineIndex = 7
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[7] == "; fd 100")
+
+        // Outside code block (line 0: # Markdown Title) -> HTML comment <!-- ... -->
+        editor.buffer.lineIndex = 0
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "<!-- # Markdown Title -->")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "# Markdown Title")
+    }
+
+    // 5. C/C++ file with //
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "main.cpp")
+        editor.buffer.lines = ["int main() {"]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "// int main() {")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "int main() {")
+    }
+
+    // 6. MediaWiki file with HTML comment <!-- ... -->
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "article.wiki")
+        editor.buffer.lines = ["== Heading =="]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "<!-- == Heading == -->")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "== Heading ==")
+    }
 }

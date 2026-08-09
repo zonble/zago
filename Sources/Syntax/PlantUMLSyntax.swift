@@ -3,6 +3,7 @@ import Foundation
 public struct PlantUMLSyntaxDefinition: SyntaxDefinition {
     public let name = "PlantUML"
     public let fileExtensions = ["puml", "plantuml", "iuml"]
+    public var commentPrefix: String { "' " }
 
     public var rules: [SyntaxRule] {
         [

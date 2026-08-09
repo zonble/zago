@@ -3,6 +3,7 @@ import Foundation
 public struct TOMLSyntaxDefinition: SyntaxDefinition {
     public let name = "TOML"
     public let fileExtensions = ["toml"]
+    public var commentPrefix: String { "# " }
 
     public var rules: [SyntaxRule] {
         [

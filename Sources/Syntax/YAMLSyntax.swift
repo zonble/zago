@@ -3,6 +3,7 @@ import Foundation
 public struct YAMLSyntaxDefinition: SyntaxDefinition {
     public let name = "YAML"
     public let fileExtensions = ["yaml", "yml"]
+    public var commentPrefix: String { "# " }
 
     public var rules: [SyntaxRule] {
         [

@@ -3,6 +3,7 @@ import Foundation
 public struct PythonSyntaxDefinition: SyntaxDefinition {
     public let name = "Python"
     public let fileExtensions = ["py", "python"]
+    public var commentPrefix: String { "# " }
 
     public var rules: [SyntaxRule] {
         [

@@ -3,6 +3,7 @@ import Foundation
 public struct DotSyntaxDefinition: SyntaxDefinition {
     public let name = "DOT"
     public let fileExtensions = ["dot", "gv"]
+    public var commentPrefix: String { "// " }
 
     public var rules: [SyntaxRule] {
         [

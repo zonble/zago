@@ -3,6 +3,7 @@ import Foundation
 public struct MarkdownSyntaxDefinition: SyntaxDefinition {
     public let name = "Markdown"
     public let fileExtensions = ["md", "markdown", "mdown", "mkd"]
+    public var commentPrefix: String { "<!-- " }
     public let supportsDocumentOutline = true
     public let supportsListAutoIndent = true
 

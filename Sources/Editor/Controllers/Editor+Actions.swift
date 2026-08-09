@@ -394,29 +394,25 @@ extension Editor {
         switchToBuffer(zeroBasedIndex: index - 1, reportInvalid: reportInvalid)
     }
 
+    public func commentPrefix(at lineIndex: Int) -> String {
+        syntaxHighlighter.commentPrefix(
+            for: buffer.filePath,
+            lines: buffer.lines,
+            bufferLineIndex: lineIndex
+        )
+    }
+
     public func commentPrefix(for filePath: String?) -> String {
-        guard let path = filePath?.lowercased() else { return "// " }
-        let ext = (path as NSString).pathExtension
-        switch ext {
-        case "py", "sh", "bash", "zsh", "rb", "pl", "yaml", "yml", "toml", "conf", "zagorc", "serc", "dockerfile", "makefile", "r":
-            return "# "
-        case "logo", "lisp", "clj", "scm", "ini":
-            return "; "
-        case "sql", "lua":
-            return "-- "
-        case "vim":
-            return "\" "
-        default:
-            return "// "
-        }
+        syntaxHighlighter.commentPrefix(
+            for: filePath,
+            lines: [],
+            bufferLineIndex: 0
+        )
     }
 
     public func toggleComment() {
         guard !buffer.isDirectoryBuffer else { return }
         saveUndoSnapshot()
-
-        let prefix = commentPrefix(for: buffer.filePath)
-        let cleanPrefix = prefix.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
 
         let startLine: Int
         let endLine: Int
@@ -431,6 +427,9 @@ extension Editor {
             startLine = cur
             endLine = cur
         }
+
+        let prefix = commentPrefix(at: startLine)
+        let cleanPrefix = prefix.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
 
         var allCommented = true
         var nonCount = 0
@@ -465,6 +464,13 @@ extension Editor {
                     } else {
                         newText.removeSubrange(prefixRange)
                     }
+                    if cleanPrefix == "<!--" {
+                        if newText.hasSuffix(" -->") {
+                            newText.removeLast(4)
+                        } else if newText.hasSuffix("-->") {
+                            newText.removeLast(3)
+                        }
+                    }
                     buffer.lines[lineIdx] = newText
                 }
             } else {
@@ -477,7 +483,8 @@ extension Editor {
                     }
                 }
                 let restOfLine = String(line.dropFirst(leadingSpaces.count))
-                let newText = leadingSpaces + prefix + restOfLine
+                let suffix = cleanPrefix == "<!--" ? " -->" : ""
+                let newText = leadingSpaces + prefix + restOfLine + suffix
                 buffer.lines[lineIdx] = newText
             }
         }
