@@ -5,6 +5,7 @@ This directory holds the detailed user and language documentation. The root [REA
 ## Guides
 
 - [Editor LOGO command language](logo.md): command prompt behavior, language vocabulary, drawing commands, procedures, data primitives, and examples.
+- [Editor LOGO error handling & ASSERT](logo_error_handling.md): 6 error categories, dual-tier status bar/console reporting, atomic undo, and `ASSERT` primitive specification.
 - [Editor LOGO text transliteration](logo_text_transliteration.md): proposed ICU String Transform primitive for text/script conversion.
 - [Command & Editor LOGO Architecture](command_architecture.md): unified division of responsibilities between Editor `Command` and `LogoEngine`.
 - [Editor basics](editor.md): common editing keys and basic editor behavior.

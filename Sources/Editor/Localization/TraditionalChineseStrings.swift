@@ -241,10 +241,11 @@ public struct TraditionalChineseStrings {
             APPLY "proc args                     以名稱與參數 List 動態呼叫 Procedure
             INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫 Procedure
 
-          15. Exception
+          15. 例外處理與斷言 (Exception Handling & Assertions)
             CATCH "tag [ commands ]              捕捉指定 Tag 的例外（"ERROR 捕捉執行時期錯誤）
-            THROW "tag                           主動拋出指定 Tag 的例外
-            ERROR                                取得最後一次捕捉到的錯誤細節資訊物件
+            THROW "tag                           拋出指定 Tag 的例外
+            ASSERT cond [msg]                    斷言條件成立（條件為 false 時中斷並拋出錯誤）
+            ERROR                                查詢上一次捕捉到的例外物件資訊物件
 
           16. Predicate
             WORD? LIST? ARRAY? NUMBER?           檢查資料型別是否為字串/清單/陣列/數值

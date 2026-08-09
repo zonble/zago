@@ -84,7 +84,7 @@ public final class LogoEngine {
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
         .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
-        .testCondition, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
+        .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
         .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
         .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
@@ -218,13 +218,50 @@ public final class LogoEngine {
                 continue
             }
 
-            // Step 3: Standalone Expression Evaluation
+            // Step 3: Unknown Identifier Check -> "I don't know how to <token>"
+            if isUnknownIdentifierToken(token) {
+                let unquoted = unquote(token)
+                let errorMessage = "[LOGO Error: I don't know how to \(unquoted)]"
+                reportError(LogoError(code: 1, message: errorMessage), token: token)
+                return
+            }
+
+            // Step 4: Standalone Expression Evaluation (primitives, numbers, variables, strings)
             let exprResult = evaluateExpression(tokens, index: &index)
             if !exprResult.isEmpty {
                 lastResult = exprResult
             }
             index += 1
         }
+    }
+
+    internal func isUnknownIdentifierToken(_ token: String) -> Bool {
+        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "()[]"))
+        if clean.isEmpty || clean.hasPrefix(";") || clean.hasPrefix("//") || clean.hasPrefix("#") {
+            return false
+        }
+        if isQuotedWordToken(clean) || clean.hasPrefix(":") || clean.hasPrefix("?") {
+            return false
+        }
+        if Double(clean) != nil {
+            return false
+        }
+        let upper = clean.uppercased()
+        if customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil {
+            return false
+        }
+        let operators: Set<String> = ["+", "-", "*", "/", "=", "<>", "<", ">", "<=", ">="]
+        if operators.contains(clean) {
+            return false
+        }
+        return true
+    }
+
+    public func reportError(_ error: LogoError, token: String = "") {
+        lastError = error
+        hasUncaughtError = true
+        delegate?.logoEngine(self, performAction: .setStatusMessage(error.message))
+        hasSetStatusMessage = true
     }
 
     internal func guardLoopIteration(_ loopName: String, iteration: Int) -> Bool {

@@ -481,7 +481,7 @@ import TextMetrics
     #expect(logoEngine.lastResult == "[2 4 6]")
 
     logoEngine.execute("MAPSE [SENTENCE ? ?] [a b]")
-    #expect(logoEngine.lastResult == "[ a b ]")
+    #expect(logoEngine.lastResult == "[a a b b]")
 
     logoEngine.execute("FILTER [? > 2] [1 2 3 4 5]")
     #expect(logoEngine.lastResult == "[3 4 5]")

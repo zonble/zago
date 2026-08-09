@@ -500,6 +500,15 @@ import TextMetrics
     #expect(editor.buffer.lines[2] == "└────────┘")
 }
 
+@Test func testUnknownCommandReporting() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("MAAK \"x 10")
+    #expect(logoEngine.hasUncaughtError)
+    #expect(logoEngine.lastError?.message == "[LOGO Error: I don't know how to MAAK]")
+}
+
 @Test func testAllExampleLogoScriptsExecuteWithoutErrors() throws {
     let fm = FileManager.default
     let examplesUrl = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("examples")

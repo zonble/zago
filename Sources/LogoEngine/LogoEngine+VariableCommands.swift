@@ -34,31 +34,46 @@ extension LogoEngine {
             index += 1
             let idxVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
             if index + 1 < tokens.count {
-                index += 1
-                let varToken = tokens[index]
-                let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let newVal = evaluateExpression(tokens, index: &index)
+                var targetIndex = index + 1
+                let rawToken = tokens[targetIndex]
+                let varName = rawToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                let targetVal = evaluateExpression(tokens, index: &targetIndex)
+                index = targetIndex
 
-                let currentVal = variables[varName] ?? ""
-                let parsed = LogoValue.parse(currentVal)
-                let zeroIdx = idxVal - 1
-                switch parsed {
-                case .list(var items):
-                    if zeroIdx >= 0 && zeroIdx < items.count {
-                        items[zeroIdx] = LogoValue.parse(newVal)
-                        variables[varName] = LogoValue.list(items).description
+                if index + 1 < tokens.count {
+                    var valIndex = index + 1
+                    let newVal = evaluateExpression(tokens, index: &valIndex)
+                    index = valIndex
+
+                    let sourceVal = variables[varName] ?? targetVal
+                    let parsed = LogoValue.parse(sourceVal)
+                    let zeroIdx = idxVal - 1
+                    var resultStr: String? = nil
+
+                    switch parsed {
+                    case .list(var items):
+                        if zeroIdx >= 0 && zeroIdx < items.count {
+                            items[zeroIdx] = LogoValue.parse(newVal)
+                            resultStr = LogoValue.list(items).description
+                        }
+                    case .array(var items):
+                        if zeroIdx >= 0 && zeroIdx < items.count {
+                            items[zeroIdx] = LogoValue.parse(newVal)
+                            resultStr = LogoValue.array(items).description
+                        }
+                    case .string(var s):
+                        if zeroIdx >= 0 && zeroIdx < s.count {
+                            let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
+                            s.replaceSubrange(strIdx...strIdx, with: newVal)
+                            resultStr = s
+                        }
                     }
-                case .array(var items):
-                    if zeroIdx >= 0 && zeroIdx < items.count {
-                        items[zeroIdx] = LogoValue.parse(newVal)
-                        variables[varName] = LogoValue.array(items).description
-                    }
-                case .string(var s):
-                    if zeroIdx >= 0 && zeroIdx < s.count {
-                        let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
-                        s.replaceSubrange(strIdx...strIdx, with: newVal)
-                        variables[varName] = s
+
+                    if let res = resultStr {
+                        if variables[varName] != nil || rawToken.hasPrefix(":") || rawToken.hasPrefix("\"") {
+                            variables[varName] = res
+                        }
+                        lastResult = res
                     }
                 }
             }
@@ -350,6 +365,43 @@ extension LogoEngine {
             variables.removeAll()
             variableValues.removeAll()
             propertyLists.removeAll()
+            return true
+
+        case .local:
+            index += 1
+            while index < tokens.count {
+                let t = tokens[index]
+                if LogoEngine.isStatementCommand(t) || t == "]" || t == ")" {
+                    index -= 1
+                    break
+                }
+                let varName = unquote(t).trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
+                if !varName.isEmpty {
+                    variables[varName] = ""
+                }
+                index += 1
+            }
+            return true
+
+        case .pons:
+            let systemKeys: Set<String> = ["author", "version", "repository"]
+            let keys = Array(variables.keys.filter { !systemKeys.contains($0) }).sorted()
+            let res = LogoValue.list(keys.map { .string($0) }).description
+            lastResult = res
+            return true
+
+        case .pops:
+            let keys = Array(customProcedures.keys).sorted()
+            let res = LogoValue.list(keys.map { .string($0) }).description
+            lastResult = res
+            return true
+
+        case .povas:
+            let systemKeys: Set<String> = ["author", "version", "repository"]
+            let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
+            let vars = LogoValue.list(Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
+            let res = LogoValue.list([procs, vars]).description
+            lastResult = res
             return true
 
         default:

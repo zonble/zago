@@ -21,9 +21,14 @@ extension LogoEngine {
         case .ifCondition:
             index += 1
             var condTokens: [String] = []
-            while index < tokens.count && tokens[index] != "[" {
-                condTokens.append(tokens[index])
+            if index < tokens.count && tokens[index] == "[" {
+                condTokens = extractBlockTokens(tokens: tokens, index: &index)
                 index += 1
+            } else {
+                while index < tokens.count && tokens[index] != "[" {
+                    condTokens.append(tokens[index])
+                    index += 1
+                }
             }
 
             let isTrue = evaluateCondition(condTokens)
@@ -40,9 +45,14 @@ extension LogoEngine {
         case .ifElseCondition:
             index += 1
             var condTokens: [String] = []
-            while index < tokens.count && tokens[index] != "[" {
-                condTokens.append(tokens[index])
+            if index < tokens.count && tokens[index] == "[" {
+                condTokens = extractBlockTokens(tokens: tokens, index: &index)
                 index += 1
+            } else {
+                while index < tokens.count && tokens[index] != "[" {
+                    condTokens.append(tokens[index])
+                    index += 1
+                }
             }
 
             let isTrue = evaluateCondition(condTokens)
@@ -57,7 +67,7 @@ extension LogoEngine {
                 var bIdx = 0
                 if isTrue {
                     executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
-                } else {
+                } else if !falseBlock.isEmpty {
                     executeTokens(falseBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
@@ -159,6 +169,10 @@ extension LogoEngine {
             }
             testResult = evaluateCondition(condTokens)
             index -= 1
+            return true
+
+        case .assertCondition:
+            executeAssertCommand(tokens, index: &index)
             return true
 
         case .ifTrue:
@@ -437,5 +451,51 @@ extension LogoEngine {
         guard index < tokens.count, tokens[index] == "[" else { return nil }
         let body = extractBlockTokens(tokens: tokens, index: &index)
         return (condition, body)
+    }
+
+    private func executeAssertCommand(_ tokens: [String], index: inout Int) {
+        guard index + 1 < tokens.count else {
+            reportError(LogoError(code: 1, message: "[LOGO Error: Not enough inputs to ASSERT]"), token: "ASSERT")
+            return
+        }
+        index += 1
+
+        var condTokens: [String] = []
+        if index < tokens.count && tokens[index] == "[" {
+            condTokens = extractBlockTokens(tokens: tokens, index: &index)
+            index += 1
+        } else {
+            while index < tokens.count {
+                let t = tokens[index]
+                if t == "[" || isQuotedWordToken(t) || t == "]" || t == ")" || (condTokens.count >= 1 && LogoEngine.isStatementCommand(t)) {
+                    break
+                }
+                condTokens.append(t)
+                index += 1
+            }
+        }
+
+        let isTrue = evaluateCondition(condTokens)
+        var customMsg: String? = nil
+
+        if index < tokens.count {
+            let t = tokens[index]
+            if t == "[" {
+                let msgBlock = extractBlockTokens(tokens: tokens, index: &index)
+                customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
+            } else if isQuotedWordToken(t) || t.hasPrefix(":") {
+                var msgTokens: [String] = []
+                while index < tokens.count && !LogoEngine.isStatementCommand(tokens[index]) && tokens[index] != "]" {
+                    msgTokens.append(tokens[index])
+                    index += 1
+                }
+                customMsg = msgTokens.map { unquote($0) }.joined(separator: " ")
+            }
+        }
+
+        if !isTrue {
+            let msg = customMsg ?? "Assertion failed: (\(condTokens.joined(separator: " ")))"
+            reportError(LogoError(code: 1, message: "[LOGO Assertion Failed: \(msg)]"), token: "ASSERT")
+        }
     }
 }
