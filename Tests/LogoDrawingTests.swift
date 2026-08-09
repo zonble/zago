@@ -405,3 +405,24 @@ import TextMetrics
     #expect(editor2.buffer.lines[0] == "####")
     #expect(editor2.buffer.lines[2] == "****")
 }
+
+@Test func testInsetCommandInBoxAndCanvasAreas() throws {
+    let editor1 = Editor()
+    let logoEngine1 = LogoEngine(delegate: editor1)
+    logoEngine1.execute("BOX 10 5 GOTO 2 2 INSET \"Hello\"")
+    #expect(editor1.buffer.lines[0] == "┌────────┐")
+    #expect(editor1.buffer.lines[1] == "│        │")
+    #expect(editor1.buffer.lines[2] == "│ Hello  │")
+    #expect(editor1.buffer.lines[3] == "│        │")
+    #expect(editor1.buffer.lines[4] == "└────────┘")
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("INSET 10 3 \"Center\"")
+    #expect(editor2.buffer.lines[1] == "  Center  ")
+
+    let editor3 = Editor()
+    let logoEngine3 = LogoEngine(delegate: editor3)
+    logoEngine3.execute("INSET 10 \"Hi\"")
+    #expect(editor3.buffer.lines[0] == "    Hi    ")
+}

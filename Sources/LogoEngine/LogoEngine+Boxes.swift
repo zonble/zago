@@ -730,4 +730,185 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .setLine(index: r, text: lineStr))
         }
     }
+
+    internal func executeInsetCommand(_ tokens: [String], index: inout Int) {
+        guard let editor = self.delegate else { return }
+        guard index < tokens.count else { return }
+
+        var widthVal: Int? = nil
+        var heightVal: Int? = nil
+        var insetText = ""
+
+        if let w = parseIntExpressionArgument(tokens, index: &index, isBoundary: shouldStopFillArgumentScan) {
+            widthVal = w
+            if index + 1 < tokens.count {
+                var heightIndex = index + 1
+                if let h = parseIntExpressionArgument(
+                    tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan)
+                {
+                    index = heightIndex
+                    heightVal = h
+                }
+            }
+            if index + 1 < tokens.count {
+                var evalIndex = index + 1
+                insetText = unquote(evaluateExpression(tokens, index: &evalIndex))
+                index = evalIndex
+            }
+        } else {
+            insetText = unquote(evaluateExpression(tokens, index: &index))
+        }
+
+        if insetText.isEmpty { return }
+
+        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+
+        // Mode 3: 1D Line Inset (1 number)
+        if let width = widthVal, heightVal == nil {
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let textWidth = insetText.displayWidth
+            let offset = max(0, (width - textWidth) / 2)
+            let paddedText = String(repeating: " ", count: offset) + insetText + String(repeating: " ", count: max(0, width - offset - textWidth))
+            let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: width, replacement: paddedText)
+
+            editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
+            editor.logoEngine(self, performAction: .setLine(index: startLine, text: newText))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
+            return
+        }
+
+        // Mode 2: 2D Box Area Inset (2 numbers)
+        if let width = widthVal, let height = heightVal {
+            let textLines = insetText.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
+            let startRow = max(0, (height - textLines.count) / 2)
+
+            for r in 0..<height {
+                let lineIdx = startLine + r
+                editor.logoEngine(self, performAction: .ensureLineExists(index: lineIdx))
+                let lineStr = (editor.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+
+                let replacementText: String
+                if r >= startRow && (r - startRow) < textLines.count {
+                    let lineContent = textLines[r - startRow]
+                    let textWidth = lineContent.displayWidth
+                    let offset = max(0, (width - textWidth) / 2)
+                    replacementText = String(repeating: " ", count: offset) + lineContent + String(repeating: " ", count: max(0, width - offset - textWidth))
+                } else {
+                    replacementText = String(repeating: " ", count: width)
+                }
+
+                let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: width, replacement: replacementText)
+                editor.logoEngine(self, performAction: .setLine(index: lineIdx, text: newText))
+            }
+
+            editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
+            editor.logoEngine(self, performAction: .updateColumnIndex(startCol + width))
+            return
+        }
+
+        // Mode 1: Auto Box Bounds Detection (No numbers)
+        performBoxInset(startLine: startLine, startCol: startCol, insetText: insetText)
+    }
+
+    private func performBoxInset(startLine: Int, startCol: Int, insetText: String) {
+        guard let editor = self.delegate else { return }
+
+        let topBorderChars: Set<Character> = ["┌", "┬", "┐", "─", "═", "╔", "╦", "╗", "╭", "╮", "+", "-"]
+        let bottomBorderChars: Set<Character> = ["└", "┴", "┘", "─", "═", "╚", "╩", "╝", "╰", "╯", "+", "-"]
+        let sideBorderChars: Set<Character> = ["│", "║", "|", "├", "┤", "┼", "╠", "╣", "╬", "┌", "┐", "└", "┘", "╔", "╗", "╚", "╝", "╭", "╮", "╰", "╯"]
+
+        func getCharAt(r: Int, c: Int) -> Character {
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            return displayCharAt(in: lineStr, visualColumn: c)
+        }
+
+        // Find top boundary
+        var topLine: Int? = nil
+        for r in stride(from: startLine, through: 0, by: -1) {
+            let ch = getCharAt(r: r, c: startCol)
+            if topBorderChars.contains(ch) {
+                topLine = r
+                break
+            }
+        }
+
+        // Find bottom boundary
+        var bottomLine: Int? = nil
+        let lineCount = (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? (startLine + 10)
+        for r in startLine..<min(lineCount + 50, startLine + 100) {
+            let ch = getCharAt(r: r, c: startCol)
+            if bottomBorderChars.contains(ch) {
+                bottomLine = r
+                break
+            }
+        }
+
+        // Find left boundary
+        var leftCol: Int? = nil
+        for c in stride(from: startCol, through: 0, by: -1) {
+            let ch = getCharAt(r: startLine, c: c)
+            if sideBorderChars.contains(ch) {
+                leftCol = c
+                break
+            }
+        }
+
+        // Find right boundary
+        var rightCol: Int? = nil
+        for c in startCol...min(200, startCol + 150) {
+            let ch = getCharAt(r: startLine, c: c)
+            if sideBorderChars.contains(ch) {
+                rightCol = c
+                break
+            }
+        }
+
+        guard let tLine = topLine, let bLine = bottomLine, let lCol = leftCol, let rCol = rightCol,
+              bLine > tLine + 1, rCol > lCol + 1 else {
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let textWidth = insetText.displayWidth
+            let offset = max(0, (40 - textWidth) / 2)
+            let replacement = String(repeating: " ", count: offset) + insetText
+            let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: replacement.displayWidth, replacement: replacement)
+            editor.logoEngine(self, performAction: .setLine(index: startLine, text: newText))
+            return
+        }
+
+        let innerTop = tLine + 1
+        let innerBottom = bLine - 1
+        let innerLeft = lCol + 1
+        let innerRight = rCol - 1
+        let innerWidth = innerRight - innerLeft + 1
+        let innerHeight = innerBottom - innerTop + 1
+
+        let textLines = insetText.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
+        let startRowInInner = max(0, (innerHeight - textLines.count) / 2)
+
+        for r in 0..<innerHeight {
+            let currentLineIdx = innerTop + r
+            editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIdx))
+            let lineStr = (editor.logoEngine(self, queryState: .lineAt(currentLineIdx)) as? String) ?? ""
+
+            let replacementText: String
+            if r >= startRowInInner && (r - startRowInInner) < textLines.count {
+                let lineContent = textLines[r - startRowInInner]
+                let textWidth = lineContent.displayWidth
+                let offset = max(0, (innerWidth - textWidth) / 2)
+                replacementText = String(repeating: " ", count: offset) + lineContent + String(repeating: " ", count: max(0, innerWidth - offset - textWidth))
+            } else {
+                replacementText = String(repeating: " ", count: innerWidth)
+            }
+
+            let newText = replaceDisplayColumns(in: lineStr, startCol: innerLeft, width: innerWidth, replacement: replacementText)
+            editor.logoEngine(self, performAction: .setLine(index: currentLineIdx, text: newText))
+        }
+
+        let targetLine = innerTop + startRowInInner
+        let targetTextWidth = (textLines.first?.displayWidth) ?? insetText.displayWidth
+        let targetCol = innerLeft + max(0, (innerWidth - targetTextWidth) / 2) + targetTextWidth
+
+        editor.logoEngine(self, performAction: .updateLineIndex(targetLine))
+        editor.logoEngine(self, performAction: .updateColumnIndex(targetCol))
+    }
 }
