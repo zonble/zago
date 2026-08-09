@@ -35,6 +35,35 @@ enum PipeTableFormatter {
         return trimmed.hasPrefix("|")
     }
 
+    static func isUnescapedPipe(in chars: [Character], at index: Int) -> Bool {
+        guard index >= 0 && index < chars.count, chars[index] == "|" else { return false }
+        var backslashCount = 0
+        var i = index - 1
+        while i >= 0 && chars[i] == "\\" {
+            backslashCount += 1
+            i -= 1
+        }
+        return backslashCount % 2 == 0
+    }
+
+    static func splitByUnescapedPipe(_ str: String) -> [String] {
+        let chars = Array(str)
+        var components: [String] = []
+        var current = ""
+        var i = 0
+        while i < chars.count {
+            if chars[i] == "|" && isUnescapedPipe(in: chars, at: i) {
+                components.append(current)
+                current = ""
+            } else {
+                current.append(chars[i])
+            }
+            i += 1
+        }
+        components.append(current)
+        return components
+    }
+
     static func parseCells(line: String, style: TableStyle = .markdown) -> [String] {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         if trimmed == "|===" { return [] }
@@ -50,11 +79,17 @@ enum PipeTableFormatter {
         } else {
             guard trimmed.hasPrefix("|") else { return [] }
 
-            var str = trimmed
-            if str.hasPrefix("|") { str = String(str.dropFirst()) }
-            if str.hasSuffix("|") { str = String(str.dropLast()) }
+            let chars = Array(trimmed)
+            var startIdx = 0
+            var endIdx = chars.count
 
-            let components = str.components(separatedBy: "|")
+            if chars.first == "|" { startIdx += 1 }
+            if chars.count > startIdx && chars.last == "|" && isUnescapedPipe(in: chars, at: chars.count - 1) {
+                endIdx -= 1
+            }
+
+            let subStr = String(chars[startIdx..<endIdx])
+            let components = splitByUnescapedPipe(subStr)
             return components.map { $0.trimmingCharacters(in: .whitespaces) }
         }
     }
@@ -517,9 +552,11 @@ enum PipeTableFormatter {
     }
 
     private static func findCellIndex(line: String, cursorColumn: Int, maxCols: Int, style: TableStyle) -> Int {
+        let chars = Array(line)
         var pipes: [Int] = []
-        for (idx, ch) in line.enumerated() {
-            if ch == "|" || (style == .restGrid && ch == "+") {
+        for idx in 0..<chars.count {
+            let ch = chars[idx]
+            if (ch == "|" && isUnescapedPipe(in: chars, at: idx)) || (style == .restGrid && ch == "+") {
                 pipes.append(idx)
             }
         }
@@ -536,9 +573,11 @@ enum PipeTableFormatter {
     }
 
     private static func calculateCellStartColumn(line: String, cellIndex: Int, style: TableStyle) -> Int {
+        let chars = Array(line)
         var pipes: [Int] = []
-        for (idx, ch) in line.enumerated() {
-            if ch == "|" || (style == .restGrid && ch == "+") {
+        for idx in 0..<chars.count {
+            let ch = chars[idx]
+            if (ch == "|" && isUnescapedPipe(in: chars, at: idx)) || (style == .restGrid && ch == "+") {
                 pipes.append(idx)
             }
         }
@@ -548,13 +587,22 @@ enum PipeTableFormatter {
     }
 
     private static func calculateNewColumn(originalLine: String, formattedLine: String, cursorColumn: Int, style: TableStyle) -> Int {
+        let origChars = Array(originalLine)
         var origPipes: [Int] = []
-        for (idx, ch) in originalLine.enumerated() {
-            if ch == "|" || (style == .restGrid && ch == "+") { origPipes.append(idx) }
+        for idx in 0..<origChars.count {
+            let ch = origChars[idx]
+            if (ch == "|" && isUnescapedPipe(in: origChars, at: idx)) || (style == .restGrid && ch == "+") {
+                origPipes.append(idx)
+            }
         }
+
+        let formattedChars = Array(formattedLine)
         var newPipes: [Int] = []
-        for (idx, ch) in formattedLine.enumerated() {
-            if ch == "|" || (style == .restGrid && ch == "+") { newPipes.append(idx) }
+        for idx in 0..<formattedChars.count {
+            let ch = formattedChars[idx]
+            if (ch == "|" && isUnescapedPipe(in: formattedChars, at: idx)) || (style == .restGrid && ch == "+") {
+                newPipes.append(idx)
+            }
         }
 
         guard origPipes.count >= 2 && newPipes.count >= 2 else {

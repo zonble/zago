@@ -355,5 +355,36 @@ struct MarkdownTableTDDTests {
             #expect(updatedNav[2] == "| 1 + 2 | 3      |")
         }
     }
+
+    @Test func testMarkdownPipeTableHandlesEscapedPipe() throws {
+        let mdSyntax = MarkdownSyntaxDefinition().buildLanguageSyntax()
+        let lines = [
+            "| Name | Description | Output |",
+            "| --- | --- | --- |",
+            "| foo | Escaped \\| pipe | ok |",
+        ]
+
+        // 1. Formatting should keep 3 columns and preserve "Escaped \| pipe" as a single cell
+        let formatted = mdSyntax.tableFormatter?(lines, 2, 2)
+        #expect(formatted != nil)
+        if let updated = formatted?.updatedLines {
+            #expect(updated.count == 3)
+            #expect(updated[0] == "| Name | Description     | Output |")
+            #expect(updated[1] == "| ---- | --------------- | ------ |")
+            #expect(updated[2] == "| foo  | Escaped \\| pipe | ok     |")
+        }
+
+        // 2. Navigation from cell 0 ("foo") to cell 1 ("Escaped \| pipe") to cell 2 ("ok")
+        let nav1 = mdSyntax.tableNavigator?(lines, 2, 2, true) // Tab from cell 0
+        #expect(nav1 != nil)
+        #expect(nav1?.newBufferLineIndex == 2)
+        #expect(nav1?.newCursorColumn == 9) // start of cell 1 "Escaped \| pipe"
+
+        let nav2 = mdSyntax.tableNavigator?(lines, 2, 18, true) // Tab from cell 1 (at escaped \|)
+        #expect(nav2 != nil)
+        #expect(nav2?.newBufferLineIndex == 2)
+        #expect(nav2?.newCursorColumn == 27) // start of cell 2 "ok"
+    }
 }
+
 
