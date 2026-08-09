@@ -213,3 +213,13 @@ public final class JSONRPCHandler {
         return JSONRPCResponse.success(result: .object(resObj), id: request.id)
     }
 }
+
+extension JSONRPCHandler: ZagoIPCServerDelegate {
+    public func ipcServer(_ server: ZagoIPCServer, didReceiveRequest request: JSONRPCRequest, connectionId: String) -> JSONRPCResponse {
+        handleRequest(request, connectionId: connectionId)
+    }
+
+    public func ipcServer(_ server: ZagoIPCServer, clientDidDisconnect connectionId: String) {
+        unregisterClient(connectionId: connectionId)
+    }
+}

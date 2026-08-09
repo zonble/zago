@@ -284,6 +284,11 @@ struct Zago: ParsableCommand {
         var interactiveOptions = baseOptions
         interactiveOptions.showRuler = ruler
         interactiveOptions.enableSyntax = enableSyntax
+        if ipc {
+            interactiveOptions.ipcEnabled = true
+        } else if noIpc {
+            interactiveOptions.ipcEnabled = false
+        }
 
         for file in targetFiles {
             let normalized = fileIOStrategy.normalizePath(file, isDirectory: false)
