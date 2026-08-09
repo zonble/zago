@@ -11,7 +11,7 @@ public enum ZagoVersion {
     public static var creditsBanner: String {
         """
         ┌─────────────────────────────────────────────────────────────┐
-        │                      zago v\(current.padding(toLength: 5, withPad: " ", startingAt: 0))                            │
+        │                      zago v\(current.padding(toLength: 8, withPad: " ", startingAt: 0))                         │
         │      zonble's nano + Editor LOGO Plain-Text Editor          │
         │                                                             │
         │  Author:     zonble (zonble@gmail.com)                      │
