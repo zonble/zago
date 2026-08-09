@@ -41,9 +41,6 @@ public final class JSONRPCHandler {
     }
 
     public func handleRequest(_ request: JSONRPCRequest, connectionId: String) -> JSONRPCResponse {
-        lock.lock()
-        defer { lock.unlock() }
-
         switch request.method {
         case "zago.client.register":
             return processRegister(request)
@@ -87,6 +84,9 @@ public final class JSONRPCHandler {
     // MARK: - Method Handlers
 
     private func processRegister(_ request: JSONRPCRequest) -> JSONRPCResponse {
+        lock.lock()
+        defer { lock.unlock() }
+
         guard let paramsObj = request.params?.objectValue else {
             return JSONRPCResponse.failure(code: -32602, message: "Invalid params for zago.client.register", id: request.id)
         }

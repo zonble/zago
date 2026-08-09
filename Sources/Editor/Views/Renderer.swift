@@ -302,6 +302,10 @@ public final class Renderer {
                     lineIndex: vLine.bufferLineIndex
                 )
 
+                if proposalInfo != nil && vLine.subLineIndex == 0 {
+                    lineOutput += "AI> ".ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                }
+
                 let totalLengthNeeded: Int
                 if let pInfo = proposalInfo {
                     totalLengthNeeded = max(baseChars.count, pInfo.startCol + pInfo.line.count)
@@ -412,8 +416,9 @@ public final class Renderer {
                     )
                     lineOutput += lineNumStr
                 }
-                let indent = String(repeating: " ", count: ghostInfo.startCol)
-                lineOutput += (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                let aiPrefix = "AI> ".ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                let indent = String(repeating: " ", count: max(0, ghostInfo.startCol))
+                lineOutput += aiPrefix + (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
