@@ -4,6 +4,9 @@ extension Editor {
     /// Central key input processing entrypoint for the Editor event loop.
     func processKey(_ key: Key) {
         defer {
+            if !proposalQueue.isEmpty {
+                renderer.invalidateScreenCache()
+            }
             if buffer.isModified {
                 markGitDiffDirty()
             }

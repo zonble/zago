@@ -302,59 +302,46 @@ public final class Renderer {
                     lineIndex: vLine.bufferLineIndex
                 )
 
-                if proposalInfo != nil && vLine.subLineIndex == 0 {
-                    lineOutput += "AI> ".ansiStyled(style: ANSIStyle.aiGhostOverlay)
-                }
-
-                let totalLengthNeeded: Int
                 if let pInfo = proposalInfo {
-                    totalLengthNeeded = max(baseChars.count, pInfo.startCol + pInfo.line.count)
+                    let indent = String(repeating: " ", count: max(0, pInfo.startCol))
+                    lineOutput += (indent + pInfo.line).ansiStyled(style: ANSIStyle.boldCyan)
                 } else {
-                    totalLengthNeeded = baseChars.count
-                }
+                    for cIdxInVLine in 0..<baseChars.count {
+                        let ch = baseChars[cIdxInVLine]
+                        let realCol = renderedStartCol + cIdxInVLine
+                        let charVisualColumn =
+                            editor.isCanvasModeActive
+                            ? editor.canvasHorizontalOffset + renderedDisplayWidth
+                            : realCol
+                        let isCellActive: Bool
+                        if let (cellLeft, cellRight) = activeCellBounds {
+                            isCellActive = realCol > cellLeft && realCol < cellRight
+                        } else {
+                            isCellActive = false
+                        }
 
-                for cIdxInVLine in 0..<totalLengthNeeded {
-                    let ch = cIdxInVLine < baseChars.count ? baseChars[cIdxInVLine] : " "
-                    let realCol = renderedStartCol + cIdxInVLine
-                    let charVisualColumn =
-                        editor.isCanvasModeActive
-                        ? editor.canvasHorizontalOffset + renderedDisplayWidth
-                        : realCol
-                    let isCellActive: Bool
-                    if let (cellLeft, cellRight) = activeCellBounds {
-                        isCellActive = realCol > cellLeft && realCol < cellRight
-                    } else {
-                        isCellActive = false
+                        if editor.isCanvasModeActive
+                            && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
+                        {
+                            lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if !editor.isCanvasModeActive
+                            && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
+                        {
+                            lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if !editor.isCanvasModeActive
+                            && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
+                        {
+                            lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
+                        } else if isCellActive {
+                            lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
+                        } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
+                            let tok = tokenTypes[realCol]
+                            lineOutput += ch.ansiStyled(style: tok.ansiColor)
+                        } else {
+                            lineOutput += String(ch)
+                        }
+                        renderedDisplayWidth += ch.displayWidth
                     }
-
-                    if let ghostCh = ghostOverlayChar(
-                        proposal: editor.proposalQueue.currentProposal,
-                        buffer: editor.buffer,
-                        lineIndex: vLine.bufferLineIndex,
-                        colIndex: realCol
-                    ) {
-                        lineOutput += ghostCh.ansiStyled(style: ANSIStyle.aiGhostOverlay)
-                    } else if editor.isCanvasModeActive
-                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
-                    {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                    } else if !editor.isCanvasModeActive
-                        && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
-                    {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                    } else if !editor.isCanvasModeActive
-                        && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
-                    {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
-                    } else if isCellActive {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
-                    } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
-                        let tok = tokenTypes[realCol]
-                        lineOutput += ch.ansiStyled(style: tok.ansiColor)
-                    } else {
-                        lineOutput += String(ch)
-                    }
-                    renderedDisplayWidth += ch.displayWidth
                 }
 
                 if editor.isCanvasModeActive {
@@ -621,9 +608,34 @@ public final class Renderer {
             if matches {
                 for chunk in file.chunks {
                     let startLine = chunk.targetLine - 1
+                    let boxLinesCount = chunk.lines.count + 2
                     let lineOffset = lineIndex - startLine
-                    if lineOffset >= 0 && lineOffset < chunk.lines.count {
-                        return (startCol: max(0, chunk.targetCol - 1), line: chunk.lines[lineOffset])
+                    if lineOffset >= 0 && lineOffset < boxLinesCount {
+                        let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
+                        let actionHint = "[Alt+a Accept | Alt+r Reject]"
+                        let maxLineW = chunk.lines.map { $0.displayWidth }.max() ?? 20
+                        let innerW = max(maxLineW + 4, actionHint.displayWidth + 6)
+                        let boxWidth = innerW + 2
+
+                        if lineOffset == 0 {
+                            // Top border: ┌─ AI Name ────────────────┐
+                            let headerText = "─ " + clientName + " "
+                            let remDashCount = max(0, boxWidth - 1 - headerText.displayWidth)
+                            let line = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
+                            return (startCol: max(0, chunk.targetCol - 1), line: line)
+                        } else if lineOffset == boxLinesCount - 1 {
+                            // Bottom border: └── [Alt+a Accept | Alt+r Reject] ─────┘
+                            let hintText = "── " + actionHint + " "
+                            let remDashCount = max(0, boxWidth - 1 - hintText.displayWidth)
+                            let line = "└" + hintText + String(repeating: "─", count: remDashCount) + "┘"
+                            return (startCol: max(0, chunk.targetCol - 1), line: line)
+                        } else {
+                            // Inner content: │  content line                     │
+                            let content = chunk.lines[lineOffset - 1]
+                            let padCount = max(0, boxWidth - 2 - 2 - content.displayWidth)
+                            let line = "│  " + content + String(repeating: " ", count: padCount) + "│"
+                            return (startCol: max(0, chunk.targetCol - 1), line: line)
+                        }
                     }
                 }
             }
