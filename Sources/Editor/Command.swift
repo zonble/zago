@@ -68,6 +68,8 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case editSpell = "edit.spell"
     case editEvalLogo = "edit.eval_logo"
     case editToggleComment = "edit.toggle_comment"
+    case editJoinLine = "edit.join_line"
+    case editSplitLine = "edit.split_line"
 
     // Search & Cursor
     case searchWhereIs = "search.whereis"

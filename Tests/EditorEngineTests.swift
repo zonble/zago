@@ -1918,3 +1918,21 @@ private func submitCommandBar(_ text: String, editor: Editor) {
         #expect(editor.buffer.lines[3] == "")
     }
 }
+
+@Test func testJoinLineAndSplitLineCommands() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["hello", "world", "again"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 2
+
+    _ = editor.commandRegistry.dispatch(id: .editJoinLine, editor: editor)
+    #expect(editor.buffer.lines == ["hello world", "again"])
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 6)
+
+    editor.buffer.columnIndex = 5
+    _ = editor.commandRegistry.dispatch(id: .editSplitLine, editor: editor)
+    #expect(editor.buffer.lines == ["hello", " world", "again"])
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 0)
+}

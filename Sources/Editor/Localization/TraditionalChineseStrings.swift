@@ -384,6 +384,8 @@ public struct TraditionalChineseStrings {
         "helpview.edit_3": "    ^K / F9            剪下選取文字、畫布區塊或目前行",
         "helpview.edit_4": "    ^U / F10           貼上最後剪下的文字至游標位置",
         "helpview.edit_5": "    ^I / Tab           於游標位置插入 Tab 縮排",
+        "helpview.edit_6": "    M+J                將下一行合併至當前行",
+        "helpview.edit_7": "    M+K                於游標位置將當前行拆分為兩行",
 
         "helpview.sec_canvas": "  畫布模式：",
         "helpview.canvas_1": "    F8 / M+V           切到畫布模式",

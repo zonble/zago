@@ -394,6 +394,8 @@ public struct EnglishStrings {
         "helpview.edit_3": "    ^K / F9            Cut selected text, canvas block, or current line",
         "helpview.edit_4": "    ^U / F10           Uncut (paste) last cut text at cursor position",
         "helpview.edit_5": "    ^I / Tab           Insert tab (4 spaces) at cursor position",
+        "helpview.edit_6": "    M+J                Join next line with current line",
+        "helpview.edit_7": "    M+K                Split current line at cursor position",
 
         "helpview.sec_canvas": "  CANVAS MODE:",
         "helpview.canvas_1": "    F8 / M+V           Toggle Canvas Mode for fixed-position editing",
