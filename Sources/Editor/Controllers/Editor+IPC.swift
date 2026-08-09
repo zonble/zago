@@ -82,6 +82,11 @@ extension Editor: JSONRPCDelegateTarget {
         )
 
         proposalQueue.pushProposal(proposal)
+        if let minLine = affectedProposals.flatMap({ $0.chunks }).map({ $0.targetLine - 1 }).min() {
+            if minLine < topVLineIndex || minLine >= topVLineIndex + 15 {
+                topVLineIndex = max(0, minLine)
+            }
+        }
         self.setStatusMessage("🤖 [AI Proposal from \(proposal.clientName)] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
         self.renderer.invalidateScreenCache()
         kill(getpid(), SIGWINCH)
