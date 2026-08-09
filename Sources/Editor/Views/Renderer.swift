@@ -397,6 +397,23 @@ public final class Renderer {
                     lineOutput += String(repeating: " ", count: max(0, targetWidth - renderedDisplayWidth))
                     lineOutput += subLineInfo
                 }
+            } else if let ghostInfo = ghostOverlayLine(
+                proposal: editor.proposalQueue.currentProposal,
+                bufferFileName: editor.buffer.filePath,
+                lineIndex: localVIndex
+            ) {
+                if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
+                    let lineNumStr = renderLineNumberGutter(
+                        editor: editor,
+                        lineNumber: localVIndex + 1,
+                        isFirstSubLine: true,
+                        showLineNumbers: true,
+                        isMenuOverlay: editor.isMenuBarActive && boxIdx < dropdownBoxLines.count
+                    )
+                    lineOutput += lineNumStr
+                }
+                let indent = String(repeating: " ", count: ghostInfo.startCol)
+                lineOutput += (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
