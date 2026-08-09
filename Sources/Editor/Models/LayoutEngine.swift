@@ -588,10 +588,16 @@ public final class LayoutEngine {
         columnIndex: Int,
         virtualLines: [VirtualLine]
     ) -> (vLineIndex: Int, vColIndex: Int) {
-        // Find all virtual lines corresponding to bufferLineIndex
-        let matching = virtualLines.enumerated().filter { $0.element.bufferLineIndex == lineIndex }
+        // Find all non-proposal virtual lines corresponding to bufferLineIndex
+        let matching = virtualLines.enumerated().filter {
+            !$0.element.isProposalOverlay && $0.element.bufferLineIndex == lineIndex
+        }
 
         if matching.isEmpty {
+            let fallback = virtualLines.enumerated().filter { $0.element.bufferLineIndex == lineIndex }
+            if let first = fallback.first {
+                return (first.offset, 0)
+            }
             return (0, 0)
         }
 

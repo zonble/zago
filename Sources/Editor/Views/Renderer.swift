@@ -93,11 +93,15 @@ public final class Renderer {
         let totalVirtualLineCount: Int
         let (cursorVLineIdx, cursorVColIdx): (Int, Int)
         if editor.isCanvasModeActive {
-            virtualLines = editor.layoutEngine.computeCanvasLines(from: editor.buffer.lines)
+            let baseCanvasLines = editor.layoutEngine.computeCanvasLines(from: editor.buffer.lines)
+            virtualLines = expandVirtualLinesWithProposal(virtualLines: baseCanvasLines, editor: editor, textWidth: textWidth)
             virtualLineStartIndex = 0
             totalVirtualLineCount = virtualLines.count
-            cursorVLineIdx = max(0, min(editor.buffer.lineIndex, max(0, virtualLines.count - 1)))
-            cursorVColIdx = editor.buffer.columnIndex
+            (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
+                lineIndex: editor.buffer.lineIndex,
+                columnIndex: editor.buffer.columnIndex,
+                virtualLines: virtualLines
+            )
         } else {
             let baseVLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
             virtualLines = expandVirtualLinesWithProposal(virtualLines: baseVLines, editor: editor, textWidth: textWidth)
@@ -106,7 +110,7 @@ public final class Renderer {
             (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
                 lineIndex: editor.buffer.lineIndex,
                 columnIndex: editor.buffer.columnIndex,
-                virtualLines: baseVLines
+                virtualLines: virtualLines
             )
         }
 
