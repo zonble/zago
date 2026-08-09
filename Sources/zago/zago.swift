@@ -180,6 +180,7 @@ struct Zago: ParsableCommand {
             wrapColumn: wrap,
             showLineNumbers: enableLineNumbers,
             showSubLineNumbers: enableSubLineNumbers,
+            ipcEnabled: ipc ? true : (noIpc ? false : nil),
             language: selectedLang,
             spellLanguage: spellLang,
             initialLine: initialLine,

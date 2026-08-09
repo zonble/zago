@@ -349,6 +349,17 @@ extension Editor {
             if let style = ArrowStyle(arg) {
                 defaultArrowStyle = style
             }
+        case "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled":
+            if arg == "off" || arg == "false" {
+                displayConfig.ipcEnabled = false
+                setStatusMessage("[IPC Disabled]")
+            } else if arg == "on" || arg == "true" {
+                displayConfig.ipcEnabled = true
+                setStatusMessage("[IPC Enabled]")
+            } else {
+                displayConfig.ipcEnabled.toggle()
+                setStatusMessage(displayConfig.ipcEnabled ? "[IPC Enabled]" : "[IPC Disabled]")
+            }
         default:
             break
         }

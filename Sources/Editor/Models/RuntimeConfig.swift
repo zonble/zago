@@ -35,6 +35,9 @@ public struct RuntimeConfig: Sendable, Equatable {
     /// Whether Git diff indicators in gutter are enabled.
     public var showGitDiff: Bool
 
+    /// Whether cross-platform IPC socket server is enabled.
+    public var ipcEnabled: Bool
+
     public init(
         showRuler: Bool = false,
         showLineNumbers: Bool = true,
@@ -46,7 +49,8 @@ public struct RuntimeConfig: Sendable, Equatable {
         listIndentSize: Int = 2,
         listWrapIndent: Bool = true,
         trimTrailingWhitespaceOnSave: Bool = false,
-        showGitDiff: Bool = true
+        showGitDiff: Bool = true,
+        ipcEnabled: Bool = false
     ) {
         self.showRuler = showRuler
         self.showLineNumbers = showLineNumbers
@@ -59,5 +63,6 @@ public struct RuntimeConfig: Sendable, Equatable {
         self.listWrapIndent = listWrapIndent
         self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
         self.showGitDiff = showGitDiff
+        self.ipcEnabled = ipcEnabled
     }
 }
