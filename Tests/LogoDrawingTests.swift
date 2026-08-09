@@ -358,16 +358,24 @@ import TextMetrics
     let editor4 = Editor()
     let logoEngine4 = LogoEngine(delegate: editor4)
     logoEngine4.execute("FOREACH [\"single \"double \"ascii] [[x] LINE 4 :x NL]")
-    #expect(editor4.buffer.lines[0] == "----")
+    #expect(editor4.buffer.lines[0] == "────")
     #expect(editor4.buffer.lines[1] == "════")
     #expect(editor4.buffer.lines[2] == "----")
 
     let editor5 = Editor()
     let logoEngine5 = LogoEngine(delegate: editor5)
     logoEngine5.execute("FOREACH [\"single \"double \"ascii] [[x] LINE 4 x NL]")
-    #expect(editor5.buffer.lines[0] == "----")
+    #expect(editor5.buffer.lines[0] == "────")
     #expect(editor5.buffer.lines[1] == "════")
     #expect(editor5.buffer.lines[2] == "----")
+
+    let editor6 = Editor()
+    let logoEngine6 = LogoEngine(delegate: editor6)
+    logoEngine6.execute("FOREACH [\"solid\" \"stemmed\" \"hollow\" \"small\"] [ LINE 4 DOUBLE ARROW ? NL ]")
+    #expect(editor6.buffer.lines[0] == "═══▶")
+    #expect(editor6.buffer.lines[1] == "═══→")
+    #expect(editor6.buffer.lines[2] == "═══▷")
+    #expect(editor6.buffer.lines[3] == "═══▸")
 }
 
 @Test func testBoxEvaluateTemplateAndVariableArguments() throws {
