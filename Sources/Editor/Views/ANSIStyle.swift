@@ -17,6 +17,9 @@ public enum ANSIStyle {
     /// Dim / Gray text attribute for line numbers, EOF markers, and borders (`\u{1B}[90m`).
     public static let dimGray = "\u{1B}[90m"
 
+    /// AI Ghost proposal hologram text attribute: Bright Cyan Italic (`\u{1B}[96;3m`).
+    public static let aiGhostOverlay = "\u{1B}[96;3m"
+
     /// Bold cyan foreground for shortcut keys and titles (`\u{1B}[1;36m`).
     public static let boldCyan = "\u{1B}[1;36m"
 

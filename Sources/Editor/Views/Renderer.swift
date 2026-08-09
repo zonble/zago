@@ -310,7 +310,7 @@ public final class Renderer {
                     }
 
                     if let ghostCh = ghostOverlayChar(proposal: editor.proposalQueue.currentProposal, bufferFileName: editor.buffer.filePath, lineIndex: vLine.bufferLineIndex, colIndex: realCol) {
-                        lineOutput += ghostCh.ansiStyled(style: ANSIStyle.dimGray)
+                        lineOutput += ghostCh.ansiStyled(style: ANSIStyle.aiGhostOverlay)
                     } else if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
                     {
