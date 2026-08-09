@@ -15,6 +15,9 @@ public struct AcceptProposalCommand: Command {
             return
         }
 
+        // Save Undo snapshot so Ctrl+u / Undo works!
+        editor.buffer.saveUndoSnapshot()
+
         let currentFileName = editor.buffer.filePath.map { NSString(string: $0).lastPathComponent } ?? ""
 
         for file in current.affectedFiles {
@@ -28,16 +31,9 @@ public struct AcceptProposalCommand: Command {
 
             if bufferMatch {
                 for chunk in file.chunks {
-                    let startLineIdx = max(0, chunk.targetLine - 1)
-
-                    for (offset, line) in chunk.lines.enumerated() {
-                        let targetLineIdx = startLineIdx + offset
-                        if targetLineIdx < editor.buffer.lines.count {
-                            editor.buffer.lines[targetLineIdx] = line
-                        } else {
-                            editor.buffer.lines.append(line)
-                        }
-                    }
+                    let insertLineIdx = max(0, min(chunk.targetLine - 1, editor.buffer.lines.count))
+                    // Unified Line Insertion: Always insert lines pushing down existing content
+                    editor.buffer.lines.insert(contentsOf: chunk.lines, at: insertLineIdx)
                 }
                 editor.buffer.isModified = true
             }
@@ -45,7 +41,7 @@ public struct AcceptProposalCommand: Command {
 
         AIHistoryLogManager.shared.logDecision(proposal: current, decision: "accepted")
         editor.proposalQueue.rejectCurrent()
-        editor.setStatusMessage("[AI Proposal] Accepted changes from \(current.clientName)")
+        editor.setStatusMessage("[AI Proposal] Accepted changes from \(current.clientName) (Press Ctrl+u to Undo)")
         editor.renderer.invalidateScreenCache()
     }
 }

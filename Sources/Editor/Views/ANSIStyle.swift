@@ -17,8 +17,8 @@ public enum ANSIStyle {
     /// Dim / Gray text attribute for line numbers, EOF markers, and borders (`\u{1B}[90m`).
     public static let dimGray = "\u{1B}[90m"
 
-    /// AI Ghost proposal hologram text attribute: Bold Cyan (`\u{1B}[1;36m`) for 100% universal terminal compatibility.
-    public static let aiGhostOverlay = "\u{1B}[1;36m"
+    /// AI Ghost proposal inverse highlight text attribute: Bold Black text on Cyan background (`\u{1B}[46;30;1m`) for 100% legibility.
+    public static let aiGhostOverlay = "\u{1B}[46;30;1m"
 
     /// Bold cyan foreground for shortcut keys and titles (`\u{1B}[1;36m`).
     public static let boldCyan = "\u{1B}[1;36m"
