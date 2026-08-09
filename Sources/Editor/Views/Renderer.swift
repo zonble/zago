@@ -515,9 +515,8 @@ public final class Renderer {
                 cursorDisplayWidth = max(0, editor.canvasVisualColumn - editor.canvasHorizontalOffset)
             } else {
                 let localCursorVLineIdx = cursorVLineIdx - virtualLineStartIndex
-                let vLineText =
-                    (localCursorVLineIdx >= 0 && localCursorVLineIdx < virtualLines.count)
-                    ? virtualLines[localCursorVLineIdx].text : ""
+                let vLine = (localCursorVLineIdx >= 0 && localCursorVLineIdx < virtualLines.count) ? virtualLines[localCursorVLineIdx] : nil
+                let vLineText = vLine?.text ?? ""
                 let vLineChars = Array(vLineText)
                 let effectiveCol: Int
                 if editor.isTableModeActive, let cell = editor.currentTableCell,
@@ -534,7 +533,16 @@ public final class Renderer {
                     effectiveCol = cursorVColIdx
                 }
                 let clampedCol = max(0, min(effectiveCol, vLineChars.count))
-                cursorDisplayWidth = vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
+                let hangingIndent: Int
+                if let vLine = vLine, vLine.subLineIndex > 0, editor.displayConfig.listWrapIndent,
+                    vLine.bufferLineIndex >= 0, vLine.bufferLineIndex < editor.buffer.lines.count
+                {
+                    let fullLine = editor.buffer.lines[vLine.bufferLineIndex]
+                    hangingIndent = LayoutEngine.calculateListHangingIndent(in: fullLine)
+                } else {
+                    hangingIndent = 0
+                }
+                cursorDisplayWidth = hangingIndent + vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
             }
 
             let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (editor.displayConfig.showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar

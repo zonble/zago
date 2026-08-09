@@ -135,12 +135,13 @@ jobs:
 
           $runtimePatterns = @(
               "swift*.dll",
+              "_swift*.dll",
               "Foundation*.dll",
+              "_Foundation*.dll",
+              "*icu*.dll",
               "dispatch*.dll",
+              "_dispatch*.dll",
               "BlocksRuntime*.dll",
-              "icudt*.dll",
-              "icuin*.dll",
-              "icuuc*.dll",
               "vcruntime*.dll",
               "msvcp*.dll",
               "mimalloc*.dll",
