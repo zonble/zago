@@ -587,7 +587,8 @@ extension LogoEngine {
             return "[]"
 
         case .names:
-            let keys = Array(variables.keys).sorted()
+            let systemKeys: Set<String> = ["author", "version", "repository"]
+            let keys = Array(variables.keys.filter { !systemKeys.contains($0) }).sorted()
             return LogoValue.list(keys.map { .string($0) }).description
 
         case .procedures:
@@ -599,8 +600,9 @@ extension LogoEngine {
             return LogoValue.list(keys.map { .string($0) }).description
 
         case .contents:
+            let systemKeys: Set<String> = ["author", "version", "repository"]
             let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
-            let vars = LogoValue.list(Array(variables.keys).sorted().map { .string($0) })
+            let vars = LogoValue.list(Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
             let plists = LogoValue.list(
                 Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted().map { .string($0) })
             return LogoValue.list([procs, vars, plists]).description

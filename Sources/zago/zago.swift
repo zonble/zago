@@ -73,6 +73,11 @@ struct Zago: ParsableCommand {
     )
     var installSkill: Bool = false
 
+    @Flag(
+        name: [.customShort("a"), .customLong("author"), .customLong("credits"), .customLong("about")],
+        help: "Display author signature, credits, and version banner.")
+    var showAuthor: Bool = false
+
     @Option(
         name: [.customShort("e"), .customLong("eval")],
         help: "Execute inline LOGO code string in headless mode and print output to stdout.")
@@ -97,6 +102,11 @@ struct Zago: ParsableCommand {
 
         var rawFiles = files
         let (initialLine, initialColumn) = Self.parseInitialLineAndColumn(from: &rawFiles)
+
+        if showAuthor {
+            terminal.write("\(ZagoVersion.creditsBanner)\n")
+            return
+        }
 
         if installSkill {
             let installedPaths = try ZagoSkillCLIInstaller.installSkill()
