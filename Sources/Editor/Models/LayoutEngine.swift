@@ -172,8 +172,6 @@ public final class LayoutEngine {
                     let cursorIsInChunk =
                         cursorColumnIndex >= vLine.startCol
                         && (cursorColumnIndex < vLine.endCol || (isAtLineEnd && cursorColumnIndex <= vLine.endCol))
-
-                    let hangingIndent = (vLine.subLineIndex > 0 && listWrapIndent) ? LayoutEngine.calculateListHangingIndent(in: line) : 0
                     cursorFallback = (virtualIndex, vLine.text.count)
                     if cursorIsInChunk {
                         cursorVirtualLineIndex = virtualIndex
