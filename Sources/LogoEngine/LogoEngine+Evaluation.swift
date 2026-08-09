@@ -409,16 +409,23 @@ extension LogoEngine {
                         variables[pName] = i < args.count ? args[i] : ""
                     }
                     let bodyTokens = Array(inner[iIdx...])
-                    if !bodyTokens.isEmpty && bodyTokens[0] == "[" {
-                        var bIdx = 0
-                        let stmtBlock = extractBlockTokens(tokens: bodyTokens, index: &bIdx)
-                        var subReturn: String? = nil
-                        var sIdx = 0
-                        executeTokens(stmtBlock, index: &sIdx, frameReturn: &subReturn)
-                        return subReturn ?? lastResult ?? ""
-                    } else {
-                        var bIdx = 0
-                        return evaluateExpression(bodyTokens, index: &bIdx)
+                    if !bodyTokens.isEmpty {
+                        if bodyTokens[0] == "[" {
+                            var bIdx = 0
+                            let stmtBlock = extractBlockTokens(tokens: bodyTokens, index: &bIdx)
+                            var subReturn: String? = nil
+                            var sIdx = 0
+                            executeTokens(stmtBlock, index: &sIdx, frameReturn: &subReturn)
+                            return subReturn ?? lastResult ?? ""
+                        } else if LogoEngine.isStatementCommand(bodyTokens[0]) {
+                            var subReturn: String? = nil
+                            var sIdx = 0
+                            executeTokens(bodyTokens, index: &sIdx, frameReturn: &subReturn)
+                            return subReturn ?? lastResult ?? ""
+                        } else {
+                            var bIdx = 0
+                            return evaluateExpression(bodyTokens, index: &bIdx)
+                        }
                     }
                 } else {
                     variables["?"] = args.first ?? ""
