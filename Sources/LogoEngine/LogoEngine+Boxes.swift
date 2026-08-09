@@ -82,10 +82,17 @@ extension LogoEngine {
             while index + 1 < tokens.count {
                 let nextToken = tokens[index + 1]
                 if shouldStopBoxArgumentScan(at: nextToken) { break }
-                index += 1
-                let rawToken = tokens[index]
+                var evalIndex = index + 1
+                let rawToken = tokens[evalIndex]
                 let isQuoted = isQuotedWordToken(rawToken)
-                let val = unquote(rawToken)
+                let unquotedRaw = unquote(rawToken)
+                let val: String
+                if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil {
+                    val = unquotedRaw
+                } else {
+                    val = unquote(evaluateExpression(tokens, index: &evalIndex))
+                }
+                index = evalIndex
 
                 if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
                     exitPos = parsedExit
@@ -132,10 +139,17 @@ extension LogoEngine {
         while index + 1 < tokens.count {
             let nextToken = tokens[index + 1]
             if shouldStopBoxArgumentScan(at: nextToken) { break }
-            index += 1
-            let rawToken = tokens[index]
+            var evalIndex = index + 1
+            let rawToken = tokens[evalIndex]
             let isQuoted = isQuotedWordToken(rawToken)
-            let val = unquote(rawToken)
+            let unquotedRaw = unquote(rawToken)
+            let val: String
+            if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil {
+                val = unquotedRaw
+            } else {
+                val = unquote(evaluateExpression(tokens, index: &evalIndex))
+            }
+            index = evalIndex
 
             if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
                 exitPos = parsedExit
@@ -160,12 +174,22 @@ extension LogoEngine {
         }
     }
 
+    private func consumeNextBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
+        consumeNextIntExpressionArgument(tokens, index: &index) { token in
+            let unquoted = unquote(token)
+            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+                || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
+                || BoxExitPosition(unquoted) != nil
+        }
+    }
+
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
         if token == "]" || token == ")" { return true }
-        if BoxAlignment(token) != nil || BorderStyle.isStyleToken(token) || BoxExitPosition(token) != nil {
+        let unquoted = unquote(token)
+        if BoxAlignment(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || BoxExitPosition(unquoted) != nil {
             return false
         }
-        return LogoEngine.isKeyword(token)
+        return LogoEngine.isStatementCommand(token)
     }
 
     private func drawBoxFrame(
@@ -546,8 +570,9 @@ extension LogoEngine {
                 }
             }
             if index + 1 < tokens.count {
-                index += 1
-                fillPattern = unquote(evaluateExpression(tokens, index: &index))
+                var evalIndex = index + 1
+                fillPattern = unquote(evaluateExpression(tokens, index: &evalIndex))
+                index = evalIndex
             }
         } else {
             fillPattern = unquote(evaluateExpression(tokens, index: &index))
