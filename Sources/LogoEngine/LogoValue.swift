@@ -36,12 +36,48 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    /// Serializes LOGO value into valid LOGO canonical syntax string (using UCBLogo |...| quoting for strings with whitespace/quotes/brackets).
+    public func toLogoSyntaxString() -> String {
         switch self {
-        case .string(let str): return str
-        case .list(let items): return "[" + items.map { $0.description }.joined(separator: " ") + "]"
-        case .array(let items): return "{" + items.map { $0.description }.joined(separator: " ") + "}"
+        case .string(let str):
+            return str
+        case .list(let items):
+            let formatted = items.map { item -> String in
+                switch item {
+                case .string(let s):
+                    let needsVBar = s.contains(" ") || s.contains("\t") || s.contains("\n")
+                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}") || s.contains("|")
+                    if needsVBar {
+                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "|", with: "\\|")
+                        return "|\(escaped)|"
+                    }
+                    return s
+                default:
+                    return item.toLogoSyntaxString()
+                }
+            }
+            return "[" + formatted.joined(separator: " ") + "]"
+        case .array(let items):
+            let formatted = items.map { item -> String in
+                switch item {
+                case .string(let s):
+                    let needsVBar = s.contains(" ") || s.contains("\t") || s.contains("\n")
+                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}") || s.contains("|")
+                    if needsVBar {
+                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "|", with: "\\|")
+                        return "|\(escaped)|"
+                    }
+                    return s
+                default:
+                    return item.toLogoSyntaxString()
+                }
+            }
+            return "{" + formatted.joined(separator: " ") + "}"
         }
+    }
+
+    public var description: String {
+        return toLogoSyntaxString()
     }
 
     public static func parse(_ raw: String) -> LogoValue {
@@ -58,6 +94,12 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             return .array(tokens.map { parse($0) })
         } else {
             var s = trimmed
+            if s.hasPrefix("|") && s.hasSuffix("|") && s.count >= 2 {
+                s.removeFirst()
+                s.removeLast()
+                s = s.replacingOccurrences(of: "\\|", with: "|").replacingOccurrences(of: "\\\\", with: "\\")
+                return .string(s)
+            }
             if s.hasPrefix("\"") { s.removeFirst() }
             if s.hasSuffix("\"") { s.removeLast() }
             return .string(s)
@@ -103,11 +145,30 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         var current = ""
         var depth = 0
         var inMultiWordString = false
+        var inVBarString = false
+        var isEscaped = false
 
         var idx = str.startIndex
         while idx < str.endIndex {
             let ch = str[idx]
-            if ch == "\"" {
+            if isEscaped {
+                current.append(ch)
+                isEscaped = false
+                idx = str.index(after: idx)
+                continue
+            }
+
+            if ch == "\\" {
+                current.append(ch)
+                isEscaped = true
+                idx = str.index(after: idx)
+                continue
+            }
+
+            if ch == "|" && !inMultiWordString {
+                inVBarString.toggle()
+                current.append(ch)
+            } else if ch == "\"" && !inVBarString {
                 if !inMultiWordString && hasMatchingMultiWordClosingQuote(in: str, startingAt: idx) {
                     inMultiWordString = true
                     current.append(ch)
@@ -117,13 +178,13 @@ public enum LogoValue: Equatable, CustomStringConvertible {
                 } else {
                     current.append(ch)
                 }
-            } else if (ch == "[" || ch == "{") && !inMultiWordString {
+            } else if (ch == "[" || ch == "{") && !inMultiWordString && !inVBarString {
                 depth += 1
                 current.append(ch)
-            } else if (ch == "]" || ch == "}") && !inMultiWordString && depth > 0 {
+            } else if (ch == "]" || ch == "}") && !inMultiWordString && !inVBarString && depth > 0 {
                 depth -= 1
                 current.append(ch)
-            } else if ch.isWhitespace && depth <= 0 && !inMultiWordString {
+            } else if ch.isWhitespace && depth <= 0 && !inMultiWordString && !inVBarString {
                 let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !trimmed.isEmpty {
                     tokens.append(trimmed)

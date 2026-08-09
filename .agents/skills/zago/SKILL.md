@@ -153,6 +153,11 @@ zago -e 'TABLE 3 3 15 1'
 echo "Hello,world!這是測試." | zago -e 'TYPE TRANSLIT "zago-cjk-punctuation" TRANSLIT "zago-cjk-spacing" READWORD'
 ```
 
+### Example 5: Unix Pipe Line-by-Line Processing with `LINES` and `FOREACH`
+```bash
+grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [ type ? nl ]'
+```
+
 ---
 
 ## 🛠️ Execution Rules for AI Agents

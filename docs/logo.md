@@ -724,6 +724,38 @@ TYPE ITEM 2 :cells
 
 ---
 
+### 4.1 List Element Quoting & Escaping Rules (UCBLogo Vertical Bar `|...|` Syntax)
+
+In Editor LOGO, lists (`[ ... ]`) and arrays (`{ ... }`) store elements using space-separated Lisp-style S-expression syntax. When string elements contain whitespace or special delimiter characters, `zago` uses **UCBLogo-compliant Vertical Bar Quoting (`|...|`)** to preserve string boundaries without syntax errors.
+
+#### 1. Quoting Trigger Conditions
+A string element inside a LOGO list or array is automatically enclosed in `|...|` if it contains any of the following characters:
+- **Whitespace**: Space (` `), Tab (`\t`), Newline (`\n`).
+- **Delimiters & Quotes**: Double quotes (`"`), Brackets (`[` or `]`), Braces (`{` or `}`), Vertical Bar (`|`).
+
+#### 2. Escaping Rules Inside `|...|`
+- Backslashes `\` are escaped as `\\`.
+- Vertical bars `|` are escaped as `\|`.
+- Double quotes `"`, brackets `[]`, braces `{}`, and spaces remain **100% literal** without needing escape characters or breaking multi-word strings.
+
+#### 3. Canonical Examples
+
+| Raw Value | Encoded LOGO Token | List Representation | Decoding Result |
+| :--- | :--- | :--- | :--- |
+| `hello` | `hello` | `[hello]` | `"hello"` |
+| `# zago` | `|# zago|` | `[|# zago|]` | `"# zago"` |
+| `echo "hello world"` | `|echo "hello world"|` | `[|echo "hello world"|]` | `"echo \"hello world\""` |
+| `### [Mint](https://...)` | `|### [Mint](https/...)|` | `[|### [Mint](https/...)|]` | `"### [Mint](https/...)"` |
+| `cat \| grep foo` | `|cat \| grep foo|` | `[|cat \| grep foo|]` | `"cat \| grep foo"` |
+
+#### 4. Practical Usage in Unix Pipe Workflows
+When piping multiline text through `LINES` and `FOREACH`, lines containing spaces, quotes, and Markdown syntax remain intact as single items:
+```bash
+grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [ type ? nl ]'
+```
+
+---
+
 ### 5. Predicates & Type Checking
 
 | Command | Aliases | Syntax | Description | Example |
