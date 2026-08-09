@@ -88,7 +88,7 @@ public final class Renderer {
         let textWidth = geometry.textWidth
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
-        let virtualLines: [VirtualLine]
+        var virtualLines: [VirtualLine]
         let virtualLineStartIndex: Int
         let totalVirtualLineCount: Int
         let (cursorVLineIdx, cursorVColIdx): (Int, Int)
@@ -99,31 +99,15 @@ public final class Renderer {
             cursorVLineIdx = max(0, min(editor.buffer.lineIndex, max(0, virtualLines.count - 1)))
             cursorVColIdx = editor.buffer.columnIndex
         } else {
-            if showSubLineInfo {
-                virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
-                virtualLineStartIndex = 0
-                totalVirtualLineCount = virtualLines.count
-                (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
-                    lineIndex: editor.buffer.lineIndex,
-                    columnIndex: editor.buffer.columnIndex,
-                    virtualLines: virtualLines
-                )
-            } else {
-                let viewport = editor.layoutEngine.computeVirtualViewport(
-                    from: editor.buffer.lines,
-                    viewWidth: textWidth,
-                    topVirtualLineIndex: editor.topVLineIndex,
-                    height: mainAreaHeight,
-                    cursorLineIndex: editor.buffer.lineIndex,
-                    cursorColumnIndex: editor.buffer.columnIndex,
-                    computeTotalLineCount: false
-                )
-                virtualLines = viewport.lines
-                virtualLineStartIndex = viewport.startVirtualIndex
-                totalVirtualLineCount = viewport.totalVirtualLineCount
-                cursorVLineIdx = viewport.cursorVirtualLineIndex
-                cursorVColIdx = viewport.cursorVirtualColumnIndex
-            }
+            let baseVLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
+            virtualLines = expandVirtualLinesWithProposal(virtualLines: baseVLines, editor: editor, textWidth: textWidth)
+            virtualLineStartIndex = 0
+            totalVirtualLineCount = virtualLines.count
+            (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
+                lineIndex: editor.buffer.lineIndex,
+                columnIndex: editor.buffer.columnIndex,
+                virtualLines: baseVLines
+            )
         }
 
         var screenLines: [String] = []
@@ -295,55 +279,51 @@ public final class Renderer {
                     renderedDisplayWidth += hangingIndent
                 }
 
-                let baseChars = Array(renderedLineText)
-                let proposalInfo = ghostOverlayLine(
-                    proposal: editor.proposalQueue.currentProposal,
-                    buffer: editor.buffer,
-                    lineIndex: vLine.bufferLineIndex,
-                    cols: cols
-                )
-
-                if let pInfo = proposalInfo {
-                    let indent = String(repeating: " ", count: max(0, pInfo.startCol))
-                    lineOutput += (indent + pInfo.line).ansiStyled(style: ANSIStyle.boldCyan)
-                } else {
-                    for cIdxInVLine in 0..<baseChars.count {
-                        let ch = baseChars[cIdxInVLine]
-                        let realCol = renderedStartCol + cIdxInVLine
-                        let charVisualColumn =
-                            editor.isCanvasModeActive
-                            ? editor.canvasHorizontalOffset + renderedDisplayWidth
-                            : realCol
-                        let isCellActive: Bool
-                        if let (cellLeft, cellRight) = activeCellBounds {
-                            isCellActive = realCol > cellLeft && realCol < cellRight
-                        } else {
-                            isCellActive = false
-                        }
-
-                        if editor.isCanvasModeActive
-                            && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
-                        {
-                            lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                        } else if !editor.isCanvasModeActive
-                            && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
-                        {
-                            lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                        } else if !editor.isCanvasModeActive
-                            && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
-                        {
-                            lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
-                        } else if isCellActive {
-                            lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
-                        } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
-                            let tok = tokenTypes[realCol]
-                            lineOutput += ch.ansiStyled(style: tok.ansiColor)
-                        } else {
-                            lineOutput += String(ch)
-                        }
-                        renderedDisplayWidth += ch.displayWidth
-                    }
+            let baseChars = Array(renderedLineText)
+            if vLine.isProposalOverlay {
+                if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
+                    let lineNumGutter = String(repeating: " ", count: gutterWidth)
+                    lineOutput += lineNumGutter.ansiStyled(style: ANSIStyle.dimGray)
                 }
+                lineOutput += vLine.text.ansiStyled(style: ANSIStyle.boldCyan)
+            } else {
+                for cIdxInVLine in 0..<baseChars.count {
+                    let ch = baseChars[cIdxInVLine]
+                    let realCol = renderedStartCol + cIdxInVLine
+                    let charVisualColumn =
+                        editor.isCanvasModeActive
+                        ? editor.canvasHorizontalOffset + renderedDisplayWidth
+                        : realCol
+                    let isCellActive: Bool
+                    if let (cellLeft, cellRight) = activeCellBounds {
+                        isCellActive = realCol > cellLeft && realCol < cellRight
+                    } else {
+                        isCellActive = false
+                    }
+
+                    if editor.isCanvasModeActive
+                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
+                    {
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                    } else if !editor.isCanvasModeActive
+                        && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
+                    {
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                    } else if !editor.isCanvasModeActive
+                        && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
+                    {
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
+                    } else if isCellActive {
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
+                    } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
+                        let tok = tokenTypes[realCol]
+                        lineOutput += ch.ansiStyled(style: tok.ansiColor)
+                    } else {
+                        lineOutput += String(ch)
+                    }
+                    renderedDisplayWidth += ch.displayWidth
+                }
+            }
 
                 if editor.isCanvasModeActive {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
@@ -590,7 +570,6 @@ public final class Renderer {
         output += "\u{1B}[?25h"  // Show cursor
         return output
     }
-
     private func wrapTextLine(_ text: String, width: Int) -> [String] {
         guard width > 10 else { return [text] }
         var result: [String] = []
@@ -614,6 +593,110 @@ public final class Renderer {
             result.append(currentLine)
         }
         return result.isEmpty ? [""] : result
+    }
+
+    private func expandVirtualLinesWithProposal(
+        virtualLines: [VirtualLine],
+        editor: Editor,
+        textWidth: Int
+    ) -> [VirtualLine] {
+        guard let proposal = editor.proposalQueue.currentProposal else { return virtualLines }
+
+        let bufferFileName = editor.buffer.filePath
+        let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
+
+        var matchingChunks: [ProposalChunk] = []
+        for file in proposal.affectedFiles {
+            let matches = (file.bufferId != nil && file.bufferId == editor.buffer.id) ||
+                          file.filePath == "active" ||
+                          (bufferFileName != nil && file.filePath == bufferFileName) ||
+                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
+                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
+                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
+                          (bufferFileName == nil && file.bufferId == nil)
+            if matches {
+                matchingChunks.append(contentsOf: file.chunks)
+            }
+        }
+
+        guard !matchingChunks.isEmpty else { return virtualLines }
+
+        let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
+        let actionHint = "[Alt+a Accept | Alt+r Reject]"
+
+        let maxBoxWidth = max(36, min(textWidth - 4, 76))
+        let innerWidth = max(10, maxBoxWidth - 6)
+
+        var linesByBufferLine: [Int: [VirtualLine]] = [:]
+        for vLine in virtualLines {
+            linesByBufferLine[vLine.bufferLineIndex, default: []].append(vLine)
+        }
+
+        var expanded: [VirtualLine] = []
+        let totalBufferLines = editor.buffer.lines.count
+        let maxLineIdx = max(totalBufferLines - 1, (matchingChunks.map { $0.targetLine - 1 }.max() ?? 0))
+
+        for lineIdx in 0...maxLineIdx {
+            if let chunk = matchingChunks.first(where: { ($0.targetLine - 1) == lineIdx }) {
+                var wrappedBoxContent: [String] = []
+                for rawLine in chunk.lines {
+                    let subLines = wrapTextLine(rawLine, width: innerWidth)
+                    wrappedBoxContent.append(contentsOf: subLines)
+                }
+
+                let contentMaxW = wrappedBoxContent.map { $0.displayWidth }.max() ?? 20
+                let finalInnerW = max(contentMaxW, actionHint.displayWidth + 2)
+                let boxWidth = finalInnerW + 4
+
+                // Top border: ┌─ AI Name ────────────────┐
+                let headerText = "─ " + clientName + " "
+                let remDashCount = max(0, boxWidth - 1 - headerText.displayWidth)
+                let topBorderStr = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
+                let topCol = max(0, chunk.targetCol - 1)
+                let topIndent = String(repeating: " ", count: topCol)
+                expanded.append(VirtualLine(
+                    bufferLineIndex: lineIdx,
+                    subLineIndex: 0,
+                    text: topIndent + topBorderStr,
+                    startCol: 0,
+                    endCol: topBorderStr.count,
+                    isProposalOverlay: true
+                ))
+
+                // Inner content lines
+                for contentStr in wrappedBoxContent {
+                    let padCount = max(0, boxWidth - 2 - 2 - contentStr.displayWidth)
+                    let boxContentLine = "│  " + contentStr + String(repeating: " ", count: padCount) + "│"
+                    expanded.append(VirtualLine(
+                        bufferLineIndex: lineIdx,
+                        subLineIndex: 0,
+                        text: topIndent + boxContentLine,
+                        startCol: 0,
+                        endCol: boxContentLine.count,
+                        isProposalOverlay: true
+                    ))
+                }
+
+                // Bottom border: └── [Alt+a Accept | Alt+r Reject] ─────┘
+                let hintText = "── " + actionHint + " "
+                let bottomDashCount = max(0, boxWidth - 1 - hintText.displayWidth)
+                let bottomBorderStr = "└" + hintText + String(repeating: "─", count: bottomDashCount) + "┘"
+                expanded.append(VirtualLine(
+                    bufferLineIndex: lineIdx,
+                    subLineIndex: 0,
+                    text: topIndent + bottomBorderStr,
+                    startCol: 0,
+                    endCol: bottomBorderStr.count,
+                    isProposalOverlay: true
+                ))
+            }
+
+            if let vLines = linesByBufferLine[lineIdx] {
+                expanded.append(contentsOf: vLines)
+            }
+        }
+
+        return expanded
     }
 
     private func ghostOverlayLine(

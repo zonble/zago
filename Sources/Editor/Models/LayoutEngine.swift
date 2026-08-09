@@ -29,6 +29,25 @@ public struct VirtualLine {
     /// The 0-based ending character index in the parent `TextBuffer` line for
     /// this virtual chunk.
     public let endCol: Int
+
+    /// Flag indicating whether this virtual line is part of an active AI proposal box overlay.
+    public let isProposalOverlay: Bool
+
+    public init(
+        bufferLineIndex: Int,
+        subLineIndex: Int,
+        text: String,
+        startCol: Int,
+        endCol: Int,
+        isProposalOverlay: Bool = false
+    ) {
+        self.bufferLineIndex = bufferLineIndex
+        self.subLineIndex = subLineIndex
+        self.text = text
+        self.startCol = startCol
+        self.endCol = endCol
+        self.isProposalOverlay = isProposalOverlay
+    }
 }
 
 public struct VirtualViewport {
