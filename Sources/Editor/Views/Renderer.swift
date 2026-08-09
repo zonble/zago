@@ -295,8 +295,22 @@ public final class Renderer {
                     renderedDisplayWidth += hangingIndent
                 }
 
-                let chars = Array(renderedLineText)
-                for (cIdxInVLine, ch) in chars.enumerated() {
+                let baseChars = Array(renderedLineText)
+                let proposalInfo = ghostOverlayLine(
+                    proposal: editor.proposalQueue.currentProposal,
+                    bufferFileName: editor.buffer.filePath,
+                    lineIndex: vLine.bufferLineIndex
+                )
+
+                let totalLengthNeeded: Int
+                if let pInfo = proposalInfo {
+                    totalLengthNeeded = max(baseChars.count, pInfo.startCol + pInfo.line.count)
+                } else {
+                    totalLengthNeeded = baseChars.count
+                }
+
+                for cIdxInVLine in 0..<totalLengthNeeded {
+                    let ch = cIdxInVLine < baseChars.count ? baseChars[cIdxInVLine] : " "
                     let realCol = renderedStartCol + cIdxInVLine
                     let charVisualColumn =
                         editor.isCanvasModeActive
@@ -309,7 +323,12 @@ public final class Renderer {
                         isCellActive = false
                     }
 
-                    if let ghostCh = ghostOverlayChar(proposal: editor.proposalQueue.currentProposal, bufferFileName: editor.buffer.filePath, lineIndex: vLine.bufferLineIndex, colIndex: realCol) {
+                    if let ghostCh = ghostOverlayChar(
+                        proposal: editor.proposalQueue.currentProposal,
+                        bufferFileName: editor.buffer.filePath,
+                        lineIndex: vLine.bufferLineIndex,
+                        colIndex: realCol
+                    ) {
                         lineOutput += ghostCh.ansiStyled(style: ANSIStyle.aiGhostOverlay)
                     } else if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
@@ -318,13 +337,13 @@ public final class Renderer {
                     } else if !editor.isCanvasModeActive
                         && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)  // Inverse video for selection
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                     } else if !editor.isCanvasModeActive
                         && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
                         lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
                     } else if isCellActive {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)  // Green bg for active cell
+                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
                     } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
                         let tok = tokenTypes[realCol]
                         lineOutput += ch.ansiStyled(style: tok.ansiColor)
@@ -363,7 +382,7 @@ public final class Renderer {
                     {
                         lineOutput += normalPad
                     }
-                } else if chars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
+                } else if baseChars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
                     lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(
                         style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                 }
@@ -561,6 +580,32 @@ public final class Renderer {
         return output
     }
 
+    private func ghostOverlayLine(
+        proposal: AIProposal?,
+        bufferFileName: String?,
+        lineIndex: Int
+    ) -> (startCol: Int, line: String)? {
+        guard let proposal = proposal else { return nil }
+        let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
+        for file in proposal.affectedFiles {
+            let matches = file.filePath == bufferFileName ||
+                          (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
+                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
+                          (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
+                          bufferFileName == nil
+            if matches {
+                for chunk in file.chunks {
+                    let startLine = chunk.targetLine - 1
+                    let lineOffset = lineIndex - startLine
+                    if lineOffset >= 0 && lineOffset < chunk.lines.count {
+                        return (startCol: max(0, chunk.targetCol - 1), line: chunk.lines[lineOffset])
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
     private func ghostOverlayChar(
         proposal: AIProposal?,
         bufferFileName: String?,
@@ -573,6 +618,7 @@ public final class Renderer {
             let matches = file.filePath == bufferFileName ||
                           (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
                           (!currentFileName.isEmpty && file.filePath == currentFileName) ||
+                          (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
                           bufferFileName == nil
             if matches {
                 for chunk in file.chunks {
