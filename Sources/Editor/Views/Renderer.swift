@@ -605,7 +605,8 @@ public final class Renderer {
         guard let proposal = proposal else { return nil }
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = file.filePath == bufferFileName ||
+            let matches = file.filePath == "active" ||
+                          file.filePath == bufferFileName ||
                           (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
                           (!currentFileName.isEmpty && file.filePath == currentFileName) ||
                           (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
@@ -632,7 +633,8 @@ public final class Renderer {
         guard let proposal = proposal else { return nil }
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = file.filePath == bufferFileName ||
+            let matches = file.filePath == "active" ||
+                          file.filePath == bufferFileName ||
                           (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
                           (!currentFileName.isEmpty && file.filePath == currentFileName) ||
                           (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
