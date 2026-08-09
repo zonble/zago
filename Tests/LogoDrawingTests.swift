@@ -470,6 +470,25 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "00015")
 }
 
+@Test func testAllExampleLogoScriptsExecuteWithoutErrors() throws {
+    let fm = FileManager.default
+    let examplesUrl = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("examples")
+    let files = try fm.contentsOfDirectory(at: examplesUrl, includingPropertiesForKeys: nil)
+        .filter { $0.pathExtension == "logo" }
+
+    #expect(!files.isEmpty)
+
+    for file in files.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+        if file.lastPathComponent == "error_handling_demo.logo" { continue }
+
+        let script = try String(contentsOf: file, encoding: .utf8)
+        let editor = Editor()
+        editor.logoEngine.execute(script)
+
+        #expect(!editor.logoEngine.hasUncaughtError, "Example script failed: \(file.lastPathComponent) with error: \(editor.logoEngine.lastError?.message ?? "")")
+    }
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
