@@ -104,9 +104,23 @@ extension Editor: JSONRPCDelegateTarget {
         )
 
         proposalQueue.pushProposal(proposal)
-        if let minLine = affectedProposals.flatMap({ $0.chunks }).map({ $0.targetLine - 1 }).min() {
-            if minLine < topVLineIndex || minLine >= topVLineIndex + 15 {
-                topVLineIndex = max(0, minLine)
+
+        let (rows, cols) = terminal.getWindowSize()
+        let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
+        let mainAreaHeight = geometry.mainAreaHeight
+        let textWidth = geometry.textWidth
+
+        let baseVLines = isCanvasModeActive
+            ? layoutEngine.computeCanvasLines(from: buffer.lines)
+            : layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
+        let expandedVLines = renderer.expandVirtualLinesWithProposal(virtualLines: baseVLines, editor: self, textWidth: textWidth)
+
+        if let firstBoxIdx = expandedVLines.firstIndex(where: { $0.isProposalOverlay }),
+           let lastBoxIdx = expandedVLines.lastIndex(where: { $0.isProposalOverlay }) {
+            if firstBoxIdx < topVLineIndex {
+                topVLineIndex = firstBoxIdx
+            } else if lastBoxIdx >= topVLineIndex + mainAreaHeight {
+                topVLineIndex = max(0, lastBoxIdx - mainAreaHeight + 1)
             }
         }
         self.setStatusMessage("🤖 [AI Proposal from \(proposal.clientName)] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
