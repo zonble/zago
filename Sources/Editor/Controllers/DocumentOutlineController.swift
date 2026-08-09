@@ -4,6 +4,7 @@ import Syntax
 /// Controller for heading navigation and document outline view modal.
 public final class DocumentOutlineController: KeyInputHandler {
     public weak var editor: Editor?
+    public private(set) var isOutlineActive: Bool = false
 
     public enum HeadingNavigationDirection {
         case next
@@ -16,6 +17,11 @@ public final class DocumentOutlineController: KeyInputHandler {
 
     /// KeyInputHandler protocol implementation.
     public func handleKey(_ key: Key) -> Bool {
+        if isOutlineActive {
+            if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
+                return true
+            }
+        }
         switch key {
         case .alt("]"):
             goToNextHeading()
@@ -48,21 +54,27 @@ public final class DocumentOutlineController: KeyInputHandler {
             return
         }
 
-        let selectedIndex = initialOutlineSelectionIndex(in: outline)
-        guard
-            let heading = DocumentOutlineView(
-                terminal: editor.terminal,
-                title: editor.l10n["outlineview.title"],
-                headings: outline.headings,
-                footer: editor.l10n["outlineview.footer"],
-                initialSelectedIndex: selectedIndex
-            ).show()
-        else {
-            editor.setStatusMessage(editor.l10n["status.outline_cancelled"])
-            return
-        }
+        isOutlineActive = true
+        defer { isOutlineActive = false }
 
-        jumpToHeading(heading, in: outline)
+        let selectedIndex = initialOutlineSelectionIndex(in: outline)
+        let headingResult = DocumentOutlineView(
+            terminal: editor.terminal,
+            title: editor.l10n["outlineview.title"],
+            headings: outline.headings,
+            footer: editor.l10n["outlineview.footer"],
+            initialSelectedIndex: selectedIndex
+        ).show()
+
+        if let heading = headingResult {
+            editor.renderer.invalidateScreenCache()
+            editor.refreshScreen()
+            jumpToHeading(heading, in: outline)
+        } else {
+            editor.setStatusMessage(editor.l10n["status.outline_cancelled"])
+            editor.renderer.invalidateScreenCache()
+            editor.refreshScreen()
+        }
     }
 
     public func supportsDocumentOutlineForCurrentBuffer() -> Bool {

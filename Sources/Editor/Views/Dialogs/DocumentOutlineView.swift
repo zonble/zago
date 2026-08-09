@@ -66,6 +66,8 @@ public final class DocumentOutlineView {
                 terminal.clearScreen()
                 ensureSelectionVisible(availableHeight: availableHeight)
                 render()
+            case .esc, .ctrl("c"), .ctrl("C"), .ctrl("g"), .ctrl("G"), .char("q"), .char("Q"):
+                return nil
             case .unknown:
                 render()
             default:

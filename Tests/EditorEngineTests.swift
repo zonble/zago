@@ -373,8 +373,82 @@ import TextMetrics
     #expect(editor.currentBufferIndex == 0)
     #expect(editor.buffer.filePath == indexPath)
     #expect(editor.buffer.lines == ["See [this](./index.md#section)", "unchanged"])
-    #expect(editor.topVLineIndex == 3)
-    #expect(editor.statusMessage == editor.l10n["status.document_link_same_file"])
+    #expect(editor.statusMessage == String(format: editor.l10n["status.jumped_to_anchor"], "section"))
+}
+
+@Test func testAnchorLinkJumpsWithinSameFile() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("zago_anchor_jump_\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    // 1. Markdown Anchor Jump
+    let mdPath = directory.appendingPathComponent("doc.md").path
+    let mdEditor = Editor(filePath: mdPath)
+    defer { mdEditor.stopFileWatcherForCurrentBuffer() }
+    mdEditor.buffer.lines = [
+        "Link to [Installation](#installation-guide)",
+        "",
+        "## Installation Guide",
+        "Details here",
+    ]
+    mdEditor.buffer.lineIndex = 0
+    mdEditor.buffer.columnIndex = 12
+    let mdHandled = mdEditor.commandRegistry.dispatch(key: .alt("o"), editor: mdEditor)
+    #expect(mdHandled == true)
+    #expect(mdEditor.buffer.lineIndex == 2)
+
+    // 2. Org-mode Anchor Jump
+    let orgPath = directory.appendingPathComponent("doc.org").path
+    let orgEditor = Editor(filePath: orgPath)
+    defer { orgEditor.stopFileWatcherForCurrentBuffer() }
+    orgEditor.buffer.lines = [
+        "Jump to [[#my-custom-id]]",
+        "",
+        "* Setup Section",
+        ":PROPERTIES:",
+        ":CUSTOM_ID: my-custom-id",
+        ":END:",
+    ]
+    orgEditor.buffer.lineIndex = 0
+    orgEditor.buffer.columnIndex = 10
+    let orgHandled = orgEditor.commandRegistry.dispatch(key: .alt("o"), editor: orgEditor)
+    #expect(orgHandled == true)
+    #expect(orgEditor.buffer.lineIndex == 4)
+
+    // 3. reStructuredText Anchor Jump
+    let rstPath = directory.appendingPathComponent("doc.rst").path
+    let rstEditor = Editor(filePath: rstPath)
+    defer { rstEditor.stopFileWatcherForCurrentBuffer() }
+    rstEditor.buffer.lines = [
+        "See `Quickstart`_",
+        "",
+        ".. _Quickstart:",
+        "",
+        "Quickstart Title",
+        "================",
+    ]
+    rstEditor.buffer.lineIndex = 0
+    rstEditor.buffer.columnIndex = 5
+    let rstHandled = rstEditor.commandRegistry.dispatch(key: .alt("o"), editor: rstEditor)
+    #expect(rstHandled == true)
+    #expect(rstEditor.buffer.lineIndex == 2)
+
+    // 4. AsciiDoc Anchor Jump
+    let adocPath = directory.appendingPathComponent("doc.adoc").path
+    let adocEditor = Editor(filePath: adocPath)
+    defer { adocEditor.stopFileWatcherForCurrentBuffer() }
+    adocEditor.buffer.lines = [
+        "See <<intro-section,Intro>>",
+        "",
+        "[[intro-section]]",
+        "== Introduction",
+    ]
+    adocEditor.buffer.lineIndex = 0
+    adocEditor.buffer.columnIndex = 6
+    let adocHandled = adocEditor.commandRegistry.dispatch(key: .alt("o"), editor: adocEditor)
+    #expect(adocHandled == true)
+    #expect(adocEditor.buffer.lineIndex == 2)
 }
 
 @Test func testSaveKeySavesExistingFileWithoutPrompt() throws {

@@ -355,6 +355,8 @@ public struct EnglishStrings {
         "status.no_document_link": "[ No document link at cursor ]",
         "status.document_link_same_file": "[ Link points to current file ]",
         "status.opened_document_link": "[ Opened %@ ]",
+        "status.jumped_to_anchor": "[ Jumped to anchor #%@ ]",
+        "status.anchor_not_found": "[ Anchor not found: #%@ ]",
         "status.no_headings": "[ No headings ]",
         "status.heading_position": "[ Heading %d/%d: %@ ]",
         "status.heading_nav_disabled_directory": "[ Heading navigation disabled in Directory Mode ]",
