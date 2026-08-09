@@ -3,6 +3,7 @@ import Foundation
 public struct SwiftSyntaxDefinition: SyntaxDefinition {
     public let name = "Swift"
     public let fileExtensions = ["swift"]
+    public var commentPrefix: String { "// " }
 
     public var rules: [SyntaxRule] {
         [

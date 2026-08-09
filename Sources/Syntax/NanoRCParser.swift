@@ -37,6 +37,7 @@ public final class NanoRCParser {
         var currentLangName: String? = nil
         var currentExtensions: [String] = []
         var currentRules: [SyntaxRule] = []
+        var currentCommentPrefix: String = "// "
 
         let lines = content.components(separatedBy: .newlines)
         for rawLine in lines {
@@ -51,7 +52,14 @@ public final class NanoRCParser {
 
             if line.hasPrefix("syntax ") {
                 if let name = currentLangName, !currentRules.isEmpty {
-                    languages.append(LanguageSyntax(name: name, extensions: currentExtensions, rules: currentRules))
+                    languages.append(
+                        LanguageSyntax(
+                            name: name,
+                            extensions: currentExtensions,
+                            rules: currentRules,
+                            commentPrefix: currentCommentPrefix
+                        )
+                    )
                 }
 
                 let parts = parseQuotedTokens(String(line.dropFirst(7)))
@@ -59,6 +67,7 @@ public final class NanoRCParser {
                     currentLangName = parts[0]
                     currentExtensions = []
                     currentRules = []
+                    currentCommentPrefix = "// "
 
                     for idx in 1..<parts.count {
                         let pat = parts[idx]
@@ -70,6 +79,14 @@ public final class NanoRCParser {
                             currentExtensions.append(ext)
                         }
                     }
+                }
+                continue
+            }
+
+            if line.hasPrefix("comment ") {
+                let rawComment = line.dropFirst(8).trimmingCharacters(in: CharacterSet(charactersIn: "\" '"))
+                if !rawComment.isEmpty {
+                    currentCommentPrefix = rawComment.hasSuffix(" ") ? rawComment : rawComment + " "
                 }
                 continue
             }
@@ -91,7 +108,14 @@ public final class NanoRCParser {
         }
 
         if let name = currentLangName, !currentRules.isEmpty {
-            languages.append(LanguageSyntax(name: name, extensions: currentExtensions, rules: currentRules))
+            languages.append(
+                LanguageSyntax(
+                    name: name,
+                    extensions: currentExtensions,
+                    rules: currentRules,
+                    commentPrefix: currentCommentPrefix
+                )
+            )
         }
     }
 

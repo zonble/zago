@@ -3,6 +3,7 @@ import Foundation
 public struct WikiSyntaxDefinition: SyntaxDefinition {
     public let name = "Wiki"
     public let fileExtensions = ["wiki", "mediawiki"]
+    public var commentPrefix: String { "<!-- " }
 
     public var rules: [SyntaxRule] {
         [

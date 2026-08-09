@@ -64,10 +64,14 @@ public struct LanguageSyntax: Sendable {
     /// Whether this syntax specification supports Markdown-style list auto-indentation and continuation on Enter.
     public let supportsListAutoIndent: Bool
 
+    /// Single-line comment prefix for this language syntax (e.g. "// ", "# ", "; ", "-- ").
+    public let commentPrefix: String
+
     public init(
         name: String,
         extensions: [String],
         rules: [SyntaxRule],
+        commentPrefix: String = "// ",
         embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil,
         tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)? = nil,
         tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil,
@@ -78,6 +82,7 @@ public struct LanguageSyntax: Sendable {
         self.name = name
         self.extensions = extensions
         self.rules = rules
+        self.commentPrefix = commentPrefix
         self.embeddedLanguageDetector = embeddedLanguageDetector
         self.tableFormatter = tableFormatter
         self.tableNavigator = tableNavigator
@@ -203,6 +208,27 @@ public final class SyntaxHighlighter {
             return findLanguage(named: embeddedLangName) ?? findLanguage(named: "CodeBlockPlainText")
         }
         return nil
+    }
+
+    /// Resolves single-line comment prefix for a line in buffer, accounting for embedded code blocks polymorphically.
+    public func commentPrefix(
+        for filePath: String?,
+        lines: [String],
+        bufferLineIndex: Int
+    ) -> String {
+        if let syntax = getSyntaxForLine(
+            filePath: filePath,
+            isDirectoryBuffer: false,
+            lines: lines,
+            bufferLineIndex: bufferLineIndex,
+            isEnabled: true
+        ) {
+            return syntax.commentPrefix
+        }
+        if let path = filePath, let syntax = detectLanguage(for: path) {
+            return syntax.commentPrefix
+        }
+        return "// "
     }
 
     /// Returns token type map for each character in line based on syntax rules.

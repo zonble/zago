@@ -3,6 +3,7 @@ import Foundation
 public struct VhsSyntaxDefinition: SyntaxDefinition {
     public let name = "VHS"
     public let fileExtensions = ["tape", "vhs"]
+    public var commentPrefix: String { "# " }
 
     public var rules: [SyntaxRule] {
         [

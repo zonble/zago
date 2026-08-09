@@ -3,6 +3,7 @@ import Foundation
 public struct OrgModeSyntaxDefinition: SyntaxDefinition {
     public let name = "Org-mode"
     public let fileExtensions = ["org"]
+    public var commentPrefix: String { "# " }
     public let supportsDocumentOutline = true
     public let supportsListAutoIndent = true
 

@@ -3,6 +3,7 @@ import Foundation
 public struct AsciiDocSyntaxDefinition: SyntaxDefinition {
     public let name = "AsciiDoc"
     public let fileExtensions = ["adoc", "asciidoc", "ascii"]
+    public var commentPrefix: String { "// " }
     public let supportsDocumentOutline = true
     public let supportsListAutoIndent = true
 

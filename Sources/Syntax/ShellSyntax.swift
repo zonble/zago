@@ -3,6 +3,7 @@ import Foundation
 public struct ShellSyntaxDefinition: SyntaxDefinition {
     public let name = "Shell"
     public let fileExtensions = ["sh", "bash", "zsh", "shell"]
+    public var commentPrefix: String { "# " }
 
     public var rules: [SyntaxRule] {
         [

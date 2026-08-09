@@ -3,6 +3,7 @@ import Foundation
 public struct MermaidSyntaxDefinition: SyntaxDefinition {
     public let name = "Mermaid"
     public let fileExtensions = ["mmd", "mermaid"]
+    public var commentPrefix: String { "%% " }
 
     public var rules: [SyntaxRule] {
         [

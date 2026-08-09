@@ -4,6 +4,7 @@ import LogoEngine
 public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let name = "LOGO"
     public let fileExtensions = ["logo", "lg", ".zagorc", ".serc"]
+    public var commentPrefix: String { "; " }
 
     private static let keywordPattern: String = {
         let lineSubkeywords = [

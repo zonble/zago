@@ -3,6 +3,7 @@ import Foundation
 public struct CSyntaxDefinition: SyntaxDefinition {
     public let name = "C/C++"
     public let fileExtensions = ["c", "cpp", "c++", "cc", "h", "hpp"]
+    public var commentPrefix: String { "// " }
 
     public var rules: [SyntaxRule] {
         [

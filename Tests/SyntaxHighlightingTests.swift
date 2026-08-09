@@ -440,6 +440,33 @@ import Testing
     }
 }
 
+@Test func testSyntaxCommentPrefixResolution() throws {
+    let highlighter = SyntaxHighlighter()
+
+    #expect(highlighter.detectLanguage(for: "test.swift")?.commentPrefix == "// ")
+    #expect(highlighter.detectLanguage(for: "test.c")?.commentPrefix == "// ")
+    #expect(highlighter.detectLanguage(for: "test.cpp")?.commentPrefix == "// ")
+    #expect(highlighter.detectLanguage(for: "test.py")?.commentPrefix == "# ")
+    #expect(highlighter.detectLanguage(for: "test.sh")?.commentPrefix == "# ")
+    #expect(highlighter.detectLanguage(for: "test.logo")?.commentPrefix == "; ")
+    #expect(highlighter.detectLanguage(for: "test.ini")?.commentPrefix == "; ")
+    #expect(highlighter.detectLanguage(for: "test.md")?.commentPrefix == "<!-- ")
+    #expect(highlighter.detectLanguage(for: "test.wiki")?.commentPrefix == "<!-- ")
+    #expect(highlighter.detectLanguage(for: "test.puml")?.commentPrefix == "' ")
+    #expect(highlighter.detectLanguage(for: "test.mmd")?.commentPrefix == "%% ")
+    #expect(highlighter.detectLanguage(for: "test.rst")?.commentPrefix == ".. ")
+
+    // Test polymorphic line lookup for embedded code block
+    let mdLines = [
+        "# Markdown Document",
+        "```python",
+        "print('hello')",
+        "```"
+    ]
+    #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 0) == "<!-- ")
+    #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 2) == "# ")
+}
+
 
 
 

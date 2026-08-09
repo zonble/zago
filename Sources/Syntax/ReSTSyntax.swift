@@ -3,6 +3,7 @@ import Foundation
 public struct ReSTSyntaxDefinition: SyntaxDefinition {
     public let name = "reStructuredText"
     public let fileExtensions = ["rst", "rest"]
+    public var commentPrefix: String { ".. " }
     public let supportsDocumentOutline = true
     public let supportsListAutoIndent = true
 
