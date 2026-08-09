@@ -415,17 +415,31 @@ import Testing
     #expect(rstHighlighted.contains("\u{1B}[94m    Title underline"))
 }
 
-@Test func testMarkdownTableWithInlineCodeHighlighting() throws {
+@Test func testMarkdownChinesePunctuationUrlHighlighting() throws {
     let highlighter = SyntaxHighlighter()
     let lang = try #require(highlighter.detectLanguage(for: "test.md"))
-    let line = "| `server_legacy._norm_punct(t)` | `assistant_server.chat.response` |"
-    let tokenMap = highlighter.tokenTypes(for: line, syntax: lang)
 
+    let line = "- [McBopomofoWeb](https://github.com/openvanilla/McBopomofoWeb)：ChromeOS 與 Windows 版本"
+    let tokenMap = highlighter.tokenTypes(for: line, syntax: lang)
     let chars = Array(line)
-    for (i, ch) in chars.enumerated() {
-        print("[\(i)] '\(ch)' -> \(tokenMap[i])")
+
+    // Find index of '：' in line
+    let colonIndex = chars.firstIndex(of: "：")
+    #expect(colonIndex != nil)
+    if let idx = colonIndex {
+        // '：' and subsequent text like 'ChromeOS' must be .normal, NOT .typeOrAttribute
+        #expect(tokenMap[idx] == .normal)
+        #expect(tokenMap[idx + 1] == .normal) // 'C'
+    }
+
+    let line2 = "請存取 https://example.com，測試中文逗號"
+    let tokenMap2 = highlighter.tokenTypes(for: line2, syntax: lang)
+    let chars2 = Array(line2)
+    if let commaIndex = chars2.firstIndex(of: "，") {
+        #expect(tokenMap2[commaIndex] == .normal)
     }
 }
+
 
 
 

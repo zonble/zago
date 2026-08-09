@@ -224,8 +224,10 @@ public final class SyntaxHighlighter {
             let matches = rule.pattern.matches(
                 in: line, options: [], range: NSRange(location: 0, length: nsLine.length))
             for match in matches {
-                let range = match.range
-                for idx in range.location..<(range.location + range.length) {
+                guard let range = Range(match.range, in: line) else { continue }
+                let startIdx = line.distance(from: line.startIndex, to: range.lowerBound)
+                let endIdx = line.distance(from: line.startIndex, to: range.upperBound)
+                for idx in startIdx..<endIdx {
                     if idx < tokenMap.count && tokenMap[idx] == .normal {
                         tokenMap[idx] = rule.tokenType
                     }
