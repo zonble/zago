@@ -40,12 +40,6 @@ extension Editor: LogoEngineDelegate {
         case .createTable(let rows, let cols, let cellWidth):
             tableModeController.createTable(
                 rows: rows, cols: cols, cellWidth: cellWidth, enterMode: false, saveSnapshot: false)
-        case .insertDiagramSnippet(let arg):
-            if let typeStr = arg, let snippet = DiagramSnippets.findDiagramSnippet(by: typeStr) {
-                DiagramSnippets.insertSnippet(snippet, into: self)
-            } else {
-                _ = commandRegistry.dispatch(id: .diagramMenu, editor: self)
-            }
         case .setBorderStyle(let style):
             setBorderStyle(style)
         case .setArrowStyle(let style):

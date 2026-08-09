@@ -141,13 +141,12 @@ struct DiagramSnippetsTests {
     }
 
     @Test
-    func testLogoEngineDiagramCommand() {
+    func testEditorDiagramMenuCommand() {
         let editor = Editor()
         editor.openNewBuffer(filePath: "doc.md")
 
-        editor.runLogoScript("DIAGRAM \"sequence")
-        let content = editor.buffer.lines.joined(separator: "\n")
-        #expect(content.contains("sequenceDiagram"))
+        _ = editor.commandRegistry.dispatch(id: .diagramMenu, editor: editor)
+        #expect(editor.isMenuBarActive)
     }
 
     @Test
