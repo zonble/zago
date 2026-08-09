@@ -66,6 +66,11 @@ struct Zago: ParsableCommand {
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
 
+    @Flag(
+        name: [.customLong("install-skill"), .customLong("install-agent-skill")],
+        help: "Install the zago AI skill definition into local user AI directories (~/.gemini/config/skills/zago and ~/.agents/skills/zago).")
+    var installSkill: Bool = false
+
     @Option(
         name: [.customShort("e"), .customLong("eval")],
         help: "Execute inline LOGO code string in headless mode and print output to stdout.")
@@ -90,6 +95,15 @@ struct Zago: ParsableCommand {
 
         var rawFiles = files
         let (initialLine, initialColumn) = Self.parseInitialLineAndColumn(from: &rawFiles)
+
+        if installSkill {
+            let installedPaths = try ZagoSkillCLIInstaller.installSkill()
+            terminal.write("Successfully installed zago AI skill to:\n")
+            for path in installedPaths {
+                terminal.write(" - \(path)\n")
+            }
+            return
+        }
 
         if initConfig {
             let targetPath = rawFiles.first

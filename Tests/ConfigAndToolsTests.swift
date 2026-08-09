@@ -230,6 +230,13 @@ struct ConfigAndToolsTests {
     #expect(config.logoPrelude.contains("MAKE \"globalVar 123"))
 }
 
+@Test func testZagoSkillDefinitionInConfig() throws {
+    let markdown = ZagoSkillDefinition.markdown
+    #expect(markdown.contains("name: zago"))
+    #expect(markdown.contains("BOX"))
+    #expect(markdown.contains("TABLE"))
+}
+
 @Test func testDisplaySettingsAreBufferLocal() throws {
     let editor = Editor()
     editor.buffer.filePath = "first.md"
