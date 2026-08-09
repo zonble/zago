@@ -118,6 +118,32 @@ struct FormatAndLayoutTests {
     #expect(output.contains("\u{1B}[4;5H"))
 }
 
+@Test func testPositionCursorDirectlyIncludesHangingIndent() throws {
+    let editor = Editor(enableSyntax: false)
+    editor.displayConfig.showLineNumbers = false
+    editor.displayConfig.listWrapIndent = true
+    let fullLine = "- 測試項目長度超長"
+    editor.buffer.lines = [fullLine]
+
+    let vLine0 = VirtualLine(bufferLineIndex: 0, subLineIndex: 0, text: "- 測試項目", startCol: 0, endCol: 5)
+    let vLine1 = VirtualLine(bufferLineIndex: 0, subLineIndex: 1, text: "長度超長", startCol: 5, endCol: 9)
+
+    let cursorSequence = editor.renderer.positionCursor(
+        editor: editor,
+        rows: 8,
+        cols: 80,
+        cursorVLineIdx: 1,
+        cursorVColIdx: 4,
+        gutterWidth: 0,
+        virtualLines: [vLine0, vLine1],
+        renderedPrompt: Renderer.RenderedPrompt(text: "", cursorCol: 1)
+    )
+
+    // hangingIndent = 2 ("- "), text width = 8 (4 CJK chars), total col = 2 + 8 + 1 = 11
+    // Screen row = 1 (vLine 1) + 2 (title bar) = 3
+    #expect(cursorSequence.contains("\u{1B}[3;11H"))
+}
+
 @Test func testSubLineNumbersRenderForWrappedProse() throws {
 
     let editor = Editor(wrapColumn: 10, enableSyntax: false, language: .en)
