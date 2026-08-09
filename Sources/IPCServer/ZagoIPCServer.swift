@@ -19,7 +19,7 @@ public final class ZagoIPCServer: @unchecked Sendable {
     public let sessionToken: String
 
     private var serverSocketFD: Int32 = -1
-    private let queue = DispatchQueue(label: "org.zago.ipcserver", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "org.zago.ipcserver", qos: .userInitiated, attributes: .concurrent)
     private var activeConnections: [String: Int32] = [:]
     private let lock = NSLock()
 
