@@ -298,7 +298,7 @@ public final class Renderer {
                 let baseChars = Array(renderedLineText)
                 let proposalInfo = ghostOverlayLine(
                     proposal: editor.proposalQueue.currentProposal,
-                    bufferFileName: editor.buffer.filePath,
+                    buffer: editor.buffer,
                     lineIndex: vLine.bufferLineIndex
                 )
 
@@ -325,7 +325,7 @@ public final class Renderer {
 
                     if let ghostCh = ghostOverlayChar(
                         proposal: editor.proposalQueue.currentProposal,
-                        bufferFileName: editor.buffer.filePath,
+                        buffer: editor.buffer,
                         lineIndex: vLine.bufferLineIndex,
                         colIndex: realCol
                     ) {
@@ -399,7 +399,7 @@ public final class Renderer {
                 }
             } else if let ghostInfo = ghostOverlayLine(
                 proposal: editor.proposalQueue.currentProposal,
-                bufferFileName: editor.buffer.filePath,
+                buffer: editor.buffer,
                 lineIndex: localVIndex
             ) {
                 if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
@@ -599,18 +599,20 @@ public final class Renderer {
 
     private func ghostOverlayLine(
         proposal: AIProposal?,
-        bufferFileName: String?,
+        buffer: TextBuffer,
         lineIndex: Int
     ) -> (startCol: Int, line: String)? {
         guard let proposal = proposal else { return nil }
+        let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = file.filePath == "active" ||
-                          file.filePath == bufferFileName ||
-                          (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
+            let matches = (file.bufferId != nil && file.bufferId == buffer.id) ||
+                          file.filePath == "active" ||
+                          (bufferFileName != nil && file.filePath == bufferFileName) ||
+                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
                           (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                          (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
-                          bufferFileName == nil
+                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
+                          (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 for chunk in file.chunks {
                     let startLine = chunk.targetLine - 1
@@ -626,19 +628,21 @@ public final class Renderer {
 
     private func ghostOverlayChar(
         proposal: AIProposal?,
-        bufferFileName: String?,
+        buffer: TextBuffer,
         lineIndex: Int,
         colIndex: Int
     ) -> Character? {
         guard let proposal = proposal else { return nil }
+        let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = file.filePath == "active" ||
-                          file.filePath == bufferFileName ||
-                          (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
+            let matches = (file.bufferId != nil && file.bufferId == buffer.id) ||
+                          file.filePath == "active" ||
+                          (bufferFileName != nil && file.filePath == bufferFileName) ||
+                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
                           (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                          (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
-                          bufferFileName == nil
+                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
+                          (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 for chunk in file.chunks {
                     let startLine = chunk.targetLine - 1

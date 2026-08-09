@@ -37,11 +37,13 @@ public struct ProposalChunk: Codable, Equatable, Sendable {
 }
 
 public struct AffectedFileProposal: Codable, Equatable, Sendable {
-    public var filePath: String
+    public var filePath: String?
+    public var bufferId: String?
     public var chunks: [ProposalChunk]
 
-    public init(filePath: String, chunks: [ProposalChunk]) {
+    public init(filePath: String? = nil, bufferId: String? = nil, chunks: [ProposalChunk]) {
         self.filePath = filePath
+        self.bufferId = bufferId
         self.chunks = chunks
     }
 }

@@ -133,4 +133,11 @@ final class IPCServerTests: XCTestCase {
         XCTAssertEqual(recent.first?.clientName, "Architect-Bot")
         XCTAssertEqual(recent.first?.decision, "accepted")
     }
+
+    func testBufferUUIDAndGetBuffersAPI() {
+        let handler = JSONRPCHandler(sessionToken: "test-token")
+        let request = JSONRPCRequest(method: "zago.buffer.getBuffers", id: .int(1))
+        let response = handler.handleRequest(request, connectionId: "conn-1")
+        XCTAssertNotNil(response.result)
+    }
 }

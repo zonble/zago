@@ -4,7 +4,24 @@ import Drawing
 import LogoEngine
 import TextMetrics
 
+public struct BufferInfo {
+    public let bufferId: String
+    public let filePath: String?
+    public let fileName: String
+    public let isModified: Bool
+    public let isFocused: Bool
+
+    public init(bufferId: String, filePath: String?, fileName: String, isModified: Bool, isFocused: Bool) {
+        self.bufferId = bufferId
+        self.filePath = filePath
+        self.fileName = fileName
+        self.isModified = isModified
+        self.isFocused = isFocused
+    }
+}
+
 public protocol JSONRPCDelegateTarget: AnyObject {
+    func handleGetBuffers() -> [BufferInfo]
     func handleGetText(bufferTarget: String?, startLine: Int?, endLine: Int?) -> (lines: [String], totalLines: Int)?
     func handleGetCursor(bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)?
     func handleShowPreview(clientId: String, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool
@@ -30,6 +47,9 @@ public final class JSONRPCHandler {
         switch request.method {
         case "zago.client.register":
             return processRegister(request)
+
+        case "zago.buffer.getBuffers":
+            return processGetBuffers(request)
 
         case "zago.buffer.getText":
             return processGetText(request)
@@ -98,9 +118,35 @@ public final class JSONRPCHandler {
         return JSONRPCResponse.success(result: .object(resObj), id: request.id)
     }
 
+    private func processGetBuffers(_ request: JSONRPCRequest) -> JSONRPCResponse {
+        guard let buffers = target?.handleGetBuffers() else {
+            return JSONRPCResponse.failure(code: 500, message: "Target delegate unhandled", id: request.id)
+        }
+
+        let activeId = buffers.first(where: { $0.isFocused })?.bufferId ?? ""
+        let bufArray: [JSONValue] = buffers.map { buf in
+            var obj: [String: JSONValue] = [
+                "bufferId": .string(buf.bufferId),
+                "fileName": .string(buf.fileName),
+                "isModified": .bool(buf.isModified),
+                "isFocused": .bool(buf.isFocused)
+            ]
+            if let path = buf.filePath {
+                obj["filePath"] = .string(path)
+            }
+            return .object(obj)
+        }
+
+        let resObj: [String: JSONValue] = [
+            "buffers": .array(bufArray),
+            "activeBufferId": .string(activeId)
+        ]
+        return JSONRPCResponse.success(result: .object(resObj), id: request.id)
+    }
+
     private func processGetText(_ request: JSONRPCRequest) -> JSONRPCResponse {
         let paramsObj = request.params?.objectValue
-        let bufferTarget = paramsObj?["bufferTarget"]?.stringValue
+        let bufferTarget = paramsObj?["bufferTarget"]?.stringValue ?? paramsObj?["bufferId"]?.stringValue
         let startLine = paramsObj?["startLine"]?.intValue
         let endLine = paramsObj?["endLine"]?.intValue
 
@@ -117,7 +163,7 @@ public final class JSONRPCHandler {
 
     private func processGetCursor(_ request: JSONRPCRequest) -> JSONRPCResponse {
         let paramsObj = request.params?.objectValue
-        let bufferTarget = paramsObj?["bufferTarget"]?.stringValue
+        let bufferTarget = paramsObj?["bufferTarget"]?.stringValue ?? paramsObj?["bufferId"]?.stringValue
 
         guard let cursor = target?.handleGetCursor(bufferTarget: bufferTarget) else {
             return JSONRPCResponse.failure(code: 404, message: "Target buffer not found", id: request.id)
@@ -151,10 +197,11 @@ public final class JSONRPCHandler {
         var affectedFiles: [AffectedFilePayload] = []
         for fileVal in affectedFilesArr {
             guard let fileObj = fileVal.objectValue,
-                  let filePath = fileObj["filePath"]?.stringValue,
                   let chunksArr = fileObj["chunks"]?.arrayValue else {
                 continue
             }
+            let filePath = fileObj["filePath"]?.stringValue
+            let bufferId = fileObj["bufferId"]?.stringValue
 
             var chunks: [ProposalChunkPayload] = []
             for chunkVal in chunksArr {
@@ -168,7 +215,7 @@ public final class JSONRPCHandler {
                 let insertMode = chunkObj["insertMode"]?.stringValue
                 chunks.append(ProposalChunkPayload(targetLine: targetLine, targetCol: targetCol, lines: lines, insertMode: insertMode))
             }
-            affectedFiles.append(AffectedFilePayload(filePath: filePath, chunks: chunks))
+            affectedFiles.append(AffectedFilePayload(filePath: filePath, bufferId: bufferId, chunks: chunks))
         }
 
         guard let success = target?.handleShowPreview(clientId: clientId, reason: reason, affectedFiles: affectedFiles), success else {

@@ -6,6 +6,7 @@ import TextTransform
 
 /// Manages text buffer lines and cursor operations.
 open class TextBuffer: SpellCheckableBuffer {
+    public let id: String = UUID().uuidString
     public var lines: [String] = [""]
     public var filePath: String?
     public var isModified: Bool = false

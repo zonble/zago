@@ -18,12 +18,13 @@ public struct AcceptProposalCommand: Command {
         let currentFileName = editor.buffer.filePath.map { NSString(string: $0).lastPathComponent } ?? ""
 
         for file in current.affectedFiles {
-            let bufferMatch = file.filePath == "active" ||
-                              file.filePath == editor.buffer.filePath ||
-                              (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
+            let bufferMatch = (file.bufferId != nil && file.bufferId == editor.buffer.id) ||
+                              file.filePath == "active" ||
+                              (editor.buffer.filePath != nil && file.filePath == editor.buffer.filePath) ||
+                              (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
                               (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                              (!currentFileName.isEmpty && currentFileName.hasSuffix(file.filePath)) ||
-                              editor.buffer.filePath == nil
+                              (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
+                              (editor.buffer.filePath == nil && file.bufferId == nil)
 
             if bufferMatch {
                 for chunk in file.chunks {
