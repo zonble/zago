@@ -178,6 +178,18 @@ public final class ConfigLoader {
                             config.syntaxErrorCount += 1
                         }
 
+                    case "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.ipcEnabled = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.ipcEnabled = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
+                    case "noipc", "no-ipc", "no_ipc":
+                        config.ipcEnabled = false
+
                     case "trim-trailing-whitespace", "trimtrailingwhitespace",
                         "trim_trailing_whitespace", "trim-trailing-spaces", "trimtrailingspaces",
                         "trim_trailing_spaces":
@@ -514,6 +526,8 @@ public final class ConfigLoader {
             config.enableSyntaxHighlight = false
         case "autoreload", "auto-reload", "auto_reload":
             config.autoReload = false
+        case "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled":
+            config.ipcEnabled = false
         case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace", "trim-trailing-spaces",
             "trimtrailingspaces", "trim_trailing_spaces":
             config.trimTrailingWhitespaceOnSave = false

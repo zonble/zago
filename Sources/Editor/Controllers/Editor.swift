@@ -235,7 +235,8 @@ public final class Editor: @unchecked Sendable {
             listIndentSize: config.listIndentSize,
             listWrapIndent: config.listWrapIndent,
             trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
-            showGitDiff: config.showGitDiff
+            showGitDiff: config.showGitDiff,
+            ipcEnabled: options.ipcEnabled ?? config.ipcEnabled
         )
 
         return ResolvedConfig(

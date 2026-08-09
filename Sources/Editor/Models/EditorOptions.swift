@@ -9,6 +9,7 @@ public struct EditorOptions {
     public var showSubLineNumbers: Bool?
     public var enableSyntax: Bool?
     public var autoReload: Bool?
+    public var ipcEnabled: Bool?
     public var language: Language?
     public var spellLanguage: String?
     public var initialLine: Int?
@@ -24,6 +25,7 @@ public struct EditorOptions {
         showSubLineNumbers: Bool? = nil,
         enableSyntax: Bool? = nil,
         autoReload: Bool? = nil,
+        ipcEnabled: Bool? = nil,
         language: Language? = nil,
         spellLanguage: String? = nil,
         initialLine: Int? = nil,
@@ -38,6 +40,7 @@ public struct EditorOptions {
         self.showSubLineNumbers = showSubLineNumbers
         self.enableSyntax = enableSyntax
         self.autoReload = autoReload
+        self.ipcEnabled = ipcEnabled
         self.language = language
         self.spellLanguage = spellLanguage
         self.initialLine = initialLine

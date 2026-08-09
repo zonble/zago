@@ -28,7 +28,7 @@ public struct SettingCommand: Command {
     }
 
     public static let settingNames = [
-        "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "regex", "tab",
+        "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "ipc", "regex", "tab",
         "lang", "border", "arrow", "trim-trailing-whitespace",
     ]
 
@@ -43,6 +43,7 @@ public struct SettingCommand: Command {
             "canvas-mode", "canvasmode", "canvas_mode",
             "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting",
             "autoreload", "auto-reload", "auto_reload",
+            "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled",
             "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
             "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces",
             "regex", "regexp", "enableregex":
