@@ -471,6 +471,35 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "00015")
 }
 
+@Test func testBoxQuotedNumericStringTreatedAsText() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    // 1. Quoted numeric string: BOX "10" -> draws box around text "10"
+    logoEngine.execute("BOX \"10\"")
+    #expect(editor.buffer.lines[0] == "┌────┐")
+    #expect(editor.buffer.lines[1] == "│ 10 │")
+    #expect(editor.buffer.lines[2] == "└────┘")
+
+    // 2. Expression: BOX WORD "10" -> draws box around text "10"
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("BOX WORD \"10\"")
+    #expect(editor.buffer.lines[0] == "┌────┐")
+    #expect(editor.buffer.lines[1] == "│ 10 │")
+    #expect(editor.buffer.lines[2] == "└────┘")
+
+    // 3. Raw unquoted number: BOX 10 3 -> draws 10-wide empty frame
+    editor.buffer.lines = [""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+    logoEngine.execute("BOX 10 3")
+    #expect(editor.buffer.lines[0] == "┌────────┐")
+    #expect(editor.buffer.lines[1] == "│        │")
+    #expect(editor.buffer.lines[2] == "└────────┘")
+}
+
 @Test func testAllExampleLogoScriptsExecuteWithoutErrors() throws {
     let fm = FileManager.default
     let examplesUrl = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("examples")
