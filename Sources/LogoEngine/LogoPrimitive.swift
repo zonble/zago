@@ -29,6 +29,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case goto
     case box
     case drawBox
+    case inset
     case line
     case arrow
     case hr
@@ -283,6 +284,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["ERALL"], .erall),
         (["ARITY"], .arity),
         (["FILL"], .fill),
+        (["INSET"], .inset),
         (["SORT"], .sort),
         (["MAKE", "VAR"], .make),
         (["NAME"], .name),

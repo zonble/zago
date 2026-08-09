@@ -119,6 +119,11 @@ extension LogoEngine {
             executeFillCommand(tokens, index: &index)
             return true
 
+        case .inset:
+            index += 1
+            executeInsetCommand(tokens, index: &index)
+            return true
+
         case .box:
             index += 1
             executeBoxCommand(tokens, index: &index, mode: .insert)
