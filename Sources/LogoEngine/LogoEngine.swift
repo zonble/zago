@@ -162,6 +162,9 @@ public final class LogoEngine {
 
     public init(delegate: LogoEngineDelegate? = nil) {
         self.delegate = delegate
+        self.variables["author"] = "zonble"
+        self.variables["version"] = "1.2.5"
+        self.variables["repository"] = "https://github.com/zonble/zago"
     }
 
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
