@@ -70,10 +70,8 @@ public final class FileWatcher: @unchecked Sendable {
                         if res == WAIT_OBJECT_0 {
                             guard self.isWatchingWindows, let currentHandle = self.changeHandle else { break }
                             let currentMTime = self.getModificationDate(for: normalized)
-                            if currentMTime != self.lastModificationDate {
-                                self.lastModificationDate = currentMTime
-                                self.notifyChange()
-                            }
+                            self.lastModificationDate = currentMTime
+                            self.notifyChange()
                             FindNextChangeNotification(currentHandle)
                         }
                     }
@@ -108,14 +106,12 @@ public final class FileWatcher: @unchecked Sendable {
                 let events = src.data
 
                 if events.contains(.delete) || events.contains(.rename) {
-                    // Atomic replace by another editor (write temp -> rename to target file)
+                    // Atomic replace by another editor or tool (write temp -> rename to target file)
                     self.reopenWatchedFile(at: path)
                 } else {
                     let currentMTime = self.getModificationDate(for: path)
-                    if currentMTime != self.lastModificationDate {
-                        self.lastModificationDate = currentMTime
-                        self.notifyChange()
-                    }
+                    self.lastModificationDate = currentMTime
+                    self.notifyChange()
                 }
             }
 
@@ -174,11 +170,6 @@ public final class FileWatcher: @unchecked Sendable {
         lastModificationDate = nil
     }
 
-    /// Fallback timer monitoring for Linux / Glibc / Musl or non-Darwin platforms where native kqueue / Win32 handles are unavailable.
-    ///
-    /// Note on Linux (Glibc/Musl Foundation): `FileManager.default.attributesOfItem(atPath:)[.modificationDate]`
-    /// evaluates file modification timestamps with 1-second time_t resolution. Comparing both `mtime` and file existence
-    /// ensures reliable modification detection across fast background file edits on Linux ext4 / tmpfs filesystems.
     private func startTimerFallback(for path: String) {
         if let timer = timerSource {
             timer.cancel()
@@ -196,10 +187,8 @@ public final class FileWatcher: @unchecked Sendable {
                     timer.cancel()
                     self.timerSource = nil
                     let currentMTime = self.getModificationDate(for: path)
-                    if currentMTime != self.lastModificationDate {
-                        self.lastModificationDate = currentMTime
-                        self.notifyChange()
-                    }
+                    self.lastModificationDate = currentMTime
+                    self.notifyChange()
                     self.startWatchingExistingFile(at: path)
                     return
                 }
