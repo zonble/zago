@@ -67,7 +67,7 @@ struct ConfigAndToolsTests {
     #expect(HelpContent.lines(language: .en).contains("  NAVIGATION & CURSOR MOVEMENT:"))
     #expect(HelpContent.lines(language: .en).contains("  CANVAS MODE:"))
     #expect(HelpContent.lines(language: .en).contains("    ⇧+Arrow            Draw box lines and move the canvas cursor"))
-    #expect(HelpContent.lines(language: .en).contains("    ^⇧+Arrow.          Draw arrow lines with an arrowhead at the endpoint"))
+    #expect(HelpContent.lines(language: .en).contains("    ^⇧+Arrow           Draw arrow lines with an arrowhead at the endpoint"))
     #expect(HelpContent.lines(language: .zh_TW).contains("  游標移動與導航："))
     #expect(HelpContent.lines(language: .zh_TW).contains("  畫布模式："))
     #expect(HelpContent.lines(language: .zh_TW).contains("    ⇧+方向鍵           畫出框線並移動畫布游標"))
@@ -903,6 +903,7 @@ struct ConfigAndToolsTests {
     #expect(reference.contains("SIN / COS / TAN degrees"))
     #expect(reference.contains("ISEQ start end"))
     #expect(reference.contains("REGEX_MATCH s \"pattern\""))
+    #expect(reference.contains("NL / NEWLINE / ENTER"))
 
     let editor = Editor()
     editor.logoEngine.execute("MAKE \"answer 42 TO TITLE :text BOX :text CENTER ROUND END")
@@ -917,6 +918,7 @@ struct ConfigAndToolsTests {
     #expect(zhReference.contains("BITAND a b"))
     #expect(zhReference.contains("以角度為單位的三角函數"))
     #expect(zhReference.contains("REGEX_MATCH s \"pattern\""))
+    #expect(zhReference.contains("NL / NEWLINE / ENTER"))
 
     let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(separator: "\n")
     #expect(zhWorkspace.contains("變數："))
