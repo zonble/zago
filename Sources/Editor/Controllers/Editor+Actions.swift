@@ -433,29 +433,47 @@ extension Editor {
 
         var allCommented = true
         var nonCount = 0
+        var minIndent = Int.max
+
         for lineIdx in startLine...endLine {
             guard lineIdx < buffer.lines.count else { continue }
             let line = buffer.lines[lineIdx]
             let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             if trimmed.isEmpty { continue }
+
             nonCount += 1
             if !trimmed.hasPrefix(cleanPrefix) {
                 allCommented = false
-                break
             }
+
+            var indent = 0
+            for ch in line {
+                if ch == " " || ch == "\t" {
+                    indent += 1
+                } else {
+                    break
+                }
+            }
+            minIndent = min(minIndent, indent)
         }
 
         if nonCount == 0 {
             allCommented = false
+            minIndent = 0
+        } else if minIndent == Int.max {
+            minIndent = 0
         }
 
         for lineIdx in startLine...endLine {
             guard lineIdx < buffer.lines.count else { continue }
             let line = buffer.lines[lineIdx]
             let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            if trimmed.isEmpty && allCommented { continue }
 
             if allCommented {
+                if trimmed.isEmpty {
+                    buffer.lines[lineIdx] = ""
+                    continue
+                }
                 if let prefixRange = line.range(of: cleanPrefix) {
                     var newText = line
                     let afterIdx = prefixRange.upperBound
@@ -471,21 +489,34 @@ extension Editor {
                             newText.removeLast(3)
                         }
                     }
+                    if newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        newText = ""
+                    }
                     buffer.lines[lineIdx] = newText
                 }
             } else {
-                var leadingSpaces = ""
-                for ch in line {
-                    if ch == " " || ch == "\t" {
-                        leadingSpaces.append(ch)
-                    } else {
-                        break
+                if trimmed.isEmpty {
+                    let indentStr = String(repeating: " ", count: minIndent)
+                    buffer.lines[lineIdx] = indentStr + cleanPrefix
+                } else {
+                    var currentIndent = 0
+                    for ch in line {
+                        if ch == " " || ch == "\t" {
+                            currentIndent += 1
+                        } else {
+                            break
+                        }
                     }
+                    let actualIndent = min(currentIndent, minIndent)
+                    let indentStr = String(repeating: " ", count: actualIndent)
+                    let restOfLine = String(line.dropFirst(currentIndent))
+                    let extraIndentCount = currentIndent - actualIndent
+                    let extraIndent = extraIndentCount > 0 ? String(repeating: " ", count: extraIndentCount) : ""
+
+                    let suffix = cleanPrefix == "<!--" ? " -->" : ""
+                    let newText = indentStr + prefix + extraIndent + restOfLine + suffix
+                    buffer.lines[lineIdx] = newText
                 }
-                let restOfLine = String(line.dropFirst(leadingSpaces.count))
-                let suffix = cleanPrefix == "<!--" ? " -->" : ""
-                let newText = leadingSpaces + prefix + restOfLine + suffix
-                buffer.lines[lineIdx] = newText
             }
         }
 

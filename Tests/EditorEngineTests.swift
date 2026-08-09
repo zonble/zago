@@ -1885,4 +1885,33 @@ private func submitCommandBar(_ text: String, editor: Editor) {
         _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
         #expect(editor.buffer.lines[0] == "== Heading ==")
     }
+
+    // 7. Range selection with empty/whitespace lines (no extra leading spaces, no trailing spaces)
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "main.swift")
+        editor.buffer.lines = [
+            "┌────┐",
+            "│ hi │",
+            "└────┘",
+            "  ",
+            ""
+        ]
+        // Select lines 0..3 (lines 1-4)
+        editor.buffer.selectionMark = (line: 0, column: 0)
+        editor.buffer.lineIndex = 3
+        editor.buffer.columnIndex = 2
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "// ┌────┐")
+        #expect(editor.buffer.lines[1] == "// │ hi │")
+        #expect(editor.buffer.lines[2] == "// └────┘")
+        #expect(editor.buffer.lines[3] == "//")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "┌────┐")
+        #expect(editor.buffer.lines[1] == "│ hi │")
+        #expect(editor.buffer.lines[2] == "└────┘")
+        #expect(editor.buffer.lines[3] == "")
+    }
 }
