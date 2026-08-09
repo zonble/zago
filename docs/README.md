@@ -6,6 +6,8 @@ This directory holds the detailed user and language documentation. The root [REA
 
 - [Editor LOGO command language](logo.md): command prompt behavior, language vocabulary, drawing commands, procedures, data primitives, and examples.
 - [Editor LOGO error handling & ASSERT](logo_error_handling.md): 6 error categories, dual-tier status bar/console reporting, atomic undo, and `ASSERT` primitive specification.
+- [Cross-Platform IPC & AI-Native Terminal Canvas Plan](zago_ipc_ai_plan.md): architectural proposal and roadmap for POSIX sockets/Windows named pipes, JSON-RPC, Dim text Ghost Overlay, and AI skill integration.
+- [AI Editor Operation Protocol Specification](zago_ai_protocol_spec.md): JSON-RPC 2.0 API methods, buffer queries, ghost overlay previews, Editor LOGO execution, and permission matrix.
 - [Editor LOGO text transliteration](logo_text_transliteration.md): proposed ICU String Transform primitive for text/script conversion.
 - [Command & Editor LOGO Architecture](command_architecture.md): unified division of responsibilities between Editor `Command` and `LogoEngine`.
 - [Editor basics](editor.md): common editing keys and basic editor behavior.
