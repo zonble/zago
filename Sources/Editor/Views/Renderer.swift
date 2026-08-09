@@ -309,7 +309,9 @@ public final class Renderer {
                         isCellActive = false
                     }
 
-                    if editor.isCanvasModeActive
+                    if let ghostCh = ghostOverlayChar(proposal: editor.proposalQueue.currentProposal, bufferFileName: editor.buffer.filePath, lineIndex: vLine.bufferLineIndex, colIndex: realCol) {
+                        lineOutput += ghostCh.ansiStyled(style: ANSIStyle.dimGray)
+                    } else if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
                     {
                         lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
@@ -557,5 +559,37 @@ public final class Renderer {
         }
         output += "\u{1B}[?25h"  // Show cursor
         return output
+    }
+
+    private func ghostOverlayChar(
+        proposal: AIProposal?,
+        bufferFileName: String?,
+        lineIndex: Int,
+        colIndex: Int
+    ) -> Character? {
+        guard let proposal = proposal else { return nil }
+        let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
+        for file in proposal.affectedFiles {
+            let matches = file.filePath == bufferFileName ||
+                          (!currentFileName.isEmpty && file.filePath.hasSuffix(currentFileName)) ||
+                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
+                          bufferFileName == nil
+            if matches {
+                for chunk in file.chunks {
+                    let startLine = chunk.targetLine - 1
+                    let lineOffset = lineIndex - startLine
+                    if lineOffset >= 0 && lineOffset < chunk.lines.count {
+                        let chunkLine = chunk.lines[lineOffset]
+                        let startCol = max(0, chunk.targetCol - 1)
+                        let colOffset = colIndex - startCol
+                        let chars = Array(chunkLine)
+                        if colOffset >= 0 && colOffset < chars.count {
+                            return chars[colOffset]
+                        }
+                    }
+                }
+            }
+        }
+        return nil
     }
 }

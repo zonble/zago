@@ -98,5 +98,11 @@ extension Editor {
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(DiagramMenuCommand())
         commandRegistry.register(ToggleCommentCommand())
+
+        // AI Proposal Commands
+        commandRegistry.register(AcceptProposalCommand())
+        commandRegistry.register(RejectProposalCommand())
+        commandRegistry.register(NextProposalCommand())
+        commandRegistry.register(PreviousProposalCommand())
     }
 }
