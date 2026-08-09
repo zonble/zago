@@ -10,6 +10,7 @@ extension Editor {
         }
 
         if key == .resize {
+            renderer.invalidateScreenCache()
             terminal.clearScreen()
             return
         }

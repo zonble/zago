@@ -464,6 +464,7 @@ public final class Editor: @unchecked Sendable {
             refreshScreen()
             let key = terminal.readKey()
             if key == .resize {
+                renderer.invalidateScreenCache()
                 terminal.clearScreen()
                 continue
             }
