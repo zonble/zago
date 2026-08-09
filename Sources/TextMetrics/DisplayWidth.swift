@@ -95,6 +95,31 @@ extension String {
         return result
     }
 
+    /// Truncates the string to fit within `width` terminal display columns, appending an ellipsis if truncated.
+    public func truncatedWithEllipsis(toDisplayWidth width: Int, ellipsis: String = "…") -> String {
+        let currentWidth = displayWidth
+        if currentWidth <= width {
+            return paddedToDisplayWidth(width)
+        }
+
+        let ellipsisWidth = ellipsis.displayWidth
+        let maxContentWidth = width - ellipsisWidth
+        if maxContentWidth <= 0 {
+            return ellipsis.paddedToDisplayWidth(width)
+        }
+
+        var result = ""
+        var visualWidth = 0
+        for ch in self {
+            let chWidth = ch.displayWidth
+            if visualWidth + chWidth > maxContentWidth { break }
+            result.append(ch)
+            visualWidth += chWidth
+        }
+        result += ellipsis
+        return result.paddedToDisplayWidth(width)
+    }
+
     /// Repeats the string as a pattern until it reaches the requested terminal display width.
     public func repeatedToDisplayWidth(_ width: Int) -> String {
         let fillChars = Array(self)

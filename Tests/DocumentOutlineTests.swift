@@ -92,6 +92,16 @@ import Testing
         #expect(editor.promptController.isActive == false)
         #expect(editor.documentOutlineController.isOutlineActive == false)
     }
+
+    @Test func testStringTruncatedWithEllipsis() {
+        let text = "This is a very long heading title that exceeds line width"
+        let truncated = text.truncatedWithEllipsis(toDisplayWidth: 20)
+        #expect(truncated.count <= 20)
+        #expect(truncated.contains("…"))
+
+        let shortText = "Short"
+        #expect(shortText.truncatedWithEllipsis(toDisplayWidth: 10) == "Short     ")
+    }
 }
 
 private final class QueuedTestTerminal: EditorTerminal, @unchecked Sendable {

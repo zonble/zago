@@ -7,6 +7,10 @@ public enum KeyParser {
         if normalized.isEmpty { return nil }
 
         switch normalized {
+        case "ctrl-left", "ctrl-arrow-left", "c-left", "c-arrow-left": return .ctrlArrowLeft
+        case "ctrl-right", "ctrl-arrow-right", "c-right", "c-arrow-right": return .ctrlArrowRight
+        case "ctrl-up", "ctrl-arrow-up", "c-up", "c-arrow-up": return .ctrlArrowUp
+        case "ctrl-down", "ctrl-arrow-down", "c-down", "c-arrow-down": return .ctrlArrowDown
         case "ctrl-shift-left", "ctrl-shift-arrow-left", "c-s-left", "c-s-arrow-left": return .ctrlShiftArrowLeft
         case "ctrl-shift-right", "ctrl-shift-arrow-right", "c-s-right", "c-s-arrow-right": return .ctrlShiftArrowRight
         case "ctrl-shift-up", "ctrl-shift-arrow-up", "c-s-up", "c-s-arrow-up": return .ctrlShiftArrowUp
