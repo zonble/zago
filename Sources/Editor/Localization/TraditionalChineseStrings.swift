@@ -345,6 +345,8 @@ public struct TraditionalChineseStrings {
         "status.no_document_link": "[ 游標所在位置沒有文件連結 ]",
         "status.document_link_same_file": "[ 連結指向目前檔案 ]",
         "status.opened_document_link": "[ 已開啟 %@ ]",
+        "status.jumped_to_anchor": "[ 已跳轉至錨點 #%@ ]",
+        "status.anchor_not_found": "[ 找不到錨點：#%@ ]",
         "status.no_headings": "[ 沒有標題 ]",
         "status.heading_position": "[ 標題 %d/%d：%@ ]",
         "status.heading_nav_disabled_directory": "[ 目錄模式下停用標題導航 ]",

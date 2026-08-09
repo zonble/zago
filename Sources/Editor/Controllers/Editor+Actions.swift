@@ -101,19 +101,52 @@ extension Editor {
 
         let line = buffer.lines[buffer.lineIndex]
         guard let link = DocumentLinkParser.link(atColumn: buffer.columnIndex, in: line),
-            let path = DocumentLinkParser.resolvedPath(target: link.target, currentFilePath: buffer.filePath)
+            let parsedTarget = DocumentLinkParser.parseTarget(link.target)
         else {
             setStatusMessage(l10n["status.no_document_link"])
             return
         }
 
-        if isCurrentDocumentPath(path) {
-            setStatusMessage(l10n["status.document_link_same_file"])
+        let resolvedPath: String?
+        if let pathPart = parsedTarget.path {
+            resolvedPath = DocumentLinkParser.resolvedPath(target: pathPart, currentFilePath: buffer.filePath)
+        } else {
+            resolvedPath = nil
+        }
+
+        let isSameFile = (resolvedPath == nil) || isCurrentDocumentPath(resolvedPath!)
+
+        if isSameFile {
+            if let anchor = parsedTarget.anchor {
+                if let targetLine = DocumentLinkParser.findAnchorLineIndex(
+                    anchor: anchor, in: buffer.lines, syntaxName: activeLanguageSyntax?.name)
+                {
+                    buffer.lineIndex = targetLine
+                    buffer.columnIndex = 0
+                    buffer.clampCursor()
+                    setStatusMessage(String(format: l10n["status.jumped_to_anchor"], anchor))
+                } else {
+                    setStatusMessage(String(format: l10n["status.anchor_not_found"], anchor))
+                }
+            } else {
+                setStatusMessage(l10n["status.document_link_same_file"])
+            }
             return
         }
 
-        openBuffer(path: path)
-        setStatusMessage(String(format: l10n["status.opened_document_link"], path))
+        if let targetPath = resolvedPath {
+            openBuffer(path: targetPath)
+            if let anchor = parsedTarget.anchor {
+                if let targetLine = DocumentLinkParser.findAnchorLineIndex(
+                    anchor: anchor, in: buffer.lines, syntaxName: activeLanguageSyntax?.name)
+                {
+                    buffer.lineIndex = targetLine
+                    buffer.columnIndex = 0
+                    buffer.clampCursor()
+                }
+            }
+            setStatusMessage(String(format: l10n["status.opened_document_link"], targetPath))
+        }
     }
 
     private func isCurrentDocumentPath(_ path: String) -> Bool {

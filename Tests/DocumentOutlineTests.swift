@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import DocumentOutline
+@testable import Editor
 
 @Suite struct DocumentOutlineTests {
 
@@ -66,4 +67,47 @@ import Testing
         #expect(outline.headings[1].title == "Chapter 1")
         #expect(outline.headings[2].title == "Section 1.1")
     }
+
+    @Test func testDocumentOutlineEscReturnsToOriginalDocumentWithoutScreenReRender() {
+        let terminal = QueuedTestTerminal(keys: [.esc])
+        let editor = Editor(
+            options: EditorOptions(filePaths: ["test.md"]),
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy(),
+                terminal: terminal
+            )
+        )
+        editor.buffer.lines = [
+            "# Header 1",
+            "Content line 1",
+            "## Header 2",
+            "Content line 2",
+        ]
+        editor.buffer.lineIndex = 1
+
+        editor.documentOutlineController.showDocumentOutline()
+
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.statusMessage == editor.l10n["status.outline_cancelled"])
+        #expect(editor.promptController.isActive == false)
+        #expect(editor.documentOutlineController.isOutlineActive == false)
+    }
+}
+
+private final class QueuedTestTerminal: EditorTerminal, @unchecked Sendable {
+    private var keys: [Key]
+
+    init(keys: [Key]) {
+        self.keys = keys
+    }
+
+    func enableRawMode() throws {}
+    func disableRawMode() {}
+    func getWindowSize() -> (rows: Int, cols: Int) { (24, 80) }
+    func readKey() -> Key { keys.isEmpty ? .esc : keys.removeFirst() }
+    func readPendingText(firstChar: Character) -> String { String(firstChar) }
+    func write(_ text: String) {}
+    func hideCursor() {}
+    func showCursor() {}
+    func clearScreen() {}
 }
