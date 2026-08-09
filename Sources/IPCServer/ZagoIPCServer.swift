@@ -23,15 +23,20 @@ public final class ZagoIPCServer: @unchecked Sendable {
     private var activeConnections: [String: Int32] = [:]
     private let lock = NSLock()
 
+    public let tokenPath: String
+
     public init(socketPath: String? = nil, sessionToken: String? = nil) {
         let pid = ProcessInfo.processInfo.processIdentifier
         if let customPath = socketPath {
             self.socketPath = customPath
+            self.tokenPath = customPath + ".token"
         } else {
             #if os(Windows)
             self.socketPath = #"\\.\pipe\zago-\#(pid)"#
+            self.tokenPath = #"\\.\pipe\zago-\#(pid).token"#
             #else
             self.socketPath = "/tmp/zago-\(pid).sock"
+            self.tokenPath = "/tmp/zago-\(pid).token"
             #endif
         }
 
@@ -92,6 +97,8 @@ public final class ZagoIPCServer: @unchecked Sendable {
 
         // 3. Set strict POSIX 0600 permissions (Owner Read/Write only)
         chmod(socketPath, S_IRUSR | S_IWUSR)
+        try? sessionToken.write(toFile: tokenPath, atomically: true, encoding: .utf8)
+        chmod(tokenPath, S_IRUSR | S_IWUSR)
 
         // 4. Start listening (backlog: 16)
         guard listen(fd, 16) == 0 else {
@@ -125,6 +132,7 @@ public final class ZagoIPCServer: @unchecked Sendable {
             serverSocketFD = -1
         }
         unlink(socketPath)
+        unlink(tokenPath)
 
         for (connId, clientFD) in activeConnections {
             close(clientFD)
