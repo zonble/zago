@@ -35,17 +35,28 @@ enum PipeTableFormatter {
         return trimmed.hasPrefix("|")
     }
 
-    static func parseCells(line: String) -> [String] {
+    static func parseCells(line: String, style: TableStyle = .markdown) -> [String] {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         if trimmed == "|===" { return [] }
-        guard trimmed.hasPrefix("|") || trimmed.hasPrefix("+") else { return [] }
+        if style == .restGrid {
+            guard trimmed.hasPrefix("|") || trimmed.hasPrefix("+") else { return [] }
 
-        var str = trimmed
-        if str.hasPrefix("|") || str.hasPrefix("+") { str = String(str.dropFirst()) }
-        if str.hasSuffix("|") || str.hasSuffix("+") { str = String(str.dropLast()) }
+            var str = trimmed
+            if str.hasPrefix("|") || str.hasPrefix("+") { str = String(str.dropFirst()) }
+            if str.hasSuffix("|") || str.hasSuffix("+") { str = String(str.dropLast()) }
 
-        let components = str.components(separatedBy: CharacterSet(charactersIn: "|+"))
-        return components.map { $0.trimmingCharacters(in: .whitespaces) }
+            let components = str.components(separatedBy: CharacterSet(charactersIn: "|+"))
+            return components.map { $0.trimmingCharacters(in: .whitespaces) }
+        } else {
+            guard trimmed.hasPrefix("|") else { return [] }
+
+            var str = trimmed
+            if str.hasPrefix("|") { str = String(str.dropFirst()) }
+            if str.hasSuffix("|") { str = String(str.dropLast()) }
+
+            let components = str.components(separatedBy: "|")
+            return components.map { $0.trimmingCharacters(in: .whitespaces) }
+        }
     }
 
     static func findTableRange(in lines: [String], at lineIndex: Int, style: TableStyle) -> Range<Int>? {
@@ -136,7 +147,7 @@ enum PipeTableFormatter {
         guard !tableLines.isEmpty else { return nil }
 
         let contentLines = tableLines.filter { $0.trimmingCharacters(in: .whitespaces) != "|===" }
-        var rows: [[String]] = contentLines.map { parseCells(line: $0) }
+        var rows: [[String]] = contentLines.map { parseCells(line: $0, style: style) }
         var maxCols = 0
         for r in rows {
             maxCols = max(maxCols, r.count)
@@ -229,7 +240,8 @@ enum PipeTableFormatter {
         let newColumn = calculateNewColumn(
             originalLine: lines[lineIndex],
             formattedLine: formattedLines[safeRelativeLine],
-            cursorColumn: cursorColumn
+            cursorColumn: cursorColumn,
+            style: style
         )
 
         var newBufferLines = lines
@@ -257,7 +269,7 @@ enum PipeTableFormatter {
                 while target < range.upperBound {
                     let trimmed = lines[target].trimmingCharacters(in: .whitespaces)
                     if trimmed.hasPrefix("|") && !trimmed.hasPrefix("|===") {
-                        let newCol = calculateCellStartColumn(line: lines[target], cellIndex: 0)
+                        let newCol = calculateCellStartColumn(line: lines[target], cellIndex: 0, style: style)
                         return TableNavigationResult(newBufferLineIndex: target, newCursorColumn: newCol)
                     }
                     target += 1
@@ -272,7 +284,7 @@ enum PipeTableFormatter {
                 while target >= range.lowerBound {
                     let trimmed = lines[target].trimmingCharacters(in: .whitespaces)
                     if trimmed.hasPrefix("|") && !trimmed.hasPrefix("|===") {
-                        let newCol = calculateCellStartColumn(line: lines[target], cellIndex: 0)
+                        let newCol = calculateCellStartColumn(line: lines[target], cellIndex: 0, style: style)
                         return TableNavigationResult(newBufferLineIndex: target, newCursorColumn: newCol)
                     }
                     target -= 1
@@ -284,7 +296,7 @@ enum PipeTableFormatter {
         let relativeLine = lineIndex - range.lowerBound
         let tableLines = Array(lines[range])
         let contentLines = tableLines.filter { $0.trimmingCharacters(in: .whitespaces) != "|===" }
-        var rows: [[String]] = contentLines.map { parseCells(line: $0) }
+        var rows: [[String]] = contentLines.map { parseCells(line: $0, style: style) }
 
         var maxCols = 0
         for r in rows {
@@ -307,7 +319,7 @@ enum PipeTableFormatter {
             rows = [headerRow, sepRow, dataRow]
         }
 
-        let currentCellIdx = findCellIndex(line: lines[lineIndex], cursorColumn: column, maxCols: maxCols)
+        let currentCellIdx = findCellIndex(line: lines[lineIndex], cursorColumn: column, maxCols: maxCols, style: style)
 
         var targetLine = relativeLine
         var targetCell = currentCellIdx
@@ -416,7 +428,7 @@ enum PipeTableFormatter {
         let safeTargetLine = min(max(targetLine, 0), formattedLines.count - 1)
         let absLineIndex = range.lowerBound + safeTargetLine
         let targetFormattedLine = formattedLines[safeTargetLine]
-        let newCol = calculateCellStartColumn(line: targetFormattedLine, cellIndex: targetCell)
+        let newCol = calculateCellStartColumn(line: targetFormattedLine, cellIndex: targetCell, style: style)
 
         return TableNavigationResult(
             newBufferLineIndex: absLineIndex,
@@ -504,10 +516,10 @@ enum PipeTableFormatter {
         }
     }
 
-    private static func findCellIndex(line: String, cursorColumn: Int, maxCols: Int) -> Int {
+    private static func findCellIndex(line: String, cursorColumn: Int, maxCols: Int, style: TableStyle) -> Int {
         var pipes: [Int] = []
         for (idx, ch) in line.enumerated() {
-            if ch == "|" || ch == "+" {
+            if ch == "|" || (style == .restGrid && ch == "+") {
                 pipes.append(idx)
             }
         }
@@ -523,10 +535,10 @@ enum PipeTableFormatter {
         return min(pipes.count - 2, maxCols - 1)
     }
 
-    private static func calculateCellStartColumn(line: String, cellIndex: Int) -> Int {
+    private static func calculateCellStartColumn(line: String, cellIndex: Int, style: TableStyle) -> Int {
         var pipes: [Int] = []
         for (idx, ch) in line.enumerated() {
-            if ch == "|" || ch == "+" {
+            if ch == "|" || (style == .restGrid && ch == "+") {
                 pipes.append(idx)
             }
         }
@@ -535,14 +547,14 @@ enum PipeTableFormatter {
         return min(pipePos + 2, line.count)
     }
 
-    private static func calculateNewColumn(originalLine: String, formattedLine: String, cursorColumn: Int) -> Int {
+    private static func calculateNewColumn(originalLine: String, formattedLine: String, cursorColumn: Int, style: TableStyle) -> Int {
         var origPipes: [Int] = []
         for (idx, ch) in originalLine.enumerated() {
-            if ch == "|" || ch == "+" { origPipes.append(idx) }
+            if ch == "|" || (style == .restGrid && ch == "+") { origPipes.append(idx) }
         }
         var newPipes: [Int] = []
         for (idx, ch) in formattedLine.enumerated() {
-            if ch == "|" || ch == "+" { newPipes.append(idx) }
+            if ch == "|" || (style == .restGrid && ch == "+") { newPipes.append(idx) }
         }
 
         guard origPipes.count >= 2 && newPipes.count >= 2 else {

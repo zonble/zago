@@ -324,4 +324,36 @@ struct MarkdownTableTDDTests {
             #expect(updated[2] == "| Cell 1   | Cell 2   |")
         }
     }
+
+    @Test func testMarkdownPipeTableDoesNotTreatPlusAsColumnSeparator() throws {
+        let mdSyntax = MarkdownSyntaxDefinition().buildLanguageSyntax()
+        let lines = [
+            "| Math | Result |",
+            "| --- | --- |",
+            "| 1 + 2 | 3 |",
+            "| 4 + 5 | 9 |",
+        ]
+
+        // Format table should preserve 2 columns and not split "1 + 2" into separate columns
+        let formatted = mdSyntax.tableFormatter?(lines, 2, 4)
+        #expect(formatted != nil)
+        if let updated = formatted?.updatedLines {
+            #expect(updated.count == 4)
+            #expect(updated[0] == "| Math  | Result |")
+            #expect(updated[1] == "| ----- | ------ |")
+            #expect(updated[2] == "| 1 + 2 | 3      |")
+            #expect(updated[3] == "| 4 + 5 | 9      |")
+        }
+
+        // Pressing Tab when cursor is at the '+' sign (col 4 of "1 + 2") should navigate to next cell "3", not split or stop at '+'
+        let navResult = mdSyntax.tableNavigator?(lines, 2, 4, true)
+        #expect(navResult != nil)
+        #expect(navResult?.newBufferLineIndex == 2)
+        #expect(navResult?.newCursorColumn == 10) // start column of cell "3" in formatted line "| 1 + 2 | 3      |"
+
+        if let updatedNav = navResult?.updatedLines {
+            #expect(updatedNav[2] == "| 1 + 2 | 3      |")
+        }
+    }
 }
+
