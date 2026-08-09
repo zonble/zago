@@ -426,3 +426,17 @@ import TextMetrics
     logoEngine3.execute("INSET 10 \"Hi\"")
     #expect(editor3.buffer.lines[0] == "    Hi    ")
 }
+
+@Test func testFactorialProcedureWithReduceAndForeach() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+    let script = """
+    to factorial :x
+        ifelse :x < 1 [ output 1 ] [ output reduce [?1 * ?2] (iseq 1 :x) ]
+    end
+
+    foreach (iseq 1 5) [ type (factorial ?) type " " ]
+    """
+    logoEngine.execute(script)
+    #expect(editor.buffer.lines[0] == "1 2 6 24 120 ")
+}
