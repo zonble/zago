@@ -169,8 +169,23 @@ extension LogoEngine {
             mode: mode, exitPos: exitPos)
     }
 
+    private func isExpressionPrimitiveToken(_ token: String) -> Bool {
+        let clean = token.uppercased()
+        if let prim = LogoPrimitive.from(clean), LogoEngine.expressionPrimitives.contains(prim) {
+            return true
+        }
+        return false
+    }
+
     private func parseBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
-        parseIntExpressionArgument(tokens, index: &index) { token in
+        guard index < tokens.count else { return nil }
+        let currentToken = tokens[index]
+
+        if isQuotedWordToken(currentToken) || isExpressionPrimitiveToken(currentToken) {
+            return nil
+        }
+
+        return parseIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
             return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
                 || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
