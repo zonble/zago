@@ -316,6 +316,34 @@ MAKE "title" "Release Notes"
 BOX :title CENTER ROUND
 ```
 
+#### Built-in System Metadata & Environment Variables
+
+Editor LOGO provides built-in system metadata and runtime state variables out of the box:
+
+##### 1. System Metadata Variables
+- `:author`: Author signature (`"zonble"`).
+- `:version`: `zago` editor & engine version (e.g. `"1.2.5"`).
+- `:repository`: Project repository URL (`"https://github.com/zonble/zago"`).
+
+##### 2. Loop & Iterator Variables
+- `:#` / `:repcount`: 1-based loop counter inside `REPEAT`, `FOREACH`, `MAP`, `FILTER`.
+- `:?` / `:?1`: Current item being processed inside functional templates (`MAP`, `FILTER`, `FOREACH`).
+- `:?2`, `:?3`, ...: Positional item values for multi-list iterations (e.g. `CROSSMAP`).
+- `:?rest`: Remaining unprocessed sublist inside `FOREACH` / `MAP`.
+
+##### 3. Editor State Reporters & Environment Variables
+- `LINE` / `LINEINDEX` / `:line`: Current 1-based line number.
+- `COL` / `COLUMN` / `:col`: Current 1-based column number.
+- `LINES` / `LINECOUNT` / `:lines`: Total number of lines in current buffer.
+- `TEXT` / `BUFFERTEXT` / `:text`: Full text content of current buffer.
+- `FILENAME` / `FILEPATH` / `:filename`: Path of currently opened file.
+- `SELECTION` / `SELECTEDTEXT` / `:selection`: Currently selected text.
+- `BUFFERS` / `BUFFERCOUNT` / `:buffers`: Total number of open buffers.
+- `MODE` / `CANVASMODE` / `:canvasmode`: Whether 2D Canvas Mode is active (`true`/`false`).
+- `MARK` / `SELECTIONMARK` / `:mark`: Current selection mark coordinates `[line col]`.
+
+> **Note:** System metadata variables (`author`, `version`, `repository`) are excluded from `NAMES` and `CONTENTS` reflection queries so user-defined workspace variable listings remain clean and uncluttered.
+
 ---
 
 ### 2. Loops (`REPEAT`, `WHILE`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)
