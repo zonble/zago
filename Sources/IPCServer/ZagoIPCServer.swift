@@ -204,7 +204,15 @@ public final class ZagoIPCServer: @unchecked Sendable {
                     outData.append(UInt8(ascii: "\n"))
                     outData.withUnsafeBytes { ptr in
                         if let rawPtr = ptr.baseAddress {
-                            _ = write(clientFD, rawPtr, outData.count)
+                            var totalWritten = 0
+                            let totalSize = outData.count
+                            while totalWritten < totalSize {
+                                let written = write(clientFD, rawPtr.advanced(by: totalWritten), totalSize - totalWritten)
+                                if written <= 0 {
+                                    break
+                                }
+                                totalWritten += written
+                            }
                         }
                     }
                 }

@@ -256,16 +256,27 @@ extension Renderer {
                     ("^U", tr("help.uncut_block")), ("^⇧+Arrow", tr("help.arrow")),
                 ]
             } else {
-                helpItems1 = [
-                    ("F1", tr("help.menu")), ("F8", tr("help.canvas_mode")), ("^O", tr("help.write_out")),
-                    ("^R", tr("help.read_file")),
-                    ("^Y", tr("help.prev_pg")), ("^K", tr("help.cut_text")), ("^C", tr("help.cur_pos")),
-                ]
-                helpItems2 = [
-                    ("^X", tr("help.exit")), ("F7", tr("help.table_mode")), ("^J", tr("help.justify")),
-                    ("^W", tr("help.where_is")),
-                    ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")), ("^T", tr("help.to_spell")),
-                ]
+                if editor?.proposalQueue.isEmpty == false {
+                    helpItems1 = [
+                        ("Alt+a", "Accept AI"), ("Alt+r", "Reject AI"), ("Alt+p", "Next Prop"),
+                        ("^O", tr("help.write_out")), ("^K", tr("help.cut_text")),
+                    ]
+                    helpItems2 = [
+                        ("Alt+P", "Prev Prop"), ("^X", tr("help.exit")), ("^W", tr("help.where_is")),
+                        ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")),
+                    ]
+                } else {
+                    helpItems1 = [
+                        ("F1", tr("help.menu")), ("F8", tr("help.canvas_mode")), ("^O", tr("help.write_out")),
+                        ("^R", tr("help.read_file")),
+                        ("^Y", tr("help.prev_pg")), ("^K", tr("help.cut_text")), ("^C", tr("help.cur_pos")),
+                    ]
+                    helpItems2 = [
+                        ("^X", tr("help.exit")), ("F7", tr("help.table_mode")), ("^J", tr("help.justify")),
+                        ("^W", tr("help.where_is")),
+                        ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")), ("^T", tr("help.to_spell")),
+                    ]
+                }
             }
         }
 
