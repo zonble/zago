@@ -271,16 +271,13 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
 
-        var realStartCol = startCol
-
-        if let next = findNextNonSpace(in: lineText, from: startCol == 0 ? 0 : startCol) {
-            if isMaskChar(next.char) {
-                if let afterNext = findNextNonSpace(in: lineText, from: next.col + 1) {
-                    if afterNext.col > next.col + 1 && isMaskChar(afterNext.char) {
-                        realStartCol = next.col
-                    }
-                }
-            }
+        let prevCol = startCol - 1
+        let connectLeft = prevCol >= 0 && isMaskChar(displayCharAt(in: lineText, visualColumn: prevCol))
+        if connectLeft {
+            let existingPrev = displayCharAt(in: lineText, visualColumn: prevCol)
+            let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 2)
+            lineText = replaceDisplayColumns(in: lineText, startCol: prevCol, width: 1, replacement: String(fusedPrev))
+            editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
         }
 
         var targetOffset: Int? = nil
@@ -288,7 +285,7 @@ extension LogoEngine {
         let maxSearchLength = 200
 
         for offset in 1..<maxSearchLength {
-            let col = realStartCol + offset
+            let col = startCol + offset
             let existing = displayCharAt(in: lineText, visualColumn: col)
 
             if existing != " " {
@@ -319,34 +316,36 @@ extension LogoEngine {
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
-            let col = realStartCol + offset
+            let col = startCol + offset
 
-            let moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
+            var moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
+            if offset == 0 && connectLeft {
+                moveMask = 10
+            }
+
             let existing = displayCharAt(in: lineText, visualColumn: col)
             let char = autoHorizontalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
+                isStart: offset == 0 && !connectLeft, isEnd: offset == lastOffset, arrowMode: arrowMode)
             lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
         }
 
         editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
-        editor.logoEngine(self, performAction: .updateColumnIndex(realStartCol + drawableOffsets.count))
+        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
     }
 
     private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode)
     {
         guard let editor = self.delegate else { return }
 
-        var realStartLine = startLine
-
-        if let next = findNextNonSpaceVertical(fromLine: startLine, col: startCol) {
-            if isMaskChar(next.char) {
-                if let afterNext = findNextNonSpaceVertical(fromLine: next.line + 1, col: startCol) {
-                    if afterNext.line > next.line + 1 && isMaskChar(afterNext.char) {
-                        realStartLine = next.line
-                    }
-                }
-            }
+        let prevLine = startLine - 1
+        let connectAbove = prevLine >= 0 && isMaskChar(getLineCharAt(line: prevLine, col: startCol))
+        if connectAbove {
+            let prevStr = (editor.logoEngine(self, queryState: .lineAt(prevLine)) as? String) ?? ""
+            let existingPrev = displayCharAt(in: prevStr, visualColumn: startCol)
+            let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 4)
+            let updatedPrev = replaceDisplayColumns(in: prevStr, startCol: startCol, width: 1, replacement: String(fusedPrev))
+            editor.logoEngine(self, performAction: .setLine(index: prevLine, text: updatedPrev))
         }
 
         var targetOffset: Int? = nil
@@ -354,7 +353,7 @@ extension LogoEngine {
         let maxSearchHeight = 100
 
         for offset in 1..<maxSearchHeight {
-            let line = realStartLine + offset
+            let line = startLine + offset
             let existing = getLineCharAt(line: line, col: startCol)
 
             if existing != " " {
@@ -382,22 +381,26 @@ extension LogoEngine {
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
-            let line = realStartLine + offset
+            let line = startLine + offset
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
 
-            let moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
+            var moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
+            if offset == 0 && connectAbove {
+                moveMask = 5
+            }
+
             let existing = displayCharAt(in: lineStr, visualColumn: startCol)
             let char = autoVerticalLineChar(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0, isEnd: offset == lastOffset, arrowMode: arrowMode)
+                isStart: offset == 0 && !connectAbove, isEnd: offset == lastOffset, arrowMode: arrowMode)
             let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
 
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
 
-        editor.logoEngine(self, performAction: .updateLineIndex(realStartLine + max(0, drawableOffsets.count - 1)))
+        editor.logoEngine(self, performAction: .updateLineIndex(startLine + max(0, drawableOffsets.count - 1)))
         editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
     }
 

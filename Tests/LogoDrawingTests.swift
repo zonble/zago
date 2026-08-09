@@ -304,6 +304,34 @@ import TextMetrics
     #expect(editor.buffer.lines[5].contains("┴"))
 }
 
+@Test func testVlineOnLineBetweenDoubleBoxesConnectsCleanly() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "╔══════╗",
+        "║ 你好 ║",
+        "╚══════╝",
+        "   x",
+        "",
+        "",
+        "",
+        "",
+        "╔══════╗",
+        "║ 你好 ║",
+        "╚══════╝"
+    ]
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 3
+
+    logoEngine.execute("VLINE \"double\"")
+
+    #expect(editor.buffer.lines[2].contains("╦"))
+    #expect(editor.buffer.lines[3] == "   ║")
+    #expect(editor.buffer.lines[4] == "   ║")
+    #expect(editor.buffer.lines[8].contains("╩"))
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
