@@ -392,3 +392,17 @@ public struct EvalLogoCommand: Command {
         editor.evalLogoCode()
     }
 }
+
+public struct ToggleCommentCommand: Command {
+    public let id: CommandID = .editToggleComment
+    public let name = "Toggle Comment"
+    public let description = "Comment or uncomment current line or selection"
+    public let keys: [Key] = [.ctrl("/"), .ctrl("_")]
+    public let commandBarAliases = ["comment", "uncomment", "toggle-comment"]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.toggleComment()
+    }
+}

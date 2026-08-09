@@ -94,5 +94,6 @@ extension Editor {
         commandRegistry.register(ToggleTableModeCommand())
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(DiagramMenuCommand())
+        commandRegistry.register(ToggleCommentCommand())
     }
 }

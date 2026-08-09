@@ -301,7 +301,7 @@ public struct GotoLineCommand: Command {
     public let id: CommandID = .cursorGotoLine
     public let name = "Go To Line"
     public let description = "Jump to line and column number"
-    public let keys: [Key] = [.ctrl("/"), .ctrl("_"), .alt("g"), .alt("G"), .alt("/")]
+    public let keys: [Key] = [.alt("g"), .alt("G"), .alt("/")]
 
     public init() {}
 

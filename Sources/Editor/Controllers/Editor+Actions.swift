@@ -393,4 +393,95 @@ extension Editor {
     public func switchToBuffer(oneBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
         switchToBuffer(zeroBasedIndex: index - 1, reportInvalid: reportInvalid)
     }
+
+    public func commentPrefix(for filePath: String?) -> String {
+        guard let path = filePath?.lowercased() else { return "// " }
+        let ext = (path as NSString).pathExtension
+        switch ext {
+        case "py", "sh", "bash", "zsh", "rb", "pl", "yaml", "yml", "toml", "conf", "zagorc", "serc", "dockerfile", "makefile", "r":
+            return "# "
+        case "logo", "lisp", "clj", "scm", "ini":
+            return "; "
+        case "sql", "lua":
+            return "-- "
+        case "vim":
+            return "\" "
+        default:
+            return "// "
+        }
+    }
+
+    public func toggleComment() {
+        guard !buffer.isDirectoryBuffer else { return }
+        saveUndoSnapshot()
+
+        let prefix = commentPrefix(for: buffer.filePath)
+        let cleanPrefix = prefix.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+        let startLine: Int
+        let endLine: Int
+
+        if let mark = buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
+                mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            startLine = start.line
+            endLine = end.line
+        } else {
+            let cur = min(max(0, buffer.lineIndex), max(0, buffer.lines.count - 1))
+            startLine = cur
+            endLine = cur
+        }
+
+        var allCommented = true
+        var nonCount = 0
+        for lineIdx in startLine...endLine {
+            guard lineIdx < buffer.lines.count else { continue }
+            let line = buffer.lines[lineIdx]
+            let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if trimmed.isEmpty { continue }
+            nonCount += 1
+            if !trimmed.hasPrefix(cleanPrefix) {
+                allCommented = false
+                break
+            }
+        }
+
+        if nonCount == 0 {
+            allCommented = false
+        }
+
+        for lineIdx in startLine...endLine {
+            guard lineIdx < buffer.lines.count else { continue }
+            let line = buffer.lines[lineIdx]
+            let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if trimmed.isEmpty && allCommented { continue }
+
+            if allCommented {
+                if let prefixRange = line.range(of: cleanPrefix) {
+                    var newText = line
+                    let afterIdx = prefixRange.upperBound
+                    if afterIdx < newText.endIndex && newText[afterIdx] == " " {
+                        newText.removeSubrange(prefixRange.lowerBound...afterIdx)
+                    } else {
+                        newText.removeSubrange(prefixRange)
+                    }
+                    buffer.lines[lineIdx] = newText
+                }
+            } else {
+                var leadingSpaces = ""
+                for ch in line {
+                    if ch == " " || ch == "\t" {
+                        leadingSpaces.append(ch)
+                    } else {
+                        break
+                    }
+                }
+                let restOfLine = String(line.dropFirst(leadingSpaces.count))
+                let newText = leadingSpaces + prefix + restOfLine
+                buffer.lines[lineIdx] = newText
+            }
+        }
+
+        buffer.isModified = true
+    }
 }
