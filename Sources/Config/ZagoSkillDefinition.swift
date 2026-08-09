@@ -7,25 +7,101 @@ public enum ZagoSkillDefinition {
 ---
 name: zago
 description: >-
-  Comprehensive guide for using the zago CLI and Editor LOGO dialect to draw plain-text ASCII/Unicode boxes, connector lines, tables, flowcharts, turtle graphics, CJK text transformations, and buffer macros. Use this skill when asked to generate plain-text diagrams, flowcharts, tables, or process text using zago.
+  Comprehensive guide for using the zago CLI, Editor LOGO dialect, and IPC socket protocol to draw plain-text ASCII/Unicode boxes, connector lines, tables, flowcharts, turtle graphics, CJK text transformations, buffer macros, and push Dim Gray ghost text overlays. Use this skill when asked to generate plain-text diagrams, flowcharts, tables, or control zago over IPC.
 ---
 
 # zago - Terminal Text Editor & LOGO Engine Specification
 
-`zago` is a lightweight terminal text editor with GNU Nano keybinding compatibility and a built-in **Editor LOGO** diagramming, text transformation, and automation engine.
+`zago` is a lightweight terminal text editor with GNU Nano keybinding compatibility, a built-in **Editor LOGO** diagramming and text transformation engine, and a **Cross-Platform IPC Server**.
 
-You can invoke `zago` from the command line in **headless mode** to render boxes, connector lines, multi-cell tables, flowcharts, turtle drawings, and CJK text transformations directly to `stdout` or text files.
+You can invoke `zago` from the command line in **headless mode**, connect over **IPC Unix domain socket / Windows named pipe**, or run interactively to render boxes, connector lines, multi-cell tables, flowcharts, turtle drawings, and CJK text transformations directly to `stdout` or terminal buffers.
 
 ---
 
-## 🚀 Quick CLI Reference
+## 🚀 Quick CLI & IPC Reference
 
-| CLI Command | Mode | Description |
+| CLI Command / Option | Mode | Description |
 | :--- | :--- | :--- |
 | `zago -e "<LOGO code>"` | Inline Headless | Executes LOGO script string and prints resulting text buffer to `stdout` |
 | `zago -s <script.logo>` | File Script Headless | Executes a `.logo` script file and prints output to `stdout` |
-| `cat file.txt \\| zago -e "<LOGO code>"` | Stdin Pipe | Reads text from `stdin`, runs LOGO script on buffer, and outputs to `stdout` |
+| `cat file.txt | zago -e "<LOGO code>"` | Stdin Pipe | Reads text from `stdin`, runs LOGO script on buffer, and outputs to `stdout` |
+| `zago --ipc` | IPC Server | Enables cross-platform IPC socket server (`/tmp/zago-<pid>.sock` or `\\\\.\\pipe\\zago-<pid>`) |
+| `zago --no-ipc` | IPC Disable | Force disables IPC socket server |
 | `zago --install-skill` | AI Setup | Installs `zago` skill definition to local user AI directories (`~/.gemini/config/skills`, `~/.agents/skills`) |
+
+---
+
+## 📡 JSON-RPC 2.0 IPC Protocol Specification
+
+When `zago` runs with `--ipc` or `set ipc.enabled true`, external AI agents can connect to `/tmp/zago-<pid>.sock` (Unix) or `\\\\.\\pipe\\zago-<pid>` (Windows) using line-delimited JSON-RPC 2.0.
+
+### 1. Registration (`zago.client.register`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "zago.client.register",
+  "params": {
+    "auth": "256-bit-token",
+    "clientId": "py-architect-bot",
+    "clientName": "Architect-Bot",
+    "agentType": "diagram_forge",
+    "color": "cyan"
+  },
+  "id": 1
+}
+```
+
+### 2. Push Dim Gray Ghost Text Overlay (`zago.overlay.showPreview`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "zago.overlay.showPreview",
+  "params": {
+    "auth": "256-bit-token",
+    "clientId": "py-architect-bot",
+    "reason": "Drafted 3-step payment flow diagram at cursor",
+    "affectedFiles": [
+      {
+        "filePath": "active",
+        "chunks": [
+          {
+            "targetLine": 15,
+            "targetCol": 1,
+            "lines": [
+              "┌───────────────┐     ┌───────────────┐",
+              "│  Client App   │ ──► │  Auth Server  │",
+              "└───────────────┘     └───────────────┘"
+            ],
+            "insertMode": "2d_insert"
+          }
+        ]
+      }
+    ]
+  },
+  "id": 2
+}
+```
+
+### 3. `insertMode` 4-Quadrant Matrix Options
+- **`"1d_insert"`**: 1D Stream Insert (shifts text right and subsequent lines downward).
+- **`"1d_overwrite"`**: 1D Stream Overwrite (replaces characters on line without shifting line length).
+- **`"2d_insert"`**: 2D Matrix Insert (shifts text right **ONLY on lines touched by block height**).
+- **`"2d_overwrite"`**: 2D Matrix Overwrite (overwrites visual X-Y matrix without moving surrounding lines).
+- **`"2d_transparent"`**: 2D Transparent Overlay (spaces preserve underlying canvas text).
+- **`"2d_fuse_corners"`**: 2D Corner Fusing (automatically fuses overlapping box corners `┌` + `│` -> `├`).
+
+---
+
+## ⌨️ Dedicated Modifier Keybindings Reference
+
+- **`Alt+Y` / `Ctrl+Y`**: Accept active ghost text proposal.
+- **`Alt+N` / `Esc`**: Reject active proposal.
+- **`Alt+R`**: Refine active proposal.
+- **`Alt+i`**: View full AI rationale explanation (`reason`).
+- **`Alt+]` / `Alt+[`**: Next / Previous proposal in queue.
+- **`Alt+Shift+Y`**: Accept ALL proposals in queue.
+- **`Alt+m`**: Jump to next file in multi-file proposal.
+- **`Alt+n` / `Alt+p`**: Jump to next / previous chunk in multi-chunk proposal.
 
 ---
 
@@ -163,7 +239,8 @@ echo "Hello,world!這是測試." | zago -e 'TYPE TRANSLIT "zago-cjk-punctuation"
 ## 🛠️ Execution Rules for AI Agents
 
 1. **Use `zago -e` for inline plain-text diagrams**: Output clean ASCII/Unicode diagram text to stdout.
-2. **Chain LOGO commands sequentially**: Write commands separated by spaces or newlines.
-3. **Respect CJK Display Width**: `zago` automatically calculates visual display width (CJK = 2 columns, ASCII = 1 column).
+2. **Use `zago --ipc` for interactive terminal previews**: Connect to Unix socket `/tmp/zago-<pid>.sock` and push `showPreview` ghost overlays.
+3. **Chain LOGO commands sequentially**: Write commands separated by spaces or newlines.
+4. **Respect CJK Display Width**: `zago` automatically calculates visual display width (CJK = 2 columns, ASCII = 1 column).
 """
 }
