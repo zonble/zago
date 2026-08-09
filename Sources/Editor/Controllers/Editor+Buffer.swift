@@ -99,6 +99,7 @@ extension Editor {
             dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
         }
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 
     public func nextBuffer() {
@@ -125,14 +126,15 @@ extension Editor {
         currentBufferIndex = buffers.count - 1
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 
     public func closeCurrentBuffer() {
         guard buffers.count > 1 else {
-            // Last buffer: replace with empty untitled scratch buffer
+            // Closing last remaining buffer: stop watcher and exit editor loop
             stopFileWatcherForCurrentBuffer()
-            buffers[0] = TextBuffer()
-            currentBufferIndex = 0
+            isRunning = false
+            renderer.invalidateScreenCache()
             return
         }
 
@@ -143,5 +145,6 @@ extension Editor {
         }
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 }

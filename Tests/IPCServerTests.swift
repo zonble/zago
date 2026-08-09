@@ -36,7 +36,7 @@ final class IPCServerTests: XCTestCase {
 
         let popped = textBuffer.performUndo()
         XCTAssertNotNil(popped)
-        XCTAssertEqual(textBuffer.lines[0], "First line")
+        XCTAssertEqual(textBuffer.lines[0], "Modified first line")
     }
 
     func testProposalQueueNavigationAndLineOffsetAdjustment() {

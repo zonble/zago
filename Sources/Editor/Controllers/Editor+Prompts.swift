@@ -46,12 +46,20 @@ extension Editor {
             if save {
                 if let path = self.buffer.filePath, !path.isEmpty {
                     self.doSave(to: path)
-                    self.closeCurrentBuffer()
+                    if self.buffers.count == 1 {
+                        self.isRunning = false
+                    } else {
+                        self.closeCurrentBuffer()
+                    }
                 } else {
                     self.promptWriteFilePath()
                 }
             } else {
-                self.closeCurrentBuffer()
+                if self.buffers.count == 1 {
+                    self.isRunning = false
+                } else {
+                    self.closeCurrentBuffer()
+                }
             }
         })
     }
