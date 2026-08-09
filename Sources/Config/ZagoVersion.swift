@@ -18,6 +18,7 @@ public enum ZagoVersion {
         │  Repository: https://github.com/zonble/zago                 │
         │  License:    MIT                                            │
         │              To all the heroes who inspired me              │
+        │              In memory of China Airlines Flight 676         │
         └─────────────────────────────────────────────────────────────┘
         """
     }
