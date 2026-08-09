@@ -1,6 +1,12 @@
 import Foundation
 
-public struct UndoSnapshot: Equatable {
+public enum ActionAuthor: Equatable, Codable, Sendable {
+    case user
+    case logoScript(name: String?)
+    case aiAgent(id: String, name: String, reason: String)
+}
+
+public struct UndoSnapshot: Equatable, Codable {
     public let lines: [String]
     public let lineIndex: Int
     public let columnIndex: Int
@@ -8,6 +14,8 @@ public struct UndoSnapshot: Equatable {
     public let selectionMarkCol: Int?
     public let canvasVisualColumn: Int?
     public let isModified: Bool
+    public let author: ActionAuthor
+    public let timestamp: Date
 
     public init(
         lines: [String],
@@ -15,7 +23,9 @@ public struct UndoSnapshot: Equatable {
         columnIndex: Int,
         selectionMark: (line: Int, column: Int)? = nil,
         canvasVisualColumn: Int? = nil,
-        isModified: Bool
+        isModified: Bool,
+        author: ActionAuthor = .user,
+        timestamp: Date = Date()
     ) {
         self.lines = lines
         self.lineIndex = lineIndex
@@ -24,17 +34,30 @@ public struct UndoSnapshot: Equatable {
         self.selectionMarkCol = selectionMark?.column
         self.canvasVisualColumn = canvasVisualColumn
         self.isModified = isModified
+        self.author = author
+        self.timestamp = timestamp
     }
 
     public var selectionMark: (line: Int, column: Int)? {
         guard let selectionMarkLine, let selectionMarkCol else { return nil }
         return (line: selectionMarkLine, column: selectionMarkCol)
     }
+
+    public static func == (lhs: UndoSnapshot, rhs: UndoSnapshot) -> Bool {
+        lhs.lines == rhs.lines &&
+        lhs.lineIndex == rhs.lineIndex &&
+        lhs.columnIndex == rhs.columnIndex &&
+        lhs.selectionMarkLine == rhs.selectionMarkLine &&
+        lhs.selectionMarkCol == rhs.selectionMarkCol &&
+        lhs.canvasVisualColumn == rhs.canvasVisualColumn &&
+        lhs.isModified == rhs.isModified &&
+        lhs.author == rhs.author
+    }
 }
 
 extension TextBuffer {
     /// Saves a snapshot of the buffer state and cursor position before mutation.
-    public func saveUndoSnapshot(canvasVisualColumn: Int? = nil) {
+    public func saveUndoSnapshot(canvasVisualColumn: Int? = nil, author: ActionAuthor = .user) {
         activeSearchMatch = nil
         let snapshot = UndoSnapshot(
             lines: lines,
@@ -42,7 +65,8 @@ extension TextBuffer {
             columnIndex: columnIndex,
             selectionMark: selectionMark,
             canvasVisualColumn: canvasVisualColumn,
-            isModified: isModified
+            isModified: isModified,
+            author: author
         )
         if undoStack.last != snapshot {
             undoStack.append(snapshot)

@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "TextEncoding", targets: ["TextEncoding"]),
         .library(name: "SpellChecker", targets: ["SpellChecker"]),
         .library(name: "Git", targets: ["Git"]),
+        .library(name: "IPCServer", targets: ["IPCServer"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -57,6 +58,10 @@ let package = Package(
             dependencies: ["Drawing"]
         ),
         .target(
+            name: "IPCServer",
+            dependencies: ["Config", "Drawing", "LogoEngine", "TextMetrics"]
+        ),
+        .target(
             name: "Syntax",
             dependencies: ["DocumentOutline", "LogoEngine"]
         ),
@@ -66,7 +71,7 @@ let package = Package(
         .target(
             name: "Editor",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax",
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "IPCServer", "LogoEngine", "SpellChecker", "Syntax",
                 "TextEncoding", "TextMetrics", "TextTransform",
             ]
         ),
@@ -78,6 +83,7 @@ let package = Package(
                 "Drawing",
                 "Editor",
                 "Git",
+                "IPCServer",
                 "LogoEngine",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
@@ -85,7 +91,7 @@ let package = Package(
         .testTarget(
             name: "zagoTests",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "LogoEngine", "SpellChecker",
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "IPCServer", "LogoEngine", "SpellChecker",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
             ],
             path: "Tests"
