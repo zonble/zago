@@ -13,23 +13,15 @@ extension LogoEngine {
         guard index + 1 < tokens.count else { return nil }
         guard !isTableArgumentBoundary(tokens[index + 1]) else { return nil }
 
-        let start = index + 1
-        let singleToken = unquote(tokens[start])
-
-        if start + 2 < tokens.count, tokens[start + 1] == "-" {
-            let hyphenated = "\(singleToken)-\(unquote(tokens[start + 2]))"
-            if BorderStyle.isStyleToken(hyphenated) {
-                index = start + 2
-                return hyphenated
-            }
-        }
+        var evalIndex = index + 1
+        let singleToken = unquote(evaluateExpression(tokens, index: &evalIndex))
 
         if BorderStyle.isStyleToken(singleToken) {
-            index = start
+            index = evalIndex
             return singleToken
         }
 
-        index = start
+        index = evalIndex
         return singleToken
     }
 

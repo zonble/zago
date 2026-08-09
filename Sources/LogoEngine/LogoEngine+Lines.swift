@@ -129,25 +129,28 @@ extension LogoEngine {
             let token = tokens[cursor]
             if token == "]" || token == ")" { break }
 
-            let raw = unquote(token)
-            let upper = raw.uppercased()
+            var evalIndex = cursor
+            let evalRaw = unquote(evaluateExpression(tokens, index: &evalIndex))
+            let upper = evalRaw.uppercased()
 
             if let arrowMode = lineArrowMode(for: upper) {
                 setArrowMode(arrowMode)
                 consumedAny = true
+                cursor = evalIndex
                 lastConsumedIndex = cursor
-            } else if upper == "DOUBLE" || upper == "ASCII" {
+            } else if BorderStyle.isStyleToken(evalRaw) || upper == "ASCII" || upper == "DOUBLE" || upper == "SINGLE" {
                 setStyle(upper.lowercased())
                 consumedAny = true
+                cursor = evalIndex
                 lastConsumedIndex = cursor
             } else if !LogoEngine.isStatementCommand(token) {
-                var evalIndex = cursor
+                var intEvalIndex = cursor
                 if let parsedLength = parseIntExpressionArgument(
-                    tokens, index: &evalIndex, isBoundary: isLineArgumentBoundary)
+                    tokens, index: &intEvalIndex, isBoundary: isLineArgumentBoundary)
                 {
                     setLength(max(1, min(parsedLength, maxLength)))
                     consumedAny = true
-                    cursor = evalIndex
+                    cursor = intEvalIndex
                     lastConsumedIndex = cursor
                 } else if isQuotedWordToken(token) {
                     consumedAny = true

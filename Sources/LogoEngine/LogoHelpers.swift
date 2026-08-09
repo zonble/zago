@@ -134,7 +134,7 @@ extension LogoEngine {
         guard !isQuotedWordToken(token) else { return false }
         if token == "(" { return true }
         if Double(token) != nil { return true }
-        if token.hasPrefix(":") { return true }
+        if token.hasPrefix(":") || token.hasPrefix("?") || token == "#" { return true }
         if variables[token.lowercased()] != nil { return true }
 
         guard let primitive = LogoPrimitive.from(token) else { return false }

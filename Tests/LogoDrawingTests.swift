@@ -336,3 +336,50 @@ import TextMetrics
     #expect(editor.buffer.lines[1] == "| 奇怪 |")
     #expect(editor.buffer.lines[2] == "+------+")
 }
+
+@Test func testLineAndVlineEvaluateTemplateAndVariableArguments() throws {
+    let editor1 = Editor()
+    let logoEngine1 = LogoEngine(delegate: editor1)
+    logoEngine1.execute("MAKE \"len\" 10 MAKE \"st\" \"double\" LINE :len :st")
+    #expect(editor1.buffer.lines[0] == "══════════")
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("FOREACH [10 5] [ LINE ? NL ]")
+    #expect(editor2.buffer.lines[0] == "──────────")
+    #expect(editor2.buffer.lines[1] == "─────")
+
+    let editor3 = Editor()
+    let logoEngine3 = LogoEngine(delegate: editor3)
+    logoEngine3.execute("FOREACH [\"double \"ascii] [ LINE 5 ? NL ]")
+    #expect(editor3.buffer.lines[0] == "═════")
+    #expect(editor3.buffer.lines[1] == "-----")
+}
+
+@Test func testBoxEvaluateTemplateAndVariableArguments() throws {
+    let editor1 = Editor()
+    let logoEngine1 = LogoEngine(delegate: editor1)
+    logoEngine1.execute("MAKE \"st\" \"round\" BOX 6 3 \"Hi\" :st")
+    #expect(editor1.buffer.lines[0] == "╭────╮")
+    #expect(editor1.buffer.lines[1] == "│ Hi │")
+    #expect(editor1.buffer.lines[2] == "╰────╯")
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("FOREACH [\"double \"round] [ GOTO ( ( # - 1 ) * 4 + 1 ) 1 BOX 6 3 \"A\" ? ]")
+    #expect(editor2.buffer.lines[0] == "╔════╗")
+    #expect(editor2.buffer.lines[4] == "╰────╯")
+}
+
+@Test func testTableAndFillEvaluateTemplateAndVariableArguments() throws {
+    let editor1 = Editor()
+    let logoEngine1 = LogoEngine(delegate: editor1)
+    logoEngine1.execute("MAKE \"st\" \"double\" TABLE BORDER :st TABLE 3 3")
+    #expect(editor1.buffer.lines[0].contains("╔"))
+
+    let editor2 = Editor()
+    let logoEngine2 = LogoEngine(delegate: editor2)
+    logoEngine2.execute("FOREACH [\"#\" \"*\"] [ GOTO ( ( # - 1 ) * 2 + 1 ) 1 FILL 4 2 ? ]")
+    #expect(editor2.buffer.lines[0] == "####")
+    #expect(editor2.buffer.lines[2] == "****")
+}
