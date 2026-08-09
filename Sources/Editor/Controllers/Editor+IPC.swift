@@ -89,7 +89,7 @@ extension Editor: JSONRPCDelegateTarget {
         }
         self.setStatusMessage("🤖 [AI Proposal from \(proposal.clientName)] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
         self.renderer.invalidateScreenCache()
-        kill(getpid(), SIGWINCH)
+        terminal.wakeup()
         return true
     }
 
@@ -97,7 +97,7 @@ extension Editor: JSONRPCDelegateTarget {
         logoEngine.execute(script)
         let outputStr = buffer.lines.joined(separator: "\n")
         self.renderer.invalidateScreenCache()
-        kill(getpid(), SIGWINCH)
+        terminal.wakeup()
         return (success: true, result: outputStr, error: nil)
     }
 

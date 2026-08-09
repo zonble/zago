@@ -29,12 +29,34 @@ import Foundation
         private var lastReadTimedOut = false
         private(set) public var rawModeEnabled = false
 
+        private var wakeupPipe: [Int32] = [-1, -1]
+
         public init() {
             lastWindowSize = PosixTerminal.currentWindowSize()
+            var fds: [Int32] = [-1, -1]
+            if pipe(&fds) == 0 {
+                wakeupPipe = fds
+                _ = fcntl(wakeupPipe[0], F_SETFL, O_NONBLOCK)
+                _ = fcntl(wakeupPipe[1], F_SETFL, O_NONBLOCK)
+            }
+        }
+
+        public func wakeup() {
+            guard wakeupPipe[1] >= 0 else { return }
+            var dummy: UInt8 = 1
+            #if canImport(Darwin)
+                _ = Darwin.write(wakeupPipe[1], &dummy, 1)
+            #elseif canImport(Glibc)
+                _ = Glibc.write(wakeupPipe[1], &dummy, 1)
+            #elseif canImport(Musl)
+                _ = Musl.write(wakeupPipe[1], &dummy, 1)
+            #endif
         }
 
         deinit {
             disableRawMode()
+            if wakeupPipe[0] >= 0 { close(wakeupPipe[0]) }
+            if wakeupPipe[1] >= 0 { close(wakeupPipe[1]) }
         }
 
         /// Enables terminal raw mode on POSIX systems.
@@ -84,17 +106,47 @@ import Foundation
         /// Reads a single byte from standard input with optional timeout in milliseconds.
         private func readByte(timeoutMs: Int = 0) -> UInt8? {
             lastReadTimedOut = false
-            if timeoutMs > 0 {
-                var fds = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
-                let ret = poll(&fds, 1, Int32(timeoutMs))
-                guard ret > 0 && (fds.revents & Int16(POLLIN)) != 0 else {
-                    lastReadTimedOut = ret == 0
+            var pollFds: [pollfd] = [
+                pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+            ]
+            if wakeupPipe[0] >= 0 {
+                pollFds.append(pollfd(fd: wakeupPipe[0], events: Int16(POLLIN), revents: 0))
+            }
+
+            let timeout = timeoutMs > 0 ? Int32(timeoutMs) : -1
+            let ret = poll(&pollFds, nfds_t(pollFds.count), timeout)
+
+            if ret > 0 {
+                if pollFds.count > 1 && (pollFds[1].revents & Int16(POLLIN)) != 0 {
+                    var dummy: UInt8 = 0
+                    #if canImport(Darwin)
+                        _ = Darwin.read(wakeupPipe[0], &dummy, 1)
+                    #elseif canImport(Glibc)
+                        _ = Glibc.read(wakeupPipe[0], &dummy, 1)
+                    #elseif canImport(Musl)
+                        _ = Musl.read(wakeupPipe[0], &dummy, 1)
+                    #endif
+                    lastWindowSize = (rows: 0, cols: 0) // Force consumeWindowResizeEvent to return true!
                     return nil
                 }
+
+                if (pollFds[0].revents & Int16(POLLIN)) != 0 {
+                    var byte: UInt8 = 0
+                    #if canImport(Darwin)
+                        let n = Darwin.read(STDIN_FILENO, &byte, 1)
+                    #elseif canImport(Glibc)
+                        let n = Glibc.read(STDIN_FILENO, &byte, 1)
+                    #elseif canImport(Musl)
+                        let n = Musl.read(STDIN_FILENO, &byte, 1)
+                    #else
+                        let n = read(STDIN_FILENO, &byte, 1)
+                    #endif
+                    return n == 1 ? byte : nil
+                }
             }
-            var byte: UInt8 = 0
-            let n = read(STDIN_FILENO, &byte, 1)
-            return n == 1 ? byte : nil
+
+            lastReadTimedOut = ret == 0
+            return nil
         }
 
         /// Reads the next input key on POSIX systems (macOS/Linux), including
