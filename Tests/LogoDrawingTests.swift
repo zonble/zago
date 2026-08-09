@@ -409,6 +409,54 @@ import TextMetrics
     #expect(editor.buffer.lines[1] == "│ A ├──────▶│ B │")
 }
 
+@Test func testAutoLineBothArrowBetweenBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌────┐              ┌───────┐",
+        "│ hi │              │ there │",
+        "└────┘              └───────┘"
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 6
+
+    logoEngine.execute("LINE BOTHARROW")
+
+    #expect(editor.buffer.lines[1] == "│ hi │◀────────────▶│ there │")
+}
+
+@Test func testAutoVlineBothArrowBetweenStackedBoxes() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    editor.buffer.lines = [
+        "┌────┐",
+        "│ hi │",
+        "└────┘",
+        "  x",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "┌───────┐",
+        "│ there │",
+        "└───────┘"
+    ]
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 2
+
+    logoEngine.execute("VLINE BOTHARROW")
+
+    #expect(editor.buffer.lines[2] == "└────┘")
+    #expect(editor.buffer.lines[3] == "  ▲")
+    #expect(editor.buffer.lines[10] == "  ▼")
+    #expect(editor.buffer.lines[11] == "┌───────┐")
+}
+
 @Test func testLogoEngineControlCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
