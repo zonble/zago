@@ -87,7 +87,9 @@ extension LogoEngine {
                 let isQuoted = isQuotedWordToken(rawToken)
                 let unquotedRaw = unquote(rawToken)
                 let val: String
-                if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil {
+                if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
+                    || BoxExitPosition(unquotedRaw) != nil
+                {
                     val = unquotedRaw
                 } else {
                     val = unquote(evaluateExpression(tokens, index: &evalIndex))
@@ -144,7 +146,9 @@ extension LogoEngine {
             let isQuoted = isQuotedWordToken(rawToken)
             let unquotedRaw = unquote(rawToken)
             let val: String
-            if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil {
+            if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
+                || BoxExitPosition(unquotedRaw) != nil
+            {
                 val = unquotedRaw
             } else {
                 val = unquote(evaluateExpression(tokens, index: &evalIndex))
@@ -769,7 +773,9 @@ extension LogoEngine {
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
             let textWidth = insetText.displayWidth
             let offset = max(0, (width - textWidth) / 2)
-            let paddedText = String(repeating: " ", count: offset) + insetText + String(repeating: " ", count: max(0, width - offset - textWidth))
+            let paddedText =
+                String(repeating: " ", count: offset) + insetText
+                + String(repeating: " ", count: max(0, width - offset - textWidth))
             let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: width, replacement: paddedText)
 
             editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
@@ -793,12 +799,15 @@ extension LogoEngine {
                     let lineContent = textLines[r - startRow]
                     let textWidth = lineContent.displayWidth
                     let offset = max(0, (width - textWidth) / 2)
-                    replacementText = String(repeating: " ", count: offset) + lineContent + String(repeating: " ", count: max(0, width - offset - textWidth))
+                    replacementText =
+                        String(repeating: " ", count: offset) + lineContent
+                        + String(repeating: " ", count: max(0, width - offset - textWidth))
                 } else {
                     replacementText = String(repeating: " ", count: width)
                 }
 
-                let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: width, replacement: replacementText)
+                let newText = replaceDisplayColumns(
+                    in: lineStr, startCol: startCol, width: width, replacement: replacementText)
                 editor.logoEngine(self, performAction: .setLine(index: lineIdx, text: newText))
             }
 
@@ -816,7 +825,9 @@ extension LogoEngine {
 
         let topBorderChars: Set<Character> = ["┌", "┬", "┐", "─", "═", "╔", "╦", "╗", "╭", "╮", "+", "-"]
         let bottomBorderChars: Set<Character> = ["└", "┴", "┘", "─", "═", "╚", "╩", "╝", "╰", "╯", "+", "-"]
-        let sideBorderChars: Set<Character> = ["│", "║", "|", "├", "┤", "┼", "╠", "╣", "╬", "┌", "┐", "└", "┘", "╔", "╗", "╚", "╝", "╭", "╮", "╰", "╯"]
+        let sideBorderChars: Set<Character> = [
+            "│", "║", "|", "├", "┤", "┼", "╠", "╣", "╬", "┌", "┐", "└", "┘", "╔", "╗", "╚", "╝", "╭", "╮", "╰", "╯",
+        ]
 
         func getCharAt(r: Int, c: Int) -> Character {
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
@@ -865,12 +876,14 @@ extension LogoEngine {
         }
 
         guard let tLine = topLine, let bLine = bottomLine, let lCol = leftCol, let rCol = rightCol,
-              bLine > tLine + 1, rCol > lCol + 1 else {
+            bLine > tLine + 1, rCol > lCol + 1
+        else {
             let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
             let textWidth = insetText.displayWidth
             let offset = max(0, (40 - textWidth) / 2)
             let replacement = String(repeating: " ", count: offset) + insetText
-            let newText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: replacement.displayWidth, replacement: replacement)
+            let newText = replaceDisplayColumns(
+                in: lineStr, startCol: startCol, width: replacement.displayWidth, replacement: replacement)
             editor.logoEngine(self, performAction: .setLine(index: startLine, text: newText))
             return
         }
@@ -895,12 +908,15 @@ extension LogoEngine {
                 let lineContent = textLines[r - startRowInInner]
                 let textWidth = lineContent.displayWidth
                 let offset = max(0, (innerWidth - textWidth) / 2)
-                replacementText = String(repeating: " ", count: offset) + lineContent + String(repeating: " ", count: max(0, innerWidth - offset - textWidth))
+                replacementText =
+                    String(repeating: " ", count: offset) + lineContent
+                    + String(repeating: " ", count: max(0, innerWidth - offset - textWidth))
             } else {
                 replacementText = String(repeating: " ", count: innerWidth)
             }
 
-            let newText = replaceDisplayColumns(in: lineStr, startCol: innerLeft, width: innerWidth, replacement: replacementText)
+            let newText = replaceDisplayColumns(
+                in: lineStr, startCol: innerLeft, width: innerWidth, replacement: replacementText)
             editor.logoEngine(self, performAction: .setLine(index: currentLineIdx, text: newText))
         }
 

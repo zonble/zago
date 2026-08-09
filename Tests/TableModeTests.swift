@@ -3,7 +3,6 @@ import Testing
 
 @testable import Editor
 
-
 @Test func testTableModeToggleAndNavigation() throws {
     let editor = Editor()
     editor.buffer.lines = [

@@ -81,12 +81,14 @@ public enum DocumentLinkParser {
         } else if target.hasPrefix("*") {
             anchorPart = String(target.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
         } else {
-            let isFilePath = target.contains("/")
+            let isFilePath =
+                target.contains("/")
                 || target.contains("\\")
                 || target.hasPrefix(".")
-                || [".md", ".markdown", ".org", ".rst", ".rest", ".adoc", ".asciidoc", ".asc", ".ascii", ".txt"].contains { ext in
-                    target.lowercased().hasSuffix(ext)
-                }
+                || [".md", ".markdown", ".org", ".rst", ".rest", ".adoc", ".asciidoc", ".asc", ".ascii", ".txt"]
+                    .contains { ext in
+                        target.lowercased().hasSuffix(ext)
+                    }
 
             if isFilePath {
                 pathPart = target

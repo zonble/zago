@@ -97,10 +97,10 @@ import Testing
 
 @Test func testSmartTabZagorcConfigurationDirectives() throws {
     let configStr = """
-    set smart_tab false
-    set list_indent_size 4
-    set tab_size 2
-    """
+        set smart_tab false
+        set list_indent_size 4
+        set tab_size 2
+        """
     let mockProvider = InMemoryConfigFileProvider(homePath: "/home/user", files: ["/home/user/.zagorc": configStr])
     let loader = ConfigLoader(provider: mockProvider)
     let config = loader.loadConfig()
@@ -168,7 +168,7 @@ import Testing
 
     #expect(virtualLines.count >= 2)
     #expect(virtualLines[0].subLineIndex == 0)
-    #expect(virtualLines[0].text.trimmingCharacters(in: .whitespaces) == "- This is a long") // subLine 0 uses wrap 20
+    #expect(virtualLines[0].text.trimmingCharacters(in: .whitespaces) == "- This is a long")  // subLine 0 uses wrap 20
     #expect(virtualLines[1].subLineIndex == 1)
     // subLine 1 capacity is (wrap 20 - hangingIndent 2 = 18 chars capacity)
     #expect(virtualLines[1].text.count <= 18)

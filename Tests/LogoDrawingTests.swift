@@ -38,7 +38,6 @@ import TextMetrics
     #expect(editor.buffer.lines[2] == "╚═╩══╝")
 }
 
-
 @Test func testTurtleVariableLoopCombo() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
@@ -74,12 +73,13 @@ import TextMetrics
     let logoEngine = LogoEngine(delegate: editor)
 
     logoEngine.execute("BOX (3 + 4) (2 + 2)")
-    #expect(editor.buffer.lines == [
-        "┌─────┐",
-        "│     │",
-        "│     │",
-        "└─────┘",
-    ])
+    #expect(
+        editor.buffer.lines == [
+            "┌─────┐",
+            "│     │",
+            "│     │",
+            "└─────┘",
+        ])
 }
 
 @Test func testTurtleRepeatAcceptsExpressionDistanceAndBareHeading() throws {
@@ -265,7 +265,7 @@ import TextMetrics
     editor.buffer.lines = [
         "┌──────────┐        ┌──────────┐",
         "│ 你好谷歌 │        │ 你好嗎？ │",
-        "└──────────┘        └──────────┘"
+        "└──────────┘        └──────────┘",
     ]
     editor.buffer.lineIndex = 1
     // Character index 7 is right after "你好谷歌 " inside the box:
@@ -291,7 +291,7 @@ import TextMetrics
         "",
         "┌──────┐",
         "│ 你好 │",
-        "└──────┘"
+        "└──────┘",
     ]
     editor.buffer.lineIndex = 2
     editor.buffer.columnIndex = 3
@@ -319,7 +319,7 @@ import TextMetrics
         "",
         "╔══════╗",
         "║ 你好 ║",
-        "╚══════╝"
+        "╚══════╝",
     ]
     editor.buffer.lineIndex = 3
     editor.buffer.columnIndex = 3
@@ -345,7 +345,7 @@ import TextMetrics
         "",
         "┌──────┐",
         "│ 你好 │",
-        "└──────┘"
+        "└──────┘",
     ]
     editor.buffer.lineIndex = 3
     editor.buffer.columnIndex = 3
@@ -365,7 +365,7 @@ import TextMetrics
     editor.buffer.lines = [
         "┌───┐       ┌───┐",
         "│ A │       │ B │",
-        "└───┘       └───┘"
+        "└───┘       └───┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 5
@@ -382,7 +382,7 @@ import TextMetrics
     editor.buffer.lines = [
         "╔═══╗       ╔═══╗",
         "║ A ║       ║ B ║",
-        "╚═══╝       ╚═══╝"
+        "╚═══╝       ╚═══╝",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 5
@@ -399,7 +399,7 @@ import TextMetrics
     editor.buffer.lines = [
         "┌───┐       ┌───┐",
         "│ A │       │ B │",
-        "└───┘       └───┘"
+        "└───┘       └───┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 5
@@ -416,7 +416,7 @@ import TextMetrics
     editor.buffer.lines = [
         "┌────┐              ┌───────┐",
         "│ hi │              │ there │",
-        "└────┘              └───────┘"
+        "└────┘              └───────┘",
     ]
     editor.buffer.lineIndex = 1
     editor.buffer.columnIndex = 6
@@ -444,7 +444,7 @@ import TextMetrics
         "",
         "┌───────┐",
         "│ there │",
-        "└───────┘"
+        "└───────┘",
     ]
     editor.buffer.lineIndex = 3
     editor.buffer.columnIndex = 2
@@ -461,11 +461,12 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
-    logoEngine.execute("""
-    MAKE "price1 "15"
-    MAKE "p1 PADLEFT :price1 5 "0"
-    TYPE :p1
-    """)
+    logoEngine.execute(
+        """
+        MAKE "price1 "15"
+        MAKE "p1 PADLEFT :price1 5 "0"
+        TYPE :p1
+        """)
 
     #expect(editor.buffer.lines[0] == "00015")
 }
@@ -485,7 +486,10 @@ import TextMetrics
         let editor = Editor()
         editor.logoEngine.execute(script)
 
-        #expect(!editor.logoEngine.hasUncaughtError, "Example script failed: \(file.lastPathComponent) with error: \(editor.logoEngine.lastError?.message ?? "")")
+        #expect(
+            !editor.logoEngine.hasUncaughtError,
+            "Example script failed: \(file.lastPathComponent) with error: \(editor.logoEngine.lastError?.message ?? "")"
+        )
     }
 }
 
@@ -616,24 +620,24 @@ import TextMetrics
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
     let script = """
-    to factorial :x
-        ifelse :x < 1 [ output 1 ] [ output reduce [?1 * ?2] (iseq 1 :x) ]
-    end
+        to factorial :x
+            ifelse :x < 1 [ output 1 ] [ output reduce [?1 * ?2] (iseq 1 :x) ]
+        end
 
-    foreach (iseq 1 5) [ type (factorial ?) type " " ]
-    """
+        foreach (iseq 1 5) [ type (factorial ?) type " " ]
+        """
     logoEngine.execute(script)
     #expect(editor.buffer.lines[0] == "1 2 6 24 120 ")
 
     let editor2 = Editor()
     let logoEngine2 = LogoEngine(delegate: editor2)
     let script2 = """
-    to double_val :x
-        return :x * 2
-    end
+        to double_val :x
+            return :x * 2
+        end
 
-    type (double_val 21)
-    """
+        type (double_val 21)
+        """
     logoEngine2.execute(script2)
     #expect(editor2.buffer.lines[0] == "42")
 }

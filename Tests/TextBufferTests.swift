@@ -264,27 +264,27 @@ import Testing
 
     // Move forward skips 「 and stops after 你
     buffer.moveWordForward()
-    #expect(buffer.columnIndex == 2) // after 你
+    #expect(buffer.columnIndex == 2)  // after 你
 
     // Move forward stops after 好
     buffer.moveWordForward()
-    #expect(buffer.columnIndex == 3) // after 好
+    #expect(buffer.columnIndex == 3)  // after 好
 
     // Move forward stops after 世
     buffer.moveWordForward()
-    #expect(buffer.columnIndex == 4) // after 世
+    #expect(buffer.columnIndex == 4)  // after 世
 
     // Move forward stops after 界
     buffer.moveWordForward()
-    #expect(buffer.columnIndex == 5) // after 界
+    #expect(buffer.columnIndex == 5)  // after 界
 
     // Move backward moves before 界
     buffer.moveWordBackward()
-    #expect(buffer.columnIndex == 4) // before 界
+    #expect(buffer.columnIndex == 4)  // before 界
 
     // Move backward moves before 世
     buffer.moveWordBackward()
-    #expect(buffer.columnIndex == 3) // before 世
+    #expect(buffer.columnIndex == 3)  // before 世
 }
 
 @Test func testCtrlShiftWordNavigationKeyDispatch() {

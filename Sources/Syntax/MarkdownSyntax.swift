@@ -25,7 +25,9 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             // Inline code, links, images, and automatic URLs
             makeRule("`[^`]+`", .string),
             makeRule("!?\\[[^\\]]+\\]\\([^\\)]+\\)", .typeOrAttribute),
-            makeRule("\\[\\^[^\\]]+\\]|https?://[^\\s<>\\)\\]\\}：；，。、！？（）【】「」『』《》〈〉“”‘’—…]+|<https?://[^>]+>", .typeOrAttribute),
+            makeRule(
+                "\\[\\^[^\\]]+\\]|https?://[^\\s<>\\)\\]\\}：；，。、！？（）【】「」『』《》〈〉“”‘’—…]+|<https?://[^>]+>",
+                .typeOrAttribute),
 
             // Emphasis and strikethrough
             makeRule("(\\*\\*|__)[^*`|\\n_]+(\\*\\*|__)", .string),

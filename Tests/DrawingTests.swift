@@ -64,24 +64,31 @@ import Testing
         let drawer = ArrowDrawer()
 
         // Solid Unicode Arrow (Default)
-        drawer.drawLine(buffer: buffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, arrowStyle: .solid)
+        drawer.drawLine(
+            buffer: buffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, arrowStyle: .solid)
         #expect(buffer.lineString(at: 0) == "───▶")
 
         // Hollow Unicode Arrow
         let hollowBuffer = StringArrayDrawingBuffer()
-        drawer.drawLine(buffer: hollowBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, arrowStyle: .hollow)
+        drawer.drawLine(
+            buffer: hollowBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true,
+            arrowStyle: .hollow)
         #expect(hollowBuffer.lineString(at: 0) == "───▷")
 
         // Stemmed Unicode Arrow
         let stemmedBuffer = StringArrayDrawingBuffer()
-        drawer.drawLine(buffer: stemmedBuffer, startLine: 0, startCol: 0, direction: .down, length: 3, hasArrow: true, arrowStyle: .stemmed)
+        drawer.drawLine(
+            buffer: stemmedBuffer, startLine: 0, startCol: 0, direction: .down, length: 3, hasArrow: true,
+            arrowStyle: .stemmed)
         #expect(stemmedBuffer.lineString(at: 0) == "│")
         #expect(stemmedBuffer.lineString(at: 1) == "│")
         #expect(stemmedBuffer.lineString(at: 2) == "↓")
 
         // ASCII Mode forces ASCII arrow regardless of ArrowStyle setting
         let asciiBuffer = StringArrayDrawingBuffer()
-        drawer.drawLine(buffer: asciiBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .ascii, arrowStyle: .solid)
+        drawer.drawLine(
+            buffer: asciiBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .ascii,
+            arrowStyle: .solid)
         #expect(asciiBuffer.lineString(at: 0) == "--->")
     }
 

@@ -429,7 +429,7 @@ import Testing
     if let idx = colonIndex {
         // '：' and subsequent text like 'ChromeOS' must be .normal, NOT .typeOrAttribute
         #expect(tokenMap[idx] == .normal)
-        #expect(tokenMap[idx + 1] == .normal) // 'C'
+        #expect(tokenMap[idx + 1] == .normal)  // 'C'
     }
 
     let line2 = "請存取 https://example.com，測試中文逗號"
@@ -461,13 +461,8 @@ import Testing
         "# Markdown Document",
         "```python",
         "print('hello')",
-        "```"
+        "```",
     ]
     #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 0) == "<!-- ")
     #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 2) == "# ")
 }
-
-
-
-
-

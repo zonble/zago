@@ -3,9 +3,9 @@ import Foundation
 import TextEncoding
 
 #if os(Windows)
-public let testAtomicallyOption = false
+    public let testAtomicallyOption = false
 #else
-public let testAtomicallyOption = true
+    public let testAtomicallyOption = true
 #endif
 
 final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
@@ -76,14 +76,15 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         // We perform a strict roundtrip equality check (roundtrip == contents) to ensure non-lossy
         // encoding validation consistently across macOS, Linux, and Windows.
         guard let data = contents.data(using: encoding, allowLossyConversion: false),
-              let roundtrip = String(data: data, encoding: encoding),
-              roundtrip == contents else {
+            let roundtrip = String(data: data, encoding: encoding),
+            roundtrip == contents
+        else {
             throw EncodingError.unsupportedCharacters
         }
         #if os(Windows)
-        try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            try data.write(to: URL(fileURLWithPath: normalized), options: [])
         #else
-        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+            try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         #endif
         recordCurrentModificationDate(for: normalized)
     }
@@ -107,7 +108,10 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
     }
 
-    private var watchedPaths: [String: (timer: any DispatchSourceTimer, state: WatcherState, queue: DispatchQueue, callback: @Sendable () -> Void)] = [:]
+    private var watchedPaths:
+        [String: (
+            timer: any DispatchSourceTimer, state: WatcherState, queue: DispatchQueue, callback: @Sendable () -> Void
+        )] = [:]
 
     private func getSnapshot(for normalized: String) -> (exists: Bool, mtime: Date?, size: UInt64?) {
         let info = fileInfo(at: normalized)
@@ -140,9 +144,9 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
             let current = self.getSnapshot(for: normalized)
-            if current.exists != state.snapshot.exists ||
-                current.mtime != state.snapshot.mtime ||
-                current.size != state.snapshot.size {
+            if current.exists != state.snapshot.exists || current.mtime != state.snapshot.mtime
+                || current.size != state.snapshot.size
+            {
                 state.snapshot = current
                 DispatchQueue.main.async {
                     onChange()
@@ -193,7 +197,8 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         }
         let data = Data(fileData.prefix(8192))
         if data.isEmpty { return false }
-        let hasUTF16BOM = (data.count >= 2 && ((data[0] == 0xFE && data[1] == 0xFF) || (data[0] == 0xFF && data[1] == 0xFE)))
+        let hasUTF16BOM =
+            (data.count >= 2 && ((data[0] == 0xFE && data[1] == 0xFF) || (data[0] == 0xFF && data[1] == 0xFE)))
         if !hasUTF16BOM && data.contains(0) {
             return true
         }

@@ -1,7 +1,8 @@
 import Foundation
 import Testing
-@testable import LogoEngine
+
 @testable import Editor
+@testable import LogoEngine
 
 @Suite struct LogoExampleExecutionTests {
     @Test func testAllExampleLogoScriptsExecutionAndExpectedOutput() throws {
@@ -19,9 +20,12 @@ import Testing
 
             editor.logoEngine.execute(script)
 
-            #expect(!editor.logoEngine.hasUncaughtError, "Example script failed: \(filename) with error: \(editor.logoEngine.lastError?.message ?? "")")
+            #expect(
+                !editor.logoEngine.hasUncaughtError,
+                "Example script failed: \(filename) with error: \(editor.logoEngine.lastError?.message ?? "")")
 
-            let fullBufferText = editor.buffer.lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            let fullBufferText = editor.buffer.lines.joined(separator: "\n").trimmingCharacters(
+                in: .whitespacesAndNewlines)
             #expect(!fullBufferText.isEmpty, "Example script \(filename) produced completely empty output buffer")
         }
     }

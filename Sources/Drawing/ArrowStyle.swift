@@ -2,10 +2,10 @@ import Foundation
 
 /// Unified source-of-truth for arrow head visual styles (Unicode-only customization).
 public enum ArrowStyle: String, CaseIterable, Sendable {
-    case solid = "solid"       // ▲ ▼ ◀ ▶ (Default Unicode filled triangles)
-    case stemmed = "stemmed"   // ↑ ↓ ← → (Legacy stemmed line arrows)
-    case hollow = "hollow"     // △ ▽ ◁ ▷ (Outline triangle arrows)
-    case small = "small"       // ▴ ▾ ◂ ▸ (Small triangle pointers)
+    case solid = "solid"  // ▲ ▼ ◀ ▶ (Default Unicode filled triangles)
+    case stemmed = "stemmed"  // ↑ ↓ ← → (Legacy stemmed line arrows)
+    case hollow = "hollow"  // △ ▽ ◁ ▷ (Outline triangle arrows)
+    case small = "small"  // ▴ ▾ ◂ ▸ (Small triangle pointers)
 
     public init?(_ token: String) {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()

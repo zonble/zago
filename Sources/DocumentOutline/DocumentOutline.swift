@@ -23,7 +23,9 @@ public struct DocumentOutline: Equatable, Sendable {
 }
 
 public enum DocumentOutlineParser {
-    public static func parse(lines: [String], customParser: (@Sendable ([String]) -> DocumentOutline?)? = nil) -> DocumentOutline {
+    public static func parse(lines: [String], customParser: (@Sendable ([String]) -> DocumentOutline?)? = nil)
+        -> DocumentOutline
+    {
         if let outline = customParser?(lines) {
             return outline
         }
@@ -78,9 +80,7 @@ public enum MarkdownOutlineParser {
     }
 
     private static func markdownFenceMarker(in trimmedLine: String) -> String? {
-        if trimmedLine.hasPrefix("```") { "```" }
-        else if trimmedLine.hasPrefix("~~~") { "~~~" }
-        else { nil }
+        if trimmedLine.hasPrefix("```") { "```" } else if trimmedLine.hasPrefix("~~~") { "~~~" } else { nil }
     }
 
     private static func atxHeading(line: String, lineIndex: Int) -> DocumentHeading? {

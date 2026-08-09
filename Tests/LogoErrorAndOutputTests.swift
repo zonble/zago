@@ -16,14 +16,14 @@ import Testing
     @Test func testCatchAndThrowErrorPrimitives() {
         let editor = Editor()
         let script = """
-        TO TEST_DIV :a :b
-            CATCH "ERROR [
-                IF :b = 0 [ THROW "ERROR "ZeroError ]
-                OUTPUT :a / :b
-            ]
-            OUTPUT ERROR
-        END
-        """
+            TO TEST_DIV :a :b
+                CATCH "ERROR [
+                    IF :b = 0 [ THROW "ERROR "ZeroError ]
+                    OUTPUT :a / :b
+                ]
+                OUTPUT ERROR
+            END
+            """
         editor.runLogoScript(script)
         #expect(editor.logoEngine.customProcedures["TEST_DIV"] != nil)
 
@@ -94,7 +94,8 @@ import Testing
 
     @Test func testErrorHandlingDemoExampleScript() {
         let editor = Editor()
-        let scriptPath = (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent("examples/error_handling_demo.logo")
+        let scriptPath = (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent(
+            "examples/error_handling_demo.logo")
         guard FileManager.default.fileExists(atPath: scriptPath) else { return }
         guard let content = try? String(contentsOfFile: scriptPath, encoding: .utf8) else { return }
 
@@ -112,7 +113,7 @@ import Testing
     @Test func testLogoFileExecutionTargetsLogoCanvasBufferAndPreservesSourceCode() {
         let editor = Editor(filePath: "demo.logo")
         editor.buffer.lines = ["BOX 4 4"]
-        
+
         let ok = editor.runLogoScript("BOX 4 4")
         #expect(ok)
 
@@ -123,7 +124,7 @@ import Testing
         let canvasIdx = editor.findLogoCanvasBufferIndex()
         #expect(canvasIdx != nil)
         #expect(editor.currentBufferIndex == canvasIdx!)
-        
+
         let canvasBuf = editor.buffers[canvasIdx!]
         #expect(canvasBuf.filePath == "*LOGO Canvas*")
         #expect(canvasBuf.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })

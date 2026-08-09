@@ -94,8 +94,9 @@ public final class LayoutEngine {
         let trimmed = line.dropFirst(leadingSpaces)
         if trimmed.isEmpty { return 0 }
 
-        if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") || trimmed.hasPrefix("+ ") ||
-            trimmed.hasPrefix(". ") || trimmed.hasPrefix(".. ") {
+        if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") || trimmed.hasPrefix("+ ") || trimmed.hasPrefix(". ")
+            || trimmed.hasPrefix(".. ")
+        {
             let firstSpaceOffset = trimmed.firstIndex(of: " ") ?? trimmed.endIndex
             let markerLen = trimmed.distance(from: trimmed.startIndex, to: firstSpaceOffset) + 1
             return leadingSpaces + markerLen
@@ -293,7 +294,8 @@ public final class LayoutEngine {
             var currentWidth = 0
             var endIndex = currentCharIndex
             var lastWordBoundary = -1
-            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
+            let chunkLimit =
+                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < totalChars {
                 let ch = chars[endIndex]
@@ -353,7 +355,9 @@ public final class LayoutEngine {
         let hangingIndent = listWrapIndent ? Self.calculateListHangingIndent(in: line) : 0
 
         if line.utf8.allSatisfy({ $0 < 0x80 }) {
-            return visitASCIIWrappedLine(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent, body)
+            return visitASCIIWrappedLine(
+                line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent, body
+            )
         }
 
         var currentCharIndex = 0
@@ -365,7 +369,8 @@ public final class LayoutEngine {
             var currentWidth = 0
             var endIndex = currentCharIndex
             var lastWordBoundary = -1
-            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
+            let chunkLimit =
+                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < totalChars {
                 let ch = chars[endIndex]
@@ -422,7 +427,8 @@ public final class LayoutEngine {
         while currentIndex < bytes.count {
             var endIndex = currentIndex
             var lastWordBoundary = -1
-            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
+            let chunkLimit =
+                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < bytes.count {
                 if endIndex - currentIndex + 1 > chunkLimit && endIndex > currentIndex {
@@ -470,7 +476,8 @@ public final class LayoutEngine {
         while currentIndex < bytes.count {
             var endIndex = currentIndex
             var lastWordBoundary = -1
-            let chunkLimit = (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
+            let chunkLimit =
+                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
 
             while endIndex < bytes.count {
                 if endIndex - currentIndex + 1 > chunkLimit && endIndex > currentIndex {
