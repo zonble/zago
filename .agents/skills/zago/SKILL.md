@@ -106,7 +106,8 @@ You can invoke `zago` from the command line in **headless mode** to render boxes
 
 ### 6. Control Flow, Arithmetic, & Procedures
 
-- **Variables**: `MAKE "var value`, `:var`
+- **Variables**: `MAKE "var value`, `:var` (Built-in: `:author`, `:version`, `:repository`)
+- **Loop & State Variables**: `:#` / `:repcount` (loop index), `:?` / `:?1` (current item in MAP/FILTER), `:line`, `:col`, `:lines`, `:text`, `:filename`
 - **Loops**: `REPEAT n [ commands ]`, `WHILE condition [ commands ]`
 - **Conditionals**: `IF condition [ commands ]`, `IFELSE condition [ trueCmds ] [ falseCmds ]`, `TEST condition`, `IFT [ trueCmds ]`, `IFF [ falseCmds ]`
 - **Arithmetic**: `+`, `-`, `*`, `/`, `MOD`, `ROUND`, `SQRT`, `ABS`, `RANDOM`
