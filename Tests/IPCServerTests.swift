@@ -70,9 +70,7 @@ final class IPCServerTests: XCTestCase {
         queue.pushProposal(proposal2)
 
         XCTAssertEqual(queue.count, 2)
-        XCTAssertEqual(queue.currentProposal?.clientName, "Architect-Bot")
-
-        queue.nextProposal()
+        // Newly pushed proposal2 (Table-Bot) is automatically activated
         XCTAssertEqual(queue.currentProposal?.clientName, "Table-Bot")
 
         queue.previousProposal()
