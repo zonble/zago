@@ -84,13 +84,15 @@ extension Editor: JSONRPCDelegateTarget {
         proposalQueue.pushProposal(proposal)
         self.setStatusMessage("🤖 [AI Proposal from \(proposal.clientName)] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
         self.renderer.invalidateScreenCache()
-        self.refreshScreen()
+        kill(getpid(), SIGWINCH)
         return true
     }
 
     public func handleExecuteLogo(script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
         logoEngine.execute(script)
         let outputStr = buffer.lines.joined(separator: "\n")
+        self.renderer.invalidateScreenCache()
+        kill(getpid(), SIGWINCH)
         return (success: true, result: outputStr, error: nil)
     }
 
