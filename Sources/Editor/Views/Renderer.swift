@@ -299,7 +299,8 @@ public final class Renderer {
                 let proposalInfo = ghostOverlayLine(
                     proposal: editor.proposalQueue.currentProposal,
                     buffer: editor.buffer,
-                    lineIndex: vLine.bufferLineIndex
+                    lineIndex: vLine.bufferLineIndex,
+                    cols: cols
                 )
 
                 if let pInfo = proposalInfo {
@@ -391,7 +392,8 @@ public final class Renderer {
             } else if let ghostInfo = ghostOverlayLine(
                 proposal: editor.proposalQueue.currentProposal,
                 buffer: editor.buffer,
-                lineIndex: localVIndex
+                lineIndex: localVIndex,
+                cols: cols
             ) {
                 if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
                     let lineNumStr = renderLineNumberGutter(
@@ -589,10 +591,36 @@ public final class Renderer {
         return output
     }
 
+    private func wrapTextLine(_ text: String, width: Int) -> [String] {
+        guard width > 10 else { return [text] }
+        var result: [String] = []
+        var currentLine = ""
+        var currentWidth = 0
+
+        for char in text {
+            let w = char.displayWidth
+            if currentWidth + w > width {
+                if !currentLine.isEmpty {
+                    result.append(currentLine)
+                }
+                currentLine = String(char)
+                currentWidth = w
+            } else {
+                currentLine.append(char)
+                currentWidth += w
+            }
+        }
+        if !currentLine.isEmpty {
+            result.append(currentLine)
+        }
+        return result.isEmpty ? [""] : result
+    }
+
     private func ghostOverlayLine(
         proposal: AIProposal?,
         buffer: TextBuffer,
-        lineIndex: Int
+        lineIndex: Int,
+        cols: Int = 80
     ) -> (startCol: Int, line: String)? {
         guard let proposal = proposal else { return nil }
         let bufferFileName = buffer.filePath
@@ -607,15 +635,26 @@ public final class Renderer {
                           (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 for chunk in file.chunks {
+                    let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
+                    let actionHint = "[Alt+a Accept | Alt+r Reject]"
+
+                    let maxBoxWidth = max(36, min(cols - 8, 76))
+                    let innerWidth = max(10, maxBoxWidth - 6)
+
+                    var wrappedBoxContent: [String] = []
+                    for rawLine in chunk.lines {
+                        let subLines = wrapTextLine(rawLine, width: innerWidth)
+                        wrappedBoxContent.append(contentsOf: subLines)
+                    }
+
                     let startLine = chunk.targetLine - 1
-                    let boxLinesCount = chunk.lines.count + 2
+                    let boxLinesCount = wrappedBoxContent.count + 2
                     let lineOffset = lineIndex - startLine
+
                     if lineOffset >= 0 && lineOffset < boxLinesCount {
-                        let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
-                        let actionHint = "[Alt+a Accept | Alt+r Reject]"
-                        let maxLineW = chunk.lines.map { $0.displayWidth }.max() ?? 20
-                        let innerW = max(maxLineW + 4, actionHint.displayWidth + 6)
-                        let boxWidth = innerW + 2
+                        let contentMaxW = wrappedBoxContent.map { $0.displayWidth }.max() ?? 20
+                        let finalInnerW = max(contentMaxW, actionHint.displayWidth + 2)
+                        let boxWidth = finalInnerW + 4
 
                         if lineOffset == 0 {
                             // Top border: ┌─ AI Name ────────────────┐
@@ -630,8 +669,8 @@ public final class Renderer {
                             let line = "└" + hintText + String(repeating: "─", count: remDashCount) + "┘"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         } else {
-                            // Inner content: │  content line                     │
-                            let content = chunk.lines[lineOffset - 1]
+                            // Inner content: │  softwrapped content line        │
+                            let content = wrappedBoxContent[lineOffset - 1]
                             let padCount = max(0, boxWidth - 2 - 2 - content.displayWidth)
                             let line = "│  " + content + String(repeating: " ", count: padCount) + "│"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
