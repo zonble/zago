@@ -22,17 +22,38 @@ public enum OverlayInsertMode: String, Codable, Equatable, Sendable {
     }
 }
 
+public enum ProposalContentType: String, Codable, Equatable, Sendable {
+    case text
+    case diagram
+
+    public static func parse(_ raw: String?) -> ProposalContentType {
+        guard let raw else { return .text }
+        switch raw.lowercased() {
+        case "diagram", "code", "raw": return .diagram
+        default: return .text
+        }
+    }
+}
+
 public struct ProposalChunk: Codable, Equatable, Sendable {
     public var targetLine: Int
     public var targetCol: Int
     public var lines: [String]
     public var insertMode: OverlayInsertMode
+    public var type: ProposalContentType
 
-    public init(targetLine: Int, targetCol: Int, lines: [String], insertMode: OverlayInsertMode = .d2Overwrite) {
+    public init(
+        targetLine: Int,
+        targetCol: Int,
+        lines: [String],
+        insertMode: OverlayInsertMode = .d2Overwrite,
+        type: ProposalContentType = .text
+    ) {
         self.targetLine = targetLine
         self.targetCol = targetCol
         self.lines = lines
         self.insertMode = insertMode
+        self.type = type
     }
 }
 

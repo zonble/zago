@@ -84,11 +84,13 @@ extension Editor: JSONRPCDelegateTarget {
             var chunks: [ProposalChunk] = []
             for chunkPayload in file.chunks {
                 let mode = OverlayInsertMode.parse(chunkPayload.insertMode ?? "2d_overwrite")
+                let type = ProposalContentType.parse(chunkPayload.type)
                 chunks.append(ProposalChunk(
                     targetLine: chunkPayload.targetLine,
                     targetCol: chunkPayload.targetCol,
                     lines: chunkPayload.lines,
-                    insertMode: mode
+                    insertMode: mode,
+                    type: type
                 ))
             }
             affectedProposals.append(AffectedFileProposal(filePath: file.filePath, bufferId: file.bufferId, chunks: chunks))
