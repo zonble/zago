@@ -599,7 +599,7 @@ public final class Renderer {
         return result.isEmpty ? [""] : result
     }
 
-    private func expandVirtualLinesWithProposal(
+    func expandVirtualLinesWithProposal(
         virtualLines: [VirtualLine],
         editor: Editor,
         textWidth: Int
