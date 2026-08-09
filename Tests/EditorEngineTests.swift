@@ -1779,3 +1779,47 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(controller.handleKey(.ctrlArrowDown) == true)
     #expect(editor.buffer.lines[1].contains("▼") || editor.buffer.lines[1].contains("v"))
 }
+
+@Test func testToggleCommentCommand() throws {
+    // 1. Swift file with //
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "test.swift")
+        editor.buffer.lines = ["let x = 10", "let y = 20"]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "// let x = 10")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "let x = 10")
+    }
+
+    // 2. Python file with #
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "test.py")
+        editor.buffer.lines = ["    x = 10"]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "    # x = 10")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "    x = 10")
+    }
+
+    // 3. LOGO file with ;
+    do {
+        let editor = Editor()
+        editor.openNewBuffer(filePath: "test.logo")
+        editor.buffer.lines = ["line 4 double"]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "; line 4 double")
+
+        _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+        #expect(editor.buffer.lines[0] == "line 4 double")
+    }
+}

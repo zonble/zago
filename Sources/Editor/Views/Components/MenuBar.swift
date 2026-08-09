@@ -102,6 +102,7 @@ public final class MenuBar {
                         titleKey: "menu.edit.previous_heading", hotkeyChar: "[", commandId: .documentHeadingPrevious,
                         isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
+                    MenuItem(titleKey: "menu.edit.toggle_comment", hotkeyChar: "c", commandId: .editToggleComment),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
                     MenuItem(
