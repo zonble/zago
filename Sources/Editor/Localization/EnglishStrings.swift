@@ -107,6 +107,7 @@ public struct EnglishStrings {
             GOTO row [col]                       Jump to 1-based row/column
             FIND "query                          Search text
             INDENT / OUTDENT                     Indent / outdent line (4 spaces)
+            NL / NEWLINE / ENTER                 Insert a new line at current position
             JOINLINE / SPLITLINE                 Join next line / split current line
             MARK / CUT / UNCUT                   Mark selection / cut / paste clipboard
 

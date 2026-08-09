@@ -105,6 +105,7 @@ public struct TraditionalChineseStrings {
             GOTO row [col]                       跳轉至 1-based 指定列/欄
             FIND "query                          搜尋指定文字
             INDENT / OUTDENT                     增加 / 減少縮排 (4 個空格)
+            NL / NEWLINE / ENTER                 於當前游標位置插入新行 (換行)
             JOINLINE / SPLITLINE                 接合下一行 / 拆分當前行
             MARK / CUT / UNCUT                   標記選取區 / 剪下 / 貼上剪貼簿
 
