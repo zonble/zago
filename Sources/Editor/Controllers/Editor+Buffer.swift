@@ -126,7 +126,6 @@ extension Editor {
         currentBufferIndex = buffers.count - 1
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
-        renderer.invalidateScreenCache()
     }
 
     public func closeCurrentBuffer() {
@@ -140,8 +139,14 @@ extension Editor {
 
         stopFileWatcherForCurrentBuffer()
         buffers.remove(at: currentBufferIndex)
-        if currentBufferIndex >= buffers.count {
-            currentBufferIndex = max(0, buffers.count - 1)
+        renderer.invalidateScreenCache()
+
+        if buffers.isEmpty {
+            isRunning = false
+        } else {
+            currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
+            loadCurrentViewSettingsFromBuffer()
+            startFileWatcherForCurrentBuffer()
         }
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()

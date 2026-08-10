@@ -63,7 +63,7 @@ public struct TraditionalChineseStrings {
         "dirbuf.up_dir": ".. (上一層目錄)",
         "status.cannot_open_binary_file": "無法開啟非文字檔 (Binary File)",
         "prompt.goto_line": "請輸入列號與欄號：",
-        "textview.footer": "  上/下：捲動   PgUp/PgDn：翻頁   Home/End：跳轉   其他按鍵：關閉",
+        "textview.footer": "  ↑/↓/上頁/下頁/Home/End：捲動   其他按鍵：關閉",
         "logoview.reference_title": "  zago - Editor LOGO 指令參考",
         "logoview.workspace_title": "  zago - Editor LOGO 工作區",
         "logoref.content": """
@@ -376,8 +376,8 @@ public struct TraditionalChineseStrings {
         "helpview.nav_4": "    ^N / 下方向鍵      游標移動至下一行",
         "helpview.nav_5": "    ^A / Home          游標移動至當前行行首",
         "helpview.nav_6": "    ^E / End           游標移動至當前行行尾",
-        "helpview.nav_7": "    ^V / PgDn          向下捲動一頁文字",
-        "helpview.nav_8": "    ^Y / PgUp          向上捲動一頁文字",
+        "helpview.nav_7": "    ^V / 上頁          向下捲動一頁文字",
+        "helpview.nav_8": "    ^Y / 下頁          向上捲動一頁文字",
 
         "helpview.sec_edit": "  編輯、剪貼與選取：",
         "helpview.edit_1": "    ^D / Delete        刪除游標所在位置的字元",
@@ -391,7 +391,7 @@ public struct TraditionalChineseStrings {
         "helpview.sec_canvas": "  畫布模式：",
         "helpview.canvas_1": "    F8 / M+V           切到畫布模式",
         "helpview.canvas_2": "    ⇧+方向鍵           畫出框線並移動畫布游標",
-        "helpview.canvas_3": "    ^⇧+方向鍵          畫出框線並在終點放置箭頭",
+        "helpview.canvas_3": "    ^⇧+方向鍵/^+方向鍵  畫出框線並在終點放置箭頭",
         "helpview.canvas_4": "    ^^ / M+B           設定畫布區塊標記",
 
         "helpview.sec_search": "  搜尋與段落重排對齊：",
@@ -404,7 +404,7 @@ public struct TraditionalChineseStrings {
         "helpview.search_7": "    ^J                 重排與自動對齊當前段落（中英文混排）",
 
         "outlineview.title": "  文件大綱",
-        "outlineview.footer": "  Up/Down 移動  Enter 跳轉  Esc/^G 關閉",
+        "outlineview.footer": "  ↑/↓: 捲動頁面 | Enter: 跳轉 | Esc/^G: 關閉",
 
         "helpview.sec_file": "  檔案與 Buffer 操作指令：",
         "helpview.file_1": "    ^S                 儲存目前文件；^O / F3 可選擇路徑",
@@ -445,7 +445,7 @@ public struct TraditionalChineseStrings {
         "helpview.logo_8": "    DATE / TIME / SET  插入當前日期時間、設定編輯器選項",
         "helpview.logo_9": "    IF / IFELSE        條件判斷（IF 條件 [...] / IFELSE 條件 [...] [...]）",
 
-        "helpview.footer": "  [ ↑/↓/PgUp/PgDn: 捲動頁面 | 按任意鍵返回編輯器 ]",
+        "helpview.footer": "  ↑/↓/上頁/下頁: 捲動 | 任意鍵：返回編輯器",
 
         // Common Messages
         "msg.cancelled": "[ 已取消 ]",
@@ -509,6 +509,7 @@ public struct TraditionalChineseStrings {
         "menu.buffer.next": "下一份文件\tM+.",
         "menu.buffer.prev": "上一份文件\tM+,",
         "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
+        "menu.buffer.clear_output": "清除 LOGO 輸出內容",
 
         "menu.run.script": "執行腳本\tF5",
         "menu.run.eval": "求值行/選取區\t^Q",
@@ -673,6 +674,7 @@ public struct TraditionalChineseStrings {
         "menu.tools.wrap_60": "換行: 60",
         "menu.tools.wrap_40": "換行: 40",
         "menu.tools.wrap_reset": "換行: 動態",
+        "menu.tools.clear_logo_output": "清除 LOGO 輸出內容",
 
         "menu.diagrams.mermaid_sequence": "Mermaid 時序圖 (Sequence)",
         "menu.diagrams.mermaid_flowchart": "Mermaid 流程圖 (Flowchart)",

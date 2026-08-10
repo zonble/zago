@@ -76,7 +76,7 @@ public enum JSONRPCId: Codable, Equatable, Hashable {
 
 // MARK: - Dynamic JSON Value
 
-public indirect enum JSONValue: Codable, Equatable {
+public indirect enum JSONValue: Codable, Equatable, Sendable {
     case null
     case bool(Bool)
     case number(Double)
