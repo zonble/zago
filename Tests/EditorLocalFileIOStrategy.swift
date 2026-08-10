@@ -108,6 +108,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
     }
 
+    private let lock = NSLock()
     private var watchedPaths:
         [String: (
             timer: any DispatchSourceTimer, state: WatcherState, queue: DispatchQueue, callback: @Sendable () -> Void
@@ -122,9 +123,11 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
     }
 
     private func recordCurrentModificationDate(for normalized: String) {
-        if let entry = watchedPaths[normalized] {
-            entry.queue.sync {
-                entry.state.snapshot = self.getSnapshot(for: normalized)
+        lock.withLock {
+            if let entry = watchedPaths[normalized] {
+                entry.queue.sync {
+                    entry.state.snapshot = self.getSnapshot(for: normalized)
+                }
             }
         }
     }
@@ -154,14 +157,17 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             }
         }
         timer.resume()
-        watchedPaths[normalized] = (timer, state, queue, onChange)
+        lock.withLock {
+            watchedPaths[normalized] = (timer, state, queue, onChange)
+        }
     }
 
     func stopWatchingFile(at path: String) {
         let normalized = normalizePath(path, isDirectory: false)
-        if let entry = watchedPaths.removeValue(forKey: normalized) {
-            entry.timer.cancel()
+        let entry = lock.withLock {
+            watchedPaths.removeValue(forKey: normalized)
         }
+        entry?.timer.cancel()
     }
 
     private func expandTilde(_ path: String) -> String {
