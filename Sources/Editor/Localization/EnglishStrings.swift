@@ -716,5 +716,20 @@ public struct EnglishStrings {
         "transform.katakana": "Katakana",
         "transform.romaji": "Romaji",
         "transform.cjk_spacing": "CJK Spacing",
+
+        // AI Proposal UI & Status Strings
+        "ai.proposal.action_hint": "[M+A Accept | M+R Reject]",
+        "ai.proposal.readonly_cannot_modify": "[AI Proposal] Cannot modify read-only buffer",
+        "ai.proposal.readonly_cannot_generate": "[AI Proposal] Cannot generate proposal in read-only buffer",
+        "ai.proposal.no_pending_accept": "[AI Proposal] No pending proposal to accept",
+        "ai.proposal.no_pending_reject": "[AI Proposal] No pending proposal to reject",
+        "ai.proposal.accepted": "[AI Proposal] Accepted changes from %@ (^Z to Undo)",
+        "ai.proposal.accepted_table_exited": "[AI Proposal] Accepted changes (Table Mode exited due to table grid structure changes)",
+        "ai.proposal.rejected": "[AI Proposal] Rejected proposal from %@",
+        "ai.proposal.queue_empty": "[AI Proposal] Queue is empty",
+        "ai.proposal.preview_item": "[AI Proposal] (%d/%d) '%@'",
+        "ai.proposal.mock_generated": "🤖 [Mock AI Proposal] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
+        "ai.proposal.received": "🤖 [AI Proposal from %@] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
+        "ai.proposal.queue_indicator": "[AI Queue %d/%d]",
     ]
 }

@@ -519,6 +519,20 @@ private func makeEditor(
         #expect(!buf1.lines.contains("inserted file2"))
     }
 
+    @Test func testAIProposalUILocalizationStrings() {
+        let l10nEN = L10n(language: .en)
+        let l10nZH = L10n(language: .zh_TW)
+
+        #expect(l10nEN["ai.proposal.action_hint"] == "[M+A Accept | M+R Reject]")
+        #expect(l10nZH["ai.proposal.action_hint"] == "[M+A 接受提案 | M+R 拒絕提案]")
+
+        #expect(l10nEN["ai.proposal.readonly_cannot_modify"] == "[AI Proposal] Cannot modify read-only buffer")
+        #expect(l10nZH["ai.proposal.readonly_cannot_modify"] == "[AI 提案] 無法修改唯讀 Buffer")
+
+        #expect(l10nEN["ai.proposal.queue_empty"] == "[AI Proposal] Queue is empty")
+        #expect(l10nZH["ai.proposal.queue_empty"] == "[AI 提案] 佇列為空")
+    }
+
     @Test func testLogoDelegateActionsMutateEditorState() {
         let editor = Editor(language: .en)
         let delegate: LogoEngineDelegate = editor

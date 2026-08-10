@@ -703,5 +703,20 @@ public struct TraditionalChineseStrings {
         "transform.katakana": "片假名",
         "transform.romaji": "羅馬字",
         "transform.cjk_spacing": "CJK 空格",
+
+        // AI Proposal UI & Status Strings
+        "ai.proposal.action_hint": "[M+A 接受提案 | M+R 拒絕提案]",
+        "ai.proposal.readonly_cannot_modify": "[AI 提案] 無法修改唯讀 Buffer",
+        "ai.proposal.readonly_cannot_generate": "[AI 提案] 無法在唯讀 Buffer 產生提案",
+        "ai.proposal.no_pending_accept": "[AI 提案] 無可接受的提案",
+        "ai.proposal.no_pending_reject": "[AI 提案] 無可拒絕的提案",
+        "ai.proposal.accepted": "[AI 提案] 已套用 %@ 的提案 (^Z 復原)",
+        "ai.proposal.accepted_table_exited": "[AI 提案] 已套用提案（因為表格結構改變已退出表格模式）",
+        "ai.proposal.rejected": "[AI 提案] 已拒絕 %@ 的提案",
+        "ai.proposal.queue_empty": "[AI 提案] 佇列為空",
+        "ai.proposal.preview_item": "[AI 提案] (%d/%d) '%@'",
+        "ai.proposal.mock_generated": "🤖 [Mock AI 提案] \"%@\" (按 M+A 接受，M+R 拒絕，M+P 預覽)",
+        "ai.proposal.received": "🤖 [來自 %@ 的 AI 提案] \"%@\" (按 M+A 接受，M+R 拒絕，M+P 預覽)",
+        "ai.proposal.queue_indicator": "[AI 佇列 %d/%d]",
     ]
 }

@@ -433,7 +433,7 @@ extension Editor {
             let errText =
                 "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
             appendLogoOutput(errText)
-            setStatusMessage("Error in LOGO execution. Press Alt+L or type :output to view.")
+            setStatusMessage("Error in LOGO execution. Press M+L or type :output to view.")
         } else if logoEngine.hasSetStatusMessage {
             // Status message set by engine
         } else if let resultPrefix, let result = logoEngine.lastResult, !result.isEmpty {

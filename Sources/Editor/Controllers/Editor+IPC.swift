@@ -124,7 +124,7 @@ extension Editor: JSONRPCDelegateTarget {
                 topVLineIndex = max(0, lastBoxIdx - mainAreaHeight + 1)
             }
         }
-        self.setStatusMessage("🤖 [\(proposal.clientName)] \"\(reason)\"")
+        self.setStatusMessage(String(format: self.l10n["ai.proposal.received"], proposal.clientName, reason))
         self.renderer.invalidateScreenCache()
         terminal.wakeup()
         return true
