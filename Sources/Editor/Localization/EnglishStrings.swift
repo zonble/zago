@@ -63,7 +63,7 @@ public struct EnglishStrings {
         "dirbuf.up_dir": ".. (up a dir)",
         "status.cannot_open_binary_file": "Cannot open binary file",
         "prompt.goto_line": "Enter line number, column number: ",
-        "textview.footer": "  Up/Down: scroll   PgUp/PgDn: page   Home/End: jump   Any other key: close",
+        "textview.footer": "  Up/Down/PgUp/PgDn/Home/End: Scroll | Any other key: Close",
         "logoview.reference_title": "  zago - Editor LOGO Reference",
         "logoview.workspace_title": "  zago - Editor LOGO Workspace",
         "logoref.content": """
@@ -401,7 +401,7 @@ public struct EnglishStrings {
         "helpview.sec_canvas": "  CANVAS MODE:",
         "helpview.canvas_1": "    F8 / M+V           Toggle Canvas Mode for fixed-position editing",
         "helpview.canvas_2": "    ⇧+Arrow            Draw box lines and move the canvas cursor",
-        "helpview.canvas_3": "    ^⇧+Arrow           Draw arrow lines with an arrowhead at the endpoint",
+        "helpview.canvas_3": "    ^⇧+Arrow / ^+Arrow Draw arrow lines with an arrowhead at the endpoint",
         "helpview.canvas_4": "    ^^ / M+B           Set / unset rectangular canvas block mark",
 
         "helpview.sec_search": "  SEARCH & PARAGRAPH FORMATTING:",
@@ -414,7 +414,7 @@ public struct EnglishStrings {
         "helpview.search_7": "    ^J                 Justify (format) current paragraph (CJK/Latin reflow)",
 
         "outlineview.title": "  Document Outline",
-        "outlineview.footer": "  Up/Down move  Enter jump  Esc/^G close",
+        "outlineview.footer": "  Up/Down: Scroll | Enter: Jump | Esc/^G: Close",
 
         "helpview.sec_file": "  FILE & BUFFER OPERATIONS:",
         "helpview.file_1": "    ^S                 Save current file; ^O / F3 WriteOut (choose path)",
@@ -455,7 +455,7 @@ public struct EnglishStrings {
         "helpview.logo_8": "    DATE / TIME / SET  Insert date/time, configure editor settings",
         "helpview.logo_9": "    IF / IFELSE        Conditional logic (IF cond [...] / IFELSE cond [...] [...])",
 
-        "helpview.footer": "  [ Up/Dn/PgUp/PgDn: Scroll | Press any key to return ]",
+        "helpview.footer": "  Up/Dn/PgUp/PgDn: Scroll | Press any key to return",
 
         // Common Messages
         "msg.cancelled": "[ Cancelled ]",
@@ -535,7 +535,7 @@ public struct EnglishStrings {
         "menu.shapes.symbols": "Insert Symbol...",
 
         "dialog.symbol_picker.title": " Insert Symbol ",
-        "dialog.symbol_picker.footer": " Enter: Insert   Tab/1-4: Switch Tab   a-z: Quick Select   Esc: Cancel ",
+        "dialog.symbol_picker.footer": " Enter: Insert | Tab/1-4: Switch Tab | a-z: Quick Select | Esc: Cancel ",
         "dialog.symbol_picker.selected": " Selected: ",
 
         "symbol_category.gfm": "1. Callouts",
