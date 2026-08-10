@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a detected rectangular cell boundary within a table.
-public struct TableCell: Equatable, Sendable {
+public struct TableCell: Equatable, Codable, Sendable {
     public let minLine: Int
     public let maxLine: Int
     public let minCol: Int

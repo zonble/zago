@@ -107,7 +107,7 @@ public struct BorderCharacterSet: Sendable {
 }
 
 /// Shared border style used by LOGO boxes, editor tables, canvas drawing, and menu state.
-public enum BorderStyle: String, CaseIterable, Sendable {
+public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     case single = "single"
     case double = "double"
     case round = "round"
