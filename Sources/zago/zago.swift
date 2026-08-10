@@ -198,7 +198,7 @@ struct Zago: ParsableCommand {
                 configSource: configSource,
                 dependencies: dependencies
             )
-
+            setupInitialLogoVariables(for: editor.logoEngine)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             terminal.write(output + "\n")
@@ -214,6 +214,7 @@ struct Zago: ParsableCommand {
                     configSource: configSource,
                     dependencies: dependencies
                 )
+                setupInitialLogoVariables(for: editor.logoEngine)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 terminal.write(output + "\n")
@@ -307,7 +308,14 @@ struct Zago: ParsableCommand {
             configSource: configSource,
             dependencies: dependencies
         )
+        setupInitialLogoVariables(for: editor.logoEngine)
         editor.run()
+    }
+
+    private static func setupInitialLogoVariables(for engine: LogoEngine) {
+        engine.variables["zago.author"] = ZagoVersion.author
+        engine.variables["zago.version"] = ZagoVersion.current
+        engine.variables["zago.repository"] = ZagoVersion.repository
     }
 
     private static func parseInitialLineAndColumn(from files: inout [String]) -> (line: Int?, column: Int?) {
