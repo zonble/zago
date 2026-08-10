@@ -141,7 +141,8 @@ final class IPCServerTests: XCTestCase {
     }
 
     func testBufferUUIDAndGetBuffersAPI() {
-        let handler = JSONRPCHandler(sessionToken: "test-token")
+        let editor = Editor()
+        let handler = JSONRPCHandler(sessionToken: "test-token", target: editor)
         let request = JSONRPCRequest(method: "zago.buffer.getBuffers", id: .int(1))
         let response = handler.handleRequest(request, connectionId: "conn-1")
         XCTAssertNotNil(response.result)
