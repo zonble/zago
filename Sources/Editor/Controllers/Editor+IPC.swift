@@ -79,6 +79,7 @@ extension Editor: JSONRPCDelegateTarget {
     }
 
     public func handleShowPreview(clientId: String, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
+        guard !buffer.isReadOnly && !buffer.isDirectoryBuffer else { return false }
         var affectedProposals: [AffectedFileProposal] = []
         for file in affectedFiles {
             var chunks: [ProposalChunk] = []
@@ -123,7 +124,7 @@ extension Editor: JSONRPCDelegateTarget {
                 topVLineIndex = max(0, lastBoxIdx - mainAreaHeight + 1)
             }
         }
-        self.setStatusMessage("🤖 [AI Proposal from \(proposal.clientName)] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
+        self.setStatusMessage("🤖 [\(proposal.clientName)] \"\(reason)\"")
         self.renderer.invalidateScreenCache()
         terminal.wakeup()
         return true

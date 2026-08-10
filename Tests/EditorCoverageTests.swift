@@ -324,6 +324,53 @@ private func makeEditor(
         #expect(config.debugMode == false)
     }
 
+    @Test func testProposalOverlayBoxWidthAlignmentAndVirtualLineExpansion() {
+        let editor = Editor()
+        editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]
+
+        let cmd = MockAISuggestionCommand()
+        cmd.execute(on: editor)
+
+        let baseVLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: 80)
+        let expanded = editor.renderer.expandVirtualLinesWithProposal(
+            virtualLines: baseVLines,
+            editor: editor,
+            textWidth: 80
+        )
+
+        #expect(expanded.count > baseVLines.count)
+
+        let overlayLines = expanded.filter { $0.isProposalOverlay }
+        #expect(!overlayLines.isEmpty)
+
+        // Verify top border, content lines, and bottom border have 100% identical display width
+        let widths = Set(overlayLines.map { $0.text.displayWidth })
+        #expect(widths.count == 1)
+
+        // Verify subLineIndex: top border is 0 (shows line number), subsequent box lines are > 0 (blank gutter)
+        #expect(overlayLines.first?.subLineIndex == 0)
+        #expect(overlayLines.dropFirst().allSatisfy { $0.subLineIndex > 0 })
+    }
+
+    @Test func testReadOnlyAndDirectoryBufferSuppressesAIProposals() {
+        let editor = Editor()
+        editor.buffer.isReadOnly = true
+
+        let cmd = MockAISuggestionCommand()
+        cmd.execute(on: editor)
+
+        #expect(editor.proposalQueue.isEmpty)
+
+        let baseVLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: 80)
+        let expanded = editor.renderer.expandVirtualLinesWithProposal(
+            virtualLines: baseVLines,
+            editor: editor,
+            textWidth: 80
+        )
+        #expect(expanded.count == baseVLines.count)
+        #expect(expanded.filter { $0.isProposalOverlay }.isEmpty)
+    }
+
     @Test func testLogoDelegateActionsMutateEditorState() {
         let editor = Editor(language: .en)
         let delegate: LogoEngineDelegate = editor

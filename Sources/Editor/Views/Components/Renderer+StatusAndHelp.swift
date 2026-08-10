@@ -258,11 +258,11 @@ extension Renderer {
             } else {
                 if editor?.proposalQueue.isEmpty == false {
                     helpItems1 = [
-                        ("Alt+a", "Accept AI"), ("Alt+r", "Reject AI"), ("Alt+p", "Next Prop"),
+                        ("M+A", "Accept AI"), ("M+R", "Reject AI"), ("M+P", "Next Prop"),
                         ("^O", tr("help.write_out")), ("^K", tr("help.cut_text")),
                     ]
                     helpItems2 = [
-                        ("Alt+P", "Prev Prop"), ("^X", tr("help.exit")), ("^W", tr("help.where_is")),
+                        ("M+P", "Prev Prop"), ("^X", tr("help.exit")), ("^W", tr("help.where_is")),
                         ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")),
                     ]
                 } else {

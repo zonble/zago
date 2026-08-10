@@ -603,6 +603,7 @@ public final class Renderer {
         editor: Editor,
         textWidth: Int
     ) -> [VirtualLine] {
+        guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else { return virtualLines }
         guard let proposal = editor.proposalQueue.currentProposal else { return virtualLines }
 
         let bufferFileName = editor.buffer.filePath
@@ -657,7 +658,7 @@ public final class Renderer {
 
                 // Top border: ┌─ AI Name ────────────────┐
                 let headerText = "─ " + clientName + " "
-                let remDashCount = max(0, boxWidth - 1 - headerText.displayWidth)
+                let remDashCount = max(0, boxWidth - 2 - headerText.displayWidth)
                 let topBorderStr = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
                 let topCol = max(0, chunk.targetCol - 1)
                 let topIndent = String(repeating: " ", count: topCol)
@@ -671,34 +672,49 @@ public final class Renderer {
                 ))
 
                 // Inner content lines
+                var boxSubLineIdx = 1
                 for contentStr in wrappedBoxContent {
-                    let padCount = max(0, boxWidth - 2 - 1 - contentStr.displayWidth)
+                    let padCount = max(0, boxWidth - 3 - contentStr.displayWidth)
                     let boxContentLine = "│ " + contentStr + String(repeating: " ", count: padCount) + "│"
                     expanded.append(VirtualLine(
                         bufferLineIndex: lineIdx,
-                        subLineIndex: 0,
+                        subLineIndex: boxSubLineIdx,
                         text: topIndent + boxContentLine,
                         startCol: 0,
                         endCol: boxContentLine.count,
                         isProposalOverlay: true
                     ))
+                    boxSubLineIdx += 1
                 }
 
-                // Bottom border: └── [Alt+a Accept | Alt+r Reject] ─────┘
-                let hintText = "── " + actionHint + " "
-                let bottomDashCount = max(0, boxWidth - 1 - hintText.displayWidth)
+                // Bottom border: └─ [Alt+a Accept | Alt+r Reject] ─────┘
+                let hintText = "─ " + actionHint + " "
+                let bottomDashCount = max(0, boxWidth - 2 - hintText.displayWidth)
                 let bottomBorderStr = "└" + hintText + String(repeating: "─", count: bottomDashCount) + "┘"
                 expanded.append(VirtualLine(
                     bufferLineIndex: lineIdx,
-                    subLineIndex: 0,
+                    subLineIndex: boxSubLineIdx,
                     text: topIndent + bottomBorderStr,
                     startCol: 0,
                     endCol: bottomBorderStr.count,
                     isProposalOverlay: true
                 ))
-            }
+                boxSubLineIdx += 1
 
-            if let vLines = linesByBufferLine[lineIdx] {
+                if let vLines = linesByBufferLine[lineIdx] {
+                    for (offset, vLine) in vLines.enumerated() {
+                        let updatedVLine = VirtualLine(
+                            bufferLineIndex: vLine.bufferLineIndex,
+                            subLineIndex: boxSubLineIdx + offset,
+                            text: vLine.text,
+                            startCol: vLine.startCol,
+                            endCol: vLine.endCol,
+                            isProposalOverlay: vLine.isProposalOverlay
+                        )
+                        expanded.append(updatedVLine)
+                    }
+                }
+            } else if let vLines = linesByBufferLine[lineIdx] {
                 expanded.append(contentsOf: vLines)
             }
         }
@@ -712,6 +728,7 @@ public final class Renderer {
         lineIndex: Int,
         cols: Int = 80
     ) -> (startCol: Int, line: String)? {
+        guard !buffer.isReadOnly && !buffer.isDirectoryBuffer else { return nil }
         guard let proposal = proposal else { return nil }
         let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
@@ -753,19 +770,19 @@ public final class Renderer {
                         if lineOffset == 0 {
                             // Top border: ┌─ AI Name ────────────────┐
                             let headerText = "─ " + clientName + " "
-                            let remDashCount = max(0, boxWidth - 1 - headerText.displayWidth)
+                            let remDashCount = max(0, boxWidth - 2 - headerText.displayWidth)
                             let line = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         } else if lineOffset == boxLinesCount - 1 {
-                            // Bottom border: └── [Alt+a Accept | Alt+r Reject] ─────┘
-                            let hintText = "── " + actionHint + " "
-                            let remDashCount = max(0, boxWidth - 1 - hintText.displayWidth)
+                            // Bottom border: └─ [Alt+a Accept | Alt+r Reject] ─────┘
+                            let hintText = "─ " + actionHint + " "
+                            let remDashCount = max(0, boxWidth - 2 - hintText.displayWidth)
                             let line = "└" + hintText + String(repeating: "─", count: remDashCount) + "┘"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         } else {
                             // Inner content: │ content line        │
                             let content = wrappedBoxContent[lineOffset - 1]
-                            let padCount = max(0, boxWidth - 2 - 1 - content.displayWidth)
+                            let padCount = max(0, boxWidth - 3 - content.displayWidth)
                             let line = "│ " + content + String(repeating: " ", count: padCount) + "│"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         }
@@ -782,6 +799,7 @@ public final class Renderer {
         lineIndex: Int,
         colIndex: Int
     ) -> Character? {
+        guard !buffer.isReadOnly && !buffer.isDirectoryBuffer else { return nil }
         guard let proposal = proposal else { return nil }
         let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""

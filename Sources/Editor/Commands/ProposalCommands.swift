@@ -10,6 +10,11 @@ public struct AcceptProposalCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
+            editor.setStatusMessage("[AI Proposal] Cannot modify read-only buffer")
+            return
+        }
+
         guard let current = editor.proposalQueue.currentProposal else {
             editor.setStatusMessage("[AI Proposal] No pending proposal to accept")
             return
@@ -41,7 +46,7 @@ public struct AcceptProposalCommand: Command {
 
         AIHistoryLogManager.shared.logDecision(proposal: current, decision: "accepted")
         editor.proposalQueue.rejectCurrent()
-        editor.setStatusMessage("[AI Proposal] Accepted changes from \(current.clientName) (Press Ctrl+u to Undo)")
+        editor.setStatusMessage("[AI Proposal] Accepted changes from \(current.clientName) (^Z to Undo)")
         editor.renderer.invalidateScreenCache()
     }
 }
@@ -122,6 +127,11 @@ public struct MockAISuggestionCommand: Command {
     public init() {}
 
     public func execute(on editor: Editor) {
+        guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
+            editor.setStatusMessage("[AI Proposal] Cannot generate proposal in read-only buffer")
+            return
+        }
+
         let args = editor.promptInputText.trimmingCharacters(in: .whitespaces)
 
         let proposalLines: [String]
@@ -163,7 +173,7 @@ public struct MockAISuggestionCommand: Command {
         )
 
         editor.proposalQueue.pushProposal(proposal)
-        editor.setStatusMessage("🤖 [Mock AI Proposal] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
+        editor.setStatusMessage("🤖 [Mock AI Proposal] \"\(reason)\"")
         editor.renderer.invalidateScreenCache()
     }
 }
