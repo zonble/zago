@@ -9,7 +9,7 @@ import Testing
         let repoRoot = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        let fileURL = repoRoot.appendingPathComponent("examples").appendingPathComponent(filename)
+        let fileURL = repoRoot.appendingPathComponent("examples").appendingPathComponent("logo").appendingPathComponent(filename)
         var path = fileURL.path
         #if os(Windows)
             if path.hasPrefix("/") && path.contains(":") {

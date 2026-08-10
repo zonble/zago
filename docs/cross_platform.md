@@ -51,7 +51,7 @@ Data piped from another process (e.g. `cmd.exe` `type file.txt | zago` or PowerS
 - **Solution**: `zago` passes redirected pipe input through its **Multi-Encoding Auto-Detector** ([`encoding.md`](encoding.md)). It inspects byte signatures (BOM, UTF-8 validity, CP950 double-byte sequences), auto-detects the exact stream encoding, and normalizes line endings (`\r\n` CRLF -> `\n` LF) when building the `TextBuffer`.
 
 #### C. Windows CRLF (`\r\n`) in LOGO Script Parsing (`Int("2\r")` Gotcha)
-On Windows, Git checkouts use `core.autocrlf = true` by default, writing `\r\n` line endings to text files and LOGO example scripts (`examples/*.logo`).
+On Windows, Git checkouts use `core.autocrlf = true` by default, writing `\r\n` line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
 - **The Pitfall**: Naive token splitting on whitespace alone can leave trailing `\r` carriage return characters attached to numerical tokens (e.g., `"2\r"`). In Swift, `Int("2\r")` returns `nil`! When fallback `Int(...) ?? 0` is used in arithmetic or bitwise primitives (such as `BIT.XOR`), `nil` becomes `0`, silently corrupting calculation results on Windows!
 - **Solution**:
   - `LogoValue.parse` trims `.whitespacesAndNewlines` when tokenizing list items.

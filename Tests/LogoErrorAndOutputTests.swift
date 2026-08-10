@@ -110,7 +110,7 @@ import Testing
     @Test func testErrorHandlingDemoExampleScript() {
         let editor = Editor()
         let scriptPath = (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent(
-            "examples/error_handling_demo.logo")
+            "examples/logo/error_handling_demo.logo")
         guard FileManager.default.fileExists(atPath: scriptPath) else { return }
         guard let content = try? String(contentsOfFile: scriptPath, encoding: .utf8) else { return }
 

@@ -1,0 +1,24 @@
+; ==============================================================================
+; Number Guessing Game in zago Editor LOGO
+; ==============================================================================
+; Usage in zago:
+;   1. Esc -> type: LOAD "examples/logo/game.logo
+;   2. Interactively guess the secret number (0-9) via prompt!
+; ==============================================================================
+
+TO GAME
+    MAKE "q "What's my number?"
+    MAKE "msg ""
+    MAKE "endgame false
+    MAKE "a (RANDOM 10)
+    DO.WHILE [
+        MAKE "g READWORD JOIN [:msg :q] " "
+        MAKE "g TRIM :g
+        IF :g = "" [ SHOW "Cancelled MAKE "endgame true ]
+        IF :g = :a [ SHOW "Bingo MAKE "endgame true ]
+        IF :g > :a [ MAKE "msg "Too large!" ]
+        IF :g < :a [ MAKE "msg "Too small!" ]
+    ][ :endgame = false ]
+END
+
+GAME
