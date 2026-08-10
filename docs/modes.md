@@ -331,8 +331,7 @@ command is disabled in Table Mode.
 ### Exit Rules
 
 - Toggling `M+T` exits Table Mode.
-- If the table structure becomes invalid while editing, Table Mode should exit
-  gracefully and keep the buffer content unchanged except for accepted edits.
+- If the table structure becomes invalid while editing (or if accepting an AI proposal inserts text/lines that break table grid integrity or alter cell boundaries), Table Mode automatically exits gracefully and returns to text/canvas mode.
 - Exiting Table Mode clears the active cell highlight and active cell metadata.
 
 ## Mode Stack And State

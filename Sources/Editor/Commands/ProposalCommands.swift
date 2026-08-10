@@ -20,27 +20,54 @@ public struct AcceptProposalCommand: Command {
             return
         }
 
-        // Save Undo snapshot so Ctrl+u / Undo works!
-        editor.buffer.saveUndoSnapshot()
-
-        let currentFileName = editor.buffer.filePath.map { NSString(string: $0).lastPathComponent } ?? ""
+        // Clear selection mark to prevent mark position conflicts
+        editor.clearActiveMark()
 
         for file in current.affectedFiles {
-            let bufferMatch = (file.bufferId != nil && file.bufferId == editor.buffer.id) ||
-                              file.filePath == "active" ||
-                              (editor.buffer.filePath != nil && file.filePath == editor.buffer.filePath) ||
-                              (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
-                              (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                              (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
-                              (editor.buffer.filePath == nil && file.bufferId == nil)
+            let targetBuffer: TextBuffer?
+            if let bId = file.bufferId, let matched = editor.buffers.first(where: { $0.id == bId }) {
+                targetBuffer = matched
+            } else if let fPath = file.filePath, fPath != "active", let matched = editor.buffers.first(where: { $0.filePath == fPath || ($0.filePath != nil && NSString(string: $0.filePath!).lastPathComponent == fPath) }) {
+                targetBuffer = matched
+            } else {
+                targetBuffer = editor.buffer
+            }
 
-            if bufferMatch {
+            if let targetBuf = targetBuffer {
+                targetBuf.saveUndoSnapshot()
                 for chunk in file.chunks {
-                    let insertLineIdx = max(0, min(chunk.targetLine - 1, editor.buffer.lines.count))
-                    // Unified Line Insertion: Always insert lines pushing down existing content
-                    editor.buffer.lines.insert(contentsOf: chunk.lines, at: insertLineIdx)
+                    let insertLineIdx = max(0, min(chunk.targetLine - 1, targetBuf.lines.count))
+                    targetBuf.lines.insert(contentsOf: chunk.lines, at: insertLineIdx)
                 }
-                editor.buffer.isModified = true
+                targetBuf.isModified = true
+            }
+        }
+
+        if editor.isTableModeActive {
+            let detector = TableCellDetector()
+            let currentLine = max(0, min(editor.buffer.lineIndex, editor.buffer.lines.count - 1))
+            let currentCol = max(0, editor.buffer.columnIndex)
+
+            var tableBroken = false
+            if let cell = editor.currentTableCell {
+                if cell.minLine < 0 || cell.maxLine >= editor.buffer.lines.count {
+                    tableBroken = true
+                } else if let newCell = detector.detectCell(in: editor.buffer.lines, line: currentLine, col: currentCol) {
+                    if newCell.minLine != cell.minLine || newCell.maxLine != cell.maxLine ||
+                       newCell.minCol != cell.minCol || newCell.maxCol != cell.maxCol {
+                        tableBroken = true
+                    }
+                } else {
+                    tableBroken = true
+                }
+            } else {
+                tableBroken = true
+            }
+
+            if tableBroken {
+                editor.isTableModeActive = false
+                editor.currentTableCell = nil
+                editor.overlayMode = .none
             }
         }
 

@@ -14,6 +14,8 @@ public struct UndoSnapshot: Equatable, Codable {
     public let selectionMarkCol: Int?
     public let canvasVisualColumn: Int?
     public let isModified: Bool
+    public let isTableModeActive: Bool
+    public let currentTableCell: TableCell?
     public let author: ActionAuthor
     public let timestamp: Date
 
@@ -24,6 +26,8 @@ public struct UndoSnapshot: Equatable, Codable {
         selectionMark: (line: Int, column: Int)? = nil,
         canvasVisualColumn: Int? = nil,
         isModified: Bool,
+        isTableModeActive: Bool = false,
+        currentTableCell: TableCell? = nil,
         author: ActionAuthor = .user,
         timestamp: Date = Date()
     ) {
@@ -34,6 +38,8 @@ public struct UndoSnapshot: Equatable, Codable {
         self.selectionMarkCol = selectionMark?.column
         self.canvasVisualColumn = canvasVisualColumn
         self.isModified = isModified
+        self.isTableModeActive = isTableModeActive
+        self.currentTableCell = currentTableCell
         self.author = author
         self.timestamp = timestamp
     }
@@ -51,6 +57,8 @@ public struct UndoSnapshot: Equatable, Codable {
         lhs.selectionMarkCol == rhs.selectionMarkCol &&
         lhs.canvasVisualColumn == rhs.canvasVisualColumn &&
         lhs.isModified == rhs.isModified &&
+        lhs.isTableModeActive == rhs.isTableModeActive &&
+        lhs.currentTableCell == rhs.currentTableCell &&
         lhs.author == rhs.author
     }
 }
@@ -66,6 +74,8 @@ extension TextBuffer {
             selectionMark: selectionMark,
             canvasVisualColumn: canvasVisualColumn,
             isModified: isModified,
+            isTableModeActive: isTableModeActive,
+            currentTableCell: currentTableCell,
             author: author
         )
         if undoStack.last != snapshot {
@@ -88,6 +98,8 @@ extension TextBuffer {
         columnIndex = max(0, min(snapshot.columnIndex, lines[lineIndex].count))
         selectionMark = snapshot.selectionMark
         isModified = snapshot.isModified
+        isTableModeActive = snapshot.isTableModeActive
+        currentTableCell = snapshot.currentTableCell
         return snapshot
     }
 }

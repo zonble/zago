@@ -156,6 +156,9 @@ Returns list of pending queued proposals, including `reason` fields and `insertM
 #### 2.3 `zago.event.selectionTriggered` (Outbound Event on Alt+A)
 Notifies connected clients when a user triggers AI Co-Pilot on a selected text block.
 
+#### 2.4 Acceptance Behavior & Mode Safety (Alt+a / `:accept`)
+When the user accepts an AI proposal, the editor applies the proposed line chunks to the target buffer. If Table Mode (`isTableModeActive`) is enabled and the accepted text alters or breaks the surrounding table grid syntax/cell boundaries, the editor automatically exits Table Mode gracefully.
+
 ---
 
 ### Domain 3: AI History & Audit Trail

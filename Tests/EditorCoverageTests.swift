@@ -394,6 +394,131 @@ private func makeEditor(
         #expect(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine == 5)
     }
 
+    @Test func testAcceptProposalExitsTableModeIfGridIsBroken() {
+        let editor = Editor()
+        let tableLines = [
+            "┌────────────────┬────────────────┐",
+            "│ Header 1       │ Header 2       │",
+            "├────────────────┼────────────────┤",
+            "│ Cell 1         │ Cell 2         │",
+            "└────────────────┴────────────────┘"
+        ]
+        editor.buffer.lines = tableLines
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 2
+
+        let controller = TableModeController(editor: editor)
+        controller.toggleTableMode()
+        #expect(editor.isTableModeActive == true)
+
+        let chunk = ProposalChunk(
+            targetLine: 2,
+            targetCol: 1,
+            lines: ["Broken non-table text line 1", "Broken non-table text line 2"],
+            insertMode: .d1Insert,
+            type: .text
+        )
+        let fileProposal = AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
+        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Insert breaking lines", affectedFiles: [fileProposal])
+        editor.proposalQueue.pushProposal(proposal)
+
+        let acceptCmd = AcceptProposalCommand()
+        acceptCmd.execute(on: editor)
+
+        #expect(editor.isTableModeActive == false)
+        #expect(editor.currentTableCell == nil)
+    }
+
+    @Test func testAcceptProposalClearsActiveSelectionMark() {
+        let editor = Editor()
+        editor.buffer.lines = ["line 1", "line 2", "line 3"]
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 0
+        editor.buffer.selectionMark = (line: 0, column: 0)
+
+        let chunk = ProposalChunk(targetLine: 2, targetCol: 1, lines: ["inserted"], insertMode: .d1Insert, type: .text)
+        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Test", affectedFiles: [
+            AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
+        ])
+        editor.proposalQueue.pushProposal(proposal)
+
+        let acceptCmd = AcceptProposalCommand()
+        acceptCmd.execute(on: editor)
+
+        #expect(editor.buffer.selectionMark == nil)
+    }
+
+    @Test func testUndoAfterAcceptProposalRestoresTableModeState() {
+        let editor = Editor()
+        let tableLines = [
+            "┌────────────────┬────────────────┐",
+            "│ Header 1       │ Header 2       │",
+            "├────────────────┼────────────────┤",
+            "│ Cell 1         │ Cell 2         │",
+            "└────────────────┴────────────────┘"
+        ]
+        editor.buffer.lines = tableLines
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 2
+
+        let controller = TableModeController(editor: editor)
+        controller.toggleTableMode()
+        #expect(editor.isTableModeActive == true)
+        let originalCell = editor.currentTableCell
+
+        let chunk = ProposalChunk(
+            targetLine: 2,
+            targetCol: 1,
+            lines: ["Breaking table line 1", "Breaking table line 2"],
+            insertMode: .d1Insert,
+            type: .text
+        )
+        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Breaking", affectedFiles: [
+            AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
+        ])
+        editor.proposalQueue.pushProposal(proposal)
+
+        let acceptCmd = AcceptProposalCommand()
+        acceptCmd.execute(on: editor)
+
+        // Exited Table Mode due to broken table grid
+        #expect(editor.isTableModeActive == false)
+
+        // Perform Undo (^Z)
+        editor.performUndo()
+
+        // Table Mode state and cell should be restored!
+        #expect(editor.isTableModeActive == true)
+        #expect(editor.currentTableCell?.minLine == originalCell?.minLine)
+    }
+
+    @Test func testAcceptProposalAppliesToTargetBufferInMultiBufferEditor() {
+        let buf1 = TextBuffer()
+        buf1.filePath = "/path/to/file1.txt"
+        buf1.lines = ["file1 line 1"]
+
+        let buf2 = TextBuffer()
+        buf2.filePath = "/path/to/file2.txt"
+        buf2.lines = ["file2 line 1"]
+
+        let editor = Editor()
+        editor.buffers = [buf1, buf2]
+        editor.currentBufferIndex = 0 // active is file1.txt
+
+        let chunk = ProposalChunk(targetLine: 1, targetCol: 1, lines: ["inserted file2"], insertMode: .d1Insert, type: .text)
+        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Target file2", affectedFiles: [
+            AffectedFileProposal(filePath: "/path/to/file2.txt", bufferId: buf2.id, chunks: [chunk])
+        ])
+        editor.proposalQueue.pushProposal(proposal)
+
+        let acceptCmd = AcceptProposalCommand()
+        acceptCmd.execute(on: editor)
+
+        // buf2 should receive the insertion even though active buffer index is 0 (file1.txt)
+        #expect(buf2.lines.contains("inserted file2"))
+        #expect(!buf1.lines.contains("inserted file2"))
+    }
+
     @Test func testLogoDelegateActionsMutateEditorState() {
         let editor = Editor(language: .en)
         let delegate: LogoEngineDelegate = editor
