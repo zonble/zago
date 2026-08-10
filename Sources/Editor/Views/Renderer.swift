@@ -389,9 +389,8 @@ public final class Renderer {
                     )
                     lineOutput += lineNumStr
                 }
-                let aiPrefix = "AI> ".ansiStyled(style: ANSIStyle.aiGhostOverlay)
                 let indent = String(repeating: " ", count: max(0, ghostInfo.startCol))
-                lineOutput += aiPrefix + (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                lineOutput += (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
@@ -626,7 +625,7 @@ public final class Renderer {
         guard !matchingChunks.isEmpty else { return virtualLines }
 
         let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
-        let actionHint = "[Alt+a Accept | Alt+r Reject]"
+        let actionHint = "[M+A Accept | M+R Reject]"
 
         let maxBoxWidth = max(36, min(textWidth - 4, 76))
         let innerWidth = max(10, maxBoxWidth - 6)
