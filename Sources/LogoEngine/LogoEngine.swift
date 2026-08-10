@@ -84,7 +84,8 @@ public final class LogoEngine {
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
         .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
-        .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag, .wait,
+        .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag,
+        .wait,
         .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
         .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
@@ -162,9 +163,6 @@ public final class LogoEngine {
 
     public init(delegate: LogoEngineDelegate? = nil) {
         self.delegate = delegate
-        self.variables["author"] = "zonble"
-        self.variables["version"] = "1.2.5"
-        self.variables["repository"] = "https://github.com/zonble/zago"
     }
 
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
