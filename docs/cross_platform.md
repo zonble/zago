@@ -170,3 +170,28 @@ Spell checking is abstracted behind the `SpellChecker` protocol:
 ### B. CJK & Emoji Display Width Calculation (`wcwidth`)
 - **macOS / Linux**: Calls `wcwidth()` from `Darwin` or `Glibc`/`Musl`.
 - **Windows**: Win32 C runtime lacks `wcwidth()`. `TextMetrics` calculates display widths based on Unicode East Asian Width (EAW) properties (Wide/Fullwidth = 2 columns, Narrow/Halfwidth = 1 column) and handles Emoji surrogate pair sequences.
+
+---
+
+## 9. C Socket API Types: Linux Glibc vs Darwin (`SOCK_STREAM`)
+
+### Pitfall & Solution
+
+#### The Gotcha: C Header Binding Type Mismatch
+In C socket header bindings:
+- **macOS (Darwin)**: `SOCK_STREAM` is defined as a C macro constant of type `Int32` (value `1`). Calling `socket(AF_UNIX, SOCK_STREAM, 0)` accepts `Int32` arguments directly.
+- **Linux (Glibc)**: In Swift's `Glibc` module bindings, `SOCK_STREAM` is imported as a C enum of type `__socket_type`. Passing `SOCK_STREAM` directly to C's `socket(Int32, Int32, Int32)` on Linux triggers a compiler error:
+  `error: cannot convert value of type '__socket_type' to expected argument type 'Int32'`.
+
+#### Architectural Solution
+In [`ZagoIPCServer.swift`](../Sources/IPCServer/ZagoIPCServer.swift), conditional compilation converts `SOCK_STREAM` portably across platforms:
+
+```swift
+#if canImport(Glibc)
+let sockType = Int32(SOCK_STREAM.rawValue)
+#else
+let sockType = Int32(SOCK_STREAM)
+#endif
+let fd = socket(Int32(AF_UNIX), sockType, 0)
+```
+This guarantees strict type safety when compiling C socket code under Swift 6 on macOS, Linux (Glibc), and Musl environments.
