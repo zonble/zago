@@ -1,8 +1,9 @@
 @_exported import Drawing
 import Foundation
 
-/// Represents a user-defined LOGO procedure defined via `TO procName :param1 ... body ... END`.
-/// Procedures can act as Statement Commands (non-returning) or Reporters/Operations (returning a value via `OUTPUT`).
+/// Represents a user-defined LOGO procedure defined via `TO procName :param1
+/// ... body ... END`. Procedures can act as Statement Commands (non-returning)
+/// or Reporters/Operations (returning a value via `OUTPUT`).
 public struct LogoProcedure: Sendable {
     public let name: String
     public let parameters: [String]
@@ -41,29 +42,37 @@ internal enum LogoRuntimeValue: Equatable {
 /// ### Core Concepts & Execution Architecture:
 ///
 /// 1. **Custom Procedure**:
-///    - Subprograms defined via `TO procName :arg1 ... END`, stored in ``customProcedures``.
-///    - Can execute as standalone commands, or return value strings via the `OUTPUT` primitive.
+///    - Subprograms defined via `TO procName :arg1 ... END`, stored in
+///      ``customProcedures``.
+///    - Can execute as standalone commands, or return value strings via the
+///      `OUTPUT` primitive.
 ///
 /// 2. **Statement Command (`executeStatementCommand`)**:
-///    - Built-in non-returning action commands (e.g. `MAKE`, `PRINT`, `SHOW`, `FORWARD`, `IF`, `REPEAT`, `BOX`).
-///    - Focuses on performing side-effects, dispatched by `LogoEngine+StatementCommands.swift` to domain modules:
+///    - Built-in non-returning action commands (e.g. `MAKE`, `PRINT`, `SHOW`,
+///      `FORWARD`, `IF`, `REPEAT`, `BOX`).
+///    - Focuses on performing side-effects, dispatched by
+///      `LogoEngine+StatementCommands.swift` to domain modules:
 ///      - `executeVariableCommand` (Variable and data structure mutations)
 ///      - `executeControlCommand` (Control flow and loops)
 ///      - `executeEditingCommand` (Text editing and buffer actions)
 ///      - `executeDrawingCommand` (Turtle graphics and table drawing)
 ///
 /// 3. **Expression Primitive (`evaluateExpressionPrimitive`)**:
-///    - Built-in value-returning operation primitives and reporters (e.g. `SUM`, `FIRST`, `BUFFERS`, `DATE`, `WORD?`).
-///    - Focuses on value computation and evaluation, dispatched by `LogoEngine+ExpressionPrimitives.swift` via nil-coalescing chain:
+///    - Built-in value-returning operation primitives and reporters (e.g.
+///      `SUM`, `FIRST`, `BUFFERS`, `DATE`, `WORD?`).
+///    - Focuses on value computation and evaluation, dispatched by
+///      `LogoEngine+ExpressionPrimitives.swift` via nil-coalescing chain:
 ///      - `evaluateDataStructurePrimitives` (Data structures and selectors)
 ///      - `evaluateMathPrimitives` (Arithmetic and logical operations)
 ///      - `evaluateBufferPrimitives` (Buffer state queries)
-///      - `evaluateTemplatePrimitives` (Higher-order functional templates and iterators: `MAP`, `FILTER`, `REDUCE`, `APPLY`)
-///      - `evaluateSystemPrimitives` (System state, environment queries, and date/time: `DATE`, `TIME`, `ASCII`, `CHAR`, `COUNT`)
+///      - `evaluateTemplatePrimitives` (Higher-order functional templates and
+///        iterators: `MAP`, `FILTER`, `REDUCE`, `APPLY`)
+///      - `evaluateSystemPrimitives` (System state, environment queries, and
+///        date/time: `DATE`, `TIME`, `ASCII`, `CHAR`, `COUNT`)
 public final class LogoEngine {
-    public var customProcedures: [String: LogoProcedure] = [:]
-    public var variables: [String: String] = [:]
-    public var propertyLists: [String: [String: LogoValue]] = [:]
+    public internal(set) var customProcedures: [String: LogoProcedure] = [:]
+    public internal(set) var variables: [String: String] = [:]
+    public internal(set) var propertyLists: [String: [String: LogoValue]] = [:]
     internal var callStack: [String] = []
     internal var variableValues: [String: LogoRuntimeValue] = [:]
     internal var lastExpressionValue: LogoRuntimeValue? = nil
@@ -161,8 +170,11 @@ public final class LogoEngine {
 
     public weak var delegate: LogoEngineDelegate?
 
-    public init(delegate: LogoEngineDelegate? = nil) {
+    public init(delegate: LogoEngineDelegate? = nil, initialVariables: [String: String] = [:]) {
         self.delegate = delegate
+        for (key, value) in initialVariables {
+            variables[key] = value
+        }
     }
 
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.

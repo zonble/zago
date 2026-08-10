@@ -78,7 +78,8 @@ import Testing
     let fileIO = MemoryEditorFileIOStrategy(files: ["/test/file.txt": "Hello World"])
     let editor = Editor(
         options: EditorOptions(filePaths: ["/test/file.txt"]),
-        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared),
+        initialVariables: [:]
     )
     editor.gitDiffInfo = GitDiffInfo(branchName: "main", hasDiffMarkers: false)
 

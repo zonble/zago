@@ -75,7 +75,8 @@ import Testing
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy(),
                 terminal: terminal
-            )
+            ),
+            initialVariables: [:]
         )
         editor.buffer.lines = [
             "# Header 1",

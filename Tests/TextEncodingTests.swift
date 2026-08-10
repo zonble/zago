@@ -60,7 +60,8 @@ import Testing
     // 1. Open Big5 file in Editor
     let editor = Editor(
         options: EditorOptions(filePaths: [tmpPath], autoReload: false, language: .en),
-        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared),
+        initialVariables: [:]
     )
     #expect(editor.buffer.fileEncoding == .big5)
     #expect(editor.buffer.lines == ["繁體中文檔案"])

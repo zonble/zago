@@ -126,7 +126,7 @@ import Foundation
                     #elseif canImport(Musl)
                         _ = Musl.read(wakeupPipe[0], &dummy, 1)
                     #endif
-                    lastWindowSize = (rows: 0, cols: 0) // Force consumeWindowResizeEvent to return true!
+                    lastWindowSize = (rows: 0, cols: 0)  // Force consumeWindowResizeEvent to return true!
                     return nil
                 }
 

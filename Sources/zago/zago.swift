@@ -3,6 +3,7 @@ import Config
 import Editor
 import Foundation
 import Git
+import LogoEngine
 
 #if os(Windows)
     import WinSDK
@@ -192,13 +193,19 @@ struct Zago: ParsableCommand {
         headlessOptions.showRuler = false
         headlessOptions.enableSyntax = false
 
+        let initialVariables = [
+            "zago.author": ZagoVersion.author,
+            "zago.version": ZagoVersion.current,
+            "zago.repository": ZagoVersion.repository,
+        ]
+
         if let code = eval {
             let editor = Editor(
                 options: headlessOptions,
                 configSource: configSource,
-                dependencies: dependencies
+                dependencies: dependencies,
+                initialVariables: initialVariables,
             )
-            setupInitialLogoVariables(for: editor.logoEngine)
             editor.runLogoScript(code)
             let output = editor.buffer.lines.joined(separator: "\n")
             terminal.write(output + "\n")
@@ -212,9 +219,9 @@ struct Zago: ParsableCommand {
                 let editor = Editor(
                     options: headlessOptions,
                     configSource: configSource,
-                    dependencies: dependencies
+                    dependencies: dependencies,
+                    initialVariables: initialVariables
                 )
-                setupInitialLogoVariables(for: editor.logoEngine)
                 editor.runLogoScript(code)
                 let output = editor.buffer.lines.joined(separator: "\n")
                 terminal.write(output + "\n")
@@ -306,16 +313,10 @@ struct Zago: ParsableCommand {
         let editor = Editor(
             options: interactiveOptions,
             configSource: configSource,
-            dependencies: dependencies
+            dependencies: dependencies,
+            initialVariables: initialVariables
         )
-        setupInitialLogoVariables(for: editor.logoEngine)
         editor.run()
-    }
-
-    private static func setupInitialLogoVariables(for engine: LogoEngine) {
-        engine.variables["zago.author"] = ZagoVersion.author
-        engine.variables["zago.version"] = ZagoVersion.current
-        engine.variables["zago.repository"] = ZagoVersion.repository
     }
 
     private static func parseInitialLineAndColumn(from files: inout [String]) -> (line: Int?, column: Int?) {
