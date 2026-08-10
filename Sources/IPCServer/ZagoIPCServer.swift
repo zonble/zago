@@ -62,7 +62,12 @@ public final class ZagoIPCServer: @unchecked Sendable {
         unlink(socketPath)
 
         // 2. Create UNIX Domain Socket
-        let fd = socket(AF_UNIX, SOCK_STREAM, 0)
+        #if canImport(Glibc)
+        let sockType = Int32(SOCK_STREAM.rawValue)
+        #else
+        let sockType = Int32(SOCK_STREAM)
+        #endif
+        let fd = socket(Int32(AF_UNIX), sockType, 0)
         guard fd >= 0 else {
             throw NSError(domain: "ZagoIPCServer", code: Int(errno), userInfo: [NSLocalizedDescriptionKey: "Failed to create UNIX domain socket"])
         }
