@@ -25,6 +25,7 @@ public struct EditorConfig {
     public var logoPrelude: String = ""
     public var logoScripts: [String: String] = [:]
     public var ipcEnabled: Bool = false
+    public var debugMode: Bool = false
     public var syntaxErrorCount: Int = 0
     public var loadedFilePath: String? = nil
 

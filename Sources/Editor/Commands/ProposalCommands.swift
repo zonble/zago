@@ -111,3 +111,59 @@ public struct PreviousProposalCommand: Command {
         editor.renderer.invalidateScreenCache()
     }
 }
+
+public struct MockAISuggestionCommand: Command {
+    public let id: CommandID = .proposalMockAI
+    public let name = "Mock AI Suggestion"
+    public let description = "Generate a mock AI proposal overlay for testing AI interactions"
+    public let keys: [Key] = []
+    public var commandBarAliases: [String] { ["mock-ai", "mock-ai-suggestion", "ai-mock", ":mock-ai", ":mock-ai-suggestion"] }
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        let args = editor.promptInputText.trimmingCharacters(in: .whitespaces)
+
+        let proposalLines: [String]
+        let reason: String
+
+        if !args.isEmpty {
+            let lines = args.components(separatedBy: "\\n").flatMap { $0.components(separatedBy: "\n") }
+            proposalLines = lines
+            reason = "Mock AI proposal: '\(args)'"
+        } else {
+            proposalLines = [
+                "┌──────────────────┐",
+                "│ Mock AI Proposal │",
+                "└──────────────────┘"
+            ]
+            reason = "Mock AI Proposal"
+        }
+
+        let lineIdx = max(1, editor.buffer.lineIndex + 1)
+        let chunk = ProposalChunk(
+            targetLine: lineIdx,
+            targetCol: 1,
+            lines: proposalLines,
+            insertMode: .d1Insert,
+            type: .text
+        )
+
+        let fileProposal = AffectedFileProposal(
+            filePath: editor.buffer.filePath ?? "active",
+            bufferId: editor.buffer.id,
+            chunks: [chunk]
+        )
+
+        let proposal = AIProposal(
+            clientId: "mock-ai",
+            clientName: "Mock-AI",
+            reason: reason,
+            affectedFiles: [fileProposal]
+        )
+
+        editor.proposalQueue.pushProposal(proposal)
+        editor.setStatusMessage("🤖 [Mock AI Proposal] \"\(reason)\" (Press Alt+a to Accept, Alt+r to Reject, Alt+p to Preview)")
+        editor.renderer.invalidateScreenCache()
+    }
+}
