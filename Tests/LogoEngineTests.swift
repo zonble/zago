@@ -622,19 +622,19 @@ import TextMetrics
 }
 
 private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
-    var wordResponse: String = "Hello World"
-    var charResponse: String = "y"
+    var wordResponse: String? = "Hello World"
+    var charResponse: String? = "y"
     var lastPrompt: String = ""
 
     func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {}
     func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? { nil }
 
-    func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String {
+    func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String? {
         lastPrompt = prompt
         return wordResponse
     }
 
-    func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String {
+    func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String? {
         lastPrompt = prompt
         return charResponse
     }
@@ -665,6 +665,28 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     mockDelegate.charResponse = "n"
     logoEngine.execute("MAKE \"cancel RC")
     #expect(logoEngine.variables["cancel"] == "n")
+}
+
+@Test func testReadWordAndReadCharCancellationStopsExecution() throws {
+    let mockDelegate = MockReadDelegate()
+    let logoEngine = LogoEngine(delegate: mockDelegate)
+
+    // Mock delegate returns nil (user pressed Esc or Ctrl+C)
+    mockDelegate.wordResponse = nil
+    mockDelegate.charResponse = nil
+
+    // Should report error and stop execution even inside a loop
+    logoEngine.execute("MAKE \"count 0\nWHILE [TRUE] [\n  MAKE \"count :count + 1\n  MAKE \"input READWORD \"Prompt:\n]")
+    #expect(logoEngine.hasUncaughtError == true)
+    #expect(logoEngine.lastError?.message.contains("Stopped by user") == true)
+    #expect(logoEngine.variables["count"] == "1")
+
+    // Test READCHAR cancellation in loop
+    let logoEngine2 = LogoEngine(delegate: mockDelegate)
+    logoEngine2.execute("MAKE \"count 0\nWHILE [TRUE] [\n  MAKE \"count :count + 1\n  MAKE \"input READCHAR\n]")
+    #expect(logoEngine2.hasUncaughtError == true)
+    #expect(logoEngine2.lastError?.message.contains("Stopped by user") == true)
+    #expect(logoEngine2.variables["count"] == "1")
 }
 
 @Test func testProhibitRedefiningReservedKeywordsAndOperators() throws {
