@@ -72,8 +72,8 @@ public struct EnglishStrings {
           cursors, selections, tables, status bar, and multi-buffer state.
 
           1. Shapes, lines & tables
-            BOX [text|width height [style]]      Insert a framed box (auto-centered text)
-            DRAWBOX [text|width height [style]]  Draw overlay box (frames canvas mark)
+            BOX [text|width height [style]]      Insert a framed box (centered text)
+            DRAWBOX [text|width height [style]]  Draw overlay box
             INSET [text|width height text]       Insert centered text inside box/region
             LINE [len] [style] [arrow]           Draw/connect a horizontal line
             VLINE [height] [style]               Draw/connect a vertical line
@@ -109,25 +109,26 @@ public struct EnglishStrings {
             INDENT / OUTDENT                     Indent / outdent line (4 spaces)
             NL / NEWLINE / ENTER                 Insert a new line at current position
             JOINLINE / SPLITLINE                 Join next line / split current line
-            MARK / CUT / UNCUT                   Mark selection / cut / paste clipboard
+            MARK                                 Mark selection 
+            CUT / UNCUT                          Cut / paste clipboard
 
           4. String operations
             WORD a b ...                         Concatenate values into a single word
-            SUBSTRING s start len / SUBSTR       Extract substring (1-based start index)
-            INDEXOF s "sub"                      Find first index of substring (1-based)
-            LASTINDEXOF s "sub"                  Find last index of substring
+            SUBSTRING s start len / SUBSTR       Extract substring (1-based)
+            INDEXOF s "sub"                      First index of substring (1-based)
+            LASTINDEXOF s "sub"                  Last index of substring
             STARTSWITH? s "prefix"               Check if string starts with prefix
             ENDSWITH? s "suffix"                 Check if string ends with suffix
             CONTAINS? s "sub"                    Check if string contains substring
-            UPPERCASE s / LOWERCASE s            Convert string to uppercase / lowercase
+            UPPERCASE s / LOWERCASE s            Convert to uppercase / lowercase
             TRIM s                               Trim whitespace from both ends
-            REPLACE s "old" "new"                Replace all occurrences of target substring
+            REPLACE s "old" "new"                Replace all occurrences
             REPEATSTR s count                    Repeat string n times
             SPLIT s "delim"                      Split string into list by delimiter
-            JOIN list "delim"                    Join list items into string with delimiter
+            JOIN list "delim"                    Join list items with delimiter
             PADLEFT s len [char]                 Pad string on left to target length
             PADRIGHT s len [char]                Pad string on right to target length
-            FORMAT "fmt" val ...                 Format string using printf-style specifier
+            FORMAT "fmt" val ...                 Format string using C-style specifier
             COUNT item                           Count length of string or list
             ASCII char / CHAR code               ASCII code / character by ASCII code
 
@@ -138,27 +139,29 @@ public struct EnglishStrings {
             BUTFIRST data / BUTLAST data         Remove first or last item
             ITEM n data                          1-based item from word/list/array
             FPUT item list / LPUT item list      Add item to front / end of list
-            FIRSTS list / BUTFIRSTS list         First items / remaining items of sublists
+            FIRSTS list / BUTFIRSTS list         First / remaining items
             COMBINE a b / REVERSE list           Combine or reverse list
             PICK list|array                      Random item from list or array
-            REMOVE item list                     Remove items matching target from list
+            REMOVE item list                     Remove items matching target
             REMDUP list                          Remove duplicates from list
             SORT list [template]                 Sort list items
             ARRAY size / MDARRAY dims            Create 1D or multi-dimensional arrays
-            MDITEM dims arr / MDSETITEM dims v   Get/set multi-dimensional array element
+            MDITEM dims arr / MDSETITEM dims v   Get/set multi-dimensional element
             LISTTOARRAY list / ARRAYTOLIST arr   Convert list to array / array to list
             PPROP "plist "prop val               Set property value on property list
             GPROP "plist "prop                   Get property value from property list
             REMPROP "plist "prop                 Remove property from property list
-            PLIST "plist / PLISTS                Get full property list / list all plists
+            PLIST "plist / PLISTS                Get full property list / all plists
 
-            • List: Enclosed in square brackets [ ... ], with elements separated by spaces.
+            • List: Enclosed in square brackets [ ... ], with elements separated 
+              by spaces.
               • Example: [apple banana orange] or [1 2 3]
-              • Dynamic List: Resizable length; ideal for prepending, appending, and list
-                concatenation.
-              • Commonly used creation & manipulation primitives: LIST, SENTENCE (or SE), 
-                FPUT (prepend), LPUT (append), FIRST / BUTFIRST.
-           • Array: Enclosed in curly braces { ... }, with elements separated by spaces.
+              • Dynamic List: Resizable length; ideal for prepending, appending, 
+                and list concatenation.
+              • Commonly used creation & manipulation primitives: LIST, SENTENCE 
+                (or SE), FPUT (prepend), LPUT (append), FIRST / BUTFIRST.
+           • Array: Enclosed in curly braces { ... }, with elements separated 
+             by spaces.
               • Example: {1 2 3} or {"apple" "banana"}
               • Fixed-size / Matrix Space: Typically initialized with a specific size
                 or dimensions; ideal for indexed random access or multi-dimensional 
@@ -166,8 +169,8 @@ public struct EnglishStrings {
               • Commonly used creation primitives:
                 • ARRAY size (Creates a 1D array of specified size, e.g., 
                   ARRAY 3 produces {"" "" ""})
-                • MDARRAY dims (Creates a multi-dimensional array of specified dimensions, 
-                  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
+                • MDARRAY dims (Creates a multi-dimensional array of specified 
+                  dimensions,  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
           6. Date / Datetime
             DATE                                 Get current date string ("YYYY-MM-DD")
@@ -180,7 +183,7 @@ public struct EnglishStrings {
             TRANSFORM.TOKATAKANA s               Convert to Katakana
             TRANSFORM.TOROMAJI s                 Convert to Romaji
             SPACING.CJK s                        Add space between CJK and Latin/digits
-            CHARCOUNT.CJK s                      Count CJK characters (ignore Latin/digits)
+            CHARCOUNT.CJK s                      Count CJK characters
             CHARCOUNT.EMOJI s                    Count Emoji symbols
             CHARCOUNT.WORDS s                    Count words
             CHARCOUNT.LINES s                    Count total lines
@@ -195,20 +198,20 @@ public struct EnglishStrings {
           9. RegEx operations
             REGEX_MATCH s "pattern"              Full string regex match (REMATCH?)
             REGEX_REPLACE s "pat" "repl"         Global regex find and replace (RREPLACE)
-            REGEX_FIND s "pattern"               Find all regex match strings as a list (RFIND)
+            REGEX_FIND s "pattern"               Find all regex matches as a list (RFIND)
 
           10. Control flow
             REPEAT n [ commands ]                Repeat block n times (repcount or #)
             FOR [ var start end step ] [ ]       Numeric loop control
             DOTIMES [ var n ] [ commands ]       Repeat n times (var 0 to n-1)
-            WHILE [ test ] [ commands ]          Execute loop while condition is true
-            DO.WHILE [ commands ] [ test ]       Execute once, repeat while condition true
+            WHILE [ test ] [ commands ]          Execute loop while true
+            DO.WHILE [ commands ] [ test ]       Execute once, repeat while true
             UNTIL [ test ] [ commands ]          Execute loop until condition is true
-            DO.UNTIL [ commands ] [ test ]       Execute once, repeat until condition true
+            DO.UNTIL [ commands ] [ test ]       Execute once, repeat true
             IF test [ commands ]                 Single-branch conditional execution
             IFELSE test [ yes ] [ no ]           Two-branch conditional execution
             CASE val [ [ match [cmds] ] ]        Multi-case pattern matching
-            OUTPUT expr / OP / RETURN            Return value from procedure (reporter)
+            OUTPUT expr / OP / RETURN            Return value (reporter)
 
           11. Interactive input (RC/RW)
             READWORD [prompt] / RW               Read line input from user or stdin
@@ -218,7 +221,7 @@ public struct EnglishStrings {
             ABS / INT / ROUND / SQRT             Absolute / floor / round / square root
             MIN a b ... / MAX a b ...            Minimum / maximum value
             SIN / COS / TAN degrees              Trigonometric functions (degrees)
-            RANDOM n / RERANDOM [seed]           Random integer 0...n-1 / seed generator
+            RANDOM n / RERANDOM [seed]           Random int 0...n-1 / seed generator
             ISEQ start end                       Generate list of sequential integers
             BITAND a b / BIT.AND                 Bitwise logic AND
             BITOR a b / BIT.OR                   Bitwise logic OR
@@ -229,7 +232,7 @@ public struct EnglishStrings {
 
           13. Program & workspace management
             TO name :arg ... END                 Define custom user procedure
-            DEFINE "name [[args] [body]]         Define procedure dynamically from list
+            DEFINE "name [[args] [body]]         Define procedure from list
             TEXT "name                           Get procedure text representation / body
             ARITY "name                          Get procedure argument count (arity)
             PROCEDURES / PROCS                   List all user-defined procedure names
@@ -262,19 +265,19 @@ public struct EnglishStrings {
             EMPTY? val                           Check if string or list is empty
             EQUAL? a b / NOTEQUAL? a b           Check equality / inequality
             LESS? a b / GREATER? a b             Compare values (less / greater)
-            PROCEDURE? name                      Check if procedure exists (built-in or user)
+            PROCEDURE? name                      Check if procedure exists
             PRIMITIVE? name                      Check if built-in primitive exists
             DEFINED? name                        Check if user-defined procedure exists
             NAME? name                           Check if variable exists
 
           17. Buffer & multi-document operations
             BUFFERS / BUFFERLIST                 List all open buffer names
-            BUFFER "name / BUFFER index          Switch to specified buffer by name or index
-            CLEARBUFFER                          Clear all text in current active buffer
-            GETLINE [row]                        Get logical line text (default current row)
-            SETLINE row "text"                   Set logical line text at specified row
-            LINECOUNT                            Return total line count of active buffer
-            BUFFERTEXT                           Return full text of active buffer
+            BUFFER "name / BUFFER index          Switch to buffer by name or index
+            CLEARBUFFER                          Clear all text in current buffer
+            GETLINE [row]                        Get logical line text
+            SETLINE row "text"                   Set logical line text at row
+            LINECOUNT                            Return line count of active buffer
+            BUFFERTEXT                           Return text of active buffer
             SELECTION                            Return currently selected text
             FILENAME                             Return active buffer file path
         """,
