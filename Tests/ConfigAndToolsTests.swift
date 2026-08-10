@@ -73,11 +73,11 @@ struct ConfigAndToolsTests {
                 "    ⇧+Arrow            Draw box lines and move the canvas cursor"))
         #expect(
             HelpContent.lines(language: .en).contains(
-                "    ^⇧+Arrow           Draw arrow lines with an arrowhead at the endpoint"))
+                "    ^⇧+Arrow / ^+Arrow Draw arrow lines with an arrowhead at the endpoint"))
         #expect(HelpContent.lines(language: .zh_TW).contains("  游標移動與導航："))
         #expect(HelpContent.lines(language: .zh_TW).contains("  畫布模式："))
         #expect(HelpContent.lines(language: .zh_TW).contains("    ⇧+方向鍵           畫出框線並移動畫布游標"))
-        #expect(HelpContent.lines(language: .zh_TW).contains("    ^⇧+方向鍵          畫出框線並在終點放置箭頭"))
+        #expect(HelpContent.lines(language: .zh_TW).contains("    ^⇧+方向鍵/^+方向鍵  畫出框線並在終點放置箭頭"))
     }
 
     @Test func testWrapColumnMenuActions() throws {
