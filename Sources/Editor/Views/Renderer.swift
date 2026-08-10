@@ -285,11 +285,7 @@ public final class Renderer {
 
             let baseChars = Array(renderedLineText)
             if vLine.isProposalOverlay {
-                if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
-                    let lineNumGutter = String(repeating: " ", count: gutterWidth)
-                    lineOutput += lineNumGutter.ansiStyled(style: ANSIStyle.dimGray)
-                }
-                lineOutput += vLine.text.ansiStyled(style: ANSIStyle.boldCyan)
+                lineOutput += vLine.text.ansiStyled(style: ANSIStyle.aiGhostOverlay)
             } else {
                 for cIdxInVLine in 0..<baseChars.count {
                     let ch = baseChars[cIdxInVLine]
@@ -430,7 +426,7 @@ public final class Renderer {
 
     func makeSubLineCounts(from virtualLines: [VirtualLine]) -> [Int: Int] {
         var counts: [Int: Int] = [:]
-        for vLine in virtualLines {
+        for vLine in virtualLines where !vLine.isProposalOverlay {
             counts[vLine.bufferLineIndex] = max(counts[vLine.bufferLineIndex] ?? 0, vLine.subLineIndex + 1)
         }
         return counts
@@ -442,6 +438,7 @@ public final class Renderer {
         subLineCount: Int,
         isEnabled: Bool
     ) -> String? {
+        guard !virtualLine.isProposalOverlay else { return nil }
         guard isEnabled, subLineCount > 1 else { return nil }
 
         let label: String

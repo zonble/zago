@@ -49,6 +49,8 @@ open class TextBuffer: SpellCheckableBuffer {
         return path.hasPrefix("*")
     }
 
+    public var onLineCountChanged: ((_ aboveLine: Int, _ delta: Int) -> Void)?
+
     public init() {
     }
 
@@ -341,6 +343,7 @@ open class TextBuffer: SpellCheckableBuffer {
 
         lines[lineIndex] = leftPart
         lines.insert(rightPart, at: lineIndex + 1)
+        onLineCountChanged?(lineIndex + 2, 1)
 
         lineIndex += 1
         columnIndex = 0
@@ -517,12 +520,14 @@ open class TextBuffer: SpellCheckableBuffer {
             isModified = true
         } else if lineIndex > 0 {
             // Merge with end of previous line
+            let oldLineIdx = lineIndex
             let currentLine = lines.remove(at: lineIndex)
             lineIndex -= 1
             let prevLineLength = lines[lineIndex].count
             lines[lineIndex].append(currentLine)
             columnIndex = prevLineLength
             isModified = true
+            onLineCountChanged?(oldLineIdx + 1, -1)
         }
     }
 
@@ -530,12 +535,14 @@ open class TextBuffer: SpellCheckableBuffer {
     public func deleteLine() {
         ensureBounds()
         if lines.count > 1 {
+            let oldLineIdx = lineIndex
             lines.remove(at: lineIndex)
             if lineIndex >= lines.count {
                 lineIndex = lines.count - 1
             }
             columnIndex = 0
             clampCursor()
+            onLineCountChanged?(oldLineIdx + 1, -1)
         } else {
             lines[0] = ""
             lineIndex = 0
@@ -556,9 +563,11 @@ open class TextBuffer: SpellCheckableBuffer {
             isModified = true
         } else if lineIndex < lines.count - 1 {
             // Merge next line into current line
+            let deletedLineIdx = lineIndex + 1
             let nextLine = lines.remove(at: lineIndex + 1)
             lines[lineIndex].append(nextLine)
             isModified = true
+            onLineCountChanged?(deletedLineIdx + 1, -1)
         }
     }
 

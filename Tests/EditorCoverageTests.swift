@@ -350,6 +350,11 @@ private func makeEditor(
         // Verify subLineIndex: top border is 0 (shows line number), subsequent box lines are > 0 (blank gutter)
         #expect(overlayLines.first?.subLineIndex == 0)
         #expect(overlayLines.dropFirst().allSatisfy { $0.subLineIndex > 0 })
+
+        // Verify renderSubLineInfo is suppressed (returns nil) for proposal overlay lines
+        for overlayLine in overlayLines {
+            #expect(editor.renderer.renderSubLineInfo(editor: editor, virtualLine: overlayLine, subLineCount: 5, isEnabled: true) == nil)
+        }
     }
 
     @Test func testReadOnlyAndDirectoryBufferSuppressesAIProposals() {
@@ -369,6 +374,24 @@ private func makeEditor(
         )
         #expect(expanded.count == baseVLines.count)
         #expect(expanded.filter { $0.isProposalOverlay }.isEmpty)
+    }
+
+    @Test func testDeletingLinesAboveProposalAdjustsProposalTargetLine() {
+        let editor = Editor()
+        editor.buffer.lines = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+        editor.buffer.lineIndex = 5
+
+        let cmd = MockAISuggestionCommand()
+        cmd.execute(on: editor)
+
+        #expect(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine == 6)
+
+        // Delete line 2 above proposal site
+        editor.buffer.lineIndex = 1
+        editor.buffer.deleteLine()
+
+        // Proposal targetLine should automatically shift from 6 to 5
+        #expect(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine == 5)
     }
 
     @Test func testLogoDelegateActionsMutateEditorState() {
