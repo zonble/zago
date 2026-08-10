@@ -51,16 +51,16 @@ public final class CanvasModeController: KeyInputHandler {
         case .shiftArrowDown:
             direction = .down
             drawsArrow = false
-        case .ctrlShiftArrowLeft, .ctrlArrowLeft, .ctrl("b"), .ctrl("B"):
+        case .ctrlShiftArrowLeft, .ctrlArrowLeft, .ctrl("b"), .ctrl("B"), .ctrlShift("b"), .ctrlShift("B"):
             direction = .left
             drawsArrow = true
-        case .ctrlShiftArrowRight, .ctrlArrowRight, .ctrl("f"), .ctrl("F"):
+        case .ctrlShiftArrowRight, .ctrlArrowRight, .ctrl("f"), .ctrl("F"), .ctrlShift("f"), .ctrlShift("F"):
             direction = .right
             drawsArrow = true
-        case .ctrlShiftArrowUp, .ctrlArrowUp, .ctrl("p"), .ctrl("P"):
+        case .ctrlShiftArrowUp, .ctrlArrowUp, .ctrl("p"), .ctrl("P"), .ctrlShift("p"), .ctrlShift("P"):
             direction = .up
             drawsArrow = true
-        case .ctrlShiftArrowDown, .ctrlArrowDown, .ctrl("n"), .ctrl("N"):
+        case .ctrlShiftArrowDown, .ctrlArrowDown, .ctrl("n"), .ctrl("N"), .ctrlShift("n"), .ctrlShift("N"):
             direction = .down
             drawsArrow = true
         default:

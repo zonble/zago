@@ -1770,17 +1770,33 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 @Test func testCanvasModeCtrlArrowDrawsArrowLines() throws {
     let editor = Editor()
     editor.buffer.baseMode = .canvas
-    editor.buffer.lines = ["", "", ""]
+    editor.buffer.lines = ["", "", "", ""]
 
     let controller = CanvasModeController(editor: editor)
 
-    // Ctrl+Right (or Ctrl+F) draws arrow line to the right
+    // Ctrl+Right and Ctrl+Shift+Right draw arrow lines to the right
     #expect(controller.handleKey(.ctrlArrowRight) == true)
     #expect(editor.buffer.lines[0].contains("▶") || editor.buffer.lines[0].contains(">"))
 
-    // Ctrl+Down (or Ctrl+N) draws arrow line downward
+    #expect(controller.handleKey(.ctrlShiftArrowRight) == true)
+    #expect(editor.buffer.lines[0].contains("▶") || editor.buffer.lines[0].contains(">"))
+
+    // Ctrl+Down and Ctrl+Shift+Down draw arrow lines downward
     #expect(controller.handleKey(.ctrlArrowDown) == true)
     #expect(editor.buffer.lines[1].contains("▼") || editor.buffer.lines[1].contains("v"))
+
+    #expect(controller.handleKey(.ctrlShiftArrowDown) == true)
+    #expect(editor.buffer.lines[2].contains("▼") || editor.buffer.lines[2].contains("v"))
+
+    // Ctrl+Left and Ctrl+Shift+Left draw arrow lines to the left
+    #expect(controller.handleKey(.ctrlArrowLeft) == true)
+    #expect(editor.buffer.lines[2].contains("◀") || editor.buffer.lines[2].contains("<"))
+
+    #expect(controller.handleKey(.ctrlShiftArrowLeft) == true)
+
+    // Ctrl+Up and Ctrl+Shift+Up draw arrow lines upward
+    #expect(controller.handleKey(.ctrlArrowUp) == true)
+    #expect(controller.handleKey(.ctrlShiftArrowUp) == true)
 }
 
 @Test func testToggleCommentCommand() throws {
