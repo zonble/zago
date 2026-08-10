@@ -296,6 +296,34 @@ private func makeEditor(
         #expect(cancelCharDelegate.logoEngine(cancelCharEditor.logoEngine, readCharWithPrompt: "?") == nil)
     }
 
+    @Test func testMockAISuggestionCommandAndDebugModeConfig() {
+        let editor = Editor()
+        let cmd = MockAISuggestionCommand()
+
+        #expect(cmd.commandBarAliases.contains("mock-ai"))
+        #expect(cmd.commandBarAliases.contains(":mock-ai"))
+
+        // Execute without arguments
+        cmd.execute(on: editor)
+        #expect(editor.proposalQueue.count == 1)
+        #expect(editor.proposalQueue.currentProposal?.clientName == "Mock-AI")
+        #expect(editor.proposalQueue.currentProposal?.reason == "Mock AI Proposal")
+
+        // Execute with custom arguments
+        editor.promptInputText = "Drafted payment flow"
+        cmd.execute(on: editor)
+        #expect(editor.proposalQueue.count == 2)
+        #expect(editor.proposalQueue.currentProposal?.reason.contains("Drafted payment flow") == true)
+
+        // ConfigLoader debugMode test
+        let configLoader = ConfigLoader(provider: InMemoryConfigFileProvider(homePath: "/home/user", currentPath: "/home/user"))
+        var config = EditorConfig()
+        configLoader.parseConfigContent("set debug true", into: &config)
+        #expect(config.debugMode == true)
+        configLoader.parseConfigContent("set debug_mode false", into: &config)
+        #expect(config.debugMode == false)
+    }
+
     @Test func testLogoDelegateActionsMutateEditorState() {
         let editor = Editor(language: .en)
         let delegate: LogoEngineDelegate = editor

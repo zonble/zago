@@ -1,0 +1,16 @@
+to game
+    make "q" "What's my number?"
+    make "msg" ""
+    make "endgame" false
+    make "a" (random 10)
+    do.while [
+        make "g rw join [:msg  :q  "(" a  ")"] " "
+        make "g trim "g
+        show "g
+        if :g = "" [ show "Cancelled" make "endgama true ]
+        if :g = :a [ show "Bingo"  make "endgama true ]
+        if :g > :a [ make "msg "Too large!" ]
+        if :g < :a [ make "msg "Too small!" ]
+    ][ :endname = false]
+    end
+game

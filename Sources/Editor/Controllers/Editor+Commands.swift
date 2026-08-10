@@ -104,5 +104,6 @@ extension Editor {
         commandRegistry.register(RejectProposalCommand())
         commandRegistry.register(NextProposalCommand())
         commandRegistry.register(PreviousProposalCommand())
+        commandRegistry.register(MockAISuggestionCommand())
     }
 }

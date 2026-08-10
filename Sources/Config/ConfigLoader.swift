@@ -263,6 +263,15 @@ public final class ConfigLoader {
                     case "nogit-diff", "nogit_diff", "nogitdiff":
                         config.showGitDiff = false
 
+                    case "debug", "debugmode", "debug-mode", "debug_mode":
+                        if value == "true" || value == "on" || value == "1" || value.isEmpty {
+                            config.debugMode = true
+                        } else if value == "false" || value == "off" || value == "0" {
+                            config.debugMode = false
+                        } else {
+                            config.syntaxErrorCount += 1
+                        }
+
                     default:
                         config.syntaxErrorCount += 1
                     }
@@ -533,6 +542,8 @@ public final class ConfigLoader {
             config.trimTrailingWhitespaceOnSave = false
         case "git-diff", "git_diff", "gitdiff":
             config.showGitDiff = false
+        case "debug", "debugmode", "debug-mode", "debug_mode":
+            config.debugMode = false
         default:
             config.syntaxErrorCount += 1
         }

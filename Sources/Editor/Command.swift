@@ -125,6 +125,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case proposalReject = "proposal.reject"
     case proposalNext = "proposal.next"
     case proposalPrev = "proposal.prev"
+    case proposalMockAI = "proposal.mockAI"
 }
 
 /// Unified protocol defining an editor command with metadata, keybindings, CommandBar aliases, and execution logic.
