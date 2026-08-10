@@ -297,6 +297,9 @@ public final class Editor: @unchecked Sendable {
             buffer.viewWrapColumn = defaultViewWrapColumn
             buffer.borderStyle = configSource.initial.defaultBorderStyle
             buffer.arrowStyle = configSource.initial.defaultArrowStyle
+            buffer.onLineCountChanged = { [weak self] aboveLine, delta in
+                self?.proposalQueue.adjustLineOffsets(aboveLine: aboveLine, delta: delta)
+            }
             if let dirBuf = buffer as? DirectoryBuffer {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
             }
