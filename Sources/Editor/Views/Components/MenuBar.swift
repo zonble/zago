@@ -121,6 +121,7 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.buffer.next", hotkeyChar: "n", commandId: .bufferNext),
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
                     MenuItem(titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput),
+                    MenuItem(titleKey: "menu.buffer.clear_output", hotkeyChar: "c", commandId: .logoClearOutput),
                 ]),
             MenuCategory(
                 titleKey: "menu.run", hotkeyChar: "r",
@@ -316,6 +317,8 @@ public final class MenuBar {
                             editor.layoutEngine.setWrapColumn(nil)
                             editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
                         }),
+                    MenuItem(
+                        titleKey: "menu.tools.clear_logo_output", hotkeyChar: "c", commandId: .logoClearOutput),
                 ]),
         ]
 

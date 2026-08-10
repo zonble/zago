@@ -509,6 +509,7 @@ public struct TraditionalChineseStrings {
         "menu.buffer.next": "下一份文件\tM+.",
         "menu.buffer.prev": "上一份文件\tM+,",
         "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
+        "menu.buffer.clear_output": "清除 LOGO 輸出內容",
 
         "menu.run.script": "執行腳本\tF5",
         "menu.run.eval": "求值行/選取區\t^Q",
@@ -673,6 +674,7 @@ public struct TraditionalChineseStrings {
         "menu.tools.wrap_60": "換行: 60",
         "menu.tools.wrap_40": "換行: 40",
         "menu.tools.wrap_reset": "換行: 動態",
+        "menu.tools.clear_logo_output": "清除 LOGO 輸出內容",
 
         "menu.diagrams.mermaid_sequence": "Mermaid 時序圖 (Sequence)",
         "menu.diagrams.mermaid_flowchart": "Mermaid 流程圖 (Flowchart)",
