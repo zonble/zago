@@ -394,6 +394,14 @@ extension LogoEngine {
             if index < tokens.count {
                 let procName = tokens[index].uppercased()
                 index += 1
+                if isReservedProcedureName(procName) {
+                    let errorMessage = "[LOGO Error: \(procName) is a reserved word/operator and cannot be redefined]"
+                    reportError(LogoError(code: 1, message: errorMessage), token: procName)
+                    while index < tokens.count && tokens[index].uppercased() != "END" {
+                        index += 1
+                    }
+                    return true
+                }
                 var params: [String] = []
                 while index < tokens.count && tokens[index].hasPrefix(":") {
                     let paramName = String(tokens[index].dropFirst()).lowercased()

@@ -50,6 +50,22 @@ extension LogoEngine {
         return true
     }
 
+    /// Checks whether a name represents a reserved operator, built-in primitive, or syntax keyword that cannot be redefined.
+    internal func isReservedProcedureName(_ name: String) -> Bool {
+        let upper = name.uppercased()
+        if LogoPrimitive.from(upper) != nil {
+            return true
+        }
+        if LogoOperator.from(upper) != nil {
+            return true
+        }
+        let reservedTokens: Set<String> = ["END", "]", "[", "}", "{", "(", ")", ";", "#", "//"]
+        if reservedTokens.contains(upper) {
+            return true
+        }
+        return false
+    }
+
     /// Removes surrounding quotes from string literal tokens if present.
     internal func unquote(_ str: String) -> String {
         var result = str
