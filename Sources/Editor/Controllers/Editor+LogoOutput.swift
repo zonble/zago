@@ -12,7 +12,7 @@ extension Editor {
         if let idx = findLogoOutputBufferIndex() {
             return buffers[idx]
         }
-        let buf = TextBuffer()
+        let buf = LogoOutputBuffer()
         buf.filePath = Self.logoOutputBufferTitle
         buf.baseMode = .text
         buf.viewShowRuler = false

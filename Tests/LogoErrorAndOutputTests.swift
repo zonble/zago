@@ -45,7 +45,9 @@ import Testing
         let idx = editor.findLogoOutputBufferIndex()
         #expect(idx != nil)
         #expect(buf.filePath == "*LOGO Output*")
+        #expect(buf is LogoOutputBuffer)
         #expect(buf.isReadOnly == true)
+        #expect(buf.allowsLogoExecution == false)
         #expect(buf.lines.contains { $0.contains("Line 1 Output") })
 
         editor.toggleLogoOutputBuffer()
@@ -64,6 +66,19 @@ import Testing
 
         editor.clearLogoOutputBuffer()
         #expect(!editor.logoOutputHistory.contains { $0.contains("Line 1 Output") })
+    }
+
+    @Test func testLogoOutputBufferBlocksLogoExecutionLikeDirectoryBuffer() {
+        let editor = Editor(filePath: "document.md")
+        editor.toggleLogoOutputBuffer()
+        #expect(editor.buffer is LogoOutputBuffer)
+
+        let initialLines = editor.buffer.lines
+        let ok = editor.runLogoScript("BOX 4 4")
+
+        #expect(ok == false)
+        #expect(editor.buffer.lines == initialLines)
+        #expect(editor.statusMessage == editor.l10n["status.directory_buffer_readonly"])
     }
 
     @Test func testLogoOutputOnDemandLoggingAndAutoRemoval() {

@@ -401,6 +401,11 @@ extension Editor {
 
     @discardableResult
     public func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
+        guard buffer.allowsLogoExecution else {
+            setStatusMessage(l10n["status.directory_buffer_readonly"])
+            return false
+        }
+
         if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
             setStatusMessage(l10n.disabledInTableMode(blockedToken))
             return false
