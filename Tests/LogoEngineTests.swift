@@ -666,3 +666,28 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     logoEngine.execute("MAKE \"cancel RC")
     #expect(logoEngine.variables["cancel"] == "n")
 }
+
+@Test func testProhibitRedefiningReservedKeywordsAndOperators() throws {
+    let logoEngine = LogoEngine()
+    let editor = Editor()
+    logoEngine.delegate = editor
+
+    // Attempting to define reserved operators like +, -, *, /, = should fail and report error
+    logoEngine.execute("TO + :a :b\nOUTPUT :a + :b\nEND")
+    #expect(logoEngine.customProcedures["+"] == nil)
+    #expect(logoEngine.lastError?.message.contains("reserved") == true)
+
+    // Attempting to define reserved primitives like PRINT, FORWARD, SUM should fail
+    logoEngine.execute("TO PRINT :x\nTYPE :x\nEND")
+    #expect(logoEngine.customProcedures["PRINT"] == nil)
+    #expect(logoEngine.lastError?.message.contains("reserved") == true)
+
+    // Attempting DEFINE on reserved primitive SHOULD fail
+    logoEngine.execute("DEFINE \"SUM [[:a :b] [OUTPUT :a + :b]]")
+    #expect(logoEngine.customProcedures["SUM"] == nil)
+
+    // Non-reserved custom procedure should succeed
+    logoEngine.execute("TO MYADD :a :b\nOUTPUT :a + :b\nEND")
+    #expect(logoEngine.customProcedures["MYADD"] != nil)
+}
+

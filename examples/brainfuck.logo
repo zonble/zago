@@ -3,10 +3,10 @@
 ; ==============================================================================
 ; Usage in zago:
 ;   1. Esc -> type: LOAD "examples/brainfuck.logo
-;   2. Esc -> type: TYPE BF (WORD (REPEATSTR 65 (CHAR 43)) (CHAR 46))
+;   2. Esc -> type: TYPE RUNBF (WORD (REPEATSTR 65 (CHAR 43)) (CHAR 46))
 ; ==============================================================================
 
-TO BF :code
+TO RUNBF :code
   MAKE "tape ARRAY 3000
   MAKE "ptr 1
   MAKE "pc 1
@@ -37,5 +37,5 @@ TYPE "===_Brainfuck_Interpreter_Demo_===
 TYPE CHAR 10
 
 MAKE "bfcode WORD (REPEATSTR 65 (CHAR 43)) (CHAR 46)
-TYPE FORMAT "Code:_%s_Output:_%s (LIST :bfcode (BF :bfcode))
+TYPE FORMAT "Code:_%s_Output:_%s (LIST :bfcode (RUNBF :bfcode))
 TYPE CHAR 10

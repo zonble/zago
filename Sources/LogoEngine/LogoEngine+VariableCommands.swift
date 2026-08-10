@@ -318,6 +318,11 @@ extension LogoEngine {
             index += 1
             let specVal = evaluateExpression(tokens, index: &index)
             let name = unquote(nameVal).uppercased()
+            if isReservedProcedureName(name) {
+                let errorMessage = "[LOGO Error: \(name) is a reserved word/operator and cannot be redefined]"
+                reportError(LogoError(code: 1, message: errorMessage), token: name)
+                return true
+            }
             let parsed = LogoValue.parse(specVal)
             if case .list(let subLists) = parsed, subLists.count >= 2 {
                 var params: [String] = []
