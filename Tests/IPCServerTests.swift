@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Config
 @testable import Drawing
 @testable import Editor
@@ -49,9 +50,12 @@ final class IPCServerTests: XCTestCase {
             clientName: "Architect-Bot",
             reason: "Drafted 3-step flowchart",
             affectedFiles: [
-                AffectedFileProposal(filePath: "ARCHITECTURE.md", chunks: [
-                    ProposalChunk(targetLine: 15, targetCol: 1, lines: ["┌───┐", "│ A │", "└───┘"], insertMode: .d2Overwrite)
-                ])
+                AffectedFileProposal(
+                    filePath: "ARCHITECTURE.md",
+                    chunks: [
+                        ProposalChunk(
+                            targetLine: 15, targetCol: 1, lines: ["┌───┐", "│ A │", "└───┘"], insertMode: .d2Overwrite)
+                    ])
             ]
         )
 
@@ -60,9 +64,11 @@ final class IPCServerTests: XCTestCase {
             clientName: "Table-Bot",
             reason: "Aligned Markdown table",
             affectedFiles: [
-                AffectedFileProposal(filePath: "README.md", chunks: [
-                    ProposalChunk(targetLine: 30, targetCol: 1, lines: ["| ID | Name |"], insertMode: .d1Insert)
-                ])
+                AffectedFileProposal(
+                    filePath: "README.md",
+                    chunks: [
+                        ProposalChunk(targetLine: 30, targetCol: 1, lines: ["| ID | Name |"], insertMode: .d1Insert)
+                    ])
             ]
         )
 
@@ -94,7 +100,7 @@ final class IPCServerTests: XCTestCase {
             params: .object([
                 "auth": .string("wrong-token"),
                 "clientId": .string("bot-1"),
-                "clientName": .string("Bot")
+                "clientName": .string("Bot"),
             ]),
             id: .int(1)
         )
@@ -109,7 +115,7 @@ final class IPCServerTests: XCTestCase {
                 "auth": .string(token),
                 "clientId": .string("bot-1"),
                 "clientName": .string("Architect-Bot"),
-                "color": .string("cyan")
+                "color": .string("cyan"),
             ]),
             id: .int(2)
         )

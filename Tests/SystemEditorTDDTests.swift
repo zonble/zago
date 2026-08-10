@@ -14,7 +14,11 @@ import Testing
         initialLine: 42,
         initialColumn: 10
     )
-    let editor = Editor(options: options, dependencies: deps)
+    let editor = Editor(
+        options: options,
+        dependencies: deps,
+        initialVariables: [:]
+    )
     // Add dummy lines so line 42 can be jumped to
     editor.buffer.lines = Array(repeating: "Line text content", count: 50)
     editor.goToLocation(line: 42, column: 10)
@@ -32,7 +36,7 @@ import Testing
         readOnly: true,
         pipedInput: "Piped Line 1\nPiped Line 2\nPiped Line 3"
     )
-    let editor = Editor(options: options, dependencies: deps)
+    let editor = Editor(options: options, dependencies: deps, initialVariables: [:])
 
     #expect(editor.buffer.isReadOnly == true)
     #expect(editor.buffer.lines.count == 3)
@@ -49,7 +53,7 @@ import Testing
     let options = EditorOptions(
         pipedInput: "Line A\nLine B"
     )
-    let editor = Editor(options: options, dependencies: deps)
+    let editor = Editor(options: options, dependencies: deps, initialVariables: [:])
 
     // Execute LOGO script on the piped input buffer
     editor.runLogoScript("fd 10")
@@ -64,7 +68,7 @@ import Testing
     let options = EditorOptions(
         pipedInput: "First Piped Line\nSecond Piped Line"
     )
-    let editor = Editor(options: options, dependencies: deps)
+    let editor = Editor(options: options, dependencies: deps, initialVariables: [:])
 
     #expect(editor.buffer.filePath == nil)
     #expect(editor.buffer.lines == ["First Piped Line", "Second Piped Line"])

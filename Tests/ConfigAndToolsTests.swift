@@ -491,7 +491,8 @@ struct ConfigAndToolsTests {
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
                 terminal: TestEditorTerminal.shared
-            )
+            ),
+            initialVariables: [:]
         )
         #expect(injectedEditor.displayConfig.showLineNumbers == false)
         #expect(injectedEditor.displayConfig.showSubLineNumbers == true)

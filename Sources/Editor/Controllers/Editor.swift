@@ -79,8 +79,12 @@ public final class Editor: @unchecked Sendable {
     /// Flag indicating whether the editor is running in interactive TUI mode.
     public internal(set) var isInteractiveMode: Bool = false
 
+    private var initialLogoVariable: [String: String]
     // Persistent LOGO Macro Engine
-    public lazy var logoEngine: LogoEngine = LogoEngine(delegate: self)
+    public lazy var logoEngine: LogoEngine = LogoEngine(
+        delegate: self,
+        initialVariables: initialLogoVariable
+    )
 
     // Prompt Controller
     public let promptController = PromptController()
@@ -256,8 +260,10 @@ public final class Editor: @unchecked Sendable {
     public init(
         options: EditorOptions = EditorOptions(),
         configSource: EditorConfigSource = EditorConfigSource(),
-        dependencies: EditorDependencies
+        dependencies: EditorDependencies,
+        initialVariables: [String: String]? = [:],
     ) {
+        self.initialLogoVariable = initialVariables ?? [:]
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
         self.gitService = dependencies.gitService

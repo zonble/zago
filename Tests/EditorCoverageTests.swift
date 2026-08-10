@@ -36,7 +36,8 @@ private func makeEditor(
 ) -> Editor {
     Editor(
         options: EditorOptions(filePaths: filePaths, autoReload: false, language: .en),
-        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: terminal)
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: terminal),
+        initialVariables: [:]
     )
 }
 

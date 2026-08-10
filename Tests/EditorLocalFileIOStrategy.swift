@@ -295,7 +295,8 @@ extension Editor {
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
                 terminal: TestEditorTerminal.shared
-            )
+            ),
+            initialVariables: [:]
         )
     }
 
@@ -323,7 +324,8 @@ extension Editor {
             dependencies: EditorDependencies(
                 fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
                 terminal: TestEditorTerminal.shared
-            )
+            ),
+            initialVariables: [:]
         )
     }
 }
