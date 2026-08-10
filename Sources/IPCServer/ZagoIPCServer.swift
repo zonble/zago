@@ -64,6 +64,10 @@ public final class ZagoIPCServer: @unchecked Sendable {
         // 2. Create UNIX Domain Socket
         #if canImport(Glibc)
         let sockType = Int32(SOCK_STREAM.rawValue)
+        #elseif canImport(Musl)
+        let sockType = Int32(SOCK_STREAM.rawValue)
+        #elseif os(Linux) || os(Android)
+        let sockType = Int32(SOCK_STREAM.rawValue)
         #else
         let sockType = Int32(SOCK_STREAM)
         #endif
