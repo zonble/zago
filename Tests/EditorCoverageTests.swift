@@ -141,6 +141,44 @@ private func makeEditor(
         #expect(unsavedEditor.statusMessage == unsavedEditor.l10n["status.cancelled"])
     }
 
+    @Test func testCtrlXExitKeybindings() {
+        let fileIO = MemoryEditorFileIOStrategy(files: ["/doc1.txt": "content1", "/doc2.txt": "content2"])
+
+        // 1. Process .ctrl("X") on unmodified single buffer -> exits editor
+        let editor1 = makeEditor(fileIO: fileIO, filePaths: ["/doc1.txt"])
+        #expect(editor1.isRunning == true)
+        editor1.processKey(.ctrl("X"))
+        #expect(editor1.isRunning == false)
+
+        // 2. Process .ctrl("x") on unmodified single buffer -> exits editor
+        let editor2 = makeEditor(fileIO: fileIO, filePaths: ["/doc1.txt"])
+        #expect(editor2.isRunning == true)
+        editor2.processKey(.ctrl("x"))
+        #expect(editor2.isRunning == false)
+
+        // 3. Process .ctrl("x") on modified single buffer -> prompts confirmation, 'n' exits editor
+        let editor3 = makeEditor(fileIO: fileIO, filePaths: ["/doc1.txt"])
+        editor3.buffer.lines = ["modified"]
+        editor3.buffer.isModified = true
+        editor3.processKey(.ctrl("x"))
+        if case .confirmExitSave = editor3.currentPromptMode {
+            #expect(Bool(true))
+        } else {
+            #expect(Bool(false), "ctrl-x on modified buffer should trigger confirmExitSave prompt")
+        }
+        editor3.processKey(.char("n"))
+        #expect(editor3.isRunning == false)
+
+        // 4. Multi-buffer scenario: .ctrl("X") closes first buffer, second .ctrl("X") exits editor
+        let multiEditor = makeEditor(fileIO: fileIO, filePaths: ["/doc1.txt", "/doc2.txt"])
+        #expect(multiEditor.buffers.count == 2)
+        multiEditor.processKey(.ctrl("X"))
+        #expect(multiEditor.buffers.count == 1)
+        #expect(multiEditor.isRunning == true)
+        multiEditor.processKey(.ctrl("X"))
+        #expect(multiEditor.isRunning == false)
+    }
+
     @Test func testInsertFilePromptSuccessErrorAndCancellation() {
         let fileIO = MemoryEditorFileIOStrategy(files: ["/snippet.txt": "AA\nBB"])
         let editor = makeEditor(fileIO: fileIO)
