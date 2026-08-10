@@ -519,6 +519,7 @@ public struct EnglishStrings {
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",
         "menu.buffer.output": "LOGO Output\tM+L",
+        "menu.buffer.clear_output": "Clear LOGO Output",
 
         "menu.run.script": "Run Script\tF5",
         "menu.run.eval": "Evaluate Line/Selection\t^Q",
@@ -683,6 +684,7 @@ public struct EnglishStrings {
         "menu.tools.wrap_60": "Wrap Column: 60",
         "menu.tools.wrap_40": "Wrap Column: 40",
         "menu.tools.wrap_reset": "Wrap Column: Dynamic",
+        "menu.tools.clear_logo_output": "Clear LOGO Output",
 
         "menu.diagrams.mermaid_sequence": "Mermaid Sequence Diagram",
         "menu.diagrams.mermaid_flowchart": "Mermaid Flowchart",

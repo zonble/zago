@@ -80,6 +80,20 @@ struct ConfigAndToolsTests {
         #expect(HelpContent.lines(language: .zh_TW).contains("    ^⇧+方向鍵/^+方向鍵  畫出框線並在終點放置箭頭"))
     }
 
+    @Test func testClearLogoOutputMenuItemInMenuBar() throws {
+        let editor = Editor()
+        let menuBar = MenuBar()
+        menuBar.updateCategories(for: editor)
+
+        let bufferCategory = menuBar.categories.first(where: { $0.titleKey == "menu.buffer" })
+        #expect(bufferCategory != nil)
+        #expect(bufferCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+
+        let toolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+        #expect(toolsCategory != nil)
+        #expect(toolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+    }
+
     @Test func testWrapColumnMenuActions() throws {
         let editor = Editor()
         #expect(editor.layoutEngine.wrapColumn == nil)
