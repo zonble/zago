@@ -192,9 +192,9 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
-    public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String {
+    public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String? {
         guard isInteractiveMode else {
-            return terminal.readNonInteractiveLine(prompt: prompt) ?? ""
+            return terminal.readNonInteractiveLine(prompt: prompt)
         }
 
         promptInputText = ""
@@ -215,7 +215,7 @@ extension Editor: LogoEngineDelegate {
             case .enter:
                 return promptInputText
             case .esc, .ctrl("c"):
-                return ""
+                return nil
             case .backspace:
                 if promptCursorIndex > 0 {
                     let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex - 1)
@@ -260,9 +260,9 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
-    public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String {
+    public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String? {
         guard isInteractiveMode else {
-            return terminal.readNonInteractiveChar(prompt: prompt) ?? ""
+            return terminal.readNonInteractiveChar(prompt: prompt)
         }
 
         promptInputText = ""
@@ -285,7 +285,7 @@ extension Editor: LogoEngineDelegate {
             case .enter:
                 return "\n"
             case .esc, .ctrl("c"):
-                return ""
+                return nil
             case .resize, .unknown:
                 continue
             default:

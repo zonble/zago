@@ -281,6 +281,19 @@ private func makeEditor(
         charEditor.isInteractiveMode = true
         let charDelegate: LogoEngineDelegate = charEditor
         #expect(charDelegate.logoEngine(charEditor.logoEngine, readCharWithPrompt: "?") == "Z")
+
+        // Test Esc cancellation returns nil
+        let cancelTerminal = QueuedEditorTerminal(keys: [.esc])
+        let cancelEditor = makeEditor(terminal: cancelTerminal)
+        cancelEditor.isInteractiveMode = true
+        let cancelDelegate: LogoEngineDelegate = cancelEditor
+        #expect(cancelDelegate.logoEngine(cancelEditor.logoEngine, readWordWithPrompt: "? ") == nil)
+
+        let cancelCharTerminal = QueuedEditorTerminal(keys: [.ctrl("c")])
+        let cancelCharEditor = makeEditor(terminal: cancelCharTerminal)
+        cancelCharEditor.isInteractiveMode = true
+        let cancelCharDelegate: LogoEngineDelegate = cancelCharEditor
+        #expect(cancelCharDelegate.logoEngine(cancelCharEditor.logoEngine, readCharWithPrompt: "?") == nil)
     }
 
     @Test func testLogoDelegateActionsMutateEditorState() {

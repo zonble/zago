@@ -89,13 +89,13 @@ public protocol LogoEngineDelegate: AnyObject {
     func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any?
 
     /// Read a line of text input with prompt message.
-    func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String
+    func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String?
 
     /// Read a single keypress input with prompt message.
-    func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String
+    func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String?
 }
 
 extension LogoEngineDelegate {
-    public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String { "" }
-    public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String { "" }
+    public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String? { "" }
+    public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String? { "" }
 }
