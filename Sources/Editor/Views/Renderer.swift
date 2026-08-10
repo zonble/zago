@@ -623,7 +623,7 @@ public final class Renderer {
         guard !matchingChunks.isEmpty else { return virtualLines }
 
         let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
-        let actionHint = "[M+A Accept | M+R Reject]"
+        let actionHint = editor.l10n["ai.proposal.action_hint"]
 
         let maxBoxWidth = max(36, min(textWidth - 4, 76))
         let innerWidth = max(10, maxBoxWidth - 6)
@@ -684,7 +684,7 @@ public final class Renderer {
                     boxSubLineIdx += 1
                 }
 
-                // Bottom border: └─ [Alt+a Accept | Alt+r Reject] ─────┘
+                // Bottom border: └─ [M+A Accept | M+R Reject] ─────┘
                 let hintText = "─ " + actionHint + " "
                 let bottomDashCount = max(0, boxWidth - 2 - hintText.displayWidth)
                 let bottomBorderStr = "└" + hintText + String(repeating: "─", count: bottomDashCount) + "┘"
@@ -740,7 +740,7 @@ public final class Renderer {
             if matches {
                 for chunk in file.chunks {
                     let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
-                    let actionHint = "[Alt+a Accept | Alt+r Reject]"
+                    let actionHint = L10n.string("ai.proposal.action_hint")
 
                     let maxBoxWidth = max(36, min(cols - 8, 76))
                     let innerWidth = max(10, maxBoxWidth - 6)
@@ -771,7 +771,7 @@ public final class Renderer {
                             let line = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
                             return (startCol: max(0, chunk.targetCol - 1), line: line)
                         } else if lineOffset == boxLinesCount - 1 {
-                            // Bottom border: └─ [Alt+a Accept | Alt+r Reject] ─────┘
+                            // Bottom border: └─ [M+A Accept | M+R Reject] ─────┘
                             let hintText = "─ " + actionHint + " "
                             let remDashCount = max(0, boxWidth - 2 - hintText.displayWidth)
                             let line = "└" + hintText + String(repeating: "─", count: remDashCount) + "┘"
