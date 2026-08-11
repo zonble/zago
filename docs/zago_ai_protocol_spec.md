@@ -30,14 +30,13 @@ An AI agent (e.g. a Cross-Doc Refactoring Agent or Workspace Formatter) can push
 
 ## 2. Multi-File Protocol Payload Example (`zago.overlay.showPreview`)
 
-Clients pass `reason` (String), `insertMode` enum, and `affectedFiles` in the JSON-RPC `showPreview` payload:
+Clients must register on the same connection before calling this method. zago takes the identity from that registered connection; the payload `clientId` must match it. Clients pass `reason` (String), `insertMode` enum, and `affectedFiles` in the JSON-RPC `showPreview` payload:
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "zago.overlay.showPreview",
   "params": {
-    "auth": "256-bit-session-token",
     "clientId": "Refactoring-Bot",
     "reason": "Synchronized component names across architecture diagram, README quickstart, and project config schema.",
     "affectedFiles": [
@@ -148,7 +147,7 @@ Registers client identity and returns allocated `connectionId`.
 
 #### 2.1 `zago.overlay.showPreview` (Pushes Proposal with Rationale)
 Pushes a multi-file or single-file proposal into the workspace proposal queue.
-- **Parameters**: `clientId`, `reason` *(Required String)*, `affectedFiles` (Array of `{ filePath, chunks: [{ targetLine, targetCol, lines, insertMode }] }`).
+- **Parameters**: `clientId` (must match the registered connection), `reason` *(Required String)*, `affectedFiles` (Array of `{ filePath, chunks: [{ targetLine, targetCol, lines, insertMode }] }`).
 
 #### 2.2 `zago.queue.getPending`
 Returns list of pending queued proposals, including `reason` fields and `insertMode` settings.

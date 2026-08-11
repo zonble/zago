@@ -1,173 +1,124 @@
 import Foundation
 
-// MARK: - JSON-RPC 2.0 Core DTOs
+// MARK: - JSON-RPC envelopes
 
-public struct JSONRPCRequest: Codable {
-    public let jsonrpc: String?
-    public let method: String
-    public let params: JSONValue?
-    public let id: JSONRPCId?
-
-    public init(method: String, params: JSONValue? = nil, id: JSONRPCId? = nil) {
-        self.jsonrpc = "2.0"
-        self.method = method
-        self.params = params
-        self.id = id
-    }
+struct JSONRPCEnvelope: Decodable {
+    let jsonrpc: String?
+    let method: String
+    let id: JSONRPCId?
 }
 
-public struct JSONRPCResponse: Codable {
-    public let jsonrpc: String
-    public let result: JSONValue?
-    public let error: JSONRPCError?
-    public let id: JSONRPCId?
-
-    public init(result: JSONValue? = nil, error: JSONRPCError? = nil, id: JSONRPCId? = nil) {
-        self.jsonrpc = "2.0"
-        self.result = result
-        self.error = error
-        self.id = id
-    }
-
-    public static func success(result: JSONValue, id: JSONRPCId?) -> JSONRPCResponse {
-        JSONRPCResponse(result: result, error: nil, id: id)
-    }
-
-    public static func failure(code: Int, message: String, data: JSONValue? = nil, id: JSONRPCId?) -> JSONRPCResponse {
-        JSONRPCResponse(result: nil, error: JSONRPCError(code: code, message: message, data: data), id: id)
-    }
+struct JSONRPCRequest<Params: Decodable>: Decodable {
+    let jsonrpc: String?
+    let method: String
+    let params: Params?
+    let id: JSONRPCId?
 }
 
-public struct JSONRPCError: Codable, Error {
-    public let code: Int
-    public let message: String
-    public let data: JSONValue?
-
-    public init(code: Int, message: String, data: JSONValue? = nil) {
-        self.code = code
-        self.message = message
-        self.data = data
-    }
+struct JSONRPCSuccessEnvelope<Result: Encodable>: Encodable {
+    let jsonrpc = "2.0"
+    let result: Result
+    let id: JSONRPCId?
 }
 
-public enum JSONRPCId: Codable, Equatable, Hashable {
+struct JSONRPCFailureEnvelope: Encodable {
+    let jsonrpc = "2.0"
+    let error: JSONRPCError
+    let id: JSONRPCId?
+}
+
+struct JSONRPCError: Codable, Error {
+    let code: Int
+    let message: String
+}
+
+enum JSONRPCId: Codable, Equatable, Hashable {
     case string(String)
     case int(Int)
 
-    public init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let val = try? container.decode(Int.self) {
-            self = .int(val)
-        } else if let val = try? container.decode(String.self) {
-            self = .string(val)
+        if let value = try? container.decode(Int.self) {
+            self = .int(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
         } else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid JSONRPCId")
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid JSON-RPC id")
         }
     }
 
-    public func encode(to encoder: Encoder) throws {
+    func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .string(let val): try container.encode(val)
-        case .int(let val): try container.encode(val)
+        case .string(let value): try container.encode(value)
+        case .int(let value): try container.encode(value)
         }
     }
 }
 
-// MARK: - Dynamic JSON Value
+// MARK: - Method payloads
 
-public indirect enum JSONValue: Codable, Equatable, Sendable {
-    case null
-    case bool(Bool)
-    case number(Double)
-    case string(String)
-    case array([JSONValue])
-    case object([String: JSONValue])
+struct EmptyParams: Decodable {}
 
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if container.decodeNil() {
-            self = .null
-        } else if let val = try? container.decode(Bool.self) {
-            self = .bool(val)
-        } else if let val = try? container.decode(Double.self) {
-            self = .number(val)
-        } else if let val = try? container.decode(String.self) {
-            self = .string(val)
-        } else if let val = try? container.decode([JSONValue].self) {
-            self = .array(val)
-        } else if let val = try? container.decode([String: JSONValue].self) {
-            self = .object(val)
-        } else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid JSONValue")
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .null: try container.encodeNil()
-        case .bool(let val): try container.encode(val)
-        case .number(let val): try container.encode(val)
-        case .string(let val): try container.encode(val)
-        case .array(let val): try container.encode(val)
-        case .object(let val): try container.encode(val)
-        }
-    }
-
-    public var stringValue: String? {
-        if case .string(let str) = self { return str }
-        return nil
-    }
-
-    public var intValue: Int? {
-        if case .number(let num) = self { return Int(num) }
-        return nil
-    }
-
-    public var boolValue: Bool? {
-        if case .bool(let b) = self { return b }
-        return nil
-    }
-
-    public var objectValue: [String: JSONValue]? {
-        if case .object(let dict) = self { return dict }
-        return nil
-    }
-
-    public var arrayValue: [JSONValue]? {
-        if case .array(let arr) = self { return arr }
-        return nil
-    }
+struct ClientRegistrationParams: Decodable {
+    let auth: String
+    let clientId: String
+    let clientName: String
+    let agentType: String?
+    let color: String?
 }
 
-// MARK: - Method Payload DTOs
-
-public struct ClientRegistrationParams: Codable {
-    public let auth: String?
-    public let clientId: String
-    public let clientName: String
-    public let agentType: String?
-    public let color: String?
+struct GetTextParams: Decodable {
+    let bufferTarget: String?
+    let bufferId: String?
+    let startLine: Int?
+    let endLine: Int?
 }
 
-public struct ProposalChunkPayload: Codable {
+struct GetCursorParams: Decodable {
+    let bufferTarget: String?
+    let bufferId: String?
+}
+
+public struct ProposalChunkPayload: Codable, Sendable {
     public let targetLine: Int
     public let targetCol: Int
     public let lines: [String]
-    public let insertMode: String? // "1d_insert", "1d_overwrite", "2d_insert", "2d_overwrite", "2d_transparent", "2d_fuse_corners"
-    public let type: String? // "text" (default) or "diagram"
+    public let insertMode: String?
+    public let type: String?
+
+    public init(targetLine: Int, targetCol: Int, lines: [String], insertMode: String? = nil, type: String? = nil) {
+        self.targetLine = targetLine
+        self.targetCol = targetCol
+        self.lines = lines
+        self.insertMode = insertMode
+        self.type = type
+    }
 }
 
-public struct AffectedFilePayload: Codable {
+public struct AffectedFilePayload: Codable, Sendable {
     public let filePath: String?
     public let bufferId: String?
     public let chunks: [ProposalChunkPayload]
+
+    public init(filePath: String? = nil, bufferId: String? = nil, chunks: [ProposalChunkPayload]) {
+        self.filePath = filePath
+        self.bufferId = bufferId
+        self.chunks = chunks
+    }
 }
 
-public struct OverlayPreviewParams: Codable {
-    public let auth: String?
-    public let clientId: String
-    public let reason: String
-    public let affectedFiles: [AffectedFilePayload]
+struct OverlayPreviewParams: Decodable {
+    let clientId: String
+    let reason: String
+    let affectedFiles: [AffectedFilePayload]
+}
+
+struct ExecuteLogoParams: Decodable {
+    let script: String
+    let mode: String?
+}
+
+struct HistoryParams: Decodable {
+    let limit: Int?
 }
