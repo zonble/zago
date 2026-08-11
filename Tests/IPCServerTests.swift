@@ -420,7 +420,7 @@ final class IPCServerTests: XCTestCase {
 
         #if !os(Windows)
             let socketPath = FileManager.default.temporaryDirectory
-                .appendingPathComponent("zago-mcp-test-\(UUID().uuidString).sock").path
+                .appendingPathComponent("zmcp-\(UUID().uuidString.prefix(8)).sock").path
             let editor = Editor()
             let ipcDelegate = TestIPCDelegate(editor: editor)
             let ipcServer = makeTestServer(
