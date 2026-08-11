@@ -16,6 +16,18 @@ public struct LogoProcedure: Sendable {
     }
 }
 
+public struct LogoExecutionFrame: Equatable, Sendable {
+    public let procedureName: String?
+    public let token: LogoToken?
+    public let scopeDepth: Int
+
+    public init(procedureName: String?, token: LogoToken?, scopeDepth: Int) {
+        self.procedureName = procedureName
+        self.token = token
+        self.scopeDepth = scopeDepth
+    }
+}
+
 /// LOGO-style Macro Language Engine for text editors.
 ///
 /// ### Core Concepts & Execution Architecture:
@@ -52,7 +64,8 @@ public final class LogoEngine {
     public internal(set) var customProcedures: [String: LogoProcedure] = [:]
     public internal(set) var variables: LogoEnvironment
     public internal(set) var propertyLists: [String: [String: LogoValue]] = [:]
-    internal var callStack: [String] = []
+    public internal(set) var executionFrames: [LogoExecutionFrame] = []
+    private var rootSourceTokens: [LogoToken] = []
     internal var lastExpressionValue: LogoValue? = nil
     public var hasSetStatusMessage: Bool = false
     internal var gensymCounter: Int = 0
@@ -123,12 +136,19 @@ public final class LogoEngine {
         hasUncaughtError = false
         hasSetStatusMessage = false
 
-        let tokens = LogoTokenizer.tokenize(script)
+        let sourceTokens = LogoTokenizer.tokenizeTokens(script)
+        let tokens = sourceTokens.map(\.text)
         guard !tokens.isEmpty else { return }
 
         // Save a single atomic Undo snapshot for the entire macro execution
         delegate.logoEngine(self, performAction: .saveUndoSnapshot)
 
+        rootSourceTokens = sourceTokens
+        executionFrames = [LogoExecutionFrame(procedureName: nil, token: nil, scopeDepth: variables.scopeDepth)]
+        defer {
+            rootSourceTokens = []
+            executionFrames = []
+        }
         var index = 0
         var frameReturn: String? = nil
         executeTokens(tokens, index: &index, frameReturn: &frameReturn)
@@ -142,6 +162,13 @@ public final class LogoEngine {
     internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
         guard self.delegate != nil else { return }
         while index < tokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
+            if tokens.count == rootSourceTokens.count, index < rootSourceTokens.count {
+                executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
+                    procedureName: executionFrames.last?.procedureName,
+                    token: rootSourceTokens[index],
+                    scopeDepth: variables.scopeDepth
+                )
+            }
             let token = tokens[index]
 
             if token == "]" {

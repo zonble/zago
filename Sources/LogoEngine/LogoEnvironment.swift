@@ -29,6 +29,7 @@ public struct LogoEnvironment: Sequence {
 
     public var keys: [String] { Array(frames.reduce(into: Set<String>()) { $0.formUnion($1.keys) }) }
     public var isEmpty: Bool { frames.allSatisfy(\.isEmpty) }
+    public var scopeDepth: Int { frames.count }
 
     public mutating func pushScope(initialValues: [String: String] = [:]) {
         frames.append(Dictionary(uniqueKeysWithValues: initialValues.map { ($0.key, LogoValue.parse($0.value)) }))
