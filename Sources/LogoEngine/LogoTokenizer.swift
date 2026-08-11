@@ -2,6 +2,38 @@ import Foundation
 
 /// Shared tokenization rules for LOGO scripts and LOGO value literals.
 public enum LogoTokenizer {
+    static func tokenizeValueList(_ source: String) -> [String] {
+        var tokens: [String] = []
+        var current = ""
+        var depth = 0
+        var inQuotedString = false
+        var inVerticalBarString = false
+        var escaped = false
+        var index = source.startIndex
+        func flush() {
+            let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { tokens.append(trimmed) }
+            current = ""
+        }
+        while index < source.endIndex {
+            let character = source[index]
+            if escaped { current.append(character); escaped = false
+            } else if character == "\\" { current.append(character); escaped = true
+            } else if character == "|" && !inQuotedString { inVerticalBarString.toggle(); current.append(character)
+            } else if character == "\"" && !inVerticalBarString {
+                if !inQuotedString && hasMatchingMultiWordClosingQuote(in: source, startingAt: index) { inQuotedString = true }
+                else if inQuotedString { inQuotedString = false }
+                current.append(character)
+            } else if (character == "[" || character == "{") && !inQuotedString && !inVerticalBarString { depth += 1; current.append(character)
+            } else if (character == "]" || character == "}") && !inQuotedString && !inVerticalBarString && depth > 0 { depth -= 1; current.append(character)
+            } else if character.isWhitespace && depth == 0 && !inQuotedString && !inVerticalBarString { flush()
+            } else { current.append(character) }
+            index = source.index(after: index)
+        }
+        flush()
+        return tokens
+    }
+
     public static func tokenize(_ script: String) -> [String] {
         var tokens: [String] = []
         var current = ""
