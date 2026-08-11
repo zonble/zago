@@ -25,6 +25,8 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
         LogoOperator(rawValue: token)
     }
 
+    public static let tokens = Set(allCases.map(\.rawValue))
+
     /// Whether this operator is an arithmetic operator (+, -, *, /, %, ^).
     public var isArithmetic: Bool {
         switch self {
@@ -44,4 +46,6 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
             return false
         }
     }
+
+    public var isSingleCharacter: Bool { rawValue.count == 1 }
 }

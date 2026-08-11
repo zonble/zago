@@ -5,7 +5,8 @@ public enum LogoTokenizer {
     public static func tokenize(_ script: String) -> [String] {
         var tokens: [String] = []
         var current = ""
-        let delimiters: Set<Character> = ["[", "]", "{", "}", "(", ")", "+", "-", "*", "/", "%", "^"]
+        let operatorDelimiters = Set(LogoOperator.allCases.filter(\.isArithmetic).compactMap { $0.rawValue.first })
+        let delimiters = Set<Character>(["[", "]", "{", "}", "(", ")"]).union(operatorDelimiters)
         var index = script.startIndex
         func flush() { if !current.isEmpty { tokens.append(current); current = "" } }
         while index < script.endIndex {
@@ -46,12 +47,14 @@ public enum LogoTokenizer {
             var index = token.startIndex
             while index < token.endIndex {
                 let remaining = token[index...]
-                if ["==", "!=", "<=", ">="].contains(where: { remaining.hasPrefix($0) }) {
+                if let token = LogoOperator.allCases
+                    .filter(\.isComparison)
+                    .map(\.rawValue)
+                    .sorted(by: { $0.count > $1.count })
+                    .first(where: { remaining.hasPrefix($0) })
+                {
                     if !current.isEmpty { parts.append(current); current = "" }
-                    let op = String(remaining.prefix(2)); parts.append(op); index = token.index(index, offsetBy: 2)
-                } else if "=<>".contains(token[index]) {
-                    if !current.isEmpty { parts.append(current); current = "" }
-                    parts.append(String(token[index])); index = token.index(after: index)
+                    parts.append(token); index = token.index(index, offsetBy: token.count)
                 } else { current.append(token[index]); index = token.index(after: index) }
             }
             if !current.isEmpty { parts.append(current) }
