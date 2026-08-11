@@ -5,37 +5,64 @@ import Foundation
 /// Values are stored as `LogoValue`, while the string subscript preserves the
 /// established source-facing API used by the editor workspace and scripts.
 public struct LogoEnvironment: Sequence {
-    private var storage: [String: LogoValue]
+    private var frames: [[String: LogoValue]]
 
     public init(initialValues: [String: String] = [:]) {
-        self.storage = Dictionary(uniqueKeysWithValues: initialValues.map { key, value in
+        self.frames = [Dictionary(uniqueKeysWithValues: initialValues.map { key, value in
             (key, LogoValue.parse(value))
-        })
+        })]
     }
 
     public subscript(name: String) -> String? {
-        get { storage[name]?.description }
+        get { value(for: name)?.description }
         set {
-            storage[name] = newValue.map(LogoValue.parse)
+            setValue(newValue.map(LogoValue.parse), for: name)
         }
     }
 
     public func value(for name: String) -> LogoValue? {
-        storage[name]
+        for frame in frames.reversed() {
+            if let value = frame[name] { return value }
+        }
+        return nil
     }
 
-    public var keys: [String] { Array(storage.keys) }
-    public var isEmpty: Bool { storage.isEmpty }
+    public var keys: [String] { Array(frames.reduce(into: Set<String>()) { $0.formUnion($1.keys) }) }
+    public var isEmpty: Bool { frames.allSatisfy(\.isEmpty) }
+
+    public mutating func pushScope(initialValues: [String: String] = [:]) {
+        frames.append(Dictionary(uniqueKeysWithValues: initialValues.map { ($0.key, LogoValue.parse($0.value)) }))
+    }
+
+    public mutating func popScope() {
+        guard frames.count > 1 else { return }
+        frames.removeLast()
+    }
+
+    public mutating func declareLocal(_ name: String, initialValue: String = "") {
+        frames[frames.count - 1][name] = LogoValue.parse(initialValue)
+    }
 
     public mutating func removeValue(forKey key: String) {
-        storage.removeValue(forKey: key)
+        for index in frames.indices.reversed() where frames[index][key] != nil {
+            frames[index].removeValue(forKey: key)
+            return
+        }
     }
 
     public mutating func removeAll() {
-        storage.removeAll()
+        frames = [[:]]
     }
 
     public func makeIterator() -> Dictionary<String, String>.Iterator {
-        Dictionary(uniqueKeysWithValues: storage.map { key, value in (key, value.description) }).makeIterator()
+        Dictionary(uniqueKeysWithValues: keys.compactMap { key in value(for: key).map { (key, $0.description) } }).makeIterator()
+    }
+
+    private mutating func setValue(_ value: LogoValue?, for name: String) {
+        for index in frames.indices.reversed() where frames[index][name] != nil {
+            frames[index][name] = value
+            return
+        }
+        frames[frames.count - 1][name] = value
     }
 }
