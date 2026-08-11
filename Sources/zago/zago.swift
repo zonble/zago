@@ -348,6 +348,26 @@ struct Zago: ParsableCommand {
             dependencies: dependencies,
             initialVariables: initialVariables
         )
+        var ipcSession: ZagoEditorIPCSession?
+        editor.ipcLifecycleHandler = { [weak editor] enabled in
+            guard let editor else { return }
+            if enabled {
+                guard ipcSession == nil else { return }
+                let session = ZagoEditorIPCSession(editor: editor, terminal: terminal)
+                do {
+                    try session.start()
+                    ipcSession = session
+                    editor.setStatusMessage("[IPC] Socket: \(session.socketPath) | Token: \(session.sessionToken)")
+                } catch {
+                    editor.setStatusMessage("[IPC Error] \(error.localizedDescription)")
+                }
+            } else {
+                guard let session = ipcSession else { return }
+                session.stop()
+                ipcSession = nil
+                editor.setStatusMessage("[IPC Disabled]")
+            }
+        }
         editor.run()
     }
 

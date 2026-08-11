@@ -71,7 +71,7 @@ let package = Package(
         .target(
             name: "Editor",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "IPCServer", "LogoEngine", "SpellChecker", "Syntax",
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax",
                 "TextEncoding", "TextMetrics", "TextTransform",
             ]
         ),
