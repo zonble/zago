@@ -7,6 +7,14 @@ import Testing
 
 @Suite(.serialized)
 struct ConfigAndToolsTests {
+    final class EffectRecorder: EditorEffectDelegate {
+        var effects: [EditorEffect] = []
+
+        func editor(_ editor: Editor, didEmit effect: EditorEffect) {
+            effects.append(effect)
+        }
+    }
+
     struct TestLocalConfigFileProvider: ConfigFileProvider {
         init() {}
         func homeDirectoryPath() -> String { FileManager.default.homeDirectoryForCurrentUser.path }
@@ -199,7 +207,7 @@ struct ConfigAndToolsTests {
         editor.layoutEngine.setWrapColumn(4)
         #expect(editor.layoutEngine.wrapColumn == 10)
 
-        editor.applyEditorSetting(setting: "wrap", arg: "4")
+        editor.apply(.wrap(column: 4))
         #expect(editor.layoutEngine.wrapColumn == 10)
     }
 
@@ -428,11 +436,11 @@ struct ConfigAndToolsTests {
         editor.switchToBuffer(zeroBasedIndex: 0)
         #expect(editor.baseMode == .text)
 
-        editor.applyEditorSetting(setting: "canvas-mode", arg: "on")
+        editor.apply(.canvasMode(true))
         #expect(editor.buffers[0].baseMode == .canvas)
         #expect(editor.buffers[1].baseMode == .canvas)
 
-        editor.applyEditorSetting(setting: "canvas-mode", arg: "off")
+        editor.apply(.canvasMode(false))
         #expect(editor.buffers[0].baseMode == .text)
         #expect(editor.buffers[1].baseMode == .canvas)
 
@@ -678,34 +686,49 @@ struct ConfigAndToolsTests {
         #expect(config.syntaxErrorCount == 1)
     }
 
-    @Test func testSubLineNumberSettingCommandSuggestionsAndAliases() throws {
+    @Test func testSettingCommandSuggestionsUseCanonicalNames() throws {
         #expect(SettingCommand.settingNames.contains("sublinenumbers"))
-        #expect(SettingCommand.valueSuggestions(for: "subline-numbers") == ["on", "off"])
+        #expect(SettingCommand.valueSuggestions(for: "sublinenumbers") == ["on", "off"])
         #expect(SettingCommand.settingNames.contains("canvas-mode"))
-        #expect(SettingCommand.valueSuggestions(for: "canvas_mode") == ["on", "off"])
+        #expect(SettingCommand.valueSuggestions(for: "canvas-mode") == ["on", "off"])
         #expect(SettingCommand.settingNames.contains("trim-trailing-whitespace"))
-        #expect(SettingCommand.valueSuggestions(for: "trimTrailingWhitespace") == ["on", "off"])
+        #expect(SettingCommand.valueSuggestions(for: "trim-trailing-whitespace") == ["on", "off"])
+        #expect(EditorSettingParser.parse(setting: "sublines", value: "on") == nil)
 
         let editor = Editor()
         #expect(editor.displayConfig.showSubLineNumbers == false)
 
-        editor.applyEditorSetting(setting: "sublines", arg: "on")
+        editor.apply(.subLineNumbers(true))
         #expect(editor.displayConfig.showSubLineNumbers == true)
 
-        editor.applyEditorSetting(setting: "subline_numbers", arg: "off")
+        editor.apply(.subLineNumbers(false))
         #expect(editor.displayConfig.showSubLineNumbers == false)
 
-        editor.applyEditorSetting(setting: "canvas-mode", arg: "on")
+        editor.apply(.canvasMode(true))
         #expect(editor.isCanvasModeActive == true)
 
-        editor.applyEditorSetting(setting: "canvasmode", arg: "off")
+        editor.apply(.canvasMode(false))
         #expect(editor.isCanvasModeActive == false)
 
-        editor.applyEditorSetting(setting: "trim-trailing-whitespace", arg: "on")
+        editor.apply(.trimTrailingWhitespace(true))
         #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == true)
 
-        editor.applyEditorSetting(setting: "trim_trailing_spaces", arg: "off")
+        editor.apply(.trimTrailingWhitespace(false))
         #expect(editor.displayConfig.trimTrailingWhitespaceOnSave == false)
+    }
+
+    @Test func testIPCSettingEmitsTypedEffect() throws {
+        let editor = Editor()
+        let recorder = EffectRecorder()
+        editor.effectDelegate = recorder
+
+        editor.apply(.ipc(true))
+        #expect(editor.displayConfig.ipcEnabled == true)
+        #expect(recorder.effects == [.ipcEnabled(true)])
+
+        editor.apply(.ipc(false))
+        #expect(editor.displayConfig.ipcEnabled == false)
+        #expect(recorder.effects == [.ipcEnabled(true), .ipcEnabled(false)])
     }
 
     @Test func testWrapColumnMinimumIsTen() throws {
@@ -982,7 +1005,7 @@ struct ConfigAndToolsTests {
         #expect(config.defaultBorderStyle == .round)
 
         let editor = Editor()
-        editor.applyEditorSetting(setting: "border", arg: "double")
+        editor.apply(.border(.double, rawValue: "double"))
         #expect(editor.defaultBorderStyle == .double)
     }
 

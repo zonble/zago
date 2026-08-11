@@ -21,45 +21,19 @@ public struct SettingCommand: Command {
             return .handled
         }
 
-        let rawArg = parts.count > 1 ? parts[1].lowercased() : ""
-        let arg = first == "unset" ? "off" : rawArg
-        editor.applyEditorSetting(setting: setting.lowercased(), arg: arg)
+        let rawValue = parts.count > 1 ? parts[1] : ""
+        let value = first == "unset" ? "off" : rawValue
+        guard let editorSetting = EditorSettingParser.parse(setting: setting, value: value) else {
+            editor.setStatusMessage(editor.l10n["status.path_required"])
+            return .handled
+        }
+        editor.apply(editorSetting)
         return .handled
     }
 
-    public static let settingNames = [
-        "wrap", "ruler", "linenumbers", "sublinenumbers", "canvas-mode", "syntax", "autoreload", "ipc", "regex", "tab",
-        "lang", "border", "arrow", "trim-trailing-whitespace",
-    ]
+    public static let settingNames = EditorSettingParser.settingNames
 
     public static func valueSuggestions(for setting: String) -> [String] {
-        switch setting.lowercased() {
-        case "wrap", "wrapcolumn":
-            return ["80", "off"]
-        case "ruler", "rulerbar", "showruler",
-            "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number",
-            "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
-            "subline_number", "sublines",
-            "canvas-mode", "canvasmode", "canvas_mode",
-            "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting",
-            "autoreload", "auto-reload", "auto_reload",
-            "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled",
-            "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
-            "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces",
-            "regex", "regexp", "enableregex":
-            return ["on", "off"]
-        case "tab", "tabsize":
-            return ["2", "4", "8"]
-        case "lang", "language":
-            return ["en", "zh_TW"]
-        case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
-            "default-border-style", "default_border_style":
-            return ["single", "double", "round", "double-round", "ascii", "ascii-round"]
-        case "arrow", "arrowstyle", "arrow-style", "arrow_style", "defaultarrow", "defaultarrowstyle",
-            "default-arrow-style", "default_arrow_style":
-            return ["solid", "stemmed", "hollow", "small"]
-        default:
-            return []
-        }
+        EditorSettingParser.valueSuggestions(for: setting)
     }
 }
