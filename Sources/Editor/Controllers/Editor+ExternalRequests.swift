@@ -77,7 +77,7 @@ extension Editor {
 
     public func externalShowPreview(_ proposal: AIProposal, viewportRows: Int, viewportCols: Int) -> Bool {
         guard !buffer.isReadOnly && !buffer.isDirectoryBuffer else { return false }
-        proposalQueue.pushProposal(proposal)
+        guard proposalQueue.pushProposal(proposal) else { return false }
 
         let geometry = ScreenGeometry(rows: viewportRows, cols: viewportCols, editor: self)
         let mainAreaHeight = geometry.mainAreaHeight

@@ -1,12 +1,16 @@
 import Foundation
 
 public final class ProposalQueue: @unchecked Sendable {
+    public static let defaultMaxDepth = 50
     public private(set) var pendingProposals: [AIProposal] = []
     public private(set) var activeIndex: Int = 0
     public private(set) var activeChunkIndex: Int = 0
     private let lock = NSLock()
+    public let maxDepth: Int
 
-    public init() {}
+    public init(maxDepth: Int = ProposalQueue.defaultMaxDepth) {
+        self.maxDepth = max(1, maxDepth)
+    }
 
     public var count: Int {
         lock.lock()
@@ -27,12 +31,15 @@ public final class ProposalQueue: @unchecked Sendable {
         return pendingProposals[activeIndex]
     }
 
-    public func pushProposal(_ proposal: AIProposal) {
+    @discardableResult
+    public func pushProposal(_ proposal: AIProposal) -> Bool {
         lock.lock()
         defer { lock.unlock() }
+        guard pendingProposals.count < maxDepth else { return false }
         pendingProposals.append(proposal)
         activeIndex = pendingProposals.count - 1
         activeChunkIndex = 0
+        return true
     }
 
     public func nextProposal() {
