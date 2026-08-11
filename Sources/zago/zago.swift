@@ -3,6 +3,7 @@ import Config
 import Editor
 import Foundation
 import Git
+import IPCServer
 import LogoEngine
 
 #if os(Windows)
@@ -70,9 +71,34 @@ struct Zago: ParsableCommand {
     @Flag(
         name: [.customLong("install-skill"), .customLong("install-agent-skill")],
         help:
-            "Install the zago AI skill definition into local user AI directories (~/.gemini/config/skills/zago and ~/.agents/skills/zago)."
+            "Install the zago AI skill definition and MCP server configuration into local user AI directories."
     )
     var installSkill: Bool = false
+
+    @Flag(
+        name: [.customLong("install-mcp")],
+        help:
+            "Install zago MCP server configuration into local user AI directories (~/.gemini/config/mcp_config.json, ~/.agents/mcp_config.json, etc.)."
+    )
+    var installMcp: Bool = false
+
+    @Flag(
+        name: [.customLong("uninstall-skill")],
+        help: "Remove the zago AI skill definition from local user AI directories."
+    )
+    var uninstallSkill: Bool = false
+
+    @Flag(
+        name: [.customLong("uninstall-mcp")],
+        help: "Remove zago from local user MCP server configurations."
+    )
+    var uninstallMcp: Bool = false
+
+    @Flag(
+        name: [.customLong("mcp"), .customLong("mcp-server")],
+        help: "Run zago as an MCP (Model Context Protocol) server over Stdio for AI co-pilot integration."
+    )
+    var mcp: Bool = false
 
     @Flag(
         name: [.customShort("a"), .customLong("author"), .customLong("credits"), .customLong("about")],
@@ -100,6 +126,12 @@ struct Zago: ParsableCommand {
     var script: String?
 
     func run() throws {
+        if mcp {
+            let mcpServer = ZagoMCPServer()
+            mcpServer.runStdioServer()
+            return
+        }
+
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
         #if os(Windows)
             let terminal: EditorTerminal = WindowsTerminal()
@@ -123,10 +155,50 @@ struct Zago: ParsableCommand {
             return
         }
 
-        if installSkill {
-            let installedPaths = try ZagoSkillCLIInstaller.installSkill()
-            terminal.write("Successfully installed zago AI skill to:\n")
+        if uninstallSkill || uninstallMcp {
+            if uninstallSkill {
+                let removedPaths = try ZagoSkillCLIInstaller.uninstallSkill()
+                if removedPaths.isEmpty {
+                    terminal.write("No installed zago AI skill was found.\n")
+                } else {
+                    terminal.write("Removed zago AI skill from:\n")
+                    for path in removedPaths {
+                        terminal.write(" - \(path)\n")
+                    }
+                }
+            }
+
+            if uninstallMcp {
+                let updatedPaths = try ZagoSkillCLIInstaller.uninstallMCP()
+                if updatedPaths.isEmpty {
+                    terminal.write("No installed zago MCP configuration was found.\n")
+                } else {
+                    terminal.write("Removed zago MCP configuration from:\n")
+                    for path in updatedPaths {
+                        terminal.write(" - \(path)\n")
+                    }
+                }
+            }
+            return
+        }
+
+        if installMcp {
+            let installedPaths = try ZagoSkillCLIInstaller.installMCP()
+            terminal.write("Successfully installed zago MCP configuration to:\n")
             for path in installedPaths {
+                terminal.write(" - \(path)\n")
+            }
+            return
+        }
+
+        if installSkill {
+            let (skillPaths, mcpPaths) = try ZagoSkillCLIInstaller.installSkillAndMCP()
+            terminal.write("Successfully installed zago AI skill to:\n")
+            for path in skillPaths {
+                terminal.write(" - \(path)\n")
+            }
+            terminal.write("Successfully configured zago MCP server to:\n")
+            for path in mcpPaths {
                 terminal.write(" - \(path)\n")
             }
             return

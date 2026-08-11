@@ -22,6 +22,8 @@ You can invoke `zago` from the command line in **headless mode**, connect over *
 | `zago --ipc` | IPC Server | Enables cross-platform IPC socket server (`/tmp/zago-<pid>.sock` or `\\\\.\\pipe\\zago-<pid>`) |
 | `zago --no-ipc` | IPC Disable | Force disables IPC socket server |
 | `zago --install-skill` | AI Setup | Installs `zago` skill definition to local user AI directories (`~/.gemini/config/skills`, `~/.agents/skills`) |
+| `zago --uninstall-skill` | AI Setup | Removes the zago skill definition from local user AI directories |
+| `zago --uninstall-mcp` | MCP Setup | Removes only the `zago` entry from local user MCP server configurations |
 
 ---
 

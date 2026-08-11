@@ -35,12 +35,23 @@ final class IPCServerTests: XCTestCase {
         return server.handleMessage(data, connectionId: connectionId)
     }
 
-    private func makeTestServer(sessionToken: String) -> any ZagoIPCMessageHandling {
+    private func makeTestServer(
+        socketPath: String? = nil,
+        sessionToken: String
+    ) -> any ZagoIPCMessageHandling {
         #if os(Windows)
-        return WindowsZagoIPCServer(sessionToken: sessionToken)
+            return WindowsZagoIPCServer(socketPath: socketPath, sessionToken: sessionToken)
         #else
-        return PosixZagoIPCServer(sessionToken: sessionToken)
+            return PosixZagoIPCServer(socketPath: socketPath, sessionToken: sessionToken)
         #endif
+    }
+
+    private struct FixedSessionLocator: ZagoIPCSessionLocating {
+        let locatedSessions: [ZagoIPCSession]
+
+        func sessions() -> [ZagoIPCSession] {
+            locatedSessions
+        }
     }
 
     private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
@@ -68,28 +79,37 @@ final class IPCServerTests: XCTestCase {
             startLine: Int?,
             endLine: Int?
         ) throws -> (lines: [String], totalLines: Int)? {
-            guard let result = editor.externalGetText(
-                bufferTarget: bufferTarget,
-                startLine: startLine,
-                endLine: endLine
-            ) else {
+            guard
+                let result = editor.externalGetText(
+                    bufferTarget: bufferTarget,
+                    startLine: startLine,
+                    endLine: endLine
+                )
+            else {
                 return nil
             }
             return (lines: result.lines, totalLines: result.totalLines)
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)? {
+        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
+            line: Int, column: Int, visualCol: Int, mode: String
+        )? {
             guard let cursor = editor.externalGetCursor(bufferTarget: bufferTarget) else {
                 return nil
             }
             return (line: cursor.line, column: cursor.column, visualCol: cursor.visualCol, mode: cursor.mode)
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) throws -> Bool {
+        func ipcServer(
+            _ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String,
+            affectedFiles: [AffectedFilePayload]
+        ) throws -> Bool {
             true
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (success: Bool, result: String, error: String?) {
+        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (
+            success: Bool, result: String, error: String?
+        ) {
             let result = editor.externalExecuteLogo(script: script, mode: mode)
             return (success: result.success, result: result.result, error: result.error)
         }
@@ -100,10 +120,18 @@ final class IPCServerTests: XCTestCase {
     }
 
     private final class TimedOutDataSource: ZagoIPCServerDataSource {
-        func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo] { throw IPCServerRequestError.timedOut }
-        func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?) throws -> (lines: [String], totalLines: Int)? { throw IPCServerRequestError.timedOut }
-        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)? { throw IPCServerRequestError.timedOut }
-        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) throws -> [IPCHistoryEntry] { throw IPCServerRequestError.timedOut }
+        func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo] {
+            throw IPCServerRequestError.timedOut
+        }
+        func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?)
+            throws -> (lines: [String], totalLines: Int)?
+        { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
+            line: Int, column: Int, visualCol: Int, mode: String
+        )? { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) throws -> [IPCHistoryEntry] {
+            throw IPCServerRequestError.timedOut
+        }
     }
 
     func testOverlayInsertModeParsing() {
@@ -230,10 +258,14 @@ final class IPCServerTests: XCTestCase {
         let dataSource = TimedOutDataSource()
         server.dataSource = dataSource
 
-        let registration = try send(server, method: "zago.client.register", params: RegistrationParams(auth: "test-token", clientId: "bot", clientName: "Bot", color: nil), id: 1, connectionId: "conn-1")
+        let registration = try send(
+            server, method: "zago.client.register",
+            params: RegistrationParams(auth: "test-token", clientId: "bot", clientName: "Bot", color: nil), id: 1,
+            connectionId: "conn-1")
         XCTAssertNil(registration.error)
 
-        let response = try send(server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 2, connectionId: "conn-1")
+        let response = try send(
+            server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 2, connectionId: "conn-1")
         XCTAssertEqual(response.error?.code, 408)
     }
 
@@ -315,12 +347,208 @@ final class IPCServerTests: XCTestCase {
         let registration = try! send(
             server,
             method: "zago.client.register",
-            params: RegistrationParams(auth: "test-token", clientId: "buffer-test", clientName: "Buffer Test", color: nil),
+            params: RegistrationParams(
+                auth: "test-token", clientId: "buffer-test", clientName: "Buffer Test", color: nil),
             id: 0,
             connectionId: "conn-1"
         )
         XCTAssertNil(registration.error)
-        let response = try! send(server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 1, connectionId: "conn-1")
+        let response = try! send(
+            server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 1, connectionId: "conn-1")
         XCTAssertNil(response.error)
+    }
+
+    func testZagoMCPServerMethods() throws {
+        let offlineServer = ZagoMCPServer(
+            sessionLocator: FixedSessionLocator(locatedSessions: [])
+        )
+        let initializeLine =
+            "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}}"
+        let initializeResponse = try XCTUnwrap(offlineServer.handleLine(initializeLine))
+        let initializeJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(initializeResponse.utf8)) as? [String: Any]
+        )
+        let initializeResult = try XCTUnwrap(initializeJSON["result"] as? [String: Any])
+        let serverInfo = try XCTUnwrap(initializeResult["serverInfo"] as? [String: Any])
+        XCTAssertEqual(serverInfo["name"] as? String, "zago")
+        XCTAssertEqual(initializeResult["protocolVersion"] as? String, "2024-11-05")
+        XCTAssertNil(
+            offlineServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+            )
+        )
+
+        let toolsResponse = try XCTUnwrap(
+            offlineServer.handleLine("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}")
+        )
+        let toolsJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(toolsResponse.utf8)) as? [String: Any]
+        )
+        let toolsResult = try XCTUnwrap(toolsJSON["result"] as? [String: Any])
+        let tools = try XCTUnwrap(toolsResult["tools"] as? [[String: Any]])
+        XCTAssertEqual(tools.count, 7)
+        let toolNames = Set(tools.compactMap { $0["name"] as? String })
+        XCTAssertEqual(
+            toolNames,
+            [
+                "zago_list_instances",
+                "zago_select_instance",
+                "zago_overlay_preview",
+                "zago_execute_logo",
+                "zago_get_buffers",
+                "zago_get_text",
+                "zago_get_cursor",
+            ]
+        )
+        let getBuffersTool = try XCTUnwrap(
+            tools.first { $0["name"] as? String == "zago_get_buffers" }
+        )
+        let annotations = try XCTUnwrap(getBuffersTool["annotations"] as? [String: Any])
+        XCTAssertEqual(annotations["readOnlyHint"] as? Bool, true)
+        XCTAssertEqual(annotations["openWorldHint"] as? Bool, false)
+
+        let offlineCall = try XCTUnwrap(
+            offlineServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
+            )
+        )
+        let offlineJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(offlineCall.utf8)) as? [String: Any]
+        )
+        let offlineResult = try XCTUnwrap(offlineJSON["result"] as? [String: Any])
+        XCTAssertEqual(offlineResult["isError"] as? Bool, true)
+
+        #if !os(Windows)
+            let socketPath = FileManager.default.temporaryDirectory
+                .appendingPathComponent("zago-mcp-test-\(UUID().uuidString).sock").path
+            let editor = Editor()
+            let ipcDelegate = TestIPCDelegate(editor: editor)
+            let ipcServer = makeTestServer(
+                socketPath: socketPath,
+                sessionToken: "mcp-test-token"
+            )
+            ipcServer.delegate = ipcDelegate
+            ipcServer.dataSource = ipcDelegate
+            try ipcServer.start()
+            defer { ipcServer.stop() }
+
+            let session = ZagoIPCSession(
+                instanceId: "zago-mcp-test",
+                endpointPath: ipcServer.socketPath,
+                tokenPath: ipcServer.tokenPath
+            )
+            let liveServer = ZagoMCPServer(
+                sessionLocator: FixedSessionLocator(locatedSessions: [session])
+            )
+            _ = liveServer.handleLine(initializeLine)
+            _ = liveServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+            )
+
+            let selectResponse = try XCTUnwrap(
+                liveServer.handleLine(
+                    "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_select_instance\",\"arguments\":{\"instanceId\":\"zago-mcp-test\"}}}"
+                )
+            )
+            XCTAssertTrue(selectResponse.contains("Selected zago instance"))
+
+            let buffersResponse = try XCTUnwrap(
+                liveServer.handleLine(
+                    "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
+                )
+            )
+            let buffersJSON = try XCTUnwrap(
+                JSONSerialization.jsonObject(with: Data(buffersResponse.utf8)) as? [String: Any]
+            )
+            let buffersResult = try XCTUnwrap(buffersJSON["result"] as? [String: Any])
+            XCTAssertNil(buffersResult["isError"])
+            let content = try XCTUnwrap(buffersResult["content"] as? [[String: Any]])
+            let text = try XCTUnwrap(content.first?["text"] as? String)
+            XCTAssertTrue(text.contains("activeBufferId"))
+
+            let previewResponse = try XCTUnwrap(
+                liveServer.handleLine(
+                    "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_overlay_preview\",\"arguments\":{\"lines\":[\"hello\"]}}}"
+                )
+            )
+            let previewJSON = try XCTUnwrap(
+                JSONSerialization.jsonObject(with: Data(previewResponse.utf8)) as? [String: Any]
+            )
+            let previewResult = try XCTUnwrap(previewJSON["result"] as? [String: Any])
+            XCTAssertNil(previewResult["isError"])
+        #endif
+    }
+
+    func testZagoSkillCLIInstallerMethods() throws {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "zago-installer-test-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let (skillPaths, mcpPaths) = try ZagoSkillCLIInstaller.installSkillAndMCP(customHomePath: tempDir.path)
+        XCTAssertGreaterThan(skillPaths.count, 0)
+        XCTAssertGreaterThan(mcpPaths.count, 0)
+
+        for path in skillPaths {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+        }
+
+        for path in mcpPaths {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let mcpServers = json?["mcpServers"] as? [String: Any]
+            let zagoConfig = mcpServers?["zago"] as? [String: Any]
+            XCTAssertEqual(zagoConfig?["command"] as? String, "zago")
+            XCTAssertEqual(zagoConfig?["args"] as? [String], ["--mcp"])
+        }
+
+        let preservedSkillFile =
+            tempDir
+            .appendingPathComponent(".agents/skills/zago/notes.txt")
+        try "keep me".write(to: preservedSkillFile, atomically: true, encoding: .utf8)
+
+        let preservedMCPServer: [String: Any] = [
+            "command": "other-server",
+            "args": ["serve"],
+        ]
+        for path in mcpPaths {
+            let url = URL(fileURLWithPath: path)
+            let data = try Data(contentsOf: url)
+            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            var servers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
+            servers["other"] = preservedMCPServer
+            json["mcpServers"] = servers
+            try JSONSerialization.data(withJSONObject: json).write(to: url)
+        }
+
+        let removedSkillPaths = try ZagoSkillCLIInstaller.uninstallSkill(
+            customHomePath: tempDir.path
+        )
+        XCTAssertEqual(Set(removedSkillPaths), Set(skillPaths))
+        for path in skillPaths {
+            XCTAssertFalse(FileManager.default.fileExists(atPath: path))
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: preservedSkillFile.path))
+
+        let updatedMCPPaths = try ZagoSkillCLIInstaller.uninstallMCP(
+            customHomePath: tempDir.path
+        )
+        XCTAssertEqual(Set(updatedMCPPaths), Set(mcpPaths))
+        for path in mcpPaths {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            let mcpServers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
+            XCTAssertNil(mcpServers["zago"])
+            XCTAssertNotNil(mcpServers["other"])
+        }
+
+        XCTAssertTrue(
+            try ZagoSkillCLIInstaller.uninstallSkill(customHomePath: tempDir.path).isEmpty
+        )
+        XCTAssertTrue(
+            try ZagoSkillCLIInstaller.uninstallMCP(customHomePath: tempDir.path).isEmpty
+        )
     }
 }
