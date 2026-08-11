@@ -25,7 +25,7 @@ private final class CoverageDelegate: LogoEngineDelegate, @unchecked Sendable {
 @Suite(.serialized)
 struct LogoCoverageTests {
     private func evaluate(_ script: String, engine: LogoEngine = LogoEngine()) -> String {
-        let tokens = engine.tokenize(script)
+        let tokens = LogoTokenizer.tokenize(script)
         var index = 0
         return engine.evaluateExpression(tokens, index: &index)
     }

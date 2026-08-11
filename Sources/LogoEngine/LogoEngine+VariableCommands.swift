@@ -333,7 +333,7 @@ extension LogoEngine {
                 if case .list(let bodyItems) = subLists[1] {
                     bodyTokens = bodyItems.map { $0.description }
                 } else if case .string(let s) = subLists[1] {
-                    bodyTokens = tokenize(s)
+                    bodyTokens = LogoTokenizer.tokenize(s)
                 }
 
                 customProcedures[name] = LogoProcedure(name: name, parameters: params, bodyTokens: bodyTokens)

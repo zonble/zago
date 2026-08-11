@@ -460,7 +460,7 @@ extension LogoEngine {
         variables["?rest"] = restList.joined(separator: " ")
 
         if clean.hasPrefix("[") && clean.hasSuffix("]") {
-            let tTokens = tokenize(clean)
+            let tTokens = LogoTokenizer.tokenize(clean)
             var idx = 0
             if !tTokens.isEmpty && tTokens[0] == "[" {
                 let inner = extractBlockTokens(tokens: tTokens, index: &idx)

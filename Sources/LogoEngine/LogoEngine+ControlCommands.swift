@@ -82,7 +82,7 @@ extension LogoEngine {
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 } else {
                     let scriptStr = evaluateExpression(tokens, index: &index)
-                    let block = tokenize(scriptStr)
+                    let block = LogoTokenizer.tokenize(scriptStr)
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 }
@@ -97,7 +97,7 @@ extension LogoEngine {
                     block = extractBlockTokens(tokens: tokens, index: &index)
                 } else {
                     let scriptStr = evaluateExpression(tokens, index: &index)
-                    block = tokenize(scriptStr)
+                    block = LogoTokenizer.tokenize(scriptStr)
                 }
                 var bIdx = 0
                 var subReturn: String? = nil

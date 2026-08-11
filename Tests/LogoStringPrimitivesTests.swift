@@ -6,7 +6,7 @@ import Testing
 @testable import LogoEngine
 
 private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String {
-    let tokens = engine.tokenize(script)
+    let tokens = LogoTokenizer.tokenize(script)
     var index = 0
     return engine.evaluateExpression(tokens, index: &index)
 }

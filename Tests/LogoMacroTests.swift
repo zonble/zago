@@ -260,9 +260,9 @@ final class LogoTestResultBox: @unchecked Sendable {
     let editor = Editor()
     let logoEngine = editor.logoEngine
 
-    #expect(logoEngine.tokenize("; whole line comment").isEmpty)
-    #expect(logoEngine.tokenize("TYPE \"A\" ; inline comment") == ["TYPE", "\"A\""])
-    #expect(logoEngine.tokenize("TYPE \"A;B\" ; inline comment") == ["TYPE", "\"A;B\""])
+    #expect(LogoTokenizer.tokenize("; whole line comment").isEmpty)
+    #expect(LogoTokenizer.tokenize("TYPE \"A\" ; inline comment") == ["TYPE", "\"A\""])
+    #expect(LogoTokenizer.tokenize("TYPE \"A;B\" ; inline comment") == ["TYPE", "\"A;B\""])
 
     logoEngine.execute(
         """
