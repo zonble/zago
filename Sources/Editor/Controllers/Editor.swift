@@ -2,7 +2,6 @@
 @_exported import Drawing
 import Foundation
 import Git
-import IPCServer
 import LogoEngine
 import SpellChecker
 import Syntax
@@ -217,9 +216,10 @@ public final class Editor: @unchecked Sendable {
         set { runtimeConfig = newValue }
     }
     public var customBoundKeys: Set<Key> = []
-    public var ipcServer: ZagoIPCServer? = nil
-    public var jsonRpcHandler: JSONRPCHandler? = nil
+    public var ipcLifecycleHandler: ((Bool) -> Void)?
     public let proposalQueue = ProposalQueue()
+    private let editorLoopRequests = EditorLoopRequestQueue()
+    private var editorLoopThread: Thread?
 
     private struct ResolvedConfig {
         let wrapColumn: Int?
@@ -448,9 +448,11 @@ public final class Editor: @unchecked Sendable {
     /// Starts the editor event loop.
     public func run() {
         isInteractiveMode = true
+        editorLoopThread = Thread.current
         defer {
+            editorLoopThread = nil
             isInteractiveMode = false
-            stopIPCServer()
+            ipcLifecycleHandler?(false)
             terminal.clearScreen()
             terminal.showCursor()
             terminal.disableRawMode()
@@ -467,11 +469,15 @@ public final class Editor: @unchecked Sendable {
         }
         terminal.hideCursor()
 
-        startIPCServerIfNeeded()
+        if displayConfig.ipcEnabled {
+            ipcLifecycleHandler?(true)
+        }
 
         while isRunning {
+            drainExternalRequests()
             refreshScreen()
             let key = terminal.readKey()
+            drainExternalRequests()
             if key == .resize {
                 renderer.invalidateScreenCache()
                 terminal.clearScreen()
@@ -479,6 +485,31 @@ public final class Editor: @unchecked Sendable {
             }
             processKey(key)
         }
+    }
+
+    public func performOnEditorLoop<T>(_ operation: @escaping () -> T) -> T {
+        if !isInteractiveMode || Thread.current === editorLoopThread {
+            return operation()
+        }
+
+        let result = EditorLoopRequestResult<T>()
+        let semaphore = DispatchSemaphore(value: 0)
+        editorLoopRequests.enqueue {
+            result.value = operation()
+            result.completed = true
+            semaphore.signal()
+        }
+        terminal.wakeup()
+        semaphore.wait()
+
+        guard result.completed else {
+            fatalError("Editor loop request completed without a result")
+        }
+        return result.value!
+    }
+
+    func drainExternalRequests() {
+        editorLoopRequests.drain()
     }
 
     /// Sets status message to display in the bottom status line.

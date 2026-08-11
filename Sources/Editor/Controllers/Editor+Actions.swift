@@ -352,17 +352,13 @@ extension Editor {
         case "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled":
             if arg == "off" || arg == "false" {
                 displayConfig.ipcEnabled = false
-                stopIPCServer()
+                ipcLifecycleHandler?(false)
             } else if arg == "on" || arg == "true" {
                 displayConfig.ipcEnabled = true
-                startIPCServerIfNeeded()
+                ipcLifecycleHandler?(true)
             } else {
                 displayConfig.ipcEnabled.toggle()
-                if displayConfig.ipcEnabled {
-                    startIPCServerIfNeeded()
-                } else {
-                    stopIPCServer()
-                }
+                ipcLifecycleHandler?(displayConfig.ipcEnabled)
             }
         default:
             break
