@@ -88,38 +88,8 @@ public final class Editor: @unchecked Sendable {
     // Prompt Controller
     public let promptController = PromptController()
 
-    public var currentPromptMode: PromptMode {
-        get { promptController.mode }
-        set { promptController.mode = newValue }
-    }
-    public var promptInputText: String {
-        get { promptController.inputText }
-        set { promptController.inputText = newValue }
-    }
-    public var promptCursorIndex: Int {
-        get { promptController.cursorIndex }
-        set { promptController.cursorIndex = newValue }
-    }
-    public var promptCompletionText: String? {
-        get { promptController.completionText }
-        set { promptController.completionText = newValue }
-    }
-    public var logoPromptHistory: [String] {
-        get { promptController.logoHistory }
-        set { promptController.logoHistory = newValue }
-    }
-    public var logoHistoryIndex: Int {
-        get { promptController.logoHistoryIndex }
-        set { promptController.logoHistoryIndex = newValue }
-    }
-
     // Search Controller
     public let searchController = SearchController()
-
-    public var lastSearchQuery: String {
-        get { searchController.lastSearchQuery }
-        set { searchController.lastSearchQuery = newValue }
-    }
 
     // Document Outline Controller
     public let documentOutlineController = DocumentOutlineController()
@@ -130,55 +100,12 @@ public final class Editor: @unchecked Sendable {
     public let canvasModeController = CanvasModeController()
     public let debuggerController = DebuggerController()
 
-    public var isMenuBarActive: Bool {
-        get { menuBarController.isActive }
-        set { menuBarController.isActive = newValue }
-    }
-
-    public var menuBar: MenuBar {
-        menuBarController.menuBar
-    }
     var defaultBaseMode: EditorBaseMode = .text
     var defaultViewShowRuler = false
     var defaultViewShowLineNumbers = true
     var defaultViewShowSubLineNumbers = false
     var defaultViewWrapColumn: Int? = nil
 
-    // Editor mode state
-    public var baseMode: EditorBaseMode {
-        get { buffer.baseMode }
-        set { buffer.baseMode = newValue }
-    }
-    public var overlayMode: EditorOverlayMode {
-        get { buffer.overlayMode }
-        set { buffer.overlayMode = newValue }
-    }
-    public var canvasVisualColumn: Int {
-        get { buffer.canvasVisualColumn }
-        set { buffer.canvasVisualColumn = newValue }
-    }
-    public var canvasHorizontalOffset: Int {
-        get { buffer.canvasHorizontalOffset }
-        set { buffer.canvasHorizontalOffset = newValue }
-    }
-
-    // Table Mode state
-    public var isTableModeActive: Bool {
-        get { buffer.isTableModeActive }
-        set { buffer.isTableModeActive = newValue }
-    }
-    public var currentTableCell: TableCell? {
-        get { buffer.currentTableCell }
-        set { buffer.currentTableCell = newValue }
-    }
-    public var defaultBorderStyle: BorderStyle {
-        get { buffer.borderStyle }
-        set { buffer.borderStyle = newValue }
-    }
-    public var defaultArrowStyle: ArrowStyle {
-        get { buffer.arrowStyle }
-        set { buffer.arrowStyle = newValue }
-    }
     public var isRegexSearchEnabled: Bool = false
 
     var lastMutationTime: Date?

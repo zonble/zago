@@ -97,9 +97,9 @@ import Testing
 
 @Test func testSmartTabZagorcConfigurationDirectives() throws {
     let configStr = """
-        set smart_tab false
-        set list_indent_size 4
-        set tab_size 2
+        set smarttab false
+        set list-indent-size 4
+        set tab 2
         """
     let mockProvider = InMemoryConfigFileProvider(homePath: "/home/user", files: ["/home/user/.zagorc": configStr])
     let loader = ConfigLoader(provider: mockProvider)
@@ -174,7 +174,7 @@ import Testing
     #expect(virtualLines[1].text.count <= 18)
 
     // 3. zagorc directive parsing for list_wrap_indent
-    let configStr = "set list_wrap_indent false"
+    let configStr = "set list-wrap-indent false"
     let mockProvider = InMemoryConfigFileProvider(homePath: "/home/user", files: ["/home/user/.zagorc": configStr])
     let config = ConfigLoader(provider: mockProvider).loadConfig()
     #expect(config.listWrapIndent == false)

@@ -27,7 +27,7 @@ final class ZagoEditorIPCEffectHandler: EditorEffectDelegate {
             editor.setStatusMessage("[IPC] Socket: \(session.socketPath) | Token: \(session.sessionToken)")
         } catch {
             editor.setStatusMessage("[IPC Error] \(error.localizedDescription)")
-            editor.apply(EditorSettingChange.ipc(false))
+            editor.apply(EditorSettingUpdate.ipc(false))
         }
     }
 

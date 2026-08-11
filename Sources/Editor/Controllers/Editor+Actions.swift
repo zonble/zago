@@ -241,7 +241,7 @@ extension Editor {
         doSave(to: path)
     }
 
-    public func apply(_ setting: EditorSettingChange) {
+    public func apply(_ setting: EditorSettingUpdate) {
         switch setting {
         case .wrap(let column): layoutEngine.setWrapColumn(column)
         case .ruler(let value): displayConfig.showRuler = resolve(value, current: displayConfig.showRuler)
@@ -255,6 +255,12 @@ extension Editor {
         case .trimTrailingWhitespace(let value): displayConfig.trimTrailingWhitespaceOnSave = resolve(value, current: displayConfig.trimTrailingWhitespaceOnSave)
         case .regex(let value): isRegexSearchEnabled = resolve(value, current: isRegexSearchEnabled)
         case .debug(let value): debugMode = resolve(value, current: debugMode)
+        case .smartTab(let value): displayConfig.smartTab = resolve(value, current: displayConfig.smartTab)
+        case .listIndentSize(let size): displayConfig.listIndentSize = size
+        case .listWrapIndent(let value):
+            displayConfig.listWrapIndent = resolve(value, current: displayConfig.listWrapIndent)
+        case .gitDiff(let value): displayConfig.showGitDiff = resolve(value, current: displayConfig.showGitDiff)
+        case .spellLanguage(let language): spellChecker.setLanguage(language)
         case .tabSize(let size): displayConfig.tabSize = size
         case .language(let language):
             self.language = language

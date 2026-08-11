@@ -673,12 +673,12 @@ struct ConfigAndToolsTests {
         let sampleConfig = """
             # Sample serc configuration
             set wrap 80
-            set showRuler true
-            set lineNumbers off
-            set subLineNumbers on
+            set ruler true
+            set linenumbers off
+            set sublinenumbers on
             set canvas-mode on
-            set autoReload true
-            set trimTrailingWhitespace on
+            set autoreload true
+            set trim-trailing-whitespace on
             bind ctrl-f move.left
             bind alt-h "logo: MOVE HOME TYPE '# ' MOVE END"
             logo-prelude
@@ -727,7 +727,7 @@ struct ConfigAndToolsTests {
         #expect(SettingCommand.valueSuggestions(for: "canvas-mode") == ["on", "off"])
         #expect(SettingCommand.settingNames.contains("trim-trailing-whitespace"))
         #expect(SettingCommand.valueSuggestions(for: "trim-trailing-whitespace") == ["on", "off"])
-        #expect(EditorSettingParser.parse(setting: "sublines", value: "on") == nil)
+        #expect(EditorSettingUpdateParser.parse(setting: "sublines", value: "on") == nil)
 
         let editor = Editor()
         #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -1099,7 +1099,7 @@ struct ConfigAndToolsTests {
         #expect(!zhJoined.contains("New Buffer"), "zh_TW editor: must not contain English submenu items")
     }
 
-    @Test func testConfigLoaderParsesAliasesAndSetUnsetVariants() throws {
+    @Test func testConfigLoaderParsesCanonicalSettingsAndUnset() throws {
         let testDir =
             FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-aliases-\(UUID().uuidString)"
         try FileManager.default.createDirectory(
@@ -1108,36 +1108,28 @@ struct ConfigAndToolsTests {
         defer { try? FileManager.default.removeItem(atPath: testDir) }
 
         let content = """
-            # Valid aliases and set/unset variants
+            # Canonical settings and unset directives
             set wrap 12
             set wrap off
             set wrap 9
-            set nowrap
-            set showRuler
-            set line_number off
-            set line_numbers
-            set subline-number off
-            set sublines
-            set canvas_mode
-            set git_diff off
-            set tabsize 8
-            set unset wrap
-            set unset ruler
-            set unset line-number
-            set unset git-diff
-            set unset sublines
-            set unset canvas-mode
-            set unset syntax
-            set unset autoreload
-            set unset trim_trailing_spaces
-            set syntaxhighlighting
-            set auto_reload 0
-            set trimtrailingspaces 1
-            set language english
-            set lang zh-hant
-            set spelllang en_GB
-            set default_border_style double_round
-            default-border-style ascii-rounded
+            unset wrap
+            set ruler on
+            unset ruler
+            set linenumbers on
+            unset linenumbers
+            set sublinenumbers on
+            unset sublinenumbers
+            set canvas-mode on
+            unset canvas-mode
+            set git-diff on
+            unset git-diff
+            set tab 8
+            set syntax on
+            set autoreload off
+            set trim-trailing-whitespace on
+            set lang zh_TW
+            set spell-language en_GB
+            set border ascii-round
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
@@ -1162,6 +1154,24 @@ struct ConfigAndToolsTests {
         #expect(config.syntaxErrorCount == 0)
     }
 
+    @Test func testConfigLoaderRejectsSettingAliasesAndBareSettings() {
+        let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
+        var config = EditorConfig()
+
+        loader.parseConfigContent(
+            """
+            set showRuler on
+            set language english
+            ruler on
+            """,
+            into: &config
+        )
+
+        #expect(config.showRuler == false)
+        #expect(config.language == nil)
+        #expect(config.syntaxErrorCount == 3)
+    }
+
     @Test func testConfigLoaderReportsMalformedAndUnknownDirectives() throws {
         let testDir =
             FileManager.default.currentDirectoryPath + "/.test-artifacts/config-loader-errors-\(UUID().uuidString)"
@@ -1175,17 +1185,17 @@ struct ConfigAndToolsTests {
             set
             set wrap zero
             set ruler maybe
-            set line-numbers maybe
-            set subline_number maybe
+            set linenumbers maybe
+            set sublinenumbers maybe
             set canvas-mode maybe
             set git-diff maybe
-            set tabsize 0
+            set tab 0
             set unset nope
             set syntax maybe
-            set auto-reload maybe
+            set autoreload maybe
             set trim-trailing-whitespace maybe
             set lang klingon
-            set spell-lang
+            set spell-language
             set border bubble
             set mystery on
             unset
