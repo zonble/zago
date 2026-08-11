@@ -2,19 +2,22 @@ import Editor
 import Foundation
 import IPCServer
 
-final class ZagoEditorIPCSession {
+final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
     let server: any ZagoIPCServer
-    private let target: ZagoEditorJSONRPCTarget
+    private weak var editor: Editor?
+    private let terminal: EditorTerminal
+    private let dateFormatter = ISO8601DateFormatter()
 
     var socketPath: String { server.socketPath }
     var sessionToken: String { server.sessionToken }
 
     init(editor: Editor, terminal: EditorTerminal) {
+        self.editor = editor
+        self.terminal = terminal
         let server = ZagoIPCServerFactory.make()
-        let target = ZagoEditorJSONRPCTarget(editor: editor, terminal: terminal)
-        server.delegate = target
         self.server = server
-        self.target = target
+        server.delegate = self
+        server.dataSource = self
     }
 
     func start() throws {
@@ -24,19 +27,7 @@ final class ZagoEditorIPCSession {
     func stop() {
         server.stop()
     }
-}
-
-final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
-    private weak var editor: Editor?
-    private let terminal: EditorTerminal
-    private let dateFormatter = ISO8601DateFormatter()
-
-    init(editor: Editor, terminal: EditorTerminal) {
-        self.editor = editor
-        self.terminal = terminal
-    }
-
-    func handleGetBuffers() -> [BufferInfo] {
+    func ipcServerGetBuffers(_ server: any ZagoIPCServer) -> [BufferInfo] {
         guard let editor else { return [] }
         return editor.performOnEditorLoop {
             editor.externalGetBuffers().map {
@@ -51,8 +42,9 @@ final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
         }
     }
 
-    func handleGetText(
-        bufferTarget: String?,
+    func ipcServer(
+        _ server: any ZagoIPCServer,
+        textFor bufferTarget: String?,
         startLine: Int?,
         endLine: Int?
     ) -> (lines: [String], totalLines: Int)? {
@@ -69,7 +61,7 @@ final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
         }
     }
 
-    func handleGetCursor(bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
+    func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
         guard let editor else { return nil }
         return editor.performOnEditorLoop {
             guard let cursor = editor.externalGetCursor(bufferTarget: bufferTarget) else {
@@ -79,11 +71,12 @@ final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
         }
     }
 
-    func handleShowPreview(clientId: String, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
+    func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
         guard let editor else { return false }
         let proposal = AIProposal(
-            clientId: clientId,
-            clientName: clientId,
+            clientId: client.clientId,
+            clientName: client.clientName,
+            clientColor: client.color,
             reason: reason,
             affectedFiles: affectedFiles.map(Self.makeAffectedFileProposal)
         )
@@ -97,7 +90,7 @@ final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
         return accepted
     }
 
-    func handleExecuteLogo(script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
+    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
         guard let editor else {
             return (success: false, result: "", error: "Editor unavailable")
         }
@@ -108,18 +101,28 @@ final class ZagoEditorJSONRPCTarget: ZagoIPCServerDelegate {
         return (success: result.success, result: result.result, error: result.error)
     }
 
-    func handleGetHistory(limit: Int) -> [JSONValue] {
+    func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) -> [IPCHistoryEntry] {
         guard let editor else { return [] }
         return editor.performOnEditorLoop {
             editor.externalGetHistory(limit: limit).map { entry in
-                .object([
-                    "id": .string(entry.id),
-                    "author": .string(entry.clientName),
-                    "reason": .string(entry.reason),
-                    "action": .string(entry.decision),
-                    "timestamp": .string(self.dateFormatter.string(from: entry.timestamp)),
-                ])
+                IPCHistoryEntry(
+                    id: entry.id,
+                    author: entry.clientName,
+                    reason: entry.reason,
+                    action: entry.decision,
+                    timestamp: self.dateFormatter.string(from: entry.timestamp)
+                )
             }
+        }
+    }
+
+    func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity) {
+        guard let editor else { return }
+        let removed = editor.performOnEditorLoop {
+            editor.proposalQueue.removeProposals(clientId: client.clientId)
+        }
+        if removed > 0 {
+            terminal.wakeup()
         }
     }
 

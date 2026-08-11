@@ -9,6 +9,7 @@ import WinSDK
 
 public protocol ZagoIPCServer: AnyObject {
     var delegate: ZagoIPCServerDelegate? { get set }
+    var dataSource: ZagoIPCServerDataSource? { get set }
     var isListening: Bool { get }
     var socketPath: String { get }
     var sessionToken: String { get }
@@ -29,17 +30,8 @@ public enum ZagoIPCServerFactory {
 }
 
 extension ZagoIPCServer {
-    func handleMessage(_ data: Data, parser: JSONRPCParser) -> JSONRPCResponse {
-        switch parser.parseMessage(data) {
-        case .success(let request):
-            return dispatch(request, parser: parser)
-        case .failure(let response):
-            return response
-        }
-    }
-
-    func handleRequest(_ request: JSONRPCRequest, parser: JSONRPCParser) -> JSONRPCResponse {
-        switch parser.normalize(request) {
+    func handleMessage(_ data: Data, connectionId: String, parser: JSONRPCParser) -> JSONRPCResponse {
+        switch parser.parseMessage(data, connectionId: connectionId) {
         case .success(let request):
             return dispatch(request, parser: parser)
         case .failure(let response):
@@ -49,18 +41,19 @@ extension ZagoIPCServer {
 
     private func dispatch(_ parsed: ZagoIPCParsedRequest, parser: JSONRPCParser) -> JSONRPCResponse {
         switch parsed.request {
-        case .register(let clientId, let clientName):
-            return parser.makeSuccessResponse(for: parsed, response: .registered(clientId: clientId, clientName: clientName))
+        case .register(let client):
+            return parser.makeSuccessResponse(for: parsed, response: .registered(clientId: client.clientId, clientName: client.clientName))
 
         case .getBuffers:
-            guard let buffers = delegate?.handleGetBuffers() else {
-                return parser.makeFailureResponse(code: 500, message: "Target delegate unhandled", request: parsed)
+            guard let buffers = dataSource?.ipcServerGetBuffers(self) else {
+                return parser.makeFailureResponse(code: 500, message: "Target data source unhandled", request: parsed)
             }
             return parser.makeSuccessResponse(for: parsed, response: .buffers(buffers))
 
         case .getText(let bufferTarget, let startLine, let endLine):
-            guard let result = delegate?.handleGetText(
-                bufferTarget: bufferTarget,
+            guard let result = dataSource?.ipcServer(
+                self,
+                textFor: bufferTarget,
                 startLine: startLine,
                 endLine: endLine
             ) else {
@@ -69,7 +62,7 @@ extension ZagoIPCServer {
             return parser.makeSuccessResponse(for: parsed, response: .text(lines: result.lines, totalLines: result.totalLines))
 
         case .getCursor(let bufferTarget):
-            guard let cursor = delegate?.handleGetCursor(bufferTarget: bufferTarget) else {
+            guard let cursor = dataSource?.ipcServer(self, cursorFor: bufferTarget) else {
                 return parser.makeFailureResponse(code: 404, message: "Target buffer not found", request: parsed)
             }
             return parser.makeSuccessResponse(for: parsed, response: .cursor(
@@ -79,8 +72,8 @@ extension ZagoIPCServer {
                 mode: cursor.mode
             ))
 
-        case .showPreview(let clientId, let reason, let affectedFiles):
-            guard delegate?.handleShowPreview(clientId: clientId, reason: reason, affectedFiles: affectedFiles) == true else {
+        case .showPreview(let client, let reason, let affectedFiles):
+            guard delegate?.ipcServer(self, showPreviewFor: client, reason: reason, affectedFiles: affectedFiles) == true else {
                 return parser.makeFailureResponse(
                     code: 409,
                     message: "Failed to push proposal into queue or depth limit exceeded",
@@ -90,7 +83,7 @@ extension ZagoIPCServer {
             return parser.makeSuccessResponse(for: parsed, response: .previewShown)
 
         case .executeLogo(let script, let mode):
-            guard let result = delegate?.handleExecuteLogo(script: script, mode: mode) else {
+            guard let result = delegate?.ipcServer(self, executeLogo: script, mode: mode) else {
                 return parser.makeFailureResponse(code: 500, message: "Logo execution error", request: parsed)
             }
             return parser.makeSuccessResponse(for: parsed, response: .logo(
@@ -100,7 +93,7 @@ extension ZagoIPCServer {
             ))
 
         case .getHistory(let limit):
-            let entries = delegate?.handleGetHistory(limit: limit) ?? []
+            let entries = dataSource?.ipcServer(self, historyWithLimit: limit) ?? []
             return parser.makeSuccessResponse(for: parsed, response: .history(entries))
         }
     }
@@ -109,6 +102,7 @@ extension ZagoIPCServer {
 #if os(Windows)
 final class WindowsZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
     weak var delegate: ZagoIPCServerDelegate?
+    weak var dataSource: ZagoIPCServerDataSource?
     private(set) var isListening: Bool = false
     let socketPath: String
     let sessionToken: String
@@ -128,20 +122,21 @@ final class WindowsZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
     }
 
     func start() throws {
-        isListening = true
+        throw NSError(domain: "ZagoIPCServer", code: 1, userInfo: [
+            NSLocalizedDescriptionKey: "Windows named-pipe IPC is not implemented yet"
+        ])
     }
 
     func stop() {
         isListening = false
     }
 
-    func handleRequest(_ request: JSONRPCRequest, connectionId: String) -> JSONRPCResponse {
-        handleRequest(request, parser: jsonRPCParser)
-    }
 }
 #else
 final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
+    private static let maxPayloadBytes = 1_048_576
     weak var delegate: ZagoIPCServerDelegate?
+    weak var dataSource: ZagoIPCServerDataSource?
     private(set) var isListening: Bool = false
     let socketPath: String
     let sessionToken: String
@@ -159,8 +154,9 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
             self.socketPath = socketPath
             self.tokenPath = socketPath + ".token"
         } else {
-            self.socketPath = "/tmp/zago-\(pid).sock"
-            self.tokenPath = "/tmp/zago-\(pid).token"
+            let nonce = UUID().uuidString.lowercased()
+            self.socketPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("zago-\(pid)-\(nonce).sock")
+            self.tokenPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("zago-\(pid)-\(nonce).token")
         }
         self.sessionToken = sessionToken ?? UUID().uuidString.replacingOccurrences(of: "-", with: "")
         self.jsonRPCParser = JSONRPCParser(sessionToken: self.sessionToken)
@@ -175,8 +171,6 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
         defer { lock.unlock() }
 
         guard !isListening else { return }
-
-        unlink(socketPath)
 
         #if canImport(Glibc)
         let sockType = Int32(SOCK_STREAM.rawValue)
@@ -227,8 +221,18 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
         }
 
         chmod(socketPath, S_IRUSR | S_IWUSR)
-        try? sessionToken.write(toFile: tokenPath, atomically: true, encoding: .utf8)
-        chmod(tokenPath, S_IRUSR | S_IWUSR)
+        let tokenCreated = FileManager.default.createFile(
+            atPath: tokenPath,
+            contents: sessionToken.data(using: .utf8),
+            attributes: [.posixPermissions: 0o600]
+        )
+        guard tokenCreated else {
+            close(fd)
+            unlink(socketPath)
+            throw NSError(domain: "ZagoIPCServer", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Failed to securely create IPC session token"
+            ])
+        }
 
         guard listen(fd, 16) == 0 else {
             close(fd)
@@ -262,13 +266,15 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
 
         for (connectionId, clientFD) in activeConnections {
             close(clientFD)
-            jsonRPCParser.unregisterClient(connectionId: connectionId)
+            if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                delegate?.ipcServer(self, clientDidDisconnect: client)
+            }
         }
         activeConnections.removeAll()
     }
 
-    func handleRequest(_ request: JSONRPCRequest, connectionId: String) -> JSONRPCResponse {
-        handleRequest(request, parser: jsonRPCParser)
+    func handleMessage(_ data: Data, connectionId: String) -> JSONRPCResponse {
+        handleMessage(data, connectionId: connectionId, parser: jsonRPCParser)
     }
 
     private func acceptLoop() {
@@ -301,11 +307,18 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
 
     private func handleClientConnection(clientFD: Int32, connectionId: String) {
         defer {
-            close(clientFD)
             lock.lock()
-            activeConnections.removeValue(forKey: connectionId)
+            let ownsDescriptor = activeConnections[connectionId] == clientFD
+            if ownsDescriptor {
+                activeConnections.removeValue(forKey: connectionId)
+            }
             lock.unlock()
-            jsonRPCParser.unregisterClient(connectionId: connectionId)
+            if ownsDescriptor {
+                close(clientFD)
+            }
+            if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                delegate?.ipcServer(self, clientDidDisconnect: client)
+            }
         }
 
         var buffer = [UInt8](repeating: 0, count: 4096)
@@ -319,14 +332,30 @@ final class PosixZagoIPCServer: ZagoIPCServer, @unchecked Sendable {
 
             accumulatedData.append(buffer, count: bytesRead)
 
+            guard accumulatedData.count <= Self.maxPayloadBytes else {
+                let response = JSONRPCResponse.failure(id: nil, error: JSONRPCError(code: 413, message: "Request exceeds maxPayloadBytes"))
+                if let responseData = try? response.encodedData() {
+                    writeResponse(responseData, to: clientFD)
+                }
+                break
+            }
+
             while let newlineIndex = accumulatedData.firstIndex(of: UInt8(ascii: "\n")) {
                 let lineData = accumulatedData.subdata(in: 0..<newlineIndex)
                 accumulatedData.removeSubrange(0...newlineIndex)
 
                 guard !lineData.isEmpty else { continue }
 
-                let response = handleMessage(lineData, parser: jsonRPCParser)
-                if let responseData = try? JSONEncoder().encode(response) {
+                guard lineData.count <= Self.maxPayloadBytes else {
+                    let response = JSONRPCResponse.failure(id: nil, error: JSONRPCError(code: 413, message: "Request exceeds maxPayloadBytes"))
+                    if let responseData = try? response.encodedData() {
+                        writeResponse(responseData, to: clientFD)
+                    }
+                    break
+                }
+
+                let response = handleMessage(lineData, connectionId: connectionId, parser: jsonRPCParser)
+                if let responseData = try? response.encodedData() {
                     writeResponse(responseData, to: clientFD)
                 }
             }

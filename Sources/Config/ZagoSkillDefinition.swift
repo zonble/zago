@@ -12,13 +12,15 @@ description: >-
 
 # zago - Terminal Text Editor & LOGO Engine Specification
 
-`zago` is a lightweight terminal text editor with GNU Nano keybinding compatibility, a built-in **Editor LOGO** diagramming and text transformation engine, and a **Cross-Platform IPC Server**.
+`zago` is a lightweight terminal text editor with GNU Nano keybinding compatibility, a built-in **Editor LOGO** diagramming and text transformation engine, and a **POSIX local IPC server**.
 
-You can invoke `zago` from the command line in **headless mode**, connect over **IPC Unix domain socket / Windows named pipe**, or run interactively to render boxes, connector lines, multi-cell tables, flowcharts, turtle drawings, and CJK text transformations directly to `stdout` or terminal buffers.
+You can invoke `zago` from the command line in **headless mode**, connect over a local **IPC Unix domain socket** on supported POSIX systems, or run interactively to render boxes, connector lines, multi-cell tables, flowcharts, turtle drawings, and CJK text transformations directly to `stdout` or terminal buffers.
 
 ---
 
 ## 🚀 Quick CLI & IPC Reference
+
+> Current implementation note: IPC is available as a local POSIX Unix-domain socket. The socket path is generated per session and shown by zago; Windows named-pipe support is not available yet.
 
 | CLI Command / Option | Mode | Description |
 | :--- | :--- | :--- |
@@ -32,6 +34,8 @@ You can invoke `zago` from the command line in **headless mode**, connect over *
 ---
 
 ## 📡 JSON-RPC 2.0 IPC Protocol Specification
+
+Every connection must first call `zago.client.register` with the session token. All later requests use that connection's registered identity and cannot impersonate another `clientId`.
 
 When `zago` runs with `--ipc` or `set ipc.enabled true`, external AI agents can connect to `/tmp/zago-<pid>.sock` (Unix) or `\\\\.\\pipe\\zago-<pid>` (Windows) using line-delimited JSON-RPC 2.0.
 

@@ -92,6 +92,18 @@ public final class ProposalQueue: @unchecked Sendable {
         activeChunkIndex = 0
     }
 
+    /// Removes previews whose originating IPC connection has gone away.
+    @discardableResult
+    public func removeProposals(clientId: String) -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        let originalCount = pendingProposals.count
+        pendingProposals.removeAll { $0.clientId == clientId }
+        activeIndex = pendingProposals.isEmpty ? 0 : min(activeIndex, pendingProposals.count - 1)
+        activeChunkIndex = 0
+        return originalCount - pendingProposals.count
+    }
+
     /// Automatically shifts targetLine of pending proposals when user edits lines above proposal sites.
     public func adjustLineOffsets(aboveLine: Int, delta: Int) {
         lock.lock()

@@ -8,14 +8,41 @@ import XCTest
 @testable import TextMetrics
 
 final class IPCServerTests: XCTestCase {
-    private final class TestIPCDelegate: ZagoIPCServerDelegate {
+    private struct TestRPCRequest<Params: Encodable>: Encodable {
+        let jsonrpc = "2.0"
+        let method: String
+        let params: Params?
+        let id: Int
+    }
+
+    private struct RegistrationParams: Encodable {
+        let auth: String
+        let clientId: String
+        let clientName: String
+        let color: String?
+    }
+
+    private struct NoParams: Encodable {}
+
+    private func send<Params: Encodable>(
+        _ server: PosixZagoIPCServer,
+        method: String,
+        params: Params? = nil,
+        id: Int,
+        connectionId: String
+    ) throws -> JSONRPCResponse {
+        let data = try JSONEncoder().encode(TestRPCRequest(method: method, params: params, id: id))
+        return server.handleMessage(data, connectionId: connectionId)
+    }
+
+    private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
         private let editor: Editor
 
         init(editor: Editor) {
             self.editor = editor
         }
 
-        func handleGetBuffers() -> [BufferInfo] {
+        func ipcServerGetBuffers(_ server: any ZagoIPCServer) -> [BufferInfo] {
             editor.externalGetBuffers().map {
                 BufferInfo(
                     bufferId: $0.bufferId,
@@ -27,8 +54,9 @@ final class IPCServerTests: XCTestCase {
             }
         }
 
-        func handleGetText(
-            bufferTarget: String?,
+        func ipcServer(
+            _ server: any ZagoIPCServer,
+            textFor bufferTarget: String?,
             startLine: Int?,
             endLine: Int?
         ) -> (lines: [String], totalLines: Int)? {
@@ -42,23 +70,23 @@ final class IPCServerTests: XCTestCase {
             return (lines: result.lines, totalLines: result.totalLines)
         }
 
-        func handleGetCursor(bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
+        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
             guard let cursor = editor.externalGetCursor(bufferTarget: bufferTarget) else {
                 return nil
             }
             return (line: cursor.line, column: cursor.column, visualCol: cursor.visualCol, mode: cursor.mode)
         }
 
-        func handleShowPreview(clientId: String, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
+        func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
             true
         }
 
-        func handleExecuteLogo(script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
+        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
             let result = editor.externalExecuteLogo(script: script, mode: mode)
             return (success: result.success, result: result.result, error: result.error)
         }
 
-        func handleGetHistory(limit: Int) -> [JSONValue] {
+        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) -> [IPCHistoryEntry] {
             []
         }
     }
@@ -176,33 +204,44 @@ final class IPCServerTests: XCTestCase {
         let server = PosixZagoIPCServer(sessionToken: token)
 
         // 1. Invalid Token Registration
-        let invalidRegReq = JSONRPCRequest(
+        let resp1 = try! send(
+            server,
             method: "zago.client.register",
-            params: .object([
-                "auth": .string("wrong-token"),
-                "clientId": .string("bot-1"),
-                "clientName": .string("Bot"),
-            ]),
-            id: .int(1)
+            params: RegistrationParams(auth: "wrong-token", clientId: "bot-1", clientName: "Bot", color: nil),
+            id: 1,
+            connectionId: "conn-1"
         )
-        let resp1 = server.handleRequest(invalidRegReq, connectionId: "conn-1")
         XCTAssertNotNil(resp1.error)
         XCTAssertEqual(resp1.error?.code, 401)
 
         // 2. Valid Token Registration
-        let validRegReq = JSONRPCRequest(
+        let resp2 = try! send(
+            server,
             method: "zago.client.register",
-            params: .object([
-                "auth": .string(token),
-                "clientId": .string("bot-1"),
-                "clientName": .string("Architect-Bot"),
-                "color": .string("cyan"),
-            ]),
-            id: .int(2)
+            params: RegistrationParams(auth: token, clientId: "bot-1", clientName: "Architect-Bot", color: "cyan"),
+            id: 2,
+            connectionId: "conn-1"
         )
-        let resp2 = server.handleRequest(validRegReq, connectionId: "conn-1")
         XCTAssertNil(resp2.error)
-        XCTAssertEqual(resp2.result?.objectValue?["registered"]?.boolValue, true)
+
+        let unregisteredRead = try! send(
+            server,
+            method: "zago.buffer.getBuffers",
+            params: Optional<NoParams>.none,
+            id: 3,
+            connectionId: "conn-2"
+        )
+        XCTAssertEqual(unregisteredRead.error?.code, 401)
+
+        let registeredRead = try! send(
+            server,
+            method: "zago.buffer.getBuffers",
+            params: Optional<NoParams>.none,
+            id: 4,
+            connectionId: "conn-1"
+        )
+        XCTAssertNotEqual(registeredRead.error?.code, 401)
+
     }
 
     func testAIHistoryLogManager() {
@@ -226,8 +265,16 @@ final class IPCServerTests: XCTestCase {
         let target = TestIPCDelegate(editor: editor)
         let server = PosixZagoIPCServer(sessionToken: "test-token")
         server.delegate = target
-        let request = JSONRPCRequest(method: "zago.buffer.getBuffers", id: .int(1))
-        let response = server.handleRequest(request, connectionId: "conn-1")
-        XCTAssertNotNil(response.result)
+        server.dataSource = target
+        let registration = try! send(
+            server,
+            method: "zago.client.register",
+            params: RegistrationParams(auth: "test-token", clientId: "buffer-test", clientName: "Buffer Test", color: nil),
+            id: 0,
+            connectionId: "conn-1"
+        )
+        XCTAssertNil(registration.error)
+        let response = try! send(server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 1, connectionId: "conn-1")
+        XCTAssertNil(response.error)
     }
 }
