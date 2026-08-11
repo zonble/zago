@@ -128,6 +128,7 @@ public final class Editor: @unchecked Sendable {
     public let menuBarController = MenuBarController()
     public let tableModeController = TableModeController()
     public let canvasModeController = CanvasModeController()
+    public let debuggerController = DebuggerController()
 
     public var isMenuBarActive: Bool {
         get { menuBarController.isActive }

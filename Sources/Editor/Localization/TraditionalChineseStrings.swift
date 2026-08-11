@@ -57,7 +57,7 @@ public struct TraditionalChineseStrings {
         "prompt.logo": "❯ ",
         "prompt.fill_text": "填滿文字：",
         "prompt.table_dimensions": "表格列 欄 寬：",
-        "status.directory_buffer_readonly": "目錄頁面為唯讀狀態",
+        "status.directory_buffer_readonly": "此緩衝區為唯讀",
         "dirbuf.header_directory": "\" 目錄: %@",
         "dirbuf.header_instructions": "\" 在檔案上按 Enter 開啟，在資料夾上按 Enter 瀏覽",
         "dirbuf.up_dir": ".. (上一層目錄)",

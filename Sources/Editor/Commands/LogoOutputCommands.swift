@@ -77,6 +77,27 @@ public struct LogoCanvasCommand: Command {
     }
 }
 
+public struct LogoDebugCommand: Command {
+    public let id: CommandID = .logoDebug
+    public let name = "LOGO Debugger"
+    public let description = "Manage LOGO breakpoints"
+    public let commandBarAliases = ["logo"]
+    public init() {}
+    public func execute(on editor: Editor) { editor.toggleLogoDebuggerBuffer() }
+    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+        switch input.tokens.dropFirst().first?.lowercased() {
+        case "break":
+            let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
+            editor.setStatusMessage("[LOGO Debug] Breakpoint \(enabled ? "set" : "cleared") at line \(editor.buffer.lineIndex + 1)")
+        case "breaks": editor.showLogoDebuggerBuffer()
+        case "eval": editor.evalLogoCode()
+        case "debug", nil: editor.toggleLogoDebuggerBuffer()
+        default: editor.setStatusMessage("[LOGO Debug] Usage: :logo break | breaks | eval | debug")
+        }
+        return .handled
+    }
+}
+
 public struct ClearLogoOutputAndCanvasCommand: Command {
     public let id: CommandID = .logoClearOutput
     public let name = "Clear Canvas & Output"
