@@ -116,7 +116,7 @@ jobs:
 
       - name: Run Automated Tests & Code Coverage
         if: runner.os != 'Windows'
-        run: swift test --enable-code-coverage
+        run: swift test --enable-code-coverage --filter Tests
 
       - name: Run Automated Tests & Code Coverage (Windows)
         if: runner.os == 'Windows'
