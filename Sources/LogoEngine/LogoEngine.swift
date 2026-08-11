@@ -62,52 +62,14 @@ public final class LogoEngine {
     public var heading: Int = 90  // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
 
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
-    internal static let statementCommands: Set<LogoPrimitive> = [
-        .make, .name, .type, .show, .delete, .backspace, .deleteLine,
-        .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
-        .joinLine, .splitLine, .indentLines, .outdentLines,
-        .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .hr, .vline, .vhr, .table,
-        .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading,
-        .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
-        .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
-        .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
-        .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag, .throwTag,
-        .wait,
-        .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem, .setFirst, .setBFL,
-        .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
-    ]
+    internal static let statementCommands = LogoPrimitive.statementCommands
 
     /// Set of built-in expression primitives (reporters/operations) that evaluate to value strings.
-    internal static let expressionPrimitives: Set<LogoPrimitive> = [
-        .apply, .invoke, .map, .mapSe, .filter, .reduce, .crossmap, .runResult,
-        .date, .time, .thing, .word, .list, .sentence, .fput, .lput, .array, .mdarray,
-        .listToArray, .arrayToList, .combine, .reverse, .gensym, .first,
-        .last, .firsts, .butFirst, .butLast, .butFirsts, .item, .mditem,
-        .pick, .remove, .remdup, .quoted, .split, .setItem,
-        .push, .pop, .dequeue, .pprop, .gprop, .remprop, .plist, .plists, .error,
-        .names, .procedures, .primitives, .contents, .text, .arity, .isWord, .isList, .isArray,
-        .isNumber, .isEmpty, .isEqual, .isNotEqual, .isIdentityEqual, .isBefore,
-        .isMember, .isSubstring, .isProcedure, .isPrimitive, .isDefined, .isName,
-        .count, .ascii, .char, .member, .uppercase, .lowercase,
-        .standout, .translit,
-        .transformToHans, .transformToHant, .transformToLatin,
-        .transformToHiragana, .transformToKatakana, .transformToRomaji,
-        .spacingCJK,
-        .charCount, .charCountCJK, .charCountWords, .charCountEmoji, .charCountLines,
-        .parse, .runparse, .less, .greater, .lessOrEqual, .greaterOrEqual,
-        .sum, .min, .max, .difference, .product, .quotient, .power, .remainder, .modulo, .minus, .abs, .int, .round,
-        .sqrt, .exp, .log10, .ln, .arctan, .sin, .cos, .tan, .radArctan, .radSin, .radCos, .radTan,
-        .iseq, .rseq, .random, .rerandom, .form, .bitAnd, .bitOr, .bitXor, .bitNot, .ashift, .lshift,
-        .trueVal, .falseVal, .andLogic, .orLogic, .xorLogic, .notLogic,
-        .buffers, .buffer, .getline, .row, .col, .lineCount, .bufferText, .selection, .isModified, .fileName, .find,
-        .sort,
-    ]
+    internal static let expressionPrimitives = LogoPrimitive.expressionPrimitives
 
     internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
 
-    internal static let variadicPrimitives: Set<LogoPrimitive> = [
-        .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic,
-    ]
+    internal static let variadicPrimitives = LogoPrimitive.variadicPrimitives
 
     internal static func isKeyword(_ token: String) -> Bool {
         guard let prim = LogoPrimitive.from(token) else { return false }

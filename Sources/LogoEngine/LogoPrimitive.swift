@@ -564,3 +564,21 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         primitiveMap[token.uppercased()]
     }
 }
+
+extension LogoPrimitive {
+    /// Single source of truth for parser-facing primitive metadata.
+    internal static let statementCommands: Set<Self> = [
+        .make, .name, .type, .show, .delete, .backspace, .deleteLine, .top, .bottom, .lineStart, .lineEnd,
+        .appendText, .prependText, .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
+        .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .hr, .vline, .vhr, .table,
+        .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading, .setline, .gotoline,
+        .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run, .repeatLoop, .forLoop,
+        .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
+        .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag,
+        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem,
+        .setFirst, .setBFL, .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
+    ]
+
+    internal static let expressionPrimitives: Set<Self> = Set(allCases).subtracting(statementCommands).subtracting([.arrow, .setHeading, .rshift, .readWord, .readChar])
+    internal static let variadicPrimitives: Set<Self> = [.word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic]
+}
