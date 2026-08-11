@@ -524,7 +524,7 @@ extension Editor {
             var nextVisited = visitedProcedures
             nextVisited.insert(procedureName)
             if let blockedToken = firstTableModeBlockedLogoToken(
-                in: procedure.bodyTokens, visitedProcedures: nextVisited)
+                in: procedure.bodyTokens.map(\.text), visitedProcedures: nextVisited)
             {
                 return blockedToken
             }

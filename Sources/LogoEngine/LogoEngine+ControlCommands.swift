@@ -418,12 +418,21 @@ extension LogoEngine {
                     params.append(paramName)
                     index += 1
                 }
-                var procTokens: [String] = []
+                var procSourceTokens: [LogoToken] = []
+                let hasRootSourceTokens = tokens.count == rootSourceTokens.count
                 while index < tokens.count && tokens[index].uppercased() != "END" {
-                    procTokens.append(tokens[index])
+                    if hasRootSourceTokens {
+                        procSourceTokens.append(rootSourceTokens[index])
+                    } else {
+                        procSourceTokens.append(LogoToken(text: tokens[index], sourceRange: 0..<0))
+                    }
                     index += 1
                 }
-                customProcedures[procName] = LogoProcedure(name: procName, parameters: params, bodyTokens: procTokens)
+                customProcedures[procName] = LogoProcedure(
+                    name: procName,
+                    parameters: params,
+                    bodyTokens: procSourceTokens
+                )
             }
             return true
 

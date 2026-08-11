@@ -279,7 +279,7 @@ struct LogoCoverageTests {
         #expect(engine.evaluateCondition(["hello", "world"]) == true)
 
         engine.variables["x"] = "outer"
-        let proc = LogoProcedure(name: "JOIN", parameters: ["x", "y"], bodyTokens: ["OUTPUT", "WORD", ":x", ":y"])
+        let proc = LogoProcedure(name: "JOIN", parameters: ["x", "y"], bodyTokenTexts: ["OUTPUT", "WORD", ":x", ":y"])
         var invokeIndex = 0
         #expect(
             engine.invokeProcedure(proc, tokens: ["JOIN", "\"left", "\"right"], index: &invokeIndex) == "leftright")

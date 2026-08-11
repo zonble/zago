@@ -30,6 +30,15 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     #expect(environment["formatted"] == "    3.1416")
 }
 
+@Test func testLogoProcedureRetainsBodySourceTokens() {
+    let editor = Editor()
+    let engine = LogoEngine(delegate: editor)
+    engine.execute("TO MYFRAME MAKE \"value 1 END")
+
+    #expect(engine.customProcedures["MYFRAME"]?.bodyTokens.map(\.text) == ["MAKE", "\"value", "1"])
+    #expect(engine.customProcedures["MYFRAME"]?.bodyTokens.first?.sourceRange == 11..<15)
+}
+
 private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Sendable {
     var writes: [String] = []
     private var lines: [String]

@@ -7,12 +7,16 @@ import Foundation
 public struct LogoProcedure: Sendable {
     public let name: String
     public let parameters: [String]
-    public let bodyTokens: [String]
+    public let bodyTokens: [LogoToken]
 
-    public init(name: String, parameters: [String], bodyTokens: [String]) {
+    public init(name: String, parameters: [String], bodyTokens: [LogoToken]) {
         self.name = name
         self.parameters = parameters
         self.bodyTokens = bodyTokens
+    }
+
+    public init(name: String, parameters: [String], bodyTokenTexts: [String]) {
+        self.init(name: name, parameters: parameters, bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
     }
 }
 
@@ -65,7 +69,7 @@ public final class LogoEngine {
     public internal(set) var variables: LogoEnvironment
     public internal(set) var propertyLists: [String: [String: LogoValue]] = [:]
     public internal(set) var executionFrames: [LogoExecutionFrame] = []
-    private var rootSourceTokens: [LogoToken] = []
+    internal var rootSourceTokens: [LogoToken] = []
     internal var lastExpressionValue: LogoValue? = nil
     public var hasSetStatusMessage: Bool = false
     internal var gensymCounter: Int = 0
@@ -151,7 +155,7 @@ public final class LogoEngine {
         }
         var index = 0
         var frameReturn: String? = nil
-        executeTokens(tokens, index: &index, frameReturn: &frameReturn)
+        executeTokens(tokens, sourceTokens: sourceTokens, index: &index, frameReturn: &frameReturn)
         if let ret = frameReturn, !ret.isEmpty {
             lastResult = ret
         }
@@ -159,13 +163,18 @@ public final class LogoEngine {
     }
 
     /// Step-by-step 3-stage statement execution loop for tokenized scripts.
-    internal func executeTokens(_ tokens: [String], index: inout Int, frameReturn: inout String?) {
+    internal func executeTokens(
+        _ tokens: [String],
+        sourceTokens: [LogoToken]? = nil,
+        index: inout Int,
+        frameReturn: inout String?
+    ) {
         guard self.delegate != nil else { return }
         while index < tokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
-            if tokens.count == rootSourceTokens.count, index < rootSourceTokens.count {
+            if let sourceTokens, index < sourceTokens.count {
                 executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
                     procedureName: executionFrames.last?.procedureName,
-                    token: rootSourceTokens[index],
+                    token: sourceTokens[index],
                     scopeDepth: variables.scopeDepth
                 )
             }

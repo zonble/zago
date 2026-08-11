@@ -351,7 +351,7 @@ extension LogoEngine {
 
         var procIndex = 0
         var procReturn: String? = nil
-        executeTokens(proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
+        executeTokens(proc.bodyTokens.map(\.text), sourceTokens: proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
         }
