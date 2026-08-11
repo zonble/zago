@@ -75,6 +75,11 @@ extension LogoEngine {
         if result.hasSuffix("\"") {
             result.removeLast()
         }
+        if result.hasPrefix("|"), result.hasSuffix("|"), result.count >= 2 {
+            result.removeFirst()
+            result.removeLast()
+            result = result.replacingOccurrences(of: "\\|", with: "|").replacingOccurrences(of: "\\\\", with: "\\")
+        }
         return result
     }
 
@@ -216,6 +221,13 @@ extension LogoEngine {
             name.removeFirst()
         }
         return name.lowercased()
+    }
+
+    internal func parseLogoValuePreservingWhitespace(_ raw: String) -> LogoValue {
+        if !raw.isEmpty && raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return .string(raw)
+        }
+        return LogoValue.parse(raw)
     }
 
     /// Formats current date string according to specified format pattern.

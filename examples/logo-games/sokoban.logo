@@ -1,0 +1,144 @@
+; ==============================================================================
+; Sokoban Game in zago Editor LOGO
+; ==============================================================================
+; Controls:
+;   W / S / A / D - Move Up / Down / Left / Right
+;   Q - Quit Game
+; Usage in zago:
+;   1. Esc -> type: LOAD "examples/logo-games/sokoban.logo
+; ==============================================================================
+
+TO SOKOBAN
+    MAKE "dotStr SUBSTRING |#@ $ .#| 6 6
+    MAKE "emptyStr | |
+    MAKE "height 6
+    MAKE "width 7
+    MAKE "grid MDARRAY [6 7]
+
+    ; Level 1 Layout: # = Wall, . = Target, $ = Box, @ = Player
+    MAKE "map [
+        |#######|
+        |#@ $ .#|
+        |#  #  #|
+        |#  $ .#|
+        |#     #|
+        |#######|
+    ]
+
+    MAKE "py 2
+    MAKE "px 2
+    MAKE "targets 0
+
+    ; Load map into 2D grid (1-indexed)
+    MAKE "r 1
+    FOREACH :map [
+        MAKE "rowStr ?
+        MAKE "c 1
+        WHILE [ :c <= :width ] [
+            MAKE "ch SUBSTRING :rowStr :c :c
+            MDSETITEM (LIST :r :c) :grid :ch
+            IF :ch = "@ [
+                MAKE "py :r
+                MAKE "px :c
+            ]
+            IF :ch = :dotStr [
+                MAKE "targets (:targets + 1)
+            ]
+            MAKE "c (:c + 1)
+        ]
+        MAKE "r (:r + 1)
+    ]
+
+    MAKE "playing true
+
+    DO.WHILE [
+        ; Clear and Render Grid
+        ERASEALL
+        APPEND "+----------------------------+"
+        APPEND |\|        zago SOKOBAN        \||
+        APPEND "+----------------------------+"
+        
+        MAKE "r 1
+        WHILE [ :r <= :height ] [
+            MAKE "line |\||
+            MAKE "c 1
+            WHILE [ :c <= :width ] [
+                MAKE "cell MDITEM (LIST :r :c) :grid
+                MAKE "line WORD :line WORD |  | :cell
+                MAKE "c (:c + 1)
+            ]
+            MAKE "line WORD :line |       \||
+            APPEND :line
+            MAKE "r (:r + 1)
+        ]
+
+        APPEND "+----------------------------+"
+        APPEND |\| Controls: W/A/S/D \| Q:Quit \||
+        APPEND "+----------------------------+"
+
+        ; Check Win Condition
+        MAKE "solved 0
+        MAKE "r 1
+        WHILE [ :r <= :height ] [
+            MAKE "c 1
+            WHILE [ :c <= :width ] [
+                MAKE "cell MDITEM (LIST :r :c) :grid
+                IF :cell = "* [ MAKE "solved (:solved + 1) ]
+                MAKE "c (:c + 1)
+            ]
+            MAKE "r (:r + 1)
+        ]
+
+        IFELSE :solved = :targets [
+            APPEND ""
+            APPEND "CONGRATULATIONS! You solved the puzzle!"
+            MAKE "playing false
+        ] [
+            MAKE "k READCHAR "Move (W/A/S/D) or Q to Quit: "
+            MAKE "k LOWERCASE :k
+
+            IFELSE OR (:k = "q) (:k = "") [
+                APPEND "Game Quit."
+                MAKE "playing false
+            ] [
+                MAKE "dy 0
+                MAKE "dx 0
+                IF :k = "w [ MAKE "dy -1 ]
+                IF :k = "s [ MAKE "dy 1 ]
+                IF :k = "a [ MAKE "dx -1 ]
+                IF :k = "d [ MAKE "dx 1 ]
+
+                IF OR (:dy != 0) (:dx != 0) [
+                    MAKE "ny (:py + :dy)
+                    MAKE "nx (:px + :dx)
+                    MAKE "targetCell MDITEM (LIST :ny :nx) :grid
+
+                    ; Open floor or target
+                    IFELSE OR (:targetCell = :emptyStr) (:targetCell = :dotStr) [
+                        IFELSE (MDITEM (LIST :py :px) :grid) = "+ [ MDSETITEM (LIST :py :px) :grid :dotStr ] [ MDSETITEM (LIST :py :px) :grid :emptyStr ]
+                        IFELSE :targetCell = :dotStr [ MDSETITEM (LIST :ny :nx) :grid "+ ] [ MDSETITEM (LIST :ny :nx) :grid "@ ]
+                        MAKE "py :ny
+                        MAKE "px :nx
+                    ] [
+                        ; Push Box ($ or *)
+                        IF OR (:targetCell = "$) (:targetCell = "*) [
+                            MAKE "nny (:ny + :dy)
+                            MAKE "nnx (:nx + :dx)
+                            MAKE "beyondCell MDITEM (LIST :nny :nnx) :grid
+
+                            IF OR (:beyondCell = :emptyStr) (:beyondCell = :dotStr) [
+                                IFELSE :beyondCell = :dotStr [ MDSETITEM (LIST :nny :nnx) :grid "* ] [ MDSETITEM (LIST :nny :nnx) :grid "$ ]
+                                IFELSE :targetCell = "* [ MDSETITEM (LIST :ny :nx) :grid "+ ] [ MDSETITEM (LIST :ny :nx) :grid "@ ]
+                                IFELSE (MDITEM (LIST :py :px) :grid) = "+ [ MDSETITEM (LIST :py :px) :grid :dotStr ] [ MDSETITEM (LIST :py :px) :grid :emptyStr ]
+                                MAKE "py :ny
+                                MAKE "px :nx
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ][ :playing = true ]
+END
+
+SOKOBAN

@@ -101,7 +101,11 @@ struct Zago: ParsableCommand {
 
     func run() throws {
         let fileIOStrategy = LocalEditorFileIOStrategy.shared
-        let terminal = LocalTerminal()
+        #if os(Windows)
+            let terminal: EditorTerminal = WindowsTerminal()
+        #else
+            let terminal: EditorTerminal = PosixTerminal()
+        #endif
         let gitService = GitService()
         let dependencies = EditorDependencies(
             fileIOStrategy: fileIOStrategy,
@@ -156,7 +160,22 @@ struct Zago: ParsableCommand {
             }
         #endif
 
-        if isStdinPiped {
+        var shouldReadStdin = false
+        if isExplicitDash {
+            shouldReadStdin = true
+        } else if isStdinPiped && eval == nil && script == nil {
+            #if !os(Windows)
+                var pfd = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+                let pollRes = poll(&pfd, 1, 0)
+                if pollRes > 0 && (pfd.revents & Int16(POLLIN)) != 0 {
+                    shouldReadStdin = true
+                }
+            #else
+                shouldReadStdin = true
+            #endif
+        }
+
+        if shouldReadStdin {
             if targetFiles.contains("-") {
                 targetFiles.removeAll(where: { $0 == "-" })
             }
@@ -199,15 +218,26 @@ struct Zago: ParsableCommand {
             "zago.repository": ZagoVersion.repository,
         ]
 
+        func extractHeadlessOutput(from editor: Editor) -> String {
+            let logoOut = editor.logoOutputHistory.filter { line in
+                !(line.hasPrefix("--- [") && line.contains("] Run: "))
+            }
+            if !logoOut.isEmpty {
+                return logoOut.joined(separator: "\n")
+            } else {
+                return editor.buffer.lines.joined(separator: "\n")
+            }
+        }
+
         if let code = eval {
             let editor = Editor(
                 options: headlessOptions,
                 configSource: configSource,
                 dependencies: dependencies,
-                initialVariables: initialVariables,
+                initialVariables: initialVariables
             )
             editor.runLogoScript(code)
-            let output = editor.buffer.lines.joined(separator: "\n")
+            let output = extractHeadlessOutput(from: editor)
             terminal.write(output + "\n")
             return
         }
@@ -223,8 +253,10 @@ struct Zago: ParsableCommand {
                     initialVariables: initialVariables
                 )
                 editor.runLogoScript(code)
-                let output = editor.buffer.lines.joined(separator: "\n")
-                terminal.write(output + "\n")
+                let output = extractHeadlessOutput(from: editor)
+                if !output.isEmpty {
+                    terminal.write(output + "\n")
+                }
                 return
             } catch {
                 if let data = "Error reading script file '\(scriptPath)': \(error.localizedDescription)\n".data(

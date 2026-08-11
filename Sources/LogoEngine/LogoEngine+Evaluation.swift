@@ -3,23 +3,28 @@ import Foundation
 extension LogoEngine {
     /// Evaluates condition expressions for IF, WHILE, UNTIL, etc.
     internal func evaluateCondition(_ conditionTokens: [String]) -> Bool {
-        guard !conditionTokens.isEmpty else { return false }
+        var tokensToEval = conditionTokens
+        if tokensToEval.first == "[" && tokensToEval.last == "]" && tokensToEval.count >= 2 {
+            tokensToEval.removeFirst()
+            tokensToEval.removeLast()
+        }
+        guard !tokensToEval.isEmpty else { return false }
         let savedLastResult = lastResult
         defer { lastResult = savedLastResult }
 
         var idx = 0
-        let leftValStr = evaluateExpression(conditionTokens, index: &idx)
+        let leftValStr = evaluateExpression(tokensToEval, index: &idx)
         let resBool = logoIsTrue(leftValStr)
 
-        if idx >= conditionTokens.count - 1 {
+        if idx >= tokensToEval.count - 1 {
             return resBool
         }
 
-        if idx + 1 < conditionTokens.count {
-            let opToken = conditionTokens[idx + 1]
+        if idx + 1 < tokensToEval.count {
+            let opToken = tokensToEval[idx + 1]
             if let op = LogoOperator.from(opToken), op.isComparison {
                 idx += 2
-                let rightValStr = evaluateExpression(conditionTokens, index: &idx)
+                let rightValStr = evaluateExpression(tokensToEval, index: &idx)
 
                 if let num1 = Double(leftValStr), let num2 = Double(rightValStr) {
                     switch op {
@@ -58,7 +63,30 @@ extension LogoEngine {
         if tokens[index] == "(" {
             isParenthesized = true
             index += 1
-            if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
+            if index < tokens.count, LogoPrimitive.from(tokens[index]) == .ifElseCondition {
+                index += 1
+                var condTokens: [String] = []
+                while index < tokens.count && tokens[index] != "[" {
+                    condTokens.append(tokens[index])
+                    index += 1
+                }
+
+                let isTrue = evaluateCondition(condTokens)
+                var trueBlock: [String] = []
+                var falseBlock: [String] = []
+                if index < tokens.count && tokens[index] == "[" {
+                    trueBlock = extractBlockTokens(tokens: tokens, index: &index)
+                }
+                if index + 1 < tokens.count && tokens[index + 1] == "[" {
+                    index += 1
+                    falseBlock = extractBlockTokens(tokens: tokens, index: &index)
+                }
+
+                let selectedBlock = isTrue ? trueBlock : falseBlock
+                var blockIndex = 0
+                leftVal = selectedBlock.isEmpty ? "" : evaluateExpression(selectedBlock, index: &blockIndex)
+                setLastExpressionString(leftVal)
+            } else if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
                 LogoEngine.isVariadicPrimitive(variadicPrim)
             {
                 index += 1
@@ -186,6 +214,45 @@ extension LogoEngine {
                     } else if op == .add {
                         leftVal = leftVal + rightVal
                     }
+                } else if op.isComparison && isParenthesized {
+                    index += 2
+                    guard index < tokens.count else { break }
+                    let rightVal = evaluateExpression(tokens, index: &index)
+                    if let num1 = Double(leftVal), let num2 = Double(rightVal) {
+                        switch op {
+                        case .equal, .aliasEqual:
+                            leftVal = num1 == num2 ? "true" : "false"
+                        case .notEqual, .aliasNotEqual:
+                            leftVal = num1 != num2 ? "true" : "false"
+                        case .lessThan:
+                            leftVal = num1 < num2 ? "true" : "false"
+                        case .greaterThan:
+                            leftVal = num1 > num2 ? "true" : "false"
+                        case .lessOrEqual:
+                            leftVal = num1 <= num2 ? "true" : "false"
+                        case .greaterOrEqual:
+                            leftVal = num1 >= num2 ? "true" : "false"
+                        default:
+                            leftVal = "false"
+                        }
+                    } else {
+                        switch op {
+                        case .equal, .aliasEqual:
+                            leftVal = leftVal == rightVal ? "true" : "false"
+                        case .notEqual, .aliasNotEqual:
+                            leftVal = leftVal != rightVal ? "true" : "false"
+                        case .lessThan:
+                            leftVal = leftVal < rightVal ? "true" : "false"
+                        case .greaterThan:
+                            leftVal = leftVal > rightVal ? "true" : "false"
+                        case .lessOrEqual:
+                            leftVal = leftVal <= rightVal ? "true" : "false"
+                        case .greaterOrEqual:
+                            leftVal = leftVal >= rightVal ? "true" : "false"
+                        default:
+                            leftVal = "false"
+                        }
+                    }
                 } else {
                     break
                 }
@@ -295,9 +362,6 @@ extension LogoEngine {
         executeTokens(proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
-        }
-        if let ret = procReturn, !ret.isEmpty {
-            lastResult = ret
         }
         return procReturn
     }

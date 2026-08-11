@@ -125,7 +125,7 @@ extension LogoEngine {
                     variables["repcount"] = "\(r)"
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                    if frameReturn != nil || byeFlag || currentThrowTag != nil { break }
+                    if frameReturn != nil || byeFlag || currentThrowTag != nil || hasUncaughtError { break }
                 }
             }
             return true
@@ -262,7 +262,7 @@ extension LogoEngine {
                         var cur = startVal
                         var iteration = 0
                         while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil
-                            && currentThrowTag == nil
+                            && currentThrowTag == nil && !hasUncaughtError
                         {
                             iteration += 1
                             guard guardLoopIteration("FOR", iteration: iteration) else { break }
@@ -292,7 +292,7 @@ extension LogoEngine {
                             variables[varName] = "\(i)"
                             var bIdx = 0
                             executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
-                            if byeFlag || frameReturn != nil || currentThrowTag != nil { break }
+                            if byeFlag || frameReturn != nil || currentThrowTag != nil || hasUncaughtError { break }
                         }
                     }
                 }
@@ -303,7 +303,7 @@ extension LogoEngine {
             index += 1
             if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
                 var iteration = 0
-                while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil && !hasUncaughtError {
                     iteration += 1
                     guard guardLoopIteration("WHILE", iteration: iteration) else { break }
                     var bIdx = 0
@@ -316,7 +316,7 @@ extension LogoEngine {
             index += 1
             if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
                 var iteration = 0
-                while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil {
+                while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil && !hasUncaughtError {
                     iteration += 1
                     guard guardLoopIteration("UNTIL", iteration: iteration) else { break }
                     var bIdx = 0
@@ -331,9 +331,14 @@ extension LogoEngine {
                 let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
                 index += 1
                 var condTokens: [String] = []
-                while index < tokens.count && tokens[index] != "]" {
-                    condTokens.append(tokens[index])
+                if index < tokens.count && tokens[index] == "[" {
+                    condTokens = extractBlockTokens(tokens: tokens, index: &index)
                     index += 1
+                } else {
+                    while index < tokens.count && tokens[index] != "]" {
+                        condTokens.append(tokens[index])
+                        index += 1
+                    }
                 }
                 var iteration = 0
                 repeat {
@@ -341,7 +346,7 @@ extension LogoEngine {
                     guard guardLoopIteration("DO.WHILE", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
-                } while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
+                } while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil && !hasUncaughtError
             }
             return true
 
@@ -351,9 +356,14 @@ extension LogoEngine {
                 let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
                 index += 1
                 var condTokens: [String] = []
-                while index < tokens.count && tokens[index] != "]" {
-                    condTokens.append(tokens[index])
+                if index < tokens.count && tokens[index] == "[" {
+                    condTokens = extractBlockTokens(tokens: tokens, index: &index)
                     index += 1
+                } else {
+                    while index < tokens.count && tokens[index] != "]" {
+                        condTokens.append(tokens[index])
+                        index += 1
+                    }
                 }
                 var iteration = 0
                 repeat {
@@ -361,7 +371,7 @@ extension LogoEngine {
                     guard guardLoopIteration("DO.UNTIL", iteration: iteration) else { break }
                     var bIdx = 0
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
-                } while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
+                } while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil && !hasUncaughtError
             }
             return true
 

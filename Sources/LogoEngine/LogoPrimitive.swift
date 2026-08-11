@@ -373,7 +373,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         // Buffer Primitives
         (["BUFFERS", "BUFFERLIST"], .buffers),
         (["BUFFER"], .buffer),
-        (["CLEARBUFFER", "ERASEBUFFER"], .clearBuffer),
+        (["CLEARBUFFER", "ERASEBUFFER", "ERASEALL", "ERASE.ALL", "CLEAR", "CS", "CLEARSCR", "CLEARSCREEN"], .clearBuffer),
         (["GETLINE"], .getline),
         (["SETLINE"], .setline),
         (["GOTOLINE", "SETROW"], .gotoline),

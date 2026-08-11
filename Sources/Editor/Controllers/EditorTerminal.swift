@@ -49,6 +49,9 @@ public protocol EditorTerminal: AnyObject {
     /// Reads a single line from input stream in non-interactive/headless mode.
     func readNonInteractiveLine(prompt: String) -> String?
 
+    /// Reads a single character from input stream in non-interactive/headless mode.
+    func readNonInteractiveChar(prompt: String) -> String?
+
     /// Wakes up any blocked readKey call from another thread (e.g. IPC server thread).
     func wakeup()
 }

@@ -868,19 +868,25 @@ extension LogoEngine {
             let str = unquote(evaluateExpression(tokens, index: &index))
             index += 1
             let startVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
-            var lengthVal: Int? = nil
+            var endOrLengthVal: Int? = nil
             if index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
                 var nextIdx = index + 1
                 if let len = Int(evaluateExpression(tokens, index: &nextIdx)), len >= 0 {
                     index = nextIdx
-                    lengthVal = len
+                    endOrLengthVal = len
                 }
             }
             let chars = Array(str)
             let zeroStart = max(0, startVal - 1)
             guard zeroStart < chars.count else { return "" }
             let maxLen = chars.count - zeroStart
-            let effectiveLen = min(lengthVal ?? maxLen, maxLen)
+            let requestedLen: Int
+            if let endOrLengthVal {
+                requestedLen = endOrLengthVal >= startVal ? endOrLengthVal - startVal + 1 : endOrLengthVal
+            } else {
+                requestedLen = maxLen
+            }
+            let effectiveLen = min(max(0, requestedLen), maxLen)
             return String(chars[zeroStart..<(zeroStart + effectiveLen)])
 
         case .replace:
@@ -928,9 +934,19 @@ extension LogoEngine {
         case .format:
             index += 1
             let pattern = unquote(evaluateExpression(tokens, index: &index))
-            index += 1
-            let argVal = evaluateExpression(tokens, index: &index)
-            let rawArgs = LogoValue.parse(argVal).toListItems().map { $0.description }
+            let expectedArgCount = formatArgumentCount(pattern: pattern)
+            var rawArgs: [String] = []
+            while rawArgs.count < expectedArgCount && index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+                index += 1
+                let argVal = evaluateExpression(tokens, index: &index)
+                let parsedArg = LogoValue.parse(argVal)
+                switch parsedArg {
+                case .list(let items), .array(let items):
+                    rawArgs.append(contentsOf: items.map { $0.description })
+                case .string:
+                    rawArgs.append(argVal)
+                }
+            }
             return formatStringPattern(pattern: pattern, args: rawArgs)
 
         case .padleft, .padright:
@@ -1110,5 +1126,50 @@ extension LogoEngine {
             }
         }
         return result
+    }
+
+    private func formatArgumentCount(pattern: String) -> Int {
+        var count = 0
+        var maxPositional = 0
+        let chars = Array(pattern)
+        var i = 0
+
+        while i < chars.count {
+            guard chars[i] == "%", i + 1 < chars.count else {
+                i += 1
+                continue
+            }
+
+            i += 1
+            if chars[i] == "%" {
+                i += 1
+                continue
+            }
+
+            var digits = ""
+            let digitStart = i
+            while i < chars.count && chars[i].isNumber {
+                digits.append(chars[i])
+                i += 1
+            }
+            if !digits.isEmpty, let pos = Int(digits), pos > 0,
+                i == chars.count || !("sSdfxX".contains(chars[i]))
+            {
+                maxPositional = max(maxPositional, pos)
+                continue
+            }
+            i = digitStart
+
+            while i < chars.count {
+                let ch = chars[i]
+                i += 1
+                if "sSdfxX".contains(ch) {
+                    count += 1
+                    break
+                }
+            }
+        }
+
+        return max(count, maxPositional)
     }
 }

@@ -194,6 +194,7 @@ extension Editor: LogoEngineDelegate {
 
     public func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String? {
         guard isInteractiveMode else {
+            flushPendingHeadlessLogoOutputBeforeRead()
             return terminal.readNonInteractiveLine(prompt: prompt)
         }
 
@@ -262,6 +263,7 @@ extension Editor: LogoEngineDelegate {
 
     public func logoEngine(_ engine: LogoEngine, readCharWithPrompt prompt: String) -> String? {
         guard isInteractiveMode else {
+            flushPendingHeadlessLogoOutputBeforeRead()
             return terminal.readNonInteractiveChar(prompt: prompt)
         }
 
@@ -284,6 +286,14 @@ extension Editor: LogoEngineDelegate {
                 return String(ch)
             case .enter:
                 return "\n"
+            case .arrowUp:
+                return "w"
+            case .arrowDown:
+                return "s"
+            case .arrowLeft:
+                return "a"
+            case .arrowRight:
+                return "d"
             case .esc, .ctrl("c"):
                 return nil
             case .resize, .unknown:
@@ -292,6 +302,22 @@ extension Editor: LogoEngineDelegate {
                 continue
             }
         }
+    }
+
+    private func flushPendingHeadlessLogoOutputBeforeRead() {
+        let pendingLogoOutput = logoOutputHistory.filter { line in
+            !(line.hasPrefix("--- [") && line.contains("] Run: "))
+        }
+        if !pendingLogoOutput.isEmpty {
+            terminal.write(pendingLogoOutput.joined(separator: "\n") + "\n")
+            logoOutputHistory.removeAll()
+        } else if !buffer.lines.isEmpty {
+            terminal.write(buffer.lines.joined(separator: "\n") + "\n")
+        }
+
+        buffer.lines = [""]
+        buffer.lineIndex = 0
+        buffer.columnIndex = 0
     }
 
     private func selectedOrCurrentLineRange() -> ClosedRange<Int> {
@@ -398,6 +424,30 @@ extension Editor {
         .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .goto, .gotoline, .gotocol,
     ]
+
+    /// Runs a LOGO script in full interactive TTY mode.
+    public func runInteractiveLogoScript(_ script: String) {
+        isInteractiveMode = true
+        defer {
+            isInteractiveMode = false
+            terminal.clearScreen()
+            terminal.showCursor()
+            terminal.disableRawMode()
+        }
+
+        do {
+            try terminal.enableRawMode()
+        } catch {
+            let message = (error as? LocalizedError)?.errorDescription ?? "\(error)"
+            if let data = (message + "\n").data(using: .utf8) {
+                FileHandle.standardError.write(data)
+            }
+            return
+        }
+        terminal.hideCursor()
+
+        _ = runLogoScript(script)
+    }
 
     @discardableResult
     public func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {

@@ -144,12 +144,7 @@ extension LogoEngine {
             } else {
                 index -= 1
             }
-            if let result = delegate?.logoEngine(self, readWordWithPrompt: prompt) {
-                return result
-            } else {
-                reportError(LogoError(code: 1, message: "[LOGO Error: Stopped by user]"), token: "READWORD")
-                return ""
-            }
+            return delegate?.logoEngine(self, readWordWithPrompt: prompt) ?? ""
 
         case .readChar:
             index += 1
@@ -161,12 +156,7 @@ extension LogoEngine {
             } else {
                 index -= 1
             }
-            if let result = delegate?.logoEngine(self, readCharWithPrompt: prompt) {
-                return result
-            } else {
-                reportError(LogoError(code: 1, message: "[LOGO Error: Stopped by user]"), token: "READCHAR")
-                return ""
-            }
+            return delegate?.logoEngine(self, readCharWithPrompt: prompt) ?? ""
 
         default:
             return nil
