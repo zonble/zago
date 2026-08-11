@@ -348,6 +348,18 @@ import Foundation
                 FileHandle.standardError.write(data)
                 fflush(nil)
             }
+            if isatty(STDIN_FILENO) != 0 {
+                let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
+                if flags >= 0 {
+                    _ = fcntl(STDIN_FILENO, F_SETFL, flags & ~O_NONBLOCK)
+                }
+                defer {
+                    if flags >= 0 {
+                        _ = fcntl(STDIN_FILENO, F_SETFL, flags)
+                    }
+                }
+                return readLine()
+            }
             return readLine()
         }
 
@@ -355,14 +367,53 @@ import Foundation
         ///
         /// Technical Details:
         /// - Flushes `stderr` prompt text via `fflush(nil)` before blocking on
-        ///   `readLine()`.
+        ///   `read()`.
         public func readNonInteractiveChar(prompt: String) -> String? {
             if !prompt.isEmpty, let data = prompt.data(using: .utf8) {
                 FileHandle.standardError.write(data)
                 fflush(nil)
             }
-            guard let line = readLine(), let firstChar = line.first else { return nil }
-            return String(firstChar)
+            if isatty(STDIN_FILENO) != 0 {
+                let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
+                if flags >= 0 {
+                    _ = fcntl(STDIN_FILENO, F_SETFL, flags & ~O_NONBLOCK)
+                }
+                defer {
+                    if flags >= 0 {
+                        _ = fcntl(STDIN_FILENO, F_SETFL, flags)
+                    }
+                }
+
+                var oldt = termios()
+                tcgetattr(STDIN_FILENO, &oldt)
+                var newt = oldt
+                newt.c_lflag &= ~tcflag_t(ECHO | ICANON)
+                withUnsafeMutableBytes(of: &newt.c_cc) { ptr in
+                    ptr[Int(VMIN)] = 1
+                    ptr[Int(VTIME)] = 0
+                }
+                tcsetattr(STDIN_FILENO, TCSANOW, &newt)
+                defer { tcsetattr(STDIN_FILENO, TCSANOW, &oldt) }
+
+                var buf: UInt8 = 0
+                while true {
+                    let n = read(STDIN_FILENO, &buf, 1)
+                    if n > 0 {
+                        return String(UnicodeScalar(buf))
+                    } else if n == 0 {
+                        return nil
+                    } else {
+                        let err = errno
+                        if err == EINTR || err == EAGAIN || err == EWOULDBLOCK {
+                            continue
+                        }
+                        return nil
+                    }
+                }
+            } else {
+                guard let line = readLine(), let firstChar = line.first else { return nil }
+                return String(firstChar)
+            }
         }
     }
 #endif

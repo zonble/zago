@@ -1,0 +1,105 @@
+; ==============================================================================
+; 1A2B / Mastermind Code Breaking Game in zago Editor LOGO
+; ==============================================================================
+; Goal:
+;   Guess the secret 4-digit number (all digits unique 0-9).
+;   A = Correct digit and position.
+;   B = Correct digit but wrong position.
+; Usage in zago:
+;   1. Esc -> type: LOAD "examples/logo-games/mastermind_1a2b.logo
+; ==============================================================================
+
+TO MASTERMIND_1A2B
+    ; Generate 4 unique random digits (0-9)
+    MAKE "secret []
+    WHILE [ (COUNT :secret) < 4 ] [
+        MAKE "d RANDOM 10
+        IF (MEMBER? :d :secret) = "false [
+            MAKE "secret LPUT :d :secret
+        ]
+    ]
+
+    MAKE "code WORD (ITEM 1 :secret) WORD (ITEM 2 :secret) WORD (ITEM 3 :secret) (ITEM 4 :secret)
+    MAKE "attempts 0
+    MAKE "history []
+    MAKE "playing true
+
+    DO.WHILE [
+        ERASEALL
+        APPEND "+----------------------------+"
+        APPEND |\|   zago 1A2B MASTERMIND     \||
+        APPEND "+----------------------------+"
+        
+        FOREACH :history [
+            MAKE "line WORD |\|| FORMAT | %-26s | ?
+            APPEND WORD :line |\||
+        ]
+
+        APPEND "+----------------------------+"
+        MAKE "line WORD |\|| FORMAT | Attempts: %-17d| :attempts
+        APPEND WORD :line |\||
+        APPEND "+----------------------------+"
+
+        MAKE "guess READWORD "Enter 4 unique digits (or Q to quit): "
+        MAKE "guess TRIM :guess
+
+        IFELSE OR ((LOWERCASE :guess) = "q) (:guess = "") [
+            APPEND FORMAT "Game Quit. Secret code was: %s" :code
+            MAKE "playing false
+        ] [
+            IFELSE (COUNT :guess) = 4 [
+                MAKE "validGuess true
+                MAKE "seen []
+                MAKE "i 1
+                WHILE [ :i <= 4 ] [
+                    MAKE "gChar SUBSTRING :guess :i :i
+                    IF (MEMBER? :gChar |0123456789|) = "false [
+                        MAKE "validGuess false
+                    ]
+                    IFELSE MEMBER? :gChar :seen [
+                        MAKE "validGuess false
+                    ] [
+                        MAKE "seen LPUT :gChar :seen
+                    ]
+                    MAKE "i (:i + 1)
+                ]
+
+                IFELSE :validGuess [
+                    MAKE "attempts (:attempts + 1)
+                    MAKE "countA 0
+                    MAKE "countB 0
+
+                    MAKE "i 1
+                    WHILE [ :i <= 4 ] [
+                        MAKE "gChar SUBSTRING :guess :i :i
+                        MAKE "sChar WORD "" (ITEM :i :secret)
+                        IFELSE :gChar = :sChar [
+                            MAKE "countA (:countA + 1)
+                        ] [
+                            IF MEMBER? :gChar :secret [
+                                MAKE "countB (:countB + 1)
+                            ]
+                        ]
+                        MAKE "i (:i + 1)
+                    ]
+
+                    MAKE "res FORMAT "%d) %s -> %dA%dB" :attempts :guess :countA :countB
+                    MAKE "history LPUT :res :history
+
+                    IF :countA = 4 [
+                        ERASEALL
+                        APPEND "BINGO! PERFECT CODE CRACKED!"
+                        APPEND FORMAT "Secret: %s in %d attempts!" :code :attempts
+                        MAKE "playing false
+                    ]
+                ] [
+                    APPEND "Invalid input! Use 4 unique digits."
+                ]
+            ] [
+                APPEND "Invalid input! Please enter exactly 4 digits."
+            ]
+        ]
+    ][ :playing = true ]
+END
+
+MASTERMIND_1A2B

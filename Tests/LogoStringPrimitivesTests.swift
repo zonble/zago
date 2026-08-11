@@ -11,6 +11,29 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     return engine.evaluateExpression(tokens, index: &index)
 }
 
+private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Sendable {
+    var writes: [String] = []
+    private var lines: [String]
+    private var chars: [String]
+
+    init(lines: [String] = [], chars: [String] = []) {
+        self.lines = lines
+        self.chars = chars
+    }
+
+    func enableRawMode() throws {}
+    func disableRawMode() {}
+    func getWindowSize() -> (rows: Int, cols: Int) { (24, 80) }
+    func readKey() -> Key { .esc }
+    func readPendingText(firstChar: Character) -> String { String(firstChar) }
+    func write(_ text: String) { writes.append(text) }
+    func hideCursor() {}
+    func showCursor() {}
+    func clearScreen() {}
+    func readNonInteractiveLine(prompt: String) -> String? { lines.isEmpty ? nil : lines.removeFirst() }
+    func readNonInteractiveChar(prompt: String) -> String? { chars.isEmpty ? nil : chars.removeFirst() }
+}
+
 @Test func testLogoStringSearchAndIndexPrimitives() throws {
     let engine = LogoEngine()
 
@@ -52,6 +75,42 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
 
     // 3. format / sprintf
     #expect(eval("format \"Line_%d:_%s [42 \"Text]", engine: engine) == "Line_42:_Text")
+    #expect(eval("format |%d) %s -> %dA%dB| 3 \"1234 1 2", engine: engine) == "3) 1234 -> 1A2B")
+    #expect(eval("format \"%s_%s [A B]", engine: engine) == "A_B")
+}
+
+@Test func testLogoVerticalBarWordsAndSubstringEndIndexCompatibility() throws {
+    let engine = LogoEngine()
+
+    #expect(eval("count [|#@ $ .#| |#  #  #|]", engine: engine) == "2")
+    #expect(eval("item 1 [|#@ $ .#| |#  #  #|]", engine: engine) == "#@ $ .#")
+    #expect(eval("substring |#@ $ .#| 6 6", engine: engine) == ".")
+    #expect(eval("substring \"abcdef 3 2", engine: engine) == "cd")
+}
+
+@Test func testLogoComparisonExpressionsCanFeedLogicPrimitives() throws {
+    let editor = Editor()
+
+    editor.runLogoScript("MAKE \"a \"1 MAKE \"b \"2 MAKE \"c \"3 IFELSE AND (:a = :b) (:b = :c) [ APPEND \"bad ] [ APPEND \"ok ]")
+
+    #expect(editor.buffer.lines.joined(separator: "\n").contains("ok"))
+}
+
+@Test func testLogoNonInteractiveReadFlushKeepsBufferWritable() throws {
+    let terminal = NonInteractiveInputTerminal(lines: ["q"], chars: ["q"])
+    let editor = Editor(
+        options: EditorOptions(),
+        dependencies: EditorDependencies(
+            fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+            terminal: terminal
+        )
+    )
+
+    editor.runLogoScript("APPEND \"before MAKE \"word READWORD \"Prompt: APPEND :word MAKE \"key READCHAR \"Key: APPEND :key")
+
+    #expect(terminal.writes.contains { $0.contains("before") })
+    #expect(editor.logoEngine.hasUncaughtError == false)
+    #expect(editor.buffer.lines.joined(separator: "\n").contains("q"))
 }
 
 @Test func testLogoStringRegexPrimitives() throws {

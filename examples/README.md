@@ -14,8 +14,19 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`reflection_demo.logo`](logo/reflection_demo.logo) | Workspace & Reflection | **Reflection & Dynamic Metaprogramming** | `NAMES`, `PROCEDURES`, `CONTENTS`, `TEXT`, `DEFINE`, `ARITY`, `ERASE`, `ERALL` |
 | [`logo_in_logo_interpreter.logo`](logo/logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](logo/brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
-| [`game.logo`](logo/game.logo) | Interactive Game | **Number Guessing Game** | `RANDOM`, `READWORD`, `DO.WHILE`, `TRIM` |
 | [`fizzbuzz.logo`](logo/fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
+
+---
+
+### 🎮 Turn-Based Interactive Games (`examples/logo-games/`)
+
+| File | Game Type | Description | Controls & Features |
+| :--- | :--- | :--- | :--- |
+| [`game.logo`](logo-games/game.logo) | Guess Number | **Number Guessing Game** | Interactively guess random secret number (0-9) |
+| [`sokoban.logo`](logo-games/sokoban.logo) | 2D Grid Puzzle | **Sokoban (推箱子)** | W/A/S/D movement, push box `$` to target `.` |
+| [`game_2048.logo`](logo-games/game_2048.logo) | 2D Sliding Puzzle | **2048 Game** | W/A/S/D slide tiles, merge equal values & score |
+| [`tic_tac_toe.logo`](logo-games/tic_tac_toe.logo) | Board Game | **Tic-Tac-Toe (井字棋)** | 1-9 cell position input, win line detection |
+| [`mastermind_1a2b.logo`](logo-games/mastermind_1a2b.logo) | Deduction Game | **1A2B / Mastermind** | 4-digit code breaking with A/B feedback |
 | [`leap_year.logo`](logo/leap_year.logo) | Classic Algo | **Leap Year Checker** | Modulo `%` logic, `IF`, `FORMAT` |
 | [`system_time_demo.logo`](logo/system_time_demo.logo) | System & Sequences | **System Date, Time, Sequences & Seed** | `DATE`, `TIME`, `RSEQ`, `RERANDOM`, `RANDOM`, `IGNORE` |
 | [`regex_demo.logo`](logo/regex_demo.logo) | Regex & String | **Regex & Text Search** (Pattern matching, masking, padding) | `REGEX_MATCH?`, `REGEX_REPLACE`, `PADLEFT`, `PADRIGHT` |

@@ -53,12 +53,12 @@ extension LogoEngine {
                     switch parsed {
                     case .list(var items):
                         if zeroIdx >= 0 && zeroIdx < items.count {
-                            items[zeroIdx] = LogoValue.parse(newVal)
+                            items[zeroIdx] = parseLogoValuePreservingWhitespace(newVal)
                             resultStr = LogoValue.list(items).description
                         }
                     case .array(var items):
                         if zeroIdx >= 0 && zeroIdx < items.count {
-                            items[zeroIdx] = LogoValue.parse(newVal)
+                            items[zeroIdx] = parseLogoValuePreservingWhitespace(newVal)
                             resultStr = LogoValue.array(items).description
                         }
                     case .string(var s):
@@ -73,7 +73,6 @@ extension LogoEngine {
                         if variables[varName] != nil || rawToken.hasPrefix(":") || rawToken.hasPrefix("\"") {
                             variables[varName] = res
                         }
-                        lastResult = res
                     }
                 }
             }
@@ -89,7 +88,7 @@ extension LogoEngine {
 
                 if let currentValStr = variables[varName] {
                     let parsed = LogoValue.parse(currentValStr)
-                    let newElem = LogoValue.parse(newVal)
+                    let newElem = parseLogoValuePreservingWhitespace(newVal)
                     switch parsed {
                     case .list(var items):
                         if items.isEmpty {
@@ -207,7 +206,7 @@ extension LogoEngine {
                         return value
                     }
 
-                    rootVal = updateNested(value: rootVal, path: indices, replacement: LogoValue.parse(newVal))
+                    rootVal = updateNested(value: rootVal, path: indices, replacement: parseLogoValuePreservingWhitespace(newVal))
                     variables[varName] = rootVal.description
                 }
             }

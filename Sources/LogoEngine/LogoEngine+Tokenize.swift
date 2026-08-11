@@ -37,6 +37,27 @@ extension LogoEngine {
                     current = ""
                     continue
                 }
+            } else if ch == "|" {
+                if !current.isEmpty {
+                    tokens.append(current)
+                    current = ""
+                }
+                current.append(ch)
+                i = script.index(after: i)
+                var isEscaped = false
+                while i < script.endIndex {
+                    let innerCh = script[i]
+                    current.append(innerCh)
+                    if innerCh == "\\" && !isEscaped {
+                        isEscaped = true
+                    } else {
+                        if innerCh == "|" && !isEscaped { break }
+                        isEscaped = false
+                    }
+                    i = script.index(after: i)
+                }
+                tokens.append(current)
+                current = ""
             } else if ch == ";" {
                 if !current.isEmpty {
                     tokens.append(current)
@@ -118,7 +139,9 @@ extension LogoEngine {
         var result: [String] = []
 
         for token in rawTokens {
-            if token.hasPrefix("\"") && token.hasSuffix("\"") && token.count > 1 {
+            if (token.hasPrefix("\"") && token.hasSuffix("\"") && token.count > 1)
+                || (token.hasPrefix("|") && token.hasSuffix("|") && token.count > 1)
+            {
                 result.append(token)
                 continue
             }

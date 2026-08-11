@@ -1,0 +1,238 @@
+; ==============================================================================
+; 2048 Puzzle Game in zago Editor LOGO
+; ==============================================================================
+; Controls:
+;   W / S / A / D - Slide Up / Down / Left / Right
+;   Q - Quit Game
+; Usage in zago:
+;   1. Esc -> type: LOAD "examples/logo-games/game_2048.logo
+; ==============================================================================
+
+TO MERGE4 :a :b :c :d
+    MAKE "vals []
+    IF :a != 0 [ MAKE "vals LPUT :a :vals ]
+    IF :b != 0 [ MAKE "vals LPUT :b :vals ]
+    IF :c != 0 [ MAKE "vals LPUT :c :vals ]
+    IF :d != 0 [ MAKE "vals LPUT :d :vals ]
+
+    MAKE "out []
+    MAKE "i 1
+    WHILE [ :i <= COUNT :vals ] [
+        MAKE "cur ITEM :i :vals
+        IFELSE AND (:i < COUNT :vals) (:cur = ITEM (:i + 1) :vals) [
+            MAKE "merged (:cur * 2)
+            MAKE "score (:score + :merged)
+            MAKE "out LPUT :merged :out
+            MAKE "i (:i + 2)
+        ] [
+            MAKE "out LPUT :cur :out
+            MAKE "i (:i + 1)
+        ]
+    ]
+
+    WHILE [ COUNT :out < 4 ] [
+        MAKE "out LPUT 0 :out
+    ]
+    OUTPUT :out
+END
+
+TO WRITE4 :r1 :c1 :r2 :c2 :r3 :c3 :r4 :c4 :vals
+    MAKE "old1 MDITEM (LIST :r1 :c1) :grid
+    MAKE "old2 MDITEM (LIST :r2 :c2) :grid
+    MAKE "old3 MDITEM (LIST :r3 :c3) :grid
+    MAKE "old4 MDITEM (LIST :r4 :c4) :grid
+    MAKE "new1 ITEM 1 :vals
+    MAKE "new2 ITEM 2 :vals
+    MAKE "new3 ITEM 3 :vals
+    MAKE "new4 ITEM 4 :vals
+
+    IF :old1 != :new1 [ MAKE "moved true ]
+    IF :old2 != :new2 [ MAKE "moved true ]
+    IF :old3 != :new3 [ MAKE "moved true ]
+    IF :old4 != :new4 [ MAKE "moved true ]
+
+    MDSETITEM (LIST :r1 :c1) :grid :new1
+    MDSETITEM (LIST :r2 :c2) :grid :new2
+    MDSETITEM (LIST :r3 :c3) :grid :new3
+    MDSETITEM (LIST :r4 :c4) :grid :new4
+END
+
+TO SLIDELEFT
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "merged MERGE4 (MDITEM (LIST :r 1) :grid) (MDITEM (LIST :r 2) :grid) (MDITEM (LIST :r 3) :grid) (MDITEM (LIST :r 4) :grid)
+        WRITE4 :r 1 :r 2 :r 3 :r 4 :merged
+        MAKE "r (:r + 1)
+    ]
+END
+
+TO SLIDERIGHT
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "merged MERGE4 (MDITEM (LIST :r 4) :grid) (MDITEM (LIST :r 3) :grid) (MDITEM (LIST :r 2) :grid) (MDITEM (LIST :r 1) :grid)
+        MAKE "reversed LIST (ITEM 4 :merged) (ITEM 3 :merged)
+        MAKE "reversed LPUT (ITEM 2 :merged) :reversed
+        MAKE "reversed LPUT (ITEM 1 :merged) :reversed
+        WRITE4 :r 1 :r 2 :r 3 :r 4 :reversed
+        MAKE "r (:r + 1)
+    ]
+END
+
+TO SLIDEUP
+    MAKE "c 1
+    WHILE [ :c <= 4 ] [
+        MAKE "merged MERGE4 (MDITEM (LIST 1 :c) :grid) (MDITEM (LIST 2 :c) :grid) (MDITEM (LIST 3 :c) :grid) (MDITEM (LIST 4 :c) :grid)
+        WRITE4 1 :c 2 :c 3 :c 4 :c :merged
+        MAKE "c (:c + 1)
+    ]
+END
+
+TO SLIDEDOWN
+    MAKE "c 1
+    WHILE [ :c <= 4 ] [
+        MAKE "merged MERGE4 (MDITEM (LIST 4 :c) :grid) (MDITEM (LIST 3 :c) :grid) (MDITEM (LIST 2 :c) :grid) (MDITEM (LIST 1 :c) :grid)
+        MAKE "reversed LIST (ITEM 4 :merged) (ITEM 3 :merged)
+        MAKE "reversed LPUT (ITEM 2 :merged) :reversed
+        MAKE "reversed LPUT (ITEM 1 :merged) :reversed
+        WRITE4 1 :c 2 :c 3 :c 4 :c :reversed
+        MAKE "c (:c + 1)
+    ]
+END
+
+TO SPAWN_TILE
+    MAKE "emptyCount 0
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "c 1
+        WHILE [ :c <= 4 ] [
+            IF (MDITEM (LIST :r :c) :grid) = 0 [
+                MAKE "emptyCount (:emptyCount + 1)
+            ]
+            MAKE "c (:c + 1)
+        ]
+        MAKE "r (:r + 1)
+    ]
+
+    IF :emptyCount > 0 [
+        MAKE "target ((RANDOM :emptyCount) + 1)
+        MAKE "seen 0
+        MAKE "placed false
+        MAKE "r 1
+        WHILE [ :r <= 4 ] [
+            MAKE "c 1
+            WHILE [ :c <= 4 ] [
+                IFELSE AND (:placed = false) ((MDITEM (LIST :r :c) :grid) = 0) [
+                    MAKE "seen (:seen + 1)
+                    IF :seen = :target [
+                        MAKE "newVal (IFELSE ((RANDOM 10) < 9) [ 2 ] [ 4 ])
+                        MDSETITEM (LIST :r :c) :grid :newVal
+                        MAKE "placed true
+                    ]
+                ] [
+                ]
+                MAKE "c (:c + 1)
+            ]
+            MAKE "r (:r + 1)
+        ]
+    ]
+END
+
+TO CAN_MOVE
+    MAKE "canMove false
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "c 1
+        WHILE [ :c <= 4 ] [
+            MAKE "val MDITEM (LIST :r :c) :grid
+            IF :val = 0 [ MAKE "canMove true ]
+            IF AND (:c < 4) (:val = MDITEM (LIST :r (:c + 1)) :grid) [ MAKE "canMove true ]
+            IF AND (:r < 4) (:val = MDITEM (LIST (:r + 1) :c) :grid) [ MAKE "canMove true ]
+            MAKE "c (:c + 1)
+        ]
+        MAKE "r (:r + 1)
+    ]
+    OUTPUT :canMove
+END
+
+TO RENDER2048
+    ERASEALL
+    APPEND "+----------------------------+"
+    APPEND |\|         zago 2048          \||
+    MAKE "line WORD |\|| FORMAT | Score: %-20d| :score
+    APPEND WORD :line |\||
+    APPEND "+----------------------------+"
+
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "line |\| |
+        MAKE "c 1
+        WHILE [ :c <= 4 ] [
+            MAKE "val MDITEM (LIST :r :c) :grid
+            IFELSE :val = 0 [ MAKE "str "." ] [ MAKE "str WORD "" :val ]
+            MAKE "line WORD :line PADRIGHT :str 6
+            MAKE "c (:c + 1)
+        ]
+        MAKE "line WORD :line |   \||
+        APPEND :line
+        MAKE "r (:r + 1)
+    ]
+
+    APPEND "+----------------------------+"
+    APPEND |\| W:Up A:Left S:Down D:Right \||
+    APPEND "+----------------------------+"
+END
+
+TO GAME2048
+    MAKE "grid MDARRAY [4 4]
+    MAKE "score 0
+    MAKE "playing true
+    MAKE "message ""
+
+    MAKE "r 1
+    WHILE [ :r <= 4 ] [
+        MAKE "c 1
+        WHILE [ :c <= 4 ] [
+            MDSETITEM (LIST :r :c) :grid 0
+            MAKE "c (:c + 1)
+        ]
+        MAKE "r (:r + 1)
+    ]
+
+    SPAWN_TILE
+    SPAWN_TILE
+
+    DO.WHILE [
+        RENDER2048
+        IF :message != "" [ APPEND :message ]
+        MAKE "message ""
+
+        MAKE "k READCHAR "Slide (W/A/S/D) or Q: "
+        MAKE "k LOWERCASE :k
+
+        IFELSE OR (:k = "q) (:k = "") [
+            APPEND "Game Over. Thank you for playing!"
+            MAKE "playing false
+        ] [
+            MAKE "moved false
+            IF :k = "a [ SLIDELEFT ]
+            IF :k = "d [ SLIDERIGHT ]
+            IF :k = "w [ SLIDEUP ]
+            IF :k = "s [ SLIDEDOWN ]
+
+            IFELSE :moved [
+                SPAWN_TILE
+                IF NOT CAN_MOVE [
+                    RENDER2048
+                    APPEND "No moves left. Game Over!"
+                    MAKE "playing false
+                ]
+            ] [
+                IF AND (:k != "a) (AND (:k != "d) (AND (:k != "w) (:k != "s))) [
+                    MAKE "message |Use W/A/S/D or Q.|
+                ]
+            ]
+        ]
+    ][ :playing = true ]
+END
+
+GAME2048

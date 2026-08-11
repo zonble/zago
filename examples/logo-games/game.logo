@@ -1,0 +1,35 @@
+; ==============================================================================
+; Number Guessing Game in zago Editor LOGO
+; ==============================================================================
+
+TO GAME
+    MAKE "target RANDOM 10
+    MAKE "attempts 0
+    MAKE "endgame false
+
+    SHOW "=== Number Guessing Game ==="
+    SHOW "I've picked a number between 0 and 9."
+
+    DO.WHILE [
+        MAKE "g READWORD "Guess (0-9): "
+        IFELSE OR (:g = "") ((LOWERCASE :g) = "q) [
+            SHOW "Game Quit."
+            MAKE "endgame true
+        ] [
+            MAKE "attempts (:attempts + 1)
+            MAKE "num INT :g
+            IFELSE :num = :target [
+                SHOW FORMAT "Correct! You guessed %d in %d attempts!" :target :attempts
+                MAKE "endgame true
+            ] [
+                IFELSE :num < :target [
+                    SHOW "Too low! Try again."
+                ] [
+                    SHOW "Too high! Try again."
+                ]
+            ]
+        ]
+    ][ :endgame = false ]
+END
+
+GAME
