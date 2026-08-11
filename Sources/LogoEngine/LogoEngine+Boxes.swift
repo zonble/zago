@@ -34,7 +34,7 @@ extension LogoEngine {
     }
 
     private func defaultBoxStyle() -> BoxStyle {
-        guard let style = delegate?.logoEngine(self, queryState: .defaultBorderStyle) as? BorderStyle else {
+        guard let style = queryBorderStyle(.defaultBorderStyle) else {
             return .single
         }
         return style.boxStyle
@@ -46,7 +46,7 @@ extension LogoEngine {
 
     internal func executeBoxCommand(_ tokens: [String], index: inout Int, mode: BoxDrawMode = .insert) {
         guard index < tokens.count else {
-            if let frame = delegate?.logoEngine(self, queryState: .canvasBlockFrame) as? LogoCanvasBlockFrame {
+            if let frame = queryCanvasBlockFrame(.canvasBlockFrame) {
                 drawBoxFrameAt(
                     startLine: frame.lineIndex,
                     startCol: frame.visualColumn,
@@ -214,9 +214,9 @@ extension LogoEngine {
     private func drawBoxFrame(
         width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne
     ) {
-        guard let editor = self.delegate else { return }
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        guard self.delegate != nil else { return }
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         drawBoxFrameAt(
             startLine: startLine,
@@ -244,7 +244,7 @@ extension LogoEngine {
             let currentLineIndex = startLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIndex))
 
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(currentLineIndex)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(currentLineIndex)) ?? ""
             let isTop = (r == 0)
             let isBottom = (r == height - 1)
             var rowStr = ""
@@ -300,8 +300,8 @@ extension LogoEngine {
 
         let calcHeight = max(targetHeight ?? 0, textLines.count + 2)
 
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         for r in 0..<calcHeight {
             let currentLineIndex = startLine + r
@@ -336,7 +336,7 @@ extension LogoEngine {
                 rowStr = String(style.sideChar) + leftSpaces + lineStr + rightSpaces + String(style.sideChar)
             }
 
-            let existingLine = (editor.logoEngine(self, queryState: .lineAt(currentLineIndex)) as? String) ?? ""
+            let existingLine = queryString(.lineAt(currentLineIndex)) ?? ""
             let newLineText = buildRowText(
                 existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom,
                 mode: mode)
@@ -603,24 +603,24 @@ extension LogoEngine {
             return
         }
 
-        if (editor.logoEngine(self, queryState: .hasTableCell) as? Bool) == true {
+        if queryBool(.hasTableCell) == true {
             editor.logoEngine(self, performAction: .fillTableCell(fillPattern))
             hasSetStatusMessage = true
             return
         }
 
-        if (editor.logoEngine(self, queryState: .hasCanvasBlockMark) as? Bool) == true {
+        if queryBool(.hasCanvasBlockMark) == true {
             editor.logoEngine(self, performAction: .fillCanvasBlock(fillPattern))
             hasSetStatusMessage = true
             return
         }
 
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         // Mode 2: Line Fill (1 number)
         if let width = widthVal, heightVal == nil {
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(startLine)) ?? ""
             let filledLine = fillStringWithPattern(pattern: fillPattern, targetWidth: width)
             let newText = replaceDisplayColumns(
                 in: lineStr, startCol: startCol, width: width, replacement: filledLine)
@@ -638,7 +638,7 @@ extension LogoEngine {
             for r in 0..<height {
                 let lineIdx = startLine + r
                 editor.logoEngine(self, performAction: .ensureLineExists(index: lineIdx))
-                let lineStr = (editor.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+                let lineStr = queryString(.lineAt(lineIdx)) ?? ""
                 let newText = replaceDisplayColumns(
                     in: lineStr, startCol: startCol, width: width, replacement: filledLine)
                 editor.logoEngine(self, performAction: .setLine(index: lineIdx, text: newText))
@@ -669,7 +669,7 @@ extension LogoEngine {
             "+", "-", "|", "│",
         ]
 
-        let totalLines = max(startLine + 1, (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0)
+        let totalLines = max(startLine + 1, queryInteger(.lineCount) ?? 0)
 
         var visited: Set<[Int]> = []
         var queue: [[Int]] = [[startLine, startCol]]
@@ -679,7 +679,7 @@ extension LogoEngine {
         let maxCols = 200
 
         func getCharAt(r: Int, c: Int) -> Character {
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(r)) ?? ""
             return displayCharAt(in: lineStr, visualColumn: c)
         }
 
@@ -739,7 +739,7 @@ extension LogoEngine {
             }
 
             editor.logoEngine(self, performAction: .ensureLineExists(index: r))
-            var lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            var lineStr = queryString(.lineAt(r)) ?? ""
             for span in spans.reversed() {
                 let width = span.end - span.start + 1
                 let replacement = fillStringWithPattern(pattern: fillPattern, targetWidth: width)
@@ -780,12 +780,12 @@ extension LogoEngine {
 
         if insetText.isEmpty { return }
 
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         // Mode 3: 1D Line Inset (1 number)
         if let width = widthVal, heightVal == nil {
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(startLine)) ?? ""
             let textWidth = insetText.displayWidth
             let offset = max(0, (width - textWidth) / 2)
             let paddedText =
@@ -807,7 +807,7 @@ extension LogoEngine {
             for r in 0..<height {
                 let lineIdx = startLine + r
                 editor.logoEngine(self, performAction: .ensureLineExists(index: lineIdx))
-                let lineStr = (editor.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+                let lineStr = queryString(.lineAt(lineIdx)) ?? ""
 
                 let replacementText: String
                 if r >= startRow && (r - startRow) < textLines.count {
@@ -845,7 +845,7 @@ extension LogoEngine {
         ]
 
         func getCharAt(r: Int, c: Int) -> Character {
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(r)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(r)) ?? ""
             return displayCharAt(in: lineStr, visualColumn: c)
         }
 
@@ -861,7 +861,7 @@ extension LogoEngine {
 
         // Find bottom boundary
         var bottomLine: Int? = nil
-        let lineCount = (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? (startLine + 10)
+        let lineCount = queryInteger(.lineCount) ?? (startLine + 10)
         for r in startLine..<min(lineCount + 50, startLine + 100) {
             let ch = getCharAt(r: r, c: startCol)
             if bottomBorderChars.contains(ch) {
@@ -893,7 +893,7 @@ extension LogoEngine {
         guard let tLine = topLine, let bLine = bottomLine, let lCol = leftCol, let rCol = rightCol,
             bLine > tLine + 1, rCol > lCol + 1
         else {
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(startLine)) ?? ""
             let textWidth = insetText.displayWidth
             let offset = max(0, (40 - textWidth) / 2)
             let replacement = String(repeating: " ", count: offset) + insetText
@@ -916,7 +916,7 @@ extension LogoEngine {
         for r in 0..<innerHeight {
             let currentLineIdx = innerTop + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIdx))
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(currentLineIdx)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(currentLineIdx)) ?? ""
 
             let replacementText: String
             if r >= startRowInInner && (r - startRowInInner) < textLines.count {

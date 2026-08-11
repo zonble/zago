@@ -627,7 +627,7 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     var lastPrompt: String = ""
 
     func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {}
-    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? { nil }
+    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> LogoEditorQueryResult? { nil }
 
     func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String? {
         lastPrompt = prompt
@@ -712,4 +712,3 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     logoEngine.execute("TO MYADD :a :b\nOUTPUT :a + :b\nEND")
     #expect(logoEngine.customProcedures["MYADD"] != nil)
 }
-

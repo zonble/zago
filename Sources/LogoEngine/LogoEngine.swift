@@ -16,27 +16,6 @@ public struct LogoProcedure: Sendable {
     }
 }
 
-internal enum LogoRuntimeValue: Equatable {
-    case string(String)
-    case dateTime(String)
-
-    var description: String {
-        switch self {
-        case .string(let value), .dateTime(let value):
-            return value
-        }
-    }
-
-    var isNumeric: Bool {
-        switch self {
-        case .string(let value):
-            return Double(value) != nil
-        case .dateTime:
-            return false
-        }
-    }
-}
-
 /// LOGO-style Macro Language Engine for text editors.
 ///
 /// ### Core Concepts & Execution Architecture:
@@ -71,11 +50,10 @@ internal enum LogoRuntimeValue: Equatable {
 ///        date/time: `DATE`, `TIME`, `ASCII`, `CHAR`, `COUNT`)
 public final class LogoEngine {
     public internal(set) var customProcedures: [String: LogoProcedure] = [:]
-    public internal(set) var variables: [String: String] = [:]
+    public internal(set) var variables: LogoEnvironment
     public internal(set) var propertyLists: [String: [String: LogoValue]] = [:]
     internal var callStack: [String] = []
-    internal var variableValues: [String: LogoRuntimeValue] = [:]
-    internal var lastExpressionValue: LogoRuntimeValue? = nil
+    internal var lastExpressionValue: LogoValue? = nil
     public var hasSetStatusMessage: Bool = false
     internal var gensymCounter: Int = 0
 
@@ -172,9 +150,7 @@ public final class LogoEngine {
 
     public init(delegate: LogoEngineDelegate? = nil, initialVariables: [String: String] = [:]) {
         self.delegate = delegate
-        for (key, value) in initialVariables {
-            variables[key] = value
-        }
+        self.variables = LogoEnvironment(initialValues: initialVariables)
     }
 
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.

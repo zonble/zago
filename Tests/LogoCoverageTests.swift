@@ -19,7 +19,7 @@ private final class CoverageDelegate: LogoEngineDelegate, @unchecked Sendable {
         }
     }
 
-    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? { nil }
+    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> LogoEditorQueryResult? { nil }
 }
 
 @Suite(.serialized)

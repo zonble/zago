@@ -121,54 +121,54 @@ extension Editor: LogoEngineDelegate {
         }
     }
 
-    public func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any? {
+    public func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> LogoEditorQueryResult? {
         switch query {
         case .currentLineIndex:
-            return buffer.lineIndex
+            return .integer(buffer.lineIndex)
         case .currentColumnIndex:
             if isCanvasModeActive {
-                return canvasVisualColumn
+                return .integer(canvasVisualColumn)
             } else {
                 let lineStr =
                     (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
                     ? buffer.lines[buffer.lineIndex] : ""
                 let charCount = lineStr.count
                 if buffer.columnIndex <= charCount {
-                    return tableModeController.getVisualColumn(in: lineStr, col: buffer.columnIndex)
+                    return .integer(tableModeController.getVisualColumn(in: lineStr, col: buffer.columnIndex))
                 } else {
-                    return lineStr.displayWidth + (buffer.columnIndex - charCount)
+                    return .integer(lineStr.displayWidth + (buffer.columnIndex - charCount))
                 }
             }
         case .lineCount:
-            return buffer.lines.count
+            return .integer(buffer.lines.count)
         case .lineAt(let index):
-            guard index >= 0 && index < buffer.lines.count else { return "" }
-            return buffer.lines[index]
+            guard index >= 0 && index < buffer.lines.count else { return .string("") }
+            return .string(buffer.lines[index])
         case .defaultBorderStyle:
-            return defaultBorderStyle
+            return .borderStyle(defaultBorderStyle)
         case .defaultArrowStyle:
-            return defaultArrowStyle
+            return .arrowStyle(defaultArrowStyle)
         case .hasCanvasBlockMark:
-            return isCanvasModeActive && !isTableModeActive && buffer.canvasBlockMark != nil
+            return .bool(isCanvasModeActive && !isTableModeActive && buffer.canvasBlockMark != nil)
         case .canvasBlockFrame:
             guard isCanvasModeActive, !isTableModeActive, let rect = currentCanvasBlockRectangle(), rect.width > 0
             else {
                 return nil
             }
-            return LogoCanvasBlockFrame(
+            return .canvasBlockFrame(LogoCanvasBlockFrame(
                 lineIndex: rect.topLine,
                 visualColumn: rect.leftColumn,
                 width: rect.width,
                 height: rect.bottomLine - rect.topLine + 1
-            )
+            ))
         case .hasTableCell:
-            return isTableModeActive && currentTableCell != nil
+            return .bool(isTableModeActive && currentTableCell != nil)
         case .bufferList:
-            return buffers.map { $0.filePath ?? "Untitled" }
+            return .strings(buffers.map { $0.filePath ?? "Untitled" })
         case .currentBufferIndex:
-            return currentBufferIndex
+            return .integer(currentBufferIndex)
         case .bufferText:
-            return buffer.lines.joined(separator: "\n")
+            return .string(buffer.lines.joined(separator: "\n"))
         case .selectionText:
             if let mark = buffer.selectionMark {
                 let (start, end) = TextBuffer.getOrderedRange(
@@ -178,17 +178,18 @@ extension Editor: LogoEngineDelegate {
                     let line = lines[start.line]
                     let sCol = max(0, min(start.column, line.count))
                     let eCol = max(0, min(end.column, line.count))
-                    return String(
-                        line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)])
+                    return .string(String(
+                        line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)]
+                    ))
                 } else if start.line < lines.count && end.line < lines.count {
-                    return lines[start.line...end.line].joined(separator: "\n")
+                    return .string(lines[start.line...end.line].joined(separator: "\n"))
                 }
             }
-            return ""
+            return .string("")
         case .isModified:
-            return buffer.isModified
+            return .bool(buffer.isModified)
         case .fileName:
-            return buffer.filePath ?? "Untitled"
+            return .string(buffer.filePath ?? "Untitled")
         }
     }
 

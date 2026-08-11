@@ -102,7 +102,7 @@ extension LogoEngine {
         case .goto:
             guard let delegate = self.delegate else { return false }
             if let row1Based = consumeOptionalDrawingIntArgument(tokens, index: &index) {
-                let totalLines = (delegate.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+                let totalLines = queryInteger(.lineCount) ?? 0
                 let lineNum = max(1, min(row1Based, totalLines)) - 1
                 delegate.logoEngine(self, performAction: .updateLineIndex(lineNum))
                 delegate.logoEngine(self, performAction: .updateColumnIndex(0))
