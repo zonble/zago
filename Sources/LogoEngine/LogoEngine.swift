@@ -123,7 +123,7 @@ public final class LogoEngine {
         hasUncaughtError = false
         hasSetStatusMessage = false
 
-        let tokens = tokenize(script)
+        let tokens = LogoTokenizer.tokenize(script)
         guard !tokens.isEmpty else { return }
 
         // Save a single atomic Undo snapshot for the entire macro execution

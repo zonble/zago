@@ -6,7 +6,7 @@ import Testing
 
 @Suite struct LogoBitwiseTests {
     private func eval(_ expression: String, engine: LogoEngine) -> String {
-        let tokens = engine.tokenize(expression)
+        let tokens = LogoTokenizer.tokenize(expression)
         var index = 0
         return engine.evaluateExpression(tokens, index: &index)
     }

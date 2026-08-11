@@ -501,7 +501,7 @@ extension Editor {
     }
 
     private func firstTableModeBlockedLogoToken(in script: String) -> String? {
-        firstTableModeBlockedLogoToken(in: logoEngine.tokenize(script), visitedProcedures: [])
+        firstTableModeBlockedLogoToken(in: LogoTokenizer.tokenize(script), visitedProcedures: [])
     }
 
     private func firstTableModeBlockedLogoToken(

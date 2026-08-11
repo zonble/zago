@@ -735,7 +735,7 @@ extension LogoEngine {
         case .parse, .runparse:
             index += 1
             let script = evaluateExpression(tokens, index: &index)
-            return "[" + tokenize(script).joined(separator: " ") + "]"
+            return "[" + LogoTokenizer.tokenize(script).joined(separator: " ") + "]"
 
         case .isSubstring:
             index += 1
