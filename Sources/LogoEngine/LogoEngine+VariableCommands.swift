@@ -337,7 +337,7 @@ extension LogoEngine {
                     bodyTokens = LogoTokenizer.tokenize(s)
                 }
 
-                customProcedures[name] = LogoProcedure(name: name, parameters: params, bodyTokens: bodyTokens)
+                customProcedures[name] = LogoProcedure(name: name, parameters: params, bodyTokenTexts: bodyTokens)
             }
             return true
 

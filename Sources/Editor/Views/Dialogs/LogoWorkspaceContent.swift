@@ -15,7 +15,7 @@ public enum LogoWorkspaceContent {
             for procedure in procedures {
                 let params = procedure.parameters.map { ":\($0)" }.joined(separator: " ")
                 output.append("    \(procedure.name.uppercased())\(params.isEmpty ? "" : " \(params)")")
-                output.append("      \(procedure.bodyTokens.joined(separator: " "))")
+                output.append("      \(procedure.bodyTokens.map(\.text).joined(separator: " "))")
             }
         }
 

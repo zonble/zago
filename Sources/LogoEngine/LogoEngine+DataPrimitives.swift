@@ -613,7 +613,7 @@ extension LogoEngine {
             let name = unquote(nameVal).uppercased()
             guard let proc = customProcedures[name] else { return "[]" }
             let paramsList = LogoValue.list(proc.parameters.map { .string(":" + $0) })
-            let bodyList = LogoValue.list(proc.bodyTokens.map { .string($0) })
+            let bodyList = LogoValue.list(proc.bodyTokens.map { .string($0.text) })
             return LogoValue.list([paramsList, bodyList]).description
 
         case .arity:
