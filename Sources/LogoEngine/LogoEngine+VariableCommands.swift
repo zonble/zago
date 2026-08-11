@@ -73,6 +73,7 @@ extension LogoEngine {
                         if variables[varName] != nil || rawToken.hasPrefix(":") || rawToken.hasPrefix("\"") {
                             variables[varName] = res
                         }
+                        lastResult = res
                     }
                 }
             }
