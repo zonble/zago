@@ -26,9 +26,12 @@ extension Editor {
         }
         let state: [String]
         if case .paused(let frame) = logoEngine.executionState {
-            let relativeLine = frame.token.map { token in
-                debuggerController.activeScript.prefix(token.sourceRange.lowerBound).reduce(0) { $1 == "\n" ? $0 + 1 : $0 }
-            } ?? 0
+            let relativeLine =
+                frame.token.map { token in
+                    debuggerController.activeScript.prefix(token.sourceRange.lowerBound).reduce(0) {
+                        $1 == "\n" ? $0 + 1 : $0
+                    }
+                } ?? 0
             let callStack = logoEngine.executionFrames.reversed().map {
                 "  \($0.procedureName ?? "<top level>")"
             }
@@ -52,7 +55,8 @@ extension Editor {
         } else {
             state = ["State: \(String(describing: logoEngine.executionState))", ""]
         }
-        debugBuffer.lines = ["LOGO Debugger", ""] + state + ["Breakpoints — \(source.filePath ?? source.id)"]
+        debugBuffer.lines =
+            ["LOGO Debugger", ""] + state + ["Breakpoints — \(source.filePath ?? source.id)"]
             + (lines.isEmpty ? ["  (none)"] : lines.map { "  ● line \($0 + 1)" })
             + ["", "Commands: :logo continue | :logo step | :logo abort | :logo eval"]
         debugBuffer.lineIndex = 0

@@ -6,9 +6,11 @@ public enum Language: String, CaseIterable, Sendable {
     case zh_TW = "zh_TW"
 
     public init?(settingValue: String) {
-        guard let language = Self.allCases.first(where: {
-            $0.rawValue.caseInsensitiveCompare(settingValue) == .orderedSame
-        }) else { return nil }
+        guard
+            let language = Self.allCases.first(where: {
+                $0.rawValue.caseInsensitiveCompare(settingValue) == .orderedSame
+            })
+        else { return nil }
         self = language
     }
 

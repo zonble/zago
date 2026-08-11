@@ -155,12 +155,13 @@ extension Editor: LogoEngineDelegate {
             else {
                 return nil
             }
-            return .canvasBlockFrame(LogoCanvasBlockFrame(
-                lineIndex: rect.topLine,
-                visualColumn: rect.leftColumn,
-                width: rect.width,
-                height: rect.bottomLine - rect.topLine + 1
-            ))
+            return .canvasBlockFrame(
+                LogoCanvasBlockFrame(
+                    lineIndex: rect.topLine,
+                    visualColumn: rect.leftColumn,
+                    width: rect.width,
+                    height: rect.bottomLine - rect.topLine + 1
+                ))
         case .hasTableCell:
             return .bool(isTableModeActive && currentTableCell != nil)
         case .bufferList:
@@ -178,9 +179,12 @@ extension Editor: LogoEngineDelegate {
                     let line = lines[start.line]
                     let sCol = max(0, min(start.column, line.count))
                     let eCol = max(0, min(end.column, line.count))
-                    return .string(String(
-                        line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)]
-                    ))
+                    return .string(
+                        String(
+                            line[
+                                line.index(
+                                    line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)]
+                        ))
                 } else if start.line < lines.count && end.line < lines.count {
                     return .string(lines[start.line...end.line].joined(separator: "\n"))
                 }
@@ -486,9 +490,11 @@ extension Editor {
         appendLogoOutputHeader(scriptName)
 
         let breakpointLines = Set(debuggerController.breakpoints(in: sourceBuffer))
-        debuggerController.beginExecution(in: sourceBuffer, targetBuffer: buffer, startLine: debugStartLine, script: script)
+        debuggerController.beginExecution(
+            in: sourceBuffer, targetBuffer: buffer, startLine: debugStartLine, script: script)
         logoEngine.shouldPauseBeforeToken = { [script] token in
-            let line = debugStartLine + script.prefix(token.sourceRange.lowerBound).reduce(0) { $1 == "\n" ? $0 + 1 : $0 }
+            let line =
+                debugStartLine + script.prefix(token.sourceRange.lowerBound).reduce(0) { $1 == "\n" ? $0 + 1 : $0 }
             return breakpointLines.contains(line)
         }
 

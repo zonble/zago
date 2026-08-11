@@ -8,9 +8,12 @@ public struct LogoEnvironment: Sequence {
     private var frames: [[String: LogoValue]]
 
     public init(initialValues: [String: String] = [:]) {
-        self.frames = [Dictionary(uniqueKeysWithValues: initialValues.map { key, value in
-            (key, LogoValue.parse(value))
-        })]
+        self.frames = [
+            Dictionary(
+                uniqueKeysWithValues: initialValues.map { key, value in
+                    (key, LogoValue.parse(value))
+                })
+        ]
     }
 
     public subscript(name: String) -> String? {
@@ -56,7 +59,8 @@ public struct LogoEnvironment: Sequence {
     }
 
     public func makeIterator() -> Dictionary<String, String>.Iterator {
-        Dictionary(uniqueKeysWithValues: keys.compactMap { key in value(for: key).map { (key, $0.description) } }).makeIterator()
+        Dictionary(uniqueKeysWithValues: keys.compactMap { key in value(for: key).map { (key, $0.description) } })
+            .makeIterator()
     }
 
     private mutating func setValue(_ value: LogoValue?, for name: String) {

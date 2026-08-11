@@ -54,17 +54,25 @@ public enum IPCServerRequestError: Error {
 
 public protocol ZagoIPCServerDataSource: AnyObject {
     func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo]
-    func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?) throws -> (lines: [String], totalLines: Int)?
-    func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)?
+    func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?) throws
+        -> (lines: [String], totalLines: Int)?
+    func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
+        line: Int, column: Int, visualCol: Int, mode: String
+    )?
     func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) throws -> [IPCHistoryEntry]
 }
 
 public protocol ZagoIPCServerDelegate: AnyObject {
-    func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) throws -> Bool
-    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (success: Bool, result: String, error: String?)
+    func ipcServer(
+        _ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String,
+        affectedFiles: [AffectedFilePayload]
+    ) throws -> Bool
+    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (
+        success: Bool, result: String, error: String?
+    )
     func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity)
 }
 
-public extension ZagoIPCServerDelegate {
-    func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity) {}
+extension ZagoIPCServerDelegate {
+    public func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity) {}
 }

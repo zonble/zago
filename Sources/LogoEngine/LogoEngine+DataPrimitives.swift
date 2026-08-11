@@ -602,7 +602,8 @@ extension LogoEngine {
         case .contents:
             let systemKeys: Set<String> = ["author", "version", "repository"]
             let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
-            let vars = LogoValue.list(Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
+            let vars = LogoValue.list(
+                Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
             let plists = LogoValue.list(
                 Array(propertyLists.keys.filter { !(propertyLists[$0]?.isEmpty ?? true) }).sorted().map { .string($0) })
             return LogoValue.list([procs, vars, plists]).description
@@ -936,7 +937,9 @@ extension LogoEngine {
             let pattern = unquote(evaluateExpression(tokens, index: &index))
             let expectedArgCount = formatArgumentCount(pattern: pattern)
             var rawArgs: [String] = []
-            while rawArgs.count < expectedArgCount && index + 1 < tokens.count && !Self.isArgumentBoundary(tokens[index + 1]) {
+            while rawArgs.count < expectedArgCount && index + 1 < tokens.count
+                && !Self.isArgumentBoundary(tokens[index + 1])
+            {
                 index += 1
                 let argVal = evaluateExpression(tokens, index: &index)
                 let parsedArg = LogoValue.parse(argVal)

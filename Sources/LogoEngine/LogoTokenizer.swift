@@ -27,17 +27,33 @@ public enum LogoTokenizer {
         }
         while index < source.endIndex {
             let character = source[index]
-            if escaped { current.append(character); escaped = false
-            } else if character == "\\" { current.append(character); escaped = true
-            } else if character == "|" && !inQuotedString { inVerticalBarString.toggle(); current.append(character)
-            } else if character == "\"" && !inVerticalBarString {
-                if !inQuotedString && hasMatchingMultiWordClosingQuote(in: source, startingAt: index) { inQuotedString = true }
-                else if inQuotedString { inQuotedString = false }
+            if escaped {
                 current.append(character)
-            } else if (character == "[" || character == "{") && !inQuotedString && !inVerticalBarString { depth += 1; current.append(character)
-            } else if (character == "]" || character == "}") && !inQuotedString && !inVerticalBarString && depth > 0 { depth -= 1; current.append(character)
-            } else if character.isWhitespace && depth == 0 && !inQuotedString && !inVerticalBarString { flush()
-            } else { current.append(character) }
+                escaped = false
+            } else if character == "\\" {
+                current.append(character)
+                escaped = true
+            } else if character == "|" && !inQuotedString {
+                inVerticalBarString.toggle()
+                current.append(character)
+            } else if character == "\"" && !inVerticalBarString {
+                if !inQuotedString && hasMatchingMultiWordClosingQuote(in: source, startingAt: index) {
+                    inQuotedString = true
+                } else if inQuotedString {
+                    inQuotedString = false
+                }
+                current.append(character)
+            } else if (character == "[" || character == "{") && !inQuotedString && !inVerticalBarString {
+                depth += 1
+                current.append(character)
+            } else if (character == "]" || character == "}") && !inQuotedString && !inVerticalBarString && depth > 0 {
+                depth -= 1
+                current.append(character)
+            } else if character.isWhitespace && depth == 0 && !inQuotedString && !inVerticalBarString {
+                flush()
+            } else {
+                current.append(character)
+            }
             index = source.index(after: index)
         }
         flush()
@@ -66,31 +82,69 @@ public enum LogoTokenizer {
         let operatorDelimiters = Set(LogoOperator.allCases.filter(\.isArithmetic).compactMap { $0.rawValue.first })
         let delimiters = Set<Character>(["[", "]", "{", "}", "(", ")"]).union(operatorDelimiters)
         var index = script.startIndex
-        func flush() { if !current.isEmpty { tokens.append(current); current = "" } }
+        func flush() {
+            if !current.isEmpty {
+                tokens.append(current)
+                current = ""
+            }
+        }
         while index < script.endIndex {
             let character = script[index]
             if character == "\"" {
-                flush(); current.append(character)
+                flush()
+                current.append(character)
                 if hasMatchingMultiWordClosingQuote(in: script, startingAt: index) {
                     index = script.index(after: index)
-                    while index < script.endIndex { current.append(script[index]); if script[index] == "\"" { break }; index = script.index(after: index) }
+                    while index < script.endIndex {
+                        current.append(script[index])
+                        if script[index] == "\"" { break }
+                        index = script.index(after: index)
+                    }
                     flush()
                 } else {
                     index = script.index(after: index)
-                    while index < script.endIndex && !script[index].isWhitespace { current.append(script[index]); index = script.index(after: index) }
-                    flush(); continue
+                    while index < script.endIndex && !script[index].isWhitespace {
+                        current.append(script[index])
+                        index = script.index(after: index)
+                    }
+                    flush()
+                    continue
                 }
             } else if character == "|" {
-                flush(); current.append(character); index = script.index(after: index); var escaped = false
-                while index < script.endIndex { let inner = script[index]; current.append(inner); if inner == "\\" && !escaped { escaped = true } else { if inner == "|" && !escaped { break }; escaped = false }; index = script.index(after: index) }
+                flush()
+                current.append(character)
+                index = script.index(after: index)
+                var escaped = false
+                while index < script.endIndex {
+                    let inner = script[index]
+                    current.append(inner)
+                    if inner == "\\" && !escaped {
+                        escaped = true
+                    } else {
+                        if inner == "|" && !escaped { break }
+                        escaped = false
+                    }
+                    index = script.index(after: index)
+                }
                 flush()
             } else if character == ";" {
-                flush(); index = script.index(after: index); while index < script.endIndex && !script[index].isNewline { index = script.index(after: index) }; continue
-            } else if character == "-", current.isEmpty, let next = script.index(index, offsetBy: 1, limitedBy: script.endIndex), next < script.endIndex, script[next].isNumber {
+                flush()
+                index = script.index(after: index)
+                while index < script.endIndex && !script[index].isNewline { index = script.index(after: index) }
+                continue
+            } else if character == "-", current.isEmpty,
+                let next = script.index(index, offsetBy: 1, limitedBy: script.endIndex), next < script.endIndex,
+                script[next].isNumber
+            {
                 current.append(character)
-            } else if delimiters.contains(character) { flush(); tokens.append(String(character))
-            } else if character.isWhitespace { flush()
-            } else { current.append(character) }
+            } else if delimiters.contains(character) {
+                flush()
+                tokens.append(String(character))
+            } else if character.isWhitespace {
+                flush()
+            } else {
+                current.append(character)
+            }
             index = script.index(after: index)
         }
         flush()
@@ -99,7 +153,8 @@ public enum LogoTokenizer {
 
     static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
         rawTokens.flatMap { word in
-            guard !((word.hasPrefix("\"") && word.hasSuffix("\"")) || (word.hasPrefix("|") && word.hasSuffix("|"))) else { return [word] }
+            guard !((word.hasPrefix("\"") && word.hasSuffix("\"")) || (word.hasPrefix("|") && word.hasSuffix("|")))
+            else { return [word] }
             var parts: [String] = []
             var current = ""
             var index = word.startIndex
@@ -111,7 +166,10 @@ public enum LogoTokenizer {
                     .sorted(by: { $0.count > $1.count })
                     .first(where: { remaining.hasPrefix($0) })
                 {
-                    if !current.isEmpty { parts.append(current); current = "" }
+                    if !current.isEmpty {
+                        parts.append(current)
+                        current = ""
+                    }
                     parts.append(`operator`)
                     index = word.index(index, offsetBy: `operator`.count)
                 } else {

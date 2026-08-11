@@ -373,7 +373,10 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         // Buffer Primitives
         (["BUFFERS", "BUFFERLIST"], .buffers),
         (["BUFFER"], .buffer),
-        (["CLEARBUFFER", "ERASEBUFFER", "ERASEALL", "ERASE.ALL", "CLEAR", "CS", "CLEARSCR", "CLEARSCREEN"], .clearBuffer),
+        (
+            ["CLEARBUFFER", "ERASEBUFFER", "ERASEALL", "ERASE.ALL", "CLEAR", "CS", "CLEARSCR", "CLEARSCREEN"],
+            .clearBuffer
+        ),
         (["GETLINE"], .getline),
         (["SETLINE"], .setline),
         (["GOTOLINE", "SETROW"], .gotoline),
@@ -579,6 +582,10 @@ extension LogoPrimitive {
         .setFirst, .setBFL, .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
 
-    internal static let expressionPrimitives: Set<Self> = Set(allCases).subtracting(statementCommands).subtracting([.arrow, .setHeading, .rshift, .readWord, .readChar])
-    internal static let variadicPrimitives: Set<Self> = [.word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic]
+    internal static let expressionPrimitives: Set<Self> = Set(allCases).subtracting(statementCommands).subtracting([
+        .arrow, .setHeading, .rshift, .readWord, .readChar,
+    ])
+    internal static let variadicPrimitives: Set<Self> = [
+        .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic,
+    ]
 }
