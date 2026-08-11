@@ -25,7 +25,7 @@ final class IPCServerTests: XCTestCase {
     private struct NoParams: Encodable {}
 
     private func send<Params: Encodable>(
-        _ server: PosixZagoIPCServer,
+        _ server: any ZagoIPCMessageHandling,
         method: String,
         params: Params? = nil,
         id: Int,
@@ -35,6 +35,14 @@ final class IPCServerTests: XCTestCase {
         return server.handleMessage(data, connectionId: connectionId)
     }
 
+    private func makeTestServer(sessionToken: String) -> any ZagoIPCMessageHandling {
+        #if os(Windows)
+        return WindowsZagoIPCServer(sessionToken: sessionToken)
+        #else
+        return PosixZagoIPCServer(sessionToken: sessionToken)
+        #endif
+    }
+
     private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
         private let editor: Editor
 
@@ -42,7 +50,7 @@ final class IPCServerTests: XCTestCase {
             self.editor = editor
         }
 
-        func ipcServerGetBuffers(_ server: any ZagoIPCServer) -> [BufferInfo] {
+        func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo] {
             editor.externalGetBuffers().map {
                 BufferInfo(
                     bufferId: $0.bufferId,
@@ -59,7 +67,7 @@ final class IPCServerTests: XCTestCase {
             textFor bufferTarget: String?,
             startLine: Int?,
             endLine: Int?
-        ) -> (lines: [String], totalLines: Int)? {
+        ) throws -> (lines: [String], totalLines: Int)? {
             guard let result = editor.externalGetText(
                 bufferTarget: bufferTarget,
                 startLine: startLine,
@@ -70,25 +78,32 @@ final class IPCServerTests: XCTestCase {
             return (lines: result.lines, totalLines: result.totalLines)
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) -> (line: Int, column: Int, visualCol: Int, mode: String)? {
+        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)? {
             guard let cursor = editor.externalGetCursor(bufferTarget: bufferTarget) else {
                 return nil
             }
             return (line: cursor.line, column: cursor.column, visualCol: cursor.visualCol, mode: cursor.mode)
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) -> Bool {
+        func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) throws -> Bool {
             true
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) -> (success: Bool, result: String, error: String?) {
+        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (success: Bool, result: String, error: String?) {
             let result = editor.externalExecuteLogo(script: script, mode: mode)
             return (success: result.success, result: result.result, error: result.error)
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) -> [IPCHistoryEntry] {
+        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) throws -> [IPCHistoryEntry] {
             []
         }
+    }
+
+    private final class TimedOutDataSource: ZagoIPCServerDataSource {
+        func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo] { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?) throws -> (lines: [String], totalLines: Int)? { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)? { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, historyWithLimit limit: Int) throws -> [IPCHistoryEntry] { throw IPCServerRequestError.timedOut }
     }
 
     func testOverlayInsertModeParsing() {
@@ -131,7 +146,7 @@ final class IPCServerTests: XCTestCase {
 
         let requestCompleted = expectation(description: "external editor request completed")
         DispatchQueue.global(qos: .userInitiated).async {
-            let result = editor.performOnEditorLoop {
+            let result = try? editor.performOnEditorLoop {
                 editor.buffer.lines[0] = "changed by ipc"
                 return "ok"
             }
@@ -199,9 +214,40 @@ final class IPCServerTests: XCTestCase {
         XCTAssertEqual(queue.pendingProposals[1].affectedFiles[0].chunks[0].targetLine, 32)
     }
 
+    func testEditorLoopRequestTimesOutBeforeDrain() {
+        let editor = Editor()
+        editor.isInteractiveMode = true
+        defer { editor.isInteractiveMode = false }
+
+        XCTAssertThrowsError(try editor.performOnEditorLoop(timeout: 0.01) { "late" }) { error in
+            XCTAssertEqual(error as? EditorLoopRequestError, .timedOut)
+        }
+        editor.drainExternalRequests()
+    }
+
+    func testEditorTimeoutMapsToRPC408() throws {
+        let server = makeTestServer(sessionToken: "test-token")
+        let dataSource = TimedOutDataSource()
+        server.dataSource = dataSource
+
+        let registration = try send(server, method: "zago.client.register", params: RegistrationParams(auth: "test-token", clientId: "bot", clientName: "Bot", color: nil), id: 1, connectionId: "conn-1")
+        XCTAssertNil(registration.error)
+
+        let response = try send(server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 2, connectionId: "conn-1")
+        XCTAssertEqual(response.error?.code, 408)
+    }
+
+    func testProposalQueueRejectsOverflow() {
+        let queue = ProposalQueue(maxDepth: 1)
+        let proposal = AIProposal(clientId: "bot", clientName: "Bot", reason: "test", affectedFiles: [])
+        XCTAssertTrue(queue.pushProposal(proposal))
+        XCTAssertFalse(queue.pushProposal(proposal))
+        XCTAssertEqual(queue.count, 1)
+    }
+
     func testIPCServerRegistrationAndAuthorization() {
         let token = "test-secret-token-12345"
-        let server = PosixZagoIPCServer(sessionToken: token)
+        let server = makeTestServer(sessionToken: token)
 
         // 1. Invalid Token Registration
         let resp1 = try! send(
@@ -263,7 +309,7 @@ final class IPCServerTests: XCTestCase {
     func testBufferUUIDAndGetBuffersAPI() {
         let editor = Editor()
         let target = TestIPCDelegate(editor: editor)
-        let server = PosixZagoIPCServer(sessionToken: "test-token")
+        let server = makeTestServer(sessionToken: "test-token")
         server.delegate = target
         server.dataSource = target
         let registration = try! send(

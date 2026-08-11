@@ -487,25 +487,17 @@ public final class Editor: @unchecked Sendable {
         }
     }
 
-    public func performOnEditorLoop<T>(_ operation: @escaping () -> T) -> T {
+    public func performOnEditorLoop<T>(timeout: TimeInterval = 0.5, _ operation: @escaping () -> T) throws -> T {
         if !isInteractiveMode || Thread.current === editorLoopThread {
             return operation()
         }
 
-        let result = EditorLoopRequestResult<T>()
-        let semaphore = DispatchSemaphore(value: 0)
+        let request = EditorLoopRequest(operation: operation)
         editorLoopRequests.enqueue {
-            result.value = operation()
-            result.completed = true
-            semaphore.signal()
+            request.execute()
         }
         terminal.wakeup()
-        semaphore.wait()
-
-        guard result.completed else {
-            fatalError("Editor loop request completed without a result")
-        }
-        return result.value!
+        return try request.wait(timeout: timeout)
     }
 
     func drainExternalRequests() {
