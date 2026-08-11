@@ -11,6 +11,14 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     return engine.evaluateExpression(tokens, index: &index)
 }
 
+@Test func testLogoTokensKeepOriginalSourceRanges() {
+    let script = "MAKE \"name 1 + 2 ; ignored"
+    let tokens = LogoTokenizer.tokenizeTokens(script)
+
+    #expect(tokens.map(\.text) == ["MAKE", "\"name", "1", "+", "2"])
+    #expect(tokens.map(\.sourceRange) == [0..<4, 5..<10, 11..<12, 13..<14, 15..<16])
+}
+
 private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Sendable {
     var writes: [String] = []
     private var lines: [String]

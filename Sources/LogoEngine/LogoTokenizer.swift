@@ -1,5 +1,15 @@
 import Foundation
 
+public struct LogoToken: Equatable, Sendable {
+    public let text: String
+    public let sourceRange: Range<Int>
+
+    public init(text: String, sourceRange: Range<Int>) {
+        self.text = text
+        self.sourceRange = sourceRange
+    }
+}
+
 /// Shared tokenization rules for LOGO scripts and LOGO value literals.
 public enum LogoTokenizer {
     static func tokenizeValueList(_ source: String) -> [String] {
@@ -35,6 +45,22 @@ public enum LogoTokenizer {
     }
 
     public static func tokenize(_ script: String) -> [String] {
+        tokenizeTokens(script).map(\.text)
+    }
+
+    public static func tokenizeTokens(_ script: String) -> [LogoToken] {
+        let tokenTexts = tokenizeScript(script)
+        var searchStart = script.startIndex
+        return tokenTexts.compactMap { text in
+            guard let range = script.range(of: text, range: searchStart..<script.endIndex) else { return nil }
+            let start = script.distance(from: script.startIndex, to: range.lowerBound)
+            let end = script.distance(from: script.startIndex, to: range.upperBound)
+            searchStart = range.upperBound
+            return LogoToken(text: text, sourceRange: start..<end)
+        }
+    }
+
+    private static func tokenizeScript(_ script: String) -> [String] {
         var tokens: [String] = []
         var current = ""
         let operatorDelimiters = Set(LogoOperator.allCases.filter(\.isArithmetic).compactMap { $0.rawValue.first })
