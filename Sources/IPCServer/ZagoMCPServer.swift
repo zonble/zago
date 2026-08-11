@@ -384,7 +384,7 @@ public final class ZagoMCPServer {
             guard !trimmed.isEmpty else { continue }
             if let response = handleLine(trimmed) {
                 print(response)
-                fflush(stdout)
+                fflush(nil)
             }
         }
     }
