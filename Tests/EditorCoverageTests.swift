@@ -320,7 +320,7 @@ private func makeEditor(
         var config = EditorConfig()
         configLoader.parseConfigContent("set debug true", into: &config)
         #expect(config.debugMode == true)
-        configLoader.parseConfigContent("set debug_mode false", into: &config)
+        configLoader.parseConfigContent("set debug false", into: &config)
         #expect(config.debugMode == false)
     }
 

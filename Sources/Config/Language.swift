@@ -5,6 +5,13 @@ public enum Language: String, CaseIterable, Sendable {
     case en = "en"
     case zh_TW = "zh_TW"
 
+    public init?(settingValue: String) {
+        guard let language = Self.allCases.first(where: {
+            $0.rawValue.caseInsensitiveCompare(settingValue) == .orderedSame
+        }) else { return nil }
+        self = language
+    }
+
     /// Detects current system language from LC_ALL, LC_MESSAGES, LANG, LANGUAGE, or Locale.
     public static func detectSystemLanguage() -> Language {
         let candidates = [

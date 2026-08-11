@@ -1479,7 +1479,7 @@ private func submitCommandBar(_ text: String, editor: Editor) {
 
     editor.processKey(.tab)
 
-    #expect(editor.promptInputText == "set linenumbers ")
+    #expect(editor.promptInputText == "set li")
     #expect(editor.promptCursorIndex == editor.promptInputText.count)
 }
 

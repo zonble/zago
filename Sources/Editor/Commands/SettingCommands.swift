@@ -23,7 +23,7 @@ public struct SettingCommand: Command {
 
         let rawValue = parts.count > 1 ? parts[1] : ""
         let value = first == "unset" ? "off" : rawValue
-        guard let editorSetting = EditorSettingParser.parse(setting: setting, value: value) else {
+        guard let editorSetting = EditorSettingUpdateParser.parse(setting: setting, value: value) else {
             editor.setStatusMessage(editor.l10n["status.path_required"])
             return .handled
         }
@@ -31,9 +31,9 @@ public struct SettingCommand: Command {
         return .handled
     }
 
-    public static let settingNames = EditorSettingParser.settingNames
+    public static let settingNames = EditorSettingUpdateParser.settingNames
 
     public static func valueSuggestions(for setting: String) -> [String] {
-        EditorSettingParser.valueSuggestions(for: setting)
+        EditorSettingUpdateParser.valueSuggestions(for: setting)
     }
 }
