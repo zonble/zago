@@ -37,8 +37,8 @@ extension LogoEngine {
         guard exitBit != 0 else { return }
 
         for step in 0..<steps {
-            let currLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
-            let currCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+            let currLine = queryInteger(.currentLineIndex) ?? 0
+            let currCol = queryInteger(.currentColumnIndex) ?? 0
             let nextLine = currLine + dRow
             let nextCol = currCol + dCol
             let nextIsInsideMinimumBounds = nextLine >= 0 && nextCol >= 0
@@ -49,7 +49,7 @@ extension LogoEngine {
 
             if isPenDown {
                 editor.logoEngine(self, performAction: .ensureLineExists(index: currLine))
-                let lineStr = (editor.logoEngine(self, queryState: .lineAt(currLine)) as? String) ?? ""
+                let lineStr = queryString(.lineAt(currLine)) ?? ""
                 let existingChar = displayCharAt(in: lineStr, visualColumn: currCol)
                 let defaultNewChar: Character = (dRow != 0) ? "│" : "─"
                 let isTerminalStep = step == steps - 1 || !nextIsInsideMinimumBounds
@@ -72,17 +72,17 @@ extension LogoEngine {
     }
 
     internal func getLineCharAt(line: Int, col: Int) -> Character {
-        guard let editor = self.delegate else { return " " }
-        let totalLines = (editor.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+        guard self.delegate != nil else { return " " }
+        let totalLines = queryInteger(.lineCount) ?? 0
         guard line >= 0 && line < totalLines else { return " " }
-        let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+        let lineStr = queryString(.lineAt(line)) ?? ""
         return displayCharAt(in: lineStr, visualColumn: col)
     }
 
     internal func setLineCharAt(line: Int, col: Int, char: Character) {
         guard let editor = self.delegate else { return }
         editor.logoEngine(self, performAction: .ensureLineExists(index: line))
-        let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+        let lineStr = queryString(.lineAt(line)) ?? ""
         let updated = replaceDisplayColumns(in: lineStr, startCol: col, width: 1, replacement: String(char))
         editor.logoEngine(self, performAction: .setLine(index: line, text: updated))
         editor.logoEngine(self, performAction: .markModified)

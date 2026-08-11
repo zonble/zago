@@ -3,6 +3,34 @@ import Foundation
 // MARK: - LogoEngine Utility & Helper Functions
 
 extension LogoEngine {
+    internal func queryInteger(_ query: LogoEditorQuery) -> Int? {
+        delegate?.logoEngine(self, queryState: query)?.integerValue
+    }
+
+    internal func queryString(_ query: LogoEditorQuery) -> String? {
+        delegate?.logoEngine(self, queryState: query)?.stringValue
+    }
+
+    internal func queryBool(_ query: LogoEditorQuery) -> Bool? {
+        delegate?.logoEngine(self, queryState: query)?.boolValue
+    }
+
+    internal func queryStrings(_ query: LogoEditorQuery) -> [String]? {
+        delegate?.logoEngine(self, queryState: query)?.stringsValue
+    }
+
+    internal func queryBorderStyle(_ query: LogoEditorQuery) -> BorderStyle? {
+        delegate?.logoEngine(self, queryState: query)?.borderStyleValue
+    }
+
+    internal func queryArrowStyle(_ query: LogoEditorQuery) -> ArrowStyle? {
+        delegate?.logoEngine(self, queryState: query)?.arrowStyleValue
+    }
+
+    internal func queryCanvasBlockFrame(_ query: LogoEditorQuery) -> LogoCanvasBlockFrame? {
+        delegate?.logoEngine(self, queryState: query)?.canvasBlockFrameValue
+    }
+
     /// Formats a Double value to String, stripping trailing `.0` if it represents an exact integer within Int bounds.
     internal func formatNum(_ val: Double) -> String {
         if val.truncatingRemainder(dividingBy: 1) == 0 && val >= Double(Int.min) && val <= Double(Int.max) {
@@ -88,25 +116,11 @@ extension LogoEngine {
     }
 
     internal func setLastExpressionString(_ value: String) {
-        lastExpressionValue = .string(value)
+        lastExpressionValue = LogoValue.parse(value)
     }
 
     internal func setLastExpressionDateTime(_ value: String) {
-        lastExpressionValue = .dateTime(value)
-    }
-
-    internal func runtimeValueForLastExpression(fallback value: String) -> LogoRuntimeValue {
-        if let runtimeValue = lastExpressionValue, runtimeValue.description == value {
-            return runtimeValue
-        }
-        return .string(value)
-    }
-
-    internal func runtimeValueForVariable(_ name: String, value: String) -> LogoRuntimeValue {
-        if let runtimeValue = variableValues[name], runtimeValue.description == value {
-            return runtimeValue
-        }
-        return .string(value)
+        lastExpressionValue = .string(value)
     }
 
     internal func parseUnquotedIntArgument(_ tokens: [String], index: inout Int) -> Int? {
@@ -119,16 +133,15 @@ extension LogoEngine {
 
         if token.hasPrefix(":") {
             let variableName = normalizeVariableName(token)
-            let value = variables[variableName] ?? ""
-            if !runtimeValueForVariable(variableName, value: value).isNumeric {
+            guard let value = variables.value(for: variableName), value.isNumber else {
                 return nil
             }
             return Int(resolveTokenValue(token))
         }
 
         let variableName = token.lowercased()
-        if let value = variables[variableName] {
-            if !runtimeValueForVariable(variableName, value: value).isNumeric {
+        if let value = variables.value(for: variableName) {
+            if !value.isNumber {
                 return nil
             }
             return Int(resolveTokenValue(token))

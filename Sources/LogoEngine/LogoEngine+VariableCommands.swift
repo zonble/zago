@@ -12,7 +12,6 @@ extension LogoEngine {
                 index += 1
                 let val = evaluateExpression(tokens, index: &index)
                 variables[varName] = val
-                variableValues[varName] = runtimeValueForLastExpression(fallback: val)
             }
             return true
 
@@ -20,12 +19,10 @@ extension LogoEngine {
             index += 1
             if index < tokens.count {
                 let val = evaluateExpression(tokens, index: &index)
-                let runtimeValue = runtimeValueForLastExpression(fallback: val)
                 index += 1
                 if index < tokens.count {
                     let varName = normalizeVariableName(evaluateExpression(tokens, index: &index))
                     variables[varName] = val
-                    variableValues[varName] = runtimeValue
                 }
             }
             return true
@@ -351,7 +348,6 @@ extension LogoEngine {
                 let targetLower = targetRaw.lowercased()
                 customProcedures.removeValue(forKey: targetUpper)
                 variables.removeValue(forKey: targetLower)
-                variableValues.removeValue(forKey: targetLower)
                 propertyLists.removeValue(forKey: targetLower)
             }
             return true
@@ -362,13 +358,11 @@ extension LogoEngine {
 
         case .erns:
             variables.removeAll()
-            variableValues.removeAll()
             return true
 
         case .erall:
             customProcedures.removeAll()
             variables.removeAll()
-            variableValues.removeAll()
             propertyLists.removeAll()
             return true
 

@@ -80,13 +80,62 @@ public enum LogoEditorQuery {
     case fileName
 }
 
+/// Typed values returned by editor state queries from a LOGO program.
+///
+/// Keeping the result domain explicit prevents the interpreter from depending
+/// on unchecked `Any` casts at the editor boundary.
+public enum LogoEditorQueryResult {
+    case integer(Int)
+    case string(String)
+    case bool(Bool)
+    case strings([String])
+    case borderStyle(BorderStyle)
+    case arrowStyle(ArrowStyle)
+    case canvasBlockFrame(LogoCanvasBlockFrame)
+
+    public var integerValue: Int? {
+        guard case .integer(let value) = self else { return nil }
+        return value
+    }
+
+    public var stringValue: String? {
+        guard case .string(let value) = self else { return nil }
+        return value
+    }
+
+    public var boolValue: Bool? {
+        guard case .bool(let value) = self else { return nil }
+        return value
+    }
+
+    public var stringsValue: [String]? {
+        guard case .strings(let value) = self else { return nil }
+        return value
+    }
+
+    public var borderStyleValue: BorderStyle? {
+        guard case .borderStyle(let value) = self else { return nil }
+        return value
+    }
+
+    public var arrowStyleValue: ArrowStyle? {
+        guard case .arrowStyle(let value) = self else { return nil }
+        return value
+    }
+
+    public var canvasBlockFrameValue: LogoCanvasBlockFrame? {
+        guard case .canvasBlockFrame(let value) = self else { return nil }
+        return value
+    }
+}
+
 /// Clean abstract delegate protocol for host editor interaction.
 public protocol LogoEngineDelegate: AnyObject {
     /// Perform an action or mutation on the host editor.
     func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction)
 
     /// Query state or data from the host editor.
-    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> Any?
+    func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> LogoEditorQueryResult?
 
     /// Read a line of text input with prompt message.
     func logoEngine(_ engine: LogoEngine, readWordWithPrompt prompt: String) -> String?

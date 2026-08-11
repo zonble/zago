@@ -580,23 +580,23 @@ private func makeEditor(
 
         let delegate: LogoEngineDelegate = editor
 
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex) as? Int == 5)
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex)?.integerValue == 5)
         #expect(
-            delegate.logoEngine(editor.logoEngine, queryState: .bufferList) as? [String] == ["first.txt", "second.txt"])
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex) as? Int == 0)
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText) as? String == "A中B\ntail")
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified) as? Bool == true)
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName) as? String == "first.txt")
+            delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue == ["first.txt", "second.txt"])
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex)?.integerValue == 0)
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText)?.stringValue == "A中B\ntail")
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified)?.boolValue == true)
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName)?.stringValue == "first.txt")
 
         editor.buffer.selectionMark = (line: 0, column: 1)
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = 2
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText) as? String == "中")
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText)?.stringValue == "中")
 
         editor.buffer.selectionMark = (line: 0, column: 0)
         editor.buffer.lineIndex = 1
         editor.buffer.columnIndex = 4
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText) as? String == "A中B\ntail")
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .selectionText)?.stringValue == "A中B\ntail")
 
         editor.switchToCanvasMode()
         editor.buffer.lineIndex = 0
@@ -605,9 +605,9 @@ private func makeEditor(
         editor.canvasVisualColumn = 3
         editor.processKey(.mark)
 
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .hasCanvasBlockMark) as? Bool == true)
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .hasCanvasBlockMark)?.boolValue == true)
         #expect(
-            delegate.logoEngine(editor.logoEngine, queryState: .canvasBlockFrame) as? LogoCanvasBlockFrame
+            delegate.logoEngine(editor.logoEngine, queryState: .canvasBlockFrame)?.canvasBlockFrameValue
                 == LogoCanvasBlockFrame(lineIndex: 0, visualColumn: 1, width: 3, height: 1)
         )
 
@@ -615,9 +615,9 @@ private func makeEditor(
         tableEditor.tableModeController.createTable(
             rows: 1, cols: 1, cellWidth: 3, enterMode: true, saveSnapshot: false)
         let tableDelegate: LogoEngineDelegate = tableEditor
-        #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .hasTableCell) as? Bool == true)
+        #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .hasTableCell)?.boolValue == true)
         #expect(
-            tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle) as? BorderStyle == .single
+            tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle)?.borderStyleValue == .single
         )
     }
 

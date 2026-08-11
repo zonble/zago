@@ -7,48 +7,48 @@ extension LogoEngine {
 
         switch prim {
         case .buffers:
-            if let list = delegate?.logoEngine(self, queryState: .bufferList) as? [String] {
+            if let list = queryStrings(.bufferList) {
                 return LogoValue.list(list.map { LogoValue.string($0) }).description
             }
             return "[]"
 
         case .buffer:
-            let curIdx = (delegate?.logoEngine(self, queryState: .currentBufferIndex) as? Int) ?? 0
+            let curIdx = queryInteger(.currentBufferIndex) ?? 0
             return "\(curIdx + 1)"
 
         case .row:
-            let row = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+            let row = queryInteger(.currentLineIndex) ?? 0
             return "\(row + 1)"
 
         case .col:
-            let col = (delegate?.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
+            let col = queryInteger(.currentColumnIndex) ?? 0
             return "\(col + 1)"
 
         case .lineCount:
-            let count = (delegate?.logoEngine(self, queryState: .lineCount) as? Int) ?? 0
+            let count = queryInteger(.lineCount) ?? 0
             return "\(count)"
 
         case .getline:
-            var lineIdx = (delegate?.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+            var lineIdx = queryInteger(.currentLineIndex) ?? 0
             if let n1Based = consumeNextIntExpressionArgument(
                 tokens, index: &index, isBoundary: Self.isArgumentBoundary)
             {
                 lineIdx = max(0, n1Based - 1)
             }
-            return (delegate?.logoEngine(self, queryState: .lineAt(lineIdx)) as? String) ?? ""
+            return queryString(.lineAt(lineIdx)) ?? ""
 
         case .bufferText:
-            return (delegate?.logoEngine(self, queryState: .bufferText) as? String) ?? ""
+            return queryString(.bufferText) ?? ""
 
         case .selection:
-            return (delegate?.logoEngine(self, queryState: .selectionText) as? String) ?? ""
+            return queryString(.selectionText) ?? ""
 
         case .isModified:
-            let mod = (delegate?.logoEngine(self, queryState: .isModified) as? Bool) ?? false
+            let mod = queryBool(.isModified) ?? false
             return mod ? "1" : "0"
 
         case .fileName:
-            return (delegate?.logoEngine(self, queryState: .fileName) as? String) ?? "Untitled"
+            return queryString(.fileName) ?? "Untitled"
 
         default:
             return nil

@@ -309,12 +309,12 @@ extension LogoEngine {
         if clean.hasPrefix(":") {
             let varName = normalizeVariableName(clean)
             let value = variables[varName] ?? ""
-            lastExpressionValue = runtimeValueForVariable(varName, value: value)
+            lastExpressionValue = variables.value(for: varName)
             return value
         }
         if clean.hasPrefix("?") || clean == "#" || variables[lower] != nil {
             if let val = variables[lower] {
-                lastExpressionValue = runtimeValueForVariable(lower, value: val)
+                lastExpressionValue = variables.value(for: lower)
                 return val
             }
         }

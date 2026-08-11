@@ -51,8 +51,8 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         if !hasExplicitLength {
             executeAutoLineCommand(startLine: startLine, startCol: startCol, styleChar: styleChar, arrowMode: arrowMode)
@@ -61,7 +61,7 @@ extension LogoEngine {
 
         editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
 
-        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        var lineText = queryString(.lineAt(startLine)) ?? ""
 
         for i in 0..<length {
             let col = startCol + i
@@ -111,8 +111,8 @@ extension LogoEngine {
             index -= 1
         }
 
-        let startCol = (editor.logoEngine(self, queryState: .currentColumnIndex) as? Int) ?? 0
-        let startLine = (editor.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+        let startCol = queryInteger(.currentColumnIndex) ?? 0
+        let startLine = queryInteger(.currentLineIndex) ?? 0
 
         if !hasExplicitHeight {
             executeAutoVlineCommand(
@@ -124,7 +124,7 @@ extension LogoEngine {
             let line = startLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(line)) ?? ""
 
             let moveMask = (r == 0) ? 4 : ((r == height - 1) ? 1 : 5)
             let existing = displayCharAt(in: lineStr, visualColumn: startCol)
@@ -275,7 +275,7 @@ extension LogoEngine {
 
     private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
         guard let editor = self.delegate else { return }
-        var lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        var lineText = queryString(.lineAt(startLine)) ?? ""
 
         let prevCol = startCol - 1
         let connectLeft =
@@ -320,7 +320,7 @@ extension LogoEngine {
         guard !drawableOffsets.isEmpty else { return }
 
         editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
-        lineText = (editor.logoEngine(self, queryState: .lineAt(startLine)) as? String) ?? ""
+        lineText = queryString(.lineAt(startLine)) ?? ""
 
         let lastOffset = drawableOffsets[drawableOffsets.count - 1]
         for offset in drawableOffsets {
@@ -351,7 +351,7 @@ extension LogoEngine {
         let connectAbove =
             prevLine >= 0 && !arrowMode.hasBackwardArrow && isMaskChar(getLineCharAt(line: prevLine, col: startCol))
         if connectAbove {
-            let prevStr = (editor.logoEngine(self, queryState: .lineAt(prevLine)) as? String) ?? ""
+            let prevStr = queryString(.lineAt(prevLine)) ?? ""
             let existingPrev = displayCharAt(in: prevStr, visualColumn: startCol)
             let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 4)
             let updatedPrev = replaceDisplayColumns(
@@ -395,7 +395,7 @@ extension LogoEngine {
             let line = startLine + offset
             editor.logoEngine(self, performAction: .ensureLineExists(index: line))
 
-            let lineStr = (editor.logoEngine(self, queryState: .lineAt(line)) as? String) ?? ""
+            let lineStr = queryString(.lineAt(line)) ?? ""
 
             var moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
             if offset == 0 && connectAbove {
@@ -497,7 +497,7 @@ extension LogoEngine {
     }
 
     private var currentArrowStyle: ArrowStyle {
-        (delegate?.logoEngine(self, queryState: .defaultArrowStyle) as? ArrowStyle) ?? .solid
+        queryArrowStyle(.defaultArrowStyle) ?? .solid
     }
 
     private func horizontalForwardArrow(styleChar: Character) -> Character {

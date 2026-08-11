@@ -87,7 +87,7 @@ extension LogoEngine {
             return true
 
         case .bottom:
-            let totalLines = (delegate.logoEngine(self, queryState: .lineCount) as? Int) ?? 1
+            let totalLines = queryInteger(.lineCount) ?? 1
             let lastLine = max(0, totalLines - 1)
             delegate.logoEngine(self, performAction: .updateLineIndex(lastLine))
             delegate.logoEngine(self, performAction: .moveEnd)
@@ -234,7 +234,7 @@ extension LogoEngine {
                     let textVal = unquote(evaluateExpression(tokens, index: &index))
                     delegate.logoEngine(self, performAction: .setLine(index: max(0, line1Based - 1), text: textVal))
                 } else {
-                    let curRow = (delegate.logoEngine(self, queryState: .currentLineIndex) as? Int) ?? 0
+                    let curRow = queryInteger(.currentLineIndex) ?? 0
                     let textVal = unquote(firstVal)
                     delegate.logoEngine(self, performAction: .setLine(index: curRow, text: textVal))
                 }
