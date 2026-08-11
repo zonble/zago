@@ -376,7 +376,7 @@ extension LogoEngine {
                 }
                 let varName = unquote(t).trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
                 if !varName.isEmpty {
-                    variables[varName] = ""
+                    variables.declareLocal(varName)
                 }
                 index += 1
             }

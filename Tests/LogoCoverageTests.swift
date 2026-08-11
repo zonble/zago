@@ -292,6 +292,21 @@ struct LogoCoverageTests {
         #expect(delegate.statusMessages.last?.contains("recursion limit exceeded") == true)
     }
 
+    @Test func testLogoEnvironmentScopesShadowAndRestoreBindings() {
+        var environment = LogoEnvironment(initialValues: ["name": "global"])
+        environment.pushScope()
+        environment.declareLocal("name")
+        environment["name"] = "local"
+        environment["temporary"] = "value"
+
+        #expect(environment["name"] == "local")
+        #expect(environment["temporary"] == "value")
+
+        environment.popScope()
+        #expect(environment["name"] == "global")
+        #expect(environment["temporary"] == nil)
+    }
+
     @Test func testReflectionAndMetaprogrammingPrimitives() {
         let delegate = CoverageDelegate()
         let engine = LogoEngine(delegate: delegate)

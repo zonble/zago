@@ -340,21 +340,11 @@ extension LogoEngine {
             args.append(arg)
         }
 
-        var previousParamValues: [String: String?] = [:]
-        for (i, param) in proc.parameters.enumerated() {
-            previousParamValues[param] = variables[param]
-            variables[param] = args[i]
-        }
+        variables.pushScope(initialValues: Dictionary(uniqueKeysWithValues: zip(proc.parameters, args)))
         procedureCallDepth += 1
         defer {
             procedureCallDepth -= 1
-            for (param, prev) in previousParamValues {
-                if let old = prev {
-                    variables[param] = old
-                } else {
-                    variables.removeValue(forKey: param)
-                }
-            }
+            variables.popScope()
         }
 
         var procIndex = 0
