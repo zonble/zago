@@ -216,7 +216,7 @@ public final class Editor: @unchecked Sendable {
         set { runtimeConfig = newValue }
     }
     public var customBoundKeys: Set<Key> = []
-    public var ipcLifecycleHandler: ((Bool) -> Void)?
+    public weak var effectDelegate: (any EditorEffectDelegate)?
     public let proposalQueue = ProposalQueue()
     private let editorLoopRequests = EditorLoopRequestQueue()
     private var editorLoopThread: Thread?
@@ -452,7 +452,7 @@ public final class Editor: @unchecked Sendable {
         defer {
             editorLoopThread = nil
             isInteractiveMode = false
-            ipcLifecycleHandler?(false)
+            effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
             terminal.clearScreen()
             terminal.showCursor()
             terminal.disableRawMode()
@@ -470,7 +470,7 @@ public final class Editor: @unchecked Sendable {
         terminal.hideCursor()
 
         if displayConfig.ipcEnabled {
-            ipcLifecycleHandler?(true)
+            effectDelegate?.editor(self, didEmit: .ipcEnabled(true))
         }
 
         while isRunning {

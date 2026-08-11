@@ -241,128 +241,48 @@ extension Editor {
         doSave(to: path)
     }
 
-    public func applyEditorSetting(setting: String, arg: String) {
-        switch setting.lowercased() {
-        case "wrap", "wrapcolumn":
-            if arg == "off" || arg == "false" || arg == "none" {
-                layoutEngine.setWrapColumn(nil)
-            } else if let w = Int(arg), w > 0 {
-                layoutEngine.setWrapColumn(w)
-            } else {
-                layoutEngine.setWrapColumn(nil)
-            }
-        case "ruler", "rulerbar", "showruler":
-            if arg == "off" || arg == "false" {
-                displayConfig.showRuler = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.showRuler = true
-            } else {
-                displayConfig.showRuler.toggle()
-            }
-        case "linenumbers", "linenumber", "line-numbers", "line-number", "line_numbers", "line_number":
-            if arg == "off" || arg == "false" {
-                displayConfig.showLineNumbers = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.showLineNumbers = true
-            } else {
-                displayConfig.showLineNumbers.toggle()
-            }
-        case "sublinenumbers", "sublinenumber", "subline-numbers", "subline-number", "subline_numbers",
-            "subline_number", "sublines":
-            if arg == "off" || arg == "false" {
-                displayConfig.showSubLineNumbers = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.showSubLineNumbers = true
-            } else {
-                displayConfig.showSubLineNumbers.toggle()
-            }
-        case "canvas-mode", "canvasmode", "canvas_mode":
-            if arg == "off" || arg == "false" {
-                switchToTextMode()
-            } else if arg == "on" || arg == "true" {
-                switchToCanvasMode()
-            } else {
-                toggleCanvasMode()
-            }
-        case "syntax", "enablesyntax", "syntaxhighlight", "syntaxhighlighting":
-            if arg == "off" || arg == "false" {
-                displayConfig.enableSyntaxHighlight = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.enableSyntaxHighlight = true
-            } else {
-                displayConfig.enableSyntaxHighlight.toggle()
-            }
-        case "autoreload", "auto-reload", "auto_reload":
-            if arg == "off" || arg == "false" {
-                displayConfig.autoReload = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.autoReload = true
-            } else {
-                displayConfig.autoReload.toggle()
-            }
-        case "trim-trailing-whitespace", "trimtrailingwhitespace", "trim_trailing_whitespace",
-            "trim-trailing-spaces", "trimtrailingspaces", "trim_trailing_spaces":
-            if arg == "off" || arg == "false" {
-                displayConfig.trimTrailingWhitespaceOnSave = false
-            } else if arg == "on" || arg == "true" {
-                displayConfig.trimTrailingWhitespaceOnSave = true
-            } else {
-                displayConfig.trimTrailingWhitespaceOnSave.toggle()
-            }
-        case "regex", "regexp", "enableregex":
-            if arg == "off" || arg == "false" {
-                isRegexSearchEnabled = false
-            } else if arg == "on" || arg == "true" {
-                isRegexSearchEnabled = true
-            } else {
-                isRegexSearchEnabled.toggle()
-            }
-        case "tab", "tabsize":
-            if let size = Int(arg), size > 0 {
-                displayConfig.tabSize = size
-            }
-        case "lang":
-            if arg == "zh_tw" || arg == "zh" {
-                language = .zh_TW
-                usesExplicitLanguage = true
-            } else if arg == "en" {
-                language = .en
-                usesExplicitLanguage = true
-            }
-            for buf in buffers {
-                if let dirBuf = buf as? DirectoryBuffer {
-                    dirBuf.loadDirectory(at: dirBuf.directoryPath, language: language)
+    public func apply(_ setting: EditorSettingChange) {
+        switch setting {
+        case .wrap(let column): layoutEngine.setWrapColumn(column)
+        case .ruler(let value): displayConfig.showRuler = resolve(value, current: displayConfig.showRuler)
+        case .lineNumbers(let value): displayConfig.showLineNumbers = resolve(value, current: displayConfig.showLineNumbers)
+        case .subLineNumbers(let value): displayConfig.showSubLineNumbers = resolve(value, current: displayConfig.showSubLineNumbers)
+        case .canvasMode(let value):
+            let enabled = resolve(value, current: isCanvasModeActive)
+            enabled ? switchToCanvasMode() : switchToTextMode()
+        case .syntaxHighlighting(let value): displayConfig.enableSyntaxHighlight = resolve(value, current: displayConfig.enableSyntaxHighlight)
+        case .autoReload(let value): displayConfig.autoReload = resolve(value, current: displayConfig.autoReload)
+        case .trimTrailingWhitespace(let value): displayConfig.trimTrailingWhitespaceOnSave = resolve(value, current: displayConfig.trimTrailingWhitespaceOnSave)
+        case .regex(let value): isRegexSearchEnabled = resolve(value, current: isRegexSearchEnabled)
+        case .tabSize(let size): displayConfig.tabSize = size
+        case .language(let language):
+            self.language = language
+            usesExplicitLanguage = true
+            for buffer in buffers {
+                if let directoryBuffer = buffer as? DirectoryBuffer {
+                    directoryBuffer.loadDirectory(at: directoryBuffer.directoryPath, language: language)
                 }
             }
-        case "border", "borderstyle", "border-style", "border_style", "defaultborder", "defaultborderstyle",
-            "default-border-style", "default_border_style":
-            if let style = BorderStyle(arg) {
+        case .border(let style, let rawValue):
+            if let style {
                 defaultBorderStyle = style
                 setStatusMessage(l10n.defaultBorder(style.rawValue))
-            } else if arg.isEmpty {
+            } else if rawValue.isEmpty {
                 _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
             } else {
-                setStatusMessage(l10n.unknownBorderStyle(arg))
+                setStatusMessage(l10n.unknownBorderStyle(rawValue))
             }
-        case "arrow", "arrowstyle", "arrow-style", "arrow_style", "defaultarrow", "defaultarrowstyle",
-            "default-arrow-style", "default_arrow_style":
-            if let style = ArrowStyle(arg) {
-                defaultArrowStyle = style
-            }
-        case "ipc", "ipc.enabled", "ipc-enabled", "ipc_enabled":
-            if arg == "off" || arg == "false" {
-                displayConfig.ipcEnabled = false
-                ipcLifecycleHandler?(false)
-            } else if arg == "on" || arg == "true" {
-                displayConfig.ipcEnabled = true
-                ipcLifecycleHandler?(true)
-            } else {
-                displayConfig.ipcEnabled.toggle()
-                ipcLifecycleHandler?(displayConfig.ipcEnabled)
-            }
-        default:
-            break
+        case .arrow(let style):
+            if let style { defaultArrowStyle = style }
+        case .ipc(let value):
+            let enabled = resolve(value, current: displayConfig.ipcEnabled)
+            displayConfig.ipcEnabled = enabled
+            effectDelegate?.editor(self, didEmit: .ipcEnabled(enabled))
         }
+    }
+
+    private func resolve(_ requested: Bool?, current: Bool) -> Bool {
+        requested ?? !current
     }
 
     public func saveBuffer(path: String?) {
