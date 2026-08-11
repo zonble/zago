@@ -67,7 +67,7 @@ public final class LogoEngine {
         .top, .bottom, .lineStart, .lineEnd, .appendText, .prependText, .changeText,
         .joinLine, .splitLine, .indentLines, .outdentLines,
         .move, .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .hr, .vline, .vhr, .table,
-        .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
+        .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading,
         .setline, .gotoline, .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run,
         .repeatLoop, .forLoop, .dotimesLoop, .whileLoop,
         .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
