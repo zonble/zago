@@ -106,6 +106,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case logoOutput = "logo.output"
     case logoClearOutput = "logo.clear_output"
     case logoCanvas = "logo.canvas"
+    case logoDebug = "logo.debug"
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case textMode = "mode.text"

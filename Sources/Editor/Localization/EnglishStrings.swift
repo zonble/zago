@@ -57,7 +57,7 @@ public struct EnglishStrings {
         "prompt.logo": "❯ ",
         "prompt.fill_text": "Fill with: ",
         "prompt.table_dimensions": "Table rows cols width: ",
-        "status.directory_buffer_readonly": "Directory buffer is read-only",
+        "status.directory_buffer_readonly": "The buffer is read-only",
         "dirbuf.header_directory": "\" Directory: %@",
         "dirbuf.header_instructions": "\" Press Enter on a file to open, or on a folder to navigate",
         "dirbuf.up_dir": ".. (up a dir)",
