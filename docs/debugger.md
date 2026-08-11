@@ -2,6 +2,8 @@
 
 The Editor LOGO debugger treats LOGO as zago's extension language, in the same role that Emacs Lisp has in Emacs. It is available from every editable buffer, not only `.logo` files.
 
+Debugger UI stays hidden during ordinary editing. The `logo` command namespace and LOGO-related menu items are exposed only while editing a `.logo` file or after enabling `set debug on`.
+
 ## Executable Units
 
 `LOGO eval` resolves, in order, the active selection, the Markdown `logo` fenced block containing the cursor, the current LOGO procedure or balanced block, and finally the current line. Markdown snippets are therefore first-class executable units.

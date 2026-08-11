@@ -216,6 +216,11 @@ public final class Editor: @unchecked Sendable {
         get { runtimeConfig }
         set { runtimeConfig = newValue }
     }
+    public var debugMode = false
+
+    public var isLogoUIEnabled: Bool {
+        debugMode || buffer.filePath?.lowercased().hasSuffix(".logo") == true
+    }
     public var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
     public let proposalQueue = ProposalQueue()
@@ -285,6 +290,7 @@ public final class Editor: @unchecked Sendable {
         self.spellChecker.setLanguage(resolved.spellLanguage)
         self.layoutEngine = LayoutEngine(wrapColumn: resolved.wrapColumn)
         self.runtimeConfig = resolved.display
+        self.debugMode = configSource.initial.debugMode
         self.defaultBaseMode = resolved.baseMode
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
@@ -377,6 +383,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
         self.displayConfig = resolved.display
+        self.debugMode = loadedConfig.debugMode
         self.defaultBaseMode = resolved.baseMode
         saveCurrentViewSettingsToBuffer()
         if loadedConfig.language != nil {

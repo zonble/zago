@@ -120,9 +120,15 @@ public final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.buffer.next", hotkeyChar: "n", commandId: .bufferNext),
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
-                    MenuItem(titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput),
-                    MenuItem(titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug),
-                    MenuItem(titleKey: "menu.buffer.clear_output", hotkeyChar: "c", commandId: .logoClearOutput),
+                    MenuItem(
+                        titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput,
+                        isVisible: { $0.isLogoUIEnabled }),
+                    MenuItem(
+                        titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug,
+                        isVisible: { $0.isLogoUIEnabled }),
+                    MenuItem(
+                        titleKey: "menu.buffer.clear_output", hotkeyChar: "c", commandId: .logoClearOutput,
+                        isVisible: { $0.isLogoUIEnabled }),
                 ]),
             MenuCategory(
                 titleKey: "menu.run", hotkeyChar: "r",
@@ -319,7 +325,8 @@ public final class MenuBar {
                             editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
                         }),
                     MenuItem(
-                        titleKey: "menu.tools.clear_logo_output", hotkeyChar: "c", commandId: .logoClearOutput),
+                        titleKey: "menu.tools.clear_logo_output", hotkeyChar: "c", commandId: .logoClearOutput,
+                        isVisible: { $0.isLogoUIEnabled }),
                 ]),
         ]
 
@@ -332,8 +339,12 @@ public final class MenuBar {
                 titleKey: "menu.help", hotkeyChar: "h",
                 items: [
                     MenuItem(titleKey: "menu.help.show", hotkeyChar: "h", commandId: .helpShow),
-                    MenuItem(titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference),
-                    MenuItem(titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace),
+                    MenuItem(
+                        titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
+                        isVisible: { $0.isLogoUIEnabled }),
+                    MenuItem(
+                        titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace,
+                        isVisible: { $0.isLogoUIEnabled }),
                 ])
         )
 

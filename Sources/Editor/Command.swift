@@ -288,6 +288,7 @@ public final class CommandRegistry {
 
         for command in commands where command.match(input) {
             guard command.isAvailable(in: editor) else {
+                if command.id == .logoDebug { return .noMatch }
                 editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
                 return .handled
             }

@@ -254,6 +254,7 @@ extension Editor {
         case .autoReload(let value): displayConfig.autoReload = resolve(value, current: displayConfig.autoReload)
         case .trimTrailingWhitespace(let value): displayConfig.trimTrailingWhitespaceOnSave = resolve(value, current: displayConfig.trimTrailingWhitespaceOnSave)
         case .regex(let value): isRegexSearchEnabled = resolve(value, current: isRegexSearchEnabled)
+        case .debug(let value): debugMode = resolve(value, current: debugMode)
         case .tabSize(let size): displayConfig.tabSize = size
         case .language(let language):
             self.language = language

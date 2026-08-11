@@ -83,6 +83,7 @@ public struct LogoDebugCommand: Command {
     public let description = "Manage LOGO breakpoints"
     public let commandBarAliases = ["logo"]
     public init() {}
+    public func isAvailable(in editor: Editor) -> Bool { editor.isLogoUIEnabled }
     public func execute(on editor: Editor) { editor.toggleLogoDebuggerBuffer() }
     public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
         switch input.tokens.dropFirst().first?.lowercased() {
