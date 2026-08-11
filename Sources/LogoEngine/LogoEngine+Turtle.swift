@@ -1,26 +1,6 @@
 import Foundation
 
 extension LogoEngine {
-    internal static let singleMasks: [Character: Int] = [
-        "│": 5, "─": 10, "┌": 6, "┐": 12, "└": 3, "┘": 9,
-        "├": 7, "┤": 13, "┬": 14, "┴": 11, "┼": 15,
-        "╵": 1, "╶": 2, "╷": 4, "╴": 8,
-    ]
-
-    internal static let doubleMasks: [Character: Int] = [
-        "║": 5, "═": 10, "╔": 6, "╗": 12, "╚": 3, "╝": 9,
-        "╠": 7, "╣": 13, "╦": 14, "╩": 11, "╬": 15,
-    ]
-
-    internal static let singleCharForMask: [Int: Character] = [
-        1: "│", 2: "─", 3: "└", 4: "│", 5: "│", 6: "┌", 7: "├",
-        8: "─", 9: "┘", 10: "─", 11: "┴", 12: "┐", 13: "┤", 14: "┬", 15: "┼",
-    ]
-
-    internal static let doubleCharForMask: [Int: Character] = [
-        1: "║", 2: "═", 3: "╚", 4: "║", 5: "║", 6: "╔", 7: "╠",
-        8: "═", 9: "╝", 10: "═", 11: "╩", 12: "╗", 13: "╣", 14: "╦", 15: "╬",
-    ]
 
     internal func executeTurtleMove(steps: Int, directionHeading: Int) {
         guard steps > 0, let editor = self.delegate else { return }
@@ -89,11 +69,11 @@ extension LogoEngine {
     }
 
     internal func getMaskForChar(_ ch: Character) -> Int {
-        return LogoEngine.singleMasks[ch] ?? LogoEngine.doubleMasks[ch] ?? 0
+        Int(canvasMask(for: ch))
     }
 
     internal func isMaskChar(_ ch: Character) -> Bool {
-        return LogoEngine.singleMasks[ch] != nil || LogoEngine.doubleMasks[ch] != nil
+        lineStyle(for: ch) != nil
     }
 
     internal func getEffectiveMask(line: Int, col: Int, existingChar: Character) -> Int {
@@ -121,27 +101,13 @@ extension LogoEngine {
         let existingMask = getEffectiveMask(line: line, col: col, existingChar: existing)
         guard existingMask != 0 else { return defaultNewChar }
 
-        let isDouble = LogoEngine.doubleMasks[existing] != nil || LogoEngine.doubleMasks[defaultNewChar] != nil
-        let fusedMask = existingMask | moveMask
-
-        if isDouble {
-            return LogoEngine.doubleCharForMask[fusedMask] ?? defaultNewChar
-        } else {
-            return LogoEngine.singleCharForMask[fusedMask] ?? defaultNewChar
-        }
+        return fuseLineCharacter(existing: existing, defaultNewCharacter: defaultNewChar, addingMask: UInt8(moveMask))
     }
 
     internal func fuseChar(existing: Character, defaultNewChar: Character, moveMask: Int) -> Character {
         let existingMask = getMaskForChar(existing)
         guard existingMask != 0 else { return defaultNewChar }
 
-        let isDouble = LogoEngine.doubleMasks[existing] != nil || LogoEngine.doubleMasks[defaultNewChar] != nil
-        let fusedMask = existingMask | moveMask
-
-        if isDouble {
-            return LogoEngine.doubleCharForMask[fusedMask] ?? defaultNewChar
-        } else {
-            return LogoEngine.singleCharForMask[fusedMask] ?? defaultNewChar
-        }
+        return fuseLineCharacter(existing: existing, defaultNewCharacter: defaultNewChar, addingMask: UInt8(moveMask))
     }
 }

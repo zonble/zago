@@ -105,6 +105,21 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character 
     }
 }
 
+public func lineStyle(for character: Character) -> BorderStyle? {
+    switch character {
+    case "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬": return .double
+    case "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼", "╵", "╶", "╷", "╴": return .single
+    default: return nil
+    }
+}
+
+public func fuseLineCharacter(existing: Character, defaultNewCharacter: Character, addingMask: UInt8) -> Character {
+    let existingMask = canvasMask(for: existing)
+    guard existingMask != 0 else { return defaultNewCharacter }
+    let style: BorderStyle = lineStyle(for: existing) == .double || lineStyle(for: defaultNewCharacter) == .double ? .double : .single
+    return lineCharacter(forMask: existingMask | addingMask, style: style)
+}
+
 public func arrowHead(
     for direction: CanvasDrawDirection,
     style: BorderStyle,
