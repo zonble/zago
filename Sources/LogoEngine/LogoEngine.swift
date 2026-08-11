@@ -198,8 +198,7 @@ public final class LogoEngine {
         if customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil {
             return false
         }
-        let operators: Set<String> = ["+", "-", "*", "/", "=", "<>", "<", ">", "<=", ">="]
-        if operators.contains(clean) {
+        if LogoOperator.from(clean) != nil {
             return false
         }
         return true
