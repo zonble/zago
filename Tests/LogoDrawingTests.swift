@@ -160,6 +160,8 @@ import TextMetrics
 }
 
 @Test func testSetHeadingAndHeadingPrimitives() throws {
+    #expect(LogoEngine.isStatementCommand("SETH"))
+
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
 
