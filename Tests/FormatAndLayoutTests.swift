@@ -837,6 +837,12 @@ struct FormatAndLayoutTests {
             editor: editor, lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
         #expect(gutterOutput.contains("5"))
 
+        editor.buffer.lineIndex = 4
+        editor.debuggerController.toggleBreakpoint(in: editor.buffer)
+        let breakpointGutter = renderer.renderLineNumberGutter(
+            editor: editor, lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
+        #expect(breakpointGutter.contains("●"))
+
         // Test full screen render
         let fullOutput = renderer.render(editor: editor, rows: 24, cols: 80)
         #expect(fullOutput.hasPrefix("\u{1B}[?7l\u{1B}[H"))

@@ -39,6 +39,20 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     #expect(engine.customProcedures["MYFRAME"]?.bodyTokens.first?.sourceRange == 11..<15)
 }
 
+@Test func testLogoEnginePausesAndContinuesAtTokenBreakpoint() {
+    let editor = Editor()
+    let engine = LogoEngine(delegate: editor)
+    engine.shouldPauseBeforeToken = { $0.text.uppercased() == "TYPE" }
+
+    engine.execute("TYPE \"A")
+    #expect(engine.executionState == .paused(LogoExecutionFrame(procedureName: nil, token: LogoToken(text: "TYPE", sourceRange: 0..<4), scopeDepth: 1)))
+    #expect(editor.buffer.lines == [""])
+
+    engine.continueExecution()
+    #expect(engine.executionState == .completed)
+    #expect(editor.buffer.lines == ["A"])
+}
+
 private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Sendable {
     var writes: [String] = []
     private var lines: [String]
@@ -60,6 +74,47 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
     func clearScreen() {}
     func readNonInteractiveLine(prompt: String) -> String? { lines.isEmpty ? nil : lines.removeFirst() }
     func readNonInteractiveChar(prompt: String) -> String? { chars.isEmpty ? nil : chars.removeFirst() }
+}
+
+@Test func testLogoDebuggerPreservesProcedureScopeAndCallStack() {
+    let editor = Editor()
+    let engine = LogoEngine(delegate: editor)
+    let script = """
+        MAKE "seen 0
+        TO INNER :value
+          MAKE "seen :value
+          MAKE "seen 2
+        END
+        INNER 1
+        """
+    engine.shouldPauseBeforeToken = { token in
+        let line = script.prefix(token.sourceRange.lowerBound).filter { $0 == "\n" }.count
+        return line == 2
+    }
+
+    engine.execute(script)
+
+    guard case .paused = engine.executionState else {
+        Issue.record("Expected procedure breakpoint to pause")
+        return
+    }
+    #expect(engine.executionFrames.map(\.procedureName) == [nil, "INNER"])
+    #expect(engine.variables["value"] == "1")
+    #expect(engine.evaluatePausedExpression("SUM :value 2") == "3")
+
+    engine.stepExecution()
+    guard case .paused(let steppedFrame) = engine.executionState else {
+        Issue.record("Expected step to pause at the next procedure token")
+        return
+    }
+    #expect(steppedFrame.token?.text == "MAKE")
+    #expect(engine.variables["seen"] == "1")
+    #expect(engine.variables["value"] == "1")
+
+    engine.continueExecution()
+    #expect(engine.executionState == .completed)
+    #expect(engine.variables["seen"] == "2")
+    #expect(engine.variables["value"] == nil)
 }
 
 @Test func testLogoStringSearchAndIndexPrimitives() throws {

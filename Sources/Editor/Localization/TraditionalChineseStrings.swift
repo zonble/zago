@@ -509,6 +509,7 @@ public struct TraditionalChineseStrings {
         "menu.buffer.next": "下一份文件\tM+.",
         "menu.buffer.prev": "上一份文件\tM+,",
         "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
+        "menu.buffer.logo_debugger": "LOGO 除錯器",
         "menu.buffer.clear_output": "清除 LOGO 輸出內容",
 
         "menu.run.script": "執行腳本\tF5",

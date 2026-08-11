@@ -522,6 +522,7 @@ public struct EnglishStrings {
         "menu.buffer.next": "Next Buffer\tM+.",
         "menu.buffer.prev": "Previous Buffer\tM+,",
         "menu.buffer.output": "LOGO Output\tM+L",
+        "menu.buffer.logo_debugger": "LOGO Debugger",
         "menu.buffer.clear_output": "Clear LOGO Output",
 
         "menu.run.script": "Run Script\tF5",

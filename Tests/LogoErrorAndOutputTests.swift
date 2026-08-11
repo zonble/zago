@@ -159,6 +159,37 @@ import Testing
         #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
     }
 
+    @Test func testMarkdownLogoBreakpointPausesStepsAndContinues() {
+        let editor = Editor(filePath: "document.md")
+        let source = editor.buffer
+        source.lines = ["# Demo", "```logo", "MAKE \"x 1", "MAKE \"x 2", "```"]
+        source.lineIndex = 2
+        editor.debuggerController.toggleBreakpoint(in: source)
+
+        editor.evalLogoCode()
+
+        guard case .paused(let firstFrame) = editor.logoEngine.executionState else {
+            Issue.record("Expected LOGO execution to pause")
+            return
+        }
+        #expect(firstFrame.token?.text == "MAKE")
+        #expect(editor.buffer.filePath == Editor.logoDebuggerBufferTitle)
+        #expect(editor.logoEngine.variables["x"] == nil)
+
+        editor.resumeLogoDebugExecution(step: true)
+        guard case .paused(let secondFrame) = editor.logoEngine.executionState else {
+            Issue.record("Expected stepped LOGO execution to pause")
+            return
+        }
+        #expect(secondFrame.token?.text == "MAKE")
+        #expect(editor.logoEngine.variables["x"] == "1")
+
+        editor.resumeLogoDebugExecution(step: false)
+        #expect(editor.logoEngine.executionState == .completed)
+        #expect(editor.logoEngine.variables["x"] == "2")
+        #expect(editor.buffer.id == source.id)
+    }
+
     @Test func testRunMenuVisibilityOnLogoFilesOnly() {
         let mdEditor = Editor(filePath: "test.md")
         mdEditor.menuBar.updateCategories(for: mdEditor)

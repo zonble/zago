@@ -477,7 +477,9 @@ public final class Renderer {
             return "   ↳ ".ansiStyled(style: ANSIStyle.dimGray)
         }
 
-        let numStr = String(format: "%4d ", lineNumber)
+        let numStr = editor.debuggerController.hasBreakpoint(in: editor.buffer, line: lineIdx)
+            ? String(format: "%3d", lineNumber) + "● "
+            : String(format: "%4d ", lineNumber)
         let hasGitDiff =
             editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
 
