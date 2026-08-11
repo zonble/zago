@@ -101,7 +101,12 @@ extension LogoEngine {
         let existingMask = getEffectiveMask(line: line, col: col, existingChar: existing)
         guard existingMask != 0 else { return defaultNewChar }
 
-        return fuseLineCharacter(existing: existing, defaultNewCharacter: defaultNewChar, addingMask: UInt8(moveMask))
+        return fuseLineCharacter(
+            existing: existing,
+            defaultNewCharacter: defaultNewChar,
+            addingMask: UInt8(moveMask),
+            existingMask: UInt8(existingMask)
+        )
     }
 
     internal func fuseChar(existing: Character, defaultNewChar: Character, moveMask: Int) -> Character {

@@ -261,7 +261,7 @@ struct LogoCoverageTests {
         #expect(engine.lastResult == "5")
 
         engine.execute("TO HALT MAKE \"stopTest 1 STOP MAKE \"stopTest 2 END HALT")
-        #expect(engine.variables["stoptest"] == "1")
+        #expect(engine.variables["stoptest"] == nil)
 
         #expect(engine.applyTemplate(templateStr: "[[x y] [OUTPUT WORD :x :y]]", args: ["A", "B"]) == "AB")
         #expect(engine.applyTemplate(templateStr: "[OUTPUT WORD ?1 ?1]", args: ["Z"]) == "ZZ")

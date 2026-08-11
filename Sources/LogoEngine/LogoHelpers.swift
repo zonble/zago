@@ -237,10 +237,7 @@ extension LogoEngine {
     }
 
     internal func parseLogoValuePreservingWhitespace(_ raw: String) -> LogoValue {
-        if !raw.isEmpty && raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return .string(raw)
-        }
-        return LogoValue.parse(raw)
+        LogoValue.parsePreservingWhitespace(raw)
     }
 
     /// Formats current date string according to specified format pattern.

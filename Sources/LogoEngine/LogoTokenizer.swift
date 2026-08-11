@@ -98,22 +98,26 @@ public enum LogoTokenizer {
     }
 
     static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
-        rawTokens.flatMap { token in
-            guard !((token.hasPrefix("\"") && token.hasSuffix("\"")) || (token.hasPrefix("|") && token.hasSuffix("|"))) else { return [token] }
+        rawTokens.flatMap { word in
+            guard !((word.hasPrefix("\"") && word.hasSuffix("\"")) || (word.hasPrefix("|") && word.hasSuffix("|"))) else { return [word] }
             var parts: [String] = []
             var current = ""
-            var index = token.startIndex
-            while index < token.endIndex {
-                let remaining = token[index...]
-                if let token = LogoOperator.allCases
+            var index = word.startIndex
+            while index < word.endIndex {
+                let remaining = word[index...]
+                if let `operator` = LogoOperator.allCases
                     .filter(\.isComparison)
                     .map(\.rawValue)
                     .sorted(by: { $0.count > $1.count })
                     .first(where: { remaining.hasPrefix($0) })
                 {
                     if !current.isEmpty { parts.append(current); current = "" }
-                    parts.append(token); index = token.index(index, offsetBy: token.count)
-                } else { current.append(token[index]); index = token.index(after: index) }
+                    parts.append(`operator`)
+                    index = word.index(index, offsetBy: `operator`.count)
+                } else {
+                    current.append(word[index])
+                    index = word.index(after: index)
+                }
             }
             if !current.isEmpty { parts.append(current) }
             return parts

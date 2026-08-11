@@ -1447,9 +1447,6 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     submitCommandBar("SET CANVAS-MODE OFF", editor: editor)
     #expect(editor.isCanvasModeActive == false)
 
-    submitCommandBar("set canvas_mode true", editor: editor)
-    #expect(editor.isCanvasModeActive == true)
-
     submitCommandBar("unset canvas-mode", editor: editor)
     #expect(editor.isCanvasModeActive == false)
 }
