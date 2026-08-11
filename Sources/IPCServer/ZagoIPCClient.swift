@@ -38,7 +38,8 @@ struct DefaultZagoIPCSessionLocator: ZagoIPCSessionLocating {
                 return []
             }
 
-            return urls
+            return
+                urls
                 .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "sock" }
                 .compactMap { socketURL -> (ZagoIPCSession, Date)? in
                     let standardTokenURL = socketURL.deletingPathExtension().appendingPathExtension("token")

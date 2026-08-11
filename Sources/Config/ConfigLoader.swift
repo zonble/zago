@@ -79,11 +79,17 @@ public final class ConfigLoader {
             if let command = ConfigCommand(rawValue: commandText.lowercased()) {
                 switch command {
                 case .set:
-                    guard tokens.count >= 2 else { recordSyntaxError(in: &config); continue }
+                    guard tokens.count >= 2 else {
+                        recordSyntaxError(in: &config)
+                        continue
+                    }
                     let value = tokens.count >= 3 ? tokens[2] : ""
                     applyOption(named: tokens[1], value: value, into: &config)
                 case .unset:
-                    guard tokens.count >= 2 else { recordSyntaxError(in: &config); continue }
+                    guard tokens.count >= 2 else {
+                        recordSyntaxError(in: &config)
+                        continue
+                    }
                     applyUnset(tokens[1], into: &config)
                 case .bind:
                     guard tokens.count >= 3, let key = KeyParser.parse(tokens[1]) else {
@@ -100,12 +106,18 @@ public final class ConfigLoader {
                     config.unbindKeys.insert(key)
                     config.customKeyBinds.removeValue(forKey: key)
                 case .logoScript:
-                    guard tokens.count >= 2 else { recordSyntaxError(in: &config); continue }
+                    guard tokens.count >= 2 else {
+                        recordSyntaxError(in: &config)
+                        continue
+                    }
                     logoBlock = .script(name: tokens[1], lines: [])
                 case .logo:
                     logoBlock = tokens.count >= 2 ? .script(name: tokens[1], lines: []) : .prelude(lines: [])
                 case .logoPrelude:
-                    guard tokens.count == 1 else { recordSyntaxError(in: &config); continue }
+                    guard tokens.count == 1 else {
+                        recordSyntaxError(in: &config)
+                        continue
+                    }
                     logoBlock = .prelude(lines: [])
                 }
             } else {
@@ -157,10 +169,16 @@ public final class ConfigLoader {
             default: break
             }
         case .listIndentSize:
-            guard let size = Int(value), size > 0 else { recordSyntaxError(in: &config); return }
+            guard let size = Int(value), size > 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
             config.listIndentSize = size
         case .tab:
-            guard let size = Int(value), size > 0 else { recordSyntaxError(in: &config); return }
+            guard let size = Int(value), size > 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
             config.tabSize = size
         case .language:
             guard let language = Language(settingValue: rawValue) else {
@@ -169,13 +187,22 @@ public final class ConfigLoader {
             }
             config.language = language
         case .spellLanguage:
-            guard !value.isEmpty else { recordSyntaxError(in: &config); return }
+            guard !value.isEmpty else {
+                recordSyntaxError(in: &config)
+                return
+            }
             config.spellLanguage = value
         case .border:
-            guard let style = BorderStyle(value) else { recordSyntaxError(in: &config); return }
+            guard let style = BorderStyle(value) else {
+                recordSyntaxError(in: &config)
+                return
+            }
             config.defaultBorderStyle = style
         case .arrow:
-            guard let style = ArrowStyle(value) else { recordSyntaxError(in: &config); return }
+            guard let style = ArrowStyle(value) else {
+                recordSyntaxError(in: &config)
+                return
+            }
             config.defaultArrowStyle = style
         case .regex:
             recordSyntaxError(in: &config)

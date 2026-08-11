@@ -45,10 +45,13 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             let formatted = items.map { item -> String in
                 switch item {
                 case .string(let s):
-                    let needsVBar = s.contains(" ") || s.contains("\t") || s.contains("\n")
-                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}") || s.contains("|")
+                    let needsVBar =
+                        s.contains(" ") || s.contains("\t") || s.contains("\n")
+                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}")
+                        || s.contains("|")
                     if needsVBar {
-                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "|", with: "\\|")
+                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(
+                            of: "|", with: "\\|")
                         return "|\(escaped)|"
                     }
                     return s
@@ -61,10 +64,13 @@ public enum LogoValue: Equatable, CustomStringConvertible {
             let formatted = items.map { item -> String in
                 switch item {
                 case .string(let s):
-                    let needsVBar = s.contains(" ") || s.contains("\t") || s.contains("\n")
-                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}") || s.contains("|")
+                    let needsVBar =
+                        s.contains(" ") || s.contains("\t") || s.contains("\n")
+                        || s.contains("\"") || s.contains("[") || s.contains("]") || s.contains("{") || s.contains("}")
+                        || s.contains("|")
                     if needsVBar {
-                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "|", with: "\\|")
+                        let escaped = s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(
+                            of: "|", with: "\\|")
                         return "|\(escaped)|"
                     }
                     return s

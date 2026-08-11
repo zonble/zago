@@ -415,9 +415,10 @@ public final class ZagoMCPServer {
         case .initialize:
             let params = try? JSONDecoder().decode(Request<InitializeParams>.self, from: data).params
             let requestedVersion = params?.protocolVersion
-            let protocolVersion = requestedVersion.flatMap {
-                Self.supportedProtocolVersions.contains($0) ? $0 : nil
-            } ?? Self.supportedProtocolVersions[0]
+            let protocolVersion =
+                requestedVersion.flatMap {
+                    Self.supportedProtocolVersions.contains($0) ? $0 : nil
+                } ?? Self.supportedProtocolVersions[0]
             state = .awaitingInitializedNotification
             return success(
                 id: envelope.id,

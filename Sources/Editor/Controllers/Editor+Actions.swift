@@ -245,14 +245,19 @@ extension Editor {
         switch setting {
         case .wrap(let column): layoutEngine.setWrapColumn(column)
         case .ruler(let value): displayConfig.showRuler = resolve(value, current: displayConfig.showRuler)
-        case .lineNumbers(let value): displayConfig.showLineNumbers = resolve(value, current: displayConfig.showLineNumbers)
-        case .subLineNumbers(let value): displayConfig.showSubLineNumbers = resolve(value, current: displayConfig.showSubLineNumbers)
+        case .lineNumbers(let value):
+            displayConfig.showLineNumbers = resolve(value, current: displayConfig.showLineNumbers)
+        case .subLineNumbers(let value):
+            displayConfig.showSubLineNumbers = resolve(value, current: displayConfig.showSubLineNumbers)
         case .canvasMode(let value):
             let enabled = resolve(value, current: isCanvasModeActive)
             enabled ? switchToCanvasMode() : switchToTextMode()
-        case .syntaxHighlighting(let value): displayConfig.enableSyntaxHighlight = resolve(value, current: displayConfig.enableSyntaxHighlight)
+        case .syntaxHighlighting(let value):
+            displayConfig.enableSyntaxHighlight = resolve(value, current: displayConfig.enableSyntaxHighlight)
         case .autoReload(let value): displayConfig.autoReload = resolve(value, current: displayConfig.autoReload)
-        case .trimTrailingWhitespace(let value): displayConfig.trimTrailingWhitespaceOnSave = resolve(value, current: displayConfig.trimTrailingWhitespaceOnSave)
+        case .trimTrailingWhitespace(let value):
+            displayConfig.trimTrailingWhitespaceOnSave = resolve(
+                value, current: displayConfig.trimTrailingWhitespaceOnSave)
         case .regex(let value): isRegexSearchEnabled = resolve(value, current: isRegexSearchEnabled)
         case .debug(let value): debugMode = resolve(value, current: debugMode)
         case .smartTab(let value): displayConfig.smartTab = resolve(value, current: displayConfig.smartTab)

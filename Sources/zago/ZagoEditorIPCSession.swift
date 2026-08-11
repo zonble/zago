@@ -31,7 +31,9 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
         guard let editor else { throw IPCServerRequestError.unavailable }
         return try perform(on: editor) {
             editor.externalGetBuffers().map {
-                BufferInfo(bufferId: $0.bufferId, filePath: $0.filePath, fileName: $0.fileName, isModified: $0.isModified, isFocused: $0.isFocused)
+                BufferInfo(
+                    bufferId: $0.bufferId, filePath: $0.filePath, fileName: $0.fileName, isModified: $0.isModified,
+                    isFocused: $0.isFocused)
             }
         }
     }
@@ -44,18 +46,22 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
     ) throws -> (lines: [String], totalLines: Int)? {
         guard let editor else { throw IPCServerRequestError.unavailable }
         return try perform(on: editor) {
-            guard let result = editor.externalGetText(
-                bufferTarget: bufferTarget,
-                startLine: startLine,
-                endLine: endLine
-            ) else {
+            guard
+                let result = editor.externalGetText(
+                    bufferTarget: bufferTarget,
+                    startLine: startLine,
+                    endLine: endLine
+                )
+            else {
                 return nil
             }
             return (lines: result.lines, totalLines: result.totalLines)
         }
     }
 
-    func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (line: Int, column: Int, visualCol: Int, mode: String)? {
+    func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
+        line: Int, column: Int, visualCol: Int, mode: String
+    )? {
         guard let editor else { throw IPCServerRequestError.unavailable }
         return try perform(on: editor) {
             guard let cursor = editor.externalGetCursor(bufferTarget: bufferTarget) else {
@@ -65,7 +71,10 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
         }
     }
 
-    func ipcServer(_ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload]) throws -> Bool {
+    func ipcServer(
+        _ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String,
+        affectedFiles: [AffectedFilePayload]
+    ) throws -> Bool {
         guard let editor else { throw IPCServerRequestError.unavailable }
         let proposal = AIProposal(
             clientId: client.clientId,
@@ -84,7 +93,9 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
         return accepted
     }
 
-    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (success: Bool, result: String, error: String?) {
+    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (
+        success: Bool, result: String, error: String?
+    ) {
         guard let editor else { throw IPCServerRequestError.unavailable }
         let result = try perform(on: editor) {
             editor.externalExecuteLogo(script: script, mode: mode)

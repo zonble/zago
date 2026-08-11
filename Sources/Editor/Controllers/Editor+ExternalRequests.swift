@@ -83,7 +83,8 @@ extension Editor {
         let mainAreaHeight = geometry.mainAreaHeight
         let textWidth = geometry.textWidth
 
-        let baseVLines = isCanvasModeActive
+        let baseVLines =
+            isCanvasModeActive
             ? layoutEngine.computeCanvasLines(from: buffer.lines)
             : layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
         let expandedVLines = renderer.expandVirtualLinesWithProposal(

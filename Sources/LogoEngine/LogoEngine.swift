@@ -16,7 +16,9 @@ public struct LogoProcedure: Sendable {
     }
 
     public init(name: String, parameters: [String], bodyTokenTexts: [String]) {
-        self.init(name: name, parameters: parameters, bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
+        self.init(
+            name: name, parameters: parameters,
+            bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
     }
 }
 

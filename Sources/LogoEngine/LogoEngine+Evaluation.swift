@@ -342,7 +342,8 @@ extension LogoEngine {
 
         variables.pushScope(initialValues: Dictionary(uniqueKeysWithValues: zip(proc.parameters, args)))
         procedureCallDepth += 1
-        executionFrames.append(LogoExecutionFrame(procedureName: proc.name, token: nil, scopeDepth: variables.scopeDepth))
+        executionFrames.append(
+            LogoExecutionFrame(procedureName: proc.name, token: nil, scopeDepth: variables.scopeDepth))
         defer {
             procedureCallDepth -= 1
             variables.popScope()
@@ -351,7 +352,8 @@ extension LogoEngine {
 
         var procIndex = 0
         var procReturn: String? = nil
-        executeTokens(proc.bodyTokens.map(\.text), sourceTokens: proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
+        executeTokens(
+            proc.bodyTokens.map(\.text), sourceTokens: proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
         }

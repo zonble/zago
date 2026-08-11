@@ -47,7 +47,10 @@ enum JSONRPCResponse {
         case .success(let id, let result):
             switch result {
             case .registered(let clientId, let clientName):
-                return try encoder.encode(JSONRPCSuccessEnvelope(result: RegistrationResult(registered: true, clientId: clientId, clientName: clientName), id: id))
+                return try encoder.encode(
+                    JSONRPCSuccessEnvelope(
+                        result: RegistrationResult(registered: true, clientId: clientId, clientName: clientName), id: id
+                    ))
             case .buffers(let buffers):
                 let result = BuffersResult(
                     buffers: buffers.map(BufferResult.init),
@@ -55,13 +58,20 @@ enum JSONRPCResponse {
                 )
                 return try encoder.encode(JSONRPCSuccessEnvelope(result: result, id: id))
             case .text(let lines, let totalLines):
-                return try encoder.encode(JSONRPCSuccessEnvelope(result: TextResult(lines: lines, totalLines: totalLines), id: id))
+                return try encoder.encode(
+                    JSONRPCSuccessEnvelope(result: TextResult(lines: lines, totalLines: totalLines), id: id))
             case .cursor(let line, let column, let visualCol, let mode):
-                return try encoder.encode(JSONRPCSuccessEnvelope(result: CursorResult(line: line, column: column, canvasVisualColumn: visualCol, mode: mode), id: id))
+                return try encoder.encode(
+                    JSONRPCSuccessEnvelope(
+                        result: CursorResult(line: line, column: column, canvasVisualColumn: visualCol, mode: mode),
+                        id: id))
             case .previewShown:
-                return try encoder.encode(JSONRPCSuccessEnvelope(result: PreviewResult(success: true, previewActive: true), id: id))
+                return try encoder.encode(
+                    JSONRPCSuccessEnvelope(result: PreviewResult(success: true, previewActive: true), id: id))
             case .logo(let success, let result, let error):
-                return try encoder.encode(JSONRPCSuccessEnvelope(result: LogoResult(success: success, lastResult: result, error: error), id: id))
+                return try encoder.encode(
+                    JSONRPCSuccessEnvelope(
+                        result: LogoResult(success: success, lastResult: result, error: error), id: id))
             case .history(let entries):
                 return try encoder.encode(JSONRPCSuccessEnvelope(result: HistoryResult(entries: entries), id: id))
             }
@@ -69,7 +79,11 @@ enum JSONRPCResponse {
     }
 }
 
-private struct RegistrationResult: Encodable { let registered: Bool; let clientId: String; let clientName: String }
+private struct RegistrationResult: Encodable {
+    let registered: Bool
+    let clientId: String
+    let clientName: String
+}
 private struct BufferResult: Encodable {
     let bufferId: String
     let filePath: String?
@@ -85,11 +99,29 @@ private struct BufferResult: Encodable {
         isFocused = buffer.isFocused
     }
 }
-private struct BuffersResult: Encodable { let buffers: [BufferResult]; let activeBufferId: String }
-private struct TextResult: Encodable { let lines: [String]; let totalLines: Int }
-private struct CursorResult: Encodable { let line: Int; let column: Int; let canvasVisualColumn: Int; let mode: String }
-private struct PreviewResult: Encodable { let success: Bool; let previewActive: Bool }
-private struct LogoResult: Encodable { let success: Bool; let lastResult: String; let error: String? }
+private struct BuffersResult: Encodable {
+    let buffers: [BufferResult]
+    let activeBufferId: String
+}
+private struct TextResult: Encodable {
+    let lines: [String]
+    let totalLines: Int
+}
+private struct CursorResult: Encodable {
+    let line: Int
+    let column: Int
+    let canvasVisualColumn: Int
+    let mode: String
+}
+private struct PreviewResult: Encodable {
+    let success: Bool
+    let previewActive: Bool
+}
+private struct LogoResult: Encodable {
+    let success: Bool
+    let lastResult: String
+    let error: String?
+}
 private struct HistoryResult: Encodable { let entries: [IPCHistoryEntry] }
 
 final class JSONRPCParser {
@@ -132,34 +164,49 @@ final class JSONRPCParser {
         failure(code: code, message: message, id: request.id)
     }
 
-    private func parse(envelope: JSONRPCEnvelope, data: Data, connectionId: String, decoder: JSONDecoder) throws -> JSONRPCParseResult {
+    private func parse(envelope: JSONRPCEnvelope, data: Data, connectionId: String, decoder: JSONDecoder) throws
+        -> JSONRPCParseResult
+    {
         switch envelope.method {
         case "zago.client.register":
-            return parseRegister(try decoder.decode(JSONRPCRequest<ClientRegistrationParams>.self, from: data), connectionId: connectionId)
+            return parseRegister(
+                try decoder.decode(JSONRPCRequest<ClientRegistrationParams>.self, from: data),
+                connectionId: connectionId)
         case "zago.buffer.getBuffers":
-            return requireRegistration(connectionId, id: envelope.id) { _ in .success(.init(id: envelope.id, request: .getBuffers)) }
+            return requireRegistration(connectionId, id: envelope.id) { _ in
+                .success(.init(id: envelope.id, request: .getBuffers))
+            }
         case "zago.buffer.getText":
             let request = try decoder.decode(JSONRPCRequest<GetTextParams>.self, from: data)
             return requireRegistration(connectionId, id: request.id) { _ in
                 let params = request.params
-                return .success(.init(id: request.id, request: .getText(bufferTarget: params?.bufferTarget ?? params?.bufferId, startLine: params?.startLine, endLine: params?.endLine)))
+                return .success(
+                    .init(
+                        id: request.id,
+                        request: .getText(
+                            bufferTarget: params?.bufferTarget ?? params?.bufferId, startLine: params?.startLine,
+                            endLine: params?.endLine)))
             }
         case "zago.buffer.getCursor":
             let request = try decoder.decode(JSONRPCRequest<GetCursorParams>.self, from: data)
             return requireRegistration(connectionId, id: request.id) { _ in
                 let params = request.params
-                return .success(.init(id: request.id, request: .getCursor(bufferTarget: params?.bufferTarget ?? params?.bufferId)))
+                return .success(
+                    .init(id: request.id, request: .getCursor(bufferTarget: params?.bufferTarget ?? params?.bufferId)))
             }
         case "zago.overlay.showPreview":
-            return parseShowPreview(try decoder.decode(JSONRPCRequest<OverlayPreviewParams>.self, from: data), connectionId: connectionId)
+            return parseShowPreview(
+                try decoder.decode(JSONRPCRequest<OverlayPreviewParams>.self, from: data), connectionId: connectionId)
         case "zago.buffer.executeLogo":
-            return parseExecuteLogo(try decoder.decode(JSONRPCRequest<ExecuteLogoParams>.self, from: data), connectionId: connectionId)
+            return parseExecuteLogo(
+                try decoder.decode(JSONRPCRequest<ExecuteLogoParams>.self, from: data), connectionId: connectionId)
         case "zago.history.getEntries":
             let request = try decoder.decode(JSONRPCRequest<HistoryParams>.self, from: data)
             return requireRegistration(connectionId, id: request.id) { _ in
                 let limit = request.params?.limit ?? 20
                 guard (1...100).contains(limit) else {
-                    return .failure(self.failure(code: -32602, message: "limit must be between 1 and 100", id: request.id))
+                    return .failure(
+                        self.failure(code: -32602, message: "limit must be between 1 and 100", id: request.id))
                 }
                 return .success(.init(id: request.id, request: .getHistory(limit: limit)))
             }
@@ -168,36 +215,49 @@ final class JSONRPCParser {
         }
     }
 
-    private func parseRegister(_ request: JSONRPCRequest<ClientRegistrationParams>, connectionId: String) -> JSONRPCParseResult {
+    private func parseRegister(_ request: JSONRPCRequest<ClientRegistrationParams>, connectionId: String)
+        -> JSONRPCParseResult
+    {
         guard let params = request.params,
-              params.auth == sessionToken,
-              (1...128).contains(params.clientId.utf8.count),
-              (1...128).contains(params.clientName.utf8.count) else {
-            return .failure(failure(code: 401, message: "Unauthorized: valid auth, clientId, and clientName are required", id: request.id))
+            params.auth == sessionToken,
+            (1...128).contains(params.clientId.utf8.count),
+            (1...128).contains(params.clientName.utf8.count)
+        else {
+            return .failure(
+                failure(
+                    code: 401, message: "Unauthorized: valid auth, clientId, and clientName are required",
+                    id: request.id))
         }
         let color = (params.color ?? "cyan").lowercased()
         guard ["cyan", "purple", "green", "magenta"].contains(color) else {
             return .failure(failure(code: -32602, message: "Unsupported client color", id: request.id))
         }
-        let client = IPCClientIdentity(clientId: params.clientId, clientName: params.clientName, agentType: params.agentType, color: color)
+        let client = IPCClientIdentity(
+            clientId: params.clientId, clientName: params.clientName, agentType: params.agentType, color: color)
         lock.lock()
-        let alreadyConnected = registeredClients.contains { $0.key != connectionId && $0.value.clientId == client.clientId }
+        let alreadyConnected = registeredClients.contains {
+            $0.key != connectionId && $0.value.clientId == client.clientId
+        }
         guard !alreadyConnected else {
             lock.unlock()
-            return .failure(failure(code: 409, message: "clientId is already registered on another connection", id: request.id))
+            return .failure(
+                failure(code: 409, message: "clientId is already registered on another connection", id: request.id))
         }
         registeredClients[connectionId] = client
         lock.unlock()
         return .success(.init(id: request.id, request: .register(client: client)))
     }
 
-    private func parseShowPreview(_ request: JSONRPCRequest<OverlayPreviewParams>, connectionId: String) -> JSONRPCParseResult {
+    private func parseShowPreview(_ request: JSONRPCRequest<OverlayPreviewParams>, connectionId: String)
+        -> JSONRPCParseResult
+    {
         requireRegistration(connectionId, id: request.id) { client in
             guard let params = request.params,
-                  params.clientId == client.clientId,
-                  !params.reason.isEmpty,
-                  params.reason.utf8.count <= 4_096,
-                  !params.affectedFiles.isEmpty else {
+                params.clientId == client.clientId,
+                !params.reason.isEmpty,
+                params.reason.utf8.count <= 4_096,
+                !params.affectedFiles.isEmpty
+            else {
                 return .failure(self.failure(code: -32602, message: "Invalid preview payload", id: request.id))
             }
             var lineCount = 0
@@ -208,15 +268,21 @@ final class JSONRPCParser {
                     }
                     lineCount += chunk.lines.count
                     guard lineCount <= Self.maxOverlayLines else {
-                        return .failure(self.failure(code: 413, message: "Proposal exceeds maxOverlayLines", id: request.id))
+                        return .failure(
+                            self.failure(code: 413, message: "Proposal exceeds maxOverlayLines", id: request.id))
                     }
                 }
             }
-            return .success(.init(id: request.id, request: .showPreview(client: client, reason: params.reason, affectedFiles: params.affectedFiles)))
+            return .success(
+                .init(
+                    id: request.id,
+                    request: .showPreview(client: client, reason: params.reason, affectedFiles: params.affectedFiles)))
         }
     }
 
-    private func parseExecuteLogo(_ request: JSONRPCRequest<ExecuteLogoParams>, connectionId: String) -> JSONRPCParseResult {
+    private func parseExecuteLogo(_ request: JSONRPCRequest<ExecuteLogoParams>, connectionId: String)
+        -> JSONRPCParseResult
+    {
         requireRegistration(connectionId, id: request.id) { _ in
             guard let params = request.params else {
                 return .failure(self.failure(code: -32602, message: "Missing script parameter", id: request.id))
@@ -228,7 +294,9 @@ final class JSONRPCParser {
         }
     }
 
-    private func requireRegistration(_ connectionId: String, id: JSONRPCId?, body: (IPCClientIdentity) -> JSONRPCParseResult) -> JSONRPCParseResult {
+    private func requireRegistration(
+        _ connectionId: String, id: JSONRPCId?, body: (IPCClientIdentity) -> JSONRPCParseResult
+    ) -> JSONRPCParseResult {
         lock.lock()
         let client = registeredClients[connectionId]
         lock.unlock()

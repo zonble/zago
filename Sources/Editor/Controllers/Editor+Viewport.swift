@@ -21,7 +21,8 @@ extension Editor {
         if isCanvasModeActive {
             ensureCanvasViewport(textWidth: textWidth)
             let baseCanvasLines = layoutEngine.computeCanvasLines(from: buffer.lines)
-            let virtualLines = renderer.expandVirtualLinesWithProposal(virtualLines: baseCanvasLines, editor: self, textWidth: textWidth)
+            let virtualLines = renderer.expandVirtualLinesWithProposal(
+                virtualLines: baseCanvasLines, editor: self, textWidth: textWidth)
             let cursorVLineIdx = max(0, min(buffer.lineIndex, max(0, virtualLines.count - 1)))
 
             if cursorVLineIdx < topVLineIndex {
@@ -33,7 +34,8 @@ extension Editor {
             topVLineIndex = max(0, min(topVLineIndex, maxCanvasTop))
         } else {
             let baseVLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
-            let virtualLines = renderer.expandVirtualLinesWithProposal(virtualLines: baseVLines, editor: self, textWidth: textWidth)
+            let virtualLines = renderer.expandVirtualLinesWithProposal(
+                virtualLines: baseVLines, editor: self, textWidth: textWidth)
             let (cursorVLineIdx, _) = layoutEngine.getVirtualCursor(
                 lineIndex: buffer.lineIndex,
                 columnIndex: buffer.columnIndex,
