@@ -298,7 +298,9 @@ public struct TraditionalChineseStrings {
         "status.fill_text_required": "需要填滿文字",
         "status.justified_paragraph": "已完成段落重排",
         "status.already_oldest": "已至最舊復原紀錄",
+        "status.already_newest": "已至最新變更",
         "status.undo_performed": "復原完成",
+        "status.redo_performed": "重做完成",
         "status.unknown_command": "未知指令",
         "status.cancelled": "已取消",
         "status.cancelled_exit": "已取消離開",
@@ -488,6 +490,7 @@ public struct TraditionalChineseStrings {
         "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
+        "menu.edit.redo": "重做\t^⇧Z",
         "menu.edit.mark": "標記區塊\t^^ / M+B",
         "menu.edit.cancel_selection": "取消標記\t^G / M+U",
         "menu.edit.cut": "剪下\t^K",

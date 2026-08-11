@@ -19,7 +19,9 @@ extension Editor {
 
     /// Performs Undo (^Z) on active buffer.
     public func performUndo() {
-        guard let snapshot = buffer.performUndo() else {
+        guard let snapshot = buffer.performUndo(
+            canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
+        ) else {
             setStatusMessage(l10n["status.already_oldest"])
             return
         }
@@ -32,5 +34,24 @@ extension Editor {
             }
         }
         setStatusMessage(l10n["status.undo_performed"])
+    }
+
+    /// Performs Redo (Ctrl+Shift+Z) on active buffer.
+    public func performRedo() {
+        guard let snapshot = buffer.performRedo(
+            canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
+        ) else {
+            setStatusMessage(l10n["status.already_newest"])
+            return
+        }
+        if isCanvasModeActive {
+            if let visualColumn = snapshot.canvasVisualColumn {
+                canvasVisualColumn = max(0, visualColumn)
+                syncCanvasCursorToBuffer()
+            } else {
+                syncCanvasCursorFromBuffer()
+            }
+        }
+        setStatusMessage(l10n["status.redo_performed"])
     }
 }

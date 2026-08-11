@@ -35,6 +35,7 @@ open class TextBuffer: SpellCheckableBuffer {
     public var borderStyle: BorderStyle = .single
     public var arrowStyle: ArrowStyle = .solid
     public var undoStack: [UndoSnapshot] = []
+    public var redoStack: [UndoSnapshot] = []
     public var maxUndoStackSize: Int = 100
 
     private var isReadOnlyStored: Bool = false

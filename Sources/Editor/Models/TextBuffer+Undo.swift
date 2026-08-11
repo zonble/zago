@@ -64,10 +64,11 @@ public struct UndoSnapshot: Equatable, Codable {
 }
 
 extension TextBuffer {
-    /// Saves a snapshot of the buffer state and cursor position before mutation.
-    public func saveUndoSnapshot(canvasVisualColumn: Int? = nil, author: ActionAuthor = .user) {
-        activeSearchMatch = nil
-        let snapshot = UndoSnapshot(
+    private func makeUndoSnapshot(
+        canvasVisualColumn: Int? = nil,
+        author: ActionAuthor = .user
+    ) -> UndoSnapshot {
+        UndoSnapshot(
             lines: lines,
             lineIndex: lineIndex,
             columnIndex: columnIndex,
@@ -78,21 +79,17 @@ extension TextBuffer {
             currentTableCell: currentTableCell,
             author: author
         )
-        if undoStack.last != snapshot {
-            undoStack.append(snapshot)
-            if undoStack.count > maxUndoStackSize {
-                undoStack.removeFirst()
-            }
+    }
+
+    private func append(_ snapshot: UndoSnapshot, to stack: inout [UndoSnapshot]) {
+        guard stack.last != snapshot else { return }
+        stack.append(snapshot)
+        if stack.count > maxUndoStackSize {
+            stack.removeFirst()
         }
     }
 
-    /// Pops the last snapshot from the undo stack and restores lines, cursor position, selection mark, and isModified state.
-    /// Returns the popped snapshot if successful.
-    @discardableResult
-    public func performUndo() -> UndoSnapshot? {
-        guard let snapshot = undoStack.popLast() else {
-            return nil
-        }
+    private func restore(_ snapshot: UndoSnapshot) {
         lines = snapshot.lines
         lineIndex = max(0, min(snapshot.lineIndex, lines.count - 1))
         columnIndex = max(0, min(snapshot.columnIndex, lines[lineIndex].count))
@@ -100,6 +97,40 @@ extension TextBuffer {
         isModified = snapshot.isModified
         isTableModeActive = snapshot.isTableModeActive
         currentTableCell = snapshot.currentTableCell
+    }
+
+    /// Saves a snapshot of the buffer state and cursor position before mutation.
+    public func saveUndoSnapshot(canvasVisualColumn: Int? = nil, author: ActionAuthor = .user) {
+        activeSearchMatch = nil
+        let snapshot = makeUndoSnapshot(canvasVisualColumn: canvasVisualColumn, author: author)
+        if undoStack.last != snapshot {
+            append(snapshot, to: &undoStack)
+            redoStack.removeAll()
+        }
+    }
+
+    /// Pops the last snapshot from the undo stack and restores lines, cursor position, selection mark, and isModified state.
+    /// Returns the popped snapshot if successful.
+    @discardableResult
+    public func performUndo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
+        guard let snapshot = undoStack.popLast() else {
+            return nil
+        }
+        let current = makeUndoSnapshot(canvasVisualColumn: canvasVisualColumn, author: snapshot.author)
+        append(current, to: &redoStack)
+        restore(snapshot)
+        return snapshot
+    }
+
+    /// Restores the most recently undone snapshot while preserving the current state for undo.
+    @discardableResult
+    public func performRedo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
+        guard let snapshot = redoStack.popLast() else {
+            return nil
+        }
+        let current = makeUndoSnapshot(canvasVisualColumn: canvasVisualColumn, author: snapshot.author)
+        append(current, to: &undoStack)
+        restore(snapshot)
         return snapshot
     }
 }

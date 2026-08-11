@@ -34,6 +34,7 @@ extension Editor {
         commandRegistry.register(InsertTabCommand())
         commandRegistry.register(InsertBacktabCommand())
         commandRegistry.register(UndoCommand())
+        commandRegistry.register(RedoCommand())
         commandRegistry.register(JustifyCommand())
         commandRegistry.register(SpellCheckCommand())
         commandRegistry.register(EvalLogoCommand())

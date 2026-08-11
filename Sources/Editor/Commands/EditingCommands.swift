@@ -329,6 +329,19 @@ public struct UndoCommand: Command {
     }
 }
 
+public struct RedoCommand: Command {
+    public let id: CommandID = .editRedo
+    public let name = "Redo"
+    public let description = "Redo last undone edit"
+    public let keys: [Key] = [.ctrlShift("Z"), .ctrlShift("z")]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        editor.performRedo()
+    }
+}
+
 public struct JustifyCommand: Command {
     public let id: CommandID = .editJustify
     public let name = "Justify"

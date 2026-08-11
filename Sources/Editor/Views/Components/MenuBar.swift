@@ -80,6 +80,7 @@ public final class MenuBar {
                 titleKey: "menu.edit", hotkeyChar: "e",
                 items: [
                     MenuItem(titleKey: "menu.edit.undo", hotkeyChar: "u", commandId: .editUndo),
+                    MenuItem(titleKey: "menu.edit.redo", hotkeyChar: "r", commandId: .editRedo),
                     MenuItem(
                         titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark,
                         isVisible: { $0.baseMode == .canvas }),
