@@ -85,12 +85,12 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         if trimmed.hasPrefix("[") && trimmed.hasSuffix("]") {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
             if inner.isEmpty { return .list([]) }
-            let tokens = tokenizeListContent(inner)
+            let tokens = LogoTokenizer.tokenizeValueList(inner)
             return .list(tokens.map { parse($0) })
         } else if trimmed.hasPrefix("{") && trimmed.hasSuffix("}") {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
             if inner.isEmpty { return .array([]) }
-            let tokens = tokenizeListContent(inner)
+            let tokens = LogoTokenizer.tokenizeValueList(inner)
             return .array(tokens.map { parse($0) })
         } else {
             var s = trimmed
@@ -106,65 +106,4 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    private static func tokenizeListContent(_ str: String) -> [String] {
-        var tokens: [String] = []
-        var current = ""
-        var depth = 0
-        var inMultiWordString = false
-        var inVBarString = false
-        var isEscaped = false
-
-        var idx = str.startIndex
-        while idx < str.endIndex {
-            let ch = str[idx]
-            if isEscaped {
-                current.append(ch)
-                isEscaped = false
-                idx = str.index(after: idx)
-                continue
-            }
-
-            if ch == "\\" {
-                current.append(ch)
-                isEscaped = true
-                idx = str.index(after: idx)
-                continue
-            }
-
-            if ch == "|" && !inMultiWordString {
-                inVBarString.toggle()
-                current.append(ch)
-            } else if ch == "\"" && !inVBarString {
-                if !inMultiWordString && LogoTokenizer.hasMatchingMultiWordClosingQuote(in: str, startingAt: idx) {
-                    inMultiWordString = true
-                    current.append(ch)
-                } else if inMultiWordString {
-                    inMultiWordString = false
-                    current.append(ch)
-                } else {
-                    current.append(ch)
-                }
-            } else if (ch == "[" || ch == "{") && !inMultiWordString && !inVBarString {
-                depth += 1
-                current.append(ch)
-            } else if (ch == "]" || ch == "}") && !inMultiWordString && !inVBarString && depth > 0 {
-                depth -= 1
-                current.append(ch)
-            } else if ch.isWhitespace && depth <= 0 && !inMultiWordString && !inVBarString {
-                let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty {
-                    tokens.append(trimmed)
-                    current = ""
-                }
-            } else {
-                current.append(ch)
-            }
-            idx = str.index(after: idx)
-        }
-        let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
-            tokens.append(trimmed)
-        }
-        return tokens
-    }
 }
