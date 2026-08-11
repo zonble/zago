@@ -58,9 +58,9 @@ enum JSONRPCId: Codable, Equatable, Hashable {
 
 // MARK: - Method payloads
 
-struct EmptyParams: Decodable {}
+struct EmptyParams: Codable {}
 
-struct ClientRegistrationParams: Decodable {
+struct ClientRegistrationParams: Codable {
     let auth: String
     let clientId: String
     let clientName: String
@@ -68,14 +68,14 @@ struct ClientRegistrationParams: Decodable {
     let color: String?
 }
 
-struct GetTextParams: Decodable {
+struct GetTextParams: Codable {
     let bufferTarget: String?
     let bufferId: String?
     let startLine: Int?
     let endLine: Int?
 }
 
-struct GetCursorParams: Decodable {
+struct GetCursorParams: Codable {
     let bufferTarget: String?
     let bufferId: String?
 }
@@ -108,17 +108,17 @@ public struct AffectedFilePayload: Codable, Sendable {
     }
 }
 
-struct OverlayPreviewParams: Decodable {
+struct OverlayPreviewParams: Codable {
     let clientId: String
     let reason: String
     let affectedFiles: [AffectedFilePayload]
 }
 
-struct ExecuteLogoParams: Decodable {
+struct ExecuteLogoParams: Codable {
     let script: String
     let mode: String?
 }
 
-struct HistoryParams: Decodable {
+struct HistoryParams: Codable {
     let limit: Int?
 }

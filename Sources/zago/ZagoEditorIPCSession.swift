@@ -109,13 +109,8 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
     }
 
     func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity) {
-        guard let editor else { return }
-        let removed = (try? editor.performOnEditorLoop {
-            editor.proposalQueue.removeProposals(clientId: client.clientId)
-        }) ?? 0
-        if removed > 0 {
-            terminal.wakeup()
-        }
+        // Do not auto-purge proposals from queue on disconnect.
+        // Pushed proposals stay in editor.proposalQueue until explicitly accepted or rejected by the user.
     }
 
     private static func makeAffectedFileProposal(_ payload: AffectedFilePayload) -> AffectedFileProposal {
