@@ -252,6 +252,40 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "")
 }
 
+@Test func testCtrlShiftZRedoesUndoAndNewEditClearsRedo() throws {
+    let editor = Editor()
+
+    editor.processKey(.char("a"))
+    editor.processKey(.char("b"))
+    #expect(editor.buffer.lines[0] == "ab")
+
+    editor.processKey(.ctrl("z"))
+    #expect(editor.buffer.lines[0] == "a")
+
+    editor.processKey(.ctrlShift("z"))
+    #expect(editor.buffer.lines[0] == "ab")
+
+    editor.processKey(.ctrl("z"))
+    editor.processKey(.char("c"))
+    editor.processKey(.ctrlShift("z"))
+    #expect(editor.buffer.lines[0] == "ac")
+}
+
+@Test func testCanvasModeRedoRestoresVisualCursor() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 8
+    editor.syncCanvasCursorToBuffer()
+
+    editor.processKey(.char("x"))
+    editor.processKey(.ctrl("z"))
+    #expect(editor.canvasVisualColumn == 8)
+
+    editor.processKey(.ctrlShift("z"))
+    #expect(editor.buffer.lines[0] == "        x")
+    #expect(editor.canvasVisualColumn == 9)
+}
+
 @Test func testSwitchingBufferPreservesPerBufferUndoHistory() throws {
     let editor = Editor()
     editor.openNewBuffer()

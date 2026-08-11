@@ -50,6 +50,8 @@ public enum ANSIKeyMapping {
         "1;6B": .ctrlShiftArrowDown, "6B": .ctrlShiftArrowDown,
         "1;6f": .ctrlShift("f"), "1;6F": .ctrlShift("f"), "102;6u": .ctrlShift("f"), "70;6u": .ctrlShift("f"),
         "1;6b": .ctrlShift("b"), "98;6u": .ctrlShift("b"), "66;6u": .ctrlShift("b"),
+        "1;6z": .ctrlShift("z"), "1;6Z": .ctrlShift("z"), "122;6u": .ctrlShift("z"), "90;6u": .ctrlShift("z"),
+        "27;6;122~": .ctrlShift("z"), "27;6;90~": .ctrlShift("z"),
 
         // Ctrl + Left/Right Word Navigation
         "1;5D": .ctrl("B"), "5D": .ctrl("B"),

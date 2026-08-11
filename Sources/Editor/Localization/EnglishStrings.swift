@@ -311,7 +311,9 @@ public struct EnglishStrings {
         "status.fill_text_required": "Fill text required",
         "status.justified_paragraph": "Justified paragraph",
         "status.already_oldest": "Already at oldest change",
+        "status.already_newest": "Already at newest change",
         "status.undo_performed": "Undo performed",
+        "status.redo_performed": "Redo performed",
         "status.unknown_command": "Unknown command",
         "status.cancelled": "Cancelled",
         "status.cancelled_exit": "Cancelled exit",
@@ -501,6 +503,7 @@ public struct EnglishStrings {
         "menu.file.reload_config": "Reload Config",
 
         "menu.edit.undo": "Undo\t^Z",
+        "menu.edit.redo": "Redo\t^⇧Z",
         "menu.edit.mark": "Toggle Mark\t^^ / M+B",
         "menu.edit.cancel_selection": "Cancel Mark / Selection\t^G / M+U",
         "menu.edit.cut": "Cut Text\t^K",
