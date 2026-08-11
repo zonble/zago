@@ -15,6 +15,10 @@ Breakpoints belong to the editor, not `LogoEngine`. They are transient session s
 :logo breaks    Show breakpoints for the current buffer.
 :logo eval      Evaluate the current executable LOGO unit.
 :logo debug     Open the *LOGO Debugger* buffer.
+:logo continue  Resume until the next breakpoint.
+:logo step      Execute one token, then pause again.
+:logo abort     Stop the paused execution.
+:logo eval EXPR Evaluate a reporter expression in the paused scope.
 ```
 
 Markers are renderer overlays adjacent to line numbers; zago does not depend on mouse gutters.
@@ -27,15 +31,8 @@ Markers are renderer overlays adjacent to line numbers; zago does not depend on 
 
 `LogoExecutionFrame` contains a procedure name, current `LogoToken`, and scope depth. Procedure bodies retain source tokens, so frames identify source inside procedures and at top level.
 
-Breakpoint suspension requires an interpreter continuation stack. It must preserve nested blocks and procedure scopes rather than unwinding the normal Swift call stack. Interactive controls are continue, step into, backtrace, locals, evaluation, and abort.
+Breakpoint suspension keeps the interpreter worker suspended in place, preserving nested blocks, procedure scopes, and the complete LOGO call stack. Interactive controls are continue, step into, backtrace, locals, evaluation, and abort.
 
 ## Inline Evaluation
 
-While paused, reporter evaluation and side-effecting execution are deliberately distinct:
-
-```text
-e :size * 2              Evaluate an expression.
-x MAKE "size 10          Execute a statement explicitly.
-```
-
-Both run in the current frame environment; results go to `*LOGO Debugger*`, not the source buffer.
+Use `:logo eval SUM :size 2` while paused. It runs in the current frame environment and displays the result in `*LOGO Debugger*`; it does not modify the source buffer.

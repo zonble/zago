@@ -451,7 +451,14 @@ extension Editor {
     }
 
     @discardableResult
-    public func runLogoScript(_ script: String, resultPrefix: String? = nil, successStatus: String? = nil) -> Bool {
+    public func runLogoScript(
+        _ script: String,
+        resultPrefix: String? = nil,
+        successStatus: String? = nil,
+        debugSourceBuffer: TextBuffer? = nil,
+        debugStartLine: Int = 0
+    ) -> Bool {
+        let sourceBuffer = debugSourceBuffer ?? buffer
         guard buffer.allowsLogoExecution else {
             setStatusMessage(l10n["status.directory_buffer_readonly"])
             return false
@@ -478,7 +485,20 @@ extension Editor {
         let scriptName = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "Untitled"
         appendLogoOutputHeader(scriptName)
 
+        let breakpointLines = Set(debuggerController.breakpoints(in: sourceBuffer))
+        debuggerController.beginExecution(in: sourceBuffer, targetBuffer: buffer, startLine: debugStartLine, script: script)
+        logoEngine.shouldPauseBeforeToken = { [script] token in
+            let line = debugStartLine + script.prefix(token.sourceRange.lowerBound).reduce(0) { $1 == "\n" ? $0 + 1 : $0 }
+            return breakpointLines.contains(line)
+        }
+
         logoEngine.execute(script)
+
+        if case .paused = logoEngine.executionState {
+            showLogoDebuggerBuffer()
+            setStatusMessage("[LOGO Debug] Paused. Use :logo continue")
+            return true
+        }
 
         if logoEngine.hasUncaughtError, let err = logoEngine.lastError {
             let errText =
@@ -536,6 +556,8 @@ extension Editor {
     /// Evaluates LOGO code from linear selection, Markdown ```logo code fence, or current line/block.
     public func evalLogoCode() {
         let script: String
+        let startLine: Int
+        let sourceBuffer = buffer
 
         // Priority 1: Selection Range
         if let mark = buffer.selectionMark {
@@ -543,17 +565,21 @@ extension Editor {
                 mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
             script = buffer.cutRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
+            startLine = start.line
             // Restore selection text back into buffer
             buffer.insertString(script)
             buffer.selectionMark = mark
         }
         // Priority 2: Markdown ```logo ... ``` code fence
-        else if let fenceScript = extractMarkdownLogoFence() {
-            script = fenceScript
+        else if let fence = extractMarkdownLogoFence() {
+            script = fence.script
+            startLine = fence.startLine
         }
         // Priority 3: Current line or multi-line block (balanced [ ... ] or TO ... END)
         else {
-            script = extractCurrentLineOrBlock()
+            let block = extractCurrentLineOrBlock()
+            script = block.script
+            startLine = block.startLine
         }
 
         guard buffer.allowsLogoExecution else {
@@ -564,10 +590,16 @@ extension Editor {
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
-        runLogoScript(cleanScript, resultPrefix: "[Eval] ", successStatus: l10n["status.logo_evaluated"])
+        runLogoScript(
+            script,
+            resultPrefix: "[Eval] ",
+            successStatus: l10n["status.logo_evaluated"],
+            debugSourceBuffer: sourceBuffer,
+            debugStartLine: startLine
+        )
     }
 
-    private func extractMarkdownLogoFence() -> String? {
+    private func extractMarkdownLogoFence() -> (script: String, startLine: Int)? {
         let currentLine = buffer.lineIndex
         var fenceStart: Int? = nil
 
@@ -596,14 +628,14 @@ extension Editor {
         }
 
         guard let end = fenceEnd, currentLine >= start && currentLine <= end else { return nil }
-        guard start + 1 < end else { return "" }
+        guard start + 1 < end else { return ("", start + 1) }
 
-        return buffer.lines[(start + 1)..<end].joined(separator: "\n")
+        return (buffer.lines[(start + 1)..<end].joined(separator: "\n"), start + 1)
     }
 
-    private func extractCurrentLineOrBlock() -> String {
+    private func extractCurrentLineOrBlock() -> (script: String, startLine: Int) {
         let currentLine = buffer.lineIndex
-        guard currentLine < buffer.lines.count else { return "" }
+        guard currentLine < buffer.lines.count else { return ("", currentLine) }
 
         // Check if inside TO ... END procedure definition
         var toStart: Int? = nil
@@ -628,7 +660,7 @@ extension Editor {
                     break
                 }
             }
-            return buffer.lines[start...end].joined(separator: "\n")
+            return (buffer.lines[start...end].joined(separator: "\n"), start)
         }
 
         // Multi-line balanced bracket check: if current line opens '[' without closing, scan down
@@ -645,9 +677,9 @@ extension Editor {
         }
 
         if endLine > currentLine {
-            return buffer.lines[currentLine...endLine].joined(separator: "\n")
+            return (buffer.lines[currentLine...endLine].joined(separator: "\n"), currentLine)
         }
 
-        return lineText
+        return (lineText, currentLine)
     }
 }

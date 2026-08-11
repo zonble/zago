@@ -90,9 +90,18 @@ public struct LogoDebugCommand: Command {
             let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
             editor.setStatusMessage("[LOGO Debug] Breakpoint \(enabled ? "set" : "cleared") at line \(editor.buffer.lineIndex + 1)")
         case "breaks": editor.showLogoDebuggerBuffer()
-        case "eval": editor.evalLogoCode()
+        case "eval":
+            let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace)
+            if parts.count > 1 {
+                editor.evaluateLogoDebugExpression(String(parts[1]))
+            } else {
+                editor.evalLogoCode()
+            }
+        case "continue": editor.resumeLogoDebugExecution(step: false)
+        case "step": editor.resumeLogoDebugExecution(step: true)
+        case "abort": editor.abortLogoDebugExecution()
         case "debug", nil: editor.toggleLogoDebuggerBuffer()
-        default: editor.setStatusMessage("[LOGO Debug] Usage: :logo break | breaks | eval | debug")
+        default: editor.setStatusMessage("[LOGO Debug] Usage: :logo break | breaks | eval [expression] | debug | continue | step | abort")
         }
         return .handled
     }

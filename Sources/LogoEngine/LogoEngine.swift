@@ -64,11 +64,18 @@ public struct LogoExecutionFrame: Equatable, Sendable {
 ///        iterators: `MAP`, `FILTER`, `REDUCE`, `APPLY`)
 ///      - `evaluateSystemPrimitives` (System state, environment queries, and
 ///        date/time: `DATE`, `TIME`, `ASCII`, `CHAR`, `COUNT`)
-public final class LogoEngine {
+public final class LogoEngine: @unchecked Sendable {
     public internal(set) var customProcedures: [String: LogoProcedure] = [:]
     public internal(set) var variables: LogoEnvironment
     public internal(set) var propertyLists: [String: [String: LogoValue]] = [:]
     public internal(set) var executionFrames: [LogoExecutionFrame] = []
+    public internal(set) var executionState: LogoExecutionState = .idle
+    public var shouldPauseBeforeToken: ((LogoToken) -> Bool)?
+    private let debuggerCondition = NSCondition()
+    private var pauseOnNextToken = false
+    private var abortRequested = false
+    private var debuggerEvaluationRequest: String?
+    private var debuggerEvaluationResult: String?
     internal var rootSourceTokens: [LogoToken] = []
     internal var lastExpressionValue: LogoValue? = nil
     public var hasSetStatusMessage: Bool = false
@@ -132,9 +139,82 @@ public final class LogoEngine {
         self.variables = LogoEnvironment(initialValues: initialVariables)
     }
 
+    public func abortExecution() {
+        debuggerCondition.lock()
+        guard case .paused = executionState else {
+            debuggerCondition.unlock()
+            return
+        }
+        abortRequested = true
+        byeFlag = true
+        executionState = .running
+        debuggerCondition.broadcast()
+        while executionState == .running {
+            debuggerCondition.wait()
+        }
+        debuggerCondition.unlock()
+    }
+
+    public func continueExecution() {
+        resumeExecution(step: false)
+    }
+
+    public func stepExecution() {
+        resumeExecution(step: true)
+    }
+
+    public func evaluatePausedExpression(_ expression: String) -> String? {
+        debuggerCondition.lock()
+        guard case .paused = executionState else {
+            debuggerCondition.unlock()
+            return nil
+        }
+        debuggerEvaluationResult = nil
+        debuggerEvaluationRequest = expression
+        debuggerCondition.broadcast()
+        while debuggerEvaluationRequest != nil {
+            debuggerCondition.wait()
+        }
+        let result = debuggerEvaluationResult
+        debuggerCondition.unlock()
+        return result
+    }
+
+    private func resumeExecution(step: Bool) {
+        debuggerCondition.lock()
+        guard case .paused = executionState else {
+            debuggerCondition.unlock()
+            return
+        }
+        pauseOnNextToken = step
+        executionState = .running
+        debuggerCondition.broadcast()
+        while executionState == .running {
+            debuggerCondition.wait()
+        }
+        debuggerCondition.unlock()
+    }
+
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
     public func execute(_ script: String) {
-        guard let delegate = self.delegate else { return }
+        debuggerCondition.lock()
+        abortRequested = false
+        byeFlag = false
+        executionState = .running
+        Thread.detachNewThread { [weak self] in
+            self?.executeScript(script)
+        }
+        while executionState == .running {
+            debuggerCondition.wait()
+        }
+        debuggerCondition.unlock()
+    }
+
+    private func executeScript(_ script: String) {
+        guard let delegate = self.delegate else {
+            finishExecution()
+            return
+        }
         lastResult = nil
         lastError = nil
         hasUncaughtError = false
@@ -142,7 +222,10 @@ public final class LogoEngine {
 
         let sourceTokens = LogoTokenizer.tokenizeTokens(script)
         let tokens = sourceTokens.map(\.text)
-        guard !tokens.isEmpty else { return }
+        guard !tokens.isEmpty else {
+            finishExecution()
+            return
+        }
 
         // Save a single atomic Undo snapshot for the entire macro execution
         delegate.logoEngine(self, performAction: .saveUndoSnapshot)
@@ -152,6 +235,7 @@ public final class LogoEngine {
         defer {
             rootSourceTokens = []
             executionFrames = []
+            finishExecution()
         }
         var index = 0
         var frameReturn: String? = nil
@@ -177,6 +261,13 @@ public final class LogoEngine {
                     token: sourceTokens[index],
                     scopeDepth: variables.scopeDepth
                 )
+                if let token = executionFrames.last?.token,
+                    pauseOnNextToken || shouldPauseBeforeToken?(token) == true
+                {
+                    if !pauseExecution(at: executionFrames[executionFrames.count - 1]) {
+                        return
+                    }
+                }
             }
             let token = tokens[index]
 
@@ -217,6 +308,34 @@ public final class LogoEngine {
             }
             index += 1
         }
+    }
+
+    private func pauseExecution(at frame: LogoExecutionFrame) -> Bool {
+        debuggerCondition.lock()
+        pauseOnNextToken = false
+        executionState = .paused(frame)
+        debuggerCondition.broadcast()
+        while case .paused = executionState {
+            if let expression = debuggerEvaluationRequest {
+                let tokens = LogoTokenizer.tokenize(expression)
+                var index = 0
+                debuggerEvaluationResult = tokens.isEmpty ? "" : evaluateExpression(tokens, index: &index)
+                debuggerEvaluationRequest = nil
+                debuggerCondition.broadcast()
+                continue
+            }
+            debuggerCondition.wait()
+        }
+        let shouldContinue = !abortRequested
+        debuggerCondition.unlock()
+        return shouldContinue
+    }
+
+    private func finishExecution() {
+        debuggerCondition.lock()
+        executionState = .completed
+        debuggerCondition.broadcast()
+        debuggerCondition.unlock()
     }
 
     internal func isUnknownIdentifierToken(_ token: String) -> Bool {
