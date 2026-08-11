@@ -11,6 +11,7 @@ public enum EditorSetting: String, CaseIterable {
     case autoReload = "autoreload"
     case ipc
     case regex
+    case debug
     case tab
     case language = "lang"
     case border
@@ -20,7 +21,8 @@ public enum EditorSetting: String, CaseIterable {
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
-        case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .autoReload, .ipc, .regex, .trimTrailingWhitespace:
+        case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .autoReload, .ipc, .regex, .debug,
+            .trimTrailingWhitespace:
             return ["on", "off"]
         case .tab: return ["2", "4", "8"]
         case .language: return ["en", "zh_TW"]
@@ -43,6 +45,7 @@ public enum EditorSetting: String, CaseIterable {
         case .autoReload: return .autoReload(Self.parseBoolean(value))
         case .ipc: return .ipc(Self.parseBoolean(value))
         case .regex: return .regex(Self.parseBoolean(value))
+        case .debug: return .debug(Self.parseBoolean(value))
         case .trimTrailingWhitespace: return .trimTrailingWhitespace(Self.parseBoolean(value))
         case .tab:
             guard let size = Int(value), size > 0 else { return nil }
@@ -73,6 +76,7 @@ public enum EditorSettingChange {
     case autoReload(Bool?)
     case trimTrailingWhitespace(Bool?)
     case regex(Bool?)
+    case debug(Bool?)
     case tabSize(Int)
     case language(Language)
     case border(BorderStyle?, rawValue: String)

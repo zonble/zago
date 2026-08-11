@@ -95,11 +95,45 @@ struct ConfigAndToolsTests {
 
         let bufferCategory = menuBar.categories.first(where: { $0.titleKey == "menu.buffer" })
         #expect(bufferCategory != nil)
-        #expect(bufferCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+        #expect(bufferCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == false)
 
         let toolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
         #expect(toolsCategory != nil)
-        #expect(toolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+        #expect(toolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == false)
+
+        editor.apply(.debug(true))
+        menuBar.updateCategories(for: editor)
+        let debugBufferCategory = menuBar.categories.first(where: { $0.titleKey == "menu.buffer" })
+        let debugToolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
+        #expect(debugBufferCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+        #expect(debugToolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+    }
+
+    @Test func testLogoUIVisibilityRequiresLogoFileOrDebugSetting() {
+        let editor = Editor(filePath: "notes.md")
+        let menuBar = MenuBar()
+
+        func visibleLogoCommands() -> Set<CommandID> {
+            menuBar.updateCategories(for: editor)
+            return Set(menuBar.categories.flatMap(\.items).compactMap(\.commandId)).intersection([
+                .logoOutput, .logoDebug, .logoClearOutput, .logoReference, .logoWorkspace,
+            ])
+        }
+
+        #expect(visibleLogoCommands().isEmpty)
+        #expect(!editor.commandRegistry.completionNames(for: editor).contains("logo"))
+        #expect(editor.commandRegistry.dispatch("logo break", editor: editor) == .noMatch)
+
+        #expect(editor.commandRegistry.dispatch("set debug on", editor: editor) == .handled)
+        #expect(editor.debugMode)
+        #expect(visibleLogoCommands() == [.logoOutput, .logoDebug, .logoClearOutput, .logoReference, .logoWorkspace])
+        #expect(editor.commandRegistry.completionNames(for: editor).contains("logo"))
+
+        let logoEditor = Editor(filePath: "program.LOGO")
+        menuBar.updateCategories(for: logoEditor)
+        let logoCommands = Set(menuBar.categories.flatMap(\.items).compactMap(\.commandId))
+        #expect(logoCommands.isSuperset(of: [.logoOutput, .logoDebug, .logoClearOutput, .logoReference, .logoWorkspace]))
+        #expect(logoEditor.commandRegistry.completionNames(for: logoEditor).contains("logo"))
     }
 
     @Test func testWrapColumnMenuActions() throws {
