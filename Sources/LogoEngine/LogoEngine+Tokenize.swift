@@ -17,7 +17,7 @@ extension LogoEngine {
                 }
                 current.append(ch)
 
-                if LogoLexer.hasMatchingMultiWordClosingQuote(in: script, startingAt: i) {
+                if LogoTokenizer.hasMatchingMultiWordClosingQuote(in: script, startingAt: i) {
                     i = script.index(after: i)
                     while i < script.endIndex {
                         let innerCh = script[i]
@@ -93,59 +93,11 @@ extension LogoEngine {
             tokens.append(current)
         }
 
-        return tokenizeInfixOperators(tokens)
+        return LogoTokenizer.tokenizeInfixOperators(tokens)
     }
 
     private func isStructuralDelimiter(_ ch: Character) -> Bool {
         ch == "[" || ch == "]" || ch == "{" || ch == "}" || ch == "(" || ch == ")"
     }
 
-    private func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
-        var result: [String] = []
-
-        for token in rawTokens {
-            if (token.hasPrefix("\"") && token.hasSuffix("\"") && token.count > 1)
-                || (token.hasPrefix("|") && token.hasSuffix("|") && token.count > 1)
-            {
-                result.append(token)
-                continue
-            }
-
-            var current = ""
-            var i = token.startIndex
-
-            while i < token.endIndex {
-                let ch = token[i]
-                let remaining = String(token[i...])
-
-                if remaining.hasPrefix("==") || remaining.hasPrefix("!=") || remaining.hasPrefix("<=")
-                    || remaining.hasPrefix(">=")
-                {
-                    if !current.isEmpty {
-                        result.append(current)
-                        current = ""
-                    }
-                    let op = String(remaining.prefix(2))
-                    result.append(op)
-                    i = token.index(i, offsetBy: 2)
-                    continue
-                } else if ch == "=" || ch == "<" || ch == ">" {
-                    if !current.isEmpty {
-                        result.append(current)
-                        current = ""
-                    }
-                    result.append(String(ch))
-                } else {
-                    current.append(ch)
-                }
-                i = token.index(after: i)
-            }
-
-            if !current.isEmpty {
-                result.append(current)
-            }
-        }
-
-        return result
-    }
 }

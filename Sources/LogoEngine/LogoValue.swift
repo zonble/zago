@@ -135,7 +135,7 @@ public enum LogoValue: Equatable, CustomStringConvertible {
                 inVBarString.toggle()
                 current.append(ch)
             } else if ch == "\"" && !inVBarString {
-                if !inMultiWordString && LogoLexer.hasMatchingMultiWordClosingQuote(in: str, startingAt: idx) {
+                if !inMultiWordString && LogoTokenizer.hasMatchingMultiWordClosingQuote(in: str, startingAt: idx) {
                     inMultiWordString = true
                     current.append(ch)
                 } else if inMultiWordString {

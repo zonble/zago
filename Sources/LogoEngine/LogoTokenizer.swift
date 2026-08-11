@@ -1,7 +1,28 @@
 import Foundation
 
-/// Shared lexical rules for LOGO scripts and LOGO value literals.
-enum LogoLexer {
+/// Shared tokenization rules for LOGO scripts and LOGO value literals.
+enum LogoTokenizer {
+    static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
+        rawTokens.flatMap { token in
+            guard !((token.hasPrefix("\"") && token.hasSuffix("\"")) || (token.hasPrefix("|") && token.hasSuffix("|"))) else { return [token] }
+            var parts: [String] = []
+            var current = ""
+            var index = token.startIndex
+            while index < token.endIndex {
+                let remaining = token[index...]
+                if ["==", "!=", "<=", ">="].contains(where: { remaining.hasPrefix($0) }) {
+                    if !current.isEmpty { parts.append(current); current = "" }
+                    let op = String(remaining.prefix(2)); parts.append(op); index = token.index(index, offsetBy: 2)
+                } else if "=<>".contains(token[index]) {
+                    if !current.isEmpty { parts.append(current); current = "" }
+                    parts.append(String(token[index])); index = token.index(after: index)
+                } else { current.append(token[index]); index = token.index(after: index) }
+            }
+            if !current.isEmpty { parts.append(current) }
+            return parts
+        }
+    }
+
     static func hasMatchingMultiWordClosingQuote(in source: String, startingAt quoteIndex: String.Index) -> Bool {
         var index = source.index(after: quoteIndex)
         var previous: Character = "\""
