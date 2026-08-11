@@ -16,7 +16,7 @@ public struct LogoEnvironment: Sequence {
     public subscript(name: String) -> String? {
         get { value(for: name)?.description }
         set {
-            setValue(newValue.map(LogoValue.parse), for: name)
+            setValue(newValue.map(LogoValue.parsePreservingWhitespace), for: name)
         }
     }
 

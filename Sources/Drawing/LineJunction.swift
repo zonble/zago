@@ -113,8 +113,13 @@ public func lineStyle(for character: Character) -> BorderStyle? {
     }
 }
 
-public func fuseLineCharacter(existing: Character, defaultNewCharacter: Character, addingMask: UInt8) -> Character {
-    let existingMask = canvasMask(for: existing)
+public func fuseLineCharacter(
+    existing: Character,
+    defaultNewCharacter: Character,
+    addingMask: UInt8,
+    existingMask: UInt8? = nil
+) -> Character {
+    let existingMask = existingMask ?? canvasMask(for: existing)
     guard existingMask != 0 else { return defaultNewCharacter }
     let style: BorderStyle = lineStyle(for: existing) == .double || lineStyle(for: defaultNewCharacter) == .double ? .double : .single
     return lineCharacter(forMask: existingMask | addingMask, style: style)

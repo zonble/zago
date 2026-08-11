@@ -106,4 +106,11 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
+    static func parsePreservingWhitespace(_ raw: String) -> LogoValue {
+        guard raw == raw.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            return .string(raw)
+        }
+        return parse(raw)
+    }
+
 }

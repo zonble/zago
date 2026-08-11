@@ -19,6 +19,17 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     #expect(tokens.map(\.sourceRange) == [0..<4, 5..<10, 11..<12, 13..<14, 15..<16])
 }
 
+@Test func testLogoTokenizerSplitsComparisonOperatorsWithoutIndexingTheOperator() {
+    #expect(LogoTokenizer.tokenize(":pc<=:len") == [":pc", "<=", ":len"])
+}
+
+@Test func testLogoEnvironmentPreservesFormattedLeadingWhitespace() {
+    var environment = LogoEnvironment()
+    environment["formatted"] = "    3.1416"
+
+    #expect(environment["formatted"] == "    3.1416")
+}
+
 private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Sendable {
     var writes: [String] = []
     private var lines: [String]
