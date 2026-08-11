@@ -17,7 +17,7 @@ extension LogoEngine {
                 }
                 current.append(ch)
 
-                if hasMatchingMultiWordClosingQuote(script: script, startingAt: i) {
+                if LogoLexer.hasMatchingMultiWordClosingQuote(in: script, startingAt: i) {
                     i = script.index(after: i)
                     while i < script.endIndex {
                         let innerCh = script[i]
@@ -98,41 +98,6 @@ extension LogoEngine {
 
     private func isStructuralDelimiter(_ ch: Character) -> Bool {
         ch == "[" || ch == "]" || ch == "{" || ch == "}" || ch == "(" || ch == ")"
-    }
-
-    private func hasMatchingMultiWordClosingQuote(script: String, startingAt quoteIndex: String.Index) -> Bool {
-        var idx = script.index(after: quoteIndex)
-        var prevChar: Character = "\""
-        var depth = 0
-        var foundSpace = false
-
-        while idx < script.endIndex {
-            let ch = script[idx]
-            if ch == "\n" || ch == "\r" { return false }
-            if (ch == "[" || ch == "{") && depth >= 0 {
-                depth += 1
-            } else if (ch == "]" || ch == "}") && depth > 0 {
-                depth -= 1
-            } else if ch.isWhitespace && depth == 0 {
-                foundSpace = true
-            } else if ch == "\"" && depth == 0 {
-                let nextIdx = script.index(after: idx)
-                let nextChar: Character = nextIdx < script.endIndex ? script[nextIdx] : " "
-                let isNewOpeningQuote =
-                    (prevChar.isWhitespace || prevChar == "[" || prevChar == "{")
-                    && (!nextChar.isWhitespace && nextChar != "]" && nextChar != "}")
-
-                if isNewOpeningQuote && foundSpace {
-                    return false
-                }
-                if !isNewOpeningQuote && foundSpace {
-                    return true
-                }
-            }
-            prevChar = ch
-            idx = script.index(after: idx)
-        }
-        return false
     }
 
     private func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
