@@ -221,34 +221,34 @@ extension LogoEngine {
                     if let num1 = Double(leftVal), let num2 = Double(rightVal) {
                         switch op {
                         case .equal, .aliasEqual:
-                            leftVal = num1 == num2 ? "true" : "false"
+                            leftVal = (num1 == num2).logoString
                         case .notEqual, .aliasNotEqual:
-                            leftVal = num1 != num2 ? "true" : "false"
+                            leftVal = (num1 != num2).logoString
                         case .lessThan:
-                            leftVal = num1 < num2 ? "true" : "false"
+                            leftVal = (num1 < num2).logoString
                         case .greaterThan:
-                            leftVal = num1 > num2 ? "true" : "false"
+                            leftVal = (num1 > num2).logoString
                         case .lessOrEqual:
-                            leftVal = num1 <= num2 ? "true" : "false"
+                            leftVal = (num1 <= num2).logoString
                         case .greaterOrEqual:
-                            leftVal = num1 >= num2 ? "true" : "false"
+                            leftVal = (num1 >= num2).logoString
                         default:
                             leftVal = "false"
                         }
                     } else {
                         switch op {
                         case .equal, .aliasEqual:
-                            leftVal = leftVal == rightVal ? "true" : "false"
+                            leftVal = (leftVal == rightVal).logoString
                         case .notEqual, .aliasNotEqual:
-                            leftVal = leftVal != rightVal ? "true" : "false"
+                            leftVal = (leftVal != rightVal).logoString
                         case .lessThan:
-                            leftVal = leftVal < rightVal ? "true" : "false"
+                            leftVal = (leftVal < rightVal).logoString
                         case .greaterThan:
-                            leftVal = leftVal > rightVal ? "true" : "false"
+                            leftVal = (leftVal > rightVal).logoString
                         case .lessOrEqual:
-                            leftVal = leftVal <= rightVal ? "true" : "false"
+                            leftVal = (leftVal <= rightVal).logoString
                         case .greaterOrEqual:
-                            leftVal = leftVal >= rightVal ? "true" : "false"
+                            leftVal = (leftVal >= rightVal).logoString
                         default:
                             leftVal = "false"
                         }
@@ -342,9 +342,11 @@ extension LogoEngine {
 
         variables.pushScope(initialValues: Dictionary(uniqueKeysWithValues: zip(proc.parameters, args)))
         procedureCallDepth += 1
+        executionFrames.append(LogoExecutionFrame(procedureName: proc.name, token: nil, scopeDepth: variables.scopeDepth))
         defer {
             procedureCallDepth -= 1
             variables.popScope()
+            executionFrames.removeLast()
         }
 
         var procIndex = 0

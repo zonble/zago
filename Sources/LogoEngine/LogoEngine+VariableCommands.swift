@@ -204,7 +204,8 @@ extension LogoEngine {
                         return value
                     }
 
-                    rootVal = updateNested(value: rootVal, path: indices, replacement: parseLogoValuePreservingWhitespace(newVal))
+                    rootVal = updateNested(
+                        value: rootVal, path: indices, replacement: parseLogoValuePreservingWhitespace(newVal))
                     variables[varName] = rootVal.description
                 }
             }
@@ -383,7 +384,7 @@ extension LogoEngine {
             return true
 
         case .pons:
-            let systemKeys: Set<String> = ["author", "version", "repository"]
+            let systemKeys: Set<String> = ["zago.author", "zago.version", "zago.repository"]
             let keys = Array(variables.keys.filter { !systemKeys.contains($0) }).sorted()
             let res = LogoValue.list(keys.map { .string($0) }).description
             lastResult = res
@@ -396,9 +397,10 @@ extension LogoEngine {
             return true
 
         case .povas:
-            let systemKeys: Set<String> = ["author", "version", "repository"]
+            let systemKeys: Set<String> = ["zago.author", "zago.version", "zago.repository"]
             let procs = LogoValue.list(Array(customProcedures.keys).sorted().map { .string($0) })
-            let vars = LogoValue.list(Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
+            let vars = LogoValue.list(
+                Array(variables.keys.filter { !systemKeys.contains($0) }).sorted().map { .string($0) })
             let res = LogoValue.list([procs, vars]).description
             lastResult = res
             return true

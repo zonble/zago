@@ -315,26 +315,26 @@ extension LogoEngine {
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) && logoIsTrue(v2)) ? "true" : "false"
+            return (logoIsTrue(v1) && logoIsTrue(v2)).logoString
 
         case .orLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) || logoIsTrue(v2)) ? "true" : "false"
+            return (logoIsTrue(v1) || logoIsTrue(v2)).logoString
 
         case .xorLogic:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return (logoIsTrue(v1) != logoIsTrue(v2)) ? "true" : "false"
+            return (logoIsTrue(v1) != logoIsTrue(v2)).logoString
 
         case .notLogic:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
-            return logoIsTrue(v) ? "false" : "true"
+            return (!logoIsTrue(v)).logoString
 
         default:
             return nil

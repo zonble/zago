@@ -649,15 +649,15 @@ extension LogoEngine {
         case .isNumber:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
-            return Double(v) != nil ? "true" : "false"
+            return (Double(v) != nil).logoString
 
         case .isEmpty:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
             let p = LogoValue.parse(v)
             switch p {
-            case .list(let items), .array(let items): return items.isEmpty ? "true" : "false"
-            case .string(let s): return s.isEmpty ? "true" : "false"
+            case .list(let items), .array(let items): return items.isEmpty.logoString
+            case .string(let s): return s.isEmpty.logoString
             }
 
         case .isEqual:
@@ -667,11 +667,11 @@ extension LogoEngine {
             let v2 = evaluateExpression(tokens, index: &index)
             if v1 == v2 { return "true" }
             if let d1 = Double(v1), let d2 = Double(v2) {
-                return d1 == d2 ? "true" : "false"
+                return (d1 == d2).logoString
             }
             let p1 = LogoValue.parse(v1)
             let p2 = LogoValue.parse(v2)
-            return p1 == p2 ? "true" : "false"
+            return (p1 == p2).logoString
 
         case .isNotEqual:
             index += 1
@@ -680,25 +680,25 @@ extension LogoEngine {
             let v2 = evaluateExpression(tokens, index: &index)
             if v1 == v2 { return "false" }
             if let d1 = Double(v1), let d2 = Double(v2) {
-                return d1 != d2 ? "true" : "false"
+                return (d1 != d2).logoString
             }
             let p1 = LogoValue.parse(v1)
             let p2 = LogoValue.parse(v2)
-            return p1 != p2 ? "true" : "false"
+            return (p1 != p2).logoString
 
         case .isIdentityEqual:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return v1 == v2 ? "true" : "false"
+            return (v1 == v2).logoString
 
         case .isBefore:
             index += 1
             let v1 = evaluateExpression(tokens, index: &index)
             index += 1
             let v2 = evaluateExpression(tokens, index: &index)
-            return v1 < v2 ? "true" : "false"
+            return (v1 < v2).logoString
 
         case .isMember:
             index += 1
@@ -708,9 +708,9 @@ extension LogoEngine {
             let p = LogoValue.parse(haystack)
             switch p {
             case .list(let items), .array(let items):
-                return items.map { $0.description }.contains(needle) ? "true" : "false"
+                return items.map { $0.description }.contains(needle).logoString
             case .string(let s):
-                return s.contains(needle) ? "true" : "false"
+                return s.contains(needle).logoString
             }
 
         case .member:
@@ -742,56 +742,56 @@ extension LogoEngine {
             let needle = evaluateExpression(tokens, index: &index)
             index += 1
             let haystack = evaluateExpression(tokens, index: &index)
-            return haystack.contains(needle) ? "true" : "false"
+            return haystack.contains(needle).logoString
 
         case .isProcedure:
             index += 1
             let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
             let exists = LogoPrimitive.from(name) != nil || customProcedures[name] != nil
-            return exists ? "true" : "false"
+            return exists.logoString
 
         case .isPrimitive:
             index += 1
             let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
-            return LogoPrimitive.from(name) != nil ? "true" : "false"
+            return (LogoPrimitive.from(name) != nil).logoString
 
         case .isDefined:
             index += 1
             let name = normalizeProcedureName(evaluateExpression(tokens, index: &index))
-            return customProcedures[name] != nil ? "true" : "false"
+            return (customProcedures[name] != nil).logoString
 
         case .isName:
             index += 1
             let name = normalizeVariableName(evaluateExpression(tokens, index: &index))
-            return variables[name] != nil ? "true" : "false"
+            return (variables[name] != nil).logoString
 
         case .less:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 < n2 ? "true" : "false"
+            return (n1 < n2).logoString
 
         case .greater:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 > n2 ? "true" : "false"
+            return (n1 > n2).logoString
 
         case .lessOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 <= n2 ? "true" : "false"
+            return (n1 <= n2).logoString
 
         case .greaterOrEqual:
             index += 1
             let n1 = Double(evaluateExpression(tokens, index: &index)) ?? 0
             index += 1
             let n2 = Double(evaluateExpression(tokens, index: &index)) ?? 0
-            return n1 >= n2 ? "true" : "false"
+            return (n1 >= n2).logoString
 
         case .indexof:
             index += 1
@@ -847,21 +847,21 @@ extension LogoEngine {
             let needle = unquote(evaluateExpression(tokens, index: &index))
             index += 1
             let haystack = unquote(evaluateExpression(tokens, index: &index))
-            return haystack.contains(needle) ? "true" : "false"
+            return haystack.contains(needle).logoString
 
         case .startswith:
             index += 1
             let prefix = unquote(evaluateExpression(tokens, index: &index))
             index += 1
             let string = unquote(evaluateExpression(tokens, index: &index))
-            return string.hasPrefix(prefix) ? "true" : "false"
+            return string.hasPrefix(prefix).logoString
 
         case .endswith:
             index += 1
             let suffix = unquote(evaluateExpression(tokens, index: &index))
             index += 1
             let string = unquote(evaluateExpression(tokens, index: &index))
-            return string.hasSuffix(suffix) ? "true" : "false"
+            return string.hasSuffix(suffix).logoString
 
         case .substring:
             index += 1
@@ -1011,7 +1011,7 @@ extension LogoEngine {
             let str = unquote(evaluateExpression(tokens, index: &index))
             if let regex = try? NSRegularExpression(pattern: pattern) {
                 let range = NSRange(str.startIndex..., in: str)
-                return regex.firstMatch(in: str, range: range) != nil ? "true" : "false"
+                return (regex.firstMatch(in: str, range: range) != nil).logoString
             }
             return "false"
 
