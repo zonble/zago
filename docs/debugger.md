@@ -21,7 +21,7 @@ Breakpoints belong to the editor, not `LogoEngine`. They are transient session s
 :logo eval EXPR Evaluate a reporter expression in the paused scope.
 ```
 
-Markers are renderer overlays adjacent to line numbers; zago does not depend on mouse gutters.
+Markers use an independent one-column renderer gutter. The column appears whenever the current buffer has breakpoints and remains visible when line numbers are hidden; zago does not depend on mouse interaction.
 
 ## Debugger Buffer
 

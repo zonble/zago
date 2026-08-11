@@ -841,7 +841,15 @@ struct FormatAndLayoutTests {
         editor.debuggerController.toggleBreakpoint(in: editor.buffer)
         let breakpointGutter = renderer.renderLineNumberGutter(
             editor: editor, lineNumber: 5, isFirstSubLine: true, showLineNumbers: true)
-        #expect(breakpointGutter.contains("●"))
+        #expect(!breakpointGutter.contains("●"))
+
+        editor.displayConfig.showLineNumbers = false
+        editor.buffer.lines = ["one", "two"]
+        editor.buffer.lineIndex = 0
+        editor.debuggerController.toggleBreakpoint(in: editor.buffer)
+        let renderedBreakpoint = renderer.render(editor: editor, rows: 8, cols: 40)
+        #expect(renderedBreakpoint.contains("●one"))
+        #expect(ScreenGeometry(rows: 8, cols: 40, editor: editor).gutterWidth == 1)
 
         // Test full screen render
         let fullOutput = renderer.render(editor: editor, rows: 24, cols: 80)
