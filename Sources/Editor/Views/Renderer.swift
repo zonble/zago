@@ -204,6 +204,7 @@ public final class Renderer {
             showSubLineInfo ?? shouldRenderSubLineInfo(editor: editor, textWidth: max(0, cols - gutterWidth))
         let subLineCounts = makeSubLineCounts(from: virtualLines)
         var tokenTypesCache: [Int: [SyntaxTokenType]] = [:]
+        let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -216,6 +217,12 @@ public final class Renderer {
             if localVIndex >= 0 && localVIndex < virtualLines.count {
                 let vLine = virtualLines[localVIndex]
                 let isFirstSubLine = (vLine.subLineIndex == 0)
+
+                if showBreakpointGutter {
+                    let hasBreakpoint = isFirstSubLine
+                        && editor.debuggerController.hasBreakpoint(in: editor.buffer, line: vLine.bufferLineIndex)
+                    lineOutput += hasBreakpoint ? "●" : " "
+                }
 
                 // Render Gutter (Line Number or Softwrap Indicator ↳)
                 if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
@@ -375,6 +382,10 @@ public final class Renderer {
                 lineIndex: localVIndex,
                 cols: cols
             ) {
+                if showBreakpointGutter {
+                    let hasBreakpoint = editor.debuggerController.hasBreakpoint(in: editor.buffer, line: localVIndex)
+                    lineOutput += hasBreakpoint ? "●" : " "
+                }
                 if editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer {
                     let lineNumStr = renderLineNumberGutter(
                         editor: editor,
@@ -388,8 +399,10 @@ public final class Renderer {
                 let indent = String(repeating: " ", count: max(0, ghostInfo.startCol))
                 lineOutput += (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
-                let gutter = editor.displayConfig.showLineNumbers ? String(repeating: " ", count: gutterWidth) : ""
+                let gutter = gutterWidth > 0 ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
+            } else if showBreakpointGutter {
+                lineOutput += " "
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
@@ -477,9 +490,7 @@ public final class Renderer {
             return "   ↳ ".ansiStyled(style: ANSIStyle.dimGray)
         }
 
-        let numStr = editor.debuggerController.hasBreakpoint(in: editor.buffer, line: lineIdx)
-            ? String(format: "%3d", lineNumber) + "● "
-            : String(format: "%4d ", lineNumber)
+        let numStr = String(format: "%4d ", lineNumber)
         let hasGitDiff =
             editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
 

@@ -36,6 +36,9 @@ public struct ScreenGeometry: Equatable {
     /// Whether the line numbers gutter is currently visible.
     public let showGutter: Bool
 
+    /// Whether the independent breakpoint marker gutter is visible.
+    public let showBreakpointGutter: Bool
+
     /// Calculated main text area height in rows.
     public let mainAreaHeight: Int
 
@@ -46,11 +49,12 @@ public struct ScreenGeometry: Equatable {
     public let textWidth: Int
 
     /// Initializes a ScreenGeometry by computing frame layout metrics for given terminal dimensions and display options.
-    public init(rows: Int, cols: Int, showRuler: Bool, showGutter: Bool) {
+    public init(rows: Int, cols: Int, showRuler: Bool, showGutter: Bool, showBreakpointGutter: Bool = false) {
         self.rows = rows
         self.cols = cols
         self.showRuler = showRuler
         self.showGutter = showGutter
+        self.showBreakpointGutter = showBreakpointGutter
 
         let chrome =
             showRuler
@@ -58,7 +62,7 @@ public struct ScreenGeometry: Equatable {
             : (Self.titleBarHeight + Self.statusLineHeight + Self.helpBarHeight)
 
         self.mainAreaHeight = max(1, rows - chrome)
-        self.gutterWidth = showGutter ? Self.defaultGutterWidth : 0
+        self.gutterWidth = (showGutter ? Self.defaultGutterWidth : 0) + (showBreakpointGutter ? 1 : 0)
         self.textWidth = max(Self.minimumTextWidth, cols - self.gutterWidth)
     }
 
@@ -66,6 +70,13 @@ public struct ScreenGeometry: Equatable {
     public init(rows: Int, cols: Int, editor: Editor) {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
-        self.init(rows: rows, cols: cols, showRuler: showRuler, showGutter: showGutter)
+        let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
+        self.init(
+            rows: rows,
+            cols: cols,
+            showRuler: showRuler,
+            showGutter: showGutter,
+            showBreakpointGutter: showBreakpointGutter
+        )
     }
 }
