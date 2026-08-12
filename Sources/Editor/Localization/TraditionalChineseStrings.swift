@@ -44,6 +44,10 @@ public struct TraditionalChineseStrings {
         "help.uncut_block": "貼上區塊",
         "help.line": "線段",
         "help.arrow": "箭頭",
+        "help.ai_accept": "接受 AI",
+        "help.ai_reject": "拒絕 AI",
+        "help.ai_next_proposal": "下個提案",
+        "help.ai_previous_proposal": "上個提案",
         "chrome.end_of_file": "檔案結尾",
 
         // Prompts
