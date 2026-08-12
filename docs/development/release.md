@@ -159,7 +159,7 @@ Then manually smoke-test:
 
 ```sh
 git status --short
-git add CHANGELOG.md Sources/Config/ZagoVersion.swift Tests/ConfigAndToolsTests.swift docs/release.md docs/homebrew_tap.md
+git add CHANGELOG.md Sources/Config/ZagoVersion.swift Tests/ConfigAndToolsTests.swift docs/development/release.md docs/development/homebrew_tap.md
 git commit -m "Release X.Y.Z"
 ```
 

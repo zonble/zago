@@ -452,7 +452,7 @@ edge. A move that starts at the top edge and heads up, or starts at the left
 edge and heads left, draws nothing; a move that starts inside the canvas draws
 up to the edge and then stops. Moving down or right can extend the buffer.
 
-> For a complete guide on using `PD` and `PU` for ASCII flowcharts, see [logo_pen_mode.md](logo_pen_mode.md).
+> For a complete guide on using `PD` and `PU` for ASCII flowcharts, see [logo_pen_mode.md](pen_mode.md).
 
 ---
 
@@ -543,7 +543,7 @@ their own syntax and are not treated as general expressions.
 
 ### 3. Classical Turtle Graphics & ASCII Diagram Pen Mode
 
-> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](logo_pen_mode.md).
+> For a complete guide on using `PD` and `PU` for ASCII flowcharts and multi-box diagrams, see [logo_pen_mode.md](pen_mode.md).
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
@@ -897,7 +897,7 @@ Disabled while Table Mode is active:
 
 LOGO commands can be entered from the command prompt, evaluated from the editor, or loaded through `.zagorc` key bindings and startup blocks.
 
-For configuration syntax, named scripts, startup preludes, and command ids, see [Configuration](configuration.md).
+For configuration syntax, named scripts, startup preludes, and command ids, see [Configuration](../user/configuration.md).
 
 ---
 

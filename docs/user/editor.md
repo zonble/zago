@@ -192,7 +192,7 @@ BOX "Hello World" 20 5 "double"
 REPEAT 4 [ FD 10 RT 90 ]
 ```
 
-> For full LOGO language reference, see [LOGO Command Language](logo.md).
+> For full LOGO language reference, see [LOGO Command Language](../logo/reference.md).
 
 ---
 
@@ -214,7 +214,7 @@ In Markdown, AsciiDoc, Graphviz DOT, PlantUML, or Mermaid documents, `zago` prov
 - Trigger snippet menu via `M+D` or **Menu → Tools → Insert Diagram Snippet**.
 - Automatically detects diagram code block context under cursor and inserts tailored template structures (e.g., Mermaid flowcharts, PlantUML sequence diagrams, Graphviz DOT graphs, or LOGO macro blocks).
 
-> For detailed snippet rules and context conditions, see [Diagram Snippets & Menu Rules](diagram_snippets.md).
+> For detailed snippet rules and context conditions, see [Diagram Snippets & Menu Rules](../features/diagram_snippets.md).
 
 ---
 
@@ -222,8 +222,8 @@ In Markdown, AsciiDoc, Graphviz DOT, PlantUML, or Mermaid documents, `zago` prov
 
 - 📐 [Editor Modes & Layout](modes.md): In-depth guide to Text, Canvas, and Table modes.
 - 📋 [Mark & Clipboard Behavior](mark.md): Text selection vs 2D canvas block mark rules.
-- 🐢 [LOGO Command Language](logo.md): LOGO macro drawing, turtle graphics, data types, and procedure definitions.
+- 🐢 [LOGO Command Language](../logo/reference.md): LOGO macro drawing, turtle graphics, data types, and procedure definitions.
 - ⚙️ [Configuration](configuration.md): Customizing `.zagorc`, key bindings, startup scripts, and Nano syntax definitions.
 - 📂 [Directory Mode](directory_mode.md): DirectoryBuffer browsing and binary safety matrix.
-- 📊 [Diagram Snippets](diagram_snippets.md): Pre-built diagram template insertion guide.
+- 📊 [Diagram Snippets](../features/diagram_snippets.md): Pre-built diagram template insertion guide.
 - 🧭 [Heading Navigation & Outline](heading_navigation.md): Planned document heading navigation and outline picker behavior.
