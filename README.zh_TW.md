@@ -1,4 +1,4 @@
-# `zago`:  為 AI Agent 時代打造的輕量文字編輯器
+# `zago`: 讓文字的多重性直接可見的編輯器
 
 [English README](README.md) | [繁體中文使用手冊 Wiki](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
 
@@ -11,15 +11,18 @@
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 
-在 AI Agent 普及的時代，Markdown 已成為人機協作與軟體開發的核心控制介面：寫規格書、提示詞指令、程式碼審查筆記、實作計畫與 context。
+AI 產生的文件很少只有一種固定性質。同一段文字裡，可能同時包含文章、程式碼、表格、圖形、操作指令，以及仍然需要人類確認的提案。人類接著要閱讀、重組、繪製、執行其中的一部分，並決定這段文字最後應該成為什麼。
 
-然而在 Terminal 裡編輯 Markdown 往往被打斷——GUI 編輯器會抽離 Terminal 流程，而傳統 Terminal 編輯器缺少表格與純文字繪圖工具。若想快速畫個文字架構圖，往往得開啟網頁版 ASCII 繪圖器或專用畫圖 App。
+多數工具會把這些不同性質的文字送往不同的應用程式。`zago` 選擇相反的方向：讓文字留在同一個可見空間裡，依照當下的工作，直接暴露它不同的性質。
 
-`zago` 為此而生：一款專為 Markdown 打造的輕量級 Terminal 編輯器。它將文章寫作、Pipe 表格排版、文件連結跳轉、大綱導覽、純文字架構圖、CJK 中英對齊工具以及自動化巨集整合在同一個流暢的純文字工作流中——無論是在本機筆電，還是透過 SSH 在遠端伺服器上。
+Text Mode 把文字視為文字流；Table Mode 把它視為結構；Canvas Mode 把它視為二維空間。無論切換哪種操作方式，底層仍然是普通、可讀、可保存的文字。
+
+`zago` 是為這種工作方式打造的 Terminal editor：在目前注視的文字上寫作、整理、繪圖、轉換，並與 AI 協作。人類決定注意哪一段文字；AI 可以理解這段文字並提出操作，但不接管文件。
 
 ![zago 編輯 Markdown 檔案、純文字架構圖與 LOGO 指令示範](zago.gif)
 
-- [`zago`:  為 AI Agent 時代打造的輕量文字編輯器](#zago--為-ai-agent-時代打造的輕量文字編輯器)
+- [`zago`: 讓文字的多重性直接可見的編輯器](#zago-讓文字的多重性直接可見的編輯器)
+  - [zago 的設計哲學](#zago-的設計哲學)
   - [zago 適合誰？](#zago-適合誰)
   - [主要特色](#主要特色)
   - [快速開始](#快速開始)
@@ -31,9 +34,16 @@
   - [文字模式與 2D Canvas 畫布模式](#文字模式與-2d-canvas-畫布模式)
   - [文字處理與文章編修功能](#文字處理與文章編修功能)
   - [指令範例 (Editor LOGO)](#指令範例-editor-logo)
+  - [CLI 命令列與管道 (Pipe) 過濾器](#cli-命令列與管道-pipe-過濾器)
+    - [1. 互動編輯器與系統 `$EDITOR`](#1-互動編輯器與系統-editor)
+    - [2. Headless 無介面指令與管道過濾器](#2-headless-無介面指令與管道過濾器)
+    - [命令列選項說明](#命令列選項說明)
   - [文件連結](#文件連結)
   - [授權條款](#授權條款)
 
+## zago 的設計哲學
+
+如果一份混合了多種性質的文件，必須在文字編輯器、表格工具、繪圖 App 和 AI 聊天視窗之間來回搬運，工作上下文就會不斷消失。`zago` 讓上下文留在原地，只切換目前編輯文字的方式。
 
 ## zago 適合誰？
 
@@ -42,9 +52,7 @@
 - **技術文件撰寫者**：偏好純文字文件，在 Git Diff、SSH 連線、PR 與 README 保持高可讀性。
 - **純文字繪圖愛好者**：無需跳出文件即可直接在文字檔內繪製框線與流程圖。
 - **CJK 與 Emoji 精確度要求者**：需要終端機顯示寬度在表格、框線、尺規與段落換行時絕對精準對齊。
-- **鍵盤優先使用者**：喜愛 Nano 風格的直覺操作，但需要更強大的 Markdown 工具箱。
-
----
+- **鍵盤優先使用者**：喜愛 Nano 風格的直覺操作，但需要處理混合純文字工作的工具箱。
 
 ## 主要特色
 
@@ -54,8 +62,8 @@
 - **中英文排版與文字處理**：字數/中文字數/Emoji 統計、繁簡轉換、羅馬拼音轉換、CJK與英數字半形空格自動正規化。
 - **全角 CJK 與 Emoji 精確計算**：包含 ✅, ❌, ⚠️ 等 Emoji 與中文字元，確保表格與框線在 Terminal 中不歪斜。
 - **雙空間模式（Text Mode & 2D Canvas Mode）**：
-  - **Text Mode**（預設）：直覺的流式文字輸入。
-  - **Canvas Mode** (`M+V`)：解鎖 2D 虛擬空間導覽與矩形區塊選取 (`Shift+Arrows`)、區塊剪貼 (`^K` / `^U`)。
+    - **Text Mode**（預設）：直覺的流式文字輸入。
+    - **Canvas Mode** (`M+V`)：解鎖 2D 虛擬空間導覽與矩形區塊選取 (`Shift+Arrows`)、區塊剪貼 (`^K` / `^U`)。
 - **Nano 相容快捷鍵**：`^O` 存檔, `^X` 離開, `^W` 搜尋, `M+W` 複製, `^K` 剪切, `^U` 貼上, `^J` 段落重排, `^Z` 復原。
 - **多頁籤 / 多 Buffer 編輯**：每個 Buffer 擁有完全獨立的 Undo/Redo 歷史紀錄與檢視設定。
 
@@ -133,22 +141,26 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 按下 `Esc` 鍵即可進入指令列。指令採用簡潔的 Editor LOGO 語法，可用於快速編輯、文字繪圖與自動化巨集：
 
 - **文字移動與插入**：
+
   ```logo
   MOVE HOME; TYPE "# "; MOVE END
   ```
 
 - **繪製外框與區域填滿**：
+
   ```logo
   BOX 30 5 CENTER ROUND
   DRAWBOX 30 4 ROUND; GOTO 2 2; FILL "hi
   ```
 
 - **迴圈與自動清單**：
+
   ```logo
   REPEAT 5 [ TYPE :# ". 項目說明" NL ]
   ```
 
 - **自訂副程式 (Procedure)**：
+
   ```logo
   TO TITLE :text
     BOX :text CENTER ROUND
@@ -156,10 +168,12 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
   ```
 
 - **繪製 ASCII 簡圖**：
+
   ```logo
   DRAWBOX 18 3 "client" CENTER; GOTO 3 11; VLINE 3
   GOTO 5 1; DRAWBOX 18 5; GOTO 6 2; TYPE "     server     "
   ```
+
   ```text
   ┌────────────────┐
   │     client     │
