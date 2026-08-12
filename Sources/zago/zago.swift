@@ -71,14 +71,14 @@ struct Zago: ParsableCommand {
     @Flag(
         name: [.customLong("install-skill"), .customLong("install-agent-skill")],
         help:
-            "Install the zago AI skill definition and MCP server configuration into local user AI directories."
+            "Install the zago AI skill definition into ~/.codex/skills and other local AI skill directories, plus MCP configuration."
     )
     var installSkill: Bool = false
 
     @Flag(
         name: [.customLong("install-mcp")],
         help:
-            "Install zago MCP server configuration into local user AI directories (~/.gemini/config/mcp_config.json, ~/.agents/mcp_config.json, etc.)."
+            "Install zago MCP server configuration into local user AI directories and ~/.codex/config.toml."
     )
     var installMcp: Bool = false
 

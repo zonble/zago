@@ -30,8 +30,8 @@ public enum ZagoSkillDefinition {
         | `zago --ipc` | IPC Server | Enables cross-platform IPC socket server (`/tmp/zago-<pid>.sock` or `\\\\.\\pipe\\zago-<pid>`) |
         | `zago --no-ipc` | IPC Disable | Force disables IPC socket server |
         | `zago --mcp` | MCP Server | Runs zago as an Stdio MCP (Model Context Protocol) server for AI co-pilot integration |
-        | `zago --install-mcp` | MCP Setup | Installs `zago` MCP server configuration to local user AI directories (`~/.gemini/config/mcp_config.json`, `~/.agents/mcp_config.json`, etc.) |
-        | `zago --install-skill` | AI Setup | Installs `zago` skill definition and MCP server configuration to local user AI directories |
+        | `zago --install-mcp` | MCP Setup | Installs `zago` MCP server configuration to local user AI directories and Codex (`~/.codex/config.toml`) |
+        | `zago --install-skill` | AI Setup | Installs `zago` skill definition to Codex (`~/.codex/skills/zago`) and other local AI skill directories, plus MCP configuration |
         | `zago --uninstall-mcp` | MCP Setup | Removes only the `zago` entry from local user MCP server configurations |
         | `zago --uninstall-skill` | AI Setup | Removes the zago skill definition from local user AI directories |
 

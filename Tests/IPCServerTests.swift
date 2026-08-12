@@ -528,6 +528,38 @@ final class IPCServerTests: XCTestCase {
         #endif
     }
 
+    func testDefaultPosixIPCServerUsesShortSocketPath() throws {
+        #if !os(Windows)
+            let server = makeTestServer(sessionToken: "short-path-token")
+            XCTAssertLessThanOrEqual(
+                server.socketPath.utf8CString.count,
+                ZagoIPCSessionPaths.unixSocketPathByteLimit
+            )
+            XCTAssertTrue(server.socketPath.hasPrefix("/tmp/") || server.socketPath.hasPrefix("/private/tmp/"))
+        #endif
+    }
+
+    func testDefaultSessionLocatorSkipsOverlongSocketPath() throws {
+        #if !os(Windows)
+            let tempRoot = FileManager.default.temporaryDirectory
+                .appendingPathComponent("zago-overlong-\(UUID().uuidString)")
+            let longDirectory = tempRoot.appendingPathComponent(String(repeating: "x", count: 120))
+            try FileManager.default.createDirectory(at: longDirectory, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+            let socketURL = longDirectory.appendingPathComponent("zago-test.sock")
+            let tokenURL = longDirectory.appendingPathComponent("zago-test.token")
+            FileManager.default.createFile(atPath: socketURL.path, contents: Data())
+            FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8))
+
+            XCTAssertGreaterThan(
+                socketURL.path.utf8CString.count,
+                ZagoIPCSessionPaths.unixSocketPathByteLimit
+            )
+            XCTAssertTrue(DefaultZagoIPCSessionLocator(temporaryDirectory: longDirectory).sessions().isEmpty)
+        #endif
+    }
+
     func testZagoSkillCLIInstallerMethods() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(
             "zago-installer-test-\(UUID().uuidString)")
@@ -537,6 +569,11 @@ final class IPCServerTests: XCTestCase {
         let (skillPaths, mcpPaths) = try ZagoSkillCLIInstaller.installSkillAndMCP(customHomePath: tempDir.path)
         XCTAssertGreaterThan(skillPaths.count, 0)
         XCTAssertGreaterThan(mcpPaths.count, 0)
+        XCTAssertTrue(
+            skillPaths.contains(
+                tempDir.appendingPathComponent(".codex/skills/zago/SKILL.md").path
+            )
+        )
 
         for path in skillPaths {
             XCTAssertTrue(FileManager.default.fileExists(atPath: path))
@@ -544,12 +581,19 @@ final class IPCServerTests: XCTestCase {
 
         for path in mcpPaths {
             XCTAssertTrue(FileManager.default.fileExists(atPath: path))
-            let data = try Data(contentsOf: URL(fileURLWithPath: path))
-            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            let mcpServers = json?["mcpServers"] as? [String: Any]
-            let zagoConfig = mcpServers?["zago"] as? [String: Any]
-            XCTAssertEqual(zagoConfig?["command"] as? String, "zago")
-            XCTAssertEqual(zagoConfig?["args"] as? [String], ["--mcp"])
+            if path.hasSuffix(".toml") {
+                let toml = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
+                XCTAssertTrue(toml.contains("[mcp_servers.zago]"))
+                XCTAssertTrue(toml.contains("command = \"zago\""))
+                XCTAssertTrue(toml.contains("args = [\"--mcp\"]"))
+            } else {
+                let data = try Data(contentsOf: URL(fileURLWithPath: path))
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                let mcpServers = json?["mcpServers"] as? [String: Any]
+                let zagoConfig = mcpServers?["zago"] as? [String: Any]
+                XCTAssertEqual(zagoConfig?["command"] as? String, "zago")
+                XCTAssertEqual(zagoConfig?["args"] as? [String], ["--mcp"])
+            }
         }
 
         let preservedSkillFile =
@@ -563,12 +607,19 @@ final class IPCServerTests: XCTestCase {
         ]
         for path in mcpPaths {
             let url = URL(fileURLWithPath: path)
-            let data = try Data(contentsOf: url)
-            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-            var servers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
-            servers["other"] = preservedMCPServer
-            json["mcpServers"] = servers
-            try JSONSerialization.data(withJSONObject: json).write(to: url)
+            if path.hasSuffix(".toml") {
+                var toml = try String(contentsOf: url, encoding: .utf8)
+                toml += "\n[mcp_servers.zago.env]\nZAGO_TEST = \"1\"\n"
+                toml += "\n[mcp_servers.other]\ncommand = \"other-server\"\nargs = [\"serve\"]\n"
+                try toml.write(to: url, atomically: true, encoding: .utf8)
+            } else {
+                let data = try Data(contentsOf: url)
+                var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                var servers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
+                servers["other"] = preservedMCPServer
+                json["mcpServers"] = servers
+                try JSONSerialization.data(withJSONObject: json).write(to: url)
+            }
         }
 
         let removedSkillPaths = try ZagoSkillCLIInstaller.uninstallSkill(
@@ -586,11 +637,18 @@ final class IPCServerTests: XCTestCase {
         XCTAssertEqual(Set(updatedMCPPaths), Set(mcpPaths))
         for path in mcpPaths {
             XCTAssertTrue(FileManager.default.fileExists(atPath: path))
-            let data = try Data(contentsOf: URL(fileURLWithPath: path))
-            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-            let mcpServers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
-            XCTAssertNil(mcpServers["zago"])
-            XCTAssertNotNil(mcpServers["other"])
+            if path.hasSuffix(".toml") {
+                let toml = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
+                XCTAssertFalse(toml.contains("[mcp_servers.zago]"))
+                XCTAssertFalse(toml.contains("[mcp_servers.zago.env]"))
+                XCTAssertTrue(toml.contains("[mcp_servers.other]"))
+            } else {
+                let data = try Data(contentsOf: URL(fileURLWithPath: path))
+                let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                let mcpServers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
+                XCTAssertNil(mcpServers["zago"])
+                XCTAssertNotNil(mcpServers["other"])
+            }
         }
 
         XCTAssertTrue(

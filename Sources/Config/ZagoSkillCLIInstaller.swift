@@ -2,6 +2,7 @@ import Foundation
 
 public enum ZagoSkillCLIInstaller {
     private static let skillRelativePaths = [
+        ".codex/skills/zago",
         ".gemini/config/skills/zago",
         ".agents/skills/zago",
         ".claude/skills/zago",
@@ -64,7 +65,7 @@ public enum ZagoSkillCLIInstaller {
 
         var installedPaths: [String] = []
 
-        for relPath in mcpConfigRelativePaths {
+        for relPath in jsonMCPConfigRelativePaths {
             let targetFile = homeDir.appendingPathComponent(relPath)
             let targetDir = targetFile.deletingLastPathComponent()
 
@@ -90,6 +91,27 @@ public enum ZagoSkillCLIInstaller {
             installedPaths.append(targetFile.path)
         }
 
+        let codexConfigFile = homeDir.appendingPathComponent(codexConfigRelativePath)
+        let codexConfigDir = codexConfigFile.deletingLastPathComponent()
+        try fileManager.createDirectory(at: codexConfigDir, withIntermediateDirectories: true)
+
+        let existingCodexConfig: String
+        if fileManager.fileExists(atPath: codexConfigFile.path) {
+            existingCodexConfig = try String(contentsOf: codexConfigFile, encoding: .utf8)
+        } else {
+            existingCodexConfig = ""
+        }
+        let updatedCodexConfig = codexConfigWithZagoMCP(
+            existingCodexConfig,
+            zagoCommand: zagoCommand
+        )
+        try updatedCodexConfig.write(
+            to: codexConfigFile,
+            atomically: usesAtomicWrites,
+            encoding: .utf8
+        )
+        installedPaths.append(codexConfigFile.path)
+
         return installedPaths
     }
 
@@ -102,7 +124,7 @@ public enum ZagoSkillCLIInstaller {
         let homeDir = homeDirectory(customHomePath, fileManager: fileManager)
         var updatedPaths: [String] = []
 
-        for relPath in mcpConfigRelativePaths {
+        for relPath in jsonMCPConfigRelativePaths {
             let targetFile = homeDir.appendingPathComponent(relPath)
             guard fileManager.fileExists(atPath: targetFile.path) else { continue }
 
@@ -124,6 +146,20 @@ public enum ZagoSkillCLIInstaller {
             )
             try jsonData.write(to: targetFile, options: atomicWriteOptions)
             updatedPaths.append(targetFile.path)
+        }
+
+        let codexConfigFile = homeDir.appendingPathComponent(codexConfigRelativePath)
+        if fileManager.fileExists(atPath: codexConfigFile.path) {
+            let existingCodexConfig = try String(contentsOf: codexConfigFile, encoding: .utf8)
+            let (updatedCodexConfig, removed) = codexConfigRemovingZagoMCP(existingCodexConfig)
+            if removed {
+                try updatedCodexConfig.write(
+                    to: codexConfigFile,
+                    atomically: usesAtomicWrites,
+                    encoding: .utf8
+                )
+                updatedPaths.append(codexConfigFile.path)
+            }
         }
 
         return updatedPaths
@@ -148,7 +184,9 @@ public enum ZagoSkillCLIInstaller {
             ?? fileManager.homeDirectoryForCurrentUser
     }
 
-    private static var mcpConfigRelativePaths: [String] {
+    private static let codexConfigRelativePath = ".codex/config.toml"
+
+    private static var jsonMCPConfigRelativePaths: [String] {
         var paths = [
             ".gemini/config/mcp_config.json",
             ".agents/mcp_config.json",
@@ -162,6 +200,87 @@ public enum ZagoSkillCLIInstaller {
         #endif
 
         return paths
+    }
+
+    private static func codexConfigWithZagoMCP(
+        _ existing: String,
+        zagoCommand: String
+    ) -> String {
+        let (withoutZago, _) = codexConfigRemovingZagoMCP(existing)
+        var output = withoutZago.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if !output.isEmpty {
+            output += "\n\n"
+        }
+
+        output += """
+            [mcp_servers.zago]
+            command = "\(tomlEscapedString(zagoCommand))"
+            args = ["--mcp"]
+            """
+
+        return output + "\n"
+    }
+
+    private static func codexConfigRemovingZagoMCP(_ existing: String) -> (String, Bool) {
+        guard !existing.isEmpty else {
+            return ("", false)
+        }
+
+        let lines = existing.split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
+        var outputLines: [String] = []
+        var removed = false
+        var skippingZagoSection = false
+
+        for line in lines {
+            if let sectionName = tomlSectionName(line) {
+                skippingZagoSection = isZagoMCPSection(sectionName)
+                if skippingZagoSection {
+                    removed = true
+                    continue
+                }
+            }
+
+            if !skippingZagoSection {
+                outputLines.append(line)
+            }
+        }
+
+        guard removed else {
+            return (existing, false)
+        }
+
+        let output = outputLines.joined(separator: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (output.isEmpty ? "" : output + "\n", true)
+    }
+
+    private static func tomlSectionName(_ line: String) -> String? {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix("["),
+            trimmed.hasSuffix("]"),
+            !trimmed.hasPrefix("[["),
+            !trimmed.hasSuffix("]]")
+        else {
+            return nil
+        }
+
+        return String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespaces)
+    }
+
+    private static func isZagoMCPSection(_ sectionName: String) -> Bool {
+        sectionName == "mcp_servers.zago"
+            || sectionName.hasPrefix("mcp_servers.zago.")
+    }
+
+    private static func tomlEscapedString(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+            .replacingOccurrences(of: "\t", with: "\\t")
     }
 
     private static var atomicWriteOptions: Data.WritingOptions {
