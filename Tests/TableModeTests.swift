@@ -84,6 +84,39 @@ import Testing
     #expect(promptIsNone)
 }
 
+@Test func testTableModeBacktabSkipsConnectorAndEntersCellAbove() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐",
+        "│        │",
+        "│        │",
+        "│        │",
+        "└──┬─────┘",
+        "   │",
+        "┌──┴─────────────┬────────────────┐",
+        "│          x     │                │",
+        "├────────────────┼────────────────┤",
+        "│                │                │",
+        "├────────────────┼────────────────┤",
+        "│                │                │",
+        "├────────────────┼────────────────┤",
+        "│                │                │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 7
+    editor.buffer.columnIndex = 11
+
+    editor.tableModeController.toggleTableMode()
+    #expect(editor.currentTableCell?.minLine == 6)
+    #expect(editor.currentTableCell?.minCol == 0)
+
+    editor.processKey(.backtab)
+
+    #expect(editor.currentTableCell?.minLine == 0)
+    #expect(editor.currentTableCell?.maxLine == 4)
+    #expect(editor.buffer.lineIndex == 3)
+}
+
 @Test func testTableModeCellTypingAndBackspaceKeepBordersAligned() throws {
     let editor = Editor()
     editor.buffer.lines = [
