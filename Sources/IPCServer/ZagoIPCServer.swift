@@ -216,10 +216,9 @@ extension ZagoIPCServer {
                 self.tokenPath = socketPath + ".token"
             } else {
                 let nonce = UUID().uuidString.lowercased()
-                self.socketPath = (NSTemporaryDirectory() as NSString).appendingPathComponent(
-                    "zago-\(pid)-\(nonce).sock")
-                self.tokenPath = (NSTemporaryDirectory() as NSString).appendingPathComponent(
-                    "zago-\(pid)-\(nonce).token")
+                let paths = ZagoIPCSessionPaths.generatedSessionPaths(pid: pid, nonce: nonce)
+                self.socketPath = paths.socketPath
+                self.tokenPath = paths.tokenPath
             }
             self.sessionToken = sessionToken ?? UUID().uuidString.replacingOccurrences(of: "-", with: "")
             self.limits = limits

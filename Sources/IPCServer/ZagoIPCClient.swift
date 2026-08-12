@@ -17,10 +17,14 @@ protocol ZagoIPCSessionLocating {
 }
 
 struct DefaultZagoIPCSessionLocator: ZagoIPCSessionLocating {
-    let temporaryDirectory: URL
+    let temporaryDirectories: [URL]
 
-    init(temporaryDirectory: URL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)) {
-        self.temporaryDirectory = temporaryDirectory
+    init(temporaryDirectory: URL? = nil) {
+        if let temporaryDirectory {
+            self.temporaryDirectories = [temporaryDirectory]
+        } else {
+            self.temporaryDirectories = ZagoIPCSessionPaths.candidateTemporaryDirectories()
+        }
     }
 
     func sessions() -> [ZagoIPCSession] {
@@ -28,19 +32,18 @@ struct DefaultZagoIPCSessionLocator: ZagoIPCSessionLocating {
             return []
         #else
             let fileManager = FileManager.default
-            guard
-                let urls = try? fileManager.contentsOfDirectory(
-                    at: temporaryDirectory,
-                    includingPropertiesForKeys: [.contentModificationDateKey],
-                    options: [.skipsHiddenFiles]
-                )
-            else {
-                return []
-            }
 
             return
-                urls
+                temporaryDirectories
+                .flatMap { temporaryDirectory -> [URL] in
+                    (try? fileManager.contentsOfDirectory(
+                        at: temporaryDirectory,
+                        includingPropertiesForKeys: [.contentModificationDateKey],
+                        options: [.skipsHiddenFiles]
+                    )) ?? []
+                }
                 .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "sock" }
+                .filter { $0.path.utf8CString.count <= ZagoIPCSessionPaths.unixSocketPathByteLimit }
                 .compactMap { socketURL -> (ZagoIPCSession, Date)? in
                     let standardTokenURL = socketURL.deletingPathExtension().appendingPathExtension("token")
                     let explicitPathTokenURL = URL(fileURLWithPath: socketURL.path + ".token")
