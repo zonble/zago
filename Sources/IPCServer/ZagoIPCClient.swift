@@ -137,6 +137,16 @@ struct IPCTextResult: Codable, Sendable {
     let totalLines: Int
 }
 
+struct IPCSelectionResult: Codable, Sendable {
+    let hasSelection: Bool
+    let text: String
+    let lines: [String]
+    let startLine: Int?
+    let startColumn: Int?
+    let endLine: Int?
+    let endColumn: Int?
+}
+
 struct IPCCursorResult: Codable, Sendable {
     let line: Int
     let column: Int
@@ -212,6 +222,14 @@ final class ZagoIPCClient {
         try call(
             method: "zago.buffer.getCursor",
             params: GetCursorParams(bufferTarget: bufferTarget, bufferId: nil),
+            in: session
+        )
+    }
+
+    func getSelection(bufferTarget: String?, in session: ZagoIPCSession) throws -> IPCSelectionResult {
+        try call(
+            method: "zago.buffer.getSelection",
+            params: GetSelectionParams(bufferTarget: bufferTarget, bufferId: nil),
             in: session
         )
     }

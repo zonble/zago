@@ -93,6 +93,17 @@ extension ZagoIPCServer {
                     for: parsed, response: .text(lines: result.lines, totalLines: result.totalLines))
             } catch { return requestFailure(error, parser: parser, request: parsed) }
 
+        case .getSelection(let bufferTarget):
+            guard let dataSource else {
+                return parser.makeFailureResponse(code: 500, message: "Target data source unhandled", request: parsed)
+            }
+            do {
+                guard let result = try dataSource.ipcServer(self, selectionFor: bufferTarget) else {
+                    return parser.makeFailureResponse(code: 404, message: "Target buffer not found", request: parsed)
+                }
+                return parser.makeSuccessResponse(for: parsed, response: .selection(result))
+            } catch { return requestFailure(error, parser: parser, request: parsed) }
+
         case .getCursor(let bufferTarget):
             guard let dataSource else {
                 return parser.makeFailureResponse(code: 500, message: "Target data source unhandled", request: parsed)

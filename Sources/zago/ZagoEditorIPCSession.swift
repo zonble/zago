@@ -59,6 +59,24 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
         }
     }
 
+    func ipcServer(_ server: any ZagoIPCServer, selectionFor bufferTarget: String?) throws -> IPCSelectionInfo? {
+        guard let editor else { throw IPCServerRequestError.unavailable }
+        return try perform(on: editor) {
+            guard let result = editor.externalGetSelection(bufferTarget: bufferTarget) else {
+                return nil
+            }
+            return IPCSelectionInfo(
+                hasSelection: result.hasSelection,
+                text: result.text,
+                lines: result.lines,
+                startLine: result.startLine,
+                startColumn: result.startColumn,
+                endLine: result.endLine,
+                endColumn: result.endColumn
+            )
+        }
+    }
+
     func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
         line: Int, column: Int, visualCol: Int, mode: String
     )? {

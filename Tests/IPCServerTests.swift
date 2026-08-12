@@ -96,6 +96,21 @@ final class IPCServerTests: XCTestCase {
             return (lines: result.lines, totalLines: result.totalLines)
         }
 
+        func ipcServer(_ server: any ZagoIPCServer, selectionFor bufferTarget: String?) throws -> IPCSelectionInfo? {
+            guard let result = editor.externalGetSelection(bufferTarget: bufferTarget) else {
+                return nil
+            }
+            return IPCSelectionInfo(
+                hasSelection: result.hasSelection,
+                text: result.text,
+                lines: result.lines,
+                startLine: result.startLine,
+                startColumn: result.startColumn,
+                endLine: result.endLine,
+                endColumn: result.endColumn
+            )
+        }
+
         func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
             line: Int, column: Int, visualCol: Int, mode: String
         )? {
@@ -139,6 +154,9 @@ final class IPCServerTests: XCTestCase {
         func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?)
             throws -> (lines: [String], totalLines: Int)?
         { throw IPCServerRequestError.timedOut }
+        func ipcServer(_ server: any ZagoIPCServer, selectionFor bufferTarget: String?) throws -> IPCSelectionInfo? {
+            throw IPCServerRequestError.timedOut
+        }
         func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
             line: Int, column: Int, visualCol: Int, mode: String
         )? { throw IPCServerRequestError.timedOut }
@@ -371,6 +389,48 @@ final class IPCServerTests: XCTestCase {
         XCTAssertNil(response.error)
     }
 
+    func testIPCGetSelectionReturnsSelectedTextAndRange() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["alpha", "beta", "gamma"]
+        editor.buffer.selectionMark = (line: 0, column: 2)
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 2
+        let target = TestIPCDelegate(editor: editor)
+        let server = makeTestServer(sessionToken: "test-token")
+        server.delegate = target
+        server.dataSource = target
+
+        let registration = try send(
+            server,
+            method: "zago.client.register",
+            params: RegistrationParams(auth: "test-token", clientId: "selection-test", clientName: "Selection Test", color: nil),
+            id: 0,
+            connectionId: "conn-selection"
+        )
+        XCTAssertNil(registration.error)
+
+        let response = try send(
+            server,
+            method: "zago.buffer.getSelection",
+            params: Optional<NoParams>.none,
+            id: 1,
+            connectionId: "conn-selection"
+        )
+        XCTAssertNil(response.error)
+
+        let responseJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: try response.encodedData()) as? [String: Any]
+        )
+        let result = try XCTUnwrap(responseJSON["result"] as? [String: Any])
+        XCTAssertEqual(result["hasSelection"] as? Bool, true)
+        XCTAssertEqual(result["text"] as? String, "pha\nbe")
+        XCTAssertEqual(result["lines"] as? [String], ["pha", "be"])
+        XCTAssertEqual(result["startLine"] as? Int, 1)
+        XCTAssertEqual(result["startColumn"] as? Int, 3)
+        XCTAssertEqual(result["endLine"] as? Int, 2)
+        XCTAssertEqual(result["endColumn"] as? Int, 3)
+    }
+
     func testIPCExecuteLogoCreatesProposalWithoutMutatingBuffer() throws {
         let editor = Editor()
         editor.buffer.lines = ["alpha", "beta"]
@@ -435,7 +495,7 @@ final class IPCServerTests: XCTestCase {
         )
         let toolsResult = try XCTUnwrap(toolsJSON["result"] as? [String: Any])
         let tools = try XCTUnwrap(toolsResult["tools"] as? [[String: Any]])
-        XCTAssertEqual(tools.count, 7)
+        XCTAssertEqual(tools.count, 8)
         let toolNames = Set(tools.compactMap { $0["name"] as? String })
         XCTAssertEqual(
             toolNames,
@@ -446,6 +506,7 @@ final class IPCServerTests: XCTestCase {
                 "zago_execute_logo",
                 "zago_get_buffers",
                 "zago_get_text",
+                "zago_get_selection",
                 "zago_get_cursor",
             ]
         )
@@ -471,6 +532,10 @@ final class IPCServerTests: XCTestCase {
             let socketPath = FileManager.default.temporaryDirectory
                 .appendingPathComponent("zmcp-\(UUID().uuidString.prefix(8)).sock").path
             let editor = Editor()
+            editor.buffer.lines = ["alpha", "beta"]
+            editor.buffer.selectionMark = (line: 0, column: 2)
+            editor.buffer.lineIndex = 1
+            editor.buffer.columnIndex = 2
             let ipcDelegate = TestIPCDelegate(editor: editor)
             let ipcServer = makeTestServer(
                 socketPath: socketPath,
@@ -525,6 +590,21 @@ final class IPCServerTests: XCTestCase {
             )
             let previewResult = try XCTUnwrap(previewJSON["result"] as? [String: Any])
             XCTAssertNil(previewResult["isError"])
+
+            let selectionResponse = try XCTUnwrap(
+                liveServer.handleLine(
+                    "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_selection\",\"arguments\":{}}}"
+                )
+            )
+            let selectionJSON = try XCTUnwrap(
+                JSONSerialization.jsonObject(with: Data(selectionResponse.utf8)) as? [String: Any]
+            )
+            let selectionResult = try XCTUnwrap(selectionJSON["result"] as? [String: Any])
+            XCTAssertNil(selectionResult["isError"])
+            let selectionContent = try XCTUnwrap(selectionResult["content"] as? [[String: Any]])
+            let selectionText = try XCTUnwrap(selectionContent.first?["text"] as? String)
+            XCTAssertTrue(selectionText.contains("\"hasSelection\" : true"))
+            XCTAssertTrue(selectionText.contains("\"text\" : \"pha\\nbe\""))
         #endif
     }
 
