@@ -153,7 +153,9 @@ public final class TableCellDetector: Sendable {
         let chars = Array(lines[topLine])
         guard leftCol < chars.count else { return .single }
         let ch = chars[leftCol]
-        if ch == "╭" {
+        if ch == "┏" {
+            return .heavy
+        } else if ch == "╭" {
             return chars.contains("═") || chars.contains("╦") ? .doubleRound : .round
         } else if ch == "║" || ch == "═" || ch == "╔" || ch == "╦" {
             return .double
