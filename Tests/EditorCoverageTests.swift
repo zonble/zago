@@ -324,6 +324,35 @@ private func makeEditor(
         #expect(config.debugMode == false)
     }
 
+    @Test func testExternalExecuteLogoCreatesProposalWithoutMutatingBuffer() {
+        let editor = makeEditor()
+        editor.buffer.lines = ["alpha", "beta"]
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 0
+
+        let result = editor.externalExecuteLogo(
+            clientId: "agent-1",
+            clientName: "Agent",
+            script: "TYPE \"inserted\"",
+            mode: "headful",
+            viewportRows: 24,
+            viewportCols: 80
+        )
+
+        #expect(result.success)
+        #expect(result.result == "inserted")
+        #expect(editor.buffer.lines == ["alpha", "beta"])
+        #expect(editor.proposalQueue.count == 1)
+        let proposal = editor.proposalQueue.currentProposal
+        #expect(proposal?.clientId == "agent-1")
+        #expect(proposal?.clientName == "Agent")
+        #expect(proposal?.affectedFiles.first?.bufferId == editor.buffer.id)
+        #expect(proposal?.affectedFiles.first?.chunks.first?.targetLine == 2)
+        #expect(proposal?.affectedFiles.first?.chunks.first?.targetCol == 1)
+        #expect(proposal?.affectedFiles.first?.chunks.first?.lines == ["inserted"])
+        #expect(proposal?.affectedFiles.first?.chunks.first?.insertMode == .d1Insert)
+    }
+
     @Test func testProposalOverlayBoxWidthAlignmentAndVirtualLineExpansion() {
         let editor = Editor()
         editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]

@@ -93,12 +93,21 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
         return accepted
     }
 
-    func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (
+    func ipcServer(_ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?) throws -> (
         success: Bool, result: String, error: String?
     ) {
         guard let editor else { throw IPCServerRequestError.unavailable }
+        let size = terminal.getWindowSize()
         let result = try perform(on: editor) {
-            editor.externalExecuteLogo(script: script, mode: mode)
+            editor.externalExecuteLogo(
+                clientId: client.clientId,
+                clientName: client.clientName,
+                clientColor: client.color,
+                script: script,
+                mode: mode,
+                viewportRows: size.rows,
+                viewportCols: size.cols
+            )
         }
         terminal.wakeup()
         return (success: result.success, result: result.result, error: result.error)

@@ -24,6 +24,11 @@ final class IPCServerTests: XCTestCase {
 
     private struct NoParams: Encodable {}
 
+    private struct ExecuteLogoTestParams: Encodable {
+        let script: String
+        let mode: String?
+    }
+
     private func send<Params: Encodable>(
         _ server: any ZagoIPCMessageHandling,
         method: String,
@@ -107,10 +112,18 @@ final class IPCServerTests: XCTestCase {
             true
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, executeLogo script: String, mode: String?) throws -> (
+        func ipcServer(_ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?) throws -> (
             success: Bool, result: String, error: String?
         ) {
-            let result = editor.externalExecuteLogo(script: script, mode: mode)
+            let result = editor.externalExecuteLogo(
+                clientId: client.clientId,
+                clientName: client.clientName,
+                clientColor: client.color,
+                script: script,
+                mode: mode,
+                viewportRows: 24,
+                viewportCols: 80
+            )
             return (success: result.success, result: result.result, error: result.error)
         }
 
@@ -356,6 +369,42 @@ final class IPCServerTests: XCTestCase {
         let response = try! send(
             server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 1, connectionId: "conn-1")
         XCTAssertNil(response.error)
+    }
+
+    func testIPCExecuteLogoCreatesProposalWithoutMutatingBuffer() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["alpha", "beta"]
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 0
+        let target = TestIPCDelegate(editor: editor)
+        let server = makeTestServer(sessionToken: "test-token")
+        server.delegate = target
+        server.dataSource = target
+
+        let registration = try send(
+            server,
+            method: "zago.client.register",
+            params: RegistrationParams(auth: "test-token", clientId: "ipc-agent", clientName: "IPC Agent", color: nil),
+            id: 0,
+            connectionId: "conn-logo"
+        )
+        XCTAssertNil(registration.error)
+
+        let response = try send(
+            server,
+            method: "zago.buffer.executeLogo",
+            params: ExecuteLogoTestParams(script: "TYPE \"inserted\"", mode: "headful"),
+            id: 1,
+            connectionId: "conn-logo"
+        )
+
+        XCTAssertNil(response.error)
+        XCTAssertEqual(editor.buffer.lines, ["alpha", "beta"])
+        XCTAssertEqual(editor.proposalQueue.count, 1)
+        XCTAssertEqual(editor.proposalQueue.currentProposal?.clientId, "ipc-agent")
+        XCTAssertEqual(editor.proposalQueue.currentProposal?.clientName, "IPC Agent")
+        XCTAssertEqual(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine, 2)
+        XCTAssertEqual(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.lines, ["inserted"])
     }
 
     func testZagoMCPServerMethods() throws {

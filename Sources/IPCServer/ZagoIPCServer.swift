@@ -121,12 +121,12 @@ extension ZagoIPCServer {
                 return parser.makeSuccessResponse(for: parsed, response: .previewShown)
             } catch { return requestFailure(error, parser: parser, request: parsed) }
 
-        case .executeLogo(let script, let mode):
+        case .executeLogo(let client, let script, let mode):
             guard let delegate else {
                 return parser.makeFailureResponse(code: 500, message: "Target delegate unhandled", request: parsed)
             }
             do {
-                let result = try delegate.ipcServer(self, executeLogo: script, mode: mode)
+                let result = try delegate.ipcServer(self, executeLogoFor: client, script: script, mode: mode)
                 return parser.makeSuccessResponse(
                     for: parsed, response: .logo(success: result.success, result: result.result, error: result.error))
             } catch { return requestFailure(error, parser: parser, request: parsed) }
