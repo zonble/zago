@@ -6,7 +6,7 @@ enum ZagoIPCRequest {
     case getText(bufferTarget: String?, startLine: Int?, endLine: Int?)
     case getCursor(bufferTarget: String?)
     case showPreview(client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload])
-    case executeLogo(script: String, mode: String?)
+    case executeLogo(client: IPCClientIdentity, script: String, mode: String?)
     case getHistory(limit: Int)
 }
 
@@ -283,14 +283,15 @@ final class JSONRPCParser {
     private func parseExecuteLogo(_ request: JSONRPCRequest<ExecuteLogoParams>, connectionId: String)
         -> JSONRPCParseResult
     {
-        requireRegistration(connectionId, id: request.id) { _ in
+        requireRegistration(connectionId, id: request.id) { client in
             guard let params = request.params else {
                 return .failure(self.failure(code: -32602, message: "Missing script parameter", id: request.id))
             }
             guard params.script.utf8.count <= Self.maxScriptBytes else {
                 return .failure(self.failure(code: 413, message: "Script exceeds maxPayloadBytes", id: request.id))
             }
-            return .success(.init(id: request.id, request: .executeLogo(script: params.script, mode: params.mode)))
+            return .success(
+                .init(id: request.id, request: .executeLogo(client: client, script: params.script, mode: params.mode)))
         }
     }
 

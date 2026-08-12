@@ -108,7 +108,75 @@ extension Editor {
         return true
     }
 
+    public func externalExecuteLogo(
+        clientId: String,
+        clientName: String,
+        clientColor: String = "cyan",
+        script: String,
+        mode: String?,
+        viewportRows: Int,
+        viewportCols: Int
+    ) -> EditorExternalLogoResult {
+        let generatedLines = renderExternalLogoProposalLines(script: script)
+        let outputStr = generatedLines.joined(separator: "\n")
+        let cursor = externalGetCursor(bufferTarget: nil)
+        let chunk = ProposalChunk(
+            targetLine: cursor?.line ?? 1,
+            targetCol: cursor?.visualCol ?? 1,
+            lines: generatedLines,
+            insertMode: .d1Insert,
+            type: .text
+        )
+        let proposal = AIProposal(
+            clientId: clientId,
+            clientName: clientName,
+            clientColor: clientColor,
+            reason: "LOGO proposal",
+            affectedFiles: [
+                AffectedFileProposal(
+                    filePath: buffer.filePath ?? "active",
+                    bufferId: buffer.id,
+                    chunks: [chunk]
+                )
+            ]
+        )
+        guard externalShowPreview(proposal, viewportRows: viewportRows, viewportCols: viewportCols) else {
+            return EditorExternalLogoResult(success: false, result: outputStr, error: "Failed to create proposal")
+        }
+        return EditorExternalLogoResult(success: true, result: outputStr, error: nil)
+    }
+
+    private func renderExternalLogoProposalLines(script: String) -> [String] {
+        let scratch = Editor(
+            options: EditorOptions(language: language),
+            dependencies: EditorDependencies(
+                fileIOStrategy: fileIOStrategy,
+                terminal: terminal,
+                gitService: gitService
+            ),
+            initialVariables: [:]
+        )
+        scratch.logoEngine.execute(script)
+        let lines = scratch.buffer.lines
+        guard lines.count > 1 || lines.first?.isEmpty == false else {
+            return [""]
+        }
+        return lines
+    }
+
     public func externalExecuteLogo(script: String, mode: String?) -> EditorExternalLogoResult {
+        let size = terminal.getWindowSize()
+        return externalExecuteLogo(
+            clientId: "zago-ipc-logo",
+            clientName: "zago IPC",
+            script: script,
+            mode: mode,
+            viewportRows: size.rows,
+            viewportCols: size.cols
+        )
+    }
+
+    public func externalExecuteLogoDirect(script: String, mode: String?) -> EditorExternalLogoResult {
         logoEngine.execute(script)
         let outputStr = buffer.lines.joined(separator: "\n")
         renderer.invalidateScreenCache()
