@@ -252,7 +252,7 @@ _(Note: End users do not need to build from source or install Swift SDK. Use the
 > [!TIP]
 > **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal actions (such as scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode, disable or unbind them in Windows Terminal via **Settings -> Actions**.
 
-For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/mark.md).
+For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/user/mark.md).
 
 ## Text Processing
 
@@ -312,7 +312,7 @@ Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for edi
   └────────────────┘
   ```
 
-For the complete command reference, see [Editor LOGO Documentation](docs/logo.md) and the [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
+For the complete command reference, see [Editor LOGO Documentation](docs/logo/reference.md) and the [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
 
 ## CLI Usage & Headless Scripting
 
@@ -414,17 +414,17 @@ Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
 ## Documentation
 
 - [User Manual / 繁體中文使用手冊](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
-- [Editor basics](docs/editor.md)
-- [Search behavior](docs/search.md)
-- [Mark, selection, and canvas behavior](docs/mark.md)
-- [Editor LOGO command language](docs/logo.md)
-- [Configuration and key bindings](docs/configuration.md)
-- [Pen mode and turtle drawing](docs/logo_pen_mode.md)
-- [Diagram snippets & menu rules](docs/diagram_snippets.md)
-- [Spell checker architecture & plan](docs/spell_checker.md)
-- [File encoding & auto-detection](docs/encoding.md)
-- [Homebrew tap](docs/homebrew_tap.md)
-- [Release & preview builds](docs/release.md)
+- [Editor basics](docs/user/editor.md)
+- [Search behavior](docs/user/search.md)
+- [Mark, selection, and canvas behavior](docs/user/mark.md)
+- [Editor LOGO command language](docs/logo/reference.md)
+- [Configuration and key bindings](docs/user/configuration.md)
+- [Pen mode and turtle drawing](docs/logo/pen_mode.md)
+- [Diagram snippets & menu rules](docs/features/diagram_snippets.md)
+- [Spell checker architecture & plan](docs/features/spell_checker.md)
+- [File encoding & auto-detection](docs/features/encoding.md)
+- [Homebrew tap](docs/development/homebrew_tap.md)
+- [Release & preview builds](docs/development/release.md)
 - [Changelog](CHANGELOG.md)
 
 ## Tests

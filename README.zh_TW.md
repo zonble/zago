@@ -112,7 +112,7 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 > [!TIP]
 > **Windows Terminal 快捷鍵提醒**：在 Windows Terminal 中，`Ctrl+Shift+Up` 與 `Ctrl+Shift+Down` 預設被綁定為終端機視窗捲動。若欲在 Canvas Mode 中使用此快捷鍵繪製垂直箭頭，請至 Windows Terminal 的 **設定 -> 動作 (Settings -> Actions)** 中取消該快捷鍵綁定。
 
-關於選取規則與剪貼簿隔離機制，請參閱 [標記、選取與 Canvas 模式說明](docs/mark.md)。
+關於選取規則與剪貼簿隔離機制，請參閱 [標記、選取與 Canvas 模式說明](docs/user/mark.md)。
 
 ## 文字處理與文章編修功能
 
@@ -170,7 +170,7 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
   └────────────────┘
   ```
 
-完整指令語法請參閱 [Editor LOGO 指令說明](docs/logo.md) 與 [線上繁體中文手冊](https://github.com/zonble/zago/wiki/zago-help-zh-tw)。
+完整指令語法請參閱 [Editor LOGO 指令說明](docs/logo/reference.md) 與 [線上繁體中文手冊](https://github.com/zonble/zago/wiki/zago-help-zh-tw)。
 
 ---
 
@@ -228,17 +228,17 @@ cat data.txt | zago -s format_report.logo > diagram.txt
 ## 文件連結
 
 - [繁體中文使用手冊 (Wiki)](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
-- [編輯器基礎操作](docs/editor.md)
-- [搜尋與取代機制](docs/search.md)
-- [選取與 2D Canvas 模式說明](docs/mark.md)
-- [Editor LOGO 指令語法](docs/logo.md)
-- [設定檔與快捷鍵綁定](docs/configuration.md)
-- [繪圖模式與海龜指令](docs/logo_pen_mode.md)
-- [預設圖表範本與選單規則](docs/diagram_snippets.md)
-- [拼字檢查器架構](docs/spell_checker.md)
-- [文字編碼自動偵測](docs/encoding.md)
-- [Homebrew Tap 說明](docs/homebrew_tap.md)
-- [發行與編譯說明](docs/release.md)
+- [編輯器基礎操作](docs/user/editor.md)
+- [搜尋與取代機制](docs/user/search.md)
+- [選取與 2D Canvas 模式說明](docs/user/mark.md)
+- [Editor LOGO 指令語法](docs/logo/reference.md)
+- [設定檔與快捷鍵綁定](docs/user/configuration.md)
+- [繪圖模式與海龜指令](docs/logo/pen_mode.md)
+- [預設圖表範本與選單規則](docs/features/diagram_snippets.md)
+- [拼字檢查器架構](docs/features/spell_checker.md)
+- [文字編碼自動偵測](docs/features/encoding.md)
+- [Homebrew Tap 說明](docs/development/homebrew_tap.md)
+- [發行與編譯說明](docs/development/release.md)
 - [版本變更紀錄](CHANGELOG.md)
 
 ---

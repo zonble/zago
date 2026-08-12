@@ -110,4 +110,4 @@ print :cols
 1. **Primitive Enum Additions**: Update `LogoPrimitive.swift` with new keywords and aliases.
 2. **Evaluation Engine Extension**: Add handlers in `LogoEngine+DataPrimitives.swift`.
 3. **TDD Unit Tests**: Create `Tests/LogoStringPrimitivesTests.swift` covering edge cases (Regex syntax errors, out of bounds, empty strings, CJK display widths, sprintf formatting).
-4. **Documentation Update**: Update `docs/logo.md` and user manual.
+4. **Documentation Update**: Update `docs/logo/reference.md` and user manual.
