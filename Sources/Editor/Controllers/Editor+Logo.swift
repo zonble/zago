@@ -165,7 +165,7 @@ extension Editor: LogoEngineDelegate {
         case .hasTableCell:
             return .bool(isTableModeActive && currentTableCell != nil)
         case .bufferList:
-            return .strings(buffers.map { $0.filePath ?? "Untitled" })
+            return .strings(buffers.map { $0.filePath ?? l10n["buffer.untitled"] })
         case .currentBufferIndex:
             return .integer(currentBufferIndex)
         case .bufferText:
@@ -193,7 +193,7 @@ extension Editor: LogoEngineDelegate {
         case .isModified:
             return .bool(buffer.isModified)
         case .fileName:
-            return .string(buffer.filePath ?? "Untitled")
+            return .string(buffer.filePath ?? l10n["buffer.untitled"])
         }
     }
 
@@ -486,7 +486,7 @@ extension Editor {
             }
         }
 
-        let scriptName = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "Untitled"
+        let scriptName = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? l10n["buffer.untitled"]
         appendLogoOutputHeader(scriptName)
 
         let breakpointLines = Set(debuggerController.breakpoints(in: sourceBuffer))
@@ -502,7 +502,7 @@ extension Editor {
 
         if case .paused = logoEngine.executionState {
             showLogoDebuggerBuffer()
-            setStatusMessage("[LOGO Debug] Paused. Use :logo continue")
+            setStatusMessage(l10n["status.logo_debug_paused"])
             return true
         }
 
@@ -510,7 +510,7 @@ extension Editor {
             let errText =
                 "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
             appendLogoOutput(errText)
-            setStatusMessage("Error in LOGO execution. Press M+L or type :output to view.")
+            setStatusMessage(l10n["status.logo_execution_error"])
         } else if logoEngine.hasSetStatusMessage {
             // Status message set by engine
         } else if let resultPrefix, let result = logoEngine.lastResult, !result.isEmpty {

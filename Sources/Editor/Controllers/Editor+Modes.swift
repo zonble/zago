@@ -27,7 +27,7 @@ extension Editor {
 
     public func switchToCanvasMode() {
         guard !buffer.isReadOnly else {
-            setStatusMessage("[ Buffer is read-only ]")
+            setStatusMessage(l10n["status.buffer_readonly_bracketed"])
             return
         }
         let wasCanvasMode = baseMode == .canvas

@@ -569,6 +569,17 @@ private func makeEditor(
         #expect(l10nZH["help.ai_next_proposal"] == "下個提案")
         #expect(l10nEN["help.ai_previous_proposal"] == "Prev Prop")
         #expect(l10nZH["help.ai_previous_proposal"] == "上個提案")
+
+        #expect(l10nEN["status.buffer_readonly_bracketed"] == "[ Buffer is read-only ]")
+        #expect(l10nZH["status.buffer_readonly_bracketed"] == "[ Buffer 為唯讀 ]")
+        #expect(l10nEN["status.markdown_table_text_mode"] == "[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]")
+        #expect(l10nZH["status.markdown_table_text_mode"] == "[ Markdown/Org 表格請在文字模式編輯 (Tab / ^J) ]")
+        #expect(l10nEN["prompt.logo_input"] == "Input: ")
+        #expect(l10nZH["prompt.logo_input"] == "輸入：")
+        #expect(l10nEN["debug.call_stack"] == "Call stack:")
+        #expect(l10nZH["debug.call_stack"] == "呼叫堆疊：")
+        #expect(l10nEN["buffer.untitled"] == "Untitled")
+        #expect(l10nZH["buffer.untitled"] == "未命名")
     }
 
     @Test func testLogoDelegateActionsMutateEditorState() {

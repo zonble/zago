@@ -169,7 +169,7 @@ extension Editor {
     func promptTableDimensions() {
         menuBarController.isActive = false
         guard !buffer.isReadOnly else {
-            setStatusMessage("[ Buffer is read-only ]")
+            setStatusMessage(l10n["status.buffer_readonly_bracketed"])
             return
         }
         promptInputText = "3 3 16"

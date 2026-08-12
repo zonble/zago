@@ -61,7 +61,7 @@ extension Editor {
         if buffer.isReadOnly {
             switch key {
             case .backspace, .enter, .char:
-                setStatusMessage("[ Buffer is read-only ]")
+                setStatusMessage(l10n["status.buffer_readonly_bracketed"])
                 return
             default:
                 break

@@ -29,7 +29,7 @@ public struct EditorExternalLogoResult: Sendable {
 extension Editor {
     public func externalGetBuffers() -> [EditorExternalBufferInfo] {
         buffers.enumerated().map { (index, buf) in
-            let fileName = buf.filePath.map { NSString(string: $0).lastPathComponent } ?? "Untitled"
+            let fileName = buf.filePath.map { NSString(string: $0).lastPathComponent } ?? l10n["buffer.untitled"]
             return EditorExternalBufferInfo(
                 bufferId: buf.id,
                 filePath: buf.filePath,
