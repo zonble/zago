@@ -891,6 +891,9 @@ import Testing
 
     // Press Alt+S to cycle border style
     editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .heavy)
+
+    editor.processKey(.alt("s"))
     #expect(editor.defaultBorderStyle == .double)
 
     editor.processKey(.alt("s"))

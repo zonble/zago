@@ -555,8 +555,8 @@ public struct TraditionalChineseStrings {
         "menu.run.canvas": "LOGO 繪圖畫布\tM+C",
         "menu.run.clear": "清除畫布與輸出",
 
-        "menu.shapes.box": "方框",
-        "menu.shapes.draw_box": "繪製方框",
+        "menu.shapes.box": "方框 (插入)",
+        "menu.shapes.draw_box": "方框 (取代)",
         "menu.shapes.line": "水平線",
         "menu.shapes.vline": "垂直線",
         "menu.shapes.table": "表格",
@@ -684,6 +684,7 @@ public struct TraditionalChineseStrings {
         "symbol.key.backspace": "Backspace 鍵",
 
         "menu.borders.single": "單線       ┌──┐",
+        "menu.borders.heavy": "粗線       ┏━━┓",
         "menu.borders.double": "雙線       ╔══╗",
         "menu.borders.round": "單線圓角   ╭──╮",
         "menu.borders.double_round": "雙線圓角   ╭══╮",

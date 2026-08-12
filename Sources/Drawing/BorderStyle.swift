@@ -109,6 +109,7 @@ public struct BorderCharacterSet: Sendable {
 /// Shared border style used by LOGO boxes, editor tables, canvas drawing, and menu state.
 public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     case single = "single"
+    case heavy = "heavy"
     case double = "double"
     case round = "round"
     case doubleRound = "double-round"
@@ -119,6 +120,8 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
         switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
         case "single":
             self = .single
+        case "heavy":
+            self = .heavy
         case "double":
             self = .double
         case "round", "rounded":
@@ -145,6 +148,7 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     public var boxStyle: BoxStyle {
         switch self {
         case .single: .single
+        case .heavy: .heavy
         case .double: .double
         case .round: .round
         case .doubleRound: .doubleRound
@@ -155,6 +159,12 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
 
     public var tableCharacters: TableBorderCharacters {
         switch self {
+        case .heavy:
+            TableBorderCharacters(
+                topLeft: "┏", topJoin: "┳", topRight: "┓",
+                midLeft: "┣", midJoin: "╋", midRight: "┫",
+                bottomLeft: "┗", bottomJoin: "┻", bottomRight: "┛",
+                horizontal: "━", vertical: "┃")
         case .double:
             TableBorderCharacters(
                 topLeft: "╔", topJoin: "╦", topRight: "╗",
@@ -219,6 +229,8 @@ public struct BoxStyle: Sendable {
 
     public static let single = BoxStyle(
         topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
+    public static let heavy = BoxStyle(
+        topLeft: "┏", topChar: "━", topRight: "┓", sideChar: "┃", bottomLeft: "┗", bottomChar: "━", bottomRight: "┛")
     public static let double = BoxStyle(
         topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
     public static let round = BoxStyle(

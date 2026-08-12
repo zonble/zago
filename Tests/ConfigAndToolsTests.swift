@@ -489,7 +489,7 @@ struct ConfigAndToolsTests {
         #expect(editor.overlayMode == .none)
 
         #expect(editor.commandRegistry.dispatch("border", editor: editor) == .handled)
-        #expect(editor.defaultBorderStyle == .double)
+        #expect(editor.defaultBorderStyle == .heavy)
     }
 
     @Test func testReloadedConfigPreservesPerEditorRuntimeMode() throws {

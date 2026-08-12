@@ -10,6 +10,12 @@ import Testing
         #expect(single == .single)
         #expect(single.tableCharacters.topLeft == "┌")
 
+        let heavy = BorderStyle.from("heavy")
+        #expect(heavy == .heavy)
+        #expect(heavy.tableCharacters.topLeft == "┏")
+        #expect(heavy.tableCharacters.horizontal == "━")
+        #expect(heavy.tableCharacters.vertical == "┃")
+
         let double = BorderStyle.from("double")
         #expect(double == .double)
         #expect(double.tableCharacters.topLeft == "╔")
