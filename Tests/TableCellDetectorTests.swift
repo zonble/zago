@@ -61,6 +61,17 @@ import Testing
     #expect(detector.detectCell(in: lines, line: 2, col: 8) != nil)
 }
 
+@Test func testTableCellDetectorRecognizesHeavyStyle() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┏━━━┓",
+        "┃   ┃",
+        "┗━━━┛",
+    ]
+
+    #expect(detector.detectCell(in: lines, line: 1, col: 2)?.style == .heavy)
+}
+
 @Test func testTableCellDetectorMarkdownTable() throws {
     let detector = TableCellDetector()
     let lines = [
