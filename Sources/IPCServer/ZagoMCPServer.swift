@@ -23,6 +23,7 @@ public final class ZagoMCPServer {
         case executeLogo = "zago_execute_logo"
         case getBuffers = "zago_get_buffers"
         case getText = "zago_get_text"
+        case getSelection = "zago_get_selection"
         case getCursor = "zago_get_cursor"
     }
 
@@ -77,6 +78,10 @@ public final class ZagoMCPServer {
         let bufferTarget: String?
         let startLine: Int?
         let endLine: Int?
+    }
+
+    private struct GetSelectionArguments: Codable {
+        let bufferTarget: String?
     }
 
     private struct GetCursorArguments: Codable {
@@ -340,6 +345,23 @@ public final class ZagoMCPServer {
             )
         ),
         Tool(
+            name: .getSelection,
+            description: "Get the current selected text from the active or specified zago buffer.",
+            inputSchema: InputSchema(
+                properties: [
+                    "bufferTarget": PropertySchema(
+                        type: .string,
+                        description: "Buffer ID or path. Defaults to the active buffer."
+                    )
+                ]
+            ),
+            annotations: ToolAnnotations(
+                readOnlyHint: true,
+                destructiveHint: false,
+                idempotentHint: true
+            )
+        ),
+        Tool(
             name: .getCursor,
             description: "Get the cursor position in the active or specified zago buffer.",
             inputSchema: InputSchema(
@@ -501,6 +523,14 @@ public final class ZagoMCPServer {
                     bufferTarget: arguments.bufferTarget,
                     startLine: arguments.startLine,
                     endLine: arguments.endLine,
+                    in: try activeSession()
+                )
+                return toolSuccess(id: id, value: result)
+
+            case .getSelection:
+                let arguments = try decodeArguments(GetSelectionArguments.self, from: data)
+                let result = try ipcClient.getSelection(
+                    bufferTarget: arguments.bufferTarget,
                     in: try activeSession()
                 )
                 return toolSuccess(id: id, value: result)

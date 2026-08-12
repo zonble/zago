@@ -13,6 +13,16 @@ public struct EditorExternalTextResult: Sendable {
     public let totalLines: Int
 }
 
+public struct EditorExternalSelectionResult: Sendable {
+    public let hasSelection: Bool
+    public let text: String
+    public let lines: [String]
+    public let startLine: Int?
+    public let startColumn: Int?
+    public let endLine: Int?
+    public let endColumn: Int?
+}
+
 public struct EditorExternalCursorInfo: Sendable {
     public let line: Int
     public let column: Int
@@ -58,6 +68,73 @@ extension Editor {
         }
 
         return EditorExternalTextResult(lines: Array(allLines[sLine...eLine]), totalLines: total)
+    }
+
+    public func externalGetSelection(bufferTarget: String?) -> EditorExternalSelectionResult? {
+        let targetBuf = resolveExternalBufferTarget(bufferTarget) ?? buffer
+        guard !targetBuf.isDirectoryBuffer else { return nil }
+        guard let mark = targetBuf.selectionMark else {
+            return EditorExternalSelectionResult(
+                hasSelection: false,
+                text: "",
+                lines: [],
+                startLine: nil,
+                startColumn: nil,
+                endLine: nil,
+                endColumn: nil
+            )
+        }
+
+        let range = TextBuffer.getOrderedRange(
+            mark1: mark,
+            mark2: (line: targetBuf.lineIndex, column: targetBuf.columnIndex)
+        )
+        guard range.start.line != range.end.line || range.start.column != range.end.column else {
+            return EditorExternalSelectionResult(
+                hasSelection: false,
+                text: "",
+                lines: [],
+                startLine: range.start.line + 1,
+                startColumn: range.start.column + 1,
+                endLine: range.end.line + 1,
+                endColumn: range.end.column + 1
+            )
+        }
+        guard range.start.line >= 0,
+            range.end.line >= 0,
+            range.start.line < targetBuf.lines.count,
+            range.end.line < targetBuf.lines.count
+        else {
+            return nil
+        }
+
+        let selectedLines: [String]
+        if range.start.line == range.end.line {
+            let line = targetBuf.lines[range.start.line]
+            selectedLines = [
+                String(line[safeCharacterRange: range.start.column..<range.end.column])
+            ]
+        } else {
+            var pieces: [String] = []
+            let firstLine = targetBuf.lines[range.start.line]
+            pieces.append(String(firstLine[safeCharacterRange: range.start.column..<firstLine.count]))
+            if range.end.line > range.start.line + 1 {
+                pieces.append(contentsOf: targetBuf.lines[(range.start.line + 1)..<range.end.line])
+            }
+            let lastLine = targetBuf.lines[range.end.line]
+            pieces.append(String(lastLine[safeCharacterRange: 0..<range.end.column]))
+            selectedLines = pieces
+        }
+
+        return EditorExternalSelectionResult(
+            hasSelection: true,
+            text: selectedLines.joined(separator: "\n"),
+            lines: selectedLines,
+            startLine: range.start.line + 1,
+            startColumn: range.start.column + 1,
+            endLine: range.end.line + 1,
+            endColumn: range.end.column + 1
+        )
     }
 
     public func externalGetCursor(bufferTarget: String?) -> EditorExternalCursorInfo? {
@@ -194,5 +271,15 @@ extension Editor {
                 || $0.filePath == target
                 || ($0.filePath != nil && NSString(string: $0.filePath!).lastPathComponent == target)
         }
+    }
+}
+
+private extension String {
+    subscript(safeCharacterRange range: Range<Int>) -> Substring {
+        let lower = max(0, min(range.lowerBound, count))
+        let upper = max(lower, min(range.upperBound, count))
+        let lowerIndex = index(startIndex, offsetBy: lower)
+        let upperIndex = index(startIndex, offsetBy: upper)
+        return self[lowerIndex..<upperIndex]
     }
 }

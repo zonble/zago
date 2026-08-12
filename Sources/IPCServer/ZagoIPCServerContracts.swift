@@ -47,6 +47,34 @@ public struct IPCHistoryEntry: Codable, Equatable, Sendable {
     }
 }
 
+public struct IPCSelectionInfo: Codable, Equatable, Sendable {
+    public let hasSelection: Bool
+    public let text: String
+    public let lines: [String]
+    public let startLine: Int?
+    public let startColumn: Int?
+    public let endLine: Int?
+    public let endColumn: Int?
+
+    public init(
+        hasSelection: Bool,
+        text: String,
+        lines: [String],
+        startLine: Int?,
+        startColumn: Int?,
+        endLine: Int?,
+        endColumn: Int?
+    ) {
+        self.hasSelection = hasSelection
+        self.text = text
+        self.lines = lines
+        self.startLine = startLine
+        self.startColumn = startColumn
+        self.endLine = endLine
+        self.endColumn = endColumn
+    }
+}
+
 public enum IPCServerRequestError: Error {
     case timedOut
     case unavailable
@@ -56,6 +84,7 @@ public protocol ZagoIPCServerDataSource: AnyObject {
     func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo]
     func ipcServer(_ server: any ZagoIPCServer, textFor bufferTarget: String?, startLine: Int?, endLine: Int?) throws
         -> (lines: [String], totalLines: Int)?
+    func ipcServer(_ server: any ZagoIPCServer, selectionFor bufferTarget: String?) throws -> IPCSelectionInfo?
     func ipcServer(_ server: any ZagoIPCServer, cursorFor bufferTarget: String?) throws -> (
         line: Int, column: Int, visualCol: Int, mode: String
     )?

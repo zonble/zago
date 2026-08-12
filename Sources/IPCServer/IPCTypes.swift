@@ -80,6 +80,11 @@ struct GetCursorParams: Codable {
     let bufferId: String?
 }
 
+struct GetSelectionParams: Codable {
+    let bufferTarget: String?
+    let bufferId: String?
+}
+
 public struct ProposalChunkPayload: Codable, Sendable {
     public let targetLine: Int
     public let targetCol: Int

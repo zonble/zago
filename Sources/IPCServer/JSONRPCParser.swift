@@ -4,6 +4,7 @@ enum ZagoIPCRequest {
     case register(client: IPCClientIdentity)
     case getBuffers
     case getText(bufferTarget: String?, startLine: Int?, endLine: Int?)
+    case getSelection(bufferTarget: String?)
     case getCursor(bufferTarget: String?)
     case showPreview(client: IPCClientIdentity, reason: String, affectedFiles: [AffectedFilePayload])
     case executeLogo(client: IPCClientIdentity, script: String, mode: String?)
@@ -24,6 +25,7 @@ enum ZagoIPCResponse {
     case registered(clientId: String, clientName: String)
     case buffers([BufferInfo])
     case text(lines: [String], totalLines: Int)
+    case selection(IPCSelectionInfo)
     case cursor(line: Int, column: Int, visualCol: Int, mode: String)
     case previewShown
     case logo(success: Bool, result: String, error: String?)
@@ -60,6 +62,8 @@ enum JSONRPCResponse {
             case .text(let lines, let totalLines):
                 return try encoder.encode(
                     JSONRPCSuccessEnvelope(result: TextResult(lines: lines, totalLines: totalLines), id: id))
+            case .selection(let selection):
+                return try encoder.encode(JSONRPCSuccessEnvelope(result: SelectionResult(selection), id: id))
             case .cursor(let line, let column, let visualCol, let mode):
                 return try encoder.encode(
                     JSONRPCSuccessEnvelope(
@@ -106,6 +110,25 @@ private struct BuffersResult: Encodable {
 private struct TextResult: Encodable {
     let lines: [String]
     let totalLines: Int
+}
+private struct SelectionResult: Encodable {
+    let hasSelection: Bool
+    let text: String
+    let lines: [String]
+    let startLine: Int?
+    let startColumn: Int?
+    let endLine: Int?
+    let endColumn: Int?
+
+    init(_ selection: IPCSelectionInfo) {
+        self.hasSelection = selection.hasSelection
+        self.text = selection.text
+        self.lines = selection.lines
+        self.startLine = selection.startLine
+        self.startColumn = selection.startColumn
+        self.endLine = selection.endLine
+        self.endColumn = selection.endColumn
+    }
 }
 private struct CursorResult: Encodable {
     let line: Int
@@ -186,6 +209,15 @@ final class JSONRPCParser {
                         request: .getText(
                             bufferTarget: params?.bufferTarget ?? params?.bufferId, startLine: params?.startLine,
                             endLine: params?.endLine)))
+            }
+        case "zago.buffer.getSelection":
+            let request = try decoder.decode(JSONRPCRequest<GetSelectionParams>.self, from: data)
+            return requireRegistration(connectionId, id: request.id) { _ in
+                let params = request.params
+                return .success(
+                    .init(
+                        id: request.id,
+                        request: .getSelection(bufferTarget: params?.bufferTarget ?? params?.bufferId)))
             }
         case "zago.buffer.getCursor":
             let request = try decoder.decode(JSONRPCRequest<GetCursorParams>.self, from: data)

@@ -59,7 +59,23 @@ public enum ZagoSkillDefinition {
         }
         ```
 
-        ### 2. Push Dim Gray Ghost Text Overlay (`zago.overlay.showPreview`)
+        ### 2. Read Current Selected Text (`zago.buffer.getSelection`)
+        ```json
+        {
+          "jsonrpc": "2.0",
+          "method": "zago.buffer.getSelection",
+          "params": {
+            "bufferTarget": "active"
+          },
+          "id": 2
+        }
+        ```
+
+        Response includes `hasSelection`, `text`, `lines`, and one-based `startLine`, `startColumn`, `endLine`, `endColumn` fields. When no text is selected, `hasSelection` is `false` and `text` is empty.
+
+        MCP exposes the same capability as `zago_get_selection`.
+
+        ### 3. Push Dim Gray Ghost Text Overlay (`zago.overlay.showPreview`)
         ```json
         {
           "jsonrpc": "2.0",
@@ -90,7 +106,7 @@ public enum ZagoSkillDefinition {
         }
         ```
 
-        ### 3. `insertMode` 4-Quadrant Matrix Options
+        ### 4. `insertMode` 4-Quadrant Matrix Options
         - **`"1d_insert"`**: 1D Stream Insert (shifts text right and subsequent lines downward).
         - **`"1d_overwrite"`**: 1D Stream Overwrite (replaces characters on line without shifting line length).
         - **`"2d_insert"`**: 2D Matrix Insert (shifts text right **ONLY on lines touched by block height**).
@@ -211,7 +227,7 @@ public enum ZagoSkillDefinition {
         ### 7. Editor & Buffer Navigation Commands
 
         - **Cursor Navigation**: `GOTO line col`, `MOVE line col`, `UP n`, `DOWN n`, `LEFT n`, `RIGHT n`
-        - **Selection & Clipboard**: `MARK`, `UNMARK`, `CUT`, `COPY`, `PASTE`
+        - **Selection & Clipboard**: `MARK`, `UNMARK`, `CUT`, `COPY`, `PASTE`; IPC/MCP agents can read selected text with `zago.buffer.getSelection` / `zago_get_selection`.
         - **File & Buffer Actions**: `SAVE`, `WRITE path`, `OPEN path`, `EDIT path`, `BUFFER NEXT`, `BUFFER PREV`, `BUFFER n`
 
         ---
