@@ -10,7 +10,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Search](user/search.md): active search query, repeated next/previous navigation, highlighting, and regex search rules.
 - [Heading navigation & outline](user/heading_navigation.md): document heading parsing, next/previous heading navigation, and outline picker behavior.
 - [Sub line numbers](user/sub_line_numbers.md): wrapped-line numbering behavior.
-- [Note mode](user/note_mode.md): note-oriented editing mode.
+- [Daily journal shortcut](user/daily_journal.md): planned shortcut for opening today's journal; not a separate editor mode.
 - [Directory mode & permissions](user/directory_mode.md): DirectoryBuffer architecture, command filtering matrix, and Editor LOGO execution restrictions.
 - [Configuration](user/configuration.md): `.zagorc`, key bindings, startup Editor LOGO code, command ids, Nano syntax file loading, and embedded code block highlighting.
 

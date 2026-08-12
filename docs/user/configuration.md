@@ -64,9 +64,6 @@ set syntax true
 set mouse true
 set backup true
 set backupdir ~/.zagorc-backups
-set note-folder gdrive/Notes
-set launch-to-note on
-set note-filename-format YYYY_MM_DD.md
 ```
 
 Options configured in `.zagorc` apply when the editor starts.
@@ -227,7 +224,6 @@ Examples:
 | `close` | Dispatches `file.exit` |
 | `write path` | Saves to `path` |
 | `open path` / `edit path` | Opens `path` in a new buffer |
-| `note` / `today` | Opens today's note buffer (Note Mode) |
 | `buffer next` | Dispatches `buffer.next` |
 | `buffer prev` / `buffer previous` | Dispatches `buffer.prev` |
 | `buffer N` | Switches to 1-based buffer index `N` |
