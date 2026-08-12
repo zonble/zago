@@ -36,6 +36,15 @@ extension TableModeController {
         {
             enterTableMode(with: cell)
         } else {
+            // Do not offer to create a new table while the cursor is on an
+            // existing box border.
+            let line = editor.buffer.lines[editor.buffer.lineIndex]
+            let chars = Array(line)
+            if editor.buffer.columnIndex >= 0, editor.buffer.columnIndex < chars.count,
+                BorderCharacterSet.isBorderOrJunction(chars[editor.buffer.columnIndex])
+            {
+                return
+            }
             editor.promptTableDimensions()
         }
     }

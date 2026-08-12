@@ -59,6 +59,31 @@ import Testing
     #expect(editor.buffer.lines.count >= 4)
 }
 
+@Test func testTableModeDoesNotActivateOnBoxFrame() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌──────────────────┐",
+        "│                  │",
+        "│                  │",
+        "│                  │",
+        "└──────────────────┘",
+    ]
+    editor.buffer.lineIndex = 4
+    editor.buffer.columnIndex = 16
+
+    editor.processKey(.f7)
+
+    #expect(editor.isTableModeActive == false)
+    #expect(editor.currentTableCell == nil)
+    let promptIsNone: Bool
+    if case .none = editor.currentPromptMode {
+        promptIsNone = true
+    } else {
+        promptIsNone = false
+    }
+    #expect(promptIsNone)
+}
+
 @Test func testTableModeCellTypingAndBackspaceKeepBordersAligned() throws {
     let editor = Editor()
     editor.buffer.lines = [

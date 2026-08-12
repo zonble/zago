@@ -62,6 +62,18 @@ public final class TableCellDetector: Sendable {
         }
         guard let rightCol = maxCol, rightCol > leftCol + 1 else { return nil }
 
+        // A cursor on a vertical border is not inside the cell it appears to
+        // enclose. Reject it before scanning for the horizontal bounds.
+        if cursorCol == leftCol || cursorCol == rightCol {
+            return nil
+        }
+
+        // The current row can itself be the top or bottom frame. It must not
+        // be treated as a cell just because the scan below finds another row.
+        if isHorizontalBorderLine(chars, leftCol: leftCol, rightCol: rightCol) {
+            return nil
+        }
+
         // Scan Up for horizontal border line
         var minLine: Int? = nil
         var lUp = cursorLine - 1
@@ -107,6 +119,10 @@ public final class TableCellDetector: Sendable {
             maxLine = lines.count
         }
         guard let bottomLine = maxLine, bottomLine > topLine + 1 else { return nil }
+
+        // The border rows themselves are drawing structure, not editable cell
+        // content. This also handles a cursor rendered over a border glyph.
+        guard cursorLine > topLine && cursorLine < bottomLine else { return nil }
 
         let detectedStyle = detectStyle(lines: lines, topLine: topLine, leftCol: leftCol)
         return TableCell(minLine: topLine, maxLine: bottomLine, minCol: leftCol, maxCol: rightCol, style: detectedStyle)
