@@ -1,4 +1,4 @@
-# `zago`: A Lean Terminal Forge for Markdown Writers
+# `zago`: An Editor for the Many Natures of Text
 
 [繁體中文 README](README.zh_TW.md) | [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
 
@@ -11,19 +11,30 @@
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 
-In the AI-agent era, Markdown is becoming the control surface for software
-work: instructions, specs, review notes, implementation plans, and context that
-guide agent CLIs.
+AI-generated documents rarely have one fixed nature. A single piece of text may
+contain prose, code, a table, a diagram, an instruction, and a suggestion that
+still needs to be checked. Human beings then have to read it, reorganize it,
+draw in it, execute parts of it, and decide what it should become.
 
-But Markdown editing still breaks the terminal flow. GUI editors pull you out
-of the shell. Terminal editors usually lack table and diagram tools. A quick
-plain-text diagram often means opening a browser-based ASCII diagrammer or a
-dedicated diagram drawing app.
+Most tools respond by sending each nature of text to a different application.
+`zago` takes the opposite approach: keep the text in one visible space, and let
+the editor expose a different property of that text when the work requires it.
 
-`zago` is built for that shift: a lean terminal Markdown forge that keeps prose
-editing, pipe tables, local document links, headings, text diagrams, CJK-aware
-text tools, and small automation macros in the same plain-text flow, whether
-the file is on your laptop or on a server over SSH.
+Text Mode treats it as a stream. Table Mode treats it as structure. Canvas Mode
+treats it as a two-dimensional space. The buffer remains ordinary, readable text
+throughout.
+
+`zago` is a terminal editor for this kind of work: writing, structuring,
+drawing, transforming, and collaborating with AI around the text currently in
+focus. The human chooses the focus; AI can inspect that text and propose an
+operation without taking over the document.
+
+## Why zago?
+
+`zago` is for people who do not want to split a mixed document between a text
+editor, a table tool, a diagram app, and an AI chat window just to make one piece
+of work understandable. It keeps the surrounding context present while the
+editing model changes.
 
 ## Who is zago for?
 
@@ -38,18 +49,19 @@ the file is on your laptop or on a server over SSH.
 - **CJK and emoji perfectionists** who need terminal display width to be correct
   when boxes, status-icon tables, rulers, and wrapped prose are involved.
 - **Keyboard-first document builders** who like nano-style editing, but want a
-  sharper toolbox for Markdown-era writing.
+  sharper toolbox for mixed plain-text work.
 
 ![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
 
-- [`zago`: A Lean Terminal Forge for Markdown Writers](#zago-a-lean-terminal-forge-for-markdown-writers)
+- [`zago`: An Editor for the Many Natures of Text](#zago-an-editor-for-the-many-natures-of-text)
+  - [Why zago?](#why-zago)
   - [Who is zago for?](#who-is-zago-for)
   - [Features](#features)
   - [Requirements](#requirements)
   - [Quick Start](#quick-start)
     - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
     - [Install with Mint](#install-with-mint)
-    - [Install on Linux (x86_64 / arm64)](#install-on-linux-x86_64--arm64)
+    - [Install on Linux (x86\_64 / arm64)](#install-on-linux-x86_64--arm64)
     - [Install on Arch Linux](#install-on-arch-linux)
     - [Install on Windows (PowerShell)](#install-on-windows-powershell)
   - [Build](#build)
