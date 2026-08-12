@@ -44,6 +44,10 @@ public struct EnglishStrings {
         "help.uncut_block": "UnCut Block",
         "help.line": "Line",
         "help.arrow": "Arrow",
+        "help.ai_accept": "Accept AI",
+        "help.ai_reject": "Reject AI",
+        "help.ai_next_proposal": "Next Prop",
+        "help.ai_previous_proposal": "Prev Prop",
         "chrome.end_of_file": "End of File",
 
         // Prompts

@@ -560,6 +560,15 @@ private func makeEditor(
 
         #expect(l10nEN["ai.proposal.queue_empty"] == "[AI Proposal] Queue is empty")
         #expect(l10nZH["ai.proposal.queue_empty"] == "[AI 提案] 佇列為空")
+
+        #expect(l10nEN["help.ai_accept"] == "Accept AI")
+        #expect(l10nZH["help.ai_accept"] == "接受 AI")
+        #expect(l10nEN["help.ai_reject"] == "Reject AI")
+        #expect(l10nZH["help.ai_reject"] == "拒絕 AI")
+        #expect(l10nEN["help.ai_next_proposal"] == "Next Prop")
+        #expect(l10nZH["help.ai_next_proposal"] == "下個提案")
+        #expect(l10nEN["help.ai_previous_proposal"] == "Prev Prop")
+        #expect(l10nZH["help.ai_previous_proposal"] == "上個提案")
     }
 
     @Test func testLogoDelegateActionsMutateEditorState() {
