@@ -39,26 +39,29 @@ extension Editor {
                 "  \($0) = \(logoEngine.variables[$0] ?? "")"
             }
             var pausedState = [
-                "Paused at \(frame.procedureName ?? "<top level>")",
-                "Source: \(source.filePath ?? source.id):\(debuggerController.activeSourceStartLine + relativeLine + 1)",
-                "Token: \(frame.token?.text ?? "")",
-                "Call stack:",
+                String(format: l10n["debug.paused_at"], frame.procedureName ?? "<top level>"),
+                String(
+                    format: l10n["debug.source"], source.filePath ?? source.id,
+                    debuggerController.activeSourceStartLine + relativeLine + 1),
+                String(format: l10n["debug.token"], frame.token?.text ?? ""),
+                l10n["debug.call_stack"],
             ]
             pausedState.append(contentsOf: callStack)
-            pausedState.append(contentsOf: ["", "Locals:"])
+            pausedState.append(contentsOf: ["", l10n["debug.locals"]])
             pausedState.append(contentsOf: locals)
             if let evaluation = debuggerController.lastEvaluation {
-                pausedState.append(contentsOf: ["", "Evaluation: \(evaluation)"])
+                pausedState.append(contentsOf: ["", String(format: l10n["debug.evaluation"], evaluation)])
             }
             pausedState.append("")
             state = pausedState
         } else {
-            state = ["State: \(String(describing: logoEngine.executionState))", ""]
+            state = [String(format: l10n["debug.state"], String(describing: logoEngine.executionState)), ""]
         }
         debugBuffer.lines =
-            ["LOGO Debugger", ""] + state + ["Breakpoints — \(source.filePath ?? source.id)"]
-            + (lines.isEmpty ? ["  (none)"] : lines.map { "  ● line \($0 + 1)" })
-            + ["", "Commands: :logo continue | :logo step | :logo abort | :logo eval"]
+            [l10n["debug.logo_title"], ""] + state
+            + [String(format: l10n["debug.breakpoints"], source.filePath ?? source.id)]
+            + (lines.isEmpty ? [l10n["debug.none"]] : lines.map { String(format: l10n["debug.line"], $0 + 1) })
+            + ["", l10n["debug.commands"]]
         debugBuffer.lineIndex = 0
         debugBuffer.columnIndex = 0
     }
@@ -75,24 +78,24 @@ extension Editor {
         if case .paused = logoEngine.executionState {
             showLogoDebuggerBuffer()
         } else {
-            setStatusMessage("[LOGO Debug] Execution completed")
+            setStatusMessage(l10n["status.logo_debug_completed"])
         }
     }
 
     public func abortLogoDebugExecution() {
         logoEngine.abortExecution()
-        setStatusMessage("[LOGO Debug] Execution aborted")
+        setStatusMessage(l10n["status.logo_debug_aborted"])
         showLogoDebuggerBuffer()
     }
 
     public func evaluateLogoDebugExpression(_ expression: String) {
         guard !expression.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let result = logoEngine.evaluatePausedExpression(expression) else {
-            setStatusMessage("[LOGO Debug] Execution is not paused")
+            setStatusMessage(l10n["status.logo_debug_not_paused"])
             return
         }
         debuggerController.lastEvaluation = result
         showLogoDebuggerBuffer()
-        setStatusMessage("[LOGO Debug] \(result)")
+        setStatusMessage(String(format: l10n["status.logo_debug_result"], result))
     }
 }

@@ -368,7 +368,7 @@ public struct JustifyCommand: Command {
             editor.buffer.lines = result.updatedLines
             editor.buffer.lineIndex = result.startLineIndex
             editor.buffer.columnIndex = result.newCursorColumn
-            editor.setStatusMessage("[ Formatted Table ]")
+            editor.setStatusMessage(editor.l10n["status.formatted_table"])
             return
         }
         let (_, cols) = editor.terminal.getWindowSize()

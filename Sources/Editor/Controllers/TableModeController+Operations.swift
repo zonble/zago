@@ -11,7 +11,7 @@ extension TableModeController {
     public func toggleTableMode() {
         guard let editor else { return }
         if !editor.isTableModeActive && editor.buffer.isReadOnly {
-            editor.setStatusMessage("[ Buffer is read-only ]")
+            editor.setStatusMessage(editor.l10n["status.buffer_readonly_bracketed"])
             return
         }
         if editor.isTableModeActive {
@@ -26,7 +26,7 @@ extension TableModeController {
             editor.buffer.lineIndex >= 0 && editor.buffer.lineIndex < editor.buffer.lines.count,
             editor.buffer.lines[editor.buffer.lineIndex].trimmingCharacters(in: CharacterSet.whitespaces).hasPrefix("|")
         {
-            editor.setStatusMessage("[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]")
+            editor.setStatusMessage(editor.l10n["status.markdown_table_text_mode"])
             return
         }
 

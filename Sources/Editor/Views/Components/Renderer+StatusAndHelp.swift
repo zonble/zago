@@ -425,11 +425,12 @@ extension Renderer {
             promptPrefix = editor.l10n["prompt.goto_line"]
             isConfirmation = false
         case .logoReadWord(let prompt):
-            let p = prompt.isEmpty ? "Input: " : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
+            let p = prompt.isEmpty ? editor.l10n["prompt.logo_input"] : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
             promptPrefix = p
             isConfirmation = false
         case .logoReadChar(let prompt):
-            let p = prompt.isEmpty ? "Input [Key]: " : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
+            let p =
+                prompt.isEmpty ? editor.l10n["prompt.logo_read_key"] : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
             promptPrefix = p
             isConfirmation = false
         case .none:

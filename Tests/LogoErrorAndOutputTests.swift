@@ -55,11 +55,11 @@ import Testing
 
         editor.tableModeController.toggleTableMode()
         #expect(editor.isTableModeActive == false)
-        #expect(editor.statusMessage == "[ Buffer is read-only ]")
+        #expect(editor.statusMessage == editor.l10n["status.buffer_readonly_bracketed"])
 
         editor.switchToCanvasMode()
         #expect(editor.isCanvasModeActive == false)
-        #expect(editor.statusMessage == "[ Buffer is read-only ]")
+        #expect(editor.statusMessage == editor.l10n["status.buffer_readonly_bracketed"])
 
         editor.toggleLogoOutputBuffer()
         #expect(editor.findLogoOutputBufferIndex() == nil)
