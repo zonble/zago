@@ -165,6 +165,13 @@ public final class MenuBar {
                         },
                         isChecked: { $0.defaultBorderStyle == .single }),
                     MenuItem(
+                        titleKey: "menu.borders.heavy", hotkeyChar: "h",
+                        action: { editor in
+                            editor.defaultBorderStyle = .heavy
+                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.heavy.rawValue))
+                        },
+                        isChecked: { $0.defaultBorderStyle == .heavy }),
+                    MenuItem(
                         titleKey: "menu.borders.double", hotkeyChar: "d",
                         action: { editor in
                             editor.defaultBorderStyle = .double

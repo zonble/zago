@@ -568,9 +568,9 @@ public struct EnglishStrings {
         "menu.run.canvas": "LOGO Canvas\tM+C",
         "menu.run.clear": "Clear Canvas & Output",
 
-        "menu.shapes.box": "Box",
-        "menu.shapes.draw_box": "Draw Box",
-        "menu.shapes.line": "Line",
+        "menu.shapes.box": "Box (Insert)",
+        "menu.shapes.draw_box": "Box (Replace)",
+        "menu.shapes.line": "Horizontal Line",
         "menu.shapes.vline": "Vertical Line",
         "menu.shapes.table": "Table",
         "menu.shapes.fill": "Fill Region/Cell",
@@ -697,6 +697,7 @@ public struct EnglishStrings {
         "symbol.key.backspace": "Backspace key",
 
         "menu.borders.single": "Single         ┌──┐",
+        "menu.borders.heavy": "Heavy          ┏━━┓",
         "menu.borders.double": "Double         ╔══╗",
         "menu.borders.round": "Round          ╭──╮",
         "menu.borders.double_round": "Double Round   ╭══╮",

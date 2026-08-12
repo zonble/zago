@@ -32,7 +32,9 @@ extension LogoEngine {
                     hasExplicitLength = true
                 },
                 setStyle: { style in
-                    if style == "double" {
+                    if style == "heavy" {
+                        styleChar = "━"
+                    } else if style == "double" {
                         styleChar = "═"
                     } else if style == "ascii" {
                         styleChar = "-"
@@ -92,7 +94,9 @@ extension LogoEngine {
                     hasExplicitHeight = true
                 },
                 setStyle: { style in
-                    if style == "double" {
+                    if style == "heavy" {
+                        styleChar = "┃"
+                    } else if style == "double" {
                         styleChar = "║"
                     } else if style == "ascii" {
                         styleChar = "|"

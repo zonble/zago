@@ -459,6 +459,15 @@ import TextMetrics
 
     logoEngine3.execute("TABLE NEXTSTYLE")
     #expect(logoEngine3.hasSetStatusMessage)
+
+    let heavyEditor = Editor()
+    let heavyEngine = LogoEngine(delegate: heavyEditor)
+    heavyEngine.execute("TABLE BORDER heavy TABLE 1 1 3")
+    #expect(heavyEditor.buffer.lines == [
+        "┏━━━┓",
+        "┃   ┃",
+        "┗━━━┛",
+    ])
 }
 
 @Test func testLogoEngineTemplatePrimitives() throws {

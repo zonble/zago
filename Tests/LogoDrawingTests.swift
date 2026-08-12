@@ -38,6 +38,16 @@ import TextMetrics
     #expect(editor.buffer.lines[2] == "╚═╩══╝")
 }
 
+@Test func testHeavyBoxAndLineSmartJunctionFusion() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("BOX 6 3 \"heavy\" GOTO 1 3 VLINE 3 \"heavy\"")
+    #expect(editor.buffer.lines[0] == "┏━┳━━┓")
+    #expect(editor.buffer.lines[1] == "┃ ┃  ┃")
+    #expect(editor.buffer.lines[2] == "┗━┻━━┛")
+}
+
 @Test func testTurtleVariableLoopCombo() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

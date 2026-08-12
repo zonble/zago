@@ -37,17 +37,17 @@ public enum CanvasDrawDirection: Sendable {
 public func canvasMask(for character: Character?, style _: BorderStyle = .single) -> UInt8 {
     guard let character else { return 0 }
     return switch character {
-    case "─", "═", "-": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
-    case "│", "║", "|": CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
-    case "┌", "╔", "╭": CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-    case "┐", "╗", "╮": CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
-    case "└", "╚", "╰": CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
-    case "┘", "╝", "╯": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask
-    case "├", "╠": CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-    case "┤", "╣": CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
-    case "┬", "╦": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
-    case "┴", "╩": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
-    case "┼", "╬", "+": 15
+    case "─", "═", "━", "-": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+    case "│", "║", "┃", "|": CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
+    case "┌", "╔", "╭", "┏": CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┐", "╗", "╮", "┓": CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
+    case "└", "╚", "╰", "┗": CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
+    case "┘", "╝", "╯", "┛": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask
+    case "├", "╠", "┣": CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┤", "╣", "┫": CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask | CanvasDrawDirection.left.mask
+    case "┬", "╦", "┳": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
+    case "┴", "╩", "┻": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+    case "┼", "╬", "╋", "+": 15
     case "→", ">", "▶", "►", "▷", "▸": CanvasDrawDirection.left.mask
     case "←", "<", "◀", "◄", "◁", "◂": CanvasDrawDirection.right.mask
     case "↑", "^", "▲", "△", "▴": CanvasDrawDirection.down.mask
@@ -108,6 +108,7 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character 
 public func lineStyle(for character: Character) -> BorderStyle? {
     switch character {
     case "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬": return .double
+    case "┃", "━", "┏", "┓", "┗", "┛", "┣", "┫", "┳", "┻", "╋": return .heavy
     case "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼", "╵", "╶", "╷", "╴": return .single
     default: return nil
     }
@@ -121,7 +122,11 @@ public func fuseLineCharacter(
 ) -> Character {
     let existingMask = existingMask ?? canvasMask(for: existing)
     guard existingMask != 0 else { return defaultNewCharacter }
-    let style: BorderStyle = lineStyle(for: existing) == .double || lineStyle(for: defaultNewCharacter) == .double ? .double : .single
+    let existingStyle = lineStyle(for: existing)
+    let newStyle = lineStyle(for: defaultNewCharacter)
+    let style: BorderStyle = existingStyle == .double || newStyle == .double
+        ? .double
+        : (existingStyle == .heavy || newStyle == .heavy ? .heavy : .single)
     return lineCharacter(forMask: existingMask | addingMask, style: style)
 }
 

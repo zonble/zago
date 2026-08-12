@@ -46,7 +46,7 @@ public struct CycleBorderStyleCommand: Command {
     public let id: CommandID = .borderStyle
     public let name = "Cycle Border Style"
     public let description =
-        "Switch default border style (Single -> Double -> Round -> Double Round -> ASCII -> Markdown)"
+        "Switch default border style (Single -> Heavy -> Double -> Round -> Double Round -> ASCII)"
     public let keys: [Key] = [.alt("s"), .alt("S")]
     public let commandBarAliases = ["border", "border-style"]
 
@@ -55,6 +55,9 @@ public struct CycleBorderStyleCommand: Command {
     public func execute(on editor: Editor) {
         switch editor.defaultBorderStyle {
         case .single:
+            editor.defaultBorderStyle = .heavy
+            editor.setStatusMessage(editor.l10n.defaultBorder("Heavy Unicode (┏━┃)"))
+        case .heavy:
             editor.defaultBorderStyle = .double
             editor.setStatusMessage(editor.l10n.defaultBorder("Double Unicode (╔═║)"))
         case .double:

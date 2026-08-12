@@ -981,7 +981,7 @@ struct FormatAndLayoutTests {
         let cleanUnchecked = lines[2].replacingOccurrences(
             of: "\u{1B}\\[[0-9;]*m", with: "", options: .regularExpression)
         #expect(cleanChecked.contains("│ ✓ Single"))
-        #expect(cleanUnchecked.contains("│   Double"))
+        #expect(cleanUnchecked.contains("│   Heavy"))
 
         editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.shapes" })!
         (_, _, lines) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
