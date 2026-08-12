@@ -46,6 +46,21 @@ import Testing
     #expect(cell?.style == .single)
 }
 
+@Test func testTableCellDetectorRejectsCursorOnFrame() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌──────────────────┐",
+        "│                  │",
+        "│                  │",
+        "│                  │",
+        "└──────────────────┘",
+    ]
+
+    #expect(detector.detectCell(in: lines, line: 4, col: 16) == nil)
+    #expect(detector.detectCell(in: lines, line: 1, col: 0) == nil)
+    #expect(detector.detectCell(in: lines, line: 2, col: 8) != nil)
+}
+
 @Test func testTableCellDetectorMarkdownTable() throws {
     let detector = TableCellDetector()
     let lines = [
