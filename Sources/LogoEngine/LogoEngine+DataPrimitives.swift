@@ -411,6 +411,9 @@ extension LogoEngine {
                 return LogoValue.array(result).description
 
             case .string(let s):
+                if delimStr.isEmpty {
+                    return LogoValue.list(s.map { LogoValue.string(String($0)) }).description
+                }
                 let parts = s.components(separatedBy: delimStr)
                 let nonSpaceParts = parts.filter { !$0.isEmpty }
                 let listItems = nonSpaceParts.map { LogoValue.string($0) }
