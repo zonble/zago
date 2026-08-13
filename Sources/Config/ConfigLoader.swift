@@ -245,9 +245,40 @@ public final class ConfigLoader {
             set border single
             set arrow solid
 
+            # Interface Language
+            # set lang en
+
+            # Spell Checker Language
+            # set spell-language en_US
+
             # Custom Key Bindings
-            # bind <key> <command_or_macro>
-            # bind ^T logo:fd 10
+            # bind <key> <command_id_or_macro>
+            # bind ^T search.find
+            # bind alt-t table.toggle
+            # bind alt-h logo:MOVE HOME TYPE "# " MOVE END
+            # unbind ^K
+
+            # LOGO Prelude & Named Scripts
+            # Prelude code runs once on the editor's persistent LOGO engine.
+            # Named scripts can be triggered with bind <key> logo:<script-name>.
+            #
+            # logo-prelude
+            #   MAKE "boxWidth 30
+            #   TO FILLBOX :text
+            #     BOX :boxWidth 4
+            #     MOVE LEFT (:boxWidth - 1) MOVE UP 2
+            #     FILL :text
+            #   END
+            # endlogo
+            #
+            # logo-script insert-title
+            #   BOX 40 3 ROUND
+            #   MOVE LEFT 38 MOVE UP 1
+            #   FILL "-
+            # endlogo
+            #
+            # bind alt-b logo:FILLBOX "hi
+            # bind alt-t logo:insert-title
             """
         if !provider.fileExists(atPath: path) {
             try provider.writeString(content, toPath: path)

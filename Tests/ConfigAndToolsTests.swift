@@ -646,6 +646,10 @@ struct ConfigAndToolsTests {
         #expect(content.contains("set trim-trailing-whitespace off"))
         #expect(content.contains("set border single"))
         #expect(content.contains("set arrow solid"))
+        #expect(content.contains("# bind ^T search.find"))
+        #expect(content.contains("# logo-prelude"))
+        #expect(content.contains("# logo-script insert-title"))
+        #expect(content.contains("# bind alt-t logo:insert-title"))
     }
 
     @Test func testConfigLoaderAndKeyParser() throws {
