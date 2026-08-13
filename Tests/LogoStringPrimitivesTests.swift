@@ -151,6 +151,8 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
 
     // 1. split & join
     #expect(eval("split \", \"apple,banana,orange", engine: engine) == "[apple banana orange]")
+    #expect(eval("split \"\" \"abc", engine: engine) == "[a b c]")
+    #expect(eval("split \"\" \"", engine: engine) == "[]")
     #expect(eval("implode \", \" [apple banana]", engine: engine) == "apple, banana")
 
     // 2. lines & unlines
