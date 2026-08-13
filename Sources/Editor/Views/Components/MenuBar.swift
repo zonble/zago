@@ -311,7 +311,8 @@ public final class MenuBar {
                             editor.displayConfig.showLineNumbers.toggle()
                             let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
                             editor.setStatusMessage(editor.l10n.lineNumbersState(state))
-                        }),
+                        },
+                        isChecked: { $0.displayConfig.showLineNumbers }),
                     MenuItem(
                         titleKey: "menu.tools.sub_line_numbers", hotkeyChar: "u",
                         action: { editor in
@@ -322,31 +323,36 @@ public final class MenuBar {
                         titleKey: "menu.tools.ruler", hotkeyChar: "r",
                         action: { editor in
                             editor.displayConfig.showRuler.toggle()
-                        }),
+                        },
+                        isChecked: { $0.displayConfig.showRuler }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(80)
                             editor.setStatusMessage(editor.l10n.wrapColumnSet(80))
-                        }),
+                        },
+                        isChecked: { $0.layoutEngine.wrapColumn == 80 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(60)
                             editor.setStatusMessage(editor.l10n.wrapColumnSet(60))
-                        }),
+                        },
+                        isChecked: { $0.layoutEngine.wrapColumn == 60 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(40)
                             editor.setStatusMessage(editor.l10n.wrapColumnSet(40))
-                        }),
+                        },
+                        isChecked: { $0.layoutEngine.wrapColumn == 40 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(nil)
                             editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
-                        }),
+                        },
+                        isChecked: { $0.layoutEngine.wrapColumn == nil }),
                 ]),
         ]
 

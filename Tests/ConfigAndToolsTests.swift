@@ -150,6 +150,7 @@ struct ConfigAndToolsTests {
 
         let lineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.line_numbers" })
         let subLineNumbersItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.sub_line_numbers" })
+        let rulerItem = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.ruler" })
         let wrap80Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_80" })
         let wrap60Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_60" })
         let wrap40Item = toolsCategory?.items.first(where: { $0.titleKey == "menu.tools.wrap_40" })
@@ -158,6 +159,7 @@ struct ConfigAndToolsTests {
 
         #expect(lineNumbersItem != nil)
         #expect(subLineNumbersItem != nil)
+        #expect(rulerItem != nil)
         #expect(wrap80Item != nil && wrap60Item != nil && wrap40Item != nil && wrapResetItem != nil)
 
         let editCategory = menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
@@ -212,12 +214,15 @@ struct ConfigAndToolsTests {
         #expect(singleItem?.isChecked?(editor) == false)
         #expect(doubleItem?.isChecked?(editor) == true)
 
+        #expect(lineNumbersItem?.isChecked?(editor) == true)
         lineNumbersItem?.action?(editor)
         #expect(editor.displayConfig.showLineNumbers == false)
+        #expect(lineNumbersItem?.isChecked?(editor) == false)
         #expect(editor.statusMessage == "[ Line Numbers hidden ]")
 
         lineNumbersItem?.action?(editor)
         #expect(editor.displayConfig.showLineNumbers == true)
+        #expect(lineNumbersItem?.isChecked?(editor) == true)
         #expect(editor.statusMessage == "[ Line Numbers shown ]")
 
         #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -226,17 +231,38 @@ struct ConfigAndToolsTests {
         #expect(editor.displayConfig.showSubLineNumbers == true)
         #expect(subLineNumbersItem?.isChecked?(editor) == true)
 
+        #expect(editor.displayConfig.showRuler == false)
+        #expect(rulerItem?.isChecked?(editor) == false)
+        rulerItem?.action?(editor)
+        #expect(editor.displayConfig.showRuler == true)
+        #expect(rulerItem?.isChecked?(editor) == true)
+        rulerItem?.action?(editor)
+        #expect(editor.displayConfig.showRuler == false)
+        #expect(rulerItem?.isChecked?(editor) == false)
+
+        #expect(wrapResetItem?.isChecked?(editor) == true)
+        #expect(wrap80Item?.isChecked?(editor) == false)
         wrap80Item?.action?(editor)
         #expect(editor.layoutEngine.wrapColumn == 80)
+        #expect(wrap80Item?.isChecked?(editor) == true)
+        #expect(wrap60Item?.isChecked?(editor) == false)
+        #expect(wrap40Item?.isChecked?(editor) == false)
+        #expect(wrapResetItem?.isChecked?(editor) == false)
 
         wrap60Item?.action?(editor)
         #expect(editor.layoutEngine.wrapColumn == 60)
+        #expect(wrap80Item?.isChecked?(editor) == false)
+        #expect(wrap60Item?.isChecked?(editor) == true)
 
         wrap40Item?.action?(editor)
         #expect(editor.layoutEngine.wrapColumn == 40)
+        #expect(wrap60Item?.isChecked?(editor) == false)
+        #expect(wrap40Item?.isChecked?(editor) == true)
 
         wrapResetItem?.action?(editor)
         #expect(editor.layoutEngine.wrapColumn == nil)
+        #expect(wrap40Item?.isChecked?(editor) == false)
+        #expect(wrapResetItem?.isChecked?(editor) == true)
 
         editor.layoutEngine.setWrapColumn(4)
         #expect(editor.layoutEngine.wrapColumn == 10)
