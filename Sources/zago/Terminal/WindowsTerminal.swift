@@ -31,6 +31,8 @@ import Foundation
         private var lastReadTimedOut = false
         private var pendingResizeEvent = false
         private var pendingConsoleUTF16Units: [UInt16] = []
+        private let wakeupLock = NSLock()
+        private var wakeupRequested = false
         private(set) public var rawModeEnabled = false
 
         public init() {
@@ -39,6 +41,35 @@ import Foundation
 
         deinit {
             disableRawMode()
+        }
+
+        public func wakeup() {
+            wakeupLock.lock()
+            wakeupRequested = true
+            wakeupLock.unlock()
+
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            guard hInput != INVALID_HANDLE_VALUE, hInput != nil else { return }
+
+            var record = INPUT_RECORD()
+            record.EventType = WORD(KEY_EVENT)
+            record.Event.KeyEvent.bKeyDown = true
+            record.Event.KeyEvent.wRepeatCount = 1
+            record.Event.KeyEvent.wVirtualKeyCode = 0
+            record.Event.KeyEvent.wVirtualScanCode = 0
+            record.Event.KeyEvent.uChar.UnicodeChar = 0
+            record.Event.KeyEvent.dwControlKeyState = 0
+
+            var written: DWORD = 0
+            _ = WriteConsoleInputW(hInput, &record, 1, &written)
+        }
+
+        private func consumeWakeupRequest() -> Bool {
+            wakeupLock.lock()
+            defer { wakeupLock.unlock() }
+            guard wakeupRequested else { return false }
+            wakeupRequested = false
+            return true
         }
 
         /// Enables terminal raw mode on Windows.
@@ -241,6 +272,9 @@ import Foundation
                 }
 
                 let unit = keyEvent.uChar.UnicodeChar
+                if unit == 0, consumeWakeupRequest() {
+                    return nil
+                }
                 guard unit != 0 else {
                     continue
                 }

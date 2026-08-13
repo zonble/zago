@@ -38,6 +38,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Terminal rendering performance](architecture/rendering_performance.md): double buffering, line diffing, layout caching, and rendering performance.
 - [Cross-platform architecture](architecture/cross_platform.md): terminal input, pipe handling, file I/O locks, encoding gotchas, and display width calculations.
 - [Windows console I/O & encoding](architecture/windows_console.md): Windows Console Subsystem, code page handling, and Win32 `ReadConsoleW` API integration.
+- [Editor wakeup and external request dispatch](architecture/editor_wakeup.md): how IPC worker threads wake the editor loop without mutating editor state directly.
 
 ## Reviews
 
