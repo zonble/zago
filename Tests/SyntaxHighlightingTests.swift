@@ -61,7 +61,21 @@ import Testing
 
     let zagorcLang = highlighter.detectLanguage(for: ".zagorc")
     #expect(zagorcLang != nil)
-    #expect(zagorcLang?.name == "LOGO")
+    #expect(zagorcLang?.name == "Zagorc")
+
+    #expect(highlighter.detectLanguage(for: "script.serc") == nil)
+
+    if let zagorcLang {
+        let directiveHighlighted = highlighter.highlight(line: "set wrap 80", syntax: zagorcLang)
+        #expect(directiveHighlighted.contains("\u{1B}[1;36mset"))
+        #expect(directiveHighlighted.contains("\u{1B}[94mwrap"))
+        #expect(directiveHighlighted.contains("\u{1B}[33m80"))
+
+        let bindingHighlighted = highlighter.highlight(line: "bind ^T logo:fd 10", syntax: zagorcLang)
+        #expect(bindingHighlighted.contains("\u{1B}[1;36mbind"))
+        #expect(bindingHighlighted.contains("\u{1B}[1;36mfd"))
+        #expect(bindingHighlighted.contains("\u{1B}[33m10"))
+    }
 
     if let lang = logoLang {
         let highlighted = highlighter.highlight(

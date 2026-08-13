@@ -1050,6 +1050,8 @@ struct ConfigAndToolsTests {
             return
         }
 
+        #expect(syntax.name == "Zagorc")
+
         let commentTokens = highlighter.tokenTypes(for: "# set wrap 80", syntax: syntax)
         #expect(commentTokens.allSatisfy { $0 == .comment })
 

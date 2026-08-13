@@ -3,10 +3,10 @@ import LogoEngine
 
 public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let name = "LOGO"
-    public let fileExtensions = ["logo", "lg", ".zagorc", ".serc"]
+    public let fileExtensions = ["logo", "lg"]
     public var commentPrefix: String { "; " }
 
-    private static let keywordPattern: String = {
+    static let keywordPattern: String = {
         let lineSubkeywords = [
             "ARROW", "RIGHTARROW", "DOWNARROW",
             "BACKARROW", "LEFTARROW", "UPARROW",
