@@ -643,6 +643,7 @@ struct ConfigAndToolsTests {
         #expect(content.contains("set linenumbers on"))
         #expect(content.contains("set sublinenumbers off"))
         #expect(content.contains("set tab 4"))
+        #expect(content.contains("set autoreload on"))
         #expect(content.contains("set trim-trailing-whitespace off"))
         #expect(content.contains("set border single"))
         #expect(content.contains("set arrow solid"))
@@ -650,6 +651,10 @@ struct ConfigAndToolsTests {
         #expect(content.contains("# logo-prelude"))
         #expect(content.contains("# logo-script insert-title"))
         #expect(content.contains("# bind alt-t logo:insert-title"))
+
+        var config = EditorConfig()
+        ConfigLoader(provider: provider).parseConfigFile(at: generatedPath, into: &config)
+        #expect(config.syntaxErrorCount == 0)
     }
 
     @Test func testConfigLoaderAndKeyParser() throws {
@@ -1400,5 +1405,22 @@ struct ConfigAndToolsTests {
         #expect(sercConfig.loadedFilePath == localSerc)
         #expect(sercConfig.wrapColumn == 55)
         #expect(sercConfig.defaultBorderStyle == .round)
+    }
+
+    @Test func testConfigLoaderDoesNotParseSameHomeAndCurrentZagorcTwice() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set wrap 72
+                set invalid-setting on
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.wrapColumn == 72)
+        #expect(config.syntaxErrorCount == 1)
     }
 }
