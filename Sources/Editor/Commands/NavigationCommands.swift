@@ -162,6 +162,23 @@ public struct MoveEndCommand: Command {
     }
 }
 
+public struct GoToEndOfFileCommand: Command {
+    public let id: CommandID = .cursorGotoEOF
+    public let name = "Go To End of File"
+    public let description = "Move to the end of the buffer"
+    public let commandBarAliases = ["eof", "end-of-file", ":eof", ":end-of-file"]
+
+    public init() {}
+
+    public func execute(on editor: Editor) {
+        guard !editor.buffer.lines.isEmpty else { return }
+        editor.clearActiveMark()
+        editor.buffer.lineIndex = editor.buffer.lines.count - 1
+        editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
+        editor.buffer.clampCursor()
+    }
+}
+
 public struct MovePgdnCommand: Command {
     public let id: CommandID = .movePgdn
     public let name = "Next Page"

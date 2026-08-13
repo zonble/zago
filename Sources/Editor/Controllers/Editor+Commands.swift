@@ -51,6 +51,7 @@ extension Editor {
         commandRegistry.register(PreviousHeadingCommand())
         commandRegistry.register(DocumentOutlineCommand())
         commandRegistry.register(GotoLineCommand())
+        commandRegistry.register(GoToEndOfFileCommand())
         commandRegistry.register(RefreshScreenCommand())
         commandRegistry.register(ShowCursorPosCommand())
 

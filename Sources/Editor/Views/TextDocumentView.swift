@@ -31,10 +31,10 @@ public final class TextDocumentView {
             case .arrowUp, .char("k"), .char("K"):
                 topIndex = max(0, topIndex - 1)
                 render()
-            case .pageDown, .char(" "):
+            case .pageDown, .ctrl("v"), .ctrl("V"), .char(" "):
                 topIndex = min(topIndex + availableHeight, maxTop)
                 render()
-            case .pageUp:
+            case .pageUp, .ctrl("y"), .ctrl("Y"):
                 topIndex = max(0, topIndex - availableHeight)
                 render()
             case .home:

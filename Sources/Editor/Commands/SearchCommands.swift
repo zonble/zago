@@ -319,7 +319,7 @@ public struct NumericGotoCommand: Command {
     public init() {}
 
     public func match(_ input: CommandBarInput) -> Bool {
-        input.text.range(of: #"^-?\d+([:,]-?\d+)?$"#, options: .regularExpression) != nil
+        input.text.range(of: #"^-?\d+([:,]-?\d+)?$|^:-?\d+$"#, options: .regularExpression) != nil
             || input.lowerFirstToken == "goto"
     }
 
@@ -328,7 +328,14 @@ public struct NumericGotoCommand: Command {
     }
 
     public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        let locationText = input.lowerFirstToken == "goto" ? input.rest : input.text
+        let locationText: String
+        if input.lowerFirstToken == "goto" {
+            locationText = input.rest
+        } else if input.text.hasPrefix(":") {
+            locationText = String(input.text.dropFirst())
+        } else {
+            locationText = input.text
+        }
         let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
             editor.setStatusMessage(editor.l10n["status.invalid_line"])

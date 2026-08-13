@@ -1309,6 +1309,17 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.logoEngine.lastResult == nil)
 }
 
+@Test func testCommandBarColonNumericGotoShorthand() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+
+    submitCommandBar(":2", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 0)
+    #expect(editor.logoEngine.lastResult == nil)
+}
+
 @Test func testCommandBarNumericGotoWithColumnShorthand() throws {
     let editor = Editor()
     editor.buffer.lines = ["one", "two", "three"]
@@ -1377,6 +1388,29 @@ private func submitCommandBar(_ text: String, editor: Editor) {
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.logoEngine.lastResult == nil)
     #expect(editor.statusMessage == editor.l10n["status.invalid_line"])
+
+    submitCommandBar(":0", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.logoEngine.lastResult == nil)
+    #expect(editor.statusMessage == editor.l10n["status.invalid_line"])
+}
+
+@Test func testCommandBarGotoEndOfFile() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["one", "two", "three"]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    submitCommandBar("eof", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 5)
+
+    submitCommandBar(":end-of-file", editor: editor)
+
+    #expect(editor.buffer.lineIndex == 2)
+    #expect(editor.buffer.columnIndex == 5)
 }
 
 @Test func testCommandBarOpenNewAndBufferShorthand() throws {
