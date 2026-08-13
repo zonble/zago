@@ -81,6 +81,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case documentHeadingPrevious = "document.heading_previous"
     case documentOutline = "document.outline"
     case cursorGotoLine = "cursor.goto_line"
+    case cursorGotoEOF = "cursor.goto_eof"
     case screenRefresh = "screen.refresh"
     case cursorPos = "cursor.pos"
 
