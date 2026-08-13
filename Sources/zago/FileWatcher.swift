@@ -20,13 +20,23 @@ public final class FileWatcher: @unchecked Sendable {
     private var lastModificationDate: Date? = nil
     private var timerSource: (any DispatchSourceTimer)? = nil
     private let queue = DispatchQueue(label: "com.se.filewatcher", qos: .utility)
+    private let stateLock = NSLock()
 
     #if canImport(Darwin)
         private var fileDescriptor: Int32 = -1
         private var source: (any DispatchSourceFileSystemObject)? = nil
-    #elseif os(Windows)
+#elseif os(Windows)
         private var changeHandle: HANDLE? = nil
+        private var stopEventHandle: HANDLE? = nil
         private var isWatchingWindows = false
+
+        private final class WindowsHandleBox: @unchecked Sendable {
+            let handle: HANDLE
+
+            init(_ handle: HANDLE) {
+                self.handle = handle
+            }
+        }
     #endif
 
     public init() {}
@@ -61,18 +71,47 @@ public final class FileWatcher: @unchecked Sendable {
             }
 
             if let h = handle, h != INVALID_HANDLE_VALUE {
+                let stopEvent = CreateEventW(nil, true, false, nil)
+                guard let stopEvent, stopEvent != INVALID_HANDLE_VALUE else {
+                    FindCloseChangeNotification(h)
+                    startTimerFallback(for: normalized)
+                    return
+                }
+
                 self.changeHandle = h
+                self.stopEventHandle = stopEvent
                 self.isWatchingWindows = true
 
-                queue.async { [weak self] in
-                    while let self = self, self.isWatchingWindows, let h = self.changeHandle {
-                        let res = WaitForSingleObject(h, 100)
+                let changeHandleBox = WindowsHandleBox(h)
+                let stopEventBox = WindowsHandleBox(stopEvent)
+
+                queue.async { [weak self, changeHandleBox, stopEventBox] in
+                    let h = changeHandleBox.handle
+                    let stopEvent = stopEventBox.handle
+                    var waitHandles: [HANDLE?] = [h, stopEvent]
+                    defer {
+                        FindCloseChangeNotification(h)
+                        CloseHandle(stopEvent)
+                    }
+
+                    while true {
+                        let res = waitHandles.withUnsafeMutableBufferPointer { buffer in
+                            WaitForMultipleObjects(DWORD(buffer.count), buffer.baseAddress, false, 100)
+                        }
                         if res == WAIT_OBJECT_0 {
-                            guard self.isWatchingWindows, let currentHandle = self.changeHandle else { break }
+                            guard let self else { break }
                             let currentMTime = self.getModificationDate(for: normalized)
-                            self.lastModificationDate = currentMTime
-                            self.notifyChange()
-                            FindNextChangeNotification(currentHandle)
+                            let shouldNotify = self.stateLock.withLock {
+                                guard currentMTime != self.lastModificationDate else { return false }
+                                self.lastModificationDate = currentMTime
+                                return true
+                            }
+                            if shouldNotify {
+                                self.notifyChange()
+                            }
+                            FindNextChangeNotification(h)
+                        } else if res == WAIT_OBJECT_0 + 1 {
+                            break
                         }
                     }
                 }
@@ -161,10 +200,11 @@ public final class FileWatcher: @unchecked Sendable {
             fileDescriptor = -1
         #elseif os(Windows)
             isWatchingWindows = false
-            if let h = changeHandle, h != INVALID_HANDLE_VALUE {
-                FindCloseChangeNotification(h)
-                changeHandle = nil
+            if let h = stopEventHandle, h != INVALID_HANDLE_VALUE {
+                SetEvent(h)
             }
+            changeHandle = nil
+            stopEventHandle = nil
         #endif
         watchedPath = nil
         lastModificationDate = nil
@@ -211,8 +251,9 @@ public final class FileWatcher: @unchecked Sendable {
     /// Records current modification date of watched file to suppress self-save change notifications.
     public func recordCurrentModificationDate() {
         guard let path = watchedPath else { return }
-        queue.sync {
-            self.lastModificationDate = self.getModificationDate(for: path)
+        let currentMTime = getModificationDate(for: path)
+        stateLock.withLock {
+            self.lastModificationDate = currentMTime
         }
     }
 
