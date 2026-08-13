@@ -24,10 +24,10 @@ This document outlines the architecture, cross-platform mechanisms, atomic save 
 │  LocalEditorFileIOStrategy                                │
 │       │                                                   │
 │       ▼                                                   │
-│  FileWatcher (Sources/zago/FileWatcher.swift)            │
-│       ├── macOS: DispatchSource / kqueue (O_EVTONLY)       │
-│       ├── Windows: Win32 FindFirstChangeNotificationW     │
-│       └── Linux/Other: DispatchSourceTimer mtime polling  │
+│  FileWatcher wrapper (Sources/zago/FileWatcher/)          │
+│       ├── DarwinFileWatcher: DispatchSource / kqueue      │
+│       ├── WindowsFileWatcher: Win32 notifications         │
+│       └── PollingFileWatcher: DispatchSourceTimer polling │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -35,17 +35,17 @@ This document outlines the architecture, cross-platform mechanisms, atomic save 
 
 ## 2. Platform-Specific Watcher Implementations
 
-`FileWatcher` utilizes native kernel event notifications on Darwin and Windows, falling back to lightweight `mtime` polling on Linux and POSIX platforms.
+`FileWatcher` is a small public wrapper over platform-specific implementations in `Sources/zago/FileWatcher/`. It uses native kernel event notifications on Darwin and Windows, falling back to lightweight `mtime` polling on Linux and other platforms.
 
 ### 2.1 macOS (Darwin) - `DispatchSourceFileSystemObject`
 - Opens a file descriptor using `open(path, O_EVTONLY)`. `O_EVTONLY` opens the file descriptor strictly for event monitoring without requesting read/write locks or modifying file access times.
 - Listens for filesystem events: `[.write, .delete, .rename, .extend, .attrib]`.
-- Dispatches events on a utility GCD background queue (`DispatchQueue(label: "com.se.filewatcher", qos: .utility)`).
+- Dispatches events on a utility GCD background queue.
 
 ### 2.2 Windows (Win32) - `FindFirstChangeNotificationW`
 - Watches the parent directory of the target file via native WinSDK `FindFirstChangeNotificationW`.
 - Monitored flags: `FILE_NOTIFY_CHANGE_LAST_WRITE`, `FILE_NOTIFY_CHANGE_SIZE`, `FILE_NOTIFY_CHANGE_FILE_NAME`.
-- Executes a background monitoring loop calling `WaitForSingleObject(handle, 100)` to poll kernel signals without blocking the editor thread.
+- Executes a background monitoring loop calling `WaitForMultipleObjects` on the change notification handle and a stop event, so shutdown does not close a handle that another thread is waiting on.
 - Upon notification, compares the target file's `mtime` (`getModificationDate`) to filter out unrelated directory changes.
 
 ### 2.3 Linux & Non-Darwin Platforms - Timer Fallback

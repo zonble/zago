@@ -51,6 +51,7 @@ This directory holds the detailed user, language, architecture, and development 
 ## Development
 
 - [Testing Guidelines & Best Practices](development/test.md): Windows file locking rules, unique temporary paths, and unit test teardown guidelines.
+- [Windows Swift debugging](development/windows_swift_debugging.md): VS Code Swift debugging, Visual Studio/WinDbg attach, dump analysis, and trace-based hang diagnosis.
 - [Release & preview builds](development/release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
 - [Homebrew tap](development/homebrew_tap.md): tap layout, Formula template, release checksum workflow, and user install commands.
 
