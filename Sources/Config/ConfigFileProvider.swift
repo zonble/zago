@@ -9,6 +9,11 @@ public protocol ConfigFileProvider: Sendable {
     /// Returns current working directory path.
     func currentDirectoryPath() -> String
 
+    /// Resolves a configuration include path in the provider's storage namespace.
+    ///
+    /// Implementations may override this for virtual or non-filesystem stores.
+    func resolvePath(_ path: String, relativeTo sourcePath: String?) -> String
+
     /// Returns whether a configuration file exists at specified path.
     func fileExists(atPath path: String) -> Bool
 
@@ -17,6 +22,20 @@ public protocol ConfigFileProvider: Sendable {
 
     /// Writes UTF-8 text string content to specified path.
     func writeString(_ content: String, toPath path: String) throws
+}
+
+extension ConfigFileProvider {
+    public func resolvePath(_ path: String, relativeTo sourcePath: String?) -> String {
+        if path.hasPrefix("~") {
+            return homeDirectoryPath() + path.dropFirst()
+        }
+        if path.hasPrefix("/") {
+            return path
+        }
+        let base = sourcePath.map { ($0 as NSString).deletingLastPathComponent }
+            ?? currentDirectoryPath()
+        return (base as NSString).appendingPathComponent(path)
+    }
 }
 
 /// In-memory virtual file provider for testing and WASM browser environment injection.

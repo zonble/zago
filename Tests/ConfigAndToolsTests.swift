@@ -873,6 +873,9 @@ struct ConfigAndToolsTests {
         let content = """
             # Sample nanorc file
             syntax "customlang" "\\.custom$"
+            header "^#!custom"
+            magic "custom file"
+            linter custom-lint --check
             color cyan "\\b(foo|bar)\\b"
             color green "\"([^\"]*)\""
             """
@@ -885,6 +888,30 @@ struct ConfigAndToolsTests {
         let customLang = highlighter.detectLanguage(for: "file.custom")
         #expect(customLang != nil)
         #expect(customLang?.name == "customlang")
+        #expect(customLang?.headerRules.count == 1)
+        #expect(customLang?.magicRules.count == 1)
+        #expect(customLang?.linterCommand == ["custom-lint", "--check"])
+    }
+
+    @Test func testZagorcIncludesNanoRCSyntaxDefinitions() throws {
+        let provider = InMemoryConfigFileProvider(
+            files: [
+                "/home/user/.zagorc": "include \"~/.nano/custom.nanorc\"\n",
+                "/home/user/.nano/custom.nanorc": """
+                    syntax "customlang" "\\.custom$"
+                    color cyan "\\b(foo|bar)\\b"
+                    """,
+            ])
+        let loader = ConfigLoader(provider: provider)
+        var config = EditorConfig()
+        loader.parseConfigFile(at: "/home/user/.zagorc", into: &config)
+
+        #expect(config.syntaxErrorCount == 0)
+        #expect(config.nanoRCContent.contains("syntax \"customlang\""))
+
+        let highlighter = SyntaxHighlighter()
+        highlighter.loadNanoRCContent(config.nanoRCContent)
+        #expect(highlighter.detectLanguage(for: "file.custom")?.name == "customlang")
     }
 
     @Test func testLocalization() throws {

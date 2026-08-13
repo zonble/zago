@@ -46,6 +46,15 @@ public struct LanguageSyntax: Sendable {
     /// List of regex tokenization rules used for ANSI color highlighting.
     public let rules: [SyntaxRule]
 
+    /// Regexes matched against the first line when the filename is inconclusive.
+    public let headerRules: [NSRegularExpression]
+
+    /// Regexes matched against a libmagic description supplied by the caller.
+    public let magicRules: [NSRegularExpression]
+
+    /// Optional external syntax checker command and arguments.
+    public let linterCommand: [String]?
+
     /// Optional polymorphic closure for detecting embedded code block language names in markup files.
     public let embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)?
 
@@ -72,6 +81,9 @@ public struct LanguageSyntax: Sendable {
         extensions: [String],
         rules: [SyntaxRule],
         commentPrefix: String = "// ",
+        headerRules: [NSRegularExpression] = [],
+        magicRules: [NSRegularExpression] = [],
+        linterCommand: [String]? = nil,
         embeddedLanguageDetector: (@Sendable ([String], Int) -> String?)? = nil,
         tableFormatter: (@Sendable ([String], Int, Int) -> TableFormatResult?)? = nil,
         tableNavigator: (@Sendable ([String], Int, Int, Bool) -> TableNavigationResult?)? = nil,
@@ -82,6 +94,9 @@ public struct LanguageSyntax: Sendable {
         self.name = name
         self.extensions = extensions
         self.rules = rules
+        self.headerRules = headerRules
+        self.magicRules = magicRules
+        self.linterCommand = linterCommand
         self.commentPrefix = commentPrefix
         self.embeddedLanguageDetector = embeddedLanguageDetector
         self.tableFormatter = tableFormatter
@@ -149,15 +164,44 @@ public final class SyntaxHighlighter {
         NanoRCParser().parseNanoRCFile(at: path, into: &languages)
     }
 
+    /// Parses NanoRC syntax definitions embedded in `.zagorc`.
+    public func loadNanoRCContent(_ content: String) {
+        guard !content.isEmpty else { return }
+        NanoRCParser().parseNanoRCContent(content, into: &languages)
+    }
+
     /// Auto-detects matching LanguageSyntax based on file path or extension.
-    public func detectLanguage(for filePath: String?) -> LanguageSyntax? {
+    public func detectLanguage(
+        for filePath: String?, firstLine: String? = nil, magicDescription: String? = nil
+    ) -> LanguageSyntax? {
         guard let path = filePath, !path.isEmpty else { return nil }
         let ext = (path as NSString).pathExtension.lowercased()
         let filename = (path as NSString).lastPathComponent.lowercased()
 
-        return languages.first { lang in
+        if let extensionLanguage = languages.first(where: { lang in
             lang.extensions.contains(ext) || lang.extensions.contains(filename)
+        }) {
+            return extensionLanguage
         }
+
+        if let firstLine,
+            let headerLanguage = languages.first(where: { lang in
+                lang.headerRules.contains { rule in
+                    rule.firstMatch(in: firstLine, options: [], range: NSRange(location: 0, length: (firstLine as NSString).length)) != nil
+                }
+            })
+        {
+            return headerLanguage
+        }
+
+        if let magicDescription {
+            return languages.first { lang in
+                lang.magicRules.contains { rule in
+                    rule.firstMatch(in: magicDescription, options: [], range: NSRange(location: 0, length: (magicDescription as NSString).length)) != nil
+                }
+            }
+        }
+        return nil
     }
 
     /// Finds matching LanguageSyntax dynamically by language name or file extension.
@@ -185,7 +229,7 @@ public final class SyntaxHighlighter {
         if isDirectoryBuffer {
             return DirectorySyntax.syntax
         }
-        guard let defaultSyntax = detectLanguage(for: filePath) else { return nil }
+        guard let defaultSyntax = detectLanguage(for: filePath, firstLine: lines.first) else { return nil }
 
         if let detector = defaultSyntax.embeddedLanguageDetector,
             let embeddedLangName = detector(lines, bufferLineIndex)
