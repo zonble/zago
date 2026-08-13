@@ -59,6 +59,45 @@ final class IPCServerTests: XCTestCase {
         }
     }
 
+    private final class WakeupTrackingTerminal: EditorTerminal, @unchecked Sendable {
+        private let lock = NSLock()
+        private(set) var wakeupCount = 0
+        var onWakeup: (() -> Void)?
+        private var woke = false
+
+        func enableRawMode() throws {}
+        func disableRawMode() {}
+        func getWindowSize() -> (rows: Int, cols: Int) { (24, 80) }
+        func readKey() -> Key {
+            while true {
+                lock.lock()
+                let shouldReturn = woke
+                if shouldReturn {
+                    woke = false
+                }
+                lock.unlock()
+                if shouldReturn {
+                    return .ctrl("X")
+                }
+                Thread.sleep(forTimeInterval: 0.005)
+            }
+        }
+        func readPendingText(firstChar: Character) -> String { String(firstChar) }
+        func write(_ text: String) {}
+        func hideCursor() {}
+        func showCursor() {}
+        func clearScreen() {}
+
+        func wakeup() {
+            lock.lock()
+            wakeupCount += 1
+            woke = true
+            let callback = onWakeup
+            lock.unlock()
+            callback?()
+        }
+    }
+
     private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
         private let editor: Editor
 
@@ -221,6 +260,44 @@ final class IPCServerTests: XCTestCase {
 
         wait(for: [requestCompleted], timeout: 1)
         XCTAssertEqual(editor.buffer.lines[0], "changed by ipc")
+    }
+
+    func testExternalEditorRequestWakesBlockedTerminal() {
+        let terminal = WakeupTrackingTerminal()
+        let editor = Editor(
+            options: EditorOptions(language: .en),
+            dependencies: EditorDependencies(fileIOStrategy: TestLocalEditorFileIOStrategy.shared, terminal: terminal),
+            initialVariables: [:]
+        )
+        let wokeTerminal = expectation(description: "external request wakes terminal")
+        let editorLoopExited = expectation(description: "editor loop exits")
+        terminal.onWakeup = {
+            wokeTerminal.fulfill()
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            editor.run()
+            editorLoopExited.fulfill()
+        }
+
+        Thread.sleep(forTimeInterval: 0.05)
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let result = try editor.performOnEditorLoop(timeout: 1) {
+                    editor.buffer.lines[0] = "changed after wakeup"
+                    return "ok"
+                }
+                XCTAssertEqual(result, "ok")
+            } catch {
+                XCTFail("Expected external editor request to complete after terminal wakeup: \(error)")
+            }
+        }
+
+        wait(for: [wokeTerminal], timeout: 1)
+        XCTAssertEqual(terminal.wakeupCount, 1)
+        wait(for: [editorLoopExited], timeout: 1)
+        XCTAssertEqual(editor.buffer.lines[0], "changed after wakeup")
     }
 
     func testProposalQueueNavigationAndLineOffsetAdjustment() {
