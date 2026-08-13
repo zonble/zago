@@ -255,7 +255,7 @@ struct Zago: ParsableCommand {
             var buf = [UInt8](repeating: 0, count: 4096)
             while true {
                 #if os(Windows)
-                    let n = read(STDIN_FILENO, &buf, UInt32(buf.count))
+                    let n = _read(STDIN_FILENO, &buf, UInt32(buf.count))
                 #else
                     let n = read(STDIN_FILENO, &buf, buf.count)
                 #endif
