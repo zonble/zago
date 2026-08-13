@@ -9,10 +9,14 @@ import Testing
         let tempDir = FileManager.default.temporaryDirectory
         let workDir = tempDir.appendingPathComponent("test_dir_\(UUID().uuidString)")
         let subDir = workDir.appendingPathComponent("subfolder")
+        let hiddenSubDir = workDir.appendingPathComponent(".hidden-folder")
         let fileURL = workDir.appendingPathComponent("notes.md")
+        let hiddenFileURL = workDir.appendingPathComponent(".gitignore")
 
         try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: hiddenSubDir, withIntermediateDirectories: true)
         try "# Notes".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+        try "*.swp".write(to: hiddenFileURL, atomically: testAtomicallyOption, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: workDir) }
 
         // Test Factory method TextBuffer.makeBuffer(filePath:)
@@ -30,7 +34,9 @@ import Testing
 
         // Contains subfolder and file
         #expect(dirBuffer.lines.contains("  ▸ subfolder/"))
+        #expect(dirBuffer.lines.contains("  ▸ .hidden-folder/"))
         #expect(dirBuffer.lines.contains("  notes.md"))
+        #expect(dirBuffer.lines.contains("  .gitignore"))
     }
 
     @Test func testDirectoryBufferTraditionalChineseLocalization() throws {

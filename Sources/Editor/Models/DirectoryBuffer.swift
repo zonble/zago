@@ -64,9 +64,7 @@ public final class DirectoryBuffer: TextBuffer {
         newLines.append(l10n.dirBufUpDir)
 
         if let contents = try? fileIO.listDirectory(at: expandedPath) {
-            let sorted = contents.filter { entry in
-                !entry.name.hasPrefix(".") || entry.name == ".zagorc" || entry.name == ".serc"
-            }.sorted { lhs, rhs in
+            let sorted = contents.sorted { lhs, rhs in
                 if lhs.isDirectory != rhs.isDirectory {
                     return lhs.isDirectory
                 }
