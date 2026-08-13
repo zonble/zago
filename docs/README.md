@@ -39,6 +39,10 @@ This directory holds the detailed user, language, architecture, and development 
 - [Cross-platform architecture](architecture/cross_platform.md): terminal input, pipe handling, file I/O locks, encoding gotchas, and display width calculations.
 - [Windows console I/O & encoding](architecture/windows_console.md): Windows Console Subsystem, code page handling, and Win32 `ReadConsoleW` API integration.
 
+## Reviews
+
+- [Refactoring review](reviews/refactoring_review.md): current structural review through the lens of Fowler's *Refactoring*, with prioritized findings and suggested extraction boundaries.
+
 ## AI & IPC
 
 - [AI editor operation protocol](ai-ipc/protocol.md): JSON-RPC 2.0 API methods, buffer queries, ghost overlay previews, Editor LOGO execution, and permission matrix.
