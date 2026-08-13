@@ -36,8 +36,13 @@ enum ZagoIPCSessionPaths {
     }
 
     static func generatedSessionPaths(pid: Int32, nonce: String) -> (socketPath: String, tokenPath: String) {
-        let socketName = "zago-\(pid)-\(nonce).sock"
-        let tokenName = "zago-\(pid)-\(nonce).token"
+        #if os(Windows)
+            let instanceName = "zago-\(pid)-\(nonce)"
+            let tokenName = "\(instanceName).token"
+        #else
+            let socketName = "zago-\(pid)-\(nonce).sock"
+            let tokenName = "zago-\(pid)-\(nonce).token"
+        #endif
         let fileManager = FileManager.default
 
         for directory in candidateTemporaryDirectories() {
@@ -47,18 +52,32 @@ enum ZagoIPCSessionPaths {
                 continue
             }
 
+            #if os(Windows)
+                return (
+                    #"\\.\pipe\\#(instanceName)"#,
+                    directory.appendingPathComponent(tokenName).path
+                )
+            #else
             let socketPath = directory.appendingPathComponent(socketName).path
             guard socketPath.utf8CString.count <= unixSocketPathByteLimit else { continue }
             return (
                 socketPath,
                 directory.appendingPathComponent(tokenName).path
             )
+            #endif
         }
 
         let fallbackDirectory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        #if os(Windows)
+            return (
+                #"\\.\pipe\\#(instanceName)"#,
+                fallbackDirectory.appendingPathComponent(tokenName).path
+            )
+        #else
         return (
             fallbackDirectory.appendingPathComponent(socketName).path,
             fallbackDirectory.appendingPathComponent(tokenName).path
         )
+        #endif
     }
 }
