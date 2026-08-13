@@ -71,8 +71,7 @@ extension Editor {
     // MARK: - View Settings Persistence
 
     func saveCurrentViewSettingsToBuffer() {
-        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
-        let current = buffers[currentBufferIndex]
+        let current = buffer
         current.viewShowRuler = displayConfig.showRuler
         current.viewShowLineNumbers = displayConfig.showLineNumbers
         current.viewShowSubLineNumbers = displayConfig.showSubLineNumbers
@@ -80,8 +79,7 @@ extension Editor {
     }
 
     func loadCurrentViewSettingsFromBuffer() {
-        guard !buffers.isEmpty, currentBufferIndex >= 0, currentBufferIndex < buffers.count else { return }
-        let current = buffers[currentBufferIndex]
+        let current = buffer
         displayConfig.showRuler = current.viewShowRuler
         displayConfig.showLineNumbers = current.viewShowLineNumbers
         displayConfig.showSubLineNumbers = current.viewShowSubLineNumbers
@@ -91,11 +89,11 @@ extension Editor {
     // MARK: - Buffer Navigation
 
     func switchToBuffer(index: Int) {
-        guard index >= 0, index < buffers.count else { return }
+        guard bufferCoordinator.isValidIndex(index) else { return }
         saveCurrentViewSettingsToBuffer()
-        currentBufferIndex = index
+        bufferCoordinator.activeIndex = index
         loadCurrentViewSettingsFromBuffer()
-        if let dirBuffer = buffers[currentBufferIndex] as? DirectoryBuffer {
+        if let dirBuffer = buffer as? DirectoryBuffer {
             dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: self.language)
         }
         startFileWatcherForCurrentBuffer()
@@ -103,15 +101,13 @@ extension Editor {
     }
 
     func nextBuffer() {
-        guard buffers.count > 1 else { return }
-        let nextIndex = (currentBufferIndex + 1) % buffers.count
-        switchToBuffer(index: nextIndex)
+        guard let index = bufferCoordinator.nextIndex() else { return }
+        switchToBuffer(index: index)
     }
 
     func prevBuffer() {
-        guard buffers.count > 1 else { return }
-        let prevIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
-        switchToBuffer(index: prevIndex)
+        guard let index = bufferCoordinator.previousIndex() else { return }
+        switchToBuffer(index: index)
     }
 
     func openNewBuffer(filePath: String? = nil) {
@@ -122,8 +118,7 @@ extension Editor {
             gitService: gitService,
             language: language
         )
-        buffers.append(newBuffer)
-        currentBufferIndex = buffers.count - 1
+        bufferCoordinator.appendAndActivate(newBuffer)
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
     }
@@ -138,18 +133,15 @@ extension Editor {
         }
 
         stopFileWatcherForCurrentBuffer()
-        buffers.remove(at: currentBufferIndex)
+        let hasActiveBuffer = bufferCoordinator.removeActive()
         renderer.invalidateScreenCache()
 
-        if buffers.isEmpty {
+        if !hasActiveBuffer {
             isRunning = false
         } else {
-            currentBufferIndex = max(0, min(currentBufferIndex, buffers.count - 1))
             loadCurrentViewSettingsFromBuffer()
             startFileWatcherForCurrentBuffer()
         }
-        loadCurrentViewSettingsFromBuffer()
-        startFileWatcherForCurrentBuffer()
         renderer.invalidateScreenCache()
     }
 }

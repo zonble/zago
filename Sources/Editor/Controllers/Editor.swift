@@ -11,26 +11,22 @@ public typealias SearchMatch = SearchController.SearchMatch
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
-    var buffers: [TextBuffer] = []
-    var currentBufferIndex: Int = 0
+    let bufferCoordinator: BufferCoordinator
+
+    var buffers: [TextBuffer] {
+        get { bufferCoordinator.buffers }
+        set { bufferCoordinator.buffers = newValue }
+    }
+
+    var currentBufferIndex: Int {
+        get { bufferCoordinator.activeIndex }
+        set { bufferCoordinator.activeIndex = newValue }
+    }
 
     /// Active text buffer.
     var buffer: TextBuffer {
-        get {
-            if buffers.isEmpty {
-                buffers.append(TextBuffer())
-            }
-            let idx = max(0, min(currentBufferIndex, buffers.count - 1))
-            return buffers[idx]
-        }
-        set {
-            if buffers.isEmpty {
-                buffers.append(newValue)
-            } else {
-                let idx = max(0, min(currentBufferIndex, buffers.count - 1))
-                buffers[idx] = newValue
-            }
-        }
+        get { bufferCoordinator.activeBuffer }
+        set { bufferCoordinator.activeBuffer = newValue }
     }
     let layoutEngine: LayoutEngine
     let renderer = Renderer()
@@ -202,14 +198,15 @@ public final class Editor: @unchecked Sendable {
         self.gitService = dependencies.gitService
         self.configProvider = configSource.reload
 
+        let initialBuffers: [TextBuffer]
         if options.filePaths.isEmpty {
-            self.buffers = [TextBuffer()]
+            initialBuffers = [TextBuffer()]
         } else {
-            self.buffers = options.filePaths.map {
+            initialBuffers = options.filePaths.map {
                 TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy)
             }
         }
-        self.currentBufferIndex = 0
+        self.bufferCoordinator = BufferCoordinator(buffers: initialBuffers)
 
         let resolved = Self.resolveConfig(options: options, config: configSource.initial)
         self.language = resolved.language
