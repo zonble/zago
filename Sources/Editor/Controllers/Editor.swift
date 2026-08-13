@@ -11,11 +11,11 @@ public typealias SearchMatch = SearchController.SearchMatch
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
-    public var buffers: [TextBuffer] = []
-    public var currentBufferIndex: Int = 0
+    var buffers: [TextBuffer] = []
+    var currentBufferIndex: Int = 0
 
     /// Active text buffer.
-    public var buffer: TextBuffer {
+    var buffer: TextBuffer {
         get {
             if buffers.isEmpty {
                 buffers.append(TextBuffer())
@@ -32,30 +32,30 @@ public final class Editor: @unchecked Sendable {
             }
         }
     }
-    public let layoutEngine: LayoutEngine
-    public let renderer = Renderer()
+    let layoutEngine: LayoutEngine
+    let renderer = Renderer()
 
     var isRunning = true
     var statusMessage: String = ""
     var statusMessageTime: Date?
 
     var clipboardText: String? = nil
-    public var canvasBlockClipboard: CanvasBlockClipboard? = nil
+    var canvasBlockClipboard: CanvasBlockClipboard? = nil
 
     /// History log lines recorded by LOGO commands, stored internally until user opens *LOGO Output* buffer.
-    public var logoOutputHistory: [String] = []
+    var logoOutputHistory: [String] = []
 
     // UI Viewport Scrolling Offset (measured in VirtualLineIndex units)
     var topVLineIndex: Int = 0
 
     let spellChecker = SpellChecker()
 
-    public let gitService: GitServiceProtocol
+    let gitService: GitServiceProtocol
 
     /// Git Diff & Repository context for current buffer
-    public var gitDiffInfo: GitDiffInfo = .empty
+    var gitDiffInfo: GitDiffInfo = .empty
 
-    public var isGitDiffDirty: Bool = true
+    var isGitDiffDirty: Bool = true
 
     public func markGitDiffDirty() {
         isGitDiffDirty = true
@@ -80,25 +80,25 @@ public final class Editor: @unchecked Sendable {
 
     private var initialLogoVariable: [String: String]
     // Persistent LOGO Macro Engine
-    public lazy var logoEngine: LogoEngine = LogoEngine(
+    lazy var logoEngine: LogoEngine = LogoEngine(
         delegate: self,
         initialVariables: initialLogoVariable
     )
 
     // Prompt Controller
-    public let promptController = PromptController()
+    let promptController = PromptController()
 
     // Search Controller
-    public let searchController = SearchController()
+    let searchController = SearchController()
 
     // Document Outline Controller
-    public let documentOutlineController = DocumentOutlineController()
+    let documentOutlineController = DocumentOutlineController()
 
     // Mode & UI Controllers
-    public let menuBarController = MenuBarController()
-    public let tableModeController = TableModeController()
-    public let canvasModeController = CanvasModeController()
-    public let debuggerController = DebuggerController()
+    let menuBarController = MenuBarController()
+    let tableModeController = TableModeController()
+    let canvasModeController = CanvasModeController()
+    let debuggerController = DebuggerController()
 
     var defaultBaseMode: EditorBaseMode = .text
     var defaultViewShowRuler = false
@@ -106,7 +106,7 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowSubLineNumbers = false
     var defaultViewWrapColumn: Int? = nil
 
-    public var isRegexSearchEnabled: Bool = false
+    var isRegexSearchEnabled: Bool = false
 
     var lastMutationTime: Date?
     var lastIsPaste: Bool = false
@@ -128,29 +128,29 @@ public final class Editor: @unchecked Sendable {
         syntaxForLine(at: buffer.lineIndex)
     }
 
-    public let commandRegistry = CommandRegistry()
-    public var commandBarRegistry: CommandRegistry { commandRegistry }
-    public var fileIOStrategy: EditorFileIOStrategy
-    public var language: Language = .detectSystemLanguage()
-    public var usesExplicitLanguage: Bool = false
+    let commandRegistry = CommandRegistry()
+    var commandBarRegistry: CommandRegistry { commandRegistry }
+    var fileIOStrategy: EditorFileIOStrategy
+    public internal(set) var language: Language = .detectSystemLanguage()
+    var usesExplicitLanguage: Bool = false
     public var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
     var currentWatchedPath: String? = nil
 
     public typealias DisplayConfig = RuntimeConfig
-    public var runtimeConfig: RuntimeConfig
-    public var displayConfig: RuntimeConfig {
+    public internal(set) var runtimeConfig: RuntimeConfig
+    public internal(set) var displayConfig: RuntimeConfig {
         get { runtimeConfig }
         set { runtimeConfig = newValue }
     }
-    public var debugMode = false
+    var debugMode = false
 
     public var isLogoUIEnabled: Bool {
         debugMode || buffer.filePath?.lowercased().hasSuffix(".logo") == true
     }
-    public var customBoundKeys: Set<Key> = []
+    var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
-    public let proposalQueue = ProposalQueue()
+    let proposalQueue = ProposalQueue()
     private let editorLoopRequests = EditorLoopRequestQueue()
     private var editorLoopThread: Thread?
 
@@ -443,6 +443,19 @@ public final class Editor: @unchecked Sendable {
     public func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
+    }
+
+    /// Returns the current buffer as plain text without exposing its mutable model.
+    public func currentBufferText() -> String {
+        buffer.lines.joined(separator: "\n")
+    }
+
+    /// Returns headless LOGO output without exposing the mutable output history.
+    public func headlessOutput() -> String {
+        let output = logoOutputHistory.filter { line in
+            !(line.hasPrefix("--- [") && line.contains("] Run: "))
+        }
+        return output.isEmpty ? currentBufferText() : output.joined(separator: "\n")
     }
 
     public func clearActiveMark() {

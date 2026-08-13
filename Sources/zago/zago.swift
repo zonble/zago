@@ -291,14 +291,7 @@ struct Zago: ParsableCommand {
         ]
 
         func extractHeadlessOutput(from editor: Editor) -> String {
-            let logoOut = editor.logoOutputHistory.filter { line in
-                !(line.hasPrefix("--- [") && line.contains("] Run: "))
-            }
-            if !logoOut.isEmpty {
-                return logoOut.joined(separator: "\n")
-            } else {
-                return editor.buffer.lines.joined(separator: "\n")
-            }
+            editor.headlessOutput()
         }
 
         if let code = eval {
