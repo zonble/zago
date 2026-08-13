@@ -4,7 +4,7 @@ import TextMetrics
 import TextTransform
 
 extension Editor {
-    public func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
+    func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
         if isTableModeActive {
             setStatusMessage(l10n["status.goto_disabled_in_table_mode"])
             return
@@ -65,7 +65,7 @@ extension Editor {
                 totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
     }
 
-    public func openDirectoryBuffer(path: String? = nil) {
+    func openDirectoryBuffer(path: String? = nil) {
         let dirPath =
             path
             ?? (buffer.filePath != nil
@@ -78,7 +78,7 @@ extension Editor {
         }
     }
 
-    public func openBuffer(path: String) {
+    func openBuffer(path: String) {
         let expanded = fileIOStrategy.normalizePath(path, isDirectory: false)
         let info = fileIOStrategy.fileInfo(at: expanded)
         if info.exists, info.isDirectory {
@@ -93,7 +93,7 @@ extension Editor {
         }
     }
 
-    public func openDocumentLinkAtCursor() {
+    func openDocumentLinkAtCursor() {
         guard !buffer.isDirectoryBuffer else {
             setStatusMessage(l10n["status.no_document_link"])
             return
@@ -158,7 +158,7 @@ extension Editor {
         fileIOStrategy.normalizePath(path, isDirectory: false)
     }
 
-    public func transformSelectedText(id transformId: String, label: String) {
+    func transformSelectedText(id transformId: String, label: String) {
         guard let range = activeTextSelectionRange() else {
             setStatusMessage(l10n["status.no_text_selection"])
             return
@@ -189,7 +189,7 @@ extension Editor {
         }
     }
 
-    public func showTextCounts() {
+    func showTextCounts() {
         let (text, statusFormat) =
             if let range = activeTextSelectionRange() {
                 (
@@ -237,7 +237,7 @@ extension Editor {
         return range
     }
 
-    public func writeBuffer(path: String) {
+    func writeBuffer(path: String) {
         doSave(to: path)
     }
 
@@ -297,7 +297,7 @@ extension Editor {
         requested ?? !current
     }
 
-    public func saveBuffer(path: String?) {
+    func saveBuffer(path: String?) {
         if let path, !path.isEmpty {
             writeBuffer(path: path)
         } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
@@ -307,7 +307,7 @@ extension Editor {
         }
     }
 
-    public func saveAndCloseBuffer(path: String?) {
+    func saveAndCloseBuffer(path: String?) {
         if let path, !path.isEmpty {
             writeBuffer(path: path)
             closeCurrentBuffer()
@@ -320,7 +320,7 @@ extension Editor {
     }
 
     @discardableResult
-    public func switchToBuffer(zeroBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
+    func switchToBuffer(zeroBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
         guard index >= 0 && index < buffers.count else {
             if reportInvalid {
                 setStatusMessage(l10n["status.no_such_buffer"])
@@ -333,11 +333,11 @@ extension Editor {
     }
 
     @discardableResult
-    public func switchToBuffer(oneBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
+    func switchToBuffer(oneBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
         switchToBuffer(zeroBasedIndex: index - 1, reportInvalid: reportInvalid)
     }
 
-    public func commentPrefix(at lineIndex: Int) -> String {
+    func commentPrefix(at lineIndex: Int) -> String {
         syntaxHighlighter.commentPrefix(
             for: buffer.filePath,
             lines: buffer.lines,
@@ -345,7 +345,7 @@ extension Editor {
         )
     }
 
-    public func commentPrefix(for filePath: String?) -> String {
+    func commentPrefix(for filePath: String?) -> String {
         syntaxHighlighter.commentPrefix(
             for: filePath,
             lines: [],
@@ -353,7 +353,7 @@ extension Editor {
         )
     }
 
-    public func toggleComment() {
+    func toggleComment() {
         guard !buffer.isDirectoryBuffer else { return }
         saveUndoSnapshot()
 

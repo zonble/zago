@@ -11,11 +11,11 @@ public enum EditorOverlayMode: String, Sendable, Equatable {
 }
 
 extension Editor {
-    public var isCanvasModeActive: Bool {
+    var isCanvasModeActive: Bool {
         baseMode == .canvas
     }
 
-    public func switchToTextMode() {
+    func switchToTextMode() {
         if baseMode == .canvas {
             syncCanvasCursorToBuffer()
         }
@@ -25,7 +25,7 @@ extension Editor {
         renderer.invalidateScreenCache()
     }
 
-    public func switchToCanvasMode() {
+    func switchToCanvasMode() {
         guard !buffer.isReadOnly else {
             setStatusMessage(l10n["status.buffer_readonly_bracketed"])
             return
@@ -49,7 +49,7 @@ extension Editor {
         }
     }
 
-    public func toggleCanvasMode() {
+    func toggleCanvasMode() {
         if baseMode == .canvas {
             switchToTextMode()
         } else {

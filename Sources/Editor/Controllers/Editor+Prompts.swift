@@ -4,7 +4,7 @@ import TextMetrics
 import TextTransform
 
 extension Editor {
-    public typealias PromptMode = PromptController.Mode
+    typealias PromptMode = PromptController.Mode
 
     /// Prompts user to input file path for saving (^O / ^S / F3).
     func promptWriteFilePath() {

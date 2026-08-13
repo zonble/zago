@@ -4,7 +4,7 @@ import Foundation
 
 extension Editor {
     /// Detects whether line at index is a markup list item (Markdown, Org-Mode, reST, AsciiDoc).
-    public func isListItemLine(at lineIndex: Int) -> Bool {
+    func isListItemLine(at lineIndex: Int) -> Bool {
         guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return false }
         let trimmed = buffer.lines[lineIndex].trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty { return false }
@@ -26,7 +26,7 @@ extension Editor {
     }
 
     /// Indents the currently selected text block by injecting spaces at line starts.
-    public func indentSelectedBlock(spaces: Int) {
+    func indentSelectedBlock(spaces: Int) {
         guard let mark = buffer.selectionMark else { return }
         let (start, end) = TextBuffer.getOrderedRange(
             mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
@@ -43,7 +43,7 @@ extension Editor {
     }
 
     /// Outdents the currently selected text block by removing up to `spaces` leading spaces from line starts.
-    public func outdentSelectedBlock(spaces: Int) {
+    func outdentSelectedBlock(spaces: Int) {
         guard let mark = buffer.selectionMark else { return }
         let (start, end) = TextBuffer.getOrderedRange(
             mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
@@ -74,7 +74,7 @@ extension Editor {
     }
 
     /// Indents the line at lineIndex at the very beginning of the line.
-    public func indentLine(at lineIndex: Int, spaces: Int) {
+    func indentLine(at lineIndex: Int, spaces: Int) {
         guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
         let padding = String(repeating: " ", count: spaces)
         buffer.lines[lineIndex] = padding + buffer.lines[lineIndex]
@@ -84,7 +84,7 @@ extension Editor {
     }
 
     /// Outdents the line at lineIndex by removing up to `spaces` leading spaces from line start.
-    public func outdentLine(at lineIndex: Int, spaces: Int) {
+    func outdentLine(at lineIndex: Int, spaces: Int) {
         guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
         let line = buffer.lines[lineIndex]
         var removed = 0

@@ -431,7 +431,7 @@ extension Editor {
     ]
 
     /// Runs a LOGO script in full interactive TTY mode.
-    public func runInteractiveLogoScript(_ script: String) {
+    func runInteractiveLogoScript(_ script: String) {
         isInteractiveMode = true
         defer {
             isInteractiveMode = false
@@ -560,7 +560,7 @@ extension Editor {
     }
 
     /// Evaluates LOGO code from linear selection, Markdown ```logo code fence, or current line/block.
-    public func evalLogoCode() {
+    func evalLogoCode() {
         let script: String
         let startLine: Int
         let sourceBuffer = buffer

@@ -19,7 +19,7 @@ extension Editor {
         }
     }
 
-    public func stopFileWatcherForCurrentBuffer() {
+    func stopFileWatcherForCurrentBuffer() {
         if let oldPath = currentWatchedPath {
             fileIOStrategy.stopWatchingFile(at: oldPath)
             currentWatchedPath = nil
@@ -27,7 +27,7 @@ extension Editor {
     }
 
     /// Handles external file system modifications detected by FileWatcher.
-    public func handleExternalFileChange() {
+    func handleExternalFileChange() {
         guard displayConfig.autoReload, buffer.filePath != nil else { return }
 
         if buffer.isModified {
@@ -60,7 +60,7 @@ extension Editor {
 
     // MARK: - Buffer Capabilities
 
-    public var isListAutoIndentSupportedBuffer: Bool {
+    var isListAutoIndentSupportedBuffer: Bool {
         guard !buffer.isDirectoryBuffer else { return false }
         if let currentSyntax = activeLanguageSyntax {
             return currentSyntax.supportsListAutoIndent
@@ -102,19 +102,19 @@ extension Editor {
         renderer.invalidateScreenCache()
     }
 
-    public func nextBuffer() {
+    func nextBuffer() {
         guard buffers.count > 1 else { return }
         let nextIndex = (currentBufferIndex + 1) % buffers.count
         switchToBuffer(index: nextIndex)
     }
 
-    public func prevBuffer() {
+    func prevBuffer() {
         guard buffers.count > 1 else { return }
         let prevIndex = (currentBufferIndex - 1 + buffers.count) % buffers.count
         switchToBuffer(index: prevIndex)
     }
 
-    public func openNewBuffer(filePath: String? = nil) {
+    func openNewBuffer(filePath: String? = nil) {
         saveCurrentViewSettingsToBuffer()
         let newBuffer = TextBuffer.makeBuffer(
             filePath: filePath,
@@ -128,7 +128,7 @@ extension Editor {
         startFileWatcherForCurrentBuffer()
     }
 
-    public func closeCurrentBuffer() {
+    func closeCurrentBuffer() {
         guard buffers.count > 1 else {
             // Closing last remaining buffer: stop watcher and exit editor loop
             stopFileWatcherForCurrentBuffer()
