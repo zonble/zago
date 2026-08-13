@@ -92,7 +92,7 @@ let package = Package(
             name: "zagoTests",
             dependencies: [
                 "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "IPCServer", "LogoEngine", "SpellChecker",
-                "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
+                "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],
             path: "Tests"
         ),
