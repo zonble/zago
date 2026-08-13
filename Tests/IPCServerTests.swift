@@ -528,7 +528,17 @@ final class IPCServerTests: XCTestCase {
         let offlineResult = try XCTUnwrap(offlineJSON["result"] as? [String: Any])
         XCTAssertEqual(offlineResult["isError"] as? Bool, true)
 
-        #if !os(Windows)
+        #if os(Windows)
+            let editor = Editor()
+            editor.buffer.lines = ["alpha", "beta"]
+            editor.buffer.selectionMark = (line: 0, column: 2)
+            editor.buffer.lineIndex = 1
+            editor.buffer.columnIndex = 2
+            let ipcDelegate = TestIPCDelegate(editor: editor)
+            let ipcServer = makeTestServer(
+                sessionToken: "mcp-test-token"
+            )
+        #else
             let socketPath = FileManager.default.temporaryDirectory
                 .appendingPathComponent("zmcp-\(UUID().uuidString.prefix(8)).sock").path
             let editor = Editor()
@@ -541,6 +551,7 @@ final class IPCServerTests: XCTestCase {
                 socketPath: socketPath,
                 sessionToken: "mcp-test-token"
             )
+        #endif
             ipcServer.delegate = ipcDelegate
             ipcServer.dataSource = ipcDelegate
             try ipcServer.start()
@@ -605,7 +616,6 @@ final class IPCServerTests: XCTestCase {
             let selectionText = try XCTUnwrap(selectionContent.first?["text"] as? String)
             XCTAssertTrue(selectionText.contains("\"hasSelection\" : true"))
             XCTAssertTrue(selectionText.contains("\"text\" : \"pha\\nbe\""))
-        #endif
     }
 
     func testDefaultPosixIPCServerUsesShortSocketPath() throws {
@@ -630,13 +640,31 @@ final class IPCServerTests: XCTestCase {
             let socketURL = longDirectory.appendingPathComponent("zago-test.sock")
             let tokenURL = longDirectory.appendingPathComponent("zago-test.token")
             FileManager.default.createFile(atPath: socketURL.path, contents: Data())
-            FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8))
+            XCTAssertTrue(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
 
             XCTAssertGreaterThan(
                 socketURL.path.utf8CString.count,
                 ZagoIPCSessionPaths.unixSocketPathByteLimit
             )
             XCTAssertTrue(DefaultZagoIPCSessionLocator(temporaryDirectory: longDirectory).sessions().isEmpty)
+        #endif
+    }
+
+    func testWindowsSessionLocatorFindsNamedPipeTokenFiles() throws {
+        #if os(Windows)
+            let tempRoot = FileManager.default.temporaryDirectory
+                .appendingPathComponent("zago-windows-locator-\(UUID().uuidString)")
+            try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+            let tokenURL = tempRoot.appendingPathComponent("zago-1234-test.token")
+            XCTAssertTrue(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
+
+            let sessions = WindowsZagoIPCSessionLocator(temporaryDirectory: tempRoot).sessions()
+            XCTAssertEqual(sessions.count, 1)
+            XCTAssertEqual(sessions[0].instanceId, "zago-1234-test")
+            XCTAssertEqual(sessions[0].endpointPath, #"\\.\pipe\zago-1234-test"#)
+            XCTAssertEqual(sessions[0].tokenPath, tokenURL.path)
         #endif
     }
 

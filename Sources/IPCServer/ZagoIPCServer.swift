@@ -8,6 +8,16 @@ import Foundation
     import WinSDK
 #endif
 
+#if os(Windows)
+    private func withWindowsWideString<Result>(_ string: String, _ body: (UnsafePointer<WCHAR>) -> Result) -> Result {
+        var utf16 = Array(string.utf16)
+        utf16.append(0)
+        return utf16.withUnsafeBufferPointer { buffer in
+            body(buffer.baseAddress!)
+        }
+    }
+#endif
+
 public struct IPCServerLimits: Sendable {
     public let maxConnections: Int
     public let maxPayloadBytes: Int
@@ -46,7 +56,7 @@ public enum ZagoIPCServerFactory {
         -> any ZagoIPCServer
     {
         #if os(Windows)
-            return WindowsZagoIPCServer(socketPath: socketPath, sessionToken: sessionToken)
+            return WindowsZagoIPCServer(socketPath: socketPath, sessionToken: sessionToken, limits: limits)
         #else
             return PosixZagoIPCServer(socketPath: socketPath, sessionToken: sessionToken, limits: limits)
         #endif
@@ -172,14 +182,29 @@ extension ZagoIPCServer {
         let socketPath: String
         let sessionToken: String
         let tokenPath: String
+        let limits: IPCServerLimits
         private let jsonRPCParser: JSONRPCParser
+        private let queue = DispatchQueue(label: "org.zago.ipcserver.windows", qos: .userInitiated, attributes: .concurrent)
+        private var pendingPipeHandle: HANDLE?
+        private var activeConnections: [String: HANDLE] = [:]
+        private let lock = NSLock()
+        private let connectionSlots: DispatchSemaphore
 
-        init(socketPath: String? = nil, sessionToken: String? = nil) {
+        init(socketPath: String? = nil, sessionToken: String? = nil, limits: IPCServerLimits = .init()) {
             let pid = ProcessInfo.processInfo.processIdentifier
-            self.socketPath = socketPath ?? #"\\.\pipe\zago-\#(pid)"#
-            self.tokenPath = self.socketPath + ".token"
+            if let socketPath {
+                self.socketPath = socketPath
+                self.tokenPath = Self.tokenPath(for: socketPath)
+            } else {
+                let nonce = UUID().uuidString.lowercased()
+                let paths = ZagoIPCSessionPaths.generatedSessionPaths(pid: pid, nonce: nonce)
+                self.socketPath = paths.socketPath
+                self.tokenPath = paths.tokenPath
+            }
             self.sessionToken = sessionToken ?? UUID().uuidString.replacingOccurrences(of: "-", with: "")
+            self.limits = limits
             self.jsonRPCParser = JSONRPCParser(sessionToken: self.sessionToken)
+            self.connectionSlots = DispatchSemaphore(value: limits.maxConnections)
         }
 
         deinit {
@@ -187,19 +212,232 @@ extension ZagoIPCServer {
         }
 
         func start() throws {
-            throw NSError(
-                domain: "ZagoIPCServer", code: 1,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Windows named-pipe IPC is not implemented yet"
-                ])
+            lock.lock()
+            defer { lock.unlock() }
+
+            guard !isListening else { return }
+
+            let tokenURL = URL(fileURLWithPath: tokenPath)
+            try FileManager.default.createDirectory(
+                at: tokenURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            let tokenCreated = FileManager.default.createFile(
+                atPath: tokenPath,
+                contents: sessionToken.data(using: .utf8)
+            )
+            guard tokenCreated else {
+                throw NSError(
+                    domain: "ZagoIPCServer", code: 1,
+                    userInfo: [
+                        NSLocalizedDescriptionKey: "Failed to create IPC session token"
+                    ])
+            }
+
+            isListening = true
+            queue.async { [weak self] in
+                self?.acceptLoop()
+            }
         }
 
         func stop() {
+            lock.lock()
+            defer { lock.unlock() }
+
+            guard isListening else { return }
             isListening = false
+            if let pendingPipeHandle {
+                CloseHandle(pendingPipeHandle)
+                self.pendingPipeHandle = nil
+            }
+            try? FileManager.default.removeItem(atPath: tokenPath)
+            for (connectionId, pipeHandle) in activeConnections {
+                DisconnectNamedPipe(pipeHandle)
+                CloseHandle(pipeHandle)
+                if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                    delegate?.ipcServer(self, clientDidDisconnect: client)
+                }
+            }
+            activeConnections.removeAll()
         }
 
         func handleMessage(_ data: Data, connectionId: String) -> JSONRPCResponse {
             handleMessage(data, connectionId: connectionId, parser: jsonRPCParser)
+        }
+
+        private static func tokenPath(for socketPath: String) -> String {
+            let pipeName = socketPath.split(separator: "\\").last.map(String.init) ?? "zago-ipc"
+            let sanitized = pipeName.map { character in
+                character.isLetter || character.isNumber || character == "-" || character == "_" ? character : "-"
+            }
+            return URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+                .appendingPathComponent(String(sanitized) + ".token")
+                .path
+        }
+
+        private func acceptLoop() {
+            while isListening {
+                guard connectionSlots.wait(timeout: .now()) == .success else {
+                    Thread.sleep(forTimeInterval: 0.01)
+                    continue
+                }
+
+                guard let pipeHandle = createPipeInstance() else {
+                    connectionSlots.signal()
+                    if isListening {
+                        Thread.sleep(forTimeInterval: 0.01)
+                    }
+                    continue
+                }
+
+                lock.lock()
+                pendingPipeHandle = pipeHandle
+                lock.unlock()
+
+                let connected = waitForClientConnection(pipeHandle)
+
+                lock.lock()
+                if pendingPipeHandle == pipeHandle {
+                    pendingPipeHandle = nil
+                }
+                lock.unlock()
+
+                guard connected, isListening else {
+                    CloseHandle(pipeHandle)
+                    connectionSlots.signal()
+                    continue
+                }
+
+                let connectionId = "conn-\(UUID().uuidString.prefix(8))"
+                lock.lock()
+                activeConnections[connectionId] = pipeHandle
+                lock.unlock()
+
+                let pipeHandleValue = UInt(bitPattern: pipeHandle)
+                queue.async { [weak self] in
+                    defer { self?.connectionSlots.signal() }
+                    guard let pipeHandle = HANDLE(bitPattern: pipeHandleValue) else { return }
+                    self?.handleClientConnection(pipeHandle: pipeHandle, connectionId: connectionId)
+                }
+            }
+        }
+
+        private func createPipeInstance() -> HANDLE? {
+            let handle = withWindowsWideString(socketPath) { pathPointer in
+                CreateNamedPipeW(
+                    pathPointer,
+                    DWORD(PIPE_ACCESS_DUPLEX),
+                    DWORD(PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT),
+                    DWORD(limits.maxConnections),
+                    DWORD(limits.maxPayloadBytes),
+                    DWORD(limits.maxPayloadBytes),
+                    DWORD(limits.clientIdleTimeout * 1_000),
+                    nil
+                )
+            }
+            guard handle != INVALID_HANDLE_VALUE, handle != nil else {
+                return nil
+            }
+            return handle!
+        }
+
+        private func waitForClientConnection(_ pipeHandle: HANDLE) -> Bool {
+            while isListening {
+                if ConnectNamedPipe(pipeHandle, nil) || GetLastError() == ERROR_PIPE_CONNECTED {
+                    var mode = DWORD(PIPE_READMODE_BYTE | PIPE_WAIT)
+                    _ = SetNamedPipeHandleState(pipeHandle, &mode, nil, nil)
+                    return true
+                }
+
+                let error = GetLastError()
+                if error == ERROR_PIPE_LISTENING {
+                    Thread.sleep(forTimeInterval: 0.01)
+                    continue
+                }
+                return false
+            }
+            return false
+        }
+
+        private func handleClientConnection(pipeHandle: HANDLE, connectionId: String) {
+            defer {
+                lock.lock()
+                let ownsHandle = activeConnections[connectionId] == pipeHandle
+                if ownsHandle {
+                    activeConnections.removeValue(forKey: connectionId)
+                }
+                lock.unlock()
+                if ownsHandle {
+                    FlushFileBuffers(pipeHandle)
+                    DisconnectNamedPipe(pipeHandle)
+                    CloseHandle(pipeHandle)
+                }
+                if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                    delegate?.ipcServer(self, clientDidDisconnect: client)
+                }
+            }
+
+            var buffer = [UInt8](repeating: 0, count: 4_096)
+            var accumulatedData = Data()
+
+            while isListening {
+                var bytesRead: DWORD = 0
+                let ok = ReadFile(pipeHandle, &buffer, DWORD(buffer.count), &bytesRead, nil)
+                guard ok, bytesRead > 0 else { break }
+
+                accumulatedData.append(buffer, count: Int(bytesRead))
+
+                guard accumulatedData.count <= limits.maxPayloadBytes else {
+                    let response = JSONRPCResponse.failure(
+                        id: nil, error: JSONRPCError(code: 413, message: "Request exceeds maxPayloadBytes"))
+                    if let responseData = try? response.encodedData() {
+                        writeResponse(responseData, to: pipeHandle)
+                    }
+                    break
+                }
+
+                while let newlineIndex = accumulatedData.firstIndex(of: UInt8(ascii: "\n")) {
+                    let lineData = accumulatedData.subdata(in: 0..<newlineIndex)
+                    accumulatedData.removeSubrange(0...newlineIndex)
+
+                    guard !lineData.isEmpty else { continue }
+
+                    guard lineData.count <= limits.maxPayloadBytes else {
+                        let response = JSONRPCResponse.failure(
+                            id: nil, error: JSONRPCError(code: 413, message: "Request exceeds maxPayloadBytes"))
+                        if let responseData = try? response.encodedData() {
+                            writeResponse(responseData, to: pipeHandle)
+                        }
+                        break
+                    }
+
+                    let response = handleMessage(lineData, connectionId: connectionId, parser: jsonRPCParser)
+                    if let responseData = try? response.encodedData() {
+                        writeResponse(responseData, to: pipeHandle)
+                    }
+                }
+            }
+        }
+
+        private func writeResponse(_ responseData: Data, to pipeHandle: HANDLE) {
+            var output = responseData
+            output.append(UInt8(ascii: "\n"))
+            var offset = 0
+            while offset < output.count {
+                var written: DWORD = 0
+                let ok = output.withUnsafeBytes { bytes -> Bool in
+                    guard let baseAddress = bytes.baseAddress else { return true }
+                    return WriteFile(
+                        pipeHandle,
+                        baseAddress.advanced(by: offset),
+                        DWORD(output.count - offset),
+                        &written,
+                        nil
+                    )
+                }
+                guard ok, written > 0 else { break }
+                offset += Int(written)
+            }
         }
 
     }
