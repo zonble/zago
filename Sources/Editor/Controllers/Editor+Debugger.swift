@@ -3,7 +3,7 @@ import Foundation
 extension Editor {
     public static let logoDebuggerBufferTitle = "*LOGO Debugger*"
 
-    public func showLogoDebuggerBuffer() {
+    func showLogoDebuggerBuffer() {
         let activeSource = debuggerController.activeSourceBufferID.flatMap { id in buffers.first { $0.id == id } }
         let source: TextBuffer
         if case .paused = logoEngine.executionState {
@@ -66,9 +66,9 @@ extension Editor {
         debugBuffer.columnIndex = 0
     }
 
-    public func toggleLogoDebuggerBuffer() { showLogoDebuggerBuffer() }
+    func toggleLogoDebuggerBuffer() { showLogoDebuggerBuffer() }
 
-    public func resumeLogoDebugExecution(step: Bool) {
+    func resumeLogoDebugExecution(step: Bool) {
         if let id = debuggerController.executionTargetBufferID,
             let index = buffers.firstIndex(where: { $0.id == id })
         {
@@ -82,13 +82,13 @@ extension Editor {
         }
     }
 
-    public func abortLogoDebugExecution() {
+    func abortLogoDebugExecution() {
         logoEngine.abortExecution()
         setStatusMessage(l10n["status.logo_debug_aborted"])
         showLogoDebuggerBuffer()
     }
 
-    public func evaluateLogoDebugExpression(_ expression: String) {
+    func evaluateLogoDebugExpression(_ expression: String) {
         guard !expression.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let result = logoEngine.evaluatePausedExpression(expression) else {
             setStatusMessage(l10n["status.logo_debug_not_paused"])

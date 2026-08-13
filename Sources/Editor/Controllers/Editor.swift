@@ -57,16 +57,16 @@ public final class Editor: @unchecked Sendable {
 
     var isGitDiffDirty: Bool = true
 
-    public func markGitDiffDirty() {
+    func markGitDiffDirty() {
         isGitDiffDirty = true
     }
 
-    public func updateGitDiffIfNeeded() {
+    func updateGitDiffIfNeeded() {
         guard isGitDiffDirty else { return }
         updateGitDiff()
     }
 
-    public func updateGitDiff() {
+    func updateGitDiff() {
         isGitDiffDirty = false
         guard displayConfig.showGitDiff, !buffer.isScratchBuffer else {
             gitDiffInfo = .empty
@@ -76,7 +76,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Flag indicating whether the editor is running in interactive TUI mode.
-    public internal(set) var isInteractiveMode: Bool = false
+    var isInteractiveMode: Bool = false
 
     private var initialLogoVariable: [String: String]
     // Persistent LOGO Macro Engine
@@ -114,7 +114,7 @@ public final class Editor: @unchecked Sendable {
     let syntaxHighlighter = SyntaxHighlighter()
 
     /// Returns the language syntax for a specific buffer line index.
-    public func syntaxForLine(at lineIndex: Int) -> LanguageSyntax? {
+    func syntaxForLine(at lineIndex: Int) -> LanguageSyntax? {
         syntaxHighlighter.getSyntaxForLine(
             filePath: buffer.filePath,
             isDirectoryBuffer: buffer.isDirectoryBuffer,
@@ -124,28 +124,28 @@ public final class Editor: @unchecked Sendable {
         )
     }
 
-    public var activeLanguageSyntax: LanguageSyntax? {
+    var activeLanguageSyntax: LanguageSyntax? {
         syntaxForLine(at: buffer.lineIndex)
     }
 
     let commandRegistry = CommandRegistry()
     var commandBarRegistry: CommandRegistry { commandRegistry }
     var fileIOStrategy: EditorFileIOStrategy
-    public internal(set) var language: Language = .detectSystemLanguage()
+    var language: Language = .detectSystemLanguage()
     var usesExplicitLanguage: Bool = false
-    public var l10n: L10n { L10n(language: language) }
+    var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
     var currentWatchedPath: String? = nil
 
-    public typealias DisplayConfig = RuntimeConfig
-    public internal(set) var runtimeConfig: RuntimeConfig
-    public internal(set) var displayConfig: RuntimeConfig {
+    typealias DisplayConfig = RuntimeConfig
+    var runtimeConfig: RuntimeConfig
+    var displayConfig: RuntimeConfig {
         get { runtimeConfig }
         set { runtimeConfig = newValue }
     }
     var debugMode = false
 
-    public var isLogoUIEnabled: Bool {
+    var isLogoUIEnabled: Bool {
         debugMode || buffer.filePath?.lowercased().hasSuffix(".logo") == true
     }
     var customBoundKeys: Set<Key> = []
@@ -270,7 +270,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Opens ~/.zagorc in a buffer for editing. Creates ~/.zagorc with default template if it does not exist.
-    public func editConfig() {
+    func editConfig() {
         let homeDir = fileIOStrategy.homeDirectoryPath()
         let zagorcPath = (homeDir as NSString).appendingPathComponent(".zagorc")
         let sercPath = (homeDir as NSString).appendingPathComponent(".serc")
@@ -295,7 +295,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.
-    public func reloadConfig() {
+    func reloadConfig() {
         let loadedConfig = configProvider()
         applyReloadedConfig(loadedConfig)
         setStatusMessage(l10n["status.config_reloaded"])
@@ -321,7 +321,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Deletes current line with Undo snapshot tracking.
-    public func deleteCurrentLine() {
+    func deleteCurrentLine() {
         if isTableModeActive, currentTableCell != nil {
             tableModeController.deleteCurrentTableCellLine()
             return
@@ -446,7 +446,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Returns the current buffer as plain text without exposing its mutable model.
-    public func currentBufferText() -> String {
+    func currentBufferText() -> String {
         buffer.lines.joined(separator: "\n")
     }
 
@@ -458,7 +458,7 @@ public final class Editor: @unchecked Sendable {
         return output.isEmpty ? currentBufferText() : output.joined(separator: "\n")
     }
 
-    public func clearActiveMark() {
+    func clearActiveMark() {
         buffer.selectionMark = nil
         buffer.canvasBlockMark = nil
         buffer.canvasBlockMarkEnd = nil

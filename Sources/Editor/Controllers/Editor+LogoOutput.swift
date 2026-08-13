@@ -3,12 +3,12 @@ import Foundation
 extension Editor {
     public static let logoOutputBufferTitle = "*LOGO Output*"
 
-    public func findLogoOutputBufferIndex() -> Int? {
+    func findLogoOutputBufferIndex() -> Int? {
         buffers.firstIndex { $0.filePath == Self.logoOutputBufferTitle }
     }
 
     @discardableResult
-    public func ensureLogoOutputBuffer() -> TextBuffer {
+    func ensureLogoOutputBuffer() -> TextBuffer {
         if let idx = findLogoOutputBufferIndex() {
             return buffers[idx]
         }
@@ -31,7 +31,7 @@ extension Editor {
         return buf
     }
 
-    public func appendLogoOutputHeader(_ scriptName: String) {
+    func appendLogoOutputHeader(_ scriptName: String) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let timestamp = formatter.string(from: Date())
@@ -42,7 +42,7 @@ extension Editor {
         }
     }
 
-    public func appendLogoOutput(_ text: String, scriptName: String? = nil) {
+    func appendLogoOutput(_ text: String, scriptName: String? = nil) {
         guard !text.isEmpty else { return }
         if let scriptName {
             appendLogoOutputHeader(scriptName)
@@ -54,7 +54,7 @@ extension Editor {
         }
     }
 
-    public func toggleLogoOutputBuffer() {
+    func toggleLogoOutputBuffer() {
         if let idx = findLogoOutputBufferIndex() {
             if currentBufferIndex == idx {
                 let prevIdx = (idx - 1 + buffers.count) % buffers.count
@@ -74,7 +74,7 @@ extension Editor {
         }
     }
 
-    public func clearLogoOutputBuffer() {
+    func clearLogoOutputBuffer() {
         logoOutputHistory.removeAll()
         if let idx = findLogoOutputBufferIndex() {
             let buf = buffers[idx]
@@ -90,12 +90,12 @@ extension Editor {
 
     public static let logoCanvasBufferTitle = "*LOGO Canvas*"
 
-    public func findLogoCanvasBufferIndex() -> Int? {
+    func findLogoCanvasBufferIndex() -> Int? {
         buffers.firstIndex { $0.filePath == Self.logoCanvasBufferTitle }
     }
 
     @discardableResult
-    public func ensureLogoCanvasBuffer() -> TextBuffer {
+    func ensureLogoCanvasBuffer() -> TextBuffer {
         if let idx = findLogoCanvasBufferIndex() {
             return buffers[idx]
         }
@@ -109,7 +109,7 @@ extension Editor {
         return buf
     }
 
-    public func toggleLogoCanvasBuffer() {
+    func toggleLogoCanvasBuffer() {
         if let idx = findLogoCanvasBufferIndex() {
             if currentBufferIndex == idx {
                 let prevIdx = (idx - 1 + buffers.count) % buffers.count
@@ -125,13 +125,13 @@ extension Editor {
         }
     }
 
-    public func clearLogoCanvasBuffer() {
+    func clearLogoCanvasBuffer() {
         let buf = ensureLogoCanvasBuffer()
         buf.lines = Array(repeating: String(repeating: " ", count: 80), count: 24)
         setStatusMessage(l10n["status.logo_canvas_cleared"])
     }
 
-    public func clearLogoOutputAndCanvasBuffers() {
+    func clearLogoOutputAndCanvasBuffers() {
         clearLogoOutputBuffer()
         clearLogoCanvasBuffer()
         setStatusMessage(l10n["status.logo_output_canvas_cleared"])

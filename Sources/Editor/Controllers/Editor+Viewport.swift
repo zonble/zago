@@ -15,7 +15,7 @@ extension Editor {
     }
 
     /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.
-    public func adjustViewport(mainAreaHeight: Int, textWidth: Int) {
+    func adjustViewport(mainAreaHeight: Int, textWidth: Int) {
         updateGitDiffIfNeeded()
 
         if isCanvasModeActive {
@@ -98,7 +98,7 @@ extension Editor {
     }
 
     /// Moves cursor by virtual line rows (sub-lines), supporting Home/End/Arrow key navigation.
-    public func moveCursorVirtual(deltaRow: Int) {
+    func moveCursorVirtual(deltaRow: Int) {
         let (_, cols) = terminal.getWindowSize()
         let textWidth = max(10, cols - 5)
         let cursorViewport = layoutEngine.computeVirtualViewport(

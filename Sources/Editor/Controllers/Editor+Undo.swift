@@ -1,24 +1,24 @@
 import Foundation
 
 extension Editor {
-    public var undoStack: [UndoSnapshot] {
+    var undoStack: [UndoSnapshot] {
         get { buffer.undoStack }
         set { buffer.undoStack = newValue }
     }
 
-    public var maxUndoStackSize: Int {
+    var maxUndoStackSize: Int {
         get { buffer.maxUndoStackSize }
         set { buffer.maxUndoStackSize = newValue }
     }
 
     /// Saves a snapshot of the active buffer and cursor position to the buffer's undo stack before mutation.
-    public func saveUndoSnapshot() {
+    func saveUndoSnapshot() {
         lastIsPaste = false
         buffer.saveUndoSnapshot(canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil)
     }
 
     /// Performs Undo (^Z) on active buffer.
-    public func performUndo() {
+    func performUndo() {
         guard
             let snapshot = buffer.performUndo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
@@ -39,7 +39,7 @@ extension Editor {
     }
 
     /// Performs Redo (Ctrl+Shift+Z) on active buffer.
-    public func performRedo() {
+    func performRedo() {
         guard
             let snapshot = buffer.performRedo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
