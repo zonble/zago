@@ -550,7 +550,6 @@ public struct TraditionalChineseStrings {
         "menu.buffer.clear_output": "清除 LOGO 輸出內容",
 
         "menu.run.script": "執行腳本\tF5",
-        "menu.run.eval": "求值行/選取區\t^Q",
         "menu.run.output": "LOGO 輸出紀錄\tM+L",
         "menu.run.canvas": "LOGO 繪圖畫布\tM+C",
         "menu.run.clear": "清除畫布與輸出",

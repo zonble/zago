@@ -47,12 +47,17 @@ public struct RunLogoScriptCommand: Command {
 
     public init() {}
 
+    public func isAvailable(in editor: Editor) -> Bool {
+        editor.buffer.filePath?.lowercased().hasSuffix(".logo") == true
+    }
+
     public func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     public func execute(on editor: Editor) {
+        guard isAvailable(in: editor) else { return }
         let code = editor.buffer.lines.joined(separator: "\n")
         editor.runLogoScript(code)
     }
