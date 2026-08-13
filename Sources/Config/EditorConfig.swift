@@ -26,6 +26,8 @@ public struct EditorConfig {
     public var logoScripts: [String: String] = [:]
     public var ipcEnabled: Bool = false
     public var debugMode: Bool = false
+    /// Inline and included GNU Nano syntax definitions from .zagorc.
+    public var nanoRCContent: String = ""
     public var syntaxErrorCount: Int = 0
     public var loadedFilePath: String? = nil
 

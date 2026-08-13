@@ -331,6 +331,7 @@ public final class Editor: @unchecked Sendable {
 
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
     func applyCustomConfig(_ config: EditorConfig) {
+        syntaxHighlighter.loadNanoRCContent(config.nanoRCContent)
         customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
         defaultArrowStyle = config.defaultArrowStyle

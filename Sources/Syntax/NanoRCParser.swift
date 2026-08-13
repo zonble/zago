@@ -33,11 +33,19 @@ public final class NanoRCParser {
     /// Parses a single .nanorc file and appends created LanguageSyntax to array.
     public func parseNanoRCFile(at path: String, into languages: inout [LanguageSyntax]) {
         guard let content = try? String(contentsOfFile: path, encoding: .utf8) else { return }
+        parseNanoRCContent(content, into: &languages)
+    }
+
+    /// Parses NanoRC directives embedded in a `.zagorc` configuration.
+    public func parseNanoRCContent(_ content: String, into languages: inout [LanguageSyntax]) {
 
         var currentLangName: String? = nil
         var currentExtensions: [String] = []
         var currentRules: [SyntaxRule] = []
         var currentCommentPrefix: String = "// "
+        var currentHeaderRules: [NSRegularExpression] = []
+        var currentMagicRules: [NSRegularExpression] = []
+        var currentLinterCommand: [String]? = nil
 
         let lines = content.components(separatedBy: .newlines)
         for rawLine in lines {
@@ -57,7 +65,10 @@ public final class NanoRCParser {
                             name: name,
                             extensions: currentExtensions,
                             rules: currentRules,
-                            commentPrefix: currentCommentPrefix
+                            commentPrefix: currentCommentPrefix,
+                            headerRules: currentHeaderRules,
+                            magicRules: currentMagicRules,
+                            linterCommand: currentLinterCommand
                         )
                     )
                 }
@@ -68,6 +79,9 @@ public final class NanoRCParser {
                     currentExtensions = []
                     currentRules = []
                     currentCommentPrefix = "// "
+                    currentHeaderRules = []
+                    currentMagicRules = []
+                    currentLinterCommand = nil
 
                     for idx in 1..<parts.count {
                         let pat = parts[idx]
@@ -88,6 +102,26 @@ public final class NanoRCParser {
                 if !rawComment.isEmpty {
                     currentCommentPrefix = rawComment.hasSuffix(" ") ? rawComment : rawComment + " "
                 }
+                continue
+            }
+
+            if line.hasPrefix("header ") || line.hasPrefix("magic ") {
+                let isHeader = line.hasPrefix("header ")
+                let patterns = parseQuotedTokens(String(line.dropFirst(isHeader ? 7 : 6)))
+                for pattern in patterns {
+                    guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+                    if isHeader {
+                        currentHeaderRules.append(regex)
+                    } else {
+                        currentMagicRules.append(regex)
+                    }
+                }
+                continue
+            }
+
+            if line.hasPrefix("linter ") {
+                let command = line.dropFirst(7).split(whereSeparator: \.isWhitespace).map(String.init)
+                currentLinterCommand = command.isEmpty ? nil : command
                 continue
             }
 
@@ -113,7 +147,10 @@ public final class NanoRCParser {
                     name: name,
                     extensions: currentExtensions,
                     rules: currentRules,
-                    commentPrefix: currentCommentPrefix
+                    commentPrefix: currentCommentPrefix,
+                    headerRules: currentHeaderRules,
+                    magicRules: currentMagicRules,
+                    linterCommand: currentLinterCommand
                 )
             )
         }

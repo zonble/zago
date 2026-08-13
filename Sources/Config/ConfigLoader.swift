@@ -51,13 +51,22 @@ public final class ConfigLoader {
         do {
             let content = try provider.readString(atPath: path)
             config.loadedFilePath = path
-            parseConfigContent(content, into: &config)
+            parseConfigContent(content, from: path, into: &config, visitedIncludes: [path])
         } catch {
             // An unreadable optional config file is ignored.
         }
     }
 
     public func parseConfigContent(_ content: String, into config: inout EditorConfig) {
+        parseConfigContent(content, from: nil, into: &config, visitedIncludes: [])
+    }
+
+    private func parseConfigContent(
+        _ content: String,
+        from sourcePath: String?,
+        into config: inout EditorConfig,
+        visitedIncludes: Set<String>
+    ) {
         var logoBlock: LogoBlock?
 
         for rawLine in content.components(separatedBy: .newlines) {
@@ -72,6 +81,12 @@ public final class ConfigLoader {
                 continue
             }
             if line.isEmpty || line.hasPrefix("#") { continue }
+
+            if Self.isNanoRCDirective(line) {
+                appendNanoRCDirective(
+                    line, from: sourcePath, into: &config, visitedIncludes: visitedIncludes)
+                continue
+            }
 
             let tokens = line.split(separator: " ", maxSplits: 2).map(String.init)
             guard let commandText = tokens.first else { continue }
@@ -126,6 +141,40 @@ public final class ConfigLoader {
         }
 
         if logoBlock != nil { recordSyntaxError(in: &config) }
+    }
+
+    private static func isNanoRCDirective(_ line: String) -> Bool {
+        ["include ", "syntax ", "color ", "icolor ", "comment ", "header ", "magic ", "linter "].contains {
+            line.lowercased().hasPrefix($0)
+        }
+    }
+
+    private func appendNanoRCDirective(
+        _ line: String,
+        from sourcePath: String?,
+        into config: inout EditorConfig,
+        visitedIncludes: Set<String>
+    ) {
+        guard line.lowercased().hasPrefix("include ") else {
+            config.nanoRCContent += line + "\n"
+            return
+        }
+
+        let rawPath = line.dropFirst("include ".count)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\" '"))
+        let includePath = provider.resolvePath(String(rawPath), relativeTo: sourcePath)
+
+        guard !visitedIncludes.contains(includePath),
+            let included = try? provider.readString(atPath: includePath)
+        else {
+            // Preserve wildcard or platform-specific includes for NanoRCParser.
+            config.nanoRCContent += line + "\n"
+            return
+        }
+
+        var nextVisited = visitedIncludes
+        nextVisited.insert(includePath)
+        parseConfigContent(included, from: includePath, into: &config, visitedIncludes: nextVisited)
     }
 
     private func applyOption(named name: String, value: String, into config: inout EditorConfig) {
