@@ -6,7 +6,18 @@ public struct LocalConfigFileProvider: ConfigFileProvider {
     public init() {}
 
     public func homeDirectoryPath() -> String {
-        FileManager.default.homeDirectoryForCurrentUser.path
+        #if os(Windows)
+            let environment = ProcessInfo.processInfo.environment
+            if let userProfile = environment["USERPROFILE"], !userProfile.isEmpty {
+                return userProfile
+            }
+            if let homeDrive = environment["HOMEDRIVE"], let homePath = environment["HOMEPATH"],
+                !homeDrive.isEmpty, !homePath.isEmpty
+            {
+                return homeDrive + homePath
+            }
+        #endif
+        return FileManager.default.homeDirectoryForCurrentUser.path
     }
 
     public func currentDirectoryPath() -> String {
