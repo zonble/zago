@@ -231,6 +231,16 @@ import Testing
         #expect(editor.currentBufferIndex == idx!)
     }
 
+    @Test func testRunLogoScriptCommandF5ShortcutOnlyRunsLogoFiles() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = ["BOX 4 4"]
+
+        let handled = editor.commandRegistry.dispatch(key: .f5, editor: editor)
+        #expect(handled)
+        #expect(editor.findLogoCanvasBufferIndex() == nil)
+        #expect(editor.logoOutputHistory.isEmpty)
+    }
+
     @Test func testClearLogoOutputAndCanvasCommand() {
         let editor = Editor(filePath: "diagram.logo")
         editor.runLogoScript("BOX 4 4")

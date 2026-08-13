@@ -563,7 +563,6 @@ public struct EnglishStrings {
         "menu.buffer.clear_output": "Clear LOGO Output",
 
         "menu.run.script": "Run Script\tF5",
-        "menu.run.eval": "Evaluate Line/Selection\t^Q",
         "menu.run.output": "LOGO Output\tM+L",
         "menu.run.canvas": "LOGO Canvas\tM+C",
         "menu.run.clear": "Clear Canvas & Output",
@@ -702,7 +701,7 @@ public struct EnglishStrings {
         "menu.borders.round": "Round          ╭──╮",
         "menu.borders.double_round": "Double Round   ╭══╮",
         "menu.borders.ascii": "ASCII          +--+",
-        "menu.borders.ascii_round": "ASCII Rounded  /--\\",
+        "menu.borders.ascii_round": "ASCII Round    /--\\",
         "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "Next Style\tM+S",
         "menu.borders.arrow_solid": "Arrow: Solid   ▲▼◀▶",

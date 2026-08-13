@@ -122,23 +122,38 @@ public final class MenuBar {
                     MenuItem(titleKey: "menu.buffer.next", hotkeyChar: "n", commandId: .bufferNext),
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
                     MenuItem(
-                        titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput,
-                        isVisible: { $0.isLogoUIEnabled }),
-                    MenuItem(
                         titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug,
-                        isVisible: { $0.isLogoUIEnabled }),
+                        isVisible: { 
+                            if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
+                                return false
+                            }
+                            return $0.isLogoUIEnabled 
+                        }),
+                    MenuItem(
+                        titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput,
+                        isVisible: { 
+                            if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
+                                return false
+                            }
+                            return $0.isLogoUIEnabled 
+                        }),
                     MenuItem(
                         titleKey: "menu.buffer.clear_output", hotkeyChar: "c", commandId: .logoClearOutput,
-                        isVisible: { $0.isLogoUIEnabled }),
+                        isVisible: { 
+                            if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
+                                return false
+                            }
+                            return $0.isLogoUIEnabled
+                        }),
                 ]),
             MenuCategory(
                 titleKey: "menu.run", hotkeyChar: "r",
                 items: [
                     MenuItem(titleKey: "menu.run.script", hotkeyChar: "r", commandId: .fileRunLogo),
-                    MenuItem(titleKey: "menu.run.eval", hotkeyChar: "e", commandId: .editEvalLogo),
-                    MenuItem(titleKey: "menu.run.output", hotkeyChar: "o", commandId: .logoOutput),
+                    MenuItem(titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug),
                     MenuItem(titleKey: "menu.run.canvas", hotkeyChar: "c", commandId: .logoCanvas),
-                    MenuItem(titleKey: "menu.run.clear", hotkeyChar: "k", commandId: .logoClearOutput),
+                    MenuItem(titleKey: "menu.run.output", hotkeyChar: "o", commandId: .logoOutput),
+                    MenuItem(titleKey: "menu.buffer.clear_output", hotkeyChar: "k", commandId: .logoClearOutput),
                 ],
                 isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true }),
             MenuCategory(
@@ -332,9 +347,6 @@ public final class MenuBar {
                             editor.layoutEngine.setWrapColumn(nil)
                             editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
                         }),
-                    MenuItem(
-                        titleKey: "menu.tools.clear_logo_output", hotkeyChar: "c", commandId: .logoClearOutput,
-                        isVisible: { $0.isLogoUIEnabled }),
                 ]),
         ]
 
