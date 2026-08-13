@@ -124,6 +124,7 @@ public final class SyntaxHighlighter {
             ShellSyntaxDefinition(),
             ReSTSyntaxDefinition(),
             OrgModeSyntaxDefinition(),
+            ZagorcSyntaxDefinition(),
             LogoSyntaxDefinition(),
             MermaidSyntaxDefinition(),
             DotSyntaxDefinition(),
