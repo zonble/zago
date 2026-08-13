@@ -106,7 +106,7 @@ struct ConfigAndToolsTests {
         let debugBufferCategory = menuBar.categories.first(where: { $0.titleKey == "menu.buffer" })
         let debugToolsCategory = menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
         #expect(debugBufferCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
-        #expect(debugToolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == true)
+        #expect(debugToolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == false)
     }
 
     @Test func testLogoUIVisibilityRequiresLogoFileOrDebugSetting() {
