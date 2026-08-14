@@ -167,6 +167,12 @@ extension TableModeController {
     ) {
         let chars = Array(line)
         guard !chars.isEmpty else { return (0, 0) }
+        if cell.minCol >= 0, cell.maxCol > cell.minCol, cell.maxCol < chars.count,
+            BorderCharacterSet.verticalBoundaryChars.contains(chars[cell.minCol]),
+            BorderCharacterSet.verticalBoundaryChars.contains(chars[cell.maxCol])
+        {
+            return (cell.minCol, cell.maxCol)
+        }
 
         let targetCol = max(cell.minCol, min(nearCol, cell.maxCol))
         var startSearch = max(0, min(targetCol, chars.count - 1))
@@ -213,10 +219,8 @@ extension TableModeController {
         guard lineIndex >= cell.innerMinLine && lineIndex <= cell.innerMaxLine else { return nil }
         guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return nil }
         let line = editor.buffer.lines[lineIndex]
-        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
-            in: line, nearCol: cell.innerMinCol, cell: cell)
-        let start = max(0, min(leftBorder + 1, line.count))
-        let end = max(start, min(rightBorder, line.count))
+        let start = max(0, min(cell.minCol + 1, line.count))
+        let end = max(start, min(cell.maxCol, line.count))
         return (start: start, end: end)
     }
 

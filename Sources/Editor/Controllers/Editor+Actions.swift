@@ -367,6 +367,11 @@ extension Editor {
         guard !buffer.isDirectoryBuffer else { return }
         saveUndoSnapshot()
 
+        if isTableModeActive, currentTableCell != nil {
+            toggleCommentInCurrentTableCell()
+            return
+        }
+
         let startLine: Int
         let endLine: Int
 
@@ -474,5 +479,126 @@ extension Editor {
         }
 
         buffer.isModified = true
+    }
+
+    private func toggleCommentInCurrentTableCell() {
+        guard let cell = currentTableCell else { return }
+
+        let rawStartLine: Int
+        let rawEndLine: Int
+        if let mark = buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
+                mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            rawStartLine = start.line
+            rawEndLine = end.line
+        } else {
+            let cur = min(max(0, buffer.lineIndex), max(0, buffer.lines.count - 1))
+            rawStartLine = cur
+            rawEndLine = cur
+        }
+
+        let startLine = max(cell.innerMinLine, rawStartLine)
+        let endLine = min(cell.innerMaxLine, rawEndLine)
+        guard startLine <= endLine else { return }
+
+        let prefix = commentPrefix(at: startLine)
+        let cleanPrefix = prefix.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        var allCommented = true
+        var nonCount = 0
+        var minIndent = Int.max
+
+        for lineIdx in startLine...endLine {
+            guard let bounds = tableModeController.currentCellInnerBounds(on: lineIdx) else { continue }
+            let line = buffer.lines[lineIdx]
+            let chars = Array(line)
+            let innerText = String(chars[bounds.start..<bounds.end])
+            let trimmed = trimmedCommentFragment(innerText)
+            if trimmed.isEmpty { continue }
+
+            nonCount += 1
+            if !trimmed.hasPrefix(cleanPrefix) {
+                allCommented = false
+            }
+
+            var indent = 0
+            for ch in innerText {
+                if ch == " " || ch == "\t" {
+                    indent += 1
+                } else {
+                    break
+                }
+            }
+            minIndent = min(minIndent, indent)
+        }
+
+        if nonCount == 0 {
+            allCommented = false
+            minIndent = 0
+        } else if minIndent == Int.max {
+            minIndent = 0
+        }
+
+        for lineIdx in startLine...endLine {
+            guard let bounds = tableModeController.currentCellInnerBounds(on: lineIdx) else { continue }
+            let line = buffer.lines[lineIdx]
+            let chars = Array(line)
+            let innerText = String(chars[bounds.start..<bounds.end])
+            let innerWidth = innerText.displayWidth
+            let trimmed = trimmedCommentFragment(innerText)
+            let newInnerText: String
+
+            if allCommented {
+                if trimmed.isEmpty {
+                    newInnerText = ""
+                } else if let prefixRange = innerText.range(of: cleanPrefix) {
+                    var newText = innerText
+                    let afterIdx = prefixRange.upperBound
+                    if afterIdx < newText.endIndex && newText[afterIdx] == " " {
+                        newText.removeSubrange(prefixRange.lowerBound...afterIdx)
+                    } else {
+                        newText.removeSubrange(prefixRange)
+                    }
+                    if cleanPrefix == "<!--" {
+                        if newText.hasSuffix(" -->") {
+                            newText.removeLast(4)
+                        } else if newText.hasSuffix("-->") {
+                            newText.removeLast(3)
+                        }
+                    }
+                    newInnerText = newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : newText
+                } else {
+                    newInnerText = innerText
+                }
+            } else if trimmed.isEmpty {
+                let indentStr = String(repeating: " ", count: minIndent)
+                newInnerText = indentStr + cleanPrefix
+            } else {
+                var currentIndent = 0
+                for ch in innerText {
+                    if ch == " " || ch == "\t" {
+                        currentIndent += 1
+                    } else {
+                        break
+                    }
+                }
+                let actualIndent = min(currentIndent, minIndent)
+                let indentStr = String(repeating: " ", count: actualIndent)
+                let restOfLine = String(innerText.dropFirst(currentIndent))
+                let extraIndentCount = currentIndent - actualIndent
+                let extraIndent = extraIndentCount > 0 ? String(repeating: " ", count: extraIndentCount) : ""
+                let suffix = cleanPrefix == "<!--" ? " -->" : ""
+                newInnerText = indentStr + prefix + extraIndent + restOfLine + suffix
+            }
+
+            let prefixText = String(chars[..<bounds.start])
+            let suffixText = String(chars[bounds.end...])
+            buffer.lines[lineIdx] = prefixText + newInnerText.paddedToDisplayWidth(innerWidth) + suffixText
+        }
+
+        buffer.isModified = true
+    }
+
+    private func trimmedCommentFragment(_ text: String) -> String {
+        text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 }
