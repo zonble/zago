@@ -1,4 +1,5 @@
 import Foundation
+import ANSIStyle
 import Testing
 
 @testable import Editor
@@ -421,6 +422,122 @@ import Testing
 
     #expect(editor.buffers.count == 1)
     #expect(editor.currentBufferIndex == 0)
+}
+
+@Test func testCommandBarSelectionCopyCutAndPaste() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "hello" {
+        editor.processKey(.char(ch))
+    }
+
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.shiftArrowLeft)
+    #expect(editor.promptController.selectionRange() == 3..<5)
+
+    let rendered = editor.renderer.formatPromptLine(editor: editor, cols: 80).text
+    #expect(rendered.contains("\(ANSIStyle.boldInverse)lo"))
+
+    editor.processKey(.alt("W"))
+    #expect(editor.clipboardText == "lo")
+    #expect(editor.promptInputText == "hello")
+
+    editor.processKey(.ctrl("K"))
+    #expect(editor.clipboardText == "lo")
+    #expect(editor.promptInputText == "hel")
+    #expect(editor.promptCursorIndex == 3)
+    #expect(editor.promptController.selectionRange() == nil)
+
+    editor.processKey(.ctrl("U"))
+    #expect(editor.promptInputText == "hello")
+    #expect(editor.promptCursorIndex == 5)
+
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.char("!"))
+    #expect(editor.promptInputText == "hell!")
+    #expect(editor.promptCursorIndex == 5)
+}
+
+@Test func testCommandBarCtrlKWithoutSelectionCutsToEnd() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "hello world" {
+        editor.processKey(.char(ch))
+    }
+    editor.promptCursorIndex = 6
+
+    editor.processKey(.ctrl("K"))
+
+    #expect(editor.clipboardText == "world")
+    #expect(editor.promptInputText == "hello ")
+    #expect(editor.promptCursorIndex == 6)
+}
+
+@Test func testCommandBarShiftLeftCompatibleSequencesSelectOneCharacter() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "hello" {
+        editor.processKey(.char(ch))
+    }
+
+    editor.processKey(.ctrlShift("B"))
+
+    #expect(editor.promptCursorIndex == 4)
+    #expect(editor.promptController.selectionRange() == 4..<5)
+}
+
+@Test func testCommandBarOpeningPromptClearsStaleSelectionAnchor() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "hello" {
+        editor.processKey(.char(ch))
+    }
+    editor.processKey(.shiftArrowLeft)
+    #expect(editor.promptController.selectionRange() == 4..<5)
+
+    editor.promptTableDimensions()
+    editor.processKey(.shiftArrowLeft)
+
+    #expect(editor.promptInputText == "3 3 16")
+    #expect(editor.promptCursorIndex == editor.promptInputText.count - 1)
+    #expect(editor.promptController.selectionRange() == editor.promptInputText.count - 1..<editor.promptInputText.count)
+}
+
+@Test func testCommandBarCtrlXExitsEditor() throws {
+    let editor = Editor()
+    editor.isRunning = true
+    editor.promptLogoMacro()
+    for ch in "partial command" {
+        editor.processKey(.char(ch))
+    }
+
+    editor.processKey(.ctrl("X"))
+
+    #expect(editor.isRunning == false)
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^X from command bar to clear the active prompt")
+    }
+    #expect(editor.promptInputText.isEmpty)
+}
+
+@Test func testCommandBarCtrlXPromptsBeforeExitingModifiedBuffer() throws {
+    let editor = Editor()
+    editor.isRunning = true
+    editor.buffer.isModified = true
+    editor.promptLogoMacro()
+    for ch in "partial command" {
+        editor.processKey(.char(ch))
+    }
+
+    editor.processKey(.ctrl("X"))
+
+    if case .confirmExitSave = editor.currentPromptMode {
+        #expect(editor.isRunning == true)
+        #expect(editor.promptInputText.isEmpty)
+    } else {
+        Issue.record("Expected ^X from command bar to open exit-save confirmation for modified buffer")
+    }
 }
 
 @Test func testCommandBarDiagramAndOutlineAndBorderAliases() throws {

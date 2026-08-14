@@ -49,7 +49,7 @@ private func makeEditor(
         editor.currentPromptMode = .saveFilePath(completion: { savedPath = $0 })
 
         typePrompt("old", in: editor)
-        editor.processKey(.ctrl("U"))
+        editor.processKey(.ctrlBackspace)
         #expect(editor.promptInputText.isEmpty)
 
         typePrompt("  draft.txt  ", in: editor)
@@ -76,13 +76,13 @@ private func makeEditor(
         editor.promptLogoMacro()
         typePrompt("alpha 測 beta", in: editor)
 
-        editor.processKey(.ctrlShift("B"))
+        editor.processKey(.ctrlArrowLeft)
         #expect(editor.promptCursorIndex == "alpha 測 ".count)
-        editor.processKey(.ctrlShift("B"))
+        editor.processKey(.ctrlArrowLeft)
         #expect(editor.promptCursorIndex == "alpha ".count)
-        editor.processKey(.ctrlShift("F"))
+        editor.processKey(.ctrlArrowRight)
         #expect(editor.promptCursorIndex == "alpha 測".count)
-        editor.processKey(.ctrlShift("F"))
+        editor.processKey(.ctrlArrowRight)
         #expect(editor.promptCursorIndex == "alpha 測 beta".count)
 
         editor.promptCompletionText = "Tab: beta"
