@@ -239,4 +239,36 @@ import Testing
         }
         #expect(modeItems?.isEmpty == true)
     }
+
+    @Test func testDirectoryBufferSelectedLineInverseRendering() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_render_\(UUID().uuidString)")
+        let subDir = workDir.appendingPathComponent("folder_a")
+        let fileURL = workDir.appendingPathComponent("file_b.txt")
+
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try "Content".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let editor = Editor(filePath: workDir.path)
+        #expect(editor.buffer is DirectoryBuffer)
+
+        let dirBuffer = editor.buffer as! DirectoryBuffer
+        // Line 3 is '.. (up a dir)'
+        dirBuffer.lineIndex = 3
+        let outputLine3 = editor.renderer.render(editor: editor, rows: 12, cols: 60)
+        #expect(outputLine3.contains("\u{1B}[7m"))
+        // Check that inverse style extends with padding spaces
+        #expect(outputLine3.contains(" \u{1B}[0m") || outputLine3.contains(" \u{1B}[27m"))
+
+        // Move to folder_a
+        if let folderIdx = dirBuffer.lines.firstIndex(where: { $0.contains("folder_a") }) {
+            dirBuffer.lineIndex = folderIdx
+            let outputFolder = editor.renderer.render(editor: editor, rows: 12, cols: 60)
+            #expect(outputFolder.contains("\u{1B}[7m"))
+            #expect(outputFolder.contains("folder_a"))
+        } else {
+            Issue.record("Expected folder_a in directory buffer")
+        }
+    }
 }

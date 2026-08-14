@@ -294,11 +294,13 @@ public final class Renderer {
                     renderedDisplayWidth += hangingIndent
                 }
 
-            let baseChars = Array(renderedLineText)
-            if vLine.isProposalOverlay {
-                lineOutput += vLine.text.ansiStyled(style: ANSIStyle.aiGhostOverlay)
-            } else {
-                for cIdxInVLine in 0..<baseChars.count {
+                let isDirBufferSelectedLine =
+                    editor.buffer.isDirectoryBuffer && vLine.bufferLineIndex == editor.buffer.lineIndex
+                let baseChars = Array(renderedLineText)
+                if vLine.isProposalOverlay {
+                    lineOutput += vLine.text.ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                } else {
+                    for cIdxInVLine in 0..<baseChars.count {
                     let ch = baseChars[cIdxInVLine]
                     let realCol = renderedStartCol + cIdxInVLine
                     let charVisualColumn =
@@ -325,6 +327,8 @@ public final class Renderer {
                         && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
                         lineOutput += renderedText.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                    } else if isDirBufferSelectedLine {
+                        lineOutput += renderedText
                     } else if !editor.isCanvasModeActive
                         && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
@@ -373,6 +377,12 @@ public final class Renderer {
                     {
                         lineOutput += normalPad
                     }
+                } else if isDirBufferSelectedLine {
+                    if renderedDisplayWidth < visibleTextWidth {
+                        lineOutput += String(repeating: " ", count: visibleTextWidth - renderedDisplayWidth)
+                        renderedDisplayWidth = visibleTextWidth
+                    }
+                    lineOutput = lineOutput.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                 } else if baseChars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
                     lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(
                         style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
