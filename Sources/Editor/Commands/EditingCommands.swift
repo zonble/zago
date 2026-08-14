@@ -56,27 +56,23 @@ public struct ToggleMarkCommand: Command {
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
         guard editor.isCanvasModeActive && !editor.isTableModeActive else {
-            editor.setStatusMessage(editor.l10n["status.block_mark_canvas_only"])
-            return .noOp
+            return .noOp(message: editor.l10n["status.block_mark_canvas_only"])
         }
 
         let point = (line: editor.buffer.lineIndex, visualColumn: editor.canvasVisualColumn)
         if editor.buffer.canvasBlockMark == nil {
             editor.buffer.canvasBlockMark = point
             editor.buffer.canvasBlockMarkEnd = point
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
         } else if let mark = editor.buffer.canvasBlockMark,
             let end = editor.buffer.canvasBlockMarkEnd,
             end.line == mark.line && end.visualColumn == mark.visualColumn
         {
             editor.buffer.canvasBlockMarkEnd = point
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
         } else {
             editor.buffer.canvasBlockMark = point
             editor.buffer.canvasBlockMarkEnd = point
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
-        return .succeeded
+        return .succeeded(message: editor.l10n["status.mark_set"])
     }
 }
 
@@ -97,16 +93,14 @@ public struct CopyTextCommand: Command {
             let (start, end) = TextBuffer.getOrderedRange(
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
             guard start.line != end.line || start.column != end.column else {
-                editor.setStatusMessage(editor.l10n["status.no_selection"])
-                return .noOp
+                return .noOp(message: editor.l10n["status.no_selection"])
             }
             editor.clipboardText = editor.buffer.textRange(
                 start: (line: start.line, col: start.column),
                 end: (line: end.line, col: end.column))
-            editor.setStatusMessage(editor.l10n["status.copied_text"])
+            return .succeeded(message: editor.l10n["status.copied_text"])
         } else {
-            editor.setStatusMessage(editor.l10n["status.no_selection"])
-            return .noOp
+            return .noOp(message: editor.l10n["status.no_selection"])
         }
         return .succeeded
     }
@@ -128,13 +122,12 @@ public struct CancelSelectionCommand: Command {
         }
         if editor.buffer.selectionMark != nil || editor.buffer.canvasBlockMark != nil {
             editor.clearActiveMark()
-            editor.setStatusMessage(editor.l10n["status.mark_unset"])
+            return .succeeded(message: editor.l10n["status.mark_unset"])
         } else if editor.isCanvasModeActive {
-            editor.setStatusMessage(editor.l10n["status.no_block_marked"])
+            return .succeeded(message: editor.l10n["status.no_block_marked"])
         } else {
-            editor.setStatusMessage(editor.l10n["status.no_selection"])
+            return .succeeded(message: editor.l10n["status.no_selection"])
         }
-        return .succeeded
     }
 }
 
@@ -165,7 +158,7 @@ public struct CutTextCommand: Command {
             editor.clipboardText = editor.buffer.cutRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             editor.buffer.selectionMark = nil
-            editor.setStatusMessage(editor.l10n["status.cut_text"])
+            return .succeeded(message: editor.l10n["status.cut_text"])
         } else {
             let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
             editor.clipboardText = currentLine + "\n"
@@ -175,7 +168,7 @@ public struct CutTextCommand: Command {
                 editor.buffer.lines[0] = ""
             }
             editor.buffer.isModified = true
-            editor.setStatusMessage(editor.l10n["status.cut_one_line"])
+            return .succeeded(message: editor.l10n["status.cut_one_line"])
         }
         return .succeeded
     }
@@ -194,19 +187,18 @@ public struct UncutTextCommand: Command {
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.tableModeController.pasteTableCellText(text)
-                editor.setStatusMessage(editor.l10n["status.uncut_text"])
+                return .succeeded(message: editor.l10n["status.uncut_text"])
             } else {
-                editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
+                return .succeeded(message: editor.l10n["status.clipboard_empty"])
             }
         } else if editor.isCanvasModeActive {
             editor.pasteCanvasBlock()
         } else if let text = editor.clipboardText, !text.isEmpty {
             editor.saveUndoSnapshot()
             editor.buffer.insertString(text)
-            editor.setStatusMessage(editor.l10n["status.uncut_text"])
+            return .succeeded(message: editor.l10n["status.uncut_text"])
         } else {
-            editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
-            return .noOp
+            return .noOp(message: editor.l10n["status.clipboard_empty"])
         }
         return .succeeded
     }
@@ -382,8 +374,7 @@ public struct JustifyCommand: Command {
             return .succeeded
         }
         guard !editor.isCanvasModeActive else {
-            editor.setStatusMessage(editor.l10n["status.justify_disabled_in_canvas_mode"])
-            return .noOp
+            return .noOp(message: editor.l10n["status.justify_disabled_in_canvas_mode"])
         }
         editor.saveUndoSnapshot()
         if let syntax = editor.activeLanguageSyntax,
@@ -393,14 +384,12 @@ public struct JustifyCommand: Command {
             editor.buffer.lines = result.updatedLines
             editor.buffer.lineIndex = result.startLineIndex
             editor.buffer.columnIndex = result.newCursorColumn
-            editor.setStatusMessage(editor.l10n["status.formatted_table"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.formatted_table"])
         }
         let (_, cols) = editor.terminal.getWindowSize()
         let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
         editor.buffer.justifyParagraph(targetWidth: targetWidth)
-        editor.setStatusMessage(editor.l10n["status.justified_paragraph"])
-        return .succeeded
+        return .succeeded(message: editor.l10n["status.justified_paragraph"])
     }
 }
 

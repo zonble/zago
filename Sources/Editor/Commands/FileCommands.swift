@@ -86,8 +86,7 @@ public struct OpenCommand: Command {
     public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard !input.rest.isEmpty else {
             let message = editor.l10n["status.path_required"]
-            editor.setStatusMessage(message)
-            return .failed(message)
+            return .failed(message, message: message)
         }
 
         return editor.openBuffer(path: input.rest)

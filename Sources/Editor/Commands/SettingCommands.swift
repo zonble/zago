@@ -20,15 +20,13 @@ public struct SettingCommand: Command {
 
         let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
         guard let setting = parts.first, !setting.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.path_required"])
         }
 
         let rawValue = parts.count > 1 ? parts[1] : ""
         let value = first == "unset" ? "off" : rawValue
         guard let editorSetting = EditorSettingUpdateParser.parse(setting: setting, value: value) else {
-            editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.path_required"])
         }
         editor.apply(editorSetting)
         return .succeeded
