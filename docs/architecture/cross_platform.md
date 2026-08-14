@@ -18,8 +18,8 @@ Terminal input behavior varies drastically between UNIX-like systems (POSIX `ter
 
 ### Architectural Solution
 `zago` abstracts terminal I/O behind the `EditorTerminal` protocol:
-- **macOS / Linux**: Handled by [`PosixTerminal`](../../Sources/zago/PosixTerminal.swift). Parses VT100 / xterm ANSI escape sequences into unified `Key` structs (`Key.arrowUp`, `Key.ctrl("s")`, etc.).
-- **Windows**: Handled by `WindowsTerminal`. Maps Win32 `VK_*` codes (`VK_LEFT`, `VK_F1`-`VK_F12`, `VK_PRIOR`, `VK_NEXT`) and handles UTF-16 surrogate pairs directly into unified `Key` structs.
+- **macOS / Linux**: Handled by [`PosixTerminal`](../../Sources/zago/Terminal/PosixTerminal.swift). Parses VT100 / xterm ANSI escape sequences into unified `Key` structs (`Key.arrowUp`, `Key.ctrl("s")`, etc.).
+- **Windows**: Handled by [`WindowsTerminal`](../../Sources/zago/Terminal/WindowsTerminal.swift). Maps Win32 console input and handles UTF-16 surrogate pairs directly into unified `Key` structs.
 
 ---
 
@@ -64,14 +64,14 @@ On Windows, Git checkouts use `core.autocrlf = true` by default, writing `\r\n` 
 ### Gotcha A: Windows File Sharing Restrictions (`Win32Error 32 / ERROR_SHARING_VIOLATION`)
 - **Pitfall**: On Windows, Foundation's `data.write(to: url, options: .atomic)` writes to a hidden temporary file and attempts a file handle swap. If an antivirus scanner, indexer, or file watcher holds an open file handle, Windows returns `Win32Error(code: 32)` (`ERROR_SHARING_VIOLATION`).
 - **Solution**:
-  - In [`LocalEditorFileIOStrategy`](../../Sources/zago/LocalEditorFileIOStrategy.swift), non-atomic writes (`options: []`) are used on Windows (`#if os(Windows)`).
+  - In [`LocalEditorFileIOStrategy`](../../Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift), non-atomic writes (`options: []`) are used on Windows (`#if os(Windows)`).
   - In Unit Tests, **all temporary files MUST incorporate a `UUID().uuidString`** to prevent path collisions between parallel Swift Testing runners.
 
 ### Gotcha B: macOS Atomic Save Inode Unlinking (`kqueue` / `O_EVTONLY`)
 - **Pitfall**: Modern macOS text editors (VS Code, Vim, Xcode, TextEdit) save files by **Atomic Replace** (`write temp -> rename temp over target`).
   In macOS `kqueue` (`open(path, O_EVTONLY)`), atomic `rename` unlinks the open file descriptor, emitting `.rename` / `.delete` events to the old inode.
 - **Solution**:
-  [`FileWatcher`](../../Sources/zago/FileWatcher.swift) intercepts `.rename` / `.delete` events and invokes `reopenWatchedFile(at:)`. After a `0.05s` settling delay, it re-opens the file path (binding to the new inode) and triggers the reload prompt.
+  [`DarwinFileWatcher`](../../Sources/zago/FileWatcher/FileWatcher+Darwin.swift) intercepts `.rename` / `.delete` events and invokes `reopenWatchedFile(at:)`. After a `0.05s` settling delay, it re-opens the file path (binding to the new inode) and triggers the reload prompt.
 
 ### Gotcha C: Linux Filesystem Timestamp Resolution (1-Second `mtime` Limit)
 - **Pitfall**: On Linux (ext4 / tmpfs in Linux Docker & CI), Foundation's `FileManager.default.attributesOfItem(atPath:)[.modificationDate]` returns `mtime` with **1-second `time_t` integer resolution**. Fast consecutive writes in unit tests occur within milliseconds, resulting in identical `mtime` values.
@@ -83,7 +83,7 @@ On Windows, Git checkouts use `core.autocrlf = true` by default, writing `\r\n` 
 - **Pitfall**: On Windows NTFS, writing data to a file updates the file stream immediately, but the OS directory entry metadata (such as `.size` and `.modificationDate` returned by `attributesOfItem(atPath:)`) can have a slight flush delay of a few milliseconds in Win32 directory indices.
   Furthermore, if `recordCurrentModificationDate()` runs asynchronously without thread synchronization, a background file watcher thread (polling every 50ms) can inspect `attributesOfItem(atPath:)` after `data.write` creates or modifies the file on disk, but *before* `recordCurrentModificationDate()` updates the baseline snapshot on the main thread. This race condition misinterprets the editor's **own save** as an "external modification", causing false-alarm reload prompts (`.confirmExternalReload`) on Windows!
 - **Solution**:
-  Both [`LocalEditorFileIOStrategy`](../../Sources/zago/LocalEditorFileIOStrategy.swift) and `TestLocalEditorFileIOStrategy` invoke `recordCurrentModificationDate()` immediately upon completing `writeTextFile`, executing snapshot updates synchronously on the watcher's serial queue (`queue.sync { ... }`). This guarantees that background watcher ticks never race with self-save snapshot updates, suppressing false positives consistently across Windows, macOS, and Linux.
+  Both [`LocalEditorFileIOStrategy`](../../Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift) and `TestLocalEditorFileIOStrategy` invoke `recordCurrentModificationDate()` immediately upon completing `writeTextFile`. Windows uses a separate `stateLock` for snapshot updates because its watcher worker owns a long-running background loop; using `queue.sync` from the editor thread would deadlock while that loop is active.
 
 ---
 
@@ -96,7 +96,7 @@ When attempting to save Unicode text containing modern Emojis (e.g. 🚀, 🇹�
 - If left unchecked, saving a file to Big5 silently corrupts all Emojis into `????`!
 
 ### Architectural Solution: Strict Roundtrip Validation
-In [`LocalEditorFileIOStrategy`](../../Sources/zago/LocalEditorFileIOStrategy.swift), `writeTextFile` enforces strict roundtrip verification before touching disk:
+In [`LocalEditorFileIOStrategy`](../../Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift), `writeTextFile` enforces strict roundtrip verification before touching disk:
 
 ```swift
 // 1. Encode text string to data

@@ -4,6 +4,8 @@ import Foundation
     import Darwin
 #elseif canImport(Glibc)
     import Glibc
+#elseif os(Windows)
+    import WinSDK
 #endif
 
 struct ZagoIPCSession: Codable, Equatable, Sendable {
@@ -16,7 +18,13 @@ protocol ZagoIPCSessionLocating {
     func sessions() -> [ZagoIPCSession]
 }
 
-struct DefaultZagoIPCSessionLocator: ZagoIPCSessionLocating {
+#if os(Windows)
+    typealias DefaultZagoIPCSessionLocator = WindowsZagoIPCSessionLocator
+#else
+    typealias DefaultZagoIPCSessionLocator = PosixZagoIPCSessionLocator
+#endif
+
+struct PosixZagoIPCSessionLocator: ZagoIPCSessionLocating {
     let temporaryDirectories: [URL]
 
     init(temporaryDirectory: URL? = nil) {
@@ -28,54 +36,96 @@ struct DefaultZagoIPCSessionLocator: ZagoIPCSessionLocating {
     }
 
     func sessions() -> [ZagoIPCSession] {
-        #if os(Windows)
-            return []
-        #else
-            let fileManager = FileManager.default
+        let fileManager = FileManager.default
 
-            return
-                temporaryDirectories
-                .flatMap { temporaryDirectory -> [URL] in
-                    (try? fileManager.contentsOfDirectory(
-                        at: temporaryDirectory,
-                        includingPropertiesForKeys: [.contentModificationDateKey],
-                        options: [.skipsHiddenFiles]
-                    )) ?? []
+        return
+            temporaryDirectories
+            .flatMap { temporaryDirectory -> [URL] in
+                (try? fileManager.contentsOfDirectory(
+                    at: temporaryDirectory,
+                    includingPropertiesForKeys: [.contentModificationDateKey],
+                    options: [.skipsHiddenFiles]
+                )) ?? []
+            }
+            .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "sock" }
+            .filter { $0.path.utf8CString.count <= ZagoIPCSessionPaths.unixSocketPathByteLimit }
+            .compactMap { socketURL -> (ZagoIPCSession, Date)? in
+                let standardTokenURL = socketURL.deletingPathExtension().appendingPathExtension("token")
+                let explicitPathTokenURL = URL(fileURLWithPath: socketURL.path + ".token")
+                let tokenURL: URL
+                if fileManager.fileExists(atPath: standardTokenURL.path) {
+                    tokenURL = standardTokenURL
+                } else if fileManager.fileExists(atPath: explicitPathTokenURL.path) {
+                    tokenURL = explicitPathTokenURL
+                } else {
+                    return nil
                 }
-                .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "sock" }
-                .filter { $0.path.utf8CString.count <= ZagoIPCSessionPaths.unixSocketPathByteLimit }
-                .compactMap { socketURL -> (ZagoIPCSession, Date)? in
-                    let standardTokenURL = socketURL.deletingPathExtension().appendingPathExtension("token")
-                    let explicitPathTokenURL = URL(fileURLWithPath: socketURL.path + ".token")
-                    let tokenURL: URL
-                    if fileManager.fileExists(atPath: standardTokenURL.path) {
-                        tokenURL = standardTokenURL
-                    } else if fileManager.fileExists(atPath: explicitPathTokenURL.path) {
-                        tokenURL = explicitPathTokenURL
-                    } else {
-                        return nil
-                    }
 
-                    let resourceValues = try? socketURL.resourceValues(forKeys: [.contentModificationDateKey])
-                    let instanceId = socketURL.deletingPathExtension().lastPathComponent
-                    return (
+                let resourceValues = try? socketURL.resourceValues(forKeys: [.contentModificationDateKey])
+                let instanceId = socketURL.deletingPathExtension().lastPathComponent
+                return (
+                    ZagoIPCSession(
+                        instanceId: instanceId,
+                        endpointPath: socketURL.path,
+                        tokenPath: tokenURL.path
+                    ),
+                    resourceValues?.contentModificationDate ?? .distantPast
+                )
+            }
+            .sorted(by: sortByModificationDateThenInstanceId)
+            .map(\.0)
+    }
+}
+
+struct WindowsZagoIPCSessionLocator: ZagoIPCSessionLocating {
+    let temporaryDirectories: [URL]
+
+    init(temporaryDirectory: URL? = nil) {
+        if let temporaryDirectory {
+            self.temporaryDirectories = [temporaryDirectory]
+        } else {
+            self.temporaryDirectories = ZagoIPCSessionPaths.candidateTemporaryDirectories()
+        }
+    }
+
+    func sessions() -> [ZagoIPCSession] {
+        let fileManager = FileManager.default
+
+        return
+            temporaryDirectories
+            .flatMap { temporaryDirectory -> [URL] in
+                (try? fileManager.contentsOfDirectory(
+                    at: temporaryDirectory,
+                    includingPropertiesForKeys: [.contentModificationDateKey],
+                    options: [.skipsHiddenFiles]
+                )) ?? []
+            }
+            .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "token" }
+            .compactMap { tokenURL -> (ZagoIPCSession, Date)? in
+                let resourceValues = try? tokenURL.resourceValues(forKeys: [.contentModificationDateKey])
+                let instanceId = tokenURL.deletingPathExtension().lastPathComponent
+                return (
                         ZagoIPCSession(
                             instanceId: instanceId,
-                            endpointPath: socketURL.path,
+                            endpointPath: #"\\.\pipe\\#(instanceId)"#,
                             tokenPath: tokenURL.path
                         ),
-                        resourceValues?.contentModificationDate ?? .distantPast
-                    )
-                }
-                .sorted { lhs, rhs in
-                    if lhs.1 == rhs.1 {
-                        return lhs.0.instanceId < rhs.0.instanceId
-                    }
-                    return lhs.1 > rhs.1
-                }
-                .map(\.0)
-        #endif
+                    resourceValues?.contentModificationDate ?? .distantPast
+                )
+            }
+            .sorted(by: sortByModificationDateThenInstanceId)
+            .map(\.0)
     }
+}
+
+private func sortByModificationDateThenInstanceId(
+    _ lhs: (ZagoIPCSession, Date),
+    _ rhs: (ZagoIPCSession, Date)
+) -> Bool {
+    if lhs.1 == rhs.1 {
+        return lhs.0.instanceId < rhs.0.instanceId
+    }
+    return lhs.1 > rhs.1
 }
 
 enum ZagoIPCClientError: LocalizedError {
@@ -98,7 +148,7 @@ enum ZagoIPCClientError: LocalizedError {
         case .selectedSessionUnavailable(let instanceId):
             "The selected zago instance '\(instanceId)' is no longer available."
         case .unsupportedPlatform:
-            "The zago MCP bridge cannot connect on this platform because Windows named-pipe IPC is not implemented yet."
+            "The zago MCP bridge cannot connect on this platform."
         case .invalidToken(let path):
             "The zago IPC session token could not be read at \(path)."
         case .endpointPathTooLong(let path):
@@ -268,41 +318,51 @@ final class ZagoIPCClient {
         in session: ZagoIPCSession,
         clientId: String? = nil
     ) throws -> Result {
+        let tokenData: Data
+        do {
+            tokenData = try Data(contentsOf: URL(fileURLWithPath: session.tokenPath))
+        } catch {
+            throw ZagoIPCClientError.invalidToken(session.tokenPath)
+        }
+        guard
+            let token = String(data: tokenData, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !token.isEmpty
+        else {
+            throw ZagoIPCClientError.invalidToken(session.tokenPath)
+        }
+
+        let connectionClientId = clientId ?? makeClientId()
+        let registrationRequest = OutboundRequest(
+            method: "zago.client.register",
+            params: ClientRegistrationParams(
+                auth: token,
+                clientId: connectionClientId,
+                clientName: clientName,
+                agentType: "mcp",
+                color: "cyan"
+            ),
+            id: .int(1)
+        )
+
         #if os(Windows)
-            throw ZagoIPCClientError.unsupportedPlatform
-        #else
-            let tokenData: Data
-            do {
-                tokenData = try Data(contentsOf: URL(fileURLWithPath: session.tokenPath))
-            } catch {
-                throw ZagoIPCClientError.invalidToken(session.tokenPath)
-            }
-            guard
-                let token = String(data: tokenData, encoding: .utf8)?
-                    .trimmingCharacters(in: .whitespacesAndNewlines),
-                !token.isEmpty
-            else {
-                throw ZagoIPCClientError.invalidToken(session.tokenPath)
+            let pipeHandle = try connect(to: session.endpointPath)
+            defer { CloseHandle(pipeHandle) }
+
+            let registration: RegistrationResult = try exchange(registrationRequest, on: pipeHandle)
+            guard registration.registered else {
+                throw ZagoIPCClientError.invalidResponse
             }
 
+            return try exchange(
+                OutboundRequest(method: method, params: params, id: .int(2)),
+                on: pipeHandle
+            )
+        #else
             let fileDescriptor = try connect(to: session.endpointPath)
             defer { close(fileDescriptor) }
 
-            let connectionClientId = clientId ?? makeClientId()
-            let registration: RegistrationResult = try exchange(
-                OutboundRequest(
-                    method: "zago.client.register",
-                    params: ClientRegistrationParams(
-                        auth: token,
-                        clientId: connectionClientId,
-                        clientName: clientName,
-                        agentType: "mcp",
-                        color: "cyan"
-                    ),
-                    id: .int(1)
-                ),
-                on: fileDescriptor
-            )
+            let registration: RegistrationResult = try exchange(registrationRequest, on: fileDescriptor)
             guard registration.registered else {
                 throw ZagoIPCClientError.invalidResponse
             }
@@ -318,7 +378,88 @@ final class ZagoIPCClient {
         "\(clientIdPrefix)-\(UUID().uuidString.lowercased())"
     }
 
-    #if !os(Windows)
+    #if os(Windows)
+        private func connect(to path: String) throws -> HANDLE {
+            _ = withWindowsWideString(path) { pathPointer in
+                WaitNamedPipeW(pathPointer, 5_000)
+            }
+            let handle = withWindowsWideString(path) { pathPointer in
+                CreateFileW(
+                    pathPointer,
+                    DWORD(GENERIC_READ) | DWORD(bitPattern: GENERIC_WRITE),
+                    0,
+                    nil,
+                    DWORD(OPEN_EXISTING),
+                    0,
+                    nil
+                )
+            }
+            guard handle != INVALID_HANDLE_VALUE, handle != nil else {
+                throw ZagoIPCClientError.connectionFailed(path)
+            }
+            return handle!
+        }
+
+        private func exchange<Request: Encodable, Result: Decodable>(
+            _ request: Request,
+            on pipeHandle: HANDLE
+        ) throws -> Result {
+            var requestData = try JSONEncoder().encode(request)
+            requestData.append(UInt8(ascii: "\n"))
+            try writeAll(requestData, to: pipeHandle)
+
+            let responseData = try readLine(from: pipeHandle)
+            let response: InboundResponse<Result>
+            do {
+                response = try JSONDecoder().decode(InboundResponse<Result>.self, from: responseData)
+            } catch {
+                throw ZagoIPCClientError.invalidResponse
+            }
+            if let error = response.error {
+                throw ZagoIPCClientError.rpc(code: error.code, message: error.message)
+            }
+            guard let result = response.result else {
+                throw ZagoIPCClientError.invalidResponse
+            }
+            return result
+        }
+
+        private func writeAll(_ data: Data, to pipeHandle: HANDLE) throws {
+            var offset = 0
+            while offset < data.count {
+                var written: DWORD = 0
+                let ok = data.withUnsafeBytes { bytes -> Bool in
+                    guard let baseAddress = bytes.baseAddress else { return true }
+                    return WriteFile(
+                        pipeHandle,
+                        baseAddress.advanced(by: offset),
+                        DWORD(data.count - offset),
+                        &written,
+                        nil
+                    )
+                }
+                guard ok, written > 0 else { throw ZagoIPCClientError.writeFailed }
+                offset += Int(written)
+            }
+        }
+
+        private func readLine(from pipeHandle: HANDLE) throws -> Data {
+            var accumulated = Data()
+            var buffer = [UInt8](repeating: 0, count: 4_096)
+
+            while accumulated.count <= maxResponseBytes {
+                var bytesRead: DWORD = 0
+                let ok = ReadFile(pipeHandle, &buffer, DWORD(buffer.count), &bytesRead, nil)
+                guard ok, bytesRead > 0 else { throw ZagoIPCClientError.disconnected }
+                accumulated.append(buffer, count: Int(bytesRead))
+
+                if let newlineIndex = accumulated.firstIndex(of: UInt8(ascii: "\n")) {
+                    return accumulated.prefix(upTo: newlineIndex)
+                }
+            }
+            throw ZagoIPCClientError.responseTooLarge
+        }
+    #else
         private func connect(to path: String) throws -> Int32 {
             #if canImport(Glibc)
                 let socketType = Int32(SOCK_STREAM.rawValue)
@@ -453,6 +594,16 @@ final class ZagoIPCClient {
             #else
                 Glibc.connect(socket, address, addressLength)
             #endif
+        }
+    }
+#endif
+
+#if os(Windows)
+    private func withWindowsWideString<Result>(_ string: String, _ body: (UnsafePointer<WCHAR>) -> Result) -> Result {
+        var utf16 = Array(string.utf16)
+        utf16.append(0)
+        return utf16.withUnsafeBufferPointer { buffer in
+            body(buffer.baseAddress!)
         }
     }
 #endif

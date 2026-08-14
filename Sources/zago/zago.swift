@@ -255,7 +255,7 @@ struct Zago: ParsableCommand {
             var buf = [UInt8](repeating: 0, count: 4096)
             while true {
                 #if os(Windows)
-                    let n = read(STDIN_FILENO, &buf, UInt32(buf.count))
+                    let n = _read(STDIN_FILENO, &buf, UInt32(buf.count))
                 #else
                     let n = read(STDIN_FILENO, &buf, buf.count)
                 #endif
@@ -386,14 +386,13 @@ struct Zago: ParsableCommand {
             #endif
         }
 
-        var interactiveOptions = baseOptions
-        interactiveOptions.showRuler = ruler
-        interactiveOptions.enableSyntax = enableSyntax
-        if ipc {
-            interactiveOptions.ipcEnabled = true
-        } else if noIpc {
-            interactiveOptions.ipcEnabled = false
-        }
+        let interactiveOptions = Self.makeInteractiveOptions(
+            baseOptions: baseOptions,
+            ruler: ruler,
+            enableSyntax: enableSyntax,
+            ipc: ipc,
+            noIpc: noIpc
+        )
 
         for file in targetFiles {
             let normalized = fileIOStrategy.normalizePath(file, isDirectory: false)
@@ -445,6 +444,24 @@ struct Zago: ParsableCommand {
         guard let value else { return nil }
         let normalized = value.lowercased()
         return normalized == "true" || normalized == "1" || normalized == "on" || normalized == "yes"
+    }
+
+    static func makeInteractiveOptions(
+        baseOptions: EditorOptions,
+        ruler: Bool,
+        enableSyntax: Bool?,
+        ipc: Bool,
+        noIpc: Bool
+    ) -> EditorOptions {
+        var interactiveOptions = baseOptions
+        interactiveOptions.showRuler = ruler ? true : nil
+        interactiveOptions.enableSyntax = enableSyntax
+        if ipc {
+            interactiveOptions.ipcEnabled = true
+        } else if noIpc {
+            interactiveOptions.ipcEnabled = false
+        }
+        return interactiveOptions
     }
 
     private static func parseLanguageOption(_ value: String?) -> Language? {

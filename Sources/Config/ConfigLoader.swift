@@ -27,22 +27,23 @@ public final class ConfigLoader {
     /// Loads configuration with cascading priority (~/.zagorc -> ./.zagorc -> ~/.serc -> ./.serc).
     public func loadConfig() -> EditorConfig {
         var config = EditorConfig()
+        var loadedPaths: Set<String> = []
         let homeDir = provider.homeDirectoryPath()
         let globalZagorc = (homeDir as NSString).appendingPathComponent(".zagorc")
         let globalSerc = (homeDir as NSString).appendingPathComponent(".serc")
         if provider.fileExists(atPath: globalZagorc) {
-            parseConfigFile(at: globalZagorc, into: &config)
+            parseConfigFile(at: globalZagorc, into: &config, loadedPaths: &loadedPaths)
         } else if provider.fileExists(atPath: globalSerc) {
-            parseConfigFile(at: globalSerc, into: &config)
+            parseConfigFile(at: globalSerc, into: &config, loadedPaths: &loadedPaths)
         }
 
         let currentDir = provider.currentDirectoryPath()
         let localZagorc = (currentDir as NSString).appendingPathComponent(".zagorc")
         let localSerc = (currentDir as NSString).appendingPathComponent(".serc")
         if provider.fileExists(atPath: localZagorc) {
-            parseConfigFile(at: localZagorc, into: &config)
+            parseConfigFile(at: localZagorc, into: &config, loadedPaths: &loadedPaths)
         } else if provider.fileExists(atPath: localSerc) {
-            parseConfigFile(at: localSerc, into: &config)
+            parseConfigFile(at: localSerc, into: &config, loadedPaths: &loadedPaths)
         }
         return config
     }
@@ -55,6 +56,12 @@ public final class ConfigLoader {
         } catch {
             // An unreadable optional config file is ignored.
         }
+    }
+
+    private func parseConfigFile(at path: String, into config: inout EditorConfig, loadedPaths: inout Set<String>) {
+        let standardizedPath = (path as NSString).standardizingPath
+        guard loadedPaths.insert(standardizedPath).inserted else { return }
+        parseConfigFile(at: path, into: &config)
     }
 
     public func parseConfigContent(_ content: String, into config: inout EditorConfig) {
@@ -289,7 +296,7 @@ public final class ConfigLoader {
             set sublinenumbers off
             set syntax on
             set tab 4
-            set auto-reload on
+            set autoreload on
             set trim-trailing-whitespace off
             set border single
             set arrow solid
