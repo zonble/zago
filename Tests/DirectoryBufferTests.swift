@@ -36,7 +36,7 @@ import Testing
         let l10n = L10n()
         #expect(dirBuffer.lines.count >= 5)
         #expect(dirBuffer.lines[0].contains(l10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
-        #expect(dirBuffer.lines[3] == l10n.dirBufUpDir)
+        #expect(dirBuffer.lines[3] == "  \(l10n.dirBufUpDir)")
 
         // Contains subfolder and file
         #expect(dirBuffer.lines.contains("  ▸ subfolder/"))
@@ -58,7 +58,7 @@ import Testing
         #expect(dirBuffer.lines.count >= 4)
         #expect(dirBuffer.lines[0].contains("目錄:"))
         #expect(dirBuffer.lines[1] == l10n.dirBufHeaderInstructions)
-        #expect(dirBuffer.lines[3] == l10n.dirBufUpDir)
+        #expect(dirBuffer.lines[3] == "  \(l10n.dirBufUpDir)")
     }
 
     @Test func testDirectoryBufferNavigationAndFileOpening() throws {

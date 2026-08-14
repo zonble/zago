@@ -61,7 +61,7 @@ public final class DirectoryBuffer: TextBuffer {
         newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr))
         newLines.append(l10n.dirBufHeaderInstructions)
         newLines.append("")
-        newLines.append(l10n.dirBufUpDir)
+        newLines.append("  \(l10n.dirBufUpDir)")
 
         if let contents = try? fileIO.listDirectory(at: expandedPath) {
             let sorted = contents.sorted { lhs, rhs in
