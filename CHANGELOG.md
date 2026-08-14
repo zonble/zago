@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+## [1.3.0] - 2026-08-14
+
+Core editor reliability, typed command workflows, and terminal UI improvements.
+
+### Added
+
+- **Command Bar Editing**: Added cut, copy, paste, selection with Shift+Arrow, and Ctrl+X exit behavior.
+- **Menu Shortcuts**: Added underlined menu shortcuts and shortcut labels for second-level menu items.
+- **IPC Validation**: Added a live IPC roundtrip test for CI.
+- **NanoRC Includes**: Added wildcard includes such as `include "/opt/homebrew/share/nano/*.nanorc"`.
+
+### Changed
+
+- **Editor Architecture**: Split editor models and tests by domain, centralized ANSI styling, and routed command, file, and prompt workflows through typed results.
+- **Table Mode**: Restricted navigation, search, replacement, comments, and cursor operations to the active cell.
+- **Help Bar**: Added localization and support for rendering beyond 80 columns.
+
+### Fixed
+
+- **File Permissions**: Handled files without read or write permission through the editor file workflow.
+- **Terminal Layout**: Fixed tab display widths, directory buffer alignment, and directory buffer cursor positioning when the ruler is enabled.
+
 ## 1.2.5 - 2026-08-09
 
 Fix CJK Markdown list softwrap hanging indent terminal cursor positioning and bundle missing `_FoundationICU.dll` in Windows release package.
