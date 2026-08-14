@@ -291,6 +291,22 @@ struct RendererChromeTests {
         #expect(zhLine.contains("編輯(\(ANSIStyle.underline)E\(ANSIStyle.underlineOff))"))
     }
 
+    @Test func testMenuDropdownItemsShowShortcutKeys() throws {
+        let renderer = Renderer()
+
+        let enEditor = Editor(language: .en)
+        enEditor.isMenuBarActive = true
+        enEditor.menuBar.categoryIndex = 0
+        let (_, _, enLines) = renderer.generateDropdownOverlayLines(editor: enEditor, cols: 80)
+        #expect(enLines.contains(where: { $0.contains("\(ANSIStyle.underline)N\(ANSIStyle.underlineOff)ew Buffer") }))
+
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.isMenuBarActive = true
+        zhEditor.menuBar.categoryIndex = 0
+        let (_, _, zhLines) = renderer.generateDropdownOverlayLines(editor: zhEditor, cols: 80)
+        #expect(zhLines.contains(where: { $0.contains("新建空白頁 (\(ANSIStyle.underline)N\(ANSIStyle.underlineOff))") }))
+    }
+
     @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {
         let editor = Editor(language: .en)
         editor.isMenuBarActive = true
