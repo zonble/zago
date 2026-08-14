@@ -522,9 +522,14 @@ extension Renderer {
         let inputChars = Array(editor.promptInputText)
         let cursorDisplayWidth = inputChars[..<clampedCursorIdx].reduce(0) { $0 + $1.displayWidth }
         let totalInputDisplayWidth = inputChars.reduce(0) { $0 + $1.displayWidth }
+        let selectionRange = editor.promptController.selectionRange()
 
         if totalInputDisplayWidth < maxInputWidth {
-            let styledText = "\(promptPrefix)\(editor.promptInputText)".ansiStyled(style: ANSIStyle.bold)
+            let styledInput = styledPromptInput(
+                inputChars.enumerated().map { (index: $0.offset, character: $0.element) },
+                selectionRange: selectionRange
+            )
+            let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(styledInput)\(ANSIStyle.reset)"
             let cursorCol = prefixWidth + cursorDisplayWidth + 1
             return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
         }
@@ -534,7 +539,7 @@ extension Renderer {
             windowStartCol = cursorDisplayWidth - maxInputWidth + 1
         }
 
-        var visibleChars: [Character] = []
+        var visibleChars: [(index: Int?, character: Character)] = []
         var currentWidth = 0
         var cursorColInWindow = 0
 
@@ -547,35 +552,52 @@ extension Renderer {
             }
 
             if idx == clampedCursorIdx {
-                cursorColInWindow = visibleChars.reduce(0) { $0 + $1.displayWidth }
+                cursorColInWindow = visibleChars.reduce(0) { $0 + $1.character.displayWidth }
             }
 
             if currentWidth + chWidth > maxInputWidth {
                 break
             }
 
-            visibleChars.append(ch)
+            visibleChars.append((index: idx, character: ch))
             currentWidth += chWidth
         }
 
         if clampedCursorIdx == inputChars.count {
-            cursorColInWindow = visibleChars.reduce(0) { $0 + $1.displayWidth }
+            cursorColInWindow = visibleChars.reduce(0) { $0 + $1.character.displayWidth }
         }
 
         if windowStartCol > 0 && !visibleChars.isEmpty {
-            visibleChars[0] = "$"
+            visibleChars[0] = (index: nil, character: "$")
         }
 
-        let visibleWidth = visibleChars.reduce(0) { $0 + $1.displayWidth }
+        let visibleWidth = visibleChars.reduce(0) { $0 + $1.character.displayWidth }
         if windowStartCol + visibleWidth < totalInputDisplayWidth && visibleChars.count > 1 {
-            visibleChars[visibleChars.count - 1] = "$"
+            visibleChars[visibleChars.count - 1] = (index: nil, character: "$")
         }
 
-        let visibleString = String(visibleChars)
-        let styledText = "\(promptPrefix)\(visibleString)".ansiStyled(style: ANSIStyle.bold)
+        let styledInput = styledPromptInput(visibleChars, selectionRange: selectionRange)
+        let styledText = "\(ANSIStyle.bold)\(promptPrefix)\(styledInput)\(ANSIStyle.reset)"
         let cursorCol = prefixWidth + cursorColInWindow + 1
 
         return RenderedPrompt(text: styledText, cursorCol: min(cols, cursorCol))
+    }
+
+    private func styledPromptInput(
+        _ chars: [(index: Int?, character: Character)],
+        selectionRange: Range<Int>?
+    ) -> String {
+        var output = ""
+        var isSelected = false
+        for entry in chars {
+            let selected = entry.index.map { selectionRange?.contains($0) == true } ?? false
+            if selected != isSelected {
+                output += selected ? ANSIStyle.boldInverse : ANSIStyle.bold
+                isSelected = selected
+            }
+            output.append(entry.character)
+        }
+        return output
     }
 
     /// Generates WordStar-style ruler bar string.

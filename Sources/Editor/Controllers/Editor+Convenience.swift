@@ -6,12 +6,19 @@ extension Editor {
 
     var promptInputText: String {
         get { promptController.inputText }
-        set { promptController.inputText = newValue }
+        set {
+            promptController.inputText = newValue
+            promptController.cursorIndex = min(promptController.cursorIndex, newValue.count)
+            promptController.selectionAnchorIndex = nil
+        }
     }
 
     var promptCursorIndex: Int {
         get { promptController.cursorIndex }
-        set { promptController.cursorIndex = newValue }
+        set {
+            promptController.cursorIndex = max(0, min(newValue, promptController.inputText.count))
+            promptController.selectionAnchorIndex = nil
+        }
     }
 
     var promptCompletionText: String? {

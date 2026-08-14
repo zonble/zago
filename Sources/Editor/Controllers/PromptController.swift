@@ -32,6 +32,9 @@ public final class PromptController: KeyInputHandler {
     /// Cursor position in prompt input text.
     public var cursorIndex: Int = 0
 
+    /// Selection anchor in prompt input text, or nil when no prompt text is selected.
+    public var selectionAnchorIndex: Int? = nil
+
     /// Autocompletion ghost text.
     public var completionText: String? = nil
 
@@ -52,6 +55,7 @@ public final class PromptController: KeyInputHandler {
         mode = .none
         inputText = ""
         cursorIndex = 0
+        selectionAnchorIndex = nil
         completionText = nil
     }
 
@@ -66,6 +70,10 @@ public final class PromptController: KeyInputHandler {
         guard isActive else { return false }
         if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
             cancel()
+            return true
+        }
+        if (key == .ctrl("X") || key == .ctrl("x")), isTextEditingPromptMode {
+            exitEditorFromPrompt()
             return true
         }
         processPromptKey(key)
@@ -118,6 +126,7 @@ public final class PromptController: KeyInputHandler {
         inputText = ""
         completionText = nil
         cursorIndex = 0
+        selectionAnchorIndex = nil
     }
 
     /// Processes keyboard input when in prompt mode.
@@ -128,6 +137,9 @@ public final class PromptController: KeyInputHandler {
 
         if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
             cancel()
+            return
+        }
+        if handlePromptEditingKeys(key) {
             return
         }
 
@@ -196,6 +208,7 @@ public final class PromptController: KeyInputHandler {
                 completion(script)
             case .arrowUp:
                 completionText = nil
+                selectionAnchorIndex = nil
                 if logoHistoryIndex > 0 {
                     logoHistoryIndex -= 1
                     inputText = logoHistory[logoHistoryIndex]
@@ -203,6 +216,7 @@ public final class PromptController: KeyInputHandler {
                 }
             case .arrowDown:
                 completionText = nil
+                selectionAnchorIndex = nil
                 if logoHistoryIndex < logoHistory.count - 1 {
                     logoHistoryIndex += 1
                     inputText = logoHistory[logoHistoryIndex]
@@ -239,6 +253,7 @@ public final class PromptController: KeyInputHandler {
             let raw = inputText
             let result = trimWhitespace ? raw.trimmingCharacters(in: .whitespacesAndNewlines) : raw
             mode = .none
+            selectionAnchorIndex = nil
             completion(trimWhitespace && result.isEmpty ? nil : result)
 
         case .backspace:
@@ -255,10 +270,12 @@ public final class PromptController: KeyInputHandler {
     /// Helper for prompt inline character insertion at cursorIndex.
     public func insertPromptChar(_ ch: Character) {
         completionText = nil
+        _ = deletePromptSelectionIfNeeded()
         let clamped = max(0, min(cursorIndex, inputText.count))
         let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
         inputText.insert(ch, at: idx)
         cursorIndex = clamped + 1
+        selectionAnchorIndex = nil
     }
 
     /// Helper to clear the entire prompt input line.
@@ -266,11 +283,15 @@ public final class PromptController: KeyInputHandler {
         completionText = nil
         inputText = ""
         cursorIndex = 0
+        selectionAnchorIndex = nil
     }
 
     /// Helper for prompt inline backspace deletion.
     public func deletePromptBackspace() {
         completionText = nil
+        if deletePromptSelectionIfNeeded() {
+            return
+        }
         if cursorIndex > 0 && !inputText.isEmpty {
             let clamped = max(1, min(cursorIndex, inputText.count))
             let idx = inputText.index(inputText.startIndex, offsetBy: clamped - 1)
@@ -282,6 +303,9 @@ public final class PromptController: KeyInputHandler {
     /// Helper for prompt inline delete key deletion.
     public func deletePromptDelete() {
         completionText = nil
+        if deletePromptSelectionIfNeeded() {
+            return
+        }
         if cursorIndex < inputText.count && !inputText.isEmpty {
             let clamped = max(0, min(cursorIndex, inputText.count - 1))
             let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
@@ -294,31 +318,70 @@ public final class PromptController: KeyInputHandler {
         switch key {
         case .arrowLeft, .ctrl("B"):
             cursorIndex = max(0, cursorIndex - 1)
+            selectionAnchorIndex = nil
             return true
         case .arrowRight, .ctrl("F"):
             cursorIndex = min(inputText.count, cursorIndex + 1)
+            selectionAnchorIndex = nil
             return true
-        case .ctrlShift("b"), .ctrlShift("B"):
+        case .shiftArrowLeft, .ctrlShiftArrowLeft, .ctrlShift("b"), .ctrlShift("B"):
+            extendPromptSelection(to: max(0, cursorIndex - 1))
+            return true
+        case .shiftArrowRight, .ctrlShiftArrowRight, .ctrlShift("f"), .ctrlShift("F"):
+            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
+            return true
+        case .ctrlArrowLeft:
             movePromptWordBackward()
+            selectionAnchorIndex = nil
             return true
-        case .ctrlShift("f"), .ctrlShift("F"):
+        case .ctrlArrowRight:
             movePromptWordForward()
+            selectionAnchorIndex = nil
             return true
         case .ctrl("A"), .home:
             cursorIndex = 0
+            selectionAnchorIndex = nil
             return true
 
         case .ctrl("E"), .end:
             cursorIndex = inputText.count
+            selectionAnchorIndex = nil
             return true
 
-        case .ctrlBackspace, .ctrl("U"):
+        case .ctrlBackspace:
             clearPromptLine()
             return true
         case .delete, .ctrl("D"):
             deletePromptDelete()
             return true
         default:
+            return false
+        }
+    }
+
+    private func handlePromptEditingKeys(_ key: Key) -> Bool {
+        guard isTextEditingPromptMode else { return false }
+        switch key {
+        case .ctrl("K"), .ctrl("k"):
+            cutPromptSelectionOrSuffix()
+            return true
+        case .ctrl("U"), .ctrl("u"):
+            pastePromptClipboard()
+            return true
+        case .alt("w"), .alt("W"):
+            copyPromptSelection()
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var isTextEditingPromptMode: Bool {
+        switch mode {
+        case .saveFilePath, .search, .insertFilePath, .spellCheck, .logoMacro, .fillText, .tableDimensions,
+            .gotoLine:
+            return true
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .logoReadWord, .logoReadChar:
             return false
         }
     }
@@ -366,6 +429,90 @@ public final class PromptController: KeyInputHandler {
         }
     }
 
+    private func exitEditorFromPrompt() {
+        mode = .none
+        inputText = ""
+        cursorIndex = 0
+        completionText = nil
+        selectionAnchorIndex = nil
+        guard let editor else { return }
+        _ = editor.commandRegistry.dispatch(id: .fileExit, editor: editor)
+    }
+
+    private func extendPromptSelection(to newCursorIndex: Int) {
+        completionText = nil
+        let clamped = max(0, min(newCursorIndex, inputText.count))
+        if selectionAnchorIndex == nil {
+            selectionAnchorIndex = cursorIndex
+        }
+        cursorIndex = clamped
+        if selectionRange() == nil {
+            selectionAnchorIndex = nil
+        }
+    }
+
+    public func selectionRange() -> Range<Int>? {
+        guard let anchor = selectionAnchorIndex else { return nil }
+        let start = max(0, min(anchor, cursorIndex, inputText.count))
+        let end = min(inputText.count, max(anchor, cursorIndex, 0))
+        guard start < end else { return nil }
+        return start..<end
+    }
+
+    private func selectedPromptText() -> String? {
+        guard let range = selectionRange() else { return nil }
+        let chars = Array(inputText)
+        return String(chars[range])
+    }
+
+    @discardableResult
+    private func deletePromptSelectionIfNeeded() -> Bool {
+        guard let range = selectionRange() else {
+            selectionAnchorIndex = nil
+            return false
+        }
+        var chars = Array(inputText)
+        chars.removeSubrange(range)
+        inputText = String(chars)
+        cursorIndex = range.lowerBound
+        selectionAnchorIndex = nil
+        completionText = nil
+        return true
+    }
+
+    private func copyPromptSelection() {
+        guard let text = selectedPromptText(), !text.isEmpty else { return }
+        editor?.clipboardText = text
+        completionText = nil
+    }
+
+    private func cutPromptSelectionOrSuffix() {
+        completionText = nil
+        if let text = selectedPromptText(), !text.isEmpty {
+            editor?.clipboardText = text
+            _ = deletePromptSelectionIfNeeded()
+            return
+        }
+        let clamped = max(0, min(cursorIndex, inputText.count))
+        let chars = Array(inputText)
+        guard clamped < chars.count else { return }
+        editor?.clipboardText = String(chars[clamped...])
+        inputText = String(chars[..<clamped])
+        cursorIndex = clamped
+        selectionAnchorIndex = nil
+    }
+
+    private func pastePromptClipboard() {
+        guard let text = editor?.clipboardText, !text.isEmpty else { return }
+        completionText = nil
+        _ = deletePromptSelectionIfNeeded()
+        let clamped = max(0, min(cursorIndex, inputText.count))
+        let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
+        inputText.insert(contentsOf: text, at: idx)
+        cursorIndex = clamped + text.count
+        selectionAnchorIndex = nil
+    }
+
     private func movePromptWordBackward() {
         let textChars = Array(inputText)
         if cursorIndex == 0 { return }
@@ -411,6 +558,7 @@ public final class PromptController: KeyInputHandler {
 
     private func replacePromptPrefix(_ replacement: String) {
         completionText = nil
+        selectionAnchorIndex = nil
         let clamped = max(0, min(cursorIndex, inputText.count))
         let splitIndex = inputText.index(inputText.startIndex, offsetBy: clamped)
         inputText = replacement + inputText[splitIndex...]
