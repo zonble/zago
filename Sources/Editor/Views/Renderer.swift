@@ -420,9 +420,7 @@ public final class Renderer {
                     boxLine: dropdownBoxLines[boxIdx],
                     dropdownStartCol: dropdownStartCol,
                     dropdownBoxWidth: dropdownBoxWidth,
-                    cols: cols,
-                    showLineNumbers: editor.displayConfig.showLineNumbers,
-                    gutterWidth: gutterWidth
+                    cols: cols
                 )
                 output += sliced + "\r\n"
             } else {

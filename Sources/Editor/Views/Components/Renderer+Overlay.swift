@@ -4,15 +4,22 @@ import TextMetrics
 
 extension Renderer {
     /// Slices line text (including ANSI syntax highlight sequences) cleanly to insert a 2D dropdown box segment.
+    ///
+    /// - Parameters:
+    ///   - baseFullLineStr: The already-rendered full screen line that the dropdown segment will overlay.
+    ///   - boxLine: The pre-rendered dropdown box segment to place at `dropdownStartCol`.
+    ///   - dropdownStartCol: Zero-based visual column where `boxLine` starts.
+    ///   - dropdownBoxWidth: Display width occupied by `boxLine`.
+    ///   - cols: Total terminal column count used to pad the right-side remainder.
+    ///   - isDim: Whether to dim the non-overlay text around the dropdown segment.
+    /// - Returns: A line composed from the left remainder, dropdown segment, and right remainder.
     func sliceOverlayLine(
         baseFullLineStr: String,
         boxLine: String,
         dropdownStartCol: Int,
         dropdownBoxWidth: Int,
         cols: Int,
-        isDim: Bool = false,
-        showLineNumbers: Bool = false,
-        gutterWidth: Int = 0
+        isDim: Bool = false
     ) -> String {
         var leftStr = ""
         var rightStr = ""
