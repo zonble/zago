@@ -38,6 +38,103 @@ import Testing
     #expect(editor.currentTableCell == nil)
 }
 
+@Test func testCanvasTableModeBacktabSyncsVisualCursorToPreviousCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ Left           │ Right          │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 20
+    editor.switchToCanvasMode()
+    editor.tableModeController.toggleTableMode()
+
+    #expect(editor.isCanvasModeActive == true)
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell?.minCol == 17)
+    #expect(editor.canvasVisualColumn == 20)
+
+    editor.processKey(.backtab)
+
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.buffer.columnIndex == 1)
+    #expect(editor.canvasVisualColumn == 1)
+    #expect(editor.renderer.render(editor: editor, rows: 8, cols: 40).contains("\u{1B}[3;7H"))
+}
+
+@Test func testTableModeNumericGotoStaysInCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ first          │ other          │",
+        "├────────────────┼────────────────┤",
+        "│ second         │ target         │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+
+    editor.promptLogoMacro()
+    for ch in "4,20" {
+        editor.processKey(.char(ch))
+    }
+    editor.processKey(.enter)
+
+    #expect(editor.currentTableCell?.minLine == 0)
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 16)
+}
+
+@Test func testTableModeGotoPromptStaysInCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ first          │ other          │",
+        "├────────────────┼────────────────┤",
+        "│ second         │ target         │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+
+    editor.processKey(.alt("/"))
+    for ch in "4 20" {
+        editor.processKey(.char(ch))
+    }
+    editor.processKey(.enter)
+
+    #expect(editor.currentTableCell?.minLine == 0)
+    #expect(editor.currentTableCell?.minCol == 0)
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 16)
+}
+
+@Test func testTableModeSpellCheckIsScopedToCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ 123            │ qxzywkwk       │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+
+    editor.processKey(.ctrl("T"))
+
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 3)
+    if case .none = editor.currentPromptMode {
+        #expect(Bool(true))
+    } else {
+        #expect(Bool(false), "Spell check should not prompt for a word outside the current table cell")
+    }
+}
+
 @Test func testCreateTableDimensionsPrompt() throws {
     let editor = Editor()
     #expect(editor.isTableModeActive == false)
@@ -485,8 +582,8 @@ import Testing
     #expect(editor.statusMessage == "[ GOTO disabled in Table Mode ]")
 
     editor.goToLocation(line: 1, column: 1)
-    #expect(editor.statusMessage == "[ GOTO disabled in Table Mode ]")
     #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.buffer.columnIndex == 1)
 }
 
 @Test func testTableModeBlocksProcedureContainingLogoDrawingCommand() throws {

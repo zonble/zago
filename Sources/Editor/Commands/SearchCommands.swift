@@ -110,6 +110,24 @@ public struct SubstituteCommand: Command {
         let isCaseInsensitive = parsed.flags.contains("i")
         let useRegex = parsed.flags.contains("r") || editor.isRegexSearchEnabled
 
+        if editor.isTableModeActive, editor.currentTableCell != nil {
+            let result = substituteCurrentTableCell(
+                parsed: parsed,
+                editor: editor,
+                isGlobal: isGlobal,
+                isCaseInsensitive: isCaseInsensitive,
+                useRegex: useRegex)
+            if result.replacements > 0 {
+                editor.saveUndoSnapshot()
+                editor.buffer.lines = result.lines
+                editor.buffer.isModified = true
+                editor.setStatusMessage(editor.l10n.replacedOccurrences(result.replacements))
+            } else {
+                editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
+            }
+            return .handled
+        }
+
         let targetRange: ClosedRange<Int>
         if parsed.isPercent {
             targetRange = 0...(max(0, editor.buffer.lines.count - 1))
@@ -238,6 +256,85 @@ public struct SubstituteCommand: Command {
         return ParsedSubstitute(
             isPercent: isPercent, delimiter: delim, search: search, replace: replace, flags: flags
         )
+    }
+
+    private func substituteCurrentTableCell(
+        parsed: ParsedSubstitute,
+        editor: Editor,
+        isGlobal: Bool,
+        isCaseInsensitive: Bool,
+        useRegex: Bool
+    ) -> (lines: [String], replacements: Int) {
+        var totalReplacements = 0
+        var newLines = editor.buffer.lines
+
+        for lineIndex in newLines.indices {
+            guard let bounds = editor.tableModeController.currentCellInnerBounds(on: lineIndex) else { continue }
+            let line = newLines[lineIndex]
+            let chars = Array(line)
+            guard bounds.start <= bounds.end, bounds.end <= chars.count else { continue }
+            let innerText = String(chars[bounds.start..<bounds.end])
+            let innerWidth = innerText.displayWidth
+            let replaced: String
+            let replacements: Int
+
+            if useRegex,
+                let regex = try? NSRegularExpression(
+                    pattern: parsed.search,
+                    options: isCaseInsensitive ? [.caseInsensitive] : []
+                )
+            {
+                let nsRange = NSRange(innerText.startIndex..<innerText.endIndex, in: innerText)
+                let matches = regex.matches(in: innerText, options: [], range: nsRange)
+                if matches.isEmpty { continue }
+                if isGlobal {
+                    replacements = matches.count
+                    replaced = regex.stringByReplacingMatches(
+                        in: innerText, options: [], range: nsRange, withTemplate: parsed.replace)
+                } else if let firstMatch = matches.first {
+                    replacements = 1
+                    replaced = regex.stringByReplacingMatches(
+                        in: innerText, options: [], range: firstMatch.range, withTemplate: parsed.replace)
+                } else {
+                    continue
+                }
+            } else {
+                let compareOptions: String.CompareOptions = isCaseInsensitive ? [.caseInsensitive] : []
+                if isGlobal {
+                    var working = innerText
+                    var searchStart = working.startIndex
+                    var countOnLine = 0
+                    while searchStart < working.endIndex,
+                        let range = working.range(
+                            of: parsed.search,
+                            options: compareOptions,
+                            range: searchStart..<working.endIndex)
+                    {
+                        countOnLine += 1
+                        working.replaceSubrange(range, with: parsed.replace)
+                        searchStart =
+                            working.index(range.lowerBound, offsetBy: parsed.replace.count, limitedBy: working.endIndex)
+                            ?? working.endIndex
+                    }
+                    guard countOnLine > 0 else { continue }
+                    replacements = countOnLine
+                    replaced = working
+                } else {
+                    guard let range = innerText.range(of: parsed.search, options: compareOptions) else { continue }
+                    var working = innerText
+                    working.replaceSubrange(range, with: parsed.replace)
+                    replacements = 1
+                    replaced = working
+                }
+            }
+
+            let prefix = String(chars[..<bounds.start])
+            let suffix = String(chars[bounds.end...])
+            newLines[lineIndex] = prefix + replaced.paddedToDisplayWidth(innerWidth) + suffix
+            totalReplacements += replacements
+        }
+
+        return (lines: newLines, replacements: totalReplacements)
     }
 }
 

@@ -107,7 +107,18 @@ extension Editor {
     /// Prompts user to check and replace misspelled words (^T / F12).
     func promptSpellCheck() {
         let syntaxName = activeLanguageSyntax?.name
-        if let target = spellChecker.findNextMisspelled(in: buffer, syntaxName: syntaxName) {
+        let target =
+            if isTableModeActive {
+                spellChecker.findNextMisspelled(
+                    lines: tableScopedSpellCheckLines(),
+                    filePath: buffer.filePath,
+                    startingAt: buffer.lineIndex,
+                    startingCol: buffer.columnIndex,
+                    syntaxName: syntaxName)
+            } else {
+                spellChecker.findNextMisspelled(in: buffer, syntaxName: syntaxName)
+            }
+        if let target {
             buffer.lineIndex = target.line
             buffer.columnIndex = target.col
             promptInputText = target.word
@@ -134,6 +145,23 @@ extension Editor {
         } else {
             setStatusMessage(l10n["status.no_misspelled"])
         }
+    }
+
+    private func tableScopedSpellCheckLines() -> [String] {
+        var lines = buffer.lines
+        guard isTableModeActive else { return lines }
+        for lineIndex in lines.indices {
+            guard let bounds = tableModeController.currentCellInnerBounds(on: lineIndex) else {
+                lines[lineIndex] = ""
+                continue
+            }
+            let chars = Array(lines[lineIndex])
+            let scopedChars = chars.enumerated().map { index, ch in
+                index >= bounds.start && index < bounds.end ? ch : " "
+            }
+            lines[lineIndex] = String(scopedChars)
+        }
+        return lines
     }
 
     /// Prompts user for LOGO macro script input (:logo / ^L).

@@ -143,6 +143,47 @@ import Testing
         #expect(editor.buffer.lines[3] == "Line 4: cat")
     }
 
+    @Test func testTableModeSearchIsScopedToCurrentCell() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "┌────────────────┬────────────────┐",
+            "│ inside         │ outside        │",
+            "└────────────────┴────────────────┘",
+        ]
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 3
+        editor.tableModeController.toggleTableMode()
+
+        _ = editor.commandBarRegistry.dispatch("/outside", editor: editor)
+
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 3)
+        #expect(editor.buffer.activeSearchMatch == nil)
+
+        _ = editor.commandBarRegistry.dispatch("/inside", editor: editor)
+
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 2)
+        #expect(editor.buffer.activeSearchMatch?.query == "inside")
+    }
+
+    @Test func testTableModeSubstituteIsScopedToCurrentCell() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "┌────────────────┬────────────────┐",
+            "│ foo            │ foo            │",
+            "└────────────────┴────────────────┘",
+        ]
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 3
+        editor.tableModeController.toggleTableMode()
+
+        let result = editor.commandBarRegistry.dispatch("%s/foo/bar/g", editor: editor)
+
+        #expect(result == .handled)
+        #expect(editor.buffer.lines[1] == "│ bar            │ foo            │")
+    }
+
     @Test func testSubstituteRegexAndCaptureGroups() throws {
         let editor = Editor()
         editor.buffer.lines = [
