@@ -308,27 +308,35 @@ public final class Renderer {
                         isCellActive = false
                     }
 
+                    let renderedText = renderText(
+                        for: ch,
+                        atDisplayColumn: renderedDisplayWidth,
+                        tabSize: editor.displayConfig.tabSize)
+
                     if editor.isCanvasModeActive
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
                     {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                     } else if !editor.isCanvasModeActive
                         && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                     } else if !editor.isCanvasModeActive
                         && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
                     {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasCursor)
+                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasCursor)
                     } else if isCellActive {
-                        lineOutput += ch.ansiStyled(style: ANSIStyle.canvasActiveCell)
+                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasActiveCell)
                     } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
                         let tok = tokenTypes[realCol]
-                        lineOutput += ch.ansiStyled(style: tok.ansiColor)
+                        lineOutput += renderedText.ansiStyled(style: tok.ansiColor)
                     } else {
-                        lineOutput += String(ch)
+                        lineOutput += renderedText
                     }
-                    renderedDisplayWidth += ch.displayWidth
+                    renderedDisplayWidth += displayWidth(
+                        for: ch,
+                        atDisplayColumn: renderedDisplayWidth,
+                        tabSize: editor.displayConfig.tabSize)
                 }
             }
 
@@ -569,7 +577,12 @@ public final class Renderer {
                 } else {
                     hangingIndent = 0
                 }
-                cursorDisplayWidth = hangingIndent + vLineChars[..<clampedCol].reduce(0) { $0 + $1.displayWidth }
+                cursorDisplayWidth =
+                    hangingIndent
+                    + displayWidth(
+                        for: vLineChars[..<clampedCol],
+                        startingAtDisplayColumn: hangingIndent,
+                        tabSize: editor.displayConfig.tabSize)
             }
 
             let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (editor.displayConfig.showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
@@ -583,6 +596,38 @@ public final class Renderer {
         output += "\u{1B}[?25h"  // Show cursor
         return output
     }
+
+    private func renderText(for character: Character, atDisplayColumn displayColumn: Int, tabSize: Int) -> String {
+        if character == "\t" {
+            return String(repeating: " ", count: displayWidth(for: character, atDisplayColumn: displayColumn, tabSize: tabSize))
+        }
+        return String(character)
+    }
+
+    private func displayWidth(for character: Character, atDisplayColumn displayColumn: Int, tabSize: Int) -> Int {
+        if character == "\t" {
+            let stop = max(1, tabSize)
+            let remainder = max(0, displayColumn) % stop
+            return remainder == 0 ? stop : stop - remainder
+        }
+        return character.displayWidth
+    }
+
+    private func displayWidth<S: Sequence<Character>>(
+        for characters: S,
+        startingAtDisplayColumn displayColumn: Int,
+        tabSize: Int
+    ) -> Int {
+        var currentDisplayColumn = max(0, displayColumn)
+        for character in characters {
+            currentDisplayColumn += displayWidth(
+                for: character,
+                atDisplayColumn: currentDisplayColumn,
+                tabSize: tabSize)
+        }
+        return currentDisplayColumn - max(0, displayColumn)
+    }
+
     private func wrapTextLine(_ text: String, width: Int) -> [String] {
         guard width > 10 else { return [text] }
         var result: [String] = []
