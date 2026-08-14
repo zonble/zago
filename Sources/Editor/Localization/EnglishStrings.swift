@@ -517,6 +517,7 @@ public struct EnglishStrings {
         "msg.not_found": "\"%@\" not found",
         "msg.inserted_lines": "[ Inserted %d lines ]",
         "msg.error_inserting_file": "Error inserting file: %@",
+        "msg.error_opening_file": "Error opening file: %@",
         "msg.error_saving_file": "Error saving file: %@",
         "msg.replaced_word": "Replaced '%@' with '%@'",
 

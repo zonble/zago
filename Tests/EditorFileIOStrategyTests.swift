@@ -8,6 +8,8 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     var files: [String: String]
     var directories: Set<String>
     var writes: [String: String] = [:]
+    var readErrors: [String: Error] = [:]
+    var writeErrors: [String: Error] = [:]
 
     init(files: [String: String] = [:], directories: Set<String> = []) {
         self.files = files
@@ -58,6 +60,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
 
     func readTextFile(at path: String) throws -> TextReadResult {
         let normalized = normalizePath(path, isDirectory: false)
+        if let error = readErrors[normalized] {
+            throw error
+        }
         guard let text = files[normalized] else {
             throw NSError(domain: "MemoryEditorFileIOStrategy", code: 1)
         }
@@ -67,6 +72,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
 
     func writeTextFile(_ contents: String, to path: String, encoding: String.Encoding) throws {
         let normalized = normalizePath(path, isDirectory: false)
+        if let error = writeErrors[normalized] {
+            throw error
+        }
         guard let data = contents.data(using: encoding, allowLossyConversion: false),
             let roundtrip = String(data: data, encoding: encoding),
             roundtrip == contents
@@ -109,6 +117,86 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
             watcherCallback = nil
         }
     }
+}
+
+@Test func testOpenBufferReadFailureDoesNotCreateEmptyBuffer() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/secret.txt": "hidden"])
+    fileIO.readErrors["/secret.txt"] = NSError(
+        domain: NSCocoaErrorDomain,
+        code: CocoaError.fileReadNoPermission.rawValue,
+        userInfo: [NSLocalizedDescriptionKey: "No read permission"]
+    )
+    let editor = Editor(
+        options: EditorOptions(autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    editor.openBuffer(path: "/secret.txt")
+
+    #expect(editor.buffers.count == 1)
+    #expect(editor.buffer.filePath == nil)
+    #expect(editor.buffer.lines == [""])
+    #expect(editor.statusMessage == "Error opening file: No read permission")
+}
+
+@Test func testInitialReadFailureMarksBufferReadOnlyAndReportsError() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/secret.txt": "hidden"])
+    fileIO.readErrors["/secret.txt"] = NSError(
+        domain: NSCocoaErrorDomain,
+        code: CocoaError.fileReadNoPermission.rawValue,
+        userInfo: [NSLocalizedDescriptionKey: "No read permission"]
+    )
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/secret.txt"], autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath == "/secret.txt")
+    #expect(editor.buffer.lines == [""])
+    #expect(editor.buffer.isReadOnly == true)
+    #expect(editor.buffer.loadErrorDescription == "No read permission")
+    #expect(editor.statusMessage == "Error opening file: No read permission")
+}
+
+@Test func testMissingInitialFileOpensAsWritableEmptyBuffer() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/new.txt"], autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath == "/new.txt")
+    #expect(editor.buffer.lines == [""])
+    #expect(editor.buffer.isReadOnly == false)
+    #expect(editor.buffer.loadErrorDescription == nil)
+    #expect(editor.statusMessage.isEmpty)
+}
+
+@Test func testSaveAndCloseBufferKeepsBufferOpenWhenWriteFails() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha"])
+    fileIO.writeErrors["/notes.txt"] = NSError(
+        domain: NSCocoaErrorDomain,
+        code: CocoaError.fileWriteNoPermission.rawValue,
+        userInfo: [NSLocalizedDescriptionKey: "No write permission"]
+    )
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.openNewBuffer()
+    editor.switchToBuffer(index: 0)
+    editor.buffer.lines = ["changed"]
+    editor.buffer.isModified = true
+
+    editor.saveAndCloseBuffer(path: nil)
+
+    #expect(editor.buffers.count == 2)
+    #expect(editor.currentBufferIndex == 0)
+    #expect(editor.buffer.filePath == "/notes.txt")
+    #expect(editor.buffer.isModified == true)
+    #expect(editor.statusMessage == "Error saving file: No write permission")
 }
 
 @Test func testEditorLoadsAndSavesThroughFileIODelegate() throws {

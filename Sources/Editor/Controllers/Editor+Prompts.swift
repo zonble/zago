@@ -21,8 +21,7 @@ extension Editor {
     /// Saves current buffer to disk and closes current buffer / exits editor (F4).
     func promptSaveAndExit() {
         if let path = buffer.filePath, !path.isEmpty {
-            doSave(to: path)
-            closeCurrentBuffer()
+            doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
         } else {
             promptInputText = ""
             currentPromptMode = .saveFilePath(completion: { [weak self] path in
@@ -30,8 +29,7 @@ extension Editor {
                     self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                     return
                 }
-                self.doSave(to: path)
-                self.closeCurrentBuffer()
+                self.doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
             })
         }
     }
@@ -45,11 +43,13 @@ extension Editor {
             }
             if save {
                 if let path = self.buffer.filePath, !path.isEmpty {
-                    self.doSave(to: path)
-                    if self.buffers.count == 1 {
-                        self.isRunning = false
-                    } else {
-                        self.closeCurrentBuffer()
+                    self.doSave(to: path) { [weak self] in
+                        guard let self else { return }
+                        if self.buffers.count == 1 {
+                            self.isRunning = false
+                        } else {
+                            self.closeCurrentBuffer()
+                        }
                     }
                 } else {
                     self.promptWriteFilePath()
@@ -286,7 +286,12 @@ extension Editor {
     }
 
     /// Saves buffer to specified file path.
-    func doSave(to path: String, forcedEncoding: String.Encoding? = nil) {
+    @discardableResult
+    func doSave(
+        to path: String,
+        forcedEncoding: String.Encoding? = nil,
+        onSuccess: (() -> Void)? = nil
+    ) -> Bool {
         do {
             if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
                 _ = buffer.trimTrailingWhitespace()
@@ -303,18 +308,22 @@ extension Editor {
             } else {
                 setStatusMessage(l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
             }
+            onSuccess?()
+            return true
         } catch EncodingError.unsupportedCharacters {
             let originalEncoding = buffer.fileEncoding
             currentPromptMode = .confirmEncodingFallback(originalEncoding: originalEncoding) { [weak self] confirmed in
                 guard let self = self else { return }
                 if confirmed {
-                    self.doSave(to: path, forcedEncoding: .utf8)
+                    self.doSave(to: path, forcedEncoding: .utf8, onSuccess: onSuccess)
                 } else {
                     self.setStatusMessage(self.l10n["status.save_cancelled"])
                 }
             }
+            return false
         } catch {
             setStatusMessage(l10n.errorSavingFile(error: error.localizedDescription))
+            return false
         }
     }
 }

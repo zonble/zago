@@ -251,6 +251,9 @@ public final class Editor: @unchecked Sendable {
         if options.readOnly == true {
             buffer.isReadOnly = true
         }
+        if let loadError = buffer.loadErrorDescription {
+            setStatusMessage(l10n.errorOpeningFile(error: loadError))
+        }
         if let initLine = options.initialLine {
             goToLocation(line: initLine, column: options.initialColumn)
         }
