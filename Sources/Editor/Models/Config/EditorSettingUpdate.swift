@@ -32,6 +32,15 @@ extension EditorSettingKey {
             return rawValue.isEmpty ? nil : .spellLanguage(rawValue)
         case .border: return .border(BorderStyle(value), rawValue: value)
         case .arrow: return .arrow(ArrowStyle(value))
+        case .keymap:
+            if ["classic", "nano", "default"].contains(value) {
+                return .keymap(.classic)
+            } else if ["modern", "vscode", "cua"].contains(value) {
+                return .keymap(.modern)
+            }
+            return nil
+        case .modernbindings:
+            return .modernbindings(SettingBoolean.parse(value))
         }
     }
 }
@@ -57,6 +66,8 @@ public enum EditorSettingUpdate {
     case border(BorderStyle?, rawValue: String)
     case arrow(ArrowStyle?)
     case ipc(Bool?)
+    case keymap(KeymapPreset)
+    case modernbindings(Bool?)
 }
 
 public enum EditorEffect: Equatable {

@@ -125,7 +125,14 @@ extension Renderer {
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
             let label = labelPrefix + plainMenuTitleWithHotkey(parts[0], hotkeyChar: item.hotkeyChar)
-            let shortcut = parts.count > 1 ? parts[1] : ""
+            let shortcut: String
+            if let cmd = item.commandId, let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) {
+                shortcut = keyLabel
+            } else if parts.count > 1 {
+                shortcut = parts[1]
+            } else {
+                shortcut = ""
+            }
             formattedItems.append("\(label)\t\(shortcut)")
         }
 
@@ -147,7 +154,14 @@ extension Renderer {
             let styledLabel =
                 labelPrefix
                 + menuTitleWithUnderlinedHotkey(parts[0], hotkeyChar: item.hotkeyChar, appendMissingHotkey: true)
-            let shortcut = parts.count > 1 ? parts[1] : ""
+            let shortcut: String
+            if let cmd = item.commandId, let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) {
+                shortcut = keyLabel
+            } else if parts.count > 1 {
+                shortcut = parts[1]
+            } else {
+                shortcut = ""
+            }
 
             let spaceCount = max(1, innerWidth - rawLabel.displayWidth - shortcut.displayWidth - 2)
             let itemLine = " " + styledLabel + String(repeating: " ", count: spaceCount) + shortcut + " "

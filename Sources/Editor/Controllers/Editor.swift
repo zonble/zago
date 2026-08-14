@@ -78,8 +78,27 @@ public final class Editor: @unchecked Sendable {
         initialVariables: initialLogoVariable
     )
 
-    // Prompt Controller
     let promptController = PromptController()
+
+    // Keymap Manager
+    public let keymapManager = KeymapManager()
+
+    /// Active Editor Mode used for Layered Keymap resolution.
+    public var currentMode: EditorMode {
+        if promptController.isActive {
+            return .prompt
+        }
+        if menuBarController.isActive {
+            return .menu
+        }
+        if isTableModeActive {
+            return .table
+        }
+        if isCanvasModeActive {
+            return .canvas
+        }
+        return .text
+    }
 
     // Search Controller
     let searchController = SearchController()
@@ -265,6 +284,9 @@ public final class Editor: @unchecked Sendable {
             syncCanvasCursorFromBuffer()
         }
         applyCustomConfig(configSource.initial)
+        if let explicitPreset = options.keymapPreset {
+            keymapManager.loadPreset(explicitPreset)
+        }
 
         startFileWatcherForCurrentBuffer()
     }
@@ -346,8 +368,13 @@ public final class Editor: @unchecked Sendable {
             logoEngine.execute(prelude)
         }
 
+        if let preset = KeymapPreset(rawValue: config.keymapPreset.lowercased()) {
+            keymapManager.loadPreset(preset)
+        }
+
         for key in config.unbindKeys {
             commandRegistry.unbind(key: key)
+            keymapManager.unbind(key: key)
         }
 
         for (key, cmdId) in config.customKeyBinds {
@@ -358,9 +385,20 @@ public final class Editor: @unchecked Sendable {
                     editor.runLogoScript(script)
                 }
                 commandRegistry.bind(key: key, command: customCmd)
+                keymapManager.bind(key: key, commandID: .customMacro)
             } else if let targetId = CommandID(rawValue: cmdId) {
                 if let cmd = commandRegistry.commands.first(where: { $0.id == targetId }) {
                     commandRegistry.bind(key: key, command: cmd)
+                    keymapManager.bind(key: key, commandID: targetId)
+                }
+            }
+        }
+
+        for (modeStr, binds) in config.customModeKeyBinds {
+            guard let mode = EditorMode(rawValue: modeStr.lowercased()) else { continue }
+            for (key, cmdId) in binds {
+                if let targetId = CommandID(rawValue: cmdId) {
+                    keymapManager.bind(key: key, commandID: targetId, mode: mode)
                 }
             }
         }

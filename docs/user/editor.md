@@ -1,6 +1,6 @@
 # `zago` Editor Basics
 
-`zago` is a modeless terminal text editor built on the lightweight foundation of `nano`, enhanced with Emacs/WordStar keybindings and major modes (Text, Canvas, Table) alongside a PE2-inspired interactive command line prompt (`Esc` / `Alt+:`), built-in Editor LOGO macro drawing, and structured table editing.
+`zago` is a modeless terminal text editor built on the lightweight foundation of `nano`, featuring classic GNU Nano keybindings (with optional modern VS Code/CUA shortcuts) and major modes (Text, Canvas, Table) alongside a PE2-inspired interactive command line prompt (`Esc` / `Alt+:`), built-in Editor LOGO macro drawing, and structured table editing.
 
 ---
 
@@ -85,7 +85,7 @@ lines.
 | `M+W` | Copy selected text or active canvas block to clipboard |
 | `^K` | Cut selected text, active canvas block, or cut current line |
 | `^U` | Paste (uncut) last copied/cut text or canvas block |
-| `^G` | Cancel active text selection or canvas mark (Emacs `keyboard-quit`) |
+| `^G` | Cancel active text selection or canvas mark (`edit.cancel_selection`) |
 
 > For detailed selection and clipboard mechanics, see [Mark & Clipboard Behavior](mark.md).
 

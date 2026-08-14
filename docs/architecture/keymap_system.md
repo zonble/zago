@@ -15,7 +15,7 @@ This document specifies the architecture for **Mode-Aware Keymap Management**, *
 1. **Mode-First Layered Resolution**: Identify the active editor mode first, then resolve `Key -> CommandID` through a layered keymap (Mode Overlay -> Global Base).
 2. **Full Command Decentralization**: All editing, navigation, and modal actions are represented by typed `CommandID`s.
 3. **Dynamic Help Bar**: The Help Bar queries the active keymap dynamically (`primaryKeyLabel(for:in:)`) as the Single Source of Truth.
-4. **First-Class Presets**: Support switching between `.classic` (Nano/WordStar) and `.modern` (VS Code / CUA) keybindings with a single configuration flag (`set modernbindings` or `set keymap modern`).
+4. **First-Class Presets**: Support switching between `.classic` (GNU Nano) and `.modern` (VS Code / CUA) keybindings with a single configuration flag (`set modernbindings` or `set keymap modern`).
 
 ---
 
@@ -112,7 +112,7 @@ public final class KeymapManager {
 
 ### Preset Matrix
 
-| Action | `CommandID` | `.classic` (Nano/WordStar) | `.modern` (VS Code / CUA) |
+| Action | `CommandID` | `.classic` (GNU Nano) | `.modern` (VS Code / CUA) |
 | :--- | :--- | :--- | :--- |
 | **Save File** | `.fileSave` | `^S` | `^S` |
 | **Write Out (Prompt)** | `.fileWriteOut` | `^O`, `F3` | `^O`, `F3` |

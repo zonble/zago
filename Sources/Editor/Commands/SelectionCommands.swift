@@ -132,3 +132,23 @@ public struct SelectEndCommand: Command {
         return .succeeded(message: message)
     }
 }
+
+public struct SelectAllCommand: Command {
+    public let id: CommandID = .selectAll
+    public let name = "Select All"
+    public let description = "Select all text in buffer"
+    public let keys: [Key] = []
+    public let commandBarAliases = ["selectall", "select-all"]
+
+    public init() {}
+
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.lines.isEmpty else { return .noOp }
+        editor.buffer.selectionMark = (line: 0, column: 0)
+        let lastLine = editor.buffer.lines.count - 1
+        editor.buffer.lineIndex = lastLine
+        editor.buffer.columnIndex = editor.buffer.lines[lastLine].count
+        return .succeeded(message: editor.l10n["status.mark_set"])
+    }
+}

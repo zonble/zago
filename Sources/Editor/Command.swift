@@ -46,12 +46,15 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case moveWordBackward = "move.word_backward"
 
     // Selection
+    case selectAll = "select.all"
     case selectLeft = "select.left"
     case selectRight = "select.right"
     case selectUp = "select.up"
     case selectDown = "select.down"
     case selectHome = "select.home"
     case selectEnd = "select.end"
+    case selectWordForward = "select.word_forward"
+    case selectWordBackward = "select.word_backward"
 
     // Editing
     case editDeleteLine = "edit.delete_line"
@@ -74,8 +77,10 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 
     // Search & Cursor
     case searchWhereIs = "search.whereis"
+    case searchReplace = "search.replace"
     case searchNext = "search.next"
     case searchPrevious = "search.previous"
+    case searchSubstitute = "search.substitute"
     case documentOpenLink = "document.open_link"
     case documentHeadingNext = "document.heading_next"
     case documentHeadingPrevious = "document.heading_previous"
@@ -100,6 +105,34 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileEditConfig = "file.edit_config"
     case fileReloadConfig = "file.reload_config"
     case fileRunLogo = "file.run_logo"
+
+    // Table Mode Operations
+    case tableNextCell = "table.next_cell"
+    case tablePrevCell = "table.prev_cell"
+    case tableAdjustWidthInc = "table.adjust_width_inc"
+    case tableAdjustWidthDec = "table.adjust_width_dec"
+    case tableAdjustHeightInc = "table.adjust_height_inc"
+    case tableAdjustHeightDec = "table.adjust_height_dec"
+    case tableCenterText = "table.center_text"
+    case tableCellStart = "table.cell_start"
+    case tableCellEnd = "table.cell_end"
+    case tableClearCell = "table.clear_cell"
+
+    // Canvas Mode Operations
+    case canvasDrawLine = "canvas.draw_line"
+    case canvasDrawArrow = "canvas.draw_arrow"
+    case canvasBlockMark = "canvas.block_mark"
+    case canvasCutBlock = "canvas.cut_block"
+    case canvasCopyBlock = "canvas.copy_block"
+    case canvasPasteBlock = "canvas.paste_block"
+
+    // Prompt Mode Operations
+    case promptConfirm = "prompt.confirm"
+    case promptCancel = "prompt.cancel"
+    case promptComplete = "prompt.complete"
+    case promptHistoryPrev = "prompt.history_prev"
+    case promptHistoryNext = "prompt.history_next"
+    case promptClearLine = "prompt.clear_line"
 
     // Macro & UI
     case macroLogo = "macro.logo"
@@ -296,6 +329,15 @@ public final class CommandRegistry {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return false
         }
+        if let command = keyMap[key], command.id == .customMacro {
+            editor.applyOperationResult(command.execute(on: editor))
+            return true
+        }
+        if let commandID = editor.keymapManager.resolve(key: key, in: editor.currentMode) {
+            if dispatch(id: commandID, editor: editor) {
+                return true
+            }
+        }
         if let command = keyMap[key] {
             editor.applyOperationResult(command.execute(on: editor))
             return true
@@ -307,6 +349,17 @@ public final class CommandRegistry {
     public func dispatchResult(key: Key, editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return .noOp
+        }
+        if let command = keyMap[key], command.id == .customMacro {
+            let result = command.execute(on: editor)
+            editor.applyOperationResult(result)
+            return result
+        }
+        if let commandID = editor.keymapManager.resolve(key: key, in: editor.currentMode) {
+            let res = dispatchResult(id: commandID, editor: editor)
+            if case .failed = res.kind {} else {
+                return res
+            }
         }
         guard let command = keyMap[key] else { return .noOp }
         let result = command.execute(on: editor)

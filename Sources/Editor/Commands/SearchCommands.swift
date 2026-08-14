@@ -80,8 +80,24 @@ public struct SearchPreviousCommand: Command {
     }
 }
 
+public struct SearchReplaceCommand: Command {
+    public let id: CommandID = .searchReplace
+    public let name = "Replace"
+    public let description = "Search and replace text"
+    public let keys: [Key] = []
+    public let commandBarAliases: [String] = ["replace"]
+
+    public init() {}
+
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptSearch()
+        return .prompting
+    }
+}
+
 public struct SubstituteCommand: Command {
-    public let id: CommandID = .editJustify
+    public let id: CommandID = .searchSubstitute
     public let name = "Substitute"
     public let description = "Vim-style regex substitute s/search/replace/g"
     public let commandBarAliases: [String] = ["s", "%s"]
