@@ -39,27 +39,38 @@ import Testing
     @Test func testBitwiseAndOrXorNot() throws {
         let engine = LogoEngine()
 
-        // BIT.AND (6 & 3 = 2)
+        // BIT.AND and BITAND (6 & 3 = 2)
         #expect(eval("BIT.AND 6 3", engine: engine) == "2")
+        #expect(eval("BITAND 6 3", engine: engine) == "2")
 
-        // BIT.OR (6 | 3 = 7)
+        // BIT.OR and BITOR (6 | 3 = 7)
         #expect(eval("BIT.OR 6 3", engine: engine) == "7")
+        #expect(eval("BITOR 6 3", engine: engine) == "7")
 
-        // BIT.XOR (6 ^ 3 = 5)
+        // BIT.XOR and BITXOR (6 ^ 3 = 5)
         #expect(eval("BIT.XOR 6 3", engine: engine) == "5")
+        #expect(eval("BITXOR 6 3", engine: engine) == "5")
 
-        // BIT.NOT (~0 = -1)
+        // BIT.NOT and BITNOT (~0 = -1)
         #expect(eval("BIT.NOT 0", engine: engine) == "-1")
+        #expect(eval("BITNOT 0", engine: engine) == "-1")
     }
 
     @Test func testBitwiseShift() throws {
         let engine = LogoEngine()
 
-        // BIT.SHL (1 << 4 = 16)
+        // BIT.SHL and LSHIFT (1 << 4 = 16)
         #expect(eval("BIT.SHL 1 4", engine: engine) == "16")
+        #expect(eval("LSHIFT 1 4", engine: engine) == "16")
 
-        // BIT.SHR (16 >> 2 = 4)
+        // BIT.SHR and RSHIFT (16 >> 2 = 4)
         #expect(eval("BIT.SHR 16 2", engine: engine) == "4")
+        #expect(eval("RSHIFT 16 2", engine: engine) == "4")
+
+        // ASHIFT (positive = left, negative = right, zero = identity)
+        #expect(eval("ASHIFT 1 4", engine: engine) == "16")
+        #expect(eval("ASHIFT 16 -2", engine: engine) == "4")
+        #expect(eval("ASHIFT 42 0", engine: engine) == "42")
     }
 
     @Test func testLeetCode136SingleNumberExample() throws {
