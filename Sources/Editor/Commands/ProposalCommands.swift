@@ -9,15 +9,16 @@ public struct AcceptProposalCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
             editor.setStatusMessage(editor.l10n["ai.proposal.readonly_cannot_modify"])
-            return
+            return .noOp
         }
 
         guard let current = editor.proposalQueue.currentProposal else {
             editor.setStatusMessage(editor.l10n["ai.proposal.no_pending_accept"])
-            return
+            return .noOp
         }
 
         // Clear selection mark to prevent mark position conflicts
@@ -79,6 +80,7 @@ public struct AcceptProposalCommand: Command {
             editor.setStatusMessage(String(format: editor.l10n["ai.proposal.accepted"], current.clientName))
         }
         editor.renderer.invalidateScreenCache()
+        return .succeeded
     }
 }
 
@@ -91,16 +93,18 @@ public struct RejectProposalCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard let current = editor.proposalQueue.currentProposal else {
             editor.setStatusMessage(editor.l10n["ai.proposal.no_pending_reject"])
-            return
+            return .noOp
         }
 
         AIHistoryLogManager.shared.logDecision(proposal: current, decision: "rejected")
         editor.proposalQueue.rejectCurrent()
         editor.setStatusMessage(String(format: editor.l10n["ai.proposal.rejected"], current.clientName))
         editor.renderer.invalidateScreenCache()
+        return .succeeded
     }
 }
 
@@ -113,16 +117,18 @@ public struct NextProposalCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.proposalQueue.isEmpty else {
             editor.setStatusMessage(editor.l10n["ai.proposal.queue_empty"])
-            return
+            return .noOp
         }
         editor.proposalQueue.nextProposal()
         if let current = editor.proposalQueue.currentProposal {
             editor.setStatusMessage(String(format: editor.l10n["ai.proposal.preview_item"], editor.proposalQueue.activeIndex + 1, editor.proposalQueue.count, current.reason))
         }
         editor.renderer.invalidateScreenCache()
+        return .succeeded
     }
 }
 
@@ -135,16 +141,18 @@ public struct PreviousProposalCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.proposalQueue.isEmpty else {
             editor.setStatusMessage(editor.l10n["ai.proposal.queue_empty"])
-            return
+            return .noOp
         }
         editor.proposalQueue.previousProposal()
         if let current = editor.proposalQueue.currentProposal {
             editor.setStatusMessage(String(format: editor.l10n["ai.proposal.preview_item"], editor.proposalQueue.activeIndex + 1, editor.proposalQueue.count, current.reason))
         }
         editor.renderer.invalidateScreenCache()
+        return .succeeded
     }
 }
 
@@ -157,10 +165,11 @@ public struct MockAISuggestionCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
             editor.setStatusMessage(editor.l10n["ai.proposal.readonly_cannot_generate"])
-            return
+            return .noOp
         }
 
         let args = editor.promptInputText.trimmingCharacters(in: .whitespaces)
@@ -206,5 +215,6 @@ public struct MockAISuggestionCommand: Command {
         editor.proposalQueue.pushProposal(proposal)
         editor.setStatusMessage(String(format: editor.l10n["ai.proposal.mock_generated"], reason))
         editor.renderer.invalidateScreenCache()
+        return .succeeded
     }
 }

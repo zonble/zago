@@ -168,15 +168,17 @@ public protocol Command {
     /// Executes command logic directly on the editor instance.
     ///
     /// - Parameter editor: Active editor instance.
-    func execute(on editor: Editor)
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult
 
-    /// Executes command logic with CommandBar arguments, returning dispatch result status.
+    /// Executes command logic with CommandBar arguments, returning typed operation status.
     ///
     /// - Parameters:
     ///   - input: Parsed CommandBar input containing arguments.
     ///   - editor: Active editor instance.
-    /// - Returns: Result status (`.handled`, `.passThrough`, or `.invalidArguments`).
-    func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult
+    /// - Returns: Typed command operation status.
+    @discardableResult
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult
 }
 
 extension Command {
@@ -191,9 +193,9 @@ extension Command {
         return commandBarAliases.contains(first)
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         execute(on: editor)
-        return .handled
     }
 }
 
@@ -222,8 +224,12 @@ public struct BlockCommand: Command {
         self.closure = action
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    
+
+    public func execute(on editor: Editor) -> EditorOperationResult {
         closure(editor)
+        return .succeeded
     }
 }
 
@@ -258,16 +264,28 @@ public final class CommandRegistry {
     /// Returns `true` if a command was found and executed.
     public func dispatch(id: CommandID, editor: Editor) -> Bool {
         if let command = commandMap[id] {
-            command.execute(on: editor)
+            _ = command.execute(on: editor)
             return true
         }
         return false
+    }
+
+    /// Dispatches a command by ID and returns a typed command result.
+    public func dispatchResult(id: CommandID, editor: Editor) -> EditorOperationResult {
+        guard let command = commandMap[id] else { return .failed("Command not found") }
+        return command.execute(on: editor)
     }
 
     /// Dispatches a command by raw ID string (for string/config compatibility).
     public func dispatch(idString: String, editor: Editor) -> Bool {
         guard let id = CommandID(rawValue: idString) else { return false }
         return dispatch(id: id, editor: editor)
+    }
+
+    /// Dispatches a raw ID string and returns a typed command result.
+    public func dispatchResult(idString: String, editor: Editor) -> EditorOperationResult {
+        guard let id = CommandID(rawValue: idString) else { return .failed("Command not found") }
+        return dispatchResult(id: id, editor: editor)
     }
 
     /// Dispatches a key input to its registered command action.
@@ -277,10 +295,19 @@ public final class CommandRegistry {
             return false
         }
         if let command = keyMap[key] {
-            command.execute(on: editor)
+            _ = command.execute(on: editor)
             return true
         }
         return false
+    }
+
+    /// Dispatches a key input and returns a typed command result.
+    public func dispatchResult(key: Key, editor: Editor) -> EditorOperationResult {
+        if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
+            return .noOp
+        }
+        guard let command = keyMap[key] else { return .noOp }
+        return command.execute(on: editor)
     }
 
     /// Dispatches raw string input from CommandBar to matching registered command.
@@ -294,7 +321,8 @@ public final class CommandRegistry {
                 editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
                 return .handled
             }
-            return command.execute(with: input, on: editor)
+            _ = command.execute(with: input, on: editor)
+            return .handled
         }
 
         guard editor.buffer.allowsLogoExecution else {
@@ -303,6 +331,30 @@ public final class CommandRegistry {
         }
 
         return .noMatch
+    }
+
+    /// Dispatches raw string input from CommandBar and returns typed operation status.
+    public func dispatchResult(_ rawInput: String, editor: Editor) -> EditorOperationResult {
+        let input = CommandBarInput(rawInput)
+        guard !input.text.isEmpty else { return .noOp }
+
+        for command in commands where command.match(input) {
+            guard command.isAvailable(in: editor) else {
+                if command.id == .logoDebug { return .noOp }
+                let message = editor.l10n["status.directory_buffer_readonly"]
+                editor.setStatusMessage(message)
+                return .failed(message)
+            }
+            return command.execute(with: input, on: editor)
+        }
+
+        guard editor.buffer.allowsLogoExecution else {
+            let message = editor.l10n["status.directory_buffer_readonly"]
+            editor.setStatusMessage(message)
+            return .failed(message)
+        }
+
+        return .noOp
     }
 
     /// Returns sorted list of available CommandBar completion names for Tab completion.

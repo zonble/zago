@@ -34,13 +34,14 @@ extension Editor {
             currentPromptMode = .confirmExternalReload(completion: { [weak self] reload in
                 guard let self = self else { return }
                 if reload {
-                    do {
-                        try self.buffer.reloadFile(fileIO: self.fileIOStrategy)
-                        self.buffer.isModified = false
+                    switch self.reloadBufferFromDisk(self.buffer) {
+                    case .succeeded:
                         self.setStatusMessage(self.l10n["status.file_reloaded"])
                         self.renderer.invalidateScreenCache()
-                    } catch {
-                        self.setStatusMessage(error.localizedDescription)
+                    case .failed:
+                        break
+                    case .cancelled, .prompting, .noOp:
+                        break
                     }
                 } else {
                     self.setStatusMessage(self.l10n["status.kept_local"])
@@ -48,12 +49,14 @@ extension Editor {
             })
             setStatusMessage(l10n["prompt.confirm_reload"])
         } else {
-            do {
-                try buffer.reloadFile(fileIO: fileIOStrategy)
+            switch reloadBufferFromDisk(buffer) {
+            case .succeeded:
                 setStatusMessage(l10n["status.file_reloaded"])
                 renderer.invalidateScreenCache()
-            } catch {
-                setStatusMessage(error.localizedDescription)
+            case .failed:
+                break
+            case .cancelled, .prompting, .noOp:
+                break
             }
         }
     }
@@ -112,13 +115,16 @@ extension Editor {
 
     func openNewBuffer(filePath: String? = nil) {
         saveCurrentViewSettingsToBuffer()
-        let newBuffer = TextBuffer.makeBuffer(
+        let newBuffer = Self.makeBuffer(
             filePath: filePath,
             fileIO: fileIOStrategy,
             gitService: gitService,
             language: language
         )
         bufferCoordinator.appendAndActivate(newBuffer)
+        if !newBuffer.isDirectoryBuffer, let path = newBuffer.filePath {
+            _ = loadFileContent(into: newBuffer, path: path)
+        }
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
     }

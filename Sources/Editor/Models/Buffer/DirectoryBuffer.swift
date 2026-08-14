@@ -116,14 +116,6 @@ public final class DirectoryBuffer: TextBuffer {
         self.columnIndex = 0
     }
 
-    override public func saveFile(
-        to path: String? = nil,
-        fileIO: EditorFileIOStrategy,
-        encoding: String.Encoding? = nil
-    ) throws {
-        // Directory buffers are read-only, do not overwrite directory with text
-    }
-
     override public func handleKey(_ key: Key, editor: Editor) -> Bool {
         switch key {
         case .enter:

@@ -9,8 +9,10 @@ public struct WhereIsCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSearch()
+        return .prompting
     }
 }
 
@@ -26,11 +28,14 @@ public struct SearchCommand: Command {
         input.text.hasPrefix("/")
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSearch()
+        return .prompting
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         let query = String(input.text.dropFirst())
         if !query.isEmpty {
             editor.lastSearchQuery = query
@@ -38,11 +43,11 @@ public struct SearchCommand: Command {
         let targetQuery = !query.isEmpty ? query : editor.lastSearchQuery
         if targetQuery.isEmpty {
             editor.setStatusMessage(editor.l10n["status.cancelled_search"])
-            return .handled
+            return .succeeded
         }
 
         editor.searchController.performSearch(query: targetQuery, useRegex: editor.isRegexSearchEnabled)
-        return .handled
+        return .succeeded
     }
 }
 
@@ -54,8 +59,10 @@ public struct SearchNextCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.searchController.findNextSearchMatch()
+        return .succeeded
     }
 }
 
@@ -67,8 +74,10 @@ public struct SearchPreviousCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.searchController.findPreviousSearchMatch()
+        return .succeeded
     }
 }
 
@@ -96,14 +105,17 @@ public struct SubstituteCommand: Command {
         return false
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.setStatusMessage(editor.l10n["status.path_required"])
+        return .failed(editor.l10n["status.path_required"])
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard let parsed = parse(input.text) else {
             editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .handled
+            return .succeeded
         }
 
         let isGlobal = parsed.flags.contains("g")
@@ -125,7 +137,7 @@ public struct SubstituteCommand: Command {
             } else {
                 editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
             }
-            return .handled
+            return .succeeded
         }
 
         let targetRange: ClosedRange<Int>
@@ -217,7 +229,7 @@ public struct SubstituteCommand: Command {
             editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
         }
 
-        return .handled
+        return .succeeded
     }
 
     private struct ParsedSubstitute {
@@ -347,8 +359,10 @@ public struct OpenDocumentLinkCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.openDocumentLinkAtCursor()
+        return .succeeded
     }
 }
 
@@ -361,8 +375,10 @@ public struct NextHeadingCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.goToNextHeading()
+        return .succeeded
     }
 }
 
@@ -375,8 +391,10 @@ public struct PreviousHeadingCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.goToPreviousHeading()
+        return .succeeded
     }
 }
 
@@ -389,8 +407,10 @@ public struct DocumentOutlineCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.showDocumentOutline()
+        return .succeeded
     }
 }
 
@@ -402,8 +422,10 @@ public struct GotoLineCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptGotoLine()
+        return .prompting
     }
 }
 
@@ -420,11 +442,14 @@ public struct NumericGotoCommand: Command {
             || input.lowerFirstToken == "goto"
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptGotoLine()
+        return .prompting
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         let locationText: String
         if input.lowerFirstToken == "goto" {
             locationText = input.rest
@@ -436,24 +461,24 @@ public struct NumericGotoCommand: Command {
         let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
             editor.setStatusMessage(editor.l10n["status.invalid_line"])
-            return .handled
+            return .succeeded
         }
         guard parts.count <= 2 else {
             editor.setStatusMessage(editor.l10n["status.invalid_column"])
-            return .handled
+            return .succeeded
         }
 
         if parts.count == 2 {
             guard let col = Int(parts[1]), col > 0 else {
                 editor.setStatusMessage(editor.l10n["status.invalid_column"])
-                return .handled
+                return .succeeded
             }
             editor.goToLocation(line: line, column: col)
         } else {
             editor.goToLocation(line: line)
         }
 
-        return .handled
+        return .succeeded
     }
 }
 
@@ -465,7 +490,11 @@ public struct RefreshScreenCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {}
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        editor.renderer.invalidateScreenCache()
+        return .succeeded
+    }
 }
 
 public struct ShowCursorPosCommand: Command {
@@ -477,7 +506,8 @@ public struct ShowCursorPosCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         let currentLine = editor.buffer.lineIndex + 1
         let totalLines = editor.buffer.lines.count
         let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100
@@ -493,5 +523,6 @@ public struct ShowCursorPosCommand: Command {
             editor.l10n.cursorInfo(
                 currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol,
                 totalCol: totalCol, visualCol: visualCol, totalVisualCol: totalVisualCol))
+        return .succeeded
     }
 }

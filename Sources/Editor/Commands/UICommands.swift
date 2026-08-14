@@ -9,8 +9,10 @@ public struct LogoMacroCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptLogoMacro()
+        return .prompting
     }
 }
 
@@ -23,7 +25,8 @@ public struct LogoReferenceCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         TextDocumentView(
             terminal: editor.terminal,
             title: editor.l10n["logoview.reference_title"],
@@ -32,6 +35,7 @@ public struct LogoReferenceCommand: Command {
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()
+        return .succeeded
     }
 }
 
@@ -44,7 +48,8 @@ public struct LogoWorkspaceCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         TextDocumentView(
             terminal: editor.terminal,
             title: editor.l10n["logoview.workspace_title"],
@@ -53,6 +58,7 @@ public struct LogoWorkspaceCommand: Command {
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()
+        return .succeeded
     }
 }
 
@@ -64,8 +70,10 @@ public struct ToggleMenuBarCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.menuBarController.toggle()
+        return .succeeded
     }
 }
 
@@ -78,7 +86,8 @@ public struct ShowHelpCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         TextDocumentView(
             terminal: editor.terminal,
             title: editor.l10n["helpview.title"],
@@ -87,6 +96,7 @@ public struct ShowHelpCommand: Command {
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()
+        return .succeeded
     }
 }
 
@@ -99,7 +109,8 @@ public struct SymbolPickerCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.menuBarController.isActive = false
         SymbolPickerView(
             terminal: editor.terminal,
@@ -118,5 +129,6 @@ public struct SymbolPickerCommand: Command {
         ).show()
         editor.renderer.invalidateScreenCache()
         editor.refreshScreen()
+        return .succeeded
     }
 }

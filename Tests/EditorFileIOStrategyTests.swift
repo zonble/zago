@@ -131,8 +131,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
         dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
     )
 
-    editor.openBuffer(path: "/secret.txt")
+    let result = editor.openBuffer(path: "/secret.txt")
 
+    #expect(result == .failed("No read permission"))
     #expect(editor.buffers.count == 1)
     #expect(editor.buffer.filePath == nil)
     #expect(editor.buffer.lines == [""])
@@ -190,8 +191,9 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     editor.buffer.lines = ["changed"]
     editor.buffer.isModified = true
 
-    editor.saveAndCloseBuffer(path: nil)
+    let result = editor.saveAndCloseBuffer(path: nil)
 
+    #expect(result == .failed("No write permission"))
     #expect(editor.buffers.count == 2)
     #expect(editor.currentBufferIndex == 0)
     #expect(editor.buffer.filePath == "/notes.txt")
@@ -209,10 +211,44 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
 
     editor.buffer.lines = ["changed"]
     editor.buffer.isModified = true
-    editor.saveBuffer(path: nil)
+    let result = editor.saveBuffer(path: nil)
 
+    #expect(result == .succeeded)
     #expect(fileIO.writes["/notes.txt"] == "changed")
     #expect(editor.buffer.isModified == false)
+}
+
+@Test func testFileCommandDispatchReturnsTypedSaveResult() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha"])
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
+
+    editor.buffer.lines = ["changed"]
+    editor.buffer.isModified = true
+
+    let result = editor.commandRegistry.dispatchResult(id: .fileSave, editor: editor)
+
+    #expect(result == .succeeded)
+    #expect(fileIO.writes["/notes.txt"] == "changed")
+}
+
+@Test func testCommandBarDispatchReturnsTypedOpenFailure() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/secret.txt": "hidden"])
+    fileIO.readErrors["/secret.txt"] = NSError(
+        domain: NSCocoaErrorDomain,
+        code: CocoaError.fileReadNoPermission.rawValue,
+        userInfo: [NSLocalizedDescriptionKey: "No read permission"]
+    )
+    let editor = Editor(
+        options: EditorOptions(autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
+
+    let result = editor.commandRegistry.dispatchResult("open /secret.txt", editor: editor)
+
+    #expect(result == .failed("No read permission"))
+    #expect(editor.buffers.count == 1)
+    #expect(editor.statusMessage == "Error opening file: No read permission")
 }
 
 @Test func testDirectoryBufferUsesFileIODelegate() throws {

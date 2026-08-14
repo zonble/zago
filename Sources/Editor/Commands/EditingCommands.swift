@@ -8,13 +8,15 @@ public struct DeleteLineCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
-            return
+            return .succeeded
         }
         editor.deleteCurrentLine()
+        return .succeeded
     }
 }
 
@@ -26,17 +28,19 @@ public struct DeleteCharCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
-            return
+            return .succeeded
         }
         if editor.isCanvasModeActive {
             editor.deleteCanvasCharacter()
-            return
+            return .succeeded
         }
         editor.buffer.delete()
+        return .succeeded
     }
 }
 
@@ -49,10 +53,11 @@ public struct ToggleMarkCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         guard editor.isCanvasModeActive && !editor.isTableModeActive else {
             editor.setStatusMessage(editor.l10n["status.block_mark_canvas_only"])
-            return
+            return .noOp
         }
 
         let point = (line: editor.buffer.lineIndex, visualColumn: editor.canvasVisualColumn)
@@ -71,6 +76,7 @@ public struct ToggleMarkCommand: Command {
             editor.buffer.canvasBlockMarkEnd = point
             editor.setStatusMessage(editor.l10n["status.mark_set"])
         }
+        return .succeeded
     }
 }
 
@@ -82,7 +88,8 @@ public struct CopyTextCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.buffer.clampCursor()
         if editor.isCanvasModeActive && !editor.isTableModeActive {
             _ = editor.copyCanvasBlock()
@@ -91,7 +98,7 @@ public struct CopyTextCommand: Command {
                 mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
             guard start.line != end.line || start.column != end.column else {
                 editor.setStatusMessage(editor.l10n["status.no_selection"])
-                return
+                return .noOp
             }
             editor.clipboardText = editor.buffer.textRange(
                 start: (line: start.line, col: start.column),
@@ -99,7 +106,9 @@ public struct CopyTextCommand: Command {
             editor.setStatusMessage(editor.l10n["status.copied_text"])
         } else {
             editor.setStatusMessage(editor.l10n["status.no_selection"])
+            return .noOp
         }
+        return .succeeded
     }
 }
 
@@ -112,9 +121,10 @@ public struct CancelSelectionCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.searchController.clearActiveSearch() {
-            return
+            return .succeeded
         }
         if editor.buffer.selectionMark != nil || editor.buffer.canvasBlockMark != nil {
             editor.clearActiveMark()
@@ -124,6 +134,7 @@ public struct CancelSelectionCommand: Command {
         } else {
             editor.setStatusMessage(editor.l10n["status.no_selection"])
         }
+        return .succeeded
     }
 }
 
@@ -135,12 +146,13 @@ public struct CutTextCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             if let cell = editor.currentTableCell {
                 editor.tableModeController.cutTableCellText(cell: cell)
             }
-            return
+            return .succeeded
         }
         editor.saveUndoSnapshot()
         editor.buffer.clampCursor()
@@ -165,6 +177,7 @@ public struct CutTextCommand: Command {
             editor.buffer.isModified = true
             editor.setStatusMessage(editor.l10n["status.cut_one_line"])
         }
+        return .succeeded
     }
 }
 
@@ -176,7 +189,8 @@ public struct UncutTextCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.tableModeController.pasteTableCellText(text)
@@ -192,7 +206,9 @@ public struct UncutTextCommand: Command {
             editor.setStatusMessage(editor.l10n["status.uncut_text"])
         } else {
             editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
+            return .noOp
         }
+        return .succeeded
     }
 }
 
@@ -204,13 +220,14 @@ public struct InsertTabCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
 
         // 1. Grid Table Mode Navigation
         if editor.isTableModeActive {
             editor.tableModeController.navigateNextTableCell()
-            return
+            return .succeeded
         }
 
         // 2. Markup Language Table Cell Navigation
@@ -223,19 +240,19 @@ public struct InsertTabCommand: Command {
             }
             editor.buffer.lineIndex = result.newBufferLineIndex
             editor.buffer.columnIndex = result.newCursorColumn
-            return
+            return .succeeded
         }
 
         // 3. Selection Active -> Block Indent
         if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
             editor.indentSelectedBlock(spaces: editor.displayConfig.tabSize)
-            return
+            return .succeeded
         }
 
         // 4. Canvas Mode
         if editor.isCanvasModeActive {
             editor.insertCanvasString(String(repeating: " ", count: editor.displayConfig.tabSize))
-            return
+            return .succeeded
         }
 
         // 5. Smart Tab (List Item line or Leading Whitespace or Word boundary)
@@ -247,21 +264,22 @@ public struct InsertTabCommand: Command {
 
             if editor.isListItemLine(at: lineIndex) {
                 editor.indentLine(at: lineIndex, spaces: editor.displayConfig.listIndentSize)
-                return
+                return .succeeded
             } else if col <= leadingSpaces {
                 editor.indentLine(at: lineIndex, spaces: editor.displayConfig.tabSize)
-                return
+                return .succeeded
             } else {
                 let tabStop = editor.displayConfig.tabSize
                 let remainder = col % tabStop
                 let insertCount = (remainder == 0) ? tabStop : (tabStop - remainder)
                 editor.buffer.insertString(String(repeating: " ", count: insertCount))
-                return
+                return .succeeded
             }
         }
 
         // 6. Fallback raw tab insertion
         editor.buffer.insertString(String(repeating: " ", count: editor.displayConfig.tabSize))
+        return .succeeded
     }
 }
 
@@ -273,13 +291,14 @@ public struct InsertBacktabCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
 
         // 1. Grid Table Mode Navigation
         if editor.isTableModeActive {
             editor.tableModeController.navigatePrevTableCell()
-            return
+            return .succeeded
         }
 
         // 2. Markup Language Table Cell Navigation
@@ -292,13 +311,13 @@ public struct InsertBacktabCommand: Command {
             }
             editor.buffer.lineIndex = result.newBufferLineIndex
             editor.buffer.columnIndex = result.newCursorColumn
-            return
+            return .succeeded
         }
 
         // 3. Selection Active -> Block Outdent
         if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
             editor.outdentSelectedBlock(spaces: editor.displayConfig.tabSize)
-            return
+            return .succeeded
         }
 
         // 4. Smart Tab Line Outdent
@@ -308,11 +327,12 @@ public struct InsertBacktabCommand: Command {
                 editor.isListItemLine(at: lineIndex)
                 ? editor.displayConfig.listIndentSize : editor.displayConfig.tabSize
             editor.outdentLine(at: lineIndex, spaces: outdentSpaces)
-            return
+            return .succeeded
         }
 
         // 5. Fallback Line Outdent
         editor.outdentLine(at: editor.buffer.lineIndex, spaces: editor.displayConfig.tabSize)
+        return .succeeded
     }
 }
 
@@ -324,8 +344,10 @@ public struct UndoCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.performUndo()
+        return .succeeded
     }
 }
 
@@ -337,8 +359,10 @@ public struct RedoCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.performRedo()
+        return .succeeded
     }
 }
 
@@ -351,14 +375,15 @@ public struct JustifyCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             editor.tableModeController.centerCellText()
-            return
+            return .succeeded
         }
         guard !editor.isCanvasModeActive else {
             editor.setStatusMessage(editor.l10n["status.justify_disabled_in_canvas_mode"])
-            return
+            return .noOp
         }
         editor.saveUndoSnapshot()
         if let syntax = editor.activeLanguageSyntax,
@@ -369,12 +394,13 @@ public struct JustifyCommand: Command {
             editor.buffer.lineIndex = result.startLineIndex
             editor.buffer.columnIndex = result.newCursorColumn
             editor.setStatusMessage(editor.l10n["status.formatted_table"])
-            return
+            return .succeeded
         }
         let (_, cols) = editor.terminal.getWindowSize()
         let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
         editor.buffer.justifyParagraph(targetWidth: targetWidth)
         editor.setStatusMessage(editor.l10n["status.justified_paragraph"])
+        return .succeeded
     }
 }
 
@@ -387,8 +413,10 @@ public struct SpellCheckCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSpellCheck()
+        return .prompting
     }
 }
 
@@ -401,8 +429,10 @@ public struct EvalLogoCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.evalLogoCode()
+        return .succeeded
     }
 }
 
@@ -415,8 +445,10 @@ public struct ToggleCommentCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleComment()
+        return .succeeded
     }
 }
 
@@ -429,9 +461,10 @@ public struct JoinLineCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
-        guard editor.buffer.lineIndex + 1 < editor.buffer.lines.count else { return }
+        guard editor.buffer.lineIndex + 1 < editor.buffer.lines.count else { return .noOp }
 
         let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
         let nextLine = editor.buffer.lines.remove(at: editor.buffer.lineIndex + 1)
@@ -441,6 +474,7 @@ public struct JoinLineCommand: Command {
         editor.buffer.lines[editor.buffer.lineIndex] = currentLine + separator + trimmedNext
         editor.buffer.columnIndex = currentLine.count + separator.count
         editor.buffer.isModified = true
+        return .succeeded
     }
 }
 
@@ -453,7 +487,8 @@ public struct SplitLineCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         let line = editor.buffer.lines[editor.buffer.lineIndex]
         let col = min(editor.buffer.columnIndex, line.count)
@@ -465,5 +500,6 @@ public struct SplitLineCommand: Command {
         editor.buffer.lineIndex += 1
         editor.buffer.columnIndex = 0
         editor.buffer.isModified = true
+        return .succeeded
     }
 }

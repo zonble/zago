@@ -88,19 +88,21 @@ extension Editor {
         }
     }
 
-    func openBuffer(path: String) {
+    @discardableResult
+    func openBuffer(path: String) -> EditorOperationResult {
         let expanded = fileIOStrategy.normalizePath(path, isDirectory: false)
         let info = fileIOStrategy.fileInfo(at: expanded)
         if info.exists, info.isDirectory {
             openDirectoryBuffer(path: expanded)
-            return
+            return .succeeded
         }
         if info.exists {
             do {
                 _ = try fileIOStrategy.readTextFile(at: expanded)
             } catch {
-                setStatusMessage(l10n.errorOpeningFile(error: error.localizedDescription))
-                return
+                let message = error.localizedDescription
+                setStatusMessage(l10n.errorOpeningFile(error: message))
+                return .failed(message)
             }
         }
 
@@ -109,6 +111,7 @@ extension Editor {
         } else {
             openNewBuffer(filePath: expanded)
         }
+        return .succeeded
     }
 
     func openDocumentLinkAtCursor() {
@@ -256,7 +259,7 @@ extension Editor {
     }
 
     @discardableResult
-    func writeBuffer(path: String) -> Bool {
+    func writeBuffer(path: String) -> EditorOperationResult {
         doSave(to: path)
     }
 
@@ -316,23 +319,27 @@ extension Editor {
         requested ?? !current
     }
 
-    func saveBuffer(path: String?) {
+    @discardableResult
+    func saveBuffer(path: String?) -> EditorOperationResult {
         if let path, !path.isEmpty {
-            writeBuffer(path: path)
+            return writeBuffer(path: path)
         } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
-            writeBuffer(path: currentPath)
+            return writeBuffer(path: currentPath)
         } else {
             promptWriteFilePath()
+            return .prompting
         }
     }
 
-    func saveAndCloseBuffer(path: String?) {
+    @discardableResult
+    func saveAndCloseBuffer(path: String?) -> EditorOperationResult {
         if let path, !path.isEmpty {
-            doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
+            return doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
         } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
-            doSave(to: currentPath) { [weak self] in self?.closeCurrentBuffer() }
+            return doSave(to: currentPath) { [weak self] in self?.closeCurrentBuffer() }
         } else {
             promptSaveAndExit()
+            return .prompting
         }
     }
 

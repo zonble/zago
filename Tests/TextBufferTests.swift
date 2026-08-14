@@ -110,23 +110,13 @@ import Testing
     #expect(buffer.lines[0] == "Hello Swift !")
 }
 
-@Test func testTextBufferFileOperations() throws {
-    let tempDir = FileManager.default.temporaryDirectory
-    let tempFile = tempDir.appendingPathComponent("test_se_\(UUID().uuidString).txt").path
-
+@Test func testTextBufferInsertsMultilineContent() throws {
     let buffer = TextBuffer()
-    buffer.lines = ["Line 1", "Line 2", "Line 3"]
-    try buffer.saveFile(to: tempFile)
-    #expect(FileManager.default.fileExists(atPath: tempFile))
+    buffer.insertString("Line 1\nLine 2\nLine 3")
 
-    let newBuffer = TextBuffer()
-    let count = try newBuffer.insertFile(at: tempFile)
-    #expect(count == 3)
-    #expect(newBuffer.lines[0] == "Line 1")
-    #expect(newBuffer.lines[1] == "Line 2")
-    #expect(newBuffer.lines[2] == "Line 3")
-
-    try? FileManager.default.removeItem(atPath: tempFile)
+    #expect(buffer.lines[0] == "Line 1")
+    #expect(buffer.lines[1] == "Line 2")
+    #expect(buffer.lines[2] == "Line 3")
 }
 
 @Test func testTrimTrailingWhitespaceOnlyRemovesLineEndSpacesAndTabs() throws {

@@ -9,8 +9,10 @@ public struct SwitchTextModeCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.switchToTextMode()
+        return .succeeded
     }
 }
 
@@ -23,8 +25,10 @@ public struct ToggleCanvasModeCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleCanvasMode()
+        return .succeeded
     }
 }
 
@@ -37,8 +41,10 @@ public struct ToggleTableModeCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.toggleTableMode()
+        return .succeeded
     }
 }
 
@@ -52,7 +58,8 @@ public struct CycleBorderStyleCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         switch editor.defaultBorderStyle {
         case .single:
             editor.defaultBorderStyle = .heavy
@@ -76,5 +83,6 @@ public struct CycleBorderStyleCommand: Command {
             editor.defaultBorderStyle = .single
             editor.setStatusMessage(editor.l10n.defaultBorder("Single Unicode (┌─│)"))
         }
+        return .succeeded
     }
 }
