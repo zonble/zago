@@ -70,6 +70,11 @@ extension Editor {
         set { buffer.canvasHorizontalOffset = newValue }
     }
 
+    var topVLineIndex: Int {
+        get { buffer.topVLineIndex }
+        set { buffer.topVLineIndex = newValue }
+    }
+
     var isTableModeActive: Bool {
         get { buffer.isTableModeActive }
         set { buffer.isTableModeActive = newValue }
