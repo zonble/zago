@@ -47,6 +47,11 @@ public final class TableModeController: KeyInputHandler {
             navigateNextTableCell()
             return true
 
+        case .backtab:
+            editor.clearActiveMark()
+            navigatePrevTableCell()
+            return true
+
         case .shiftArrowLeft:
             extendTableSelectionLeft(cell: cell)
             return true

@@ -5,17 +5,27 @@ import TextTransform
 
 extension Editor {
     func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
-        if isTableModeActive {
-            setStatusMessage(l10n["status.goto_disabled_in_table_mode"])
-            return
-        }
-
         guard oneBasedLine > 0 else {
             setStatusMessage(l10n["status.invalid_line"])
             return
         }
 
-        if isCanvasModeActive {
+        if isTableModeActive, currentTableCell != nil {
+            if let oneBasedColumn, oneBasedColumn <= 0 {
+                setStatusMessage(l10n["status.invalid_column"])
+                return
+            }
+            let targetLine = oneBasedLine - 1
+            let targetColumn = (oneBasedColumn ?? buffer.columnIndex + 1) - 1
+            guard let clamped = tableModeController.clampedPositionInCurrentCell(
+                line: targetLine, column: targetColumn)
+            else {
+                setStatusMessage(l10n["status.goto_disabled_in_table_mode"])
+                return
+            }
+            buffer.lineIndex = clamped.line
+            buffer.columnIndex = clamped.column
+        } else if isCanvasModeActive {
             if let oneBasedColumn, oneBasedColumn <= 0 {
                 setStatusMessage(l10n["status.invalid_column"])
                 return

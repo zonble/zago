@@ -208,6 +208,26 @@ extension TableModeController {
         editor.buffer.columnIndex = max(innerMinCol, min(editor.buffer.columnIndex, maxCol))
     }
 
+    public func currentCellInnerBounds(on lineIndex: Int) -> (start: Int, end: Int)? {
+        guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return nil }
+        guard lineIndex >= cell.innerMinLine && lineIndex <= cell.innerMaxLine else { return nil }
+        guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return nil }
+        let line = editor.buffer.lines[lineIndex]
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: cell.innerMinCol, cell: cell)
+        let start = max(0, min(leftBorder + 1, line.count))
+        let end = max(start, min(rightBorder, line.count))
+        return (start: start, end: end)
+    }
+
+    public func clampedPositionInCurrentCell(line: Int, column: Int) -> (line: Int, column: Int)? {
+        guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return nil }
+        let targetLine = max(cell.innerMinLine, min(line, cell.innerMaxLine))
+        guard let bounds = currentCellInnerBounds(on: targetLine) else { return nil }
+        let maxColumn = max(bounds.start, bounds.end - 1)
+        return (line: targetLine, column: max(bounds.start, min(column, maxColumn)))
+    }
+
     /// Navigates to next table cell to the right or next row (Tab).
     public func navigateNextTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }

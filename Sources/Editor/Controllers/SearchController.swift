@@ -177,13 +177,27 @@ public final class SearchController: KeyInputHandler {
         guard let editor else { return [] }
         var candidates: [SearchCandidate] = []
         for (lineIndex, line) in editor.buffer.lines.enumerated() {
-            var searchStart = line.startIndex
-            while searchStart < line.endIndex,
-                let range = line.range(of: query, options: [.caseInsensitive], range: searchStart..<line.endIndex)
+            let searchRange: Range<String.Index>
+            let columnOffset: Int
+            if editor.isTableModeActive, let bounds = editor.tableModeController.currentCellInnerBounds(on: lineIndex) {
+                let start = line.index(line.startIndex, offsetBy: bounds.start)
+                let end = line.index(line.startIndex, offsetBy: bounds.end)
+                searchRange = start..<end
+                columnOffset = bounds.start
+            } else if editor.isTableModeActive {
+                continue
+            } else {
+                searchRange = line.startIndex..<line.endIndex
+                columnOffset = 0
+            }
+
+            var searchStart = searchRange.lowerBound
+            while searchStart < searchRange.upperBound,
+                let range = line.range(of: query, options: [.caseInsensitive], range: searchStart..<searchRange.upperBound)
             {
                 let column = line.distance(from: line.startIndex, to: range.lowerBound)
                 let length = line.distance(from: range.lowerBound, to: range.upperBound)
-                if length > 0 {
+                if length > 0, column >= columnOffset {
                     candidates.append(SearchCandidate(line: lineIndex, column: column, length: length))
                 }
                 searchStart = range.upperBound
@@ -196,7 +210,18 @@ public final class SearchController: KeyInputHandler {
         guard let editor else { return [] }
         var candidates: [SearchCandidate] = []
         for (lineIndex, line) in editor.buffer.lines.enumerated() {
-            let nsRange = NSRange(line.startIndex..<line.endIndex, in: line)
+            let searchRange: Range<String.Index>
+            if editor.isTableModeActive, let bounds = editor.tableModeController.currentCellInnerBounds(on: lineIndex) {
+                let start = line.index(line.startIndex, offsetBy: bounds.start)
+                let end = line.index(line.startIndex, offsetBy: bounds.end)
+                searchRange = start..<end
+            } else if editor.isTableModeActive {
+                continue
+            } else {
+                searchRange = line.startIndex..<line.endIndex
+            }
+
+            let nsRange = NSRange(searchRange, in: line)
             let matches = regex.matches(in: line, options: [], range: nsRange)
             for match in matches {
                 guard match.range.length > 0, let range = Range(match.range(at: 0), in: line) else { continue }
