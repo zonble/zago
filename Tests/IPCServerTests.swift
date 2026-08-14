@@ -466,6 +466,38 @@ final class IPCServerTests: XCTestCase {
         XCTAssertNil(response.error)
     }
 
+    func testIPCClientConnectsToLiveServerAndFetchesBuffers() throws {
+        #if os(Windows)
+            let server = makeTestServer(sessionToken: "live-token")
+        #else
+            let socketPath = FileManager.default.temporaryDirectory
+                .appendingPathComponent("zago-live-\(UUID().uuidString.prefix(8)).sock").path
+            let server = makeTestServer(socketPath: socketPath, sessionToken: "live-token")
+        #endif
+        let editor = Editor()
+        editor.buffer.lines = ["alpha", "beta"]
+        let target = TestIPCDelegate(editor: editor)
+        server.delegate = target
+        server.dataSource = target
+
+        try server.start()
+        defer { server.stop() }
+
+        let session = ZagoIPCSession(
+            instanceId: "zago-live-test",
+            endpointPath: server.socketPath,
+            tokenPath: server.tokenPath
+        )
+        let client = ZagoIPCClient(clientId: "zago-test-client", clientName: "zago test")
+
+        let result = try client.getBuffers(in: session)
+
+        XCTAssertEqual(result.buffers.count, 1)
+        XCTAssertEqual(result.buffers.first?.bufferId, result.activeBufferId)
+        XCTAssertEqual(result.buffers.first?.fileName, editor.l10n["buffer.untitled"])
+        XCTAssertEqual(result.buffers.first?.isFocused, true)
+    }
+
     func testIPCGetSelectionReturnsSelectedTextAndRange() throws {
         let editor = Editor()
         editor.buffer.lines = ["alpha", "beta", "gamma"]
