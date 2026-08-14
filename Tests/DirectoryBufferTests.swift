@@ -271,4 +271,41 @@ import Testing
             Issue.record("Expected folder_a in directory buffer")
         }
     }
+
+    @Test func testDirectoryBufferPreservesViewportWhenExitingFileBuffer() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_viewport_\(UUID().uuidString)")
+        let fileURL = workDir.appendingPathComponent("sample.txt")
+
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        let longText = (1...100).map { "Line \($0)" }.joined(separator: "\n")
+        try longText.write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        let editor = Editor(filePath: workDir.path)
+        #expect(editor.buffer is DirectoryBuffer)
+        let dirBuffer = editor.buffer as! DirectoryBuffer
+        #expect(dirBuffer.topVLineIndex == 0)
+
+        // Find and open sample.txt
+        if let idx = dirBuffer.lines.firstIndex(where: { $0.contains("sample.txt") }) {
+            dirBuffer.lineIndex = idx
+            let initialDirLineIndex = dirBuffer.lineIndex
+            dirBuffer.activateEntry(editor: editor)
+            #expect(editor.buffer.isDirectoryBuffer == false)
+
+            // Scroll down in sample.txt
+            editor.buffer.lineIndex = 50
+            editor.adjustViewport(mainAreaHeight: 20, textWidth: 80)
+            #expect(editor.topVLineIndex > 0)
+
+            // Close sample.txt to return to directory buffer
+            editor.closeCurrentBuffer()
+            #expect(editor.buffer is DirectoryBuffer)
+            #expect(editor.buffer.lineIndex == initialDirLineIndex)
+            #expect(editor.topVLineIndex == 0)
+        } else {
+            Issue.record("Expected sample.txt in directory buffer")
+        }
+    }
 }

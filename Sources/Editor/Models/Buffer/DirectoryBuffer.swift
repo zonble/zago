@@ -111,8 +111,14 @@ public final class DirectoryBuffer: TextBuffer {
             }
         }
 
+        let isSameDirectory = (expandedPath == self.directoryPath && !self.lines.isEmpty)
         self.lines = newLines
-        self.lineIndex = min(3, max(0, newLines.count - 1))
+        if isSameDirectory {
+            self.lineIndex = min(self.lineIndex, max(0, newLines.count - 1))
+        } else {
+            self.lineIndex = min(3, max(0, newLines.count - 1))
+            self.topVLineIndex = 0
+        }
         self.columnIndex = 0
     }
 

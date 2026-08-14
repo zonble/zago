@@ -22,6 +22,7 @@ open class TextBuffer: SpellCheckableBuffer {
     public var overlayMode: EditorOverlayMode = .none
     public var canvasVisualColumn: Int = 0
     public var canvasHorizontalOffset: Int = 0
+    public var topVLineIndex: Int = 0
     public var isTableModeActive: Bool = false
     public var currentTableCell: TableCell? = nil
     public var selectionMark: (line: Int, column: Int)? = nil
