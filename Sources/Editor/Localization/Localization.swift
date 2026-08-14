@@ -103,6 +103,10 @@ public struct L10n: Sendable {
         String(format: self["msg.error_inserting_file"], error)
     }
 
+    public func errorOpeningFile(error: String) -> String {
+        String(format: self["msg.error_opening_file"], error)
+    }
+
     public func errorSavingFile(error: String) -> String {
         String(format: self["msg.error_saving_file"], error)
     }

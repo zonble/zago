@@ -95,6 +95,14 @@ extension Editor {
             openDirectoryBuffer(path: expanded)
             return
         }
+        if info.exists {
+            do {
+                _ = try fileIOStrategy.readTextFile(at: expanded)
+            } catch {
+                setStatusMessage(l10n.errorOpeningFile(error: error.localizedDescription))
+                return
+            }
+        }
 
         if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
             switchToBuffer(index: existingIndex)
@@ -247,7 +255,8 @@ extension Editor {
         return range
     }
 
-    func writeBuffer(path: String) {
+    @discardableResult
+    func writeBuffer(path: String) -> Bool {
         doSave(to: path)
     }
 
@@ -319,11 +328,9 @@ extension Editor {
 
     func saveAndCloseBuffer(path: String?) {
         if let path, !path.isEmpty {
-            writeBuffer(path: path)
-            closeCurrentBuffer()
+            doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
         } else if let currentPath = buffer.filePath, !currentPath.isEmpty {
-            writeBuffer(path: currentPath)
-            closeCurrentBuffer()
+            doSave(to: currentPath) { [weak self] in self?.closeCurrentBuffer() }
         } else {
             promptSaveAndExit()
         }

@@ -9,6 +9,7 @@ open class TextBuffer: SpellCheckableBuffer {
     public let id: String = UUID().uuidString
     public var lines: [String] = [""]
     public var filePath: String?
+    public var loadErrorDescription: String?
     public var isModified: Bool = false
 
     /// Real buffer cursor position (measured in Character / Grapheme Clusters).
@@ -107,15 +108,26 @@ open class TextBuffer: SpellCheckableBuffer {
         fileIO: EditorFileIOStrategy
     ) {
         let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        guard let result = try? fileIO.readTextFile(at: expandedPath) else {
+        guard fileIO.fileInfo(at: expandedPath).exists else {
             replaceContents("", filePath: expandedPath, isModified: false)
             self.fileEncoding = .utf8
+            self.loadErrorDescription = nil
+            self.isReadOnly = false
             return
         }
-        self.fileEncoding = result.encoding
-        replaceContents(result.content, filePath: expandedPath, isModified: false)
-        lineIndex = 0
-        columnIndex = 0
+        do {
+            let result = try fileIO.readTextFile(at: expandedPath)
+            self.fileEncoding = result.encoding
+            self.loadErrorDescription = nil
+            replaceContents(result.content, filePath: expandedPath, isModified: false)
+            lineIndex = 0
+            columnIndex = 0
+        } catch {
+            replaceContents("", filePath: expandedPath, isModified: false)
+            self.fileEncoding = .utf8
+            self.loadErrorDescription = error.localizedDescription
+            self.isReadOnly = true
+        }
     }
 
     /// Reloads buffer content from current file path.
@@ -126,6 +138,7 @@ open class TextBuffer: SpellCheckableBuffer {
         }
         let result = try fileIO.readTextFile(at: path)
         self.fileEncoding = result.encoding
+        self.loadErrorDescription = nil
         replaceContents(result.content, filePath: path, isModified: false)
         clampCursor()
     }

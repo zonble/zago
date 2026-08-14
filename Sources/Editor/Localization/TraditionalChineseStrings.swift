@@ -504,6 +504,7 @@ public struct TraditionalChineseStrings {
         "msg.not_found": "找不到 \"%@\"",
         "msg.inserted_lines": "[ 已插入 %d 行內容 ]",
         "msg.error_inserting_file": "插入檔案錯誤：%@",
+        "msg.error_opening_file": "開啟檔案錯誤：%@",
         "msg.error_saving_file": "儲存檔案錯誤：%@",
         "msg.replaced_word": "已將 '%@' 替換為 '%@'",
 
