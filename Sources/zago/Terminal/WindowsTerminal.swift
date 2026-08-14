@@ -30,6 +30,9 @@ import Foundation
         private var lastWindowSize: (rows: Int, cols: Int)
         private var lastReadTimedOut = false
         private var pendingResizeEvent = false
+        private var pendingConsoleUTF16Units: [UInt16] = []
+        private let wakeupLock = NSLock()
+        private var wakeupRequested = false
         private(set) public var rawModeEnabled = false
 
         public init() {
@@ -38,6 +41,35 @@ import Foundation
 
         deinit {
             disableRawMode()
+        }
+
+        public func wakeup() {
+            wakeupLock.lock()
+            wakeupRequested = true
+            wakeupLock.unlock()
+
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            guard hInput != INVALID_HANDLE_VALUE, hInput != nil else { return }
+
+            var record = INPUT_RECORD()
+            record.EventType = WORD(KEY_EVENT)
+            record.Event.KeyEvent.bKeyDown = true
+            record.Event.KeyEvent.wRepeatCount = 1
+            record.Event.KeyEvent.wVirtualKeyCode = 0
+            record.Event.KeyEvent.wVirtualScanCode = 0
+            record.Event.KeyEvent.uChar.UnicodeChar = 0
+            record.Event.KeyEvent.dwControlKeyState = 0
+
+            var written: DWORD = 0
+            _ = WriteConsoleInputW(hInput, &record, 1, &written)
+        }
+
+        private func consumeWakeupRequest() -> Bool {
+            wakeupLock.lock()
+            defer { wakeupLock.unlock() }
+            guard wakeupRequested else { return false }
+            wakeupRequested = false
+            return true
         }
 
         /// Enables terminal raw mode on Windows.
@@ -202,29 +234,56 @@ import Foundation
 
         private func readConsoleUTF16Unit(timeoutMs: Int = 0) -> UInt16? {
             lastReadTimedOut = false
-            let hInput = GetStdHandle(DWORD(bitPattern: -10))
-            if consumePendingWindowsResizeInput() {
-                return nil
+            if !pendingConsoleUTF16Units.isEmpty {
+                return pendingConsoleUTF16Units.removeFirst()
             }
-            if timeoutMs > 0 {
-                let res = WaitForSingleObject(hInput, DWORD(timeoutMs))
+
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+
+            while true {
+                let waitMs = timeoutMs > 0 ? DWORD(timeoutMs) : DWORD.max
+                let res = WaitForSingleObject(hInput, waitMs)
                 if res == WAIT_TIMEOUT {
                     lastReadTimedOut = true
                     return nil
                 } else if res != WAIT_OBJECT_0 {
                     return nil
                 }
-                if consumePendingWindowsResizeInput() {
+
+                var record = INPUT_RECORD()
+                var recordsRead: DWORD = 0
+                guard ReadConsoleInputW(hInput, &record, 1, &recordsRead), recordsRead == 1 else {
                     return nil
                 }
-            }
 
-            var unit: UInt16 = 0
-            var unitsRead: DWORD = 0
-            if ReadConsoleW(hInput, &unit, 1, &unitsRead, nil) && unitsRead == 1 {
-                return unit
+                if record.EventType == WORD(WINDOW_BUFFER_SIZE_EVENT) {
+                    _ = consumeWindowResizeEvent()
+                    pendingResizeEvent = true
+                    return nil
+                }
+
+                guard record.EventType == WORD(KEY_EVENT) else {
+                    continue
+                }
+
+                let keyEvent = record.Event.KeyEvent
+                guard keyEvent.bKeyDown.boolValue else {
+                    continue
+                }
+
+                let unit = keyEvent.uChar.UnicodeChar
+                if unit == 0, consumeWakeupRequest() {
+                    return nil
+                }
+                guard unit != 0 else {
+                    continue
+                }
+                let repeatCount = Int(keyEvent.wRepeatCount)
+                if repeatCount > 1 {
+                    pendingConsoleUTF16Units.append(contentsOf: Array(repeating: UInt16(unit), count: repeatCount - 1))
+                }
+                return UInt16(unit)
             }
-            return nil
         }
 
         private static func isHighSurrogate(_ unit: UInt16) -> Bool {
@@ -338,58 +397,74 @@ import Foundation
         /// Reads all currently queued pending text bytes from stdin without blocking (accelerates clipboard paste).
         public func readPendingText(firstChar: Character) -> String {
             var result = String(firstChar)
-            var rawBuffer = [UInt16](repeating: 0, count: 32768)
+            var units: [UInt16] = []
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
 
             while WaitForSingleObject(hInput, 0) == WAIT_OBJECT_0 {
-                var unitsRead: DWORD = 0
-                if ReadConsoleW(hInput, &rawBuffer, DWORD(rawBuffer.count), &unitsRead, nil) && unitsRead > 0 {
-                    let units = Array(rawBuffer[..<Int(unitsRead)])
-                    var idx = 0
-                    while idx < units.count {
-                        let unit = units[idx]
-                        if unit == 13 || unit == 10 {  // CR or LF
-                            if unit == 13 && idx + 1 < units.count && units[idx + 1] == 10 {
-                                idx += 1
-                            }
-                            result.append("\n")
+                var record = INPUT_RECORD()
+                var recordsRead: DWORD = 0
+                guard ReadConsoleInputW(hInput, &record, 1, &recordsRead), recordsRead == 1 else {
+                    break
+                }
+
+                if record.EventType == WORD(WINDOW_BUFFER_SIZE_EVENT) {
+                    _ = consumeWindowResizeEvent()
+                    pendingResizeEvent = true
+                    continue
+                }
+
+                guard record.EventType == WORD(KEY_EVENT) else {
+                    continue
+                }
+
+                let keyEvent = record.Event.KeyEvent
+                guard keyEvent.bKeyDown.boolValue else {
+                    continue
+                }
+
+                let unit = keyEvent.uChar.UnicodeChar
+                guard unit != 0 else {
+                    continue
+                }
+                units.append(contentsOf: Array(repeating: UInt16(unit), count: Int(keyEvent.wRepeatCount)))
+            }
+
+            var idx = 0
+            while idx < units.count {
+                let unit = units[idx]
+                if unit == 13 || unit == 10 {  // CR or LF
+                    if unit == 13 && idx + 1 < units.count && units[idx + 1] == 10 {
+                        idx += 1
+                    }
+                    result.append("\n")
+                    idx += 1
+                } else if unit == 27 {  // ESC sequence skip
+                    idx += 1
+                    if idx < units.count && units[idx] == UInt16(UInt8(ascii: "[")) {
+                        idx += 1
+                        while idx < units.count && (units[idx] < 64 || units[idx] > 126) {
                             idx += 1
-                        } else if unit == 27 {  // ESC sequence skip
-                            idx += 1
-                            if idx < units.count && units[idx] == UInt16(UInt8(ascii: "[")) {
-                                idx += 1
-                                while idx < units.count && (units[idx] < 64 || units[idx] > 126) {
-                                    idx += 1
-                                }
-                                if idx < units.count { idx += 1 }
-                            }
-                        } else if unit >= 32 || unit == 9 {  // Printable character or Tab
-                            if Self.isHighSurrogate(unit) {
-                                if idx + 1 < units.count, Self.isLowSurrogate(units[idx + 1]) {
-                                    if let ch = Self.characterFromConsoleUTF16Units([unit, units[idx + 1]]) {
-                                        result.append(ch)
-                                    }
-                                    idx += 2
-                                } else if let low = readConsoleUTF16Unit(timeoutMs: 50), Self.isLowSurrogate(low) {
-                                    if let ch = Self.characterFromConsoleUTF16Units([unit, low]) {
-                                        result.append(ch)
-                                    }
-                                    idx += 1
-                                } else {
-                                    idx += 1
-                                }
-                            } else if let ch = Self.characterFromConsoleUTF16Units([unit]) {
+                        }
+                        if idx < units.count { idx += 1 }
+                    }
+                } else if unit >= 32 || unit == 9 {  // Printable character or Tab
+                    if Self.isHighSurrogate(unit) {
+                        if idx + 1 < units.count, Self.isLowSurrogate(units[idx + 1]) {
+                            if let ch = Self.characterFromConsoleUTF16Units([unit, units[idx + 1]]) {
                                 result.append(ch)
-                                idx += 1
-                            } else {
-                                idx += 1
                             }
+                            idx += 2
                         } else {
                             idx += 1
                         }
+                    } else if let ch = Self.characterFromConsoleUTF16Units([unit]) {
+                        result.append(ch)
+                        idx += 1
+                    } else {
+                        idx += 1
                     }
                 } else {
-                    break
+                    idx += 1
                 }
             }
             return result
