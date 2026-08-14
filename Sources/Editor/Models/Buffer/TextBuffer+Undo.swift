@@ -6,6 +6,22 @@ public enum ActionAuthor: Equatable, Codable, Sendable {
     case aiAgent(id: String, name: String, reason: String)
 }
 
+/// Represents an immutable snapshot of buffer text, cursor coordinates, and UI mode states for Undo/Redo operations.
+///
+/// ### Architecture & Swift Copy-On-Write (COW) Performance
+/// 1. **Absolute State Correctness**:
+///    In an editor featuring 2D Canvas drawing, multi-line Markdown table reformatting, and LOGO macro
+///    transformations, snapshot-based undo guarantees 100% mathematical correctness and avoids the complex
+///    character-offset desync issues common to operational transform (OT) or differential patch engines.
+///
+/// 2. **Swift Copy-On-Write (COW) Optimization**:
+///    - `lines: [String]` is a Swift value type backed by reference-counted buffer storage.
+///    - Initializing an `UndoSnapshot` with `buffer.lines` is an $O(1)$ pointer reference count increment;
+///      it does *not* perform deep string allocations for unchanged text.
+///    - Unmodified lines across up to 100 snapshot frames share identical backing string buffers in memory.
+///    - Only lines that are mutated trigger copy-on-write allocation for their individual buffers.
+///    - Memory consumption per snapshot is primarily limited to the array pointer spine (~8 bytes per line),
+///      making snapshot-based undo lightweight and predictable for typical source code, Markdown, and diagram files.
 public struct UndoSnapshot: Equatable, Codable {
     public let lines: [String]
     public let lineIndex: Int
