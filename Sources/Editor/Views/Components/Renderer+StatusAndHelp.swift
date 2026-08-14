@@ -271,84 +271,110 @@ extension Renderer {
             ]
 
         case .none:
+            func keyLabel(for cmd: CommandID, fallback: String) -> String {
+                guard let editor else { return fallback }
+                return editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) ?? fallback
+            }
+
             if editor?.isTableModeActive == true {
                 helpItems1 = [
-                    ("F1", tr("help.menu")),
+                    (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                     ("Esc", tr("help.commands")),
-                    ("Tab", tr("help.next_cell")),
+                    (keyLabel(for: .tableNextCell, fallback: "Tab"), tr("help.next_cell")),
                     ("C+⇧+←/→", tr("help.cell_width")),
                     ("Arrow", tr("help.move")),
-                    ("^J", tr("help.center_text")),
+                    (keyLabel(for: .tableCenterText, fallback: "^J"), tr("help.center_text")),
                 ]
                 helpItems2 = [
-                    ("^X", tr("help.exit")),
-                    ("F7", tr("help.table_exit")),
-                    ("⇧+Tab", tr("help.prev_cell")),
+                    (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                    (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_exit")),
+                    (keyLabel(for: .tablePrevCell, fallback: "⇧+Tab"), tr("help.prev_cell")),
                     ("C+⇧+↑/↓", tr("help.cell_height")),
                     ("⇧+Arrow", tr("help.select_text")),
-                    ("^K", tr("help.clear_cell")),
+                    (keyLabel(for: .tableClearCell, fallback: "^K"), tr("help.clear_cell")),
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", tr("help.menu")),
-                    ("F8", tr("help.text_mode")),
+                    (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                    (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.text_mode")),
                     ("ESC", tr("help.commands")),
                     ("⇧+Arrow", tr("help.line")),
-                    ("^O", tr("help.write_out")),
+                    (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                     ("^^/M+B", tr("help.mark_block")),
-                    ("^K", tr("help.cut_block")),
-                    ("M+W", tr("help.copy_block")),
+                    (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_block")),
+                    (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_block")),
                 ]
                 helpItems2 = [
-                    ("^X", tr("help.exit")), ("F7", tr("help.table_mode")),
-                    ("^Z", tr("help.undo")),
+                    (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                    (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
+                    (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
                     ("^⇧+Arrow", tr("help.arrow")),
-                    ("^W", tr("help.where_is")),
+                    (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
                     ("^G", tr("help.clear_mark")),
-                    ("^U", tr("help.uncut_block")),
+                    (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_block")),
                     ("M+S", tr("help.border_style")),
                 ]
             } else {
                 if editor?.proposalQueue.isEmpty == false {
                     helpItems1 = [
-                        ("M+A", tr("help.ai_accept")),
-                        ("M+P", tr("help.ai_next_proposal")),
-                        ("F1", tr("help.menu")),
-                        ("^O", tr("help.write_out")),
-                        ("^K", tr("help.cut_text")),
-                        ("^Y", tr("help.prev_pg")),
+                        (keyLabel(for: .proposalAccept, fallback: "M+A"), tr("help.ai_accept")),
+                        (keyLabel(for: .proposalNext, fallback: "M+P"), tr("help.ai_next_proposal")),
+                        (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                        (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
+                        (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
+                        (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
                     ]
                     helpItems2 = [
-                        ("M+R", tr("help.ai_reject")),
-                        ("M+P", tr("help.ai_previous_proposal")),
-                        ("^X", tr("help.exit")),
-                        ("^W", tr("help.where_is")),
-                        ("^U", tr("help.uncut_text")),
-                        ("^V", tr("help.next_pg")),
+                        (keyLabel(for: .proposalReject, fallback: "M+R"), tr("help.ai_reject")),
+                        (keyLabel(for: .proposalPrev, fallback: "M+P"), tr("help.ai_previous_proposal")),
+                        (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                        (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
+                        (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_text")),
+                        (keyLabel(for: .movePgdn, fallback: "PgDn"), tr("help.next_pg")),
+                    ]
+                } else if editor?.keymapManager.activePreset == .modern {
+                    helpItems1 = [
+                        (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                        (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
+                        ("ESC", tr("help.commands")),
+                        (keyLabel(for: .fileSave, fallback: "^S"), tr("help.save")),
+                        (keyLabel(for: .editCut, fallback: "^X"), tr("help.cut_text")),
+                        (keyLabel(for: .editCopy, fallback: "^C"), tr("help.copy_text")),
+                        (keyLabel(for: .editUncut, fallback: "^V"), tr("help.uncut_text")),
+                        (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
+                    ]
+                    helpItems2 = [
+                        (keyLabel(for: .fileExit, fallback: "^Q"), tr("help.exit")),
+                        (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
+                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
+                        (keyLabel(for: .editRedo, fallback: "^Y"), tr("help.redo")),
+                        (keyLabel(for: .searchWhereIs, fallback: "^F"), tr("help.where_is")),
+                        (keyLabel(for: .searchReplace, fallback: "^H"), tr("help.replace")),
+                        (keyLabel(for: .selectAll, fallback: "^A"), tr("help.select_all")),
+                        (keyLabel(for: .movePgdn, fallback: "PgDn"), tr("help.next_pg")),
                     ]
                 } else {
                     helpItems1 = [
-                        ("F1", tr("help.menu")),
-                        ("F8", tr("help.canvas_mode")),
+                        (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                        (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
                         ("ESC", tr("help.commands")),
-                        ("^O", tr("help.write_out")),
-                        ("^R", tr("help.read_file")),
-                        ("^K", tr("help.cut_text")),
+                        (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
+                        (keyLabel(for: .fileInsert, fallback: "^R"), tr("help.read_file")),
+                        (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
                         ("⇧+Arrow", tr("help.select_text")),
-                        ("^Y", tr("help.prev_pg")),
-                        ("^C", tr("help.cur_pos")),
+                        (keyLabel(for: .movePgup, fallback: "^Y"), tr("help.prev_pg")),
+                        (keyLabel(for: .cursorPos, fallback: "^C"), tr("help.cur_pos")),
                     ]
                     helpItems2 = [
-                        ("^X", tr("help.exit")),
-                        ("F7", tr("help.table_mode")),
-                        ("^Z", tr("help.undo")),
-                        ("^J", tr("help.justify")),
-                        ("^W", tr("help.where_is")),
-                        ("^U", tr("help.uncut_text")),
-                        ("M+W", tr("help.copy_text")),
-                        ("^V", tr("help.next_pg")),
-                        ("^T", tr("help.to_spell")),
-
+                        (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                        (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
+                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
+                        (keyLabel(for: .editJustify, fallback: "^J"), tr("help.justify")),
+                        (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
+                        (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_text")),
+                        (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_text")),
+                        (keyLabel(for: .movePgdn, fallback: "^V"), tr("help.next_pg")),
+                        (keyLabel(for: .editSpell, fallback: "^T"), tr("help.to_spell")),
                     ]
                 }
             }

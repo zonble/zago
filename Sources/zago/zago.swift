@@ -58,6 +58,12 @@ struct Zago: ParsableCommand {
     )
     var spellLang: String?
 
+    @Option(
+        name: [.customLong("keymap"), .customShort("k")],
+        help: "Set keymap preset ('classic' for GNU Nano or 'modern' for VS Code / CUA shortcuts)."
+    )
+    var keymap: KeymapPreset?
+
     @Flag(
         name: [.customShort("R"), .long],
         help: "Open file(s) in read-only mode.")
@@ -278,7 +284,8 @@ struct Zago: ParsableCommand {
             initialLine: initialLine,
             initialColumn: initialColumn,
             readOnly: readonly,
-            pipedInput: pipedInputData
+            pipedInput: pipedInputData,
+            keymapPreset: keymap
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false
@@ -476,3 +483,5 @@ struct Zago: ParsableCommand {
         }
     }
 }
+
+extension KeymapPreset: ExpressibleByArgument {}

@@ -20,7 +20,9 @@ public struct EditorConfig {
     public var spellLanguage: String = "en_US"
     public var defaultBorderStyle: BorderStyle = .single
     public var defaultArrowStyle: ArrowStyle = .solid
+    public var keymapPreset: String = "classic"
     public var customKeyBinds: [Key: String] = [:]
+    public var customModeKeyBinds: [String: [Key: String]] = [:]
     public var unbindKeys: Set<Key> = []
     public var logoPrelude: String = ""
     public var logoScripts: [String: String] = [:]

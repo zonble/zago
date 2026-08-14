@@ -118,15 +118,35 @@ public final class ConfigLoader {
                         recordSyntaxError(in: &config)
                         continue
                     }
-                    config.customKeyBinds[key] = Self.unquote(tokens[2])
+                    let rest = tokens[2].trimmingCharacters(in: .whitespaces)
+                    let validModes: Set<String> = ["text", "canvas", "table", "prompt", "menu"]
+                    let parts = rest.split(whereSeparator: \.isWhitespace).map(String.init)
+                    if parts.count >= 2, let lastPart = parts.last?.lowercased(), validModes.contains(lastPart) {
+                        let targetPart = rest.dropLast(lastPart.count).trimmingCharacters(in: .whitespaces)
+                        let target = Self.unquote(targetPart)
+                        var map = config.customModeKeyBinds[lastPart, default: [:]]
+                        map[key] = target
+                        config.customModeKeyBinds[lastPart] = map
+                    } else {
+                        config.customKeyBinds[key] = Self.unquote(rest)
+                    }
                     config.unbindKeys.remove(key)
                 case .unbind:
-                    guard tokens.count >= 2, let key = KeyParser.parse(tokens[1]) else {
+                    let rawTokens = line.split(whereSeparator: \.isWhitespace).map(String.init)
+                    guard rawTokens.count >= 2, let key = KeyParser.parse(rawTokens[1]) else {
                         recordSyntaxError(in: &config)
                         continue
                     }
-                    config.unbindKeys.insert(key)
-                    config.customKeyBinds.removeValue(forKey: key)
+                    if rawTokens.count >= 3 {
+                        let mode = rawTokens[2].lowercased()
+                        config.customModeKeyBinds[mode]?.removeValue(forKey: key)
+                    } else {
+                        config.unbindKeys.insert(key)
+                        config.customKeyBinds.removeValue(forKey: key)
+                        for m in config.customModeKeyBinds.keys {
+                            config.customModeKeyBinds[m]?.removeValue(forKey: key)
+                        }
+                    }
                 case .logoScript:
                     guard tokens.count >= 2 else {
                         recordSyntaxError(in: &config)
@@ -262,6 +282,22 @@ public final class ConfigLoader {
             config.defaultArrowStyle = style
         case .regex:
             recordSyntaxError(in: &config)
+        case .keymap:
+            if ["classic", "nano", "default"].contains(value) {
+                config.keymapPreset = "classic"
+            } else if ["modern", "vscode", "cua"].contains(value) {
+                config.keymapPreset = "modern"
+            } else {
+                recordSyntaxError(in: &config)
+            }
+        case .modernbindings:
+            if SettingBoolean.parse(value, emptyValue: true) == true {
+                config.keymapPreset = "modern"
+            } else if SettingBoolean.parse(value, emptyValue: true) == false {
+                config.keymapPreset = "classic"
+            } else {
+                recordSyntaxError(in: &config)
+            }
         }
     }
 

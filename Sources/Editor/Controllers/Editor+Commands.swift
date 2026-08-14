@@ -16,6 +16,7 @@ extension Editor {
         commandRegistry.register(MoveWordBackwardCommand())
 
         // Selection Commands
+        commandRegistry.register(SelectAllCommand())
         commandRegistry.register(SelectLeftCommand())
         commandRegistry.register(SelectRightCommand())
         commandRegistry.register(SelectUpCommand())
@@ -44,6 +45,7 @@ extension Editor {
 
         // Search & Cursor Commands
         commandRegistry.register(WhereIsCommand())
+        commandRegistry.register(SearchReplaceCommand())
         commandRegistry.register(SearchNextCommand())
         commandRegistry.register(SearchPreviousCommand())
         commandRegistry.register(OpenDocumentLinkCommand())
@@ -69,6 +71,18 @@ extension Editor {
         commandRegistry.register(ExitEditorCommand())
         commandRegistry.register(EditConfigCommand())
         commandRegistry.register(ReloadConfigCommand())
+
+        // Table Mode Commands
+        commandRegistry.register(TableNextCellCommand())
+        commandRegistry.register(TablePrevCellCommand())
+        commandRegistry.register(TableAdjustWidthIncCommand())
+        commandRegistry.register(TableAdjustWidthDecCommand())
+        commandRegistry.register(TableAdjustHeightIncCommand())
+        commandRegistry.register(TableAdjustHeightDecCommand())
+        commandRegistry.register(TableCenterTextCommand())
+        commandRegistry.register(TableCellStartCommand())
+        commandRegistry.register(TableCellEndCommand())
+        commandRegistry.register(TableClearCellCommand())
 
         // CommandBar Specialized Commands
         commandRegistry.register(QuitCommand())

@@ -22,6 +22,8 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case gitDiff = "git-diff"
     case debug
     case regex
+    case keymap
+    case modernbindings
 
     public var suggestedValues: [String] {
         switch self {
@@ -34,15 +36,17 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .spellLanguage: return ["en_US", "zh_TW"]
         case .border: return ["single", "double", "round", "double-round", "ascii", "ascii-round"]
         case .arrow: return ["solid", "stemmed", "hollow", "small"]
+        case .keymap: return ["classic", "modern"]
+        case .modernbindings: return ["on", "off"]
         }
     }
 
     var supportsConfigUnset: Bool {
         switch self {
         case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
-            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug:
+            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings:
             return true
-        case .listIndentSize, .tab, .language, .spellLanguage, .border, .arrow, .regex:
+        case .listIndentSize, .tab, .language, .spellLanguage, .border, .arrow, .regex, .keymap:
             return false
         }
     }

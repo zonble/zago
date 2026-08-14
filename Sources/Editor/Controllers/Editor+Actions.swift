@@ -312,6 +312,13 @@ extension Editor {
             let enabled = resolve(value, current: displayConfig.ipcEnabled)
             displayConfig.ipcEnabled = enabled
             effectDelegate?.editor(self, didEmit: .ipcEnabled(enabled))
+        case .keymap(let preset):
+            keymapManager.loadPreset(preset)
+            reportOperationResult(.succeeded(message: "Keymap preset set to \(preset.rawValue)"))
+        case .modernbindings(let value):
+            let isModern = resolve(value, current: keymapManager.activePreset == .modern)
+            keymapManager.loadPreset(isModern ? .modern : .classic)
+            reportOperationResult(.succeeded(message: "Modern keybindings \(isModern ? "enabled" : "disabled")"))
         }
     }
 
