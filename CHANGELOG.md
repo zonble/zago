@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## [1.3.1] - 2026-08-14
+
+Linux release build compatibility fix.
+
+### Fixed
+
+- **Linux Release Build**: Updated the release workflow to Swift 6.3.3 and removed a trailing parameter comma that older Linux Swift parsers rejected.
+
 ## [1.3.0] - 2026-08-14
 
 Core editor reliability, typed command workflows, and terminal UI improvements.
