@@ -185,7 +185,7 @@ extension Renderer {
 
     /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
     func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
-        let helpWidth = min(cols, 80)
+        let helpWidth = max(1, cols - 1)
         let language = editor?.language ?? .detectSystemLanguage()
         func tr(_ key: String) -> String {
             L10n.string(key, language: language)
@@ -208,10 +208,18 @@ extension Renderer {
                 return line1 + "\r\n" + line2
             } else {
                 helpItems1 = [
-                    ("BOX", "[TEXT][W H][BORDER]"), ("TABLE", "[ROWS][COLS][W]"), ("LINE", "[LEN][ARROW]"),
+                    ("Esc", tr("help.go_back")),
+                    ("BOX", "[TEXT][W H][BORDER]"),
+                    ("LINE", "[LEN][ARROW]"),
+                    ("FILL", "TEXT"),
+                    ("TABLE", "[ROWS][COLS][W]"),
                 ]
                 helpItems2 = [
-                    ("DRAWBOX", "[TEXT][W H][BORDER]"), ("FILL", "TEXT"), ("Tab", tr("help.complete")),
+                    ("Tab", tr("help.complete")),
+                    ("DRAWBOX", "[TEXT][W H][BORDER]"),
+                    ("VLINE", "[LEN][ARROW]"),
+                    ("INSET", "TEXT"),
+                    ("REPEAT", "TIMES ACTION"),
                 ]
             }
 
@@ -235,48 +243,82 @@ extension Renderer {
         case .none:
             if editor?.isTableModeActive == true {
                 helpItems1 = [
-                    ("F1", tr("help.menu")), ("Tab", tr("help.next_cell")),
-                    ("C+⇧+←/→", tr("help.cell_width")), ("^J", tr("help.center_text")),
-                    ("^K", tr("help.clear_cell")),
+                    ("F1", tr("help.menu")),
+                    ("Esc", tr("help.commands")),
+                    ("Tab", tr("help.next_cell")),
+                    ("C+⇧+←/→", tr("help.cell_width")),
+                    ("Arrow", tr("help.move")),
+                    ("^J", tr("help.center_text")),
                 ]
                 helpItems2 = [
-                    ("^X", tr("help.exit")), ("F7", tr("help.table_exit")),
-                    ("C+⇧+↑/↓", tr("help.cell_height")), ("⇧+Arrow", tr("help.select_text")),
-                    ("Esc", tr("help.command")),
+                    ("^X", tr("help.exit")),
+                    ("F7", tr("help.table_exit")),
+                    ("⇧+Tab", tr("help.prev_cell")),
+                    ("C+⇧+↑/↓", tr("help.cell_height")),
+                    ("⇧+Arrow", tr("help.select_text")),
+                    ("^K", tr("help.clear_cell")),
                 ]
             } else if editor?.isCanvasModeActive == true {
                 helpItems1 = [
-                    ("F1", tr("help.menu")), ("F8", tr("help.text_mode")), ("^O", tr("help.write_out")),
+                    ("F1", tr("help.menu")),
+                    ("F8", tr("help.text_mode")),
+                    ("ESC", tr("help.commands")),
+                    ("⇧+Arrow", tr("help.line")),
+                    ("^O", tr("help.write_out")),
                     ("^^/M+B", tr("help.mark_block")),
-                    ("^K", tr("help.cut_block")), ("⇧+Arrow", tr("help.line")),
+                    ("^K", tr("help.cut_block")),
+                    ("M+W", tr("help.copy_block")),
                 ]
                 helpItems2 = [
-                    ("^X", tr("help.exit")), ("F7", tr("help.table_mode")), ("^W", tr("help.where_is")),
-                    ("M+W", tr("help.copy_block")),
-                    ("^U", tr("help.uncut_block")), ("^⇧+Arrow", tr("help.arrow")),
+                    ("^X", tr("help.exit")), ("F7", tr("help.table_mode")),
+                    ("^Z", tr("help.undo")),
+                    ("^⇧+Arrow", tr("help.arrow")),
+                    ("^W", tr("help.where_is")),
+                    ("^G", tr("help.clear_mark")),
+                    ("^U", tr("help.uncut_block")),
+                    ("M+S", tr("help.border_style")),
                 ]
             } else {
                 if editor?.proposalQueue.isEmpty == false {
                     helpItems1 = [
-                        ("M+A", tr("help.ai_accept")), ("M+R", tr("help.ai_reject")),
+                        ("M+A", tr("help.ai_accept")),
                         ("M+P", tr("help.ai_next_proposal")),
-                        ("^O", tr("help.write_out")), ("^K", tr("help.cut_text")),
+                        ("F1", tr("help.menu")),
+                        ("^O", tr("help.write_out")),
+                        ("^K", tr("help.cut_text")),
+                        ("^Y", tr("help.prev_pg")),
                     ]
                     helpItems2 = [
-                        ("M+P", tr("help.ai_previous_proposal")), ("^X", tr("help.exit")),
+                        ("M+R", tr("help.ai_reject")),
+                        ("M+P", tr("help.ai_previous_proposal")),
+                        ("^X", tr("help.exit")),
                         ("^W", tr("help.where_is")),
-                        ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")),
+                        ("^U", tr("help.uncut_text")),
+                        ("^V", tr("help.next_pg")),
                     ]
                 } else {
                     helpItems1 = [
-                        ("F1", tr("help.menu")), ("F8", tr("help.canvas_mode")), ("^O", tr("help.write_out")),
+                        ("F1", tr("help.menu")),
+                        ("F8", tr("help.canvas_mode")),
+                        ("ESC", tr("help.commands")),
+                        ("^O", tr("help.write_out")),
                         ("^R", tr("help.read_file")),
-                        ("^Y", tr("help.prev_pg")), ("^K", tr("help.cut_text")), ("^C", tr("help.cur_pos")),
+                        ("^K", tr("help.cut_text")),
+                        ("⇧+Arrow", tr("help.select_text")),
+                        ("^Y", tr("help.prev_pg")),
+                        ("^C", tr("help.cur_pos")),
                     ]
                     helpItems2 = [
-                        ("^X", tr("help.exit")), ("F7", tr("help.table_mode")), ("^J", tr("help.justify")),
+                        ("^X", tr("help.exit")),
+                        ("F7", tr("help.table_mode")),
+                        ("^Z", tr("help.undo")),
+                        ("^J", tr("help.justify")),
                         ("^W", tr("help.where_is")),
-                        ("^V", tr("help.next_pg")), ("^U", tr("help.uncut_text")), ("^T", tr("help.to_spell")),
+                        ("^U", tr("help.uncut_text")),
+                        ("M+W", tr("help.copy_text")),
+                        ("^V", tr("help.next_pg")),
+                        ("^T", tr("help.to_spell")),
+
                     ]
                 }
             }

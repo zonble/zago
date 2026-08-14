@@ -536,13 +536,15 @@ struct FormatAndLayoutTests {
 
         let canvasEditor = Editor(language: .zh_TW)
         canvasEditor.switchToCanvasMode()
-        let canvasHelpBar = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: canvasEditor)
+        let canvasHelpBar = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: canvasEditor)
         #expect(canvasHelpBar.contains("標記區塊"))
         #expect(canvasHelpBar.contains("剪下區塊"))
         #expect(canvasHelpBar.contains("複製區塊"))
         #expect(canvasHelpBar.contains("貼上區塊"))
         #expect(canvasHelpBar.contains("線段"))
         #expect(canvasHelpBar.contains("箭頭"))
+        #expect(canvasHelpBar.contains("清除標記"))
+        #expect(canvasHelpBar.contains("邊框樣式"))
         #expect(!canvasHelpBar.contains("Mark Block"))
         #expect(!canvasHelpBar.contains("Copy Block"))
 
@@ -755,7 +757,7 @@ struct FormatAndLayoutTests {
         let editorEn = Editor(language: .en)
 
         // 1. LOGO macro prompt help bar (English)
-        let logoHelp = renderer.renderHelpBar(cols: 80, promptMode: .logoMacro(completion: { _ in }), editor: editorEn)
+        let logoHelp = renderer.renderHelpBar(cols: 120, promptMode: .logoMacro(completion: { _ in }), editor: editorEn)
         #expect(logoHelp.contains("BOX"))
         #expect(logoHelp.contains("DRAWBOX"))
         #expect(logoHelp.contains("TABLE"))
@@ -788,13 +790,13 @@ struct FormatAndLayoutTests {
 
         let editor = Editor(language: .en)
         editor.switchToCanvasMode()
-        let canvasHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
+        let canvasHelp = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: editor)
         #expect(canvasHelp.contains("⇧+Arrow"))
         #expect(canvasHelp.contains("M+B"))
         #expect(canvasHelp.contains("^K"))
         #expect(canvasHelp.contains("^U"))
         #expect(canvasHelp.contains("F1"))
-        #expect(!canvasHelp.contains("^G"))
+        #expect(canvasHelp.contains("^G"))
         #expect(!canvasHelp.contains(editor.l10n.helpGetHelp))
 
         // 5. Traditional Chinese help bar verification
@@ -804,6 +806,23 @@ struct FormatAndLayoutTests {
         #expect(zhExitHelp.contains("是"))
         #expect(zhExitHelp.contains("否"))
         #expect(zhExitHelp.contains("取消"))
+    }
+
+    @Test func testWideHelpBarUsesColumnsBeyondEighty() throws {
+        let renderer = Renderer()
+        let editor = Editor(language: .en)
+
+        let standardHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
+        let wideHelp = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: editor)
+
+        #expect(!standardHelp.contains("M+W"))
+        #expect(wideHelp.contains("M+W"))
+        #expect(wideHelp.contains("Copy Text"))
+
+        let zhEditor = Editor(language: .zh_TW)
+        let zhWideHelp = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: zhEditor)
+        #expect(zhWideHelp.contains("複製文字"))
+        #expect(zhWideHelp.contains("復原"))
     }
 
     @Test func testCanvasModeRendersLocalizedEndOfFileMarker() throws {
