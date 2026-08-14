@@ -29,7 +29,11 @@ extension Renderer {
         var formattedMenu = "\(ANSIStyle.menuDefault) "
         for (idx, cat) in editor.menuBar.categories.enumerated() {
             let catTitle = editor.l10n[cat.titleKey]
-            let styledTitle = underlinedMenuTitle(catTitle, hotkeyChar: cat.hotkeyChar)
+            let styledTitle = menuTitleWithUnderlinedHotkey(
+                catTitle,
+                hotkeyChar: cat.hotkeyChar,
+                appendMissingHotkey: false
+            )
             if idx == editor.menuBar.categoryIndex {
                 formattedMenu +=
                     "\(ANSIStyle.menuSelected)\(menuSegment(title: styledTitle, isSelected: true))\(ANSIStyle.menuReset)"
@@ -41,7 +45,11 @@ extension Renderer {
         return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\(ANSIStyle.reset)\r\n"
     }
 
-    private func underlinedMenuTitle(_ title: String, hotkeyChar: Character) -> String {
+    func menuTitleWithUnderlinedHotkey(
+        _ title: String,
+        hotkeyChar: Character,
+        appendMissingHotkey: Bool
+    ) -> String {
         let hotkey = String(hotkeyChar).lowercased()
         var output = ""
         var didUnderline = false
@@ -53,7 +61,16 @@ extension Renderer {
                 output.append(character)
             }
         }
+        if !didUnderline, appendMissingHotkey {
+            let displayHotkey = displayMenuHotkey(hotkeyChar)
+            output += " (\(ANSIStyle.underline)\(displayHotkey)\(ANSIStyle.underlineOff))"
+        }
         return output
+    }
+
+    func displayMenuHotkey(_ hotkeyChar: Character) -> String {
+        let hotkey = String(hotkeyChar)
+        return hotkey.rangeOfCharacter(from: .letters) == nil ? hotkey : hotkey.uppercased()
     }
 
     /// Renders standard top Title Bar line containing app version, filename, modified badge, and git branch.

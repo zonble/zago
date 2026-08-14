@@ -124,7 +124,7 @@ extension Renderer {
             let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
-            let label = labelPrefix + parts[0]
+            let label = labelPrefix + plainMenuTitleWithHotkey(parts[0], hotkeyChar: item.hotkeyChar)
             let shortcut = parts.count > 1 ? parts[1] : ""
             formattedItems.append("\(label)\t\(shortcut)")
         }
@@ -143,11 +143,14 @@ extension Renderer {
             let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
-            let label = labelPrefix + parts[0]
+            let rawLabel = labelPrefix + plainMenuTitleWithHotkey(parts[0], hotkeyChar: item.hotkeyChar)
+            let styledLabel =
+                labelPrefix
+                + menuTitleWithUnderlinedHotkey(parts[0], hotkeyChar: item.hotkeyChar, appendMissingHotkey: true)
             let shortcut = parts.count > 1 ? parts[1] : ""
 
-            let spaceCount = max(1, innerWidth - label.displayWidth - shortcut.displayWidth - 2)
-            let itemLine = " " + label + String(repeating: " ", count: spaceCount) + shortcut + " "
+            let spaceCount = max(1, innerWidth - rawLabel.displayWidth - shortcut.displayWidth - 2)
+            let itemLine = " " + styledLabel + String(repeating: " ", count: spaceCount) + shortcut + " "
 
             if iIdx == editor.menuBar.itemIndex {
                 boxLines.append(
@@ -161,5 +164,13 @@ extension Renderer {
 
         let clampedStartCol = max(0, min(colOffset, cols - boxWidth))
         return (clampedStartCol, boxWidth, boxLines)
+    }
+
+    private func plainMenuTitleWithHotkey(_ title: String, hotkeyChar: Character) -> String {
+        let hotkey = String(hotkeyChar).lowercased()
+        if title.contains(where: { String($0).lowercased() == hotkey }) {
+            return title
+        }
+        return "\(title) (\(displayMenuHotkey(hotkeyChar)))"
     }
 }
