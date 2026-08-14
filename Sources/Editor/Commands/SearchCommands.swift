@@ -357,7 +357,6 @@ public struct OpenDocumentLinkCommand: Command {
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
         editor.openDocumentLinkAtCursor()
-        return .succeeded
     }
 }
 
@@ -465,12 +464,10 @@ public struct NumericGotoCommand: Command {
             guard let col = Int(parts[1]), col > 0 else {
                 return .succeeded(message: editor.l10n["status.invalid_column"])
             }
-            editor.goToLocation(line: line, column: col)
+            return editor.goToLocation(line: line, column: col)
         } else {
-            editor.goToLocation(line: line)
+            return editor.goToLocation(line: line)
         }
-
-        return .succeeded
     }
 }
 

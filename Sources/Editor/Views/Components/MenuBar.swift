@@ -176,49 +176,49 @@ public final class MenuBar {
                         titleKey: "menu.borders.single", hotkeyChar: "s",
                         action: { editor in
                             editor.defaultBorderStyle = .single
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.single.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.single.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .single }),
                     MenuItem(
                         titleKey: "menu.borders.heavy", hotkeyChar: "h",
                         action: { editor in
                             editor.defaultBorderStyle = .heavy
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.heavy.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.heavy.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .heavy }),
                     MenuItem(
                         titleKey: "menu.borders.double", hotkeyChar: "d",
                         action: { editor in
                             editor.defaultBorderStyle = .double
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.double.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.double.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .double }),
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
                             editor.defaultBorderStyle = .round
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.round.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.round.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .round }),
                     MenuItem(
                         titleKey: "menu.borders.double_round", hotkeyChar: "u",
                         action: { editor in
                             editor.defaultBorderStyle = .doubleRound
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .doubleRound }),
                     MenuItem(
                         titleKey: "menu.borders.ascii", hotkeyChar: "a",
                         action: { editor in
                             editor.defaultBorderStyle = .ascii
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.ascii.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.ascii.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
                     MenuItem(
                         titleKey: "menu.borders.ascii_round", hotkeyChar: "c",
                         action: { editor in
                             editor.defaultBorderStyle = .asciiRound
-                            editor.setStatusMessage(editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
@@ -310,7 +310,7 @@ public final class MenuBar {
                         action: { editor in
                             editor.displayConfig.showLineNumbers.toggle()
                             let state = editor.displayConfig.showLineNumbers ? "shown" : "hidden"
-                            editor.setStatusMessage(editor.l10n.lineNumbersState(state))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.lineNumbersState(state)))
                         },
                         isChecked: { $0.displayConfig.showLineNumbers }),
                     MenuItem(
@@ -329,28 +329,28 @@ public final class MenuBar {
                         titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(80)
-                            editor.setStatusMessage(editor.l10n.wrapColumnSet(80))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(80)))
                         },
                         isChecked: { $0.layoutEngine.wrapColumn == 80 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(60)
-                            editor.setStatusMessage(editor.l10n.wrapColumnSet(60))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(60)))
                         },
                         isChecked: { $0.layoutEngine.wrapColumn == 60 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(40)
-                            editor.setStatusMessage(editor.l10n.wrapColumnSet(40))
+                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(40)))
                         },
                         isChecked: { $0.layoutEngine.wrapColumn == 40 }),
                     MenuItem(
                         titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
                         action: { editor in
                             editor.layoutEngine.setWrapColumn(nil)
-                            editor.setStatusMessage(editor.l10n["status.wrap_column_reset"])
+                            editor.reportOperationResult(.succeeded(message: editor.l10n["status.wrap_column_reset"]))
                         },
                         isChecked: { $0.layoutEngine.wrapColumn == nil }),
                 ]),

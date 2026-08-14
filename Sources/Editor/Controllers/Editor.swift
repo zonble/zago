@@ -259,7 +259,7 @@ public final class Editor: @unchecked Sendable {
             buffer.isReadOnly = true
         }
         if let loadError = buffer.loadErrorDescription {
-            setStatusMessage(l10n.errorOpeningFile(error: loadError))
+            reportOperationResult(.failed(loadError, message: l10n.errorOpeningFile(error: loadError)))
         }
         if let initLine = options.initialLine {
             goToLocation(line: initLine, column: options.initialColumn)
@@ -298,14 +298,14 @@ public final class Editor: @unchecked Sendable {
         } else {
             openNewBuffer(filePath: configPath)
         }
-        setStatusMessage(l10n.editingConfig(configPath))
+        reportOperationResult(.succeeded(message: l10n.editingConfig(configPath)))
     }
 
     /// Reloads configuration settings from ~/.serc or ./.serc files.
     func reloadConfig() {
         let loadedConfig = configProvider()
         applyReloadedConfig(loadedConfig)
-        setStatusMessage(l10n["status.config_reloaded"])
+        reportOperationResult(.succeeded(message: l10n["status.config_reloaded"]))
     }
 
     /// Applies reloadable configuration without changing per-editor runtime modes.
@@ -369,7 +369,7 @@ public final class Editor: @unchecked Sendable {
         }
 
         if config.syntaxErrorCount > 0 {
-            setStatusMessage(l10n.configLoadedWithErrors(config.syntaxErrorCount))
+            reportOperationResult(.failed("Config syntax errors", message: l10n.configLoadedWithErrors(config.syntaxErrorCount)))
         }
     }
 
@@ -448,9 +448,22 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Sets status message to display in the bottom status line.
-    public func setStatusMessage(_ msg: String) {
+    private func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
+    }
+
+    public func applyOperationResult(_ result: EditorOperationResult) {
+        if let message = result.statusMessage {
+            guard statusMessage != message else { return }
+            setStatusMessage(message)
+        }
+    }
+
+    @discardableResult
+    public func reportOperationResult(_ result: EditorOperationResult) -> EditorOperationResult {
+        applyOperationResult(result)
+        return result
     }
 
     /// Returns the current buffer as plain text without exposing its mutable model.

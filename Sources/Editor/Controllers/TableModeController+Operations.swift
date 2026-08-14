@@ -11,14 +11,14 @@ extension TableModeController {
     public func toggleTableMode() {
         guard let editor else { return }
         if !editor.isTableModeActive && editor.buffer.isReadOnly {
-            editor.setStatusMessage(editor.l10n["status.buffer_readonly_bracketed"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.buffer_readonly_bracketed"]))
             return
         }
         if editor.isTableModeActive {
             editor.isTableModeActive = false
             editor.currentTableCell = nil
             editor.overlayMode = .none
-            editor.setStatusMessage(editor.l10n["status.table_mode_exited"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.table_mode_exited"]))
             return
         }
 
@@ -26,7 +26,7 @@ extension TableModeController {
             editor.buffer.lineIndex >= 0 && editor.buffer.lineIndex < editor.buffer.lines.count,
             editor.buffer.lines[editor.buffer.lineIndex].trimmingCharacters(in: CharacterSet.whitespaces).hasPrefix("|")
         {
-            editor.setStatusMessage(editor.l10n["status.markdown_table_text_mode"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.markdown_table_text_mode"]))
             return
         }
 
@@ -66,7 +66,7 @@ extension TableModeController {
             editor.buffer.columnIndex = cellLeft + 1
         }
         clampTableModeCursor()
-        editor.setStatusMessage(editor.l10n["status.table_mode_hint"])
+        editor.reportOperationResult(.succeeded(message: editor.l10n["status.table_mode_hint"]))
     }
 
     // MARK: - Table Editing Operations
@@ -254,7 +254,7 @@ extension TableModeController {
                 enterTableMode(with: cell)
             }
         } else {
-            editor.setStatusMessage(editor.l10n["status.table_created"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.table_created"]))
         }
     }
 
@@ -319,7 +319,7 @@ extension TableModeController {
                 editor.buffer.lines[lineIdx] = prefix + newCellText + suffix
             }
         }
-        editor.setStatusMessage(editor.l10n["status.cell_text_centered"])
+        editor.reportOperationResult(.succeeded(message: editor.l10n["status.cell_text_centered"]))
     }
 
     public func joinCurrentTableCellLine(separator: String) {
@@ -349,7 +349,7 @@ extension TableModeController {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return false }
         guard cell.innerMinLine <= cell.innerMaxLine else { return false }
         guard !fillText.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.fill_text_required"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.fill_text_required"]))
             return true
         }
 
@@ -368,7 +368,7 @@ extension TableModeController {
 
         if didFill {
             editor.buffer.isModified = true
-            editor.setStatusMessage(editor.l10n["status.filled_cell"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.filled_cell"]))
             clampTableModeCursor()
         }
         return true
@@ -480,14 +480,14 @@ extension TableModeController {
                         let endIdx = min(rightB, chars.count)
                         let textInside = String(chars[(leftB + 1)..<endIdx]).trimmingTrailingWhitespace()
                         if textInside.displayWidth >= currentWidth {
-                            editor.setStatusMessage(editor.l10n["status.cannot_shrink_width"])
+                            editor.reportOperationResult(.noOp(message: editor.l10n["status.cannot_shrink_width"]))
                             return
                         }
                     }
                 }
             }
             if currentWidth <= 1 {
-                editor.setStatusMessage(editor.l10n["status.cannot_shrink_width"])
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.cannot_shrink_width"]))
                 return
             }
         } else if delta > 0 {
@@ -500,7 +500,8 @@ extension TableModeController {
                     let nextIdx = rightB + 1
                     if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
                         if !isSameGridTable {
-                            editor.setStatusMessage(editor.l10n["status.cannot_expand_width_collision"])
+                            editor.reportOperationResult(
+                                .noOp(message: editor.l10n["status.cannot_expand_width_collision"]))
                             return
                         }
                     }
@@ -562,7 +563,7 @@ extension TableModeController {
 
         if delta < 0 {
             if currentHeight <= 1 {
-                editor.setStatusMessage(editor.l10n["status.cannot_shrink_height"])
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.cannot_shrink_height"]))
                 return
             }
 
@@ -575,7 +576,7 @@ extension TableModeController {
             }
 
             guard let removeLineIdx = lineToRemove else {
-                editor.setStatusMessage(editor.l10n["status.cannot_shrink_height"])
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.cannot_shrink_height"]))
                 return
             }
 

@@ -180,9 +180,9 @@ public final class TableModeController: KeyInputHandler {
         case .ctrl("u"), .ctrl("U"), .f10:
             if let text = editor.clipboardText, !text.isEmpty {
                 pasteTableCellText(text)
-                editor.setStatusMessage(editor.l10n["status.uncut_text"])
+                editor.reportOperationResult(.succeeded(message: editor.l10n["status.uncut_text"]))
             } else {
-                editor.setStatusMessage(editor.l10n["status.clipboard_empty"])
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.clipboard_empty"]))
             }
             return true
 

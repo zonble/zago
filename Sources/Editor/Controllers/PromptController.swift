@@ -78,7 +78,7 @@ public final class PromptController: KeyInputHandler {
         case .saveFilePath(let completion):
             mode = .none
             completion(nil)
-            editor?.setStatusMessage(editor?.l10n["status.cancelled"] ?? "")
+            editor?.reportOperationResult(.cancelled(message: editor?.l10n["status.cancelled"] ?? ""))
         case .confirmExitSave(let completion):
             mode = .none
             completion(nil)

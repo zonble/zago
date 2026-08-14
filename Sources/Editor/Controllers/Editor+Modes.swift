@@ -27,7 +27,7 @@ extension Editor {
 
     func switchToCanvasMode() {
         guard !buffer.isReadOnly else {
-            setStatusMessage(l10n["status.buffer_readonly_bracketed"])
+            reportOperationResult(.noOp(message: l10n["status.buffer_readonly_bracketed"]))
             return
         }
         let wasCanvasMode = baseMode == .canvas
@@ -43,7 +43,7 @@ extension Editor {
     private func clearModeStatusMessage() {
         switch statusMessage {
         case "[ Text Editing Mode ]", "[ Canvas Mode ]":
-            setStatusMessage("")
+            reportOperationResult(.succeeded(message: ""))
         default:
             break
         }

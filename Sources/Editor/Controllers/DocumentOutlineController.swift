@@ -47,10 +47,10 @@ public final class DocumentOutlineController: KeyInputHandler {
 
     public func showDocumentOutline() {
         guard let editor else { return }
-        guard canNavigateHeadings() else { return }
+        guard reportHeadingNavigationAvailability(editor).isSucceeded else { return }
         let outline = currentDocumentOutline()
         guard !outline.headings.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.no_headings"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.no_headings"]))
             return
         }
 
@@ -71,7 +71,7 @@ public final class DocumentOutlineController: KeyInputHandler {
             editor.refreshScreen()
             jumpToHeading(heading, in: outline)
         } else {
-            editor.setStatusMessage(editor.l10n["status.outline_cancelled"])
+            editor.reportOperationResult(.cancelled(message: editor.l10n["status.outline_cancelled"]))
             editor.renderer.invalidateScreenCache()
             editor.refreshScreen()
         }
@@ -84,10 +84,10 @@ public final class DocumentOutlineController: KeyInputHandler {
 
     private func goToHeading(direction: HeadingNavigationDirection) {
         guard let editor else { return }
-        guard canNavigateHeadings() else { return }
+        guard reportHeadingNavigationAvailability(editor).isSucceeded else { return }
         let outline = currentDocumentOutline()
         guard !outline.headings.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.no_headings"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.no_headings"]))
             return
         }
 
@@ -109,25 +109,26 @@ public final class DocumentOutlineController: KeyInputHandler {
         return DocumentOutlineParser.parse(lines: editor.buffer.lines, customParser: language?.outlineParser)
     }
 
-    private func canNavigateHeadings() -> Bool {
-        guard let editor else { return false }
+    private func reportHeadingNavigationAvailability(_ editor: Editor) -> EditorOperationResult {
+        let result = headingNavigationAvailability(for: editor)
+        editor.applyOperationResult(result)
+        return result
+    }
+
+    private func headingNavigationAvailability(for editor: Editor) -> EditorOperationResult {
         if editor.buffer.isDirectoryBuffer {
-            editor.setStatusMessage(editor.l10n["status.heading_nav_disabled_directory"])
-            return false
+            return .noOp(message: editor.l10n["status.heading_nav_disabled_directory"])
         }
         if editor.isCanvasModeActive {
-            editor.setStatusMessage(editor.l10n["status.heading_nav_disabled_canvas"])
-            return false
+            return .noOp(message: editor.l10n["status.heading_nav_disabled_canvas"])
         }
         if editor.isTableModeActive {
-            editor.setStatusMessage(editor.l10n["status.heading_nav_disabled_table"])
-            return false
+            return .noOp(message: editor.l10n["status.heading_nav_disabled_table"])
         }
         if !supportsDocumentOutlineForCurrentBuffer() {
-            editor.setStatusMessage(editor.l10n["status.heading_nav_unsupported_format"])
-            return false
+            return .noOp(message: editor.l10n["status.heading_nav_unsupported_format"])
         }
-        return true
+        return .succeeded
     }
 
     private func jumpToHeading(_ heading: DocumentHeading, in outline: DocumentOutline) {
@@ -138,8 +139,10 @@ public final class DocumentOutlineController: KeyInputHandler {
         editor.topVLineIndex = max(0, editor.buffer.lineIndex - 1)
         let index = (outline.headings.firstIndex(of: heading) ?? 0) + 1
         let markerTitle = "\(heading.marker) \(heading.title)"
-        editor.setStatusMessage(
-            String(format: editor.l10n["status.heading_position"], index, outline.headings.count, markerTitle))
+        editor.reportOperationResult(
+            .succeeded(
+                message: String(
+                    format: editor.l10n["status.heading_position"], index, outline.headings.count, markerTitle)))
     }
 
     private func initialOutlineSelectionIndex(in outline: DocumentOutline) -> Int {

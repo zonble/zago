@@ -264,7 +264,7 @@ public final class CommandRegistry {
     /// Returns `true` if a command was found and executed.
     public func dispatch(id: CommandID, editor: Editor) -> Bool {
         if let command = commandMap[id] {
-            apply(command.execute(on: editor), to: editor)
+            editor.applyOperationResult(command.execute(on: editor))
             return true
         }
         return false
@@ -274,7 +274,7 @@ public final class CommandRegistry {
     public func dispatchResult(id: CommandID, editor: Editor) -> EditorOperationResult {
         guard let command = commandMap[id] else { return .failed("Command not found") }
         let result = command.execute(on: editor)
-        apply(result, to: editor)
+        editor.applyOperationResult(result)
         return result
     }
 
@@ -297,7 +297,7 @@ public final class CommandRegistry {
             return false
         }
         if let command = keyMap[key] {
-            apply(command.execute(on: editor), to: editor)
+            editor.applyOperationResult(command.execute(on: editor))
             return true
         }
         return false
@@ -310,7 +310,7 @@ public final class CommandRegistry {
         }
         guard let command = keyMap[key] else { return .noOp }
         let result = command.execute(on: editor)
-        apply(result, to: editor)
+        editor.applyOperationResult(result)
         return result
     }
 
@@ -322,15 +322,21 @@ public final class CommandRegistry {
         for command in commands where command.match(input) {
             guard command.isAvailable(in: editor) else {
                 if command.id == .logoDebug { return .noMatch }
-                editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
+                editor.reportOperationResult(
+                    .failed(
+                        editor.l10n["status.directory_buffer_readonly"],
+                        message: editor.l10n["status.directory_buffer_readonly"]))
                 return .handled
             }
-            apply(command.execute(with: input, on: editor), to: editor)
+            editor.applyOperationResult(command.execute(with: input, on: editor))
             return .handled
         }
 
         guard editor.buffer.allowsLogoExecution else {
-            editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
+            editor.reportOperationResult(
+                .failed(
+                    editor.l10n["status.directory_buffer_readonly"],
+                    message: editor.l10n["status.directory_buffer_readonly"]))
             return .handled
         }
 
@@ -346,27 +352,19 @@ public final class CommandRegistry {
             guard command.isAvailable(in: editor) else {
                 if command.id == .logoDebug { return .noOp }
                 let message = editor.l10n["status.directory_buffer_readonly"]
-                editor.setStatusMessage(message)
-                return .failed(message)
+                return editor.reportOperationResult(.failed(message, message: message))
             }
             let result = command.execute(with: input, on: editor)
-            apply(result, to: editor)
+            editor.applyOperationResult(result)
             return result
         }
 
         guard editor.buffer.allowsLogoExecution else {
             let message = editor.l10n["status.directory_buffer_readonly"]
-            editor.setStatusMessage(message)
-            return .failed(message)
+            return editor.reportOperationResult(.failed(message, message: message))
         }
 
         return .noOp
-    }
-
-    private func apply(_ result: EditorOperationResult, to editor: Editor) {
-        if let message = result.statusMessage {
-            editor.setStatusMessage(message)
-        }
     }
 
     /// Returns sorted list of available CommandBar completion names for Tab completion.

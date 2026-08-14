@@ -83,11 +83,11 @@ public final class CanvasModeController: KeyInputHandler {
         let targetColumn = editor.canvasVisualColumn + delta.column
         guard targetLine >= 0, targetColumn >= 0 else { return }
         guard editor.isCanvasLineAllowed(targetLine) else {
-            editor.setStatusMessage(editor.l10n["status.canvas_row_limit_exceeded"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.canvas_row_limit_exceeded"]))
             return
         }
         guard editor.isCanvasColumnAllowed(editor.canvasVisualColumn), editor.isCanvasColumnAllowed(targetColumn) else {
-            editor.setStatusMessage(editor.l10n["status.canvas_column_limit_exceeded"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.canvas_column_limit_exceeded"]))
             return
         }
 
@@ -160,7 +160,7 @@ extension Editor {
         let visualColumn = buffer.lines[buffer.lineIndex].visualColumn(forCharacterOffset: buffer.columnIndex)
         if visualColumn >= EditorLimits.maxCanvasAutoExtendColumns {
             canvasVisualColumn = EditorLimits.maxCanvasAutoExtendColumns - 1
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
         } else {
             canvasVisualColumn = visualColumn
         }
@@ -181,11 +181,11 @@ extension Editor {
         let targetColumn = canvasVisualColumn + deltaColumn
         guard targetLine >= 0, targetColumn >= 0 else { return }
         guard isCanvasLineAllowed(targetLine) else {
-            setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             return
         }
         guard isCanvasColumnAllowed(targetColumn) else {
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             return
         }
         if extendDownward && deltaLine > 0 {
@@ -206,7 +206,7 @@ extension Editor {
         let lineEnd = buffer.lines[buffer.lineIndex].displayWidth
         if lineEnd >= EditorLimits.maxCanvasAutoExtendColumns {
             canvasVisualColumn = EditorLimits.maxCanvasAutoExtendColumns - 1
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
         } else {
             canvasVisualColumn = lineEnd
         }
@@ -218,7 +218,7 @@ extension Editor {
             isCanvasColumnAllowed(canvasVisualColumn)
         else {
             if !isCanvasColumnAllowed(canvasVisualColumn) {
-                setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+                reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             }
             return
         }
@@ -250,7 +250,7 @@ extension Editor {
     func insertCanvasNewline() {
         let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
         guard isCanvasLineAllowed(insertIndex) else {
-            setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             return
         }
         buffer.lines.insert("", at: insertIndex)
@@ -305,7 +305,7 @@ extension Editor {
     func ensureCanvasLineExists(_ lineIndex: Int) -> Bool {
         guard lineIndex >= 0 else { return false }
         guard isCanvasLineAllowed(lineIndex) else {
-            setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             return false
         }
         var appended = false
@@ -329,11 +329,11 @@ extension Editor {
 
     func isCanvasRangeAllowed(topLine: Int, bottomLine: Int, leftColumn: Int, rightColumnExclusive: Int) -> Bool {
         guard isCanvasLineAllowed(topLine), isCanvasLineAllowed(bottomLine) else {
-            setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             return false
         }
         guard leftColumn >= 0, rightColumnExclusive <= EditorLimits.maxCanvasAutoExtendColumns else {
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             return false
         }
         return true
@@ -378,7 +378,7 @@ extension Editor {
     @discardableResult
     func copyCanvasBlock() -> Bool {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
-            setStatusMessage(l10n["status.no_block_marked"])
+            reportOperationResult(.noOp(message: l10n["status.no_block_marked"]))
             return false
         }
 
@@ -389,13 +389,13 @@ extension Editor {
         }
 
         canvasBlockClipboard = CanvasBlockClipboard(width: rect.width, rows: rows)
-        setStatusMessage(l10n["status.copied_block"])
+        reportOperationResult(.succeeded(message: l10n["status.copied_block"]))
         return true
     }
 
     func cutCanvasBlock() {
         guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
-            setStatusMessage(l10n["status.no_block_marked"])
+            reportOperationResult(.noOp(message: l10n["status.no_block_marked"]))
             return
         }
         guard
@@ -422,12 +422,12 @@ extension Editor {
         syncCanvasCursorToBuffer()
         clearActiveMark()
         buffer.isModified = true
-        setStatusMessage(l10n["status.cut_text"])
+        reportOperationResult(.succeeded(message: l10n["status.cut_text"]))
     }
 
     func pasteCanvasBlock() {
         guard let clipboard = canvasBlockClipboard, clipboard.width > 0, !clipboard.rows.isEmpty else {
-            setStatusMessage(l10n["status.clipboard_empty"])
+            reportOperationResult(.noOp(message: l10n["status.clipboard_empty"]))
             return
         }
 
@@ -456,7 +456,7 @@ extension Editor {
         syncCanvasCursorToBuffer()
         clearActiveMark()
         buffer.isModified = true
-        setStatusMessage(l10n["status.uncut_text"])
+        reportOperationResult(.succeeded(message: l10n["status.uncut_text"]))
     }
 
     func fillCanvasBlock(with fillText: String) -> Bool {
@@ -467,10 +467,10 @@ extension Editor {
                 bottomLine: rect.bottomLine,
                 leftColumn: rect.leftColumn,
                 rightColumnExclusive: rect.rightColumnExclusive
-            )
+        )
         else { return true }
         guard !fillText.isEmpty else {
-            setStatusMessage(l10n["status.fill_text_required"])
+            reportOperationResult(.noOp(message: l10n["status.fill_text_required"]))
             return true
         }
 
@@ -484,7 +484,7 @@ extension Editor {
         }
         clearActiveMark()
         buffer.isModified = true
-        setStatusMessage(l10n["status.filled_block"])
+        reportOperationResult(.succeeded(message: l10n["status.filled_block"]))
         syncCanvasCursorToBuffer()
         return true
     }
@@ -550,7 +550,7 @@ extension Editor {
     private func writeCanvasCharacter(_ character: Character, lineIndex: Int, visualColumn: Int) {
         guard ensureCanvasLineExists(lineIndex) else { return }
         guard isCanvasColumnAllowed(visualColumn) else {
-            setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+            reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             return
         }
         let result = buffer.lines[lineIndex].writingAtVisualColumn(visualColumn, character: character)

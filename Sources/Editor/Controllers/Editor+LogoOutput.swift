@@ -85,7 +85,7 @@ extension Editor {
                 "",
             ]
         }
-        setStatusMessage(l10n["status.logo_output_cleared"])
+        reportOperationResult(.succeeded(message: l10n["status.logo_output_cleared"]))
     }
 
     public static let logoCanvasBufferTitle = "*LOGO Canvas*"
@@ -128,12 +128,12 @@ extension Editor {
     func clearLogoCanvasBuffer() {
         let buf = ensureLogoCanvasBuffer()
         buf.lines = Array(repeating: String(repeating: " ", count: 80), count: 24)
-        setStatusMessage(l10n["status.logo_canvas_cleared"])
+        reportOperationResult(.succeeded(message: l10n["status.logo_canvas_cleared"]))
     }
 
     func clearLogoOutputAndCanvasBuffers() {
         clearLogoOutputBuffer()
         clearLogoCanvasBuffer()
-        setStatusMessage(l10n["status.logo_output_canvas_cleared"])
+        reportOperationResult(.succeeded(message: l10n["status.logo_output_canvas_cleared"]))
     }
 }

@@ -34,26 +34,30 @@ extension Editor {
             currentPromptMode = .confirmExternalReload(completion: { [weak self] reload in
                 guard let self = self else { return }
                 if reload {
-                    switch self.reloadBufferFromDisk(self.buffer).kind {
+                    let result = self.reloadBufferFromDisk(self.buffer)
+                    switch result.kind {
                     case .succeeded:
-                        self.setStatusMessage(self.l10n["status.file_reloaded"])
+                        self.applyOperationResult(result)
                         self.renderer.invalidateScreenCache()
                     case .failed:
+                        self.applyOperationResult(result)
                         break
                     case .cancelled, .prompting, .noOp:
                         break
                     }
                 } else {
-                    self.setStatusMessage(self.l10n["status.kept_local"])
+                    self.reportOperationResult(.succeeded(message: self.l10n["status.kept_local"]))
                 }
             })
-            setStatusMessage(l10n["prompt.confirm_reload"])
+            reportOperationResult(.prompting(message: l10n["prompt.confirm_reload"]))
         } else {
-            switch reloadBufferFromDisk(buffer).kind {
+            let result = reloadBufferFromDisk(buffer)
+            switch result.kind {
             case .succeeded:
-                setStatusMessage(l10n["status.file_reloaded"])
+                applyOperationResult(result)
                 renderer.invalidateScreenCache()
             case .failed:
+                applyOperationResult(result)
                 break
             case .cancelled, .prompting, .noOp:
                 break
