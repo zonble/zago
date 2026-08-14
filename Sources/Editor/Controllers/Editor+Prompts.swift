@@ -21,7 +21,7 @@ extension Editor {
     /// Saves current buffer to disk and closes current buffer / exits editor (F4).
     func promptSaveAndExit() {
         if let path = buffer.filePath, !path.isEmpty {
-            doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
+            completeSaveAndClose(path: path)
         } else {
             promptInputText = ""
             currentPromptMode = .saveFilePath(completion: { [weak self] path in
@@ -29,7 +29,7 @@ extension Editor {
                     self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
                     return
                 }
-                self.doSave(to: path) { [weak self] in self?.closeCurrentBuffer() }
+                self.completeSaveAndClose(path: path)
             })
         }
     }
@@ -41,26 +41,7 @@ extension Editor {
                 self?.setStatusMessage(self?.l10n["status.cancelled_exit"] ?? "")
                 return
             }
-            if save {
-                if let path = self.buffer.filePath, !path.isEmpty {
-                    self.doSave(to: path) { [weak self] in
-                        guard let self else { return }
-                        if self.buffers.count == 1 {
-                            self.isRunning = false
-                        } else {
-                            self.closeCurrentBuffer()
-                        }
-                    }
-                } else {
-                    self.promptWriteFilePath()
-                }
-            } else {
-                if self.buffers.count == 1 {
-                    self.isRunning = false
-                } else {
-                    self.closeCurrentBuffer()
-                }
-            }
+            self.completeExitSaveDecision(shouldSave: save)
         })
     }
 
