@@ -337,4 +337,21 @@ struct LogoCoverageTests {
         #expect(engine.customProcedures.isEmpty)
         #expect(engine.propertyLists.isEmpty)
     }
+
+    @Test func testAllLogoPrimitivesAreMappedAndReachable() {
+        let allPrimitives = LogoPrimitive.allCases
+        var mappedPrimitives: Set<LogoPrimitive> = []
+
+        for alias in LogoPrimitive.keywordAliases {
+            if let prim = LogoPrimitive.from(alias) {
+                mappedPrimitives.insert(prim)
+            }
+        }
+
+        for prim in allPrimitives {
+            #expect(mappedPrimitives.contains(prim), "LogoPrimitive .\(prim) is not mapped in LogoPrimitive.rawMappings")
+        }
+
+        #expect(mappedPrimitives.count == allPrimitives.count)
+    }
 }
