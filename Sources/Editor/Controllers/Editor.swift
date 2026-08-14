@@ -190,7 +190,7 @@ public final class Editor: @unchecked Sendable {
         options: EditorOptions = EditorOptions(),
         configSource: EditorConfigSource = EditorConfigSource(),
         dependencies: EditorDependencies,
-        initialVariables: [String: String]? = [:],
+        initialVariables: [String: String]? = [:]
     ) {
         self.initialLogoVariable = initialVariables ?? [:]
         self.terminal = dependencies.terminal
