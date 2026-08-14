@@ -20,6 +20,9 @@ public enum ANSIStyle {
     /// Inverse / Reverse video attribute for selection and cursor (`\u{1B}[7m`).
     public static let inverse = "\u{1B}[7m"
 
+    /// Turns off inverse video without resetting foreground, background, or bold attributes (`\u{1B}[27m`).
+    public static let inverseOff = "\u{1B}[27m"
+
     /// Bold inverse / reverse video attribute for selected dialog rows (`\u{1B}[7;1m`).
     public static let boldInverse = "\u{1B}[7;1m"
 
