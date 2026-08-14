@@ -12,6 +12,7 @@ Core editor reliability, typed command workflows, and terminal UI improvements.
 - **Menu Shortcuts**: Added underlined menu shortcuts and shortcut labels for second-level menu items.
 - **IPC Validation**: Added a live IPC roundtrip test for CI.
 - **NanoRC Includes**: Added wildcard includes such as `include "/opt/homebrew/share/nano/*.nanorc"`.
+- **Homebrew Distribution**: Updated the `zonble/zago` tap formula to build and install `v1.3.0`.
 
 ### Changed
 
