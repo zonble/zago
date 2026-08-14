@@ -358,6 +358,36 @@ struct FormatAndLayoutTests {
         #expect(tabLine.characterOffset(forVisualColumn: 1) == 1)
     }
 
+    @Test func testRendererExpandsRawTabsUsingConfiguredTabStops() throws {
+        let editor = Editor(enableSyntax: false)
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.tabSize = 4
+        editor.buffer.lines = ["A\tB"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 2
+
+        let output = editor.renderer.render(editor: editor, rows: 8, cols: 20)
+
+        #expect(output.contains("A   B"))
+        #expect(!output.contains("A\tB"))
+        #expect(output.contains("\u{1B}[2;5H"))
+    }
+
+    @Test func testRendererRawTabsHonorCustomTabSize() throws {
+        let editor = Editor(enableSyntax: false)
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.tabSize = 2
+        editor.buffer.lines = ["A\tB"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 2
+
+        let output = editor.renderer.render(editor: editor, rows: 8, cols: 20)
+
+        #expect(output.contains("A B"))
+        #expect(!output.contains("A\tB"))
+        #expect(output.contains("\u{1B}[2;3H"))
+    }
+
     @Test func testWordStarRuler() throws {
         let editor = Editor(showRuler: true)
         #expect(editor.displayConfig.showRuler == true)
