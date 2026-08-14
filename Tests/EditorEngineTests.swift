@@ -4,6 +4,59 @@ import TextMetrics
 
 @testable import Editor
 
+@Test func testBufferCoordinatorMaintainsActiveBufferAndClampsIndex() throws {
+    let first = TextBuffer()
+    let second = TextBuffer()
+    let coordinator = BufferCoordinator(buffers: [first, second])
+
+    #expect(coordinator.count == 2)
+    #expect(coordinator.activeIndex == 0)
+    #expect(coordinator.activeBuffer.id == first.id)
+
+    coordinator.activeIndex = 99
+    #expect(coordinator.activeIndex == 1)
+    #expect(coordinator.activeBuffer.id == second.id)
+
+    coordinator.activeIndex = -4
+    #expect(coordinator.activeIndex == 0)
+    #expect(coordinator.activeBuffer.id == first.id)
+
+    let third = TextBuffer()
+    coordinator.appendAndActivate(third)
+    #expect(coordinator.count == 3)
+    #expect(coordinator.activeIndex == 2)
+    #expect(coordinator.activeBuffer.id == third.id)
+
+    #expect(coordinator.nextIndex() == 0)
+    #expect(coordinator.previousIndex() == 1)
+
+    #expect(coordinator.removeActive() == true)
+    #expect(coordinator.count == 2)
+    #expect(coordinator.activeIndex == 1)
+    #expect(coordinator.activeBuffer.id == second.id)
+}
+
+@Test func testBufferCoordinatorNeverExposesEmptyStorage() throws {
+    let coordinator = BufferCoordinator(buffers: [])
+
+    #expect(coordinator.count == 1)
+    #expect(coordinator.activeIndex == 0)
+    #expect(coordinator.activeBuffer.lines == [""])
+
+    coordinator.buffers = []
+    #expect(coordinator.count == 1)
+    #expect(coordinator.activeIndex == 0)
+
+    #expect(coordinator.removeActive() == false)
+    #expect(coordinator.count == 1)
+    #expect(coordinator.activeIndex == 0)
+
+    let replacement = TextBuffer()
+    coordinator.buffers = [replacement]
+    #expect(coordinator.count == 1)
+    #expect(coordinator.activeBuffer.id == replacement.id)
+}
+
 @Test func testCanvasModeShiftArrowDrawsBoxLines() throws {
     let editor = Editor()
     editor.switchToCanvasMode()

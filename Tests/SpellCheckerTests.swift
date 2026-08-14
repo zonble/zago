@@ -69,15 +69,15 @@ struct SpellCheckerTests {
             "#+BEGIN_SRC swift",
             "misspelledword = 123",
             "#+END_SRC",
-            "normal text",
+            "hello world",
         ]
         #expect(checker.findNextMisspelled(in: orgBuffer, syntaxName: "Org-mode") == nil)
 
         // Test Org-mode inline verbatim/code (=code=, ~code~)
         let orgInline = TextBuffer()
         orgInline.lines = [
-            "Here is =misspelledword= inside verbatim.",
-            "Here is misspelledword outside.",
+            "hello is =misspelledword= inside code.",
+            "hello is misspelledword outside.",
         ]
         let target = checker.findNextMisspelled(in: orgInline, syntaxName: "Org-mode")
         #expect(target != nil)
@@ -92,7 +92,7 @@ struct SpellCheckerTests {
             "----",
             "misspelledword = 123",
             "----",
-            "normal text",
+            "hello world",
         ]
         #expect(checker.findNextMisspelled(in: adocBuffer, syntaxName: "AsciiDoc") == nil)
     }
@@ -105,7 +105,7 @@ struct SpellCheckerTests {
             ".. code-block:: python",
             "misspelledword = 123",
             "",
-            "normal text",
+            "hello world",
         ]
         #expect(checker.findNextMisspelled(in: rstBuffer, syntaxName: "reStructuredText") == nil)
     }
