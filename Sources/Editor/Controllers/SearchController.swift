@@ -53,7 +53,7 @@ public final class SearchController: KeyInputHandler {
         guard let editor, editor.buffer.activeSearchMatch != nil else { return false }
         editor.buffer.activeSearchMatch = nil
         if setStatus {
-            editor.setStatusMessage(editor.l10n["status.search_cleared"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.search_cleared"]))
         }
         return true
     }
@@ -92,7 +92,7 @@ public final class SearchController: KeyInputHandler {
         guard let editor else { return }
         let query = editor.buffer.activeSearchMatch?.query ?? lastSearchQuery
         guard !query.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.no_active_search"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.no_active_search"]))
             return
         }
 
@@ -134,7 +134,10 @@ public final class SearchController: KeyInputHandler {
                 candidates = regexSearchCandidates(regex: regex)
             } catch {
                 editor.buffer.activeSearchMatch = nil
-                editor.setStatusMessage(String(format: editor.l10n["status.invalid_regex"], error.localizedDescription))
+                editor.reportOperationResult(
+                    .failed(
+                        error.localizedDescription,
+                        message: String(format: editor.l10n["status.invalid_regex"], error.localizedDescription)))
                 return
             }
         } else {
@@ -144,7 +147,7 @@ public final class SearchController: KeyInputHandler {
         guard !candidates.isEmpty else {
             editor.buffer.activeSearchMatch = nil
             lastSearchQuery = query
-            editor.setStatusMessage(editor.l10n.notFound(query: query))
+            editor.reportOperationResult(.noOp(message: editor.l10n.notFound(query: query)))
             return
         }
 
@@ -273,9 +276,11 @@ public final class SearchController: KeyInputHandler {
         )
         lastSearchQuery = query
         if wrapped {
-            editor.setStatusMessage(editor.l10n.searchWrappedFound(query: query, line: candidate.line + 1))
+            editor.reportOperationResult(
+                .succeeded(message: editor.l10n.searchWrappedFound(query: query, line: candidate.line + 1)))
         } else {
-            editor.setStatusMessage(editor.l10n.foundQueryAtLine(query: query, line: candidate.line + 1))
+            editor.reportOperationResult(
+                .succeeded(message: editor.l10n.foundQueryAtLine(query: query, line: candidate.line + 1)))
         }
     }
 }

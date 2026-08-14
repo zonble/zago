@@ -78,24 +78,24 @@ extension Editor {
         if case .paused = logoEngine.executionState {
             showLogoDebuggerBuffer()
         } else {
-            setStatusMessage(l10n["status.logo_debug_completed"])
+            reportOperationResult(.succeeded(message: l10n["status.logo_debug_completed"]))
         }
     }
 
     func abortLogoDebugExecution() {
         logoEngine.abortExecution()
-        setStatusMessage(l10n["status.logo_debug_aborted"])
+        reportOperationResult(.succeeded(message: l10n["status.logo_debug_aborted"]))
         showLogoDebuggerBuffer()
     }
 
     func evaluateLogoDebugExpression(_ expression: String) {
         guard !expression.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let result = logoEngine.evaluatePausedExpression(expression) else {
-            setStatusMessage(l10n["status.logo_debug_not_paused"])
+            reportOperationResult(.noOp(message: l10n["status.logo_debug_not_paused"]))
             return
         }
         debuggerController.lastEvaluation = result
         showLogoDebuggerBuffer()
-        setStatusMessage(String(format: l10n["status.logo_debug_result"], result))
+        reportOperationResult(.succeeded(message: String(format: l10n["status.logo_debug_result"], result)))
     }
 }

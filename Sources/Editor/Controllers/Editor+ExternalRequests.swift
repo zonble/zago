@@ -180,7 +180,8 @@ extension Editor {
             }
         }
 
-        setStatusMessage(String(format: l10n["ai.proposal.received"], proposal.clientName, proposal.reason))
+        reportOperationResult(
+            .succeeded(message: String(format: l10n["ai.proposal.received"], proposal.clientName, proposal.reason)))
         renderer.invalidateScreenCache()
         return true
     }

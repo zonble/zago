@@ -61,7 +61,7 @@ extension Editor {
         if buffer.isReadOnly {
             switch key {
             case .backspace, .enter, .char:
-                setStatusMessage(l10n["status.buffer_readonly_bracketed"])
+                reportOperationResult(.noOp(message: l10n["status.buffer_readonly_bracketed"]))
                 return
             default:
                 break
@@ -125,7 +125,7 @@ extension Editor {
             break
 
         default:
-            setStatusMessage(l10n["status.unknown_command"])
+            reportOperationResult(.noOp(message: l10n["status.unknown_command"]))
         }
 
         if isCanvasModeActive {

@@ -11,25 +11,25 @@ extension Editor {
         promptInputText = buffer.filePath ?? ""
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                 return
             }
-            self.doSave(to: path)
+            self.applyOperationResult(self.doSave(to: path))
         })
     }
 
     /// Saves current buffer to disk and closes current buffer / exits editor (F4).
     func promptSaveAndExit() {
         if let path = buffer.filePath, !path.isEmpty {
-            completeSaveAndClose(path: path)
+            applyOperationResult(completeSaveAndClose(path: path))
         } else {
             promptInputText = ""
             currentPromptMode = .saveFilePath(completion: { [weak self] path in
                 guard let self = self, let path = path, !path.isEmpty else {
-                    self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                    self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                     return
                 }
-                self.completeSaveAndClose(path: path)
+                self.applyOperationResult(self.completeSaveAndClose(path: path))
             })
         }
     }
@@ -38,10 +38,10 @@ extension Editor {
     func promptExitSaveConfirm() {
         currentPromptMode = .confirmExitSave(completion: { [weak self] save in
             guard let self = self, let save = save else {
-                self?.setStatusMessage(self?.l10n["status.cancelled_exit"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_exit"] ?? ""))
                 return
             }
-            self.completeExitSaveDecision(shouldSave: save)
+            self.applyOperationResult(self.completeExitSaveDecision(shouldSave: save))
         })
     }
 
@@ -50,7 +50,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .search(completion: { [weak self] query in
             guard let self = self, let query = query else {
-                self?.setStatusMessage(self?.l10n["status.cancelled_search"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_search"] ?? ""))
                 return
             }
             let targetQuery: String
@@ -60,7 +60,7 @@ extension Editor {
             } else if !self.lastSearchQuery.isEmpty {
                 targetQuery = self.lastSearchQuery
             } else {
-                self.setStatusMessage(self.l10n["status.cancelled_search"])
+                self.reportOperationResult(.cancelled(message: self.l10n["status.cancelled_search"]))
                 return
             }
             self.searchController.performSearch(query: targetQuery)
@@ -72,10 +72,10 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .insertFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
-                self?.setStatusMessage(self?.l10n["status.cancelled_insert"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_insert"] ?? ""))
                 return
             }
-            self.insertFileContent(from: path)
+            self.applyOperationResult(self.insertFileContent(from: path))
         })
     }
 
@@ -101,7 +101,8 @@ extension Editor {
                 word: target.word, line: target.line, col: target.col,
                 completion: { [weak self] replacement in
                     guard let self = self, let newWord = replacement, !newWord.isEmpty else {
-                        self?.setStatusMessage(self?.l10n["status.spell_check_skipped"] ?? "")
+                        self?.reportOperationResult(
+                            .cancelled(message: self?.l10n["status.spell_check_skipped"] ?? ""))
                         return
                     }
                     if newWord != target.word {
@@ -112,13 +113,14 @@ extension Editor {
                         lineStr.replaceSubrange(sIdx..<eIdx, with: newWord)
                         self.buffer.lines[target.line] = lineStr
                         self.buffer.isModified = true
-                        self.setStatusMessage(self.l10n.replacedWord(target: target.word, newWord: newWord))
+                        self.reportOperationResult(
+                            .succeeded(message: self.l10n.replacedWord(target: target.word, newWord: newWord)))
                     } else {
-                        self.setStatusMessage(self.l10n["status.word_kept"])
+                        self.reportOperationResult(.succeeded(message: self.l10n["status.word_kept"]))
                     }
                 })
         } else {
-            setStatusMessage(l10n["status.no_misspelled"])
+            reportOperationResult(.noOp(message: l10n["status.no_misspelled"]))
         }
     }
 
@@ -145,7 +147,7 @@ extension Editor {
         logoHistoryIndex = logoPromptHistory.count
         currentPromptMode = .logoMacro(completion: { [weak self] script in
             guard let self = self, let script = script, !script.isEmpty else {
-                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                 return
             }
             switch self.commandBarRegistry.dispatch(script, editor: self) {
@@ -162,7 +164,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .fillText(completion: { [weak self] text in
             guard let self = self, let text = text, !text.isEmpty else {
-                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                 return
             }
             self.runLogoScript("FILL \(self.logoStringLiteral(text))")
@@ -172,7 +174,7 @@ extension Editor {
     func promptTableDimensions() {
         menuBarController.isActive = false
         guard !buffer.isReadOnly else {
-            setStatusMessage(l10n["status.buffer_readonly_bracketed"])
+            reportOperationResult(.noOp(message: l10n["status.buffer_readonly_bracketed"]))
             return
         }
         promptInputText = "3 3 16"
@@ -180,7 +182,7 @@ extension Editor {
         currentPromptMode = .tableDimensions(completion: { [weak self] input in
             guard let self = self, let input = input?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty
             else {
-                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                 return
             }
             let parts = input.components(separatedBy: .whitespaces).compactMap { Int($0) }
@@ -233,7 +235,7 @@ extension Editor {
         buffer.lines.insert(contentsOf: tableLines, at: insertIdx)
         buffer.lineIndex = insertIdx
         buffer.columnIndex = 2
-        setStatusMessage(l10n["status.table_created"])
+        reportOperationResult(.succeeded(message: l10n["status.table_created"]))
     }
 
     private func logoStringLiteral(_ text: String) -> String {
@@ -245,7 +247,7 @@ extension Editor {
         promptInputText = ""
         currentPromptMode = .gotoLine(completion: { [weak self] input in
             guard let self = self, let input = input, !input.isEmpty else {
-                self?.setStatusMessage(self?.l10n["status.cancelled"] ?? "")
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
                 return
             }
             self.performGotoLine(input)

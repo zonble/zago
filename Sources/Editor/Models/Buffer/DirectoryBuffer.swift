@@ -127,13 +127,13 @@ public final class DirectoryBuffer: TextBuffer {
         case .arrowUp, .arrowDown, .arrowLeft, .arrowRight, .home, .end, .pageUp, .pageDown, .resize:
             return false
         case .delete, .ctrlBackspace:
-            editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))
             return true
         case .char(let ch):
             if ch.isWhitespace {
                 return true
             }
-            editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))
             return true
         default:
             return false
@@ -183,7 +183,7 @@ public final class DirectoryBuffer: TextBuffer {
             }
             let targetFilePath = fileIO.childPath(fileName, in: directoryPath)
             if fileIO.fileInfo(at: targetFilePath).isBinary {
-                editor.setStatusMessage(editor.l10n["status.cannot_open_binary_file"])
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.cannot_open_binary_file"]))
                 return true
             }
             editor.openBuffer(path: targetFilePath)

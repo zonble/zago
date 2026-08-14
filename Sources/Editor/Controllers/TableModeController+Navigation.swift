@@ -9,7 +9,7 @@ extension TableModeController {
         guard let editor else { return }
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
         }
 
         let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -32,7 +32,7 @@ extension TableModeController {
         guard let editor else { return }
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
         }
 
         let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -127,7 +127,8 @@ extension TableModeController {
         editor.buffer.columnIndex = first.startCol
         editor.buffer.selectionMark = nil
         clampTableModeCursor()
-        editor.setStatusMessage(updateClipboard ? editor.l10n["status.cut_text"] : "[ Deleted selection ]")
+        editor.reportOperationResult(
+            .succeeded(message: updateClipboard ? editor.l10n["status.cut_text"] : "[ Deleted selection ]"))
         return true
     }
 
@@ -156,7 +157,7 @@ extension TableModeController {
         editor.buffer.isModified = true
         editor.buffer.selectionMark = nil
         clampTableModeCursor()
-        editor.setStatusMessage(editor.l10n["status.cut_text"])
+        editor.reportOperationResult(.succeeded(message: editor.l10n["status.cut_text"]))
     }
 
     // MARK: - Table Navigation Operations

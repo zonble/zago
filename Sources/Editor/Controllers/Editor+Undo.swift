@@ -22,9 +22,9 @@ extension Editor {
         guard
             let snapshot = buffer.performUndo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
-            )
+        )
         else {
-            setStatusMessage(l10n["status.already_oldest"])
+            reportOperationResult(.noOp(message: l10n["status.already_oldest"]))
             return
         }
         if isCanvasModeActive {
@@ -35,7 +35,7 @@ extension Editor {
                 syncCanvasCursorFromBuffer()
             }
         }
-        setStatusMessage(l10n["status.undo_performed"])
+        reportOperationResult(.succeeded(message: l10n["status.undo_performed"]))
     }
 
     /// Performs Redo (Ctrl+Shift+Z) on active buffer.
@@ -43,9 +43,9 @@ extension Editor {
         guard
             let snapshot = buffer.performRedo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
-            )
+        )
         else {
-            setStatusMessage(l10n["status.already_newest"])
+            reportOperationResult(.noOp(message: l10n["status.already_newest"]))
             return
         }
         if isCanvasModeActive {
@@ -56,6 +56,6 @@ extension Editor {
                 syncCanvasCursorFromBuffer()
             }
         }
-        setStatusMessage(l10n["status.redo_performed"])
+        reportOperationResult(.succeeded(message: l10n["status.redo_performed"]))
     }
 }

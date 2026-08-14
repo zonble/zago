@@ -21,7 +21,7 @@ extension Editor: LogoEngineDelegate {
         case .insertNewline:
             insertNewlineForLogo()
         case .setStatusMessage(let msg):
-            setStatusMessage(msg)
+            reportOperationResult(.succeeded(message: msg))
             appendLogoOutput(msg)
         case .deleteChar:
             buffer.delete()
@@ -74,7 +74,7 @@ extension Editor: LogoEngineDelegate {
         case .updateColumnIndex(let columnIndex):
             if isCanvasModeActive {
                 guard isCanvasColumnAllowed(columnIndex) else {
-                    setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
+                    reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
                     return
                 }
                 canvasVisualColumn = max(0, columnIndex)
@@ -406,12 +406,12 @@ extension Editor: LogoEngineDelegate {
 
     private func setBorderStyle(_ style: String) {
         guard let borderStyle = BorderStyle(style) else {
-            setStatusMessage(l10n.unknownTableBorder(style))
+            reportOperationResult(.noOp(message: l10n.unknownTableBorder(style)))
             return
         }
 
         defaultBorderStyle = borderStyle
-        setStatusMessage(l10n.defaultBorder(borderStyle.rawValue))
+        reportOperationResult(.succeeded(message: l10n.defaultBorder(borderStyle.rawValue)))
     }
 
     private func setArrowStyle(_ style: String) {
@@ -464,12 +464,12 @@ extension Editor {
     ) -> Bool {
         let sourceBuffer = debugSourceBuffer ?? buffer
         guard buffer.allowsLogoExecution else {
-            setStatusMessage(l10n["status.directory_buffer_readonly"])
+            reportOperationResult(.noOp(message: l10n["status.directory_buffer_readonly"]))
             return false
         }
 
         if isTableModeActive, let blockedToken = firstTableModeBlockedLogoToken(in: script) {
-            setStatusMessage(l10n.disabledInTableMode(blockedToken))
+            reportOperationResult(.noOp(message: l10n.disabledInTableMode(blockedToken)))
             return false
         }
 
@@ -502,7 +502,7 @@ extension Editor {
 
         if case .paused = logoEngine.executionState {
             showLogoDebuggerBuffer()
-            setStatusMessage(l10n["status.logo_debug_paused"])
+            reportOperationResult(.prompting(message: l10n["status.logo_debug_paused"]))
             return true
         }
 
@@ -510,17 +510,17 @@ extension Editor {
             let errText =
                 "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
             appendLogoOutput(errText)
-            setStatusMessage(l10n["status.logo_execution_error"])
+            reportOperationResult(.failed(err.message, message: l10n["status.logo_execution_error"]))
         } else if logoEngine.hasSetStatusMessage {
             // Status message set by engine
         } else if let resultPrefix, let result = logoEngine.lastResult, !result.isEmpty {
             appendLogoOutput(result)
-            setStatusMessage("\(resultPrefix)\(result)")
+            reportOperationResult(.succeeded(message: "\(resultPrefix)\(result)"))
         } else if let successStatus {
-            setStatusMessage(successStatus)
+            reportOperationResult(.succeeded(message: successStatus))
         } else if let result = logoEngine.lastResult, !result.isEmpty {
             appendLogoOutput(result)
-            setStatusMessage(result)
+            reportOperationResult(.succeeded(message: result))
         }
 
         return true
@@ -589,7 +589,7 @@ extension Editor {
         }
 
         guard buffer.allowsLogoExecution else {
-            setStatusMessage(l10n["status.directory_buffer_readonly"])
+            reportOperationResult(.noOp(message: l10n["status.directory_buffer_readonly"]))
             return
         }
 

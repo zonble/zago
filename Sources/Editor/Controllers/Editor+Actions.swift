@@ -4,50 +4,44 @@ import TextMetrics
 import TextTransform
 
 extension Editor {
-    func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) {
+    @discardableResult
+    func goToLocation(line oneBasedLine: Int, column oneBasedColumn: Int? = nil) -> EditorOperationResult {
         guard oneBasedLine > 0 else {
-            setStatusMessage(l10n["status.invalid_line"])
-            return
+            return reportOperationResult(.noOp(message: l10n["status.invalid_line"]))
         }
 
         if isTableModeActive, currentTableCell != nil {
             if let oneBasedColumn, oneBasedColumn <= 0 {
-                setStatusMessage(l10n["status.invalid_column"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.invalid_column"]))
             }
             let targetLine = oneBasedLine - 1
             let targetColumn = (oneBasedColumn ?? buffer.columnIndex + 1) - 1
             guard let clamped = tableModeController.clampedPositionInCurrentCell(
                 line: targetLine, column: targetColumn)
             else {
-                setStatusMessage(l10n["status.goto_disabled_in_table_mode"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.goto_disabled_in_table_mode"]))
             }
             buffer.lineIndex = clamped.line
             buffer.columnIndex = clamped.column
         } else if isCanvasModeActive {
             if let oneBasedColumn, oneBasedColumn <= 0 {
-                setStatusMessage(l10n["status.invalid_column"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.invalid_column"]))
             }
             let targetLine = oneBasedLine - 1
             guard isCanvasLineAllowed(targetLine) else {
-                setStatusMessage(l10n["status.canvas_row_limit_exceeded"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             }
             let targetColumn = (oneBasedColumn ?? 1) - 1
             guard isCanvasColumnAllowed(targetColumn) else {
-                setStatusMessage(l10n["status.canvas_column_limit_exceeded"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             }
-            guard ensureCanvasLineExists(targetLine) else { return }
+            guard ensureCanvasLineExists(targetLine) else { return .noOp }
             buffer.lineIndex = targetLine
             canvasVisualColumn = targetColumn
             syncCanvasCursorToBuffer()
         } else if let oneBasedColumn {
             guard oneBasedColumn > 0 else {
-                setStatusMessage(l10n["status.invalid_column"])
-                return
+                return reportOperationResult(.noOp(message: l10n["status.invalid_column"]))
             }
             let targetLine = max(0, min(oneBasedLine - 1, buffer.lines.count - 1))
             buffer.lineIndex = targetLine
@@ -68,11 +62,12 @@ extension Editor {
             isCanvasModeActive
             ? canvasVisualColumn + 1
             : line.visualColumn(forCharacterOffset: buffer.columnIndex) + 1
-        setStatusMessage(
-            l10n.cursorInfo(
+        return reportOperationResult(
+            .succeeded(
+                message: l10n.cursorInfo(
                 currentLine: currentLine, totalLines: buffer.lines.count,
                 percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
-                totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1))
+                totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1)))
     }
 
     func openDirectoryBuffer(path: String? = nil) {
@@ -101,8 +96,7 @@ extension Editor {
                 _ = try fileIOStrategy.readTextFile(at: expanded)
             } catch {
                 let message = error.localizedDescription
-                setStatusMessage(l10n.errorOpeningFile(error: message))
-                return .failed(message)
+                return reportOperationResult(.failed(message, message: l10n.errorOpeningFile(error: message)))
             }
         }
 
@@ -114,18 +108,17 @@ extension Editor {
         return .succeeded
     }
 
-    func openDocumentLinkAtCursor() {
+    @discardableResult
+    func openDocumentLinkAtCursor() -> EditorOperationResult {
         guard !buffer.isDirectoryBuffer else {
-            setStatusMessage(l10n["status.no_document_link"])
-            return
+            return reportOperationResult(.noOp(message: l10n["status.no_document_link"]))
         }
 
         let line = buffer.lines[buffer.lineIndex]
         guard let link = DocumentLinkParser.link(atColumn: buffer.columnIndex, in: line),
             let parsedTarget = DocumentLinkParser.parseTarget(link.target)
         else {
-            setStatusMessage(l10n["status.no_document_link"])
-            return
+            return reportOperationResult(.noOp(message: l10n["status.no_document_link"]))
         }
 
         let resolvedPath: String?
@@ -145,18 +138,20 @@ extension Editor {
                     buffer.lineIndex = targetLine
                     buffer.columnIndex = 0
                     buffer.clampCursor()
-                    setStatusMessage(String(format: l10n["status.jumped_to_anchor"], anchor))
+                    return reportOperationResult(
+                        .succeeded(message: String(format: l10n["status.jumped_to_anchor"], anchor)))
                 } else {
-                    setStatusMessage(String(format: l10n["status.anchor_not_found"], anchor))
+                    return reportOperationResult(
+                        .noOp(message: String(format: l10n["status.anchor_not_found"], anchor)))
                 }
             } else {
-                setStatusMessage(l10n["status.document_link_same_file"])
+                return reportOperationResult(.noOp(message: l10n["status.document_link_same_file"]))
             }
-            return
         }
 
         if let targetPath = resolvedPath {
-            openBuffer(path: targetPath)
+            let result = openBuffer(path: targetPath)
+            guard result.isSucceeded else { return result }
             if let anchor = parsedTarget.anchor {
                 if let targetLine = DocumentLinkParser.findAnchorLineIndex(
                     anchor: anchor, in: buffer.lines, syntaxName: activeLanguageSyntax?.name)
@@ -166,8 +161,10 @@ extension Editor {
                     buffer.clampCursor()
                 }
             }
-            setStatusMessage(String(format: l10n["status.opened_document_link"], targetPath))
+            return reportOperationResult(
+                .succeeded(message: String(format: l10n["status.opened_document_link"], targetPath)))
         }
+        return .noOp
     }
 
     private func isCurrentDocumentPath(_ path: String) -> Bool {
@@ -179,10 +176,10 @@ extension Editor {
         fileIOStrategy.normalizePath(path, isDirectory: false)
     }
 
-    func transformSelectedText(id transformId: String, label: String) {
+    @discardableResult
+    func transformSelectedText(id transformId: String, label: String) -> EditorOperationResult {
         guard let range = activeTextSelectionRange() else {
-            setStatusMessage(l10n["status.no_text_selection"])
-            return
+            return reportOperationResult(.noOp(message: l10n["status.no_text_selection"]))
         }
 
         let selectedText = buffer.textRange(
@@ -204,13 +201,16 @@ extension Editor {
             } else {
                 buffer.clampCursor()
             }
-            setStatusMessage(String(format: l10n["status.transformed_selection"], label))
+            return reportOperationResult(
+                .succeeded(message: String(format: l10n["status.transformed_selection"], label)))
         } catch {
-            setStatusMessage(String(format: l10n["status.text_transform_failed"], "\(error)"))
+            return reportOperationResult(
+                .failed("\(error)", message: String(format: l10n["status.text_transform_failed"], "\(error)")))
         }
     }
 
-    func showTextCounts() {
+    @discardableResult
+    func showTextCounts() -> EditorOperationResult {
         let (text, statusFormat) =
             if let range = activeTextSelectionRange() {
                 (
@@ -222,7 +222,7 @@ extension Editor {
             } else {
                 (buffer.lines.joined(separator: "\n"), l10n["status.word_count_document"])
             }
-        setStatusMessage(String(format: statusFormat, textCountSummary(for: text)))
+        return reportOperationResult(.succeeded(message: String(format: statusFormat, textCountSummary(for: text))))
     }
 
     func hasActiveTextSelection() -> Bool {
@@ -300,11 +300,11 @@ extension Editor {
         case .border(let style, let rawValue):
             if let style {
                 defaultBorderStyle = style
-                setStatusMessage(l10n.defaultBorder(style.rawValue))
+                reportOperationResult(.succeeded(message: l10n.defaultBorder(style.rawValue)))
             } else if rawValue.isEmpty {
                 _ = commandRegistry.dispatch(id: .borderStyle, editor: self)
             } else {
-                setStatusMessage(l10n.unknownBorderStyle(rawValue))
+                reportOperationResult(.noOp(message: l10n.unknownBorderStyle(rawValue)))
             }
         case .arrow(let style):
             if let style { defaultArrowStyle = style }
@@ -347,7 +347,7 @@ extension Editor {
     func switchToBuffer(zeroBasedIndex index: Int, reportInvalid: Bool = false) -> Bool {
         guard index >= 0 && index < buffers.count else {
             if reportInvalid {
-                setStatusMessage(l10n["status.no_such_buffer"])
+                reportOperationResult(.noOp(message: l10n["status.no_such_buffer"]))
             }
             return false
         }

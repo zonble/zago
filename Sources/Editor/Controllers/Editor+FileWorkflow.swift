@@ -48,10 +48,8 @@ extension Editor {
             targetBuffer.fileEncoding = .utf8
             targetBuffer.loadErrorDescription = message
             targetBuffer.isReadOnly = true
-            if reportStatus {
-                setStatusMessage(l10n.errorOpeningFile(error: message))
-            }
-            return .failed(message)
+            return reportOperationResult(
+                .failed(message, message: reportStatus ? l10n.errorOpeningFile(error: message) : nil))
         }
     }
 
@@ -59,8 +57,7 @@ extension Editor {
     func reloadBufferFromDisk(_ targetBuffer: TextBuffer, reportStatus: Bool = true) -> EditorOperationResult {
         guard let path = targetBuffer.filePath, !path.isEmpty else {
             let message = l10n["status.path_required"]
-            if reportStatus { setStatusMessage(message) }
-            return .failed(message)
+            return reportOperationResult(.failed(message, message: reportStatus ? message : nil))
         }
 
         do {
@@ -69,12 +66,10 @@ extension Editor {
             targetBuffer.loadErrorDescription = nil
             targetBuffer.replaceContents(result.content, filePath: path, isModified: false)
             targetBuffer.clampCursor()
-            if reportStatus { setStatusMessage(l10n["status.file_reloaded"]) }
-            return .succeeded
+            return reportOperationResult(.succeeded(message: reportStatus ? l10n["status.file_reloaded"] : nil))
         } catch {
             let message = error.localizedDescription
-            if reportStatus { setStatusMessage(message) }
-            return .failed(message)
+            return reportOperationResult(.failed(message, message: reportStatus ? message : nil))
         }
     }
 
@@ -85,12 +80,11 @@ extension Editor {
             let result = try fileIOStrategy.readTextFile(at: expandedPath)
             saveUndoSnapshot()
             buffer.insertString(result.content)
-            setStatusMessage(l10n.insertedLines(result.content.components(separatedBy: .newlines).count))
-            return .succeeded
+            return reportOperationResult(
+                .succeeded(message: l10n.insertedLines(result.content.components(separatedBy: .newlines).count)))
         } catch {
             let message = error.localizedDescription
-            setStatusMessage(l10n.errorInsertingFile(error: message))
-            return .failed(message)
+            return reportOperationResult(.failed(message, message: l10n.errorInsertingFile(error: message)))
         }
     }
 
@@ -124,28 +118,29 @@ extension Editor {
                 }
             }
             startFileWatcherForCurrentBuffer()
+            let message: String
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
-                setStatusMessage(l10n["status.saved_as_utf8"])
+                message = l10n["status.saved_as_utf8"]
             } else {
-                setStatusMessage(l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
+                message = l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)")
             }
             onSuccess?()
-            return .succeeded
+            return reportOperationResult(.succeeded(message: message))
         } catch EncodingError.unsupportedCharacters {
             let originalEncoding = buffer.fileEncoding
             currentPromptMode = .confirmEncodingFallback(originalEncoding: originalEncoding) { [weak self] confirmed in
                 guard let self = self else { return }
                 if confirmed {
-                    _ = self.saveBufferContent(to: path, forcedEncoding: .utf8, onSuccess: onSuccess)
+                    self.applyOperationResult(
+                        self.saveBufferContent(to: path, forcedEncoding: .utf8, onSuccess: onSuccess))
                 } else {
-                    self.setStatusMessage(self.l10n["status.save_cancelled"])
+                    self.reportOperationResult(.cancelled(message: self.l10n["status.save_cancelled"]))
                 }
             }
             return .prompting
         } catch {
             let message = error.localizedDescription
-            setStatusMessage(l10n.errorSavingFile(error: message))
-            return .failed(message)
+            return reportOperationResult(.failed(message, message: l10n.errorSavingFile(error: message)))
         }
     }
 
