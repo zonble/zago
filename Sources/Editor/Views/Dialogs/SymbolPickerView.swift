@@ -1,3 +1,4 @@
+import ANSIStyle
 import Config
 import Foundation
 import TextMetrics
@@ -307,7 +308,7 @@ public final class SymbolPickerView {
         // Top Frame
         let topBar = "╔" + String(repeating: "═", count: max(0, dialogWidth - 2)) + "╗"
         output += "\u{001B}[\(startRow);\(startCol)H\(topBar)"
-        output += "\u{001B}[\(startRow);\(startCol + 2)H\u{001B}[1m\(title)\u{001B}[0m"
+        output += "\u{001B}[\(startRow);\(startCol + 2)H\(title.ansiStyled(style: ANSIStyle.bold))"
 
         // Tab Bar
         let tabRow = startRow + 1
@@ -320,7 +321,7 @@ public final class SymbolPickerView {
             let catName = l10n[cat.nameKey]
             output += "\u{001B}[\(tabRow);\(currentTabCol)H"
             if idx == categoryIndex {
-                output += "\u{001B}[7;1m[\(catName)]\u{001B}[0m"
+                output += "[\(catName)]".ansiStyled(style: ANSIStyle.boldInverse)
                 currentTabCol += catName.displayWidth + 3
             } else {
                 output += " \(catName) "
@@ -357,7 +358,7 @@ public final class SymbolPickerView {
                     let rawStr = "\(hint)\(item.symbol)"
                     let paddedStr = rawStr.paddedToDisplayWidth(maxListWidth)
                     if idx == selectedIndex {
-                        output += "\u{001B}[7;1m\(paddedStr)\u{001B}[0m"
+                        output += paddedStr.ansiStyled(style: ANSIStyle.boldInverse)
                     } else {
                         output += paddedStr
                     }
@@ -378,7 +379,7 @@ public final class SymbolPickerView {
                     let rawStr = " \(hint) \(item.symbol) "
                     let paddedStr = rawStr.paddedToDisplayWidth(cellWidth)
                     if idx == selectedIndex {
-                        output += "\u{001B}[7;1m\(paddedStr)\u{001B}[0m"
+                        output += paddedStr.ansiStyled(style: ANSIStyle.boldInverse)
                     } else {
                         output += paddedStr
                     }
@@ -406,7 +407,7 @@ public final class SymbolPickerView {
         output += "\u{001B}[\(footerRow);\(startCol + dialogWidth - 1)H║"
 
         let footerText = l10n["dialog.symbol_picker.footer"]
-        output += "\u{001B}[\(footerRow);\(startCol + 2)H\u{001B}[1;36m\(footerText)\u{001B}[0m"
+        output += "\u{001B}[\(footerRow);\(startCol + 2)H\(footerText.ansiStyled(style: ANSIStyle.boldCyan))"
 
         // Bottom Frame
         let bottomRow = startRow + dialogHeight - 1

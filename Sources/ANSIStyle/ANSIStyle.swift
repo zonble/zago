@@ -14,6 +14,9 @@ public enum ANSIStyle {
     /// Inverse / Reverse video attribute for selection and cursor (`\u{1B}[7m`).
     public static let inverse = "\u{1B}[7m"
 
+    /// Bold inverse / reverse video attribute for selected dialog rows (`\u{1B}[7;1m`).
+    public static let boldInverse = "\u{1B}[7;1m"
+
     /// Dim / Gray text attribute for line numbers, EOF markers, and borders (`\u{1B}[90m`).
     public static let dimGray = "\u{1B}[90m"
 

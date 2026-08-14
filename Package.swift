@@ -17,6 +17,7 @@ let package = Package(
         .library(name: "SpellChecker", targets: ["SpellChecker"]),
         .library(name: "Git", targets: ["Git"]),
         .library(name: "IPCServer", targets: ["IPCServer"]),
+        .library(name: "ANSIStyle", targets: ["ANSIStyle"]),
         .library(name: "Editor", targets: ["Editor"]),
     ],
     dependencies: [
@@ -62,8 +63,11 @@ let package = Package(
             dependencies: ["Config", "Drawing", "LogoEngine", "TextMetrics"]
         ),
         .target(
+            name: "ANSIStyle"
+        ),
+        .target(
             name: "Syntax",
-            dependencies: ["DocumentOutline", "LogoEngine"]
+            dependencies: ["ANSIStyle", "DocumentOutline", "LogoEngine"]
         ),
         .target(
             name: "Diagram"
@@ -71,8 +75,8 @@ let package = Package(
         .target(
             name: "Editor",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker", "Syntax",
-                "TextEncoding", "TextMetrics", "TextTransform",
+                "ANSIStyle", "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker",
+                "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
             ]
         ),
         .executableTarget(

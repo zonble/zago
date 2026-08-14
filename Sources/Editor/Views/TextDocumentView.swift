@@ -1,3 +1,4 @@
+import ANSIStyle
 import Foundation
 import TextMetrics
 
@@ -57,8 +58,11 @@ public final class TextDocumentView {
 
     private func render() {
         let (rows, cols) = terminal.getWindowSize()
-        var output = "\u{1B}[H"
-        output += "\u{1B}[7m\(title.paddedToDisplayWidth(cols))\u{1B}[m\r\n"
+        var output = ANSIStyle.cursorHome
+        output += title.paddedToDisplayWidth(cols).ansiStyled(
+            style: ANSIStyle.inverse,
+            endStyle: ANSIStyle.resetShort
+        ) + "\r\n"
 
         let availableHeight = max(1, rows - 2)
         topIndex = max(0, min(topIndex, max(0, lines.count - availableHeight)))
@@ -66,10 +70,10 @@ public final class TextDocumentView {
         for i in 0..<availableHeight {
             let lineIndex = topIndex + i
             let line = lineIndex < lines.count ? lines[lineIndex] : ""
-            output += "\u{1B}[K\(line.paddedToDisplayWidth(cols))\r\n"
+            output += "\(ANSIStyle.clearLine)\(line.paddedToDisplayWidth(cols))\r\n"
         }
 
-        output += "\u{1B}[1;36m\(footer.paddedToDisplayWidth(cols))\u{1B}[0m"
+        output += footer.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.boldCyan)
         terminal.write(output)
         fflush(nil)
     }

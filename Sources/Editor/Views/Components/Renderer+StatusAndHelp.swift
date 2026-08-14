@@ -1,3 +1,4 @@
+import ANSIStyle
 import Config
 import Foundation
 import Syntax
@@ -5,10 +6,6 @@ import TextEncoding
 import TextMetrics
 
 extension Renderer {
-    // MARK: - Title Bar or Top Menu Bar
-
-    // MARK: - Title Bar & Menu Bar Component
-
     /// Renders the top Title Bar or Menu Bar based on active state.
     func renderTitleOrMenuBar(editor: Editor, cols: Int) -> String {
         editor.isMenuBarActive
