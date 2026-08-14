@@ -322,7 +322,7 @@ Editor LOGO provides built-in system metadata and runtime state variables out of
 
 ##### 1. System Metadata Variables
 - `:author`: Author signature (`"zonble"`).
-- `:version`: `zago` editor & engine version (e.g. `"1.2.5"`).
+- `:version`: `zago` editor & engine version (e.g. `"1.3.0"`).
 - `:repository`: Project repository URL (`"https://github.com/zonble/zago"`).
 
 ##### 2. Loop & Iterator Variables
