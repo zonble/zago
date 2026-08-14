@@ -34,7 +34,7 @@ extension Editor {
             currentPromptMode = .confirmExternalReload(completion: { [weak self] reload in
                 guard let self = self else { return }
                 if reload {
-                    switch self.reloadBufferFromDisk(self.buffer) {
+                    switch self.reloadBufferFromDisk(self.buffer).kind {
                     case .succeeded:
                         self.setStatusMessage(self.l10n["status.file_reloaded"])
                         self.renderer.invalidateScreenCache()
@@ -49,7 +49,7 @@ extension Editor {
             })
             setStatusMessage(l10n["prompt.confirm_reload"])
         } else {
-            switch reloadBufferFromDisk(buffer) {
+            switch reloadBufferFromDisk(buffer).kind {
             case .succeeded:
                 setStatusMessage(l10n["status.file_reloaded"])
                 renderer.invalidateScreenCache()

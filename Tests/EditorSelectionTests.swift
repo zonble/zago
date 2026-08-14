@@ -389,18 +389,18 @@ import Testing
 
     let toggleCmd = ToggleMarkCommand()
     // 1st press: set start point
-    toggleCmd.execute(on: editor)
+    let firstToggleResult = toggleCmd.execute(on: editor)
     #expect(editor.buffer.canvasBlockMark != nil)
-    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
+    #expect(firstToggleResult.statusMessage == editor.l10n["status.mark_set"])
 
     // 2nd press: set end point
-    toggleCmd.execute(on: editor)
+    let secondToggleResult = toggleCmd.execute(on: editor)
     #expect(editor.buffer.canvasBlockMark != nil)
-    #expect(editor.statusMessage == editor.l10n["status.mark_set"])
+    #expect(secondToggleResult.statusMessage == editor.l10n["status.mark_set"])
 
     // Cancel mark using CancelSelectionCommand (^G / :unmark)
     let cancelCmd = CancelSelectionCommand()
-    cancelCmd.execute(on: editor)
+    let cancelResult = cancelCmd.execute(on: editor)
     #expect(editor.buffer.canvasBlockMark == nil)
-    #expect(editor.statusMessage == editor.l10n["status.mark_unset"])
+    #expect(cancelResult.statusMessage == editor.l10n["status.mark_unset"])
 }

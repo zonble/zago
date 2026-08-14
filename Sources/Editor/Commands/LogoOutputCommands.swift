@@ -112,7 +112,7 @@ public struct LogoDebugCommand: Command {
         case "break":
             let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
             let key = enabled ? "status.logo_debug_breakpoint_set" : "status.logo_debug_breakpoint_cleared"
-            editor.setStatusMessage(String(format: editor.l10n[key], editor.buffer.lineIndex + 1))
+            return .succeeded(message: String(format: editor.l10n[key], editor.buffer.lineIndex + 1))
         case "breaks": editor.showLogoDebuggerBuffer()
         case "eval":
             let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace)
@@ -125,7 +125,7 @@ public struct LogoDebugCommand: Command {
         case "step": editor.resumeLogoDebugExecution(step: true)
         case "abort": editor.abortLogoDebugExecution()
         case "debug", nil: editor.toggleLogoDebuggerBuffer()
-        default: editor.setStatusMessage(editor.l10n["status.logo_debug_usage"])
+        default: return .succeeded(message: editor.l10n["status.logo_debug_usage"])
         }
         return .succeeded
     }

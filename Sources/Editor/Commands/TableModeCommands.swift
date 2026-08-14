@@ -60,29 +60,30 @@ public struct CycleBorderStyleCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
+        let message: String
         switch editor.defaultBorderStyle {
         case .single:
             editor.defaultBorderStyle = .heavy
-            editor.setStatusMessage(editor.l10n.defaultBorder("Heavy Unicode (┏━┃)"))
+            message = editor.l10n.defaultBorder("Heavy Unicode (┏━┃)")
         case .heavy:
             editor.defaultBorderStyle = .double
-            editor.setStatusMessage(editor.l10n.defaultBorder("Double Unicode (╔═║)"))
+            message = editor.l10n.defaultBorder("Double Unicode (╔═║)")
         case .double:
             editor.defaultBorderStyle = .round
-            editor.setStatusMessage(editor.l10n.defaultBorder("Round Unicode (╭─│)"))
+            message = editor.l10n.defaultBorder("Round Unicode (╭─│)")
         case .round:
             editor.defaultBorderStyle = .doubleRound
-            editor.setStatusMessage(editor.l10n.defaultBorder("Double Round Unicode (╭═║)"))
+            message = editor.l10n.defaultBorder("Double Round Unicode (╭═║)")
         case .doubleRound:
             editor.defaultBorderStyle = .ascii
-            editor.setStatusMessage(editor.l10n.defaultBorder("ASCII (+-|)"))
+            message = editor.l10n.defaultBorder("ASCII (+-|)")
         case .ascii:
             editor.defaultBorderStyle = .asciiRound
-            editor.setStatusMessage(editor.l10n.defaultBorder("ASCII Rounded (/-\\|)"))
+            message = editor.l10n.defaultBorder("ASCII Rounded (/-\\|)")
         case .asciiRound:
             editor.defaultBorderStyle = .single
-            editor.setStatusMessage(editor.l10n.defaultBorder("Single Unicode (┌─│)"))
+            message = editor.l10n.defaultBorder("Single Unicode (┌─│)")
         }
-        return .succeeded
+        return .succeeded(message: message)
     }
 }

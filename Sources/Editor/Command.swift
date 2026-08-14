@@ -264,7 +264,7 @@ public final class CommandRegistry {
     /// Returns `true` if a command was found and executed.
     public func dispatch(id: CommandID, editor: Editor) -> Bool {
         if let command = commandMap[id] {
-            _ = command.execute(on: editor)
+            apply(command.execute(on: editor), to: editor)
             return true
         }
         return false
@@ -273,7 +273,9 @@ public final class CommandRegistry {
     /// Dispatches a command by ID and returns a typed command result.
     public func dispatchResult(id: CommandID, editor: Editor) -> EditorOperationResult {
         guard let command = commandMap[id] else { return .failed("Command not found") }
-        return command.execute(on: editor)
+        let result = command.execute(on: editor)
+        apply(result, to: editor)
+        return result
     }
 
     /// Dispatches a command by raw ID string (for string/config compatibility).
@@ -295,7 +297,7 @@ public final class CommandRegistry {
             return false
         }
         if let command = keyMap[key] {
-            _ = command.execute(on: editor)
+            apply(command.execute(on: editor), to: editor)
             return true
         }
         return false
@@ -307,7 +309,9 @@ public final class CommandRegistry {
             return .noOp
         }
         guard let command = keyMap[key] else { return .noOp }
-        return command.execute(on: editor)
+        let result = command.execute(on: editor)
+        apply(result, to: editor)
+        return result
     }
 
     /// Dispatches raw string input from CommandBar to matching registered command.
@@ -321,7 +325,7 @@ public final class CommandRegistry {
                 editor.setStatusMessage(editor.l10n["status.directory_buffer_readonly"])
                 return .handled
             }
-            _ = command.execute(with: input, on: editor)
+            apply(command.execute(with: input, on: editor), to: editor)
             return .handled
         }
 
@@ -345,7 +349,9 @@ public final class CommandRegistry {
                 editor.setStatusMessage(message)
                 return .failed(message)
             }
-            return command.execute(with: input, on: editor)
+            let result = command.execute(with: input, on: editor)
+            apply(result, to: editor)
+            return result
         }
 
         guard editor.buffer.allowsLogoExecution else {
@@ -355,6 +361,12 @@ public final class CommandRegistry {
         }
 
         return .noOp
+    }
+
+    private func apply(_ result: EditorOperationResult, to editor: Editor) {
+        if let message = result.statusMessage {
+            editor.setStatusMessage(message)
+        }
     }
 
     /// Returns sorted list of available CommandBar completion names for Tab completion.

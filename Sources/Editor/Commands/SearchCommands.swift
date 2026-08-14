@@ -42,8 +42,7 @@ public struct SearchCommand: Command {
         }
         let targetQuery = !query.isEmpty ? query : editor.lastSearchQuery
         if targetQuery.isEmpty {
-            editor.setStatusMessage(editor.l10n["status.cancelled_search"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.cancelled_search"])
         }
 
         editor.searchController.performSearch(query: targetQuery, useRegex: editor.isRegexSearchEnabled)
@@ -107,15 +106,14 @@ public struct SubstituteCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
-        editor.setStatusMessage(editor.l10n["status.path_required"])
-        return .failed(editor.l10n["status.path_required"])
+        let message = editor.l10n["status.path_required"]
+        return .failed(message, message: message)
     }
 
     @discardableResult
     public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard let parsed = parse(input.text) else {
-            editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.path_required"])
         }
 
         let isGlobal = parsed.flags.contains("g")
@@ -133,11 +131,10 @@ public struct SubstituteCommand: Command {
                 editor.saveUndoSnapshot()
                 editor.buffer.lines = result.lines
                 editor.buffer.isModified = true
-                editor.setStatusMessage(editor.l10n.replacedOccurrences(result.replacements))
+                return .succeeded(message: editor.l10n.replacedOccurrences(result.replacements))
             } else {
-                editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
+                return .succeeded(message: editor.l10n.notFound(query: parsed.search))
             }
-            return .succeeded
         }
 
         let targetRange: ClosedRange<Int>
@@ -224,12 +221,10 @@ public struct SubstituteCommand: Command {
             editor.saveUndoSnapshot()
             editor.buffer.lines = newLines
             editor.buffer.isModified = true
-            editor.setStatusMessage(editor.l10n.replacedOccurrences(totalReplacements))
+            return .succeeded(message: editor.l10n.replacedOccurrences(totalReplacements))
         } else {
-            editor.setStatusMessage(editor.l10n.notFound(query: parsed.search))
+            return .succeeded(message: editor.l10n.notFound(query: parsed.search))
         }
-
-        return .succeeded
     }
 
     private struct ParsedSubstitute {
@@ -460,18 +455,15 @@ public struct NumericGotoCommand: Command {
         }
         let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
-            editor.setStatusMessage(editor.l10n["status.invalid_line"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.invalid_line"])
         }
         guard parts.count <= 2 else {
-            editor.setStatusMessage(editor.l10n["status.invalid_column"])
-            return .succeeded
+            return .succeeded(message: editor.l10n["status.invalid_column"])
         }
 
         if parts.count == 2 {
             guard let col = Int(parts[1]), col > 0 else {
-                editor.setStatusMessage(editor.l10n["status.invalid_column"])
-                return .succeeded
+                return .succeeded(message: editor.l10n["status.invalid_column"])
             }
             editor.goToLocation(line: line, column: col)
         } else {
@@ -519,10 +511,9 @@ public struct ShowCursorPosCommand: Command {
             ? editor.canvasVisualColumn + 1
             : line.visualColumn(forCharacterOffset: editor.buffer.columnIndex) + 1
         let totalVisualCol = line.displayWidth + 1
-        editor.setStatusMessage(
-            editor.l10n.cursorInfo(
+        return .succeeded(
+            message: editor.l10n.cursorInfo(
                 currentLine: currentLine, totalLines: totalLines, percent: percent, currentCol: currentCol,
                 totalCol: totalCol, visualCol: visualCol, totalVisualCol: totalVisualCol))
-        return .succeeded
     }
 }

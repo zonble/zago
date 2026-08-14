@@ -10,9 +10,10 @@ public struct SelectLeftCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         if editor.buffer.columnIndex > 0 {
             editor.buffer.columnIndex -= 1
@@ -20,7 +21,7 @@ public struct SelectLeftCommand: Command {
             editor.buffer.lineIndex -= 1
             editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
         }
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
 
@@ -34,9 +35,10 @@ public struct SelectRightCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         let currentLineLength = editor.buffer.lines[editor.buffer.lineIndex].count
         if editor.buffer.columnIndex < currentLineLength {
@@ -45,7 +47,7 @@ public struct SelectRightCommand: Command {
             editor.buffer.lineIndex += 1
             editor.buffer.columnIndex = 0
         }
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
 
@@ -59,12 +61,13 @@ public struct SelectUpCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         editor.moveCursorVirtual(deltaRow: -1)
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
 
@@ -78,12 +81,13 @@ public struct SelectDownCommand: Command {
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         editor.moveCursorVirtual(deltaRow: 1)
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
 
@@ -98,12 +102,13 @@ public struct SelectHomeCommand: Command {
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         editor.buffer.columnIndex = 0
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
 
@@ -118,11 +123,12 @@ public struct SelectEndCommand: Command {
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
+        var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
-            editor.setStatusMessage(editor.l10n["status.mark_set"])
+            message = editor.l10n["status.mark_set"]
         }
         editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
-        return .succeeded
+        return .succeeded(message: message)
     }
 }
