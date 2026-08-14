@@ -1,3 +1,4 @@
+import ANSIStyle
 @_exported import DocumentOutline
 import Foundation
 
@@ -13,12 +14,12 @@ public enum SyntaxTokenType {
     /// Returns ANSI color escape sequence for token type.
     public var ansiColor: String {
         switch self {
-        case .keyword: return "\u{1B}[1;36m"  // Bold Cyan
-        case .string: return "\u{1B}[32m"  // Green
-        case .comment: return "\u{1B}[90m"  // Dim Gray
-        case .number: return "\u{1B}[33m"  // Yellow
-        case .typeOrAttribute: return "\u{1B}[94m"  // Bright Blue
-        case .normal: return "\u{1B}[0m"
+        case .keyword: ANSIStyle.boldCyan
+        case .string: ANSIColor.Foreground.green.rawValue
+        case .comment: ANSIStyle.dimGray
+        case .number: ANSIColor.Foreground.yellow.rawValue
+        case .typeOrAttribute: ANSIColor.Foreground.brightBlue.rawValue
+        case .normal: ANSIStyle.reset
         }
     }
 }
@@ -329,7 +330,7 @@ public final class SyntaxHighlighter {
             let token = tokenMap[idx]
             if token != currentToken {
                 if currentToken != .normal {
-                    result += "\u{1B}[0m"
+                    result += ANSIStyle.reset
                 }
                 if token != .normal {
                     result += token.ansiColor
@@ -340,7 +341,7 @@ public final class SyntaxHighlighter {
         }
 
         if currentToken != .normal {
-            result += "\u{1B}[0m"
+            result += ANSIStyle.reset
         }
 
         return result
