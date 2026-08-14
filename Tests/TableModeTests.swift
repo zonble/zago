@@ -135,6 +135,53 @@ import Testing
     }
 }
 
+@Test func testTableModeToggleCommentOnlyChangesCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "main.swift"
+    editor.buffer.lines = [
+        "┌────────────────────┬────────────────────┐",
+        "│ let x = 1          │ let y = 2          │",
+        "└────────────────────┴────────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+
+    _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+
+    #expect(editor.buffer.lines[1] == "│ // let x = 1       │ let y = 2          │")
+}
+
+@Test func testTableModeCommentPrefixDoesNotBecomeCellBorder() throws {
+    let line = "│ // let x = 1       │ let y = 2          │"
+    let cell = TableCell(minLine: 0, maxLine: 2, minCol: 0, maxCol: 21)
+
+    let borders = TableModeController.findCellHorizontalBorders(in: line, nearCol: cell.innerMinCol, cell: cell)
+
+    #expect(borders.left == 0)
+    #expect(borders.right == 21)
+}
+
+@Test func testTableModeToggleCommentSelectionOnlyChangesCurrentCell() throws {
+    let editor = Editor()
+    editor.buffer.filePath = "main.swift"
+    editor.buffer.lines = [
+        "┌────────────────────┬────────────────────┐",
+        "│ // let x = 1       │ // let y = 2       │",
+        "│ // let z = 3       │ // let w = 4       │",
+        "└────────────────────┴────────────────────┘",
+    ]
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 10
+    editor.tableModeController.enterTableMode(with: TableCell(minLine: 0, maxLine: 3, minCol: 0, maxCol: 21))
+    editor.buffer.selectionMark = (line: 1, column: 1)
+
+    _ = editor.commandRegistry.dispatch(id: .editToggleComment, editor: editor)
+
+    #expect(editor.buffer.lines[1] == "│ let x = 1          │ // let y = 2       │")
+    #expect(editor.buffer.lines[2] == "│ let z = 3          │ // let w = 4       │")
+}
+
 @Test func testCreateTableDimensionsPrompt() throws {
     let editor = Editor()
     #expect(editor.isTableModeActive == false)
