@@ -29,15 +29,31 @@ extension Renderer {
         var formattedMenu = "\(ANSIStyle.menuDefault) "
         for (idx, cat) in editor.menuBar.categories.enumerated() {
             let catTitle = editor.l10n[cat.titleKey]
+            let styledTitle = underlinedMenuTitle(catTitle, hotkeyChar: cat.hotkeyChar)
             if idx == editor.menuBar.categoryIndex {
                 formattedMenu +=
-                    "\(ANSIStyle.menuSelected)\(menuSegment(title: catTitle, isSelected: true))\(ANSIStyle.menuReset)"
+                    "\(ANSIStyle.menuSelected)\(menuSegment(title: styledTitle, isSelected: true))\(ANSIStyle.menuReset)"
             } else {
-                formattedMenu += menuSegment(title: catTitle, isSelected: false)
+                formattedMenu += menuSegment(title: styledTitle, isSelected: false)
             }
         }
         let remainingSpaces = max(0, cols - rawMenuStr.displayWidth)
         return formattedMenu + String(repeating: " ", count: remainingSpaces) + "\(ANSIStyle.reset)\r\n"
+    }
+
+    private func underlinedMenuTitle(_ title: String, hotkeyChar: Character) -> String {
+        let hotkey = String(hotkeyChar).lowercased()
+        var output = ""
+        var didUnderline = false
+        for character in title {
+            if !didUnderline, String(character).lowercased() == hotkey {
+                output += "\(ANSIStyle.underline)\(character)\(ANSIStyle.underlineOff)"
+                didUnderline = true
+            } else {
+                output.append(character)
+            }
+        }
+        return output
     }
 
     /// Renders standard top Title Bar line containing app version, filename, modified badge, and git branch.

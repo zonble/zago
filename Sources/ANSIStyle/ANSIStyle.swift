@@ -11,6 +11,12 @@ public enum ANSIStyle {
     /// Bold text attribute (`\u{1B}[1m`).
     public static let bold = "\u{1B}[1m"
 
+    /// Underline text attribute (`\u{1B}[4m`).
+    public static let underline = "\u{1B}[4m"
+
+    /// Turns off underline without resetting foreground, background, or bold attributes (`\u{1B}[24m`).
+    public static let underlineOff = "\u{1B}[24m"
+
     /// Inverse / Reverse video attribute for selection and cursor (`\u{1B}[7m`).
     public static let inverse = "\u{1B}[7m"
 

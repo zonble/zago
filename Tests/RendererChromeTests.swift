@@ -1,4 +1,5 @@
 import Foundation
+import ANSIStyle
 import Testing
 import TextMetrics
 
@@ -272,6 +273,22 @@ struct RendererChromeTests {
         let (startCol2, _, _) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: cols)
         let title1Width = editor.l10n[editor.menuBar.categories[1].titleKey].displayWidth
         #expect(startCol2 == 1 + title0Width + 2 + title1Width + 2)
+    }
+
+    @Test func testMenuBarUnderlinesShortcutKeys() throws {
+        let renderer = Renderer()
+
+        let enEditor = Editor(language: .en)
+        enEditor.isMenuBarActive = true
+        let enLine = renderer.renderTitleOrMenuBar(editor: enEditor, cols: 80)
+        #expect(enLine.contains("\(ANSIStyle.underline)F\(ANSIStyle.underlineOff)ile"))
+        #expect(enLine.contains("\(ANSIStyle.underline)E\(ANSIStyle.underlineOff)dit"))
+
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.isMenuBarActive = true
+        let zhLine = renderer.renderTitleOrMenuBar(editor: zhEditor, cols: 80)
+        #expect(zhLine.contains("檔案(\(ANSIStyle.underline)F\(ANSIStyle.underlineOff))"))
+        #expect(zhLine.contains("編輯(\(ANSIStyle.underline)E\(ANSIStyle.underlineOff))"))
     }
 
     @Test func testMenuDropdownReservesCheckboxColumnForEveryItem() throws {
