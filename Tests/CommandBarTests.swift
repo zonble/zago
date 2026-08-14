@@ -458,6 +458,25 @@ import Testing
     #expect(editor.promptCursorIndex == 5)
 }
 
+@Test func testCommandBarMiddleSelectionTurnsOffInverseForSubsequentText() throws {
+    let editor = Editor()
+    editor.promptLogoMacro()
+    for ch in "hello world" {
+        editor.processKey(.char(ch))
+    }
+    // Cursor at index 5 ("hello" | " world")
+    editor.promptCursorIndex = 5
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.shiftArrowLeft)
+    #expect(editor.promptController.selectionRange() == 3..<5)
+
+    let rendered = editor.renderer.formatPromptLine(editor: editor, cols: 80).text
+    // Selected range 'lo' should be bold inverse
+    #expect(rendered.contains("\(ANSIStyle.boldInverse)lo"))
+    // Subsequent text ' world' must follow inverseOff (\u{1B}[27m) and not be inverse
+    #expect(rendered.contains("\(ANSIStyle.inverseOff) world"))
+}
+
 @Test func testCommandBarCtrlKWithoutSelectionCutsToEnd() throws {
     let editor = Editor()
     editor.promptLogoMacro()

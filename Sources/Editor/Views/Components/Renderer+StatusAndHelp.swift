@@ -592,10 +592,13 @@ extension Renderer {
         for entry in chars {
             let selected = entry.index.map { selectionRange?.contains($0) == true } ?? false
             if selected != isSelected {
-                output += selected ? ANSIStyle.boldInverse : ANSIStyle.bold
+                output += selected ? ANSIStyle.boldInverse : ANSIStyle.inverseOff
                 isSelected = selected
             }
             output.append(entry.character)
+        }
+        if isSelected {
+            output += ANSIStyle.inverseOff
         }
         return output
     }
