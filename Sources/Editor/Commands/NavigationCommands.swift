@@ -8,10 +8,11 @@ public struct MoveRightCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: 1)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
@@ -22,6 +23,7 @@ public struct MoveRightCommand: Command {
             editor.buffer.lineIndex += 1
             editor.buffer.columnIndex = 0
         }
+        return .succeeded
     }
 }
 
@@ -33,10 +35,11 @@ public struct MoveLeftCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: -1)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
@@ -46,6 +49,7 @@ public struct MoveLeftCommand: Command {
             editor.buffer.lineIndex -= 1
             editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
         }
+        return .succeeded
     }
 }
 
@@ -57,14 +61,16 @@ public struct MoveUpCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: -1, deltaColumn: 0)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
         editor.moveCursorVirtual(deltaRow: -1)
+        return .succeeded
     }
 }
 
@@ -76,14 +82,16 @@ public struct MoveDownCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 1, deltaColumn: 0)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
         editor.moveCursorVirtual(deltaRow: 1)
+        return .succeeded
     }
 }
 
@@ -95,7 +103,8 @@ public struct MoveHomeCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -103,16 +112,17 @@ public struct MoveHomeCommand: Command {
                 in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = leftBorder + 1
             editor.tableModeController.clampTableModeCursor()
-            return
+            return .succeeded
         }
         if editor.isCanvasModeActive {
             editor.moveCanvasCursorToLineStart()
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
         let vLine = editor.getVirtualLineForCursor()
         editor.buffer.columnIndex = vLine.startCol
+        return .succeeded
     }
 }
 
@@ -124,7 +134,8 @@ public struct MoveEndCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -132,11 +143,11 @@ public struct MoveEndCommand: Command {
                 in: line, nearCol: editor.buffer.columnIndex, cell: cell)
             editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
             editor.tableModeController.clampTableModeCursor()
-            return
+            return .succeeded
         }
         if editor.isCanvasModeActive {
             editor.moveCanvasCursorToLineEnd()
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
 
@@ -151,7 +162,7 @@ public struct MoveEndCommand: Command {
 
         guard cursorVLineIdx >= 0 && cursorVLineIdx < virtualLines.count else {
             editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
-            return
+            return .succeeded
         }
 
         let vLine = virtualLines[cursorVLineIdx]
@@ -159,6 +170,7 @@ public struct MoveEndCommand: Command {
             cursorVLineIdx + 1 < virtualLines.count
             && virtualLines[cursorVLineIdx + 1].bufferLineIndex == vLine.bufferLineIndex
         editor.buffer.columnIndex = hasNextWrappedChunk ? max(vLine.startCol, vLine.endCol - 1) : vLine.endCol
+        return .succeeded
     }
 }
 
@@ -170,12 +182,14 @@ public struct GoToEndOfFileCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
-        guard !editor.buffer.lines.isEmpty else { return }
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.lines.isEmpty else { return .noOp }
         editor.clearActiveMark()
         editor.buffer.lineIndex = editor.buffer.lines.count - 1
         editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
         editor.buffer.clampCursor()
+        return .succeeded
     }
 }
 
@@ -187,7 +201,8 @@ public struct MovePgdnCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let vCol = editor.tableModeController.getVisualColumn(
@@ -196,16 +211,17 @@ public struct MovePgdnCommand: Command {
             editor.buffer.columnIndex = editor.tableModeController.getCharIndexForVisualColumn(
                 in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
             editor.tableModeController.clampTableModeCursor()
-            return
+            return .succeeded
         }
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: true)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
         editor.moveCursorVirtual(deltaRow: mainAreaHeight)
+        return .succeeded
     }
 }
 
@@ -217,7 +233,8 @@ public struct MovePgupCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let vCol = editor.tableModeController.getVisualColumn(
@@ -226,16 +243,17 @@ public struct MovePgupCommand: Command {
             editor.buffer.columnIndex = editor.tableModeController.getCharIndexForVisualColumn(
                 in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
             editor.tableModeController.clampTableModeCursor()
-            return
+            return .succeeded
         }
         let (rows, _) = editor.terminal.getWindowSize()
         let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: -mainAreaHeight, deltaColumn: 0)
-            return
+            return .succeeded
         }
         editor.clearActiveMark()
         editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
+        return .succeeded
     }
 }
 
@@ -247,11 +265,13 @@ public struct MoveWordForwardCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if !editor.isCanvasModeActive {
             editor.clearActiveMark()
         }
         editor.buffer.moveWordForward()
+        return .succeeded
     }
 }
 
@@ -263,10 +283,12 @@ public struct MoveWordBackwardCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if !editor.isCanvasModeActive {
             editor.clearActiveMark()
         }
         editor.buffer.moveWordBackward()
+        return .succeeded
     }
 }

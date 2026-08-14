@@ -19,8 +19,14 @@ import Testing
         try "*.swp".write(to: hiddenFileURL, atomically: testAtomicallyOption, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: workDir) }
 
-        // Test Factory method TextBuffer.makeBuffer(filePath:)
-        let buffer = TextBuffer.makeBuffer(filePath: workDir.path)
+        let editor = Editor(
+            options: EditorOptions(filePaths: [workDir.path], autoReload: false),
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        let buffer = editor.buffer
         #expect(buffer is DirectoryBuffer)
         #expect(buffer.isDirectoryBuffer == true)
         #expect(buffer.isReadOnly == true)

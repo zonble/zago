@@ -9,7 +9,8 @@ public struct SaveFileCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveBuffer(path: nil)
     }
 }
@@ -22,8 +23,10 @@ public struct WriteOutCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptWriteFilePath()
+        return .prompting
     }
 }
 
@@ -35,17 +38,18 @@ public struct WriteCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveBuffer(path: nil)
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         if input.rest.isEmpty {
-            editor.saveBuffer(path: nil)
+            return editor.saveBuffer(path: nil)
         } else {
-            editor.writeBuffer(path: input.rest)
+            return editor.writeBuffer(path: input.rest)
         }
-        return .handled
     }
 }
 
@@ -57,8 +61,10 @@ public struct ReadFileCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptInsertFilePath()
+        return .prompting
     }
 }
 
@@ -70,18 +76,21 @@ public struct OpenCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptInsertFilePath()
+        return .prompting
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard !input.rest.isEmpty else {
-            editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .handled
+            let message = editor.l10n["status.path_required"]
+            editor.setStatusMessage(message)
+            return .failed(message)
         }
 
-        editor.openBuffer(path: input.rest)
-        return .handled
+        return editor.openBuffer(path: input.rest)
     }
 }
 
@@ -93,8 +102,10 @@ public struct DirectoryBufferCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.openDirectoryBuffer(path: nil)
+        return .succeeded
     }
 }
 
@@ -106,13 +117,16 @@ public struct DirCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.openDirectoryBuffer(path: nil)
+        return .succeeded
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         editor.openDirectoryBuffer(path: input.rest.isEmpty ? nil : input.rest)
-        return .handled
+        return .succeeded
     }
 }
 
@@ -124,8 +138,10 @@ public struct SaveAndExitCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSaveAndExit()
+        return .prompting
     }
 }
 
@@ -139,24 +155,26 @@ public struct SaveExitCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveAndCloseBuffer(path: nil)
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        guard let first = input.lowerFirstToken else { return .noMatch }
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard let first = input.lowerFirstToken else { return .noOp }
         let targetPath = input.rest.isEmpty ? nil : input.rest
 
         if first == "x" || first == ":x" {
             if editor.buffer.isModified {
-                editor.saveAndCloseBuffer(path: targetPath)
+                return editor.saveAndCloseBuffer(path: targetPath)
             } else {
                 editor.closeCurrentBuffer()
+                return .succeeded
             }
         } else {
-            editor.saveAndCloseBuffer(path: targetPath)
+            return editor.saveAndCloseBuffer(path: targetPath)
         }
-        return .handled
     }
 }
 
@@ -168,15 +186,18 @@ public struct ExitEditorCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.buffer.isModified {
             editor.promptExitSaveConfirm()
+            return .prompting
         } else {
             if editor.buffers.count <= 1 {
                 editor.isRunning = false
             } else {
                 editor.closeCurrentBuffer()
             }
+            return .succeeded
         }
     }
 }
@@ -189,22 +210,26 @@ public struct QuitCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         if editor.buffer.isModified {
             editor.promptExitSaveConfirm()
+            return .prompting
         } else {
             editor.closeCurrentBuffer()
+            return .succeeded
         }
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        guard let first = input.lowerFirstToken else { return .noMatch }
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard let first = input.lowerFirstToken else { return .noOp }
         if first == "q!" || first == ":q!" {
             editor.closeCurrentBuffer()
+            return .succeeded
         } else {
-            execute(on: editor)
+            return execute(on: editor)
         }
-        return .handled
     }
 }
 
@@ -217,8 +242,10 @@ public struct EditConfigCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.editConfig()
+        return .succeeded
     }
 }
 
@@ -231,7 +258,9 @@ public struct ReloadConfigCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.reloadConfig()
+        return .succeeded
     }
 }

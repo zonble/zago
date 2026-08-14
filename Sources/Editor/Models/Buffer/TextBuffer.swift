@@ -1,5 +1,4 @@
 import Foundation
-import Git
 import SpellChecker
 import TextMetrics
 import TextTransform
@@ -53,12 +52,8 @@ open class TextBuffer: SpellCheckableBuffer {
 
     public var onLineCountChanged: ((_ aboveLine: Int, _ delta: Int) -> Void)?
 
-    public init() {
-    }
-
-    public init(filePath: String, fileIO: EditorFileIOStrategy) {
+    public init(filePath: String? = nil) {
         self.filePath = filePath
-        loadFile(at: filePath, fileIO: fileIO)
     }
 
     public static func getOrderedRange(
@@ -78,91 +73,11 @@ open class TextBuffer: SpellCheckableBuffer {
         }
     }
 
-    /// Factory method to create appropriate TextBuffer or DirectoryBuffer.
-    public static func makeBuffer(
-        filePath: String?,
-        fileIO: EditorFileIOStrategy,
-        gitService: GitServiceProtocol = GitService(),
-        language: Language = .detectSystemLanguage()
-    ) -> TextBuffer {
-        guard let path = filePath, !path.isEmpty else { return TextBuffer() }
-        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        let info = fileIO.fileInfo(at: expandedPath)
-        if info.exists, info.isDirectory {
-            return DirectoryBuffer(
-                directoryPath: expandedPath, fileIO: fileIO, gitService: gitService, language: language)
-        }
-        return TextBuffer(filePath: expandedPath, fileIO: fileIO)
-    }
-
     public var fileEncoding: String.Encoding = .utf8
 
     /// Key handler for specialized buffer types. Returns true if handled.
     open func handleKey(_ key: Key, editor: Editor) -> Bool {
         return false
-    }
-
-    /// Loads text from a file path.
-    public func loadFile(
-        at path: String,
-        fileIO: EditorFileIOStrategy
-    ) {
-        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        guard fileIO.fileInfo(at: expandedPath).exists else {
-            replaceContents("", filePath: expandedPath, isModified: false)
-            self.fileEncoding = .utf8
-            self.loadErrorDescription = nil
-            self.isReadOnly = false
-            return
-        }
-        do {
-            let result = try fileIO.readTextFile(at: expandedPath)
-            self.fileEncoding = result.encoding
-            self.loadErrorDescription = nil
-            replaceContents(result.content, filePath: expandedPath, isModified: false)
-            lineIndex = 0
-            columnIndex = 0
-        } catch {
-            replaceContents("", filePath: expandedPath, isModified: false)
-            self.fileEncoding = .utf8
-            self.loadErrorDescription = error.localizedDescription
-            self.isReadOnly = true
-        }
-    }
-
-    /// Reloads buffer content from current file path.
-    public func reloadFile(fileIO: EditorFileIOStrategy) throws {
-        guard let path = filePath, !path.isEmpty else {
-            throw NSError(
-                domain: "TextBuffer", code: 2, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
-        }
-        let result = try fileIO.readTextFile(at: path)
-        self.fileEncoding = result.encoding
-        self.loadErrorDescription = nil
-        replaceContents(result.content, filePath: path, isModified: false)
-        clampCursor()
-    }
-
-    /// Saves buffer text to file.
-    public func saveFile(
-        to path: String? = nil,
-        fileIO: EditorFileIOStrategy,
-        encoding: String.Encoding? = nil
-    ) throws {
-        let targetPath = path ?? filePath
-        guard let savePath = targetPath, !savePath.isEmpty else {
-            throw NSError(
-                domain: "TextBuffer", code: 1, userInfo: [NSLocalizedDescriptionKey: "No file path specified"])
-        }
-
-        let expandedPath = fileIO.normalizePath(savePath, isDirectory: false)
-        let content = lines.joined(separator: "\n")
-        let targetEncoding = encoding ?? self.fileEncoding
-        try fileIO.writeTextFile(content, to: expandedPath, encoding: targetEncoding)
-
-        self.filePath = expandedPath
-        self.fileEncoding = targetEncoding
-        self.isModified = false
     }
 
     @discardableResult
@@ -175,18 +90,6 @@ open class TextBuffer: SpellCheckableBuffer {
         clampCursor()
         isModified = true
         return true
-    }
-
-    /// Inserts external file content at current cursor position.
-    public func insertFile(
-        at path: String,
-        fileIO: EditorFileIOStrategy
-    ) throws -> Int {
-        let expandedPath = fileIO.normalizePath(path, isDirectory: false)
-        let result = try fileIO.readTextFile(at: expandedPath)
-        let insertedLines = result.content.components(separatedBy: .newlines)
-        insertString(result.content)
-        return insertedLines.count
     }
 
     public func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false) {

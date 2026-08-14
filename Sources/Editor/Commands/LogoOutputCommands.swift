@@ -14,8 +14,10 @@ public struct LogoOutputCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleLogoOutputBuffer()
+        return .succeeded
     }
 }
 
@@ -33,8 +35,10 @@ public struct ClearLogoOutputCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearLogoOutputBuffer()
+        return .succeeded
     }
 }
 
@@ -56,10 +60,12 @@ public struct RunLogoScriptCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
-        guard isAvailable(in: editor) else { return }
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        guard isAvailable(in: editor) else { return .noOp }
         let code = editor.buffer.lines.joined(separator: "\n")
         editor.runLogoScript(code)
+        return .succeeded
     }
 }
 
@@ -77,8 +83,10 @@ public struct LogoCanvasCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleLogoCanvasBuffer()
+        return .succeeded
     }
 }
 
@@ -89,8 +97,17 @@ public struct LogoDebugCommand: Command {
     public let commandBarAliases = ["logo"]
     public init() {}
     public func isAvailable(in editor: Editor) -> Bool { editor.isLogoUIEnabled }
-    public func execute(on editor: Editor) { editor.toggleLogoDebuggerBuffer() }
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
+    
+
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
+        editor.toggleLogoDebuggerBuffer()
+        return .succeeded
+    }
+    
+
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         switch input.tokens.dropFirst().first?.lowercased() {
         case "break":
             let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
@@ -110,7 +127,7 @@ public struct LogoDebugCommand: Command {
         case "debug", nil: editor.toggleLogoDebuggerBuffer()
         default: editor.setStatusMessage(editor.l10n["status.logo_debug_usage"])
         }
-        return .handled
+        return .succeeded
     }
 }
 
@@ -128,7 +145,9 @@ public struct ClearLogoOutputAndCanvasCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearLogoOutputAndCanvasBuffers()
+        return .succeeded
     }
 }

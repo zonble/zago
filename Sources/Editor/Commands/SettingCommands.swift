@@ -8,27 +8,30 @@ public struct SettingCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.editConfig()
+        return .succeeded
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        guard let first = input.lowerFirstToken else { return .handled }
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard let first = input.lowerFirstToken else { return .succeeded }
 
         let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
         guard let setting = parts.first, !setting.isEmpty else {
             editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .handled
+            return .succeeded
         }
 
         let rawValue = parts.count > 1 ? parts[1] : ""
         let value = first == "unset" ? "off" : rawValue
         guard let editorSetting = EditorSettingUpdateParser.parse(setting: setting, value: value) else {
             editor.setStatusMessage(editor.l10n["status.path_required"])
-            return .handled
+            return .succeeded
         }
         editor.apply(editorSetting)
-        return .handled
+        return .succeeded
     }
 
     public static let settingNames = EditorSettingUpdateParser.settingNames

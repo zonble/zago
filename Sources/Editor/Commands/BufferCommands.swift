@@ -8,8 +8,10 @@ public struct PrevBufferCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.prevBuffer()
+        return .succeeded
     }
 }
 
@@ -21,8 +23,10 @@ public struct NextBufferCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.nextBuffer()
+        return .succeeded
     }
 }
 
@@ -35,8 +39,10 @@ public struct NewBufferCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.openNewBuffer()
+        return .succeeded
     }
 }
 
@@ -53,19 +59,22 @@ public struct BufferCommand: Command {
         return commandBarAliases.contains(token)
     }
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.nextBuffer()
+        return .succeeded
     }
 
-    public func execute(with input: CommandBarInput, on editor: Editor) -> CommandBarDispatchResult {
-        guard let token = input.lowerFirstToken else { return .noMatch }
+    @discardableResult
+    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard let token = input.lowerFirstToken else { return .noOp }
         if token == "bnext" {
             editor.nextBuffer()
-            return .handled
+            return .succeeded
         }
         if token == "bprev" {
             editor.prevBuffer()
-            return .handled
+            return .succeeded
         }
 
         let arg = input.rest.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -81,10 +90,10 @@ public struct BufferCommand: Command {
         default:
             guard let oneBasedIndex = Int(arg) else {
                 editor.setStatusMessage(editor.l10n["status.no_such_buffer"])
-                return .handled
+                return .succeeded
             }
             _ = editor.switchToBuffer(oneBasedIndex: oneBasedIndex, reportInvalid: true)
         }
-        return .handled
+        return .succeeded
     }
 }

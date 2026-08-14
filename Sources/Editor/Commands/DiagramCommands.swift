@@ -9,12 +9,14 @@ public struct DiagramMenuCommand: Command {
 
     public init() {}
 
-    public func execute(on editor: Editor) {
+    @discardableResult
+    public func execute(on editor: Editor) -> EditorOperationResult {
         editor.menuBar.updateCategories(for: editor)
         if let idx = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.diagrams" }) {
             editor.menuBar.categoryIndex = idx
             editor.menuBar.itemIndex = 0
         }
         editor.isMenuBarActive = true
+        return .succeeded
     }
 }

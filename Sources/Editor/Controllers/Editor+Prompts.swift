@@ -94,13 +94,7 @@ extension Editor {
                 self?.setStatusMessage(self?.l10n["status.cancelled_insert"] ?? "")
                 return
             }
-            do {
-                self.saveUndoSnapshot()
-                let count = try self.buffer.insertFile(at: path, fileIO: self.fileIOStrategy)
-                self.setStatusMessage(self.l10n.insertedLines(count))
-            } catch {
-                self.setStatusMessage(self.l10n.errorInsertingFile(error: error.localizedDescription))
-            }
+            self.insertFileContent(from: path)
         })
     }
 
@@ -291,39 +285,7 @@ extension Editor {
         to path: String,
         forcedEncoding: String.Encoding? = nil,
         onSuccess: (() -> Void)? = nil
-    ) -> Bool {
-        do {
-            if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
-                _ = buffer.trimTrailingWhitespace()
-            }
-            try buffer.saveFile(to: path, fileIO: fileIOStrategy, encoding: forcedEncoding)
-            for b in buffers {
-                if let dirBuf = b as? DirectoryBuffer {
-                    dirBuf.loadDirectory(at: dirBuf.directoryPath)
-                }
-            }
-            startFileWatcherForCurrentBuffer()
-            if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
-                setStatusMessage(l10n["status.saved_as_utf8"])
-            } else {
-                setStatusMessage(l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)"))
-            }
-            onSuccess?()
-            return true
-        } catch EncodingError.unsupportedCharacters {
-            let originalEncoding = buffer.fileEncoding
-            currentPromptMode = .confirmEncodingFallback(originalEncoding: originalEncoding) { [weak self] confirmed in
-                guard let self = self else { return }
-                if confirmed {
-                    self.doSave(to: path, forcedEncoding: .utf8, onSuccess: onSuccess)
-                } else {
-                    self.setStatusMessage(self.l10n["status.save_cancelled"])
-                }
-            }
-            return false
-        } catch {
-            setStatusMessage(l10n.errorSavingFile(error: error.localizedDescription))
-            return false
-        }
+    ) -> EditorOperationResult {
+        saveBufferContent(to: path, forcedEncoding: forcedEncoding, onSuccess: onSuccess)
     }
 }

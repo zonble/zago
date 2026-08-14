@@ -203,7 +203,12 @@ public final class Editor: @unchecked Sendable {
             initialBuffers = [TextBuffer()]
         } else {
             initialBuffers = options.filePaths.map {
-                TextBuffer.makeBuffer(filePath: $0, fileIO: dependencies.fileIOStrategy)
+                Self.makeBuffer(
+                    filePath: $0,
+                    fileIO: dependencies.fileIOStrategy,
+                    gitService: dependencies.gitService,
+                    language: options.language ?? configSource.initial.language ?? .detectSystemLanguage()
+                )
             }
         }
         self.bufferCoordinator = BufferCoordinator(buffers: initialBuffers)
@@ -233,6 +238,8 @@ public final class Editor: @unchecked Sendable {
             }
             if let dirBuf = buffer as? DirectoryBuffer {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
+            } else if let path = buffer.filePath {
+                _ = loadFileContent(into: buffer, path: path, reportStatus: false)
             }
         }
 

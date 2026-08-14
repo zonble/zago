@@ -329,21 +329,3 @@ extension Editor {
         )
     }
 }
-
-extension TextBuffer {
-    static func makeBuffer(filePath: String?) -> TextBuffer {
-        makeBuffer(filePath: filePath, fileIO: TestLocalEditorFileIOStrategy.shared)
-    }
-
-    func reloadFile() throws {
-        try reloadFile(fileIO: TestLocalEditorFileIOStrategy.shared)
-    }
-
-    func saveFile(to path: String? = nil) throws {
-        try saveFile(to: path, fileIO: TestLocalEditorFileIOStrategy.shared)
-    }
-
-    func insertFile(at path: String) throws -> Int {
-        try insertFile(at: path, fileIO: TestLocalEditorFileIOStrategy.shared)
-    }
-}
