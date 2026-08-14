@@ -148,4 +148,36 @@ extension Editor {
             return .failed(message)
         }
     }
+
+    @discardableResult
+    func completeSaveAndClose(path: String) -> EditorOperationResult {
+        saveBufferContent(to: path) { [weak self] in
+            self?.closeCurrentBuffer()
+        }
+    }
+
+    @discardableResult
+    func completeExitSaveDecision(shouldSave: Bool) -> EditorOperationResult {
+        guard shouldSave else {
+            closeCurrentBufferOrExitEditor()
+            return .succeeded
+        }
+
+        guard let path = buffer.filePath, !path.isEmpty else {
+            promptSaveAndExit()
+            return .prompting
+        }
+
+        return saveBufferContent(to: path) { [weak self] in
+            self?.closeCurrentBufferOrExitEditor()
+        }
+    }
+
+    private func closeCurrentBufferOrExitEditor() {
+        if buffers.count == 1 {
+            isRunning = false
+        } else {
+            closeCurrentBuffer()
+        }
+    }
 }

@@ -201,6 +201,25 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     #expect(editor.statusMessage == "Error saving file: No write permission")
 }
 
+@Test func testExitSaveDecisionWorkflowSavesAndClosesBuffer() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha"])
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/notes.txt"], autoReload: false, language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.openNewBuffer()
+    editor.switchToBuffer(index: 0)
+    editor.buffer.lines = ["changed"]
+    editor.buffer.isModified = true
+
+    let result = editor.completeExitSaveDecision(shouldSave: true)
+
+    #expect(result == .succeeded)
+    #expect(fileIO.writes["/notes.txt"] == "changed")
+    #expect(editor.buffers.count == 1)
+    #expect(editor.buffer.filePath == nil)
+}
+
 @Test func testEditorLoadsAndSavesThroughFileIODelegate() throws {
     let fileIO = MemoryEditorFileIOStrategy(files: ["/notes.txt": "alpha\nbeta"])
     let editor = Editor(
