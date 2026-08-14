@@ -144,6 +144,7 @@ public final class Renderer {
         let mainTextStr = renderMainTextArea(
             editor: editor,
             mainAreaHeight: mainAreaHeight,
+            showRuler: geometry.showRuler,
             gutterWidth: gutterWidth,
             showSubLineInfo: showSubLineInfo,
             virtualLines: virtualLines,
@@ -173,6 +174,7 @@ public final class Renderer {
             editor: editor,
             rows: rows,
             cols: cols,
+            showRuler: geometry.showRuler,
             cursorVLineIdx: cursorVLineIdx,
             cursorVColIdx: cursorVColIdx,
             gutterWidth: gutterWidth,
@@ -190,6 +192,7 @@ public final class Renderer {
     func renderMainTextArea(
         editor: Editor,
         mainAreaHeight: Int,
+        showRuler: Bool = false,
         gutterWidth: Int,
         showSubLineInfo: Bool? = nil,
         virtualLines: [VirtualLine],
@@ -212,7 +215,7 @@ public final class Renderer {
             let localVIndex = vIndex - virtualLineStartIndex
             output += "\u{1B}[K"  // Clear line
 
-            let boxIdx = editor.displayConfig.showRuler ? (i + 1) : i
+            let boxIdx = showRuler ? (i + 1) : i
 
             var lineOutput = ""
             if localVIndex >= 0 && localVIndex < virtualLines.count {
@@ -531,6 +534,7 @@ public final class Renderer {
         editor: Editor,
         rows: Int,
         cols: Int,
+        showRuler: Bool = false,
         cursorVLineIdx: Int,
         cursorVColIdx: Int,
         gutterWidth: Int,
@@ -584,7 +588,7 @@ public final class Renderer {
                         tabSize: editor.displayConfig.tabSize)
             }
 
-            let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (editor.displayConfig.showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
+            let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
             let screenCol = gutterWidth + cursorDisplayWidth + 1
             output += "\u{1B}[\(screenRow);\(screenCol)H"
         } else {

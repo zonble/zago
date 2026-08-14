@@ -214,7 +214,8 @@ public struct MovePgdnCommand: Command {
             return .succeeded
         }
         let (rows, _) = editor.terminal.getWindowSize()
-        let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
+        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: mainAreaHeight, deltaColumn: 0, extendDownward: true)
             return .succeeded
@@ -246,7 +247,8 @@ public struct MovePgupCommand: Command {
             return .succeeded
         }
         let (rows, _) = editor.terminal.getWindowSize()
-        let mainAreaHeight = max(1, rows - (editor.displayConfig.showRuler ? 5 : 4))
+        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: -mainAreaHeight, deltaColumn: 0)
             return .succeeded
