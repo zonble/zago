@@ -1,8 +1,8 @@
 class Zago < Formula
   desc "Terminal text editor and plain-text diagramming tool"
   homepage "https://github.com/zonble/zago"
-  url "https://github.com/zonble/zago/archive/refs/tags/v1.2.5.tar.gz"
-  sha256 "d5d884b6482dda8beb8ca3dcefddb6971e146f3202433e66195f9a7b926772f9"
+  url "https://github.com/zonble/zago/archive/refs/tags/v1.3.0.tar.gz"
+  sha256 "109f6bf7415b567ebe0432c03128d06c353742e3b832298854fcb9c4537c3655"
   license "MIT"
   head "https://github.com/zonble/zago.git", branch: "main"
 
@@ -12,7 +12,7 @@ class Zago < Formula
 
   on_linux do
     depends_on "swift" => :build
-  end 
+  end
 
   def install
     system "swift", "build",
