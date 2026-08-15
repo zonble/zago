@@ -225,7 +225,8 @@ extension LogoEngine {
                 }
 
                 if !isDict {
-                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(items.map { $0.stringValue }, mode: mode)
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(
+                        items.map { $0.stringValue }, mode: mode)
                     formatSpec = f
                     localeSpec = l
                     timeZoneSpec = tz
@@ -305,7 +306,8 @@ extension LogoEngine {
                 }
 
                 if !isDict {
-                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(items.map { $0.stringValue }, mode: .dateTime)
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(
+                        items.map { $0.stringValue }, mode: .dateTime)
                     formatSpec = f
                     localeSpec = l
                     timeZoneSpec = tz
@@ -336,7 +338,8 @@ extension LogoEngine {
 
         let parsedCal = LogoDateTimeFormatter.parseCalendar(calendarSpec)
         let parsedTz = LogoDateTimeFormatter.parseTimeZone(timeZoneSpec)
-        let parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
+        let parsedDate =
+            LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
 
         let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
         let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
@@ -426,7 +429,9 @@ extension LogoEngine {
                 while i < items.count {
                     let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
                     let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                    if ["style", "fmt", "locale", "lang", "currency", "curr", "precision", "digits"].contains(cleanKey) && i + 1 < items.count {
+                    if ["style", "fmt", "locale", "lang", "currency", "curr", "precision", "digits"].contains(cleanKey)
+                        && i + 1 < items.count
+                    {
                         isDict = true
                         let val = items[i + 1].stringValue
                         switch cleanKey {
@@ -462,7 +467,8 @@ extension LogoEngine {
             if positional.count > 2 { currencyCode = positional[2] }
         }
 
-        let res = LogoFormatters.formatNumber(num, style: style, locale: localeSpec, currencyCode: currencyCode, precision: precision)
+        let res = LogoFormatters.formatNumber(
+            num, style: style, locale: localeSpec, currencyCode: currencyCode, precision: precision)
         setLastExpressionString(res)
         return res
     }

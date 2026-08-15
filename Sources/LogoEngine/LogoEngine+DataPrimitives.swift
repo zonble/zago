@@ -616,7 +616,9 @@ extension LogoEngine {
             guard index < tokens.count else { return "[]" }
             let nextToken = tokens[index]
             let upper = unquote(nextToken).uppercased()
-            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
+            let name =
+                (customProcedures[upper] != nil)
+                ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             guard let proc = customProcedures[name] else { return "[]" }
             let paramsList = LogoValue.list(proc.parameters.map { .string(":" + $0) })
             let bodyList = LogoValue.list(proc.bodyTokens.map { .string($0.text) })
@@ -627,7 +629,9 @@ extension LogoEngine {
             guard index < tokens.count else { return "1" }
             let nextToken = tokens[index]
             let upper = unquote(nextToken).uppercased()
-            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
+            let name =
+                (customProcedures[upper] != nil)
+                ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             if let proc = customProcedures[name] {
                 return "\(proc.parameters.count)"
             }
@@ -638,7 +642,9 @@ extension LogoEngine {
             guard index < tokens.count else { return "" }
             let nextToken = tokens[index]
             let upper = unquote(nextToken).uppercased()
-            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
+            let name =
+                (customProcedures[upper] != nil)
+                ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             if let proc = customProcedures[name] {
                 return proc.docstring ?? ""
             }

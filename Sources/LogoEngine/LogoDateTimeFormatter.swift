@@ -169,21 +169,22 @@ public struct LogoDateTimeFormatter {
         }
         let clean = raw.hasPrefix(":") ? String(raw.dropFirst()) : raw
 
-        let identifier: Calendar.Identifier = switch clean {
-        case "roc", "republicofchina", "minguo", "taiwan": .republicOfChina
-        case "japanese", "japan", "wareki", "jp": .japanese
-        case "buddhist", "thai": .buddhist
-        case "chinese", "lunar": .chinese
-        case "islamic", "islamiccivil", "islamicrural", "muslim": .islamic
-        case "islamicummalqura", "ummalqura": .islamicUmmAlQura
-        case "hebrew", "jewish": .hebrew
-        case "persian", "iran": .persian
-        case "indian": .indian
-        case "coptic": .coptic
-        case "ethiopic", "ethiopicametemihret": .ethiopicAmeteMihret
-        case "gregorian", "western", "iso": .gregorian
-        default: .gregorian
-        }
+        let identifier: Calendar.Identifier =
+            switch clean {
+            case "roc", "republicofchina", "minguo", "taiwan": .republicOfChina
+            case "japanese", "japan", "wareki", "jp": .japanese
+            case "buddhist", "thai": .buddhist
+            case "chinese", "lunar": .chinese
+            case "islamic", "islamiccivil", "islamicrural", "muslim": .islamic
+            case "islamicummalqura", "ummalqura": .islamicUmmAlQura
+            case "hebrew", "jewish": .hebrew
+            case "persian", "iran": .persian
+            case "indian": .indian
+            case "coptic": .coptic
+            case "ethiopic", "ethiopicametemihret": .ethiopicAmeteMihret
+            case "gregorian", "western", "iso": .gregorian
+            default: .gregorian
+            }
 
         return Calendar(identifier: identifier)
     }
@@ -426,7 +427,10 @@ public struct LogoDateTimeFormatter {
         var i = 0
         while i < items.count {
             let key = items[i].stringValue.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
-            if ["year", "y", "month", "m", "day", "d", "hour", "h", "min", "minute", "sec", "second", "s", "tz", "timezone", "cal", "calendar"].contains(key) && i + 1 < items.count {
+            if [
+                "year", "y", "month", "m", "day", "d", "hour", "h", "min", "minute", "sec", "second", "s", "tz",
+                "timezone", "cal", "calendar",
+            ].contains(key) && i + 1 < items.count {
                 isPlist = true
                 let valStr = items[i + 1].stringValue.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
                 switch key {
@@ -496,16 +500,17 @@ public struct LogoDateTimeFormatter {
         calendar: Calendar = Calendar(identifier: .gregorian)
     ) -> Date {
         let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
-        let component: Calendar.Component = switch cleanUnit {
-        case "second", "seconds", "sec", "s": .second
-        case "minute", "minutes", "min": .minute
-        case "hour", "hours", "h": .hour
-        case "day", "days", "d": .day
-        case "week", "weeks", "w": .weekOfYear
-        case "month", "months", "m": .month
-        case "year", "years", "y": .year
-        default: .day
-        }
+        let component: Calendar.Component =
+            switch cleanUnit {
+            case "second", "seconds", "sec", "s": .second
+            case "minute", "minutes", "min": .minute
+            case "hour", "hours", "h": .hour
+            case "day", "days", "d": .day
+            case "week", "weeks", "w": .weekOfYear
+            case "month", "months", "m": .month
+            case "year", "years", "y": .year
+            default: .day
+            }
 
         return calendar.date(byAdding: component, value: amount, to: date) ?? date
     }
@@ -517,16 +522,17 @@ public struct LogoDateTimeFormatter {
         calendar: Calendar = Calendar(identifier: .gregorian)
     ) -> Int {
         let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
-        let component: Calendar.Component = switch cleanUnit {
-        case "second", "seconds", "sec", "s": .second
-        case "minute", "minutes", "min": .minute
-        case "hour", "hours", "h": .hour
-        case "day", "days", "d": .day
-        case "week", "weeks", "w": .weekOfYear
-        case "month", "months", "m": .month
-        case "year", "years", "y": .year
-        default: .day
-        }
+        let component: Calendar.Component =
+            switch cleanUnit {
+            case "second", "seconds", "sec", "s": .second
+            case "minute", "minutes", "min": .minute
+            case "hour", "hours", "h": .hour
+            case "day", "days", "d": .day
+            case "week", "weeks", "w": .weekOfYear
+            case "month", "months", "m": .month
+            case "year", "years", "y": .year
+            default: .day
+            }
 
         let comps = calendar.dateComponents([component], from: d2, to: d1)
         return switch component {

@@ -175,13 +175,18 @@ extension LogoEngine {
 
                 case .dateformat:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = ""
+                        break
+                    }
                     let dateVal = cleanArgs[0]
                     let restArgs = Array(cleanArgs.dropFirst())
                     let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
                     let parsedCal = LogoDateTimeFormatter.parseCalendar(cal)
                     let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
-                    let parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
+                    let parsedDate =
+                        LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz)
+                        ?? Date()
                     let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
                     let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
                     leftVal = LogoDateTimeFormatter.format(
@@ -196,7 +201,10 @@ extension LogoEngine {
 
                 case .dateadd:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = ""
+                        break
+                    }
                     let dateVal = cleanArgs[0]
                     let amountVal = cleanArgs.count > 1 ? (Int(cleanArgs[1]) ?? 0) : 0
                     let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
@@ -210,7 +218,10 @@ extension LogoEngine {
 
                 case .datediff:
                     let cleanArgs = args.map { unquote($0) }
-                    guard cleanArgs.count >= 2 else { leftVal = "0"; break }
+                    guard cleanArgs.count >= 2 else {
+                        leftVal = "0"
+                        break
+                    }
                     let dateVal1 = cleanArgs[0]
                     let dateVal2 = cleanArgs[1]
                     let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
@@ -222,7 +233,10 @@ extension LogoEngine {
 
                 case .formatNumber:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = ""
+                        break
+                    }
                     let num = Double(cleanArgs[0]) ?? 0
                     let style = cleanArgs.count > 1 ? LogoFormatters.NumberStyle.parse(cleanArgs[1]) : .decimal
                     let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
@@ -232,7 +246,10 @@ extension LogoEngine {
 
                 case .formatList:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = ""
+                        break
+                    }
                     let parsed = LogoValue.parse(cleanArgs[0])
                     let items: [String]
                     switch parsed {
@@ -246,7 +263,10 @@ extension LogoEngine {
 
                 case .formatRelativeTime:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = ""
+                        break
+                    }
                     let arg1 = cleanArgs[0]
                     if let val = Double(arg1) {
                         let unit = cleanArgs.count > 1 ? cleanArgs[1] : "days"
@@ -262,7 +282,10 @@ extension LogoEngine {
 
                 case .formatBytes:
                     let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else { leftVal = "0 bytes"; break }
+                    guard !cleanArgs.isEmpty else {
+                        leftVal = "0 bytes"
+                        break
+                    }
                     let bytes = Int64(Double(cleanArgs[0]) ?? 0)
                     let style = cleanArgs.count > 1 ? LogoFormatters.ByteCountStyle.parse(cleanArgs[1]) : .file
                     let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
