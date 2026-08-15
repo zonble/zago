@@ -707,4 +707,38 @@ import TextMetrics
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
 }
 
+@Test func testCanvasClassicKeymapPageUpDown() throws {
+    let editor = Editor()
+    #expect(editor.keymapManager.activePreset == .classic)
+    editor.buffer.lines = Array(repeating: "Canvas Row Text", count: 40)
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 5
+
+    // ^V Page Down in Canvas
+    editor.processKey(.ctrl("v"))
+    #expect(editor.buffer.lineIndex > 0)
+    let movedLine = editor.buffer.lineIndex
+
+    // ^Y Page Up in Canvas
+    editor.processKey(.ctrl("y"))
+    #expect(editor.buffer.lineIndex < movedLine)
+}
+
+@Test func testCanvasModernSelectAll() throws {
+    let editor = Editor()
+    editor.apply(.keymap(.modern))
+    editor.buffer.lines = ["12345", "ABCDE", "xyz"]
+    editor.switchToCanvasMode()
+
+    // ^A in Modern Canvas Mode sets 2D block mark covering all rows
+    editor.processKey(.ctrl("a"))
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 4)
+}
+
+
 
