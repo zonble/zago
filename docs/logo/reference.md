@@ -618,7 +618,7 @@ their own syntax and are not treated as general expressions.
 | `RT` | `RIGHT` | `RT` | Turn turtle right 90° | `RT` |
 | `LT` | `LEFT` | `LT` | Turn turtle left 90° | `LT` |
 | `SETHEADING` | `SETH` | `SETHEADING direction` | Set turtle heading by direction (`UP`, `RIGHT`, `DOWN`, `LEFT`; quoted forms also work) | `SETH RIGHT`, `SETH "DOWN` |
-| `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (0, 90, 180, 270) | `SHOW HEADING`, `TYPE HEADING` |
+| `HEADING` | - | `HEADING` | Evaluates/returns current turtle heading (`UP`, `RIGHT`, `DOWN`, `LEFT`) | `SHOW HEADING`, `TYPE HEADING` |
 
 ---
 

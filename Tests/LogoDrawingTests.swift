@@ -176,16 +176,16 @@ import TextMetrics
     let logoEngine = LogoEngine(delegate: editor)
 
     logoEngine.execute("SETH RIGHT HEADING")
-    #expect(logoEngine.lastResult == "90")
+    #expect(logoEngine.lastResult == "RIGHT")
 
     logoEngine.execute("SETHEADING DOWN HEADING")
-    #expect(logoEngine.lastResult == "180")
+    #expect(logoEngine.lastResult == "DOWN")
 
     logoEngine.execute("SETH LEFT HEADING")
-    #expect(logoEngine.lastResult == "270")
+    #expect(logoEngine.lastResult == "LEFT")
 
     logoEngine.execute("SETH UP HEADING")
-    #expect(logoEngine.lastResult == "0")
+    #expect(logoEngine.lastResult == "UP")
 }
 
 @Test func testSetHeadingRejectsNumericAngles() throws {
@@ -193,7 +193,7 @@ import TextMetrics
     let logoEngine = LogoEngine(delegate: editor)
 
     logoEngine.execute("SETH RIGHT SETH 180 HEADING")
-    #expect(logoEngine.lastResult == "90")
+    #expect(logoEngine.lastResult == "RIGHT")
 }
 
 @Test func testTurnRightAndLeftTakeNoArguments() throws {
@@ -201,10 +201,10 @@ import TextMetrics
     let logoEngine = LogoEngine(delegate: editor)
 
     logoEngine.execute("SETH UP RT HEADING")
-    #expect(logoEngine.lastResult == "90")
+    #expect(logoEngine.lastResult == "RIGHT")
 
     logoEngine.execute("LT HEADING")
-    #expect(logoEngine.lastResult == "0")
+    #expect(logoEngine.lastResult == "UP")
 }
 
 @Test func testCanvasModeLogoShapesStartAtVisualCursorColumn() throws {

@@ -122,7 +122,7 @@ extension LogoEngine {
             return applyTextCount(tokens, index: &index) { TextAnalyzer.lineCount(in: $0) }
 
         case .headingPrimitive:
-            return "\(heading)"
+            return heading.rawValue
 
         case .readWord:
             index += 1

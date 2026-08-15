@@ -2,15 +2,14 @@ import Foundation
 
 extension LogoEngine {
 
-    internal func executeTurtleMove(steps: Int, directionHeading: Int) {
+    internal func executeTurtleMove(steps: Int, heading: LogoHeading) {
         guard steps > 0, let editor = self.delegate else { return }
         let (dRow, dCol, exitBit, entryBit): (Int, Int, Int, Int) = {
-            switch directionHeading {
-            case 0: return (-1, 0, 1, 4)  // UP: exit UP (1), entry DOWN (4)
-            case 90: return (0, 1, 2, 8)  // RIGHT: exit RIGHT (2), entry LEFT (8)
-            case 180: return (1, 0, 4, 1)  // DOWN: exit DOWN (4), entry UP (1)
-            case 270: return (0, -1, 8, 2)  // LEFT: exit LEFT (8), entry RIGHT (2)
-            default: return (0, 0, 0, 0)
+            switch heading {
+            case .up: return (-1, 0, 1, 4)  // UP: exit UP (1), entry DOWN (4)
+            case .right: return (0, 1, 2, 8)  // RIGHT: exit RIGHT (2), entry LEFT (8)
+            case .down: return (1, 0, 4, 1)  // DOWN: exit DOWN (4), entry UP (1)
+            case .left: return (0, -1, 8, 2)  // LEFT: exit LEFT (8), entry RIGHT (2)
             }
         }()
 
