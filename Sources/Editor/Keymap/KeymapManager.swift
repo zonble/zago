@@ -5,7 +5,7 @@ import Config
 public final class KeymapManager {
     public private(set) var baseKeymap: [Key: CommandID] = [:]
     public private(set) var modeKeymaps: [EditorMode: [Key: CommandID]] = [:]
-    public private(set) var primaryDisplayKeys: [CommandID: Key] = [:]
+    public private(set) var primaryDisplayKeys: [CommandID: [Key]] = [:]
     public private(set) var activePreset: KeymapPreset = .classic
 
     public init(preset: KeymapPreset = .classic) {
@@ -28,7 +28,7 @@ public final class KeymapManager {
 
     /// Binds a key to a command, optionally restricted to a specific mode overlay.
     public func bind(key: Key, commandID: CommandID, mode: EditorMode? = nil) {
-        primaryDisplayKeys[commandID] = key
+        primaryDisplayKeys[commandID] = [key]
         if let mode {
             var map = modeKeymaps[mode, default: [:]]
             map[key] = commandID
@@ -48,8 +48,13 @@ public final class KeymapManager {
                 modeKeymaps[m]?.removeValue(forKey: key)
             }
         }
-        for (cmd, k) in primaryDisplayKeys where k == key {
-            primaryDisplayKeys.removeValue(forKey: cmd)
+        for (cmd, keys) in primaryDisplayKeys {
+            let remaining = keys.filter { $0 != key }
+            if remaining.isEmpty {
+                primaryDisplayKeys.removeValue(forKey: cmd)
+            } else {
+                primaryDisplayKeys[cmd] = remaining
+            }
         }
     }
 
@@ -69,7 +74,7 @@ public final class KeymapManager {
             if !label.isEmpty { return label }
         }
         // 2. Check canonical primary key
-        if let primaryKey = primaryDisplayKeys[commandID] {
+        if let primaryKey = primaryDisplayKeys[commandID]?.first {
             let label = primaryKey.helpBarLabel
             if !label.isEmpty { return label }
         }
@@ -172,14 +177,14 @@ public final class KeymapManager {
         baseKeymap[.alt("G")] = .cursorGotoLine
         baseKeymap[.ctrl("_")] = .cursorGotoLine
 
-        primaryDisplayKeys[.menuShow] = .f1
-        primaryDisplayKeys[.tableToggle] = .f7
-        primaryDisplayKeys[.canvasToggle] = .f8
-        primaryDisplayKeys[.borderStyle] = .alt("S")
-        primaryDisplayKeys[.proposalAccept] = .alt("A")
-        primaryDisplayKeys[.proposalReject] = .alt("R")
-        primaryDisplayKeys[.proposalNext] = .alt("P")
-        primaryDisplayKeys[.proposalPrev] = .alt("P")
+        primaryDisplayKeys[.menuShow] = [.f1]
+        primaryDisplayKeys[.tableToggle] = [.f7]
+        primaryDisplayKeys[.canvasToggle] = [.alt("V"), .f8]
+        primaryDisplayKeys[.borderStyle] = [.alt("S")]
+        primaryDisplayKeys[.proposalAccept] = [.alt("A")]
+        primaryDisplayKeys[.proposalReject] = [.alt("R")]
+        primaryDisplayKeys[.proposalNext] = [.alt("P")]
+        primaryDisplayKeys[.proposalPrev] = [.alt("P")]
 
         switch preset {
         case .classic:
@@ -260,33 +265,46 @@ public final class KeymapManager {
             baseKeymap[.f11] = .cursorPos
             baseKeymap[.f12] = .editSpell
 
-            primaryDisplayKeys[.moveRight] = .ctrl("F")
-            primaryDisplayKeys[.moveLeft] = .ctrl("B")
-            primaryDisplayKeys[.moveUp] = .ctrl("P")
-            primaryDisplayKeys[.moveDown] = .ctrl("N")
-            primaryDisplayKeys[.moveHome] = .ctrl("A")
-            primaryDisplayKeys[.moveEnd] = .ctrl("E")
-            primaryDisplayKeys[.movePgdn] = .ctrl("V")
-            primaryDisplayKeys[.movePgup] = .ctrl("Y")
-            primaryDisplayKeys[.editDelete] = .ctrl("D")
-            primaryDisplayKeys[.fileSave] = .ctrl("S")
-            primaryDisplayKeys[.fileWriteOut] = .ctrl("O")
-            primaryDisplayKeys[.fileInsert] = .ctrl("R")
-            primaryDisplayKeys[.fileExit] = .ctrl("X")
-            primaryDisplayKeys[.searchWhereIs] = .ctrl("W")
-            primaryDisplayKeys[.searchNext] = .alt("N")
-            primaryDisplayKeys[.searchPrevious] = .alt("P")
-            primaryDisplayKeys[.editCut] = .ctrl("K")
-            primaryDisplayKeys[.editUncut] = .ctrl("U")
-            primaryDisplayKeys[.editUndo] = .ctrl("Z")
-            primaryDisplayKeys[.editRedo] = .ctrl("Y")
-            primaryDisplayKeys[.editCopy] = .alt("W")
-            primaryDisplayKeys[.editJustify] = .ctrl("J")
-            primaryDisplayKeys[.editSpell] = .ctrl("T")
-            primaryDisplayKeys[.cursorPos] = .ctrl("C")
-            primaryDisplayKeys[.editEvalLogo] = .ctrl("Q")
-            primaryDisplayKeys[.helpShow] = .f1
-            primaryDisplayKeys[.menuShow] = .f1
+            primaryDisplayKeys[.moveRight] = [.ctrl("F"), .arrowRight]
+            primaryDisplayKeys[.moveLeft] = [.ctrl("B"), .arrowLeft]
+            primaryDisplayKeys[.moveUp] = [.ctrl("P"), .arrowUp]
+            primaryDisplayKeys[.moveDown] = [.ctrl("N"), .arrowDown]
+            primaryDisplayKeys[.moveHome] = [.ctrl("A"), .home]
+            primaryDisplayKeys[.moveEnd] = [.ctrl("E"), .end]
+            primaryDisplayKeys[.movePgdn] = [.ctrl("V"), .pageDown]
+            primaryDisplayKeys[.movePgup] = [.ctrl("Y"), .pageUp]
+            primaryDisplayKeys[.editDelete] = [.ctrl("D"), .delete]
+            primaryDisplayKeys[.editCut] = [.ctrl("K"), .f9]
+            primaryDisplayKeys[.editUncut] = [.ctrl("U"), .f10]
+            primaryDisplayKeys[.editTab] = [.ctrl("I"), .tab]
+            primaryDisplayKeys[.fileSave] = [.ctrl("S")]
+            primaryDisplayKeys[.fileWriteOut] = [.ctrl("O"), .f3]
+            primaryDisplayKeys[.fileInsert] = [.ctrl("R"), .f5]
+            primaryDisplayKeys[.fileExit] = [.ctrl("X"), .f2]
+            primaryDisplayKeys[.fileSaveExit] = [.f4]
+            primaryDisplayKeys[.searchWhereIs] = [.ctrl("W"), .f6]
+            primaryDisplayKeys[.searchNext] = [.alt("N")]
+            primaryDisplayKeys[.searchPrevious] = [.alt("P")]
+            primaryDisplayKeys[.cursorPos] = [.ctrl("C"), .f11]
+            primaryDisplayKeys[.editSpell] = [.ctrl("T"), .f12]
+            primaryDisplayKeys[.editUndo] = [.ctrl("Z")]
+            primaryDisplayKeys[.editRedo] = [.ctrl("Y")]
+            primaryDisplayKeys[.editCopy] = [.alt("W")]
+            primaryDisplayKeys[.editJustify] = [.ctrl("J")]
+            primaryDisplayKeys[.editEvalLogo] = [.ctrl("Q")]
+            primaryDisplayKeys[.editJoinLine] = [.alt("J")]
+            primaryDisplayKeys[.editSplitLine] = [.alt("K")]
+            primaryDisplayKeys[.editCancelSelection] = [.ctrl("G")]
+            primaryDisplayKeys[.bufferNew] = [.ctrl("N")]
+            primaryDisplayKeys[.bufferNext] = [.alt(".")]
+            primaryDisplayKeys[.bufferPrev] = [.alt(",")]
+            primaryDisplayKeys[.screenRefresh] = [.ctrl("L")]
+            primaryDisplayKeys[.documentOpenLink] = [.alt("O")]
+            primaryDisplayKeys[.canvasDrawLine] = [.shiftArrowRight]
+            primaryDisplayKeys[.canvasDrawArrow] = [.ctrlShiftArrowRight]
+            primaryDisplayKeys[.documentOutline] = [.alt("\\")]
+            primaryDisplayKeys[.menuShow] = [.f1, .alt("M"), .ctrl("M")]
+            primaryDisplayKeys[.helpShow] = [.f1]
 
         case .modern:
             // VS Code / CUA modern shortcuts
@@ -369,25 +387,44 @@ public final class KeymapManager {
             baseKeymap[.pageUp] = .movePgup
             baseKeymap[.pageDown] = .movePgdn
 
-            primaryDisplayKeys[.fileSave] = .ctrl("S")
-            primaryDisplayKeys[.fileWriteOut] = .ctrl("O")
-            primaryDisplayKeys[.fileExit] = .ctrl("Q")
-            primaryDisplayKeys[.searchWhereIs] = .ctrl("F")
-            primaryDisplayKeys[.searchNext] = .f3
-            primaryDisplayKeys[.searchReplace] = .ctrl("H")
-            primaryDisplayKeys[.editUndo] = .ctrl("Z")
-            primaryDisplayKeys[.editRedo] = .ctrl("Y")
-            primaryDisplayKeys[.selectAll] = .ctrl("A")
-            primaryDisplayKeys[.editCut] = .ctrl("X")
-            primaryDisplayKeys[.editCopy] = .ctrl("C")
-            primaryDisplayKeys[.editUncut] = .ctrl("V")
-            primaryDisplayKeys[.editEvalLogo] = .ctrl("E")
-            primaryDisplayKeys[.editSpell] = .ctrl("T")
-            primaryDisplayKeys[.cursorPos] = .f11
-            primaryDisplayKeys[.movePgup] = .pageUp
-            primaryDisplayKeys[.movePgdn] = .pageDown
-            primaryDisplayKeys[.helpShow] = .f1
-            primaryDisplayKeys[.menuShow] = .f1
+            primaryDisplayKeys[.moveRight] = [.arrowRight]
+            primaryDisplayKeys[.moveLeft] = [.arrowLeft]
+            primaryDisplayKeys[.moveUp] = [.arrowUp]
+            primaryDisplayKeys[.moveDown] = [.arrowDown]
+            primaryDisplayKeys[.moveHome] = [.home]
+            primaryDisplayKeys[.moveEnd] = [.end]
+            primaryDisplayKeys[.movePgdn] = [.pageDown]
+            primaryDisplayKeys[.movePgup] = [.pageUp]
+            primaryDisplayKeys[.editDelete] = [.delete]
+            primaryDisplayKeys[.editCut] = [.ctrl("X"), .f9]
+            primaryDisplayKeys[.editUncut] = [.ctrl("V"), .f10]
+            primaryDisplayKeys[.editCopy] = [.ctrl("C")]
+            primaryDisplayKeys[.editUndo] = [.ctrl("Z")]
+            primaryDisplayKeys[.editRedo] = [.ctrl("Y")]
+            primaryDisplayKeys[.selectAll] = [.ctrl("A")]
+            primaryDisplayKeys[.editTab] = [.tab]
+            primaryDisplayKeys[.fileSave] = [.ctrl("S")]
+            primaryDisplayKeys[.fileWriteOut] = [.ctrl("O")]
+            primaryDisplayKeys[.fileExit] = [.ctrl("Q")]
+            primaryDisplayKeys[.fileSaveExit] = [.f4]
+            primaryDisplayKeys[.searchWhereIs] = [.ctrl("F"), .f3]
+            primaryDisplayKeys[.searchReplace] = [.ctrl("H")]
+            primaryDisplayKeys[.editEvalLogo] = [.ctrl("E")]
+            primaryDisplayKeys[.editSpell] = [.ctrl("T"), .f12]
+            primaryDisplayKeys[.cursorPos] = [.f11, .alt("C")]
+            primaryDisplayKeys[.editJoinLine] = [.alt("J")]
+            primaryDisplayKeys[.editSplitLine] = [.alt("K")]
+            primaryDisplayKeys[.editCancelSelection] = [.ctrl("G")]
+            primaryDisplayKeys[.bufferNew] = [.ctrl("N")]
+            primaryDisplayKeys[.bufferNext] = [.alt(".")]
+            primaryDisplayKeys[.bufferPrev] = [.alt(",")]
+            primaryDisplayKeys[.screenRefresh] = [.ctrl("L")]
+            primaryDisplayKeys[.documentOpenLink] = [.alt("O")]
+            primaryDisplayKeys[.canvasDrawLine] = [.shiftArrowRight]
+            primaryDisplayKeys[.canvasDrawArrow] = [.ctrlShiftArrowRight]
+            primaryDisplayKeys[.documentOutline] = [.alt("\\")]
+            primaryDisplayKeys[.menuShow] = [.f1]
+            primaryDisplayKeys[.helpShow] = [.f1]
         }
     }
 
@@ -444,13 +481,15 @@ public final class KeymapManager {
 
     /// Returns the keys associated with a command in the given mode.
     public func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
-        var result: [Key] = []
-        if let primary = primaryDisplayKeys[commandID] {
-            result.append(primary)
+        if let modeKey = modeKeymaps[mode]?.first(where: { $0.value == commandID })?.key {
+            return [modeKey]
         }
-        let modeKeys = (modeKeymaps[mode] ?? [:]).filter { $0.value == commandID }.map(\.key)
+        if let displayKeys = primaryDisplayKeys[commandID], !displayKeys.isEmpty {
+            return displayKeys
+        }
+        var result: [Key] = []
         let baseKeys = baseKeymap.filter { $0.value == commandID }.map(\.key)
-        for key in (modeKeys + baseKeys) {
+        for key in baseKeys {
             if !result.contains(key) {
                 result.append(key)
             }
