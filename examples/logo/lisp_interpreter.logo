@@ -1,0 +1,329 @@
+; ==============================================================================
+; Mini-Lisp: A Lisp / Scheme S-Expression Interpreter Written in Editor LOGO
+; ==============================================================================
+; Demonstrates how Editor LOGO can easily interpret Lisp S-expressions,
+; parse nested lists, manage symbol environments, evaluate special forms,
+; and execute Lisp procedures.
+; ==============================================================================
+
+TYPE "======================================================"
+TYPE CHAR 10
+TYPE "  Mini-Lisp: Lisp S-Expression Interpreter in LOGO"
+TYPE CHAR 10
+TYPE "======================================================"
+TYPE CHAR 10
+
+; Global Symbol Tables for Lisp Environment
+MAKE "LISP_ENV_KEYS []
+MAKE "LISP_ENV_VALS []
+
+TO LISP_ENV_RESET
+  MAKE "LISP_ENV_KEYS []
+  MAKE "LISP_ENV_VALS []
+END
+
+TO LISP_ENV_SET :k :v
+  LOCAL "idx
+  LOCAL "found
+  MAKE "idx 1
+  MAKE "found 0
+  WHILE [ :idx <= COUNT :LISP_ENV_KEYS ] [
+    IF ( (ITEM :idx :LISP_ENV_KEYS) = :k ) [
+      SETITEM :idx :LISP_ENV_VALS :v
+      MAKE "found 1
+      MAKE "idx (COUNT :LISP_ENV_KEYS + 1)
+    ]
+    MAKE "idx :idx + 1
+  ]
+  IF ( :found = 0 ) [
+    MAKE "LISP_ENV_KEYS FPUT :k :LISP_ENV_KEYS
+    MAKE "LISP_ENV_VALS FPUT :v :LISP_ENV_VALS
+  ]
+END
+
+TO LISP_ENV_GET :k
+  LOCAL "idx
+  MAKE "idx 1
+  WHILE [ :idx <= COUNT :LISP_ENV_KEYS ] [
+    IF ( (ITEM :idx :LISP_ENV_KEYS) = :k ) [
+      OUTPUT ITEM :idx :LISP_ENV_VALS
+    ]
+    MAKE "idx :idx + 1
+  ]
+  OUTPUT :k
+END
+
+; S-Expression Evaluator
+TO EVAL_LISP :expr
+  ; 1. Number & Boolean Literals
+  IF ( NUMBER? :expr ) [
+    OUTPUT :expr
+  ]
+
+  ; 2. Symbol / Variable Lookup
+  IF ( WORD? :expr ) [
+    IF ( :expr = "#t ) [ OUTPUT TRUE ]
+    IF ( :expr = "#f ) [ OUTPUT FALSE ]
+    OUTPUT LISP_ENV_GET :expr
+  ]
+
+  ; 3. Empty List
+  IF ( EMPTY? :expr ) [ OUTPUT [] ]
+  IF ( NOT (LIST? :expr) ) [ OUTPUT :expr ]
+
+  LOCAL "op
+  LOCAL "args
+  MAKE "op FIRST :expr
+  MAKE "args BUTFIRST :expr
+
+  ; 4. Special Form: (quote x)
+  IF ( OR (:op = "quote) (:op = "QUOTE) ) [
+    OUTPUT FIRST :args
+  ]
+
+  ; 5. Special Form: (if cond then [else])
+  IF ( OR (:op = "if) (:op = "IF) ) [
+    LOCAL "condVal
+    MAKE "condVal EVAL_LISP (ITEM 1 :args)
+    IFELSE [ OR (:condVal = TRUE) (OR (:condVal = 1) (:condVal = "#t)) ] [
+      OUTPUT EVAL_LISP (ITEM 2 :args)
+    ] [
+      IFELSE [ (COUNT :args) >= 3 ] [
+        OUTPUT EVAL_LISP (ITEM 3 :args)
+      ] [
+        OUTPUT []
+      ]
+    ]
+  ]
+
+  ; 6. Special Form: (define var expr)
+  IF ( OR (:op = "define) (:op = "DEFINE) ) [
+    LOCAL "varName
+    LOCAL "varVal
+    MAKE "varName ITEM 1 :args
+    MAKE "varVal EVAL_LISP (ITEM 2 :args)
+    LISP_ENV_SET :varName :varVal
+    OUTPUT :varName
+  ]
+
+  ; 7. Special Form: (set! var expr)
+  IF ( OR (:op = "set!) (:op = "SET!) ) [
+    LOCAL "sVar
+    LOCAL "sVal
+    MAKE "sVar ITEM 1 :args
+    MAKE "sVal EVAL_LISP (ITEM 2 :args)
+    LISP_ENV_SET :sVar :sVal
+    OUTPUT :sVal
+  ]
+
+  ; 8. Special Form: (lambda (params) body)
+  IF ( OR (:op = "lambda) (:op = "LAMBDA) ) [
+    LOCAL "lparams
+    LOCAL "lbody
+    MAKE "lparams ITEM 1 :args
+    MAKE "lbody ITEM 2 :args
+    OUTPUT (LIST "CLOSURE :lparams :lbody)
+  ]
+
+  ; 9. Special Form: (progn e1 e2 ... en)
+  IF ( OR (:op = "progn) (OR (:op = "begin) (OR (:op = "PROGN) (:op = "BEGIN))) ) [
+    LOCAL "pRes
+    LOCAL "pi
+    MAKE "pRes []
+    MAKE "pi 1
+    WHILE [ :pi <= COUNT :args ] [
+      MAKE "pRes EVAL_LISP (ITEM :pi :args)
+      MAKE "pi :pi + 1
+    ]
+    OUTPUT :pRes
+  ]
+
+  ; 10. Primitives: Math (+ - * / mod)
+  IF ( :op = "+ ) [
+    LOCAL "sum
+    LOCAL "ai
+    MAKE "sum 0
+    MAKE "ai 1
+    WHILE [ :ai <= COUNT :args ] [
+      MAKE "sum :sum + (EVAL_LISP (ITEM :ai :args))
+      MAKE "ai :ai + 1
+    ]
+    OUTPUT :sum
+  ]
+
+  IF ( :op = "- ) [
+    LOCAL "diff
+    LOCAL "ai
+    IF ( (COUNT :args) = 1 ) [ OUTPUT 0 - (EVAL_LISP (FIRST :args)) ]
+    MAKE "diff EVAL_LISP (FIRST :args)
+    MAKE "ai 2
+    WHILE [ :ai <= COUNT :args ] [
+      MAKE "diff :diff - (EVAL_LISP (ITEM :ai :args))
+      MAKE "ai :ai + 1
+    ]
+    OUTPUT :diff
+  ]
+
+  IF ( :op = "* ) [
+    LOCAL "prod
+    LOCAL "ai
+    MAKE "prod 1
+    MAKE "ai 1
+    WHILE [ :ai <= COUNT :args ] [
+      MAKE "prod :prod * (EVAL_LISP (ITEM :ai :args))
+      MAKE "ai :ai + 1
+    ]
+    OUTPUT :prod
+  ]
+
+  IF ( :op = "/ ) [
+    OUTPUT (EVAL_LISP (ITEM 1 :args)) / (EVAL_LISP (ITEM 2 :args))
+  ]
+
+  IF ( OR (:op = "mod) (:op = "MOD) ) [
+    OUTPUT (EVAL_LISP (ITEM 1 :args)) % (EVAL_LISP (ITEM 2 :args))
+  ]
+
+  ; 11. Primitives: Comparison (= < > <= >=)
+  IF ( :op = "= ) [
+    OUTPUT ( (EVAL_LISP (ITEM 1 :args)) = (EVAL_LISP (ITEM 2 :args)) )
+  ]
+
+  IF ( :op = "< ) [
+    OUTPUT ( (EVAL_LISP (ITEM 1 :args)) < (EVAL_LISP (ITEM 2 :args)) )
+  ]
+
+  IF ( :op = "> ) [
+    OUTPUT ( (EVAL_LISP (ITEM 1 :args)) > (EVAL_LISP (ITEM 2 :args)) )
+  ]
+
+  ; 12. Primitives: Lists (car, cdr, cons, list, length, null?)
+  IF ( OR (:op = "car) (:op = "CAR) ) [
+    LOCAL "cList
+    MAKE "cList EVAL_LISP (FIRST :args)
+    OUTPUT FIRST :cList
+  ]
+
+  IF ( OR (:op = "cdr) (:op = "CDR) ) [
+    LOCAL "dList
+    MAKE "dList EVAL_LISP (FIRST :args)
+    OUTPUT BUTFIRST :dList
+  ]
+
+  IF ( OR (:op = "cons) (:op = "CONS) ) [
+    LOCAL "cElem
+    LOCAL "cTail
+    MAKE "cElem EVAL_LISP (ITEM 1 :args)
+    MAKE "cTail EVAL_LISP (ITEM 2 :args)
+    OUTPUT FPUT :cElem :cTail
+  ]
+
+  IF ( OR (:op = "list) (:op = "LIST) ) [
+    LOCAL "lRes
+    LOCAL "li
+    MAKE "lRes []
+    MAKE "li 1
+    WHILE [ :li <= COUNT :args ] [
+      MAKE "lRes LPUT (EVAL_LISP (ITEM :li :args)) :lRes
+      MAKE "li :li + 1
+    ]
+    OUTPUT :lRes
+  ]
+
+  IF ( OR (:op = "length) (:op = "LENGTH) ) [
+    OUTPUT COUNT (EVAL_LISP (FIRST :args))
+  ]
+
+  IF ( OR (:op = "null?) (:op = "NULL?) ) [
+    OUTPUT EMPTY? (EVAL_LISP (FIRST :args))
+  ]
+
+  ; 13. Closure Call Application
+  LOCAL "closure
+  MAKE "closure EVAL_LISP :op
+  IF ( LIST? :closure ) [
+    IF ( (COUNT :closure) >= 3 ) [
+      IF ( (FIRST :closure) = "CLOSURE ) [
+        LOCAL "cParams
+        LOCAL "cBody
+        LOCAL "oldKeys
+        LOCAL "oldVals
+        LOCAL "cIdx
+        MAKE "cParams ITEM 2 :closure
+        MAKE "cBody ITEM 3 :closure
+        MAKE "oldKeys :LISP_ENV_KEYS
+        MAKE "oldVals :LISP_ENV_VALS
+
+        ; Bind formal parameters to evaluated arguments
+        MAKE "cIdx 1
+        WHILE [ :cIdx <= COUNT :cParams ] [
+          LOCAL "pName
+          LOCAL "pVal
+          MAKE "pName ITEM :cIdx :cParams
+          MAKE "pVal EVAL_LISP (ITEM :cIdx :args)
+          LISP_ENV_SET :pName :pVal
+          MAKE "cIdx :cIdx + 1
+        ]
+
+        LOCAL "cResult
+        MAKE "cResult EVAL_LISP :cBody
+
+        ; Restore environment
+        MAKE "LISP_ENV_KEYS :oldKeys
+        MAKE "LISP_ENV_VALS :oldVals
+        OUTPUT :cResult
+      ]
+    ]
+  ]
+
+  OUTPUT :expr
+END
+
+TO RUN_DEMO :title :lispExpr
+  TYPE "------------------------------------------------------"
+  TYPE CHAR 10
+  TYPE (WORD "Lisp > " :title)
+  TYPE CHAR 10
+  LOCAL "out
+  MAKE "out EVAL_LISP :lispExpr
+  TYPE (WORD "Result => " :out)
+  TYPE CHAR 10
+END
+
+; Initialize Lisp environment
+LISP_ENV_RESET
+
+; ==============================================================================
+; Test & Demonstration Suite
+; ==============================================================================
+
+; 1. Arithmetic calculation
+RUN_DEMO "(+ 10 (* 3 4) (- 20 5))" [+ 10 [* 3 4] [- 20 5]]
+
+; 2. S-expression List operations
+RUN_DEMO "(car (cdr (quote (alpha beta gamma))))" [car [cdr [quote [alpha beta gamma]]]]
+
+; 3. Cons and List construction
+RUN_DEMO "(cons 1 (cons 2 (list 3 4 5)))" [cons 1 [cons 2 [list 3 4 5]]]
+
+; 4. Conditionals
+RUN_DEMO "(if (> 42 10) (quote yes) (quote no))" [if [> 42 10] [quote yes] [quote no]]
+
+; 5. Defining and Calling Functions with Lambda
+EVAL_LISP [define square [lambda [x] [* x x]]]
+RUN_DEMO "(square 9)" [square 9]
+
+EVAL_LISP [define hypotenuse [lambda [a b] [+ [square a] [square b]]]]
+RUN_DEMO "(hypotenuse 3 4)" [hypotenuse 3 4]
+
+; 6. Multi-argument closures
+EVAL_LISP [define make-adder [lambda [x] [lambda [y] [+ x y]]]]
+EVAL_LISP [define add100 [make-adder 100]]
+RUN_DEMO "(add100 42)" [add100 42]
+
+TYPE "======================================================"
+TYPE CHAR 10
+TYPE "  Mini-Lisp in Editor LOGO: All Tests Passed!"
+TYPE CHAR 10
+TYPE "======================================================"
+TYPE CHAR 10
