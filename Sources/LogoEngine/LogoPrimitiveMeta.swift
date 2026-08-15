@@ -312,24 +312,26 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "width", required: false),
                     LogoPrimitiveParameter(name: "height", required: false),
+                    LogoPrimitiveParameter(name: "text", required: false),
+                    LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
                     LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
-                    LogoPrimitiveParameter(name: "title", required: false),
                     LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
                 ],
-                examples: [LogoPrimitiveExample(input: "BOX 30 5 \"double \"Window")]
+                examples: [LogoPrimitiveExample(input: "BOX 30 5 \"Window \"center \"double")]
             )
 
         case .drawBox:
             LogoPrimitiveMeta(
                 name: "DRAWBOX",
-                description: "Draws an auto-sized box with title and horizontal alignment.",
+                description: "Overlays an ASCII/Unicode box at current position or selection.",
                 localizedDescriptionKey: "logo.doc.drawbox",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "width"),
-                    LogoPrimitiveParameter(name: "height"),
+                    LogoPrimitiveParameter(name: "width", required: false),
+                    LogoPrimitiveParameter(name: "height", required: false),
+                    LogoPrimitiveParameter(name: "text", required: false),
+                    LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
                     LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
-                    LogoPrimitiveParameter(name: "title", required: false),
                     LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
                 ],
                 examples: [LogoPrimitiveExample(input: "DRAWBOX 20 4 \"Server \"center")]
@@ -381,15 +383,20 @@ extension LogoPrimitive {
         case .table:
             LogoPrimitiveMeta(
                 name: "TABLE",
-                description: "Draws a structured Unicode/ASCII table grid.",
+                description: "Creates a Unicode/ASCII table grid or changes table border style.",
                 localizedDescriptionKey: "logo.doc.table",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "rows"),
-                    LogoPrimitiveParameter(name: "cols"),
+                    LogoPrimitiveParameter(name: "rows", required: false),
+                    LogoPrimitiveParameter(name: "cols", required: false),
                     LogoPrimitiveParameter(name: "cellwidth", required: false)
                 ],
-                examples: [LogoPrimitiveExample(input: "TABLE 3 4 12")]
+                examples: [
+                    LogoPrimitiveExample(input: "TABLE"),
+                    LogoPrimitiveExample(input: "TABLE 3 4 12"),
+                    LogoPrimitiveExample(input: "TABLE BORDER \"double"),
+                    LogoPrimitiveExample(input: "TABLE NEXTSTYLE")
+                ]
             )
 
         case .newline:
@@ -1589,7 +1596,7 @@ extension LogoPrimitive {
 
         case .isIdentityEqual:
             LogoPrimitiveMeta(
-                name: "IDENTITY?",
+                name: ".EQ",
                 description: "Tests reference identity equality between arrays or lists.",
                 localizedDescriptionKey: "logo.doc.isidentity",
                 source: .zago,
@@ -1597,7 +1604,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "a"),
                     LogoPrimitiveParameter(name: "b")
                 ],
-                examples: [LogoPrimitiveExample(input: "IDENTITY? :a :b")]
+                examples: [LogoPrimitiveExample(input: ".EQ :a :b")]
             )
 
         case .isBefore:
@@ -1767,62 +1774,62 @@ extension LogoPrimitive {
 
         case .transformToHans:
             LogoPrimitiveMeta(
-                name: "TO.HANS",
+                name: "TOHANS",
                 description: "Converts Traditional Chinese text to Simplified Chinese.",
                 localizedDescriptionKey: "logo.doc.tohans",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.HANS \"繁體中文", output: "繁体中文")]
+                examples: [LogoPrimitiveExample(input: "TOHANS \"繁體中文", output: "繁体中文")]
             )
 
         case .transformToHant:
             LogoPrimitiveMeta(
-                name: "TO.HANT",
+                name: "TOHANT",
                 description: "Converts Simplified Chinese text to Traditional Chinese.",
                 localizedDescriptionKey: "logo.doc.tohant",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.HANT \"简体中文", output: "簡體中文")]
+                examples: [LogoPrimitiveExample(input: "TOHANT \"简体中文", output: "簡體中文")]
             )
 
         case .transformToLatin:
             LogoPrimitiveMeta(
-                name: "TO.LATIN",
+                name: "TOLATIN",
                 description: "Transliterates text to Latin romanized script.",
                 localizedDescriptionKey: "logo.doc.tolatin",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.LATIN \"中文", output: "zhōng wén")]
+                examples: [LogoPrimitiveExample(input: "TOLATIN \"中文", output: "zhōng wén")]
             )
 
         case .transformToHiragana:
             LogoPrimitiveMeta(
-                name: "TO.HIRAGANA",
+                name: "TOHIRAGANA",
                 description: "Converts any text to Hiragana.",
                 localizedDescriptionKey: "logo.doc.tohiragana",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.HIRAGANA \"カタカナ", output: "かたかな")]
+                examples: [LogoPrimitiveExample(input: "TOHIRAGANA \"カタカナ", output: "かたかな")]
             )
 
         case .transformToKatakana:
             LogoPrimitiveMeta(
-                name: "TO.KATAKANA",
+                name: "TOKATAKANA",
                 description: "Converts any text to Katakana.",
                 localizedDescriptionKey: "logo.doc.tokatakana",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.KATAKANA \"ひらがな", output: "ヒラガナ")]
+                examples: [LogoPrimitiveExample(input: "TOKATAKANA \"ひらがな", output: "ヒラガナ")]
             )
 
         case .transformToRomaji:
             LogoPrimitiveMeta(
-                name: "TO.ROMAJI",
+                name: "TOROMAJI",
                 description: "Transliterates Japanese Kana to Romaji.",
                 localizedDescriptionKey: "logo.doc.toromaji",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "TO.ROMAJI \"とうきょう", output: "tōkyō")]
+                examples: [LogoPrimitiveExample(input: "TOROMAJI \"とうきょう", output: "tōkyō")]
             )
 
         case .spacingCJK:
@@ -1837,52 +1844,52 @@ extension LogoPrimitive {
 
         case .charCount:
             LogoPrimitiveMeta(
-                name: "COUNT.CHARS",
+                name: "CHARCOUNT",
                 description: "Counts total Unicode grapheme clusters in string.",
                 localizedDescriptionKey: "logo.doc.countchars",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "COUNT.CHARS \"Hello 世界", output: "8")]
+                examples: [LogoPrimitiveExample(input: "CHARCOUNT \"Hello 世界", output: "8")]
             )
 
         case .charCountCJK:
             LogoPrimitiveMeta(
-                name: "COUNT.CJK",
+                name: "CHARCOUNT.CJK",
                 description: "Counts CJK ideograph characters in string.",
                 localizedDescriptionKey: "logo.doc.countcjk",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "COUNT.CJK \"Hello 世界", output: "2")]
+                examples: [LogoPrimitiveExample(input: "CHARCOUNT.CJK \"Hello 世界", output: "2")]
             )
 
         case .charCountWords:
             LogoPrimitiveMeta(
-                name: "COUNT.WORDS",
+                name: "CHARCOUNT.WORDS",
                 description: "Counts words in natural language string.",
                 localizedDescriptionKey: "logo.doc.countwords",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "COUNT.WORDS \"Quick brown fox", output: "3")]
+                examples: [LogoPrimitiveExample(input: "CHARCOUNT.WORDS \"Quick brown fox", output: "3")]
             )
 
         case .charCountEmoji:
             LogoPrimitiveMeta(
-                name: "COUNT.EMOJI",
+                name: "CHARCOUNT.EMOJI",
                 description: "Counts emoji glyphs in string.",
                 localizedDescriptionKey: "logo.doc.countemoji",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "COUNT.EMOJI \"🚀✨🎉", output: "3")]
+                examples: [LogoPrimitiveExample(input: "CHARCOUNT.EMOJI \"🚀✨🎉", output: "3")]
             )
 
         case .charCountLines:
             LogoPrimitiveMeta(
-                name: "COUNT.LINES",
-                description: "Counts line count in multiline string.",
+                name: "CHARCOUNT.LINES",
+                description: "Counts lines in multiline string.",
                 localizedDescriptionKey: "logo.doc.countlines",
                 source: .zago,
                 parameters: [LogoPrimitiveParameter(name: "string")],
-                examples: [LogoPrimitiveExample(input: "COUNT.LINES :multilineStr")]
+                examples: [LogoPrimitiveExample(input: "CHARCOUNT.LINES :multilineStr")]
             )
 
         case .parse:
@@ -1948,7 +1955,7 @@ extension LogoPrimitive {
 
         case .contains:
             LogoPrimitiveMeta(
-                name: "CONTAINS",
+                name: "CONTAINS?",
                 description: "Tests whether string contains substring.",
                 localizedDescriptionKey: "logo.doc.contains",
                 source: .zago,
@@ -1956,12 +1963,12 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "string"),
                     LogoPrimitiveParameter(name: "substring")
                 ],
-                examples: [LogoPrimitiveExample(input: "CONTAINS \"zago \"ag", output: "true")]
+                examples: [LogoPrimitiveExample(input: "CONTAINS? \"zago \"ag", output: "true")]
             )
 
         case .startswith:
             LogoPrimitiveMeta(
-                name: "STARTSWITH",
+                name: "STARTSWITH?",
                 description: "Tests whether string starts with specified prefix.",
                 localizedDescriptionKey: "logo.doc.startswith",
                 source: .zago,
@@ -1969,12 +1976,12 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "string"),
                     LogoPrimitiveParameter(name: "prefix")
                 ],
-                examples: [LogoPrimitiveExample(input: "STARTSWITH \"index.html \"index", output: "true")]
+                examples: [LogoPrimitiveExample(input: "STARTSWITH? \"index.html \"index", output: "true")]
             )
 
         case .endswith:
             LogoPrimitiveMeta(
-                name: "ENDSWITH",
+                name: "ENDSWITH?",
                 description: "Tests whether string ends with specified suffix.",
                 localizedDescriptionKey: "logo.doc.endswith",
                 source: .zago,
@@ -1982,7 +1989,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "string"),
                     LogoPrimitiveParameter(name: "suffix")
                 ],
-                examples: [LogoPrimitiveExample(input: "ENDSWITH \"main.swift \".swift", output: "true")]
+                examples: [LogoPrimitiveExample(input: "ENDSWITH? \"main.swift \".swift", output: "true")]
             )
 
         case .substring:
@@ -2079,7 +2086,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "formatString"),
                     LogoPrimitiveParameter(name: "args", required: false)
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT \"Hello, %s! 2026", output: "Hello, 2026!")]
+                examples: [LogoPrimitiveExample(input: "FORMAT \"Hello, %s! \"Zago", output: "Hello, Zago!")]
             )
 
         case .padleft:
