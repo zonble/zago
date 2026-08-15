@@ -272,7 +272,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "height", required: false),
                     LogoPrimitiveParameter(name: "text", required: false),
                     LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
                     LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
                 ],
                 examples: [LogoPrimitiveExample(input: "BOX 30 5 \"Window \"center \"double")]
@@ -289,7 +289,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "height", required: false),
                     LogoPrimitiveParameter(name: "text", required: false),
                     LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
                     LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
                 ],
                 examples: [LogoPrimitiveExample(input: "DRAWBOX 20 4 \"Server \"center")]
@@ -320,7 +320,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "length", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
                     LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
                     LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
                 ],
@@ -338,7 +338,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "height", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
                     LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
                     LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
                 ],
@@ -359,7 +359,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "cols", required: false),
                     LogoPrimitiveParameter(name: "cellwidth", required: false),
                     LogoPrimitiveParameter(name: "mode", required: false, allowedValues: ["BORDER", "NEXTSTYLE"]),
-                    LogoPrimitiveParameter(name: "borderStyle", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"])
+                    LogoPrimitiveParameter(name: "borderStyle", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"])
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "TABLE"),

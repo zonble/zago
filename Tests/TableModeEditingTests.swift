@@ -111,6 +111,24 @@ import TextMetrics
     #expect(editor.defaultBorderStyle == .asciiRound)
 
     editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .tripleDash)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .heavyTripleDash)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .quadrupleDash)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .heavyQuadrupleDash)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .doubleDash)
+
+    editor.processKey(.alt("s"))
+    #expect(editor.defaultBorderStyle == .heavyDoubleDash)
+
+    editor.processKey(.alt("s"))
     #expect(editor.defaultBorderStyle == .single)
 }
 

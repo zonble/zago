@@ -161,6 +161,10 @@ public final class TableCellDetector: Sendable {
             return .double
         } else if ch == "+" {
             return .ascii
+        } else if let dashedStyle = BorderStyle.allCases.first(where: {
+            $0.isDashed && chars.contains($0.horizontalLineCharacter)
+        }) {
+            return dashedStyle
         }
         return .single
     }

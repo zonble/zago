@@ -37,8 +37,10 @@ public enum CanvasDrawDirection: Sendable {
 public func canvasMask(for character: Character?, style _: BorderStyle = .single) -> UInt8 {
     guard let character else { return 0 }
     return switch character {
-    case "─", "═", "━", "-": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
-    case "│", "║", "┃", "|": CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
+    case "─", "═", "━", "┄", "┅", "┈", "┉", "╌", "╍", "-":
+        CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
+    case "│", "║", "┃", "┆", "┇", "┊", "┋", "╎", "╏", "|":
+        CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask
     case "┌", "╔", "╭", "┏": CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
     case "┐", "╗", "╮", "┓": CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask
     case "└", "╚", "╰", "┗": CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask
@@ -109,6 +111,12 @@ public func lineStyle(for character: Character) -> BorderStyle? {
     switch character {
     case "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬": return .double
     case "┃", "━", "┏", "┓", "┗", "┛", "┣", "┫", "┳", "┻", "╋": return .heavy
+    case "┄", "┆": return .tripleDash
+    case "┅", "┇": return .heavyTripleDash
+    case "┈", "┊": return .quadrupleDash
+    case "┉", "┋": return .heavyQuadrupleDash
+    case "╌", "╎": return .doubleDash
+    case "╍", "╏": return .heavyDoubleDash
     case "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼", "╵", "╶", "╷", "╴": return .single
     default: return nil
     }
@@ -124,9 +132,18 @@ public func fuseLineCharacter(
     guard existingMask != 0 else { return defaultNewCharacter }
     let existingStyle = lineStyle(for: existing)
     let newStyle = lineStyle(for: defaultNewCharacter)
-    let style: BorderStyle = existingStyle == .double || newStyle == .double
-        ? .double
-        : (existingStyle == .heavy || newStyle == .heavy ? .heavy : .single)
+    let style: BorderStyle
+    if let newStyle, newStyle.isDashed {
+        style = newStyle
+    } else if let existingStyle, existingStyle.isDashed {
+        style = existingStyle
+    } else if existingStyle == .double || newStyle == .double {
+        style = .double
+    } else if existingStyle == .heavy || newStyle == .heavy {
+        style = .heavy
+    } else {
+        style = .single
+    }
     return lineCharacter(forMask: existingMask | addingMask, style: style)
 }
 

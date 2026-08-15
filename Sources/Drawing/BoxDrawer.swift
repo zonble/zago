@@ -25,6 +25,10 @@ public struct BoxDrawer: Sendable {
             borderStyle = .asciiRound
         } else if style.topLeft == "╭" {
             borderStyle = style.topChar == "=" ? .doubleRound : .round
+        } else if let dashedStyle = BorderStyle.allCases.first(where: {
+            $0.isDashed && $0.horizontalLineCharacter == style.topChar
+        }) {
+            borderStyle = dashedStyle
         } else {
             borderStyle = .single
         }

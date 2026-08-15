@@ -62,6 +62,17 @@ final class MenuBar {
     }
 
     func updateCategories(for editor: Editor? = nil) {
+        func borderStyleItem(_ style: BorderStyle, titleKey: String, hotkeyChar: Character) -> MenuItem {
+            MenuItem(
+                titleKey: titleKey,
+                hotkeyChar: hotkeyChar,
+                action: { editor in
+                    editor.defaultBorderStyle = style
+                    editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(style.rawValue)))
+                },
+                isChecked: { $0.defaultBorderStyle == style })
+        }
+
         var baseCategories: [MenuCategory] = [
             MenuCategory(
                 titleKey: "menu.file", hotkeyChar: "f",
@@ -221,6 +232,12 @@ final class MenuBar {
                             editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
+                    borderStyleItem(.tripleDash, titleKey: "menu.borders.triple_dash", hotkeyChar: "t"),
+                    borderStyleItem(.heavyTripleDash, titleKey: "menu.borders.heavy_triple", hotkeyChar: "g"),
+                    borderStyleItem(.quadrupleDash, titleKey: "menu.borders.quad_dash", hotkeyChar: "q"),
+                    borderStyleItem(.heavyQuadrupleDash, titleKey: "menu.borders.heavy_quad", hotkeyChar: "w"),
+                    borderStyleItem(.doubleDash, titleKey: "menu.borders.double_dash", hotkeyChar: "j"),
+                    borderStyleItem(.heavyDoubleDash, titleKey: "menu.borders.heavy_double", hotkeyChar: "k"),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
                     MenuItem(
                         titleKey: "menu.borders.arrow_solid", hotkeyChar: "1",

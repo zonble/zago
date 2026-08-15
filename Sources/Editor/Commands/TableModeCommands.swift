@@ -49,7 +49,7 @@ struct CycleBorderStyleCommand: Command {
     let id: CommandID = .borderStyle
     let name = "Cycle Border Style"
     let description =
-        "Switch default border style (Single -> Heavy -> Double -> Round -> Double Round -> ASCII)"
+        "Switch default border style"
     let commandBarAliases = ["border", "border-style"]
 
     init() {}
@@ -77,6 +77,24 @@ struct CycleBorderStyleCommand: Command {
             editor.defaultBorderStyle = .asciiRound
             message = editor.l10n.defaultBorder("ASCII Rounded (/-\\|)")
         case .asciiRound:
+            editor.defaultBorderStyle = .tripleDash
+            message = editor.l10n.defaultBorder("Triple Dash (┌┄┆)")
+        case .tripleDash:
+            editor.defaultBorderStyle = .heavyTripleDash
+            message = editor.l10n.defaultBorder("Heavy Triple Dash (┏┅┇)")
+        case .heavyTripleDash:
+            editor.defaultBorderStyle = .quadrupleDash
+            message = editor.l10n.defaultBorder("Quadruple Dash (┌┈┊)")
+        case .quadrupleDash:
+            editor.defaultBorderStyle = .heavyQuadrupleDash
+            message = editor.l10n.defaultBorder("Heavy Quadruple Dash (┏┉┋)")
+        case .heavyQuadrupleDash:
+            editor.defaultBorderStyle = .doubleDash
+            message = editor.l10n.defaultBorder("Double Dash (┌╌╎)")
+        case .doubleDash:
+            editor.defaultBorderStyle = .heavyDoubleDash
+            message = editor.l10n.defaultBorder("Heavy Double Dash (┏╍╏)")
+        case .heavyDoubleDash:
             editor.defaultBorderStyle = .single
             message = editor.l10n.defaultBorder("Single Unicode (┌─│)")
         }
