@@ -562,7 +562,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "unit", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false)
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.RELATIVETIME -2 \"hour \"en_US", output: "2 hours ago")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.RELATIVETIME -2 \"hour \"en_US", output: "2 hours ago")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatBytes:

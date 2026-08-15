@@ -881,6 +881,7 @@ struct TraditionalChineseStrings {
         "describe_command.editor_command": "編輯器指令",
         "describe_command.name": "名稱：",
         "describe_command.description": "說明：",
+        "describe_command.notes": "備註：",
         "describe_command.aliases": "別名 (Aliases)：",
         "describe_command.builtin_primitive": "內建 LOGO 指令 (%@)",
         "describe_command.source_ucb_logo": "UCB LOGO 標準",

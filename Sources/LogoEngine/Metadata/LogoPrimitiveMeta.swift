@@ -34,6 +34,7 @@ public struct LogoPrimitiveMeta: Sendable, Equatable {
     public let source: LogoPrimitiveMetaSource
     public let parameters: [LogoPrimitiveParameter]?
     public let examples: [LogoPrimitiveExample]?
+    public let notes: String?
 
     public init(
         name: String,
@@ -41,7 +42,8 @@ public struct LogoPrimitiveMeta: Sendable, Equatable {
         localizedDescriptionKey: String,
         source: LogoPrimitiveMetaSource,
         parameters: [LogoPrimitiveParameter]? = nil,
-        examples: [LogoPrimitiveExample]? = nil
+        examples: [LogoPrimitiveExample]? = nil,
+        notes: String? = nil
     ) {
         self.name = name
         self.description = description
@@ -49,6 +51,7 @@ public struct LogoPrimitiveMeta: Sendable, Equatable {
         self.source = source
         self.parameters = parameters
         self.examples = examples
+        self.notes = notes
     }
 }
 

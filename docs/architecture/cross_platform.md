@@ -4,6 +4,23 @@ This document consolidates all cross-platform Gotchas, operating system differen
 
 ---
 
+## Platform-Specific Foundation APIs
+
+`RelativeDateTimeFormatter` is available in the Apple Foundation implementations used by
+macOS, but is not available in the Foundation implementations used by Linux or Windows.
+The relative-time formatter entry points in
+[`LogoFormatters.swift`](../../Sources/LogoEngine/Formatting/LogoFormatters.swift) are
+therefore compiled as disabled stubs on Linux and Windows. The keyword and metadata remain
+available for scripts and documentation, but execution reports a platform-not-supported
+Logo error. The Apple implementation keeps Foundation's locale-aware behavior for all
+supported locales.
+
+When adding Foundation-backed Logo primitives, check API availability on every CI target
+before sharing the implementation across platforms. Do not replace a platform formatter
+with a hand-maintained language list just to make it compile.
+
+---
+
 ## 1. Terminal Input Handling Across Platforms
 
 ### The Problem

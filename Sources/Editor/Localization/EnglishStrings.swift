@@ -895,6 +895,7 @@ struct EnglishStrings {
         "describe_command.editor_command": "Editor Command",
         "describe_command.name": "Name: ",
         "describe_command.description": "Description:",
+        "describe_command.notes": "Notes:",
         "describe_command.aliases": "Aliases:",
         "describe_command.builtin_primitive": "Built-in LOGO Primitive (%@)",
         "describe_command.source_ucb_logo": "UCB Logo Standard",

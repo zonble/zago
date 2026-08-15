@@ -5,7 +5,7 @@ import Testing
 
 @Suite struct LogoPrimitiveMetaTests {
     @Test func testAllLogoPrimitivesHaveValidMetadata() {
-        for prim in LogoPrimitive.allCases {
+        for prim in availablePrimitives {
             let meta = prim.meta
             #expect(!meta.name.isEmpty, "Primitive \(prim) has empty name")
             #expect(!meta.description.isEmpty, "Primitive \(prim) has empty description")
@@ -18,7 +18,7 @@ import Testing
     }
 
     @Test func testLogoPrimitiveExamplesStartWithKnownCommandAlias() {
-        for prim in LogoPrimitive.allCases {
+        for prim in availablePrimitives {
             let meta = prim.meta
             for example in meta.examples ?? [] {
                 guard let firstToken = example.input.split(whereSeparator: \.isWhitespace).first else {
@@ -40,7 +40,25 @@ import Testing
         #expect(LogoPrimitive.vline.meta.parameters?[1].allowedValues == lineStyles)
         #expect(LogoPrimitive.justify.meta.parameters == nil)
         #expect(LogoPrimitive.formatRelativeTime.meta.parameters?[1].required == false)
+        #expect(LogoPrimitive.formatRelativeTime.meta.notes == "Not supported on Linux or Windows.")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
+    }
+
+    @Test func testRelativeTimeAvailabilityMatchesPlatformSupport() {
+        #expect(LogoPrimitive.from("FORMAT.RELATIVETIME") == .formatRelativeTime)
+    }
+
+#if os(Linux) || os(Windows)
+    @Test func testRelativeTimeReportsUnsupportedPlatformError() {
+        let engine = LogoEngine()
+        var index = 0
+        _ = engine.evaluateExpression(["FORMAT.RELATIVETIME", "-1", "\"day"], index: &index)
+        #expect(engine.lastError?.message == "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]")
+    }
+#endif
+
+    private var availablePrimitives: [LogoPrimitive] {
+        LogoPrimitive.allCases
     }
 }

@@ -490,6 +490,13 @@ extension LogoEngine {
 
     private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+#if os(Linux) || os(Windows)
+        while reader.nextOptionalExpression() != nil {}
+        reader.commit(to: &index)
+        let message = "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"
+        reportError(LogoError(code: 1, message: message), token: "FORMAT.RELATIVETIME")
+        return ""
+#else
         guard let arg1 = reader.nextOptionalExpression() else { return "" }
         let clean1 = unquote(arg1)
 
@@ -515,6 +522,7 @@ extension LogoEngine {
 
         setLastExpressionString(res)
         return res
+#endif
     }
 
     private func evaluateFormatBytesPrimitive(tokens: [String], index: inout Int) -> String {
