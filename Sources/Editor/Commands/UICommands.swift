@@ -137,7 +137,14 @@ struct DescribeKeyCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
-        editor.promptDescribeKey()
-        return .prompting
+        editor.menuBarController.isActive = false
+        DescribeKeyDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            language: editor.language
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+        return .succeeded
     }
 }

@@ -650,6 +650,18 @@ struct TraditionalChineseStrings {
         "dialog.symbol_picker.footer": " Enter: 插入   Tab/1-4: 切換分頁   a-z: 快速選擇   Esc: 取消 ",
         "dialog.symbol_picker.selected": " 選擇: ",
 
+        "dialog.describe_key.title": " 查詢按鍵功能 ",
+        "dialog.describe_key.prompt": "請按下任意按鍵以查詢其指令與模式功能...",
+        "dialog.describe_key.footer_close": " 按任意鍵關閉 ",
+        "dialog.describe_key.key_label": " 按鍵：%@ ",
+        "dialog.describe_key.section_text": "文字編輯模式（預設）：",
+        "dialog.describe_key.section_canvas": "畫布模式（定點繪圖）：",
+        "dialog.describe_key.section_table": "表格模式（儲存格導航與調整）：",
+        "dialog.describe_key.section_logo": "自訂 LOGO 巨集 / 腳本：",
+        "dialog.describe_key.same_as_text": "同文字編輯模式",
+        "dialog.describe_key.insert_char": "輸入字元「%@」",
+        "dialog.describe_key.unbound": "未綁定任何指令",
+
         "symbol_category.gfm": "1. GFM 區塊",
         "symbol_category.steps": "2. 步驟標記",
         "symbol_category.badges": "3. 狀態圖示",

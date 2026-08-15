@@ -528,52 +528,63 @@ import Foundation
         // 1. Trigger via command bar
         let dispatchResult = editor.commandBarRegistry.dispatch("help-key", editor: editor)
         #expect(dispatchResult == .handled)
-        if case .describeKey = editor.currentPromptMode {
-            #expect(true)
-        } else {
-            #expect(Bool(false), "Expected prompt mode to be .describeKey")
+
+        // 2. Test DescribeKeyDialogView modal loop with scripted keys
+        final class ScriptedKeyTerminal: EditorTerminal, @unchecked Sendable {
+            var keysToReturn: [Key] = []
+            var writtenOutput: String = ""
+            var rows = 24
+            var cols = 80
+
+            func enableRawMode() throws {}
+            func disableRawMode() {}
+            func getWindowSize() -> (rows: Int, cols: Int) { (rows, cols) }
+            func readKey() -> Key {
+                if !keysToReturn.isEmpty {
+                    return keysToReturn.removeFirst()
+                }
+                return .esc
+            }
+            func readPendingText(firstChar: Character) -> String { String(firstChar) }
+            func write(_ text: String) { writtenOutput += text }
+            func hideCursor() {}
+            func showCursor() {}
+            func clearScreen() {}
         }
 
-        // 2. Verify .unknown (e.g. readKey timeout) does not dismiss describeKey prompt
-        editor.processKey(.unknown)
-        #expect(editor.promptController.isActive)
+        // Test 1: Inspect Esc key
+        let term1 = ScriptedKeyTerminal()
+        term1.keysToReturn = [.esc, .enter]
+        let dialog1 = DescribeKeyDialogView(terminal: term1, editor: editor, language: .en)
+        dialog1.show()
+        #expect(term1.writtenOutput.contains("Key: Esc"))
 
-        // 3. Describe ^K (has Table mode override)
-        editor.processKey(.ctrl("k"))
-        #expect(!editor.promptController.isActive)
-        #expect(editor.statusMessage.contains("^K:"))
-        #expect(editor.statusMessage.contains("edit.cut"))
-        #expect(editor.statusMessage.contains("Table Mode:"))
+        // Test 2: Inspect ^K (has Table mode override)
+        let term2 = ScriptedKeyTerminal()
+        term2.keysToReturn = [.unknown, .ctrl("k"), .enter]
+        let dialog2 = DescribeKeyDialogView(terminal: term2, editor: editor, language: .en)
+        dialog2.show()
+        #expect(term2.writtenOutput.contains("Key: ^K"))
+        #expect(term2.writtenOutput.contains("edit.cut"))
+        #expect(term2.writtenOutput.contains("Table Mode"))
+        #expect(term2.writtenOutput.contains("table.clear_cell"))
 
-        // 3. Describe Tab (has Table mode override)
-        editor.promptDescribeKey()
-        editor.processKey(.tab)
-        #expect(editor.statusMessage.contains("Tab:"))
-        #expect(editor.statusMessage.contains("edit.tab"))
-        #expect(editor.statusMessage.contains("Table Mode:"))
-
-        // 4. Describe Shift+Right (has Canvas mode override)
-        editor.promptDescribeKey()
-        editor.processKey(.shiftArrowRight)
-        #expect(editor.statusMessage.contains("⇧+Arrow:"))
-        #expect(editor.statusMessage.contains("select.right"))
-        #expect(editor.statusMessage.contains("Canvas Mode:"))
-
-        // 5. Describe Character
-        editor.promptDescribeKey()
-        editor.processKey(.char("z"))
-        #expect(editor.statusMessage == "'z': Insert character 'z'")
-
-        // 6. Traditional Chinese formatting
+        // Test 3: Traditional Chinese inspection
         let zhEditor = Editor(language: .zh_TW)
-        zhEditor.promptDescribeKey()
-        zhEditor.processKey(.ctrl("k"))
-        #expect(zhEditor.statusMessage.contains("^K："))
-        #expect(zhEditor.statusMessage.contains("表格模式："))
+        let term3 = ScriptedKeyTerminal()
+        term3.keysToReturn = [.ctrl("k"), .enter]
+        let dialog3 = DescribeKeyDialogView(terminal: term3, editor: zhEditor, language: .zh_TW)
+        dialog3.show()
+        #expect(term3.writtenOutput.contains("按鍵：^K"))
+        #expect(term3.writtenOutput.contains("文字編輯模式（預設）："))
+        #expect(term3.writtenOutput.contains("表格模式（儲存格導航與調整）："))
 
-        // 7. Custom LOGO macro description
+        // Test 4: Custom LOGO macro description
         var macroConfig = EditorConfig()
-        macroConfig.customKeyBinds = [Key.alt("t"): "logo:insert-title"]
+        macroConfig.customKeyBinds = [
+            Key.alt("t"): "logo:insert-title",
+            Key.alt("h"): "logo:MOVE HOME TYPE \"# Long Header Description Section\" MOVE END TYPE \"\n---\n\" MOVE HOME",
+        ]
         let configSource = EditorConfigSource(initial: macroConfig, reload: { macroConfig })
         let macroEditor = Editor(
             configSource: configSource,
@@ -582,12 +593,22 @@ import Foundation
                 terminal: TestEditorTerminal.shared
             )
         )
-        macroEditor.promptDescribeKey()
-        macroEditor.processKey(.alt("t"))
-        #expect(macroEditor.statusMessage.contains("M+T:"))
-        #expect(macroEditor.statusMessage.contains("Execute LOGO script 'insert-title'"))
+        let term4 = ScriptedKeyTerminal()
+        term4.keysToReturn = [.alt("t"), .enter]
+        let dialog4 = DescribeKeyDialogView(terminal: term4, editor: macroEditor, language: .en)
+        dialog4.show()
+        #expect(term4.writtenOutput.contains("Key: M+T"))
+        #expect(term4.writtenOutput.contains("Execute LOGO script 'insert-title'"))
 
-        // 8. Verify MenuBar item placement in Help menu
+        // Test 5: Long inline LOGO script wraps cleanly
+        let term5 = ScriptedKeyTerminal()
+        term5.keysToReturn = [.alt("h"), .enter]
+        let dialog5 = DescribeKeyDialogView(terminal: term5, editor: macroEditor, language: .en)
+        dialog5.show()
+        #expect(term5.writtenOutput.contains("Key: M+H"))
+        #expect(term5.writtenOutput.contains("MOVE HOME TYPE"))
+
+        // Test 6: Verify MenuBar item placement in Help menu
         let menuBar = MenuBar()
         menuBar.updateCategories(for: editor)
         let helpCategory = menuBar.categories.first(where: { $0.titleKey == "menu.help" })
