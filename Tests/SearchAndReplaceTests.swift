@@ -257,4 +257,87 @@ import Testing
         editor.processKey(.tab)
         #expect(editor.promptInputText == "transform.tohan")
     }
+
+    @Test func testInteractiveSearchAndReplaceYesNo() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["hello apple, hello banana, hello cherry"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .searchReplace, editor: editor)
+
+        // Stage 1: input query "hello" and press Enter
+        for ch in "hello" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        // Stage 2: input replacement "hi" and press Enter
+        for ch in "hi" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        // Stage 3: Match 1 -> press Y (replace)
+        editor.processKey(.char("y"))
+
+        // Match 2 -> press N (skip)
+        editor.processKey(.char("n"))
+
+        // Match 3 -> press Y (replace)
+        editor.processKey(.char("y"))
+
+        #expect(editor.buffer.lines[0] == "hi apple, hello banana, hi cherry")
+        #expect(editor.statusMessage == editor.l10n.replacedOccurrences(2))
+    }
+
+    @Test func testInteractiveSearchAndReplaceAll() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "cat dog cat",
+            "bird cat mouse",
+        ]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .searchReplace, editor: editor)
+
+        for ch in "cat" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        for ch in "fox" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        // Press 'A' for Replace All
+        editor.processKey(.char("a"))
+
+        #expect(editor.buffer.lines[0] == "fox dog fox")
+        #expect(editor.buffer.lines[1] == "bird fox mouse")
+        #expect(editor.statusMessage == editor.l10n.replacedOccurrences(3))
+
+        // Verify Undo reverts all 3 replaces
+        _ = editor.commandRegistry.dispatch(id: .editUndo, editor: editor)
+        #expect(editor.buffer.lines[0] == "cat dog cat")
+        #expect(editor.buffer.lines[1] == "bird cat mouse")
+    }
+
+    @Test func testInteractiveSearchAndReplaceCancel() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["test 1, test 2, test 3"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .searchReplace, editor: editor)
+
+        for ch in "test" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        for ch in "demo" { editor.processKey(.char(ch)) }
+        editor.processKey(.enter)
+
+        // Match 1: Replace
+        editor.processKey(.char("y"))
+
+        // Match 2: Cancel
+        editor.processKey(.ctrl("c"))
+
+        #expect(editor.buffer.lines[0] == "demo 1, test 2, test 3")
+        #expect(editor.statusMessage == editor.l10n.replacedOccurrences(1))
+    }
 }

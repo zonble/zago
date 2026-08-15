@@ -44,7 +44,7 @@ extension Editor {
         commandRegistry.register(SplitLineCommand())
 
         // Search & Cursor Commands
-        commandRegistry.register(WhereIsCommand())
+        commandRegistry.register(SearchCommand())
         commandRegistry.register(SearchReplaceCommand())
         commandRegistry.register(SearchNextCommand())
         commandRegistry.register(SearchPreviousCommand())
@@ -93,7 +93,7 @@ extension Editor {
         commandRegistry.register(SettingCommand())
         commandRegistry.register(BufferCommand())
         commandRegistry.register(NumericGotoCommand())
-        commandRegistry.register(SearchCommand())
+        commandRegistry.register(SlashSearchCommand())
         commandRegistry.register(SubstituteCommand())
 
         // UI & Macro Commands

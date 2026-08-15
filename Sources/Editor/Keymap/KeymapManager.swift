@@ -118,10 +118,10 @@ final class KeymapManager {
         // Common UI, Dialogs & Actions
         register(.macroLogo, .esc, .alt(":"))
         register(.editDelete, .delete, .ctrl("D"), .ctrl("d"))
-        register(.editDeleteLine, .ctrlBackspace, .ctrl("H"), .ctrl("h"))
+        register(.editDeleteLine, .ctrlBackspace)
         register(.editBacktab, .backtab)
         register(.tableToggle, .f7, .alt("T"), .alt("t"))
-        register(.canvasToggle, .alt("V"), .alt("v"), .f8)
+        register(.canvasToggle, .f8, .alt("V"), .alt("v"))
         register(.borderStyle, .alt("S"), .alt("s"))
         register(.logoOutput, .alt("L"), .alt("l"))
         register(.logoCanvas, .alt("C"), .alt("c"))
@@ -177,14 +177,15 @@ final class KeymapManager {
 
             // Search & Tools
             register(.searchWhereIs, .ctrl("W"), .ctrl("w"), .f6)
+            register(.searchReplace, .ctrl("\\"), .alt("R"), .alt("r"))
             register(.searchNext, .alt("N"), .alt("n"))
             register(.searchPrevious, .alt("P"), .alt("p"))
+            register(.cursorGotoLine, .alt("G"), .alt("g"), .ctrl("_"))
             register(.cursorPos, .ctrl("C"), .ctrl("c"), .f11)
             register(.editSpell, .ctrl("T"), .ctrl("t"), .f12)
 
             // UI
             register(.menuShow, .f1, .alt("M"), .alt("m"), .ctrl("M"), .ctrl("m"))
-            register(.helpShow, .f1)
 
         case .modern:
             // Navigation
@@ -223,13 +224,14 @@ final class KeymapManager {
             register(.searchReplace, .ctrl("H"), .ctrl("h"))
             register(.searchNext, .f3, .alt("N"), .alt("n"))
             register(.searchPrevious, .alt("P"), .alt("p"))
+            register(.cursorGotoLine, .ctrl("G"), .ctrl("g"), .alt("G"), .alt("g"))
+            register(.editJustify, .ctrl("J"), .ctrl("j"), .alt("J"), .alt("j"))
             register(.editEvalLogo, .ctrl("E"), .ctrl("e"))
             register(.editSpell, .ctrl("T"), .ctrl("t"), .f12)
             register(.cursorPos, .f11, .alt("C"), .alt("c"), .ctrlShift("C"), .ctrlShift("c"))
 
             // UI
             register(.menuShow, .f1)
-            register(.helpShow, .f1)
         }
     }
 

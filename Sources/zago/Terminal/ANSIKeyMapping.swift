@@ -86,7 +86,6 @@ public enum ANSIKeyMapping {
         switch code {
         case 13: return .enter
         case 9: return .tab
-        case 8: return .ctrlBackspace
         case 127: return .backspace
         case 30: return .mark
         case 31: return .ctrl("/")

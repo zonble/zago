@@ -5,6 +5,14 @@ import TextTransform
 
 /// Encapsulates state management and key processing for command bar prompts and dialogs.
 final class PromptController: KeyInputHandler {
+    /// Interactive choice made during interactive search and replace confirmation.
+    public enum ReplaceChoice: Sendable {
+        case yes
+        case no
+        case all
+        case cancel
+    }
+
     /// Interactive prompt state mode for command bar inputs and confirmation dialogs.
     enum Mode {
         case none
@@ -13,6 +21,9 @@ final class PromptController: KeyInputHandler {
         case confirmExternalReload(completion: (Bool) -> Void)
         case confirmEncodingFallback(originalEncoding: String.Encoding, completion: (Bool) -> Void)
         case search(completion: (String?) -> Void)
+        case replaceSearch(completion: (String?) -> Void)
+        case replaceWith(searchQuery: String, completion: (String?) -> Void)
+        case confirmReplace(query: String, replacement: String, completion: (ReplaceChoice) -> Void)
         case insertFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
         case logoMacro(completion: (String?) -> Void)
@@ -192,6 +203,12 @@ final class PromptController: KeyInputHandler {
         case .search(let completion):
             mode = .none
             completion(nil)
+        case .replaceSearch(let completion), .replaceWith(_, let completion):
+            mode = .none
+            completion(nil)
+        case .confirmReplace(_, _, let completion):
+            mode = .none
+            completion(.cancel)
         case .insertFilePath(let completion):
             mode = .none
             completion(nil)
@@ -268,6 +285,27 @@ final class PromptController: KeyInputHandler {
 
         case .search(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
+
+        case .replaceSearch(let completion):
+            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
+
+        case .replaceWith(_, let completion):
+            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
+
+        case .confirmReplace(_, _, let completion):
+            switch key {
+            case .char("y"), .char("Y"), .enter:
+                mode = .none
+                completion(.yes)
+            case .char("n"), .char("N"):
+                mode = .none
+                completion(.no)
+            case .char("a"), .char("A"):
+                mode = .none
+                completion(.all)
+            default:
+                break
+            }
 
         case .insertFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
@@ -401,10 +439,10 @@ final class PromptController: KeyInputHandler {
 
     private var isTextEditingPromptMode: Bool {
         switch mode {
-        case .saveFilePath, .search, .insertFilePath, .spellCheck, .logoMacro, .fillText, .tableDimensions,
+        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText, .tableDimensions,
             .gotoLine:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .logoReadWord, .logoReadChar:
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .logoReadWord, .logoReadChar:
             return false
         }
     }
@@ -761,7 +799,9 @@ final class PromptController: KeyInputHandler {
             return [("Y/Enter", tr("help.yes")), ("N", tr("help.no")), ("^C", tr("help.cancel"))]
         case .confirmEncodingFallback:
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("^C", tr("help.cancel"))]
-        case .search:
+        case .confirmReplace:
+            return [("Y", tr("help.yes")), ("N", tr("help.no")), ("A", tr("help.all")), ("^C", tr("help.cancel"))]
+        case .search, .replaceSearch, .replaceWith:
             return [("^C", tr("help.cancel")), ("^M", tr("help.set_search")), ("^R", tr("help.replace"))]
         case .saveFilePath, .insertFilePath:
             return [("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.confirm"))]

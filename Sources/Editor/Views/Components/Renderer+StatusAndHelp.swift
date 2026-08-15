@@ -262,7 +262,15 @@ extension Renderer {
                 ("N", tr("help.no"))
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .fillText, .tableDimensions, .gotoLine, .spellCheck,
+        case .confirmReplace:
+            helpItems1 = [
+                ("Y", tr("help.yes")), ("A", tr("help.all")),
+            ]
+            helpItems2 = [
+                ("N", tr("help.no")), ("^C", tr("help.cancel")),
+            ]
+
+        case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions, .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
             helpItems1 = [
                 ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),
@@ -337,22 +345,24 @@ extension Renderer {
                     helpItems1 = [
                         (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                         (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
-                        ("ESC", tr("help.commands")),
                         (keyLabel(for: .fileSave, fallback: "^S"), tr("help.save")),
                         (keyLabel(for: .editCut, fallback: "^X"), tr("help.cut_text")),
                         (keyLabel(for: .editCopy, fallback: "^C"), tr("help.copy_text")),
                         (keyLabel(for: .editUncut, fallback: "^V"), tr("help.uncut_text")),
+                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
                         (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
+                        (keyLabel(for: .editEvalLogo, fallback: "^E"), tr("help.run_logo")),
                     ]
                     helpItems2 = [
                         (keyLabel(for: .fileExit, fallback: "^Q"), tr("help.exit")),
                         (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
-                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
-                        (keyLabel(for: .editRedo, fallback: "^Y"), tr("help.redo")),
+                        (keyLabel(for: .editJustify, fallback: "^J"), tr("help.justify")),
                         (keyLabel(for: .searchWhereIs, fallback: "^F"), tr("help.where_is")),
                         (keyLabel(for: .searchReplace, fallback: "^H"), tr("help.replace")),
                         (keyLabel(for: .selectAll, fallback: "^A"), tr("help.select_all")),
+                        (keyLabel(for: .editRedo, fallback: "^Y"), tr("help.redo")),
                         (keyLabel(for: .movePgdn, fallback: "PgDn"), tr("help.next_pg")),
+                        (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                     ]
                 } else {
                     helpItems1 = [
@@ -360,20 +370,20 @@ extension Renderer {
                         (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
                         ("ESC", tr("help.commands")),
                         (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
-                        (keyLabel(for: .fileInsert, fallback: "^R"), tr("help.read_file")),
+                        (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
                         (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
-                        ("⇧+Arrow", tr("help.select_text")),
+                        (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_text")),
                         (keyLabel(for: .movePgup, fallback: "^Y"), tr("help.prev_pg")),
-                        (keyLabel(for: .cursorPos, fallback: "^C"), tr("help.cur_pos")),
+                        (keyLabel(for: .editEvalLogo, fallback: "^Q"), tr("help.run_logo")),
                     ]
                     helpItems2 = [
                         (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
                         (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
-                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
                         (keyLabel(for: .editJustify, fallback: "^J"), tr("help.justify")),
-                        (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
+                        (keyLabel(for: .fileInsert, fallback: "^R"), tr("help.read_file")),
+                        (keyLabel(for: .searchReplace, fallback: "^\\"), tr("help.replace")),
                         (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_text")),
-                        (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_text")),
+                        (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
                         (keyLabel(for: .movePgdn, fallback: "^V"), tr("help.next_pg")),
                         (keyLabel(for: .editSpell, fallback: "^T"), tr("help.to_spell")),
                     ]
@@ -505,6 +515,16 @@ extension Renderer {
             let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"
             promptPrefix = "\(editor.l10n["prompt.search"])\(defaultHint): "
             isConfirmation = false
+        case .replaceSearch:
+            let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"
+            promptPrefix = "\(editor.l10n["prompt.replace_search"])\(defaultHint): "
+            isConfirmation = false
+        case .replaceWith:
+            promptPrefix = editor.l10n["prompt.replace_with"]
+            isConfirmation = false
+        case .confirmReplace:
+            promptPrefix = editor.l10n["prompt.confirm_replace"]
+            isConfirmation = true
         case .insertFilePath:
             promptPrefix = editor.l10n["prompt.insert_file"]
             isConfirmation = false

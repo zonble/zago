@@ -58,6 +58,9 @@ struct TraditionalChineseStrings {
         "help.ai_reject": "拒絕 AI",
         "help.ai_next_proposal": "下個提案",
         "help.ai_previous_proposal": "上個提案",
+        "help.run_logo": "執行腳本",
+        "help.all": "全部",
+        "help.goto_line": "跳至行",
         "chrome.end_of_file": "檔案結尾",
 
         // Prompts
@@ -66,6 +69,9 @@ struct TraditionalChineseStrings {
         "prompt.confirm_reload": "檔案已在磁碟上變更。是否重新載入？（答「N」將保留本地緩衝區）：",
         "prompt.encoding_fallback": "編碼 \"%@\" 無法支援新文字，是否改以 UTF-8 格式儲存？(y/n) ",
         "prompt.search": "搜尋",
+        "prompt.replace_search": "搜尋並取代",
+        "prompt.replace_with": "取代為：",
+        "prompt.confirm_replace": "是否取代此處？[Y]是 / [N]否 / [A]全部 / [^C]取消：",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
         "prompt.logo": "❯ ",

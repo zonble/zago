@@ -25,6 +25,14 @@ struct Keymap: Sendable {
 
     /// Binds a single key to a command, placing it at the front of the command's shortcut list.
     mutating func bind(key: Key, to commandID: CommandID) {
+        if let previousCommand = keyToCommand[key], previousCommand != commandID {
+            let remaining = (commandToKeys[previousCommand] ?? []).filter { $0 != key }
+            if remaining.isEmpty {
+                commandToKeys.removeValue(forKey: previousCommand)
+            } else {
+                commandToKeys[previousCommand] = remaining
+            }
+        }
         keyToCommand[key] = commandID
         var list = commandToKeys[commandID, default: []].filter { $0 != key }
         list.insert(key, at: 0)
@@ -39,6 +47,14 @@ struct Keymap: Sendable {
     /// Registers a command with an array of keys in preference order.
     mutating func register(_ commandID: CommandID, keys: [Key]) {
         for key in keys {
+            if let previousCommand = keyToCommand[key], previousCommand != commandID {
+                let remaining = (commandToKeys[previousCommand] ?? []).filter { $0 != key }
+                if remaining.isEmpty {
+                    commandToKeys.removeValue(forKey: previousCommand)
+                } else {
+                    commandToKeys[previousCommand] = remaining
+                }
+            }
             keyToCommand[key] = commandID
         }
         commandToKeys[commandID] = keys
