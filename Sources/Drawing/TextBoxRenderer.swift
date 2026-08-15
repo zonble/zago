@@ -11,6 +11,31 @@ public enum TextBoxRenderMode: Sendable {
 public struct TextBoxRenderer: Sendable {
     public init() {}
 
+    public func insetRows(
+        text: String,
+        width: Int,
+        height: Int
+    ) -> (rows: [String], targetRow: Int, targetColumn: Int) {
+        let textLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
+        let startRow = max(0, (height - textLines.count) / 2)
+        let rows = (0..<height).map { row in
+            guard row >= startRow, row - startRow < textLines.count else {
+                return String(repeating: " ", count: width)
+            }
+
+            let line = textLines[row - startRow]
+            let textWidth = line.displayWidth
+            let offset = max(0, (width - textWidth) / 2)
+            return String(repeating: " ", count: offset)
+                + line
+                + String(repeating: " ", count: max(0, width - offset - textWidth))
+        }
+
+        let targetTextWidth = textLines.first?.displayWidth ?? text.displayWidth
+        let targetColumn = max(0, (width - targetTextWidth) / 2) + targetTextWidth
+        return (rows, startRow, targetColumn)
+    }
+
     public func frameRows(width: Int, height: Int, style: BoxStyle) -> [String] {
         guard width > 0, height > 0 else { return [] }
 

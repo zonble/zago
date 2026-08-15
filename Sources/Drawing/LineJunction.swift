@@ -130,6 +130,24 @@ public func fuseLineCharacter(
     return lineCharacter(forMask: existingMask | addingMask, style: style)
 }
 
+/// Fuses an existing line character with a new movement mask using the existing line style.
+public func fuseLineCharacter(
+    existing: Character,
+    defaultNewChar: Character,
+    moveMask: Int
+) -> Character {
+    let existingMask = canvasMask(for: existing)
+    guard existingMask != 0 else { return defaultNewChar }
+    return fuseLineCharacter(
+        existing: existing,
+        defaultNewCharacter: defaultNewChar,
+        addingMask: UInt8(moveMask))
+}
+
+public func isLineCharacter(_ character: Character) -> Bool {
+    lineStyle(for: character) != nil
+}
+
 public func arrowHead(
     for direction: CanvasDrawDirection,
     style: BorderStyle,

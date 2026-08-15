@@ -29,15 +29,20 @@ extension LogoEngine {
             if isPenDown {
                 editor.logoEngine(self, performAction: .ensureLineExists(index: currLine))
                 let lineStr = queryString(.lineAt(currLine)) ?? ""
-                let existingChar = displayCharAt(in: lineStr, visualColumn: currCol)
+                let existingChar = DisplayText.character(atVisualColumn: currCol, in: lineStr)
                 let defaultNewChar: Character = (dRow != 0) ? "│" : "─"
                 let isTerminalStep = step == steps - 1 || !nextIsInsideMinimumBounds
                 let maskToApply = (step == 0) ? exitBit : (isTerminalStep ? entryBit : (exitBit | entryBit))
-                let fusedChar = fuseCharContextual(
-                    line: currLine, col: currCol, existing: existingChar, defaultNewChar: defaultNewChar,
-                    moveMask: maskToApply)
-                let updatedLineText = replaceDisplayColumns(
-                    in: lineStr, startCol: currCol, width: 1, replacement: String(fusedChar))
+                let fusedChar = LineRenderer.contextualCharacter(
+                    existing: existingChar,
+                    defaultNewCharacter: defaultNewChar,
+                    moveMask: maskToApply,
+                    left: getLineCharAt(line: currLine, col: currCol - 1),
+                    right: getLineCharAt(line: currLine, col: currCol + 1),
+                    up: getLineCharAt(line: currLine - 1, col: currCol),
+                    down: getLineCharAt(line: currLine + 1, col: currCol))
+                let updatedLineText = DisplayText.replacingColumns(
+                    in: lineStr, startCol: currCol, width: 1, with: String(fusedChar))
                 editor.logoEngine(self, performAction: .setLine(index: currLine, text: updatedLineText))
                 editor.logoEngine(self, performAction: .markModified)
             }
@@ -55,63 +60,16 @@ extension LogoEngine {
         let totalLines = queryInteger(.lineCount) ?? 0
         guard line >= 0 && line < totalLines else { return " " }
         let lineStr = queryString(.lineAt(line)) ?? ""
-        return displayCharAt(in: lineStr, visualColumn: col)
+        return DisplayText.character(atVisualColumn: col, in: lineStr)
     }
 
     internal func setLineCharAt(line: Int, col: Int, char: Character) {
         guard let editor = self.delegate else { return }
         editor.logoEngine(self, performAction: .ensureLineExists(index: line))
         let lineStr = queryString(.lineAt(line)) ?? ""
-        let updated = replaceDisplayColumns(in: lineStr, startCol: col, width: 1, replacement: String(char))
+        let updated = DisplayText.replacingColumns(in: lineStr, startCol: col, width: 1, with: String(char))
         editor.logoEngine(self, performAction: .setLine(index: line, text: updated))
         editor.logoEngine(self, performAction: .markModified)
     }
 
-    internal func getMaskForChar(_ ch: Character) -> Int {
-        Int(canvasMask(for: ch))
-    }
-
-    internal func isMaskChar(_ ch: Character) -> Bool {
-        lineStyle(for: ch) != nil
-    }
-
-    internal func getEffectiveMask(line: Int, col: Int, existingChar: Character) -> Int {
-        var mask = getMaskForChar(existingChar)
-        guard mask != 0 else { return 0 }
-
-        if mask == 10 {
-            let rightCh = getLineCharAt(line: line, col: col + 1)
-            let leftCh = getLineCharAt(line: line, col: col - 1)
-            if !isMaskChar(rightCh) { mask &= ~2 }
-            if !isMaskChar(leftCh) { mask &= ~8 }
-        } else if mask == 5 {
-            let downCh = getLineCharAt(line: line + 1, col: col)
-            let upCh = getLineCharAt(line: line - 1, col: col)
-            if !isMaskChar(downCh) { mask &= ~4 }
-            if !isMaskChar(upCh) { mask &= ~1 }
-        }
-
-        return mask
-    }
-
-    internal func fuseCharContextual(line: Int, col: Int, existing: Character, defaultNewChar: Character, moveMask: Int)
-        -> Character
-    {
-        let existingMask = getEffectiveMask(line: line, col: col, existingChar: existing)
-        guard existingMask != 0 else { return defaultNewChar }
-
-        return fuseLineCharacter(
-            existing: existing,
-            defaultNewCharacter: defaultNewChar,
-            addingMask: UInt8(moveMask),
-            existingMask: UInt8(existingMask)
-        )
-    }
-
-    internal func fuseChar(existing: Character, defaultNewChar: Character, moveMask: Int) -> Character {
-        let existingMask = getMaskForChar(existing)
-        guard existingMask != 0 else { return defaultNewChar }
-
-        return fuseLineCharacter(existing: existing, defaultNewCharacter: defaultNewChar, addingMask: UInt8(moveMask))
-    }
 }
