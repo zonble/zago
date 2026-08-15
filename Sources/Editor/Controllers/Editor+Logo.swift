@@ -631,7 +631,7 @@ extension Editor {
                 fenceStart = r
                 break
             }
-            if line.hasPrefix("```") && r < currentLine {
+            if line.hasPrefix("```") && r < currentLine && r != currentLine - 1 {
                 break
             }
         }
@@ -648,7 +648,7 @@ extension Editor {
             }
         }
 
-        guard let end = fenceEnd, currentLine >= start && currentLine <= end else { return nil }
+        guard let end = fenceEnd, currentLine >= start && currentLine <= end + 1 else { return nil }
         guard start + 1 < end else { return ("", start + 1) }
 
         return (buffer.lines[(start + 1)..<end].joined(separator: "\n"), start + 1)
@@ -663,25 +663,37 @@ extension Editor {
         for r in (0...currentLine).reversed() {
             let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
             let upper = line.uppercased()
-            if upper.hasPrefix("TO ") || upper == "TO" {
+            let tokens = upper.split(separator: " ").map(String.init)
+            let hasTo = tokens.contains("TO")
+            let hasEnd = tokens.contains("END")
+
+            if hasTo && hasEnd {
+                if r == currentLine {
+                    return (buffer.lines[r], r)
+                } else {
+                    break
+                }
+            } else if hasTo {
                 toStart = r
                 break
-            }
-            if upper == "END" && r < currentLine {
+            } else if hasEnd && r < currentLine {
                 break
             }
         }
 
         if let start = toStart {
-            var end = currentLine
+            var end: Int? = nil
             for r in start..<buffer.lines.count {
                 let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
-                if line.uppercased() == "END" {
+                let tokens = line.uppercased().split(separator: " ").map(String.init)
+                if tokens.contains("END") {
                     end = r
                     break
                 }
             }
-            return (buffer.lines[start...end].joined(separator: "\n"), start)
+            if let end = end, currentLine >= start && currentLine <= end {
+                return (buffer.lines[start...end].joined(separator: "\n"), start)
+            }
         }
 
         // Multi-line balanced bracket check: if current line opens '[' without closing, scan down
