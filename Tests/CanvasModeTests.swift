@@ -648,3 +648,63 @@ import TextMetrics
     #expect(controller.handleKey(.ctrlArrowUp) == true)
     #expect(controller.handleKey(.ctrlShiftArrowUp) == true)
 }
+
+@Test func testCanvasBlockModernKeymapCopyCutPaste() throws {
+    let editor = Editor()
+    editor.apply(.keymap(.modern))
+    editor.buffer.lines = ["abcdef", "123456"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    // Test ^C (Copy)
+    editor.processKey(.ctrl("c"))
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
+    #expect(editor.buffer.lines == ["abcdef", "123456"])
+
+    // Test ^X (Cut)
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+    editor.processKey(.ctrl("x"))
+    #expect(editor.buffer.lines == ["aef", "156"])
+
+    // Test ^V (Paste)
+    editor.buffer.lines = ["xxYY", "zzWW"]
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 2
+    editor.processKey(.ctrl("v"))
+    #expect(editor.buffer.lines == ["xxbcdYY", "zz234WW"])
+}
+
+@Test func testCanvasClassicKeymapPreservesCtrlCAndCtrlX() throws {
+    let editor = Editor()
+    #expect(editor.keymapManager.activePreset == .classic)
+    editor.buffer.lines = ["abcdef", "123456"]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 1
+    editor.processKey(.mark)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 3
+    editor.processKey(.mark)
+
+    // Test ^C in Classic (shows Cursor Pos status, does not copy block)
+    editor.processKey(.ctrl("c"))
+    #expect(editor.canvasBlockClipboard == nil)
+    #expect(editor.statusMessage.contains("col") || editor.statusMessage.contains("line"))
+
+    // Test ^K in Classic (Cuts block)
+    editor.processKey(.ctrl("k"))
+    #expect(editor.buffer.lines == ["aef", "156"])
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
+}
+
+

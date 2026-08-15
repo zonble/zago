@@ -23,7 +23,7 @@ public final class KeymapManager {
         loadBasePreset(preset)
 
         // 2. Load Mode Overlays (Table, Canvas, Prompt, Menu)
-        loadModeOverlays()
+        loadModeOverlays(for: preset)
     }
 
     /// Binds a key to a command, optionally restricted to a specific mode overlay.
@@ -68,17 +68,24 @@ public final class KeymapManager {
 
     /// Reverse lookup: Finds the primary key label for a CommandID in a given mode.
     public func primaryKeyLabel(for commandID: CommandID, in mode: EditorMode) -> String? {
-        // 1. Check mode-specific overlay
+        // 1. Check if the active preset's primary display key is bound in this mode
+        if let primaryKey = primaryDisplayKeys[commandID]?.first {
+            if let modeKeys = modeKeymaps[mode], modeKeys[primaryKey] == commandID {
+                let label = primaryKey.helpBarLabel
+                if !label.isEmpty { return label }
+            }
+        }
+        // 2. Check mode-specific overlay for mode-unique commands
         if let modeKey = modeKeymaps[mode]?.first(where: { $0.value == commandID })?.key {
             let label = modeKey.helpBarLabel
             if !label.isEmpty { return label }
         }
-        // 2. Check canonical primary key
+        // 3. Check canonical primary key
         if let primaryKey = primaryDisplayKeys[commandID]?.first {
             let label = primaryKey.helpBarLabel
             if !label.isEmpty { return label }
         }
-        // 3. Check base keymap
+        // 4. Check base keymap
         if let baseKey = baseKeymap.first(where: { $0.value == commandID })?.key {
             let label = baseKey.helpBarLabel
             if !label.isEmpty { return label }
@@ -428,7 +435,7 @@ public final class KeymapManager {
         }
     }
 
-    private func loadModeOverlays() {
+    private func loadModeOverlays(for preset: KeymapPreset) {
         // Table Mode Overlays
         var table: [Key: CommandID] = [:]
         table[.tab] = .tableNextCell
@@ -437,13 +444,13 @@ public final class KeymapManager {
         table[.ctrlShiftArrowLeft] = .tableAdjustWidthDec
         table[.ctrlShiftArrowDown] = .tableAdjustHeightInc
         table[.ctrlShiftArrowUp] = .tableAdjustHeightDec
+        table[.home] = .tableCellStart
+        table[.end] = .tableCellEnd
         table[.ctrl("j")] = .tableCenterText
         table[.ctrl("J")] = .tableCenterText
         table[.ctrl("k")] = .tableClearCell
         table[.ctrl("K")] = .tableClearCell
         table[.f9] = .tableClearCell
-        table[.home] = .tableCellStart
-        table[.end] = .tableCellEnd
         modeKeymaps[.table] = table
 
         // Canvas Mode Overlays
@@ -456,16 +463,34 @@ public final class KeymapManager {
         canvas[.ctrlShiftArrowRight] = .canvasDrawArrow
         canvas[.ctrlShiftArrowUp] = .canvasDrawArrow
         canvas[.ctrlShiftArrowDown] = .canvasDrawArrow
-        canvas[.ctrl("k")] = .editCut
-        canvas[.ctrl("K")] = .editCut
-        canvas[.alt("w")] = .editCopy
-        canvas[.alt("W")] = .editCopy
-        canvas[.ctrl("u")] = .editUncut
-        canvas[.ctrl("U")] = .editUncut
         canvas[.alt("b")] = .editMark
         canvas[.alt("B")] = .editMark
         canvas[.ctrl("^")] = .editMark
         canvas[.mark] = .editMark
+
+        switch preset {
+        case .classic:
+            canvas[.ctrl("k")] = .editCut
+            canvas[.ctrl("K")] = .editCut
+            canvas[.alt("w")] = .editCopy
+            canvas[.alt("W")] = .editCopy
+            canvas[.ctrl("u")] = .editUncut
+            canvas[.ctrl("U")] = .editUncut
+
+        case .modern:
+            canvas[.ctrl("x")] = .editCut
+            canvas[.ctrl("X")] = .editCut
+            canvas[.ctrl("c")] = .editCopy
+            canvas[.ctrl("C")] = .editCopy
+            canvas[.ctrl("v")] = .editUncut
+            canvas[.ctrl("V")] = .editUncut
+            canvas[.ctrl("k")] = .editCut
+            canvas[.ctrl("K")] = .editCut
+            canvas[.ctrl("u")] = .editUncut
+            canvas[.ctrl("U")] = .editUncut
+            canvas[.alt("w")] = .editCopy
+            canvas[.alt("W")] = .editCopy
+        }
         modeKeymaps[.canvas] = canvas
 
         // Prompt Mode Overlays
