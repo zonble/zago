@@ -1,0 +1,141 @@
+import Foundation
+import Testing
+
+@testable import Editor
+@testable import LogoEngine
+
+@Suite struct LogoDateTimeTests {
+    @Test func testBasicDateDefault() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["DATE"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(!res.isEmpty)
+        let parts = res.split(separator: "-")
+        #expect(parts.count == 3)
+    }
+
+    @Test func testBasicTimeDefault() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["TIME"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(!res.isEmpty)
+        let parts = res.split(separator: ":")
+        #expect(parts.count == 3)
+    }
+
+    @Test func testBasicDateTimeDefault() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["DATETIME"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(!res.isEmpty)
+        #expect(res.contains("-"))
+        #expect(res.contains(":"))
+    }
+
+    @Test func testSmartPolymorphicROCArguments() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["DATE", "\"zh_TW", "\"roc"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(res.contains("民國") || res.contains("115"))
+    }
+
+    @Test func testSmartPolymorphicSingleROCArgument() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["DATE", "\"roc"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(res.contains("民國") || res.contains("115"))
+    }
+
+    @Test func testSmartPolymorphicJapaneseArgument() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = ["DATE", "\"japanese"]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(res.contains("令和") || res.contains("8年"))
+    }
+
+    @Test func testCustomPatternFormatting() {
+        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 2023-11-14 22:13:20 UTC
+        let formatted = LogoDateTimeFormatter.format(
+            date: fixedDate,
+            mode: .date,
+            formatSpec: "yyyy/MM/dd",
+            localeSpec: "en_US",
+            timeZoneSpec: "UTC",
+            calendarSpec: "gregorian"
+        )
+        #expect(formatted == "2023/11/14")
+    }
+
+    @Test func testISO8601Formatting() {
+        let fixedDate = Date(timeIntervalSince1970: 1700000000)
+        let formatted = LogoDateTimeFormatter.format(
+            date: fixedDate,
+            mode: .dateTime,
+            formatSpec: "iso8601",
+            localeSpec: "en_US",
+            timeZoneSpec: "UTC"
+        )
+        #expect(formatted == "2023-11-14T22:13:20Z")
+    }
+
+    @Test func testMinguoROCCalendar() {
+        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 2023-11-14 (民國112年)
+        let formatted = LogoDateTimeFormatter.format(
+            date: fixedDate,
+            mode: .date,
+            formatSpec: "GGGy年M月d日",
+            localeSpec: "zh_TW",
+            timeZoneSpec: "UTC",
+            calendarSpec: "roc"
+        )
+        #expect(formatted.contains("112") || formatted.contains("民國"))
+    }
+
+    @Test func testTimeZonesAndOffsets() {
+        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 22:13:20 UTC -> 07:13:20 (+09:00 next day)
+        let formattedTokyo = LogoDateTimeFormatter.format(
+            date: fixedDate,
+            mode: .time,
+            formatSpec: "HH:mm:ss",
+            timeZoneSpec: "Asia/Tokyo"
+        )
+        #expect(formattedTokyo == "07:13:20")
+
+        let formattedOffset = LogoDateTimeFormatter.format(
+            date: fixedDate,
+            mode: .time,
+            formatSpec: "HH:mm:ss",
+            timeZoneSpec: "+0900"
+        )
+        #expect(formattedOffset == "07:13:20")
+    }
+
+    @Test func testEvaluatorPropertyList() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = [
+            "DATE",
+            "[", "format", "\"yyyy-MM-dd", "tz", "\"UTC", "calendar", "\"gregorian", "]"
+        ]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(!res.isEmpty)
+        #expect(res.split(separator: "-").count == 3)
+    }
+
+    @Test func testEvaluatorVariadicParentheses() {
+        let engine = LogoEngine()
+        var index = 0
+        let tokens = [
+            "(", "DATE", "\"iso8601", "\"en_US", "\"UTC", ")"
+        ]
+        let res = engine.evaluateExpression(tokens, index: &index)
+        #expect(!res.isEmpty)
+        #expect(res.hasSuffix("Z"))
+    }
+}

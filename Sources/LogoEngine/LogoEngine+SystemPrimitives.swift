@@ -13,44 +13,13 @@ extension LogoEngine {
 
         switch prim {
         case .date:
-            index += 1
-            var format = "yyyy-MM-dd"
-            if index < tokens.count {
-                let nextToken = tokens[index]
-                if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
-                    let customFmt = unquote(nextToken)
-                    if !customFmt.isEmpty {
-                        format = customFmt
-                    }
-                } else {
-                    index -= 1
-                }
-            }
-            let formatter = DateFormatter()
-            formatter.dateFormat = format
-            let value = formatter.string(from: Date())
-            setLastExpressionDateTime(value)
-            return value
+            return evaluateDateTimePrimitive(mode: .date, tokens: tokens, index: &index)
 
         case .time:
-            index += 1
-            var format = "HH:mm:ss"
-            if index < tokens.count {
-                let nextToken = tokens[index]
-                if !LogoEngine.isKeyword(nextToken) && nextToken != "]" && nextToken != ")" {
-                    let customFmt = unquote(nextToken)
-                    if !customFmt.isEmpty {
-                        format = customFmt
-                    }
-                } else {
-                    index -= 1
-                }
-            }
-            let formatter = DateFormatter()
-            formatter.dateFormat = format
-            let value = formatter.string(from: Date())
-            setLastExpressionDateTime(value)
-            return value
+            return evaluateDateTimePrimitive(mode: .time, tokens: tokens, index: &index)
+
+        case .datetime:
+            return evaluateDateTimePrimitive(mode: .dateTime, tokens: tokens, index: &index)
 
         case .count:
             index += 1
@@ -193,5 +162,85 @@ extension LogoEngine {
         index += 1
         let inputText = unquote(evaluateExpression(tokens, index: &index))
         return "\(count(inputText))"
+    }
+
+    private func evaluateDateTimePrimitive(
+        mode: LogoDateTimeFormatter.Mode,
+        tokens: [String],
+        index: inout Int
+    ) -> String {
+        var formatSpec: String? = nil
+        var localeSpec: String? = nil
+        var timeZoneSpec: String? = nil
+        var calendarSpec: String? = nil
+
+        if index + 1 < tokens.count && tokens[index + 1] == "[" {
+            index += 1
+            let rawList = evaluateExpression(tokens, index: &index)
+            let parsed = LogoValue.parse(rawList)
+            if case .list(let items) = parsed {
+                var isDict = false
+                var i = 0
+                while i < items.count {
+                    let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                    if (cleanKey == "format" || cleanKey == "fmt" || cleanKey == "locale" || cleanKey == "lang"
+                        || cleanKey == "tz" || cleanKey == "timezone" || cleanKey == "calendar" || cleanKey == "cal")
+                        && i + 1 < items.count
+                    {
+                        isDict = true
+                        let val = items[i + 1].stringValue
+                        switch cleanKey {
+                        case "format", "fmt": formatSpec = val
+                        case "locale", "lang": localeSpec = val
+                        case "tz", "timezone": timeZoneSpec = val
+                        case "calendar", "cal": calendarSpec = val
+                        default: break
+                        }
+                        i += 2
+                    } else {
+                        i += 1
+                    }
+                }
+
+                if !isDict {
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(items.map { $0.stringValue }, mode: mode)
+                    formatSpec = f
+                    localeSpec = l
+                    timeZoneSpec = tz
+                    calendarSpec = cal
+                }
+            }
+        } else {
+            var positional: [String] = []
+            while positional.count < 4 && index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                    break
+                }
+                index += 1
+                let val = evaluateExpression(tokens, index: &index)
+                let clean = unquote(val)
+                positional.append(clean)
+            }
+
+            if !positional.isEmpty {
+                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(positional, mode: mode)
+                formatSpec = f
+                localeSpec = l
+                timeZoneSpec = tz
+                calendarSpec = cal
+            }
+        }
+
+        let result = LogoDateTimeFormatter.format(
+            mode: mode,
+            formatSpec: formatSpec,
+            localeSpec: localeSpec,
+            timeZoneSpec: timeZoneSpec,
+            calendarSpec: calendarSpec
+        )
+        setLastExpressionDateTime(result)
+        return result
     }
 }
