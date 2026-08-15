@@ -15,6 +15,9 @@ final class DescribeCommandDialogView {
     private var cachedLines: [String] = []
     private var cachedBodyHeight: Int = 10
 
+    private var tabCandidates: [String] = []
+    private var tabCandidateIndex: Int = 0
+
     init(
         terminal: EditorTerminal,
         editor: Editor? = nil,
@@ -54,18 +57,26 @@ final class DescribeCommandDialogView {
                         symbol = trimmed
                         isInputMode = false
                         scrollOffset = 0
+                        tabCandidates = []
+                        tabCandidateIndex = 0
                         render()
                     } else {
                         return
                     }
                 case .esc, .ctrl("c"), .ctrl("g"):
                     return
+                case .tab:
+                    handleTabCompletion()
                 case .backspace:
+                    tabCandidates = []
+                    tabCandidateIndex = 0
                     if !inputText.isEmpty {
                         inputText.removeLast()
                         render()
                     }
                 case .char(let ch):
+                    tabCandidates = []
+                    tabCandidateIndex = 0
                     inputText.append(ch)
                     render()
                 default:
@@ -115,6 +126,79 @@ final class DescribeCommandDialogView {
         }
     }
 
+    private func handleTabCompletion() {
+        let candidates = allCandidates()
+        let query = inputText.trimmingCharacters(in: .whitespaces)
+
+        if tabCandidates.isEmpty {
+            if query.isEmpty {
+                tabCandidates = candidates
+                tabCandidateIndex = 0
+            } else {
+                let queryLower = query.lowercased()
+                tabCandidates = candidates.filter { $0.lowercased().hasPrefix(queryLower) }
+                tabCandidateIndex = 0
+            }
+        }
+
+        guard !tabCandidates.isEmpty else { return }
+
+        if tabCandidates.count == 1 {
+            inputText = tabCandidates[0]
+            tabCandidates = []
+            tabCandidateIndex = 0
+        } else {
+            let commonPrefix = longestCommonPrefix(strings: tabCandidates)
+            if !query.isEmpty && commonPrefix.count > query.count && tabCandidateIndex == 0 {
+                inputText = commonPrefix
+            } else {
+                inputText = tabCandidates[tabCandidateIndex % tabCandidates.count]
+                tabCandidateIndex += 1
+            }
+        }
+        render()
+    }
+
+    private func longestCommonPrefix(strings: [String]) -> String {
+        guard let first = strings.first, !strings.isEmpty else { return "" }
+        var prefix = first
+        for str in strings.dropFirst() {
+            while !str.lowercased().hasPrefix(prefix.lowercased()) && !prefix.isEmpty {
+                prefix = String(prefix.dropLast())
+            }
+            if prefix.isEmpty { break }
+        }
+        return prefix
+    }
+
+    private func allCandidates() -> [String] {
+        var set = Set<String>()
+
+        // 1. Built-in LOGO Primitives
+        for prim in LogoPrimitive.allCases {
+            set.insert(prim.meta.name)
+        }
+
+        // 2. Editor Commands
+        if let editor = editor {
+            for cmd in editor.commandRegistry.commands {
+                for alias in cmd.commandBarAliases {
+                    set.insert(alias)
+                }
+                set.insert(cmd.id.rawValue)
+            }
+        }
+
+        // 3. User-defined procedures
+        if let editor = editor {
+            for procName in editor.logoEngine.customProcedures.keys {
+                set.insert(procName)
+            }
+        }
+
+        return Array(set).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
     private func render() {
         let (rows, cols) = terminal.getWindowSize()
         guard rows > 6 && cols > 20 else { return }
@@ -134,12 +218,19 @@ final class DescribeCommandDialogView {
             title = l10n["describe_command.title_input"]
             footer = l10n["describe_command.footer_input"]
             let promptLabel = l10n["describe_command.prompt_input"]
-            lines = [
+            var inputLines = [
                 "",
                 promptLabel,
                 "> " + inputText + "█",
                 "",
             ]
+            if !tabCandidates.isEmpty {
+                let preview = tabCandidates.prefix(6).joined(separator: ", ")
+                let more = tabCandidates.count > 6 ? ", ..." : ""
+                let candidateHint = "  [\(tabCandidates.count)] " + preview + more
+                inputLines.append(candidateHint.ansiStyled(style: ANSIStyle.dimGray))
+            }
+            lines = inputLines
         } else {
             title = String(format: l10n["describe_command.title_help"], symbol)
             lines = buildSymbolDetails(for: symbol, l10n: l10n, maxLineWidth: contentWidth)
@@ -154,7 +245,7 @@ final class DescribeCommandDialogView {
         cachedLines = lines
 
         let dialogHeight = isInputMode
-            ? min(maxDialogHeight, 8)
+            ? min(maxDialogHeight, lines.count + 2)
             : min(maxDialogHeight, max(12, lines.count + 2))
 
         let bodyHeight = max(1, dialogHeight - 2)
@@ -197,11 +288,7 @@ final class DescribeCommandDialogView {
             let lineIndex = scrollOffset + r
             if lineIndex < lines.count {
                 let lineText = lines[lineIndex]
-                let maxLineWidth = max(1, dialogWidth - 6)
-                let visibleText = lineText.displayWidth > maxLineWidth
-                    ? lineText.visualSlice(startVisualColumn: 0, width: maxLineWidth).text
-                    : lineText
-                output += "\u{001B}[\(currentRow);\(startCol + 3)H\(visibleText)"
+                output += "\u{001B}[\(currentRow);\(startCol + 3)H\(lineText)\(ANSIStyle.reset)"
             }
         }
 
@@ -398,42 +485,53 @@ final class DescribeCommandDialogView {
         let reqBadge = param.required
             ? l10n["describe_command.param_required"]
             : l10n["describe_command.param_optional"]
-        let prefix = "    • \(param.name) " + reqBadge.ansiStyled(style: ANSIStyle.dimGray)
+        let prefixPlain = "    • \(param.name) "
+        let reqBadgeStyled = reqBadge.ansiStyled(style: ANSIStyle.dimGray)
 
         guard !param.allowedValues.isEmpty else {
-            return [prefix]
+            return [prefixPlain + reqBadgeStyled]
         }
 
         let allowedLabel = l10n["describe_command.allowed_values"]
         let values = param.allowedValues
 
-        let plainLead = "    • \(param.name) \(reqBadge)\(allowedLabel)"
-        let indentSize = min(plainLead.displayWidth, 24)
+        let firstLineLeader = "\(prefixPlain)\(reqBadge)\(allowedLabel)"
+        let indentSize = min(firstLineLeader.displayWidth, 24)
         let indent = String(repeating: " ", count: indentSize)
 
         var result: [String] = []
-        var currentPlain = plainLead
-        var currentFormatted = prefix + allowedLabel.ansiStyled(style: ANSIStyle.dimGray)
+        var currentValues = allowedLabel
 
         for (i, val) in values.enumerated() {
             let item = val + (i == values.count - 1 ? ")" : ", ")
-            if (currentPlain + item).displayWidth <= maxLineWidth {
-                currentPlain += item
-                currentFormatted += item.ansiStyled(style: ANSIStyle.dimGray)
+            let testLine = result.isEmpty
+                ? "\(prefixPlain)\(reqBadge)\(currentValues)\(item)"
+                : "\(indent)\(currentValues)\(item)"
+
+            if testLine.displayWidth <= maxLineWidth {
+                currentValues += item
             } else {
-                if currentPlain != plainLead {
-                    result.append(currentFormatted)
-                    currentPlain = indent + item
-                    currentFormatted = indent + item.ansiStyled(style: ANSIStyle.dimGray)
+                if result.isEmpty {
+                    let formattedFirstLine = prefixPlain + (reqBadge + currentValues).ansiStyled(style: ANSIStyle.dimGray)
+                    result.append(formattedFirstLine)
                 } else {
-                    currentPlain += item
-                    currentFormatted += item.ansiStyled(style: ANSIStyle.dimGray)
+                    let formattedSubsequent = indent + currentValues.ansiStyled(style: ANSIStyle.dimGray)
+                    result.append(formattedSubsequent)
                 }
+                currentValues = item
             }
         }
-        if !currentFormatted.isEmpty {
-            result.append(currentFormatted)
+
+        if !currentValues.isEmpty {
+            if result.isEmpty {
+                let formattedFirstLine = prefixPlain + (reqBadge + currentValues).ansiStyled(style: ANSIStyle.dimGray)
+                result.append(formattedFirstLine)
+            } else {
+                let formattedSubsequent = indent + currentValues.ansiStyled(style: ANSIStyle.dimGray)
+                result.append(formattedSubsequent)
+            }
         }
+
         return result
     }
 

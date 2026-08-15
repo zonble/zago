@@ -882,7 +882,7 @@ struct EnglishStrings {
         "describe_command.title_input": "Describe Command & Procedure",
         "describe_command.title_help": "Help: %@",
         "describe_command.prompt_input": "Enter command, procedure or primitive name:",
-        "describe_command.footer_input": "[ Enter: Search  |  Esc: Close ]",
+        "describe_command.footer_input": "[ Tab: Complete  |  Enter: Search  |  Esc: Close ]",
         "describe_command.footer_scroll": "[ ↑/↓/PgUp/PgDn: Scroll  |  q/Esc/Enter: Close ]",
         "describe_command.footer_close": "[ Press q / Esc / Enter to close ]",
         "describe_command.found_matches": "Found %d matches:",
