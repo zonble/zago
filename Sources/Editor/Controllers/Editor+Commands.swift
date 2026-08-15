@@ -108,6 +108,7 @@ extension Editor {
         commandRegistry.register(ClearLogoOutputAndCanvasCommand())
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
+        commandRegistry.register(DescribeKeyCommand())
         commandRegistry.register(SymbolPickerCommand())
         commandRegistry.register(SwitchTextModeCommand())
         commandRegistry.register(ToggleCanvasModeCommand())

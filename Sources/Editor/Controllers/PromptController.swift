@@ -30,6 +30,7 @@ final class PromptController: KeyInputHandler {
         case fillText(completion: (String?) -> Void)
         case tableDimensions(completion: (String?) -> Void)
         case gotoLine(completion: (String?) -> Void)
+        case describeKey(completion: (Key) -> Void)
         case logoReadWord(prompt: String)
         case logoReadChar(prompt: String)
     }
@@ -79,6 +80,17 @@ final class PromptController: KeyInputHandler {
     /// KeyInputHandler protocol implementation.
     func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
+
+        if case .describeKey(let completion) = mode {
+            if key == .unknown || key == .resize {
+                return false
+            }
+            mode = .none
+            inputText = ""
+            cursorIndex = 0
+            completion(key)
+            return true
+        }
 
         let cmd = editor?.keymapManager.resolve(key: key, in: .prompt)
 
@@ -227,6 +239,8 @@ final class PromptController: KeyInputHandler {
         case .gotoLine(let completion):
             mode = .none
             completion(nil)
+        case .describeKey:
+            mode = .none
         case .logoReadWord, .logoReadChar:
             mode = .none
         case .none:
@@ -242,7 +256,7 @@ final class PromptController: KeyInputHandler {
     /// Processes keyboard input when in prompt mode.
     func processPromptKey(_ key: Key) {
         switch mode {
-        case .logoReadWord, .logoReadChar:
+        case .logoReadWord, .logoReadChar, .describeKey:
             break
         case .saveFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
@@ -442,7 +456,7 @@ final class PromptController: KeyInputHandler {
         case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText, .tableDimensions,
             .gotoLine:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .logoReadWord, .logoReadChar:
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .describeKey, .logoReadWord, .logoReadChar:
             return false
         }
     }
@@ -814,6 +828,8 @@ final class PromptController: KeyInputHandler {
             ]
         case .logoReadWord, .logoReadChar:
             return [("^C", tr("help.cancel")), ("^M", tr("help.submit"))]
+        case .describeKey:
+            return nil
         }
     }
 }

@@ -282,6 +282,74 @@ extension Editor {
         })
     }
 
+    /// Prompts user to press any key to describe its function (:help-key / Help -> Describe Key).
+    func promptDescribeKey() {
+        promptInputText = ""
+        currentPromptMode = .describeKey(completion: { [weak self] key in
+            guard let self else { return }
+            let desc = self.describeKey(key)
+            self.reportOperationResult(.succeeded(message: desc))
+        })
+    }
+
+    /// Resolves a Key across base, canvas, and table modes and returns a formatted description.
+    func describeKey(_ key: Key) -> String {
+        let keyLabel = key.helpBarLabel
+
+        func commandDescription(for cmdId: CommandID) -> String {
+            if cmdId == .customMacro, let customCmd = commandRegistry.customCommand(for: key) {
+                if language == .zh_TW {
+                    let script = customCmd.description.replacingOccurrences(of: "Execute LOGO script ", with: "")
+                    return "執行自訂 LOGO 腳本 \(script)"
+                }
+                return customCmd.description
+            }
+            let key = "command.\(cmdId.rawValue).description"
+            let localized = l10n[key]
+            if localized != key && !localized.isEmpty {
+                return localized
+            }
+            if let cmd = commandRegistry.commands.first(where: { $0.id == cmdId }) {
+                return cmd.description
+            }
+            return cmdId.rawValue
+        }
+
+        let textCmd = keymapManager.resolve(key: key, in: .text)
+        let canvasCmd = keymapManager.resolve(key: key, in: .canvas)
+        let tableCmd = keymapManager.resolve(key: key, in: .table)
+
+        if textCmd == nil && canvasCmd == nil && tableCmd == nil {
+            if case .char(let ch) = key {
+                return String(format: l10n["status.describe_char"], String(ch), String(ch))
+            }
+            return String(format: l10n["status.describe_unbound"], keyLabel)
+        }
+
+        var parts: [String] = []
+        if let textCmd {
+            let desc = commandDescription(for: textCmd)
+            parts.append("\(desc) (\(textCmd.rawValue))")
+        }
+
+        let modeSep = (language == .zh_TW) ? "：" : ": "
+
+        if let canvasCmd, canvasCmd != textCmd {
+            let desc = commandDescription(for: canvasCmd)
+            let modeTitle = l10n["mode.canvas_mode"]
+            parts.append("\(modeTitle)\(modeSep)\(desc) (\(canvasCmd.rawValue))")
+        }
+
+        if let tableCmd, tableCmd != textCmd {
+            let desc = commandDescription(for: tableCmd)
+            let modeTitle = l10n["mode.table_mode"]
+            parts.append("\(modeTitle)\(modeSep)\(desc) (\(tableCmd.rawValue))")
+        }
+
+        let sep = (language == .zh_TW) ? "：" : ": "
+        return "\(keyLabel)\(sep)\(parts.joined(separator: " | "))"
+    }
+
     func performGotoLine(_ input: String) {
         let parts = input.components(separatedBy: CharacterSet(charactersIn: ", "))
             .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }

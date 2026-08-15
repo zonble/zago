@@ -126,3 +126,18 @@ struct SymbolPickerCommand: Command {
         return .succeeded
     }
 }
+
+struct DescribeKeyCommand: Command {
+    let id: CommandID = .helpDescribeKey
+    let name = "Describe Key"
+    let description = "Describe keybinding and mode functions"
+    let commandBarAliases = ["help-key"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptDescribeKey()
+        return .prompting
+    }
+}

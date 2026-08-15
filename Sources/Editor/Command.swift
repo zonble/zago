@@ -144,6 +144,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case logoDebug = "logo.debug"
     case menuShow = "menu.show"
     case helpShow = "help.show"
+    case helpDescribeKey = "help.describe_key"
     case textMode = "mode.text"
     case canvasToggle = "mode.canvas.toggle"
     case tableToggle = "table.toggle"
@@ -272,6 +273,11 @@ final class CommandRegistry {
     /// Unbinds a specific key mapping.
     func unbind(key: Key) {
         customKeyMap.removeValue(forKey: key)
+    }
+
+    /// Returns custom command bound to key if any.
+    func customCommand(for key: Key) -> Command? {
+        customKeyMap[key]
     }
 
     /// Dispatches a command by its type-safe `CommandID`.
