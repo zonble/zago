@@ -39,21 +39,17 @@ import Testing
     @Test func testBitwiseAndOrXorNot() throws {
         let engine = LogoEngine()
 
-        // BIT.AND and BITAND (6 & 3 = 2)
+        // BIT.AND (6 & 3 = 2)
         #expect(eval("BIT.AND 6 3", engine: engine) == "2")
-        #expect(eval("BITAND 6 3", engine: engine) == "2")
 
-        // BIT.OR and BITOR (6 | 3 = 7)
+        // BIT.OR (6 | 3 = 7)
         #expect(eval("BIT.OR 6 3", engine: engine) == "7")
-        #expect(eval("BITOR 6 3", engine: engine) == "7")
 
-        // BIT.XOR and BITXOR (6 ^ 3 = 5)
+        // BIT.XOR (6 ^ 3 = 5)
         #expect(eval("BIT.XOR 6 3", engine: engine) == "5")
-        #expect(eval("BITXOR 6 3", engine: engine) == "5")
 
-        // BIT.NOT and BITNOT (~0 = -1)
+        // BIT.NOT (~0 = -1)
         #expect(eval("BIT.NOT 0", engine: engine) == "-1")
-        #expect(eval("BITNOT 0", engine: engine) == "-1")
     }
 
     @Test func testBitwiseShift() throws {

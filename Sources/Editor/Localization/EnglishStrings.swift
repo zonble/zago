@@ -135,7 +135,7 @@ struct EnglishStrings {
             GOTO row [col]                       Jump to 1-based row/column
             FIND "query                          Search text
             INDENT / OUTDENT                     Indent / outdent line (4 spaces)
-            NL / NEWLINE / ENTER                 Insert a new line at current position
+            NL / NEWLINE                         Insert a new line at current position
             JOINLINE / SPLITLINE                 Join next line / split current line
             MARK                                 Mark selection 
             CUT / UNCUT                          Cut / paste clipboard
@@ -204,8 +204,8 @@ struct EnglishStrings {
             DATE [format] [locale] [tz] [cal]    Get current date (styles, timezones, calendars)
             TIME [format] [locale] [tz] [cal]    Get current time (default: "HH:mm:ss")
             DATETIME [fmt] [loc] [tz] [cal]      Get combined date & time string
-            DATEADD date amount [unit]           Add/subtract time units (days, hours, etc.)
-            DATEDIFF date1 date2 [unit]          Difference between dates in specified units
+            DATE.ADD date amount [unit]          Add/subtract time units (days, hours, etc.)
+            DATE.DIFF date1 date2 [unit]         Difference between dates in specified units
             FORMAT.DATE date [fmt] [loc] [tz]    Format custom date/timestamp/list
             FORMAT.NUMBER num [style] [loc]      Format number (words, caps, roman, money, pct)
             FORMAT.LIST list [type] [locale]     Format human list ("and" -> A, B, and C)
@@ -232,9 +232,9 @@ struct EnglishStrings {
             HEADING                              Return current heading
 
           9. RegEx operations
-            REGEX_MATCH s "pattern"              Full string regex match (REMATCH?)
-            REGEX_REPLACE s "pat" "repl"         Global regex find and replace (RREPLACE)
-            REGEX_FIND s "pattern"               Find all regex matches as a list (RFIND)
+            REGEX.MATCH s "pattern"              Full string regex match
+            REGEX.REPLACE s "pat" "repl"         Global regex find and replace
+            REGEX.FIND s "pattern"               Find all regex matches as a list
 
           10. Control flow
             REPEAT n [ commands ]                Repeat block n times (repcount or #)
@@ -259,12 +259,12 @@ struct EnglishStrings {
             SIN / COS / TAN degrees              Trigonometric functions (degrees)
             RANDOM n / RERANDOM [seed]           Random int 0...n-1 / seed generator
             ISEQ start end                       Generate list of sequential integers
-            BITAND a b / BIT.AND                 Bitwise logic AND
-            BITOR a b / BIT.OR                   Bitwise logic OR
-            BITXOR a b / BIT.XOR                 Bitwise logic XOR
-            BITNOT a / BIT.NOT                   Bitwise logic NOT
-            LSHIFT a bits / BIT.SHL              Bitwise logical shift left
-            RSHIFT a bits / BIT.SHR              Bitwise logical shift right
+            BIT.AND a b                          Bitwise logic AND
+            BIT.OR a b                           Bitwise logic OR
+            BIT.XOR a b                          Bitwise logic XOR
+            BIT.NOT a                            Bitwise logic NOT
+            BIT.SHL a bits / LSHIFT              Bitwise logical shift left
+            BIT.SHR a bits / RSHIFT              Bitwise logical shift right
 
           13. Program & workspace management
             TO name :arg ... END                 Define custom procedure (single-expression

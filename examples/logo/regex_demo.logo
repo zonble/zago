@@ -1,14 +1,14 @@
 ; ==============================================================================
 ; Regular Expression & String Search Example (in zago Editor LOGO)
 ; ==============================================================================
-; Demonstrates LOGO regex primitives: `REGEX_MATCH?`, `REGEX_REPLACE`,
+; Demonstrates LOGO regex primitives: `REGEX.MATCH`, `REGEX.REPLACE`,
 ; `PADLEFT`, `PADRIGHT`.
 ; ==============================================================================
 
 TYPE "===_Regex_&_String_Search_Demo_==="
 NL
 
-; 1. REGEX_MATCH? Check valid email format
+; 1. REGEX.MATCH Check valid email format
 MAKE "emails [user@example.com invalid_email dev.logo@zago.org]
 MAKE "email_pattern "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 MAKE "i 1
@@ -16,7 +16,7 @@ MAKE "n COUNT :emails
 
 WHILE [:i <= :n] [
   MAKE "em ITEM :i :emails
-  MAKE "valid REGEX_MATCH? :email_pattern :em
+  MAKE "valid REGEX.MATCH :email_pattern :em
   TYPE FORMAT "email:_%s_valid:_%s" (LIST :em :valid)
   NL
   MAKE "i :i + 1
@@ -24,9 +24,9 @@ WHILE [:i <= :n] [
 
 NL
 
-; 2. REGEX_REPLACE Mask IP addresses and numbers
+; 2. REGEX.REPLACE Mask IP addresses and numbers
 MAKE "raw_text "Server_192.168.1.100_date_2026-08-08"
-MAKE "masked REGEX_REPLACE "\d+" "***" :raw_text
+MAKE "masked REGEX.REPLACE "\d+" "***" :raw_text
 TYPE FORMAT "original:_%s" (LIST :raw_text)
 NL
 TYPE FORMAT "masked:___%s" (LIST :masked)

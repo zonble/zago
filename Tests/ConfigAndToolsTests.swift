@@ -800,11 +800,11 @@ struct ConfigAndToolsTests {
         #expect(reference.contains("SUBSTRING s start len"))
         #expect(reference.contains("PROCEDURE? name"))
         #expect(reference.contains("GETLINE [row]"))
-        #expect(reference.contains("BITAND a b"))
+        #expect(reference.contains("BIT.AND a b"))
         #expect(reference.contains("SIN / COS / TAN degrees"))
         #expect(reference.contains("ISEQ start end"))
-        #expect(reference.contains("REGEX_MATCH s \"pattern\""))
-        #expect(reference.contains("NL / NEWLINE / ENTER"))
+        #expect(reference.contains("REGEX.MATCH s \"pattern\""))
+        #expect(reference.contains("NL / NEWLINE"))
 
         let editor = Editor()
         editor.logoEngine.execute("MAKE \"answer 42 TO TITLE :text BOX :text CENTER ROUND END")
@@ -816,10 +816,10 @@ struct ConfigAndToolsTests {
         #expect(zhReference.contains("LOGO 指令參考"))
         #expect(zhReference.contains("框線樣式"))
         #expect(zhReference.contains("GETLINE [row]"))
-        #expect(zhReference.contains("BITAND a b"))
+        #expect(zhReference.contains("BIT.AND a b"))
         #expect(zhReference.contains("以角度為單位的三角函數"))
-        #expect(zhReference.contains("REGEX_MATCH s \"pattern\""))
-        #expect(zhReference.contains("NL / NEWLINE / ENTER"))
+        #expect(zhReference.contains("REGEX.MATCH s \"pattern\""))
+        #expect(zhReference.contains("NL / NEWLINE"))
 
         let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(
             separator: "\n")

@@ -143,7 +143,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATEFORMAT", "[", "2026", "12", "25", "]", "\"japanese"
+            "FORMAT.DATE", "[", "2026", "12", "25", "]", "\"japanese"
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res.contains("令和8年") || res.contains("12月25日"))
@@ -153,7 +153,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATEFORMAT", "\"2026-08-31T15:00:00Z", "\"yyyy/MM/dd", "\"UTC"
+            "FORMAT.DATE", "\"2026-08-31T15:00:00Z", "\"yyyy/MM/dd", "\"UTC"
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "2026/08/31")
@@ -163,7 +163,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATEADD", "\"2026-08-15", "7", "\"days"
+            "DATE.ADD", "\"2026-08-15", "7", "\"days"
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "2026-08-22")
@@ -173,7 +173,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATEDIFF", "\"2026-12-31", "\"2026-08-15", "\"days"
+            "DATE.DIFF", "\"2026-12-31", "\"2026-08-15", "\"days"
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "138")

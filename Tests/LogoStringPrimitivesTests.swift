@@ -201,8 +201,8 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
 @Test func testLogoStringRegexPrimitives() throws {
     let engine = LogoEngine()
 
-    // 1. regex_match?, regex_replace, regex_find
-    #expect(eval("regex_match? \"^A+ \"AAA_Title", engine: engine) == "true")
-    #expect(eval("regex_replace \"cat \"dog \"the_cat", engine: engine) == "the_dog")
-    #expect(eval("regex_find \"123 \"Item_123_456", engine: engine) == "[123]")
+    // Pure canonical dot syntax: REGEX.MATCH, REGEX.REPLACE, REGEX.FIND
+    #expect(eval("regex.match \"^A+ \"AAA_Title", engine: engine) == "true")
+    #expect(eval("regex.replace \"cat \"dog \"the_cat", engine: engine) == "the_dog")
+    #expect(eval("regex.find \"123 \"Item_123_456", engine: engine) == "[123]")
 }
