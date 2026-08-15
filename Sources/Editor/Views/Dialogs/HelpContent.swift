@@ -3,22 +3,13 @@ import TextMetrics
 
 public enum HelpContent {
     public struct HelpItem: Sendable {
-        public let commandID: CommandID?
-        public let customKeyLabelKey: String?
+        public let commandID: CommandID
         public let descriptionKey: String
         public let mode: EditorMode
 
         public init(commandID: CommandID, descriptionKey: String? = nil, mode: EditorMode = .text) {
             self.commandID = commandID
-            self.customKeyLabelKey = nil
             self.descriptionKey = descriptionKey ?? "command.\(commandID.rawValue).description"
-            self.mode = mode
-        }
-
-        public init(customKeyLabelKey: String, descriptionKey: String, mode: EditorMode = .text) {
-            self.commandID = nil
-            self.customKeyLabelKey = customKeyLabelKey
-            self.descriptionKey = descriptionKey
             self.mode = mode
         }
     }
@@ -61,7 +52,7 @@ public enum HelpContent {
             titleKey: "helpview.sec_edit",
             items: [
                 HelpItem(commandID: .editDelete),
-                HelpItem(customKeyLabelKey: "help.keys.selection_extend", descriptionKey: "command.select.extend.description"),
+                HelpItem(commandID: .selectRight, descriptionKey: "command.select.extend.description"),
                 HelpItem(commandID: .editCut),
                 HelpItem(commandID: .editUncut),
                 HelpItem(commandID: .editTab),
@@ -75,7 +66,7 @@ public enum HelpContent {
                 HelpItem(commandID: .canvasToggle, mode: .canvas),
                 HelpItem(commandID: .canvasDrawLine, mode: .canvas),
                 HelpItem(commandID: .canvasDrawArrow, mode: .canvas),
-                HelpItem(customKeyLabelKey: "help.keys.canvas_block_mark", descriptionKey: "command.canvas.block_mark.description", mode: .canvas),
+                HelpItem(commandID: .editMark, mode: .canvas),
             ]
         ),
         Section(
@@ -83,7 +74,7 @@ public enum HelpContent {
             items: [
                 HelpItem(commandID: .searchWhereIs),
                 HelpItem(commandID: .documentOpenLink),
-                HelpItem(customKeyLabelKey: "help.keys.document_outline", descriptionKey: "command.document.outline.description"),
+                HelpItem(commandID: .documentOutline),
                 HelpItem(commandID: .screenRefresh),
                 HelpItem(commandID: .cursorPos),
                 HelpItem(commandID: .editSpell),
@@ -101,7 +92,7 @@ public enum HelpContent {
                 HelpItem(commandID: .fileExit),
                 HelpItem(commandID: .fileSaveExit),
                 HelpItem(commandID: .editCancelSelection),
-                HelpItem(customKeyLabelKey: "help.keys.canvas_block_mark_canvas", descriptionKey: "command.canvas.block_mark.description", mode: .canvas),
+                HelpItem(commandID: .editMark, descriptionKey: "command.canvas.block_mark.description", mode: .canvas),
                 HelpItem(commandID: .menuShow),
             ]
         ),
@@ -158,73 +149,15 @@ public enum HelpContent {
     }
 
     private static func formatHelpKeys(for commandID: CommandID, in mode: EditorMode, keymapManager: KeymapManager, language: Language) -> String {
-        let isClassic = keymapManager.activePreset == .classic
-        switch commandID {
-        case .moveRight where isClassic:
-            return L10n.string("help.keys.nav_right_classic", language: language)
-        case .moveLeft where isClassic:
-            return L10n.string("help.keys.nav_left_classic", language: language)
-        case .moveUp where isClassic:
-            return L10n.string("help.keys.nav_up_classic", language: language)
-        case .moveDown where isClassic:
-            return L10n.string("help.keys.nav_down_classic", language: language)
-        case .moveHome where isClassic:
-            return L10n.string("help.keys.nav_home_classic", language: language)
-        case .moveEnd where isClassic:
-            return L10n.string("help.keys.nav_end_classic", language: language)
-        case .movePgdn where isClassic:
-            return L10n.string("help.keys.nav_pgdn_classic", language: language)
-        case .movePgup where isClassic:
-            return L10n.string("help.keys.nav_pgup_classic", language: language)
-        case .editDelete where isClassic:
-            return L10n.string("help.keys.delete_classic", language: language)
-        case .editCut:
-            return isClassic
-                ? L10n.string("help.keys.cut_classic", language: language)
-                : L10n.string("help.keys.cut_modern", language: language)
-        case .editUncut:
-            return isClassic
-                ? L10n.string("help.keys.uncut_classic", language: language)
-                : L10n.string("help.keys.uncut_modern", language: language)
-        case .editTab where isClassic:
-            return L10n.string("help.keys.tab_classic", language: language)
-        case .fileExit:
-            return isClassic
-                ? L10n.string("help.keys.exit_classic", language: language)
-                : "^Q"
-        case .cursorPos:
-            return isClassic
-                ? L10n.string("help.keys.cursor_pos_classic", language: language)
-                : L10n.string("help.keys.cursor_pos_modern", language: language)
-        case .editSpell where isClassic:
-            return L10n.string("help.keys.spell_classic", language: language)
-        case .fileWriteOut where isClassic:
-            return L10n.string("help.keys.write_out_classic", language: language)
-        case .fileInsert where isClassic:
-            return L10n.string("help.keys.insert_file_classic", language: language)
-        case .searchWhereIs:
-            return isClassic
-                ? L10n.string("help.keys.search_classic", language: language)
-                : L10n.string("help.keys.search_modern", language: language)
-        case .documentOutline:
-            return L10n.string("help.keys.document_outline", language: language)
-        case .menuShow:
-            return L10n.string("help.keys.menu_show", language: language)
-        case .canvasDrawArrow:
-            return L10n.string("help.keys.canvas_draw_arrow", language: language)
-        case .canvasDrawLine:
-            return L10n.string("help.keys.canvas_draw_line", language: language)
-        default:
-            let keys = keymapManager.keys(for: commandID, in: mode)
-            var labels: [String] = []
-            for key in keys {
-                let lbl = label(for: key, language: language)
-                if !lbl.isEmpty && !labels.contains(lbl) {
-                    labels.append(lbl)
-                }
+        let keys = keymapManager.keys(for: commandID, in: mode)
+        var labels: [String] = []
+        for key in keys {
+            let lbl = label(for: key, language: language)
+            if !lbl.isEmpty && !labels.contains(lbl) {
+                labels.append(lbl)
             }
-            return labels.joined(separator: " / ")
         }
+        return labels.joined(separator: " / ")
     }
 
     private static func sectionLines(language: Language, keymapManager: KeymapManager) -> [String] {
@@ -236,16 +169,9 @@ public enum HelpContent {
                 itemLines = range.map { L10n.string("\(prefix)_\($0)", language: language) }
             case .items(let items):
                 itemLines = items.map { item in
-                    let keyLabel: String
-                    if let customKey = item.customKeyLabelKey {
-                        keyLabel = L10n.string(customKey, language: language)
-                    } else if let cmdID = item.commandID {
-                        keyLabel = formatHelpKeys(for: cmdID, in: item.mode, keymapManager: keymapManager, language: language)
-                    } else {
-                        keyLabel = ""
-                    }
+                    let keyLabel = formatHelpKeys(for: item.commandID, in: item.mode, keymapManager: keymapManager, language: language)
                     let desc = L10n.string(item.descriptionKey, language: language)
-                    let padCount = keyLabel == L10n.string("help.keys.canvas_draw_arrow", language: language) && language == .zh_TW
+                    let padCount = keyLabel == L10n.string("key.ctrl_shift_arrow", language: language) && language == .zh_TW
                         ? 2
                         : max(1, 19 - keyLabel.displayWidth)
                     let paddedKey = keyLabel + String(repeating: " ", count: padCount)
