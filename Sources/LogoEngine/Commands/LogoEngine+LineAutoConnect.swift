@@ -1,7 +1,8 @@
 import Foundation
 
 extension LogoEngine {
-    internal func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
+    internal func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode)
+    {
         guard let editor = self.delegate else { return }
         var lineText = queryString(.lineAt(startLine)) ?? ""
 

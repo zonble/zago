@@ -48,7 +48,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "row", required: false),
-                    LogoPrimitiveParameter(name: "text", required: true)
+                    LogoPrimitiveParameter(name: "text", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "SETLINE 1 \"Title")]
             )
@@ -137,6 +137,6 @@ extension LogoPrimitive {
             )
 
         default: nil
+        }
     }
-}
 }

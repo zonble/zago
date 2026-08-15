@@ -63,8 +63,9 @@ internal struct LogoArgumentReader {
         let boundary = isBoundary ?? { LogoEngine.isArgumentBoundary($0) }
         guard index + 1 < tokens.count else { return nil }
         var nextIndex = index + 1
-        guard let value = engine.parseIntExpressionArgument(
-            tokens, index: &nextIndex, isBoundary: boundary)
+        guard
+            let value = engine.parseIntExpressionArgument(
+                tokens, index: &nextIndex, isBoundary: boundary)
         else {
             return nil
         }

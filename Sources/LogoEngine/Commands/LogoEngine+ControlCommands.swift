@@ -378,7 +378,7 @@ extension LogoEngine {
                     _ = reader.nextRawToken()
                 }
                 var docstring: String? = nil
-                if let token = reader.peekToken(), (token.hasPrefix("\"") || token.hasPrefix("'")),
+                if let token = reader.peekToken(), token.hasPrefix("\"") || token.hasPrefix("'"),
                     reader.peekToken(offset: 2)?.uppercased() != "END"
                 {
                     docstring = unquote(token)
@@ -430,10 +430,12 @@ extension LogoEngine {
             return
         }
         var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-        let condTokens = reader.nextBlock() ?? reader.tokensUntil { token in
-            token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
-                || LogoEngine.isStatementCommand(token)
-        }
+        let condTokens =
+            reader.nextBlock()
+            ?? reader.tokensUntil { token in
+                token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
+                    || LogoEngine.isStatementCommand(token)
+            }
 
         let isTrue = evaluateCondition(condTokens)
         var customMsg: String? = nil

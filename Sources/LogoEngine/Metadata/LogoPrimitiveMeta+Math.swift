@@ -12,7 +12,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
                     LogoPrimitiveParameter(name: "b", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "SUM 10 20", output: "30")]
             )
@@ -26,7 +26,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
                     LogoPrimitiveParameter(name: "b", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "MIN 5 2 9", output: "2")]
             )
@@ -40,7 +40,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
                     LogoPrimitiveParameter(name: "b", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "MAX 5 2 9", output: "9")]
             )
@@ -53,7 +53,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "DIFFERENCE 10 3", output: "7")]
             )
@@ -67,7 +67,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
                     LogoPrimitiveParameter(name: "b", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "PRODUCT 5 6", output: "30")]
             )
@@ -80,7 +80,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "QUOTIENT 10 2", output: "5")]
             )
@@ -93,7 +93,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "base", required: true),
-                    LogoPrimitiveParameter(name: "exponent", required: true)
+                    LogoPrimitiveParameter(name: "exponent", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "POWER 2 8", output: "256")]
             )
@@ -106,7 +106,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "div", required: true)
+                    LogoPrimitiveParameter(name: "div", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REMAINDER 10 3", output: "1")]
             )
@@ -119,7 +119,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "div", required: true)
+                    LogoPrimitiveParameter(name: "div", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "MODULO -1 10", output: "9")]
             )
@@ -292,7 +292,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "start", required: true),
-                    LogoPrimitiveParameter(name: "end", required: true)
+                    LogoPrimitiveParameter(name: "end", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "ISEQ 1 5", output: "[1 2 3 4 5]")]
             )
@@ -306,7 +306,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "start", required: true),
                     LogoPrimitiveParameter(name: "end", required: true),
-                    LogoPrimitiveParameter(name: "count", required: true)
+                    LogoPrimitiveParameter(name: "count", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "RSEQ 0 1 5", output: "[0 0.25 0.5 0.75 1]")]
             )
@@ -340,7 +340,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
                     LogoPrimitiveParameter(name: "width", required: true),
-                    LogoPrimitiveParameter(name: "precision", required: true)
+                    LogoPrimitiveParameter(name: "precision", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORM 3.14159 8 2", output: "    3.14")]
             )
@@ -353,7 +353,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.AND 6 3", output: "2")]
             )
@@ -366,7 +366,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.OR 4 2", output: "6")]
             )
@@ -379,7 +379,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.XOR 5 3", output: "6")]
             )
@@ -402,7 +402,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "bits", required: true)
+                    LogoPrimitiveParameter(name: "bits", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "ASHIFT 4 2", output: "16")]
             )
@@ -415,7 +415,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "bits", required: true)
+                    LogoPrimitiveParameter(name: "bits", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "LSHIFT 1 3", output: "8")]
             )
@@ -428,7 +428,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "bits", required: true)
+                    LogoPrimitiveParameter(name: "bits", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "RSHIFT 16 2", output: "4")]
             )
@@ -443,7 +443,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false),
                     LogoPrimitiveParameter(name: "tz", required: false),
-                    LogoPrimitiveParameter(name: "cal", required: false)
+                    LogoPrimitiveParameter(name: "cal", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE \"iso")]
             )
@@ -457,7 +457,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "format", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false),
-                    LogoPrimitiveParameter(name: "tz", required: false)
+                    LogoPrimitiveParameter(name: "tz", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "TIME")]
             )
@@ -472,7 +472,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false),
                     LogoPrimitiveParameter(name: "tz", required: false),
-                    LogoPrimitiveParameter(name: "cal", required: false)
+                    LogoPrimitiveParameter(name: "cal", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATETIME \"full")]
             )
@@ -488,7 +488,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false),
                     LogoPrimitiveParameter(name: "tz", required: false),
-                    LogoPrimitiveParameter(name: "cal", required: false)
+                    LogoPrimitiveParameter(name: "cal", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.DATE \"2026-12-31 \"long")]
             )
@@ -502,7 +502,9 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "dateStr", required: true),
                     LogoPrimitiveParameter(name: "amount", required: true),
-                    LogoPrimitiveParameter(name: "unit", required: false, allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"])
+                    LogoPrimitiveParameter(
+                        name: "unit", required: false,
+                        allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE.ADD DATE 7 \"days")]
             )
@@ -516,7 +518,9 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "date1", required: true),
                     LogoPrimitiveParameter(name: "date2", required: true),
-                    LogoPrimitiveParameter(name: "unit", required: false, allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"])
+                    LogoPrimitiveParameter(
+                        name: "unit", required: false,
+                        allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE.DIFF \"2026-12-31 DATE \"days")]
             )
@@ -524,15 +528,18 @@ extension LogoPrimitive {
         case .formatNumber:
             LogoPrimitiveMeta(
                 name: "FORMAT.NUMBER",
-                description: "Formats number using localized decimal, currency, percent, roman, or financial CJK uppercase.",
+                description:
+                    "Formats number using localized decimal, currency, percent, roman, or financial CJK uppercase.",
                 localizedDescriptionKey: "logo.doc.formatnumber",
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "num", required: true),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["decimal", "currency", "percent", "roman", "financial", "ordinal", "spellout"]),
+                    LogoPrimitiveParameter(
+                        name: "style", required: false,
+                        allowedValues: ["decimal", "currency", "percent", "roman", "financial", "ordinal", "spellout"]),
                     LogoPrimitiveParameter(name: "locale", required: false),
                     LogoPrimitiveParameter(name: "currency", required: false),
-                    LogoPrimitiveParameter(name: "precision", required: false)
+                    LogoPrimitiveParameter(name: "precision", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.NUMBER 10050208 \"financial", output: "壹仟零伍萬零貳佰零捌")]
             )
@@ -546,7 +553,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "list", required: true),
                     LogoPrimitiveParameter(name: "type", required: false, allowedValues: ["and", "or", "unit"]),
-                    LogoPrimitiveParameter(name: "locale", required: false)
+                    LogoPrimitiveParameter(name: "locale", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.LIST [A B C] \"and \"en_US", output: "A, B, and C")]
             )
@@ -560,7 +567,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
                     LogoPrimitiveParameter(name: "unit", required: false),
-                    LogoPrimitiveParameter(name: "locale", required: false)
+                    LogoPrimitiveParameter(name: "locale", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.RELATIVETIME -2 \"hour \"en_US", output: "2 hours ago")],
                 notes: "Not supported on Linux or Windows."
@@ -574,8 +581,9 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "bytes", required: true),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["file", "memory", "binary", "decimal", "bytes"]),
-                    LogoPrimitiveParameter(name: "locale", required: false)
+                    LogoPrimitiveParameter(
+                        name: "style", required: false, allowedValues: ["file", "memory", "binary", "decimal", "bytes"]),
+                    LogoPrimitiveParameter(name: "locale", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.BYTES 1048576", output: "1 MB")]
             )
@@ -598,8 +606,9 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "list", required: true),
-                    LogoPrimitiveParameter(name: "order", required: false, allowedValues: ["desc", "descending", "greaterp", "greater?"]),
-                    LogoPrimitiveParameter(name: "template", required: false)
+                    LogoPrimitiveParameter(
+                        name: "order", required: false, allowedValues: ["desc", "descending", "greaterp", "greater?"]),
+                    LogoPrimitiveParameter(name: "template", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "SORT [3 1 4 1 5 9]", output: "[1 1 3 4 5 9]")]
             )
@@ -613,11 +622,11 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "width", required: false),
                     LogoPrimitiveParameter(name: "height", required: false),
-                    LogoPrimitiveParameter(name: "text", required: true)
+                    LogoPrimitiveParameter(name: "text", required: true),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "FILL \".\""),
-                    LogoPrimitiveExample(input: "FILL 20 3 \".#\"")
+                    LogoPrimitiveExample(input: "FILL 20 3 \".#\""),
                 ]
             )
 
@@ -695,7 +704,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "procname", required: true),
-                    LogoPrimitiveParameter(name: "textList", required: true)
+                    LogoPrimitiveParameter(name: "textList", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "DEFINE \"double [[n] [OUTPUT :n * 2]]")]
             )
@@ -766,6 +775,6 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "END")]
             )
         default: nil
+        }
     }
-}
 }

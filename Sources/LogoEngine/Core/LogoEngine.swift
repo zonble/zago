@@ -80,9 +80,11 @@ public final class LogoEngine: @unchecked Sendable {
 
     internal func optionalCommandArgument(_ tokens: [String], index: inout Int) -> String? {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-        guard let value = reader.nextOptionalExpression(isBoundary: { token in
-            LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-        }) else { return nil }
+        guard
+            let value = reader.nextOptionalExpression(isBoundary: { token in
+                LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+            })
+        else { return nil }
         reader.commit(to: &index)
         return unquote(value)
     }

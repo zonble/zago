@@ -11,7 +11,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "LESS? 3 5", output: "true")]
             )
@@ -24,7 +24,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "GREATER? 10 5", output: "true")]
             )
@@ -37,7 +37,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "LESSEQUAL? 5 5", output: "true")]
             )
@@ -50,12 +50,12 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "GREATEREQUAL? 10 5", output: "true")]
             )
 
         default: nil
+        }
     }
-}
 }
