@@ -1,11 +1,10 @@
 import Foundation
 import Config
 
-/// Manages layered keybindings (Base Keymap + Mode Overlays) and Keymap Presets.
+/// Manages layered keymaps (Base Keymap + Mode Overlays) and Keymap Presets.
 final class KeymapManager {
-    private(set) var baseKeymap: [Key: CommandID] = [:]
-    private(set) var modeKeymaps: [EditorMode: [Key: CommandID]] = [:]
-    private(set) var primaryDisplayKeys: [CommandID: [Key]] = [:]
+    private(set) var baseKeymap = Keymap()
+    private(set) var modeKeymaps: [EditorMode: Keymap] = [:]
     private(set) var activePreset: KeymapPreset = .classic
 
     init(preset: KeymapPreset = .classic) {
@@ -17,510 +16,259 @@ final class KeymapManager {
         self.activePreset = preset
         baseKeymap.removeAll()
         modeKeymaps.removeAll()
-        primaryDisplayKeys.removeAll()
 
         // 1. Load Universal / Base Keybindings
         loadBasePreset(preset)
 
-        // 2. Load Mode Overlays (Table, Canvas, Prompt, Menu)
+        // 2. Load Mode Overlays (Table, Canvas, Prompt)
         loadModeOverlays(for: preset)
     }
 
     /// Binds a key to a command, optionally restricted to a specific mode overlay.
     func bind(key: Key, commandID: CommandID, mode: EditorMode? = nil) {
-        primaryDisplayKeys[commandID] = [key]
         if let mode {
-            var map = modeKeymaps[mode, default: [:]]
-            map[key] = commandID
+            var map = modeKeymaps[mode, default: Keymap()]
+            map.bind(key: key, to: commandID)
             modeKeymaps[mode] = map
         } else {
-            baseKeymap[key] = commandID
+            baseKeymap.bind(key: key, to: commandID)
         }
     }
 
     /// Unbinds a key, optionally restricted to a specific mode overlay.
     func unbind(key: Key, mode: EditorMode? = nil) {
         if let mode {
-            modeKeymaps[mode]?.removeValue(forKey: key)
+            modeKeymaps[mode]?.unbind(key: key)
         } else {
-            baseKeymap.removeValue(forKey: key)
+            baseKeymap.unbind(key: key)
             for m in EditorMode.allCases {
-                modeKeymaps[m]?.removeValue(forKey: key)
-            }
-        }
-        for (cmd, keys) in primaryDisplayKeys {
-            let remaining = keys.filter { $0 != key }
-            if remaining.isEmpty {
-                primaryDisplayKeys.removeValue(forKey: cmd)
-            } else {
-                primaryDisplayKeys[cmd] = remaining
+                modeKeymaps[m]?.unbind(key: key)
             }
         }
     }
 
     /// Resolves a Key event to a CommandID based on the active mode (Mode Overlay -> Base Keymap).
     func resolve(key: Key, in mode: EditorMode) -> CommandID? {
-        if let cmd = modeKeymaps[mode]?[key] {
+        if let cmd = modeKeymaps[mode]?.resolve(key: key) {
             return cmd
         }
-        return baseKeymap[key]
+        return baseKeymap.resolve(key: key)
     }
 
-    /// Reverse lookup: Finds the primary key label for a CommandID in a given mode.
+    /// Returns the primary shortcut key for a command in the given mode.
+    func shortcut(for commandID: CommandID, in mode: EditorMode = .text) -> Key? {
+        if let modeKey = modeKeymaps[mode]?.shortcut(for: commandID) {
+            return modeKey
+        }
+        return baseKeymap.shortcut(for: commandID)
+    }
+
+    /// Returns the display label for a command's shortcut key in the given mode.
+    func shortcutLabel(for commandID: CommandID, in mode: EditorMode = .text) -> String? {
+        shortcut(for: commandID, in: mode)?.helpBarLabel
+    }
+
+    /// Backwards compatible alias for shortcutLabel
     func primaryKeyLabel(for commandID: CommandID, in mode: EditorMode) -> String? {
-        // 1. Check if the active preset's primary display key is bound in this mode
-        if let primaryKey = primaryDisplayKeys[commandID]?.first {
-            if let modeKeys = modeKeymaps[mode], modeKeys[primaryKey] == commandID {
-                let label = primaryKey.helpBarLabel
-                if !label.isEmpty { return label }
+        shortcutLabel(for: commandID, in: mode)
+    }
+
+    /// Returns the keys associated with a command in the given mode.
+    func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
+        if let modeMap = modeKeymaps[mode] {
+            let modeKeys = modeMap.keys(for: commandID)
+            if !modeKeys.isEmpty {
+                return modeKeys
             }
         }
-        // 2. Check mode-specific overlay for mode-unique commands
-        if let modeKey = modeKeymaps[mode]?.first(where: { $0.value == commandID })?.key {
-            let label = modeKey.helpBarLabel
-            if !label.isEmpty { return label }
-        }
-        // 3. Check canonical primary key
-        if let primaryKey = primaryDisplayKeys[commandID]?.first {
-            let label = primaryKey.helpBarLabel
-            if !label.isEmpty { return label }
-        }
-        // 4. Check base keymap
-        if let baseKey = baseKeymap.first(where: { $0.value == commandID })?.key {
-            let label = baseKey.helpBarLabel
-            if !label.isEmpty { return label }
-        }
-        return nil
+        return baseKeymap.keys(for: commandID)
     }
 
-    // MARK: - Private Setup Helpers
+    // MARK: - Private Registration Helpers
+
+    private func register(_ commandID: CommandID, _ keys: Key..., mode: EditorMode? = nil) {
+        register(commandID, keys: keys, mode: mode)
+    }
+
+    private func register(_ commandID: CommandID, keys: [Key], mode: EditorMode? = nil) {
+        if let mode {
+            var map = modeKeymaps[mode, default: Keymap()]
+            map.register(commandID, keys: keys)
+            modeKeymaps[mode] = map
+        } else {
+            baseKeymap.register(commandID, keys: keys)
+        }
+    }
 
     private func loadBasePreset(_ preset: KeymapPreset) {
-        // Navigation (common across both presets)
-        baseKeymap[.arrowUp] = .moveUp
-        baseKeymap[.arrowDown] = .moveDown
-        baseKeymap[.arrowLeft] = .moveLeft
-        baseKeymap[.arrowRight] = .moveRight
-        baseKeymap[.home] = .moveHome
-        baseKeymap[.end] = .moveEnd
-        baseKeymap[.pageUp] = .movePgup
-        baseKeymap[.pageDown] = .movePgdn
-        baseKeymap[.ctrlArrowLeft] = .moveWordBackward
-        baseKeymap[.ctrlArrowRight] = .moveWordForward
-        baseKeymap[.ctrlShift("b")] = .moveWordBackward
-        baseKeymap[.ctrlShift("B")] = .moveWordBackward
-        baseKeymap[.ctrlShift("f")] = .moveWordForward
-        baseKeymap[.ctrlShift("F")] = .moveWordForward
+        // Universal Navigation
+        register(.moveWordBackward, .ctrlArrowLeft, .ctrlShift("B"), .ctrlShift("b"))
+        register(.moveWordForward, .ctrlArrowRight, .ctrlShift("F"), .ctrlShift("f"))
 
         // Selection (Shift + Navigation)
-        baseKeymap[.shiftArrowLeft] = .selectLeft
-        baseKeymap[.shiftArrowRight] = .selectRight
-        baseKeymap[.shiftArrowUp] = .selectUp
-        baseKeymap[.shiftArrowDown] = .selectDown
-        baseKeymap[.shiftHome] = .selectHome
-        baseKeymap[.shiftEnd] = .selectEnd
-        baseKeymap[.ctrlShiftArrowLeft] = .selectWordBackward
-        baseKeymap[.ctrlShiftArrowRight] = .selectWordForward
+        register(.selectLeft, .shiftArrowLeft)
+        register(.selectRight, .shiftArrowRight)
+        register(.selectUp, .shiftArrowUp)
+        register(.selectDown, .shiftArrowDown)
+        register(.selectHome, .shiftHome)
+        register(.selectEnd, .shiftEnd)
+        register(.selectWordBackward, .ctrlShiftArrowLeft)
+        register(.selectWordForward, .ctrlShiftArrowRight)
 
-        // Editing & UI (common across both presets)
-        baseKeymap[.esc] = .macroLogo
-        baseKeymap[.alt(":")] = .macroLogo
-        baseKeymap[.delete] = .editDelete
-        baseKeymap[.ctrl("d")] = .editDelete
-        baseKeymap[.ctrl("D")] = .editDelete
-        baseKeymap[.ctrlBackspace] = .editDeleteLine
-        baseKeymap[.ctrl("h")] = .editDeleteLine
-        baseKeymap[.ctrl("H")] = .editDeleteLine
-        baseKeymap[.tab] = .editTab
-        baseKeymap[.ctrl("i")] = .editTab
-        baseKeymap[.ctrl("I")] = .editTab
-        baseKeymap[.backtab] = .editBacktab
-        baseKeymap[.f1] = .menuShow
-        baseKeymap[.ctrl("m")] = .menuShow
-        baseKeymap[.ctrl("M")] = .menuShow
-        baseKeymap[.alt("m")] = .menuShow
-        baseKeymap[.alt("M")] = .menuShow
-        baseKeymap[.f7] = .tableToggle
-        baseKeymap[.alt("t")] = .tableToggle
-        baseKeymap[.alt("T")] = .tableToggle
-        baseKeymap[.f8] = .canvasToggle
-        baseKeymap[.alt("v")] = .canvasToggle
-        baseKeymap[.alt("V")] = .canvasToggle
-        baseKeymap[.alt("s")] = .borderStyle
-        baseKeymap[.alt("S")] = .borderStyle
-        baseKeymap[.alt("l")] = .logoOutput
-        baseKeymap[.alt("L")] = .logoOutput
-        baseKeymap[.alt("c")] = .logoCanvas
-        baseKeymap[.alt("C")] = .logoCanvas
-        baseKeymap[.ctrlShift("z")] = .editRedo
-        baseKeymap[.ctrlShift("Z")] = .editRedo
-        baseKeymap[.ctrl("/")] = .editToggleComment
-        baseKeymap[.alt("b")] = .editMark
-        baseKeymap[.alt("B")] = .editMark
-        baseKeymap[.mark] = .editMark
-        baseKeymap[.alt("j")] = .editJustify
-        baseKeymap[.alt("J")] = .editJustify
-        baseKeymap[.ctrl("j")] = .editJustify
-        baseKeymap[.ctrl("J")] = .editJustify
-        baseKeymap[.alt("w")] = .editCopy
-        baseKeymap[.alt("W")] = .editCopy
-
-        // AI Proposal bindings
-        baseKeymap[.alt("a")] = .proposalAccept
-        baseKeymap[.alt("A")] = .proposalAccept
-        baseKeymap[.alt("r")] = .proposalReject
-        baseKeymap[.alt("R")] = .proposalReject
-        baseKeymap[.alt("p")] = .proposalNext
-        baseKeymap[.alt("P")] = .proposalPrev
-
-        // Document headings
-        baseKeymap[.alt("]")] = .documentHeadingNext
-        baseKeymap[.alt("[")] = .documentHeadingPrevious
-        baseKeymap[.alt("\\")] = .documentOutline
-
-        // Cursor & Goto
-        baseKeymap[.alt("/")] = .cursorGotoLine
-        baseKeymap[.alt("g")] = .cursorGotoLine
-        baseKeymap[.alt("G")] = .cursorGotoLine
-        baseKeymap[.ctrl("_")] = .cursorGotoLine
-
-        primaryDisplayKeys[.menuShow] = [.f1]
-        primaryDisplayKeys[.tableToggle] = [.f7]
-        primaryDisplayKeys[.canvasToggle] = [.alt("V"), .f8]
-        primaryDisplayKeys[.borderStyle] = [.alt("S")]
-        primaryDisplayKeys[.proposalAccept] = [.alt("A")]
-        primaryDisplayKeys[.proposalReject] = [.alt("R")]
-        primaryDisplayKeys[.proposalNext] = [.alt("P")]
-        primaryDisplayKeys[.proposalPrev] = [.alt("P")]
+        // Common UI, Dialogs & Actions
+        register(.macroLogo, .esc, .alt(":"))
+        register(.editDelete, .delete, .ctrl("D"), .ctrl("d"))
+        register(.editDeleteLine, .ctrlBackspace, .ctrl("H"), .ctrl("h"))
+        register(.editBacktab, .backtab)
+        register(.tableToggle, .f7, .alt("T"), .alt("t"))
+        register(.canvasToggle, .alt("V"), .alt("v"), .f8)
+        register(.borderStyle, .alt("S"), .alt("s"))
+        register(.logoOutput, .alt("L"), .alt("l"))
+        register(.logoCanvas, .alt("C"), .alt("c"))
+        register(.editToggleComment, .ctrl("/"))
+        register(.editJoinLine, .alt("J"), .alt("j"))
+        register(.editSplitLine, .alt("K"), .alt("k"))
+        register(.bufferNext, .alt("."), .alt(">"))
+        register(.bufferPrev, .alt(","), .alt("<"))
+        register(.documentOpenLink, .alt("O"), .alt("o"))
+        register(.documentOutline, .alt("\\"))
+        register(.documentHeadingNext, .alt("]"))
+        register(.documentHeadingPrevious, .alt("["))
+        register(.cursorGotoLine, .alt("/"), .alt("G"), .alt("g"), .ctrl("_"))
+        register(.proposalAccept, .alt("A"), .alt("a"))
+        register(.proposalReject, .alt("R"), .alt("r"))
+        register(.proposalNext, .alt("P"))
+        register(.proposalPrev, .alt("p"))
 
         switch preset {
         case .classic:
-            // Classic GNU Nano shortcuts
-            baseKeymap[.ctrl("s")] = .fileSave
-            baseKeymap[.ctrl("S")] = .fileSave
-            baseKeymap[.ctrl("o")] = .fileWriteOut
-            baseKeymap[.ctrl("O")] = .fileWriteOut
-            baseKeymap[.f3] = .fileWriteOut
-            baseKeymap[.ctrl("r")] = .fileInsert
-            baseKeymap[.ctrl("R")] = .fileInsert
-            baseKeymap[.f5] = .fileRunLogo
-            baseKeymap[.ctrl("x")] = .fileExit
-            baseKeymap[.ctrl("X")] = .fileExit
-            baseKeymap[.f2] = .fileExit
+            // Navigation
+            register(.moveRight, .ctrl("F"), .ctrl("f"), .arrowRight)
+            register(.moveLeft, .ctrl("B"), .ctrl("b"), .arrowLeft)
+            register(.moveUp, .ctrl("P"), .ctrl("p"), .arrowUp)
+            register(.moveDown, .ctrl("N"), .ctrl("n"), .arrowDown)
+            register(.moveHome, .ctrl("A"), .ctrl("a"), .home)
+            register(.moveEnd, .ctrl("E"), .ctrl("e"), .end)
+            register(.movePgdn, .ctrl("V"), .ctrl("v"), .pageDown)
+            register(.movePgup, .ctrl("Y"), .ctrl("y"), .pageUp)
 
-            baseKeymap[.ctrl("w")] = .searchWhereIs
-            baseKeymap[.ctrl("W")] = .searchWhereIs
-            baseKeymap[.f6] = .searchWhereIs
-            baseKeymap[.alt("n")] = .searchNext
-            baseKeymap[.alt("N")] = .searchNext
-            baseKeymap[.alt("p")] = .searchPrevious
+            // Editing & Clipboard
+            register(.editDelete, .ctrl("D"), .ctrl("d"), .delete)
+            register(.editCut, .ctrl("K"), .ctrl("k"), .f9)
+            register(.editUncut, .ctrl("U"), .ctrl("u"), .f10)
+            register(.editTab, .ctrl("I"), .ctrl("i"), .tab)
+            register(.editUndo, .alt("U"), .alt("u"), .ctrl("Z"), .ctrl("z"))
+            register(.editRedo, .alt("E"), .alt("e"), .ctrlShift("Z"), .ctrlShift("z"))
+            register(.editCopy, .alt("W"), .alt("w"))
+            register(.editJustify, .ctrl("J"), .ctrl("j"), .alt("J"), .alt("j"))
+            register(.editEvalLogo, .ctrl("Q"), .ctrl("q"))
+            register(.editCancelSelection, .ctrl("G"), .ctrl("g"))
+            register(.editMark, .alt("B"), .alt("b"), .mark)
 
-            baseKeymap[.ctrl("k")] = .editCut
-            baseKeymap[.ctrl("K")] = .editCut
-            baseKeymap[.f9] = .editCut
-            baseKeymap[.ctrl("u")] = .editUncut
-            baseKeymap[.ctrl("U")] = .editUncut
-            baseKeymap[.f10] = .editUncut
-            baseKeymap[.f4] = .fileSaveExit
-            baseKeymap[.f5] = .fileRunLogo
+            // Files & Buffers
+            register(.fileSave, .ctrl("S"), .ctrl("s"))
+            register(.fileWriteOut, .ctrl("O"), .ctrl("o"), .f3)
+            register(.fileInsert, .ctrl("R"), .ctrl("r"), .f5)
+            register(.fileExit, .ctrl("X"), .ctrl("x"), .f2)
+            register(.fileSaveExit, .f4)
+            register(.fileRunLogo, .f5)
+            register(.bufferNew, .ctrl("N"), .ctrl("n"))
+            register(.screenRefresh, .ctrl("L"), .ctrl("l"))
 
-            baseKeymap[.ctrl("i")] = .editTab
-            baseKeymap[.alt("j")] = .editJoinLine
-            baseKeymap[.alt("J")] = .editJoinLine
-            baseKeymap[.alt("k")] = .editSplitLine
-            baseKeymap[.alt("K")] = .editSplitLine
-            baseKeymap[.ctrl("g")] = .editCancelSelection
-            baseKeymap[.ctrl("G")] = .editCancelSelection
-            baseKeymap[.alt(".")] = .bufferNext
-            baseKeymap[.alt(">")] = .bufferNext
-            baseKeymap[.alt(",")] = .bufferPrev
-            baseKeymap[.alt("<")] = .bufferPrev
-            baseKeymap[.ctrl("n")] = .bufferNew
-            baseKeymap[.ctrl("l")] = .screenRefresh
-            baseKeymap[.ctrl("L")] = .screenRefresh
-            baseKeymap[.alt("o")] = .documentOpenLink
-            baseKeymap[.alt("O")] = .documentOpenLink
+            // Search & Tools
+            register(.searchWhereIs, .ctrl("W"), .ctrl("w"), .f6)
+            register(.searchNext, .alt("N"), .alt("n"))
+            register(.searchPrevious, .alt("P"), .alt("p"))
+            register(.cursorPos, .ctrl("C"), .ctrl("c"), .f11)
+            register(.editSpell, .ctrl("T"), .ctrl("t"), .f12)
 
-            baseKeymap[.alt("u")] = .editUndo
-            baseKeymap[.alt("U")] = .editUndo
-            baseKeymap[.ctrl("z")] = .editUndo
-            baseKeymap[.ctrl("Z")] = .editUndo
-            baseKeymap[.alt("e")] = .editRedo
-            baseKeymap[.alt("E")] = .editRedo
-
-            baseKeymap[.ctrl("a")] = .moveHome
-            baseKeymap[.ctrl("A")] = .moveHome
-            baseKeymap[.ctrl("e")] = .moveEnd
-            baseKeymap[.ctrl("E")] = .moveEnd
-            baseKeymap[.ctrl("p")] = .moveUp
-            baseKeymap[.ctrl("P")] = .moveUp
-            baseKeymap[.ctrl("n")] = .moveDown
-            baseKeymap[.ctrl("N")] = .moveDown
-            baseKeymap[.ctrl("b")] = .moveLeft
-            baseKeymap[.ctrl("B")] = .moveLeft
-            baseKeymap[.ctrl("f")] = .moveRight
-            baseKeymap[.ctrl("F")] = .moveRight
-            baseKeymap[.ctrl("v")] = .movePgdn
-            baseKeymap[.ctrl("V")] = .movePgdn
-            baseKeymap[.ctrl("y")] = .movePgup
-            baseKeymap[.ctrl("Y")] = .movePgup
-
-            baseKeymap[.ctrl("q")] = .editEvalLogo
-            baseKeymap[.ctrl("Q")] = .editEvalLogo
-            baseKeymap[.ctrl("c")] = .cursorPos
-            baseKeymap[.ctrl("C")] = .cursorPos
-            baseKeymap[.ctrl("t")] = .editSpell
-            baseKeymap[.ctrl("T")] = .editSpell
-            baseKeymap[.f11] = .cursorPos
-            baseKeymap[.f12] = .editSpell
-
-            primaryDisplayKeys[.moveRight] = [.ctrl("F"), .arrowRight]
-            primaryDisplayKeys[.moveLeft] = [.ctrl("B"), .arrowLeft]
-            primaryDisplayKeys[.moveUp] = [.ctrl("P"), .arrowUp]
-            primaryDisplayKeys[.moveDown] = [.ctrl("N"), .arrowDown]
-            primaryDisplayKeys[.moveHome] = [.ctrl("A"), .home]
-            primaryDisplayKeys[.moveEnd] = [.ctrl("E"), .end]
-            primaryDisplayKeys[.movePgdn] = [.ctrl("V"), .pageDown]
-            primaryDisplayKeys[.movePgup] = [.ctrl("Y"), .pageUp]
-            primaryDisplayKeys[.editDelete] = [.ctrl("D"), .delete]
-            primaryDisplayKeys[.editCut] = [.ctrl("K"), .f9]
-            primaryDisplayKeys[.editUncut] = [.ctrl("U"), .f10]
-            primaryDisplayKeys[.editTab] = [.ctrl("I"), .tab]
-            primaryDisplayKeys[.fileSave] = [.ctrl("S")]
-            primaryDisplayKeys[.fileWriteOut] = [.ctrl("O"), .f3]
-            primaryDisplayKeys[.fileInsert] = [.ctrl("R"), .f5]
-            primaryDisplayKeys[.fileExit] = [.ctrl("X"), .f2]
-            primaryDisplayKeys[.fileSaveExit] = [.f4]
-            primaryDisplayKeys[.searchWhereIs] = [.ctrl("W"), .f6]
-            primaryDisplayKeys[.searchNext] = [.alt("N")]
-            primaryDisplayKeys[.searchPrevious] = [.alt("P")]
-            primaryDisplayKeys[.cursorPos] = [.ctrl("C"), .f11]
-            primaryDisplayKeys[.editSpell] = [.ctrl("T"), .f12]
-            primaryDisplayKeys[.editUndo] = [.alt("U")]
-            primaryDisplayKeys[.editRedo] = [.alt("E")]
-            primaryDisplayKeys[.editCopy] = [.alt("W")]
-            primaryDisplayKeys[.editJustify] = [.ctrl("J")]
-            primaryDisplayKeys[.editEvalLogo] = [.ctrl("Q")]
-            primaryDisplayKeys[.editJoinLine] = [.alt("J")]
-            primaryDisplayKeys[.editSplitLine] = [.alt("K")]
-            primaryDisplayKeys[.editCancelSelection] = [.ctrl("G")]
-            primaryDisplayKeys[.bufferNew] = [.ctrl("N")]
-            primaryDisplayKeys[.bufferNext] = [.alt(".")]
-            primaryDisplayKeys[.bufferPrev] = [.alt(",")]
-            primaryDisplayKeys[.screenRefresh] = [.ctrl("L")]
-            primaryDisplayKeys[.documentOpenLink] = [.alt("O")]
-            primaryDisplayKeys[.canvasDrawLine] = [.shiftArrowRight]
-            primaryDisplayKeys[.canvasDrawArrow] = [.ctrlShiftArrowRight]
-            primaryDisplayKeys[.documentOutline] = [.alt("\\")]
-            primaryDisplayKeys[.menuShow] = [.f1, .alt("M"), .ctrl("M")]
-            primaryDisplayKeys[.helpShow] = [.f1]
+            // UI
+            register(.menuShow, .f1, .alt("M"), .alt("m"), .ctrl("M"), .ctrl("m"))
+            register(.helpShow, .f1)
 
         case .modern:
-            // VS Code / CUA modern shortcuts
-            baseKeymap[.ctrl("s")] = .fileSave
-            baseKeymap[.ctrl("S")] = .fileSave
-            baseKeymap[.ctrl("q")] = .fileExit
-            baseKeymap[.ctrl("Q")] = .fileExit
-            baseKeymap[.ctrl("w")] = .fileExit
-            baseKeymap[.ctrl("W")] = .fileExit
+            // Navigation
+            register(.moveRight, .arrowRight)
+            register(.moveLeft, .arrowLeft)
+            register(.moveUp, .arrowUp)
+            register(.moveDown, .arrowDown)
+            register(.moveHome, .home)
+            register(.moveEnd, .end)
+            register(.movePgdn, .pageDown)
+            register(.movePgup, .pageUp)
 
-            baseKeymap[.ctrl("e")] = .editEvalLogo
-            baseKeymap[.ctrl("E")] = .editEvalLogo
+            // Editing & Clipboard
+            register(.editDelete, .delete)
+            register(.editCut, .ctrl("X"), .ctrl("x"), .f9, .ctrl("K"), .ctrl("k"))
+            register(.editCopy, .ctrl("C"), .ctrl("c"))
+            register(.editUncut, .ctrl("V"), .ctrl("v"), .f10, .ctrl("U"), .ctrl("u"))
+            register(.editUndo, .ctrl("Z"), .ctrl("z"))
+            register(.editRedo, .ctrl("Y"), .ctrl("y"), .ctrlShift("Z"), .ctrlShift("z"))
+            register(.selectAll, .ctrl("A"), .ctrl("a"))
+            register(.editTab, .tab)
+            register(.editCancelSelection, .ctrl("G"), .ctrl("g"))
+            register(.editMark, .alt("B"), .alt("b"), .mark)
 
-            baseKeymap[.ctrl("f")] = .searchWhereIs
-            baseKeymap[.ctrl("F")] = .searchWhereIs
-            baseKeymap[.f3] = .searchNext
-            baseKeymap[.ctrl("h")] = .searchReplace
-            baseKeymap[.ctrl("H")] = .searchReplace
-            baseKeymap[.alt("n")] = .searchNext
-            baseKeymap[.alt("N")] = .searchNext
-            baseKeymap[.alt("p")] = .searchPrevious
+            // Files & Buffers
+            register(.fileSave, .ctrl("S"), .ctrl("s"))
+            register(.fileWriteOut, .ctrl("O"), .ctrl("o"))
+            register(.fileExit, .ctrl("Q"), .ctrl("q"), .ctrl("W"), .ctrl("w"))
+            register(.fileSaveExit, .f4)
+            register(.fileRunLogo, .f5)
+            register(.bufferNew, .ctrl("N"), .ctrl("n"))
+            register(.screenRefresh, .ctrl("L"), .ctrl("l"))
 
-            baseKeymap[.ctrl("z")] = .editUndo
-            baseKeymap[.ctrl("Z")] = .editUndo
-            baseKeymap[.ctrl("y")] = .editRedo
-            baseKeymap[.ctrl("Y")] = .editRedo
-            baseKeymap[.ctrlShift("z")] = .editRedo
-            baseKeymap[.ctrlShift("Z")] = .editRedo
+            // Search & Tools
+            register(.searchWhereIs, .ctrl("F"), .ctrl("f"), .f3)
+            register(.searchReplace, .ctrl("H"), .ctrl("h"))
+            register(.searchNext, .f3, .alt("N"), .alt("n"))
+            register(.searchPrevious, .alt("P"), .alt("p"))
+            register(.editEvalLogo, .ctrl("E"), .ctrl("e"))
+            register(.editSpell, .ctrl("T"), .ctrl("t"), .f12)
+            register(.cursorPos, .f11, .alt("C"), .alt("c"), .ctrlShift("C"), .ctrlShift("c"))
 
-            baseKeymap[.ctrl("a")] = .selectAll
-            baseKeymap[.ctrl("A")] = .selectAll
-
-            baseKeymap[.ctrl("c")] = .editCopy
-            baseKeymap[.ctrl("C")] = .editCopy
-            baseKeymap[.ctrl("x")] = .editCut
-            baseKeymap[.ctrl("X")] = .editCut
-            baseKeymap[.f9] = .editCut
-            baseKeymap[.ctrl("v")] = .editUncut
-            baseKeymap[.ctrl("V")] = .editUncut
-            baseKeymap[.f10] = .editUncut
-            baseKeymap[.f4] = .fileSaveExit
-            baseKeymap[.f5] = .fileRunLogo
-
-            baseKeymap[.alt("j")] = .editJoinLine
-            baseKeymap[.alt("J")] = .editJoinLine
-            baseKeymap[.alt("k")] = .editSplitLine
-            baseKeymap[.alt("K")] = .editSplitLine
-            baseKeymap[.ctrl("g")] = .editCancelSelection
-            baseKeymap[.ctrl("G")] = .editCancelSelection
-            baseKeymap[.alt(".")] = .bufferNext
-            baseKeymap[.alt(">")] = .bufferNext
-            baseKeymap[.alt(",")] = .bufferPrev
-            baseKeymap[.alt("<")] = .bufferPrev
-            baseKeymap[.ctrl("l")] = .screenRefresh
-            baseKeymap[.ctrl("L")] = .screenRefresh
-            baseKeymap[.alt("o")] = .documentOpenLink
-            baseKeymap[.alt("O")] = .documentOpenLink
-
-            baseKeymap[.ctrl("t")] = .editSpell
-            baseKeymap[.ctrl("T")] = .editSpell
-            baseKeymap[.f12] = .editSpell
-            baseKeymap[.alt("c")] = .cursorPos
-            baseKeymap[.alt("C")] = .cursorPos
-            baseKeymap[.f11] = .cursorPos
-            baseKeymap[.ctrlShift("c")] = .cursorPos
-            baseKeymap[.ctrlShift("C")] = .cursorPos
-            baseKeymap[.ctrlShift("c")] = .cursorPos
-            baseKeymap[.ctrlShift("C")] = .cursorPos
-
-            baseKeymap[.ctrl("o")] = .fileWriteOut
-            baseKeymap[.ctrl("O")] = .fileWriteOut
-            baseKeymap[.ctrl("k")] = .editCut
-            baseKeymap[.ctrl("K")] = .editCut
-            baseKeymap[.ctrl("u")] = .editUncut
-            baseKeymap[.ctrl("U")] = .editUncut
-
-            baseKeymap[.f1] = .helpShow
-            baseKeymap[.f11] = .cursorPos
-            baseKeymap[.f12] = .editSpell
-            baseKeymap[.pageUp] = .movePgup
-            baseKeymap[.pageDown] = .movePgdn
-
-            primaryDisplayKeys[.moveRight] = [.arrowRight]
-            primaryDisplayKeys[.moveLeft] = [.arrowLeft]
-            primaryDisplayKeys[.moveUp] = [.arrowUp]
-            primaryDisplayKeys[.moveDown] = [.arrowDown]
-            primaryDisplayKeys[.moveHome] = [.home]
-            primaryDisplayKeys[.moveEnd] = [.end]
-            primaryDisplayKeys[.movePgdn] = [.pageDown]
-            primaryDisplayKeys[.movePgup] = [.pageUp]
-            primaryDisplayKeys[.editDelete] = [.delete]
-            primaryDisplayKeys[.editCut] = [.ctrl("X"), .f9]
-            primaryDisplayKeys[.editUncut] = [.ctrl("V"), .f10]
-            primaryDisplayKeys[.editCopy] = [.ctrl("C")]
-            primaryDisplayKeys[.editUndo] = [.ctrl("Z")]
-            primaryDisplayKeys[.editRedo] = [.ctrl("Y")]
-            primaryDisplayKeys[.selectAll] = [.ctrl("A")]
-            primaryDisplayKeys[.editTab] = [.tab]
-            primaryDisplayKeys[.fileSave] = [.ctrl("S")]
-            primaryDisplayKeys[.fileWriteOut] = [.ctrl("O")]
-            primaryDisplayKeys[.fileExit] = [.ctrl("Q")]
-            primaryDisplayKeys[.fileSaveExit] = [.f4]
-            primaryDisplayKeys[.searchWhereIs] = [.ctrl("F"), .f3]
-            primaryDisplayKeys[.searchReplace] = [.ctrl("H")]
-            primaryDisplayKeys[.editEvalLogo] = [.ctrl("E")]
-            primaryDisplayKeys[.editSpell] = [.ctrl("T"), .f12]
-            primaryDisplayKeys[.cursorPos] = [.f11, .alt("C")]
-            primaryDisplayKeys[.editJoinLine] = [.alt("J")]
-            primaryDisplayKeys[.editSplitLine] = [.alt("K")]
-            primaryDisplayKeys[.editCancelSelection] = [.ctrl("G")]
-            primaryDisplayKeys[.bufferNew] = [.ctrl("N")]
-            primaryDisplayKeys[.bufferNext] = [.alt(".")]
-            primaryDisplayKeys[.bufferPrev] = [.alt(",")]
-            primaryDisplayKeys[.screenRefresh] = [.ctrl("L")]
-            primaryDisplayKeys[.documentOpenLink] = [.alt("O")]
-            primaryDisplayKeys[.canvasDrawLine] = [.shiftArrowRight]
-            primaryDisplayKeys[.canvasDrawArrow] = [.ctrlShiftArrowRight]
-            primaryDisplayKeys[.documentOutline] = [.alt("\\")]
-            primaryDisplayKeys[.menuShow] = [.f1]
-            primaryDisplayKeys[.helpShow] = [.f1]
+            // UI
+            register(.menuShow, .f1)
+            register(.helpShow, .f1)
         }
     }
 
     private func loadModeOverlays(for preset: KeymapPreset) {
         // Table Mode Overlays
-        var table: [Key: CommandID] = [:]
-        table[.tab] = .tableNextCell
-        table[.backtab] = .tablePrevCell
-        table[.ctrlShiftArrowRight] = .tableAdjustWidthInc
-        table[.ctrlShiftArrowLeft] = .tableAdjustWidthDec
-        table[.ctrlShiftArrowDown] = .tableAdjustHeightInc
-        table[.ctrlShiftArrowUp] = .tableAdjustHeightDec
-        table[.home] = .tableCellStart
-        table[.end] = .tableCellEnd
-        table[.ctrl("j")] = .tableCenterText
-        table[.ctrl("J")] = .tableCenterText
-        table[.ctrl("k")] = .tableClearCell
-        table[.ctrl("K")] = .tableClearCell
-        table[.f9] = .tableClearCell
-        modeKeymaps[.table] = table
+        register(.tableNextCell, .tab, mode: .table)
+        register(.tablePrevCell, .backtab, mode: .table)
+        register(.tableAdjustWidthInc, .ctrlShiftArrowRight, mode: .table)
+        register(.tableAdjustWidthDec, .ctrlShiftArrowLeft, mode: .table)
+        register(.tableAdjustHeightInc, .ctrlShiftArrowDown, mode: .table)
+        register(.tableAdjustHeightDec, .ctrlShiftArrowUp, mode: .table)
+        register(.tableCellStart, .home, mode: .table)
+        register(.tableCellEnd, .end, mode: .table)
+        register(.tableCenterText, .ctrl("J"), .ctrl("j"), mode: .table)
+        register(.tableClearCell, .ctrl("K"), .ctrl("k"), .f9, mode: .table)
 
         // Canvas Mode Overlays
-        var canvas: [Key: CommandID] = [:]
-        canvas[.shiftArrowLeft] = .canvasDrawLine
-        canvas[.shiftArrowRight] = .canvasDrawLine
-        canvas[.shiftArrowUp] = .canvasDrawLine
-        canvas[.shiftArrowDown] = .canvasDrawLine
-        canvas[.ctrlShiftArrowLeft] = .canvasDrawArrow
-        canvas[.ctrlShiftArrowRight] = .canvasDrawArrow
-        canvas[.ctrlShiftArrowUp] = .canvasDrawArrow
-        canvas[.ctrlShiftArrowDown] = .canvasDrawArrow
-        canvas[.alt("b")] = .editMark
-        canvas[.alt("B")] = .editMark
-        canvas[.ctrl("^")] = .editMark
-        canvas[.mark] = .editMark
+        register(.canvasDrawLine, .shiftArrowRight, .shiftArrowLeft, .shiftArrowUp, .shiftArrowDown, mode: .canvas)
+        register(.canvasDrawArrow, .ctrlShiftArrowRight, .ctrlShiftArrowLeft, .ctrlShiftArrowUp, .ctrlShiftArrowDown, mode: .canvas)
+        register(.editMark, .alt("B"), .alt("b"), .ctrl("^"), .mark, mode: .canvas)
 
         switch preset {
         case .classic:
-            canvas[.ctrl("k")] = .editCut
-            canvas[.ctrl("K")] = .editCut
-            canvas[.alt("w")] = .editCopy
-            canvas[.alt("W")] = .editCopy
-            canvas[.ctrl("u")] = .editUncut
-            canvas[.ctrl("U")] = .editUncut
+            register(.editCut, .ctrl("K"), .ctrl("k"), mode: .canvas)
+            register(.editCopy, .alt("W"), .alt("w"), mode: .canvas)
+            register(.editUncut, .ctrl("U"), .ctrl("u"), mode: .canvas)
 
         case .modern:
-            canvas[.ctrl("x")] = .editCut
-            canvas[.ctrl("X")] = .editCut
-            canvas[.ctrl("c")] = .editCopy
-            canvas[.ctrl("C")] = .editCopy
-            canvas[.ctrl("v")] = .editUncut
-            canvas[.ctrl("V")] = .editUncut
-            canvas[.ctrl("k")] = .editCut
-            canvas[.ctrl("K")] = .editCut
-            canvas[.ctrl("u")] = .editUncut
-            canvas[.ctrl("U")] = .editUncut
-            canvas[.alt("w")] = .editCopy
-            canvas[.alt("W")] = .editCopy
+            register(.editCut, .ctrl("X"), .ctrl("x"), .ctrl("K"), .ctrl("k"), mode: .canvas)
+            register(.editCopy, .ctrl("C"), .ctrl("c"), .alt("W"), .alt("w"), mode: .canvas)
+            register(.editUncut, .ctrl("V"), .ctrl("v"), .ctrl("U"), .ctrl("u"), mode: .canvas)
         }
-        modeKeymaps[.canvas] = canvas
 
         // Prompt Mode Overlays
-        var prompt: [Key: CommandID] = [:]
-        prompt[.enter] = .promptConfirm
-        prompt[.esc] = .promptCancel
-        prompt[.tab] = .promptComplete
-        prompt[.arrowUp] = .promptHistoryPrev
-        prompt[.arrowDown] = .promptHistoryNext
-        prompt[.ctrlBackspace] = .promptClearLine
-        modeKeymaps[.prompt] = prompt
-    }
-
-    /// Returns the keys associated with a command in the given mode.
-    func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
-        if let modeKey = modeKeymaps[mode]?.first(where: { $0.value == commandID })?.key {
-            return [modeKey]
-        }
-        if let displayKeys = primaryDisplayKeys[commandID], !displayKeys.isEmpty {
-            return displayKeys
-        }
-        var result: [Key] = []
-        let baseKeys = baseKeymap.filter { $0.value == commandID }.map(\.key)
-        for key in baseKeys {
-            if !result.contains(key) {
-                result.append(key)
-            }
-        }
-        return result
+        register(.promptConfirm, .enter, mode: .prompt)
+        register(.promptCancel, .esc, mode: .prompt)
+        register(.promptComplete, .tab, mode: .prompt)
+        register(.promptHistoryPrev, .arrowUp, mode: .prompt)
+        register(.promptHistoryNext, .arrowDown, mode: .prompt)
+        register(.promptClearLine, .ctrlBackspace, mode: .prompt)
     }
 }
