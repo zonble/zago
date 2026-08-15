@@ -259,6 +259,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case formatList
     case formatRelativeTime
     case formatBytes
+    case detectURL
+    case detectEmail
+    case detectPhone
+    case detectDate
+    case detectAddress
     case search
     case sort
     case fill
@@ -551,6 +556,11 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FORMAT.LIST"], .formatList),
         (["FORMAT.RELATIVETIME"], .formatRelativeTime),
         (["FORMAT.BYTES"], .formatBytes),
+        (["DETECT.URL"], .detectURL),
+        (["DETECT.EMAIL"], .detectEmail),
+        (["DETECT.PHONE"], .detectPhone),
+        (["DETECT.DATE"], .detectDate),
+        (["DETECT.ADDRESS"], .detectAddress),
         (["SEARCH"], .search),
     ]
 
@@ -600,5 +610,6 @@ extension LogoPrimitive {
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,
         .dateformat, .dateadd, .datediff, .formatNumber, .formatList, .formatRelativeTime, .formatBytes,
+        .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress,
     ]
 }
