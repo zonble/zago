@@ -32,15 +32,7 @@ extension LogoEngine {
                     hasExplicitLength = true
                 },
                 setStyle: { style in
-                    if style == "heavy" {
-                        styleChar = "━"
-                    } else if style == "double" {
-                        styleChar = "═"
-                    } else if style == "ascii" {
-                        styleChar = "-"
-                    } else {
-                        styleChar = "─"
-                    }
+                    styleChar = BorderStyle.from(style).horizontalLineCharacter
                 },
                 setArrowMode: { mode in
                     arrowMode = mode
@@ -94,15 +86,7 @@ extension LogoEngine {
                     hasExplicitHeight = true
                 },
                 setStyle: { style in
-                    if style == "heavy" {
-                        styleChar = "┃"
-                    } else if style == "double" {
-                        styleChar = "║"
-                    } else if style == "ascii" {
-                        styleChar = "|"
-                    } else {
-                        styleChar = "│"
-                    }
+                    styleChar = BorderStyle.from(style).verticalLineCharacter
                 },
                 setArrowMode: { mode in
                     arrowMode = mode

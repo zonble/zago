@@ -203,6 +203,16 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
                 horizontal: "─", vertical: "│")
         }
     }
+
+    /// The character used by a horizontal line command for this style.
+    public var horizontalLineCharacter: Character {
+        tableCharacters.horizontal.first ?? "─"
+    }
+
+    /// The character used by a vertical line command for this style.
+    public var verticalLineCharacter: Character {
+        tableCharacters.vertical.first ?? "│"
+    }
 }
 
 public struct BoxStyle: Sendable {
