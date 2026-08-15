@@ -33,4 +33,14 @@ import Testing
             }
         }
     }
+
+    @Test func testMetadataMatchesSupportedOptionalArguments() {
+        let lineStyles = ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]
+        #expect(LogoPrimitive.line.meta.parameters?[1].allowedValues == lineStyles)
+        #expect(LogoPrimitive.vline.meta.parameters?[1].allowedValues == lineStyles)
+        #expect(LogoPrimitive.justify.meta.parameters == nil)
+        #expect(LogoPrimitive.formatRelativeTime.meta.parameters?[1].required == false)
+        #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
+        #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
+    }
 }

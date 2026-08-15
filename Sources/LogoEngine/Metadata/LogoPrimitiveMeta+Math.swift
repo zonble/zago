@@ -559,7 +559,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
-                    LogoPrimitiveParameter(name: "unit", required: true),
+                    LogoPrimitiveParameter(name: "unit", required: false),
                     LogoPrimitiveParameter(name: "locale", required: false)
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.RELATIVETIME -2 \"hour \"en_US", output: "2 hours ago")]
@@ -595,7 +595,11 @@ extension LogoPrimitive {
                 description: "Sorts elements in list alphabetically or numerically.",
                 localizedDescriptionKey: "logo.doc.sort",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "list", required: true)],
+                parameters: [
+                    LogoPrimitiveParameter(name: "list", required: true),
+                    LogoPrimitiveParameter(name: "order", required: false, allowedValues: ["desc", "descending", "greaterp", "greater?"]),
+                    LogoPrimitiveParameter(name: "template", required: false)
+                ],
                 examples: [LogoPrimitiveExample(input: "SORT [3 1 4 1 5 9]", output: "[1 1 3 4 5 9]")]
             )
 

@@ -35,7 +35,10 @@ extension LogoPrimitive {
                 description: "Inserts text at current editor cursor position without trailing newline.",
                 localizedDescriptionKey: "logo.doc.type",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [
+                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "...", required: false)
+                ],
                 examples: [LogoPrimitiveExample(input: "TYPE \"Hello")]
             )
 
@@ -45,7 +48,10 @@ extension LogoPrimitive {
                 description: "Displays a status message or formatted output to the user.",
                 localizedDescriptionKey: "logo.doc.show",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [
+                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "...", required: false)
+                ],
                 examples: [LogoPrimitiveExample(input: "SHOW [Done]")]
             )
 
@@ -121,7 +127,10 @@ extension LogoPrimitive {
                 description: "Appends text to the end of current line.",
                 localizedDescriptionKey: "logo.doc.append",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "text", required: true)],
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true),
+                    LogoPrimitiveParameter(name: "...", required: false)
+                ],
                 examples: [LogoPrimitiveExample(input: "APPEND \" (done)")]
             )
 
@@ -131,7 +140,10 @@ extension LogoPrimitive {
                 description: "Prepends text to the start of current line.",
                 localizedDescriptionKey: "logo.doc.prepend",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "text", required: true)],
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true),
+                    LogoPrimitiveParameter(name: "...", required: false)
+                ],
                 examples: [LogoPrimitiveExample(input: "PREPEND \"# ")]
             )
 
@@ -233,8 +245,7 @@ extension LogoPrimitive {
                 description: "Reflows and justifies paragraph text to wrap margin.",
                 localizedDescriptionKey: "logo.doc.justify",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "width", required: false)],
-                examples: [LogoPrimitiveExample(input: "JUSTIFY 72")]
+                examples: [LogoPrimitiveExample(input: "JUSTIFY")]
             )
 
         case .goto:
@@ -309,7 +320,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "length", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "ascii"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
                     LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
                     LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
                 ],
@@ -327,7 +338,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "height", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "double", "ascii"]),
+                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]),
                     LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
                     LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
                 ],
@@ -749,7 +760,8 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "arg1", required: true)
+                    LogoPrimitiveParameter(name: "arg1", required: true),
+                    LogoPrimitiveParameter(name: "...", required: false)
                 ],
                 examples: [LogoPrimitiveExample(input: "INVOKE [?1 + ?2] 10 20", output: "30")]
             )
