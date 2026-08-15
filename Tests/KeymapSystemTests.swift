@@ -424,4 +424,63 @@ import Foundation
         #expect(twLines.contains("游標向前移動一個字元"))
         #expect(twLines.contains("^F / 右方向鍵"))
     }
+
+    @Test func testZagorcEndToEndKeyBindsAndMacros() throws {
+        let configPath = "/home/user/.zagorc"
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                configPath: """
+                bind ^T search.whereis
+                bind alt-h 'logo: MOVE HOME TYPE "# " MOVE END'
+                unbind ^K
+                """
+            ]
+        )
+        let loader = ConfigLoader(provider: provider)
+        var config = EditorConfig()
+        loader.parseConfigFile(at: configPath, into: &config)
+
+        let configSource = EditorConfigSource(initial: config, reload: { config })
+        let editor = Editor(
+            configSource: configSource,
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+
+        // 1. Verify ^T triggers search.whereis (opening search prompt)
+        guard case .none = editor.currentPromptMode else {
+            #expect(Bool(false), "Expected promptMode to be .none initially")
+            return
+        }
+        editor.processKey(.ctrl("t"))
+        guard case .search = editor.currentPromptMode else {
+            #expect(Bool(false), "Expected promptMode to be .search after pressing ^T")
+            return
+        }
+        editor.processKey(.esc)
+        guard case .none = editor.currentPromptMode else {
+            #expect(Bool(false), "Expected promptMode to be .none after pressing Esc")
+            return
+        }
+
+        // 2. Verify alt-h executes the LOGO macro
+        editor.buffer.lines = ["Hello World"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 5
+        editor.processKey(.alt("h"))
+        #expect(editor.buffer.lines[0] == "# Hello World")
+
+        // 3. Verify ^K is unbound and no longer cuts the line
+        editor.buffer.lines = ["Stay Intact"]
+        editor.buffer.lineIndex = 0
+        editor.processKey(.ctrl("k"))
+        #expect(editor.buffer.lines[0] == "Stay Intact")
+    }
 }
+
+
+
