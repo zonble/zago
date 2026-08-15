@@ -559,6 +559,145 @@ import Testing
     }
 }
 
+@Test func testCommandBarClassicKeymapAllOperations() throws {
+    let editor = Editor()
+    #expect(editor.keymapManager.activePreset == .classic)
+    editor.isRunning = true
+
+    // 1. Navigation: ^A moves to Home, ^E moves to End
+    editor.promptLogoMacro()
+    for ch in "sample text" {
+        editor.processKey(.char(ch))
+    }
+    #expect(editor.promptCursorIndex == 11)
+
+    // ^A moves cursor to 0
+    editor.processKey(.ctrl("a"))
+    #expect(editor.promptCursorIndex == 0)
+    #expect(editor.promptController.selectionRange() == nil)
+
+    // ^E moves cursor to 11
+    editor.processKey(.ctrl("e"))
+    #expect(editor.promptCursorIndex == 11)
+
+    // 2. Editing: ^K cuts from cursor to end, ^U pastes
+    editor.processKey(.ctrl("a"))
+    editor.processKey(.ctrl("k"))
+    #expect(editor.promptInputText == "")
+    #expect(editor.clipboardText == "sample text")
+
+    editor.processKey(.ctrl("u"))
+    #expect(editor.promptInputText == "sample text")
+
+    // 3. Selection & Copy with Alt+W
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.shiftArrowLeft)
+    editor.processKey(.shiftArrowLeft)
+    #expect(editor.promptController.selectionRange() == 7..<11)
+    editor.processKey(.alt("w"))
+    #expect(editor.clipboardText == "text")
+
+    // 4. Cancel with ^G and ^C
+    editor.processKey(.ctrl("g"))
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^G to cancel active prompt in classic mode")
+    }
+
+    editor.promptLogoMacro()
+    editor.processKey(.ctrl("c"))
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^C to cancel active prompt in classic mode")
+    }
+}
+
+@Test func testCommandBarModernKeymapAllOperations() throws {
+    let editor = Editor()
+    editor.apply(.keymap(.modern))
+    #expect(editor.keymapManager.activePreset == .modern)
+    editor.isRunning = true
+
+    // 1. In Modern preset, ^Q exits prompt / editor
+    editor.promptLogoMacro()
+    for ch in "partial command" {
+        editor.processKey(.char(ch))
+    }
+
+    editor.processKey(.ctrl("Q"))
+    #expect(editor.isRunning == false)
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^Q from command bar to clear active prompt and exit in modern preset")
+    }
+
+    // 2. In Modern preset with modified buffer, ^Q prompts before exit
+    editor.isRunning = true
+    editor.buffer.isModified = true
+    editor.promptLogoMacro()
+    for ch in "partial" {
+        editor.processKey(.char(ch))
+    }
+    editor.processKey(.ctrl("q"))
+    if case .confirmExitSave = editor.currentPromptMode {
+        // In confirmExitSave, pressing 'n' rejects save and exits
+        editor.processKey(.char("n"))
+        #expect(editor.isRunning == false)
+    } else {
+        Issue.record("Expected ^Q from command bar to open exit-save confirmation in modern mode")
+    }
+
+    // 3. In Modern preset, ^A selects all, ^C copies, ^X cuts, ^V pastes
+    editor.isRunning = true
+    editor.buffer.isModified = false
+    editor.promptLogoMacro()
+    for ch in "hello world" {
+        editor.processKey(.char(ch))
+    }
+    #expect(editor.promptInputText == "hello world")
+
+    // ^A selects all
+    editor.processKey(.ctrl("a"))
+    #expect(editor.promptController.selectionRange() == 0..<11)
+
+    // ^C copies
+    editor.processKey(.ctrl("c"))
+    #expect(editor.clipboardText == "hello world")
+
+    // ^X cuts
+    editor.processKey(.ctrl("x"))
+    #expect(editor.promptInputText == "")
+    #expect(editor.clipboardText == "hello world")
+    #expect(editor.isRunning == true) // shouldn't exit on ^X in modern preset!
+
+    // ^V pastes
+    editor.processKey(.ctrl("v"))
+    #expect(editor.promptInputText == "hello world")
+
+    // 4. Cancel with Esc and ^G
+    editor.processKey(.esc)
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected Esc to cancel active prompt in modern mode")
+    }
+
+    editor.promptLogoMacro()
+    editor.processKey(.ctrl("g"))
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^G to cancel active prompt in modern mode")
+    }
+
+    // 5. In Modern preset without selection, ^C cancels prompt
+    editor.promptLogoMacro()
+    editor.processKey(.ctrl("c"))
+    if case .none = editor.currentPromptMode {
+    } else {
+        Issue.record("Expected ^C without selection to cancel prompt in modern mode")
+    }
+}
+
 @Test func testCommandBarDiagramAndOutlineAndBorderAliases() throws {
     let editor = Editor()
 
