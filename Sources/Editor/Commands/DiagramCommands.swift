@@ -4,7 +4,6 @@ public struct DiagramMenuCommand: Command {
     public let id: CommandID = .diagramMenu
     public let name = "Diagram Snippets Menu"
     public let description = "Open diagram snippet menu"
-    public let keys: [Key] = []
     public let commandBarAliases = ["diagram", "diagrams", "snippet", "snippets"]
 
     public init() {}

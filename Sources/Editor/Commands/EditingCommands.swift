@@ -4,7 +4,6 @@ public struct DeleteLineCommand: Command {
     public let id: CommandID = .editDeleteLine
     public let name = "Delete Line"
     public let description = "Delete current line"
-    public let keys: [Key] = [.ctrlBackspace, .ctrl("H"), .ctrl("h")]
 
     public init() {}
 
@@ -24,7 +23,6 @@ public struct DeleteCharCommand: Command {
     public let id: CommandID = .editDelete
     public let name = "Delete"
     public let description = "Delete character under cursor"
-    public let keys: [Key] = [.ctrl("D"), .delete]
 
     public init() {}
 
@@ -48,7 +46,6 @@ public struct ToggleMarkCommand: Command {
     public let id: CommandID = .editMark
     public let name = "Mark"
     public let description = "Set or unset canvas block mark"
-    public let keys: [Key] = [.mark, .alt("b"), .alt("B")]
     public let commandBarAliases = ["mark", "mb"]
 
     public init() {}
@@ -80,13 +77,18 @@ public struct CopyTextCommand: Command {
     public let id: CommandID = .editCopy
     public let name = "Copy Text"
     public let description = "Copy selected text or canvas block"
-    public let keys: [Key] = [.alt("w"), .alt("W")]
 
     public init() {}
 
     @discardableResult
     public func execute(on editor: Editor) -> EditorOperationResult {
         editor.buffer.clampCursor()
+        if editor.isTableModeActive {
+            if let cell = editor.currentTableCell {
+                editor.tableModeController.copyTableCellText(cell: cell)
+                return .succeeded
+            }
+        }
         if editor.isCanvasModeActive && !editor.isTableModeActive {
             _ = editor.copyCanvasBlock()
         } else if let mark = editor.buffer.selectionMark {
@@ -110,7 +112,6 @@ public struct CancelSelectionCommand: Command {
     public let id: CommandID = .editCancelSelection
     public let name = "Cancel Selection"
     public let description = "Cancel active selection or mark"
-    public let keys: [Key] = [.ctrl("G"), .alt("u"), .alt("U")]
     public let commandBarAliases = ["unmark", "cancelmark", "clearmark"]
 
     public init() {}
@@ -135,7 +136,6 @@ public struct CutTextCommand: Command {
     public let id: CommandID = .editCut
     public let name = "Cut Text"
     public let description = "Cut selected text or line"
-    public let keys: [Key] = [.ctrl("K"), .ctrl("k"), .f9]
 
     public init() {}
 
@@ -178,7 +178,6 @@ public struct UncutTextCommand: Command {
     public let id: CommandID = .editUncut
     public let name = "UnCut Text"
     public let description = "Paste cut text"
-    public let keys: [Key] = [.ctrl("U"), .ctrl("u"), .f10]
 
     public init() {}
 
@@ -208,7 +207,6 @@ public struct InsertTabCommand: Command {
     public let id: CommandID = .editTab
     public let name = "Insert Tab"
     public let description = "Insert tab spaces or smart indent"
-    public let keys: [Key] = [.tab, .ctrl("I"), .ctrl("i")]
 
     public init() {}
 
@@ -279,7 +277,6 @@ public struct InsertBacktabCommand: Command {
     public let id: CommandID = .editBacktab
     public let name = "Insert Backtab"
     public let description = "Navigate to previous table cell or outdent"
-    public let keys: [Key] = [.backtab]
 
     public init() {}
 
@@ -332,7 +329,6 @@ public struct UndoCommand: Command {
     public let id: CommandID = .editUndo
     public let name = "Undo"
     public let description = "Undo last edit"
-    public let keys: [Key] = [.ctrl("Z"), .ctrl("z")]
 
     public init() {}
 
@@ -347,7 +343,6 @@ public struct RedoCommand: Command {
     public let id: CommandID = .editRedo
     public let name = "Redo"
     public let description = "Redo last undone edit"
-    public let keys: [Key] = [.ctrlShift("Z"), .ctrlShift("z")]
 
     public init() {}
 
@@ -362,7 +357,6 @@ public struct JustifyCommand: Command {
     public let id: CommandID = .editJustify
     public let name = "Justify"
     public let description = "Justify paragraph text or format table"
-    public let keys: [Key] = [.ctrl("J"), .ctrl("j")]
     public let commandBarAliases = ["justify"]
 
     public init() {}
@@ -397,7 +391,6 @@ public struct SpellCheckCommand: Command {
     public let id: CommandID = .editSpell
     public let name = "To Spell"
     public let description = "Check spelling"
-    public let keys: [Key] = [.ctrl("T"), .f12]
     public let commandBarAliases = ["spell-check"]
 
     public init() {}
@@ -413,7 +406,6 @@ public struct EvalLogoCommand: Command {
     public let id: CommandID = .editEvalLogo
     public let name = "Eval Editor LOGO Code"
     public let description = "Evaluate Editor LOGO code at current line, selection, or code block"
-    public let keys: [Key] = [.ctrl("Q"), .ctrl("q")]
     public let commandBarAliases = ["eval", "evallogo", "run-logo"]
 
     public init() {}
@@ -429,7 +421,6 @@ public struct ToggleCommentCommand: Command {
     public let id: CommandID = .editToggleComment
     public let name = "Toggle Comment"
     public let description = "Comment or uncomment current line or selection"
-    public let keys: [Key] = [.ctrl("/"), .ctrl("_")]
     public let commandBarAliases = ["comment", "uncomment", "toggle-comment"]
 
     public init() {}
@@ -445,7 +436,6 @@ public struct JoinLineCommand: Command {
     public let id: CommandID = .editJoinLine
     public let name = "Join Line"
     public let description = "Join next line with current line"
-    public let keys: [Key] = [.alt("j"), .alt("J")]
     public let commandBarAliases = ["joinline", "join"]
 
     public init() {}
@@ -471,7 +461,6 @@ public struct SplitLineCommand: Command {
     public let id: CommandID = .editSplitLine
     public let name = "Split Line"
     public let description = "Split current line at cursor position"
-    public let keys: [Key] = [.alt("k"), .alt("K")]
     public let commandBarAliases = ["splitline", "split"]
 
     public init() {}

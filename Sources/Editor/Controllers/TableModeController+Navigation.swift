@@ -160,6 +160,36 @@ extension TableModeController {
         editor.reportOperationResult(.succeeded(message: editor.l10n["status.cut_text"]))
     }
 
+    public func copyTableCellText(cell: TableCell) {
+        guard let editor else { return }
+        if let mark = editor.buffer.selectionMark {
+            let (start, end) = TextBuffer.getOrderedRange(
+                mark1: mark, mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex))
+            guard start.line != end.line || start.column != end.column else {
+                editor.reportOperationResult(.noOp(message: editor.l10n["status.no_selection"]))
+                return
+            }
+            editor.clipboardText = editor.buffer.textRange(
+                start: (line: start.line, col: start.column),
+                end: (line: end.line, col: end.column))
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.copied_text"]))
+            return
+        }
+
+        let lineIndex = editor.buffer.lineIndex
+        guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return }
+        let line = editor.buffer.lines[lineIndex]
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        let start = leftBorder + 1
+        let end = rightBorder
+        guard start < end else { return }
+
+        let chars = Array(line)
+        editor.clipboardText = String(chars[start..<min(end, chars.count)])
+        editor.reportOperationResult(.succeeded(message: editor.l10n["status.copied_text"]))
+    }
+
     // MARK: - Table Navigation Operations
 
     /// Finds the left and right vertical border character indices for the current cell on the given line string.

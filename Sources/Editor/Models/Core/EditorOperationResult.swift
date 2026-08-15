@@ -46,6 +46,13 @@ public struct EditorOperationResult: Equatable, Sendable {
         kind == .succeeded
     }
 
+    public var isFailed: Bool {
+        if case .failed = kind {
+            return true
+        }
+        return false
+    }
+
     public static func == (lhs: EditorOperationResult, rhs: EditorOperationResult) -> Bool {
         lhs.kind == rhs.kind
     }

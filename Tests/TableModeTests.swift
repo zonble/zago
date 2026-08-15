@@ -945,3 +945,44 @@ import Testing
     #expect(!editor.buffer.isCharacterSelected(line: 3, col: 2))
 }
 
+@Test func testTableModeModernKeymapCopyCutPaste() throws {
+    let editor = Editor()
+    editor.apply(.keymap(.modern))
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┐",
+        "│ Hello          │ World          │",
+        "└────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+
+    // 1. Toggle Table Mode ON
+    editor.tableModeController.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    // 2. Test Copy (Ctrl+C) in Modern Mode inside cell
+    editor.processKey(.ctrl("c"))
+    #expect(editor.clipboardText?.contains("Hello") == true)
+    #expect(editor.buffer.lines[1].contains("Hello")) // Cell text still intact
+
+    // 3. Move to second cell and Paste (Ctrl+V)
+    editor.processKey(.tab)
+    #expect(editor.currentTableCell?.minCol == 17)
+    // Cut second cell text first with Ctrl+X
+    editor.processKey(.ctrl("x"))
+    #expect(editor.clipboardText?.contains("World") == true)
+    #expect(!editor.buffer.lines[1].contains("World"))
+
+    // Paste with Ctrl+V (not PageDown!)
+    editor.clipboardText = "Test"
+    editor.processKey(.ctrl("v"))
+    #expect(editor.buffer.lines[1].contains("Test"))
+
+    // 4. Test secondary aliases (^K / ^U) also work in Modern table mode
+    editor.processKey(.ctrl("k"))
+    #expect(editor.clipboardText?.contains("Test") == true)
+    editor.clipboardText = "Alias"
+    editor.processKey(.ctrl("u"))
+    #expect(editor.buffer.lines[1].contains("Alias"))
+}
+

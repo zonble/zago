@@ -4,7 +4,6 @@ public struct SwitchTextModeCommand: Command {
     public let id: CommandID = .textMode
     public let name = "Text Editing Mode"
     public let description = "Switch to Text Editing Mode"
-    public let keys: [Key] = []
     public let commandBarAliases = ["text-mode"]
 
     public init() {}
@@ -20,7 +19,6 @@ public struct ToggleCanvasModeCommand: Command {
     public let id: CommandID = .canvasToggle
     public let name = "Canvas Mode"
     public let description = "Toggle Canvas Mode"
-    public let keys: [Key] = [.f8, .alt("v"), .alt("V")]
     public let commandBarAliases = ["canvas-mode"]
 
     public init() {}
@@ -36,7 +34,6 @@ public struct ToggleTableModeCommand: Command {
     public let id: CommandID = .tableToggle
     public let name = "Table Mode"
     public let description = "Toggle Table Mode for active cell"
-    public let keys: [Key] = [.f7, .alt("t"), .alt("T")]
     public let commandBarAliases = ["table-mode"]
 
     public init() {}
@@ -53,7 +50,6 @@ public struct CycleBorderStyleCommand: Command {
     public let name = "Cycle Border Style"
     public let description =
         "Switch default border style (Single -> Heavy -> Double -> Round -> Double Round -> ASCII)"
-    public let keys: [Key] = [.alt("s"), .alt("S")]
     public let commandBarAliases = ["border", "border-style"]
 
     public init() {}
@@ -92,7 +88,6 @@ public struct TableNextCellCommand: Command {
     public let id: CommandID = .tableNextCell
     public let name = "Next Table Cell"
     public let description = "Move to next table cell"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -108,7 +103,6 @@ public struct TablePrevCellCommand: Command {
     public let id: CommandID = .tablePrevCell
     public let name = "Previous Table Cell"
     public let description = "Move to previous table cell"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -124,7 +118,6 @@ public struct TableAdjustWidthIncCommand: Command {
     public let id: CommandID = .tableAdjustWidthInc
     public let name = "Increase Table Cell Width"
     public let description = "Increase current table column width"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -139,7 +132,6 @@ public struct TableAdjustWidthDecCommand: Command {
     public let id: CommandID = .tableAdjustWidthDec
     public let name = "Decrease Table Cell Width"
     public let description = "Decrease current table column width"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -154,7 +146,6 @@ public struct TableAdjustHeightIncCommand: Command {
     public let id: CommandID = .tableAdjustHeightInc
     public let name = "Increase Table Cell Height"
     public let description = "Increase current table row height"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -169,7 +160,6 @@ public struct TableAdjustHeightDecCommand: Command {
     public let id: CommandID = .tableAdjustHeightDec
     public let name = "Decrease Table Cell Height"
     public let description = "Decrease current table row height"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -184,7 +174,6 @@ public struct TableCenterTextCommand: Command {
     public let id: CommandID = .tableCenterText
     public let name = "Center Table Cell Text"
     public let description = "Center text in current table cell"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -199,7 +188,6 @@ public struct TableCellStartCommand: Command {
     public let id: CommandID = .tableCellStart
     public let name = "Beginning of Table Cell"
     public let description = "Move cursor to beginning of table cell"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -220,7 +208,6 @@ public struct TableCellEndCommand: Command {
     public let id: CommandID = .tableCellEnd
     public let name = "End of Table Cell"
     public let description = "Move cursor to end of table cell"
-    public let keys: [Key] = []
 
     public init() {}
 
@@ -241,7 +228,6 @@ public struct TableClearCellCommand: Command {
     public let id: CommandID = .tableClearCell
     public let name = "Clear Table Cell"
     public let description = "Clear text inside current table cell"
-    public let keys: [Key] = []
 
     public init() {}
 

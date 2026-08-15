@@ -4,7 +4,6 @@ public struct MoveRightCommand: Command {
     public let id: CommandID = .moveRight
     public let name = "Forward"
     public let description = "Move forward a character"
-    public let keys: [Key] = [.ctrl("F"), .arrowRight]
 
     public init() {}
 
@@ -31,7 +30,6 @@ public struct MoveLeftCommand: Command {
     public let id: CommandID = .moveLeft
     public let name = "Backward"
     public let description = "Move backward a character"
-    public let keys: [Key] = [.ctrl("B"), .arrowLeft]
 
     public init() {}
 
@@ -57,7 +55,6 @@ public struct MoveUpCommand: Command {
     public let id: CommandID = .moveUp
     public let name = "Previous Line"
     public let description = "Move to previous line"
-    public let keys: [Key] = [.ctrl("P"), .arrowUp]
 
     public init() {}
 
@@ -78,7 +75,6 @@ public struct MoveDownCommand: Command {
     public let id: CommandID = .moveDown
     public let name = "Next Line"
     public let description = "Move to next line"
-    public let keys: [Key] = [.ctrl("N"), .arrowDown]
 
     public init() {}
 
@@ -99,7 +95,6 @@ public struct MoveHomeCommand: Command {
     public let id: CommandID = .moveHome
     public let name = "Beginning of Line"
     public let description = "Move to beginning of line"
-    public let keys: [Key] = [.ctrl("A"), .ctrl("a"), .home]
 
     public init() {}
 
@@ -130,7 +125,6 @@ public struct MoveEndCommand: Command {
     public let id: CommandID = .moveEnd
     public let name = "End of Line"
     public let description = "Move to end of line"
-    public let keys: [Key] = [.ctrl("E"), .ctrl("e"), .end]
 
     public init() {}
 
@@ -197,7 +191,6 @@ public struct MovePgdnCommand: Command {
     public let id: CommandID = .movePgdn
     public let name = "Next Page"
     public let description = "Move forward one page"
-    public let keys: [Key] = [.ctrl("V"), .ctrl("v"), .pageDown]
 
     public init() {}
 
@@ -230,7 +223,6 @@ public struct MovePgupCommand: Command {
     public let id: CommandID = .movePgup
     public let name = "Previous Page"
     public let description = "Move backward one page"
-    public let keys: [Key] = [.ctrl("Y"), .ctrl("y"), .pageUp]
 
     public init() {}
 
@@ -263,7 +255,6 @@ public struct MoveWordForwardCommand: Command {
     public let id: CommandID = .moveWordForward
     public let name = "Forward Word"
     public let description = "Move forward one word"
-    public let keys: [Key] = [.ctrlShift("f"), .ctrlShift("F")]
 
     public init() {}
 
@@ -281,7 +272,6 @@ public struct MoveWordBackwardCommand: Command {
     public let id: CommandID = .moveWordBackward
     public let name = "Backward Word"
     public let description = "Move backward one word"
-    public let keys: [Key] = [.ctrlShift("b"), .ctrlShift("B")]
 
     public init() {}
 

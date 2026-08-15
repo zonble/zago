@@ -108,7 +108,7 @@ public final class TableModeController: KeyInputHandler {
             clampTableModeCursor()
             return true
 
-        case .pageUp, .ctrl("y"), .ctrl("Y"):
+        case .pageUp:
             editor.clearActiveMark()
             let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
             editor.buffer.lineIndex = cell.innerMinLine
@@ -117,7 +117,7 @@ public final class TableModeController: KeyInputHandler {
             clampTableModeCursor()
             return true
 
-        case .pageDown, .ctrl("v"), .ctrl("V"):
+        case .pageDown:
             editor.clearActiveMark()
             let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
             editor.buffer.lineIndex = cell.innerMaxLine
@@ -171,19 +171,6 @@ public final class TableModeController: KeyInputHandler {
         case .enter:
             editor.clearActiveMark()
             moveToNextTableCellLineOrCell()
-            return true
-
-        case .ctrl("k"), .ctrl("K"), .f9:
-            cutTableCellText(cell: cell)
-            return true
-
-        case .ctrl("u"), .ctrl("U"), .f10:
-            if let text = editor.clipboardText, !text.isEmpty {
-                pasteTableCellText(text)
-                editor.reportOperationResult(.succeeded(message: editor.l10n["status.uncut_text"]))
-            } else {
-                editor.reportOperationResult(.noOp(message: editor.l10n["status.clipboard_empty"]))
-            }
             return true
 
         case .backspace:

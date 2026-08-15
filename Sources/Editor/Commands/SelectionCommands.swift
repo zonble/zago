@@ -4,7 +4,6 @@ public struct SelectLeftCommand: Command {
     public let id: CommandID = .selectLeft
     public let name = "Select Left"
     public let description = "Extend selection left"
-    public let keys: [Key] = [.shiftArrowLeft]
 
     public init() {}
 
@@ -29,7 +28,6 @@ public struct SelectRightCommand: Command {
     public let id: CommandID = .selectRight
     public let name = "Select Right"
     public let description = "Extend selection right"
-    public let keys: [Key] = [.shiftArrowRight]
 
     public init() {}
 
@@ -55,7 +53,6 @@ public struct SelectUpCommand: Command {
     public let id: CommandID = .selectUp
     public let name = "Select Up"
     public let description = "Extend selection up"
-    public let keys: [Key] = [.shiftArrowUp]
 
     public init() {}
 
@@ -75,7 +72,6 @@ public struct SelectDownCommand: Command {
     public let id: CommandID = .selectDown
     public let name = "Select Down"
     public let description = "Extend selection down"
-    public let keys: [Key] = [.shiftArrowDown]
 
     public init() {}
 
@@ -95,7 +91,6 @@ public struct SelectHomeCommand: Command {
     public let id: CommandID = .selectHome
     public let name = "Select Home"
     public let description = "Extend selection to line start"
-    public let keys: [Key] = [.shiftHome]
 
     public init() {}
 
@@ -116,7 +111,6 @@ public struct SelectEndCommand: Command {
     public let id: CommandID = .selectEnd
     public let name = "Select End"
     public let description = "Extend selection to line end"
-    public let keys: [Key] = [.shiftEnd]
 
     public init() {}
 
@@ -137,7 +131,6 @@ public struct SelectAllCommand: Command {
     public let id: CommandID = .selectAll
     public let name = "Select All"
     public let description = "Select all text in buffer"
-    public let keys: [Key] = []
     public let commandBarAliases = ["selectall", "select-all"]
 
     public init() {}

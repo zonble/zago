@@ -4,7 +4,6 @@ public struct AcceptProposalCommand: Command {
     public let id: CommandID = .proposalAccept
     public let name = "Accept AI Proposal"
     public let description = "Accept current AI proposal and apply changes to text buffer"
-    public let keys: [Key] = [.alt("a")]
     public var commandBarAliases: [String] { ["accept", "proposal.accept", ":accept"] }
 
     public init() {}
@@ -87,7 +86,6 @@ public struct RejectProposalCommand: Command {
     public let id: CommandID = .proposalReject
     public let name = "Reject AI Proposal"
     public let description = "Reject and dismiss current AI proposal"
-    public let keys: [Key] = [.alt("r")]
     public var commandBarAliases: [String] { ["reject", "proposal.reject", ":reject"] }
 
     public init() {}
@@ -110,7 +108,6 @@ public struct NextProposalCommand: Command {
     public let id: CommandID = .proposalNext
     public let name = "Next AI Proposal"
     public let description = "Preview next AI proposal in queue"
-    public let keys: [Key] = [.alt("p")]
     public var commandBarAliases: [String] { ["nextproposal", "proposal.next", ":nextproposal"] }
 
     public init() {}
@@ -138,7 +135,6 @@ public struct PreviousProposalCommand: Command {
     public let id: CommandID = .proposalPrev
     public let name = "Previous AI Proposal"
     public let description = "Preview previous AI proposal in queue"
-    public let keys: [Key] = [.alt("P")]
     public var commandBarAliases: [String] { ["prevproposal", "proposal.prev", ":prevproposal"] }
 
     public init() {}
@@ -166,7 +162,6 @@ public struct MockAISuggestionCommand: Command {
     public let id: CommandID = .proposalMockAI
     public let name = "Mock AI Suggestion"
     public let description = "Generate a mock AI proposal overlay for testing AI interactions"
-    public let keys: [Key] = []
     public var commandBarAliases: [String] { ["mock-ai", "mock-ai-suggestion", "ai-mock", ":mock-ai", ":mock-ai-suggestion"] }
 
     public init() {}

@@ -5,7 +5,6 @@ public struct WhereIsCommand: Command {
     public let id: CommandID = .searchWhereIs
     public let name = "Where Is"
     public let description = "Search text"
-    public let keys: [Key] = [.ctrl("W"), .f6]
 
     public init() {}
 
@@ -54,7 +53,6 @@ public struct SearchNextCommand: Command {
     public let id: CommandID = .searchNext
     public let name = "Find Next"
     public let description = "Find next active search match"
-    public let keys: [Key] = [.alt("n"), .alt("N")]
 
     public init() {}
 
@@ -69,7 +67,6 @@ public struct SearchPreviousCommand: Command {
     public let id: CommandID = .searchPrevious
     public let name = "Find Previous"
     public let description = "Find previous active search match"
-    public let keys: [Key] = [.alt("p"), .alt("P")]
 
     public init() {}
 
@@ -84,7 +81,6 @@ public struct SearchReplaceCommand: Command {
     public let id: CommandID = .searchReplace
     public let name = "Replace"
     public let description = "Search and replace text"
-    public let keys: [Key] = []
     public let commandBarAliases: [String] = ["replace"]
 
     public init() {}
@@ -365,7 +361,6 @@ public struct OpenDocumentLinkCommand: Command {
     public let id: CommandID = .documentOpenLink
     public let name = "Open Link"
     public let description = "Open document link at cursor"
-    public let keys: [Key] = [.alt("o"), .alt("O")]
     public let commandBarAliases = ["openlink", "open-link", "follow"]
 
     public init() {}
@@ -380,7 +375,6 @@ public struct NextHeadingCommand: Command {
     public let id: CommandID = .documentHeadingNext
     public let name = "Next Heading"
     public let description = "Jump to next document heading"
-    public let keys: [Key] = [.alt("]")]
     public let commandBarAliases = ["nextheading", "next-heading"]
 
     public init() {}
@@ -396,7 +390,6 @@ public struct PreviousHeadingCommand: Command {
     public let id: CommandID = .documentHeadingPrevious
     public let name = "Previous Heading"
     public let description = "Jump to previous document heading"
-    public let keys: [Key] = [.alt("[")]
     public let commandBarAliases = ["prevheading", "prev-heading"]
 
     public init() {}
@@ -412,7 +405,6 @@ public struct DocumentOutlineCommand: Command {
     public let id: CommandID = .documentOutline
     public let name = "Outline"
     public let description = "Open document outline"
-    public let keys: [Key] = [.alt("\\")]
     public let commandBarAliases = ["outline", "toc", "headings"]
 
     public init() {}
@@ -428,7 +420,6 @@ public struct GotoLineCommand: Command {
     public let id: CommandID = .cursorGotoLine
     public let name = "Go To Line"
     public let description = "Jump to line and column number"
-    public let keys: [Key] = [.alt("g"), .alt("G"), .alt("/")]
 
     public init() {}
 
@@ -491,7 +482,6 @@ public struct RefreshScreenCommand: Command {
     public let id: CommandID = .screenRefresh
     public let name = "Refresh"
     public let description = "Refresh screen"
-    public let keys: [Key] = [.ctrl("L")]
 
     public init() {}
 
@@ -506,7 +496,6 @@ public struct ShowCursorPosCommand: Command {
     public let id: CommandID = .cursorPos
     public let name = "Cur Pos"
     public let description = "Display cursor position"
-    public let keys: [Key] = [.ctrl("C"), .f11]
     public let commandBarAliases = ["pos", "cursorpos", "where"]
 
     public init() {}
