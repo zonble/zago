@@ -643,10 +643,13 @@ extension LogoEngine {
             let nextToken = tokens[index]
             let upper = unquote(nextToken).uppercased()
             let name =
-                (customProcedures[upper] != nil)
+                (customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil)
                 ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             if let proc = customProcedures[name] {
                 return proc.docstring ?? ""
+            }
+            if let prim = LogoPrimitive.from(name) {
+                return prim.meta.description
             }
             return ""
 

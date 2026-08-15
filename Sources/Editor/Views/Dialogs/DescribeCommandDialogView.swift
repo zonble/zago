@@ -11,6 +11,9 @@ final class DescribeCommandDialogView {
     private var symbol: String
     private var isInputMode: Bool
     private var inputText: String = ""
+    private var scrollOffset: Int = 0
+    private var cachedLines: [String] = []
+    private var cachedBodyHeight: Int = 10
 
     init(
         terminal: EditorTerminal,
@@ -31,6 +34,7 @@ final class DescribeCommandDialogView {
     }
 
     func show() {
+        scrollOffset = 0
         render()
         while true {
             let key = terminal.readKey()
@@ -49,6 +53,7 @@ final class DescribeCommandDialogView {
                     if !trimmed.isEmpty {
                         symbol = trimmed
                         isInputMode = false
+                        scrollOffset = 0
                         render()
                     } else {
                         return
@@ -67,8 +72,45 @@ final class DescribeCommandDialogView {
                     break
                 }
             } else {
-                // Showing details: dismiss on any key
-                return
+                // Showing details with scroll support
+                switch key {
+                case .esc, .enter, .char("q"), .char("Q"), .ctrl("c"), .ctrl("g"):
+                    return
+
+                case .arrowUp, .char("k"), .char("K"):
+                    if scrollOffset > 0 {
+                        scrollOffset -= 1
+                        render()
+                    }
+
+                case .arrowDown, .char("j"), .char("J"):
+                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                    if scrollOffset < maxOffset {
+                        scrollOffset += 1
+                        render()
+                    }
+
+                case .pageUp, .ctrl("u"):
+                    scrollOffset = max(0, scrollOffset - max(1, cachedBodyHeight - 1))
+                    render()
+
+                case .pageDown, .ctrl("d"), .char(" "):
+                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                    scrollOffset = min(maxOffset, scrollOffset + max(1, cachedBodyHeight - 1))
+                    render()
+
+                case .home, .char("g"):
+                    scrollOffset = 0
+                    render()
+
+                case .end, .char("G"):
+                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                    scrollOffset = maxOffset
+                    render()
+
+                default:
+                    break
+                }
             }
         }
     }
@@ -77,8 +119,51 @@ final class DescribeCommandDialogView {
         let (rows, cols) = terminal.getWindowSize()
         guard rows > 6 && cols > 20 else { return }
 
-        let dialogWidth = min(cols - 4, 76)
-        let dialogHeight = min(rows - 4, 18)
+        let l10n = editor?.l10n ?? L10n(language: language)
+
+        let title: String
+        let footer: String
+        let lines: [String]
+
+        let dialogWidth = min(cols - 4, max(76, min(100, Int(Double(cols) * 0.90))))
+        let maxDialogHeight = min(rows - 4, max(18, Int(Double(rows) * 0.85)))
+
+        let contentWidth = max(20, dialogWidth - 6)
+
+        if isInputMode {
+            title = l10n["describe_command.title_input"]
+            footer = l10n["describe_command.footer_input"]
+            let promptLabel = l10n["describe_command.prompt_input"]
+            lines = [
+                "",
+                promptLabel,
+                "> " + inputText + "█",
+                "",
+            ]
+        } else {
+            title = String(format: l10n["describe_command.title_help"], symbol)
+            lines = buildSymbolDetails(for: symbol, l10n: l10n, maxLineWidth: contentWidth)
+            let hasOverflow = lines.count > (maxDialogHeight - 2)
+            if hasOverflow {
+                footer = l10n["describe_command.footer_scroll"]
+            } else {
+                footer = l10n["describe_command.footer_close"]
+            }
+        }
+
+        cachedLines = lines
+
+        let dialogHeight = isInputMode
+            ? min(maxDialogHeight, 8)
+            : min(maxDialogHeight, max(12, lines.count + 2))
+
+        let bodyHeight = max(1, dialogHeight - 2)
+        cachedBodyHeight = bodyHeight
+
+        // Clamp scrollOffset
+        let maxOffset = max(0, lines.count - bodyHeight)
+        scrollOffset = min(maxOffset, max(0, scrollOffset))
+
         let startRow = max(1, (rows - dialogHeight) / 2)
         let startCol = max(1, (cols - dialogWidth) / 2)
 
@@ -92,46 +177,26 @@ final class DescribeCommandDialogView {
             output += "\u{001B}[H"
         }
 
-        let l10n = editor?.l10n ?? L10n(language: language)
-
-        let title: String
-        let footer: String
-        let lines: [String]
-
-        if isInputMode {
-            title = language == .zh_TW ? "查詢指令與程序 (Describe Command)" : "Describe Command & Procedure"
-            footer = language == .zh_TW ? "[ Enter: 查詢  |  Esc: 關閉 ]" : "[ Enter: Search  |  Esc: Close ]"
-            let promptLabel = language == .zh_TW
-                ? "請輸入指令名稱、自訂 Procedure 或 Primitive："
-                : "Enter command, procedure or primitive name:"
-            lines = [
-                "",
-                promptLabel,
-                "> " + inputText + "█",
-                "",
-            ]
-        } else {
-            title = String(format: language == .zh_TW ? "說明：%@" : "Help: %@", symbol)
-            footer = language == .zh_TW ? "[ 按任意鍵關閉 ]" : "[ Press any key to close ]"
-            lines = buildSymbolDetails(for: symbol, l10n: l10n)
-        }
-
-        // Top border
+        // Top border with scroll up indicator
         let topBar = "╔" + String(repeating: "═", count: max(0, dialogWidth - 2)) + "╗"
         output += "\u{001B}[\(startRow);\(startCol)H\(topBar)"
         let styledTitle = title.ansiStyled(style: ANSIStyle.bold)
         output += "\u{001B}[\(startRow);\(startCol + 2)H\(styledTitle)"
+        if scrollOffset > 0 {
+            let indicator = " ▲ ".ansiStyled(style: ANSIStyle.boldYellow)
+            output += "\u{001B}[\(startRow);\(startCol + dialogWidth - 6)H\(indicator)"
+        }
 
         // Body rows
-        let bodyHeight = max(1, dialogHeight - 2)
         for r in 0..<bodyHeight {
             let currentRow = startRow + 1 + r
             output += "\u{001B}[\(currentRow);\(startCol)H║"
             output += String(repeating: " ", count: max(0, dialogWidth - 2))
             output += "\u{001B}[\(currentRow);\(startCol + dialogWidth - 1)H║"
 
-            if r < lines.count {
-                let lineText = lines[r]
+            let lineIndex = scrollOffset + r
+            if lineIndex < lines.count {
+                let lineText = lines[lineIndex]
                 let maxLineWidth = max(1, dialogWidth - 6)
                 let visibleText = lineText.displayWidth > maxLineWidth
                     ? lineText.visualSlice(startVisualColumn: 0, width: maxLineWidth).text
@@ -140,10 +205,14 @@ final class DescribeCommandDialogView {
             }
         }
 
-        // Bottom border
+        // Bottom border with scroll down indicator
         let bottomBar = "╚" + String(repeating: "═", count: max(0, dialogWidth - 2)) + "╝"
         let bottomRow = startRow + dialogHeight - 1
         output += "\u{001B}[\(bottomRow);\(startCol)H\(bottomBar)"
+        if scrollOffset + bodyHeight < lines.count {
+            let indicator = " ▼ ".ansiStyled(style: ANSIStyle.boldYellow)
+            output += "\u{001B}[\(bottomRow);\(startCol + dialogWidth - 6)H\(indicator)"
+        }
         if !footer.isEmpty {
             let styledFooter = footer.ansiStyled(style: ANSIStyle.dimGray)
             let footerPos = max(startCol + 2, startCol + (dialogWidth - footer.displayWidth) / 2)
@@ -156,35 +225,38 @@ final class DescribeCommandDialogView {
         fflush(nil)
     }
 
-    private func buildSymbolDetails(for sym: String, l10n: L10n) -> [String] {
+    private func buildSymbolDetails(for sym: String, l10n: L10n, maxLineWidth: Int = 68) -> [String] {
         let symUpper = sym.uppercased()
         let symLower = sym.lowercased()
-        var result: [String] = []
 
-        let isZh = language == .zh_TW
+        var sections: [[String]] = []
 
         // 1. User-Defined LOGO Procedure
         if let proc = editor?.logoEngine.customProcedures[symUpper] {
-            result.append("• " + (isZh ? "自訂程序 (LOGO Procedure)" : "User-Defined Procedure").ansiStyled(style: ANSIStyle.boldYellow))
-            let paramsStr = proc.parameters.isEmpty ? (isZh ? "(無參數)" : "(none)") : proc.parameters.map { ":" + $0 }.joined(separator: " ")
-            result.append("    " + (isZh ? "語法：" : "Syntax: ") + "\(proc.name) \(paramsStr)".ansiStyled(style: ANSIStyle.bold))
-            result.append("")
+            var procSection: [String] = []
+            procSection.append("• " + l10n["describe_command.user_procedure"].ansiStyled(style: ANSIStyle.boldYellow))
+            let paramsStr = proc.parameters.isEmpty
+                ? l10n["describe_command.no_parameters"]
+                : proc.parameters.map { ":" + $0 }.joined(separator: " ")
+            procSection.append("    " + l10n["describe_command.syntax"] + "\(proc.name) \(paramsStr)".ansiStyled(style: ANSIStyle.bold))
+            procSection.append("")
 
-            result.append("• " + (isZh ? "說明文件 (Docstring)" : "Docstring").ansiStyled(style: ANSIStyle.boldCyan))
+            procSection.append("• " + l10n["describe_command.docstring"].ansiStyled(style: ANSIStyle.boldCyan))
             if let doc = proc.docstring, !doc.isEmpty {
-                result.append("    \(doc)")
+                let wrapped = wrapText(doc, maxLineWidth: maxLineWidth, indent: "    ")
+                procSection.append(contentsOf: wrapped)
             } else {
-                result.append("    " + (isZh ? "(未提供 docstring)" : "(No docstring provided)").ansiStyled(style: ANSIStyle.dimGray))
+                procSection.append("    " + l10n["describe_command.no_docstring"].ansiStyled(style: ANSIStyle.dimGray))
             }
-            result.append("")
+            procSection.append("")
 
-            result.append("• " + (isZh ? "定義 (Definition)" : "Definition").ansiStyled(style: ANSIStyle.boldCyan))
+            procSection.append("• " + l10n["describe_command.definition"].ansiStyled(style: ANSIStyle.boldCyan))
             let bodyText = proc.bodyTokens.map(\.text).joined(separator: " ")
-            let wrappedBody = formatScriptLines(bodyText, maxLineWidth: 66, maxLines: 3)
+            let wrappedBody = formatScriptLines(bodyText, maxLineWidth: maxLineWidth, maxLines: 5)
             for line in wrappedBody {
-                result.append("    \(line)")
+                procSection.append("    \(line)")
             }
-            return result
+            sections.append(procSection)
         }
 
         // 2. Editor Command
@@ -196,42 +268,176 @@ final class DescribeCommandDialogView {
             })
 
             if let cmd = foundCmd {
-                result.append("• " + (isZh ? "編輯器指令 (Editor Command)" : "Editor Command").ansiStyled(style: ANSIStyle.boldYellow))
-                result.append("    " + (isZh ? "名稱：" : "Name: ") + "\(cmd.name) [\(cmd.id.rawValue)]".ansiStyled(style: ANSIStyle.bold))
-                result.append("")
+                var cmdSection: [String] = []
+                cmdSection.append("• " + l10n["describe_command.editor_command"].ansiStyled(style: ANSIStyle.boldYellow))
+                cmdSection.append("    " + l10n["describe_command.name"] + "\(cmd.name) [\(cmd.id.rawValue)]".ansiStyled(style: ANSIStyle.bold))
+                cmdSection.append("")
 
-                result.append("• " + (isZh ? "說明：" : "Description:").ansiStyled(style: ANSIStyle.boldCyan))
+                cmdSection.append("• " + l10n["describe_command.description"].ansiStyled(style: ANSIStyle.boldCyan))
                 let locKey = "command.\(cmd.id.rawValue).description"
                 let locDesc = l10n[locKey]
                 let desc = (locDesc != locKey && !locDesc.isEmpty) ? locDesc : cmd.description
-                result.append("    \(desc)")
-                result.append("")
+                let wrapped = wrapText(desc, maxLineWidth: maxLineWidth, indent: "    ")
+                cmdSection.append(contentsOf: wrapped)
 
                 if !cmd.commandBarAliases.isEmpty {
-                    result.append("• " + (isZh ? "別名 (Aliases)：" : "Aliases:").ansiStyled(style: ANSIStyle.boldCyan))
-                    result.append("    " + cmd.commandBarAliases.joined(separator: ", "))
+                    cmdSection.append("")
+                    cmdSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))
+                    cmdSection.append("    " + cmd.commandBarAliases.joined(separator: ", "))
                 }
-                return result
+                sections.append(cmdSection)
             }
         }
 
         // 3. Built-in LOGO Primitive
         if let prim = LogoPrimitive.from(sym) {
-            result.append("• " + (isZh ? "內建 LOGO 指令 (Primitive)" : "Built-in LOGO Primitive").ansiStyled(style: ANSIStyle.boldYellow))
-            result.append("    " + (isZh ? "指令名：" : "Name: ") + "\(prim)".uppercased().ansiStyled(style: ANSIStyle.bold))
-            result.append("")
-            result.append("• " + (isZh ? "說明：" : "Description:").ansiStyled(style: ANSIStyle.boldCyan))
-            result.append("    " + (isZh ? "內建直譯器指令 / Primitive。" : "Built-in interpreter command or reporter."))
+            var primSection: [String] = []
+            let meta = prim.meta
+            let sourceStr = (meta.source == .ucbLogo)
+                ? l10n["describe_command.source_ucb_logo"]
+                : l10n["describe_command.source_zago"]
+
+            let titleTemplate = l10n["describe_command.builtin_primitive"]
+            let titleStr = String(format: titleTemplate, sourceStr)
+            primSection.append("• " + titleStr.ansiStyled(style: ANSIStyle.boldYellow))
+
+            let paramsStr = meta.parameters?.map { param in
+                param.required ? param.name : "[\(param.name)]"
+            }.joined(separator: " ") ?? ""
+            let syntaxStr = paramsStr.isEmpty ? meta.name : "\(meta.name) \(paramsStr)"
+            primSection.append("    " + l10n["describe_command.syntax"] + syntaxStr.ansiStyled(style: ANSIStyle.bold))
+            primSection.append("")
+
+            primSection.append("• " + l10n["describe_command.description"].ansiStyled(style: ANSIStyle.boldCyan))
+            let locKey = meta.localizedDescriptionKey
+            let locDesc = l10n[locKey]
+            let desc = (locDesc != locKey && !locDesc.isEmpty) ? locDesc : meta.description
+            let wrappedDesc = wrapText(desc, maxLineWidth: maxLineWidth, indent: "    ")
+            primSection.append(contentsOf: wrappedDesc)
+
+            if let params = meta.parameters, !params.isEmpty {
+                primSection.append("")
+                primSection.append("• " + l10n["describe_command.parameters"].ansiStyled(style: ANSIStyle.boldCyan))
+                for param in params {
+                    let paramLines = formatParameterLines(param: param, l10n: l10n, maxLineWidth: maxLineWidth)
+                    primSection.append(contentsOf: paramLines)
+                }
+            }
+
+            if let examples = meta.examples, !examples.isEmpty {
+                primSection.append("")
+                primSection.append("• " + l10n["describe_command.examples"].ansiStyled(style: ANSIStyle.boldCyan))
+                for example in examples {
+                    var exStr = "    " + example.input
+                    if !example.output.isEmpty {
+                        exStr += "  ->  " + example.output
+                    }
+                    primSection.append(exStr)
+                }
+            }
+            sections.append(primSection)
+        }
+
+        // 4. Combine results
+        if sections.isEmpty {
+            var result: [String] = []
+            result.append("• " + l10n["describe_command.not_found"].ansiStyled(style: ANSIStyle.boldYellow))
+            let notFoundDesc = String(format: l10n["describe_command.not_found_desc"], sym)
+            result.append("    " + notFoundDesc)
             return result
         }
 
-        // 4. Not Found
-        result.append("• " + (isZh ? "找不到符合項目" : "Not Found").ansiStyled(style: ANSIStyle.boldYellow))
-        result.append("    " + String(format: isZh ? "找不到名為 '%@' 的指令、程序或 Primitive。" : "No command, procedure or primitive found matching '%@'.", sym))
+        var result: [String] = []
+        if sections.count > 1 {
+            let matchesHeader = String(format: l10n["describe_command.found_matches"], sections.count)
+            result.append("💡 " + matchesHeader.ansiStyled(style: ANSIStyle.dimGray))
+            result.append("")
+        }
+
+        let divider = String(repeating: "─", count: min(68, maxLineWidth)).ansiStyled(style: ANSIStyle.dimGray)
+        for (idx, section) in sections.enumerated() {
+            if idx > 0 {
+                result.append("")
+                result.append(divider)
+                result.append("")
+            }
+            result.append(contentsOf: section)
+        }
+
         return result
     }
 
-    private func formatScriptLines(_ text: String, maxLineWidth: Int, maxLines: Int = 3) -> [String] {
+    private func wrapText(_ text: String, maxLineWidth: Int, indent: String) -> [String] {
+        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        guard !words.isEmpty else { return [indent + text] }
+
+        var result: [String] = []
+        var currentLine = indent
+
+        for word in words {
+            if currentLine == indent {
+                currentLine += word
+            } else if (currentLine + " " + word).displayWidth <= maxLineWidth {
+                currentLine += " " + word
+            } else {
+                result.append(currentLine)
+                currentLine = indent + word
+            }
+        }
+        if currentLine != indent {
+            result.append(currentLine)
+        }
+        return result
+    }
+
+    private func formatParameterLines(
+        param: LogoPrimitiveParameter,
+        l10n: L10n,
+        maxLineWidth: Int
+    ) -> [String] {
+        let reqBadge = param.required
+            ? l10n["describe_command.param_required"]
+            : l10n["describe_command.param_optional"]
+        let prefix = "    • \(param.name) " + reqBadge.ansiStyled(style: ANSIStyle.dimGray)
+
+        guard !param.allowedValues.isEmpty else {
+            return [prefix]
+        }
+
+        let allowedLabel = l10n["describe_command.allowed_values"]
+        let values = param.allowedValues
+
+        let plainLead = "    • \(param.name) \(reqBadge)\(allowedLabel)"
+        let indentSize = min(plainLead.displayWidth, 24)
+        let indent = String(repeating: " ", count: indentSize)
+
+        var result: [String] = []
+        var currentPlain = plainLead
+        var currentFormatted = prefix + allowedLabel.ansiStyled(style: ANSIStyle.dimGray)
+
+        for (i, val) in values.enumerated() {
+            let item = val + (i == values.count - 1 ? ")" : ", ")
+            if (currentPlain + item).displayWidth <= maxLineWidth {
+                currentPlain += item
+                currentFormatted += item.ansiStyled(style: ANSIStyle.dimGray)
+            } else {
+                if currentPlain != plainLead {
+                    result.append(currentFormatted)
+                    currentPlain = indent + item
+                    currentFormatted = indent + item.ansiStyled(style: ANSIStyle.dimGray)
+                } else {
+                    currentPlain += item
+                    currentFormatted += item.ansiStyled(style: ANSIStyle.dimGray)
+                }
+            }
+        }
+        if !currentFormatted.isEmpty {
+            result.append(currentFormatted)
+        }
+        return result
+    }
+
+    private func formatScriptLines(_ text: String, maxLineWidth: Int, maxLines: Int = 5) -> [String] {
         let rawLines = text.components(separatedBy: .newlines)
         var wrapped: [String] = []
 
