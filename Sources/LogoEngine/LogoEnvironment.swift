@@ -23,7 +23,7 @@ public struct LogoEnvironment: Sequence {
         }
     }
 
-    public func value(for name: String) -> LogoValue? {
+    func value(for name: String) -> LogoValue? {
         for frame in frames.reversed() {
             if let value = frame[name] { return value }
         }
@@ -32,29 +32,29 @@ public struct LogoEnvironment: Sequence {
 
     public var keys: [String] { Array(frames.reduce(into: Set<String>()) { $0.formUnion($1.keys) }) }
     public var isEmpty: Bool { frames.allSatisfy(\.isEmpty) }
-    public var scopeDepth: Int { frames.count }
+    var scopeDepth: Int { frames.count }
 
-    public mutating func pushScope(initialValues: [String: String] = [:]) {
+    mutating func pushScope(initialValues: [String: String] = [:]) {
         frames.append(Dictionary(uniqueKeysWithValues: initialValues.map { ($0.key, LogoValue.parse($0.value)) }))
     }
 
-    public mutating func popScope() {
+    mutating func popScope() {
         guard frames.count > 1 else { return }
         frames.removeLast()
     }
 
-    public mutating func declareLocal(_ name: String, initialValue: String = "") {
+    mutating func declareLocal(_ name: String, initialValue: String = "") {
         frames[frames.count - 1][name] = LogoValue.parse(initialValue)
     }
 
-    public mutating func removeValue(forKey key: String) {
+    mutating func removeValue(forKey key: String) {
         for index in frames.indices.reversed() where frames[index][key] != nil {
             frames[index].removeValue(forKey: key)
             return
         }
     }
 
-    public mutating func removeAll() {
+    mutating func removeAll() {
         frames = [[:]]
     }
 

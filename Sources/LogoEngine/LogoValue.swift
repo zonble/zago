@@ -1,34 +1,34 @@
 import Foundation
 
 /// Unified data value representation for LOGO (words, lists, and multi-dimensional arrays).
-public enum LogoValue: Equatable, CustomStringConvertible {
+enum LogoValue: Equatable, CustomStringConvertible {
     case string(String)
     case list([LogoValue])
     case array([LogoValue])
 
-    public var isList: Bool {
+    var isList: Bool {
         if case .list = self { return true }
         return false
     }
 
-    public var isArray: Bool {
+    var isArray: Bool {
         if case .array = self { return true }
         return false
     }
 
-    public var isWord: Bool {
+    var isWord: Bool {
         if case .string = self { return true }
         return false
     }
 
-    public var isNumber: Bool {
+    var isNumber: Bool {
         switch self {
         case .string(let s): return Double(s) != nil
         default: return false
         }
     }
 
-    public var isEmpty: Bool {
+    var isEmpty: Bool {
         switch self {
         case .string(let s): return s.isEmpty
         case .list(let l): return l.isEmpty
@@ -36,7 +36,7 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    public var stringValue: String {
+    var stringValue: String {
         switch self {
         case .string(let s): return s
         case .list(let items): return "[" + items.map { $0.stringValue }.joined(separator: " ") + "]"
@@ -45,7 +45,7 @@ public enum LogoValue: Equatable, CustomStringConvertible {
     }
 
     /// Serializes LOGO value into valid LOGO canonical syntax string (using UCBLogo |...| quoting for strings with whitespace/quotes/brackets).
-    public func toLogoSyntaxString() -> String {
+    func toLogoSyntaxString() -> String {
         switch self {
         case .string(let str):
             return str
@@ -90,11 +90,11 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         return toLogoSyntaxString()
     }
 
-    public static func parse(_ raw: String) -> LogoValue {
+    static func parse(_ raw: String) -> LogoValue {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.hasPrefix("[") && trimmed.hasSuffix("]") {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)

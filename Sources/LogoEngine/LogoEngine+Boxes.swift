@@ -1,14 +1,14 @@
 import Foundation
 import TextMetrics
 
-public enum BoxExitPosition: String, Sendable, CaseIterable {
+enum BoxExitPosition: String, Sendable, CaseIterable {
     case ne
     case se
     case nw
     case sw
     case down
 
-    public init?(_ raw: String) {
+    init?(_ raw: String) {
         let clean = raw.lowercased().filter { $0.isLetter || $0.isNumber }
         switch clean {
         case "ne", "atne", "topright":

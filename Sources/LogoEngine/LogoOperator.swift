@@ -1,7 +1,7 @@
 import Foundation
 
 /// Strongly-typed enum representing infix arithmetic and comparison operators in LOGO expressions.
-public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
+enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     // Arithmetic Operators
     case add = "+"
     case subtract = "-"
@@ -21,14 +21,14 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     case greaterOrEqual = ">="
 
     /// Resolves an operator string to a strongly-typed LogoOperator enum.
-    public static func from(_ token: String) -> LogoOperator? {
+    static func from(_ token: String) -> LogoOperator? {
         LogoOperator(rawValue: token)
     }
 
-    public static let tokens = Set(allCases.map(\.rawValue))
+    static let tokens = Set(allCases.map(\.rawValue))
 
     /// Whether this operator is an arithmetic operator (+, -, *, /, %, ^).
-    public var isArithmetic: Bool {
+    var isArithmetic: Bool {
         switch self {
         case .add, .subtract, .multiply, .divide, .modulo, .power:
             return true
@@ -38,7 +38,7 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     }
 
     /// Whether this operator is a comparison operator (==, =, !=, <>, <, <=, >, >=).
-    public var isComparison: Bool {
+    var isComparison: Bool {
         switch self {
         case .equal, .aliasEqual, .notEqual, .aliasNotEqual, .lessThan, .lessOrEqual, .greaterThan, .greaterOrEqual:
             return true
@@ -47,5 +47,5 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
         }
     }
 
-    public var isSingleCharacter: Bool { rawValue.count == 1 }
+    var isSingleCharacter: Bool { rawValue.count == 1 }
 }
