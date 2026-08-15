@@ -51,8 +51,8 @@ public final class LogoEngine: @unchecked Sendable {
     internal var gensymCounter: Int = 0
 
     // Turtle graphics state
-    public var isPenDown: Bool = true
-    public var heading: LogoHeading = .right
+    internal var isPenDown: Bool = true
+    internal var heading: LogoHeading = .right
 
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
     internal static let statementCommands = LogoPrimitive.statementCommands
