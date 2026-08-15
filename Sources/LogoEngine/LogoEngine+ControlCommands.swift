@@ -421,6 +421,9 @@ extension LogoEngine {
                 var params: [String] = []
                 while index < tokens.count && tokens[index].hasPrefix(":") {
                     let paramName = String(tokens[index].dropFirst()).lowercased()
+                    if params.contains(paramName) {
+                        break
+                    }
                     params.append(paramName)
                     index += 1
                 }

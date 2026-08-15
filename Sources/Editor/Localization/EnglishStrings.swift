@@ -200,10 +200,17 @@ struct EnglishStrings {
                 • MDARRAY dims (Creates a multi-dimensional array of specified 
                   dimensions,  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
-          6. Date, Time & Calendar
-            DATE [format] [locale] [tz] [cal]    Get date (supports styles, timezones, calendars)
-            TIME [format] [locale] [tz] [cal]    Get time string (default: "HH:mm:ss")
-            DATETIME [format] [locale] [tz] [cal] Get combined date & time string
+          6. Date, Time & Foundation Formatters
+            DATE [format] [locale] [tz] [cal]    Get current date (styles, timezones, calendars)
+            TIME [format] [locale] [tz] [cal]    Get current time (default: "HH:mm:ss")
+            DATETIME [fmt] [loc] [tz] [cal]      Get combined date & time string
+            DATEADD date amount [unit]           Add/subtract time units (days, hours, etc.)
+            DATEDIFF date1 date2 [unit]          Difference between dates in specified units
+            FORMAT.DATE date [fmt] [loc] [tz]    Format custom date/timestamp/list
+            FORMAT.NUMBER num [style] [loc]      Format number (words, caps, roman, money, pct)
+            FORMAT.LIST list [type] [locale]     Format human list ("and" -> A, B, and C)
+            FORMAT.RELATIVETIME val [unit] [loc] Relative time ("yesterday", "3 days ago")
+            FORMAT.BYTES bytes [style] [locale]  Format byte sizes ("1 MB", "1.07 GB")
 
           7. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.
@@ -260,7 +267,8 @@ struct EnglishStrings {
             RSHIFT a bits / BIT.SHR              Bitwise logical shift right
 
           13. Program & workspace management
-            TO name :arg ... END                 Define custom user procedure
+            TO name :arg ... END                 Define custom procedure (single-expression
+                                                 procedures support implicit return!)
             DEFINE "name [[args] [body]]         Define procedure from list
             TEXT "name                           Get procedure text representation / body
             ARITY "name                          Get procedure argument count (arity)

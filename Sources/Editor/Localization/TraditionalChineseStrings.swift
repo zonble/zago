@@ -190,10 +190,17 @@ struct TraditionalChineseStrings {
                 • ARRAY size（建立指定大小的一維陣列，如 ARRAY 3 產生 {"" "" ""}）
                 • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生 3 × 3 矩陣）
 
-          6. 日期、時間與日曆系統
-            DATE [format] [locale] [tz] [cal]    取得日期字串（支援樣式、時區、民國/和曆等曆法）
-            TIME [format] [locale] [tz] [cal]    取得時間字串（預設："HH:mm:ss"）
-            DATETIME [format] [locale] [tz] [cal] 取得完整日期時間字串
+          6. 日期、時間與 Foundation 格式化工具
+            DATE [format] [locale] [tz] [cal]    取得目前日期（支援樣式、時區、民國/和曆等曆法）
+            TIME [format] [locale] [tz] [cal]    取得目前時間（預設："HH:mm:ss"）
+            DATETIME [fmt] [loc] [tz] [cal]      取得完整日期時間字串
+            DATEADD date amount [unit]           加減日期時間單位（天、月、時等）
+            DATEDIFF date1 date2 [unit]          計算兩日期間距（天、月等）
+            FORMAT.DATE date [fmt] [loc] [tz]    格式化指定日期/時間戳記/清單
+            FORMAT.NUMBER num [style] [loc]      格式化數字（words 國字、caps 大寫支票、roman、money、pct）
+            FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、香蕉與芭樂）
+            FORMAT.RELATIVETIME val [unit] [loc] 相對時間（"昨天"、"3天前"、"in 2 hours"）
+            FORMAT.BYTES bytes [style] [locale]  檔案與記憶體容量（"1 MB"、"1.07 GB"）
 
           7. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文
@@ -250,7 +257,7 @@ struct TraditionalChineseStrings {
             RSHIFT a bits / BIT.SHR              整數位元邏輯右移
 
           13. Program
-            TO name :arg ... END                 定義自訂 User Procedure
+            TO name :arg ... END                 定義自訂 Procedure（單一運算式支援隱式回傳，免寫 OP！）
             DEFINE "name [[args] [body]]         動態由 List 結構建立 User Procedure
             TEXT "name                           取得 Procedure 的原始定義文字/結構
             ARITY "name                          取得 Procedure 的參數個數 (Arity)

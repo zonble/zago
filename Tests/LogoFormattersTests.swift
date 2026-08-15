@@ -235,4 +235,23 @@ import Testing
         let resBytes = engine.evaluateExpression(tokensBytes, index: &index)
         #expect(resBytes.contains("1,048,576 bytes"))
     }
+
+    // MARK: - Implicit Return Tests
+
+    @Test func testSingleExpressionProcedureImplicitReturn() {
+        let engine = LogoEngine()
+        engine.execute("TO 大寫 :x FORMAT.NUMBER :x \"bank \"zh-TW END")
+
+        var index = 0
+        let callTokens = ["大寫", "2324234232"]
+        let res = engine.evaluateExpression(callTokens, index: &index)
+        #expect(res == "貳拾參億貳仟肆佰貳拾參萬肆仟貳佰參拾貳")
+
+        engine.execute("TO 雙倍 :n :n * 2 END")
+
+        index = 0
+        let callDouble = ["雙倍", "21"]
+        let resDouble = engine.evaluateExpression(callDouble, index: &index)
+        #expect(resDouble == "42")
+    }
 }
