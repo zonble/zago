@@ -98,8 +98,8 @@ struct TraditionalChineseStrings {
           Editor LOGO 指令參考
           ================================================================
 
-          Editor LOGO 是編輯器巨集語言。指令會操作目前文件、
-          游標、選取範圍、表格、狀態列與多文件 Buffer 狀態。
+          Editor LOGO 是純文字圖形語言。請先從方框、線段、表格與文字排版開始；
+          完整的 primitive 參數、別名、範例與平台說明請使用 DESCRIBE 查詢。
 
           1. 文字圖形與樣式
             BOX [text|width height [style]]      插入邊框（自動置中/內嵌文字）
@@ -110,9 +110,11 @@ struct TraditionalChineseStrings {
             FILL text                            填滿選取區、表格儲存格或方框內部
             TABLE [rows cols width]              插入 ASCII 表格
 
-            邊界限制：BOX/DRAWBOX 寬 3...200、高 2...100；LINE/VLINE 1...200
-            框線樣式：single, double, round, double-round, ascii, markdown
-            箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+            • 邊界限制：BOX/DRAWBOX 寬 3...200、高 2...100；LINE/VLINE 1...200
+            • 框線樣式：single, heavy, double, round, double-round, ascii, ascii-round
+                       triple-dash, heavy-triple-dash, quadruple-dash、
+                       heavy-quadruple-dash, double-dash, heavy-double-dash
+            •  箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
           2. 四則運算與運算子
             +  -  *  /  %  ^                     加、減、乘、除、取餘數、次方
@@ -201,6 +203,11 @@ struct TraditionalChineseStrings {
             FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、香蕉與芭樂）
             FORMAT.RELATIVETIME val [unit] [loc] 相對時間（"昨天"、"3天前"、"in 2 hours"）
             FORMAT.BYTES bytes [style] [locale]  檔案與記憶體容量（"1 MB"、"1.07 GB"）
+            DETECT.URL text                      偵測網址，回傳 LOGO 清單
+            DETECT.EMAIL text                    偵測電子郵件地址，回傳 LOGO 清單
+            DETECT.PHONE text                    偵測電話號碼，回傳 LOGO 清單
+            DETECT.DATE text                     偵測日期，回傳 LOGO 清單
+            DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 清單
 
           7. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文
@@ -257,30 +264,33 @@ struct TraditionalChineseStrings {
             BIT.SHR a bits / RSHIFT              整數位元邏輯右移
 
           13. Program
-            TO name :arg ... END                 定義自訂 Procedure（單一運算式支援隱式回傳，免寫 OP！）
+            TO name :arg ... END                 定義自訂 Procedure
+                                                 （單一運算式支援隱式回傳，免寫 OP）
             DEFINE "name [[args] [body]]         動態由 List 結構建立 User Procedure
             TEXT "name                           取得 Procedure 的原始定義文字/結構
             ARITY "name                          取得 Procedure 的參數個數 (Arity)
             PROCEDURES / PROCS                   列出所有自訂 Procedure 名稱清單
             PRIMITIVES / PRIMS                   列出所有 Built-in Primitive 名稱清單
             NAMES                                列出所有全域變數名稱清單
-            CONTENTS                             列出工作區完整內容 (Procedures, Vars, Plists)
+            CONTENTS                             列出工作區完整內容
             ERASE "name / ER                     清除指定 Procedure 或變數
             ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 全域工作區
 
           14. Higher function
-            MAP template list                    對 List 項目進行 Map 映射 (可用 ? 表示項目)
-            MAPSE template list                  對 List 項目進行 Map 映射並扁平化
+            MAP template list                    對 List 進行 Map 映射 (用 ? 代表項目)
+            MAPSE template list                  對 List 進行 Map 映射並扁平化
             FILTER template list                 過濾符合條件的 List 項目
-            REDUCE template list                 對 List 項目進行累加歸納 (可用 ?1, ?2)
+            REDUCE template list                 對 List 進行累加歸納 (可用 ?1, ?2)
             CROSSMAP template lists              對多組 List 計算笛卡兒積映射
             APPLY "proc args                     以名稱與參數 List 動態呼叫 Procedure
             INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫 Procedure
 
           15. 例外處理與斷言 (Exception Handling & Assertions)
-            CATCH "tag [ commands ]              捕捉指定 Tag 的例外（"ERROR 捕捉執行時期錯誤）
+            CATCH "tag [ commands ]              捕捉指定 Tag 的例外
+                                                 （"ERROR 捕捉執行時期錯誤）
             THROW "tag                           拋出指定 Tag 的例外
-            ASSERT cond [msg]                    斷言條件成立（條件為 false 時中斷並拋出錯誤）
+            ASSERT cond [msg]                    斷言條件成立
+                                                （條件為 false 時中斷並拋出錯誤）
             ERROR                                查詢上一次捕捉到的例外物件資訊物件
 
           16. Predicate
@@ -294,17 +304,16 @@ struct TraditionalChineseStrings {
             NAME? name                           檢查指定名稱的變數是否存在
 
           17. Buffer
-            BUFFERS / BUFFERLIST                 列出所有已開啟的 Buffer 列表
-            BUFFER "name / BUFFER index          切換至指定名稱或索引的 Buffer
-            CLEARBUFFER                          清空當前 Buffer 的全部內容
+            BUFFERS / BUFFERLIST                 列出所有已開啟的文件列表
+            BUFFER "name / BUFFER index          切換至指定名稱或索引的文件
+            CLEARBUFFER                          清空當前文件的全部內容
             GETLINE [row]                        取得指定列 (預設當前列) 的邏輯行文字
             SETLINE row "text"                   設定指定列的邏輯行文字
-            LINECOUNT                            回傳當前 Buffer 的總行數
-            BUFFERTEXT                           回傳當前 Buffer 的完整內文
-            SELECTION                            回傳當前選取範圍的文字
-            FILENAME                             回傳當前 Buffer 的檔案路徑
+            LINECOUNT                            回傳當前文件的總行數
+            BUFFERTEXT                           回傳當前文件的完整內文
+            SELECTION                            回傳當前文件的選取範圍文字
+            FILENAME                             回傳當前文件的檔案路徑
         """,
-        "logoref.all_aliases_header": "所有 Primitive 別名與關鍵字 (All Primitive Keywords & Aliases)",
         "logoworkspace.heading": "  Editor LOGO 工作區",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  變數：",

@@ -96,8 +96,9 @@ struct EnglishStrings {
         "logoview.workspace_title": "  zago - Editor LOGO Workspace",
         "logoref.content": """
 
-          Editor LOGO is an editor macro language. Commands edit text buffers,
-          cursors, selections, tables, status bar, and multi-buffer state.
+          Editor LOGO is a plain-text diagram language. Start with shapes, lines,
+          tables, and text layout; use DESCRIBE for full primitive parameters,
+          aliases, examples, and platform notes.
 
           1. Shapes, lines & tables
             BOX [text|width height [style]]      Insert a framed box (centered text)
@@ -111,7 +112,9 @@ struct EnglishStrings {
 
             Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
                     LINE/VLINE clamp to length 1...200.
-            Borders: single, double, round, double-round, ascii, markdown
+            Borders: single, heavy, double, round, double-round, ascii, ascii-round
+                     triple-dash, heavy-triple-dash, quadruple-dash,
+                     heavy-quadruple-dash, double-dash, heavy-double-dash
             Arrows:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
           2. Basic arithmetic & infix operators
@@ -201,16 +204,23 @@ struct EnglishStrings {
                   dimensions,  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
           6. Date, Time & Foundation Formatters
-            DATE [format] [locale] [tz] [cal]    Get current date (styles, timezones, calendars)
+            DATE [format] [locale] [tz] [cal]    Get current date (styles, timezones, 
+                                                 calendars)
             TIME [format] [locale] [tz] [cal]    Get current time (default: "HH:mm:ss")
             DATETIME [fmt] [loc] [tz] [cal]      Get combined date & time string
             DATE.ADD date amount [unit]          Add/subtract time units (days, hours, etc.)
             DATE.DIFF date1 date2 [unit]         Difference between dates in specified units
             FORMAT.DATE date [fmt] [loc] [tz]    Format custom date/timestamp/list
-            FORMAT.NUMBER num [style] [loc]      Format number (words, caps, roman, money, pct)
+            FORMAT.NUMBER num [style] [loc]      Format number (words, caps, roman, 
+                                                 money, pct)
             FORMAT.LIST list [type] [locale]     Format human list ("and" -> A, B, and C)
             FORMAT.RELATIVETIME val [unit] [loc] Relative time ("yesterday", "3 days ago")
             FORMAT.BYTES bytes [style] [locale]  Format byte sizes ("1 MB", "1.07 GB")
+            DETECT.URL text                      Detect URLs; returns a list
+            DETECT.EMAIL text                    Detect email addresses; returns a list
+            DETECT.PHONE text                    Detect phone numbers; returns a list
+            DETECT.DATE text                     Detect dates; returns a list
+            DETECT.ADDRESS text                  Detect postal addresses; returns a list
 
           7. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.
@@ -267,10 +277,11 @@ struct EnglishStrings {
             BIT.SHR a bits / RSHIFT              Bitwise logical shift right
 
           13. Program & workspace management
-            TO name :arg ... END                 Define custom procedure (single-expression
-                                                 procedures support implicit return!)
+            TO name :arg ... END                 Define custom procedure 
+                                                 (single-expression procedures support
+                                                 implicit return!)
             DEFINE "name [[args] [body]]         Define procedure from list
-            TEXT "name                           Get procedure text representation / body
+            TEXT "name                           Get procedure text representation
             ARITY "name                          Get procedure argument count (arity)
             PROCEDURES / PROCS                   List all user-defined procedure names
             PRIMITIVES / PRIMS                   List all built-in primitive names
@@ -284,8 +295,8 @@ struct EnglishStrings {
             MAP template list                    Map list items using template
                                                  (? is current item)
             MAPSE template list                  Map list items and flatten results
-            FILTER template list                 Filter list items matching template condition
-            REDUCE template list                 Reduce list items using template (?1, ?2)
+            FILTER template list                 Filter items matching template condition
+            REDUCE template list                 Reduce items using template (?1, ?2)
             CROSSMAP template lists              Cartesian product map over lists
             APPLY "proc args                     Dynamically apply procedure with arg list
             INVOKE "proc arg1 arg2               Dynamically invoke procedure with arguments
@@ -294,7 +305,8 @@ struct EnglishStrings {
             CATCH "tag [ commands ]              Catch exception tag 
                                                  ("ERROR catches runtime errors)
             THROW "tag                           Throw exception tag
-            ASSERT cond [msg]                    Assert condition (halts execution on false)
+            ASSERT cond [msg]                    Assert condition (halts execution 
+                                                 on false)
             ERROR                                Query last caught error info object
 
           16. Predicates
@@ -318,7 +330,6 @@ struct EnglishStrings {
             SELECTION                            Return currently selected text
             FILENAME                             Return active buffer file path
         """,
-        "logoref.all_aliases_header": "All Primitive Keywords & Aliases",
         "logoworkspace.heading": "  Editor LOGO Workspace",
         "logoworkspace.procedures": "  User Procedures:",
         "logoworkspace.variables": "  Variables:",
