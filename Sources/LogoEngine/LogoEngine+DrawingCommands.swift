@@ -27,12 +27,7 @@ extension LogoEngine {
     }
 
     private func isHeadingDirectionToken(_ token: String) -> Bool {
-        switch unquote(token).trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
-        case "UP", "TOP", "RIGHT", "DOWN", "BOTTOM", "LEFT":
-            return true
-        default:
-            return false
-        }
+        LogoHeading.parse(token) != nil
     }
 
     private func consumeOptionalHeadingArgument(_ tokens: [String], index: inout Int) -> String? {
@@ -49,7 +44,7 @@ extension LogoEngine {
             return nil
         }
         let evaluated = evaluateExpression(tokens, index: &index)
-        if parseHeadingValue(evaluated) != nil {
+        if LogoHeading.parse(evaluated) != nil {
             return evaluated
         } else {
             index -= 1
@@ -70,18 +65,18 @@ extension LogoEngine {
             return true
 
         case .turnRight:
-            heading = (heading + 90) % 360
+            heading = heading.turnedRight
             return true
 
         case .turnLeft:
-            heading = ((heading - 90) % 360 + 360) % 360
+            heading = heading.turnedLeft
             return true
 
         case .setHeading:
             if let dirStr = consumeOptionalHeadingArgument(tokens, index: &index),
-                let angle = parseHeadingValue(dirStr)
+                let dir = LogoHeading.parse(dirStr)
             {
-                heading = ((angle % 360) + 360) % 360
+                heading = dir
             }
             return true
 
@@ -89,14 +84,14 @@ extension LogoEngine {
             let dist =
                 consumeOptionalDrawingIntArgument(tokens, index: &index)
                 .map { max(1, min($0, 200)) } ?? 1
-            executeTurtleMove(steps: dist, directionHeading: heading)
+            executeTurtleMove(steps: dist, heading: heading)
             return true
 
         case .back:
             let dist =
                 consumeOptionalDrawingIntArgument(tokens, index: &index)
                 .map { max(1, min($0, 200)) } ?? 1
-            executeTurtleMove(steps: dist, directionHeading: (heading + 180) % 360)
+            executeTurtleMove(steps: dist, heading: heading.opposite)
             return true
 
         case .goto:
@@ -156,22 +151,6 @@ extension LogoEngine {
 
         default:
             return false
-        }
-    }
-
-    internal func parseHeadingValue(_ valStr: String) -> Int? {
-        let clean = unquote(valStr).trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        switch clean {
-        case "UP", "TOP":
-            return 0
-        case "RIGHT":
-            return 90
-        case "DOWN", "BOTTOM":
-            return 180
-        case "LEFT":
-            return 270
-        default:
-            return nil
         }
     }
 }

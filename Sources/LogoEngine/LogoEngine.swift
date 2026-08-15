@@ -64,7 +64,7 @@ public final class LogoEngine: @unchecked Sendable {
 
     // Turtle graphics state
     public var isPenDown: Bool = true
-    public var heading: Int = 90  // 0 = UP, 90 = RIGHT, 180 = DOWN, 270 = LEFT
+    public var heading: LogoHeading = .right
 
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
     internal static let statementCommands = LogoPrimitive.statementCommands
