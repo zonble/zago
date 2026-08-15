@@ -181,8 +181,29 @@ public final class KeymapManager {
 
             baseKeymap[.ctrl("k")] = .editCut
             baseKeymap[.ctrl("K")] = .editCut
+            baseKeymap[.f9] = .editCut
             baseKeymap[.ctrl("u")] = .editUncut
             baseKeymap[.ctrl("U")] = .editUncut
+            baseKeymap[.f10] = .editUncut
+            baseKeymap[.f4] = .fileSaveExit
+            baseKeymap[.f5] = .fileRunLogo
+
+            baseKeymap[.ctrl("i")] = .editTab
+            baseKeymap[.alt("j")] = .editJoinLine
+            baseKeymap[.alt("J")] = .editJoinLine
+            baseKeymap[.alt("k")] = .editSplitLine
+            baseKeymap[.alt("K")] = .editSplitLine
+            baseKeymap[.ctrl("g")] = .editCancelSelection
+            baseKeymap[.ctrl("G")] = .editCancelSelection
+            baseKeymap[.alt(".")] = .bufferNext
+            baseKeymap[.alt(">")] = .bufferNext
+            baseKeymap[.alt(",")] = .bufferPrev
+            baseKeymap[.alt("<")] = .bufferPrev
+            baseKeymap[.ctrl("n")] = .bufferNew
+            baseKeymap[.ctrl("l")] = .screenRefresh
+            baseKeymap[.ctrl("L")] = .screenRefresh
+            baseKeymap[.alt("o")] = .documentOpenLink
+            baseKeymap[.alt("O")] = .documentOpenLink
 
             baseKeymap[.alt("u")] = .editUndo
             baseKeymap[.alt("U")] = .editUndo
@@ -215,6 +236,15 @@ public final class KeymapManager {
             baseKeymap[.f11] = .cursorPos
             baseKeymap[.f12] = .editSpell
 
+            primaryDisplayKeys[.moveRight] = .ctrl("F")
+            primaryDisplayKeys[.moveLeft] = .ctrl("B")
+            primaryDisplayKeys[.moveUp] = .ctrl("P")
+            primaryDisplayKeys[.moveDown] = .ctrl("N")
+            primaryDisplayKeys[.moveHome] = .ctrl("A")
+            primaryDisplayKeys[.moveEnd] = .ctrl("E")
+            primaryDisplayKeys[.movePgdn] = .ctrl("V")
+            primaryDisplayKeys[.movePgup] = .ctrl("Y")
+            primaryDisplayKeys[.editDelete] = .ctrl("D")
             primaryDisplayKeys[.fileSave] = .ctrl("S")
             primaryDisplayKeys[.fileWriteOut] = .ctrl("O")
             primaryDisplayKeys[.fileInsert] = .ctrl("R")
@@ -231,8 +261,6 @@ public final class KeymapManager {
             primaryDisplayKeys[.editSpell] = .ctrl("T")
             primaryDisplayKeys[.cursorPos] = .ctrl("C")
             primaryDisplayKeys[.editEvalLogo] = .ctrl("Q")
-            primaryDisplayKeys[.movePgup] = .ctrl("Y")
-            primaryDisplayKeys[.movePgdn] = .ctrl("V")
             primaryDisplayKeys[.helpShow] = .f1
             primaryDisplayKeys[.menuShow] = .f1
 
@@ -271,13 +299,36 @@ public final class KeymapManager {
             baseKeymap[.ctrl("C")] = .editCopy
             baseKeymap[.ctrl("x")] = .editCut
             baseKeymap[.ctrl("X")] = .editCut
+            baseKeymap[.f9] = .editCut
             baseKeymap[.ctrl("v")] = .editUncut
             baseKeymap[.ctrl("V")] = .editUncut
+            baseKeymap[.f10] = .editUncut
+            baseKeymap[.f4] = .fileSaveExit
+            baseKeymap[.f5] = .fileRunLogo
+
+            baseKeymap[.alt("j")] = .editJoinLine
+            baseKeymap[.alt("J")] = .editJoinLine
+            baseKeymap[.alt("k")] = .editSplitLine
+            baseKeymap[.alt("K")] = .editSplitLine
+            baseKeymap[.ctrl("g")] = .editCancelSelection
+            baseKeymap[.ctrl("G")] = .editCancelSelection
+            baseKeymap[.alt(".")] = .bufferNext
+            baseKeymap[.alt(">")] = .bufferNext
+            baseKeymap[.alt(",")] = .bufferPrev
+            baseKeymap[.alt("<")] = .bufferPrev
+            baseKeymap[.ctrl("l")] = .screenRefresh
+            baseKeymap[.ctrl("L")] = .screenRefresh
+            baseKeymap[.alt("o")] = .documentOpenLink
+            baseKeymap[.alt("O")] = .documentOpenLink
 
             baseKeymap[.ctrl("t")] = .editSpell
             baseKeymap[.ctrl("T")] = .editSpell
+            baseKeymap[.f12] = .editSpell
             baseKeymap[.alt("c")] = .cursorPos
             baseKeymap[.alt("C")] = .cursorPos
+            baseKeymap[.f11] = .cursorPos
+            baseKeymap[.ctrlShift("c")] = .cursorPos
+            baseKeymap[.ctrlShift("C")] = .cursorPos
             baseKeymap[.ctrlShift("c")] = .cursorPos
             baseKeymap[.ctrlShift("C")] = .cursorPos
 
@@ -365,5 +416,21 @@ public final class KeymapManager {
         prompt[.arrowDown] = .promptHistoryNext
         prompt[.ctrlBackspace] = .promptClearLine
         modeKeymaps[.prompt] = prompt
+    }
+
+    /// Returns the keys associated with a command in the given mode.
+    public func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
+        var result: [Key] = []
+        if let primary = primaryDisplayKeys[commandID] {
+            result.append(primary)
+        }
+        let modeKeys = (modeKeymaps[mode] ?? [:]).filter { $0.value == commandID }.map(\.key)
+        let baseKeys = baseKeymap.filter { $0.value == commandID }.map(\.key)
+        for key in (modeKeys + baseKeys) {
+            if !result.contains(key) {
+                result.append(key)
+            }
+        }
+        return result
     }
 }

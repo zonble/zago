@@ -91,7 +91,7 @@ public struct ShowHelpCommand: Command {
         TextDocumentView(
             terminal: editor.terminal,
             title: editor.l10n["helpview.title"],
-            lines: HelpContent.lines(language: editor.language),
+            lines: HelpContent.lines(editor: editor),
             footer: editor.l10n["textview.footer"]
         ).show()
         editor.renderer.invalidateScreenCache()
