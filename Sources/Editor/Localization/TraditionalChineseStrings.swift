@@ -118,7 +118,8 @@ struct TraditionalChineseStrings {
 
           2. 四則運算與運算子
             +  -  *  /  %  ^                     加、減、乘、除、取餘數、次方
-            =  <>  !=   <  >  <=  >=             等於、不等於、小於、大於、小於等於、大於等於
+            =  <>  !=   <  >  <=  >=             等於、不等於、小於、大於、
+                                                 小於等於、大於等於
             SUM a b                              加法運算 (+)
             DIFFERENCE a b                       減法運算 (-)
             PRODUCT a b                          乘法運算 (*)
@@ -190,18 +191,23 @@ struct TraditionalChineseStrings {
                 進行多維計算的情境。
               • 常用建立 Primitives：
                 • ARRAY size（建立指定大小的一維陣列，如 ARRAY 3 產生 {"" "" ""}）
-                • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生 3 × 3 矩陣）
+                • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生
+                  3 × 3 矩陣）
 
           6. 日期、時間與 Foundation 格式化工具
-            DATE [format] [locale] [tz] [cal]    取得目前日期（支援樣式、時區、民國/和曆等曆法）
+            DATE [format] [locale] [tz] [cal]    取得目前日期（支援樣式、時區、
+                                                 民國/和曆等曆法）
             TIME [format] [locale] [tz] [cal]    取得目前時間（預設："HH:mm:ss"）
             DATETIME [fmt] [loc] [tz] [cal]      取得完整日期時間字串
             DATE.ADD date amount [unit]          加減日期時間單位（天、月、時等）
             DATE.DIFF date1 date2 [unit]         計算兩日期間距（天、月等）
             FORMAT.DATE date [fmt] [loc] [tz]    格式化指定日期/時間戳記/清單
-            FORMAT.NUMBER num [style] [loc]      格式化數字（words 國字、caps 大寫支票、roman、money、pct）
-            FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、香蕉與芭樂）
-            FORMAT.RELATIVETIME val [unit] [loc] 相對時間（"昨天"、"3天前"、"in 2 hours"）
+            FORMAT.NUMBER num [style] [loc]      格式化數字（words 國字、caps 大寫
+                                                 支票、roman、money、pct）
+            FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、
+                                                 香蕉與芭樂）
+            FORMAT.RELATIVETIME val [unit] [loc] 相對時間（"昨天"、"3天前"、
+                                                 "in 2 hours"）
             FORMAT.BYTES bytes [style] [locale]  檔案與記憶體容量（"1 MB"、"1.07 GB"）
             DETECT.URL text                      偵測網址，回傳 LOGO 清單
             DETECT.EMAIL text                    偵測電子郵件地址，回傳 LOGO 清單
@@ -274,7 +280,7 @@ struct TraditionalChineseStrings {
             NAMES                                列出所有全域變數名稱清單
             CONTENTS                             列出工作區完整內容
             ERASE "name / ER                     清除指定 Procedure 或變數
-            ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 全域工作區
+            ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 工作區
 
           14. Higher function
             MAP template list                    對 List 進行 Map 映射 (用 ? 代表項目)
@@ -282,8 +288,8 @@ struct TraditionalChineseStrings {
             FILTER template list                 過濾符合條件的 List 項目
             REDUCE template list                 對 List 進行累加歸納 (可用 ?1, ?2)
             CROSSMAP template lists              對多組 List 計算笛卡兒積映射
-            APPLY "proc args                     以名稱與參數 List 動態呼叫 Procedure
-            INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫 Procedure
+            APPLY "proc args                     以名稱與參數 List 動態呼叫命令
+            INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫命令
 
           15. 例外處理與斷言 (Exception Handling & Assertions)
             CATCH "tag [ commands ]              捕捉指定 Tag 的例外
@@ -298,9 +304,9 @@ struct TraditionalChineseStrings {
             EMPTY? val                           檢查字串或清單是否為空
             EQUAL? a b / NOTEQUAL? a b           比較兩值是否相等 / 不相等
             LESS? a b / GREATER? a b             比較大小 (小於 / 大於)
-            PROCEDURE? name                      檢查 built-in 或自訂 Procedure 是否存在
-            PRIMITIVE? name                      檢查 built-in Primitive 是否存在
-            DEFINED? name                        檢查自訂 Procedure 是否存在
+            PROCEDURE? name                      檢查內建或自訂命令是否存在
+            PRIMITIVE? name                      檢查內建命令是否存在
+            DEFINED? name                        檢查自訂密令是否存在
             NAME? name                           檢查指定名稱的變數是否存在
 
           17. Buffer
