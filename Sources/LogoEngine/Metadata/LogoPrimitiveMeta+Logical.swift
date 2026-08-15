@@ -30,7 +30,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "cond1", required: true),
                     LogoPrimitiveParameter(name: "cond2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "AND (:x > 0) (:y > 0)")]
             )
@@ -44,7 +44,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "cond1", required: true),
                     LogoPrimitiveParameter(name: "cond2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "OR (:a = 1) (:b = 1)")]
             )
@@ -57,7 +57,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true)
+                    LogoPrimitiveParameter(name: "b", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "XOR TRUE FALSE", output: "true")]
             )
@@ -73,6 +73,6 @@ extension LogoPrimitive {
             )
 
         default: nil
+        }
     }
-}
 }

@@ -687,7 +687,11 @@ extension LogoEngine {
             let v = reader.nextExpression()
             reader.commit(to: &index)
             let p = LogoValue.parse(v)
-            let isWord = switch p { case .string: true; default: false }
+            let isWord =
+                switch p {
+                case .string: true
+                default: false
+                }
             return isWord.logoString
 
         case .isList:
@@ -695,7 +699,11 @@ extension LogoEngine {
             let v = reader.nextExpression()
             reader.commit(to: &index)
             let p = LogoValue.parse(v)
-            let isList = switch p { case .list: true; default: false }
+            let isList =
+                switch p {
+                case .list: true
+                default: false
+                }
             return isList.logoString
 
         case .isArray:
@@ -703,7 +711,11 @@ extension LogoEngine {
             let v = reader.nextExpression()
             reader.commit(to: &index)
             let p = LogoValue.parse(v)
-            let isArray = switch p { case .array: true; default: false }
+            let isArray =
+                switch p {
+                case .array: true
+                default: false
+                }
             return isArray.logoString
 
         case .isNumber:

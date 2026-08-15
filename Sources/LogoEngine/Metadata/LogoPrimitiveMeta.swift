@@ -8,11 +8,13 @@ public enum LogoPrimitiveMetaSource: Sendable, Equatable {
 public struct LogoPrimitiveParameter: Sendable, Equatable {
     public let name: String
     public let required: Bool
+    public let example: String?
     public let allowedValues: [String]
 
-    public init(name: String, required: Bool, allowedValues: [String] = []) {
+    public init(name: String, required: Bool, example: String? = nil, allowedValues: [String] = []) {
         self.name = name
         self.required = required
+        self.example = example
         self.allowedValues = allowedValues
     }
 }
@@ -54,8 +56,6 @@ public struct LogoPrimitiveMeta: Sendable, Equatable {
         self.notes = notes
     }
 }
-
-
 
 extension LogoPrimitive {
     public var meta: LogoPrimitiveMeta {

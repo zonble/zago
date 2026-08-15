@@ -36,7 +36,9 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
 
     static func parse(_ raw: String) -> LogoHeading? {
         let clean = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        let unquoted = clean.hasPrefix("\"") ? String(clean.dropFirst()) : (clean.hasPrefix(":") ? String(clean.dropFirst()) : clean)
+        let unquoted =
+            clean.hasPrefix("\"")
+            ? String(clean.dropFirst()) : (clean.hasPrefix(":") ? String(clean.dropFirst()) : clean)
         let stripped = unquoted.trimmingCharacters(in: CharacterSet(charactersIn: "\"|")).uppercased()
         return switch stripped {
         case "UP", "TOP":

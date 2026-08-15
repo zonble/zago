@@ -47,7 +47,9 @@ extension LogoEngine {
         } else if subcommand == "NEXTSTYLE" {
             delegate.logoEngine(self, performAction: .nextBorderStyle)
             hasSetStatusMessage = true
-        } else if let rows = parseIntExpressionArgument(tokens, index: &index, isBoundary: LogoEngine.isArgumentBoundary) {
+        } else if let rows = parseIntExpressionArgument(
+            tokens, index: &index, isBoundary: LogoEngine.isArgumentBoundary)
+        {
             let cols = consumeNextTableIntArgument(tokens, index: &index) ?? 3
             let cellWidth = consumeNextTableIntArgument(tokens, index: &index)
             delegate.logoEngine(self, performAction: .createTable(rows: rows, cols: cols, cellWidth: cellWidth))

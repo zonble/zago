@@ -11,7 +11,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "varname", required: true),
-                    LogoPrimitiveParameter(name: "value", required: true)
+                    LogoPrimitiveParameter(name: "value", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "MAKE \"count 10")]
             )
@@ -24,7 +24,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
-                    LogoPrimitiveParameter(name: "varname", required: true)
+                    LogoPrimitiveParameter(name: "varname", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "NAME 42 \"answer")]
             )
@@ -37,7 +37,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "TYPE \"Hello")]
             )
@@ -50,7 +50,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "SHOW [Done]")]
             )
@@ -129,7 +129,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "text", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "APPEND \" (done)")]
             )
@@ -142,7 +142,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "text", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "PREPEND \"# ")]
             )
@@ -155,7 +155,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "old", required: true),
-                    LogoPrimitiveParameter(name: "new", required: true)
+                    LogoPrimitiveParameter(name: "new", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "CHANGE \"old \"new")]
             )
@@ -206,8 +206,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.move",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "direction", required: true, allowedValues: ["UP", "DOWN", "LEFT", "RIGHT", "HOME", "END"]),
-                    LogoPrimitiveParameter(name: "count", required: false)
+                    LogoPrimitiveParameter(
+                        name: "direction", required: true,
+                        allowedValues: ["UP", "DOWN", "LEFT", "RIGHT", "HOME", "END"]),
+                    LogoPrimitiveParameter(name: "count", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "MOVE \"RIGHT 5")]
             )
@@ -256,7 +258,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "row", required: true),
-                    LogoPrimitiveParameter(name: "col", required: false)
+                    LogoPrimitiveParameter(name: "col", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "GOTO 10 5")]
             )
@@ -272,8 +274,15 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "height", required: false),
                     LogoPrimitiveParameter(name: "text", required: false),
                     LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
-                    LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
+                    LogoPrimitiveParameter(
+                        name: "style", required: false,
+                        allowedValues: [
+                            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+                            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash",
+                            "heavy-double-dash",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "BOX 30 5 \"Window \"center \"double")]
             )
@@ -289,8 +298,15 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "height", required: false),
                     LogoPrimitiveParameter(name: "text", required: false),
                     LogoPrimitiveParameter(name: "align", required: false, allowedValues: ["left", "center", "right"]),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
-                    LogoPrimitiveParameter(name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"])
+                    LogoPrimitiveParameter(
+                        name: "style", required: false,
+                        allowedValues: [
+                            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+                            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash",
+                            "heavy-double-dash",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "exit", required: false, allowedValues: ["ne", "se", "nw", "sw", "down"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "DRAWBOX 20 4 \"Server \"center")]
             )
@@ -304,11 +320,11 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "width", required: false),
                     LogoPrimitiveParameter(name: "height", required: false),
-                    LogoPrimitiveParameter(name: "text", required: true)
+                    LogoPrimitiveParameter(name: "text", required: true),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "INSET \"Hello"),
-                    LogoPrimitiveExample(input: "INSET 20 5 \"Title")
+                    LogoPrimitiveExample(input: "INSET 20 5 \"Title"),
                 ]
             )
 
@@ -320,13 +336,25 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "length", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
-                    LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
-                    LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
+                    LogoPrimitiveParameter(
+                        name: "style", required: false,
+                        allowedValues: [
+                            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+                            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash",
+                            "heavy-double-dash",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "arrow", required: false,
+                        allowedValues: [
+                            "arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow",
+                            "both", "bidir",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"]),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "LINE 40 \"single"),
-                    LogoPrimitiveExample(input: "LINE 10 \"arrow \"hollow")
+                    LogoPrimitiveExample(input: "LINE 10 \"arrow \"hollow"),
                 ]
             )
 
@@ -338,13 +366,25 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "height", required: false),
-                    LogoPrimitiveParameter(name: "style", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]),
-                    LogoPrimitiveParameter(name: "arrow", required: false, allowedValues: ["arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow", "both", "bidir"]),
-                    LogoPrimitiveParameter(name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"])
+                    LogoPrimitiveParameter(
+                        name: "style", required: false,
+                        allowedValues: [
+                            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+                            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash",
+                            "heavy-double-dash",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "arrow", required: false,
+                        allowedValues: [
+                            "arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow",
+                            "both", "bidir",
+                        ]),
+                    LogoPrimitiveParameter(
+                        name: "arrowStyle", required: false, allowedValues: ["solid", "stemmed", "hollow", "small"]),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "VLINE 8 \"single"),
-                    LogoPrimitiveExample(input: "VLINE 5 \"arrow \"stemmed")
+                    LogoPrimitiveExample(input: "VLINE 5 \"arrow \"stemmed"),
                 ]
             )
 
@@ -359,13 +399,19 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "cols", required: false),
                     LogoPrimitiveParameter(name: "cellwidth", required: false),
                     LogoPrimitiveParameter(name: "mode", required: false, allowedValues: ["BORDER", "NEXTSTYLE"]),
-                    LogoPrimitiveParameter(name: "borderStyle", required: false, allowedValues: ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"])
+                    LogoPrimitiveParameter(
+                        name: "borderStyle", required: false,
+                        allowedValues: [
+                            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+                            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash",
+                            "heavy-double-dash",
+                        ]),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "TABLE"),
                     LogoPrimitiveExample(input: "TABLE 3 4 12"),
                     LogoPrimitiveExample(input: "TABLE BORDER \"double"),
-                    LogoPrimitiveExample(input: "TABLE NEXTSTYLE")
+                    LogoPrimitiveExample(input: "TABLE NEXTSTYLE"),
                 ]
             )
 
@@ -441,7 +487,11 @@ extension LogoPrimitive {
                 description: "Sets turtle heading to UP, RIGHT, DOWN, or LEFT.",
                 localizedDescriptionKey: "logo.doc.setheading",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "direction", required: true, allowedValues: ["UP", "RIGHT", "DOWN", "LEFT", "TOP", "BOTTOM"])],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "direction", required: true,
+                        allowedValues: ["UP", "RIGHT", "DOWN", "LEFT", "TOP", "BOTTOM"])
+                ],
                 examples: [LogoPrimitiveExample(input: "SETH \"DOWN")]
             )
 
@@ -462,7 +512,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "condition", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "IF :count > 0 [ TYPE \"Positive ]")]
             )
@@ -476,7 +526,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "condition", required: true),
                     LogoPrimitiveParameter(name: "trueBranch", required: true),
-                    LogoPrimitiveParameter(name: "falseBranch", required: true)
+                    LogoPrimitiveParameter(name: "falseBranch", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "IFELSE :x > 0 [ SHOW \"Yes ] [ SHOW \"No ]")]
             )
@@ -499,7 +549,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "count", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REPEAT 4 [ FD 5 RT ]")]
             )
@@ -512,7 +562,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "spec", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "FOR [ i 1 10 2 ] [ TYPE :i NL ]")]
             )
@@ -525,7 +575,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "spec", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "DOTIMES [ i 5 ] [ SHOW :i ]")]
             )
@@ -538,7 +588,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "condition", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "WHILE [ :x > 0 ] [ MAKE \"x :x - 1 ]")]
             )
@@ -551,7 +601,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "instructions", required: true),
-                    LogoPrimitiveParameter(name: "condition", required: true)
+                    LogoPrimitiveParameter(name: "condition", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "DO.WHILE [ MAKE \"x :x + 1 ] [ :x < 5 ]")]
             )
@@ -564,7 +614,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "condition", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "UNTIL [ :done ] [ STEP ]")]
             )
@@ -577,7 +627,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "instructions", required: true),
-                    LogoPrimitiveParameter(name: "condition", required: true)
+                    LogoPrimitiveParameter(name: "condition", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "DO.UNTIL [ STEP ] [ :ready ]")]
             )
@@ -590,7 +640,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "value", required: true),
-                    LogoPrimitiveParameter(name: "clauses", required: true)
+                    LogoPrimitiveParameter(name: "clauses", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "CASE :mode [ [1 [SHOW \"One]] [ELSE [SHOW \"Other]] ]")]
             )
@@ -623,7 +673,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "condition", required: true),
-                    LogoPrimitiveParameter(name: "message", required: false)
+                    LogoPrimitiveParameter(name: "message", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "ASSERT :count > 0 \"Must be positive")]
             )
@@ -702,7 +752,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "tag", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "CATCH \"exit [ LOOP ]")]
             )
@@ -715,7 +765,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "tag", required: true),
-                    LogoPrimitiveParameter(name: "value", required: false)
+                    LogoPrimitiveParameter(name: "value", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "THROW \"exit 42")]
             )
@@ -747,7 +797,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "argslist", required: true)
+                    LogoPrimitiveParameter(name: "argslist", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "APPLY \"SUM [10 20]", output: "30")]
             )
@@ -761,7 +811,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
                     LogoPrimitiveParameter(name: "arg1", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false)
+                    LogoPrimitiveParameter(name: "...", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "INVOKE [?1 + ?2] 10 20", output: "30")]
             )
@@ -774,7 +824,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "list", required: true),
-                    LogoPrimitiveParameter(name: "instructions", required: true)
+                    LogoPrimitiveParameter(name: "instructions", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "FOREACH [A B C] [ TYPE ? NL ]")]
             )
@@ -787,7 +837,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "MAP [? * 2] [1 2 3]", output: "[2 4 6]")]
             )
@@ -800,7 +850,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "MAP.SE [LIST ? ?] [A B]", output: "[A A B B]")]
             )
@@ -813,7 +863,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "predicate", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "FILTER [? > 0] [-2 0 5 8]", output: "[5 8]")]
             )
@@ -826,7 +876,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "predicate", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "FIND [? > 10] [5 12 8]", output: "12")]
             )
@@ -839,7 +889,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REDUCE \"SUM [1 2 3 4]", output: "10")]
             )
@@ -852,7 +902,7 @@ extension LogoPrimitive {
                 source: .ucbLogo,
                 parameters: [
                     LogoPrimitiveParameter(name: "template", required: true),
-                    LogoPrimitiveParameter(name: "lists", required: true)
+                    LogoPrimitiveParameter(name: "lists", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "CROSSMAP [WORD ?1 ?2] [[A B] [1 2]]", output: "[A1 A2 B1 B2]")]
             )
@@ -908,6 +958,6 @@ extension LogoPrimitive {
             )
 
         default: nil
+        }
     }
-}
 }

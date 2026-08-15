@@ -96,150 +96,153 @@ extension LogoEngine {
                 } else {
                     switch variadicPrim {
                     case .date, .time, .datetime:
-                    let mode: LogoDateTimeFormatter.Mode
-                    switch variadicPrim {
-                    case .date: mode = .date
-                    case .time: mode = .time
-                    case .datetime: mode = .dateTime
-                    default: mode = .date
-                    }
-                    let cleanArgs = args.map { unquote($0) }
-                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(cleanArgs, mode: mode)
-                    leftVal = LogoDateTimeFormatter.format(
-                        mode: mode,
-                        formatSpec: f,
-                        localeSpec: l,
-                        timeZoneSpec: tz,
-                        calendarSpec: cal
-                    )
-                    setLastExpressionDateTime(leftVal)
+                        let mode: LogoDateTimeFormatter.Mode
+                        switch variadicPrim {
+                        case .date: mode = .date
+                        case .time: mode = .time
+                        case .datetime: mode = .dateTime
+                        default: mode = .date
+                        }
+                        let cleanArgs = args.map { unquote($0) }
+                        let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(cleanArgs, mode: mode)
+                        leftVal = LogoDateTimeFormatter.format(
+                            mode: mode,
+                            formatSpec: f,
+                            localeSpec: l,
+                            timeZoneSpec: tz,
+                            calendarSpec: cal
+                        )
+                        setLastExpressionDateTime(leftVal)
 
                     case .dateformat:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = ""
-                        break
-                    }
-                    let dateVal = cleanArgs[0]
-                    let restArgs = Array(cleanArgs.dropFirst())
-                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
-                    let parsedCal = LogoDateTimeFormatter.parseCalendar(cal)
-                    let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
-                    let parsedDate =
-                        LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz)
-                        ?? Date()
-                    let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
-                    let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
-                    leftVal = LogoDateTimeFormatter.format(
-                        date: parsedDate,
-                        mode: mode,
-                        formatSpec: f,
-                        localeSpec: l,
-                        timeZoneSpec: tz,
-                        calendarSpec: cal
-                    )
-                    setLastExpressionDateTime(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = ""
+                            break
+                        }
+                        let dateVal = cleanArgs[0]
+                        let restArgs = Array(cleanArgs.dropFirst())
+                        let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
+                        let parsedCal = LogoDateTimeFormatter.parseCalendar(cal)
+                        let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
+                        let parsedDate =
+                            LogoDateTimeFormatter.parseDate(
+                                dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz)
+                            ?? Date()
+                        let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
+                        let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
+                        leftVal = LogoDateTimeFormatter.format(
+                            date: parsedDate,
+                            mode: mode,
+                            formatSpec: f,
+                            localeSpec: l,
+                            timeZoneSpec: tz,
+                            calendarSpec: cal
+                        )
+                        setLastExpressionDateTime(leftVal)
 
                     case .dateadd:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = ""
-                        break
-                    }
-                    let dateVal = cleanArgs[0]
-                    let amountVal = cleanArgs.count > 1 ? (Int(cleanArgs[1]) ?? 0) : 0
-                    let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
-                    let parsedDate = LogoDateTimeFormatter.parseDate(dateVal) ?? Date()
-                    let newDate = LogoDateTimeFormatter.add(to: parsedDate, amount: amountVal, unit: unitVal)
-                    leftVal = LogoDateTimeFormatter.format(
-                        date: newDate,
-                        mode: (dateVal.contains(":") || dateVal.contains("T")) ? .dateTime : .date
-                    )
-                    setLastExpressionDateTime(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = ""
+                            break
+                        }
+                        let dateVal = cleanArgs[0]
+                        let amountVal = cleanArgs.count > 1 ? (Int(cleanArgs[1]) ?? 0) : 0
+                        let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
+                        let parsedDate = LogoDateTimeFormatter.parseDate(dateVal) ?? Date()
+                        let newDate = LogoDateTimeFormatter.add(to: parsedDate, amount: amountVal, unit: unitVal)
+                        leftVal = LogoDateTimeFormatter.format(
+                            date: newDate,
+                            mode: (dateVal.contains(":") || dateVal.contains("T")) ? .dateTime : .date
+                        )
+                        setLastExpressionDateTime(leftVal)
 
                     case .datediff:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard cleanArgs.count >= 2 else {
-                        leftVal = "0"
-                        break
-                    }
-                    let dateVal1 = cleanArgs[0]
-                    let dateVal2 = cleanArgs[1]
-                    let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
-                    let d1 = LogoDateTimeFormatter.parseDate(dateVal1) ?? Date()
-                    let d2 = LogoDateTimeFormatter.parseDate(dateVal2) ?? Date()
-                    let diff = LogoDateTimeFormatter.diff(between: d1, and: d2, unit: unitVal)
-                    leftVal = "\(diff)"
-                    setLastExpressionString(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard cleanArgs.count >= 2 else {
+                            leftVal = "0"
+                            break
+                        }
+                        let dateVal1 = cleanArgs[0]
+                        let dateVal2 = cleanArgs[1]
+                        let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
+                        let d1 = LogoDateTimeFormatter.parseDate(dateVal1) ?? Date()
+                        let d2 = LogoDateTimeFormatter.parseDate(dateVal2) ?? Date()
+                        let diff = LogoDateTimeFormatter.diff(between: d1, and: d2, unit: unitVal)
+                        leftVal = "\(diff)"
+                        setLastExpressionString(leftVal)
 
                     case .formatNumber:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = ""
-                        break
-                    }
-                    let num = Double(cleanArgs[0]) ?? 0
-                    let style = cleanArgs.count > 1 ? LogoFormatters.NumberStyle.parse(cleanArgs[1]) : .decimal
-                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                    let curr = cleanArgs.count > 3 ? cleanArgs[3] : nil
-                    leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr)
-                    setLastExpressionString(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = ""
+                            break
+                        }
+                        let num = Double(cleanArgs[0]) ?? 0
+                        let style = cleanArgs.count > 1 ? LogoFormatters.NumberStyle.parse(cleanArgs[1]) : .decimal
+                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        let curr = cleanArgs.count > 3 ? cleanArgs[3] : nil
+                        leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr)
+                        setLastExpressionString(leftVal)
 
                     case .formatList:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = ""
-                        break
-                    }
-                    let parsed = LogoValue.parse(cleanArgs[0])
-                    let items: [String]
-                    switch parsed {
-                    case .list(let l), .array(let l): items = l.map { $0.stringValue }
-                    case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
-                    }
-                    let type = cleanArgs.count > 1 ? LogoFormatters.ListType.parse(cleanArgs[1]) : .and
-                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                    leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
-                    setLastExpressionString(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = ""
+                            break
+                        }
+                        let parsed = LogoValue.parse(cleanArgs[0])
+                        let items: [String]
+                        switch parsed {
+                        case .list(let l), .array(let l): items = l.map { $0.stringValue }
+                        case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
+                        }
+                        let type = cleanArgs.count > 1 ? LogoFormatters.ListType.parse(cleanArgs[1]) : .and
+                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
+                        setLastExpressionString(leftVal)
 
                     case .formatRelativeTime:
-#if os(Linux) || os(Windows)
-                    leftVal = ""
-                    reportError(
-                        LogoError(code: 1, message: "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"),
-                        token: "FORMAT.RELATIVETIME"
-                    )
-#else
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = ""
-                        break
-                    }
-                    let arg1 = cleanArgs[0]
-                    if let val = Double(arg1) {
-                        let unit = cleanArgs.count > 1 ? cleanArgs[1] : "days"
-                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                        leftVal = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
-                    } else if let targetDate = LogoDateTimeFormatter.parseDate(arg1) {
-                        let locale = cleanArgs.count > 1 ? cleanArgs[1] : nil
-                        leftVal = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
-                    } else {
-                        leftVal = arg1
-                    }
-                    setLastExpressionString(leftVal)
-#endif
+                        #if os(Linux) || os(Windows)
+                            leftVal = ""
+                            reportError(
+                                LogoError(
+                                    code: 1,
+                                    message: "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"),
+                                token: "FORMAT.RELATIVETIME"
+                            )
+                        #else
+                            let cleanArgs = args.map { unquote($0) }
+                            guard !cleanArgs.isEmpty else {
+                                leftVal = ""
+                                break
+                            }
+                            let arg1 = cleanArgs[0]
+                            if let val = Double(arg1) {
+                                let unit = cleanArgs.count > 1 ? cleanArgs[1] : "days"
+                                let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                                leftVal = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
+                            } else if let targetDate = LogoDateTimeFormatter.parseDate(arg1) {
+                                let locale = cleanArgs.count > 1 ? cleanArgs[1] : nil
+                                leftVal = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
+                            } else {
+                                leftVal = arg1
+                            }
+                            setLastExpressionString(leftVal)
+                        #endif
 
                     case .formatBytes:
-                    let cleanArgs = args.map { unquote($0) }
-                    guard !cleanArgs.isEmpty else {
-                        leftVal = "0 bytes"
-                        break
-                    }
-                    let bytes = Int64(Double(cleanArgs[0]) ?? 0)
-                    let style = cleanArgs.count > 1 ? LogoFormatters.ByteCountStyle.parse(cleanArgs[1]) : .file
-                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                    leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
-                    setLastExpressionString(leftVal)
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = "0 bytes"
+                            break
+                        }
+                        let bytes = Int64(Double(cleanArgs[0]) ?? 0)
+                        let style = cleanArgs.count > 1 ? LogoFormatters.ByteCountStyle.parse(cleanArgs[1]) : .file
+                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
+                        setLastExpressionString(leftVal)
 
                     default:
                         leftVal = ""

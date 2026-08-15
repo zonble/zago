@@ -12,7 +12,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "pattern", required: true),
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "start", required: false)
+                    LogoPrimitiveParameter(name: "start", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "INDEXOF \"world \"hello world", output: "7")]
             )
@@ -25,7 +25,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "pattern", required: true),
-                    LogoPrimitiveParameter(name: "string", required: true)
+                    LogoPrimitiveParameter(name: "string", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "LASTINDEXOF \"o \"hello world", output: "8")]
             )
@@ -38,7 +38,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "pattern", required: true),
-                    LogoPrimitiveParameter(name: "string", required: true)
+                    LogoPrimitiveParameter(name: "string", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "INDEXESOF \"l \"hello world", output: "[3 4 10]")]
             )
@@ -51,7 +51,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "substring", required: true)
+                    LogoPrimitiveParameter(name: "substring", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "CONTAINS? \"zago \"ag", output: "true")]
             )
@@ -64,7 +64,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "prefix", required: true)
+                    LogoPrimitiveParameter(name: "prefix", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "STARTSWITH? \"index.html \"index", output: "true")]
             )
@@ -77,7 +77,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "suffix", required: true)
+                    LogoPrimitiveParameter(name: "suffix", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "ENDSWITH? \"main.swift \".swift", output: "true")]
             )
@@ -91,7 +91,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
                     LogoPrimitiveParameter(name: "start", required: true),
-                    LogoPrimitiveParameter(name: "length", required: false)
+                    LogoPrimitiveParameter(name: "length", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "SUBSTRING \"abcdef 2 3", output: "bcd")]
             )
@@ -105,7 +105,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
                     LogoPrimitiveParameter(name: "old", required: true),
-                    LogoPrimitiveParameter(name: "new", required: true)
+                    LogoPrimitiveParameter(name: "new", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REPLACE \"hello world \"world \"there", output: "hello there")]
             )
@@ -128,7 +128,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "count", required: true),
-                    LogoPrimitiveParameter(name: "string", required: true)
+                    LogoPrimitiveParameter(name: "string", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REPEATSTR 5 \"=", output: "=====")]
             )
@@ -141,7 +141,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "separator", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true)
+                    LogoPrimitiveParameter(name: "list", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "JOINSTR \", \" [A B C]", output: "A, B, C")]
             )
@@ -174,7 +174,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "formatString", required: true),
-                    LogoPrimitiveParameter(name: "args", required: false)
+                    LogoPrimitiveParameter(name: "args", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT \"Hello, %s! \"Zago", output: "Hello, Zago!")]
             )
@@ -188,7 +188,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "width", required: true),
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "padChar", required: false)
+                    LogoPrimitiveParameter(name: "padChar", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "PADLEFT 8 \"42 \"0", output: "00000042")]
             )
@@ -202,7 +202,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "width", required: true),
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "padChar", required: false)
+                    LogoPrimitiveParameter(name: "padChar", required: false),
                 ],
                 examples: [LogoPrimitiveExample(input: "PADRIGHT 10 \"Title \".", output: "Title.....")]
             )
@@ -215,7 +215,7 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "pattern", required: true)
+                    LogoPrimitiveParameter(name: "pattern", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REGEX.MATCH \"abc-123 \"[a-z]+-[0-9]+", output: "true")]
             )
@@ -229,9 +229,11 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
                     LogoPrimitiveParameter(name: "pattern", required: true),
-                    LogoPrimitiveParameter(name: "template", required: true)
+                    LogoPrimitiveParameter(name: "template", required: true),
                 ],
-                examples: [LogoPrimitiveExample(input: "REGEX.REPLACE \"hello 2026 \"[0-9]+ \"world", output: "hello world")]
+                examples: [
+                    LogoPrimitiveExample(input: "REGEX.REPLACE \"hello 2026 \"[0-9]+ \"world", output: "hello world")
+                ]
             )
 
         case .regexFind:
@@ -242,12 +244,12 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "pattern", required: true)
+                    LogoPrimitiveParameter(name: "pattern", required: true),
                 ],
                 examples: [LogoPrimitiveExample(input: "REGEX.FIND \"abc-123 \"[0-9]+", output: "[123]")]
             )
 
         default: nil
+        }
     }
-}
 }

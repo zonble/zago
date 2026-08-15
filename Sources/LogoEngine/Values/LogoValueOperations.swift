@@ -3,7 +3,7 @@ import Foundation
 /// Pure value operations shared by LOGO expression and template evaluation.
 internal func formatNum(_ value: Double) -> String {
     if value.truncatingRemainder(dividingBy: 1) == 0,
-       value >= Double(Int.min), value <= Double(Int.max)
+        value >= Double(Int.min), value <= Double(Int.max)
     {
         return "\(Int(value))"
     }

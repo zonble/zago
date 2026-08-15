@@ -238,7 +238,7 @@ extension LogoEngine {
         } else {
             var positional: [String] = []
             while positional.count < 4,
-                  let val = reader.nextOptionalExpression()
+                let val = reader.nextOptionalExpression()
             {
                 let clean = unquote(val)
                 positional.append(clean)
@@ -315,7 +315,7 @@ extension LogoEngine {
         } else {
             var positional: [String] = []
             while positional.count < 4,
-                  let val = reader.nextOptionalExpression()
+                let val = reader.nextOptionalExpression()
             {
                 let clean = unquote(val)
                 positional.append(clean)
@@ -376,7 +376,7 @@ extension LogoEngine {
     private func evaluateDateDiffPrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         guard let dateVal1 = reader.nextOptionalExpression(),
-              let dateVal2 = reader.nextOptionalExpression()
+            let dateVal2 = reader.nextOptionalExpression()
         else { return "0" }
         let unitVal = reader.nextOptionalExpression().map(unquote) ?? "days"
         reader.commit(to: &index)
@@ -433,7 +433,7 @@ extension LogoEngine {
         } else {
             var positional: [String] = []
             while positional.count < 3,
-                  let val = reader.nextOptionalExpression()
+                let val = reader.nextOptionalExpression()
             {
                 positional.append(unquote(val))
             }
@@ -473,7 +473,7 @@ extension LogoEngine {
 
         var positional: [String] = []
         while positional.count < 2,
-              let val = reader.nextOptionalExpression()
+            let val = reader.nextOptionalExpression()
         {
             positional.append(unquote(val))
         }
@@ -490,39 +490,39 @@ extension LogoEngine {
 
     private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-#if os(Linux) || os(Windows)
-        while reader.nextOptionalExpression() != nil {}
-        reader.commit(to: &index)
-        let message = "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"
-        reportError(LogoError(code: 1, message: message), token: "FORMAT.RELATIVETIME")
-        return ""
-#else
-        guard let arg1 = reader.nextOptionalExpression() else { return "" }
-        let clean1 = unquote(arg1)
+        #if os(Linux) || os(Windows)
+            while reader.nextOptionalExpression() != nil {}
+            reader.commit(to: &index)
+            let message = "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"
+            reportError(LogoError(code: 1, message: message), token: "FORMAT.RELATIVETIME")
+            return ""
+        #else
+            guard let arg1 = reader.nextOptionalExpression() else { return "" }
+            let clean1 = unquote(arg1)
 
-        var positional: [String] = []
-        while positional.count < 2,
-              let val = reader.nextOptionalExpression()
-        {
-            positional.append(unquote(val))
-        }
-        reader.commit(to: &index)
+            var positional: [String] = []
+            while positional.count < 2,
+                let val = reader.nextOptionalExpression()
+            {
+                positional.append(unquote(val))
+            }
+            reader.commit(to: &index)
 
-        let res: String
-        if let val = Double(clean1) {
-            let unit = positional.count > 0 ? positional[0] : "days"
-            let locale = positional.count > 1 ? positional[1] : nil
-            res = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
-        } else if let targetDate = LogoDateTimeFormatter.parseDate(clean1) {
-            let locale = positional.count > 0 ? positional[0] : nil
-            res = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
-        } else {
-            res = clean1
-        }
+            let res: String
+            if let val = Double(clean1) {
+                let unit = positional.count > 0 ? positional[0] : "days"
+                let locale = positional.count > 1 ? positional[1] : nil
+                res = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
+            } else if let targetDate = LogoDateTimeFormatter.parseDate(clean1) {
+                let locale = positional.count > 0 ? positional[0] : nil
+                res = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
+            } else {
+                res = clean1
+            }
 
-        setLastExpressionString(res)
-        return res
-#endif
+            setLastExpressionString(res)
+            return res
+        #endif
     }
 
     private func evaluateFormatBytesPrimitive(tokens: [String], index: inout Int) -> String {
@@ -535,7 +535,7 @@ extension LogoEngine {
 
         var positional: [String] = []
         while positional.count < 2,
-              let val = reader.nextOptionalExpression()
+            let val = reader.nextOptionalExpression()
         {
             positional.append(unquote(val))
         }

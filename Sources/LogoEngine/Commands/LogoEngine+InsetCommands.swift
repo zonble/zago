@@ -57,9 +57,10 @@ extension LogoEngine {
         let lineCount = queryInteger(.lineCount) ?? (startLine + 10)
         let scanLineCount = min(lineCount + 50, startLine + 100)
         let lines = (0..<scanLineCount).map { queryString(.lineAt($0)) ?? "" }
-        guard let bounds = BoxRegionDetector.findBounds(
-            in: lines, startLine: startLine, startColumn: startCol,
-            maxColumn: min(200, startCol + 150)), bounds.isUsable
+        guard
+            let bounds = BoxRegionDetector.findBounds(
+                in: lines, startLine: startLine, startColumn: startCol,
+                maxColumn: min(200, startCol + 150)), bounds.isUsable
         else {
             let lineStr = queryString(.lineAt(startLine)) ?? ""
             let textWidth = insetText.displayWidth

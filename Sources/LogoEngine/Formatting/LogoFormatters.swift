@@ -233,29 +233,29 @@ struct LogoFormatters {
         unit: String,
         locale: String? = nil
     ) -> String {
-#if os(Linux) || os(Windows)
-        return ""
-#else
-        let loc = LogoDateTimeFormatter.parseLocale(locale)
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = loc
-        formatter.unitsStyle = .full
-        formatter.dateTimeStyle = .named
+        #if os(Linux) || os(Windows)
+            return ""
+        #else
+            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let formatter = RelativeDateTimeFormatter()
+            formatter.locale = loc
+            formatter.unitsStyle = .full
+            formatter.dateTimeStyle = .named
 
-        let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
-        var comps = DateComponents()
-        switch cleanUnit {
-        case "second", "seconds", "sec", "s": comps.second = Int(value)
-        case "minute", "minutes", "min": comps.minute = Int(value)
-        case "hour", "hours", "h": comps.hour = Int(value)
-        case "day", "days", "d": comps.day = Int(value)
-        case "week", "weeks", "w": comps.weekOfYear = Int(value)
-        case "month", "months", "m": comps.month = Int(value)
-        case "year", "years", "y": comps.year = Int(value)
-        default: comps.day = Int(value)
-        }
-        return formatter.localizedString(from: comps)
-#endif
+            let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+            var comps = DateComponents()
+            switch cleanUnit {
+            case "second", "seconds", "sec", "s": comps.second = Int(value)
+            case "minute", "minutes", "min": comps.minute = Int(value)
+            case "hour", "hours", "h": comps.hour = Int(value)
+            case "day", "days", "d": comps.day = Int(value)
+            case "week", "weeks", "w": comps.weekOfYear = Int(value)
+            case "month", "months", "m": comps.month = Int(value)
+            case "year", "years", "y": comps.year = Int(value)
+            default: comps.day = Int(value)
+            }
+            return formatter.localizedString(from: comps)
+        #endif
     }
 
     static func formatRelativeDate(
@@ -263,16 +263,16 @@ struct LogoFormatters {
         reference: Date = Date(),
         locale: String? = nil
     ) -> String {
-#if os(Linux) || os(Windows)
-        return ""
-#else
-        let loc = LogoDateTimeFormatter.parseLocale(locale)
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = loc
-        formatter.unitsStyle = .full
-        formatter.dateTimeStyle = .named
-        return formatter.localizedString(for: target, relativeTo: reference)
-#endif
+        #if os(Linux) || os(Windows)
+            return ""
+        #else
+            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let formatter = RelativeDateTimeFormatter()
+            formatter.locale = loc
+            formatter.unitsStyle = .full
+            formatter.dateTimeStyle = .named
+            return formatter.localizedString(for: target, relativeTo: reference)
+        #endif
     }
 
     // MARK: - Byte Count Formatter

@@ -214,10 +214,11 @@ extension LogoEngine {
     ) {
         guard let editor = self.delegate else { return }
         let renderer = TextBoxRenderer()
-        let renderMode: TextBoxRenderMode = switch mode {
-        case .insert: .insert
-        case .overlay: .overlay
-        }
+        let renderMode: TextBoxRenderMode =
+            switch mode {
+            case .insert: .insert
+            case .overlay: .overlay
+            }
         let rows = renderer.frameRows(width: width, height: height, style: style)
 
         for (r, rowStr) in rows.enumerated() {
@@ -243,10 +244,11 @@ extension LogoEngine {
     ) {
         guard let editor = self.delegate else { return }
         let renderer = TextBoxRenderer()
-        let renderMode: TextBoxRenderMode = switch mode {
-        case .insert: .insert
-        case .overlay: .overlay
-        }
+        let renderMode: TextBoxRenderMode =
+            switch mode {
+            case .insert: .insert
+            case .overlay: .overlay
+            }
         let rendered = renderer.textBoxRows(
             text: text,
             targetWidth: targetWidth,
