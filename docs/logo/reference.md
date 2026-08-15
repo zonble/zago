@@ -551,8 +551,8 @@ TYPE "hello;world"
 | `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
 | `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
 | `NEWLINE` | `NL` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
-| `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
+| `LINE` | - | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
+| `VLINE` | - | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
 | `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL (2 + 3)` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
 | `DELETELINE` | `DELLINE`, `KILLLINE` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE` |
@@ -596,8 +596,8 @@ their own syntax and are not treated as general expressions.
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 (2 + 3) "round"` |
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
-| `LINE` | `HR` | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
-| `VLINE` | `VR`, `VHR` | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
+| `LINE` | - | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
+| `VLINE` | - | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
@@ -949,8 +949,8 @@ Disabled while Table Mode is active:
 
 - `BOX`
 - `DRAWBOX`
-- `LINE` / `HR`
-- `VLINE` / `VR` / `VHR`
+- `LINE`
+- `VLINE`
 - `TABLE`
 - Turtle drawing commands: `PD`, `PU`, `FD`, `BK`, `RT`, `LT`
 

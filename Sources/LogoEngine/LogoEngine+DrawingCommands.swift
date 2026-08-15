@@ -129,12 +129,12 @@ extension LogoEngine {
             executeBoxCommand(tokens, index: &index, mode: .overlay)
             return true
 
-        case .line, .hr:
+        case .line:
             index += 1
             executeLineCommand(tokens, index: &index)
             return true
 
-        case .vline, .vhr:
+        case .vline:
             index += 1
             executeVlineCommand(tokens, index: &index)
             return true
