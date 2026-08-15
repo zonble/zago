@@ -79,6 +79,7 @@ struct EnglishStrings {
         "prompt.table_dimensions": "Table rows cols width: ",
         "prompt.logo_input": "Input: ",
         "prompt.logo_read_key": "Input [Key]: ",
+        "status.read_only": "The buffer is read-only",
         "status.directory_buffer_readonly": "The buffer is read-only",
         "dirbuf.header_directory": "\" Directory: %@",
         "dirbuf.header_instructions": "\" Press Enter on a file to open, or on a folder to navigate",

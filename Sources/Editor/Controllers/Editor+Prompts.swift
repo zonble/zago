@@ -93,6 +93,10 @@ extension Editor {
 
     /// Prompts user to input file path to insert into buffer (^R / F5).
     func promptInsertFilePath() {
+        if buffer.isReadOnly {
+            reportOperationResult(.noOp(message: l10n["status.read_only"]))
+            return
+        }
         promptInputText = ""
         currentPromptMode = .insertFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {

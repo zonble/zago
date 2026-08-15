@@ -123,6 +123,9 @@ struct TableAdjustWidthIncCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.tableModeController.resizeCurrentTableCellWidth(delta: 1)
         return .succeeded
     }
@@ -137,6 +140,9 @@ struct TableAdjustWidthDecCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.tableModeController.resizeCurrentTableCellWidth(delta: -1)
         return .succeeded
     }
@@ -151,6 +157,9 @@ struct TableAdjustHeightIncCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.tableModeController.resizeCurrentTableCellHeight(delta: 1)
         return .succeeded
     }
@@ -165,6 +174,9 @@ struct TableAdjustHeightDecCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.tableModeController.resizeCurrentTableCellHeight(delta: -1)
         return .succeeded
     }
@@ -179,6 +191,9 @@ struct TableCenterTextCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.tableModeController.centerCellText()
         return .succeeded
     }
@@ -233,6 +248,9 @@ struct TableClearCellCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         guard let cell = editor.currentTableCell else { return .noOp }
         editor.tableModeController.cutTableCellText(cell: cell)
         return .succeeded

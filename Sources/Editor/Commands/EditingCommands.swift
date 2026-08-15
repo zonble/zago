@@ -9,6 +9,9 @@ struct DeleteLineCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
@@ -28,6 +31,9 @@ struct DeleteCharCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
@@ -141,6 +147,9 @@ struct CutTextCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         if editor.isTableModeActive {
             if let cell = editor.currentTableCell {
                 editor.tableModeController.cutTableCellText(cell: cell)
@@ -183,6 +192,9 @@ struct UncutTextCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.tableModeController.pasteTableCellText(text)
@@ -212,13 +224,17 @@ struct InsertTabCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
-        editor.saveUndoSnapshot()
-
         // 1. Grid Table Mode Navigation
         if editor.isTableModeActive {
             editor.tableModeController.navigateNextTableCell()
             return .succeeded
         }
+
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
+
+        editor.saveUndoSnapshot()
 
         // 2. Markup Language Table Cell Navigation
         if let syntax = editor.activeLanguageSyntax,
@@ -282,13 +298,17 @@ struct InsertBacktabCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
-        editor.saveUndoSnapshot()
-
         // 1. Grid Table Mode Navigation
         if editor.isTableModeActive {
             editor.tableModeController.navigatePrevTableCell()
             return .succeeded
         }
+
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
+
+        editor.saveUndoSnapshot()
 
         // 2. Markup Language Table Cell Navigation
         if let syntax = editor.activeLanguageSyntax,
@@ -334,6 +354,9 @@ struct UndoCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.performUndo()
         return .succeeded
     }
@@ -348,6 +371,9 @@ struct RedoCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.performRedo()
         return .succeeded
     }
@@ -363,6 +389,9 @@ struct JustifyCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         if editor.isTableModeActive {
             editor.tableModeController.centerCellText()
             return .succeeded
@@ -396,6 +425,9 @@ struct SpellCheckCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.promptSpellCheck()
         return .prompting
     }
@@ -426,6 +458,9 @@ struct ToggleCommentCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.toggleComment()
         return .succeeded
     }
@@ -441,6 +476,9 @@ struct JoinLineCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.saveUndoSnapshot()
         guard editor.buffer.lineIndex + 1 < editor.buffer.lines.count else { return .noOp }
 
@@ -466,6 +504,9 @@ struct SplitLineCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
         editor.saveUndoSnapshot()
         let line = editor.buffer.lines[editor.buffer.lineIndex]
         let col = min(editor.buffer.columnIndex, line.count)

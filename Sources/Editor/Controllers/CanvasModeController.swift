@@ -67,6 +67,11 @@ final class CanvasModeController: KeyInputHandler {
             return false
         }
 
+        guard !editor.buffer.isReadOnly else {
+            editor.reportOperationResult(.noOp(message: editor.l10n["status.read_only"]))
+            return true
+        }
+
         editor.saveUndoSnapshot()
         editor.clearActiveMark()
         drawCanvasStep(direction: direction, drawsArrow: drawsArrow)

@@ -79,6 +79,7 @@ struct TraditionalChineseStrings {
         "prompt.table_dimensions": "表格列 欄 寬：",
         "prompt.logo_input": "輸入：",
         "prompt.logo_read_key": "輸入 [按鍵]：",
+        "status.read_only": "此緩衝區為唯讀",
         "status.directory_buffer_readonly": "此緩衝區為唯讀",
         "dirbuf.header_directory": "\" 目錄: %@",
         "dirbuf.header_instructions": "\" 在檔案上按 Enter 開啟，在資料夾上按 Enter 瀏覽",
