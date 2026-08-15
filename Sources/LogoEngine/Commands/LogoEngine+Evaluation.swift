@@ -187,6 +187,13 @@ extension LogoEngine {
                         setLastExpressionString(leftVal)
 
                     case .formatList:
+#if os(Linux) || os(Windows)
+                        leftVal = ""
+                        reportError(
+                            LogoError(code: 1, message: "[LOGO Error: FORMAT.LIST is not supported on this platform]"),
+                            token: "FORMAT.LIST"
+                        )
+#else
                         let cleanArgs = args.map { unquote($0) }
                         guard !cleanArgs.isEmpty else {
                             leftVal = ""
@@ -202,6 +209,7 @@ extension LogoEngine {
                         let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
                         leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
                         setLastExpressionString(leftVal)
+#endif
 
                     case .formatRelativeTime:
                         #if os(Linux) || os(Windows)

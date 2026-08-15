@@ -193,6 +193,9 @@ struct LogoFormatters {
         guard !items.isEmpty else { return "" }
         if items.count == 1 { return items[0] }
 
+#if os(Linux) || os(Windows)
+        return ""
+#else
         let loc = LogoDateTimeFormatter.parseLocale(locale)
         let isChinese = loc.identifier.lowercased().hasPrefix("zh")
 
@@ -224,6 +227,7 @@ struct LogoFormatters {
                 return items.joined(separator: ", ")
             }
         }
+#endif
     }
 
     // MARK: - Relative Date Time Formatter

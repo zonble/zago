@@ -452,6 +452,13 @@ extension LogoEngine {
 
     private func evaluateFormatListPrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+#if os(Linux) || os(Windows)
+        while reader.nextOptionalExpression() != nil {}
+        reader.commit(to: &index)
+        let message = "[LOGO Error: FORMAT.LIST is not supported on this platform]"
+        reportError(LogoError(code: 1, message: message), token: "FORMAT.LIST")
+        return ""
+#else
         guard let listStr = reader.nextOptionalExpression() else { return "" }
         let parsed = LogoValue.parse(listStr)
 
@@ -486,6 +493,7 @@ extension LogoEngine {
         let res = LogoFormatters.formatList(items, type: type, locale: localeSpec)
         setLastExpressionString(res)
         return res
+#endif
     }
 
     private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {

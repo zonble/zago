@@ -555,7 +555,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "type", required: false, allowedValues: ["and", "or", "unit"]),
                     LogoPrimitiveParameter(name: "locale", required: false),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.LIST [A B C] \"and \"en_US", output: "A, B, and C")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.LIST [A B C] \"and \"en_US", output: "A, B, and C")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatRelativeTime:

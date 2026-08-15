@@ -111,6 +111,7 @@ import Testing
 
     // MARK: - FORMAT.LIST Tests
 
+#if !os(Linux) && !os(Windows)
     @Test func testFormatListAndTraditionalChinese() {
         let engine = LogoEngine()
         var index = 0
@@ -158,6 +159,8 @@ import Testing
         #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "zh_TW") == "A或B")
         #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "en_US") == "A or B")
     }
+
+    #endif
 
     // MARK: - FORMAT.RELATIVETIME Tests
 
@@ -228,10 +231,12 @@ import Testing
         let resNum = engine.evaluateExpression(tokensNum, index: &index)
         #expect(resNum == "MMXXVI")
 
+#if !os(Linux) && !os(Windows)
         index = 0
         let tokensList = ["(", "FORMAT.LIST", "[", "One", "Two", "]", "\"or", "\"en_US", ")"]
         let resList = engine.evaluateExpression(tokensList, index: &index)
         #expect(resList == "One or Two")
+#endif
 
         index = 0
         let tokensBytes = ["(", "FORMAT.BYTES", "1048576", "\"bytes", "\"en_US", ")"]
