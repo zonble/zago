@@ -68,14 +68,107 @@ final class PromptController: KeyInputHandler {
     /// KeyInputHandler protocol implementation.
     func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
-        if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
+
+        let cmd = editor?.keymapManager.resolve(key: key, in: .prompt)
+
+        if cmd == .editCopy, selectionRange() == nil {
             cancel()
             return true
         }
-        if (key == .ctrl("X") || key == .ctrl("x")), isTextEditingPromptMode {
-            exitEditorFromPrompt()
+
+        switch cmd {
+        case .promptCancel:
+            cancel()
             return true
+
+        case .fileExit:
+            if isTextEditingPromptMode {
+                exitEditorFromPrompt()
+                return true
+            }
+
+        case .editCut:
+            if isTextEditingPromptMode {
+                cutPromptSelectionOrSuffix()
+                return true
+            }
+
+        case .editCopy:
+            if isTextEditingPromptMode {
+                copyPromptSelection()
+                return true
+            }
+
+        case .editUncut:
+            if isTextEditingPromptMode {
+                pastePromptClipboard()
+                return true
+            }
+
+        case .selectAll:
+            if isTextEditingPromptMode {
+                selectAllPromptText()
+                return true
+            }
+
+        case .moveHome:
+            cursorIndex = 0
+            selectionAnchorIndex = nil
+            return true
+
+        case .moveEnd:
+            cursorIndex = inputText.count
+            selectionAnchorIndex = nil
+            return true
+
+        case .moveLeft:
+            cursorIndex = max(0, cursorIndex - 1)
+            selectionAnchorIndex = nil
+            return true
+
+        case .moveRight:
+            cursorIndex = min(inputText.count, cursorIndex + 1)
+            selectionAnchorIndex = nil
+            return true
+
+        case .moveWordBackward:
+            movePromptWordBackward()
+            selectionAnchorIndex = nil
+            return true
+
+        case .moveWordForward:
+            movePromptWordForward()
+            selectionAnchorIndex = nil
+            return true
+
+        case .selectLeft:
+            extendPromptSelection(to: max(0, cursorIndex - 1))
+            return true
+
+        case .selectRight:
+            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
+            return true
+
+        case .selectWordBackward:
+            extendPromptSelection(to: max(0, cursorIndex - 1))
+            return true
+
+        case .selectWordForward:
+            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
+            return true
+
+        case .promptClearLine:
+            clearPromptLine()
+            return true
+
+        case .editDelete:
+            deletePromptDelete()
+            return true
+
+        default:
+            break
         }
+
         processPromptKey(key)
         return true
     }
@@ -131,18 +224,6 @@ final class PromptController: KeyInputHandler {
 
     /// Processes keyboard input when in prompt mode.
     func processPromptKey(_ key: Key) {
-        if handlePromptNavigationKeys(key) {
-            return
-        }
-
-        if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
-            cancel()
-            return
-        }
-        if handlePromptEditingKeys(key) {
-            return
-        }
-
         switch mode {
         case .logoReadWord, .logoReadChar:
             break
@@ -154,7 +235,7 @@ final class PromptController: KeyInputHandler {
             case .char("y"), .char("Y"), .enter:
                 mode = .none
                 completion(true)
-            case .char("n"), .char("N"), .ctrl("X"), .ctrl("x"):
+            case .char("n"), .char("N"):
                 mode = .none
                 completion(false)
             default:
@@ -195,10 +276,11 @@ final class PromptController: KeyInputHandler {
             processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
         case .logoMacro(let completion):
-            switch key {
-            case .tab:
+            let cmd = editor?.keymapManager.resolve(key: key, in: .prompt)
+            switch cmd {
+            case .promptComplete:
                 _ = completeCommandBarPrompt()
-            case .enter:
+            case .promptConfirm:
                 let script = inputText
                 completionText = nil
                 if !script.isEmpty && logoHistory.last != script {
@@ -206,7 +288,7 @@ final class PromptController: KeyInputHandler {
                 }
                 mode = .none
                 completion(script)
-            case .arrowUp:
+            case .promptHistoryPrev:
                 completionText = nil
                 selectionAnchorIndex = nil
                 if logoHistoryIndex > 0 {
@@ -214,7 +296,7 @@ final class PromptController: KeyInputHandler {
                     inputText = logoHistory[logoHistoryIndex]
                     cursorIndex = inputText.count
                 }
-            case .arrowDown:
+            case .promptHistoryNext:
                 completionText = nil
                 selectionAnchorIndex = nil
                 if logoHistoryIndex < logoHistory.count - 1 {
@@ -226,12 +308,15 @@ final class PromptController: KeyInputHandler {
                     inputText = ""
                     cursorIndex = 0
                 }
-            case .backspace:
-                deletePromptBackspace()
-            case .char(let ch):
-                insertPromptChar(ch)
             default:
-                break
+                switch key {
+                case .backspace:
+                    deletePromptBackspace()
+                case .char(let ch):
+                    insertPromptChar(ch)
+                default:
+                    break
+                }
             }
 
         case .fillText(let completion), .tableDimensions(let completion), .gotoLine(let completion):
@@ -248,20 +333,21 @@ final class PromptController: KeyInputHandler {
         trimWhitespace: Bool = false,
         completion: (String?) -> Void
     ) {
-        switch key {
-        case .enter:
+        let cmd = editor?.keymapManager.resolve(key: key, in: .prompt)
+        if cmd == .promptConfirm {
             let raw = inputText
             let result = trimWhitespace ? raw.trimmingCharacters(in: .whitespacesAndNewlines) : raw
             mode = .none
             selectionAnchorIndex = nil
             completion(trimWhitespace && result.isEmpty ? nil : result)
+            return
+        }
 
+        switch key {
         case .backspace:
             deletePromptBackspace()
-
         case .char(let ch):
             insertPromptChar(ch)
-
         default:
             break
         }
@@ -310,69 +396,6 @@ final class PromptController: KeyInputHandler {
             let clamped = max(0, min(cursorIndex, inputText.count - 1))
             let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
             inputText.remove(at: idx)
-        }
-    }
-
-    /// Handles common prompt navigation keys (Left, Right, Home, End, Delete, Ctrl+A/E/B/F/D).
-    private func handlePromptNavigationKeys(_ key: Key) -> Bool {
-        switch key {
-        case .arrowLeft, .ctrl("B"):
-            cursorIndex = max(0, cursorIndex - 1)
-            selectionAnchorIndex = nil
-            return true
-        case .arrowRight, .ctrl("F"):
-            cursorIndex = min(inputText.count, cursorIndex + 1)
-            selectionAnchorIndex = nil
-            return true
-        case .shiftArrowLeft, .ctrlShiftArrowLeft, .ctrlShift("b"), .ctrlShift("B"):
-            extendPromptSelection(to: max(0, cursorIndex - 1))
-            return true
-        case .shiftArrowRight, .ctrlShiftArrowRight, .ctrlShift("f"), .ctrlShift("F"):
-            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
-            return true
-        case .ctrlArrowLeft:
-            movePromptWordBackward()
-            selectionAnchorIndex = nil
-            return true
-        case .ctrlArrowRight:
-            movePromptWordForward()
-            selectionAnchorIndex = nil
-            return true
-        case .ctrl("A"), .home:
-            cursorIndex = 0
-            selectionAnchorIndex = nil
-            return true
-
-        case .ctrl("E"), .end:
-            cursorIndex = inputText.count
-            selectionAnchorIndex = nil
-            return true
-
-        case .ctrlBackspace:
-            clearPromptLine()
-            return true
-        case .delete, .ctrl("D"):
-            deletePromptDelete()
-            return true
-        default:
-            return false
-        }
-    }
-
-    private func handlePromptEditingKeys(_ key: Key) -> Bool {
-        guard isTextEditingPromptMode else { return false }
-        switch key {
-        case .ctrl("K"), .ctrl("k"):
-            cutPromptSelectionOrSuffix()
-            return true
-        case .ctrl("U"), .ctrl("u"):
-            pastePromptClipboard()
-            return true
-        case .alt("w"), .alt("W"):
-            copyPromptSelection()
-            return true
-        default:
-            return false
         }
     }
 
@@ -427,6 +450,12 @@ final class PromptController: KeyInputHandler {
             }
             cursorIndex = idx
         }
+    }
+
+    private func selectAllPromptText() {
+        guard !inputText.isEmpty else { return }
+        selectionAnchorIndex = 0
+        cursorIndex = inputText.count
     }
 
     private func exitEditorFromPrompt() {
