@@ -416,7 +416,7 @@ IFELSE MODIFIED? [ SHOW "Unsaved changes!" ] [ SHOW "Buffer clean" ]
 
 ### 4. Custom Procedures (`TO ... END`)
 
-Define reusable macro procedures for frequent layout operations:
+Define reusable macro procedures for frequent layout operations or value calculations:
 
 ```logo
 TO TITLE :text
@@ -424,6 +424,38 @@ TO TITLE :text
 END
 
 TITLE "Architecture Overview"
+```
+
+#### Single-Expression Procedures (Implicit Return) ✨
+
+For concise helpers, mathematical functions, and text formatters, single-expression procedures **automatically return their evaluated value** without needing `OUTPUT` or `OP` (similar to Swift 5.1+ and modern functional languages):
+
+```logo
+; Single-line helper without OP
+TO 大寫 :x FORMAT.NUMBER :x "bank "zh-TW END
+
+TYPE 大寫 2324234232
+; => 貳拾參億貳仟肆佰貳拾參萬肆仟貳佰參拾貳
+
+; Multi-line arithmetic helper
+TO DOUBLE :n
+  :n * 2
+END
+
+SHOW DOUBLE 21
+; => 42
+```
+
+#### Multi-Statement Reporter Procedures (`OUTPUT` or `OP`)
+
+If a procedure contains multiple statements (assignments with `MAKE`, loops, or side-effect commands like `FORWARD`), use explicit `OUTPUT` (or `OP`) to return a value:
+
+```logo
+TO COMPUTE_AND_DRAW :x
+  MAKE "y (:x * 2)
+  BOX :y "round
+  OUTPUT :y + 10
+END
 ```
 
 Once defined, procedures live for the duration of the editor session.

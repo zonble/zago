@@ -20,6 +20,21 @@ public struct LogoProcedure: Sendable {
             name: name, parameters: parameters,
             bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
     }
+
+    /// Returns true if the procedure body does not contain statement commands (like MAKE, FORWARD, BOX, etc.),
+    /// enabling implicit return of its single evaluated expression.
+    public var isSingleExpression: Bool {
+        let bodyTexts = bodyTokens.map(\.text)
+        guard !bodyTexts.isEmpty else { return false }
+        for t in bodyTexts {
+            if let prim = LogoPrimitive.from(t) {
+                if LogoPrimitive.statementCommands.contains(prim) && prim != .output && prim != .stop {
+                    return false
+                }
+            }
+        }
+        return true
+    }
 }
 
 public struct LogoExecutionFrame: Equatable, Sendable {
@@ -213,10 +228,6 @@ public final class LogoEngine: @unchecked Sendable {
     }
 
     private func executeScript(_ script: String) {
-        guard let delegate = self.delegate else {
-            finishExecution()
-            return
-        }
         lastResult = nil
         lastError = nil
         hasUncaughtError = false
@@ -230,7 +241,7 @@ public final class LogoEngine: @unchecked Sendable {
         }
 
         // Save a single atomic Undo snapshot for the entire macro execution
-        delegate.logoEngine(self, performAction: .saveUndoSnapshot)
+        delegate?.logoEngine(self, performAction: .saveUndoSnapshot)
 
         rootSourceTokens = sourceTokens
         executionFrames = [LogoExecutionFrame(procedureName: nil, token: nil, scopeDepth: variables.scopeDepth)]
@@ -245,7 +256,7 @@ public final class LogoEngine: @unchecked Sendable {
         if let ret = frameReturn, !ret.isEmpty {
             lastResult = ret
         }
-        delegate.logoEngine(self, performAction: .clampCursor)
+        delegate?.logoEngine(self, performAction: .clampCursor)
     }
 
     /// Step-by-step 3-stage statement execution loop for tokenized scripts.
@@ -255,18 +266,19 @@ public final class LogoEngine: @unchecked Sendable {
         index: inout Int,
         frameReturn: inout String?
     ) {
-        guard self.delegate != nil else { return }
         while index < tokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
             if let sourceTokens, index < sourceTokens.count {
-                executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
-                    procedureName: executionFrames.last?.procedureName,
-                    token: sourceTokens[index],
-                    scopeDepth: variables.scopeDepth
-                )
+                if !executionFrames.isEmpty {
+                    executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
+                        procedureName: executionFrames.last?.procedureName,
+                        token: sourceTokens[index],
+                        scopeDepth: variables.scopeDepth
+                    )
+                }
                 if let token = executionFrames.last?.token,
                     pauseOnNextToken || shouldPauseBeforeToken?(token) == true
                 {
-                    if !pauseExecution(at: executionFrames[executionFrames.count - 1]) {
+                    if !executionFrames.isEmpty && !pauseExecution(at: executionFrames[executionFrames.count - 1]) {
                         return
                     }
                 }

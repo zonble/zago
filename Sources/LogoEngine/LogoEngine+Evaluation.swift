@@ -455,7 +455,8 @@ extension LogoEngine {
             args.append(arg)
         }
 
-        variables.pushScope(initialValues: Dictionary(uniqueKeysWithValues: zip(proc.parameters, args)))
+        let initialScope = Dictionary(zip(proc.parameters, args), uniquingKeysWith: { _, last in last })
+        variables.pushScope(initialValues: initialScope)
         procedureCallDepth += 1
         executionFrames.append(
             LogoExecutionFrame(procedureName: proc.name, token: nil, scopeDepth: variables.scopeDepth))
@@ -467,12 +468,16 @@ extension LogoEngine {
 
         var procIndex = 0
         var procReturn: String? = nil
+        let savedLastResult = lastResult
+        lastResult = nil
         executeTokens(
             proc.bodyTokens.map(\.text), sourceTokens: proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
         }
-        return procReturn
+        let finalResult = procReturn ?? (proc.isSingleExpression ? lastResult : nil)
+        lastResult = savedLastResult
+        return finalResult
     }
 
     internal func extractBlockTokens(tokens: [String], index: inout Int) -> [String] {
