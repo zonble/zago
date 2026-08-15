@@ -247,8 +247,6 @@ public final class KeymapManager {
             baseKeymap[.ctrl("Z")] = .editUndo
             baseKeymap[.alt("e")] = .editRedo
             baseKeymap[.alt("E")] = .editRedo
-            baseKeymap[.ctrl("y")] = .editRedo
-            baseKeymap[.ctrl("Y")] = .editRedo
 
             baseKeymap[.ctrl("a")] = .moveHome
             baseKeymap[.ctrl("A")] = .moveHome
@@ -262,6 +260,10 @@ public final class KeymapManager {
             baseKeymap[.ctrl("B")] = .moveLeft
             baseKeymap[.ctrl("f")] = .moveRight
             baseKeymap[.ctrl("F")] = .moveRight
+            baseKeymap[.ctrl("v")] = .movePgdn
+            baseKeymap[.ctrl("V")] = .movePgdn
+            baseKeymap[.ctrl("y")] = .movePgup
+            baseKeymap[.ctrl("Y")] = .movePgup
 
             baseKeymap[.ctrl("q")] = .editEvalLogo
             baseKeymap[.ctrl("Q")] = .editEvalLogo
@@ -294,8 +296,8 @@ public final class KeymapManager {
             primaryDisplayKeys[.searchPrevious] = [.alt("P")]
             primaryDisplayKeys[.cursorPos] = [.ctrl("C"), .f11]
             primaryDisplayKeys[.editSpell] = [.ctrl("T"), .f12]
-            primaryDisplayKeys[.editUndo] = [.ctrl("Z")]
-            primaryDisplayKeys[.editRedo] = [.ctrl("Y")]
+            primaryDisplayKeys[.editUndo] = [.alt("U")]
+            primaryDisplayKeys[.editRedo] = [.alt("E")]
             primaryDisplayKeys[.editCopy] = [.alt("W")]
             primaryDisplayKeys[.editJustify] = [.ctrl("J")]
             primaryDisplayKeys[.editEvalLogo] = [.ctrl("Q")]

@@ -25,11 +25,15 @@ import Foundation
     @Test func testClassicVsModernPresetResolution() throws {
         let keymap = KeymapManager(preset: .classic)
 
-        // Classic: ^A is moveHome, ^W is searchWhereIs, ^O is fileWriteOut, ^X is fileExit
+        // Classic: ^A is moveHome, ^W is searchWhereIs, ^O is fileWriteOut, ^X is fileExit, ^V is movePgdn, ^Y is movePgup
         #expect(keymap.resolve(key: .ctrl("a"), in: .text) == .moveHome)
         #expect(keymap.resolve(key: .ctrl("w"), in: .text) == .searchWhereIs)
         #expect(keymap.resolve(key: .ctrl("o"), in: .text) == .fileWriteOut)
         #expect(keymap.resolve(key: .ctrl("x"), in: .text) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .text) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .canvas) == .movePgup)
 
         // Switch to Modern
         keymap.loadPreset(.modern)
@@ -42,6 +46,9 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("c"), in: .text) == .editCopy)
         #expect(keymap.resolve(key: .ctrl("x"), in: .text) == .editCut)
         #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .canvas) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("x"), in: .canvas) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
     }
 
     @Test func testDynamicHelpBarReflection() throws {
