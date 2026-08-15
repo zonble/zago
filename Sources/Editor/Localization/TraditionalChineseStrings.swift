@@ -685,10 +685,10 @@ struct TraditionalChineseStrings {
         "dialog.describe_key.insert_char": "輸入字元「%@」",
         "dialog.describe_key.unbound": "未綁定任何指令",
 
-        "symbol_category.gfm": "1. GFM 區塊",
-        "symbol_category.steps": "2. 步驟標記",
-        "symbol_category.badges": "3. 狀態圖示",
-        "symbol_category.math_keys": "4. 數學按鍵",
+        "symbol_category.steps": "1. 步驟標記",
+        "symbol_category.badges": "2. 狀態圖示",
+        "symbol_category.math_keys": "3. 數學按鍵",
+        "symbol_category.gfm": "4. GFM 區塊",
 
         "symbol.callout.note": "Note 說明提示區塊",
         "symbol.callout.tip": "Tip 秘訣提示區塊",

@@ -695,10 +695,10 @@ struct EnglishStrings {
         "dialog.describe_key.insert_char": "Insert character '%@'",
         "dialog.describe_key.unbound": "Unbound key",
 
-        "symbol_category.gfm": "1. Callouts",
-        "symbol_category.steps": "2. Steps",
-        "symbol_category.badges": "3. Badges",
-        "symbol_category.math_keys": "4. Math/Keys",
+        "symbol_category.steps": "1. Steps",
+        "symbol_category.badges": "2. Badges",
+        "symbol_category.math_keys": "3. Math/Keys",
+        "symbol_category.gfm": "4. Callouts",
 
         "symbol.callout.note": "Note callout block",
         "symbol.callout.tip": "Tip callout block",
