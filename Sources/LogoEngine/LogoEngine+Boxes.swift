@@ -239,44 +239,24 @@ extension LogoEngine {
         exitPos: BoxExitPosition = .ne
     ) {
         guard let editor = self.delegate else { return }
+        let renderer = TextBoxRenderer()
+        let renderMode: TextBoxRenderMode = switch mode {
+        case .insert: .insert
+        case .overlay: .overlay
+        }
+        let rows = renderer.frameRows(width: width, height: height, style: style)
 
-        for r in 0..<height {
+        for (r, rowStr) in rows.enumerated() {
             let currentLineIndex = startLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIndex))
 
             let lineStr = queryString(.lineAt(currentLineIndex)) ?? ""
             let isTop = (r == 0)
-            let isBottom = (r == height - 1)
-            var rowStr = ""
+            let isBottom = (r == rows.count - 1)
 
-            for c in 0..<width {
-                let isLeft = (c == 0)
-                let isRight = (c == width - 1)
-
-                var ch: Character = " "
-
-                if isTop && isLeft {
-                    ch = style.topLeft
-                } else if isTop && isRight {
-                    ch = style.topRight
-                } else if isBottom && isLeft {
-                    ch = style.bottomLeft
-                } else if isBottom && isRight {
-                    ch = style.bottomRight
-                } else if isTop {
-                    ch = style.topChar
-                } else if isBottom {
-                    ch = style.bottomChar
-                } else if isLeft || isRight {
-                    ch = style.sideChar
-                }
-
-                rowStr.append(ch)
-            }
-
-            let newLineText = buildRowText(
-                existingLine: lineStr, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom,
-                mode: mode)
+            let newLineText = renderer.mergeRow(
+                existingLine: lineStr, startCol: startCol, row: rowStr, isTop: isTop, isBottom: isBottom,
+                mode: renderMode)
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
@@ -288,58 +268,35 @@ extension LogoEngine {
         exitPos: BoxExitPosition = .ne
     ) {
         guard let editor = self.delegate else { return }
-        let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
-        let maxVisualWidth = rawLines.map { $0.displayWidth }.max() ?? 0
-        let calcWidth = targetWidth ?? (maxVisualWidth + 4)
-        let innerWidth = max(1, calcWidth - 2)
-
-        var textLines: [String] = []
-        for rLine in rawLines {
-            textLines.append(contentsOf: wrapTextLine(rLine, maxWidth: innerWidth))
+        let renderer = TextBoxRenderer()
+        let renderMode: TextBoxRenderMode = switch mode {
+        case .insert: .insert
+        case .overlay: .overlay
         }
-
-        let calcHeight = max(targetHeight ?? 0, textLines.count + 2)
+        let rendered = renderer.textBoxRows(
+            text: text,
+            targetWidth: targetWidth,
+            targetHeight: targetHeight,
+            alignment: align,
+            style: style
+        )
+        let calcWidth = rendered.width
+        let calcHeight = rendered.height
 
         let startCol = queryInteger(.currentColumnIndex) ?? 0
         let startLine = queryInteger(.currentLineIndex) ?? 0
 
-        for r in 0..<calcHeight {
+        for (r, rowStr) in rendered.rows.enumerated() {
             let currentLineIndex = startLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIndex))
 
             let isTop = (r == 0)
             let isBottom = (r == calcHeight - 1)
 
-            let rowStr: String
-            if isTop {
-                rowStr =
-                    String(style.topLeft) + String(repeating: style.topChar, count: innerWidth) + String(style.topRight)
-            } else if isBottom {
-                rowStr =
-                    String(style.bottomLeft) + String(repeating: style.bottomChar, count: innerWidth)
-                    + String(style.bottomRight)
-            } else {
-                let lineStr = (r >= 1 && (r - 1) < textLines.count) ? textLines[r - 1] : ""
-                let textWidth = lineStr.displayWidth
-                let textOffset: Int
-                if align == "center" || align == "centre" {
-                    textOffset = max(0, (innerWidth - textWidth) / 2)
-                } else if align == "right" {
-                    textOffset = max(0, innerWidth - textWidth)
-                } else {
-                    textOffset = (innerWidth > textWidth) ? 1 : 0
-                }
-
-                let leftSpaces = String(repeating: " ", count: textOffset)
-                let rightSpacesCount = max(0, innerWidth - textOffset - textWidth)
-                let rightSpaces = String(repeating: " ", count: rightSpacesCount)
-                rowStr = String(style.sideChar) + leftSpaces + lineStr + rightSpaces + String(style.sideChar)
-            }
-
             let existingLine = queryString(.lineAt(currentLineIndex)) ?? ""
-            let newLineText = buildRowText(
-                existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom,
-                mode: mode)
+            let newLineText = renderer.mergeRow(
+                existingLine: existingLine, startCol: startCol, row: rowStr, isTop: isTop, isBottom: isBottom,
+                mode: renderMode)
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
@@ -368,205 +325,6 @@ extension LogoEngine {
             editor.logoEngine(self, performAction: .updateLineIndex(startLine + height))
             editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
         }
-    }
-
-    private func buildRowText(
-        existingLine: String,
-        startCol: Int,
-        rowStr: String,
-        isTop: Bool,
-        isBottom: Bool,
-        mode: BoxDrawMode
-    ) -> String {
-        switch mode {
-        case .insert:
-            return buildInsertedRowText(
-                existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
-        case .overlay:
-            return buildOverlayRowText(
-                existingLine: existingLine, startCol: startCol, rowStr: rowStr, isTop: isTop, isBottom: isBottom)
-        }
-    }
-
-    private func buildInsertedRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool)
-        -> String
-    {
-        var prefix = ""
-        var suffix = ""
-        var firstOverlap: Character? = nil
-
-        var currentW = 0
-        for (offset, ch) in existingLine.enumerated() {
-            let w = ch.displayWidth
-            if currentW + w <= startCol {
-                prefix.append(ch)
-            } else {
-                firstOverlap = ch
-                let suffixIndex = existingLine.index(existingLine.startIndex, offsetBy: offset)
-                suffix = String(existingLine[suffixIndex...])
-                break
-            }
-            currentW += w
-        }
-
-        if prefix.displayWidth < startCol {
-            prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
-        }
-
-        var resultRow = ""
-        var currentVisualCol = 0
-
-        for ch in rowStr {
-            let w = ch.displayWidth
-            let isLeft = (currentVisualCol == 0)
-            let isRight = (currentVisualCol + w == rowStr.displayWidth)
-
-            var moveMask = 0
-            if isTop && isLeft {
-                moveMask = 6
-            } else if isTop && isRight {
-                moveMask = 12
-            } else if isBottom && isLeft {
-                moveMask = 3
-            } else if isBottom && isRight {
-                moveMask = 9
-            } else if isTop {
-                moveMask = 10
-            } else if isBottom {
-                moveMask = 10
-            } else if isLeft || isRight {
-                moveMask = 5
-            }
-
-            if currentVisualCol == 0, moveMask != 0, let existingCh = firstOverlap {
-                let fused = fuseChar(existing: existingCh, defaultNewChar: ch, moveMask: moveMask)
-                resultRow.append(fused)
-            } else {
-                resultRow.append(ch)
-            }
-
-            currentVisualCol += w
-        }
-
-        return prefix + resultRow + suffix
-    }
-
-    private func buildOverlayRowText(existingLine: String, startCol: Int, rowStr: String, isTop: Bool, isBottom: Bool)
-        -> String
-    {
-        var prefix = ""
-        var suffix = ""
-        var existingBoxRegion: [Character] = []
-        let rowWidth = rowStr.displayWidth
-
-        var currentW = 0
-        for ch in existingLine {
-            let w = ch.displayWidth
-            if currentW + w <= startCol {
-                prefix.append(ch)
-            } else if currentW < startCol + rowWidth {
-                existingBoxRegion.append(ch)
-            } else {
-                suffix.append(ch)
-            }
-            currentW += w
-        }
-
-        if prefix.displayWidth < startCol {
-            prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
-        }
-
-        var resultRow = ""
-        var currentVisualCol = 0
-
-        for ch in rowStr {
-            let w = ch.displayWidth
-            let isLeft = (currentVisualCol == 0)
-            let isRight = (currentVisualCol + w == rowWidth)
-
-            var moveMask = 0
-            if isTop && isLeft {
-                moveMask = 6
-            } else if isTop && isRight {
-                moveMask = 12
-            } else if isBottom && isLeft {
-                moveMask = 3
-            } else if isBottom && isRight {
-                moveMask = 9
-            } else if isTop {
-                moveMask = 10
-            } else if isBottom {
-                moveMask = 10
-            } else if isLeft || isRight {
-                moveMask = 5
-            }
-
-            if moveMask != 0 && !existingBoxRegion.isEmpty {
-                var regionW = 0
-                var matchChar: Character? = nil
-                for eCh in existingBoxRegion {
-                    let eW = eCh.displayWidth
-                    if regionW == currentVisualCol {
-                        matchChar = eCh
-                        break
-                    }
-                    regionW += eW
-                }
-                if let existingCh = matchChar {
-                    let fused = fuseChar(existing: existingCh, defaultNewChar: ch, moveMask: moveMask)
-                    resultRow.append(fused)
-                } else {
-                    resultRow.append(ch)
-                }
-            } else {
-                resultRow.append(ch)
-            }
-
-            currentVisualCol += w
-        }
-
-        return prefix + resultRow + suffix
-    }
-
-    private func wrapTextLine(_ text: String, maxWidth: Int) -> [String] {
-        guard text.displayWidth > maxWidth && maxWidth > 0 else { return [text] }
-        var result: [String] = []
-        let words = text.components(separatedBy: " ")
-        var currentLine = ""
-
-        for word in words {
-            let wordWidth = word.displayWidth
-            if wordWidth > maxWidth {
-                if !currentLine.isEmpty {
-                    result.append(currentLine)
-                    currentLine = ""
-                }
-                var temp = ""
-                for ch in word {
-                    let chW = ch.displayWidth
-                    if temp.displayWidth + chW > maxWidth && !temp.isEmpty {
-                        result.append(temp)
-                        temp = String(ch)
-                    } else {
-                        temp.append(ch)
-                    }
-                }
-                if !temp.isEmpty {
-                    currentLine = temp
-                }
-            } else if currentLine.isEmpty {
-                currentLine = word
-            } else if currentLine.displayWidth + 1 + wordWidth <= maxWidth {
-                currentLine += " " + word
-            } else {
-                result.append(currentLine)
-                currentLine = word
-            }
-        }
-        if !currentLine.isEmpty {
-            result.append(currentLine)
-        }
-        return result
     }
 
     internal func executeFillCommand(_ tokens: [String], index: inout Int) {
@@ -663,12 +421,6 @@ extension LogoEngine {
     private func performFloodFill(startLine: Int, startCol: Int, fillPattern: String) {
         guard let editor = self.delegate else { return }
 
-        let boxBorderChars: Set<Character> = [
-            "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼",
-            "║", "═", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩", "╬",
-            "+", "-", "|", "│",
-        ]
-
         let totalLines = max(startLine + 1, queryInteger(.lineCount) ?? 0)
 
         var visited: Set<[Int]> = []
@@ -684,7 +436,7 @@ extension LogoEngine {
         }
 
         func isBoundary(ch: Character) -> Bool {
-            return boxBorderChars.contains(ch)
+            BoxBorderCharacters.isBorder(ch)
         }
 
         var cellsToFill: [[Int]] = []
@@ -838,12 +590,6 @@ extension LogoEngine {
     private func performBoxInset(startLine: Int, startCol: Int, insetText: String) {
         guard let editor = self.delegate else { return }
 
-        let topBorderChars: Set<Character> = ["┌", "┬", "┐", "─", "═", "╔", "╦", "╗", "╭", "╮", "+", "-"]
-        let bottomBorderChars: Set<Character> = ["└", "┴", "┘", "─", "═", "╚", "╩", "╝", "╰", "╯", "+", "-"]
-        let sideBorderChars: Set<Character> = [
-            "│", "║", "|", "├", "┤", "┼", "╠", "╣", "╬", "┌", "┐", "└", "┘", "╔", "╗", "╚", "╝", "╭", "╮", "╰", "╯",
-        ]
-
         func getCharAt(r: Int, c: Int) -> Character {
             let lineStr = queryString(.lineAt(r)) ?? ""
             return displayCharAt(in: lineStr, visualColumn: c)
@@ -853,7 +599,7 @@ extension LogoEngine {
         var topLine: Int? = nil
         for r in stride(from: startLine, through: 0, by: -1) {
             let ch = getCharAt(r: r, c: startCol)
-            if topBorderChars.contains(ch) {
+            if BoxBorderCharacters.isTop(ch) {
                 topLine = r
                 break
             }
@@ -864,7 +610,7 @@ extension LogoEngine {
         let lineCount = queryInteger(.lineCount) ?? (startLine + 10)
         for r in startLine..<min(lineCount + 50, startLine + 100) {
             let ch = getCharAt(r: r, c: startCol)
-            if bottomBorderChars.contains(ch) {
+            if BoxBorderCharacters.isBottom(ch) {
                 bottomLine = r
                 break
             }
@@ -874,7 +620,7 @@ extension LogoEngine {
         var leftCol: Int? = nil
         for c in stride(from: startCol, through: 0, by: -1) {
             let ch = getCharAt(r: startLine, c: c)
-            if sideBorderChars.contains(ch) {
+            if BoxBorderCharacters.isSide(ch) {
                 leftCol = c
                 break
             }
@@ -884,7 +630,7 @@ extension LogoEngine {
         var rightCol: Int? = nil
         for c in startCol...min(200, startCol + 150) {
             let ch = getCharAt(r: startLine, c: c)
-            if sideBorderChars.contains(ch) {
+            if BoxBorderCharacters.isSide(ch) {
                 rightCol = c
                 break
             }

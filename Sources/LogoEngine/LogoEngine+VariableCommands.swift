@@ -1,8 +1,9 @@
 import Foundation
 
 extension LogoEngine {
-    /// Executes Logo variable manipulation statement commands (.make, .name, .setItem, .setFirst, etc.).
-    /// Returns `true` if the primitive was handled by this module, `false` otherwise.
+    /// Executes Logo variable manipulation statement commands (.make, .name,
+    /// .setItem, .setFirst, etc.). Returns `true` if the primitive was handled
+    /// by this module, `false` otherwise.
     internal func executeVariableCommand(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> Bool {
         switch prim {
         case .make:

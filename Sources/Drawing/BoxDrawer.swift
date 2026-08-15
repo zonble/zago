@@ -29,46 +29,24 @@ public struct BoxDrawer: Sendable {
             borderStyle = .single
         }
 
-        for r in 0..<height {
-            let currentLine = startLine + r
-            let isTop = (r == 0)
-            let isBottom = (r == height - 1)
-
-            for c in 0..<width {
-                let isLeft = (c == 0)
-                let isRight = (c == width - 1)
-                let currentCol = startCol + c
-
-                var ch: Character = " "
-
-                if isTop && isLeft {
-                    ch = style.topLeft
-                } else if isTop && isRight {
-                    ch = style.topRight
-                } else if isBottom && isLeft {
-                    ch = style.bottomLeft
-                } else if isBottom && isRight {
-                    ch = style.bottomRight
-                } else if isTop {
-                    ch = style.topChar
-                } else if isBottom {
-                    ch = style.bottomChar
-                } else if isLeft || isRight {
-                    ch = style.sideChar
-                } else {
-                    continue
-                }
-
-                if blendJunctions, let existing = buffer.getCharacter(line: currentLine, visualColumn: currentCol) {
+        let rows = TextBoxRenderer().frameRows(width: width, height: height, style: style)
+        for (rowIndex, row) in rows.enumerated() {
+            let currentLine = startLine + rowIndex
+            var column = startCol
+            for ch in row {
+                defer { column += ch.displayWidth }
+                guard ch != " " else { continue }
+                var renderedCharacter = ch
+                if blendJunctions, let existing = buffer.getCharacter(line: currentLine, visualColumn: column) {
                     let existingMask = canvasMask(for: existing, style: borderStyle)
-                    let newMask = canvasMask(for: ch, style: borderStyle)
+                    let newMask = canvasMask(for: renderedCharacter, style: borderStyle)
                     if existingMask != 0 && newMask != 0 {
                         let blendedMask = existingMask | newMask
-                        ch = lineCharacter(forMask: blendedMask, style: borderStyle)
+                        renderedCharacter = lineCharacter(forMask: blendedMask, style: borderStyle)
                     }
                 }
 
-                buffer.setCharacter(line: currentLine, visualColumn: currentCol, character: ch)
+                buffer.setCharacter(line: currentLine, visualColumn: column, character: renderedCharacter)
             }
         }
     }
