@@ -173,6 +173,53 @@ extension LogoEngine {
                     )
                     setLastExpressionDateTime(leftVal)
 
+                case .dateformat:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    let dateVal = cleanArgs[0]
+                    let restArgs = Array(cleanArgs.dropFirst())
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
+                    let parsedCal = LogoDateTimeFormatter.parseCalendar(cal)
+                    let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
+                    let parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
+                    let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
+                    let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
+                    leftVal = LogoDateTimeFormatter.format(
+                        date: parsedDate,
+                        mode: mode,
+                        formatSpec: f,
+                        localeSpec: l,
+                        timeZoneSpec: tz,
+                        calendarSpec: cal
+                    )
+                    setLastExpressionDateTime(leftVal)
+
+                case .dateadd:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    let dateVal = cleanArgs[0]
+                    let amountVal = cleanArgs.count > 1 ? (Int(cleanArgs[1]) ?? 0) : 0
+                    let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
+                    let parsedDate = LogoDateTimeFormatter.parseDate(dateVal) ?? Date()
+                    let newDate = LogoDateTimeFormatter.add(to: parsedDate, amount: amountVal, unit: unitVal)
+                    leftVal = LogoDateTimeFormatter.format(
+                        date: newDate,
+                        mode: (dateVal.contains(":") || dateVal.contains("T")) ? .dateTime : .date
+                    )
+                    setLastExpressionDateTime(leftVal)
+
+                case .datediff:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard cleanArgs.count >= 2 else { leftVal = "0"; break }
+                    let dateVal1 = cleanArgs[0]
+                    let dateVal2 = cleanArgs[1]
+                    let unitVal = cleanArgs.count > 2 ? cleanArgs[2] : "days"
+                    let d1 = LogoDateTimeFormatter.parseDate(dateVal1) ?? Date()
+                    let d2 = LogoDateTimeFormatter.parseDate(dateVal2) ?? Date()
+                    let diff = LogoDateTimeFormatter.diff(between: d1, and: d2, unit: unitVal)
+                    leftVal = "\(diff)"
+                    setLastExpressionString(leftVal)
+
                 default:
                     leftVal = ""
                     setLastExpressionString(leftVal)

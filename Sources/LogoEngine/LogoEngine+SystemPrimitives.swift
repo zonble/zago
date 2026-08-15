@@ -21,6 +21,15 @@ extension LogoEngine {
         case .datetime:
             return evaluateDateTimePrimitive(mode: .dateTime, tokens: tokens, index: &index)
 
+        case .dateformat:
+            return evaluateDateFormatPrimitive(tokens: tokens, index: &index)
+
+        case .dateadd:
+            return evaluateDateAddPrimitive(tokens: tokens, index: &index)
+
+        case .datediff:
+            return evaluateDateDiffPrimitive(tokens: tokens, index: &index)
+
         case .count:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
@@ -241,6 +250,146 @@ extension LogoEngine {
             calendarSpec: calendarSpec
         )
         setLastExpressionDateTime(result)
+        return result
+    }
+
+    private func evaluateDateFormatPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "" }
+        let dateVal = evaluateExpression(tokens, index: &index)
+
+        var formatSpec: String? = nil
+        var localeSpec: String? = nil
+        var timeZoneSpec: String? = nil
+        var calendarSpec: String? = nil
+
+        if index + 1 < tokens.count && tokens[index + 1] == "[" {
+            index += 1
+            let rawList = evaluateExpression(tokens, index: &index)
+            let parsed = LogoValue.parse(rawList)
+            if case .list(let items) = parsed {
+                var isDict = false
+                var i = 0
+                while i < items.count {
+                    let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                    if (cleanKey == "format" || cleanKey == "fmt" || cleanKey == "locale" || cleanKey == "lang"
+                        || cleanKey == "tz" || cleanKey == "timezone" || cleanKey == "calendar" || cleanKey == "cal")
+                        && i + 1 < items.count
+                    {
+                        isDict = true
+                        let val = items[i + 1].stringValue
+                        switch cleanKey {
+                        case "format", "fmt": formatSpec = val
+                        case "locale", "lang": localeSpec = val
+                        case "tz", "timezone": timeZoneSpec = val
+                        case "calendar", "cal": calendarSpec = val
+                        default: break
+                        }
+                        i += 2
+                    } else {
+                        i += 1
+                    }
+                }
+
+                if !isDict {
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(items.map { $0.stringValue }, mode: .dateTime)
+                    formatSpec = f
+                    localeSpec = l
+                    timeZoneSpec = tz
+                    calendarSpec = cal
+                }
+            }
+        } else {
+            var positional: [String] = []
+            while positional.count < 4 && index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                    break
+                }
+                index += 1
+                let val = evaluateExpression(tokens, index: &index)
+                let clean = unquote(val)
+                positional.append(clean)
+            }
+
+            if !positional.isEmpty {
+                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(positional, mode: .dateTime)
+                formatSpec = f
+                localeSpec = l
+                timeZoneSpec = tz
+                calendarSpec = cal
+            }
+        }
+
+        let parsedCal = LogoDateTimeFormatter.parseCalendar(calendarSpec)
+        let parsedTz = LogoDateTimeFormatter.parseTimeZone(timeZoneSpec)
+        let parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
+
+        let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
+        let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
+
+        let result = LogoDateTimeFormatter.format(
+            date: parsedDate,
+            mode: mode,
+            formatSpec: formatSpec,
+            localeSpec: localeSpec,
+            timeZoneSpec: timeZoneSpec,
+            calendarSpec: calendarSpec
+        )
+        setLastExpressionDateTime(result)
+        return result
+    }
+
+    private func evaluateDateAddPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "" }
+        let dateVal = evaluateExpression(tokens, index: &index)
+        guard index + 1 < tokens.count else { return dateVal }
+        index += 1
+        let amountVal = Int(evaluateExpression(tokens, index: &index)) ?? 0
+
+        var unitVal = "days"
+        if index + 1 < tokens.count {
+            let nextToken = tokens[index + 1]
+            if !LogoEngine.isStatementCommand(nextToken) && nextToken != "]" && nextToken != ")" {
+                index += 1
+                unitVal = unquote(evaluateExpression(tokens, index: &index))
+            }
+        }
+
+        let parsedDate = LogoDateTimeFormatter.parseDate(dateVal) ?? Date()
+        let newDate = LogoDateTimeFormatter.add(to: parsedDate, amount: amountVal, unit: unitVal)
+        let result = LogoDateTimeFormatter.format(
+            date: newDate,
+            mode: (dateVal.contains(":") || dateVal.contains("T")) ? .dateTime : .date
+        )
+        setLastExpressionDateTime(result)
+        return result
+    }
+
+    private func evaluateDateDiffPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "0" }
+        let dateVal1 = evaluateExpression(tokens, index: &index)
+        guard index + 1 < tokens.count else { return "0" }
+        index += 1
+        let dateVal2 = evaluateExpression(tokens, index: &index)
+
+        var unitVal = "days"
+        if index + 1 < tokens.count {
+            let nextToken = tokens[index + 1]
+            if !LogoEngine.isStatementCommand(nextToken) && nextToken != "]" && nextToken != ")" {
+                index += 1
+                unitVal = unquote(evaluateExpression(tokens, index: &index))
+            }
+        }
+
+        let d1 = LogoDateTimeFormatter.parseDate(dateVal1) ?? Date()
+        let d2 = LogoDateTimeFormatter.parseDate(dateVal2) ?? Date()
+        let diff = LogoDateTimeFormatter.diff(between: d1, and: d2, unit: unitVal)
+        let result = "\(diff)"
+        setLastExpressionString(result)
         return result
     }
 }

@@ -486,6 +486,9 @@ TYPE "hello;world"
 | `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date with full Foundation locale, timezone, and calendar support (e.g. `DATE "full "zh_TW`, `DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc`) | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
 | `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time with timezone and style presets (default: `HH:mm:ss`) | `TIME`, `TIME "medium "en_US "UTC` |
 | `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time | `DATETIME`, `DATETIME "iso8601` |
+| `DATEFORMAT` | `FORMATDATE`, `FDATE` | `DATEFORMAT date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `DATEFORMAT [2026 12 25] "japanese` |
+| `DATEADD` | `ADDDATE` | `DATEADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATEADD DATE 7 "days` |
+| `DATEDIFF` | `DIFFDATE` | `DATEDIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATEDIFF "2026-12-31 DATE "days` |
 | `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
 | `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
 | `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
@@ -1005,7 +1008,32 @@ SHOW :ordered
    SHOW (TIME "medium "en_US "+0900)                        ; "5:30:00 PM"
    ```
 
-3. **Property List / Dictionary Format**:
+3. **Custom Date Formatting (`DATEFORMAT`)**:
+   ```logo
+   ; From simple number list [Year Month Day]
+   SHOW DATEFORMAT [2026 12 25] "japanese                   ; "令和8年12月25日"
+   SHOW DATEFORMAT [2026 12 25] "roc                        ; "民國 115年12月25日"
+
+   ; From ISO-8601 string across time zones
+   SHOW DATEFORMAT "2026-08-31T15:00:00Z "full "zh_TW "Asia/Taipei "roc
+   ; => "民國 115年8月31日 星期一"
+
+   ; From Property List
+   SHOW DATEFORMAT [year 2026 month 8 day 31 tz "UTC"] "full
+   ```
+
+4. **Date Arithmetic & Differences (`DATEADD` & `DATEDIFF`)**:
+   ```logo
+   ; Add / subtract time units
+   MAKE "deadline DATEADD DATE 7 "days                      ; 7 days later
+   MAKE "nextMonth DATEADD DATE 1 "month                    ; 1 month later
+   MAKE "meeting   DATEADD "2026-08-15T10:00:00 2 "hours   ; 2 hours later
+
+   ; Calculate difference between two dates
+   MAKE "daysLeft DATEDIFF "2026-12-31 DATE "days           ; Days until end of year
+   ```
+
+5. **Property List / Dictionary Format**:
    ```logo
    SHOW DATE [format "GGGy年M月d日" locale "zh_TW" tz "Asia/Taipei" calendar "roc"]
    SHOW DATE [format "iso8601" tz "UTC"]
@@ -1013,7 +1041,8 @@ SHOW :ordered
 
 #### Box Framing Example:
 ```logo
-MAKE "d" (DATE "full "zh_TW) BOX :d "double"
+MAKE "d (DATE "full "zh_TW)
+BOX :d "double"
 ```
 
 *Output:*
