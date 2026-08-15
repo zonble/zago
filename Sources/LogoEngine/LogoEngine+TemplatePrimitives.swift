@@ -12,44 +12,40 @@ extension LogoEngine {
 
         switch prim {
         case .uppercase:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             return v.uppercased()
 
         case .lowercase:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             return v.lowercased()
 
         case .apply:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let args = LogoValue.parse(listStr).toListItems().map { $0.description }
             return applyTemplate(templateStr: templateStr, args: args)
 
         case .invoke:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
             var args: [String] = []
-            while index + 1 < tokens.count {
-                if LogoEngine.isStatementCommand(tokens[index + 1]) || tokens[index + 1] == "]"
-                    || tokens[index + 1] == ")"
-                {
-                    break
-                }
-                index += 1
-                let arg = evaluateExpression(tokens, index: &index)
+            while let arg = reader.nextOptionalExpression() {
                 args.append(arg)
             }
+            reader.commit(to: &index)
             return applyTemplate(templateStr: templateStr, args: args)
 
         case .foreach:
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let listStr = reader.nextExpression()
+            let templateStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             for (i, item) in items.enumerated() {
                 let rest = Array(items[(i + 1)...])
@@ -58,10 +54,10 @@ extension LogoEngine {
             return ""
 
         case .map:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             var results: [String] = []
             for (i, item) in items.enumerated() {
@@ -72,10 +68,10 @@ extension LogoEngine {
             return "[" + results.joined(separator: " ") + "]"
 
         case .mapSe:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             var results: [String] = []
             for (i, item) in items.enumerated() {
@@ -94,10 +90,10 @@ extension LogoEngine {
             return "[" + results.joined(separator: " ") + "]"
 
         case .filter:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             var results: [String] = []
             for (i, item) in items.enumerated() {
@@ -110,10 +106,10 @@ extension LogoEngine {
             return "[" + results.joined(separator: " ") + "]"
 
         case .find:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             for (i, item) in items.enumerated() {
                 let rest = Array(items[(i + 1)...])
@@ -125,10 +121,10 @@ extension LogoEngine {
             return "[]"
 
         case .reduce:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listStr = reader.nextExpression()
+            reader.commit(to: &index)
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             guard !items.isEmpty else { return "" }
             var accum = items[0]
@@ -140,10 +136,10 @@ extension LogoEngine {
             return accum
 
         case .crossmap:
-            index += 1
-            let templateStr = evaluateExpression(tokens, index: &index)
-            index += 1
-            let listsArgStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let templateStr = reader.nextExpression()
+            let listsArgStr = reader.nextExpression()
+            reader.commit(to: &index)
             let parsedListsArg = LogoValue.parse(listsArgStr).toListItems()
             let listOfLists = parsedListsArg.map { $0.toListItems().map { item in item.description } }
             guard !listOfLists.isEmpty else { return "[]" }
@@ -167,33 +163,31 @@ extension LogoEngine {
             return "[" + results.joined(separator: " ") + "]"
 
         case .sort:
-            index += 1
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var descending = false
-            if index < tokens.count {
-                let nextToken = tokens[index]
+            if let nextToken = reader.peekToken() {
                 let modifier = unquote(nextToken).lowercased()
                 if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
                     descending = true
-                    index += 1
+                    _ = reader.nextRawToken()
                 }
             }
-            guard index < tokens.count else { return nil }
-            let dataStr = evaluateExpression(tokens, index: &index)
+            guard reader.peekToken() != nil else { return nil }
+            let dataStr = reader.nextExpression()
             let parsed = LogoValue.parse(dataStr)
             var customTemplate: String? = nil
 
-            if index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
+            if let nextToken = reader.peekToken() {
                 if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil {
-                    index += 1
-                    customTemplate = evaluateExpression(tokens, index: &index)
+                    customTemplate = reader.nextExpression()
                 }
             }
+            reader.commit(to: &index)
 
             let isLessThan: (String, String) -> Bool = { a, b in
                 if let t = customTemplate {
                     let res = self.applyTemplate(templateStr: t, args: [a, b])
-                    return self.logoIsTrue(res)
+                    return logoIsTrue(res)
                 } else {
                     if let n1 = Double(a), let n2 = Double(b) {
                         return descending ? n1 > n2 : n1 < n2
@@ -223,15 +217,6 @@ extension LogoEngine {
 
         default:
             return nil
-        }
-    }
-}
-
-extension LogoValue {
-    internal func toListItems() -> [LogoValue] {
-        switch self {
-        case .list(let items), .array(let items): return items
-        case .string(let s): return [.string(s)]
         }
     }
 }

@@ -8,6 +8,15 @@ public enum LineArrowMode: Sendable {
 
     public var hasForwardArrow: Bool { self == .forward || self == .both }
     public var hasBackwardArrow: Bool { self == .backward || self == .both }
+
+    public init?(token: String) {
+        switch token.uppercased() {
+        case "ARROW", "RIGHTARROW", "DOWNARROW": self = .forward
+        case "BACKARROW", "LEFTARROW", "UPARROW": self = .backward
+        case "BOTHARROW", "BOTH", "BIDIR": self = .both
+        default: return nil
+        }
+    }
 }
 
 /// Pure character selection for Logo line commands.

@@ -30,9 +30,9 @@ extension LogoEngine {
 
         case .getline:
             var lineIdx = queryInteger(.currentLineIndex) ?? 0
-            if let n1Based = consumeNextIntExpressionArgument(
-                tokens, index: &index, isBoundary: Self.isArgumentBoundary)
-            {
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let n1Based = reader.nextOptionalInteger() {
+                reader.commit(to: &index)
                 lineIdx = max(0, n1Based - 1)
             }
             return queryString(.lineAt(lineIdx)) ?? ""

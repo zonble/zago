@@ -1,18 +1,6 @@
 @_exported import Drawing
 import Foundation
 
-public struct LogoExecutionFrame: Equatable, Sendable {
-    public let procedureName: String?
-    public let token: LogoToken?
-    public let scopeDepth: Int
-
-    public init(procedureName: String?, token: LogoToken?, scopeDepth: Int) {
-        self.procedureName = procedureName
-        self.token = token
-        self.scopeDepth = scopeDepth
-    }
-}
-
 /// LOGO-style Macro Language Engine for text editors.
 ///
 /// ### Core Concepts & Execution Architecture:
@@ -91,13 +79,12 @@ public final class LogoEngine: @unchecked Sendable {
     }
 
     internal func optionalCommandArgument(_ tokens: [String], index: inout Int) -> String? {
-        guard index + 1 < tokens.count else { return nil }
-        let nextToken = tokens[index + 1]
-        guard !LogoEngine.isStatementCommand(nextToken), nextToken != "]", nextToken != ")" else {
-            return nil
-        }
-        index += 1
-        return unquote(evaluateExpression(tokens, index: &index))
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let value = reader.nextOptionalExpression(isBoundary: { token in
+            LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+        }) else { return nil }
+        reader.commit(to: &index)
+        return unquote(value)
     }
 
     public var lastResult: String? = nil

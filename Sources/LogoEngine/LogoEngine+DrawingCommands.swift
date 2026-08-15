@@ -1,29 +1,18 @@
 import Foundation
 
 extension LogoEngine {
-    private func isDrawingArgumentBoundary(_ token: String) -> Bool {
-        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-    }
-
-    private func consumeOptionalDrawingArgument(_ tokens: [String], index: inout Int) -> String? {
-        index += 1
-        guard index < tokens.count else {
-            index -= 1
-            return nil
-        }
-        guard !isDrawingArgumentBoundary(tokens[index]) else {
-            index -= 1
-            return nil
-        }
-        return evaluateExpression(tokens, index: &index)
-    }
-
     private func consumeOptionalDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        consumeOptionalIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let value = reader.nextOptionalInteger() else { return nil }
+        reader.commit(to: &index)
+        return value
     }
 
     private func consumeNextDrawingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        consumeNextIntExpressionArgument(tokens, index: &index, isBoundary: isDrawingArgumentBoundary)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let value = reader.nextOptionalInteger() else { return nil }
+        reader.commit(to: &index)
+        return value
     }
 
     private func isHeadingDirectionToken(_ token: String) -> Bool {
@@ -31,25 +20,20 @@ extension LogoEngine {
     }
 
     private func consumeOptionalHeadingArgument(_ tokens: [String], index: inout Int) -> String? {
-        index += 1
-        guard index < tokens.count else {
-            index -= 1
-            return nil
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let nextToken = reader.peekToken() else { return nil }
+        if isHeadingDirectionToken(nextToken) {
+            _ = reader.nextRawToken()
+            reader.commit(to: &index)
+            return nextToken
         }
-        if isHeadingDirectionToken(tokens[index]) {
-            return tokens[index]
-        }
-        guard !isDrawingArgumentBoundary(tokens[index]) else {
-            index -= 1
-            return nil
-        }
-        let evaluated = evaluateExpression(tokens, index: &index)
+        guard !LogoEngine.isArgumentBoundary(nextToken) else { return nil }
+        let evaluated = reader.nextExpression()
         if LogoHeading.parse(evaluated) != nil {
+            reader.commit(to: &index)
             return evaluated
-        } else {
-            index -= 1
-            return nil
         }
+        return nil
     }
 
     /// Executes Logo turtle & box/line drawing statement commands (PD, PU, FD, BK, LT, RT, GOTO, BOX, LINE, TABLE, etc.).

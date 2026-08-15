@@ -6,29 +6,10 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         guard index < tokens.count else { return }
 
-        var widthVal: Int? = nil
-        var heightVal: Int? = nil
-        var fillPattern = ""
-
-        if let w = parseIntExpressionArgument(tokens, index: &index, isBoundary: shouldStopFillArgumentScan) {
-            widthVal = w
-            if index + 1 < tokens.count {
-                var heightIndex = index + 1
-                if let h = parseIntExpressionArgument(
-                    tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan)
-                {
-                    index = heightIndex
-                    heightVal = h
-                }
-            }
-            if index + 1 < tokens.count {
-                var evalIndex = index + 1
-                fillPattern = unquote(evaluateExpression(tokens, index: &evalIndex))
-                index = evalIndex
-            }
-        } else {
-            fillPattern = unquote(evaluateExpression(tokens, index: &index))
-        }
+        let arguments = consumeSizedTextArguments(tokens, index: &index)
+        let widthVal = arguments.width
+        let heightVal = arguments.height
+        let fillPattern = arguments.text
 
         if fillPattern.isEmpty {
             editor.logoEngine(self, performAction: .setStatusMessage("Fill text required"))
@@ -80,10 +61,6 @@ extension LogoEngine {
         }
 
         performFloodFill(startLine: startLine, startCol: startCol, fillPattern: fillPattern)
-    }
-
-    internal func shouldStopFillArgumentScan(at token: String) -> Bool {
-        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
 
     private func performFloodFill(startLine: Int, startCol: Int, fillPattern: String) {

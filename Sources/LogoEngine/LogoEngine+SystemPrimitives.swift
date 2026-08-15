@@ -1,6 +1,10 @@
 import Foundation
 import TextTransform
 
+private func systemOptionalArgumentBoundary(_ token: String) -> Bool {
+    LogoEngine.isKeyword(token) || token == "]" || token == ")"
+}
+
 extension LogoEngine {
     /// System & Environment Primitives Evaluator (`evaluateSystemPrimitives`)
     ///
@@ -43,8 +47,9 @@ extension LogoEngine {
             return evaluateFormatBytesPrimitive(tokens: tokens, index: &index)
 
         case .count:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             let p = LogoValue.parse(v)
             let res: String
             switch p {
@@ -55,8 +60,9 @@ extension LogoEngine {
             return res
 
         case .ascii:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             let cleanStr = unquote(v)
             if let firstScalar = cleanStr.unicodeScalars.first {
                 return "\(firstScalar.value)"
@@ -64,25 +70,25 @@ extension LogoEngine {
             return "0"
 
         case .char:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             if let code = Int(v), let scalar = UnicodeScalar(code) {
                 return String(Character(scalar))
             }
             return ""
 
         case .standout:
-            index += 1
-            let v = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let v = reader.nextExpression()
+            reader.commit(to: &index)
             return "**\(v)**"
 
         case .translit:
-            index += 1
-            let transformId = unquote(evaluateExpression(tokens, index: &index))
-            if index + 1 < tokens.count {
-                index += 1
-            }
-            let inputText = unquote(evaluateExpression(tokens, index: &index))
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let transformId = unquote(reader.nextExpression())
+            let inputText = unquote(reader.nextExpression())
+            reader.commit(to: &index)
             return applyTextTransform(transformId, to: inputText)
 
         case .transformToHans:
@@ -125,15 +131,12 @@ extension LogoEngine {
             return heading.rawValue
 
         case .readWord:
-            index += 1
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var prompt = ""
-            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]"
-                && tokens[index] != ")"
-            {
-                prompt = unquote(evaluateExpression(tokens, index: &index))
-            } else {
-                index -= 1
+            if let value = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+                prompt = unquote(value)
             }
+            reader.commit(to: &index)
             guard let value = delegate?.logoEngine(self, readWordWithPrompt: prompt) else {
                 reportError(LogoError(code: 1, message: "[LOGO Error: Stopped by user]"), token: "READWORD")
                 return ""
@@ -141,15 +144,12 @@ extension LogoEngine {
             return value
 
         case .readChar:
-            index += 1
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var prompt = ""
-            if index < tokens.count && !LogoEngine.isKeyword(tokens[index]) && tokens[index] != "]"
-                && tokens[index] != ")"
-            {
-                prompt = unquote(evaluateExpression(tokens, index: &index))
-            } else {
-                index -= 1
+            if let value = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+                prompt = unquote(value)
             }
+            reader.commit(to: &index)
             guard let value = delegate?.logoEngine(self, readCharWithPrompt: prompt) else {
                 reportError(LogoError(code: 1, message: "[LOGO Error: Stopped by user]"), token: "READCHAR")
                 return ""
@@ -162,8 +162,9 @@ extension LogoEngine {
     }
 
     private func applyFixedTextTransform(_ transformId: String, _ tokens: [String], index: inout Int) -> String {
-        index += 1
-        let inputText = unquote(evaluateExpression(tokens, index: &index))
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        let inputText = unquote(reader.nextExpression())
+        reader.commit(to: &index)
         return applyTextTransform(transformId, to: inputText)
     }
 
@@ -180,8 +181,9 @@ extension LogoEngine {
     }
 
     private func applyTextCount(_ tokens: [String], index: inout Int, count: (String) -> Int) -> String {
-        index += 1
-        let inputText = unquote(evaluateExpression(tokens, index: &index))
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        let inputText = unquote(reader.nextExpression())
+        reader.commit(to: &index)
         return "\(count(inputText))"
     }
 
@@ -195,9 +197,9 @@ extension LogoEngine {
         var timeZoneSpec: String? = nil
         var calendarSpec: String? = nil
 
-        if index + 1 < tokens.count && tokens[index + 1] == "[" {
-            index += 1
-            let rawList = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        if reader.peekToken() == "[" {
+            let rawList = reader.nextExpression()
             let parsed = LogoValue.parse(rawList)
             if case .list(let items) = parsed {
                 var isDict = false
@@ -235,13 +237,9 @@ extension LogoEngine {
             }
         } else {
             var positional: [String] = []
-            while positional.count < 4 && index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
-                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                    break
-                }
-                index += 1
-                let val = evaluateExpression(tokens, index: &index)
+            while positional.count < 4,
+                  let val = reader.nextOptionalExpression()
+            {
                 let clean = unquote(val)
                 positional.append(clean)
             }
@@ -255,6 +253,8 @@ extension LogoEngine {
             }
         }
 
+        reader.commit(to: &index)
+
         let result = LogoDateTimeFormatter.format(
             mode: mode,
             formatSpec: formatSpec,
@@ -267,18 +267,16 @@ extension LogoEngine {
     }
 
     private func evaluateDateFormatPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "" }
-        let dateVal = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let dateVal = reader.nextOptionalExpression() else { return "" }
 
         var formatSpec: String? = nil
         var localeSpec: String? = nil
         var timeZoneSpec: String? = nil
         var calendarSpec: String? = nil
 
-        if index + 1 < tokens.count && tokens[index + 1] == "[" {
-            index += 1
-            let rawList = evaluateExpression(tokens, index: &index)
+        if reader.peekToken() == "[" {
+            let rawList = reader.nextExpression()
             let parsed = LogoValue.parse(rawList)
             if case .list(let items) = parsed {
                 var isDict = false
@@ -316,13 +314,9 @@ extension LogoEngine {
             }
         } else {
             var positional: [String] = []
-            while positional.count < 4 && index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
-                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                    break
-                }
-                index += 1
-                let val = evaluateExpression(tokens, index: &index)
+            while positional.count < 4,
+                  let val = reader.nextOptionalExpression()
+            {
                 let clean = unquote(val)
                 positional.append(clean)
             }
@@ -335,6 +329,8 @@ extension LogoEngine {
                 calendarSpec = cal
             }
         }
+
+        reader.commit(to: &index)
 
         let parsedCal = LogoDateTimeFormatter.parseCalendar(calendarSpec)
         let parsedTz = LogoDateTimeFormatter.parseTimeZone(timeZoneSpec)
@@ -357,21 +353,15 @@ extension LogoEngine {
     }
 
     private func evaluateDateAddPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "" }
-        let dateVal = evaluateExpression(tokens, index: &index)
-        guard index + 1 < tokens.count else { return dateVal }
-        index += 1
-        let amountVal = Int(evaluateExpression(tokens, index: &index)) ?? 0
-
-        var unitVal = "days"
-        if index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
-            if !LogoEngine.isStatementCommand(nextToken) && nextToken != "]" && nextToken != ")" {
-                index += 1
-                unitVal = unquote(evaluateExpression(tokens, index: &index))
-            }
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let dateVal = reader.nextOptionalExpression() else { return "" }
+        guard let amount = reader.nextOptionalExpression() else {
+            reader.commit(to: &index)
+            return dateVal
         }
+        let amountVal = Int(amount) ?? 0
+        let unitVal = reader.nextOptionalExpression().map(unquote) ?? "days"
+        reader.commit(to: &index)
 
         let parsedDate = LogoDateTimeFormatter.parseDate(dateVal) ?? Date()
         let newDate = LogoDateTimeFormatter.add(to: parsedDate, amount: amountVal, unit: unitVal)
@@ -384,21 +374,12 @@ extension LogoEngine {
     }
 
     private func evaluateDateDiffPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "0" }
-        let dateVal1 = evaluateExpression(tokens, index: &index)
-        guard index + 1 < tokens.count else { return "0" }
-        index += 1
-        let dateVal2 = evaluateExpression(tokens, index: &index)
-
-        var unitVal = "days"
-        if index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
-            if !LogoEngine.isStatementCommand(nextToken) && nextToken != "]" && nextToken != ")" {
-                index += 1
-                unitVal = unquote(evaluateExpression(tokens, index: &index))
-            }
-        }
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let dateVal1 = reader.nextOptionalExpression(),
+              let dateVal2 = reader.nextOptionalExpression()
+        else { return "0" }
+        let unitVal = reader.nextOptionalExpression().map(unquote) ?? "days"
+        reader.commit(to: &index)
 
         let d1 = LogoDateTimeFormatter.parseDate(dateVal1) ?? Date()
         let d2 = LogoDateTimeFormatter.parseDate(dateVal2) ?? Date()
@@ -409,9 +390,8 @@ extension LogoEngine {
     }
 
     private func evaluateFormatNumberPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "" }
-        let numStr = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let numStr = reader.nextOptionalExpression() else { return "" }
         let num = Double(unquote(numStr)) ?? 0
 
         var style: LogoFormatters.NumberStyle = .decimal
@@ -419,9 +399,8 @@ extension LogoEngine {
         var currencyCode: String? = nil
         var precision: Int? = nil
 
-        if index + 1 < tokens.count && tokens[index + 1] == "[" {
-            index += 1
-            let rawList = evaluateExpression(tokens, index: &index)
+        if reader.peekToken() == "[" {
+            let rawList = reader.nextExpression()
             let parsed = LogoValue.parse(rawList)
             if case .list(let items) = parsed {
                 var isDict = false
@@ -453,19 +432,17 @@ extension LogoEngine {
             }
         } else {
             var positional: [String] = []
-            while positional.count < 3 && index + 1 < tokens.count {
-                let nextToken = tokens[index + 1]
-                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                    break
-                }
-                index += 1
-                let val = evaluateExpression(tokens, index: &index)
+            while positional.count < 3,
+                  let val = reader.nextOptionalExpression()
+            {
                 positional.append(unquote(val))
             }
             if positional.count > 0 { style = LogoFormatters.NumberStyle.parse(positional[0]) }
             if positional.count > 1 { localeSpec = positional[1] }
             if positional.count > 2 { currencyCode = positional[2] }
         }
+
+        reader.commit(to: &index)
 
         let res = LogoFormatters.formatNumber(
             num, style: style, locale: localeSpec, currencyCode: currencyCode, precision: precision)
@@ -474,9 +451,8 @@ extension LogoEngine {
     }
 
     private func evaluateFormatListPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "" }
-        let listStr = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let listStr = reader.nextOptionalExpression() else { return "" }
         let parsed = LogoValue.parse(listStr)
 
         var items: [String] = []
@@ -496,18 +472,16 @@ extension LogoEngine {
         var localeSpec: String? = nil
 
         var positional: [String] = []
-        while positional.count < 2 && index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
-            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                break
-            }
-            index += 1
-            let val = evaluateExpression(tokens, index: &index)
+        while positional.count < 2,
+              let val = reader.nextOptionalExpression()
+        {
             positional.append(unquote(val))
         }
 
         if positional.count > 0 { type = LogoFormatters.ListType.parse(positional[0]) }
         if positional.count > 1 { localeSpec = positional[1] }
+
+        reader.commit(to: &index)
 
         let res = LogoFormatters.formatList(items, type: type, locale: localeSpec)
         setLastExpressionString(res)
@@ -515,21 +489,17 @@ extension LogoEngine {
     }
 
     private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "" }
-        let arg1 = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let arg1 = reader.nextOptionalExpression() else { return "" }
         let clean1 = unquote(arg1)
 
         var positional: [String] = []
-        while positional.count < 2 && index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
-            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                break
-            }
-            index += 1
-            let val = evaluateExpression(tokens, index: &index)
+        while positional.count < 2,
+              let val = reader.nextOptionalExpression()
+        {
             positional.append(unquote(val))
         }
+        reader.commit(to: &index)
 
         let res: String
         if let val = Double(clean1) {
@@ -548,27 +518,24 @@ extension LogoEngine {
     }
 
     private func evaluateFormatBytesPrimitive(tokens: [String], index: inout Int) -> String {
-        index += 1
-        guard index < tokens.count else { return "0 bytes" }
-        let byteStr = evaluateExpression(tokens, index: &index)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let byteStr = reader.nextOptionalExpression() else { return "0 bytes" }
         let bytes = Int64(Double(unquote(byteStr)) ?? 0)
 
         var style: LogoFormatters.ByteCountStyle = .file
         var localeSpec: String? = nil
 
         var positional: [String] = []
-        while positional.count < 2 && index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
-            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
-                break
-            }
-            index += 1
-            let val = evaluateExpression(tokens, index: &index)
+        while positional.count < 2,
+              let val = reader.nextOptionalExpression()
+        {
             positional.append(unquote(val))
         }
 
         if positional.count > 0 { style = LogoFormatters.ByteCountStyle.parse(positional[0]) }
         if positional.count > 1 { localeSpec = positional[1] }
+
+        reader.commit(to: &index)
 
         let res = LogoFormatters.formatBytes(bytes, style: style, locale: localeSpec)
         setLastExpressionString(res)

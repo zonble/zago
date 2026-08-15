@@ -137,7 +137,7 @@ extension LogoEngine {
             let evalRaw = unquote(evaluateExpression(tokens, index: &evalIndex))
             let upper = evalRaw.uppercased()
 
-            if let arrowMode = lineArrowMode(for: upper) {
+            if let arrowMode = LineArrowMode(token: upper) {
                 setArrowMode(arrowMode)
                 consumedAny = true
                 cursor = evalIndex
@@ -181,21 +181,8 @@ extension LogoEngine {
     private func isLineArgumentBoundary(_ token: String) -> Bool {
         let unquoted = unquote(token)
         return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-            || lineArrowMode(for: unquoted.uppercased()) != nil
+            || LineArrowMode(token: unquoted.uppercased()) != nil
             || BorderStyle.isStyleToken(unquoted) || ArrowStyle.isStyleToken(unquoted)
-    }
-
-    private func lineArrowMode(for uppercasedToken: String) -> LineArrowMode? {
-        switch uppercasedToken {
-        case "ARROW", "RIGHTARROW", "DOWNARROW":
-            return .forward
-        case "BACKARROW", "LEFTARROW", "UPARROW":
-            return .backward
-        case "BOTHARROW", "BOTH", "BIDIR":
-            return .both
-        default:
-            return nil
-        }
     }
 
     internal var currentArrowStyle: ArrowStyle {

@@ -7,41 +7,34 @@ extension LogoEngine {
     internal func executeVariableCommand(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> Bool {
         switch prim {
         case .make:
-            index += 1
-            if index < tokens.count {
-                let varName = normalizeVariableName(tokens[index])
-                index += 1
-                let val = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let rawName = reader.nextRawToken() {
+                let varName = normalizeVariableName(rawName)
+                let val = reader.nextExpression()
                 variables[varName] = val
             }
+            reader.commit(to: &index)
             return true
 
         case .name:
-            index += 1
-            if index < tokens.count {
-                let val = evaluateExpression(tokens, index: &index)
-                index += 1
-                if index < tokens.count {
-                    let varName = normalizeVariableName(evaluateExpression(tokens, index: &index))
-                    variables[varName] = val
-                }
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let val = reader.nextExpression()
+            if let rawName = reader.nextOptionalExpression() {
+                let varName = normalizeVariableName(rawName)
+                variables[varName] = val
             }
+            reader.commit(to: &index)
             return true
 
         case .setItem:
-            index += 1
-            let idxVal = Int(evaluateExpression(tokens, index: &index)) ?? 1
-            if index + 1 < tokens.count {
-                var targetIndex = index + 1
-                let rawToken = tokens[targetIndex]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let idxVal = reader.nextInteger(default: 1)
+            if let target = reader.nextRawExpression() {
+                let rawToken = target.raw
                 let varName = rawToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                let targetVal = evaluateExpression(tokens, index: &targetIndex)
-                index = targetIndex
+                let targetVal = target.value
 
-                if index + 1 < tokens.count {
-                    var valIndex = index + 1
-                    let newVal = evaluateExpression(tokens, index: &valIndex)
-                    index = valIndex
+                if let newVal = reader.nextOptionalExpression() {
 
                     let sourceVal = variables[varName] ?? targetVal
                     let parsed = LogoValue.parse(sourceVal)
@@ -75,15 +68,14 @@ extension LogoEngine {
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .setFirst:
-            if index + 1 < tokens.count {
-                index += 1
-                let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let varToken = reader.nextRawToken() {
                 let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let newVal = evaluateExpression(tokens, index: &index)
+                let newVal = reader.nextExpression()
 
                 if let currentValStr = variables[varName] {
                     let parsed = LogoValue.parse(currentValStr)
@@ -113,15 +105,14 @@ extension LogoEngine {
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .setBFL:
-            if index + 1 < tokens.count {
-                index += 1
-                let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let varToken = reader.nextRawToken() {
                 let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let newVal = evaluateExpression(tokens, index: &index)
+                let newVal = reader.nextExpression()
 
                 if let currentValStr = variables[varName] {
                     let parsed = LogoValue.parse(currentValStr)
@@ -149,17 +140,15 @@ extension LogoEngine {
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .mdsetItem:
-            index += 1
-            let idxVal = evaluateExpression(tokens, index: &index)
-            if index + 1 < tokens.count {
-                index += 1
-                let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let idxVal = reader.nextExpression()
+            if let varToken = reader.nextRawToken() {
                 let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let newVal = evaluateExpression(tokens, index: &index)
+                let newVal = reader.nextExpression()
 
                 let indicesList = LogoValue.parse(idxVal)
                 var indices: [Int] = []
@@ -210,15 +199,14 @@ extension LogoEngine {
                     variables[varName] = rootVal.description
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .fput, .push:
-            index += 1
-            if index < tokens.count {
-                let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let varToken = reader.nextRawToken() {
                 let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let itemVal = evaluateExpression(tokens, index: &index)
+                let itemVal = reader.nextExpression()
 
                 let currentVal = variables[varName] ?? ""
                 let parsed = LogoValue.parse(currentVal)
@@ -233,15 +221,14 @@ extension LogoEngine {
                     variables[varName] = itemVal + s
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .lput:
-            index += 1
-            if index < tokens.count {
-                let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let varToken = reader.nextRawToken() {
                 let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
-                index += 1
-                let itemVal = evaluateExpression(tokens, index: &index)
+                let itemVal = reader.nextExpression()
 
                 let currentVal = variables[varName] ?? ""
                 let parsed = LogoValue.parse(currentVal)
@@ -256,11 +243,13 @@ extension LogoEngine {
                     variables[varName] = s + itemVal
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .dequeue:
-            index += 1
-            let varToken = tokens[index]
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            guard let varToken = reader.nextRawToken() else { return true }
+            reader.commit(to: &index)
             let varName = varToken.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
             let currentVal = variables[varName] ?? ""
             let parsed = LogoValue.parse(currentVal)
@@ -283,12 +272,11 @@ extension LogoEngine {
             return true
 
         case .pprop:
-            index += 1
-            let nameVal = evaluateExpression(tokens, index: &index)
-            index += 1
-            let propVal = evaluateExpression(tokens, index: &index)
-            index += 1
-            let valStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let nameVal = reader.nextExpression()
+            let propVal = reader.nextExpression()
+            let valStr = reader.nextExpression()
+            reader.commit(to: &index)
             let name = unquote(nameVal).lowercased()
             let propName = unquote(propVal).lowercased()
             let val = LogoValue.parse(valStr)
@@ -299,10 +287,10 @@ extension LogoEngine {
             return true
 
         case .remprop:
-            index += 1
-            let nameVal = evaluateExpression(tokens, index: &index)
-            index += 1
-            let propVal = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let nameVal = reader.nextExpression()
+            let propVal = reader.nextExpression()
+            reader.commit(to: &index)
             let name = unquote(nameVal).lowercased()
             let propName = unquote(propVal).lowercased()
             propertyLists[name]?.removeValue(forKey: propName)
@@ -312,10 +300,10 @@ extension LogoEngine {
             return true
 
         case .define:
-            index += 1
-            let nameVal = evaluateExpression(tokens, index: &index)
-            index += 1
-            let specVal = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let nameVal = reader.nextExpression()
+            let specVal = reader.nextExpression()
+            reader.commit(to: &index)
             let name = unquote(nameVal).uppercased()
             if isReservedProcedureName(name) {
                 let errorMessage = "[LOGO Error: \(name) is a reserved word/operator and cannot be redefined]"
@@ -356,15 +344,16 @@ extension LogoEngine {
             return true
 
         case .erase:
-            index += 1
-            if index < tokens.count {
-                let targetRaw = unquote(evaluateExpression(tokens, index: &index))
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                let targetRaw = unquote(reader.nextExpression())
                 let targetUpper = targetRaw.uppercased()
                 let targetLower = targetRaw.lowercased()
                 customProcedures.removeValue(forKey: targetUpper)
                 variables.removeValue(forKey: targetLower)
                 propertyLists.removeValue(forKey: targetLower)
             }
+            reader.commit(to: &index)
             return true
 
         case .erps:
@@ -382,19 +371,16 @@ extension LogoEngine {
             return true
 
         case .local:
-            index += 1
-            while index < tokens.count {
-                let t = tokens[index]
-                if LogoEngine.isStatementCommand(t) || t == "]" || t == ")" {
-                    index -= 1
-                    break
-                }
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            while let t = reader.peekToken() {
+                if LogoEngine.isArgumentBoundary(t) { break }
+                _ = reader.nextRawToken()
                 let varName = unquote(t).trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
                 if !varName.isEmpty {
                     variables.declareLocal(varName)
                 }
-                index += 1
             }
+            reader.commit(to: &index)
             return true
 
         case .pons:

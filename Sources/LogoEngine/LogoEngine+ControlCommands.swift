@@ -11,10 +11,10 @@ extension LogoEngine {
     ) -> Bool {
         switch prim {
         case .output:
-            index += 1
-            if index < tokens.count {
-                let val = evaluateExpression(tokens, index: &index)
-                frameReturn = val
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                frameReturn = reader.nextExpression()
+                reader.commit(to: &index)
             }
             return true
 
@@ -139,9 +139,10 @@ extension LogoEngine {
             return true
 
         case .wait:
-            index += 1
-            if index < tokens.count {
-                let timeStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                let timeStr = reader.nextExpression()
+                reader.commit(to: &index)
                 if let val = Double(timeStr), val > 0 {
                     delegate?.logoEngine(self, performAction: .refreshScreen)
                     let isTesting =
@@ -198,9 +199,10 @@ extension LogoEngine {
             return true
 
         case .ignore:
-            index += 1
-            if index < tokens.count {
-                _ = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                _ = reader.nextExpression()
+                reader.commit(to: &index)
             }
             return true
 
@@ -382,8 +384,10 @@ extension LogoEngine {
             return true
 
         case .caseSwitch:
-            index += 1
-            let targetVal = unquote(evaluateExpression(tokens, index: &index))
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            guard reader.peekToken() != nil else { return true }
+            let targetVal = unquote(reader.nextExpression())
+            reader.commit(to: &index)
             index += 1
             if index < tokens.count && tokens[index] == "[" {
                 let clausesBlock = extractBlockTokens(tokens: tokens, index: &index)
@@ -454,14 +458,13 @@ extension LogoEngine {
             return true
 
         case .exec:
-            index += 1
-            if index < tokens.count {
-                let procName = tokens[index].uppercased()
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let rawName = reader.nextRawToken() {
+                let procName = rawName.uppercased()
+                reader.commit(to: &index)
                 if let proc = customProcedures[procName] {
                     let ret = invokeProcedure(proc, tokens: tokens, index: &index)
-                    if let r = ret, !r.isEmpty {
-                        lastResult = r
-                    }
+                    if let r = ret, !r.isEmpty { lastResult = r }
                 }
             }
             return true
