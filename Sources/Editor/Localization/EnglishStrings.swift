@@ -663,6 +663,18 @@ struct EnglishStrings {
         "dialog.symbol_picker.footer": " Enter: Insert | Tab/1-4: Switch Tab | a-z: Quick Select | Esc: Cancel ",
         "dialog.symbol_picker.selected": " Selected: ",
 
+        "dialog.describe_key.title": " Describe Key ",
+        "dialog.describe_key.prompt": "Press any key to inspect its command and mode behaviors...",
+        "dialog.describe_key.footer_close": " Press any key to close ",
+        "dialog.describe_key.key_label": " Key: %@ ",
+        "dialog.describe_key.section_text": "Text Mode (Default Editing):",
+        "dialog.describe_key.section_canvas": "Canvas Mode (Fixed-Position / Drawing):",
+        "dialog.describe_key.section_table": "Table Mode (Cell Navigation & Resize):",
+        "dialog.describe_key.section_logo": "Custom LOGO Script / Macro:",
+        "dialog.describe_key.same_as_text": "Same as Text Mode",
+        "dialog.describe_key.insert_char": "Insert character '%@'",
+        "dialog.describe_key.unbound": "Unbound key",
+
         "symbol_category.gfm": "1. Callouts",
         "symbol_category.steps": "2. Steps",
         "symbol_category.badges": "3. Badges",
