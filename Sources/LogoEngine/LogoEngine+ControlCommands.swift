@@ -427,6 +427,13 @@ extension LogoEngine {
                     params.append(paramName)
                     index += 1
                 }
+                var docstring: String? = nil
+                if index < tokens.count && (tokens[index].hasPrefix("\"") || tokens[index].hasPrefix("'")) {
+                    if index + 1 < tokens.count && tokens[index + 1].uppercased() != "END" {
+                        docstring = unquote(tokens[index])
+                        index += 1
+                    }
+                }
                 var procSourceTokens: [LogoToken] = []
                 let hasRootSourceTokens = tokens.count == rootSourceTokens.count
                 while index < tokens.count && tokens[index].uppercased() != "END" {
@@ -440,6 +447,7 @@ extension LogoEngine {
                 customProcedures[procName] = LogoProcedure(
                     name: procName,
                     parameters: params,
+                    docstring: docstring,
                     bodyTokens: procSourceTokens
                 )
             }

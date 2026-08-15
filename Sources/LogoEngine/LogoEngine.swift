@@ -7,17 +7,19 @@ import Foundation
 public struct LogoProcedure: Sendable {
     public let name: String
     public let parameters: [String]
+    public let docstring: String?
     public let bodyTokens: [LogoToken]
 
-    public init(name: String, parameters: [String], bodyTokens: [LogoToken]) {
+    public init(name: String, parameters: [String], docstring: String? = nil, bodyTokens: [LogoToken]) {
         self.name = name
         self.parameters = parameters
+        self.docstring = docstring
         self.bodyTokens = bodyTokens
     }
 
-    public init(name: String, parameters: [String], bodyTokenTexts: [String]) {
+    public init(name: String, parameters: [String], docstring: String? = nil, bodyTokenTexts: [String]) {
         self.init(
-            name: name, parameters: parameters,
+            name: name, parameters: parameters, docstring: docstring,
             bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
     }
 

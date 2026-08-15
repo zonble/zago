@@ -613,8 +613,10 @@ extension LogoEngine {
 
         case .text:
             index += 1
-            let nameVal = evaluateExpression(tokens, index: &index)
-            let name = unquote(nameVal).uppercased()
+            guard index < tokens.count else { return "[]" }
+            let nextToken = tokens[index]
+            let upper = unquote(nextToken).uppercased()
+            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             guard let proc = customProcedures[name] else { return "[]" }
             let paramsList = LogoValue.list(proc.parameters.map { .string(":" + $0) })
             let bodyList = LogoValue.list(proc.bodyTokens.map { .string($0.text) })
@@ -622,12 +624,46 @@ extension LogoEngine {
 
         case .arity:
             index += 1
-            let nameVal = evaluateExpression(tokens, index: &index)
-            let name = unquote(nameVal).uppercased()
+            guard index < tokens.count else { return "1" }
+            let nextToken = tokens[index]
+            let upper = unquote(nextToken).uppercased()
+            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
             if let proc = customProcedures[name] {
                 return "\(proc.parameters.count)"
             }
             return "1"
+
+        case .doc:
+            index += 1
+            guard index < tokens.count else { return "" }
+            let nextToken = tokens[index]
+            let upper = unquote(nextToken).uppercased()
+            let name = (customProcedures[upper] != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
+            if let proc = customProcedures[name] {
+                return proc.docstring ?? ""
+            }
+            return ""
+
+        case .help:
+            index += 1
+            guard index < tokens.count else { return "Usage: HELP procedure_or_primitive" }
+            let nextToken = tokens[index]
+            let upper = unquote(nextToken).uppercased()
+            let name = (customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil) ? upper : unquote(evaluateExpression(tokens, index: &index)).uppercased()
+            if let proc = customProcedures[name] {
+                let params = proc.parameters.isEmpty ? "none" : proc.parameters.map { ":" + $0 }.joined(separator: " ")
+                var info = "Procedure: \(proc.name)\nParameters: \(params)"
+                if let doc = proc.docstring, !doc.isEmpty {
+                    info += "\nDocstring: \(doc)"
+                }
+                let body = proc.bodyTokens.map(\.text).joined(separator: " ")
+                info += "\nDefinition: \(body)"
+                return info
+            }
+            if LogoPrimitive.from(name) != nil {
+                return "Built-in Primitive: \(name)"
+            }
+            return "No help found for '\(nextToken)'"
 
         case .isWord:
             index += 1
