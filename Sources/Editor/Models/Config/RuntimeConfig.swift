@@ -32,6 +32,9 @@ struct RuntimeConfig: Sendable, Equatable {
     /// Whether trailing whitespace is automatically trimmed on save.
     var trimTrailingWhitespaceOnSave: Bool
 
+    /// Whether saving avoids adding a trailing newline when missing.
+    var noNewlines: Bool
+
     /// Whether Git diff indicators in gutter are enabled.
     var showGitDiff: Bool
 
@@ -49,6 +52,7 @@ struct RuntimeConfig: Sendable, Equatable {
         listIndentSize: Int = 2,
         listWrapIndent: Bool = true,
         trimTrailingWhitespaceOnSave: Bool = false,
+        noNewlines: Bool = false,
         showGitDiff: Bool = true,
         ipcEnabled: Bool = false
     ) {
@@ -62,6 +66,7 @@ struct RuntimeConfig: Sendable, Equatable {
         self.listIndentSize = listIndentSize
         self.listWrapIndent = listWrapIndent
         self.trimTrailingWhitespaceOnSave = trimTrailingWhitespaceOnSave
+        self.noNewlines = noNewlines
         self.showGitDiff = showGitDiff
         self.ipcEnabled = ipcEnabled
     }

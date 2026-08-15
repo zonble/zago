@@ -273,6 +273,12 @@ struct Zago: ParsableCommand {
             }
         }
 
+        #if os(Windows)
+        let platformDefaultLineEnding: LineEnding = .crlf
+        #else
+        let platformDefaultLineEnding: LineEnding = .lf
+        #endif
+
         let baseOptions = EditorOptions(
             filePaths: targetFiles,
             wrapColumn: wrap,
@@ -285,7 +291,8 @@ struct Zago: ParsableCommand {
             initialColumn: initialColumn,
             readOnly: readonly,
             pipedInput: pipedInputData,
-            keymapPreset: keymap
+            keymapPreset: keymap,
+            defaultLineEnding: platformDefaultLineEnding
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false

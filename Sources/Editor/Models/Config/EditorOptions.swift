@@ -17,6 +17,7 @@ public struct EditorOptions {
     public var readOnly: Bool?
     public var pipedInput: String?
     public var keymapPreset: KeymapPreset?
+    public var defaultLineEnding: LineEnding?
 
     public init(
         filePaths: [String] = [],
@@ -33,7 +34,8 @@ public struct EditorOptions {
         initialColumn: Int? = nil,
         readOnly: Bool? = nil,
         pipedInput: String? = nil,
-        keymapPreset: KeymapPreset? = nil
+        keymapPreset: KeymapPreset? = nil,
+        defaultLineEnding: LineEnding? = nil
     ) {
         self.filePaths = filePaths
         self.wrapColumn = wrapColumn
@@ -50,5 +52,6 @@ public struct EditorOptions {
         self.readOnly = readOnly
         self.pipedInput = pipedInput
         self.keymapPreset = keymapPreset
+        self.defaultLineEnding = defaultLineEnding
     }
 }
