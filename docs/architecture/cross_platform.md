@@ -19,6 +19,12 @@ supported locales.
 keyword and metadata, but execution reports a platform-not-supported Logo error on Linux
 and Windows.
 
+`NSDataDetector` is also unavailable in the Foundation implementations used by Linux and
+Windows. The `DETECT.URL`, `DETECT.EMAIL`, `DETECT.PHONE`, `DETECT.DATE`, and
+`DETECT.ADDRESS` keywords remain available for completion and metadata, but execution
+reports a platform-not-supported Logo error on those platforms. Apple platforms use the
+system detector and return the original matched substrings as a Logo list.
+
 When adding Foundation-backed Logo primitives, check API availability on every CI target
 before sharing the implementation across platforms. Do not replace a platform formatter
 with a hand-maintained language list just to make it compile.

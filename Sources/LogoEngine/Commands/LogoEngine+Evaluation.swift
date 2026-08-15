@@ -252,6 +252,10 @@ extension LogoEngine {
                         leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
                         setLastExpressionString(leftVal)
 
+                    case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
+                        let text = args.first.map(unquote) ?? ""
+                        leftVal = evaluateDetectPrimitive(variadicPrim, text: text)
+
                     default:
                         leftVal = ""
                         setLastExpressionString(leftVal)

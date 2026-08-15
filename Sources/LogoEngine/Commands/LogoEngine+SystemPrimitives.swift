@@ -46,6 +46,12 @@ extension LogoEngine {
         case .formatBytes:
             return evaluateFormatBytesPrimitive(tokens: tokens, index: &index)
 
+        case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let text = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            return evaluateDetectPrimitive(prim, text: text)
+
         case .count:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let v = reader.nextExpression()
@@ -556,5 +562,28 @@ extension LogoEngine {
         let res = LogoFormatters.formatBytes(bytes, style: style, locale: localeSpec)
         setLastExpressionString(res)
         return res
+    }
+
+    internal func evaluateDetectPrimitive(_ primitive: LogoPrimitive, text: String) -> String {
+        #if os(Linux) || os(Windows)
+            let name = primitive.meta.name
+            let message = "[LOGO Error: \(name) is not supported on this platform]"
+            reportError(LogoError(code: 1, message: message), token: name)
+            return ""
+        #else
+            let kind: LogoDetectorKind
+            switch primitive {
+            case .detectURL: kind = .url
+            case .detectEmail: kind = .email
+            case .detectPhone: kind = .phone
+            case .detectDate: kind = .date
+            case .detectAddress: kind = .address
+            default: return ""
+            }
+            let matches = LogoDetectors.detect(text, kind: kind)
+            let result = LogoValue.list(matches.map(LogoValue.string)).description
+            setLastExpressionString(result)
+            return result
+        #endif
     }
 }
