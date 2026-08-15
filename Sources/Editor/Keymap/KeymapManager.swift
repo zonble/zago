@@ -262,8 +262,12 @@ final class KeymapManager {
         case .modern:
             register(.editCut, .ctrl("X"), .ctrl("x"), .ctrl("K"), .ctrl("k"), mode: .canvas)
             register(.editCopy, .ctrl("C"), .ctrl("c"), .alt("W"), .alt("w"), mode: .canvas)
-            register(.editUncut, .ctrl("V"), .ctrl("v"), .ctrl("U"), .ctrl("u"), mode: .canvas)
+            register(.editUncut, .ctrl("U"), .ctrl("u"), mode: .canvas)
         }
+
+        // Canvas mode keeps ^Y/^V as page navigation in every keymap preset.
+        register(.movePgup, .ctrl("Y"), .ctrl("y"), mode: .canvas)
+        register(.movePgdn, .ctrl("V"), .ctrl("v"), mode: .canvas)
 
         // Prompt Mode Overlays
         register(.promptConfirm, .enter, mode: .prompt)
