@@ -13,7 +13,7 @@ public struct LogoError: Sendable, Equatable {
     }
 
     /// Formats error as a Logo list `[code "message" "procedureName"]`.
-    public var toLogoListString: String {
+    internal var toLogoListString: String {
         let procStr = procedureName ?? ""
         return "[\(code) \"\(message)\" \"\(procStr)\"]"
     }

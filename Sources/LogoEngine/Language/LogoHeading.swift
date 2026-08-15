@@ -1,13 +1,13 @@
 import Foundation
 
 /// Strongly-typed 4-directional heading for the LOGO turtle in the character grid.
-public enum LogoHeading: String, Sendable, CaseIterable, Equatable {
+enum LogoHeading: String, Sendable, CaseIterable, Equatable {
     case up = "UP"
     case right = "RIGHT"
     case down = "DOWN"
     case left = "LEFT"
 
-    public var turnedRight: LogoHeading {
+    var turnedRight: LogoHeading {
         switch self {
         case .up: .right
         case .right: .down
@@ -16,7 +16,7 @@ public enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    public var turnedLeft: LogoHeading {
+    var turnedLeft: LogoHeading {
         switch self {
         case .up: .left
         case .left: .down
@@ -25,7 +25,7 @@ public enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    public var opposite: LogoHeading {
+    var opposite: LogoHeading {
         switch self {
         case .up: .down
         case .right: .left
@@ -34,7 +34,7 @@ public enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    public static func parse(_ raw: String) -> LogoHeading? {
+    static func parse(_ raw: String) -> LogoHeading? {
         let clean = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         let unquoted = clean.hasPrefix("\"") ? String(clean.dropFirst()) : (clean.hasPrefix(":") ? String(clean.dropFirst()) : clean)
         let stripped = unquoted.trimmingCharacters(in: CharacterSet(charactersIn: "\"|")).uppercased()
