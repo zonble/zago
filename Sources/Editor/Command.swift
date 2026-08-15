@@ -174,8 +174,11 @@ public protocol Command {
     /// Human-readable localized title of the command.
     var name: String { get }
 
-    /// Detailed description explaining the purpose of the command.
+    /// Human-readable description of what this command accomplishes.
     var description: String { get }
+
+    /// Localization string key for the command description.
+    var descriptionKey: String { get }
 
     /// Default shortcut keybindings that trigger this command.
     var keys: [Key] { get }
@@ -215,6 +218,9 @@ public protocol Command {
 }
 
 extension Command {
+    public var descriptionKey: String {
+        "command.\(id.rawValue).description"
+    }
     public var keys: [Key] { [] }
     public var commandBarAliases: [String] { [] }
     public var completionNames: [String] { commandBarAliases }
@@ -237,6 +243,7 @@ public struct BlockCommand: Command {
     public let id: CommandID
     public let name: String
     public let description: String
+    public let descriptionKey: String
     public let keys: [Key]
     public let commandBarAliases: [String]
     private let closure: (Editor) -> Void
@@ -245,6 +252,7 @@ public struct BlockCommand: Command {
         id: CommandID,
         name: String,
         description: String,
+        descriptionKey: String? = nil,
         keys: [Key] = [],
         commandBarAliases: [String] = [],
         action: @escaping (Editor) -> Void
@@ -252,12 +260,12 @@ public struct BlockCommand: Command {
         self.id = id
         self.name = name
         self.description = description
+        self.descriptionKey = descriptionKey ?? "command.\(id.rawValue).description"
         self.keys = keys
         self.commandBarAliases = commandBarAliases
         self.closure = action
     }
 
-    @discardableResult
     
 
     public func execute(on editor: Editor) -> EditorOperationResult {

@@ -282,4 +282,35 @@ import Foundation
         let modernToolsStr = modernToolsLines.joined(separator: "\n")
         #expect(modernToolsStr.contains("^E"))
     }
+
+    @Test func testCommandDescriptionKey() throws {
+        let moveCmd = MoveRightCommand()
+        #expect(moveCmd.descriptionKey == "command.move.right.description")
+
+        let blockCmd = BlockCommand(id: .customMacro, name: "Custom", description: "Custom description") { _ in }
+        #expect(blockCmd.descriptionKey == "command.custom.macro.description")
+    }
+
+    @Test func testHelpContentKeymapPresetReflection() throws {
+        let classicEditor = Editor(language: .en)
+        let classicLines = HelpContent.lines(editor: classicEditor).joined(separator: "\n")
+        #expect(classicLines.contains("^F / Right Arrow"))
+        #expect(classicLines.contains("^K / F9"))
+        #expect(classicLines.contains("^U / F10"))
+        #expect(classicLines.contains("^X / F2"))
+
+        let modernEditor = Editor(language: .en)
+        modernEditor.apply(.keymap(.modern))
+        let modernLines = HelpContent.lines(editor: modernEditor).joined(separator: "\n")
+        #expect(modernLines.contains("Right Arrow"))
+        #expect(modernLines.contains("^X / F9"))
+        #expect(modernLines.contains("^V / F10"))
+        #expect(modernLines.contains("^Q"))
+
+        // Chinese localization
+        let twEditor = Editor(language: .zh_TW)
+        let twLines = HelpContent.lines(editor: twEditor).joined(separator: "\n")
+        #expect(twLines.contains("游標向前移動一個字元"))
+        #expect(twLines.contains("^F / 右方向鍵"))
+    }
 }
