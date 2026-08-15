@@ -486,7 +486,11 @@ TYPE "hello;world"
 | `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date with full Foundation locale, timezone, and calendar support (e.g. `DATE "full "zh_TW`, `DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc`) | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
 | `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time with timezone and style presets (default: `HH:mm:ss`) | `TIME`, `TIME "medium "en_US "UTC` |
 | `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time | `DATETIME`, `DATETIME "iso8601` |
-| `DATEFORMAT` | `FORMATDATE`, `FDATE` | `DATEFORMAT date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `DATEFORMAT [2026 12 25] "japanese` |
+| `FORMAT.DATE` | `DATEFORMAT`, `FORMATDATE`, `FDATE` | `FORMAT.DATE date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `FORMAT.DATE [2026 12 25] "japanese` |
+| `FORMAT.NUMBER` | `FORMATNUMBER`, `NUMBERFORMAT`, `FNUM` | `FORMAT.NUMBER num [style] [locale] [curr]` | Formats numbers (spellout/Chinese words, financial uppercase 壹貳參, currency, percent, decimal, roman MMXXVI, ordinal) | `FORMAT.NUMBER 12345 "financial "zh_TW` |
+| `FORMAT.LIST` | `FORMATLIST`, `LISTFORMAT`, `FLIST` | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
+| `FORMAT.RELATIVETIME` | `FORMAT.RELTIME`, `RELATIVETIME`, `RELTIME`, `FTIME` | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
+| `FORMAT.BYTES` | `FORMAT.BYTECOUNT`, `BYTEFORMAT`, `FBYTES`, `BYTESIZE` | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
 | `DATEADD` | `ADDDATE` | `DATEADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATEADD DATE 7 "days` |
 | `DATEDIFF` | `DIFFDATE` | `DATEDIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATEDIFF "2026-12-31 DATE "days` |
 | `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
@@ -1008,35 +1012,50 @@ SHOW :ordered
    SHOW (TIME "medium "en_US "+0900)                        ; "5:30:00 PM"
    ```
 
-3. **Custom Date Formatting (`DATEFORMAT`)**:
+3. **Foundation Formatting Family (`FORMAT.xxx`)**:
    ```logo
-   ; From simple number list [Year Month Day]
-   SHOW DATEFORMAT [2026 12 25] "japanese                   ; "令和8年12月25日"
-   SHOW DATEFORMAT [2026 12 25] "roc                        ; "民國 115年12月25日"
-
-   ; From ISO-8601 string across time zones
-   SHOW DATEFORMAT "2026-08-31T15:00:00Z "full "zh_TW "Asia/Taipei "roc
+   ; FORMAT.DATE (or DATEFORMAT)
+   SHOW FORMAT.DATE [2026 12 25] "japanese                  ; "令和8年12月25日"
+   SHOW FORMAT.DATE "2026-08-31T15:00:00Z "full "zh_TW "Asia/Taipei "roc
    ; => "民國 115年8月31日 星期一"
 
-   ; From Property List
-   SHOW DATEFORMAT [year 2026 month 8 day 31 tz "UTC"] "full
+   ; FORMAT.NUMBER (Supports: words/spellout, caps/financial, roman, currency, percent, decimal, ordinal)
+   SHOW FORMAT.NUMBER 12345 "words "zh_TW                  ; "一萬二千三百四十五"
+   SHOW FORMAT.NUMBER 12345 "caps "zh_TW                   ; "壹萬貳仟參佰肆拾伍" (大寫/支票)
+   SHOW FORMAT.NUMBER 12345 "check                         ; "壹萬貳仟參佰肆拾伍"
+   SHOW FORMAT.NUMBER 12345 "words "en_US                  ; "twelve thousand three hundred forty-five"
+   SHOW FORMAT.NUMBER 2026 "roman                          ; "MMXXVI"
+   SHOW FORMAT.NUMBER 1234.5 "currency "en_US "USD         ; "$1,234.50"
+
+   ; FORMAT.LIST
+   SHOW FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW          ; "蘋果、香蕉和芭樂"
+   SHOW FORMAT.LIST [Alice Bob Charlie] "or "en_US         ; "Alice, Bob, or Charlie"
+
+   ; FORMAT.RELATIVETIME
+   SHOW FORMAT.RELATIVETIME -1 "day "zh_TW                 ; "昨天"
+   SHOW FORMAT.RELATIVETIME 2 "hours "en_US                ; "in 2 hours"
+
+   ; FORMAT.BYTES
+   SHOW FORMAT.BYTES 1048576                               ; "1 MB"
+   SHOW FORMAT.BYTES 1073741824                            ; "1.07 GB"
    ```
 
 4. **Date Arithmetic & Differences (`DATEADD` & `DATEDIFF`)**:
    ```logo
    ; Add / subtract time units
-   MAKE "deadline DATEADD DATE 7 "days                      ; 7 days later
-   MAKE "nextMonth DATEADD DATE 1 "month                    ; 1 month later
-   MAKE "meeting   DATEADD "2026-08-15T10:00:00 2 "hours   ; 2 hours later
+   MAKE "deadline DATEADD DATE 7 "days                     ; 7 days later
+   MAKE "nextMonth DATEADD DATE 1 "month                   ; 1 month later
+   MAKE "meeting   DATEADD "2026-08-15T10:00:00 2 "hours  ; 2 hours later
 
    ; Calculate difference between two dates
-   MAKE "daysLeft DATEDIFF "2026-12-31 DATE "days           ; Days until end of year
+   MAKE "daysLeft DATEDIFF "2026-12-31 DATE "days          ; Days until end of year
    ```
 
 5. **Property List / Dictionary Format**:
    ```logo
    SHOW DATE [format "GGGy年M月d日" locale "zh_TW" tz "Asia/Taipei" calendar "roc"]
    SHOW DATE [format "iso8601" tz "UTC"]
+   SHOW FORMAT.NUMBER 1234.5 [style "currency" curr "USD" locale "en_US"]
    ```
 
 #### Box Framing Example:
