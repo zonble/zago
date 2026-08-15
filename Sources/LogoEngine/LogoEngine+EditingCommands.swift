@@ -1,12 +1,11 @@
 import Foundation
 
 extension LogoEngine {
-    private func isExpressionArgumentBoundary(_ token: String) -> Bool {
-        LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-    }
-
     private func consumeOptionalEditingIntArgument(_ tokens: [String], index: inout Int) -> Int? {
-        consumeOptionalIntExpressionArgument(tokens, index: &index, isBoundary: isExpressionArgumentBoundary)
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let value = reader.nextOptionalInteger() else { return nil }
+        reader.commit(to: &index)
+        return value
     }
 
     private func consumeExpressionArguments(
@@ -14,22 +13,11 @@ extension LogoEngine {
         index: inout Int,
         consume: (String) -> Void
     ) {
-        var consumedAny = false
-
-        while index < tokens.count {
-            if isExpressionArgumentBoundary(tokens[index]) {
-                if !consumedAny { index -= 1 }
-                break
-            }
-
-            let value = evaluateExpression(tokens, index: &index)
-            consume(value)
-            consumedAny = true
-
-            guard index + 1 < tokens.count else { break }
-            guard !isExpressionArgumentBoundary(tokens[index + 1]) else { break }
-            index += 1
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        while let nextToken = reader.peekToken(), !LogoEngine.isArgumentBoundary(nextToken) {
+            consume(reader.nextExpression())
         }
+        reader.commit(to: &index)
     }
 
     /// Executes Logo editor text manipulation and buffer management statement commands (.type, .show, .move, .cut, etc.).
@@ -39,7 +27,6 @@ extension LogoEngine {
 
         switch prim {
         case .type:
-            index += 1
             consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
             }
@@ -47,7 +34,6 @@ extension LogoEngine {
             return true
 
         case .show:
-            index += 1
             var parts: [String] = []
             consumeExpressionArguments(tokens, index: &index) { text in
                 parts.append(text)
@@ -102,7 +88,6 @@ extension LogoEngine {
             return true
 
         case .appendText:
-            index += 1
             delegate.logoEngine(self, performAction: .moveEnd)
             consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
@@ -110,7 +95,6 @@ extension LogoEngine {
             return true
 
         case .prependText:
-            index += 1
             delegate.logoEngine(self, performAction: .moveHome)
             consumeExpressionArguments(tokens, index: &index) { text in
                 delegate.logoEngine(self, performAction: .insertText(text))
@@ -118,14 +102,13 @@ extension LogoEngine {
             return true
 
         case .changeText:
-            index += 1
-            if index < tokens.count {
-                let oldText = evaluateExpression(tokens, index: &index)
-                if index + 1 < tokens.count && !LogoEngine.isStatementCommand(tokens[index + 1])
-                    && tokens[index + 1] != "]"
-                {
-                    index += 1
-                    let newText = evaluateExpression(tokens, index: &index)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                let oldText = reader.nextExpression()
+                if let newText = reader.nextOptionalExpression(isBoundary: { token in
+                    LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+                }) {
+                    reader.commit(to: &index)
                     delegate.logoEngine(self, performAction: .replaceText(old: oldText, new: newText))
                 }
             }
@@ -151,10 +134,11 @@ extension LogoEngine {
             return true
 
         case .move:
-            index += 1
-            if index < tokens.count {
-                let dir = tokens[index].uppercased()
-                let count = consumeOptionalEditingIntArgument(tokens, index: &index) ?? 1
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            if let rawDirection = reader.nextRawToken() {
+                let dir = rawDirection.uppercased()
+                let count = reader.nextOptionalInteger() ?? 1
+                reader.commit(to: &index)
                 let steps = max(1, count)
                 switch dir {
                 case "UP":

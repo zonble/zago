@@ -89,72 +89,13 @@ extension LogoEngine {
             } else if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
                 LogoEngine.isVariadicPrimitive(variadicPrim)
             {
-                index += 1
-                var args: [String] = []
-                while index < tokens.count && tokens[index] != ")" && tokens[index] != "]" {
-                    let arg = evaluateExpression(tokens, index: &index)
-                    args.append(arg)
-                    if index + 1 < tokens.count && tokens[index + 1] != ")" && tokens[index + 1] != "]" {
-                        index += 1
-                    } else {
-                        break
-                    }
-                }
-                if index + 1 < tokens.count && tokens[index + 1] == ")" {
-                    index += 1
-                }
-                switch variadicPrim {
-                case .word:
-                    leftVal = args.joined()
+                let args = evaluateVariadicArguments(tokens, index: &index)
+                if let value = evaluateVariadicValuePrimitive(variadicPrim, arguments: args) {
+                    leftVal = value
                     setLastExpressionString(leftVal)
-
-                case .list:
-                    leftVal = "[" + args.joined(separator: " ") + "]"
-                    setLastExpressionString(leftVal)
-
-                case .sentence:
-                    var items: [LogoValue] = []
-                    for arg in args {
-                        let parsed = LogoValue.parse(arg)
-                        switch parsed {
-                        case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
-                        case .string(let s): items.append(.string(s))
-                        }
-                    }
-                    leftVal = LogoValue.list(items).description
-                    setLastExpressionString(leftVal)
-
-                case .sum:
-                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
-                    leftVal = formatNum(nums.reduce(0, +))
-                    setLastExpressionString(leftVal)
-
-                case .product:
-                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
-                    leftVal = formatNum(nums.reduce(1, *))
-                    setLastExpressionString(leftVal)
-
-                case .min:
-                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
-                    leftVal = formatNum(nums.min() ?? 0)
-                    setLastExpressionString(leftVal)
-
-                case .max:
-                    let nums = args.flatMap { numericValues(in: LogoValue.parse($0)) }
-                    leftVal = formatNum(nums.max() ?? 0)
-                    setLastExpressionString(leftVal)
-
-                case .andLogic:
-                    let allTrue = args.allSatisfy { logoIsTrue($0) }
-                    leftVal = allTrue ? "1" : "0"
-                    setLastExpressionString(leftVal)
-
-                case .orLogic:
-                    let anyTrue = args.contains { logoIsTrue($0) }
-                    leftVal = anyTrue ? "1" : "0"
-                    setLastExpressionString(leftVal)
-
-                case .date, .time, .datetime:
+                } else {
+                    switch variadicPrim {
+                    case .date, .time, .datetime:
                     let mode: LogoDateTimeFormatter.Mode
                     switch variadicPrim {
                     case .date: mode = .date
@@ -173,7 +114,7 @@ extension LogoEngine {
                     )
                     setLastExpressionDateTime(leftVal)
 
-                case .dateformat:
+                    case .dateformat:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -199,7 +140,7 @@ extension LogoEngine {
                     )
                     setLastExpressionDateTime(leftVal)
 
-                case .dateadd:
+                    case .dateadd:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -216,7 +157,7 @@ extension LogoEngine {
                     )
                     setLastExpressionDateTime(leftVal)
 
-                case .datediff:
+                    case .datediff:
                     let cleanArgs = args.map { unquote($0) }
                     guard cleanArgs.count >= 2 else {
                         leftVal = "0"
@@ -231,7 +172,7 @@ extension LogoEngine {
                     leftVal = "\(diff)"
                     setLastExpressionString(leftVal)
 
-                case .formatNumber:
+                    case .formatNumber:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -244,7 +185,7 @@ extension LogoEngine {
                     leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr)
                     setLastExpressionString(leftVal)
 
-                case .formatList:
+                    case .formatList:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -261,7 +202,7 @@ extension LogoEngine {
                     leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
                     setLastExpressionString(leftVal)
 
-                case .formatRelativeTime:
+                    case .formatRelativeTime:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -280,7 +221,7 @@ extension LogoEngine {
                     }
                     setLastExpressionString(leftVal)
 
-                case .formatBytes:
+                    case .formatBytes:
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = "0 bytes"
@@ -292,9 +233,10 @@ extension LogoEngine {
                     leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
                     setLastExpressionString(leftVal)
 
-                default:
-                    leftVal = ""
-                    setLastExpressionString(leftVal)
+                    default:
+                        leftVal = ""
+                        setLastExpressionString(leftVal)
+                    }
                 }
             } else {
                 leftVal = evaluateExpression(tokens, index: &index)
@@ -470,13 +412,13 @@ extension LogoEngine {
             return nil
         }
 
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         var args: [String] = []
-        for _ in 0..<proc.parameters.count {
+        for _ in proc.parameters {
             guard !hasUncaughtError else { return nil }
-            index += 1
-            let arg = evaluateExpression(tokens, index: &index)
-            args.append(arg)
+            args.append(reader.nextExpression())
         }
+        reader.commit(to: &index)
 
         let initialScope = Dictionary(zip(proc.parameters, args), uniquingKeysWith: { _, last in last })
         variables.pushScope(initialValues: initialScope)

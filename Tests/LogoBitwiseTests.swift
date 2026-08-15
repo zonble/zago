@@ -69,6 +69,13 @@ import Testing
         #expect(eval("ASHIFT 42 0", engine: engine) == "42")
     }
 
+    @Test func testBitwiseArgumentsEvaluateExpressions() throws {
+        let engine = LogoEngine()
+
+        #expect(eval("BIT.AND (SUM 4 2) 3", engine: engine) == "2")
+        #expect(eval("BIT.SHL (SUM 1 1) (DIFFERENCE 5 3)", engine: engine) == "8")
+    }
+
     @Test func testLeetCode136SingleNumberExample() throws {
         let output = try executeScriptFile("leetcode_136_single_number.logo")
         #expect(output.contains("===_LeetCode_136:_Single_Number_==="))

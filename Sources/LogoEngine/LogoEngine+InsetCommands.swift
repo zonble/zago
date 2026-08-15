@@ -6,29 +6,10 @@ extension LogoEngine {
         guard let editor = self.delegate else { return }
         guard index < tokens.count else { return }
 
-        var widthVal: Int? = nil
-        var heightVal: Int? = nil
-        var insetText = ""
-
-        if let w = parseIntExpressionArgument(tokens, index: &index, isBoundary: shouldStopFillArgumentScan) {
-            widthVal = w
-            if index + 1 < tokens.count {
-                var heightIndex = index + 1
-                if let h = parseIntExpressionArgument(
-                    tokens, index: &heightIndex, isBoundary: shouldStopFillArgumentScan)
-                {
-                    index = heightIndex
-                    heightVal = h
-                }
-            }
-            if index + 1 < tokens.count {
-                var evalIndex = index + 1
-                insetText = unquote(evaluateExpression(tokens, index: &evalIndex))
-                index = evalIndex
-            }
-        } else {
-            insetText = unquote(evaluateExpression(tokens, index: &index))
-        }
+        let arguments = consumeSizedTextArguments(tokens, index: &index)
+        let widthVal = arguments.width
+        let heightVal = arguments.height
+        let insetText = arguments.text
 
         if insetText.isEmpty { return }
 
