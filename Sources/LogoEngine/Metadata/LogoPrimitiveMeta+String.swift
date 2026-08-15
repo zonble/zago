@@ -10,9 +10,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.indexof",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by INDEXOF.", example: "value"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by INDEXOF.", example: "value"),
-                    LogoPrimitiveParameter(name: "start", required: false, description: "The start argument. Used by INDEXOF.", example: "value"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The substring to find.", example: "world"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to search.", example: "hello world"),
+                    LogoPrimitiveParameter(name: "start", required: false, description: "The 1-based position at which to begin searching.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "INDEXOF \"world \"hello world", output: "7")]
             )
@@ -24,8 +24,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.lastindexof",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by LASTINDEXOF.", example: "value"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by LASTINDEXOF.", example: "value"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The substring to find.", example: "o"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to search.", example: "hello world"),
                 ],
                 examples: [LogoPrimitiveExample(input: "LASTINDEXOF \"o \"hello world", output: "8")]
             )
@@ -37,8 +37,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.indexesof",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by INDEXESOF.", example: "value"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by INDEXESOF.", example: "value"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The substring whose positions should be returned.", example: "l"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to search.", example: "hello world"),
                 ],
                 examples: [LogoPrimitiveExample(input: "INDEXESOF \"l \"hello world", output: "[3 4 10]")]
             )
@@ -50,8 +50,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.contains",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CONTAINS.", example: "value"),
-                    LogoPrimitiveParameter(name: "substring", required: true, description: "The substring argument. Used by CONTAINS.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to inspect.", example: "zago editor"),
+                    LogoPrimitiveParameter(name: "substring", required: true, description: "The text that must be present.", example: "ago"),
                 ],
                 examples: [LogoPrimitiveExample(input: "CONTAINS? \"zago \"ag", output: "true")]
             )
@@ -63,8 +63,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.startswith",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by STARTSWITH.", example: "value"),
-                    LogoPrimitiveParameter(name: "prefix", required: true, description: "The prefix argument. Used by STARTSWITH.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to inspect.", example: "index.html"),
+                    LogoPrimitiveParameter(name: "prefix", required: true, description: "The text that must appear at the beginning.", example: "index"),
                 ],
                 examples: [LogoPrimitiveExample(input: "STARTSWITH? \"index.html \"index", output: "true")]
             )
@@ -76,8 +76,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.endswith",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by ENDSWITH.", example: "value"),
-                    LogoPrimitiveParameter(name: "suffix", required: true, description: "The suffix argument. Used by ENDSWITH.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to inspect.", example: "main.swift"),
+                    LogoPrimitiveParameter(name: "suffix", required: true, description: "The text that must appear at the end.", example: ".swift"),
                 ],
                 examples: [LogoPrimitiveExample(input: "ENDSWITH? \"main.swift \".swift", output: "true")]
             )
@@ -89,9 +89,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.substring",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by SUBSTRING.", example: "value"),
-                    LogoPrimitiveParameter(name: "start", required: true, description: "The start argument. Used by SUBSTRING.", example: "value"),
-                    LogoPrimitiveParameter(name: "length", required: false, description: "The length argument. Used by SUBSTRING.", example: "3"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text from which to extract characters.", example: "abcdef"),
+                    LogoPrimitiveParameter(name: "start", required: true, description: "The 1-based starting position.", example: "2"),
+                    LogoPrimitiveParameter(name: "length", required: false, description: "The number of characters to return; omit to return the remainder.", example: "3"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SUBSTRING \"abcdef 2 3", output: "bcd")]
             )
@@ -103,9 +103,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.replace",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by REPLACE.", example: "value"),
-                    LogoPrimitiveParameter(name: "old", required: true, description: "The old argument. Used by REPLACE.", example: "value"),
-                    LogoPrimitiveParameter(name: "new", required: true, description: "The new argument. Used by REPLACE.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to modify.", example: "hello world"),
+                    LogoPrimitiveParameter(name: "old", required: true, description: "The substring to replace.", example: "world"),
+                    LogoPrimitiveParameter(name: "new", required: true, description: "The replacement text.", example: "Zago"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REPLACE \"hello world \"world \"there", output: "hello there")]
             )
@@ -116,7 +116,7 @@ extension LogoPrimitive {
                 description: "Trims whitespace from both ends of string.",
                 localizedDescriptionKey: "logo.doc.trim",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRIM.", example: "value")],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The text whose surrounding whitespace should be removed.", example: "  hello  ")],
                 examples: [LogoPrimitiveExample(input: "TRIM \"  hello  ", output: "hello")]
             )
 
@@ -127,8 +127,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.repeatstr",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "count", required: true, description: "The number of items. Used by REPEATSTR.", example: "3"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by REPEATSTR.", example: "value"),
+                    LogoPrimitiveParameter(name: "count", required: true, description: "The number of repetitions.", example: "5"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to repeat.", example: "="),
                 ],
                 examples: [LogoPrimitiveExample(input: "REPEATSTR 5 \"=", output: "=====")]
             )
@@ -140,8 +140,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.joinstr",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "separator", required: true, description: "The separator argument. Used by JOIN.", example: "value"),
-                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by JOIN.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "separator", required: true, description: "The text placed between list items.", example: ", "),
+                    LogoPrimitiveParameter(name: "list", required: true, description: "The list whose items should be joined.", example: "[A B C]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "JOINSTR \", \" [A B C]", output: "A, B, C")]
             )
@@ -152,7 +152,7 @@ extension LogoPrimitive {
                 description: "Splits multiline string into list of individual lines.",
                 localizedDescriptionKey: "logo.doc.lines",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "multilineString", required: true, description: "The multilineString argument. Used by LINES.", example: "value")],
+                parameters: [LogoPrimitiveParameter(name: "multilineString", required: true, description: "The text to split at line breaks.", example: "Line 1\\nLine 2")],
                 examples: [LogoPrimitiveExample(input: "LINES :buffer")]
             )
 
@@ -162,7 +162,7 @@ extension LogoPrimitive {
                 description: "Joins list of lines into single multiline string with newlines.",
                 localizedDescriptionKey: "logo.doc.unlines",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "listOfLines", required: true, description: "The listOfLines argument. Used by UNLINES.", example: "[A B C]")],
+                parameters: [LogoPrimitiveParameter(name: "listOfLines", required: true, description: "The list of text lines to join with newline characters.", example: "[Line1 Line2]")],
                 examples: [LogoPrimitiveExample(input: "UNLINES [Line1 Line2]")]
             )
 
@@ -173,8 +173,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.format",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "formatString", required: true, description: "The formatString argument. Used by FORMAT.", example: "value"),
-                    LogoPrimitiveParameter(name: "args", required: false, description: "The args argument. Used by FORMAT.", example: "value"),
+                    LogoPrimitiveParameter(name: "formatString", required: true, description: "The printf-style format containing placeholders such as %s, %d, or %f.", example: "Hello, %s!"),
+                    LogoPrimitiveParameter(name: "args", required: false, description: "Values substituted into the format placeholders, in order.", example: "Zago"),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT \"Hello, %s! \"Zago", output: "Hello, Zago!")]
             )
@@ -186,9 +186,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.padleft",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "width", required: true, description: "The width. Used by PADLEFT.", example: "3"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by PADLEFT.", example: "value"),
-                    LogoPrimitiveParameter(name: "padChar", required: false, description: "The padChar argument. Used by PADLEFT.", example: "value"),
+                    LogoPrimitiveParameter(name: "width", required: true, description: "The target character width.", example: "8"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to pad on the left.", example: "42"),
+                    LogoPrimitiveParameter(name: "padChar", required: false, description: "The character used for padding; defaults to a space.", example: "0"),
                 ],
                 examples: [LogoPrimitiveExample(input: "PADLEFT 8 \"42 \"0", output: "00000042")]
             )
@@ -200,9 +200,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.padright",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "width", required: true, description: "The width. Used by PADRIGHT.", example: "3"),
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by PADRIGHT.", example: "value"),
-                    LogoPrimitiveParameter(name: "padChar", required: false, description: "The padChar argument. Used by PADRIGHT.", example: "value"),
+                    LogoPrimitiveParameter(name: "width", required: true, description: "The target character width.", example: "10"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to pad on the right.", example: "Title"),
+                    LogoPrimitiveParameter(name: "padChar", required: false, description: "The character used for padding; defaults to a space.", example: "."),
                 ],
                 examples: [LogoPrimitiveExample(input: "PADRIGHT 10 \"Title \".", output: "Title.....")]
             )
@@ -214,8 +214,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.regexmatch",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by REGEXMATCH.", example: "value"),
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by REGEXMATCH.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to test against the regular expression.", example: "abc-123"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The regular expression pattern.", example: "[a-z]+-[0-9]+"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REGEX.MATCH \"abc-123 \"[a-z]+-[0-9]+", output: "true")]
             )
@@ -227,9 +227,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.regexreplace",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by REGEXREPLACE.", example: "value"),
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by REGEXREPLACE.", example: "value"),
-                    LogoPrimitiveParameter(name: "template", required: true, description: "The Logo template to apply. Used by REGEXREPLACE.", example: "[FD 1]"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text in which matches should be replaced.", example: "hello 2026"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The regular expression pattern to find.", example: "[0-9]+"),
+                    LogoPrimitiveParameter(name: "template", required: true, description: "The replacement text or template for each match.", example: "year"),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "REGEX.REPLACE \"hello 2026 \"[0-9]+ \"world", output: "hello world")
@@ -243,8 +243,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.regexfind",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by REGEXFIND.", example: "value"),
-                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The pattern argument. Used by REGEXFIND.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The text to search for regular expression matches.", example: "abc-123"),
+                    LogoPrimitiveParameter(name: "pattern", required: true, description: "The regular expression pattern whose matches should be returned.", example: "[0-9]+"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REGEX.FIND \"abc-123 \"[0-9]+", output: "[123]")]
             )

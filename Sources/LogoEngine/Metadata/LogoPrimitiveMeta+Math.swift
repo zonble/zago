@@ -443,7 +443,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false, description: "The output date style or custom date pattern.", example: "long", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
                     LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date.", example: "en_US"),
                     LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used for the date.", example: "Asia/Taipei"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date.", example: "gregorian"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date.", example: "gregorian", allowedValues: ["roc", "republicofchina", "minguo", "taiwan", "japanese", "japan", "wareki", "jp", "buddhist", "thai", "chinese", "lunar", "islamic", "islamiccivil", "islamicrural", "islamicummalqura", "ummalqura", "muslim", "hebrew", "jewish", "persian", "iran", "indian", "coptic", "ethiopic", "ethiopicametemihret", "gregorian", "western"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE \"iso")]
             )
@@ -472,7 +472,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false, description: "The output date-time style or custom date-time pattern.", example: "full", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
                     LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date and time.", example: "en_US"),
                     LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used for the date and time.", example: "Asia/Taipei"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date and time.", example: "gregorian"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date and time.", example: "gregorian", allowedValues: ["roc", "republicofchina", "minguo", "taiwan", "japanese", "japan", "wareki", "jp", "buddhist", "thai", "chinese", "lunar", "islamic", "islamiccivil", "islamicrural", "islamicummalqura", "ummalqura", "muslim", "hebrew", "jewish", "persian", "iran", "indian", "coptic", "ethiopic", "ethiopicametemihret", "gregorian", "western"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATETIME \"full")]
             )
@@ -488,7 +488,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "format", required: false, description: "The output date style or custom date pattern.", example: "long", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
                     LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date.", example: "en_US"),
                     LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used when parsing and formatting the date.", example: "Asia/Taipei"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used when parsing and formatting the date.", example: "gregorian"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used when parsing and formatting the date.", example: "gregorian", allowedValues: ["roc", "republicofchina", "minguo", "taiwan", "japanese", "japan", "wareki", "jp", "buddhist", "thai", "chinese", "lunar", "islamic", "islamiccivil", "islamicrural", "islamicummalqura", "ummalqura", "muslim", "hebrew", "jewish", "persian", "iran", "indian", "coptic", "ethiopic", "ethiopicametemihret", "gregorian", "western"]),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.DATE \"2026-12-31 \"long")]
             )
@@ -533,15 +533,18 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.formatnumber",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by FORMATNUMBER.", example: "1"),
+                    LogoPrimitiveParameter(name: "num", required: true, description: "The number to format.", example: "1234.5"),
                     LogoPrimitiveParameter(
-                        name: "style", required: false, description: "The formatting or border style. Used by FORMATNUMBER.", example: "decimal",
+                        name: "style", required: false, description: "The number representation to use.", example: "currency",
                         allowedValues: ["decimal", "currency", "percent", "roman", "financial", "ordinal", "spellout"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale identifier. Used by FORMATNUMBER.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "currency", required: false, description: "The currency argument. Used by FORMATNUMBER.", example: "value"),
-                    LogoPrimitiveParameter(name: "precision", required: false, description: "The precision argument. Used by FORMATNUMBER.", example: "value"),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for decimal separators, symbols, and words.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "currency", required: false, description: "The ISO 4217 currency code used by the currency style.", example: "USD"),
+                    LogoPrimitiveParameter(name: "precision", required: false, description: "The exact number of fraction digits for numeric styles.", example: "2"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.NUMBER 10050208 \"financial", output: "壹仟零伍萬零貳佰零捌")]
+                examples: [
+                    LogoPrimitiveExample(input: "FORMAT.NUMBER 1234.5 \"currency \"en_US \"USD", output: "$1,234.50"),
+                    LogoPrimitiveExample(input: "FORMAT.NUMBER 10050208 \"financial", output: "壹仟零伍萬零貳佰零捌"),
+                ]
             )
 
         case .formatList:

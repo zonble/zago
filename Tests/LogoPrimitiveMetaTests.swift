@@ -64,6 +64,13 @@ import Testing
         #expect(LogoPrimitive.dateformat.meta.parameters?[1].allowedValues == ["short", "medium", "long", "full", "iso8601"])
         #expect(LogoPrimitive.dateformat.meta.parameters?[3].example == "Asia/Taipei")
         #expect(LogoPrimitive.dateformat.meta.parameters?[4].example == "gregorian")
+        #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("roc") == true)
+        #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("gregorian") == true)
+        #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("not-a-calendar") == false)
+        #expect(LogoPrimitive.formatNumber.meta.parameters?[3].description == "The ISO 4217 currency code used by the currency style.")
+        #expect(LogoPrimitive.formatNumber.meta.parameters?[3].example == "USD")
+        #expect(LogoPrimitive.formatNumber.meta.parameters?[4].description == "The exact number of fraction digits for numeric styles.")
+        #expect(LogoPrimitive.formatNumber.meta.parameters?[4].example == "2")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
     }
