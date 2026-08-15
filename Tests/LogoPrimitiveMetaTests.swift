@@ -41,6 +41,7 @@ import Testing
         #expect(LogoPrimitive.justify.meta.parameters == nil)
         #expect(LogoPrimitive.formatRelativeTime.meta.parameters?[1].required == false)
         #expect(LogoPrimitive.formatRelativeTime.meta.notes == "Not supported on Linux or Windows.")
+        #expect(LogoPrimitive.formatList.meta.notes == "Not supported on Linux or Windows.")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
     }
@@ -48,6 +49,15 @@ import Testing
     @Test func testRelativeTimeAvailabilityMatchesPlatformSupport() {
         #expect(LogoPrimitive.from("FORMAT.RELATIVETIME") == .formatRelativeTime)
     }
+
+#if os(Linux) || os(Windows)
+    @Test func testListFormatterReportsUnsupportedPlatformError() {
+        let engine = LogoEngine()
+        var index = 0
+        _ = engine.evaluateExpression(["FORMAT.LIST", "[", "A", "B", "]"], index: &index)
+        #expect(engine.lastError?.message == "[LOGO Error: FORMAT.LIST is not supported on this platform]")
+    }
+#endif
 
 #if os(Linux) || os(Windows)
     @Test func testRelativeTimeReportsUnsupportedPlatformError() {

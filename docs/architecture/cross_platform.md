@@ -15,6 +15,10 @@ available for scripts and documentation, but execution reports a platform-not-su
 Logo error. The Apple implementation keeps Foundation's locale-aware behavior for all
 supported locales.
 
+`ListFormatter` has the same platform limitation. `FORMAT.LIST` remains present in the
+keyword and metadata, but execution reports a platform-not-supported Logo error on Linux
+and Windows.
+
 When adding Foundation-backed Logo primitives, check API availability on every CI target
 before sharing the implementation across platforms. Do not replace a platform formatter
 with a hand-maintained language list just to make it compile.
