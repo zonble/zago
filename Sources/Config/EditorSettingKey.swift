@@ -24,12 +24,13 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case regex
     case keymap
     case modernbindings
+    case noNewlines = "nonewlines"
 
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
         case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab, .listWrapIndent,
-            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace:
+            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines:
             return ["on", "off"]
         case .tab, .listIndentSize: return ["2", "4", "8"]
         case .language: return Language.allCases.map(\.rawValue)
@@ -44,7 +45,7 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     var supportsConfigUnset: Bool {
         switch self {
         case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
-            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings:
+            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines:
             return true
         case .listIndentSize, .tab, .language, .spellLanguage, .border, .arrow, .regex, .keymap:
             return false

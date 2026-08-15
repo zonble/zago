@@ -78,7 +78,8 @@ extension Renderer {
         let bufCountStr =
             editor.buffers.count > 1 ? " [\(editor.currentBufferIndex + 1)/\(editor.buffers.count)]" : ""
         let leftText = "  zago \(ZagoVersion.current)\(bufCountStr)"
-        let centerText = editor.buffer.filePath ?? editor.l10n.newBuffer
+        let formatTagStr = editor.buffer.lineEnding.statusTag.map { " \($0)" } ?? ""
+        let centerText = (editor.buffer.filePath ?? editor.l10n.newBuffer) + formatTagStr
         let branchTextStr: String
         if editor.displayConfig.showGitDiff, let branch = editor.gitDiffInfo.branchName, !branch.isEmpty {
             branchTextStr = " [\(branch)]"

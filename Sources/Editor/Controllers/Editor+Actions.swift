@@ -280,6 +280,8 @@ extension Editor {
         case .trimTrailingWhitespace(let value):
             displayConfig.trimTrailingWhitespaceOnSave = resolve(
                 value, current: displayConfig.trimTrailingWhitespaceOnSave)
+        case .noNewlines(let value):
+            displayConfig.noNewlines = resolve(value, current: displayConfig.noNewlines)
         case .regex(let value): isRegexSearchEnabled = resolve(value, current: isRegexSearchEnabled)
         case .debug(let value): debugMode = resolve(value, current: debugMode)
         case .smartTab(let value): displayConfig.smartTab = resolve(value, current: displayConfig.smartTab)

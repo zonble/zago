@@ -117,6 +117,7 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowLineNumbers = true
     var defaultViewShowSubLineNumbers = false
     var defaultViewWrapColumn: Int? = nil
+    var defaultLineEnding: LineEnding = .lf
 
     var isRegexSearchEnabled: Bool = false
 
@@ -188,6 +189,7 @@ public final class Editor: @unchecked Sendable {
             listIndentSize: config.listIndentSize,
             listWrapIndent: config.listWrapIndent,
             trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
+            noNewlines: config.noNewlines,
             showGitDiff: config.showGitDiff,
             ipcEnabled: options.ipcEnabled ?? config.ipcEnabled
         )
@@ -241,7 +243,9 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.defaultViewWrapColumn = layoutEngine.wrapColumn
+        self.defaultLineEnding = options.defaultLineEnding ?? .lf
         for buffer in self.buffers {
+            buffer.lineEnding = defaultLineEnding
             buffer.baseMode = buffer.isDirectoryBuffer ? .text : resolved.baseMode
             buffer.viewShowRuler = defaultViewShowRuler
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers

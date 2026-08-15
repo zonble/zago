@@ -27,7 +27,7 @@ extension Editor {
     func loadFileContent(into targetBuffer: TextBuffer, path: String, reportStatus: Bool = true) -> EditorOperationResult {
         let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
         guard fileIOStrategy.fileInfo(at: expandedPath).exists else {
-            targetBuffer.replaceContents("", filePath: expandedPath, isModified: false)
+            targetBuffer.replaceContents("", filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.fileEncoding = .utf8
             targetBuffer.loadErrorDescription = nil
             targetBuffer.isReadOnly = false
@@ -38,13 +38,13 @@ extension Editor {
             let result = try fileIOStrategy.readTextFile(at: expandedPath)
             targetBuffer.fileEncoding = result.encoding
             targetBuffer.loadErrorDescription = nil
-            targetBuffer.replaceContents(result.content, filePath: expandedPath, isModified: false)
+            targetBuffer.replaceContents(result.content, filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.lineIndex = 0
             targetBuffer.columnIndex = 0
             return .succeeded
         } catch {
             let message = error.localizedDescription
-            targetBuffer.replaceContents("", filePath: expandedPath, isModified: false)
+            targetBuffer.replaceContents("", filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.fileEncoding = .utf8
             targetBuffer.loadErrorDescription = message
             targetBuffer.isReadOnly = true
@@ -64,7 +64,7 @@ extension Editor {
             let result = try fileIOStrategy.readTextFile(at: path)
             targetBuffer.fileEncoding = result.encoding
             targetBuffer.loadErrorDescription = nil
-            targetBuffer.replaceContents(result.content, filePath: path, isModified: false)
+            targetBuffer.replaceContents(result.content, filePath: path, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.clampCursor()
             return reportOperationResult(.succeeded(message: reportStatus ? l10n["status.file_reloaded"] : nil))
         } catch {
@@ -101,8 +101,13 @@ extension Editor {
 
             let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
             let targetEncoding = forcedEncoding ?? buffer.fileEncoding
+            let separator = buffer.lineEnding.separator
+            var fileContent = buffer.lines.joined(separator: separator)
+            if buffer.hasTrailingNewline && !fileContent.isEmpty && !fileContent.hasSuffix(separator) {
+                fileContent += separator
+            }
             try fileIOStrategy.writeTextFile(
-                buffer.lines.joined(separator: "\n"),
+                fileContent,
                 to: expandedPath,
                 encoding: targetEncoding
             )

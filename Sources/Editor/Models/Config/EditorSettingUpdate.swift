@@ -41,6 +41,8 @@ extension EditorSettingKey {
             return nil
         case .modernbindings:
             return .modernbindings(SettingBoolean.parse(value))
+        case .noNewlines:
+            return .noNewlines(SettingBoolean.parse(value))
         }
     }
 }
@@ -54,6 +56,7 @@ public enum EditorSettingUpdate {
     case syntaxHighlighting(Bool?)
     case autoReload(Bool?)
     case trimTrailingWhitespace(Bool?)
+    case noNewlines(Bool?)
     case regex(Bool?)
     case debug(Bool?)
     case smartTab(Bool?)

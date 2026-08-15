@@ -35,6 +35,8 @@ class TextBuffer: SpellCheckableBuffer {
     var viewWrapColumn: Int? = nil
     var borderStyle: BorderStyle = .single
     var arrowStyle: ArrowStyle = .solid
+    var lineEnding: LineEnding = .lf
+    var hasTrailingNewline: Bool = false
     var undoStack: [UndoSnapshot] = []
     var redoStack: [UndoSnapshot] = []
     var maxUndoStackSize: Int = 100
@@ -93,9 +95,18 @@ class TextBuffer: SpellCheckableBuffer {
         return true
     }
 
-    func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false) {
-        let fileLines = text.components(separatedBy: .newlines)
-        self.lines = fileLines.isEmpty ? [""] : fileLines
+    func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false, defaultLineEnding: LineEnding = .lf) {
+        self.lineEnding = LineEnding.detect(in: text, fallback: defaultLineEnding)
+        self.hasTrailingNewline = text.hasSuffix("\r\n") || text.hasSuffix("\n") || text.hasSuffix("\r")
+        let normalized = text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        let fileLines = normalized.components(separatedBy: "\n")
+        if hasTrailingNewline && fileLines.count > 1 && fileLines.last == "" {
+            self.lines = Array(fileLines.dropLast())
+        } else {
+            self.lines = fileLines.isEmpty ? [""] : fileLines
+        }
         self.filePath = filePath ?? self.filePath
         self.isModified = isModified
     }
