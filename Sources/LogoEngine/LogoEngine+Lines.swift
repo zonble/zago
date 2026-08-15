@@ -2,21 +2,6 @@ import Foundation
 import TextMetrics
 
 extension LogoEngine {
-    private enum LineArrowMode {
-        case none
-        case forward
-        case backward
-        case both
-
-        var hasForwardArrow: Bool {
-            self == .forward || self == .both
-        }
-
-        var hasBackwardArrow: Bool {
-            self == .backward || self == .both
-        }
-    }
-
     internal func executeLineCommand(_ tokens: [String], index: inout Int) {
         guard let editor = self.delegate else { return }
         var length = 40
@@ -60,11 +45,12 @@ extension LogoEngine {
         for i in 0..<length {
             let col = startCol + i
             let moveMask = (i == 0) ? 2 : ((i == length - 1) ? 8 : 10)
-            let existing = displayCharAt(in: lineText, visualColumn: col)
-            let char = explicitHorizontalLineChar(
+            let existing = DisplayText.character(atVisualColumn: col, in: lineText)
+            let char = LineRenderer.character(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode)
-            lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
+                direction: .right, isStart: i == 0, isEnd: i == length - 1, arrowMode: arrowMode,
+                arrowStyle: currentArrowStyle, automatic: false)
+            lineText = DisplayText.replacingColumns(in: lineText, startCol: col, width: 1, with: String(char))
         }
 
         editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
@@ -115,11 +101,12 @@ extension LogoEngine {
             let lineStr = queryString(.lineAt(line)) ?? ""
 
             let moveMask = (r == 0) ? 4 : ((r == height - 1) ? 1 : 5)
-            let existing = displayCharAt(in: lineStr, visualColumn: startCol)
-            let char = explicitVerticalLineChar(
+            let existing = DisplayText.character(atVisualColumn: startCol, in: lineStr)
+            let char = LineRenderer.character(
                 existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: r == 0, isEnd: r == height - 1, arrowMode: arrowMode)
-            let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
+                direction: .down, isStart: r == 0, isEnd: r == height - 1, arrowMode: arrowMode,
+                arrowStyle: currentArrowStyle, automatic: false)
+            let lineText = DisplayText.replacingColumns(in: lineStr, startCol: startCol, width: 1, with: String(char))
 
             editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
         }
@@ -211,352 +198,8 @@ extension LogoEngine {
         }
     }
 
-    private func findNextNonSpace(in line: String, from startCol: Int) -> (col: Int, char: Character)? {
-        let maxSearch = 200
-        for offset in 0..<maxSearch {
-            let col = startCol + offset
-            let ch = displayCharAt(in: line, visualColumn: col)
-            if ch != " " {
-                return (col, ch)
-            }
-        }
-        return nil
-    }
-
-    private func findPrevNonSpace(in line: String, from startCol: Int) -> (col: Int, char: Character)? {
-        let maxSearch = min(200, startCol + 1)
-        for offset in 1...maxSearch {
-            let col = startCol - offset
-            if col < 0 { break }
-            let ch = displayCharAt(in: line, visualColumn: col)
-            if ch != " " {
-                return (col, ch)
-            }
-        }
-        return nil
-    }
-
-    private func findNextNonSpaceVertical(fromLine startLine: Int, col: Int) -> (line: Int, char: Character)? {
-        let maxSearch = 100
-        for offset in 0..<maxSearch {
-            let line = startLine + offset
-            let ch = getLineCharAt(line: line, col: col)
-            if ch != " " {
-                return (line, ch)
-            }
-        }
-        return nil
-    }
-
-    private func findPrevNonSpaceVertical(fromLine startLine: Int, col: Int) -> (line: Int, char: Character)? {
-        let maxSearch = min(100, startLine + 1)
-        for offset in 1...maxSearch {
-            let line = startLine - offset
-            if line < 0 { break }
-            let ch = getLineCharAt(line: line, col: col)
-            if ch != " " {
-                return (line, ch)
-            }
-        }
-        return nil
-    }
-
-    private func executeAutoLineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode) {
-        guard let editor = self.delegate else { return }
-        var lineText = queryString(.lineAt(startLine)) ?? ""
-
-        let prevCol = startCol - 1
-        let connectLeft =
-            prevCol >= 0 && !arrowMode.hasBackwardArrow
-            && isMaskChar(displayCharAt(in: lineText, visualColumn: prevCol))
-        if connectLeft {
-            let existingPrev = displayCharAt(in: lineText, visualColumn: prevCol)
-            let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 2)
-            lineText = replaceDisplayColumns(in: lineText, startCol: prevCol, width: 1, replacement: String(fusedPrev))
-            editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
-        }
-
-        var targetOffset: Int? = nil
-        var targetChar: Character? = nil
-        let maxSearchLength = 200
-
-        for offset in 1..<maxSearchLength {
-            let col = startCol + offset
-            let existing = displayCharAt(in: lineText, visualColumn: col)
-
-            if existing != " " {
-                targetOffset = offset
-                targetChar = existing
-                break
-            }
-        }
-
-        let drawableOffsets: [Int]
-        if let target = targetOffset {
-            let isMask = isMaskChar(targetChar ?? " ")
-            let shouldFuse = !arrowMode.hasForwardArrow && isMask
-            let maxOffset = shouldFuse ? target : target - 1
-            if maxOffset >= 0 {
-                drawableOffsets = Array(0...maxOffset)
-            } else {
-                drawableOffsets = []
-            }
-        } else {
-            drawableOffsets = Array(0..<10)
-        }
-
-        guard !drawableOffsets.isEmpty else { return }
-
-        editor.logoEngine(self, performAction: .ensureLineExists(index: startLine))
-        lineText = queryString(.lineAt(startLine)) ?? ""
-
-        let lastOffset = drawableOffsets[drawableOffsets.count - 1]
-        for offset in drawableOffsets {
-            let col = startCol + offset
-
-            var moveMask = horizontalMoveMask(offset: offset, lastOffset: lastOffset)
-            if offset == 0 && connectLeft {
-                moveMask = 10
-            }
-
-            let existing = displayCharAt(in: lineText, visualColumn: col)
-            let char = autoHorizontalLineChar(
-                existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0 && (!connectLeft || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset,
-                arrowMode: arrowMode)
-            lineText = replaceDisplayColumns(in: lineText, startCol: col, width: 1, replacement: String(char))
-        }
-
-        editor.logoEngine(self, performAction: .setLine(index: startLine, text: lineText))
-        editor.logoEngine(self, performAction: .updateColumnIndex(startCol + drawableOffsets.count))
-    }
-
-    private func executeAutoVlineCommand(startLine: Int, startCol: Int, styleChar: Character, arrowMode: LineArrowMode)
-    {
-        guard let editor = self.delegate else { return }
-
-        let prevLine = startLine - 1
-        let connectAbove =
-            prevLine >= 0 && !arrowMode.hasBackwardArrow && isMaskChar(getLineCharAt(line: prevLine, col: startCol))
-        if connectAbove {
-            let prevStr = queryString(.lineAt(prevLine)) ?? ""
-            let existingPrev = displayCharAt(in: prevStr, visualColumn: startCol)
-            let fusedPrev = fuseChar(existing: existingPrev, defaultNewChar: styleChar, moveMask: 4)
-            let updatedPrev = replaceDisplayColumns(
-                in: prevStr, startCol: startCol, width: 1, replacement: String(fusedPrev))
-            editor.logoEngine(self, performAction: .setLine(index: prevLine, text: updatedPrev))
-        }
-
-        var targetOffset: Int? = nil
-        var targetChar: Character? = nil
-        let maxSearchHeight = 100
-
-        for offset in 1..<maxSearchHeight {
-            let line = startLine + offset
-            let existing = getLineCharAt(line: line, col: startCol)
-
-            if existing != " " {
-                targetOffset = offset
-                targetChar = existing
-                break
-            }
-        }
-
-        let drawableOffsets: [Int]
-        if let target = targetOffset {
-            let isMask = isMaskChar(targetChar ?? " ")
-            let shouldFuse = !arrowMode.hasForwardArrow && isMask
-            let maxOffset = shouldFuse ? target : target - 1
-            if maxOffset >= 0 {
-                drawableOffsets = Array(0...maxOffset)
-            } else {
-                drawableOffsets = []
-            }
-        } else {
-            drawableOffsets = Array(0..<5)
-        }
-
-        guard !drawableOffsets.isEmpty else { return }
-
-        let lastOffset = drawableOffsets[drawableOffsets.count - 1]
-        for offset in drawableOffsets {
-            let line = startLine + offset
-            editor.logoEngine(self, performAction: .ensureLineExists(index: line))
-
-            let lineStr = queryString(.lineAt(line)) ?? ""
-
-            var moveMask = verticalMoveMask(offset: offset, lastOffset: lastOffset)
-            if offset == 0 && connectAbove {
-                moveMask = 5
-            }
-
-            let existing = displayCharAt(in: lineStr, visualColumn: startCol)
-            let char = autoVerticalLineChar(
-                existing: existing, styleChar: styleChar, moveMask: moveMask,
-                isStart: offset == 0 && (!connectAbove || arrowMode.hasBackwardArrow), isEnd: offset == lastOffset,
-                arrowMode: arrowMode)
-            let lineText = replaceDisplayColumns(in: lineStr, startCol: startCol, width: 1, replacement: String(char))
-
-            editor.logoEngine(self, performAction: .setLine(index: line, text: lineText))
-        }
-
-        editor.logoEngine(self, performAction: .updateLineIndex(startLine + max(0, drawableOffsets.count - 1)))
-        editor.logoEngine(self, performAction: .updateColumnIndex(startCol))
-    }
-
-    private func horizontalMoveMask(offset: Int, lastOffset: Int) -> Int {
-        if lastOffset == 0 { return 10 }
-        if offset == 0 { return 2 }
-        if offset == lastOffset { return 8 }
-        return 10
-    }
-
-    private func verticalMoveMask(offset: Int, lastOffset: Int) -> Int {
-        if lastOffset == 0 { return 5 }
-        if offset == 0 { return 4 }
-        if offset == lastOffset { return 1 }
-        return 5
-    }
-
-    private func explicitHorizontalLineChar(
-        existing: Character,
-        styleChar: Character,
-        moveMask: Int,
-        isStart: Bool,
-        isEnd: Bool,
-        arrowMode: LineArrowMode
-    ) -> Character {
-        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
-        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
-        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-    }
-
-    private func explicitVerticalLineChar(
-        existing: Character,
-        styleChar: Character,
-        moveMask: Int,
-        isStart: Bool,
-        isEnd: Bool,
-        arrowMode: LineArrowMode
-    ) -> Character {
-        if isStart, arrowMode.hasBackwardArrow { return verticalBackwardArrow(styleChar: styleChar) }
-        if isEnd, arrowMode.hasForwardArrow { return verticalForwardArrow(styleChar: styleChar) }
-        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-    }
-
-    private func autoHorizontalLineChar(
-        existing: Character,
-        styleChar: Character,
-        moveMask: Int,
-        isStart: Bool,
-        isEnd: Bool,
-        arrowMode: LineArrowMode
-    ) -> Character {
-        if isMaskChar(existing) {
-            return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-        }
-        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
-        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
-        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-    }
-
-    private func autoVerticalLineChar(
-        existing: Character,
-        styleChar: Character,
-        moveMask: Int,
-        isStart: Bool,
-        isEnd: Bool,
-        arrowMode: LineArrowMode
-    ) -> Character {
-        if isMaskChar(existing) {
-            return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-        }
-        if isStart, arrowMode.hasBackwardArrow { return verticalBackwardArrow(styleChar: styleChar) }
-        if isEnd, arrowMode.hasForwardArrow { return verticalForwardArrow(styleChar: styleChar) }
-        return fuseChar(existing: existing, defaultNewChar: styleChar, moveMask: moveMask)
-    }
-
-    private func horizontalLineChar(styleChar: Character, isStart: Bool, isEnd: Bool, arrowMode: LineArrowMode)
-        -> Character
-    {
-        if isStart, arrowMode.hasBackwardArrow { return horizontalBackwardArrow(styleChar: styleChar) }
-        if isEnd, arrowMode.hasForwardArrow { return horizontalForwardArrow(styleChar: styleChar) }
-        return styleChar
-    }
-
-    private var currentArrowStyle: ArrowStyle {
+    internal var currentArrowStyle: ArrowStyle {
         queryArrowStyle(.defaultArrowStyle) ?? .solid
-    }
-
-    private func horizontalForwardArrow(styleChar: Character) -> Character {
-        let borderStyle: BorderStyle = styleChar == "-" ? .ascii : .single
-        return arrowHead(for: .right, style: borderStyle, arrowStyle: currentArrowStyle)
-    }
-
-    private func horizontalBackwardArrow(styleChar: Character) -> Character {
-        let borderStyle: BorderStyle = styleChar == "-" ? .ascii : .single
-        return arrowHead(for: .left, style: borderStyle, arrowStyle: currentArrowStyle)
-    }
-
-    private func verticalForwardArrow(styleChar: Character) -> Character {
-        let borderStyle: BorderStyle = styleChar == "|" ? .ascii : .single
-        return arrowHead(for: .down, style: borderStyle, arrowStyle: currentArrowStyle)
-    }
-
-    private func verticalBackwardArrow(styleChar: Character) -> Character {
-        let borderStyle: BorderStyle = styleChar == "|" ? .ascii : .single
-        return arrowHead(for: .up, style: borderStyle, arrowStyle: currentArrowStyle)
-    }
-
-    internal func displayCharAt(in line: String, visualColumn: Int) -> Character {
-        var col = 0
-        for ch in line {
-            if col == visualColumn {
-                return ch
-            }
-            col += ch.displayWidth
-            if col > visualColumn {
-                return " "
-            }
-        }
-        return " "
-    }
-
-    internal func replaceDisplayColumns(in line: String, startCol: Int, width: Int, replacement: String) -> String {
-        let prefix = displayPrefix(in: line, before: startCol)
-        let suffix = displaySuffix(in: line, after: startCol + width)
-        let paddedPrefix = prefix + String(repeating: " ", count: max(0, startCol - prefix.displayWidth))
-        return paddedPrefix + replacement + suffix
-    }
-
-    private func displayPrefix(in line: String, before targetCol: Int) -> String {
-        var result = ""
-        var col = 0
-        for ch in line {
-            let nextCol = col + ch.displayWidth
-            if nextCol <= targetCol {
-                result.append(ch)
-            } else {
-                break
-            }
-            col = nextCol
-        }
-        return result
-    }
-
-    private func displaySuffix(in line: String, after targetCol: Int) -> String {
-        var result = ""
-        var col = 0
-        for ch in line {
-            let nextCol = col + ch.displayWidth
-            if col >= targetCol {
-                result.append(ch)
-            } else if nextCol > targetCol {
-                result += String(repeating: " ", count: nextCol - targetCol)
-            }
-            col = nextCol
-        }
-        return result
     }
 
     internal func executeNewlineCommand(_ tokens: [String], index: inout Int) {
