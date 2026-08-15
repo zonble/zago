@@ -175,8 +175,8 @@ final class DescribeCommandDialogView {
         var set = Set<String>()
 
         // 1. Built-in LOGO Primitives
-        for prim in LogoPrimitive.allCases {
-            set.insert(prim.meta.name)
+        for alias in LogoPrimitive.keywordAliases {
+            set.insert(alias)
         }
 
         // 2. Editor Commands
@@ -228,7 +228,8 @@ final class DescribeCommandDialogView {
                 let preview = tabCandidates.prefix(6).joined(separator: ", ")
                 let more = tabCandidates.count > 6 ? ", ..." : ""
                 let candidateHint = "  [\(tabCandidates.count)] " + preview + more
-                inputLines.append(candidateHint.ansiStyled(style: ANSIStyle.dimGray))
+                let wrappedHint = wrapText(candidateHint, maxLineWidth: contentWidth, indent: "  ")
+                inputLines.append(contentsOf: wrappedHint.map { $0.ansiStyled(style: ANSIStyle.dimGray) })
             }
             lines = inputLines
         } else {
@@ -393,6 +394,15 @@ final class DescribeCommandDialogView {
             }.joined(separator: " ") ?? ""
             let syntaxStr = paramsStr.isEmpty ? meta.name : "\(meta.name) \(paramsStr)"
             primSection.append("    " + l10n["describe_command.syntax"] + syntaxStr.ansiStyled(style: ANSIStyle.bold))
+
+            let aliases = LogoPrimitive.keywordAliases.filter {
+                $0 != meta.name && LogoPrimitive.from($0) == prim
+            }
+            if !aliases.isEmpty {
+                primSection.append("")
+                primSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))
+                primSection.append("    " + aliases.joined(separator: ", "))
+            }
             primSection.append("")
 
             primSection.append("• " + l10n["describe_command.description"].ansiStyled(style: ANSIStyle.boldCyan))
@@ -493,49 +503,27 @@ final class DescribeCommandDialogView {
             : l10n["describe_command.param_optional"]
         let prefixPlain = "    • \(param.name) "
         let reqBadgeStyled = reqBadge.ansiStyled(style: ANSIStyle.dimGray)
+        let detailIndent = "      "
+        var result = [prefixPlain + reqBadgeStyled]
 
-        guard !param.allowedValues.isEmpty else {
-            return [prefixPlain + reqBadgeStyled]
+        if let description = param.description, !description.isEmpty {
+            result.append(contentsOf: wrapText(
+                l10n["describe_command.parameter_description"] + description,
+                maxLineWidth: maxLineWidth,
+                indent: detailIndent))
         }
 
-        let allowedLabel = l10n["describe_command.allowed_values"]
-        let values = param.allowedValues
-
-        let firstLineLeader = "\(prefixPlain)\(reqBadge)\(allowedLabel)"
-        let indentSize = min(firstLineLeader.displayWidth, 24)
-        let indent = String(repeating: " ", count: indentSize)
-
-        var result: [String] = []
-        var currentValues = allowedLabel
-
-        for (i, val) in values.enumerated() {
-            let item = val + (i == values.count - 1 ? ")" : ", ")
-            let testLine = result.isEmpty
-                ? "\(prefixPlain)\(reqBadge)\(currentValues)\(item)"
-                : "\(indent)\(currentValues)\(item)"
-
-            if testLine.displayWidth <= maxLineWidth {
-                currentValues += item
-            } else {
-                if result.isEmpty {
-                    let formattedFirstLine = prefixPlain + (reqBadge + currentValues).ansiStyled(style: ANSIStyle.dimGray)
-                    result.append(formattedFirstLine)
-                } else {
-                    let formattedSubsequent = indent + currentValues.ansiStyled(style: ANSIStyle.dimGray)
-                    result.append(formattedSubsequent)
-                }
-                currentValues = item
-            }
+        if !param.allowedValues.isEmpty {
+            let allowedLabel = l10n["describe_command.allowed_values"]
+            let allowedValues = allowedLabel + param.allowedValues.joined(separator: ", ") + ")"
+            result.append(contentsOf: wrapText(allowedValues, maxLineWidth: maxLineWidth, indent: detailIndent))
         }
 
-        if !currentValues.isEmpty {
-            if result.isEmpty {
-                let formattedFirstLine = prefixPlain + (reqBadge + currentValues).ansiStyled(style: ANSIStyle.dimGray)
-                result.append(formattedFirstLine)
-            } else {
-                let formattedSubsequent = indent + currentValues.ansiStyled(style: ANSIStyle.dimGray)
-                result.append(formattedSubsequent)
-            }
+        if let example = param.example, !example.isEmpty {
+            result.append(contentsOf: wrapText(
+                l10n["describe_command.parameter_example"] + example,
+                maxLineWidth: maxLineWidth,
+                indent: detailIndent))
         }
 
         return result

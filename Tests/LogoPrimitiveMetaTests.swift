@@ -17,6 +17,21 @@ import Testing
         }
     }
 
+    @Test func testAllPrimitiveParametersHaveDescriptionAndExample() {
+        for primitive in LogoPrimitive.allCases {
+            for parameter in primitive.meta.parameters ?? [] {
+                #expect(
+                    !(parameter.description?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true),
+                    "\(primitive) parameter \(parameter.name) has no description"
+                )
+                #expect(
+                    !(parameter.example?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true),
+                    "\(primitive) parameter \(parameter.name) has no example"
+                )
+            }
+        }
+    }
+
     @Test func testLogoPrimitiveExamplesStartWithKnownCommandAlias() {
         for prim in availablePrimitives {
             let meta = prim.meta
@@ -42,6 +57,8 @@ import Testing
         #expect(LogoPrimitive.formatRelativeTime.meta.parameters?[1].required == false)
         #expect(LogoPrimitive.formatRelativeTime.meta.notes == "Not supported on Linux or Windows.")
         #expect(LogoPrimitive.formatList.meta.notes == "Not supported on Linux or Windows.")
+        #expect(LogoPrimitive.formatList.meta.parameters?[0].description == "The list or array to format.")
+        #expect(LogoPrimitive.formatList.meta.parameters?[0].example == "[A B C]")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
     }

@@ -907,6 +907,8 @@ struct EnglishStrings {
         "describe_command.source_ucb_logo": "UCB Logo Standard",
         "describe_command.source_zago": "Zago Extension",
         "describe_command.parameters": "Parameters:",
+        "describe_command.parameter_description": "Description: ",
+        "describe_command.parameter_example": "Example: ",
         "describe_command.param_required": "(required)",
         "describe_command.param_optional": "(optional)",
         "describe_command.allowed_values": " (allowed: ",

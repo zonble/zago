@@ -9,7 +9,7 @@ extension LogoPrimitive {
                 description: "Returns value of named variable (same as :var).",
                 localizedDescriptionKey: "logo.doc.thing",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "varname", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "varname", required: true, description: "The variable name. Used by THING.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "THING \"count")]
             )
 
@@ -20,9 +20,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.word",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "word1", required: true),
-                    LogoPrimitiveParameter(name: "word2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false),
+                    LogoPrimitiveParameter(name: "word1", required: true, description: "The word1 argument. Used by WORD.", example: "text"),
+                    LogoPrimitiveParameter(name: "word2", required: true, description: "The word2 argument. Used by WORD.", example: "text"),
+                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by WORD.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "WORD \"Hello \"World", output: "HelloWorld")]
             )
@@ -34,9 +34,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.list",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item1", required: true),
-                    LogoPrimitiveParameter(name: "item2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false),
+                    LogoPrimitiveParameter(name: "item1", required: true, description: "The item1 argument. Used by LIST.", example: "value"),
+                    LogoPrimitiveParameter(name: "item2", required: true, description: "The item2 argument. Used by LIST.", example: "value"),
+                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by LIST.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "LIST 1 2", output: "[1 2]")]
             )
@@ -48,9 +48,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.sentence",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item1", required: true),
-                    LogoPrimitiveParameter(name: "item2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false),
+                    LogoPrimitiveParameter(name: "item1", required: true, description: "The item1 argument. Used by SENTENCE.", example: "value"),
+                    LogoPrimitiveParameter(name: "item2", required: true, description: "The item2 argument. Used by SENTENCE.", example: "value"),
+                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by SENTENCE.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "SE [Hello] [World]", output: "[Hello World]")]
             )
@@ -62,8 +62,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.fput",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by FPUT.", example: "value"),
+                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by FPUT.", example: "[A B C]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "FPUT 0 [1 2 3]", output: "[0 1 2 3]")]
             )
@@ -75,8 +75,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.lput",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "list", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by LPUT.", example: "value"),
+                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by LPUT.", example: "[A B C]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "LPUT 4 [1 2 3]", output: "[1 2 3 4]")]
             )
@@ -88,8 +88,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.array",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "size", required: true),
-                    LogoPrimitiveParameter(name: "origin", required: false),
+                    LogoPrimitiveParameter(name: "size", required: true, description: "The size argument. Used by ARRAY.", example: "3"),
+                    LogoPrimitiveParameter(name: "origin", required: false, description: "The origin argument. Used by ARRAY.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "ARRAY 10")]
             )
@@ -100,7 +100,7 @@ extension LogoPrimitive {
                 description: "Creates multi-dimensional nested array.",
                 localizedDescriptionKey: "logo.doc.mdarray",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "dimensions", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "dimensions", required: true, description: "The dimensions argument. Used by MDARRAY.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "MDARRAY [3 3]")]
             )
 
@@ -111,8 +111,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.mditem",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "indices", required: true),
-                    LogoPrimitiveParameter(name: "array", required: true),
+                    LogoPrimitiveParameter(name: "indices", required: true, description: "The indices argument. Used by MDITEM.", example: "value"),
+                    LogoPrimitiveParameter(name: "array", required: true, description: "The array argument. Used by MDITEM.", example: "[A B C]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MDITEM [1 2] :grid")]
             )
@@ -124,9 +124,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.mdsetitem",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "indices", required: true),
-                    LogoPrimitiveParameter(name: "array", required: true),
-                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "indices", required: true, description: "The indices argument. Used by MDSETITEM.", example: "value"),
+                    LogoPrimitiveParameter(name: "array", required: true, description: "The array argument. Used by MDSETITEM.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by MDSETITEM.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MDSETITEM [1 2] :grid 99")]
             )
@@ -137,7 +137,7 @@ extension LogoPrimitive {
                 description: "Converts list to fixed-size array.",
                 localizedDescriptionKey: "logo.doc.listtoarray",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "list", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by LISTTOARRAY.", example: "[A B C]")],
                 examples: [LogoPrimitiveExample(input: "LISTTOARRAY [A B C]")]
             )
 
@@ -147,7 +147,7 @@ extension LogoPrimitive {
                 description: "Converts array to list.",
                 localizedDescriptionKey: "logo.doc.arraytolist",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "array", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "array", required: true, description: "The array argument. Used by ARRAYTOLIST.", example: "[A B C]")],
                 examples: [LogoPrimitiveExample(input: "ARRAYTOLIST :myArr")]
             )
 
@@ -158,8 +158,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.combine",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "data", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by COMBINE.", example: "value"),
+                    LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by COMBINE.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "COMBINE \"A [B C]", output: "[A B C]")]
             )
@@ -170,7 +170,7 @@ extension LogoPrimitive {
                 description: "Reverses items in list, array, or characters in word.",
                 localizedDescriptionKey: "logo.doc.reverse",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by REVERSE.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "REVERSE [1 2 3]", output: "[3 2 1]")]
             )
 
@@ -189,7 +189,7 @@ extension LogoPrimitive {
                 description: "Returns first element of list or first character of word.",
                 localizedDescriptionKey: "logo.doc.first",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by FIRST.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "FIRST [Apple Banana]", output: "Apple")]
             )
 
@@ -199,7 +199,7 @@ extension LogoPrimitive {
                 description: "Returns last element of list or last character of word.",
                 localizedDescriptionKey: "logo.doc.last",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by LAST.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "LAST [Apple Banana]", output: "Banana")]
             )
 
@@ -209,7 +209,7 @@ extension LogoPrimitive {
                 description: "Returns list containing first element of each sublist.",
                 localizedDescriptionKey: "logo.doc.firsts",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "listOfLists", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "listOfLists", required: true, description: "The listOfLists argument. Used by FIRSTS.", example: "[A B C]")],
                 examples: [LogoPrimitiveExample(input: "FIRSTS [[A 1] [B 2]]", output: "[A B]")]
             )
 
@@ -219,7 +219,7 @@ extension LogoPrimitive {
                 description: "Returns list or word without its first element.",
                 localizedDescriptionKey: "logo.doc.butfirst",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by BUTFIRST.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "BF [A B C]", output: "[B C]")]
             )
 
@@ -229,7 +229,7 @@ extension LogoPrimitive {
                 description: "Returns list or word without its last element.",
                 localizedDescriptionKey: "logo.doc.butlast",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by BUTLAST.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "BL [A B C]", output: "[A B]")]
             )
 
@@ -239,7 +239,7 @@ extension LogoPrimitive {
                 description: "Returns list of sublists without their first elements.",
                 localizedDescriptionKey: "logo.doc.butfirsts",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "listOfLists", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "listOfLists", required: true, description: "The listOfLists argument. Used by BUTFIRSTS.", example: "[A B C]")],
                 examples: [LogoPrimitiveExample(input: "BFS [[A 1] [B 2]]", output: "[[1] [2]]")]
             )
 
@@ -250,8 +250,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.item",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "index", required: true),
-                    LogoPrimitiveParameter(name: "data", required: true),
+                    LogoPrimitiveParameter(name: "index", required: true, description: "The item index. Used by ITEM.", example: "3"),
+                    LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by ITEM.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "ITEM 2 [Apple Banana Orange]", output: "Banana")]
             )
@@ -262,7 +262,7 @@ extension LogoPrimitive {
                 description: "Randomly selects an element from list, array, or word.",
                 localizedDescriptionKey: "logo.doc.pick",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by PICK.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "PICK [Heads Tails]")]
             )
 
@@ -273,8 +273,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.remove",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "data", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by REMOVE.", example: "value"),
+                    LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by REMOVE.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REMOVE 2 [1 2 3 2 4]", output: "[1 3 4]")]
             )
@@ -285,7 +285,7 @@ extension LogoPrimitive {
                 description: "Removes duplicate elements from list or word preserving first order.",
                 localizedDescriptionKey: "logo.doc.remdup",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by REMDUP.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "REMDUP [1 2 2 3 1]", output: "[1 2 3]")]
             )
 
@@ -295,7 +295,7 @@ extension LogoPrimitive {
                 description: "Wraps word with leading double-quote literal.",
                 localizedDescriptionKey: "logo.doc.quoted",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "word", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "word", required: true, description: "The word argument. Used by QUOTED.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "QUOTED \"test", output: "\"test")]
             )
 
@@ -306,8 +306,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.split",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true),
-                    LogoPrimitiveParameter(name: "separator", required: true),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by SPLIT.", example: "value"),
+                    LogoPrimitiveParameter(name: "separator", required: true, description: "The separator argument. Used by SPLIT.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SPLIT \"a,b,c \",", output: "[a b c]")]
             )
@@ -319,9 +319,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.setitem",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "index", required: true),
-                    LogoPrimitiveParameter(name: "array", required: true),
-                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "index", required: true, description: "The item index. Used by SETITEM.", example: "3"),
+                    LogoPrimitiveParameter(name: "array", required: true, description: "The array argument. Used by SETITEM.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by SETITEM.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SETITEM 1 :arr \"New")]
             )
@@ -333,8 +333,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.setfirst",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "list", required: true),
-                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by SETFIRST.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by SETFIRST.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SETFIRST :myList 99")]
             )
@@ -346,8 +346,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.setbutfirst",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "list", required: true),
-                    LogoPrimitiveParameter(name: "newRest", required: true),
+                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by SETBFL.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "newRest", required: true, description: "The newRest argument. Used by SETBFL.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SETBUTFIRST :myList [X Y]")]
             )
@@ -359,8 +359,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.push",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "stackVar", required: true),
-                    LogoPrimitiveParameter(name: "item", required: true),
+                    LogoPrimitiveParameter(name: "stackVar", required: true, description: "The stackVar argument. Used by PUSH.", example: "value"),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by PUSH.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "PUSH \"stack 42")]
             )
@@ -371,7 +371,7 @@ extension LogoPrimitive {
                 description: "Pops and returns top item from variable stack list.",
                 localizedDescriptionKey: "logo.doc.pop",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "stackVar", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "stackVar", required: true, description: "The stackVar argument. Used by POP.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "MAKE \"top POP \"stack")]
             )
 
@@ -381,7 +381,7 @@ extension LogoPrimitive {
                 description: "Dequeues and returns front item from variable queue list.",
                 localizedDescriptionKey: "logo.doc.dequeue",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "queueVar", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "queueVar", required: true, description: "The queueVar argument. Used by DEQUEUE.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "MAKE \"item DEQUEUE \"q")]
             )
 
@@ -392,9 +392,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.pprop",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "plistName", required: true),
-                    LogoPrimitiveParameter(name: "propName", required: true),
-                    LogoPrimitiveParameter(name: "value", required: true),
+                    LogoPrimitiveParameter(name: "plistName", required: true, description: "The plistName argument. Used by PPROP.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "propName", required: true, description: "The propName argument. Used by PPROP.", example: "text"),
+                    LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by PPROP.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "PPROP \"person \"age 30")]
             )
@@ -406,8 +406,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.gprop",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "plistName", required: true),
-                    LogoPrimitiveParameter(name: "propName", required: true),
+                    LogoPrimitiveParameter(name: "plistName", required: true, description: "The plistName argument. Used by GPROP.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "propName", required: true, description: "The propName argument. Used by GPROP.", example: "text"),
                 ],
                 examples: [LogoPrimitiveExample(input: "GPROP \"person \"age", output: "30")]
             )
@@ -419,8 +419,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.remprop",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "plistName", required: true),
-                    LogoPrimitiveParameter(name: "propName", required: true),
+                    LogoPrimitiveParameter(name: "plistName", required: true, description: "The plistName argument. Used by REMPROP.", example: "[A B C]"),
+                    LogoPrimitiveParameter(name: "propName", required: true, description: "The propName argument. Used by REMPROP.", example: "text"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REMPROP \"person \"age")]
             )
@@ -431,7 +431,7 @@ extension LogoPrimitive {
                 description: "Returns alternating key-value list for named property list.",
                 localizedDescriptionKey: "logo.doc.plist",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "plistName", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "plistName", required: true, description: "The plistName argument. Used by PLIST.", example: "[A B C]")],
                 examples: [LogoPrimitiveExample(input: "PLIST \"person")]
             )
 
@@ -459,7 +459,7 @@ extension LogoPrimitive {
                 description: "Tests whether value is a word/string.",
                 localizedDescriptionKey: "logo.doc.isword",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by ISWORD.", example: "1")],
                 examples: [LogoPrimitiveExample(input: "WORD? \"hello", output: "true")]
             )
 
@@ -469,7 +469,7 @@ extension LogoPrimitive {
                 description: "Tests whether value is a list.",
                 localizedDescriptionKey: "logo.doc.islist",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by ISLIST.", example: "1")],
                 examples: [LogoPrimitiveExample(input: "LIST? [1 2]", output: "true")]
             )
 
@@ -479,7 +479,7 @@ extension LogoPrimitive {
                 description: "Tests whether value is an array.",
                 localizedDescriptionKey: "logo.doc.isarray",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by ISARRAY.", example: "1")],
                 examples: [LogoPrimitiveExample(input: "ARRAY? :arr")]
             )
 
@@ -489,7 +489,7 @@ extension LogoPrimitive {
                 description: "Tests whether value is a valid numeric value.",
                 localizedDescriptionKey: "logo.doc.isnumber",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "value", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "value", required: true, description: "The value to process. Used by ISNUMBER.", example: "1")],
                 examples: [LogoPrimitiveExample(input: "NUMBER? 42", output: "true")]
             )
 
@@ -499,7 +499,7 @@ extension LogoPrimitive {
                 description: "Tests whether word, list, or array is empty.",
                 localizedDescriptionKey: "logo.doc.isempty",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by ISEMPTY.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "EMPTY? []", output: "true")]
             )
 
@@ -510,8 +510,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.isequal",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true),
+                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by ISEQUAL.", example: "1"),
+                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by ISEQUAL.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "EQUAL? 10 10", output: "true")]
             )
@@ -523,8 +523,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.isnotequal",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true),
+                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by ISNOTEQUAL.", example: "1"),
+                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by ISNOTEQUAL.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "NOTEQUAL? 1 2", output: "true")]
             )
@@ -536,8 +536,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.isidentity",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true),
+                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by ISIDENTITYEQUAL.", example: "1"),
+                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by ISIDENTITYEQUAL.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: ".EQ :a :b")]
             )
@@ -549,8 +549,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.isbefore",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true),
+                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by ISBEFORE.", example: "1"),
+                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by ISBEFORE.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "BEFORE? \"apple \"banana", output: "true")]
             )
@@ -562,8 +562,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.ismember",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "data", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by ISMEMBER.", example: "value"),
+                    LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by ISMEMBER.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEMBER? 2 [1 2 3]", output: "true")]
             )
@@ -575,8 +575,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.issubstring",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "sub", required: true),
-                    LogoPrimitiveParameter(name: "string", required: true),
+                    LogoPrimitiveParameter(name: "sub", required: true, description: "The sub argument. Used by ISSUBSTRING.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by ISSUBSTRING.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SUBSTRING? \"log \"logo", output: "true")]
             )
@@ -587,7 +587,7 @@ extension LogoPrimitive {
                 description: "Tests whether name is a defined custom procedure.",
                 localizedDescriptionKey: "logo.doc.isprocedure",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "name", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "name", required: true, description: "The name. Used by ISPROCEDURE.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "PROCEDURE? \"square")]
             )
 
@@ -597,7 +597,7 @@ extension LogoPrimitive {
                 description: "Tests whether name is a built-in primitive.",
                 localizedDescriptionKey: "logo.doc.isprimitive",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "name", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "name", required: true, description: "The name. Used by ISPRIMITIVE.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "PRIMITIVE? \"sum", output: "true")]
             )
 
@@ -607,7 +607,7 @@ extension LogoPrimitive {
                 description: "Tests whether name is a defined procedure or primitive.",
                 localizedDescriptionKey: "logo.doc.isdefined",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "name", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "name", required: true, description: "The name. Used by ISDEFINED.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "DEFINED? \"box", output: "true")]
             )
 
@@ -617,7 +617,7 @@ extension LogoPrimitive {
                 description: "Tests whether variable name exists in environment.",
                 localizedDescriptionKey: "logo.doc.isname",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "varname", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "varname", required: true, description: "The variable name. Used by ISNAME.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "NAME? \"count")]
             )
 
@@ -627,7 +627,7 @@ extension LogoPrimitive {
                 description: "Returns item count of list, array, or character count of word.",
                 localizedDescriptionKey: "logo.doc.count",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "data", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by COUNT.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "COUNT [1 2 3 4]", output: "4")]
             )
 
@@ -637,7 +637,7 @@ extension LogoPrimitive {
                 description: "Returns integer Unicode code point of character.",
                 localizedDescriptionKey: "logo.doc.ascii",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "char", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "char", required: true, description: "The char argument. Used by ASCII.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "ASCII \"A", output: "65")]
             )
 
@@ -647,7 +647,7 @@ extension LogoPrimitive {
                 description: "Returns character string corresponding to integer Unicode code point.",
                 localizedDescriptionKey: "logo.doc.char",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "codepoint", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "codepoint", required: true, description: "The codepoint argument. Used by CHAR.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHAR 65", output: "A")]
             )
 
@@ -658,8 +658,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.member",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "item", required: true),
-                    LogoPrimitiveParameter(name: "data", required: true),
+                    LogoPrimitiveParameter(name: "item", required: true, description: "The item argument. Used by MEMBER.", example: "value"),
+                    LogoPrimitiveParameter(name: "data", required: true, description: "The data argument. Used by MEMBER.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEMBER 3 [1 2 3 4 5]", output: "[3 4 5]")]
             )
@@ -670,7 +670,7 @@ extension LogoPrimitive {
                 description: "Converts word to uppercase characters.",
                 localizedDescriptionKey: "logo.doc.uppercase",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "word", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "word", required: true, description: "The word argument. Used by UPPERCASE.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "UPPERCASE \"hello", output: "HELLO")]
             )
 
@@ -680,7 +680,7 @@ extension LogoPrimitive {
                 description: "Converts word to lowercase characters.",
                 localizedDescriptionKey: "logo.doc.lowercase",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "word", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "word", required: true, description: "The word argument. Used by LOWERCASE.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "LOWERCASE \"HELLO", output: "hello")]
             )
 
@@ -690,7 +690,7 @@ extension LogoPrimitive {
                 description: "Wraps text with ANSI reverse standout escape codes.",
                 localizedDescriptionKey: "logo.doc.standout",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "text", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "text", required: true, description: "The text value. Used by STANDOUT.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "STANDOUT \"Alert")]
             )
 
@@ -701,8 +701,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.translit",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "transform", required: true),
-                    LogoPrimitiveParameter(name: "string", required: true),
+                    LogoPrimitiveParameter(name: "transform", required: true, description: "The transform argument. Used by TRANSLIT.", example: "value"),
+                    LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSLIT.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "TRANSLIT \"Traditional-Simplified \"繁體", output: "繁体")]
             )
@@ -713,7 +713,7 @@ extension LogoPrimitive {
                 description: "Converts Traditional Chinese text to Simplified Chinese.",
                 localizedDescriptionKey: "logo.doc.tohans",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOHANS.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOHANS \"繁體中文", output: "繁体中文")]
             )
 
@@ -723,7 +723,7 @@ extension LogoPrimitive {
                 description: "Converts Simplified Chinese text to Traditional Chinese.",
                 localizedDescriptionKey: "logo.doc.tohant",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOHANT.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOHANT \"简体中文", output: "簡體中文")]
             )
 
@@ -733,7 +733,7 @@ extension LogoPrimitive {
                 description: "Transliterates text to Latin romanized script.",
                 localizedDescriptionKey: "logo.doc.tolatin",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOLATIN.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOLATIN \"中文", output: "zhōng wén")]
             )
 
@@ -743,7 +743,7 @@ extension LogoPrimitive {
                 description: "Converts any text to Hiragana.",
                 localizedDescriptionKey: "logo.doc.tohiragana",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOHIRAGANA.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOHIRAGANA \"カタカナ", output: "かたかな")]
             )
 
@@ -753,7 +753,7 @@ extension LogoPrimitive {
                 description: "Converts any text to Katakana.",
                 localizedDescriptionKey: "logo.doc.tokatakana",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOKATAKANA.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOKATAKANA \"ひらがな", output: "ヒラガナ")]
             )
 
@@ -763,7 +763,7 @@ extension LogoPrimitive {
                 description: "Transliterates Japanese Kana to Romaji.",
                 localizedDescriptionKey: "logo.doc.toromaji",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by TRANSFORMTOROMAJI.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "TOROMAJI \"とうきょう", output: "tōkyō")]
             )
 
@@ -773,7 +773,7 @@ extension LogoPrimitive {
                 description: "Formats typography spacing between CJK and Western alphanumeric characters.",
                 localizedDescriptionKey: "logo.doc.spacingcjk",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by SPACINGCJK.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "SPACING.CJK \"使用Zago編輯器\"", output: "使用 Zago 編輯器")]
             )
 
@@ -783,7 +783,7 @@ extension LogoPrimitive {
                 description: "Counts total Unicode grapheme clusters in string.",
                 localizedDescriptionKey: "logo.doc.countchars",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CHARCOUNT.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHARCOUNT \"Hello 世界", output: "8")]
             )
 
@@ -793,7 +793,7 @@ extension LogoPrimitive {
                 description: "Counts CJK ideograph characters in string.",
                 localizedDescriptionKey: "logo.doc.countcjk",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CHARCOUNTCJK.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHARCOUNT.CJK \"Hello 世界", output: "2")]
             )
 
@@ -803,7 +803,7 @@ extension LogoPrimitive {
                 description: "Counts words in natural language string.",
                 localizedDescriptionKey: "logo.doc.countwords",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CHARCOUNTWORDS.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHARCOUNT.WORDS \"Quick brown fox", output: "3")]
             )
 
@@ -813,7 +813,7 @@ extension LogoPrimitive {
                 description: "Counts emoji glyphs in string.",
                 localizedDescriptionKey: "logo.doc.countemoji",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CHARCOUNTEMOJI.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHARCOUNT.EMOJI \"🚀✨🎉", output: "3")]
             )
 
@@ -823,7 +823,7 @@ extension LogoPrimitive {
                 description: "Counts lines in multiline string.",
                 localizedDescriptionKey: "logo.doc.countlines",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by CHARCOUNTLINES.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "CHARCOUNT.LINES :multilineStr")]
             )
 
@@ -833,7 +833,7 @@ extension LogoPrimitive {
                 description: "Parses string into a LOGO token list.",
                 localizedDescriptionKey: "logo.doc.parse",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "string", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "string", required: true, description: "The string argument. Used by PARSE.", example: "value")],
                 examples: [LogoPrimitiveExample(input: "PARSE \"[FD 10 RT]", output: "[FD 10 RT]")]
             )
 
@@ -843,7 +843,7 @@ extension LogoPrimitive {
                 description: "Parses word string into tokenized list.",
                 localizedDescriptionKey: "logo.doc.runparse",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "word", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "word", required: true, description: "The word argument. Used by RUNPARSE.", example: "text")],
                 examples: [LogoPrimitiveExample(input: "RUNPARSE \"FD 10", output: "[FD 10]")]
             )
 
