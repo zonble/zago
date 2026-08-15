@@ -18,6 +18,7 @@ final class TextDocumentView {
     }
 
     func show() {
+        terminal.clearScreen()
         render()
         while true {
             let key = terminal.readKey()
@@ -58,6 +59,7 @@ final class TextDocumentView {
 
     private func render() {
         let (rows, cols) = terminal.getWindowSize()
+        guard rows > 2, cols > 0 else { return }
         var output = ANSIStyle.cursorHome
         output += title.paddedToDisplayWidth(cols).ansiStyled(
             style: ANSIStyle.inverse,
@@ -73,7 +75,10 @@ final class TextDocumentView {
             output += "\(ANSIStyle.clearLine)\(line.paddedToDisplayWidth(cols))\r\n"
         }
 
-        output += footer.paddedToDisplayWidth(cols).ansiStyled(style: ANSIStyle.boldCyan)
+        // Avoid writing into the bottom-right terminal corner (cols) on the last line
+        // to prevent terminals from triggering automatic vertical scrolling and tearing.
+        let footerText = footer.paddedToDisplayWidth(max(0, cols - 1))
+        output += footerText.ansiStyled(style: ANSIStyle.boldCyan)
         terminal.write(output)
         fflush(nil)
     }

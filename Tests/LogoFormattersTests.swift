@@ -254,4 +254,51 @@ import Testing
         let resDouble = engine.evaluateExpression(callDouble, index: &index)
         #expect(resDouble == "42")
     }
+
+    // MARK: - Procedure Docstring & Help Tests
+
+    @Test func testProcedureDocstringsAndHelp() {
+        let engine = LogoEngine()
+        engine.execute("TO 大寫 :x \"將阿拉伯數字轉為繁體中文公文大寫\" FORMAT.NUMBER :x \"bank \"zh-TW END")
+
+        #expect(engine.customProcedures["大寫"]?.docstring == "將阿拉伯數字轉為繁體中文公文大寫")
+
+        var index = 0
+        let docTokens = ["DOC", "\"大寫"]
+        let docRes = engine.evaluateExpression(docTokens, index: &index)
+        #expect(docRes == "將阿拉伯數字轉為繁體中文公文大寫")
+
+        index = 0
+        let helpTokens = ["HELP", "\"大寫"]
+        let helpRes = engine.evaluateExpression(helpTokens, index: &index)
+        #expect(helpRes.contains("Procedure: 大寫"))
+        #expect(helpRes.contains("Docstring: 將阿拉伯數字轉為繁體中文公文大寫"))
+
+        // Multi-line body docstring
+        engine.execute("""
+        TO 雙倍 :n
+          "計算數值的雙倍乘積"
+          :n * 2
+        END
+        """)
+
+        #expect(engine.customProcedures["雙倍"]?.docstring == "計算數值的雙倍乘積")
+
+        index = 0
+        let helpDoubleTokens = ["HELP", "\"雙倍"]
+        let helpDoubleRes = engine.evaluateExpression(helpDoubleTokens, index: &index)
+        #expect(helpDoubleRes.contains("Docstring: 計算數值的雙倍乘積"))
+        #expect(helpDoubleRes.contains("Parameters: :n"))
+
+        // Unquoted procedure symbol directly
+        index = 0
+        let unquotedDocTokens = ["DOC", "大寫"]
+        let unquotedDocRes = engine.evaluateExpression(unquotedDocTokens, index: &index)
+        #expect(unquotedDocRes == "將阿拉伯數字轉為繁體中文公文大寫")
+
+        index = 0
+        let unquotedHelpTokens = ["HELP", "雙倍"]
+        let unquotedHelpRes = engine.evaluateExpression(unquotedHelpTokens, index: &index)
+        #expect(unquotedHelpRes.contains("Procedure: 雙倍"))
+    }
 }

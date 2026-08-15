@@ -324,6 +324,7 @@ extension LogoEngine {
             let parsed = LogoValue.parse(specVal)
             if case .list(let subLists) = parsed, subLists.count >= 2 {
                 var params: [String] = []
+                var docstring: String? = nil
                 var bodyTokens: [String] = []
                 if case .list(let paramItems) = subLists[0] {
                     params = paramItems.map { $0.description.trimmingCharacters(in: CharacterSet(charactersIn: ":\"")) }
@@ -331,13 +332,24 @@ extension LogoEngine {
                     params = [s.trimmingCharacters(in: CharacterSet(charactersIn: ":\""))]
                 }
 
-                if case .list(let bodyItems) = subLists[1] {
-                    bodyTokens = bodyItems.map { $0.description }
-                } else if case .string(let s) = subLists[1] {
-                    bodyTokens = LogoTokenizer.tokenize(s)
+                if subLists.count >= 3 {
+                    if case .string(let doc) = subLists[1] {
+                        docstring = doc
+                    }
+                    if case .list(let bodyItems) = subLists[2] {
+                        bodyTokens = bodyItems.map { $0.description }
+                    } else if case .string(let s) = subLists[2] {
+                        bodyTokens = LogoTokenizer.tokenize(s)
+                    }
+                } else {
+                    if case .list(let bodyItems) = subLists[1] {
+                        bodyTokens = bodyItems.map { $0.description }
+                    } else if case .string(let s) = subLists[1] {
+                        bodyTokens = LogoTokenizer.tokenize(s)
+                    }
                 }
 
-                customProcedures[name] = LogoProcedure(name: name, parameters: params, bodyTokenTexts: bodyTokens)
+                customProcedures[name] = LogoProcedure(name: name, parameters: params, docstring: docstring, bodyTokenTexts: bodyTokens)
             }
             return true
 
