@@ -835,9 +835,10 @@ struct TraditionalChineseStrings {
         "menu.diagrams.dot_digraph": "Graphviz 有向圖 (digraph)",
         "menu.diagrams.dot_graph": "Graphviz 無向圖 (graph)",
 
-        "menu.help.show": "使用手冊手冊",
+        "menu.help.show": "使用說明手冊",
         "menu.help.logo_reference": "Editor LOGO 指令參考",
         "menu.help.describe_key": "查詢按鍵功能",
+        "menu.help.describe_command": "查詢指令與程序",
         "menu.help.logo_workspace": "Editor LOGO 工作區",
 
         "transform.tohant": "繁體中文",

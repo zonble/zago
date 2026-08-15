@@ -458,7 +458,7 @@ TO COMPUTE_AND_DRAW :x
 END
 ```
 
-#### Procedure Docstrings & Documentation (`DOC` and `HELP`) 📖
+#### Procedure Docstrings & Documentation (`DOC`) 📖
 
 In true Lisp tradition, procedures support first-class **docstrings** right after parameter declarations or at the start of the body:
 
@@ -474,15 +474,13 @@ TO 雙倍 :n
   :n * 2
 END
 
-; Query docstring and help information:
+; Query docstring programmatically in LOGO scripts:
 SHOW DOC "大寫
 ; => "將阿拉伯數字轉為繁體中文支票大寫金額"
 
-SHOW HELP "大寫
-; => Procedure: 大寫
-;    Parameters: :x
-;    Docstring: 將阿拉伯數字轉為繁體中文支票大寫金額
-;    Definition: FORMAT.NUMBER :x "bank "zh-TW
+; Or in Editor Command Bar:
+; :help-command 大寫
+; (Opens the interactive Help Modal Dialog showing procedure signature, docstring, and definition)
 ```
 
 Once defined, procedures live for the duration of the editor session.

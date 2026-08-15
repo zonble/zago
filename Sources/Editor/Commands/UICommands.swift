@@ -148,3 +148,46 @@ struct DescribeKeyCommand: Command {
         return .succeeded
     }
 }
+
+struct DescribeCommandCommand: Command {
+    let id: CommandID = .helpDescribeCommand
+    let name = "Describe Command"
+    let description = "Describe Editor commands and LOGO procedures"
+    let commandBarAliases = ["help-command", "help-cmd", "describe-command", "describe-proc"]
+
+    init() {}
+
+    func match(_ input: CommandBarInput) -> Bool {
+        guard let token = input.lowerFirstToken else { return false }
+        return commandBarAliases.contains(token)
+    }
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.menuBarController.isActive = false
+        DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: nil,
+            language: editor.language
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+        return .succeeded
+    }
+
+    @discardableResult
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        editor.menuBarController.isActive = false
+        let query = input.rest.trimmingCharacters(in: .whitespaces)
+        DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: query.isEmpty ? nil : query,
+            language: editor.language
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+        return .succeeded
+    }
+}
