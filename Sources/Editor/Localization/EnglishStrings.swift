@@ -58,6 +58,9 @@ struct EnglishStrings {
         "help.ai_reject": "Reject AI",
         "help.ai_next_proposal": "Next Prop",
         "help.ai_previous_proposal": "Prev Prop",
+        "help.run_logo": "Run Logo",
+        "help.all": "All",
+        "help.goto_line": "Goto Line",
         "chrome.end_of_file": "End of File",
 
         // Prompts
@@ -66,6 +69,9 @@ struct EnglishStrings {
         "prompt.confirm_reload": "File changed on disk. Reload? (Answering \"N\" will keep local buffer): ",
         "prompt.encoding_fallback": "Encoding \"%@\" cannot represent new text. Convert and save as UTF-8? (y/n) ",
         "prompt.search": "Search",
+        "prompt.replace_search": "Search (to replace)",
+        "prompt.replace_with": "Replace with: ",
+        "prompt.confirm_replace": "Replace this instance? [Y]es / [N]o / [A]ll / [^C]ancel: ",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
         "prompt.logo": "❯ ",

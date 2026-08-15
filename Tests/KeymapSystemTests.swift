@@ -480,6 +480,27 @@ import Foundation
         editor.processKey(.ctrl("k"))
         #expect(editor.buffer.lines[0] == "Stay Intact")
     }
+
+    @Test func testSearchReplaceKeybindingsAcrossPresets() throws {
+        let classicKeymap = KeymapManager(preset: .classic)
+        #expect(classicKeymap.resolve(key: .ctrl("\\"), in: .text) == .searchReplace)
+        #expect(classicKeymap.resolve(key: .alt("r"), in: .text) == .searchReplace)
+        #expect(classicKeymap.resolve(key: .alt("R"), in: .text) == .searchReplace)
+
+        let modernKeymap = KeymapManager(preset: .modern)
+        #expect(modernKeymap.resolve(key: .ctrl("h"), in: .text) == .searchReplace)
+        #expect(modernKeymap.resolve(key: .ctrl("H"), in: .text) == .searchReplace)
+
+        // Verify editor pressing ^H in modern keymap opens replaceSearch prompt
+        let editor = Editor()
+        editor.apply(.keymap(.modern))
+        editor.processKey(.ctrl("h"))
+        if case .replaceSearch = editor.currentPromptMode {
+            #expect(true)
+        } else {
+            #expect(Bool(false), "Expected currentPromptMode to be .replaceSearch")
+        }
+    }
 }
 
 

@@ -283,4 +283,113 @@ final class SearchController: KeyInputHandler {
                 .succeeded(message: editor.l10n.foundQueryAtLine(query: query, line: candidate.line + 1)))
         }
     }
+
+    /// Starts interactive search & replace workflow.
+    func startInteractiveReplace(query: String, replacement: String) {
+        guard let editor else { return }
+        editor.saveUndoSnapshot()
+
+        let candidates = editor.isRegexSearchEnabled
+            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { regexSearchCandidates(regex: $0) } ?? []
+            : plainSearchCandidates(query: query)
+
+        guard !candidates.isEmpty else {
+            editor.buffer.activeSearchMatch = nil
+            lastSearchQuery = query
+            editor.reportOperationResult(.noOp(message: editor.l10n.notFound(query: query)))
+            return
+        }
+
+        runInteractiveReplaceStep(query: query, replacement: replacement, candidateIndex: 0, replacedCount: 0)
+    }
+
+    private func runInteractiveReplaceStep(
+        query: String,
+        replacement: String,
+        candidateIndex: Int,
+        replacedCount: Int
+    ) {
+        guard let editor else { return }
+
+        let candidates = editor.isRegexSearchEnabled
+            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { regexSearchCandidates(regex: $0) } ?? []
+            : plainSearchCandidates(query: query)
+
+        guard candidateIndex < candidates.count else {
+            editor.buffer.activeSearchMatch = nil
+            editor.reportOperationResult(
+                .succeeded(message: editor.l10n.replacedOccurrences(replacedCount))
+            )
+            return
+        }
+
+        let candidate = candidates[candidateIndex]
+        editor.buffer.lineIndex = candidate.line
+        editor.buffer.columnIndex = candidate.column
+        editor.buffer.activeSearchMatch = SearchMatch(
+            query: query,
+            line: candidate.line,
+            column: candidate.column,
+            length: candidate.length,
+            usesRegex: editor.isRegexSearchEnabled
+        )
+
+        editor.currentPromptMode = .confirmReplace(query: query, replacement: replacement) { [weak self] choice in
+            guard let self = self, let editor = self.editor else { return }
+            switch choice {
+            case .yes:
+                self.replaceCandidate(candidate, with: replacement)
+                self.runInteractiveReplaceStep(
+                    query: query,
+                    replacement: replacement,
+                    candidateIndex: candidateIndex,
+                    replacedCount: replacedCount + 1
+                )
+
+            case .no:
+                self.runInteractiveReplaceStep(
+                    query: query,
+                    replacement: replacement,
+                    candidateIndex: candidateIndex + 1,
+                    replacedCount: replacedCount
+                )
+
+            case .all:
+                var count = replacedCount
+                while true {
+                    let remaining = editor.isRegexSearchEnabled
+                        ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { self.regexSearchCandidates(regex: $0) } ?? []
+                        : self.plainSearchCandidates(query: query)
+                    guard let first = remaining.first(where: { self.isAtOrAfter($0, line: candidate.line, column: 0, includeEqual: true) }) ?? remaining.first else {
+                        break
+                    }
+                    self.replaceCandidate(first, with: replacement)
+                    count += 1
+                }
+                editor.buffer.activeSearchMatch = nil
+                editor.reportOperationResult(
+                    .succeeded(message: editor.l10n.replacedOccurrences(count))
+                )
+
+            case .cancel:
+                editor.buffer.activeSearchMatch = nil
+                editor.reportOperationResult(
+                    .succeeded(message: editor.l10n.replacedOccurrences(replacedCount))
+                )
+            }
+        }
+    }
+
+    private func replaceCandidate(_ candidate: SearchCandidate, with replacement: String) {
+        guard let editor else { return }
+        guard candidate.line < editor.buffer.lines.count else { return }
+        var line = editor.buffer.lines[candidate.line]
+        guard candidate.column + candidate.length <= line.count else { return }
+        let startIdx = line.index(line.startIndex, offsetBy: candidate.column)
+        let endIdx = line.index(startIdx, offsetBy: candidate.length)
+        line.replaceSubrange(startIdx..<endIdx, with: replacement)
+        editor.buffer.lines[candidate.line] = line
+        editor.buffer.columnIndex = candidate.column + replacement.count
+        editor.buffer.isModified = true
+    }
 }

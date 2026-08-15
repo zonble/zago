@@ -1,7 +1,7 @@
 import Foundation
 import TextMetrics
 
-struct WhereIsCommand: Command {
+struct SearchCommand: Command {
     let id: CommandID = .searchWhereIs
     let name = "Where Is"
     let description = "Search text"
@@ -15,9 +15,9 @@ struct WhereIsCommand: Command {
     }
 }
 
-struct SearchCommand: Command {
+struct SlashSearchCommand: Command {
     let id: CommandID = .searchWhereIs
-    let name = "Search"
+    let name = "Slash Search"
     let description = "Search text with /<query>"
     let commandBarAliases: [String] = ["/"]
 
@@ -87,7 +87,7 @@ struct SearchReplaceCommand: Command {
 
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
-        editor.promptSearch()
+        editor.promptSearchAndReplace()
         return .prompting
     }
 }

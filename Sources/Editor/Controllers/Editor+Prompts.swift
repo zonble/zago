@@ -67,6 +67,30 @@ extension Editor {
         })
     }
 
+    /// Prompts user for interactive search and replace (^\ / ^H / :replace).
+    func promptSearchAndReplace() {
+        if buffer.isReadOnly {
+            reportOperationResult(.noOp(message: l10n["status.read_only"]))
+            return
+        }
+        promptInputText = lastSearchQuery
+        currentPromptMode = .replaceSearch(completion: { [weak self] query in
+            guard let self = self, let query = query, !query.isEmpty else {
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_search"] ?? ""))
+                return
+            }
+            self.lastSearchQuery = query
+            self.promptInputText = ""
+            self.currentPromptMode = .replaceWith(searchQuery: query, completion: { [weak self] replacement in
+                guard let self = self, let replacement = replacement else {
+                    self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_search"] ?? ""))
+                    return
+                }
+                self.searchController.startInteractiveReplace(query: query, replacement: replacement)
+            })
+        })
+    }
+
     /// Prompts user to input file path to insert into buffer (^R / F5).
     func promptInsertFilePath() {
         promptInputText = ""
