@@ -60,10 +60,10 @@ extension LogoEngine {
             return
         }
 
-        performFloodFill(startLine: startLine, startCol: startCol, fillPattern: fillPattern)
+        executeFloodFill(startLine: startLine, startCol: startCol, fillPattern: fillPattern)
     }
 
-    private func performFloodFill(startLine: Int, startCol: Int, fillPattern: String) {
+    private func executeFloodFill(startLine: Int, startCol: Int, fillPattern: String) {
         guard let editor = self.delegate else { return }
 
         let totalLines = max(startLine + 1, queryInteger(.lineCount) ?? 0)

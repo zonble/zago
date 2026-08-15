@@ -48,10 +48,10 @@ extension LogoEngine {
             return
         }
 
-        performBoxInset(startLine: startLine, startCol: startCol, insetText: insetText)
+        executeBoxInset(startLine: startLine, startCol: startCol, insetText: insetText)
     }
 
-    private func performBoxInset(startLine: Int, startCol: Int, insetText: String) {
+    private func executeBoxInset(startLine: Int, startCol: Int, insetText: String) {
         guard let editor = self.delegate else { return }
 
         let lineCount = queryInteger(.lineCount) ?? (startLine + 10)
