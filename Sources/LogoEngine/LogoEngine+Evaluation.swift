@@ -220,6 +220,55 @@ extension LogoEngine {
                     leftVal = "\(diff)"
                     setLastExpressionString(leftVal)
 
+                case .formatNumber:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    let num = Double(cleanArgs[0]) ?? 0
+                    let style = cleanArgs.count > 1 ? LogoFormatters.NumberStyle.parse(cleanArgs[1]) : .decimal
+                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                    let curr = cleanArgs.count > 3 ? cleanArgs[3] : nil
+                    leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr)
+                    setLastExpressionString(leftVal)
+
+                case .formatList:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    let parsed = LogoValue.parse(cleanArgs[0])
+                    let items: [String]
+                    switch parsed {
+                    case .list(let l), .array(let l): items = l.map { $0.stringValue }
+                    case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
+                    }
+                    let type = cleanArgs.count > 1 ? LogoFormatters.ListType.parse(cleanArgs[1]) : .and
+                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                    leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
+                    setLastExpressionString(leftVal)
+
+                case .formatRelativeTime:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = ""; break }
+                    let arg1 = cleanArgs[0]
+                    if let val = Double(arg1) {
+                        let unit = cleanArgs.count > 1 ? cleanArgs[1] : "days"
+                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        leftVal = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
+                    } else if let targetDate = LogoDateTimeFormatter.parseDate(arg1) {
+                        let locale = cleanArgs.count > 1 ? cleanArgs[1] : nil
+                        leftVal = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
+                    } else {
+                        leftVal = arg1
+                    }
+                    setLastExpressionString(leftVal)
+
+                case .formatBytes:
+                    let cleanArgs = args.map { unquote($0) }
+                    guard !cleanArgs.isEmpty else { leftVal = "0 bytes"; break }
+                    let bytes = Int64(Double(cleanArgs[0]) ?? 0)
+                    let style = cleanArgs.count > 1 ? LogoFormatters.ByteCountStyle.parse(cleanArgs[1]) : .file
+                    let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                    leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
+                    setLastExpressionString(leftVal)
+
                 default:
                     leftVal = ""
                     setLastExpressionString(leftVal)

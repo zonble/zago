@@ -30,6 +30,18 @@ extension LogoEngine {
         case .datediff:
             return evaluateDateDiffPrimitive(tokens: tokens, index: &index)
 
+        case .formatNumber:
+            return evaluateFormatNumberPrimitive(tokens: tokens, index: &index)
+
+        case .formatList:
+            return evaluateFormatListPrimitive(tokens: tokens, index: &index)
+
+        case .formatRelativeTime:
+            return evaluateFormatRelativeTimePrimitive(tokens: tokens, index: &index)
+
+        case .formatBytes:
+            return evaluateFormatBytesPrimitive(tokens: tokens, index: &index)
+
         case .count:
             index += 1
             let v = evaluateExpression(tokens, index: &index)
@@ -391,5 +403,169 @@ extension LogoEngine {
         let result = "\(diff)"
         setLastExpressionString(result)
         return result
+    }
+
+    private func evaluateFormatNumberPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "" }
+        let numStr = evaluateExpression(tokens, index: &index)
+        let num = Double(unquote(numStr)) ?? 0
+
+        var style: LogoFormatters.NumberStyle = .decimal
+        var localeSpec: String? = nil
+        var currencyCode: String? = nil
+        var precision: Int? = nil
+
+        if index + 1 < tokens.count && tokens[index + 1] == "[" {
+            index += 1
+            let rawList = evaluateExpression(tokens, index: &index)
+            let parsed = LogoValue.parse(rawList)
+            if case .list(let items) = parsed {
+                var isDict = false
+                var i = 0
+                while i < items.count {
+                    let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                    if ["style", "fmt", "locale", "lang", "currency", "curr", "precision", "digits"].contains(cleanKey) && i + 1 < items.count {
+                        isDict = true
+                        let val = items[i + 1].stringValue
+                        switch cleanKey {
+                        case "style", "fmt": style = LogoFormatters.NumberStyle.parse(val)
+                        case "locale", "lang": localeSpec = val
+                        case "currency", "curr": currencyCode = val
+                        case "precision", "digits": precision = Int(val)
+                        default: break
+                        }
+                        i += 2
+                    } else {
+                        i += 1
+                    }
+                }
+                if !isDict {
+                    if items.count > 0 { style = LogoFormatters.NumberStyle.parse(items[0].stringValue) }
+                    if items.count > 1 { localeSpec = items[1].stringValue }
+                }
+            }
+        } else {
+            var positional: [String] = []
+            while positional.count < 3 && index + 1 < tokens.count {
+                let nextToken = tokens[index + 1]
+                if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                    break
+                }
+                index += 1
+                let val = evaluateExpression(tokens, index: &index)
+                positional.append(unquote(val))
+            }
+            if positional.count > 0 { style = LogoFormatters.NumberStyle.parse(positional[0]) }
+            if positional.count > 1 { localeSpec = positional[1] }
+            if positional.count > 2 { currencyCode = positional[2] }
+        }
+
+        let res = LogoFormatters.formatNumber(num, style: style, locale: localeSpec, currencyCode: currencyCode, precision: precision)
+        setLastExpressionString(res)
+        return res
+    }
+
+    private func evaluateFormatListPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "" }
+        let listStr = evaluateExpression(tokens, index: &index)
+        let parsed = LogoValue.parse(listStr)
+
+        var items: [String] = []
+        switch parsed {
+        case .list(let l), .array(let l):
+            items = l.map { $0.stringValue }
+        case .string(let s):
+            let clean = unquote(s)
+            if clean.contains(" ") {
+                items = clean.split(separator: " ").map { String($0) }
+            } else {
+                items = [clean]
+            }
+        }
+
+        var type: LogoFormatters.ListType = .and
+        var localeSpec: String? = nil
+
+        var positional: [String] = []
+        while positional.count < 2 && index + 1 < tokens.count {
+            let nextToken = tokens[index + 1]
+            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                break
+            }
+            index += 1
+            let val = evaluateExpression(tokens, index: &index)
+            positional.append(unquote(val))
+        }
+
+        if positional.count > 0 { type = LogoFormatters.ListType.parse(positional[0]) }
+        if positional.count > 1 { localeSpec = positional[1] }
+
+        let res = LogoFormatters.formatList(items, type: type, locale: localeSpec)
+        setLastExpressionString(res)
+        return res
+    }
+
+    private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "" }
+        let arg1 = evaluateExpression(tokens, index: &index)
+        let clean1 = unquote(arg1)
+
+        var positional: [String] = []
+        while positional.count < 2 && index + 1 < tokens.count {
+            let nextToken = tokens[index + 1]
+            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                break
+            }
+            index += 1
+            let val = evaluateExpression(tokens, index: &index)
+            positional.append(unquote(val))
+        }
+
+        let res: String
+        if let val = Double(clean1) {
+            let unit = positional.count > 0 ? positional[0] : "days"
+            let locale = positional.count > 1 ? positional[1] : nil
+            res = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
+        } else if let targetDate = LogoDateTimeFormatter.parseDate(clean1) {
+            let locale = positional.count > 0 ? positional[0] : nil
+            res = LogoFormatters.formatRelativeDate(target: targetDate, locale: locale)
+        } else {
+            res = clean1
+        }
+
+        setLastExpressionString(res)
+        return res
+    }
+
+    private func evaluateFormatBytesPrimitive(tokens: [String], index: inout Int) -> String {
+        index += 1
+        guard index < tokens.count else { return "0 bytes" }
+        let byteStr = evaluateExpression(tokens, index: &index)
+        let bytes = Int64(Double(unquote(byteStr)) ?? 0)
+
+        var style: LogoFormatters.ByteCountStyle = .file
+        var localeSpec: String? = nil
+
+        var positional: [String] = []
+        while positional.count < 2 && index + 1 < tokens.count {
+            let nextToken = tokens[index + 1]
+            if LogoEngine.isStatementCommand(nextToken) || nextToken == "]" || nextToken == ")" {
+                break
+            }
+            index += 1
+            let val = evaluateExpression(tokens, index: &index)
+            positional.append(unquote(val))
+        }
+
+        if positional.count > 0 { style = LogoFormatters.ByteCountStyle.parse(positional[0]) }
+        if positional.count > 1 { localeSpec = positional[1] }
+
+        let res = LogoFormatters.formatBytes(bytes, style: style, locale: localeSpec)
+        setLastExpressionString(res)
+        return res
     }
 }

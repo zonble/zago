@@ -3,6 +3,9 @@ import PackageDescription
 
 let package = Package(
     name: "zago",
+    platforms: [
+        .macOS(.v13)
+    ],
     products: [
         .executable(name: "zago", targets: ["zago"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),

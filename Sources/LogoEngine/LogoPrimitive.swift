@@ -258,6 +258,10 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case dateformat
     case dateadd
     case datediff
+    case formatNumber
+    case formatList
+    case formatRelativeTime
+    case formatBytes
     case search
     case sort
     case fill
@@ -547,9 +551,13 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["DATE"], .date),
         (["TIME"], .time),
         (["DATETIME", "TIMESTAMP", "NOW"], .datetime),
-        (["DATEFORMAT", "FORMATDATE", "FDATE"], .dateformat),
+        (["FORMAT.DATE", "DATEFORMAT", "FORMATDATE", "FDATE"], .dateformat),
         (["DATEADD", "ADDDATE"], .dateadd),
         (["DATEDIFF", "DIFFDATE"], .datediff),
+        (["FORMAT.NUMBER", "FORMATNUMBER", "NUMBERFORMAT", "NUMFORMAT", "FNUM"], .formatNumber),
+        (["FORMAT.LIST", "FORMATLIST", "LISTFORMAT", "FLIST"], .formatList),
+        (["FORMAT.RELATIVETIME", "FORMAT.RELTIME", "RELATIVETIME", "RELTIME", "FTIME"], .formatRelativeTime),
+        (["FORMAT.BYTES", "FORMAT.BYTECOUNT", "BYTEFORMAT", "FORMATBYTES", "FBYTES", "BYTESIZE"], .formatBytes),
         (["SEARCH"], .search),
     ]
 
@@ -598,6 +606,6 @@ extension LogoPrimitive {
     ])
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,
-        .dateformat, .dateadd, .datediff,
+        .dateformat, .dateadd, .datediff, .formatNumber, .formatList, .formatRelativeTime, .formatBytes,
     ]
 }
