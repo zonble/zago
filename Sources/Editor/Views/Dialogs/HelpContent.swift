@@ -73,12 +73,14 @@ enum HelpContent {
             titleKey: "helpview.sec_search",
             items: [
                 HelpItem(commandID: .searchWhereIs),
+                HelpItem(commandID: .searchReplace),
                 HelpItem(commandID: .documentOpenLink),
                 HelpItem(commandID: .documentOutline),
                 HelpItem(commandID: .screenRefresh),
                 HelpItem(commandID: .cursorPos),
                 HelpItem(commandID: .editSpell),
                 HelpItem(commandID: .editJustify),
+                HelpItem(commandID: .editEvalLogo),
             ]
         ),
         Section(
@@ -96,7 +98,7 @@ enum HelpContent {
                 HelpItem(commandID: .menuShow),
             ]
         ),
-        Section(titleKey: "helpview.sec_set", itemPrefix: "helpview.set", itemRange: 1...14),
+        Section(titleKey: "helpview.sec_set", itemPrefix: "helpview.set", itemRange: 1...23),
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
     ]
 

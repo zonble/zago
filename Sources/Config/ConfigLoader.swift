@@ -334,21 +334,31 @@ public final class ConfigLoader {
 
             # View & Layout Options
             set wrap 80
+            set fill 72
             set ruler on
             set linenumbers on
             set sublinenumbers off
             set syntax on
             set tab 4
+            set smarttab on
+            set list-indent-size 2
+            set list-wrap-indent on
             set autoreload on
             set trim-trailing-whitespace off
+            set nonewlines off
+            set git-diff on
             set border single
             set arrow solid
+            set keymap classic
 
             # Interface Language
             # set lang en
 
             # Spell Checker Language
             # set spell-language en_US
+
+            # IPC Socket Server
+            # set ipc on
 
             # Custom Key Bindings
             # bind <key> <command_id_or_macro>
