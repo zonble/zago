@@ -133,7 +133,7 @@ struct TraditionalChineseStrings {
             GOTO row [col]                       跳轉至 1-based 指定列/欄
             FIND "query                          搜尋指定文字
             INDENT / OUTDENT                     增加 / 減少縮排 (4 個空格)
-            NL / NEWLINE / ENTER                 於當前游標位置插入新行 (換行)
+            NL / NEWLINE                         於當前游標位置插入新行 (換行)
             JOINLINE / SPLITLINE                 接合下一行 / 拆分當前行
             MARK / CUT / UNCUT                   標記選取區 / 剪下 / 貼上剪貼簿
 
@@ -194,8 +194,8 @@ struct TraditionalChineseStrings {
             DATE [format] [locale] [tz] [cal]    取得目前日期（支援樣式、時區、民國/和曆等曆法）
             TIME [format] [locale] [tz] [cal]    取得目前時間（預設："HH:mm:ss"）
             DATETIME [fmt] [loc] [tz] [cal]      取得完整日期時間字串
-            DATEADD date amount [unit]           加減日期時間單位（天、月、時等）
-            DATEDIFF date1 date2 [unit]          計算兩日期間距（天、月等）
+            DATE.ADD date amount [unit]          加減日期時間單位（天、月、時等）
+            DATE.DIFF date1 date2 [unit]         計算兩日期間距（天、月等）
             FORMAT.DATE date [fmt] [loc] [tz]    格式化指定日期/時間戳記/清單
             FORMAT.NUMBER num [style] [loc]      格式化數字（words 國字、caps 大寫支票、roman、money、pct）
             FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、香蕉與芭樂）
@@ -222,12 +222,12 @@ struct TraditionalChineseStrings {
             HEADING                              回傳目前繪圖方向
 
           9. Regex
-            REGEX_MATCH s "pattern"              正規表達式全字串匹配 (REMATCH?)
-            REGEX_REPLACE s "pat" "repl"         正規表達式全域搜尋與取代 (RREPLACE)
-            REGEX_FIND s "pattern"               正規表達式搜尋並回傳匹配項清單 (RFIND)
+            REGEX.MATCH s "pattern"              正規表達式全字串匹配
+            REGEX.REPLACE s "pat" "repl"         正規表達式全域搜尋與取代
+            REGEX.FIND s "pattern"               正規表達式搜尋並回傳匹配項清單
 
           10. Flow
-            REPEAT n [ commands ]                重複執行 n 次（可用 # 或 repcount）
+            REPEAT n [ commands ]                重複執行 n 次（可用 :# 或 repcount）
             FOR [ var start end step ] [ ]       數值迴圈控制
             DOTIMES [ var n ] [ commands ]       執行 n 次 (var 從 0 至 n-1)
             WHILE [ test ] [ commands ]          條件成立時持續執行
@@ -249,12 +249,12 @@ struct TraditionalChineseStrings {
             SIN / COS / TAN degrees              以角度為單位的三角函數
             RANDOM n / RERANDOM [seed]           產生 0...n-1 隨機整數 / 重置隨機種子
             ISEQ start end                       產生連續整數 List (例如 ISEQ 1 5)
-            BITAND a b / BIT.AND                 整數位元 logic AND 運算
-            BITOR a b / BIT.OR                   整數位元 logic OR 運算
-            BITXOR a b / BIT.XOR                 整數位元 logic XOR 運算
-            BITNOT a / BIT.NOT                   整數位元邏輯反轉運算
-            LSHIFT a bits / BIT.SHL              整數位元邏輯左移
-            RSHIFT a bits / BIT.SHR              整數位元邏輯右移
+            BIT.AND a b                          整數位元 logic AND 運算
+            BIT.OR a b                           整數位元 logic OR 運算
+            BIT.XOR a b                          整數位元 logic XOR 運算
+            BIT.NOT a                            整數位元邏輯反轉運算
+            BIT.SHL a bits / LSHIFT              整數位元邏輯左移
+            BIT.SHR a bits / RSHIFT              整數位元邏輯右移
 
           13. Program
             TO name :arg ... END                 定義自訂 Procedure（單一運算式支援隱式回傳，免寫 OP！）

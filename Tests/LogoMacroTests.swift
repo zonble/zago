@@ -121,7 +121,7 @@ final class LogoTestResultBox: @unchecked Sendable {
 
     #expect(LogoPrimitive.from("SET") == nil)
 
-    logoEngine.execute("MAKE \"msg_val\" 42 MSG \"Current Val: \" + :msg_val")
+    logoEngine.execute("MAKE \"msg_val\" 42 SHOW \"Current Val: \" + :msg_val")
     #expect(editor.statusMessage == "Current Val: 42")
 }
 

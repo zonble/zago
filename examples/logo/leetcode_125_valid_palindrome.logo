@@ -4,11 +4,11 @@
 ; A phrase is a palindrome if, after converting all uppercase letters into
 ; lowercase letters and removing all non-alphanumeric characters, it reads
 ; the same forward and backward.
-; Uses new string primitives: `lowercase`, `regex_replace`, `reverse`.
+; Uses new string primitives: `lowercase`, `regex.replace`, `reverse`.
 ; ==============================================================================
 
 TO ISPALINDROME :s
-  MAKE "clean LOWERCASE REGEX_REPLACE "[^a-zA-Z0-9]" "" :s
+  MAKE "clean LOWERCASE REGEX.REPLACE "[^a-zA-Z0-9]" "" :s
   MAKE "rev REVERSE :clean
   IF :clean = :rev [ OUTPUT "true ]
   OUTPUT "false

@@ -543,19 +543,19 @@ TYPE "hello;world"
 | `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date with full Foundation locale, timezone, and calendar support (e.g. `DATE "full "zh_TW`, `DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc`) | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
 | `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time with timezone and style presets (default: `HH:mm:ss`) | `TIME`, `TIME "medium "en_US "UTC` |
 | `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time | `DATETIME`, `DATETIME "iso8601` |
-| `FORMAT.DATE` | `DATEFORMAT`, `FORMATDATE`, `FDATE` | `FORMAT.DATE date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `FORMAT.DATE [2026 12 25] "japanese` |
-| `FORMAT.NUMBER` | `FORMATNUMBER`, `NUMBERFORMAT`, `FNUM` | `FORMAT.NUMBER num [style] [locale] [curr]` | Formats numbers (spellout/Chinese words, financial uppercase 壹貳參, currency, percent, decimal, roman MMXXVI, ordinal) | `FORMAT.NUMBER 12345 "financial "zh_TW` |
-| `FORMAT.LIST` | `FORMATLIST`, `LISTFORMAT`, `FLIST` | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
-| `FORMAT.RELATIVETIME` | `FORMAT.RELTIME`, `RELATIVETIME`, `RELTIME`, `FTIME` | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
-| `FORMAT.BYTES` | `FORMAT.BYTECOUNT`, `BYTEFORMAT`, `FBYTES`, `BYTESIZE` | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
-| `DATEADD` | `ADDDATE` | `DATEADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATEADD DATE 7 "days` |
-| `DATEDIFF` | `DIFFDATE` | `DATEDIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATEDIFF "2026-12-31 DATE "days` |
-| `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
+| `FORMAT.DATE` | - | `FORMAT.DATE date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `FORMAT.DATE [2026 12 25] "japanese` |
+| `FORMAT.NUMBER` | - | `FORMAT.NUMBER num [style] [locale] [curr]` | Formats numbers (spellout/Chinese words, financial uppercase 壹貳參, currency, percent, decimal, roman MMXXVI, ordinal) | `FORMAT.NUMBER 12345 "financial "zh_TW` |
+| `FORMAT.LIST` | - | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
+| `FORMAT.RELATIVETIME` | - | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
+| `FORMAT.BYTES` | - | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
+| `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
+| `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
+| `NEWLINE` | `NL` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
 | `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
 | `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
 | `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL (2 + 3)` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
-| `DELETELINE` | `DELLINE`, `KILLLINE`, `DL` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE`, `DL (1 + 2)` |
+| `DELETELINE` | `DELLINE`, `KILLLINE` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE` |
 | `CHANGE` | - | `CHANGE old new` | Replaces text in current line, or selected lines when a selection is active | `CHANGE "foo" "bar"` |
 | `JOIN` | - | `JOIN [separator]` | Joins the next line into the current line | `JOIN " "` |
 | `SPLITLINE` | - | `SPLITLINE` | Splits the current line at the cursor | `SPLITLINE` |
@@ -759,9 +759,9 @@ TYPE ITEM 2 :cells
 | `BIT.SHR` | - | `BIT.SHR a shift` | Bitwise Shift Right operator | `BIT.SHR 16 2` |
 | `INDEXOF` | `INDEX_OF` | `INDEXOF needle haystack [startFrom]` | Returns 1-based index of first occurrence of `needle` in `haystack` (0 if not found) | `INDEXOF "a "banana` |
 | `LASTINDEXOF` | `LAST_INDEX_OF` | `LASTINDEXOF needle haystack` | Returns 1-based index of last occurrence of `needle` in `haystack` (0 if not found) | `LASTINDEXOF "a "banana` |
-| `INDEXESOF` | `INDICESOF`, `ALL_INDEXES` | `INDEXESOF needle haystack` | Returns a list of all 1-based match indices of `needle` in `haystack` | `INDEXESOF "a "banana` |
+| `INDEXESOF` | `INDICESOF` | `INDEXESOF needle haystack` | Returns a list of all 1-based match indices of `needle` in `haystack` | `INDEXESOF "a "banana` |
 | `CONTAINS?` | `CONTAINSP`, `INCLUDES?` | `CONTAINS? needle haystack` | Returns true if `haystack` contains `needle` | `CONTAINS? "world "hello_world` |
-| `STARTSWITH?` | `STARTSP`, `HAS_PREFIX?` | `STARTSWITH? prefix string` | Returns true if `string` starts with `prefix` | `STARTSWITH? "# "#_Title` |
+| `STARTSWITH?` | `HAS_PREFIX?` | `STARTSWITH? prefix string` | Returns true if `string` starts with `prefix` | `STARTSWITH? "# "#_Title` |
 | `ENDSWITH?` | `ENDSP`, `HAS_SUFFIX?` | `ENDSWITH? suffix string` | Returns true if `string` ends with `suffix` | `ENDSWITH? ".md "file.md` |
 | `SUBSTRING` | `SUBSTR`, `SLICE` | `SUBSTRING string start [length]` | Extracts substring starting at 1-based `start` position | `SUBSTRING "Hello_World 1 5` |
 | `SEARCH` | - | `SEARCH haystack needle` | Searches string or list for occurrence of needle | `SEARCH "banana "an` |
@@ -772,11 +772,11 @@ TYPE ITEM 2 :cells
 | `LINES` | `TO_LINES` | `LINES string` | Splits multiline string into a list of individual lines | `LINES :multilineText` |
 | `UNLINES` | `FROM_LINES` | `UNLINES list` | Joins a list of lines into a multiline string with newlines | `UNLINES :lineList` |
 | `FORMAT` | `SPRINTF` | `FORMAT pattern argList` | Formats string pattern with placeholders (`%s`, `%d`, `%f`, `%x`, `%0Nd`, `%-Ns`, `%1`) | `FORMAT "Line_%d:_%s [42 "Text]` |
-| `PADLEFT` | `RJUST` | `PADLEFT width [padChar] string` | Left-pads string to specified display width | `PADLEFT 5 "0 "42` |
-| `PADRIGHT` | `LJUST` | `PADRIGHT width [padChar] string` | Right-pads string to specified display width | `PADRIGHT 10 ". "item` |
-| `REGEX_MATCH?` | `REGEX_MATCH`, `REMATCH?` | `REGEX_MATCH? pattern string` | Returns true if `string` matches regex `pattern` | `REGEX_MATCH? "^#+ "#_Title` |
-| `REGEX_REPLACE` | `RREPLACE`, `RSUBSTITUTE` | `REGEX_REPLACE pattern replacement string` | Replaces all regex matches in `string` with `replacement` | `REGEX_REPLACE "\s+ "_ "a   b` |
-| `REGEX_FIND` | `RFIND`, `RFINDALL` | `REGEX_FIND pattern string` | Returns a list of all substrings matching regex `pattern` | `REGEX_FIND "\d+ "Item_42_and_100` |
+| `PADLEFT` | - | `PADLEFT width [padChar] string` | Left-pads string to specified display width | `PADLEFT 5 "0 "42` |
+| `PADRIGHT` | - | `PADRIGHT width [padChar] string` | Right-pads string to specified display width | `PADRIGHT 10 ". "item` |
+| `REGEX.MATCH` | - | `REGEX.MATCH pattern string` | Returns true if `string` matches regex `pattern` | `REGEX.MATCH "^#+ "#_Title` |
+| `REGEX.REPLACE` | - | `REGEX.REPLACE pattern replacement string` | Replaces all regex matches in `string` with `replacement` | `REGEX.REPLACE "\s+ "_ "a   b` |
+| `REGEX.FIND` | - | `REGEX.FIND pattern string` | Returns a list of all substrings matching regex `pattern` | `REGEX.FIND "\d+ "Item_42_and_100` |
 | `TRANSLIT` | `TRANSFORM` | `TRANSLIT transform-id text` | Applies an ICU String Transform or zago `Zago-*` writing transform | `TRANSLIT "Any-Hiragana "Sakura`, `TRANSLIT "Zago-CJK-Punctuation "Hello,` |
 | `SPACING.CJK` | - | `SPACING.CJK text` | Normalizes spacing between CJK script characters and ASCII words/numbers without changing punctuation | `SPACING.CJK "中文API測試` |
 | `TOHANS` | `TRANSFORM.TOHANS` | `TOHANS text` | Converts Traditional Chinese text to Simplified Chinese via `Hant-Hans` | `TOHANS "繁體中文` |
@@ -871,9 +871,8 @@ grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [
 | `RANGE` | `ISEQ` | `RANGE start end [step]` | Generates inclusive integer sequence list | `RANGE 1 5` $\rightarrow$ `[1 2 3 4 5]`, `RANGE 1 10 2` |
 | `RSEQ` | - | `RSEQ start end count` | Generates real number sequence list | `RSEQ 0 1 5` |
 | `RANDOM` | - | `RANDOM max [min]` | Generates random integer in range | `RANDOM 100`, `RANDOM 10 20` |
-| `RERANDOM` | - | `RERANDOM seed` | Resets pseudo-random number generator seed for reproducibility | `RERANDOM 42` |
-| `BITAND`, `BITOR`, `BITXOR`, `BITNOT` | - | `BITAND a b` | Bitwise logic operations | `BITAND 5 3` |
-| `ASHIFT`, `LSHIFT` | - | `ASHIFT val shift` | Arithmetic and logical bit shifts | `LSHIFT 1 4` |
+| `BIT.AND`, `BIT.OR`, `BIT.XOR`, `BIT.NOT` | - | `BIT.AND a b` | Bitwise logic operations | `BIT.AND 5 3` |
+| `ASHIFT`, `LSHIFT` / `BIT.SHL`, `RSHIFT` / `BIT.SHR` | - | `BIT.SHL a shift` | Arithmetic and logical bit shifts | `BIT.SHL 1 4` |
 
 ---
 
@@ -913,11 +912,11 @@ grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [
 | :--- | :--- | :--- | :--- | :--- |
 | `BUFFERS` | `BUFFERLIST` | `BUFFERS` | Returns list of open buffer names | `MAKE "b" BUFFERS` |
 | `BUFFER` | - | `BUFFER` | Returns active 1-based buffer index | `SHOW BUFFER` |
-| `CLEARBUFFER` | `ERASEBUFFER` | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
+| `CLEARBUFFER` | - | `CLEARBUFFER` | Clears all text in active buffer | `CLEARBUFFER` |
 | `GETLINE` | - | `GETLINE [row]` | Returns text content of specified line (or current line) | `MAKE "l" GETLINE (1 + 1)` |
 | `SETLINE` | - | `SETLINE [row] "text"` | Replaces text of specified line (or current line) | `SETLINE (1 + 1) "Title"` |
-| `ROW` | `LINE.NO` | `ROW` | Returns current 1-indexed row number | `SHOW ROW` |
-| `COL` | `COL.NO` | `COL` | Returns current 1-indexed column number | `SHOW COL` |
+| `ROW` | - | `ROW` | Returns current 1-indexed row number | `SHOW ROW` |
+| `COL` | - | `COL` | Returns current 1-indexed column number | `SHOW COL` |
 | `LINECOUNT` | `LINES` | `LINECOUNT` | Returns total line count of active buffer | `SHOW LINECOUNT` |
 | `BUFFERTEXT` | - | `BUFFERTEXT` | Returns full string text of active buffer | `MAKE "t" BUFFERTEXT` |
 | `SELECTION` | `SELECTEDTEXT` | `SELECTION` | Returns currently selected text string | `MAKE "s" SELECTION` |
@@ -1097,15 +1096,15 @@ SHOW :ordered
    SHOW FORMAT.BYTES 1073741824                            ; "1.07 GB"
    ```
 
-4. **Date Arithmetic & Differences (`DATEADD` & `DATEDIFF`)**:
+4. **Date Arithmetic & Differences (`DATE.ADD` & `DATE.DIFF`)**:
    ```logo
    ; Add / subtract time units
-   MAKE "deadline DATEADD DATE 7 "days                     ; 7 days later
-   MAKE "nextMonth DATEADD DATE 1 "month                   ; 1 month later
-   MAKE "meeting   DATEADD "2026-08-15T10:00:00 2 "hours  ; 2 hours later
+   MAKE "deadline DATE.ADD DATE 7 "days                     ; 7 days later
+   MAKE "nextMonth DATE.ADD DATE 1 "month                   ; 1 month later
+   MAKE "meeting   DATE.ADD "2026-08-15T10:00:00 2 "hours  ; 2 hours later
 
    ; Calculate difference between two dates
-   MAKE "daysLeft DATEDIFF "2026-12-31 DATE "days          ; Days until end of year
+   MAKE "daysLeft DATE.DIFF "2026-12-31 DATE "days          ; Days until end of year
    ```
 
 5. **Property List / Dictionary Format**:
