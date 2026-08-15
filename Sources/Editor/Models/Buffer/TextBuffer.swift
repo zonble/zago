@@ -604,6 +604,31 @@ class TextBuffer: SpellCheckableBuffer {
         return resultLines.isEmpty ? [""] : resultLines
     }
 
+    /// Joins lines of a paragraph into a single continuous text string, respecting CJK word boundaries.
+    private static func joinParagraphLines(_ paragraphLines: [String]) -> String {
+        var result = ""
+        for line in paragraphLines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { continue }
+            if result.isEmpty {
+                result = trimmed
+                continue
+            }
+            guard let lastChar = result.last, let firstChar = trimmed.first else {
+                result += trimmed
+                continue
+            }
+            if lastChar.displayWidth >= 2 && firstChar.displayWidth >= 2 {
+                result += trimmed
+            } else if lastChar.isWhitespace || firstChar.isWhitespace {
+                result += trimmed
+            } else {
+                result += " " + trimmed
+            }
+        }
+        return result
+    }
+
     /// Justifies (reflows) the paragraph at current cursor position (^J) using visual column display widths.
     func justifyParagraph(targetWidth: Int = 72) {
         guard !lines.isEmpty else { return }
@@ -626,9 +651,7 @@ class TextBuffer: SpellCheckableBuffer {
         }
 
         // 2. Extract paragraph text
-        let paragraphText = lines[startLine...endLine]
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .joined(separator: " ")
+        let paragraphText = TextBuffer.joinParagraphLines(Array(lines[startLine...endLine]))
 
         // 3. Tokenize and reflow using visual display width
         let tokens = TextBuffer.tokenizeForReflow(paragraphText)

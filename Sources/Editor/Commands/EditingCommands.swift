@@ -380,8 +380,7 @@ struct JustifyCommand: Command {
             editor.buffer.columnIndex = result.newCursorColumn
             return .succeeded(message: editor.l10n["status.formatted_table"])
         }
-        let (_, cols) = editor.terminal.getWindowSize()
-        let targetWidth = editor.layoutEngine.wrapColumn ?? max(20, cols - 5)
+        let targetWidth = editor.fillColumn
         editor.buffer.justifyParagraph(targetWidth: targetWidth)
         return .succeeded(message: editor.l10n["status.justified_paragraph"])
     }

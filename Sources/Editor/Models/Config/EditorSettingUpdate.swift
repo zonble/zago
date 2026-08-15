@@ -43,12 +43,16 @@ extension EditorSettingKey {
             return .modernbindings(SettingBoolean.parse(value))
         case .noNewlines:
             return .noNewlines(SettingBoolean.parse(value))
+        case .fill:
+            guard let width = Int(value), width > 0 else { return nil }
+            return .fill(width)
         }
     }
 }
 
 public enum EditorSettingUpdate {
     case wrap(column: Int?)
+    case fill(Int)
     case ruler(Bool?)
     case lineNumbers(Bool?)
     case subLineNumbers(Bool?)

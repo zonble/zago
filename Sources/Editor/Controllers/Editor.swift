@@ -118,6 +118,7 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowSubLineNumbers = false
     var defaultViewWrapColumn: Int? = nil
     var defaultLineEnding: LineEnding = .lf
+    var fillColumn: Int = 72
 
     var isRegexSearchEnabled: Bool = false
 
@@ -244,6 +245,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.defaultViewWrapColumn = layoutEngine.wrapColumn
         self.defaultLineEnding = options.defaultLineEnding ?? .lf
+        self.fillColumn = options.fillColumn ?? configSource.initial.fillColumn
         for buffer in self.buffers {
             buffer.lineEnding = defaultLineEnding
             buffer.baseMode = buffer.isDirectoryBuffer ? .text : resolved.baseMode
@@ -342,6 +344,7 @@ public final class Editor: @unchecked Sendable {
         self.displayConfig = resolved.display
         self.debugMode = loadedConfig.debugMode
         self.defaultBaseMode = resolved.baseMode
+        self.fillColumn = loadedConfig.fillColumn
         saveCurrentViewSettingsToBuffer()
         if loadedConfig.language != nil {
             self.language = resolved.language

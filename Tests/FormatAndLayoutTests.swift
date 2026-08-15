@@ -225,6 +225,138 @@ struct FormatAndLayoutTests {
         #expect(buffer.lines[6] == "行。")
     }
 
+    @Test func testJustifyUnwrapsShorterLinesUpward() throws {
+        let buffer = TextBuffer()
+        // 1. CJK short lines unwrapped upwards into a single line
+        buffer.lines = [
+            "第一行短文字",
+            "第二行短文字",
+            "第三行短文字",
+            "",
+            "第二段不被影響",
+        ]
+        buffer.lineIndex = 0
+
+        // targetWidth = 72 (36 CJK characters), all 3 lines (18 CJK characters = 36 cols) fit in line 0
+        buffer.justifyParagraph(targetWidth: 72)
+
+        #expect(buffer.lines.count == 3)
+        #expect(buffer.lines[0] == "第一行短文字第二行短文字第三行短文字")
+        #expect(buffer.lines[1] == "")
+        #expect(buffer.lines[2] == "第二段不被影響")
+
+        // 2. English short lines unwrapped upwards with proper spaces
+        let engBuffer = TextBuffer()
+        engBuffer.lines = [
+            "short line one",
+            "short line two",
+            "short line three",
+        ]
+        engBuffer.lineIndex = 1
+        engBuffer.justifyParagraph(targetWidth: 72)
+
+        #expect(engBuffer.lines.count == 1)
+        #expect(engBuffer.lines[0] == "short line one short line two short line three")
+    }
+
+    @Test func testJustifyUsesEditorFillColumnSetting() throws {
+        let editor = Editor()
+        editor.apply(.fill(20))
+        #expect(editor.fillColumn == 20)
+
+        editor.buffer.lines = [
+            "This is a long sentence that should be wrapped according to fill column setting.",
+        ]
+        editor.buffer.lineIndex = 0
+
+        _ = editor.commandRegistry.dispatch(id: .editJustify, editor: editor)
+
+        for line in editor.buffer.lines {
+            #expect(line.displayWidth <= 20)
+        }
+    }
+
+    @Test func testLongChineseParagraphReflowAndWrap() throws {
+        let buffer = TextBuffer()
+        // Long continuous Chinese text originally broken arbitrarily
+        buffer.lines = [
+            "古人學問無遺力，少壯工夫老始成。",
+            "紙上得來終覺淺，絕知此事要躬行。",
+            "這是一篇用來測試長篇中文段落重新排版演算法的文章，我們希望在重排之後，",
+            "每一個字元都能依照全形字元佔用兩格寬度的規則進行計算與斷行，",
+            "並且在段落重排時不會在中文字與中文字之間插入多餘的半形空格。",
+        ]
+        buffer.lineIndex = 0
+
+        // Target width = 40 (20 CJK full-width characters per line)
+        buffer.justifyParagraph(targetWidth: 40)
+
+        #expect(buffer.lines.count > 1)
+        for (i, line) in buffer.lines.enumerated() {
+            #expect(line.displayWidth <= 40, "Line \(i) exceeded target width 40: \(line) (displayWidth: \(line.displayWidth))")
+        }
+
+        // Verify content integrity: all characters preserved without stray spaces between Chinese chars
+        let rejoined = buffer.lines.joined()
+        #expect(rejoined.contains("古人學問無遺力，少壯工夫老始成。紙上得來終覺淺"))
+        #expect(!rejoined.contains("古 人"))
+        #expect(!rejoined.contains("紙 上"))
+    }
+
+    @Test func testLongEnglishParagraphReflowAndWrap() throws {
+        let buffer = TextBuffer()
+        // Long English text with uneven line lengths
+        buffer.lines = [
+            "GNU nano is a small and friendly text editor that aims to be a free replacement",
+            "for the Pico text editor, which was part of the Pine email suite.",
+            "Nano copies the look and feel of Pico, but is free software, and implements several features",
+            "that Pico lacks, such as opening multiple files, scrolling per line, undo/redo, and syntax highlighting.",
+        ]
+        buffer.lineIndex = 0
+
+        // Target width = 50 display columns
+        buffer.justifyParagraph(targetWidth: 50)
+
+        #expect(buffer.lines.count >= 5)
+        for (i, line) in buffer.lines.enumerated() {
+            #expect(line.displayWidth <= 50, "Line \(i) exceeded target width 50: '\(line)' (displayWidth: \(line.displayWidth))")
+            #expect(!line.hasPrefix(" "))
+            #expect(!line.hasSuffix(" "))
+        }
+
+        // Verify words are preserved
+        let allWords = buffer.lines.joined(separator: " ").components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+        #expect(allWords.contains("replacement"))
+        #expect(allWords.contains("highlighting."))
+    }
+
+    @Test func testLongMixedCJKAndLatinParagraphReflowAndWrap() throws {
+        let buffer = TextBuffer()
+        // Long mixed paragraph with Chinese, English terms, version numbers, and symbols
+        buffer.lines = [
+            "Zago 是一款用 Swift 6.0 開發的終端機文字編輯器，",
+            "它結合了 GNU nano 的經典操作模式與 WordStar 的尺規設計，",
+            "並且內建了 Logo 語言繪圖引擎，支援 ANSI 繪圖與 Markdown 表格快速編輯。",
+            "在處理 UTF-8 與 CJK 全形字元時，Zago 能夠精準計算 Display Width 並進行段落 Reflow。",
+        ]
+        buffer.lineIndex = 0
+
+        // Target width = 36 display columns
+        buffer.justifyParagraph(targetWidth: 36)
+
+        #expect(buffer.lines.count >= 5)
+        for (i, line) in buffer.lines.enumerated() {
+            #expect(line.displayWidth <= 36, "Line \(i) exceeded target width 36: '\(line)' (displayWidth: \(line.displayWidth))")
+        }
+
+        // Verify key terms and characters are kept intact
+        let fullText = buffer.lines.joined(separator: " ")
+        #expect(fullText.contains("Swift 6.0"))
+        #expect(fullText.contains("GNU nano"))
+        #expect(fullText.contains("WordStar"))
+        #expect(fullText.contains("Display Width"))
+    }
+
     @Test func testTerminalDisplayWidthHelpers() throws {
         #expect(Character("A").displayWidth == 1)
         #expect(Character("中").displayWidth == 2)
