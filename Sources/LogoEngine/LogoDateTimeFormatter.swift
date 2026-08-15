@@ -345,4 +345,199 @@ public struct LogoDateTimeFormatter {
 
         return formatter.string(from: date)
     }
+
+    public static func parseDate(
+        _ raw: String,
+        defaultCalendar: Calendar = Calendar(identifier: .gregorian),
+        defaultTimeZone: TimeZone = TimeZone.current
+    ) -> Date? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let lower = trimmed.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+        if lower == "now" || lower == "today" {
+            return Date()
+        }
+
+        if (trimmed.hasPrefix("[") && trimmed.hasSuffix("]")) || (trimmed.hasPrefix("{") && trimmed.hasSuffix("}")) {
+            let parsed = LogoValue.parse(trimmed)
+            if case .list(let items) = parsed {
+                return parseDateFromList(items, defaultCalendar: defaultCalendar, defaultTimeZone: defaultTimeZone)
+            } else if case .array(let items) = parsed {
+                return parseDateFromList(items, defaultCalendar: defaultCalendar, defaultTimeZone: defaultTimeZone)
+            }
+        }
+
+        if let timestamp = Double(lower), timestamp > 100000 {
+            return Date(timeIntervalSince1970: timestamp)
+        }
+
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = iso.date(from: trimmed) { return d }
+
+        iso.formatOptions = [.withInternetDateTime]
+        if let d = iso.date(from: trimmed) { return d }
+
+        let standardPatterns = [
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd",
+            "yyyy/MM/dd HH:mm:ss",
+            "yyyy/MM/dd",
+            "yyyy.MM.dd",
+            "MM/dd/yyyy",
+            "dd/MM/yyyy",
+            "HH:mm:ss",
+        ]
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = defaultTimeZone
+        formatter.calendar = defaultCalendar
+
+        for pattern in standardPatterns {
+            formatter.dateFormat = pattern
+            if let d = formatter.date(from: trimmed) {
+                return d
+            }
+        }
+
+        return nil
+    }
+
+    private static func parseDateFromList(
+        _ items: [LogoValue],
+        defaultCalendar: Calendar,
+        defaultTimeZone: TimeZone
+    ) -> Date? {
+        guard !items.isEmpty else { return nil }
+
+        var isPlist = false
+        var year: Int? = nil
+        var month: Int? = nil
+        var day: Int? = nil
+        var hour: Int? = nil
+        var minute: Int? = nil
+        var second: Int? = nil
+        var tz: TimeZone = defaultTimeZone
+        var cal: Calendar = defaultCalendar
+
+        var i = 0
+        while i < items.count {
+            let key = items[i].stringValue.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+            if ["year", "y", "month", "m", "day", "d", "hour", "h", "min", "minute", "sec", "second", "s", "tz", "timezone", "cal", "calendar"].contains(key) && i + 1 < items.count {
+                isPlist = true
+                let valStr = items[i + 1].stringValue.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                switch key {
+                case "year", "y": year = Int(valStr)
+                case "month", "m": month = Int(valStr)
+                case "day", "d": day = Int(valStr)
+                case "hour", "h": hour = Int(valStr)
+                case "minute", "min": minute = Int(valStr)
+                case "second", "sec", "s": second = Int(valStr)
+                case "tz", "timezone": tz = parseTimeZone(valStr)
+                case "cal", "calendar": cal = parseCalendar(valStr)
+                default: break
+                }
+                i += 2
+            } else {
+                i += 1
+            }
+        }
+
+        if isPlist {
+            let yearNum = year ?? cal.component(.year, from: Date())
+            let inputCal = (yearNum > 1000) ? Calendar(identifier: .gregorian) : cal
+            var comps = DateComponents()
+            comps.calendar = inputCal
+            comps.timeZone = tz
+            comps.year = yearNum
+            comps.month = month ?? 1
+            comps.day = day ?? 1
+            comps.hour = hour ?? 0
+            comps.minute = minute ?? 0
+            comps.second = second ?? 0
+            return inputCal.date(from: comps)
+        }
+
+        var nums: [Int] = []
+        for item in items {
+            let s = item.stringValue.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            if let n = Int(s) {
+                nums.append(n)
+            } else if isTimeZoneName(s) {
+                tz = parseTimeZone(s)
+            } else if isCalendarName(s) {
+                cal = parseCalendar(s)
+            }
+        }
+
+        guard !nums.isEmpty else { return nil }
+
+        let yearNum = nums.count > 0 ? nums[0] : cal.component(.year, from: Date())
+        let inputCal = (yearNum > 1000) ? Calendar(identifier: .gregorian) : cal
+        var comps = DateComponents()
+        comps.calendar = inputCal
+        comps.timeZone = tz
+        comps.year = yearNum
+        comps.month = nums.count > 1 ? nums[1] : 1
+        comps.day = nums.count > 2 ? nums[2] : 1
+        comps.hour = nums.count > 3 ? nums[3] : 0
+        comps.minute = nums.count > 4 ? nums[4] : 0
+        comps.second = nums.count > 5 ? nums[5] : 0
+        return inputCal.date(from: comps)
+    }
+
+    public static func add(
+        to date: Date,
+        amount: Int,
+        unit: String,
+        calendar: Calendar = Calendar(identifier: .gregorian)
+    ) -> Date {
+        let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+        let component: Calendar.Component = switch cleanUnit {
+        case "second", "seconds", "sec", "s": .second
+        case "minute", "minutes", "min": .minute
+        case "hour", "hours", "h": .hour
+        case "day", "days", "d": .day
+        case "week", "weeks", "w": .weekOfYear
+        case "month", "months", "m": .month
+        case "year", "years", "y": .year
+        default: .day
+        }
+
+        return calendar.date(byAdding: component, value: amount, to: date) ?? date
+    }
+
+    public static func diff(
+        between d1: Date,
+        and d2: Date,
+        unit: String,
+        calendar: Calendar = Calendar(identifier: .gregorian)
+    ) -> Int {
+        let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+        let component: Calendar.Component = switch cleanUnit {
+        case "second", "seconds", "sec", "s": .second
+        case "minute", "minutes", "min": .minute
+        case "hour", "hours", "h": .hour
+        case "day", "days", "d": .day
+        case "week", "weeks", "w": .weekOfYear
+        case "month", "months", "m": .month
+        case "year", "years", "y": .year
+        default: .day
+        }
+
+        let comps = calendar.dateComponents([component], from: d2, to: d1)
+        return switch component {
+        case .second: comps.second ?? 0
+        case .minute: comps.minute ?? 0
+        case .hour: comps.hour ?? 0
+        case .day: comps.day ?? 0
+        case .weekOfYear: comps.weekOfYear ?? 0
+        case .month: comps.month ?? 0
+        case .year: comps.year ?? 0
+        default: comps.day ?? 0
+        }
+    }
 }

@@ -255,6 +255,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case date
     case time
     case datetime
+    case dateformat
+    case dateadd
+    case datediff
     case search
     case sort
     case fill
@@ -544,6 +547,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["DATE"], .date),
         (["TIME"], .time),
         (["DATETIME", "TIMESTAMP", "NOW"], .datetime),
+        (["DATEFORMAT", "FORMATDATE", "FDATE"], .dateformat),
+        (["DATEADD", "ADDDATE"], .dateadd),
+        (["DATEDIFF", "DIFFDATE"], .datediff),
         (["SEARCH"], .search),
     ]
 
@@ -592,5 +598,6 @@ extension LogoPrimitive {
     ])
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,
+        .dateformat, .dateadd, .datediff,
     ]
 }
