@@ -521,6 +521,82 @@ import Foundation
         modernEditor.processKey(.alt("j"))
         #expect(modernEditor.buffer.lines == ["Alpha Beta"])
     }
+
+    @Test func testDescribeKeyFeature() throws {
+        let editor = Editor(language: .en)
+
+        // 1. Trigger via command bar
+        let dispatchResult = editor.commandBarRegistry.dispatch("help-key", editor: editor)
+        #expect(dispatchResult == .handled)
+        if case .describeKey = editor.currentPromptMode {
+            #expect(true)
+        } else {
+            #expect(Bool(false), "Expected prompt mode to be .describeKey")
+        }
+
+        // 2. Verify .unknown (e.g. readKey timeout) does not dismiss describeKey prompt
+        editor.processKey(.unknown)
+        #expect(editor.promptController.isActive)
+
+        // 3. Describe ^K (has Table mode override)
+        editor.processKey(.ctrl("k"))
+        #expect(!editor.promptController.isActive)
+        #expect(editor.statusMessage.contains("^K:"))
+        #expect(editor.statusMessage.contains("edit.cut"))
+        #expect(editor.statusMessage.contains("Table Mode:"))
+
+        // 3. Describe Tab (has Table mode override)
+        editor.promptDescribeKey()
+        editor.processKey(.tab)
+        #expect(editor.statusMessage.contains("Tab:"))
+        #expect(editor.statusMessage.contains("edit.tab"))
+        #expect(editor.statusMessage.contains("Table Mode:"))
+
+        // 4. Describe Shift+Right (has Canvas mode override)
+        editor.promptDescribeKey()
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.statusMessage.contains("⇧+Arrow:"))
+        #expect(editor.statusMessage.contains("select.right"))
+        #expect(editor.statusMessage.contains("Canvas Mode:"))
+
+        // 5. Describe Character
+        editor.promptDescribeKey()
+        editor.processKey(.char("z"))
+        #expect(editor.statusMessage == "'z': Insert character 'z'")
+
+        // 6. Traditional Chinese formatting
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.promptDescribeKey()
+        zhEditor.processKey(.ctrl("k"))
+        #expect(zhEditor.statusMessage.contains("^K："))
+        #expect(zhEditor.statusMessage.contains("表格模式："))
+
+        // 7. Custom LOGO macro description
+        var macroConfig = EditorConfig()
+        macroConfig.customKeyBinds = [Key.alt("t"): "logo:insert-title"]
+        let configSource = EditorConfigSource(initial: macroConfig, reload: { macroConfig })
+        let macroEditor = Editor(
+            configSource: configSource,
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        macroEditor.promptDescribeKey()
+        macroEditor.processKey(.alt("t"))
+        #expect(macroEditor.statusMessage.contains("M+T:"))
+        #expect(macroEditor.statusMessage.contains("Execute LOGO script 'insert-title'"))
+
+        // 8. Verify MenuBar item placement in Help menu
+        let menuBar = MenuBar()
+        menuBar.updateCategories(for: editor)
+        let helpCategory = menuBar.categories.first(where: { $0.titleKey == "menu.help" })
+        #expect(helpCategory != nil)
+        let describeKeyItem = helpCategory?.items.first(where: { $0.commandId == CommandID.helpDescribeKey })
+        #expect(describeKeyItem != nil)
+        #expect(describeKeyItem?.titleKey == "menu.help.describe_key")
+        #expect(describeKeyItem?.hotkeyChar == "k")
+    }
 }
 
 

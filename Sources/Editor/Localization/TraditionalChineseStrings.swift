@@ -79,8 +79,13 @@ struct TraditionalChineseStrings {
         "prompt.table_dimensions": "表格列 欄 寬：",
         "prompt.logo_input": "輸入：",
         "prompt.logo_read_key": "輸入 [按鍵]：",
+        "prompt.describe_key": "請按下任一按鍵：",
         "status.read_only": "此緩衝區為唯讀",
         "status.directory_buffer_readonly": "此緩衝區為唯讀",
+        "status.describe_char": "「%@」：輸入字元「%@」",
+        "status.describe_unbound": "%@：未綁定任何指令",
+        "mode.canvas_mode": "畫布模式",
+        "mode.table_mode": "表格模式",
         "dirbuf.header_directory": "\" 目錄: %@",
         "dirbuf.header_instructions": "\" 在檔案上按 Enter 開啟，在資料夾上按 Enter 瀏覽",
         "dirbuf.up_dir": ".. (上一層目錄)",
@@ -467,6 +472,15 @@ struct TraditionalChineseStrings {
         "command.canvas.draw_arrow.description": "畫出框線並在終點放置箭頭",
         "command.canvas.block_mark.description": "設定畫布區塊標記",
 
+        "command.table.next_cell.description": "跳至下一個表格儲存格",
+        "command.table.prev_cell.description": "跳至上一個表格儲存格",
+        "command.table.adjust_width_inc.description": "增加目前表格欄寬",
+        "command.table.adjust_width_dec.description": "減少目前表格欄寬",
+        "command.table.adjust_height_inc.description": "增加目前表格列高",
+        "command.table.adjust_height_dec.description": "減少目前表格列高",
+        "command.table.center_text.description": "將目前儲存格文字置中",
+        "command.table.clear_cell.description": "清空目前儲存格文字",
+
         "command.search.whereis.description": "搜尋；跳到下一個/上一個結果",
         "command.search.replace.description": "搜尋並取代文字",
         "command.search.next.description": "重複搜尋下一個相符項目",
@@ -495,6 +509,7 @@ struct TraditionalChineseStrings {
         "command.buffer.prev.description": "切換至上一個文件",
         "command.menu.show.description": "開啟/關閉頂端選單列",
         "command.menu.toggle.description": "開啟/關閉頂端選單列",
+        "command.help.describe_key.description": "查詢指定按鍵之指令與模式功能",
 
         "command.select.all.description": "全選緩衝區文字",
         "command.edit.undo.description": "復原上一步操作",
@@ -802,6 +817,7 @@ struct TraditionalChineseStrings {
 
         "menu.help.show": "使用手冊手冊",
         "menu.help.logo_reference": "Editor LOGO 指令參考",
+        "menu.help.describe_key": "查詢按鍵功能",
         "menu.help.logo_workspace": "Editor LOGO 工作區",
 
         "transform.tohant": "繁體中文",

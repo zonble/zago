@@ -79,8 +79,13 @@ struct EnglishStrings {
         "prompt.table_dimensions": "Table rows cols width: ",
         "prompt.logo_input": "Input: ",
         "prompt.logo_read_key": "Input [Key]: ",
+        "prompt.describe_key": "Press any key: ",
         "status.read_only": "The buffer is read-only",
         "status.directory_buffer_readonly": "The buffer is read-only",
+        "status.describe_char": "'%@': Insert character '%@'",
+        "status.describe_unbound": "%@: Unbound key",
+        "mode.canvas_mode": "Canvas Mode",
+        "mode.table_mode": "Table Mode",
         "dirbuf.header_directory": "\" Directory: %@",
         "dirbuf.header_instructions": "\" Press Enter on a file to open, or on a folder to navigate",
         "dirbuf.up_dir": ".. (up a dir)",
@@ -480,6 +485,15 @@ struct EnglishStrings {
         "command.canvas.draw_arrow.description": "Draw arrow lines with an arrowhead at the endpoint",
         "command.canvas.block_mark.description": "Set / unset rectangular canvas block mark",
 
+        "command.table.next_cell.description": "Move to next table cell",
+        "command.table.prev_cell.description": "Move to previous table cell",
+        "command.table.adjust_width_inc.description": "Increase current table column width",
+        "command.table.adjust_width_dec.description": "Decrease current table column width",
+        "command.table.adjust_height_inc.description": "Increase current table row height",
+        "command.table.adjust_height_dec.description": "Decrease current table row height",
+        "command.table.center_text.description": "Center text in current table cell",
+        "command.table.clear_cell.description": "Clear text inside current table cell",
+
         "command.search.whereis.description": "Search; repeat next/previous match",
         "command.search.replace.description": "Search and replace text",
         "command.search.next.description": "Repeat search next match",
@@ -508,6 +522,7 @@ struct EnglishStrings {
         "command.buffer.prev.description": "Previous Buffer (switch to previous buffer)",
         "command.menu.show.description": "Toggle top Menu Bar",
         "command.menu.toggle.description": "Toggle top Menu Bar",
+        "command.help.describe_key.description": "Describe keybinding and mode functions",
 
         "command.select.all.description": "Select all buffer text",
         "command.edit.undo.description": "Undo last edit operation",
@@ -815,6 +830,7 @@ struct EnglishStrings {
 
         "menu.help.show": "Show Help Reference",
         "menu.help.logo_reference": "Editor LOGO Reference",
+        "menu.help.describe_key": "Describe Key",
         "menu.help.logo_workspace": "Editor LOGO Workspace",
 
         "transform.tohant": "Traditional Chinese",

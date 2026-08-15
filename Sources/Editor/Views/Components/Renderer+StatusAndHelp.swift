@@ -279,6 +279,10 @@ extension Renderer {
                 ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
             ]
 
+        case .describeKey:
+            helpItems1 = []
+            helpItems2 = []
+
         case .none:
             func keyLabel(for cmd: CommandID, fallback: String) -> String {
                 guard let editor else { return fallback }
@@ -542,6 +546,9 @@ extension Renderer {
             isConfirmation = false
         case .gotoLine:
             promptPrefix = editor.l10n["prompt.goto_line"]
+            isConfirmation = false
+        case .describeKey:
+            promptPrefix = editor.l10n["prompt.describe_key"]
             isConfirmation = false
         case .logoReadWord(let prompt):
             let p = prompt.isEmpty ? editor.l10n["prompt.logo_input"] : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
