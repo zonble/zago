@@ -67,10 +67,20 @@ public enum ANSIStyle {
         guard !text.isEmpty else { return "" }
         return "\(style)\(text)\(endStyle)"
     }
+
+    /// Strips ANSI escape sequences from a string.
+    public static func stripANSI(from text: String) -> String {
+        text.replacingOccurrences(of: "\u{1B}\\[[0-9;]*[a-zA-Z]", with: "", options: .regularExpression)
+    }
 }
 
 /// Helper extension on `String` for convenient ANSI text styling.
 extension String {
+    /// Strips ANSI escape sequences from this string.
+    public var strippedANSI: String {
+        ANSIStyle.stripANSI(from: self)
+    }
+
     /// Wraps string with an ANSI start style and an optional ending style (defaults to `ANSIStyle.reset`).
     public func ansiStyled(style: String, endStyle: String = ANSIStyle.reset) -> String {
         guard !isEmpty else { return "" }
