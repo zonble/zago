@@ -31,10 +31,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case drawBox
     case inset
     case line
-    case arrow
-    case hr
     case vline
-    case vhr
     case table
     case newline
     case penDown
@@ -328,10 +325,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BOX"], .box),
         (["DRAWBOX"], .drawBox),
         (["LINE"], .line),
-        (["HR"], .hr),
-        (["ARROW"], .arrow),
-        (["VLINE", "VR"], .vline),
-        (["VHR"], .vhr),
+        (["VLINE"], .vline),
         (["TABLE"], .table),
         (["NEWLINE", "NL"], .newline),
         (["PD", "PENDOWN"], .penDown),
@@ -591,7 +585,7 @@ extension LogoPrimitive {
     internal static let statementCommands: Set<Self> = [
         .make, .name, .type, .show, .delete, .backspace, .deleteLine, .top, .bottom, .lineStart, .lineEnd,
         .appendText, .prependText, .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
-        .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .hr, .vline, .vhr, .table,
+        .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .vline, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading, .setline, .gotoline,
         .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
@@ -601,7 +595,7 @@ extension LogoPrimitive {
     ]
 
     internal static let expressionPrimitives: Set<Self> = Set(allCases).subtracting(statementCommands).subtracting([
-        .arrow, .setHeading, .rshift, .readWord, .readChar,
+        .setHeading, .rshift, .readWord, .readChar,
     ])
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,

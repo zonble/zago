@@ -425,7 +425,7 @@ extension Editor: LogoEngineDelegate {
 
 extension Editor {
     private static let tableModeBlockedLogoPrimitives: Set<LogoPrimitive> = [
-        .box, .drawBox, .line, .hr, .vline, .vhr, .table,
+        .box, .drawBox, .line, .vline, .table,
         .penDown, .penUp, .forward, .back, .turnRight, .turnLeft,
         .goto, .gotoline, .gotocol,
     ]
