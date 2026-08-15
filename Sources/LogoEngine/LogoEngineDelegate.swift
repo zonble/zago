@@ -93,37 +93,37 @@ public enum LogoEditorQueryResult {
     case arrowStyle(ArrowStyle)
     case canvasBlockFrame(LogoCanvasBlockFrame)
 
-    public var integerValue: Int? {
+    var integerValue: Int? {
         guard case .integer(let value) = self else { return nil }
         return value
     }
 
-    public var stringValue: String? {
+    var stringValue: String? {
         guard case .string(let value) = self else { return nil }
         return value
     }
 
-    public var boolValue: Bool? {
+    var boolValue: Bool? {
         guard case .bool(let value) = self else { return nil }
         return value
     }
 
-    public var stringsValue: [String]? {
+    var stringsValue: [String]? {
         guard case .strings(let value) = self else { return nil }
         return value
     }
 
-    public var borderStyleValue: BorderStyle? {
+    var borderStyleValue: BorderStyle? {
         guard case .borderStyle(let value) = self else { return nil }
         return value
     }
 
-    public var arrowStyleValue: ArrowStyle? {
+    var arrowStyleValue: ArrowStyle? {
         guard case .arrowStyle(let value) = self else { return nil }
         return value
     }
 
-    public var canvasBlockFrameValue: LogoCanvasBlockFrame? {
+    var canvasBlockFrameValue: LogoCanvasBlockFrame? {
         guard case .canvasBlockFrame(let value) = self else { return nil }
         return value
     }

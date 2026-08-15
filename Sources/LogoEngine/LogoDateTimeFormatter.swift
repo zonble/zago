@@ -1,14 +1,14 @@
 import Foundation
 
 /// Advanced Foundation-powered Date and Time Formatter for LogoEngine.
-public struct LogoDateTimeFormatter {
-    public enum Mode {
+struct LogoDateTimeFormatter {
+    enum Mode {
         case date
         case time
         case dateTime
     }
 
-    public enum StylePreset {
+    enum StylePreset {
         case short
         case medium
         case long
@@ -16,7 +16,7 @@ public struct LogoDateTimeFormatter {
         case iso8601
         case custom(String)
 
-        public static func parse(_ raw: String, mode: Mode) -> StylePreset {
+        static func parse(_ raw: String, mode: Mode) -> StylePreset {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
             return switch clean {
@@ -39,7 +39,7 @@ public struct LogoDateTimeFormatter {
         }
     }
 
-    public static func isCalendarName(_ name: String) -> Bool {
+    static func isCalendarName(_ name: String) -> Bool {
         let clean = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let stripped = clean.hasPrefix(":") ? String(clean.dropFirst()) : clean
         return switch stripped {
@@ -58,7 +58,7 @@ public struct LogoDateTimeFormatter {
         }
     }
 
-    public static func isStylePresetName(_ name: String) -> Bool {
+    static func isStylePresetName(_ name: String) -> Bool {
         let clean = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let stripped = clean.hasPrefix(":") ? String(clean.dropFirst()) : clean
         return switch stripped {
@@ -67,7 +67,7 @@ public struct LogoDateTimeFormatter {
         }
     }
 
-    public static func isLocaleName(_ name: String) -> Bool {
+    static func isLocaleName(_ name: String) -> Bool {
         let clean = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let stripped = clean.hasPrefix(":") ? String(clean.dropFirst()) : clean
         let lower = stripped.lowercased()
@@ -90,7 +90,7 @@ public struct LogoDateTimeFormatter {
         return false
     }
 
-    public static func isTimeZoneName(_ name: String) -> Bool {
+    static func isTimeZoneName(_ name: String) -> Bool {
         let clean = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let stripped = clean.hasPrefix(":") ? String(clean.dropFirst()) : clean
         if stripped.hasPrefix("+") || stripped.hasPrefix("-") { return true }
@@ -102,7 +102,7 @@ public struct LogoDateTimeFormatter {
         return false
     }
 
-    public static func resolveArguments(
+    static func resolveArguments(
         _ args: [String],
         mode: Mode
     ) -> (format: String?, locale: String?, tz: String?, cal: String?) {
@@ -163,7 +163,7 @@ public struct LogoDateTimeFormatter {
         return (format, locale, tz, cal)
     }
 
-    public static func parseCalendar(_ raw: String?) -> Calendar {
+    static func parseCalendar(_ raw: String?) -> Calendar {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !raw.isEmpty else {
             return Calendar(identifier: .gregorian)
         }
@@ -189,7 +189,7 @@ public struct LogoDateTimeFormatter {
         return Calendar(identifier: identifier)
     }
 
-    public static func parseTimeZone(_ raw: String?) -> TimeZone {
+    static func parseTimeZone(_ raw: String?) -> TimeZone {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
             return TimeZone.current
         }
@@ -241,7 +241,7 @@ public struct LogoDateTimeFormatter {
         return nil
     }
 
-    public static func parseLocale(_ raw: String?) -> Locale {
+    static func parseLocale(_ raw: String?) -> Locale {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
             return Locale.autoupdatingCurrent
         }
@@ -258,7 +258,7 @@ public struct LogoDateTimeFormatter {
         return Locale(identifier: clean)
     }
 
-    public static func format(
+    static func format(
         date: Date = Date(),
         mode: Mode,
         formatSpec: String? = nil,
@@ -347,7 +347,7 @@ public struct LogoDateTimeFormatter {
         return formatter.string(from: date)
     }
 
-    public static func parseDate(
+    static func parseDate(
         _ raw: String,
         defaultCalendar: Calendar = Calendar(identifier: .gregorian),
         defaultTimeZone: TimeZone = TimeZone.current
@@ -493,7 +493,7 @@ public struct LogoDateTimeFormatter {
         return inputCal.date(from: comps)
     }
 
-    public static func add(
+    static func add(
         to date: Date,
         amount: Int,
         unit: String,
@@ -515,7 +515,7 @@ public struct LogoDateTimeFormatter {
         return calendar.date(byAdding: component, value: amount, to: date) ?? date
     }
 
-    public static func diff(
+    static func diff(
         between d1: Date,
         and d2: Date,
         unit: String,

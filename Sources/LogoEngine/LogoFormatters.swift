@@ -1,11 +1,11 @@
 import Foundation
 
 /// Advanced Foundation-powered Number, List, RelativeDateTime, and ByteCount formatters for LogoEngine.
-public struct LogoFormatters {
+struct LogoFormatters {
 
     // MARK: - Number Formatter
 
-    public enum NumberStyle {
+    enum NumberStyle {
         case decimal
         case percent
         case currency
@@ -14,7 +14,7 @@ public struct LogoFormatters {
         case roman
         case ordinal
 
-        public static func parse(_ raw: String) -> NumberStyle {
+        static func parse(_ raw: String) -> NumberStyle {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
             return switch clean {
@@ -32,7 +32,7 @@ public struct LogoFormatters {
         }
     }
 
-    public static func formatNumber(
+    static func formatNumber(
         _ number: Double,
         style: NumberStyle = .decimal,
         locale: String? = nil,
@@ -100,7 +100,7 @@ public struct LogoFormatters {
     }
 
     /// Converts an integer to Roman Numerals (1...3999).
-    public static func formatRoman(_ num: Int) -> String {
+    static func formatRoman(_ num: Int) -> String {
         guard num > 0, num < 4000 else { return "\(num)" }
         let mappings: [(int: Int, roman: String)] = [
             (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
@@ -119,7 +119,7 @@ public struct LogoFormatters {
     }
 
     /// Converts an integer to traditional Chinese financial uppercase (大寫金額/數字: 零壹貳參肆伍陸柒捌玖拾佰仟萬億).
-    public static func formatFinancialChinese(_ num: Int) -> String {
+    static func formatFinancialChinese(_ num: Int) -> String {
         if num == 0 { return "零" }
         if num < 0 { return "負" + formatFinancialChinese(-num) }
 
@@ -168,12 +168,12 @@ public struct LogoFormatters {
 
     // MARK: - List Formatter
 
-    public enum ListType {
+    enum ListType {
         case and
         case or
         case unit
 
-        public static func parse(_ raw: String) -> ListType {
+        static func parse(_ raw: String) -> ListType {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
             return switch clean {
@@ -185,7 +185,7 @@ public struct LogoFormatters {
         }
     }
 
-    public static func formatList(
+    static func formatList(
         _ items: [String],
         type: ListType = .and,
         locale: String? = nil
@@ -228,7 +228,7 @@ public struct LogoFormatters {
 
     // MARK: - Relative Date Time Formatter
 
-    public static func formatRelativeTime(
+    static func formatRelativeTime(
         value: Double,
         unit: String,
         locale: String? = nil
@@ -255,7 +255,7 @@ public struct LogoFormatters {
         return formatter.localizedString(from: comps)
     }
 
-    public static func formatRelativeDate(
+    static func formatRelativeDate(
         target: Date,
         reference: Date = Date(),
         locale: String? = nil
@@ -270,14 +270,14 @@ public struct LogoFormatters {
 
     // MARK: - Byte Count Formatter
 
-    public enum ByteCountStyle {
+    enum ByteCountStyle {
         case file
         case memory
         case binary
         case decimal
         case bytes
 
-        public static func parse(_ raw: String) -> ByteCountStyle {
+        static func parse(_ raw: String) -> ByteCountStyle {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
             return switch clean {
@@ -291,7 +291,7 @@ public struct LogoFormatters {
         }
     }
 
-    public static func formatBytes(
+    static func formatBytes(
         _ bytes: Int64,
         style: ByteCountStyle = .file,
         locale: String? = nil

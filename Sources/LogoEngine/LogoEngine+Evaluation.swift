@@ -579,7 +579,7 @@ extension LogoEngine {
         return nil
     }
 
-    public func applyTemplate(templateStr: String, args: [String], indexInLoop: Int = 1, restList: [String] = [])
+    internal func applyTemplate(templateStr: String, args: [String], indexInLoop: Int = 1, restList: [String] = [])
         -> String
     {
         let clean = templateStr.trimmingCharacters(in: .whitespacesAndNewlines)

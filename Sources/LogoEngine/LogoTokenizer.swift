@@ -64,7 +64,7 @@ public enum LogoTokenizer {
         tokenizeTokens(script).map(\.text)
     }
 
-    public static func tokenizeTokens(_ script: String) -> [LogoToken] {
+    static func tokenizeTokens(_ script: String) -> [LogoToken] {
         let tokenTexts = tokenizeScript(script)
         var searchStart = script.startIndex
         return tokenTexts.compactMap { text in
