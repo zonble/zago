@@ -1,64 +1,64 @@
 import Foundation
 
-public struct LogoOutputCommand: Command {
-    public let id: CommandID = .logoOutput
-    public let name = "LOGO Output Buffer"
-    public let description = "Toggle viewing the *LOGO Output* buffer"
-    public let commandBarAliases: [String] = ["output", "logooutput", "log", "messages"]
+struct LogoOutputCommand: Command {
+    let id: CommandID = .logoOutput
+    let name = "LOGO Output Buffer"
+    let description = "Toggle viewing the *LOGO Output* buffer"
+    let commandBarAliases: [String] = ["output", "logooutput", "log", "messages"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleLogoOutputBuffer()
         return .succeeded
     }
 }
 
-public struct ClearLogoOutputCommand: Command {
-    public let id: CommandID = .logoClearOutput
-    public let name = "Clear LOGO Output Buffer"
-    public let description = "Clear all contents in the *LOGO Output* buffer"
-    public let commandBarAliases: [String] = ["clearoutput", "clog", "clear-output"]
+struct ClearLogoOutputCommand: Command {
+    let id: CommandID = .logoClearOutput
+    let name = "Clear LOGO Output Buffer"
+    let description = "Clear all contents in the *LOGO Output* buffer"
+    let commandBarAliases: [String] = ["clearoutput", "clog", "clear-output"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearLogoOutputBuffer()
         return .succeeded
     }
 }
 
-public struct RunLogoScriptCommand: Command {
-    public let id: CommandID = .fileRunLogo
-    public let name = "Run LOGO Script"
-    public let description = "Run full LOGO script in active buffer"
-    public let commandBarAliases: [String] = ["run", "runscript", "runlogo"]
+struct RunLogoScriptCommand: Command {
+    let id: CommandID = .fileRunLogo
+    let name = "Run LOGO Script"
+    let description = "Run full LOGO script in active buffer"
+    let commandBarAliases: [String] = ["run", "runscript", "runlogo"]
 
-    public init() {}
+    init() {}
 
-    public func isAvailable(in editor: Editor) -> Bool {
+    func isAvailable(in editor: Editor) -> Bool {
         editor.buffer.filePath?.lowercased().hasSuffix(".logo") == true
     }
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard isAvailable(in: editor) else { return .noOp }
         let code = editor.buffer.lines.joined(separator: "\n")
         editor.runLogoScript(code)
@@ -66,44 +66,42 @@ public struct RunLogoScriptCommand: Command {
     }
 }
 
-public struct LogoCanvasCommand: Command {
-    public let id: CommandID = .logoCanvas
-    public let name = "LOGO Canvas Buffer"
-    public let description = "Toggle viewing the *LOGO Canvas* buffer"
-    public let commandBarAliases: [String] = ["canvas-buffer", "logocanvas", "canvas"]
+struct LogoCanvasCommand: Command {
+    let id: CommandID = .logoCanvas
+    let name = "LOGO Canvas Buffer"
+    let description = "Toggle viewing the *LOGO Canvas* buffer"
+    let commandBarAliases: [String] = ["canvas-buffer", "logocanvas", "canvas"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleLogoCanvasBuffer()
         return .succeeded
     }
 }
 
-public struct LogoDebugCommand: Command {
-    public let id: CommandID = .logoDebug
-    public let name = "LOGO Debugger"
-    public let description = "Manage LOGO breakpoints"
-    public let commandBarAliases = ["logo"]
-    public init() {}
-    public func isAvailable(in editor: Editor) -> Bool { editor.isLogoUIEnabled }
-    
+struct LogoDebugCommand: Command {
+    let id: CommandID = .logoDebug
+    let name = "LOGO Debugger"
+    let description = "Manage LOGO breakpoints"
+    let commandBarAliases = ["logo"]
+    init() {}
+    func isAvailable(in editor: Editor) -> Bool { editor.isLogoUIEnabled }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleLogoDebuggerBuffer()
         return .succeeded
     }
-    
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         switch input.tokens.dropFirst().first?.lowercased() {
         case "break":
             let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
@@ -127,21 +125,21 @@ public struct LogoDebugCommand: Command {
     }
 }
 
-public struct ClearLogoOutputAndCanvasCommand: Command {
-    public let id: CommandID = .logoClearOutput
-    public let name = "Clear Canvas & Output"
-    public let description = "Clear all contents in *LOGO Canvas* and *LOGO Output* buffers"
-    public let commandBarAliases: [String] = ["clear", "clearall", "clear-canvas"]
+struct ClearLogoOutputAndCanvasCommand: Command {
+    let id: CommandID = .logoClearOutput
+    let name = "Clear Canvas & Output"
+    let description = "Clear all contents in *LOGO Canvas* and *LOGO Output* buffers"
+    let commandBarAliases: [String] = ["clear", "clearall", "clear-canvas"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearLogoOutputAndCanvasBuffers()
         return .succeeded
     }

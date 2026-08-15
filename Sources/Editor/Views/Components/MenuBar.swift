@@ -2,15 +2,15 @@ import Diagram
 import Foundation
 import LogoEngine
 
-public struct MenuItem {
-    public let titleKey: String
-    public let hotkeyChar: Character
-    public let commandId: CommandID?
-    public let action: ((Editor) -> Void)?
-    public let isChecked: ((Editor) -> Bool)?
-    public let isVisible: ((Editor) -> Bool)?
+struct MenuItem {
+    let titleKey: String
+    let hotkeyChar: Character
+    let commandId: CommandID?
+    let action: ((Editor) -> Void)?
+    let isChecked: ((Editor) -> Bool)?
+    let isVisible: ((Editor) -> Bool)?
 
-    public init(
+    init(
         titleKey: String,
         hotkeyChar: Character,
         commandId: CommandID? = nil,
@@ -27,13 +27,13 @@ public struct MenuItem {
     }
 }
 
-public struct MenuCategory {
-    public let titleKey: String
-    public let hotkeyChar: Character
-    public let items: [MenuItem]
-    public let isVisible: ((Editor) -> Bool)?
+struct MenuCategory {
+    let titleKey: String
+    let hotkeyChar: Character
+    let items: [MenuItem]
+    let isVisible: ((Editor) -> Bool)?
 
-    public init(
+    init(
         titleKey: String,
         hotkeyChar: Character,
         items: [MenuItem],
@@ -47,21 +47,21 @@ public struct MenuCategory {
 }
 
 /// Menu Bar Data Engine handling menu categories, items, and keyboard navigation.
-public final class MenuBar {
-    public var categoryIndex: Int = 0
-    public var itemIndex: Int = 0
+final class MenuBar {
+    var categoryIndex: Int = 0
+    var itemIndex: Int = 0
 
-    public var categories: [MenuCategory] = []
+    var categories: [MenuCategory] = []
 
-    public init() {
+    init() {
         setupCategories()
     }
 
-    public func setupCategories() {
+    func setupCategories() {
         updateCategories(for: nil)
     }
 
-    public func updateCategories(for editor: Editor? = nil) {
+    func updateCategories(for editor: Editor? = nil) {
         var baseCategories: [MenuCategory] = [
             MenuCategory(
                 titleKey: "menu.file", hotkeyChar: "f",
@@ -392,11 +392,11 @@ public final class MenuBar {
         itemIndex = min(itemIndex, max(0, currentCategory.items.count - 1))
     }
 
-    public var currentCategory: MenuCategory {
+    var currentCategory: MenuCategory {
         categories[categoryIndex]
     }
 
-    public var currentItem: MenuItem? {
+    var currentItem: MenuItem? {
         let items = currentCategory.items
         guard itemIndex >= 0 && itemIndex < items.count else { return nil }
         return items[itemIndex]

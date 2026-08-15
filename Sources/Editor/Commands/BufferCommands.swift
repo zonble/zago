@@ -1,69 +1,69 @@
 import Foundation
 
-public struct PrevBufferCommand: Command {
-    public let id: CommandID = .bufferPrev
-    public let name = "Previous Buffer"
-    public let description = "Switch to previous open buffer"
+struct PrevBufferCommand: Command {
+    let id: CommandID = .bufferPrev
+    let name = "Previous Buffer"
+    let description = "Switch to previous open buffer"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.prevBuffer()
         return .succeeded
     }
 }
 
-public struct NextBufferCommand: Command {
-    public let id: CommandID = .bufferNext
-    public let name = "Next Buffer"
-    public let description = "Switch to next open buffer"
+struct NextBufferCommand: Command {
+    let id: CommandID = .bufferNext
+    let name = "Next Buffer"
+    let description = "Switch to next open buffer"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.nextBuffer()
         return .succeeded
     }
 }
 
-public struct NewBufferCommand: Command {
-    public let id: CommandID = .bufferNew
-    public let name = "New Buffer"
-    public let description = "Open a new buffer"
-    public let commandBarAliases = ["new"]
+struct NewBufferCommand: Command {
+    let id: CommandID = .bufferNew
+    let name = "New Buffer"
+    let description = "Open a new buffer"
+    let commandBarAliases = ["new"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.openNewBuffer()
         return .succeeded
     }
 }
 
-public struct BufferCommand: Command {
-    public let id: CommandID = .bufferNext
-    public let name = "Buffer"
-    public let description = "Buffer management (next, prev, N)"
-    public let commandBarAliases: [String] = ["buffer", "bnext", "bprev"]
+struct BufferCommand: Command {
+    let id: CommandID = .bufferNext
+    let name = "Buffer"
+    let description = "Buffer management (next, prev, N)"
+    let commandBarAliases: [String] = ["buffer", "bnext", "bprev"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let token = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(token)
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.nextBuffer()
         return .succeeded
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard let token = input.lowerFirstToken else { return .noOp }
         if token == "bnext" {
             editor.nextBuffer()

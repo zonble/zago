@@ -1,14 +1,14 @@
 import Foundation
 
-public struct SelectLeftCommand: Command {
-    public let id: CommandID = .selectLeft
-    public let name = "Select Left"
-    public let description = "Extend selection left"
+struct SelectLeftCommand: Command {
+    let id: CommandID = .selectLeft
+    let name = "Select Left"
+    let description = "Extend selection left"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -24,15 +24,15 @@ public struct SelectLeftCommand: Command {
     }
 }
 
-public struct SelectRightCommand: Command {
-    public let id: CommandID = .selectRight
-    public let name = "Select Right"
-    public let description = "Extend selection right"
+struct SelectRightCommand: Command {
+    let id: CommandID = .selectRight
+    let name = "Select Right"
+    let description = "Extend selection right"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -49,15 +49,15 @@ public struct SelectRightCommand: Command {
     }
 }
 
-public struct SelectUpCommand: Command {
-    public let id: CommandID = .selectUp
-    public let name = "Select Up"
-    public let description = "Extend selection up"
+struct SelectUpCommand: Command {
+    let id: CommandID = .selectUp
+    let name = "Select Up"
+    let description = "Extend selection up"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -68,15 +68,15 @@ public struct SelectUpCommand: Command {
     }
 }
 
-public struct SelectDownCommand: Command {
-    public let id: CommandID = .selectDown
-    public let name = "Select Down"
-    public let description = "Extend selection down"
+struct SelectDownCommand: Command {
+    let id: CommandID = .selectDown
+    let name = "Select Down"
+    let description = "Extend selection down"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         var message: String?
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -87,15 +87,15 @@ public struct SelectDownCommand: Command {
     }
 }
 
-public struct SelectHomeCommand: Command {
-    public let id: CommandID = .selectHome
-    public let name = "Select Home"
-    public let description = "Extend selection to line start"
+struct SelectHomeCommand: Command {
+    let id: CommandID = .selectHome
+    let name = "Select Home"
+    let description = "Extend selection to line start"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
         var message: String?
         if editor.buffer.selectionMark == nil {
@@ -107,15 +107,15 @@ public struct SelectHomeCommand: Command {
     }
 }
 
-public struct SelectEndCommand: Command {
-    public let id: CommandID = .selectEnd
-    public let name = "Select End"
-    public let description = "Extend selection to line end"
+struct SelectEndCommand: Command {
+    let id: CommandID = .selectEnd
+    let name = "Select End"
+    let description = "Extend selection to line end"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
         var message: String?
         if editor.buffer.selectionMark == nil {
@@ -127,16 +127,16 @@ public struct SelectEndCommand: Command {
     }
 }
 
-public struct SelectAllCommand: Command {
-    public let id: CommandID = .selectAll
-    public let name = "Select All"
-    public let description = "Select all text in buffer"
-    public let commandBarAliases = ["selectall", "select-all"]
+struct SelectAllCommand: Command {
+    let id: CommandID = .selectAll
+    let name = "Select All"
+    let description = "Select all text in buffer"
+    let commandBarAliases = ["selectall", "select-all"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.lines.isEmpty else { return .noOp }
         if editor.isCanvasModeActive && !editor.isTableModeActive {
             let maxCol = editor.buffer.lines.map(\.displayWidth).max() ?? 0

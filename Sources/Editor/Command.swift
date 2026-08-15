@@ -1,18 +1,18 @@
 import Foundation
 
-public enum CommandBarDispatchResult: Sendable, Equatable {
+enum CommandBarDispatchResult: Sendable, Equatable {
     case handled
     case noMatch
 }
 
-public struct CommandBarInput: Sendable, Equatable {
-    public let raw: String
-    public let text: String
-    public let tokens: [String]
-    public let firstToken: String?
-    public let rest: String
+struct CommandBarInput: Sendable, Equatable {
+    let raw: String
+    let text: String
+    let tokens: [String]
+    let firstToken: String?
+    let rest: String
 
-    public init(_ raw: String) {
+    init(_ raw: String) {
         self.raw = raw
         self.text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         self.tokens = text.split(whereSeparator: \.isWhitespace).map(String.init)
@@ -21,18 +21,18 @@ public struct CommandBarInput: Sendable, Equatable {
         self.rest = parts.count > 1 ? String(parts[1]) : ""
     }
 
-    public var lowerFirstToken: String? {
+    var lowerFirstToken: String? {
         firstToken?.lowercased()
     }
 
-    public var firstTokenIsAllUppercaseWord: Bool {
+    var firstTokenIsAllUppercaseWord: Bool {
         guard let firstToken else { return false }
         return firstToken != firstToken.lowercased() && firstToken == firstToken.uppercased()
     }
 }
 
 /// Type-safe string enum defining all standard editor command identifiers.
-public enum CommandID: String, CaseIterable, Sendable, Hashable {
+enum CommandID: String, CaseIterable, Sendable, Hashable {
     // Navigation
     case moveRight = "move.right"
     case moveLeft = "move.left"
@@ -165,9 +165,7 @@ public enum CommandID: String, CaseIterable, Sendable, Hashable {
 }
 
 /// Unified protocol defining an editor command with metadata, keybindings, CommandBar aliases, and execution logic.
-///
-/// Implement this protocol to add custom commands, keybindings, or CommandBar macro utilities to `Editor`.
-public protocol Command {
+protocol Command {
     /// Unique command identifier for menu binding and command dispatch.
     var id: CommandID { get }
 
@@ -187,63 +185,50 @@ public protocol Command {
     var completionNames: [String] { get }
 
     /// Evaluates whether the command can be executed in the current editor state.
-    ///
-    /// - Parameter editor: Active editor instance.
-    /// - Returns: `true` if command is available for execution; otherwise `false`.
     func isAvailable(in editor: Editor) -> Bool
 
     /// Checks if typed CommandBar input matches this command.
-    ///
-    /// - Parameter input: Parsed CommandBar input token stream.
-    /// - Returns: `true` if input matches command aliases.
     func match(_ input: CommandBarInput) -> Bool
 
     /// Executes command logic directly on the editor instance.
-    ///
-    /// - Parameter editor: Active editor instance.
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult
 
     /// Executes command logic with CommandBar arguments, returning typed operation status.
-    ///
-    /// - Parameters:
-    ///   - input: Parsed CommandBar input containing arguments.
-    ///   - editor: Active editor instance.
-    /// - Returns: Typed command operation status.
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult
 }
 
 extension Command {
-    public var descriptionKey: String {
+    var descriptionKey: String {
         "command.\(id.rawValue).description"
     }
-    public var commandBarAliases: [String] { [] }
-    public var completionNames: [String] { commandBarAliases }
+    var commandBarAliases: [String] { [] }
+    var completionNames: [String] { commandBarAliases }
 
-    public func isAvailable(in editor: Editor) -> Bool { true }
+    func isAvailable(in editor: Editor) -> Bool { true }
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         guard let first = input.lowerFirstToken else { return false }
         return commandBarAliases.contains(first)
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         execute(on: editor)
     }
 }
 
 /// Generic block-based command conforming to `Command` protocol.
-public struct BlockCommand: Command {
-    public let id: CommandID
-    public let name: String
-    public let description: String
-    public let descriptionKey: String
-    public let commandBarAliases: [String]
+struct BlockCommand: Command {
+    let id: CommandID
+    let name: String
+    let description: String
+    let descriptionKey: String
+    let commandBarAliases: [String]
     private let closure: (Editor) -> Void
 
-    public init(
+    init(
         id: CommandID,
         name: String,
         description: String,
@@ -259,39 +244,39 @@ public struct BlockCommand: Command {
         self.closure = action
     }
 
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         closure(editor)
         return .succeeded
     }
 }
 
 /// Unified registry managing editor commands and CommandBar prompt dispatch.
-public final class CommandRegistry {
+final class CommandRegistry {
     private var customKeyMap: [Key: any Command] = [:]
     private var commandMap: [CommandID: any Command] = [:]
-    private(set) public var commands: [any Command] = []
+    private(set) var commands: [any Command] = []
 
-    public init() {}
+    init() {}
 
     /// Registers a command conforming to `Command` protocol.
-    public func register(_ command: any Command) {
+    func register(_ command: any Command) {
         commands.append(command)
         commandMap[command.id] = command
     }
 
     /// Binds a specific key to a command.
-    public func bind(key: Key, command: any Command) {
+    func bind(key: Key, command: any Command) {
         customKeyMap[key] = command
     }
 
     /// Unbinds a specific key mapping.
-    public func unbind(key: Key) {
+    func unbind(key: Key) {
         customKeyMap.removeValue(forKey: key)
     }
 
     /// Dispatches a command by its type-safe `CommandID`.
     /// Returns `true` if a command was found and executed.
-    public func dispatch(id: CommandID, editor: Editor) -> Bool {
+    func dispatch(id: CommandID, editor: Editor) -> Bool {
         if let command = commandMap[id] {
             editor.applyOperationResult(command.execute(on: editor))
             return true
@@ -300,7 +285,7 @@ public final class CommandRegistry {
     }
 
     /// Dispatches a command by ID and returns a typed command result.
-    public func dispatchResult(id: CommandID, editor: Editor) -> EditorOperationResult {
+    func dispatchResult(id: CommandID, editor: Editor) -> EditorOperationResult {
         guard let command = commandMap[id] else { return .failed("Command not found") }
         let result = command.execute(on: editor)
         editor.applyOperationResult(result)
@@ -308,20 +293,20 @@ public final class CommandRegistry {
     }
 
     /// Dispatches a command by raw ID string (for string/config compatibility).
-    public func dispatch(idString: String, editor: Editor) -> Bool {
+    func dispatch(idString: String, editor: Editor) -> Bool {
         guard let id = CommandID(rawValue: idString) else { return false }
         return dispatch(id: id, editor: editor)
     }
 
     /// Dispatches a raw ID string and returns a typed command result.
-    public func dispatchResult(idString: String, editor: Editor) -> EditorOperationResult {
+    func dispatchResult(idString: String, editor: Editor) -> EditorOperationResult {
         guard let id = CommandID(rawValue: idString) else { return .failed("Command not found") }
         return dispatchResult(id: id, editor: editor)
     }
 
     /// Dispatches a key input to its registered command action.
     /// Returns `true` if a command was found and executed.
-    public func dispatch(key: Key, editor: Editor) -> Bool {
+    func dispatch(key: Key, editor: Editor) -> Bool {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return false
         }
@@ -342,7 +327,7 @@ public final class CommandRegistry {
     }
 
     /// Dispatches a key input and returns a typed command result.
-    public func dispatchResult(key: Key, editor: Editor) -> EditorOperationResult {
+    func dispatchResult(key: Key, editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return .noOp
         }
@@ -366,7 +351,7 @@ public final class CommandRegistry {
     }
 
     /// Dispatches raw string input from CommandBar to matching registered command.
-    public func dispatch(_ rawInput: String, editor: Editor) -> CommandBarDispatchResult {
+    func dispatch(_ rawInput: String, editor: Editor) -> CommandBarDispatchResult {
         let input = CommandBarInput(rawInput)
         guard !input.text.isEmpty else { return .handled }
 
@@ -395,7 +380,7 @@ public final class CommandRegistry {
     }
 
     /// Dispatches raw string input from CommandBar and returns typed operation status.
-    public func dispatchResult(_ rawInput: String, editor: Editor) -> EditorOperationResult {
+    func dispatchResult(_ rawInput: String, editor: Editor) -> EditorOperationResult {
         let input = CommandBarInput(rawInput)
         guard !input.text.isEmpty else { return .noOp }
 
@@ -419,7 +404,7 @@ public final class CommandRegistry {
     }
 
     /// Returns sorted list of available CommandBar completion names for Tab completion.
-    public func completionNames(for editor: Editor) -> [String] {
+    func completionNames(for editor: Editor) -> [String] {
         let available = commands.filter { $0.isAvailable(in: editor) }
         return Array(Set(available.flatMap(\.completionNames))).sorted()
     }

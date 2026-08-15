@@ -6,15 +6,15 @@ import TextMetrics
 // MARK: - CanvasModeController
 
 /// Controller handling Canvas Mode drawing keys, box drawing, and visual column navigation.
-public final class CanvasModeController: KeyInputHandler {
-    public weak var editor: Editor?
+final class CanvasModeController: KeyInputHandler {
+    weak var editor: Editor?
 
-    public init(editor: Editor? = nil) {
+    init(editor: Editor? = nil) {
         self.editor = editor
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key) -> Bool {
+    func handleKey(_ key: Key) -> Bool {
         guard let editor, editor.isCanvasModeActive && !editor.isTableModeActive else { return false }
 
         let direction: CanvasDrawDirection
@@ -131,11 +131,11 @@ public final class CanvasModeController: KeyInputHandler {
 // MARK: - Editor Canvas Domain Extensions
 
 extension Editor {
-    public struct CanvasBlockClipboard: Sendable, Equatable {
-        public let width: Int
-        public let rows: [String]
+    struct CanvasBlockClipboard: Sendable, Equatable {
+        let width: Int
+        let rows: [String]
 
-        public init(width: Int, rows: [String]) {
+        init(width: Int, rows: [String]) {
             self.width = width
             self.rows = rows
         }

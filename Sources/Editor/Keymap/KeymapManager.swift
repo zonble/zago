@@ -2,18 +2,18 @@ import Foundation
 import Config
 
 /// Manages layered keybindings (Base Keymap + Mode Overlays) and Keymap Presets.
-public final class KeymapManager {
-    public private(set) var baseKeymap: [Key: CommandID] = [:]
-    public private(set) var modeKeymaps: [EditorMode: [Key: CommandID]] = [:]
-    public private(set) var primaryDisplayKeys: [CommandID: [Key]] = [:]
-    public private(set) var activePreset: KeymapPreset = .classic
+final class KeymapManager {
+    private(set) var baseKeymap: [Key: CommandID] = [:]
+    private(set) var modeKeymaps: [EditorMode: [Key: CommandID]] = [:]
+    private(set) var primaryDisplayKeys: [CommandID: [Key]] = [:]
+    private(set) var activePreset: KeymapPreset = .classic
 
-    public init(preset: KeymapPreset = .classic) {
+    init(preset: KeymapPreset = .classic) {
         loadPreset(preset)
     }
 
     /// Loads an entire preset of default keybindings.
-    public func loadPreset(_ preset: KeymapPreset) {
+    func loadPreset(_ preset: KeymapPreset) {
         self.activePreset = preset
         baseKeymap.removeAll()
         modeKeymaps.removeAll()
@@ -27,7 +27,7 @@ public final class KeymapManager {
     }
 
     /// Binds a key to a command, optionally restricted to a specific mode overlay.
-    public func bind(key: Key, commandID: CommandID, mode: EditorMode? = nil) {
+    func bind(key: Key, commandID: CommandID, mode: EditorMode? = nil) {
         primaryDisplayKeys[commandID] = [key]
         if let mode {
             var map = modeKeymaps[mode, default: [:]]
@@ -39,7 +39,7 @@ public final class KeymapManager {
     }
 
     /// Unbinds a key, optionally restricted to a specific mode overlay.
-    public func unbind(key: Key, mode: EditorMode? = nil) {
+    func unbind(key: Key, mode: EditorMode? = nil) {
         if let mode {
             modeKeymaps[mode]?.removeValue(forKey: key)
         } else {
@@ -59,7 +59,7 @@ public final class KeymapManager {
     }
 
     /// Resolves a Key event to a CommandID based on the active mode (Mode Overlay -> Base Keymap).
-    public func resolve(key: Key, in mode: EditorMode) -> CommandID? {
+    func resolve(key: Key, in mode: EditorMode) -> CommandID? {
         if let cmd = modeKeymaps[mode]?[key] {
             return cmd
         }
@@ -67,7 +67,7 @@ public final class KeymapManager {
     }
 
     /// Reverse lookup: Finds the primary key label for a CommandID in a given mode.
-    public func primaryKeyLabel(for commandID: CommandID, in mode: EditorMode) -> String? {
+    func primaryKeyLabel(for commandID: CommandID, in mode: EditorMode) -> String? {
         // 1. Check if the active preset's primary display key is bound in this mode
         if let primaryKey = primaryDisplayKeys[commandID]?.first {
             if let modeKeys = modeKeymaps[mode], modeKeys[primaryKey] == commandID {
@@ -507,7 +507,7 @@ public final class KeymapManager {
     }
 
     /// Returns the keys associated with a command in the given mode.
-    public func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
+    func keys(for commandID: CommandID, in mode: EditorMode = .text) -> [Key] {
         if let modeKey = modeKeymaps[mode]?.first(where: { $0.value == commandID })?.key {
             return [modeKey]
         }

@@ -1,34 +1,34 @@
 import Foundation
 import TextMetrics
 
-public enum HelpContent {
-    public struct HelpItem: Sendable {
-        public let commandID: CommandID
-        public let descriptionKey: String
-        public let mode: EditorMode
+enum HelpContent {
+    struct HelpItem: Sendable {
+        let commandID: CommandID
+        let descriptionKey: String
+        let mode: EditorMode
 
-        public init(commandID: CommandID, descriptionKey: String? = nil, mode: EditorMode = .text) {
+        init(commandID: CommandID, descriptionKey: String? = nil, mode: EditorMode = .text) {
             self.commandID = commandID
             self.descriptionKey = descriptionKey ?? "command.\(commandID.rawValue).description"
             self.mode = mode
         }
     }
 
-    public enum SectionContent: Sendable {
+    enum SectionContent: Sendable {
         case items([HelpItem])
         case staticKeys(prefix: String, range: ClosedRange<Int>)
     }
 
-    public struct Section: Sendable {
-        public let titleKey: String
-        public let content: SectionContent
+    struct Section: Sendable {
+        let titleKey: String
+        let content: SectionContent
 
-        public init(titleKey: String, items: [HelpItem]) {
+        init(titleKey: String, items: [HelpItem]) {
             self.titleKey = titleKey
             self.content = .items(items)
         }
 
-        public init(titleKey: String, itemPrefix: String, itemRange: ClosedRange<Int>) {
+        init(titleKey: String, itemPrefix: String, itemRange: ClosedRange<Int>) {
             self.titleKey = titleKey
             self.content = .staticKeys(prefix: itemPrefix, range: itemRange)
         }
@@ -100,14 +100,14 @@ public enum HelpContent {
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
     ]
 
-    public static func lines(
+    static func lines(
         language: Language = .detectSystemLanguage(),
         keymapManager: KeymapManager? = nil
     ) -> [String] {
         [""] + sectionLines(language: language, keymapManager: keymapManager ?? KeymapManager(preset: .classic))
     }
 
-    public static func lines(editor: Editor) -> [String] {
+    static func lines(editor: Editor) -> [String] {
         lines(language: editor.language, keymapManager: editor.keymapManager)
     }
 

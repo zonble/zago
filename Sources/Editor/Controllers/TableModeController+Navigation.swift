@@ -5,7 +5,7 @@ import TextMetrics
 // MARK: - Table Controller Navigation & Selection Extensions
 
 extension TableModeController {
-    public func extendTableSelectionLeft(cell: TableCell) {
+    func extendTableSelectionLeft(cell: TableCell) {
         guard let editor else { return }
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -28,7 +28,7 @@ extension TableModeController {
         clampTableModeCursor()
     }
 
-    public func extendTableSelectionRight(cell: TableCell) {
+    func extendTableSelectionRight(cell: TableCell) {
         guard let editor else { return }
         if editor.buffer.selectionMark == nil {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
@@ -113,7 +113,7 @@ extension TableModeController {
     }
 
     @discardableResult
-    public func deleteTableSelectionIfNeeded(cell: TableCell, updateClipboard: Bool) -> Bool {
+    func deleteTableSelectionIfNeeded(cell: TableCell, updateClipboard: Bool) -> Bool {
         guard let editor else { return false }
         let segments = tableSelectionSegments(cell: cell)
         guard !segments.isEmpty else { return false }
@@ -132,7 +132,7 @@ extension TableModeController {
         return true
     }
 
-    public func cutTableCellText(cell: TableCell) {
+    func cutTableCellText(cell: TableCell) {
         guard let editor else { return }
         if deleteTableSelectionIfNeeded(cell: cell, updateClipboard: true) {
             return
@@ -160,7 +160,7 @@ extension TableModeController {
         editor.reportOperationResult(.succeeded(message: editor.l10n["status.cut_text"]))
     }
 
-    public func copyTableCellText(cell: TableCell) {
+    func copyTableCellText(cell: TableCell) {
         guard let editor else { return }
         if let mark = editor.buffer.selectionMark {
             let (start, end) = TextBuffer.getOrderedRange(
@@ -193,7 +193,7 @@ extension TableModeController {
     // MARK: - Table Navigation Operations
 
     /// Finds the left and right vertical border character indices for the current cell on the given line string.
-    public static func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (
+    static func findCellHorizontalBorders(in line: String, nearCol: Int, cell: TableCell) -> (
         left: Int, right: Int
     ) {
         let chars = Array(line)
@@ -233,7 +233,7 @@ extension TableModeController {
     }
 
     /// Clamps cursor position to inner bounds of current cell.
-    public func clampTableModeCursor() {
+    func clampTableModeCursor() {
         guard let editor, let cell = editor.currentTableCell else { return }
         editor.buffer.lineIndex = max(cell.innerMinLine, min(editor.buffer.lineIndex, cell.innerMaxLine))
         guard editor.buffer.lineIndex >= 0 && editor.buffer.lineIndex < editor.buffer.lines.count else { return }
@@ -245,7 +245,7 @@ extension TableModeController {
         editor.buffer.columnIndex = max(innerMinCol, min(editor.buffer.columnIndex, maxCol))
     }
 
-    public func currentCellInnerBounds(on lineIndex: Int) -> (start: Int, end: Int)? {
+    func currentCellInnerBounds(on lineIndex: Int) -> (start: Int, end: Int)? {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return nil }
         guard lineIndex >= cell.innerMinLine && lineIndex <= cell.innerMaxLine else { return nil }
         guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return nil }
@@ -255,7 +255,7 @@ extension TableModeController {
         return (start: start, end: end)
     }
 
-    public func clampedPositionInCurrentCell(line: Int, column: Int) -> (line: Int, column: Int)? {
+    func clampedPositionInCurrentCell(line: Int, column: Int) -> (line: Int, column: Int)? {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return nil }
         let targetLine = max(cell.innerMinLine, min(line, cell.innerMaxLine))
         guard let bounds = currentCellInnerBounds(on: targetLine) else { return nil }
@@ -264,7 +264,7 @@ extension TableModeController {
     }
 
     /// Navigates to next table cell to the right or next row (Tab).
-    public func navigateNextTableCell() {
+    func navigateNextTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
 
@@ -287,7 +287,7 @@ extension TableModeController {
         }
     }
 
-    public func findNextCellToRight(
+    func findNextCellToRight(
         of cell: TableCell, on targetLine: Int, detector: TableCellDetector
     ) -> TableCell? {
         guard let editor else { return nil }
@@ -308,7 +308,7 @@ extension TableModeController {
         return nil
     }
 
-    public func navigateRightAdjacentTableCell() {
+    func navigateRightAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
         guard
@@ -322,7 +322,7 @@ extension TableModeController {
         enterTableMode(with: rightCell)
     }
 
-    public func navigateLeftAdjacentTableCell() {
+    func navigateLeftAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell, cell.minCol > 0 else { return }
         let detector = TableCellDetector()
         guard
@@ -337,17 +337,17 @@ extension TableModeController {
     }
 
     /// Returns visual display column width for a given character index in a line string.
-    public func getVisualColumn(in line: String, col: Int) -> Int {
+    func getVisualColumn(in line: String, col: Int) -> Int {
         line.visualColumn(forCharacterOffset: col)
     }
 
     /// Returns Character array index in line string corresponding to target visual display column width.
-    public func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
+    func getCharIndexForVisualColumn(in line: String, targetVisualCol: Int) -> Int {
         line.characterOffset(forVisualColumn: targetVisualCol)
     }
 
     /// Navigates to table cell above (Up Arrow at top row of cell).
-    public func navigateUpTableCell() {
+    func navigateUpTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let currentLineText = editor.buffer.lines[editor.buffer.lineIndex]
         let currentVCol = getVisualColumn(in: currentLineText, col: editor.buffer.columnIndex)
@@ -372,7 +372,7 @@ extension TableModeController {
     }
 
     /// Navigates to table cell below (Down Arrow at bottom row of cell).
-    public func navigateDownTableCell() {
+    func navigateDownTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let currentLineText = editor.buffer.lines[editor.buffer.lineIndex]
         let currentVCol = getVisualColumn(in: currentLineText, col: editor.buffer.columnIndex)
@@ -397,7 +397,7 @@ extension TableModeController {
     }
 
     /// Navigates to previous table cell to the left or previous row (Shift+Tab).
-    public func navigatePrevTableCell() {
+    func navigatePrevTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let prevCol = max(0, cell.minCol - 2)
         let detector = TableCellDetector()
@@ -420,7 +420,7 @@ extension TableModeController {
         }
     }
 
-    public func moveToNextTableCellLineOrCell() {
+    func moveToNextTableCellLineOrCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         if editor.buffer.lineIndex < cell.innerMaxLine {
             editor.buffer.lineIndex += 1
@@ -434,7 +434,7 @@ extension TableModeController {
         clampTableModeCursor()
     }
 
-    public func detectTableLineRange(for cell: TableCell) -> [Int] {
+    func detectTableLineRange(for cell: TableCell) -> [Int] {
         guard let editor else { return [] }
         var start = cell.minLine
         var end = cell.maxLine
@@ -463,7 +463,7 @@ extension TableModeController {
         return Array(start...end)
     }
 
-    public func isTableBorderLine(_ chars: [Character], colLeft: Int, colRight: Int) -> Bool {
+    func isTableBorderLine(_ chars: [Character], colLeft: Int, colRight: Int) -> Bool {
         guard colLeft + 1 < chars.count else { return false }
         let c = chars[colLeft + 1]
         if BorderCharacterSet.isHorizontal(c) {
@@ -475,7 +475,7 @@ extension TableModeController {
         return false
     }
 
-    public func isAnyBorderLine(_ line: String, colLeft: Int) -> Bool {
+    func isAnyBorderLine(_ line: String, colLeft: Int) -> Bool {
         let chars = Array(line)
         guard colLeft < chars.count else { return false }
         return BorderCharacterSet.verticalBoundaryChars.contains(chars[colLeft])

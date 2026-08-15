@@ -1,15 +1,15 @@
 import Foundation
 
-public struct AcceptProposalCommand: Command {
-    public let id: CommandID = .proposalAccept
-    public let name = "Accept AI Proposal"
-    public let description = "Accept current AI proposal and apply changes to text buffer"
-    public var commandBarAliases: [String] { ["accept", "proposal.accept", ":accept"] }
+struct AcceptProposalCommand: Command {
+    let id: CommandID = .proposalAccept
+    let name = "Accept AI Proposal"
+    let description = "Accept current AI proposal and apply changes to text buffer"
+    var commandBarAliases: [String] { ["accept", "proposal.accept", ":accept"] }
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
             return .noOp(message: editor.l10n["ai.proposal.readonly_cannot_modify"])
         }
@@ -82,16 +82,16 @@ public struct AcceptProposalCommand: Command {
     }
 }
 
-public struct RejectProposalCommand: Command {
-    public let id: CommandID = .proposalReject
-    public let name = "Reject AI Proposal"
-    public let description = "Reject and dismiss current AI proposal"
-    public var commandBarAliases: [String] { ["reject", "proposal.reject", ":reject"] }
+struct RejectProposalCommand: Command {
+    let id: CommandID = .proposalReject
+    let name = "Reject AI Proposal"
+    let description = "Reject and dismiss current AI proposal"
+    var commandBarAliases: [String] { ["reject", "proposal.reject", ":reject"] }
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard let current = editor.proposalQueue.currentProposal else {
             return .noOp(message: editor.l10n["ai.proposal.no_pending_reject"])
         }
@@ -104,16 +104,16 @@ public struct RejectProposalCommand: Command {
     }
 }
 
-public struct NextProposalCommand: Command {
-    public let id: CommandID = .proposalNext
-    public let name = "Next AI Proposal"
-    public let description = "Preview next AI proposal in queue"
-    public var commandBarAliases: [String] { ["nextproposal", "proposal.next", ":nextproposal"] }
+struct NextProposalCommand: Command {
+    let id: CommandID = .proposalNext
+    let name = "Next AI Proposal"
+    let description = "Preview next AI proposal in queue"
+    var commandBarAliases: [String] { ["nextproposal", "proposal.next", ":nextproposal"] }
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.proposalQueue.isEmpty else {
             return .noOp(message: editor.l10n["ai.proposal.queue_empty"])
         }
@@ -131,16 +131,16 @@ public struct NextProposalCommand: Command {
     }
 }
 
-public struct PreviousProposalCommand: Command {
-    public let id: CommandID = .proposalPrev
-    public let name = "Previous AI Proposal"
-    public let description = "Preview previous AI proposal in queue"
-    public var commandBarAliases: [String] { ["prevproposal", "proposal.prev", ":prevproposal"] }
+struct PreviousProposalCommand: Command {
+    let id: CommandID = .proposalPrev
+    let name = "Previous AI Proposal"
+    let description = "Preview previous AI proposal in queue"
+    var commandBarAliases: [String] { ["prevproposal", "proposal.prev", ":prevproposal"] }
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.proposalQueue.isEmpty else {
             return .noOp(message: editor.l10n["ai.proposal.queue_empty"])
         }
@@ -158,16 +158,16 @@ public struct PreviousProposalCommand: Command {
     }
 }
 
-public struct MockAISuggestionCommand: Command {
-    public let id: CommandID = .proposalMockAI
-    public let name = "Mock AI Suggestion"
-    public let description = "Generate a mock AI proposal overlay for testing AI interactions"
-    public var commandBarAliases: [String] { ["mock-ai", "mock-ai-suggestion", "ai-mock", ":mock-ai", ":mock-ai-suggestion"] }
+struct MockAISuggestionCommand: Command {
+    let id: CommandID = .proposalMockAI
+    let name = "Mock AI Suggestion"
+    let description = "Generate a mock AI proposal overlay for testing AI interactions"
+    var commandBarAliases: [String] { ["mock-ai", "mock-ai-suggestion", "ai-mock", ":mock-ai", ":mock-ai-suggestion"] }
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.isReadOnly && !editor.buffer.isDirectoryBuffer else {
             return .noOp(message: editor.l10n["ai.proposal.readonly_cannot_generate"])
         }

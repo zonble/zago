@@ -4,9 +4,9 @@ import TextMetrics
 import TextTransform
 
 /// Encapsulates state management and key processing for command bar prompts and dialogs.
-public final class PromptController: KeyInputHandler {
+final class PromptController: KeyInputHandler {
     /// Interactive prompt state mode for command bar inputs and confirmation dialogs.
-    public enum Mode {
+    enum Mode {
         case none
         case saveFilePath(completion: (String?) -> Void)
         case confirmExitSave(completion: (Bool?) -> Void)
@@ -24,34 +24,34 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Active prompt mode state.
-    public var mode: Mode = .none
+    var mode: Mode = .none
 
     /// Current text buffer entered in prompt bar.
-    public var inputText: String = ""
+    var inputText: String = ""
 
     /// Cursor position in prompt input text.
-    public var cursorIndex: Int = 0
+    var cursorIndex: Int = 0
 
     /// Selection anchor in prompt input text, or nil when no prompt text is selected.
-    public var selectionAnchorIndex: Int? = nil
+    var selectionAnchorIndex: Int? = nil
 
     /// Autocompletion ghost text.
-    public var completionText: String? = nil
+    var completionText: String? = nil
 
     /// Logo script prompt history.
-    public var logoHistory: [String] = []
+    var logoHistory: [String] = []
 
     /// Logo script history navigation index.
-    public var logoHistoryIndex: Int = 0
+    var logoHistoryIndex: Int = 0
 
-    public weak var editor: Editor?
+    weak var editor: Editor?
 
-    public init(editor: Editor? = nil) {
+    init(editor: Editor? = nil) {
         self.editor = editor
     }
 
     /// Resets all transient prompt input states.
-    public func reset() {
+    func reset() {
         mode = .none
         inputText = ""
         cursorIndex = 0
@@ -60,13 +60,13 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Returns whether a prompt is currently active.
-    public var isActive: Bool {
+    var isActive: Bool {
         if case .none = mode { return false }
         return true
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key) -> Bool {
+    func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
         if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
             cancel()
@@ -81,7 +81,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Cancels active prompt mode.
-    public func cancel() {
+    func cancel() {
         switch mode {
         case .saveFilePath(let completion):
             mode = .none
@@ -130,7 +130,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Processes keyboard input when in prompt mode.
-    public func processPromptKey(_ key: Key) {
+    func processPromptKey(_ key: Key) {
         if handlePromptNavigationKeys(key) {
             return
         }
@@ -268,7 +268,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Helper for prompt inline character insertion at cursorIndex.
-    public func insertPromptChar(_ ch: Character) {
+    func insertPromptChar(_ ch: Character) {
         completionText = nil
         _ = deletePromptSelectionIfNeeded()
         let clamped = max(0, min(cursorIndex, inputText.count))
@@ -279,7 +279,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Helper to clear the entire prompt input line.
-    public func clearPromptLine() {
+    func clearPromptLine() {
         completionText = nil
         inputText = ""
         cursorIndex = 0
@@ -287,7 +287,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Helper for prompt inline backspace deletion.
-    public func deletePromptBackspace() {
+    func deletePromptBackspace() {
         completionText = nil
         if deletePromptSelectionIfNeeded() {
             return
@@ -301,7 +301,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Helper for prompt inline delete key deletion.
-    public func deletePromptDelete() {
+    func deletePromptDelete() {
         completionText = nil
         if deletePromptSelectionIfNeeded() {
             return
@@ -451,7 +451,7 @@ public final class PromptController: KeyInputHandler {
         }
     }
 
-    public func selectionRange() -> Range<Int>? {
+    func selectionRange() -> Range<Int>? {
         guard let anchor = selectionAnchorIndex else { return nil }
         let start = max(0, min(anchor, cursorIndex, inputText.count))
         let end = min(inputText.count, max(anchor, cursorIndex, 0))
@@ -715,7 +715,7 @@ public final class PromptController: KeyInputHandler {
     }
 
     /// Provides shortcut hints for the active prompt mode.
-    public func promptHelpShortcuts() -> [(key: String, label: String)]? {
+    func promptHelpShortcuts() -> [(key: String, label: String)]? {
         guard let editor, isActive else { return nil }
 
         let lang = editor.language

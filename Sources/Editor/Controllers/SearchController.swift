@@ -1,22 +1,22 @@
 import Foundation
 
-public enum SearchDirection {
+enum SearchDirection {
     case forward
     case backward
 }
 
 /// Controller managing text search state and search candidate execution.
-public final class SearchController: KeyInputHandler {
-    public weak var editor: Editor?
+final class SearchController: KeyInputHandler {
+    weak var editor: Editor?
 
-    public struct SearchMatch: Sendable, Equatable {
-        public let query: String
-        public let line: Int
-        public let column: Int
-        public let length: Int
-        public let usesRegex: Bool
+    struct SearchMatch: Sendable, Equatable {
+        let query: String
+        let line: Int
+        let column: Int
+        let length: Int
+        let usesRegex: Bool
 
-        public init(query: String, line: Int, column: Int, length: Int, usesRegex: Bool) {
+        init(query: String, line: Int, column: Int, length: Int, usesRegex: Bool) {
             self.query = query
             self.line = line
             self.column = column
@@ -25,14 +25,14 @@ public final class SearchController: KeyInputHandler {
         }
     }
 
-    public var lastSearchQuery: String = ""
+    var lastSearchQuery: String = ""
 
-    public init(editor: Editor? = nil) {
+    init(editor: Editor? = nil) {
         self.editor = editor
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key) -> Bool {
+    func handleKey(_ key: Key) -> Bool {
         switch key {
         case .ctrl("W"), .f6:
             editor?.promptSearch()
@@ -49,7 +49,7 @@ public final class SearchController: KeyInputHandler {
     }
 
     @discardableResult
-    public func clearActiveSearch(setStatus: Bool = true) -> Bool {
+    func clearActiveSearch(setStatus: Bool = true) -> Bool {
         guard let editor, editor.buffer.activeSearchMatch != nil else { return false }
         editor.buffer.activeSearchMatch = nil
         if setStatus {
@@ -58,21 +58,21 @@ public final class SearchController: KeyInputHandler {
         return true
     }
 
-    public func isSearchMatchCharacter(line: Int, col: Int) -> Bool {
+    func isSearchMatchCharacter(line: Int, col: Int) -> Bool {
         guard let editor, let match = editor.buffer.activeSearchMatch else { return false }
         return line == match.line && col >= match.column && col < match.column + match.length
     }
 
-    public func findNextSearchMatch() {
+    func findNextSearchMatch() {
         repeatSearch(direction: .forward)
     }
 
-    public func findPreviousSearchMatch() {
+    func findPreviousSearchMatch() {
         repeatSearch(direction: .backward)
     }
 
     /// Performs search operation for target query string.
-    public func performSearch(
+    func performSearch(
         query: String,
         useRegex: Bool = false,
         direction: SearchDirection = .forward

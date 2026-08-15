@@ -1,61 +1,61 @@
 import Foundation
 
-public struct SwitchTextModeCommand: Command {
-    public let id: CommandID = .textMode
-    public let name = "Text Editing Mode"
-    public let description = "Switch to Text Editing Mode"
-    public let commandBarAliases = ["text-mode"]
+struct SwitchTextModeCommand: Command {
+    let id: CommandID = .textMode
+    let name = "Text Editing Mode"
+    let description = "Switch to Text Editing Mode"
+    let commandBarAliases = ["text-mode"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.switchToTextMode()
         return .succeeded
     }
 }
 
-public struct ToggleCanvasModeCommand: Command {
-    public let id: CommandID = .canvasToggle
-    public let name = "Canvas Mode"
-    public let description = "Toggle Canvas Mode"
-    public let commandBarAliases = ["canvas-mode"]
+struct ToggleCanvasModeCommand: Command {
+    let id: CommandID = .canvasToggle
+    let name = "Canvas Mode"
+    let description = "Toggle Canvas Mode"
+    let commandBarAliases = ["canvas-mode"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleCanvasMode()
         return .succeeded
     }
 }
 
-public struct ToggleTableModeCommand: Command {
-    public let id: CommandID = .tableToggle
-    public let name = "Table Mode"
-    public let description = "Toggle Table Mode for active cell"
-    public let commandBarAliases = ["table-mode"]
+struct ToggleTableModeCommand: Command {
+    let id: CommandID = .tableToggle
+    let name = "Table Mode"
+    let description = "Toggle Table Mode for active cell"
+    let commandBarAliases = ["table-mode"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.toggleTableMode()
         return .succeeded
     }
 }
 
-public struct CycleBorderStyleCommand: Command {
-    public let id: CommandID = .borderStyle
-    public let name = "Cycle Border Style"
-    public let description =
+struct CycleBorderStyleCommand: Command {
+    let id: CommandID = .borderStyle
+    let name = "Cycle Border Style"
+    let description =
         "Switch default border style (Single -> Heavy -> Double -> Round -> Double Round -> ASCII)"
-    public let commandBarAliases = ["border", "border-style"]
+    let commandBarAliases = ["border", "border-style"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         let message: String
         switch editor.defaultBorderStyle {
         case .single:
@@ -84,115 +84,115 @@ public struct CycleBorderStyleCommand: Command {
     }
 }
 
-public struct TableNextCellCommand: Command {
-    public let id: CommandID = .tableNextCell
-    public let name = "Next Table Cell"
-    public let description = "Move to next table cell"
+struct TableNextCellCommand: Command {
+    let id: CommandID = .tableNextCell
+    let name = "Next Table Cell"
+    let description = "Move to next table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearActiveMark()
         editor.tableModeController.navigateNextTableCell()
         return .succeeded
     }
 }
 
-public struct TablePrevCellCommand: Command {
-    public let id: CommandID = .tablePrevCell
-    public let name = "Previous Table Cell"
-    public let description = "Move to previous table cell"
+struct TablePrevCellCommand: Command {
+    let id: CommandID = .tablePrevCell
+    let name = "Previous Table Cell"
+    let description = "Move to previous table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.clearActiveMark()
         editor.tableModeController.navigatePrevTableCell()
         return .succeeded
     }
 }
 
-public struct TableAdjustWidthIncCommand: Command {
-    public let id: CommandID = .tableAdjustWidthInc
-    public let name = "Increase Table Cell Width"
-    public let description = "Increase current table column width"
+struct TableAdjustWidthIncCommand: Command {
+    let id: CommandID = .tableAdjustWidthInc
+    let name = "Increase Table Cell Width"
+    let description = "Increase current table column width"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.resizeCurrentTableCellWidth(delta: 1)
         return .succeeded
     }
 }
 
-public struct TableAdjustWidthDecCommand: Command {
-    public let id: CommandID = .tableAdjustWidthDec
-    public let name = "Decrease Table Cell Width"
-    public let description = "Decrease current table column width"
+struct TableAdjustWidthDecCommand: Command {
+    let id: CommandID = .tableAdjustWidthDec
+    let name = "Decrease Table Cell Width"
+    let description = "Decrease current table column width"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.resizeCurrentTableCellWidth(delta: -1)
         return .succeeded
     }
 }
 
-public struct TableAdjustHeightIncCommand: Command {
-    public let id: CommandID = .tableAdjustHeightInc
-    public let name = "Increase Table Cell Height"
-    public let description = "Increase current table row height"
+struct TableAdjustHeightIncCommand: Command {
+    let id: CommandID = .tableAdjustHeightInc
+    let name = "Increase Table Cell Height"
+    let description = "Increase current table row height"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.resizeCurrentTableCellHeight(delta: 1)
         return .succeeded
     }
 }
 
-public struct TableAdjustHeightDecCommand: Command {
-    public let id: CommandID = .tableAdjustHeightDec
-    public let name = "Decrease Table Cell Height"
-    public let description = "Decrease current table row height"
+struct TableAdjustHeightDecCommand: Command {
+    let id: CommandID = .tableAdjustHeightDec
+    let name = "Decrease Table Cell Height"
+    let description = "Decrease current table row height"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.resizeCurrentTableCellHeight(delta: -1)
         return .succeeded
     }
 }
 
-public struct TableCenterTextCommand: Command {
-    public let id: CommandID = .tableCenterText
-    public let name = "Center Table Cell Text"
-    public let description = "Center text in current table cell"
+struct TableCenterTextCommand: Command {
+    let id: CommandID = .tableCenterText
+    let name = "Center Table Cell Text"
+    let description = "Center text in current table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.tableModeController.centerCellText()
         return .succeeded
     }
 }
 
-public struct TableCellStartCommand: Command {
-    public let id: CommandID = .tableCellStart
-    public let name = "Beginning of Table Cell"
-    public let description = "Move cursor to beginning of table cell"
+struct TableCellStartCommand: Command {
+    let id: CommandID = .tableCellStart
+    let name = "Beginning of Table Cell"
+    let description = "Move cursor to beginning of table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard let cell = editor.currentTableCell else { return .noOp }
         editor.clearActiveMark()
         let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -204,15 +204,15 @@ public struct TableCellStartCommand: Command {
     }
 }
 
-public struct TableCellEndCommand: Command {
-    public let id: CommandID = .tableCellEnd
-    public let name = "End of Table Cell"
-    public let description = "Move cursor to end of table cell"
+struct TableCellEndCommand: Command {
+    let id: CommandID = .tableCellEnd
+    let name = "End of Table Cell"
+    let description = "Move cursor to end of table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard let cell = editor.currentTableCell else { return .noOp }
         editor.clearActiveMark()
         let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -224,15 +224,15 @@ public struct TableCellEndCommand: Command {
     }
 }
 
-public struct TableClearCellCommand: Command {
-    public let id: CommandID = .tableClearCell
-    public let name = "Clear Table Cell"
-    public let description = "Clear text inside current table cell"
+struct TableClearCellCommand: Command {
+    let id: CommandID = .tableClearCell
+    let name = "Clear Table Cell"
+    let description = "Clear text inside current table cell"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard let cell = editor.currentTableCell else { return .noOp }
         editor.tableModeController.cutTableCellText(cell: cell)
         return .succeeded
