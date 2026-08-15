@@ -154,8 +154,8 @@ public enum ZagoSkillDefinition {
         - **`LINE BACKARROW`**: Adds a backward arrow (`◀───`).
         - **`LINE BOTHARROW`**: Adds arrows at both ends (`◀──▶`).
 
-        #### `TABLE rows cols cellWidth [cellHeight]`
-        - Example: `TABLE 3 3 12 1` (Draws a 3x3 grid table with cell width 12 and cell height 1).
+        #### `TABLE rows cols cellWidth`
+        - Example: `TABLE 3 3 12` (Draws a 3x3 grid table with cell width 12).
 
         #### `FILL "text"`
         - Repeats text inside a box or table cell while preserving borders.
