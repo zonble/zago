@@ -19,51 +19,28 @@ extension LogoEngine {
             return true
 
         case .ifCondition:
-            index += 1
-            var condTokens: [String] = []
-            if index < tokens.count && tokens[index] == "[" {
-                condTokens = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-            } else {
-                while index < tokens.count && tokens[index] != "[" {
-                    condTokens.append(tokens[index])
-                    index += 1
-                }
-            }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
 
             let isTrue = evaluateCondition(condTokens)
 
-            if index < tokens.count && tokens[index] == "[" {
-                let trueBlock = extractBlockTokens(tokens: tokens, index: &index)
+            if let trueBlock = reader.nextBlock() {
                 if isTrue {
                     var bIdx = 0
                     executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .ifElseCondition:
-            index += 1
-            var condTokens: [String] = []
-            if index < tokens.count && tokens[index] == "[" {
-                condTokens = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-            } else {
-                while index < tokens.count && tokens[index] != "[" {
-                    condTokens.append(tokens[index])
-                    index += 1
-                }
-            }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
 
             let isTrue = evaluateCondition(condTokens)
 
-            if index < tokens.count && tokens[index] == "[" {
-                let trueBlock = extractBlockTokens(tokens: tokens, index: &index)
-                var falseBlock: [String] = []
-                if index + 1 < tokens.count && tokens[index + 1] == "[" {
-                    index += 1
-                    falseBlock = extractBlockTokens(tokens: tokens, index: &index)
-                }
+            if let trueBlock = reader.nextBlock() {
+                let falseBlock = reader.nextBlock() ?? []
                 var bIdx = 0
                 if isTrue {
                     executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
@@ -71,34 +48,36 @@ extension LogoEngine {
                     executeTokens(falseBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .run:
-            index += 1
-            if index < tokens.count {
-                if tokens[index] == "[" {
-                    let block = extractBlockTokens(tokens: tokens, index: &index)
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
+                if let block = reader.nextBlock() {
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 } else {
-                    let scriptStr = evaluateExpression(tokens, index: &index)
+                    let scriptStr = reader.nextExpression() ?? ""
                     let block = LogoTokenizer.tokenize(scriptStr)
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .runResult:
-            index += 1
-            if index < tokens.count {
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if reader.peekToken() != nil {
                 var block: [String] = []
-                if tokens[index] == "[" {
-                    block = extractBlockTokens(tokens: tokens, index: &index)
+                if let rawBlock = reader.nextBlock() {
+                    block = rawBlock
                 } else {
-                    let scriptStr = evaluateExpression(tokens, index: &index)
+                    let scriptStr = reader.nextExpression() ?? ""
                     block = LogoTokenizer.tokenize(scriptStr)
                 }
+                reader.commit(to: &index)
                 var bIdx = 0
                 var subReturn: String? = nil
                 executeTokens(block, index: &bIdx, frameReturn: &subReturn)
@@ -111,12 +90,11 @@ extension LogoEngine {
             return true
 
         case .repeatLoop:
-            index += 1
-            let countStr = evaluateExpression(tokens, index: &index)
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let countStr = reader.nextExpression() ?? ""
             let count = Int(countStr) ?? 1
-            index += 1  // Advance to "["
-            if index < tokens.count && tokens[index] == "[" {
-                let block = extractBlockTokens(tokens: tokens, index: &index)
+            if let block = reader.nextBlock() {
+                reader.commit(to: &index)
                 guard count > 0 else { return true }
                 for r in 1...count {
                     guard guardLoopIteration("REPEAT", iteration: r) else { break }
@@ -128,6 +106,7 @@ extension LogoEngine {
                     if frameReturn != nil || byeFlag || currentThrowTag != nil || hasUncaughtError { break }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .stop:
@@ -156,20 +135,14 @@ extension LogoEngine {
             return true
 
         case .testCondition:
-            index += 1
-            var condTokens: [String] = []
-            while index < tokens.count {
-                let upperNext = tokens[index].uppercased()
-                if upperNext == "IFTRUE" || upperNext == "IFT" || upperNext == "IFFALSE" || upperNext == "IFF"
-                    || upperNext == "[" || upperNext == "]"
-                {
-                    break
-                }
-                condTokens.append(tokens[index])
-                index += 1
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let condTokens = reader.tokensUntil { token in
+                let upper = token.uppercased()
+                return upper == "IFTRUE" || upper == "IFT" || upper == "IFFALSE" || upper == "IFF"
+                    || token == "[" || token == "]"
             }
             testResult = evaluateCondition(condTokens)
-            index -= 1
+            reader.commit(to: &index)
             return true
 
         case .assertCondition:
@@ -177,25 +150,25 @@ extension LogoEngine {
             return true
 
         case .ifTrue:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let block = extractBlockTokens(tokens: tokens, index: &index)
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let block = reader.nextBlock() {
                 if testResult == true {
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .ifFalse:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let block = extractBlockTokens(tokens: tokens, index: &index)
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let block = reader.nextBlock() {
                 if testResult == false {
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .ignore:
@@ -207,103 +180,93 @@ extension LogoEngine {
             return true
 
         case .catchTag:
-            index += 1
-            if index < tokens.count {
-                let tag = unquote(evaluateExpression(tokens, index: &index)).lowercased()
-                index += 1
-                if index < tokens.count && tokens[index] == "[" {
-                    let block = extractBlockTokens(tokens: tokens, index: &index)
-                    var bIdx = 0
-                    executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                    if let throwTag = currentThrowTag, throwTag == tag || tag == "error" {
-                        let thrownVal = currentThrowValue ?? ""
-                        currentThrowTag = nil
-                        currentThrowValue = nil
-                        lastError = LogoError(code: 1, message: thrownVal.isEmpty ? "Error" : thrownVal)
-                        hasUncaughtError = false
-                        if !thrownVal.isEmpty {
-                            lastResult = thrownVal
-                        }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let rawTag = reader.nextExpression(), let block = reader.nextBlock() {
+                let tag = unquote(rawTag).lowercased()
+                var bIdx = 0
+                executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
+                if let throwTag = currentThrowTag, throwTag == tag || tag == "error" {
+                    let thrownVal = currentThrowValue ?? ""
+                    currentThrowTag = nil
+                    currentThrowValue = nil
+                    lastError = LogoError(code: 1, message: thrownVal.isEmpty ? "Error" : thrownVal)
+                    hasUncaughtError = false
+                    if !thrownVal.isEmpty {
+                        lastResult = thrownVal
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .throwTag:
-            index += 1
-            if index < tokens.count {
-                let tag = unquote(evaluateExpression(tokens, index: &index)).lowercased()
-                var thrownVal = ""
-                if index + 1 < tokens.count && !tokens[index + 1].hasPrefix("]") {
-                    index += 1
-                    thrownVal = evaluateExpression(tokens, index: &index)
-                }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let rawTag = reader.nextExpression() {
+                let tag = unquote(rawTag).lowercased()
+                let thrownVal = reader.nextOptionalExpression(isBoundary: { $0 == "]" }) ?? ""
                 currentThrowTag = tag
                 currentThrowValue = thrownVal
             }
+            reader.commit(to: &index)
             return true
 
         case .forLoop:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let ctrlBlock = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-                if index < tokens.count && tokens[index] == "[" {
-                    let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
-                    if !ctrlBlock.isEmpty {
-                        let varName = ctrlBlock[0].lowercased()
-                        var cIdx = 1
-                        let startVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 1
-                        cIdx += 1
-                        let limitVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? startVal
-                        cIdx += 1
-                        var stepVal = 1
-                        if cIdx < ctrlBlock.count {
-                            stepVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 1
-                        }
-                        var cur = startVal
-                        var iteration = 0
-                        while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil
-                            && currentThrowTag == nil && !hasUncaughtError
-                        {
-                            iteration += 1
-                            guard guardLoopIteration("FOR", iteration: iteration) else { break }
-                            variables[varName] = "\(cur)"
-                            var bIdx = 0
-                            executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
-                            cur += stepVal
-                        }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextBlock() {
+                reader.commit(to: &index)
+                if !ctrlBlock.isEmpty {
+                    let varName = ctrlBlock[0].lowercased()
+                    var cIdx = 1
+                    let startVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 1
+                    cIdx += 1
+                    let limitVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? startVal
+                    cIdx += 1
+                    var stepVal = 1
+                    if cIdx < ctrlBlock.count {
+                        stepVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 1
+                    }
+                    var cur = startVal
+                    var iteration = 0
+                    while (stepVal > 0 ? cur <= limitVal : cur >= limitVal) && !byeFlag && frameReturn == nil
+                        && currentThrowTag == nil && !hasUncaughtError
+                    {
+                        iteration += 1
+                        guard guardLoopIteration("FOR", iteration: iteration) else { break }
+                        variables[varName] = "\(cur)"
+                        var bIdx = 0
+                        executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
+                        cur += stepVal
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .dotimesLoop:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let ctrlBlock = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-                if index < tokens.count && tokens[index] == "[" {
-                    let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
-                    if ctrlBlock.count >= 2 {
-                        let varName = ctrlBlock[0].lowercased()
-                        var cIdx = 1
-                        let countVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 0
-                        for i in 0..<countVal {
-                            guard guardLoopIteration("DOTIMES", iteration: i + 1) else { break }
-                            variables[varName] = "\(i)"
-                            var bIdx = 0
-                            executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
-                            if byeFlag || frameReturn != nil || currentThrowTag != nil || hasUncaughtError { break }
-                        }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextBlock() {
+                reader.commit(to: &index)
+                if ctrlBlock.count >= 2 {
+                    let varName = ctrlBlock[0].lowercased()
+                    var cIdx = 1
+                    let countVal = Int(evaluateExpression(ctrlBlock, index: &cIdx)) ?? 0
+                    for i in 0..<countVal {
+                        guard guardLoopIteration("DOTIMES", iteration: i + 1) else { break }
+                        variables[varName] = "\(i)"
+                        var bIdx = 0
+                        executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
+                        if byeFlag || frameReturn != nil || currentThrowTag != nil || hasUncaughtError { break }
                     }
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .whileLoop:
-            index += 1
-            if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
+            if let bodyBlock = reader.nextBlock() {
+                reader.commit(to: &index)
                 var iteration = 0
                 while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                     && !hasUncaughtError
@@ -314,11 +277,14 @@ extension LogoEngine {
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .untilLoop:
-            index += 1
-            if let (condTokens, bodyBlock) = extractLoopConditionAndBody(tokens: tokens, index: &index) {
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
+            if let bodyBlock = reader.nextBlock() {
+                reader.commit(to: &index)
                 var iteration = 0
                 while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                     && !hasUncaughtError
@@ -329,23 +295,14 @@ extension LogoEngine {
                     executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }
+            reader.commit(to: &index)
             return true
 
         case .doWhileLoop:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-                var condTokens: [String] = []
-                if index < tokens.count && tokens[index] == "[" {
-                    condTokens = extractBlockTokens(tokens: tokens, index: &index)
-                    index += 1
-                } else {
-                    while index < tokens.count && tokens[index] != "]" {
-                        condTokens.append(tokens[index])
-                        index += 1
-                    }
-                }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let bodyBlock = reader.nextBlock() {
+                let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "]" }
+                reader.commit(to: &index)
                 var iteration = 0
                 repeat {
                     iteration += 1
@@ -355,23 +312,14 @@ extension LogoEngine {
                 } while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                     && !hasUncaughtError
             }
+            reader.commit(to: &index)
             return true
 
         case .doUntilLoop:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let bodyBlock = extractBlockTokens(tokens: tokens, index: &index)
-                index += 1
-                var condTokens: [String] = []
-                if index < tokens.count && tokens[index] == "[" {
-                    condTokens = extractBlockTokens(tokens: tokens, index: &index)
-                    index += 1
-                } else {
-                    while index < tokens.count && tokens[index] != "]" {
-                        condTokens.append(tokens[index])
-                        index += 1
-                    }
-                }
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let bodyBlock = reader.nextBlock() {
+                let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "]" }
+                reader.commit(to: &index)
                 var iteration = 0
                 repeat {
                     iteration += 1
@@ -381,72 +329,70 @@ extension LogoEngine {
                 } while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
                     && !hasUncaughtError
             }
+            reader.commit(to: &index)
             return true
 
         case .caseSwitch:
-            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            guard reader.peekToken() != nil else { return true }
-            let targetVal = unquote(reader.nextExpression())
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            guard let rawTarget = reader.nextExpression(), let clausesBlock = reader.nextBlock() else {
+                reader.commit(to: &index)
+                return true
+            }
+            let targetVal = unquote(rawTarget)
             reader.commit(to: &index)
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let clausesBlock = extractBlockTokens(tokens: tokens, index: &index)
-                let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock)
-                if let res = result {
-                    lastResult = res
-                }
+            let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock)
+            if let res = result {
+                lastResult = res
             }
             return true
 
         case .condSwitch:
-            index += 1
-            if index < tokens.count && tokens[index] == "[" {
-                let clausesBlock = extractBlockTokens(tokens: tokens, index: &index)
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let clausesBlock = reader.nextBlock() {
                 let result = evaluateCondClauses(clausesBlock: clausesBlock)
-                if let res = result {
-                    lastResult = res
-                }
+                if let res = result { lastResult = res }
             }
+            reader.commit(to: &index)
             return true
 
         case .to:
-            index += 1
-            if index < tokens.count {
-                let procName = tokens[index].uppercased()
-                index += 1
+            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+            if let rawName = reader.nextRawToken() {
+                let procName = rawName.uppercased()
                 if isReservedProcedureName(procName) {
                     let errorMessage = "[LOGO Error: \(procName) is a reserved word/operator and cannot be redefined]"
                     reportError(LogoError(code: 1, message: errorMessage), token: procName)
-                    while index < tokens.count && tokens[index].uppercased() != "END" {
-                        index += 1
+                    while let token = reader.peekToken(), token.uppercased() != "END" {
+                        _ = reader.nextRawToken()
                     }
+                    reader.commit(to: &index)
                     return true
                 }
                 var params: [String] = []
-                while index < tokens.count && tokens[index].hasPrefix(":") {
-                    let paramName = String(tokens[index].dropFirst()).lowercased()
+                while let token = reader.peekToken(), token.hasPrefix(":") {
+                    let paramName = String(token.dropFirst()).lowercased()
                     if params.contains(paramName) {
                         break
                     }
                     params.append(paramName)
-                    index += 1
+                    _ = reader.nextRawToken()
                 }
                 var docstring: String? = nil
-                if index < tokens.count && (tokens[index].hasPrefix("\"") || tokens[index].hasPrefix("'")) {
-                    if index + 1 < tokens.count && tokens[index + 1].uppercased() != "END" {
-                        docstring = unquote(tokens[index])
-                        index += 1
-                    }
+                if let token = reader.peekToken(), (token.hasPrefix("\"") || token.hasPrefix("'")),
+                    reader.peekToken(offset: 2)?.uppercased() != "END"
+                {
+                    docstring = unquote(token)
+                    _ = reader.nextRawToken()
                 }
                 var procSourceTokens: [LogoToken] = []
                 let hasRootSourceTokens = tokens.count == rootSourceTokens.count
-                while index < tokens.count && tokens[index].uppercased() != "END" {
+                while let token = reader.peekToken(), token.uppercased() != "END" {
+                    _ = reader.nextRawToken()
                     if hasRootSourceTokens {
-                        procSourceTokens.append(rootSourceTokens[index])
+                        procSourceTokens.append(rootSourceTokens[reader.position])
                     } else {
-                        procSourceTokens.append(LogoToken(text: tokens[index], sourceRange: 0..<0))
+                        procSourceTokens.append(LogoToken(text: token, sourceRange: 0..<0))
                     }
-                    index += 1
                 }
                 customProcedures[procName] = LogoProcedure(
                     name: procName,
@@ -455,6 +401,7 @@ extension LogoEngine {
                     bodyTokens: procSourceTokens
                 )
             }
+            reader.commit(to: &index)
             return true
 
         case .exec:
@@ -477,70 +424,29 @@ extension LogoEngine {
         }
     }
 
-    private func extractLoopConditionAndBody(tokens: [String], index: inout Int) -> (
-        condition: [String], body: [String]
-    )? {
-        guard index < tokens.count else { return nil }
-
-        if tokens[index] == "[" {
-            let condition = extractBlockTokens(tokens: tokens, index: &index)
-            index += 1
-            guard index < tokens.count, tokens[index] == "[" else { return nil }
-            let body = extractBlockTokens(tokens: tokens, index: &index)
-            return (condition, body)
-        }
-
-        var condition: [String] = []
-        while index < tokens.count && tokens[index] != "[" {
-            condition.append(tokens[index])
-            index += 1
-        }
-        guard index < tokens.count, tokens[index] == "[" else { return nil }
-        let body = extractBlockTokens(tokens: tokens, index: &index)
-        return (condition, body)
-    }
-
     private func executeAssertCommand(_ tokens: [String], index: inout Int) {
         guard index + 1 < tokens.count else {
             reportError(LogoError(code: 1, message: "[LOGO Error: Not enough inputs to ASSERT]"), token: "ASSERT")
             return
         }
-        index += 1
-
-        var condTokens: [String] = []
-        if index < tokens.count && tokens[index] == "[" {
-            condTokens = extractBlockTokens(tokens: tokens, index: &index)
-            index += 1
-        } else {
-            while index < tokens.count {
-                let t = tokens[index]
-                if t == "[" || isQuotedWordToken(t) || t == "]" || t == ")"
-                    || (condTokens.count >= 1 && LogoEngine.isStatementCommand(t))
-                {
-                    break
-                }
-                condTokens.append(t)
-                index += 1
-            }
+        var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
+        let condTokens = reader.nextBlock() ?? reader.tokensUntil { token in
+            token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
+                || LogoEngine.isStatementCommand(token)
         }
 
         let isTrue = evaluateCondition(condTokens)
         var customMsg: String? = nil
 
-        if index < tokens.count {
-            let t = tokens[index]
-            if t == "[" {
-                let msgBlock = extractBlockTokens(tokens: tokens, index: &index)
-                customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
-            } else if isQuotedWordToken(t) || t.hasPrefix(":") {
-                var msgTokens: [String] = []
-                while index < tokens.count && !LogoEngine.isStatementCommand(tokens[index]) && tokens[index] != "]" {
-                    msgTokens.append(tokens[index])
-                    index += 1
-                }
-                customMsg = msgTokens.map { unquote($0) }.joined(separator: " ")
+        if let msgBlock = reader.nextBlock() {
+            customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
+        } else if let token = reader.peekToken(), isQuotedWordToken(token) || token.hasPrefix(":") {
+            let msgTokens = reader.tokensUntil {
+                LogoEngine.isStatementCommand($0) || $0 == "]" || $0 == ")"
             }
+            customMsg = msgTokens.map { unquote($0) }.joined(separator: " ")
         }
+        reader.commit(to: &index)
 
         if !isTrue {
             let msg = customMsg ?? "Assertion failed: (\(condTokens.joined(separator: " ")))"
