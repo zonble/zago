@@ -36,6 +36,14 @@ public enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
+    public var stringValue: String {
+        switch self {
+        case .string(let s): return s
+        case .list(let items): return "[" + items.map { $0.stringValue }.joined(separator: " ") + "]"
+        case .array(let items): return "{" + items.map { $0.stringValue }.joined(separator: " ") + "}"
+        }
+    }
+
     /// Serializes LOGO value into valid LOGO canonical syntax string (using UCBLogo |...| quoting for strings with whitespace/quotes/brackets).
     public func toLogoSyntaxString() -> String {
         switch self {

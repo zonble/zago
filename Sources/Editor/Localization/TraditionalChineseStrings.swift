@@ -190,9 +190,10 @@ struct TraditionalChineseStrings {
                 • ARRAY size（建立指定大小的一維陣列，如 ARRAY 3 產生 {"" "" ""}）
                 • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生 3 × 3 矩陣）
 
-          6. Date / Datetime
-            DATE                                 取得當前系統日期字串 ("YYYY-MM-DD")
-            TIME                                 取得當前系統時間字串 ("HH:MM:SS")
+          6. 日期、時間與日曆系統
+            DATE [format] [locale] [tz] [cal]    取得日期字串（支援樣式、時區、民國/和曆等曆法）
+            TIME [format] [locale] [tz] [cal]    取得時間字串（預設："HH:mm:ss"）
+            DATETIME [format] [locale] [tz] [cal] 取得完整日期時間字串
 
           7. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文

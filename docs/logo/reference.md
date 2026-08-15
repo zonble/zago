@@ -483,9 +483,9 @@ TYPE "hello;world"
 | `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `READWORD` | `RW`, `READLINE`, `READ` | `READWORD [prompt]` | Reads a line of text input from user or stdin | `MAKE "name READWORD "Enter name: "` |
-| `READCHAR` | `RC`, `READKEY`, `RK` | `READCHAR [prompt]` | Reads a single keypress from user or stdin | `IF READCHAR "Confirm (y/n)? " = "y" [ DELETE ]` |
-| `DATE` | - | `DATE [format]` | Evaluates/inserts current date (e.g. `YYYY/MM/DD` or `yyyy-MM-dd`) | `DATE`, `MAKE "d" DATE "YYYY/MM/DD"` |
-| `TIME` | - | `TIME [format]` | Evaluates/inserts current time (default: `HH:mm:ss`) | `TIME`, `TIME "HH:mm"` |
+| `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date with full Foundation locale, timezone, and calendar support (e.g. `DATE "full "zh_TW`, `DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc`) | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
+| `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time with timezone and style presets (default: `HH:mm:ss`) | `TIME`, `TIME "medium "en_US "UTC` |
+| `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time | `DATETIME`, `DATETIME "iso8601` |
 | `NEWLINE` | `NL`, `ENTER` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
 | `LINE` | `HR` | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
 | `VLINE` | `VR`, `VHR` | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
@@ -982,20 +982,46 @@ SHOW :ordered
 [9 6 5 4 3 2 1 1]
 ```
 
-### 2. Variable Date Assignment & Box Framing (`DATE` & `BOX`)
+### 2. Variable Date Assignment & Foundation Date Formatting (`DATE`, `TIME`, `DATETIME` & `BOX`)
 
-Stores formatted current date into variable `:d` and wraps it inside a framed box:
+`zago` features full Foundation-powered date and time formatting, supporting localized presets (`short`, `medium`, `long`, `full`, `iso8601`), custom Unicode patterns, custom Locales, TimeZones (IANA, abbreviations, numeric offsets), and Calendar systems (Gregorian, ROC/Minguo, Japanese/Wareki, Buddhist, Chinese Lunar, Islamic, Hebrew, etc.).
 
+#### Calling Forms:
+1. **Zero Arguments (Defaults)**:
+   - `DATE` -> `"2026-08-15"`
+   - `TIME` -> `"16:30:00"`
+   - `DATETIME` -> `"2026-08-15 16:30:00"`
+
+2. **Positional Overloads**:
+   ```logo
+   ; Preset style + Locale
+   SHOW (DATE "full "zh_TW)                   ; "2026年8月15日 星期六"
+   SHOW (DATE "short "en_US)                  ; "8/15/26"
+
+   ; Calendar Systems + TimeZones
+   SHOW (DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc)       ; "民國115年8月15日"
+   SHOW (DATE "GGGy年M月d日 "ja_JP "Asia/Tokyo "japanese)   ; "令和8年8月15日"
+   SHOW (DATE "iso8601 "en_US "UTC)                         ; "2026-08-15T08:30:00Z"
+   SHOW (TIME "medium "en_US "+0900)                        ; "5:30:00 PM"
+   ```
+
+3. **Property List / Dictionary Format**:
+   ```logo
+   SHOW DATE [format "GGGy年M月d日" locale "zh_TW" tz "Asia/Taipei" calendar "roc"]
+   SHOW DATE [format "iso8601" tz "UTC"]
+   ```
+
+#### Box Framing Example:
 ```logo
-MAKE "d" DATE "YYYY/MM/DD" BOX :d "double"
+MAKE "d" (DATE "full "zh_TW) BOX :d "double"
 ```
 
 *Output:*
 
 ```text
-╔════════════╗
-║ 2026/07/28 ║
-╚════════════╝
+╔═════════════════════════╗
+║   2026年8月15日 星期六   ║
+╚═════════════════════════╝
 ```
 
 ### 3. Multi-Column Layout Generator (`VLINE` & `GOTO`)

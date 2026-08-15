@@ -200,9 +200,10 @@ struct EnglishStrings {
                 • MDARRAY dims (Creates a multi-dimensional array of specified 
                   dimensions,  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
-          6. Date / Datetime
-            DATE                                 Get current date string ("YYYY-MM-DD")
-            TIME                                 Get current time string ("HH:MM:SS")
+          6. Date, Time & Calendar
+            DATE [format] [locale] [tz] [cal]    Get date (supports styles, timezones, calendars)
+            TIME [format] [locale] [tz] [cal]    Get time string (default: "HH:mm:ss")
+            DATETIME [format] [locale] [tz] [cal] Get combined date & time string
 
           7. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.

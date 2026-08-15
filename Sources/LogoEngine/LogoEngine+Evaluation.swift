@@ -154,6 +154,25 @@ extension LogoEngine {
                     leftVal = anyTrue ? "1" : "0"
                     setLastExpressionString(leftVal)
 
+                case .date, .time, .datetime:
+                    let mode: LogoDateTimeFormatter.Mode
+                    switch variadicPrim {
+                    case .date: mode = .date
+                    case .time: mode = .time
+                    case .datetime: mode = .dateTime
+                    default: mode = .date
+                    }
+                    let cleanArgs = args.map { unquote($0) }
+                    let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(cleanArgs, mode: mode)
+                    leftVal = LogoDateTimeFormatter.format(
+                        mode: mode,
+                        formatSpec: f,
+                        localeSpec: l,
+                        timeZoneSpec: tz,
+                        calendarSpec: cal
+                    )
+                    setLastExpressionDateTime(leftVal)
+
                 default:
                     leftVal = ""
                     setLastExpressionString(leftVal)
