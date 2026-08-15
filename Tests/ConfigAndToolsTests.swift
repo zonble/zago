@@ -3,6 +3,7 @@ import Testing
 
 @testable import Config
 @testable import Editor
+@testable import LogoEngine
 @testable import Syntax
 
 @Suite(.serialized)
@@ -906,6 +907,9 @@ struct ConfigAndToolsTests {
             language: .zh_TW
         )
         _ = primDialog
+        #expect(LogoPrimitive.keywordAliases.contains("DRAWBOX"))
+        #expect(LogoPrimitive.from("PRINT") == .type)
+        #expect(LogoPrimitive.from("BOX") == .box)
 
         // Test collision when user defines a procedure with same name as built-in primitive
         editor.logoEngine.execute("TO BOX :w :h \"Custom box wrapper\" END")

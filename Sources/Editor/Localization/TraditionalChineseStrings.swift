@@ -893,6 +893,8 @@ struct TraditionalChineseStrings {
         "describe_command.source_ucb_logo": "UCB LOGO 標準",
         "describe_command.source_zago": "Zago 擴充指令",
         "describe_command.parameters": "參數清單：",
+        "describe_command.parameter_description": "說明：",
+        "describe_command.parameter_example": "範例：",
         "describe_command.param_required": "(必填)",
         "describe_command.param_optional": "(選填)",
         "describe_command.allowed_values": " (可選值: ",

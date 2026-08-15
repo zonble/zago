@@ -36,7 +36,7 @@ extension LogoPrimitive {
                 description: "Returns text content of specified line (or current line).",
                 localizedDescriptionKey: "logo.doc.getline",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "row", required: false)],
+                parameters: [LogoPrimitiveParameter(name: "row", required: false, description: "The row argument. Used by GETLINE.", example: "3")],
                 examples: [LogoPrimitiveExample(input: "GETLINE 1")]
             )
 
@@ -47,8 +47,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.setline",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "row", required: false),
-                    LogoPrimitiveParameter(name: "text", required: true),
+                    LogoPrimitiveParameter(name: "row", required: false, description: "The row argument. Used by SETLINE.", example: "3"),
+                    LogoPrimitiveParameter(name: "text", required: true, description: "The text value. Used by SETLINE.", example: "text"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SETLINE 1 \"Title")]
             )
@@ -59,7 +59,7 @@ extension LogoPrimitive {
                 description: "Jumps cursor directly to specified 1-based row.",
                 localizedDescriptionKey: "logo.doc.gotoline",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "row", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "row", required: true, description: "The row argument. Used by GOTOLINE.", example: "3")],
                 examples: [LogoPrimitiveExample(input: "GOTOLINE 10")]
             )
 
@@ -69,7 +69,7 @@ extension LogoPrimitive {
                 description: "Jumps cursor directly to specified 1-based visual column.",
                 localizedDescriptionKey: "logo.doc.gotocol",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "col", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "col", required: true, description: "The col argument. Used by GOTOCOL.", example: "3")],
                 examples: [LogoPrimitiveExample(input: "GOTOCOL 5")]
             )
 

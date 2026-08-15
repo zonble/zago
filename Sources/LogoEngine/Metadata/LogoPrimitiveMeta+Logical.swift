@@ -28,9 +28,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.and",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "cond1", required: true),
-                    LogoPrimitiveParameter(name: "cond2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false),
+                    LogoPrimitiveParameter(name: "cond1", required: true, description: "The cond1 argument. Used by ANDLOGIC.", example: "value"),
+                    LogoPrimitiveParameter(name: "cond2", required: true, description: "The cond2 argument. Used by ANDLOGIC.", example: "value"),
+                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by ANDLOGIC.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "AND (:x > 0) (:y > 0)")]
             )
@@ -42,9 +42,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.or",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "cond1", required: true),
-                    LogoPrimitiveParameter(name: "cond2", required: true),
-                    LogoPrimitiveParameter(name: "...", required: false),
+                    LogoPrimitiveParameter(name: "cond1", required: true, description: "The cond1 argument. Used by ORLOGIC.", example: "value"),
+                    LogoPrimitiveParameter(name: "cond2", required: true, description: "The cond2 argument. Used by ORLOGIC.", example: "value"),
+                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by ORLOGIC.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "OR (:a = 1) (:b = 1)")]
             )
@@ -56,8 +56,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.xor",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true),
-                    LogoPrimitiveParameter(name: "b", required: true),
+                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by XORLOGIC.", example: "1"),
+                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by XORLOGIC.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "XOR TRUE FALSE", output: "true")]
             )
@@ -68,7 +68,7 @@ extension LogoPrimitive {
                 description: "Logical negation of condition.",
                 localizedDescriptionKey: "logo.doc.not",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "condition", required: true)],
+                parameters: [LogoPrimitiveParameter(name: "condition", required: true, description: "The condition to evaluate. Used by NOTLOGIC.", example: "1")],
                 examples: [LogoPrimitiveExample(input: "NOT :ready")]
             )
 
