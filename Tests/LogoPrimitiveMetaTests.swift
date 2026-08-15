@@ -35,7 +35,7 @@ import Testing
     }
 
     @Test func testMetadataMatchesSupportedOptionalArguments() {
-        let lineStyles = ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round"]
+        let lineStyles = ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]
         #expect(LogoPrimitive.line.meta.parameters?[1].allowedValues == lineStyles)
         #expect(LogoPrimitive.vline.meta.parameters?[1].allowedValues == lineStyles)
         #expect(LogoPrimitive.justify.meta.parameters == nil)

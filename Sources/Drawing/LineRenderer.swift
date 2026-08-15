@@ -76,6 +76,12 @@ public enum LineRenderer {
         case "-", "|": return .ascii
         case "═", "║": return .double
         case "━", "┃": return .heavy
+        case "┄", "┆": return .tripleDash
+        case "┅", "┇": return .heavyTripleDash
+        case "┈", "┊": return .quadrupleDash
+        case "┉", "┋": return .heavyQuadrupleDash
+        case "╌", "╎": return .doubleDash
+        case "╍", "╏": return .heavyDoubleDash
         default: return .single
         }
     }

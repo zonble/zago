@@ -115,6 +115,12 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     case doubleRound = "double-round"
     case ascii = "ascii"
     case asciiRound = "ascii-round"
+    case tripleDash = "triple-dash"
+    case heavyTripleDash = "heavy-triple-dash"
+    case quadrupleDash = "quadruple-dash"
+    case heavyQuadrupleDash = "heavy-quadruple-dash"
+    case doubleDash = "double-dash"
+    case heavyDoubleDash = "heavy-double-dash"
 
     public init?(_ token: String) {
         switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
@@ -132,6 +138,18 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
             self = .ascii
         case "asciiround", "ascii-round", "ascii_round", "asciirounded", "ascii-rounded", "ascii_rounded":
             self = .asciiRound
+        case "tripledash", "triple-dash", "triple_dash":
+            self = .tripleDash
+        case "heavytripledash", "heavy-triple-dash", "heavy_triple_dash":
+            self = .heavyTripleDash
+        case "quadrupledash", "quadruple-dash", "quadruple_dash":
+            self = .quadrupleDash
+        case "heavyquadrupledash", "heavy-quadruple-dash", "heavy_quadruple_dash":
+            self = .heavyQuadrupleDash
+        case "doubledash", "double-dash", "double_dash":
+            self = .doubleDash
+        case "heavydoubledash", "heavy-double-dash", "heavy_double_dash":
+            self = .heavyDoubleDash
         default:
             return nil
         }
@@ -154,6 +172,12 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
         case .doubleRound: .doubleRound
         case .ascii: .ascii
         case .asciiRound: .asciiRound
+        case .tripleDash: .tripleDash
+        case .heavyTripleDash: .heavyTripleDash
+        case .quadrupleDash: .quadrupleDash
+        case .heavyQuadrupleDash: .heavyQuadrupleDash
+        case .doubleDash: .doubleDash
+        case .heavyDoubleDash: .heavyDoubleDash
         }
     }
 
@@ -201,6 +225,18 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
                 midLeft: "├", midJoin: "┼", midRight: "┤",
                 bottomLeft: "└", bottomJoin: "┴", bottomRight: "┘",
                 horizontal: "─", vertical: "│")
+        case .tripleDash:
+            BorderStyle.single.tableCharacters.withLines(horizontal: "┄", vertical: "┆")
+        case .heavyTripleDash:
+            BorderStyle.heavy.tableCharacters.withLines(horizontal: "┅", vertical: "┇")
+        case .quadrupleDash:
+            BorderStyle.single.tableCharacters.withLines(horizontal: "┈", vertical: "┊")
+        case .heavyQuadrupleDash:
+            BorderStyle.heavy.tableCharacters.withLines(horizontal: "┉", vertical: "┋")
+        case .doubleDash:
+            BorderStyle.single.tableCharacters.withLines(horizontal: "╌", vertical: "╎")
+        case .heavyDoubleDash:
+            BorderStyle.heavy.tableCharacters.withLines(horizontal: "╍", vertical: "╏")
         }
     }
 
@@ -212,6 +248,25 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     /// The character used by a vertical line command for this style.
     public var verticalLineCharacter: Character {
         tableCharacters.vertical.first ?? "│"
+    }
+
+    public var isDashed: Bool {
+        switch self {
+        case .tripleDash, .heavyTripleDash, .quadrupleDash, .heavyQuadrupleDash, .doubleDash, .heavyDoubleDash:
+            true
+        default:
+            false
+        }
+    }
+}
+
+private extension TableBorderCharacters {
+    func withLines(horizontal: String, vertical: String) -> TableBorderCharacters {
+        TableBorderCharacters(
+            topLeft: topLeft, topJoin: topJoin, topRight: topRight,
+            midLeft: midLeft, midJoin: midJoin, midRight: midRight,
+            bottomLeft: bottomLeft, bottomJoin: bottomJoin, bottomRight: bottomRight,
+            horizontal: horizontal, vertical: vertical)
     }
 }
 
@@ -251,6 +306,18 @@ public struct BoxStyle: Sendable {
         topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
     public static let asciiRound = BoxStyle(
         topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
+    public static let tripleDash = BoxStyle(
+        topLeft: "┌", topChar: "┄", topRight: "┐", sideChar: "┆", bottomLeft: "└", bottomChar: "┄", bottomRight: "┘")
+    public static let heavyTripleDash = BoxStyle(
+        topLeft: "┏", topChar: "┅", topRight: "┓", sideChar: "┇", bottomLeft: "┗", bottomChar: "┅", bottomRight: "┛")
+    public static let quadrupleDash = BoxStyle(
+        topLeft: "┌", topChar: "┈", topRight: "┐", sideChar: "┊", bottomLeft: "└", bottomChar: "┈", bottomRight: "┘")
+    public static let heavyQuadrupleDash = BoxStyle(
+        topLeft: "┏", topChar: "┉", topRight: "┓", sideChar: "┋", bottomLeft: "┗", bottomChar: "┉", bottomRight: "┛")
+    public static let doubleDash = BoxStyle(
+        topLeft: "┌", topChar: "╌", topRight: "┐", sideChar: "╎", bottomLeft: "└", bottomChar: "╌", bottomRight: "┘")
+    public static let heavyDoubleDash = BoxStyle(
+        topLeft: "┏", topChar: "╍", topRight: "┓", sideChar: "╏", bottomLeft: "┗", bottomChar: "╍", bottomRight: "┛")
 
     public static func from(_ str: String) -> BoxStyle {
         BorderStyle.from(str).boxStyle
