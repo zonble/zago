@@ -440,10 +440,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.date",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "format", required: false, description: "The format argument. Used by DATE.", example: "single"),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale identifier. Used by DATE.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "tz", required: false, description: "The tz argument. Used by DATE.", example: "value"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The cal argument. Used by DATE.", example: "value"),
+                    LogoPrimitiveParameter(name: "format", required: false, description: "The output date style or custom date pattern.", example: "long", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used for the date.", example: "Asia/Taipei"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date.", example: "gregorian"),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE \"iso")]
             )
@@ -455,9 +455,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.time",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "format", required: false, description: "The format argument. Used by TIME.", example: "single"),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale identifier. Used by TIME.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "tz", required: false, description: "The tz argument. Used by TIME.", example: "value"),
+                    LogoPrimitiveParameter(name: "format", required: false, description: "The output time style or custom time pattern.", example: "medium", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted time.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used for the time.", example: "Asia/Taipei"),
                 ],
                 examples: [LogoPrimitiveExample(input: "TIME")]
             )
@@ -469,10 +469,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.datetime",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "format", required: false, description: "The format argument. Used by DATETIME.", example: "single"),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale identifier. Used by DATETIME.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "tz", required: false, description: "The tz argument. Used by DATETIME.", example: "value"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The cal argument. Used by DATETIME.", example: "value"),
+                    LogoPrimitiveParameter(name: "format", required: false, description: "The output date-time style or custom date-time pattern.", example: "full", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date and time.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used for the date and time.", example: "Asia/Taipei"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used for the formatted date and time.", example: "gregorian"),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATETIME \"full")]
             )
@@ -484,11 +484,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.formatdate",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "dateStr", required: true, description: "The dateStr argument. Used by DATEFORMAT.", example: "value"),
-                    LogoPrimitiveParameter(name: "format", required: false, description: "The format argument. Used by DATEFORMAT.", example: "single"),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale identifier. Used by DATEFORMAT.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "tz", required: false, description: "The tz argument. Used by DATEFORMAT.", example: "value"),
-                    LogoPrimitiveParameter(name: "cal", required: false, description: "The cal argument. Used by DATEFORMAT.", example: "value"),
+                    LogoPrimitiveParameter(name: "dateStr", required: true, description: "The date or date-time string to parse and format.", example: "2026-12-31"),
+                    LogoPrimitiveParameter(name: "format", required: false, description: "The output date style or custom date pattern.", example: "long", allowedValues: ["short", "medium", "long", "full", "iso8601"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "The locale used for the formatted date.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "tz", required: false, description: "The time zone identifier used when parsing and formatting the date.", example: "Asia/Taipei"),
+                    LogoPrimitiveParameter(name: "cal", required: false, description: "The calendar used when parsing and formatting the date.", example: "gregorian"),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.DATE \"2026-12-31 \"long")]
             )
@@ -500,8 +500,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.dateadd",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "dateStr", required: true, description: "The dateStr argument. Used by DATEADD.", example: "value"),
-                    LogoPrimitiveParameter(name: "amount", required: true, description: "The amount argument. Used by DATEADD.", example: "value"),
+                    LogoPrimitiveParameter(name: "dateStr", required: true, description: "The date or date-time string to change.", example: "2026-12-31"),
+                    LogoPrimitiveParameter(name: "amount", required: true, description: "The number of units to add; use a negative number to subtract.", example: "7"),
                     LogoPrimitiveParameter(
                         name: "unit", required: false, description: "The unit used for the operation. Used by DATEADD.", example: "days",
                         allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),
@@ -516,8 +516,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.datediff",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "date1", required: true, description: "The date1 argument. Used by DATEDIFF.", example: "value"),
-                    LogoPrimitiveParameter(name: "date2", required: true, description: "The date2 argument. Used by DATEDIFF.", example: "value"),
+                    LogoPrimitiveParameter(name: "date1", required: true, description: "The first date or date-time string.", example: "2026-12-31"),
+                    LogoPrimitiveParameter(name: "date2", required: true, description: "The second date or date-time string.", example: "2027-01-07"),
                     LogoPrimitiveParameter(
                         name: "unit", required: false, description: "The unit used for the operation. Used by DATEDIFF.", example: "days",
                         allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),

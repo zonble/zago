@@ -59,6 +59,11 @@ import Testing
         #expect(LogoPrimitive.formatList.meta.notes == "Not supported on Linux or Windows.")
         #expect(LogoPrimitive.formatList.meta.parameters?[0].description == "The list or array to format.")
         #expect(LogoPrimitive.formatList.meta.parameters?[0].example == "[A B C]")
+        #expect(LogoPrimitive.dateformat.meta.parameters?[0].description == "The date or date-time string to parse and format.")
+        #expect(LogoPrimitive.dateformat.meta.parameters?[0].example == "2026-12-31")
+        #expect(LogoPrimitive.dateformat.meta.parameters?[1].allowedValues == ["short", "medium", "long", "full", "iso8601"])
+        #expect(LogoPrimitive.dateformat.meta.parameters?[3].example == "Asia/Taipei")
+        #expect(LogoPrimitive.dateformat.meta.parameters?[4].example == "gregorian")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
     }
