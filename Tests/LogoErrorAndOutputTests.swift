@@ -294,4 +294,76 @@ import Testing
             """)
         #expect(logoEngine3.lastError != nil)
     }
+
+    @Test func testEvalLogoScopeBoundaries() {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "MAKE \"a 1",
+            "```logo",
+            "MAKE \"b 2",
+            "MAKE \"c 3",
+            "```",
+            "MAKE \"d 4",
+            "TO DOUBLE :x :x * 2 END",
+            "MAKE \"e (DOUBLE 5)"
+        ]
+
+        // 1. Cursor on line 0 (ordinary single line) -> only line 0 is evaluated
+        editor.buffer.lineIndex = 0
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["a"] == "1")
+        #expect(editor.logoEngine.variables["b"] == nil)
+
+        // 2. Cursor inside Markdown fence (line 2) -> lines 2 & 3 evaluated
+        editor.buffer.lineIndex = 2
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["b"] == "2")
+        #expect(editor.logoEngine.variables["c"] == "3")
+        #expect(editor.logoEngine.variables["d"] == nil)
+
+        // 3. Cursor on line right below Markdown fence (line 5) -> fence above evaluated
+        editor.logoEngine.variables["b"] = nil
+        editor.buffer.lineIndex = 5
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["b"] == "2")
+
+        // 4. Cursor on line 6 -> defines DOUBLE procedure
+        editor.buffer.lineIndex = 6
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.customProcedures["DOUBLE"] != nil)
+
+        // 5. Cursor on line 7 (after single-line TO ... END on line 6) -> only line 7 evaluated
+        editor.buffer.lineIndex = 7
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["e"] == "10")
+    }
+
+    @Test func testEvalLogoDoesNotBleedAcrossSingleLineProcedures() {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "TO CDATE :x FORMAT.DATE :x \"full \"zh-TW END",
+            "",
+            "TO CNUM :x FORMAT.NUMBER :x \"words \"zh-TW END",
+            "",
+            "MAKE \"line5 5",
+            "",
+            "MAKE \"line7 7",
+            "",
+            "MAKE \"line9 9",
+            "",
+            "MAKE \"line11 11"
+        ]
+
+        // Ensure when cursor is on line 6 (MAKE "line7 7"),
+        // ONLY line 6 is evaluated, and lines 0, 2, 4, 8, 10 are NOT evaluated!
+        editor.buffer.lineIndex = 6
+        editor.evalLogoCode()
+
+        #expect(editor.logoEngine.variables["line7"] == "7")
+        #expect(editor.logoEngine.variables["line5"] == nil)
+        #expect(editor.logoEngine.variables["line9"] == nil)
+        #expect(editor.logoEngine.variables["line11"] == nil)
+        #expect(editor.logoEngine.customProcedures["CDATE"] == nil)
+        #expect(editor.logoEngine.customProcedures["CNUM"] == nil)
+    }
 }
