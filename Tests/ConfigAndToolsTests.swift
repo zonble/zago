@@ -897,5 +897,24 @@ struct ConfigAndToolsTests {
             language: .en
         )
         _ = cmdDialog
+
+        // Test dialog creation for built-in primitive
+        let primDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "BOX",
+            language: .zh_TW
+        )
+        _ = primDialog
+
+        // Test collision when user defines a procedure with same name as built-in primitive
+        editor.logoEngine.execute("TO BOX :w :h \"Custom box wrapper\" END")
+        let collisionDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "BOX",
+            language: .zh_TW
+        )
+        _ = collisionDialog
     }
 }
