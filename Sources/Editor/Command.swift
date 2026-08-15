@@ -180,9 +180,6 @@ public protocol Command {
     /// Localization string key for the command description.
     var descriptionKey: String { get }
 
-    /// Default shortcut keybindings that trigger this command.
-    var keys: [Key] { get }
-
     /// CommandBar command aliases (e.g. `["write", "w", "save"]`).
     var commandBarAliases: [String] { get }
 
@@ -221,7 +218,6 @@ extension Command {
     public var descriptionKey: String {
         "command.\(id.rawValue).description"
     }
-    public var keys: [Key] { [] }
     public var commandBarAliases: [String] { [] }
     public var completionNames: [String] { commandBarAliases }
 
@@ -244,7 +240,6 @@ public struct BlockCommand: Command {
     public let name: String
     public let description: String
     public let descriptionKey: String
-    public let keys: [Key]
     public let commandBarAliases: [String]
     private let closure: (Editor) -> Void
 
@@ -253,7 +248,6 @@ public struct BlockCommand: Command {
         name: String,
         description: String,
         descriptionKey: String? = nil,
-        keys: [Key] = [],
         commandBarAliases: [String] = [],
         action: @escaping (Editor) -> Void
     ) {
@@ -261,12 +255,9 @@ public struct BlockCommand: Command {
         self.name = name
         self.description = description
         self.descriptionKey = descriptionKey ?? "command.\(id.rawValue).description"
-        self.keys = keys
         self.commandBarAliases = commandBarAliases
         self.closure = action
     }
-
-    
 
     public func execute(on editor: Editor) -> EditorOperationResult {
         closure(editor)
@@ -274,31 +265,28 @@ public struct BlockCommand: Command {
     }
 }
 
-/// Unified registry managing editor commands, keymaps, and CommandBar prompt dispatch.
+/// Unified registry managing editor commands and CommandBar prompt dispatch.
 public final class CommandRegistry {
-    private var keyMap: [Key: any Command] = [:]
+    private var customKeyMap: [Key: any Command] = [:]
     private var commandMap: [CommandID: any Command] = [:]
     private(set) public var commands: [any Command] = []
 
     public init() {}
 
-    /// Registers a command conforming to `Command` protocol and maps its associated keybindings.
+    /// Registers a command conforming to `Command` protocol.
     public func register(_ command: any Command) {
         commands.append(command)
         commandMap[command.id] = command
-        for key in command.keys {
-            keyMap[key] = command
-        }
     }
 
     /// Binds a specific key to a command.
     public func bind(key: Key, command: any Command) {
-        keyMap[key] = command
+        customKeyMap[key] = command
     }
 
     /// Unbinds a specific key mapping.
     public func unbind(key: Key) {
-        keyMap.removeValue(forKey: key)
+        customKeyMap.removeValue(forKey: key)
     }
 
     /// Dispatches a command by its type-safe `CommandID`.
@@ -337,7 +325,7 @@ public final class CommandRegistry {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return false
         }
-        if let command = keyMap[key], command.id == .customMacro {
+        if let command = customKeyMap[key], command.id == .customMacro {
             editor.applyOperationResult(command.execute(on: editor))
             return true
         }
@@ -346,7 +334,7 @@ public final class CommandRegistry {
                 return true
             }
         }
-        if let command = keyMap[key] {
+        if let command = customKeyMap[key] {
             editor.applyOperationResult(command.execute(on: editor))
             return true
         }
@@ -358,21 +346,23 @@ public final class CommandRegistry {
         if editor.isTableModeActive && editor.customBoundKeys.contains(key) {
             return .noOp
         }
-        if let command = keyMap[key], command.id == .customMacro {
+        if let command = customKeyMap[key], command.id == .customMacro {
             let result = command.execute(on: editor)
             editor.applyOperationResult(result)
             return result
         }
         if let commandID = editor.keymapManager.resolve(key: key, in: editor.currentMode) {
-            let res = dispatchResult(id: commandID, editor: editor)
-            if case .failed = res.kind {} else {
-                return res
+            let result = dispatchResult(id: commandID, editor: editor)
+            if !result.isFailed {
+                return result
             }
         }
-        guard let command = keyMap[key] else { return .noOp }
-        let result = command.execute(on: editor)
-        editor.applyOperationResult(result)
-        return result
+        if let command = customKeyMap[key] {
+            let result = command.execute(on: editor)
+            editor.applyOperationResult(result)
+            return result
+        }
+        return .noOp
     }
 
     /// Dispatches raw string input from CommandBar to matching registered command.

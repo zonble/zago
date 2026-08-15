@@ -137,11 +137,12 @@ import TextMetrics
     #expect(editor.commandRegistry.commands.count > 20)
 
     var executed = false
-    let testCmd = BlockCommand(id: .testCmd, name: "Test", description: "Test command", keys: [.ctrl("T")]) { _ in
+    let testCmd = BlockCommand(id: .testCmd, name: "Test", description: "Test command") { _ in
         executed = true
     }
     let registry = CommandRegistry()
     registry.register(testCmd)
+    registry.bind(key: .ctrl("T"), command: testCmd)
 
     let handled = registry.dispatch(key: .ctrl("T"), editor: editor)
     #expect(handled == true)

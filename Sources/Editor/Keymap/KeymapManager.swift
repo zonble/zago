@@ -95,6 +95,10 @@ public final class KeymapManager {
         baseKeymap[.pageDown] = .movePgdn
         baseKeymap[.ctrlArrowLeft] = .moveWordBackward
         baseKeymap[.ctrlArrowRight] = .moveWordForward
+        baseKeymap[.ctrlShift("b")] = .moveWordBackward
+        baseKeymap[.ctrlShift("B")] = .moveWordBackward
+        baseKeymap[.ctrlShift("f")] = .moveWordForward
+        baseKeymap[.ctrlShift("F")] = .moveWordForward
 
         // Selection (Shift + Navigation)
         baseKeymap[.shiftArrowLeft] = .selectLeft
@@ -107,17 +111,37 @@ public final class KeymapManager {
         baseKeymap[.ctrlShiftArrowRight] = .selectWordForward
 
         // Editing & UI (common across both presets)
+        baseKeymap[.esc] = .macroLogo
+        baseKeymap[.alt(":")] = .macroLogo
         baseKeymap[.delete] = .editDelete
         baseKeymap[.ctrl("d")] = .editDelete
         baseKeymap[.ctrl("D")] = .editDelete
         baseKeymap[.ctrlBackspace] = .editDeleteLine
+        baseKeymap[.ctrl("h")] = .editDeleteLine
+        baseKeymap[.ctrl("H")] = .editDeleteLine
         baseKeymap[.tab] = .editTab
+        baseKeymap[.ctrl("i")] = .editTab
+        baseKeymap[.ctrl("I")] = .editTab
         baseKeymap[.backtab] = .editBacktab
         baseKeymap[.f1] = .menuShow
         baseKeymap[.ctrl("m")] = .menuShow
         baseKeymap[.ctrl("M")] = .menuShow
+        baseKeymap[.alt("m")] = .menuShow
+        baseKeymap[.alt("M")] = .menuShow
         baseKeymap[.f7] = .tableToggle
+        baseKeymap[.alt("t")] = .tableToggle
+        baseKeymap[.alt("T")] = .tableToggle
         baseKeymap[.f8] = .canvasToggle
+        baseKeymap[.alt("v")] = .canvasToggle
+        baseKeymap[.alt("V")] = .canvasToggle
+        baseKeymap[.alt("s")] = .borderStyle
+        baseKeymap[.alt("S")] = .borderStyle
+        baseKeymap[.alt("l")] = .logoOutput
+        baseKeymap[.alt("L")] = .logoOutput
+        baseKeymap[.alt("c")] = .logoCanvas
+        baseKeymap[.alt("C")] = .logoCanvas
+        baseKeymap[.ctrlShift("z")] = .editRedo
+        baseKeymap[.ctrlShift("Z")] = .editRedo
         baseKeymap[.ctrl("/")] = .editToggleComment
         baseKeymap[.alt("b")] = .editMark
         baseKeymap[.alt("B")] = .editMark

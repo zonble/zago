@@ -380,7 +380,7 @@ public final class Editor: @unchecked Sendable {
         for (key, cmdId) in config.customKeyBinds {
             if let script = resolveLogoScript(for: cmdId, using: config) {
                 let customCmd = BlockCommand(
-                    id: .customMacro, name: "Macro", description: "Custom LOGO macro", keys: [key]
+                    id: .customMacro, name: "Macro", description: "Custom LOGO macro"
                 ) { editor in
                     editor.runLogoScript(script)
                 }
