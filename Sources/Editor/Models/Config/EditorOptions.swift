@@ -4,6 +4,7 @@ import Foundation
 public struct EditorOptions {
     public var filePaths: [String]
     public var wrapColumn: Int?
+    public var fillColumn: Int?
     public var showRuler: Bool?
     public var showLineNumbers: Bool?
     public var showSubLineNumbers: Bool?
@@ -22,6 +23,7 @@ public struct EditorOptions {
     public init(
         filePaths: [String] = [],
         wrapColumn: Int? = nil,
+        fillColumn: Int? = nil,
         showRuler: Bool? = nil,
         showLineNumbers: Bool? = nil,
         showSubLineNumbers: Bool? = nil,
@@ -39,6 +41,7 @@ public struct EditorOptions {
     ) {
         self.filePaths = filePaths
         self.wrapColumn = wrapColumn
+        self.fillColumn = fillColumn
         self.showRuler = showRuler
         self.showLineNumbers = showLineNumbers
         self.showSubLineNumbers = showSubLineNumbers

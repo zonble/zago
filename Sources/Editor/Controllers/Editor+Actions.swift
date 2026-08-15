@@ -266,6 +266,7 @@ extension Editor {
     public func apply(_ setting: EditorSettingUpdate) {
         switch setting {
         case .wrap(let column): layoutEngine.setWrapColumn(column)
+        case .fill(let width): fillColumn = width
         case .ruler(let value): displayConfig.showRuler = resolve(value, current: displayConfig.showRuler)
         case .lineNumbers(let value):
             displayConfig.showLineNumbers = resolve(value, current: displayConfig.showLineNumbers)

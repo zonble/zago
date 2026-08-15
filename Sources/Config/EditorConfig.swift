@@ -4,6 +4,7 @@ import Foundation
 /// Parsed configuration settings loaded from ~/.zagorc or ./.zagorc files.
 public struct EditorConfig {
     public var wrapColumn: Int? = nil
+    public var fillColumn: Int = 72
     public var showRuler: Bool = false
     public var showLineNumbers: Bool = true
     public var showSubLineNumbers: Bool = false

@@ -257,6 +257,12 @@ public final class ConfigLoader {
                 return
             }
             config.tabSize = size
+        case .fill:
+            guard let width = Int(value), width > 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.fillColumn = width
         case .language:
             guard let language = Language(settingValue: rawValue) else {
                 recordSyntaxError(in: &config)

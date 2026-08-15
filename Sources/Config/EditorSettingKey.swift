@@ -25,10 +25,12 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case keymap
     case modernbindings
     case noNewlines = "nonewlines"
+    case fill
 
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
+        case .fill: return ["72", "80"]
         case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab, .listWrapIndent,
             .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines:
             return ["on", "off"]
@@ -47,7 +49,7 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
             .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines:
             return true
-        case .listIndentSize, .tab, .language, .spellLanguage, .border, .arrow, .regex, .keymap:
+        case .listIndentSize, .tab, .fill, .language, .spellLanguage, .border, .arrow, .regex, .keymap:
             return false
         }
     }
