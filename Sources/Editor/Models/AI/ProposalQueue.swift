@@ -1,30 +1,30 @@
 import Foundation
 
-public final class ProposalQueue: @unchecked Sendable {
-    public static let defaultMaxDepth = 50
-    public private(set) var pendingProposals: [AIProposal] = []
-    public private(set) var activeIndex: Int = 0
-    public private(set) var activeChunkIndex: Int = 0
+final class ProposalQueue: @unchecked Sendable {
+    static let defaultMaxDepth = 50
+    private(set) var pendingProposals: [AIProposal] = []
+    private(set) var activeIndex: Int = 0
+    private(set) var activeChunkIndex: Int = 0
     private let lock = NSLock()
-    public let maxDepth: Int
+    let maxDepth: Int
 
-    public init(maxDepth: Int = ProposalQueue.defaultMaxDepth) {
+    init(maxDepth: Int = ProposalQueue.defaultMaxDepth) {
         self.maxDepth = max(1, maxDepth)
     }
 
-    public var count: Int {
+    var count: Int {
         lock.lock()
         defer { lock.unlock() }
         return pendingProposals.count
     }
 
-    public var isEmpty: Bool {
+    var isEmpty: Bool {
         lock.lock()
         defer { lock.unlock() }
         return pendingProposals.isEmpty
     }
 
-    public var currentProposal: AIProposal? {
+    var currentProposal: AIProposal? {
         lock.lock()
         defer { lock.unlock() }
         guard activeIndex >= 0 && activeIndex < pendingProposals.count else { return nil }
@@ -32,7 +32,7 @@ public final class ProposalQueue: @unchecked Sendable {
     }
 
     @discardableResult
-    public func pushProposal(_ proposal: AIProposal) -> Bool {
+    func pushProposal(_ proposal: AIProposal) -> Bool {
         lock.lock()
         defer { lock.unlock() }
         guard pendingProposals.count < maxDepth else { return false }
@@ -42,7 +42,7 @@ public final class ProposalQueue: @unchecked Sendable {
         return true
     }
 
-    public func nextProposal() {
+    func nextProposal() {
         lock.lock()
         defer { lock.unlock() }
         guard !pendingProposals.isEmpty else { return }
@@ -50,7 +50,7 @@ public final class ProposalQueue: @unchecked Sendable {
         activeChunkIndex = 0
     }
 
-    public func previousProposal() {
+    func previousProposal() {
         lock.lock()
         defer { lock.unlock() }
         guard !pendingProposals.isEmpty else { return }
@@ -58,7 +58,7 @@ public final class ProposalQueue: @unchecked Sendable {
         activeChunkIndex = 0
     }
 
-    public func nextChunk() {
+    func nextChunk() {
         lock.lock()
         defer { lock.unlock() }
         guard activeIndex >= 0 && activeIndex < pendingProposals.count else { return }
@@ -68,7 +68,7 @@ public final class ProposalQueue: @unchecked Sendable {
         activeChunkIndex = (activeChunkIndex + 1) % totalChunks
     }
 
-    public func previousChunk() {
+    func previousChunk() {
         lock.lock()
         defer { lock.unlock() }
         guard activeIndex >= 0 && activeIndex < pendingProposals.count else { return }
@@ -79,7 +79,7 @@ public final class ProposalQueue: @unchecked Sendable {
     }
 
     @discardableResult
-    public func rejectCurrent() -> AIProposal? {
+    func rejectCurrent() -> AIProposal? {
         lock.lock()
         defer { lock.unlock() }
         guard activeIndex >= 0 && activeIndex < pendingProposals.count else { return nil }
@@ -91,7 +91,7 @@ public final class ProposalQueue: @unchecked Sendable {
         return rejected
     }
 
-    public func rejectAll() {
+    func rejectAll() {
         lock.lock()
         defer { lock.unlock() }
         pendingProposals.removeAll()
@@ -101,7 +101,7 @@ public final class ProposalQueue: @unchecked Sendable {
 
     /// Removes previews whose originating IPC connection has gone away.
     @discardableResult
-    public func removeProposals(clientId: String) -> Int {
+    func removeProposals(clientId: String) -> Int {
         lock.lock()
         defer { lock.unlock() }
         let originalCount = pendingProposals.count
@@ -112,7 +112,7 @@ public final class ProposalQueue: @unchecked Sendable {
     }
 
     /// Automatically shifts targetLine of pending proposals when user edits lines above proposal sites.
-    public func adjustLineOffsets(aboveLine: Int, delta: Int) {
+    func adjustLineOffsets(aboveLine: Int, delta: Int) {
         lock.lock()
         defer { lock.unlock() }
         for pIndex in 0..<pendingProposals.count {

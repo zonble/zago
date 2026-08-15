@@ -3,28 +3,28 @@ import Config
 import Foundation
 import TextMetrics
 
-public struct SymbolItem: Sendable {
-    public let symbol: String
-    public let descriptionKey: String
+struct SymbolItem: Sendable {
+    let symbol: String
+    let descriptionKey: String
 
-    public init(symbol: String, descriptionKey: String) {
+    init(symbol: String, descriptionKey: String) {
         self.symbol = symbol
         self.descriptionKey = descriptionKey
     }
 }
 
-public struct SymbolCategory: Sendable {
-    public let nameKey: String
-    public let items: [SymbolItem]
+struct SymbolCategory: Sendable {
+    let nameKey: String
+    let items: [SymbolItem]
 
-    public init(nameKey: String, items: [SymbolItem]) {
+    init(nameKey: String, items: [SymbolItem]) {
         self.nameKey = nameKey
         self.items = items
     }
 }
 
-public enum SymbolCategories {
-    public static let categories: [SymbolCategory] = [
+enum SymbolCategories {
+    static let categories: [SymbolCategory] = [
         SymbolCategory(
             nameKey: "symbol_category.gfm",
             items: [
@@ -148,16 +148,16 @@ public enum SymbolCategories {
 }
 
 /// Interactive TUI Symbol Picker dialog window.
-public final class SymbolPickerView {
+final class SymbolPickerView {
     private let terminal: EditorTerminal
     private let language: Language
     private weak var editor: Editor?
     private let onSelect: (String) -> Void
 
-    public var categoryIndex: Int = 0
-    public var selectedIndex: Int = 0
+    var categoryIndex: Int = 0
+    var selectedIndex: Int = 0
 
-    public init(
+    init(
         terminal: EditorTerminal,
         editor: Editor? = nil,
         language: Language = .detectSystemLanguage(),
@@ -169,7 +169,7 @@ public final class SymbolPickerView {
         self.onSelect = onSelect
     }
 
-    public func show() {
+    func show() {
         render()
         while true {
             let key = terminal.readKey()

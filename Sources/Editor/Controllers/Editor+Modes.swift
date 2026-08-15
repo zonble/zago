@@ -1,11 +1,11 @@
 import Foundation
 
-public enum EditorBaseMode: String, Sendable, Equatable {
+enum EditorBaseMode: String, Sendable, Equatable {
     case text
     case canvas
 }
 
-public enum EditorOverlayMode: String, Sendable, Equatable {
+enum EditorOverlayMode: String, Sendable, Equatable {
     case none
     case table
 }

@@ -1,8 +1,8 @@
 import Foundation
 
 /// English translation table for zago text editor.
-public struct EnglishStrings {
-    public static let table: [String: String] = [
+struct EnglishStrings {
+    static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help": "Get Help",
         "help.menu": "Menu",

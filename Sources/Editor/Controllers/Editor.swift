@@ -483,12 +483,12 @@ public final class Editor: @unchecked Sendable {
     }
 
     /// Sets status message to display in the bottom status line.
-    private func setStatusMessage(_ msg: String) {
+    public func setStatusMessage(_ msg: String) {
         self.statusMessage = msg
         self.statusMessageTime = Date()
     }
 
-    public func applyOperationResult(_ result: EditorOperationResult) {
+    func applyOperationResult(_ result: EditorOperationResult) {
         if let message = result.statusMessage {
             guard statusMessage != message else { return }
             setStatusMessage(message)
@@ -496,7 +496,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     @discardableResult
-    public func reportOperationResult(_ result: EditorOperationResult) -> EditorOperationResult {
+    func reportOperationResult(_ result: EditorOperationResult) -> EditorOperationResult {
         applyOperationResult(result)
         return result
     }

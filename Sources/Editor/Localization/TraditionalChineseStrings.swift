@@ -1,8 +1,8 @@
 import Foundation
 
 /// Traditional Chinese (zh_TW) translation table for zago text editor.
-public struct TraditionalChineseStrings {
-    public static let table: [String: String] = [
+struct TraditionalChineseStrings {
+    static let table: [String: String] = [
         // Help Bar Labels
         "help.get_help": "輔助說明",
         "help.menu": "主選單",

@@ -458,6 +458,21 @@ extension Editor {
     public func runLogoScript(
         _ script: String,
         resultPrefix: String? = nil,
+        successStatus: String? = nil
+    ) -> Bool {
+        runLogoScript(
+            script,
+            resultPrefix: resultPrefix,
+            successStatus: successStatus,
+            debugSourceBuffer: nil,
+            debugStartLine: 0
+        )
+    }
+
+    @discardableResult
+    func runLogoScript(
+        _ script: String,
+        resultPrefix: String? = nil,
         successStatus: String? = nil,
         debugSourceBuffer: TextBuffer? = nil,
         debugStartLine: Int = 0

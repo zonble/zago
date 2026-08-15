@@ -1,28 +1,28 @@
 import DocumentOutline
 import Foundation
 
-public struct ParsedLinkTarget: Equatable, Sendable {
-    public let path: String?
-    public let anchor: String?
+struct ParsedLinkTarget: Equatable, Sendable {
+    let path: String?
+    let anchor: String?
 
-    public init(path: String?, anchor: String?) {
+    init(path: String?, anchor: String?) {
         self.path = path
         self.anchor = anchor
     }
 }
 
-public struct DocumentLink: Equatable, Sendable {
-    public let target: String
-    public let range: Range<Int>
+struct DocumentLink: Equatable, Sendable {
+    let target: String
+    let range: Range<Int>
 
-    public init(target: String, range: Range<Int>) {
+    init(target: String, range: Range<Int>) {
         self.target = target
         self.range = range
     }
 }
 
-public enum DocumentLinkParser {
-    public static func link(atColumn column: Int, in line: String) -> DocumentLink? {
+enum DocumentLinkParser {
+    static func link(atColumn column: Int, in line: String) -> DocumentLink? {
         let links = links(in: line)
         guard !links.isEmpty else { return nil }
 
@@ -34,7 +34,7 @@ public enum DocumentLinkParser {
         return links.count == 1 ? links[0] : nil
     }
 
-    public static func links(in line: String) -> [DocumentLink] {
+    static func links(in line: String) -> [DocumentLink] {
         [
             markdownLinks(in: line),
             orgLinks(in: line),
@@ -44,7 +44,7 @@ public enum DocumentLinkParser {
         ].flatMap { $0 }.sorted { $0.range.lowerBound < $1.range.lowerBound }
     }
 
-    public static func parseTarget(_ rawTarget: String) -> ParsedLinkTarget? {
+    static func parseTarget(_ rawTarget: String) -> ParsedLinkTarget? {
         var target = rawTarget.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !target.isEmpty else { return nil }
 
@@ -118,11 +118,11 @@ public enum DocumentLinkParser {
         return ParsedLinkTarget(path: pathPart, anchor: anchorPart)
     }
 
-    public static func localPathTarget(from rawTarget: String) -> String? {
+    static func localPathTarget(from rawTarget: String) -> String? {
         parseTarget(rawTarget)?.path
     }
 
-    public static func resolvedPath(target: String, currentFilePath: String?) -> String? {
+    static func resolvedPath(target: String, currentFilePath: String?) -> String? {
         guard let parsed = parseTarget(target) else { return nil }
         guard let localTarget = parsed.path else { return nil }
 
@@ -141,7 +141,7 @@ public enum DocumentLinkParser {
         return URL(fileURLWithPath: baseDirectory).appendingPathComponent(expanded).standardizedFileURL.path
     }
 
-    public static func findAnchorLineIndex(anchor: String, in lines: [String], syntaxName: String? = nil) -> Int? {
+    static func findAnchorLineIndex(anchor: String, in lines: [String], syntaxName: String? = nil) -> Int? {
         let rawAnchor = anchor.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !rawAnchor.isEmpty, !lines.isEmpty else { return nil }
 

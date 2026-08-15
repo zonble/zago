@@ -1,21 +1,21 @@
 import Foundation
 import Git
 
-public final class DirectoryBuffer: TextBuffer {
-    public var directoryPath: String
-    public let fileIO: EditorFileIOStrategy
-    public let gitService: GitServiceProtocol
+final class DirectoryBuffer: TextBuffer {
+    var directoryPath: String
+    let fileIO: EditorFileIOStrategy
+    let gitService: GitServiceProtocol
 
-    override public var isReadOnly: Bool {
+    override var isReadOnly: Bool {
         get { true }
         set {}
     }
-    override public var allowsLogoExecution: Bool { false }
-    override public var isDirectoryBuffer: Bool { true }
+    override var allowsLogoExecution: Bool { false }
+    override var isDirectoryBuffer: Bool { true }
 
-    public var currentLanguage: Language
+    var currentLanguage: Language
 
-    public init(
+    init(
         directoryPath: String,
         fileIO: EditorFileIOStrategy,
         gitService: GitServiceProtocol = GitService(),
@@ -31,7 +31,7 @@ public final class DirectoryBuffer: TextBuffer {
         loadDirectory(at: expandedPath, language: language)
     }
 
-    public func loadDirectory(at path: String, language: Language? = nil) {
+    func loadDirectory(at path: String, language: Language? = nil) {
         if let lang = language {
             self.currentLanguage = lang
         }
@@ -122,7 +122,7 @@ public final class DirectoryBuffer: TextBuffer {
         self.columnIndex = 0
     }
 
-    override public func handleKey(_ key: Key, editor: Editor) -> Bool {
+    override func handleKey(_ key: Key, editor: Editor) -> Bool {
         switch key {
         case .enter:
             _ = activateEntry(editor: editor)
@@ -147,7 +147,7 @@ public final class DirectoryBuffer: TextBuffer {
     }
 
     @discardableResult
-    public func activateEntry(editor: Editor) -> Bool {
+    func activateEntry(editor: Editor) -> Bool {
         guard lineIndex >= 0 && lineIndex < lines.count else { return false }
         let line = lines[lineIndex]
         let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -200,7 +200,7 @@ public final class DirectoryBuffer: TextBuffer {
     }
 
     @discardableResult
-    public func navigateUp(editor: Editor) -> Bool {
+    func navigateUp(editor: Editor) -> Bool {
         let parentDir = fileIO.parentDirectory(of: directoryPath)
         if !parentDir.isEmpty && parentDir != directoryPath {
             loadDirectory(at: parentDir, language: currentLanguage)

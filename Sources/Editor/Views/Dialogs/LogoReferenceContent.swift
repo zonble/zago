@@ -1,8 +1,8 @@
 import Foundation
 import LogoEngine
 
-public enum LogoReferenceContent {
-    public static func lines(language: Language = .detectSystemLanguage()) -> [String] {
+enum LogoReferenceContent {
+    static func lines(language: Language = .detectSystemLanguage()) -> [String] {
         let contentLines = L10n.string("logoref.content", language: language).components(separatedBy: "\n")
         let headerText = L10n.string("logoref.all_aliases_header", language: language)
         let separatorLines = [

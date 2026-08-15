@@ -3,21 +3,21 @@ import Foundation
 import TextMetrics
 
 /// Generic full-screen, scrollable text viewer for reference-style editor pages.
-public final class TextDocumentView {
+final class TextDocumentView {
     private let terminal: EditorTerminal
     private let title: String
     private let lines: [String]
     private let footer: String
     private var topIndex: Int = 0
 
-    public init(terminal: EditorTerminal, title: String, lines: [String], footer: String) {
+    init(terminal: EditorTerminal, title: String, lines: [String], footer: String) {
         self.terminal = terminal
         self.title = title
         self.lines = lines
         self.footer = footer
     }
 
-    public func show() {
+    func show() {
         render()
         while true {
             let key = terminal.readKey()

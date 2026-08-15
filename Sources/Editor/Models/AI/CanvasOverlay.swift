@@ -97,16 +97,16 @@ public struct AIProposal: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
-public struct CanvasOverlay: Equatable, Sendable {
-    public var activeProposal: AIProposal?
-    public var currentChunkIndex: Int = 0
+struct CanvasOverlay: Equatable, Sendable {
+    var activeProposal: AIProposal?
+    var currentChunkIndex: Int = 0
 
-    public init(activeProposal: AIProposal? = nil, currentChunkIndex: Int = 0) {
+    init(activeProposal: AIProposal? = nil, currentChunkIndex: Int = 0) {
         self.activeProposal = activeProposal
         self.currentChunkIndex = currentChunkIndex
     }
 
-    public var isVisible: Bool {
+    var isVisible: Bool {
         activeProposal != nil
     }
 }
