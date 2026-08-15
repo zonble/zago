@@ -145,6 +145,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case menuShow = "menu.show"
     case helpShow = "help.show"
     case helpDescribeKey = "help.describe_key"
+    case helpDescribeCommand = "help.describe_command"
     case textMode = "mode.text"
     case canvasToggle = "mode.canvas.toggle"
     case tableToggle = "table.toggle"

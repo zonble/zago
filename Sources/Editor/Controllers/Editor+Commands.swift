@@ -109,6 +109,7 @@ extension Editor {
         commandRegistry.register(ToggleMenuBarCommand())
         commandRegistry.register(ShowHelpCommand())
         commandRegistry.register(DescribeKeyCommand())
+        commandRegistry.register(DescribeCommandCommand())
         commandRegistry.register(SymbolPickerCommand())
         commandRegistry.register(SwitchTextModeCommand())
         commandRegistry.register(ToggleCanvasModeCommand())

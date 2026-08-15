@@ -366,6 +366,7 @@ final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.help.show", hotkeyChar: "h", commandId: .helpShow),
                     MenuItem(titleKey: "menu.help.describe_key", hotkeyChar: "k", commandId: .helpDescribeKey),
+                    MenuItem(titleKey: "menu.help.describe_command", hotkeyChar: "c", commandId: .helpDescribeCommand),
                     MenuItem(
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
                         isVisible: { $0.isLogoUIEnabled }),

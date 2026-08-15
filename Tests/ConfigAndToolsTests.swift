@@ -868,11 +868,34 @@ struct ConfigAndToolsTests {
         #expect(!zhJoined.contains("New Buffer"), "zh_TW editor: must not contain English submenu items")
     }
 
+    @Test func testDescribeCommandCommandAndModalView() throws {
+        let editor = Editor()
+        let command = DescribeCommandCommand()
 
+        #expect(command.id == .helpDescribeCommand)
+        #expect(command.commandBarAliases.contains("help-command"))
+        #expect(command.commandBarAliases.contains("describe-command"))
 
+        // Define a procedure with docstring
+        editor.logoEngine.execute("TO 大寫 :x \"轉為支票大寫\" FORMAT.NUMBER :x \"bank \"zh-TW END")
+        #expect(editor.logoEngine.customProcedures["大寫"]?.docstring == "轉為支票大寫")
 
+        // Test dialog creation for procedure
+        let procDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "大寫",
+            language: .zh_TW
+        )
+        _ = procDialog
 
-
-
-
+        // Test dialog creation for editor command
+        let cmdDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "save",
+            language: .en
+        )
+        _ = cmdDialog
+    }
 }

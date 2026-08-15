@@ -279,7 +279,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case erall
     case arity
     case doc
-    case help
     case end
 
     private static let rawMappings: [([String], LogoPrimitive)] = [
@@ -298,7 +297,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["ERALL"], .erall),
         (["ARITY"], .arity),
         (["DOC", "DOCSTRING"], .doc),
-        (["HELP", "DESCRIBE", "MAN"], .help),
         (["FILL"], .fill),
         (["INSET"], .inset),
         (["SORT"], .sort),

@@ -852,6 +852,7 @@ struct EnglishStrings {
         "menu.help.show": "Show Help Reference",
         "menu.help.logo_reference": "Editor LOGO Reference",
         "menu.help.describe_key": "Describe Key",
+        "menu.help.describe_command": "Describe Command & Procedure",
         "menu.help.logo_workspace": "Editor LOGO Workspace",
 
         "transform.tohant": "Traditional Chinese",
