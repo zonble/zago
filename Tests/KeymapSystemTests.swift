@@ -501,6 +501,26 @@ import Foundation
             #expect(Bool(false), "Expected currentPromptMode to be .replaceSearch")
         }
     }
+
+    @Test func testJoinLineAndSplitLineKeyBindings() throws {
+        // Classic Keymap
+        let classicEditor = Editor()
+        classicEditor.buffer.lines = ["First Line", "Second Line"]
+        classicEditor.processKey(.alt("j"))
+        #expect(classicEditor.buffer.lines == ["First Line Second Line"])
+
+        // Split Line
+        classicEditor.buffer.columnIndex = 10
+        classicEditor.processKey(.alt("k"))
+        #expect(classicEditor.buffer.lines == ["First Line", " Second Line"])
+
+        // Modern Keymap
+        let modernEditor = Editor()
+        modernEditor.apply(.keymap(.modern))
+        modernEditor.buffer.lines = ["Alpha", "Beta"]
+        modernEditor.processKey(.alt("j"))
+        #expect(modernEditor.buffer.lines == ["Alpha Beta"])
+    }
 }
 
 
