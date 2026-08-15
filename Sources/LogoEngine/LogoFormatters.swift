@@ -19,7 +19,9 @@ public struct LogoFormatters {
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
             return switch clean {
             case "spellout", "words", "word", "text", "chinese", "cjk", "spoken": .spellout
-            case "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional", "daxie": .financial
+            case "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional",
+                "daxie":
+                .financial
             case "currency", "money", "curr", "cash": .currency
             case "percent", "percentage", "pct": .percent
             case "roman", "romannumeral": .roman
@@ -103,7 +105,7 @@ public struct LogoFormatters {
         let mappings: [(int: Int, roman: String)] = [
             (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
             (100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
-            (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")
+            (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
         ]
         var res = ""
         var n = num

@@ -349,7 +349,8 @@ extension LogoEngine {
                     }
                 }
 
-                customProcedures[name] = LogoProcedure(name: name, parameters: params, docstring: docstring, bodyTokenTexts: bodyTokens)
+                customProcedures[name] = LogoProcedure(
+                    name: name, parameters: params, docstring: docstring, bodyTokenTexts: bodyTokens)
             }
             return true
 
