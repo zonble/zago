@@ -161,6 +161,7 @@ import Testing
 
     // MARK: - FORMAT.RELATIVETIME Tests
 
+#if !os(Linux) && !os(Windows)
     @Test func testFormatRelativeTimeYesterdayChinese() {
         let engine = LogoEngine()
         var index = 0
@@ -190,6 +191,8 @@ import Testing
         let res = LogoFormatters.formatRelativeDate(target: target, locale: "en_US")
         #expect(res.contains("2 days ago") || res.contains("days ago"))
     }
+
+    #endif
 
     // MARK: - FORMAT.BYTES Tests
 

@@ -203,6 +203,13 @@ extension LogoEngine {
                     setLastExpressionString(leftVal)
 
                     case .formatRelativeTime:
+#if os(Linux) || os(Windows)
+                    leftVal = ""
+                    reportError(
+                        LogoError(code: 1, message: "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]"),
+                        token: "FORMAT.RELATIVETIME"
+                    )
+#else
                     let cleanArgs = args.map { unquote($0) }
                     guard !cleanArgs.isEmpty else {
                         leftVal = ""
@@ -220,6 +227,7 @@ extension LogoEngine {
                         leftVal = arg1
                     }
                     setLastExpressionString(leftVal)
+#endif
 
                     case .formatBytes:
                     let cleanArgs = args.map { unquote($0) }

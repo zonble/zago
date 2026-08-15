@@ -402,6 +402,12 @@ final class DescribeCommandDialogView {
             let wrappedDesc = wrapText(desc, maxLineWidth: maxLineWidth, indent: "    ")
             primSection.append(contentsOf: wrappedDesc)
 
+            if let notes = meta.notes, !notes.isEmpty {
+                primSection.append("")
+                primSection.append("• " + l10n["describe_command.notes"].ansiStyled(style: ANSIStyle.boldCyan))
+                primSection.append(contentsOf: wrapText(notes, maxLineWidth: maxLineWidth, indent: "    "))
+            }
+
             if let params = meta.parameters, !params.isEmpty {
                 primSection.append("")
                 primSection.append("• " + l10n["describe_command.parameters"].ansiStyled(style: ANSIStyle.boldCyan))

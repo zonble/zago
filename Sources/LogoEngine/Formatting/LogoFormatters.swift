@@ -233,6 +233,9 @@ struct LogoFormatters {
         unit: String,
         locale: String? = nil
     ) -> String {
+#if os(Linux) || os(Windows)
+        return ""
+#else
         let loc = LogoDateTimeFormatter.parseLocale(locale)
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = loc
@@ -251,8 +254,8 @@ struct LogoFormatters {
         case "year", "years", "y": comps.year = Int(value)
         default: comps.day = Int(value)
         }
-
         return formatter.localizedString(from: comps)
+#endif
     }
 
     static func formatRelativeDate(
@@ -260,12 +263,16 @@ struct LogoFormatters {
         reference: Date = Date(),
         locale: String? = nil
     ) -> String {
+#if os(Linux) || os(Windows)
+        return ""
+#else
         let loc = LogoDateTimeFormatter.parseLocale(locale)
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = loc
         formatter.unitsStyle = .full
         formatter.dateTimeStyle = .named
         return formatter.localizedString(for: target, relativeTo: reference)
+#endif
     }
 
     // MARK: - Byte Count Formatter
