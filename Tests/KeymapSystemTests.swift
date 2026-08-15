@@ -48,7 +48,7 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .editUncut)
         #expect(keymap.resolve(key: .ctrl("c"), in: .canvas) == .editCopy)
         #expect(keymap.resolve(key: .ctrl("x"), in: .canvas) == .editCut)
-        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
     }
 
     @Test func testPageUpDownKeyBindingsAcrossPresetsAndModes() throws {
@@ -64,16 +64,16 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
         #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
 
-        // Modern: ^Y is Redo, ^V is Paste/Uncut, PgUp/PgDn are PageUp/Down
+        // Modern text mode keeps ^Y/^V as redo/paste; Canvas Mode reserves them for paging.
         keymap.loadPreset(.modern)
         #expect(keymap.resolve(key: .ctrl("y"), in: .text) == .editRedo)
         #expect(keymap.resolve(key: .ctrl("Y"), in: .text) == .editRedo)
         #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .editUncut)
         #expect(keymap.resolve(key: .ctrl("V"), in: .text) == .editUncut)
-        #expect(keymap.resolve(key: .ctrl("y"), in: .canvas) == .editRedo)
-        #expect(keymap.resolve(key: .ctrl("Y"), in: .canvas) == .editRedo)
-        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
-        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .canvas) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("Y"), in: .canvas) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
         #expect(keymap.resolve(key: .pageUp, in: .text) == .movePgup)
         #expect(keymap.resolve(key: .pageDown, in: .text) == .movePgdn)
         #expect(keymap.resolve(key: .pageUp, in: .canvas) == .movePgup)
@@ -114,7 +114,7 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
         #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
 
-        // Modern: ^X is Cut, ^C is Copy, ^V is Paste/Uncut
+        // Modern text mode uses ^X/^C/^V for editing; Canvas Mode reserves ^Y/^V for paging.
         keymap.loadPreset(.modern)
         #expect(keymap.resolve(key: .ctrl("x"), in: .text) == .editCut)
         #expect(keymap.resolve(key: .ctrl("X"), in: .text) == .editCut)
@@ -126,8 +126,8 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("X"), in: .canvas) == .editCut)
         #expect(keymap.resolve(key: .ctrl("c"), in: .canvas) == .editCopy)
         #expect(keymap.resolve(key: .ctrl("C"), in: .canvas) == .editCopy)
-        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
-        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
     }
 
     @Test func testHomeEndAndSelectAllKeyBindingsAcrossPresetsAndModes() throws {
@@ -619,6 +619,3 @@ import Foundation
         #expect(describeKeyItem?.hotkeyChar == "k")
     }
 }
-
-
-

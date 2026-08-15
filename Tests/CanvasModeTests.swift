@@ -390,6 +390,23 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 5)
 }
 
+@Test func testCanvasCtrlPageNavigationDoesNotExtendDocument() throws {
+    let editor = Editor()
+    editor.apply(.keymap(.classic))
+    editor.buffer.lines = ["one", "two"]
+    editor.switchToCanvasMode()
+    editor.canvasVisualColumn = 5
+    editor.syncCanvasCursorToBuffer()
+
+    editor.processKey(.ctrl("v"))
+    #expect(editor.buffer.lines == ["one", "two"])
+    #expect(editor.buffer.lineIndex == 1)
+
+    editor.processKey(.ctrl("y"))
+    #expect(editor.buffer.lines == ["one", "two"])
+    #expect(editor.buffer.lineIndex == 0)
+}
+
 @Test func testCanvasModeHorizontalRenderingOffset() throws {
     let editor = Editor()
     editor.buffer.lines = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
@@ -676,11 +693,11 @@ import TextMetrics
     editor.processKey(.ctrl("x"))
     #expect(editor.buffer.lines == ["aef", "156"])
 
-    // Test ^V (Paste)
+    // Test ^U (Paste; ^V pages in Canvas Mode)
     editor.buffer.lines = ["xxYY", "zzWW"]
     editor.buffer.lineIndex = 0
     editor.canvasVisualColumn = 2
-    editor.processKey(.ctrl("v"))
+    editor.processKey(.ctrl("u"))
     #expect(editor.buffer.lines == ["xxbcdYY", "zz234WW"])
 }
 
@@ -739,6 +756,4 @@ import TextMetrics
     #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
     #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 4)
 }
-
-
 
