@@ -806,6 +806,11 @@ struct ConfigAndToolsTests {
         #expect(reference.contains("ISEQ start end"))
         #expect(reference.contains("REGEX.MATCH s \"pattern\""))
         #expect(reference.contains("NL / NEWLINE"))
+        #expect(reference.contains("DETECT.URL text"))
+        #expect(reference.contains("DETECT.ADDRESS text"))
+        #expect(!reference.contains("All Primitive Keywords & Aliases"))
+        #expect(reference.contains("heavy-triple-dash"))
+        #expect(!reference.contains("ascii, markdown"))
 
         let editor = Editor()
         editor.logoEngine.execute("MAKE \"answer 42 TO TITLE :text BOX :text CENTER ROUND END")
@@ -821,6 +826,10 @@ struct ConfigAndToolsTests {
         #expect(zhReference.contains("以角度為單位的三角函數"))
         #expect(zhReference.contains("REGEX.MATCH s \"pattern\""))
         #expect(zhReference.contains("NL / NEWLINE"))
+        #expect(zhReference.contains("DETECT.URL text"))
+        #expect(zhReference.contains("DETECT.ADDRESS text"))
+        #expect(!zhReference.contains("所有 Primitive 別名與關鍵字"))
+        #expect(zhReference.contains("heavy-triple-dash"))
 
         let zhWorkspace = LogoWorkspaceContent.lines(engine: Editor().logoEngine, language: .zh_TW).joined(
             separator: "\n")
