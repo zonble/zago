@@ -13,12 +13,19 @@ struct SymbolItem: Sendable {
     }
 }
 
+enum SymbolCategoryLayout: Sendable, Equatable {
+    case grid(columns: Int)
+    case list
+}
+
 struct SymbolCategory: Sendable {
     let nameKey: String
+    let layout: SymbolCategoryLayout
     let items: [SymbolItem]
 
-    init(nameKey: String, items: [SymbolItem]) {
+    init(nameKey: String, layout: SymbolCategoryLayout, items: [SymbolItem]) {
         self.nameKey = nameKey
+        self.layout = layout
         self.items = items
     }
 }
@@ -26,17 +33,8 @@ struct SymbolCategory: Sendable {
 enum SymbolCategories {
     static let categories: [SymbolCategory] = [
         SymbolCategory(
-            nameKey: "symbol_category.gfm",
-            items: [
-                SymbolItem(symbol: "> [!NOTE]", descriptionKey: "symbol.callout.note"),
-                SymbolItem(symbol: "> [!TIP]", descriptionKey: "symbol.callout.tip"),
-                SymbolItem(symbol: "> [!IMPORTANT]", descriptionKey: "symbol.callout.important"),
-                SymbolItem(symbol: "> [!WARNING]", descriptionKey: "symbol.callout.warning"),
-                SymbolItem(symbol: "> [!CAUTION]", descriptionKey: "symbol.callout.caution"),
-            ]
-        ),
-        SymbolCategory(
             nameKey: "symbol_category.steps",
+            layout: .grid(columns: 5),
             items: [
                 SymbolItem(symbol: "①", descriptionKey: "symbol.step.circled_1"),
                 SymbolItem(symbol: "②", descriptionKey: "symbol.step.circled_2"),
@@ -85,6 +83,7 @@ enum SymbolCategories {
         ),
         SymbolCategory(
             nameKey: "symbol_category.badges",
+            layout: .grid(columns: 5),
             items: [
                 SymbolItem(symbol: "✓", descriptionKey: "symbol.badge.check"),
                 SymbolItem(symbol: "✔", descriptionKey: "symbol.badge.heavy_check"),
@@ -117,6 +116,7 @@ enum SymbolCategories {
         ),
         SymbolCategory(
             nameKey: "symbol_category.math_keys",
+            layout: .grid(columns: 5),
             items: [
                 SymbolItem(symbol: "±", descriptionKey: "symbol.math.plus_minus"),
                 SymbolItem(symbol: "×", descriptionKey: "symbol.math.multiply"),
@@ -142,6 +142,17 @@ enum SymbolCategories {
                 SymbolItem(symbol: "⎋", descriptionKey: "symbol.key.escape"),
                 SymbolItem(symbol: "⏎", descriptionKey: "symbol.key.return"),
                 SymbolItem(symbol: "⌫", descriptionKey: "symbol.key.backspace"),
+            ]
+        ),
+        SymbolCategory(
+            nameKey: "symbol_category.gfm",
+            layout: .list,
+            items: [
+                SymbolItem(symbol: "> [!NOTE]", descriptionKey: "symbol.callout.note"),
+                SymbolItem(symbol: "> [!TIP]", descriptionKey: "symbol.callout.tip"),
+                SymbolItem(symbol: "> [!IMPORTANT]", descriptionKey: "symbol.callout.important"),
+                SymbolItem(symbol: "> [!WARNING]", descriptionKey: "symbol.callout.warning"),
+                SymbolItem(symbol: "> [!CAUTION]", descriptionKey: "symbol.callout.caution"),
             ]
         ),
     ]
@@ -266,12 +277,14 @@ final class SymbolPickerView {
         selectedIndex = (selectedIndex + delta + count) % count
     }
 
+    private var currentCategoryLayout: SymbolCategoryLayout {
+        guard categoryIndex >= 0 && categoryIndex < SymbolCategories.categories.count else { return .list }
+        return SymbolCategories.categories[categoryIndex].layout
+    }
+
     private func gridColumnsCount() -> Int {
-        if categoryIndex == 0 {
-            return 1
-        } else {
-            return 5
-        }
+        guard case .grid(let columns) = currentCategoryLayout else { return 1 }
+        return max(1, columns)
     }
 
     private func moveSelectionInGrid(rowDelta: Int, colsCount: Int) {
@@ -347,7 +360,7 @@ final class SymbolPickerView {
         }
 
         // Draw items with letter indicators [a]..[z]
-        if categoryIndex == 0 {
+        if case .list = currentCategoryLayout {
             // GFM Callout List Mode - uniform full row selection bar
             let maxListWidth = max(10, dialogWidth - 6)
             for (idx, item) in items.enumerated() {
@@ -366,7 +379,7 @@ final class SymbolPickerView {
             }
         } else {
             // Grid Mode - uniform cell width selection bar
-            let colsCount = 5
+            let colsCount = gridColumnsCount()
             let cellWidth = 13
             for (idx, item) in items.enumerated() {
                 let rowOffset = idx / colsCount
