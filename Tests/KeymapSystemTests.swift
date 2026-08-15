@@ -51,6 +51,110 @@ import Foundation
         #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
     }
 
+    @Test func testPageUpDownKeyBindingsAcrossPresetsAndModes() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // Classic: ^Y is PageUp, ^V is PageDown (in text and canvas)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .text) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("Y"), in: .text) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .canvas) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("Y"), in: .canvas) == .movePgup)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
+
+        // Modern: ^Y is Redo, ^V is Paste/Uncut, PgUp/PgDn are PageUp/Down
+        keymap.loadPreset(.modern)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .text) == .editRedo)
+        #expect(keymap.resolve(key: .ctrl("Y"), in: .text) == .editRedo)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .text) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("y"), in: .canvas) == .editRedo)
+        #expect(keymap.resolve(key: .ctrl("Y"), in: .canvas) == .editRedo)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .pageUp, in: .text) == .movePgup)
+        #expect(keymap.resolve(key: .pageDown, in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .pageUp, in: .canvas) == .movePgup)
+        #expect(keymap.resolve(key: .pageDown, in: .canvas) == .movePgdn)
+    }
+
+    @Test func testCtrlQKeyBindingsAcrossPresetsAndModes() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // Classic: ^Q is evaluate Logo
+        #expect(keymap.resolve(key: .ctrl("q"), in: .text) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("Q"), in: .text) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("q"), in: .canvas) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("Q"), in: .canvas) == .editEvalLogo)
+
+        // Modern: ^Q is Exit
+        keymap.loadPreset(.modern)
+        #expect(keymap.resolve(key: .ctrl("q"), in: .text) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("Q"), in: .text) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("q"), in: .canvas) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("Q"), in: .canvas) == .fileExit)
+    }
+
+    @Test func testClipboardKeyBindingsAcrossPresetsAndModes() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // Classic: ^X is Exit, ^C is CurPos, ^V is PageDown
+        #expect(keymap.resolve(key: .ctrl("x"), in: .text) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("X"), in: .text) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .text) == .cursorPos)
+        #expect(keymap.resolve(key: .ctrl("C"), in: .text) == .cursorPos)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .text) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("x"), in: .canvas) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("X"), in: .canvas) == .fileExit)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .canvas) == .cursorPos)
+        #expect(keymap.resolve(key: .ctrl("C"), in: .canvas) == .cursorPos)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .movePgdn)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
+
+        // Modern: ^X is Cut, ^C is Copy, ^V is Paste/Uncut
+        keymap.loadPreset(.modern)
+        #expect(keymap.resolve(key: .ctrl("x"), in: .text) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("X"), in: .text) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .text) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("C"), in: .text) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .text) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .text) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("x"), in: .canvas) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("X"), in: .canvas) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .canvas) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("C"), in: .canvas) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .canvas) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .editUncut)
+    }
+
+    @Test func testHomeEndAndSelectAllKeyBindingsAcrossPresetsAndModes() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // Classic: ^A is MoveHome, ^E is MoveEnd
+        #expect(keymap.resolve(key: .ctrl("a"), in: .text) == .moveHome)
+        #expect(keymap.resolve(key: .ctrl("A"), in: .text) == .moveHome)
+        #expect(keymap.resolve(key: .ctrl("e"), in: .text) == .moveEnd)
+        #expect(keymap.resolve(key: .ctrl("E"), in: .text) == .moveEnd)
+        #expect(keymap.resolve(key: .ctrl("a"), in: .canvas) == .moveHome)
+        #expect(keymap.resolve(key: .ctrl("A"), in: .canvas) == .moveHome)
+        #expect(keymap.resolve(key: .ctrl("e"), in: .canvas) == .moveEnd)
+        #expect(keymap.resolve(key: .ctrl("E"), in: .canvas) == .moveEnd)
+
+        // Modern: ^A is SelectAll, ^E is evaluate Logo
+        keymap.loadPreset(.modern)
+        #expect(keymap.resolve(key: .ctrl("a"), in: .text) == .selectAll)
+        #expect(keymap.resolve(key: .ctrl("A"), in: .text) == .selectAll)
+        #expect(keymap.resolve(key: .ctrl("e"), in: .text) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("E"), in: .text) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("a"), in: .canvas) == .selectAll)
+        #expect(keymap.resolve(key: .ctrl("A"), in: .canvas) == .selectAll)
+        #expect(keymap.resolve(key: .ctrl("e"), in: .canvas) == .editEvalLogo)
+        #expect(keymap.resolve(key: .ctrl("E"), in: .canvas) == .editEvalLogo)
+    }
+
     @Test func testDynamicHelpBarReflection() throws {
         let editor = Editor(language: .en)
         let renderer = Renderer()
