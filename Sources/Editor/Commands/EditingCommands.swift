@@ -1,14 +1,14 @@
 import Foundation
 
-public struct DeleteLineCommand: Command {
-    public let id: CommandID = .editDeleteLine
-    public let name = "Delete Line"
-    public let description = "Delete current line"
+struct DeleteLineCommand: Command {
+    let id: CommandID = .editDeleteLine
+    let name = "Delete Line"
+    let description = "Delete current line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
@@ -19,15 +19,15 @@ public struct DeleteLineCommand: Command {
     }
 }
 
-public struct DeleteCharCommand: Command {
-    public let id: CommandID = .editDelete
-    public let name = "Delete"
-    public let description = "Delete character under cursor"
+struct DeleteCharCommand: Command {
+    let id: CommandID = .editDelete
+    let name = "Delete"
+    let description = "Delete character under cursor"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         if !editor.isCanvasModeActive && editor.deleteTextSelectionIfNeeded(updateClipboard: false, saveSnapshot: false)
         {
@@ -42,16 +42,16 @@ public struct DeleteCharCommand: Command {
     }
 }
 
-public struct ToggleMarkCommand: Command {
-    public let id: CommandID = .editMark
-    public let name = "Mark"
-    public let description = "Set or unset canvas block mark"
-    public let commandBarAliases = ["mark", "mb"]
+struct ToggleMarkCommand: Command {
+    let id: CommandID = .editMark
+    let name = "Mark"
+    let description = "Set or unset canvas block mark"
+    let commandBarAliases = ["mark", "mb"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard editor.isCanvasModeActive && !editor.isTableModeActive else {
             return .noOp(message: editor.l10n["status.block_mark_canvas_only"])
         }
@@ -73,15 +73,15 @@ public struct ToggleMarkCommand: Command {
     }
 }
 
-public struct CopyTextCommand: Command {
-    public let id: CommandID = .editCopy
-    public let name = "Copy Text"
-    public let description = "Copy selected text or canvas block"
+struct CopyTextCommand: Command {
+    let id: CommandID = .editCopy
+    let name = "Copy Text"
+    let description = "Copy selected text or canvas block"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.buffer.clampCursor()
         if editor.isTableModeActive {
             if let cell = editor.currentTableCell {
@@ -108,16 +108,16 @@ public struct CopyTextCommand: Command {
     }
 }
 
-public struct CancelSelectionCommand: Command {
-    public let id: CommandID = .editCancelSelection
-    public let name = "Cancel Selection"
-    public let description = "Cancel active selection or mark"
-    public let commandBarAliases = ["unmark", "cancelmark", "clearmark"]
+struct CancelSelectionCommand: Command {
+    let id: CommandID = .editCancelSelection
+    let name = "Cancel Selection"
+    let description = "Cancel active selection or mark"
+    let commandBarAliases = ["unmark", "cancelmark", "clearmark"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.searchController.clearActiveSearch() {
             return .succeeded
         }
@@ -132,15 +132,15 @@ public struct CancelSelectionCommand: Command {
     }
 }
 
-public struct CutTextCommand: Command {
-    public let id: CommandID = .editCut
-    public let name = "Cut Text"
-    public let description = "Cut selected text or line"
+struct CutTextCommand: Command {
+    let id: CommandID = .editCut
+    let name = "Cut Text"
+    let description = "Cut selected text or line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             if let cell = editor.currentTableCell {
                 editor.tableModeController.cutTableCellText(cell: cell)
@@ -174,15 +174,15 @@ public struct CutTextCommand: Command {
     }
 }
 
-public struct UncutTextCommand: Command {
-    public let id: CommandID = .editUncut
-    public let name = "UnCut Text"
-    public let description = "Paste cut text"
+struct UncutTextCommand: Command {
+    let id: CommandID = .editUncut
+    let name = "UnCut Text"
+    let description = "Paste cut text"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             if let text = editor.clipboardText, !text.isEmpty {
                 editor.tableModeController.pasteTableCellText(text)
@@ -203,15 +203,15 @@ public struct UncutTextCommand: Command {
     }
 }
 
-public struct InsertTabCommand: Command {
-    public let id: CommandID = .editTab
-    public let name = "Insert Tab"
-    public let description = "Insert tab spaces or smart indent"
+struct InsertTabCommand: Command {
+    let id: CommandID = .editTab
+    let name = "Insert Tab"
+    let description = "Insert tab spaces or smart indent"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
 
         // 1. Grid Table Mode Navigation
@@ -273,15 +273,15 @@ public struct InsertTabCommand: Command {
     }
 }
 
-public struct InsertBacktabCommand: Command {
-    public let id: CommandID = .editBacktab
-    public let name = "Insert Backtab"
-    public let description = "Navigate to previous table cell or outdent"
+struct InsertBacktabCommand: Command {
+    let id: CommandID = .editBacktab
+    let name = "Insert Backtab"
+    let description = "Navigate to previous table cell or outdent"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
 
         // 1. Grid Table Mode Navigation
@@ -325,44 +325,44 @@ public struct InsertBacktabCommand: Command {
     }
 }
 
-public struct UndoCommand: Command {
-    public let id: CommandID = .editUndo
-    public let name = "Undo"
-    public let description = "Undo last edit"
+struct UndoCommand: Command {
+    let id: CommandID = .editUndo
+    let name = "Undo"
+    let description = "Undo last edit"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.performUndo()
         return .succeeded
     }
 }
 
-public struct RedoCommand: Command {
-    public let id: CommandID = .editRedo
-    public let name = "Redo"
-    public let description = "Redo last undone edit"
+struct RedoCommand: Command {
+    let id: CommandID = .editRedo
+    let name = "Redo"
+    let description = "Redo last undone edit"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.performRedo()
         return .succeeded
     }
 }
 
-public struct JustifyCommand: Command {
-    public let id: CommandID = .editJustify
-    public let name = "Justify"
-    public let description = "Justify paragraph text or format table"
-    public let commandBarAliases = ["justify"]
+struct JustifyCommand: Command {
+    let id: CommandID = .editJustify
+    let name = "Justify"
+    let description = "Justify paragraph text or format table"
+    let commandBarAliases = ["justify"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive {
             editor.tableModeController.centerCellText()
             return .succeeded
@@ -387,61 +387,61 @@ public struct JustifyCommand: Command {
     }
 }
 
-public struct SpellCheckCommand: Command {
-    public let id: CommandID = .editSpell
-    public let name = "To Spell"
-    public let description = "Check spelling"
-    public let commandBarAliases = ["spell-check"]
+struct SpellCheckCommand: Command {
+    let id: CommandID = .editSpell
+    let name = "To Spell"
+    let description = "Check spelling"
+    let commandBarAliases = ["spell-check"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSpellCheck()
         return .prompting
     }
 }
 
-public struct EvalLogoCommand: Command {
-    public let id: CommandID = .editEvalLogo
-    public let name = "Eval Editor LOGO Code"
-    public let description = "Evaluate Editor LOGO code at current line, selection, or code block"
-    public let commandBarAliases = ["eval", "evallogo", "run-logo"]
+struct EvalLogoCommand: Command {
+    let id: CommandID = .editEvalLogo
+    let name = "Eval Editor LOGO Code"
+    let description = "Evaluate Editor LOGO code at current line, selection, or code block"
+    let commandBarAliases = ["eval", "evallogo", "run-logo"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.evalLogoCode()
         return .succeeded
     }
 }
 
-public struct ToggleCommentCommand: Command {
-    public let id: CommandID = .editToggleComment
-    public let name = "Toggle Comment"
-    public let description = "Comment or uncomment current line or selection"
-    public let commandBarAliases = ["comment", "uncomment", "toggle-comment"]
+struct ToggleCommentCommand: Command {
+    let id: CommandID = .editToggleComment
+    let name = "Toggle Comment"
+    let description = "Comment or uncomment current line or selection"
+    let commandBarAliases = ["comment", "uncomment", "toggle-comment"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.toggleComment()
         return .succeeded
     }
 }
 
-public struct JoinLineCommand: Command {
-    public let id: CommandID = .editJoinLine
-    public let name = "Join Line"
-    public let description = "Join next line with current line"
-    public let commandBarAliases = ["joinline", "join"]
+struct JoinLineCommand: Command {
+    let id: CommandID = .editJoinLine
+    let name = "Join Line"
+    let description = "Join next line with current line"
+    let commandBarAliases = ["joinline", "join"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         guard editor.buffer.lineIndex + 1 < editor.buffer.lines.count else { return .noOp }
 
@@ -457,16 +457,16 @@ public struct JoinLineCommand: Command {
     }
 }
 
-public struct SplitLineCommand: Command {
-    public let id: CommandID = .editSplitLine
-    public let name = "Split Line"
-    public let description = "Split current line at cursor position"
-    public let commandBarAliases = ["splitline", "split"]
+struct SplitLineCommand: Command {
+    let id: CommandID = .editSplitLine
+    let name = "Split Line"
+    let description = "Split current line at cursor position"
+    let commandBarAliases = ["splitline", "split"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.saveUndoSnapshot()
         let line = editor.buffer.lines[editor.buffer.lineIndex]
         let col = min(editor.buffer.columnIndex, line.count)

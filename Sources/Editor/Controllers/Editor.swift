@@ -6,7 +6,7 @@ import LogoEngine
 import SpellChecker
 import Syntax
 
-public typealias SearchMatch = SearchController.SearchMatch
+typealias SearchMatch = SearchController.SearchMatch
 
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
@@ -81,10 +81,10 @@ public final class Editor: @unchecked Sendable {
     let promptController = PromptController()
 
     // Keymap Manager
-    public let keymapManager = KeymapManager()
+    let keymapManager = KeymapManager()
 
     /// Active Editor Mode used for Layered Keymap resolution.
-    public var currentMode: EditorMode {
+    var currentMode: EditorMode {
         if promptController.isActive {
             return .prompt
         }

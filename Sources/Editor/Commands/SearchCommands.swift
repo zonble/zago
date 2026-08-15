@@ -1,40 +1,40 @@
 import Foundation
 import TextMetrics
 
-public struct WhereIsCommand: Command {
-    public let id: CommandID = .searchWhereIs
-    public let name = "Where Is"
-    public let description = "Search text"
+struct WhereIsCommand: Command {
+    let id: CommandID = .searchWhereIs
+    let name = "Where Is"
+    let description = "Search text"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSearch()
         return .prompting
     }
 }
 
-public struct SearchCommand: Command {
-    public let id: CommandID = .searchWhereIs
-    public let name = "Search"
-    public let description = "Search text with /<query>"
-    public let commandBarAliases: [String] = ["/"]
+struct SearchCommand: Command {
+    let id: CommandID = .searchWhereIs
+    let name = "Search"
+    let description = "Search text with /<query>"
+    let commandBarAliases: [String] = ["/"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         input.text.hasPrefix("/")
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSearch()
         return .prompting
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         let query = String(input.text.dropFirst())
         if !query.isEmpty {
             editor.lastSearchQuery = query
@@ -49,62 +49,62 @@ public struct SearchCommand: Command {
     }
 }
 
-public struct SearchNextCommand: Command {
-    public let id: CommandID = .searchNext
-    public let name = "Find Next"
-    public let description = "Find next active search match"
+struct SearchNextCommand: Command {
+    let id: CommandID = .searchNext
+    let name = "Find Next"
+    let description = "Find next active search match"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.searchController.findNextSearchMatch()
         return .succeeded
     }
 }
 
-public struct SearchPreviousCommand: Command {
-    public let id: CommandID = .searchPrevious
-    public let name = "Find Previous"
-    public let description = "Find previous active search match"
+struct SearchPreviousCommand: Command {
+    let id: CommandID = .searchPrevious
+    let name = "Find Previous"
+    let description = "Find previous active search match"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.searchController.findPreviousSearchMatch()
         return .succeeded
     }
 }
 
-public struct SearchReplaceCommand: Command {
-    public let id: CommandID = .searchReplace
-    public let name = "Replace"
-    public let description = "Search and replace text"
-    public let commandBarAliases: [String] = ["replace"]
+struct SearchReplaceCommand: Command {
+    let id: CommandID = .searchReplace
+    let name = "Replace"
+    let description = "Search and replace text"
+    let commandBarAliases: [String] = ["replace"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptSearch()
         return .prompting
     }
 }
 
-public struct SubstituteCommand: Command {
-    public let id: CommandID = .searchSubstitute
-    public let name = "Substitute"
-    public let description = "Vim-style regex substitute s/search/replace/g"
-    public let commandBarAliases: [String] = ["s", "%s"]
+struct SubstituteCommand: Command {
+    let id: CommandID = .searchSubstitute
+    let name = "Substitute"
+    let description = "Vim-style regex substitute s/search/replace/g"
+    let commandBarAliases: [String] = ["s", "%s"]
 
-    public init() {}
+    init() {}
 
-    public func isAvailable(in editor: Editor) -> Bool {
+    func isAvailable(in editor: Editor) -> Bool {
         !editor.buffer.isReadOnly
     }
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         let text = input.text
         if text.hasPrefix("%s") {
             let rest = text.dropFirst(2)
@@ -117,13 +117,13 @@ public struct SubstituteCommand: Command {
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         let message = editor.l10n["status.path_required"]
         return .failed(message, message: message)
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard let parsed = parse(input.text) else {
             return .succeeded(message: editor.l10n["status.path_required"])
         }
@@ -357,100 +357,100 @@ public struct SubstituteCommand: Command {
     }
 }
 
-public struct OpenDocumentLinkCommand: Command {
-    public let id: CommandID = .documentOpenLink
-    public let name = "Open Link"
-    public let description = "Open document link at cursor"
-    public let commandBarAliases = ["openlink", "open-link", "follow"]
+struct OpenDocumentLinkCommand: Command {
+    let id: CommandID = .documentOpenLink
+    let name = "Open Link"
+    let description = "Open document link at cursor"
+    let commandBarAliases = ["openlink", "open-link", "follow"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.openDocumentLinkAtCursor()
     }
 }
 
-public struct NextHeadingCommand: Command {
-    public let id: CommandID = .documentHeadingNext
-    public let name = "Next Heading"
-    public let description = "Jump to next document heading"
-    public let commandBarAliases = ["nextheading", "next-heading"]
+struct NextHeadingCommand: Command {
+    let id: CommandID = .documentHeadingNext
+    let name = "Next Heading"
+    let description = "Jump to next document heading"
+    let commandBarAliases = ["nextheading", "next-heading"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.goToNextHeading()
         return .succeeded
     }
 }
 
-public struct PreviousHeadingCommand: Command {
-    public let id: CommandID = .documentHeadingPrevious
-    public let name = "Previous Heading"
-    public let description = "Jump to previous document heading"
-    public let commandBarAliases = ["prevheading", "prev-heading"]
+struct PreviousHeadingCommand: Command {
+    let id: CommandID = .documentHeadingPrevious
+    let name = "Previous Heading"
+    let description = "Jump to previous document heading"
+    let commandBarAliases = ["prevheading", "prev-heading"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.goToPreviousHeading()
         return .succeeded
     }
 }
 
-public struct DocumentOutlineCommand: Command {
-    public let id: CommandID = .documentOutline
-    public let name = "Outline"
-    public let description = "Open document outline"
-    public let commandBarAliases = ["outline", "toc", "headings"]
+struct DocumentOutlineCommand: Command {
+    let id: CommandID = .documentOutline
+    let name = "Outline"
+    let description = "Open document outline"
+    let commandBarAliases = ["outline", "toc", "headings"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.documentOutlineController.showDocumentOutline()
         return .succeeded
     }
 }
 
-public struct GotoLineCommand: Command {
-    public let id: CommandID = .cursorGotoLine
-    public let name = "Go To Line"
-    public let description = "Jump to line and column number"
+struct GotoLineCommand: Command {
+    let id: CommandID = .cursorGotoLine
+    let name = "Go To Line"
+    let description = "Jump to line and column number"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptGotoLine()
         return .prompting
     }
 }
 
-public struct NumericGotoCommand: Command {
-    public let id: CommandID = .cursorGotoLine
-    public let name = "Goto Line"
-    public let description = "Jump to line or line/column"
-    public let commandBarAliases: [String] = ["goto"]
+struct NumericGotoCommand: Command {
+    let id: CommandID = .cursorGotoLine
+    let name = "Goto Line"
+    let description = "Jump to line or line/column"
+    let commandBarAliases: [String] = ["goto"]
 
-    public init() {}
+    init() {}
 
-    public func match(_ input: CommandBarInput) -> Bool {
+    func match(_ input: CommandBarInput) -> Bool {
         input.text.range(of: #"^-?\d+([:,]-?\d+)?$|^:-?\d+$"#, options: .regularExpression) != nil
             || input.lowerFirstToken == "goto"
     }
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.promptGotoLine()
         return .prompting
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         let locationText: String
         if input.lowerFirstToken == "goto" {
             locationText = input.rest
@@ -478,30 +478,30 @@ public struct NumericGotoCommand: Command {
     }
 }
 
-public struct RefreshScreenCommand: Command {
-    public let id: CommandID = .screenRefresh
-    public let name = "Refresh"
-    public let description = "Refresh screen"
+struct RefreshScreenCommand: Command {
+    let id: CommandID = .screenRefresh
+    let name = "Refresh"
+    let description = "Refresh screen"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.renderer.invalidateScreenCache()
         return .succeeded
     }
 }
 
-public struct ShowCursorPosCommand: Command {
-    public let id: CommandID = .cursorPos
-    public let name = "Cur Pos"
-    public let description = "Display cursor position"
-    public let commandBarAliases = ["pos", "cursorpos", "where"]
+struct ShowCursorPosCommand: Command {
+    let id: CommandID = .cursorPos
+    let name = "Cur Pos"
+    let description = "Display cursor position"
+    let commandBarAliases = ["pos", "cursorpos", "where"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         let currentLine = editor.buffer.lineIndex + 1
         let totalLines = editor.buffer.lines.count
         let percent = totalLines > 0 ? Int(Double(currentLine) / Double(totalLines) * 100) : 100

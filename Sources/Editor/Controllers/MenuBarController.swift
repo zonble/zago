@@ -1,21 +1,21 @@
 import Foundation
 
 /// Controller handling Menu Bar UI activation, keyboard navigation, and menu item execution.
-public final class MenuBarController: KeyInputHandler {
-    public weak var editor: Editor?
+final class MenuBarController: KeyInputHandler {
+    weak var editor: Editor?
 
     /// Whether the menu bar mode is currently active.
-    public var isActive: Bool = false
+    var isActive: Bool = false
 
     /// Underlying MenuBar model storing category and item state.
-    public let menuBar = MenuBar()
+    let menuBar = MenuBar()
 
-    public init(editor: Editor? = nil) {
+    init(editor: Editor? = nil) {
         self.editor = editor
     }
 
     /// Toggles Menu Bar mode on ESC key in normal edit mode.
-    public func toggle() {
+    func toggle() {
         guard let editor else { return }
         isActive.toggle()
         if isActive {
@@ -26,14 +26,14 @@ public final class MenuBarController: KeyInputHandler {
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key) -> Bool {
+    func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
         processKey(key)
         return true
     }
 
     /// Handles key input navigation when Menu Bar is active.
-    public func processKey(_ key: Key) {
+    func processKey(_ key: Key) {
         switch key {
         case .esc, .ctrl("C"), .ctrl("G"):
             isActive = false
@@ -96,7 +96,7 @@ public final class MenuBarController: KeyInputHandler {
     }
 
     /// Executes current selected menu item action.
-    public func executeCurrentMenuItem() {
+    func executeCurrentMenuItem() {
         guard let editor, let item = menuBar.currentItem else { return }
         isActive = false
 

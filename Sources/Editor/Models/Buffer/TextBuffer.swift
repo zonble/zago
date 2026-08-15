@@ -28,7 +28,7 @@ open class TextBuffer: SpellCheckableBuffer {
     public var selectionMark: (line: Int, column: Int)? = nil
     public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
     public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
-    public var activeSearchMatch: SearchMatch? = nil
+    var activeSearchMatch: SearchMatch? = nil
     public var viewShowRuler: Bool = false
     public var viewShowLineNumbers: Bool = true
     public var viewShowSubLineNumbers: Bool = false

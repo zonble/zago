@@ -1,17 +1,17 @@
 import Foundation
 
-public final class DebuggerController {
+final class DebuggerController {
     private var breakpointsByBufferID: [String: Set<Int>] = [:]
-    public private(set) var activeSourceBufferID: String?
-    public private(set) var activeSourceStartLine = 0
-    public private(set) var activeScript = ""
-    public private(set) var executionTargetBufferID: String?
-    public var lastEvaluation: String?
+    private(set) var activeSourceBufferID: String?
+    private(set) var activeSourceStartLine = 0
+    private(set) var activeScript = ""
+    private(set) var executionTargetBufferID: String?
+    var lastEvaluation: String?
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func toggleBreakpoint(in buffer: TextBuffer) -> Bool {
+    func toggleBreakpoint(in buffer: TextBuffer) -> Bool {
         var lines = breakpointsByBufferID[buffer.id, default: []]
         if lines.remove(buffer.lineIndex) != nil {
             breakpointsByBufferID[buffer.id] = lines
@@ -22,15 +22,15 @@ public final class DebuggerController {
         return true
     }
 
-    public func breakpoints(in buffer: TextBuffer) -> [Int] {
+    func breakpoints(in buffer: TextBuffer) -> [Int] {
         breakpointsByBufferID[buffer.id, default: []].sorted()
     }
 
-    public func hasBreakpoint(in buffer: TextBuffer, line: Int) -> Bool {
+    func hasBreakpoint(in buffer: TextBuffer, line: Int) -> Bool {
         breakpointsByBufferID[buffer.id, default: []].contains(line)
     }
 
-    public func beginExecution(in buffer: TextBuffer, targetBuffer: TextBuffer, startLine: Int, script: String) {
+    func beginExecution(in buffer: TextBuffer, targetBuffer: TextBuffer, startLine: Int, script: String) {
         activeSourceBufferID = buffer.id
         activeSourceStartLine = startLine
         activeScript = script

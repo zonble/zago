@@ -1,14 +1,14 @@
 import Foundation
 
-public struct MoveRightCommand: Command {
-    public let id: CommandID = .moveRight
-    public let name = "Forward"
-    public let description = "Move forward a character"
+struct MoveRightCommand: Command {
+    let id: CommandID = .moveRight
+    let name = "Forward"
+    let description = "Move forward a character"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: 1)
             return .succeeded
@@ -26,15 +26,15 @@ public struct MoveRightCommand: Command {
     }
 }
 
-public struct MoveLeftCommand: Command {
-    public let id: CommandID = .moveLeft
-    public let name = "Backward"
-    public let description = "Move backward a character"
+struct MoveLeftCommand: Command {
+    let id: CommandID = .moveLeft
+    let name = "Backward"
+    let description = "Move backward a character"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 0, deltaColumn: -1)
             return .succeeded
@@ -51,15 +51,15 @@ public struct MoveLeftCommand: Command {
     }
 }
 
-public struct MoveUpCommand: Command {
-    public let id: CommandID = .moveUp
-    public let name = "Previous Line"
-    public let description = "Move to previous line"
+struct MoveUpCommand: Command {
+    let id: CommandID = .moveUp
+    let name = "Previous Line"
+    let description = "Move to previous line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: -1, deltaColumn: 0)
             return .succeeded
@@ -71,15 +71,15 @@ public struct MoveUpCommand: Command {
     }
 }
 
-public struct MoveDownCommand: Command {
-    public let id: CommandID = .moveDown
-    public let name = "Next Line"
-    public let description = "Move to next line"
+struct MoveDownCommand: Command {
+    let id: CommandID = .moveDown
+    let name = "Next Line"
+    let description = "Move to next line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isCanvasModeActive {
             editor.moveCanvasCursor(deltaLine: 1, deltaColumn: 0)
             return .succeeded
@@ -91,15 +91,15 @@ public struct MoveDownCommand: Command {
     }
 }
 
-public struct MoveHomeCommand: Command {
-    public let id: CommandID = .moveHome
-    public let name = "Beginning of Line"
-    public let description = "Move to beginning of line"
+struct MoveHomeCommand: Command {
+    let id: CommandID = .moveHome
+    let name = "Beginning of Line"
+    let description = "Move to beginning of line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -121,15 +121,15 @@ public struct MoveHomeCommand: Command {
     }
 }
 
-public struct MoveEndCommand: Command {
-    public let id: CommandID = .moveEnd
-    public let name = "End of Line"
-    public let description = "Move to end of line"
+struct MoveEndCommand: Command {
+    let id: CommandID = .moveEnd
+    let name = "End of Line"
+    let description = "Move to end of line"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let line = editor.buffer.lines[editor.buffer.lineIndex]
@@ -168,16 +168,16 @@ public struct MoveEndCommand: Command {
     }
 }
 
-public struct GoToEndOfFileCommand: Command {
-    public let id: CommandID = .cursorGotoEOF
-    public let name = "Go To End of File"
-    public let description = "Move to the end of the buffer"
-    public let commandBarAliases = ["eof", "end-of-file", ":eof", ":end-of-file"]
+struct GoToEndOfFileCommand: Command {
+    let id: CommandID = .cursorGotoEOF
+    let name = "Go To End of File"
+    let description = "Move to the end of the buffer"
+    let commandBarAliases = ["eof", "end-of-file", ":eof", ":end-of-file"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.lines.isEmpty else { return .noOp }
         editor.clearActiveMark()
         editor.buffer.lineIndex = editor.buffer.lines.count - 1
@@ -187,15 +187,15 @@ public struct GoToEndOfFileCommand: Command {
     }
 }
 
-public struct MovePgdnCommand: Command {
-    public let id: CommandID = .movePgdn
-    public let name = "Next Page"
-    public let description = "Move forward one page"
+struct MovePgdnCommand: Command {
+    let id: CommandID = .movePgdn
+    let name = "Next Page"
+    let description = "Move forward one page"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let vCol = editor.tableModeController.getVisualColumn(
@@ -219,15 +219,15 @@ public struct MovePgdnCommand: Command {
     }
 }
 
-public struct MovePgupCommand: Command {
-    public let id: CommandID = .movePgup
-    public let name = "Previous Page"
-    public let description = "Move backward one page"
+struct MovePgupCommand: Command {
+    let id: CommandID = .movePgup
+    let name = "Previous Page"
+    let description = "Move backward one page"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if editor.isTableModeActive, let cell = editor.currentTableCell {
             editor.clearActiveMark()
             let vCol = editor.tableModeController.getVisualColumn(
@@ -251,15 +251,15 @@ public struct MovePgupCommand: Command {
     }
 }
 
-public struct MoveWordForwardCommand: Command {
-    public let id: CommandID = .moveWordForward
-    public let name = "Forward Word"
-    public let description = "Move forward one word"
+struct MoveWordForwardCommand: Command {
+    let id: CommandID = .moveWordForward
+    let name = "Forward Word"
+    let description = "Move forward one word"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if !editor.isCanvasModeActive {
             editor.clearActiveMark()
         }
@@ -268,15 +268,15 @@ public struct MoveWordForwardCommand: Command {
     }
 }
 
-public struct MoveWordBackwardCommand: Command {
-    public let id: CommandID = .moveWordBackward
-    public let name = "Backward Word"
-    public let description = "Move backward one word"
+struct MoveWordBackwardCommand: Command {
+    let id: CommandID = .moveWordBackward
+    let name = "Backward Word"
+    let description = "Move backward one word"
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         if !editor.isCanvasModeActive {
             editor.clearActiveMark()
         }

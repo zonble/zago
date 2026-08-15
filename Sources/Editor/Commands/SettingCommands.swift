@@ -1,21 +1,21 @@
 import Foundation
 
-public struct SettingCommand: Command {
-    public let id: CommandID = .fileEditConfig
-    public let name = "Setting"
-    public let description = "Set editor settings (e.g. set wrap 80)"
-    public let commandBarAliases: [String] = ["set", "unset"]
+struct SettingCommand: Command {
+    let id: CommandID = .fileEditConfig
+    let name = "Setting"
+    let description = "Set editor settings (e.g. set wrap 80)"
+    let commandBarAliases: [String] = ["set", "unset"]
 
-    public init() {}
+    init() {}
 
     @discardableResult
-    public func execute(on editor: Editor) -> EditorOperationResult {
+    func execute(on editor: Editor) -> EditorOperationResult {
         editor.editConfig()
         return .succeeded
     }
 
     @discardableResult
-    public func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard let first = input.lowerFirstToken else { return .succeeded }
 
         let parts = input.rest.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
@@ -32,9 +32,9 @@ public struct SettingCommand: Command {
         return .succeeded
     }
 
-    public static let settingNames = EditorSettingUpdateParser.settingNames
+    static let settingNames = EditorSettingUpdateParser.settingNames
 
-    public static func valueSuggestions(for setting: String) -> [String] {
+    static func valueSuggestions(for setting: String) -> [String] {
         EditorSettingUpdateParser.valueSuggestions(for: setting)
     }
 }

@@ -2,21 +2,21 @@ import Foundation
 import Syntax
 
 /// Controller for heading navigation and document outline view modal.
-public final class DocumentOutlineController: KeyInputHandler {
-    public weak var editor: Editor?
-    public private(set) var isOutlineActive: Bool = false
+final class DocumentOutlineController: KeyInputHandler {
+    weak var editor: Editor?
+    private(set) var isOutlineActive: Bool = false
 
-    public enum HeadingNavigationDirection {
+    enum HeadingNavigationDirection {
         case next
         case previous
     }
 
-    public init(editor: Editor? = nil) {
+    init(editor: Editor? = nil) {
         self.editor = editor
     }
 
     /// KeyInputHandler protocol implementation.
-    public func handleKey(_ key: Key) -> Bool {
+    func handleKey(_ key: Key) -> Bool {
         if isOutlineActive {
             if key == .esc || key == .ctrl("C") || key == .ctrl("G") {
                 return true
@@ -37,15 +37,15 @@ public final class DocumentOutlineController: KeyInputHandler {
         }
     }
 
-    public func goToNextHeading() {
+    func goToNextHeading() {
         goToHeading(direction: .next)
     }
 
-    public func goToPreviousHeading() {
+    func goToPreviousHeading() {
         goToHeading(direction: .previous)
     }
 
-    public func showDocumentOutline() {
+    func showDocumentOutline() {
         guard let editor else { return }
         guard reportHeadingNavigationAvailability(editor).isSucceeded else { return }
         let outline = currentDocumentOutline()
@@ -77,7 +77,7 @@ public final class DocumentOutlineController: KeyInputHandler {
         }
     }
 
-    public func supportsDocumentOutlineForCurrentBuffer() -> Bool {
+    func supportsDocumentOutlineForCurrentBuffer() -> Bool {
         guard let editor, !editor.buffer.isDirectoryBuffer else { return false }
         return editor.syntaxHighlighter.detectLanguage(for: editor.buffer.filePath)?.supportsDocumentOutline == true
     }

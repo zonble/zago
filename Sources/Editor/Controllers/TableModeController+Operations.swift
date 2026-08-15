@@ -8,7 +8,7 @@ extension TableModeController {
     // MARK: - Table Mode Toggle & Enter
 
     /// Toggles Table Mode on/off.
-    public func toggleTableMode() {
+    func toggleTableMode() {
         guard let editor else { return }
         if !editor.isTableModeActive && editor.buffer.isReadOnly {
             editor.reportOperationResult(.noOp(message: editor.l10n["status.buffer_readonly_bracketed"]))
@@ -50,7 +50,7 @@ extension TableModeController {
     }
 
     /// Enters Table Mode locked to target cell.
-    public func enterTableMode(with cell: TableCell) {
+    func enterTableMode(with cell: TableCell) {
         guard let editor else { return }
         editor.clearActiveMark()
         editor.isTableModeActive = true
@@ -72,7 +72,7 @@ extension TableModeController {
     // MARK: - Table Editing Operations
 
     /// Inserts LOGO output into the active table cell without shifting or overwriting borders.
-    public func insertTextInCurrentTableCell(_ text: String) {
+    func insertTextInCurrentTableCell(_ text: String) {
         guard let editor else { return }
         guard editor.isTableModeActive, let cell = editor.currentTableCell else {
             editor.buffer.insertString(text)
@@ -104,7 +104,7 @@ extension TableModeController {
     }
 
     /// Pastes text into the active table cell without shifting or overwriting borders.
-    public func pasteTableCellText(_ text: String) {
+    func pasteTableCellText(_ text: String) {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return }
         editor.saveUndoSnapshot()
         _ = deleteTableSelectionIfNeeded(cell: cell, updateClipboard: false)
@@ -117,7 +117,7 @@ extension TableModeController {
         }
     }
 
-    public func moveToNextLineInCurrentTableCell(cell: TableCell) {
+    func moveToNextLineInCurrentTableCell(cell: TableCell) {
         guard let editor else { return }
         guard editor.buffer.lineIndex < cell.innerMaxLine else { return }
         editor.buffer.lineIndex += 1
@@ -130,8 +130,7 @@ extension TableModeController {
         clampTableModeCursor()
     }
 
-    public func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool
-    {
+    func insertCharacterInCurrentTableCell(_ ch: Character, cell: TableCell, saveSnapshot: Bool = false) -> Bool {
         guard let editor else { return false }
         guard editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine else {
             return false
@@ -193,7 +192,7 @@ extension TableModeController {
     }
 
     /// Generates a table at cursor position.
-    public func createTable(
+    func createTable(
         rows: Int = 3,
         cols: Int = 3,
         cellWidth requestedCellWidth: Int? = nil,
@@ -284,7 +283,7 @@ extension TableModeController {
     }
 
     /// Centers text inside each line of the current table cell.
-    public func centerCellText() {
+    func centerCellText() {
         guard let editor, let cell = editor.currentTableCell else { return }
         editor.saveUndoSnapshot()
 
@@ -322,7 +321,7 @@ extension TableModeController {
         editor.reportOperationResult(.succeeded(message: editor.l10n["status.cell_text_centered"]))
     }
 
-    public func joinCurrentTableCellLine(separator: String) {
+    func joinCurrentTableCellLine(separator: String) {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return }
         clampTableModeCursor()
         guard editor.buffer.lineIndex < cell.innerMaxLine else { return }
@@ -345,7 +344,7 @@ extension TableModeController {
     }
 
     /// Fills every editable row in the active table cell while preserving borders.
-    public func fillCurrentTableCell(with fillText: String) -> Bool {
+    func fillCurrentTableCell(with fillText: String) -> Bool {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return false }
         guard cell.innerMinLine <= cell.innerMaxLine else { return false }
         guard !fillText.isEmpty else {
@@ -375,7 +374,7 @@ extension TableModeController {
     }
 
     /// Deletes the current visual row inside the active cell without removing the buffer line or table borders.
-    public func deleteCurrentTableCellLine() {
+    func deleteCurrentTableCellLine() {
         guard let editor else { return }
         guard editor.isTableModeActive, let cell = editor.currentTableCell else {
             editor.buffer.deleteLine()
@@ -454,7 +453,7 @@ extension TableModeController {
     // MARK: - Table Resize Operations
 
     /// Resizes the column width of the active table cell (or standalone box) by delta (+1 or -1).
-    public func resizeCurrentTableCellWidth(delta: Int) {
+    func resizeCurrentTableCellWidth(delta: Int) {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
         let tableLines = detectTableLineRange(for: cell)
@@ -553,7 +552,7 @@ extension TableModeController {
     }
 
     /// Resizes the row height of the active table cell (or standalone box) by delta (+1 or -1).
-    public func resizeCurrentTableCellHeight(delta: Int) {
+    func resizeCurrentTableCellHeight(delta: Int) {
         guard let editor, editor.isTableModeActive, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
 
