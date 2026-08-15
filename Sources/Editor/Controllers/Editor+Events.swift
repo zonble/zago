@@ -60,8 +60,8 @@ extension Editor {
 
         if buffer.isReadOnly {
             switch key {
-            case .backspace, .enter, .char:
-                reportOperationResult(.noOp(message: l10n["status.buffer_readonly_bracketed"]))
+            case .backspace, .enter, .char, .delete:
+                reportOperationResult(.noOp(message: l10n["status.read_only"]))
                 return
             default:
                 break

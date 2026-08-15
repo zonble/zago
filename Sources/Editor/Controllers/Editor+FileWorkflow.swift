@@ -75,6 +75,9 @@ extension Editor {
 
     @discardableResult
     func insertFileContent(from path: String) -> EditorOperationResult {
+        if buffer.isReadOnly {
+            return reportOperationResult(.noOp(message: l10n["status.read_only"]))
+        }
         let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
         do {
             let result = try fileIOStrategy.readTextFile(at: expandedPath)

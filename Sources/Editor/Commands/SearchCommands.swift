@@ -124,6 +124,10 @@ struct SubstituteCommand: Command {
 
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard !editor.buffer.isReadOnly else {
+            return .noOp(message: editor.l10n["status.read_only"])
+        }
+
         guard let parsed = parse(input.text) else {
             return .succeeded(message: editor.l10n["status.path_required"])
         }
