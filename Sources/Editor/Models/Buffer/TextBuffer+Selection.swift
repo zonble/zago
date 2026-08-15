@@ -2,7 +2,7 @@ import Foundation
 
 extension TextBuffer {
     /// Checks if a buffer character (line, col) is within the current linear selection range.
-    public func isCharacterSelected(line: Int, col: Int) -> Bool {
+    func isCharacterSelected(line: Int, col: Int) -> Bool {
         guard let mark = selectionMark else { return false }
         if isTableModeActive, let cell = currentTableCell {
             let cursor = (line: lineIndex, column: columnIndex)
@@ -38,7 +38,7 @@ extension TextBuffer {
         return false
     }
 
-    public func isLineSelected(line: Int) -> Bool {
+    func isLineSelected(line: Int) -> Bool {
         guard let mark = selectionMark else { return false }
         let (start, end) = TextBuffer.getOrderedRange(mark1: mark, mark2: (line: lineIndex, column: columnIndex))
         if start.line == end.line {

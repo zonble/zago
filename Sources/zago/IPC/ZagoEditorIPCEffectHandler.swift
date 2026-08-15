@@ -24,10 +24,9 @@ final class ZagoEditorIPCEffectHandler: EditorEffectDelegate {
         do {
             try session.start()
             self.session = session
-            editor.reportOperationResult(
-                .succeeded(message: "[IPC] Socket: \(session.socketPath) | Token: \(session.sessionToken)"))
+            editor.setStatusMessage("[IPC] Socket: \(session.socketPath) | Token: \(session.sessionToken)")
         } catch {
-            editor.reportOperationResult(.failed(error.localizedDescription, message: "[IPC Error] \(error.localizedDescription)"))
+            editor.setStatusMessage("[IPC Error] \(error.localizedDescription)")
             editor.apply(EditorSettingUpdate.ipc(false))
         }
     }
@@ -36,6 +35,6 @@ final class ZagoEditorIPCEffectHandler: EditorEffectDelegate {
         guard let session else { return }
         session.stop()
         self.session = nil
-        editor.reportOperationResult(.succeeded(message: "[IPC Disabled]"))
+        editor.setStatusMessage("[IPC Disabled]")
     }
 }

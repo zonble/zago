@@ -1,55 +1,55 @@
 import Foundation
 
 /// Immutable value object representing calculated UI layout metrics and frame dimensions for a single render pass.
-public struct ScreenGeometry: Equatable {
+struct ScreenGeometry: Equatable {
     // MARK: - Layout Constants & Chrome Rules
 
     /// Number of terminal rows reserved for top Title Bar (or Menu Bar).
-    public static let titleBarHeight = 1
+    static let titleBarHeight = 1
 
     /// Number of terminal rows reserved for optional WordStar Ruler Bar.
-    public static let rulerBarHeight = 1
+    static let rulerBarHeight = 1
 
     /// Number of terminal rows reserved for Status/Prompt Line.
-    public static let statusLineHeight = 1
+    static let statusLineHeight = 1
 
     /// Number of terminal rows reserved for dynamic Contextual Help Bar (2 lines).
-    public static let helpBarHeight = 2
+    static let helpBarHeight = 2
 
     /// Character width reserved for line numbers gutter (e.g. " 123 ").
-    public static let defaultGutterWidth = 5
+    static let defaultGutterWidth = 5
 
     /// Minimum allowable text display width.
-    public static let minimumTextWidth = 10
+    static let minimumTextWidth = 10
 
     // MARK: - Frame Instance Metrics
 
     /// Terminal screen height in rows.
-    public let rows: Int
+    let rows: Int
 
     /// Terminal screen width in columns.
-    public let cols: Int
+    let cols: Int
 
     /// Whether the WordStar ruler bar is currently visible.
-    public let showRuler: Bool
+    let showRuler: Bool
 
     /// Whether the line numbers gutter is currently visible.
-    public let showGutter: Bool
+    let showGutter: Bool
 
     /// Whether the independent breakpoint marker gutter is visible.
-    public let showBreakpointGutter: Bool
+    let showBreakpointGutter: Bool
 
     /// Calculated main text area height in rows.
-    public let mainAreaHeight: Int
+    let mainAreaHeight: Int
 
     /// Calculated line numbers gutter width in character columns.
-    public let gutterWidth: Int
+    let gutterWidth: Int
 
     /// Calculated effective text display area width in character columns.
-    public let textWidth: Int
+    let textWidth: Int
 
     /// Initializes a ScreenGeometry by computing frame layout metrics for given terminal dimensions and display options.
-    public init(rows: Int, cols: Int, showRuler: Bool, showGutter: Bool, showBreakpointGutter: Bool = false) {
+    init(rows: Int, cols: Int, showRuler: Bool, showGutter: Bool, showBreakpointGutter: Bool = false) {
         self.rows = rows
         self.cols = cols
         self.showRuler = showRuler
@@ -67,7 +67,7 @@ public struct ScreenGeometry: Equatable {
     }
 
     /// Convenience initializer deriving ruler and gutter visibility from an Editor instance.
-    public init(rows: Int, cols: Int, editor: Editor) {
+    init(rows: Int, cols: Int, editor: Editor) {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty

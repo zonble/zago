@@ -7,12 +7,12 @@ import TextMetrics
 /// screen ANSI UI components (Title Bar, Menu Bar, WordStar Ruler, Main Text
 /// Area, Line Numbers Gutter, Status/Prompt Line, Dynamic Help Bar, Cursor
 /// Positioning).
-public final class Renderer {
-    public struct RenderedPrompt {
-        public let text: String
-        public let cursorCol: Int
+final class Renderer {
+    struct RenderedPrompt {
+        let text: String
+        let cursorCol: Int
 
-        public init(text: String, cursorCol: Int) {
+        init(text: String, cursorCol: Int) {
             self.text = text
             self.cursorCol = cursorCol
         }
@@ -23,23 +23,23 @@ public final class Renderer {
     private var lastCols: Int = 0
 
     /// Returns whether the screen line buffer cache is currently valid/populated.
-    public var isScreenCacheValid: Bool {
+    var isScreenCacheValid: Bool {
         !lastRenderedLines.isEmpty
     }
 
     /// Invalidates the screen line buffer cache, forcing a full redraw on the next render pass.
-    public func invalidateScreenCache() {
+    func invalidateScreenCache() {
         lastRenderedLines.removeAll()
     }
 
     /// Renders complete static screen ANSI output for given ScreenGeometry.
-    public func render(editor: Editor, geometry: ScreenGeometry) -> String {
+    func render(editor: Editor, geometry: ScreenGeometry) -> String {
         let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
         return ANSIStyle.disableLineWrap + ANSIStyle.cursorHome + screenLines.joined(separator: "\r\n") + cursorPosStr
     }
 
     /// Renders screen using Double Buffering / Screen Line Diffing for given ScreenGeometry.
-    public func renderDiff(editor: Editor, geometry: ScreenGeometry) -> String {
+    func renderDiff(editor: Editor, geometry: ScreenGeometry) -> String {
         let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
         let isDiffable =
             (geometry.rows == lastRows && geometry.cols == lastCols && lastRenderedLines.count == screenLines.count)
@@ -70,12 +70,12 @@ public final class Renderer {
     }
 
     /// Renders complete static screen output ANSI string for given terminal rows and cols.
-    public func render(editor: Editor, rows: Int, cols: Int) -> String {
+    func render(editor: Editor, rows: Int, cols: Int) -> String {
         render(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
     }
 
     /// Renders screen using Double Buffering for given terminal rows and cols.
-    public func renderDiff(editor: Editor, rows: Int, cols: Int) -> String {
+    func renderDiff(editor: Editor, rows: Int, cols: Int) -> String {
         renderDiff(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
     }
 

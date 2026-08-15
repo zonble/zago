@@ -4,60 +4,60 @@ import TextMetrics
 import TextTransform
 
 /// Manages text buffer lines and cursor operations.
-open class TextBuffer: SpellCheckableBuffer {
-    public let id: String = UUID().uuidString
-    public var lines: [String] = [""]
-    public var filePath: String?
-    public var loadErrorDescription: String?
-    public var isModified: Bool = false
+class TextBuffer: SpellCheckableBuffer {
+    let id: String = UUID().uuidString
+    var lines: [String] = [""]
+    var filePath: String?
+    var loadErrorDescription: String?
+    var isModified: Bool = false
 
     /// Real buffer cursor position (measured in Character / Grapheme Clusters).
     /// lineIndex: 0-indexed line number
     /// columnIndex: 0-indexed column offset
-    public var lineIndex: Int = 0
-    public var columnIndex: Int = 0
+    var lineIndex: Int = 0
+    var columnIndex: Int = 0
 
     // Runtime mode state belongs to the buffer/editor view, not to the process.
-    public var baseMode: EditorBaseMode = .text
-    public var overlayMode: EditorOverlayMode = .none
-    public var canvasVisualColumn: Int = 0
-    public var canvasHorizontalOffset: Int = 0
-    public var topVLineIndex: Int = 0
-    public var isTableModeActive: Bool = false
-    public var currentTableCell: TableCell? = nil
-    public var selectionMark: (line: Int, column: Int)? = nil
-    public var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
-    public var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
+    var baseMode: EditorBaseMode = .text
+    var overlayMode: EditorOverlayMode = .none
+    var canvasVisualColumn: Int = 0
+    var canvasHorizontalOffset: Int = 0
+    var topVLineIndex: Int = 0
+    var isTableModeActive: Bool = false
+    var currentTableCell: TableCell? = nil
+    var selectionMark: (line: Int, column: Int)? = nil
+    var canvasBlockMark: (line: Int, visualColumn: Int)? = nil
+    var canvasBlockMarkEnd: (line: Int, visualColumn: Int)? = nil
     var activeSearchMatch: SearchMatch? = nil
-    public var viewShowRuler: Bool = false
-    public var viewShowLineNumbers: Bool = true
-    public var viewShowSubLineNumbers: Bool = false
-    public var viewWrapColumn: Int? = nil
-    public var borderStyle: BorderStyle = .single
-    public var arrowStyle: ArrowStyle = .solid
-    public var undoStack: [UndoSnapshot] = []
-    public var redoStack: [UndoSnapshot] = []
-    public var maxUndoStackSize: Int = 100
+    var viewShowRuler: Bool = false
+    var viewShowLineNumbers: Bool = true
+    var viewShowSubLineNumbers: Bool = false
+    var viewWrapColumn: Int? = nil
+    var borderStyle: BorderStyle = .single
+    var arrowStyle: ArrowStyle = .solid
+    var undoStack: [UndoSnapshot] = []
+    var redoStack: [UndoSnapshot] = []
+    var maxUndoStackSize: Int = 100
 
     private var isReadOnlyStored: Bool = false
-    open var isReadOnly: Bool {
+    var isReadOnly: Bool {
         get { isReadOnlyStored }
         set { isReadOnlyStored = newValue }
     }
-    open var allowsLogoExecution: Bool { true }
-    open var isDirectoryBuffer: Bool { false }
-    open var isScratchBuffer: Bool {
+    var allowsLogoExecution: Bool { true }
+    var isDirectoryBuffer: Bool { false }
+    var isScratchBuffer: Bool {
         guard let path = filePath else { return true }
         return path.hasPrefix("*")
     }
 
-    public var onLineCountChanged: ((_ aboveLine: Int, _ delta: Int) -> Void)?
+    var onLineCountChanged: ((_ aboveLine: Int, _ delta: Int) -> Void)?
 
-    public init(filePath: String? = nil) {
+    init(filePath: String? = nil) {
         self.filePath = filePath
     }
 
-    public static func getOrderedRange(
+    static func getOrderedRange(
         mark1: (line: Int, column: Int),
         mark2: (line: Int, column: Int)
     ) -> (start: (line: Int, column: Int), end: (line: Int, column: Int)) {
@@ -74,15 +74,15 @@ open class TextBuffer: SpellCheckableBuffer {
         }
     }
 
-    public var fileEncoding: String.Encoding = .utf8
+    var fileEncoding: String.Encoding = .utf8
 
     /// Key handler for specialized buffer types. Returns true if handled.
-    open func handleKey(_ key: Key, editor: Editor) -> Bool {
+    func handleKey(_ key: Key, editor: Editor) -> Bool {
         return false
     }
 
     @discardableResult
-    public func trimTrailingWhitespace() -> Bool {
+    func trimTrailingWhitespace() -> Bool {
         let trimmedLines = lines.map { line in
             String(line.reversed().drop(while: { $0 == " " || $0 == "\t" }).reversed())
         }
@@ -93,7 +93,7 @@ open class TextBuffer: SpellCheckableBuffer {
         return true
     }
 
-    public func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false) {
+    func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false) {
         let fileLines = text.components(separatedBy: .newlines)
         self.lines = fileLines.isEmpty ? [""] : fileLines
         self.filePath = filePath ?? self.filePath
@@ -101,7 +101,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Inserts multi-line or single-line string content at current cursor position.
-    public func insertString(_ text: String) {
+    func insertString(_ text: String) {
         ensureBounds()
         let textLines = text.components(separatedBy: .newlines)
         if textLines.isEmpty { return }
@@ -142,7 +142,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Cuts text range from start (line, col) to end (line, col) and returns cut text.
-    public func textRange(
+    func textRange(
         start: (line: Int, col: Int),
         end: (line: Int, col: Int)
     ) -> String {
@@ -170,7 +170,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Cuts text range from start (line, col) to end (line, col) and returns cut text.
-    public func cutRange(
+    func cutRange(
         start: (line: Int, col: Int),
         end: (line: Int, col: Int)
     ) -> String {
@@ -216,7 +216,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Inserts a character at the current cursor position.
-    public func insert(character ch: Character) {
+    func insert(character ch: Character) {
         ensureBounds()
         var currentLine = lines[lineIndex]
         let index =
@@ -229,7 +229,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Inserts a newline at the current cursor position, optionally continuing list items for Markdown/AsciiDoc/Org buffers.
-    public func insertNewline(enableListAutoIndent: Bool = false) {
+    func insertNewline(enableListAutoIndent: Bool = false) {
         ensureBounds()
         let currentLine = lines[lineIndex]
         let index =
@@ -321,7 +321,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Moves cursor forward by one word (M+F).
-    public func moveWordForward() {
+    func moveWordForward() {
         ensureBounds()
         let currentLine = lines[lineIndex]
         let lineChars = Array(currentLine)
@@ -374,7 +374,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Moves cursor backward by one word (M+B).
-    public func moveWordBackward() {
+    func moveWordBackward() {
         ensureBounds()
 
         if columnIndex == 0 {
@@ -427,7 +427,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Deletes the character preceding the cursor (Backspace).
-    public func backspace() {
+    func backspace() {
         ensureBounds()
         if columnIndex > 0 {
             var currentLine = lines[lineIndex]
@@ -450,7 +450,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Deletes the current line entirely (Ctrl+Backspace).
-    public func deleteLine() {
+    func deleteLine() {
         ensureBounds()
         if lines.count > 1 {
             let oldLineIdx = lineIndex
@@ -470,7 +470,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Deletes the character at the cursor position (Delete).
-    public func delete() {
+    func delete() {
         ensureBounds()
         let currentLine = lines[lineIndex]
         if columnIndex < currentLine.count {
@@ -490,7 +490,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Clamps cursor position to valid buffer line and column bounds.
-    public func clampCursor() {
+    func clampCursor() {
         if lines.isEmpty {
             lines = [""]
         }
@@ -594,7 +594,7 @@ open class TextBuffer: SpellCheckableBuffer {
     }
 
     /// Justifies (reflows) the paragraph at current cursor position (^J) using visual column display widths.
-    public func justifyParagraph(targetWidth: Int = 72) {
+    func justifyParagraph(targetWidth: Int = 72) {
         guard !lines.isEmpty else { return }
         clampCursor()
 

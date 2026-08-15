@@ -1,44 +1,44 @@
 import Foundation
 
 /// Value object storing runtime configuration settings and UI toggle options for the editor.
-public struct RuntimeConfig: Sendable, Equatable {
+struct RuntimeConfig: Sendable, Equatable {
     /// Whether the WordStar ruler bar is enabled.
-    public var showRuler: Bool
+    var showRuler: Bool
 
     /// Whether line numbers gutter is enabled.
-    public var showLineNumbers: Bool
+    var showLineNumbers: Bool
 
     /// Whether sub-line wrapping numbers are enabled.
-    public var showSubLineNumbers: Bool
+    var showSubLineNumbers: Bool
 
     /// Whether ANSI syntax highlighting is enabled.
-    public var enableSyntaxHighlight: Bool
+    var enableSyntaxHighlight: Bool
 
     /// Whether automatic file reload on external modification is enabled.
-    public var autoReload: Bool
+    var autoReload: Bool
 
     /// Number of spaces representing a Tab character.
-    public var tabSize: Int
+    var tabSize: Int
 
     /// Whether smart tab, list indent, and block indent are enabled.
-    public var smartTab: Bool
+    var smartTab: Bool
 
     /// Number of spaces for list item indent nesting.
-    public var listIndentSize: Int
+    var listIndentSize: Int
 
     /// Whether soft-wrapped list items use hanging indent on sub-lines.
-    public var listWrapIndent: Bool
+    var listWrapIndent: Bool
 
     /// Whether trailing whitespace is automatically trimmed on save.
-    public var trimTrailingWhitespaceOnSave: Bool
+    var trimTrailingWhitespaceOnSave: Bool
 
     /// Whether Git diff indicators in gutter are enabled.
-    public var showGitDiff: Bool
+    var showGitDiff: Bool
 
     /// Whether cross-platform IPC socket server is enabled.
-    public var ipcEnabled: Bool
+    var ipcEnabled: Bool
 
-    public init(
+    init(
         showRuler: Bool = false,
         showLineNumbers: Bool = true,
         showSubLineNumbers: Bool = false,

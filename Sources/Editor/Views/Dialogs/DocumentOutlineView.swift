@@ -3,7 +3,7 @@ import Foundation
 import Syntax
 import TextMetrics
 
-public final class DocumentOutlineView {
+final class DocumentOutlineView {
     private let terminal: EditorTerminal
     private let title: String
     private let headings: [DocumentHeading]
@@ -11,7 +11,7 @@ public final class DocumentOutlineView {
     private var selectedIndex: Int
     private var topIndex: Int = 0
 
-    public init(
+    init(
         terminal: EditorTerminal,
         title: String,
         headings: [DocumentHeading],
@@ -25,7 +25,7 @@ public final class DocumentOutlineView {
         self.selectedIndex = max(0, min(initialSelectedIndex, max(0, headings.count - 1)))
     }
 
-    public func show() -> DocumentHeading? {
+    func show() -> DocumentHeading? {
         render()
         while true {
             let key = terminal.readKey()
@@ -77,7 +77,7 @@ public final class DocumentOutlineView {
         }
     }
 
-    public static func rows(for headings: [DocumentHeading]) -> [String] {
+    static func rows(for headings: [DocumentHeading]) -> [String] {
         headings.map { heading in
             let lineNumber = String(format: "%4d", heading.lineIndex + 1)
             let indent = String(repeating: "  ", count: max(0, heading.level - 1))

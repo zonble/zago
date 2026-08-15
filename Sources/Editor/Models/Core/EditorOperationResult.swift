@@ -1,7 +1,7 @@
 import Foundation
 
-public struct EditorOperationResult: Equatable, Sendable {
-    public enum Kind: Equatable, Sendable {
+struct EditorOperationResult: Equatable, Sendable {
+    enum Kind: Equatable, Sendable {
         case succeeded
         case failed(String)
         case cancelled
@@ -9,51 +9,51 @@ public struct EditorOperationResult: Equatable, Sendable {
         case noOp
     }
 
-    public let kind: Kind
-    public let statusMessage: String?
+    let kind: Kind
+    let statusMessage: String?
 
-    public static let succeeded = EditorOperationResult(kind: .succeeded)
-    public static let cancelled = EditorOperationResult(kind: .cancelled)
-    public static let prompting = EditorOperationResult(kind: .prompting)
-    public static let noOp = EditorOperationResult(kind: .noOp)
+    static let succeeded = EditorOperationResult(kind: .succeeded)
+    static let cancelled = EditorOperationResult(kind: .cancelled)
+    static let prompting = EditorOperationResult(kind: .prompting)
+    static let noOp = EditorOperationResult(kind: .noOp)
 
-    public static func succeeded(message: String?) -> EditorOperationResult {
+    static func succeeded(message: String?) -> EditorOperationResult {
         EditorOperationResult(kind: .succeeded, statusMessage: message)
     }
 
-    public static func failed(_ reason: String, message: String? = nil) -> EditorOperationResult {
+    static func failed(_ reason: String, message: String? = nil) -> EditorOperationResult {
         EditorOperationResult(kind: .failed(reason), statusMessage: message)
     }
 
-    public static func cancelled(message: String?) -> EditorOperationResult {
+    static func cancelled(message: String?) -> EditorOperationResult {
         EditorOperationResult(kind: .cancelled, statusMessage: message)
     }
 
-    public static func prompting(message: String?) -> EditorOperationResult {
+    static func prompting(message: String?) -> EditorOperationResult {
         EditorOperationResult(kind: .prompting, statusMessage: message)
     }
 
-    public static func noOp(message: String?) -> EditorOperationResult {
+    static func noOp(message: String?) -> EditorOperationResult {
         EditorOperationResult(kind: .noOp, statusMessage: message)
     }
 
-    public init(kind: Kind, statusMessage: String? = nil) {
+    init(kind: Kind, statusMessage: String? = nil) {
         self.kind = kind
         self.statusMessage = statusMessage
     }
 
-    public var isSucceeded: Bool {
+    var isSucceeded: Bool {
         kind == .succeeded
     }
 
-    public var isFailed: Bool {
+    var isFailed: Bool {
         if case .failed = kind {
             return true
         }
         return false
     }
 
-    public static func == (lhs: EditorOperationResult, rhs: EditorOperationResult) -> Bool {
+    static func == (lhs: EditorOperationResult, rhs: EditorOperationResult) -> Bool {
         lhs.kind == rhs.kind
     }
 }

@@ -28,15 +28,15 @@ public struct AIHistoryEntry: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
-public final class AIHistoryLogManager: @unchecked Sendable {
-    public static let shared = AIHistoryLogManager()
+final class AIHistoryLogManager: @unchecked Sendable {
+    static let shared = AIHistoryLogManager()
 
-    public private(set) var entries: [AIHistoryEntry] = []
+    private(set) var entries: [AIHistoryEntry] = []
     private let lock = NSLock()
 
     private init() {}
 
-    public func logDecision(proposal: AIProposal, decision: String) {
+    func logDecision(proposal: AIProposal, decision: String) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -55,7 +55,7 @@ public final class AIHistoryLogManager: @unchecked Sendable {
         }
     }
 
-    public func recentEntries(limit: Int = 20) -> [AIHistoryEntry] {
+    func recentEntries(limit: Int = 20) -> [AIHistoryEntry] {
         lock.lock()
         defer { lock.unlock() }
         return Array(entries.prefix(limit))

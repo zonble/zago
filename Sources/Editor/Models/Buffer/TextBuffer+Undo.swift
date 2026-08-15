@@ -1,6 +1,6 @@
 import Foundation
 
-public enum ActionAuthor: Equatable, Codable, Sendable {
+enum ActionAuthor: Equatable, Codable, Sendable {
     case user
     case logoScript(name: String?)
     case aiAgent(id: String, name: String, reason: String)
@@ -22,20 +22,20 @@ public enum ActionAuthor: Equatable, Codable, Sendable {
 ///    - Only lines that are mutated trigger copy-on-write allocation for their individual buffers.
 ///    - Memory consumption per snapshot is primarily limited to the array pointer spine (~8 bytes per line),
 ///      making snapshot-based undo lightweight and predictable for typical source code, Markdown, and diagram files.
-public struct UndoSnapshot: Equatable, Codable {
-    public let lines: [String]
-    public let lineIndex: Int
-    public let columnIndex: Int
-    public let selectionMarkLine: Int?
-    public let selectionMarkCol: Int?
-    public let canvasVisualColumn: Int?
-    public let isModified: Bool
-    public let isTableModeActive: Bool
-    public let currentTableCell: TableCell?
-    public let author: ActionAuthor
-    public let timestamp: Date
+struct UndoSnapshot: Equatable, Codable {
+    let lines: [String]
+    let lineIndex: Int
+    let columnIndex: Int
+    let selectionMarkLine: Int?
+    let selectionMarkCol: Int?
+    let canvasVisualColumn: Int?
+    let isModified: Bool
+    let isTableModeActive: Bool
+    let currentTableCell: TableCell?
+    let author: ActionAuthor
+    let timestamp: Date
 
-    public init(
+    init(
         lines: [String],
         lineIndex: Int,
         columnIndex: Int,
@@ -60,12 +60,12 @@ public struct UndoSnapshot: Equatable, Codable {
         self.timestamp = timestamp
     }
 
-    public var selectionMark: (line: Int, column: Int)? {
+    var selectionMark: (line: Int, column: Int)? {
         guard let selectionMarkLine, let selectionMarkCol else { return nil }
         return (line: selectionMarkLine, column: selectionMarkCol)
     }
 
-    public static func == (lhs: UndoSnapshot, rhs: UndoSnapshot) -> Bool {
+    static func == (lhs: UndoSnapshot, rhs: UndoSnapshot) -> Bool {
         lhs.lines == rhs.lines &&
         lhs.lineIndex == rhs.lineIndex &&
         lhs.columnIndex == rhs.columnIndex &&
@@ -116,7 +116,7 @@ extension TextBuffer {
     }
 
     /// Saves a snapshot of the buffer state and cursor position before mutation.
-    public func saveUndoSnapshot(canvasVisualColumn: Int? = nil, author: ActionAuthor = .user) {
+    func saveUndoSnapshot(canvasVisualColumn: Int? = nil, author: ActionAuthor = .user) {
         activeSearchMatch = nil
         let snapshot = makeUndoSnapshot(canvasVisualColumn: canvasVisualColumn, author: author)
         if undoStack.last != snapshot {
@@ -128,7 +128,7 @@ extension TextBuffer {
     /// Pops the last snapshot from the undo stack and restores lines, cursor position, selection mark, and isModified state.
     /// Returns the popped snapshot if successful.
     @discardableResult
-    public func performUndo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
+    func performUndo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
         guard let snapshot = undoStack.popLast() else {
             return nil
         }
@@ -140,7 +140,7 @@ extension TextBuffer {
 
     /// Restores the most recently undone snapshot while preserving the current state for undo.
     @discardableResult
-    public func performRedo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
+    func performRedo(canvasVisualColumn: Int? = nil) -> UndoSnapshot? {
         guard let snapshot = redoStack.popLast() else {
             return nil
         }

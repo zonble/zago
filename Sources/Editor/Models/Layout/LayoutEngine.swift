@@ -9,31 +9,31 @@ import TextMetrics
 /// Each `VirtualLine` tracks its relationship to the original buffer line, its
 /// sub-line sequence index, the displayed substring text, and the character
 /// index boundaries.
-public struct VirtualLine {
+struct VirtualLine {
     /// The 0-based index of the original raw line in the `TextBuffer`.
-    public let bufferLineIndex: Int
+    let bufferLineIndex: Int
 
     /// The 0-based sub-line sequence index within the parent `TextBuffer` line.
     /// - `0`: The first visual sub-line of the raw buffer line.
     /// - `1+`: Subsequent softwrapped sub-lines (rendered with a `↳` softwrap
     ///   continuation indicator in the gutter).
-    public let subLineIndex: Int
+    let subLineIndex: Int
 
     /// The text content substring displayed on this virtual line chunk.
-    public let text: String
+    let text: String
 
     /// The 0-based starting character index in the parent `TextBuffer` line for
     /// this virtual chunk.
-    public let startCol: Int
+    let startCol: Int
 
     /// The 0-based ending character index in the parent `TextBuffer` line for
     /// this virtual chunk.
-    public let endCol: Int
+    let endCol: Int
 
     /// Flag indicating whether this virtual line is part of an active AI proposal box overlay.
-    public let isProposalOverlay: Bool
+    let isProposalOverlay: Bool
 
-    public init(
+    init(
         bufferLineIndex: Int,
         subLineIndex: Int,
         text: String,
@@ -50,14 +50,14 @@ public struct VirtualLine {
     }
 }
 
-public struct VirtualViewport {
-    public let lines: [VirtualLine]
-    public let startVirtualIndex: Int
-    public let totalVirtualLineCount: Int
-    public let cursorVirtualLineIndex: Int
-    public let cursorVirtualColumnIndex: Int
+struct VirtualViewport {
+    let lines: [VirtualLine]
+    let startVirtualIndex: Int
+    let totalVirtualLineCount: Int
+    let cursorVirtualLineIndex: Int
+    let cursorVirtualColumnIndex: Int
 
-    public init(
+    init(
         lines: [VirtualLine],
         startVirtualIndex: Int,
         totalVirtualLineCount: Int,
@@ -72,13 +72,13 @@ public struct VirtualViewport {
     }
 }
 
-public struct CachedVirtualChunk {
-    public let subLineIndex: Int
-    public let text: String
-    public let startCol: Int
-    public let endCol: Int
+struct CachedVirtualChunk {
+    let subLineIndex: Int
+    let text: String
+    let startCol: Int
+    let endCol: Int
 
-    public init(subLineIndex: Int, text: String, startCol: Int, endCol: Int) {
+    init(subLineIndex: Int, text: String, startCol: Int, endCol: Int) {
         self.subLineIndex = subLineIndex
         self.text = text
         self.startCol = startCol
@@ -88,10 +88,10 @@ public struct CachedVirtualChunk {
 
 /// Handles softwrap (virtual line wrapping) calculation and real/virtual cursor
 /// coordinate conversions.
-public final class LayoutEngine {
-    public static let minimumWrapColumn = 10
-    public var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
-    public var listWrapIndent: Bool = true
+final class LayoutEngine {
+    static let minimumWrapColumn = 10
+    var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
+    var listWrapIndent: Bool = true
 
     private struct LineCacheKey: Hashable {
         let line: String
@@ -101,14 +101,14 @@ public final class LayoutEngine {
 
     private var lineCache: [LineCacheKey: [CachedVirtualChunk]] = [:]
     private let cacheLock = NSLock()
-    public private(set) var lineCacheHitCount: Int = 0
+    private(set) var lineCacheHitCount: Int = 0
 
-    public init(wrapColumn: Int? = nil, listWrapIndent: Bool = true) {
+    init(wrapColumn: Int? = nil, listWrapIndent: Bool = true) {
         self.wrapColumn = Self.normalizedWrapColumn(wrapColumn)
         self.listWrapIndent = listWrapIndent
     }
 
-    public static func calculateListHangingIndent(in line: String) -> Int {
+    static func calculateListHangingIndent(in line: String) -> Int {
         let leadingSpaces = line.prefix(while: { $0 == " " || $0 == "\t" }).count
         let trimmed = line.dropFirst(leadingSpaces)
         if trimmed.isEmpty { return 0 }
@@ -130,18 +130,18 @@ public final class LayoutEngine {
         return 0
     }
 
-    public static func normalizedWrapColumn(_ column: Int?) -> Int? {
+    static func normalizedWrapColumn(_ column: Int?) -> Int? {
         guard let column else { return nil }
         return max(minimumWrapColumn, column)
     }
 
-    public func setWrapColumn(_ column: Int?) {
+    func setWrapColumn(_ column: Int?) {
         wrapColumn = Self.normalizedWrapColumn(column)
         invalidateCache()
     }
 
     /// Invalidates the line layout cache.
-    public func invalidateCache() {
+    func invalidateCache() {
         cacheLock.lock()
         defer { cacheLock.unlock() }
         lineCache.removeAll()
@@ -153,7 +153,7 @@ public final class LayoutEngine {
     }
 
     /// Computes virtual display lines from raw buffer lines given available terminal view width, respecting word boundaries for Latin text.
-    public func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
+    func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
         let effectiveWrap = effectiveWrap(for: viewWidth)
         var virtualLines: [VirtualLine] = []
 
@@ -164,7 +164,7 @@ public final class LayoutEngine {
         return virtualLines
     }
 
-    public func computeVirtualViewport(
+    func computeVirtualViewport(
         from lines: [String],
         viewWidth: Int,
         topVirtualLineIndex: Int,
@@ -230,7 +230,7 @@ public final class LayoutEngine {
         )
     }
 
-    public func computeVirtualLine(at virtualLineIndex: Int, from lines: [String], viewWidth: Int) -> VirtualLine? {
+    func computeVirtualLine(at virtualLineIndex: Int, from lines: [String], viewWidth: Int) -> VirtualLine? {
         let effectiveWrap = effectiveWrap(for: viewWidth)
         let targetIndex = max(0, virtualLineIndex)
         var virtualIndex = 0
@@ -566,7 +566,7 @@ public final class LayoutEngine {
         }
     }
 
-    public func computeCanvasLines(from lines: [String]) -> [VirtualLine] {
+    func computeCanvasLines(from lines: [String]) -> [VirtualLine] {
         if lines.isEmpty {
             return [VirtualLine(bufferLineIndex: 0, subLineIndex: 0, text: "", startCol: 0, endCol: 0)]
         }
@@ -583,7 +583,7 @@ public final class LayoutEngine {
 
     /// Maps buffer real cursor position (lineIndex, columnIndex) to virtual
     /// line index and virtual column.
-    public func getVirtualCursor(
+    func getVirtualCursor(
         lineIndex: Int,
         columnIndex: Int,
         virtualLines: [VirtualLine]
@@ -627,7 +627,7 @@ public final class LayoutEngine {
 
     /// Maps virtual screen cursor position (vLineIndex, vColIndex) back to real
     /// buffer cursor (lineIndex, columnIndex).
-    public func getBufferCursor(
+    func getBufferCursor(
         vLineIndex: Int,
         vColIndex: Int,
         virtualLines: [VirtualLine]
