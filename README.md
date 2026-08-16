@@ -68,9 +68,10 @@ editing model changes.
     - [Windows / Developers](#windows--developers)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
   - [Table Mode](#table-mode)
-  - [Text Processing](#text-processing)
+  - [Text Processing in Text Mode](#text-processing-in-text-mode)
   - [IPC Mode to Interact with AI Agents](#ipc-mode-to-interact-with-ai-agents)
   - [Command Examples](#command-examples)
+  - [LOGO Environment](#logo-environment)
   - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
     - [1. Interactive Editor \& System `$EDITOR` Mode](#1-interactive-editor--system-editor-mode)
     - [2. Headless Scripting \& Unix Pipe Filter](#2-headless-scripting--unix-pipe-filter)
@@ -426,6 +427,9 @@ a break point. When the program stops on a break point, you can use
 commands like `logo continue`, `logo step`, `logo abort` and `logo eval`
 to control the debugger.
 
+To know the details of a LOGO primitive, just type `help-cmd` in the
+command bar. For example: `help-cmd BOX`.
+
 ## CLI Usage & Headless Scripting
 
 `zago` operates as an interactive TUI editor, a system `$EDITOR`, and a
@@ -443,9 +447,6 @@ zago notes.txt file2.txt --wrap 80 --ruler
 # Open file and jump directly to line 42, column 10
 zago +42:10 notes.txt
 
-# Pipe stdin stream directly into interactive TUI editor
-cat server.log | zago
-
 # Open files in read-only mode
 zago -R /var/log/syslog
 ```
@@ -461,7 +462,7 @@ directly to `stdout`:
 uptime | zago -e "box buffertext"
 
 # Execute inline LOGO code and print output
-zago -e "BOX 20 4; MOVE DOWN MOVE RIGHT; FILL \"Hello World\""
+zago -e "BOX 20 4 GOTO 2 2 INSET \"Hello World\""
 
 # Process input file with a LOGO script and redirect output
 cat data.txt | zago -s format_report.logo > diagram.txt
