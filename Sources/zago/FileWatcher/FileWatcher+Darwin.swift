@@ -7,8 +7,13 @@ import Foundation
     final class DarwinFileWatcher: PlatformFileWatcher, @unchecked Sendable {
         var onChange: (() -> Void)? = nil
 
+        private struct FileSignature: Equatable {
+            let modificationDate: Date?
+            let fileSize: UInt64?
+        }
+
         private var watchedPath: String? = nil
-        private var lastModificationDate: Date? = nil
+        private var lastSignature: FileSignature? = nil
         private var timerSource: (any DispatchSourceTimer)? = nil
         private let queue = DispatchQueue(label: "com.se.filewatcher.darwin", qos: .utility)
 
@@ -41,12 +46,12 @@ import Foundation
             }
             fileDescriptor = -1
             watchedPath = nil
-            lastModificationDate = nil
+            lastSignature = nil
         }
 
         func recordCurrentModificationDate() {
             guard let path = watchedPath else { return }
-            lastModificationDate = getModificationDate(for: path)
+            lastSignature = getSignature(for: path)
         }
 
         private func startWatchingExistingFile(at path: String) {
@@ -56,7 +61,7 @@ import Foundation
                 return
             }
 
-            lastModificationDate = getModificationDate(for: path)
+            lastSignature = getSignature(for: path)
 
             let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
             let src = DispatchSource.makeFileSystemObjectSource(
@@ -72,9 +77,7 @@ import Foundation
                 if events.contains(.delete) || events.contains(.rename) {
                     self.reopenWatchedFile(at: path)
                 } else {
-                    let currentMTime = self.getModificationDate(for: path)
-                    self.lastModificationDate = currentMTime
-                    self.notifyChange()
+                    self.notifyIfChanged(at: path)
                 }
             }
 
@@ -98,9 +101,7 @@ import Foundation
             queue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                 guard let self, self.watchedPath == path else { return }
                 if FileManager.default.fileExists(atPath: path) {
-                    let currentMTime = self.getModificationDate(for: path)
-                    self.lastModificationDate = currentMTime
-                    self.notifyChange()
+                    self.notifyIfChanged(at: path)
                     self.startWatchingExistingFile(at: path)
                 } else {
                     self.startTimerFallback(for: path)
@@ -113,7 +114,7 @@ import Foundation
                 timer.cancel()
                 timerSource = nil
             }
-            lastModificationDate = getModificationDate(for: path)
+            lastSignature = getSignature(for: path)
 
             let timer = DispatchSource.makeTimerSource(queue: queue)
             timer.schedule(deadline: .now() + 0.5, repeating: 0.5)
@@ -123,16 +124,14 @@ import Foundation
                 if FileManager.default.fileExists(atPath: path) {
                     timer.cancel()
                     self.timerSource = nil
-                    let currentMTime = self.getModificationDate(for: path)
-                    self.lastModificationDate = currentMTime
-                    self.notifyChange()
+                    self.notifyIfChanged(at: path)
                     self.startWatchingExistingFile(at: path)
                     return
                 }
 
-                let currentMTime = self.getModificationDate(for: p)
-                if currentMTime != self.lastModificationDate {
-                    self.lastModificationDate = currentMTime
+                let currentSignature = self.getSignature(for: p)
+                if currentSignature != self.lastSignature {
+                    self.lastSignature = currentSignature
                     self.notifyChange()
                 }
             }
@@ -144,9 +143,19 @@ import Foundation
             onChange?()
         }
 
-        private func getModificationDate(for path: String) -> Date? {
+        private func notifyIfChanged(at path: String) {
+            let currentSignature = getSignature(for: path)
+            guard currentSignature != lastSignature else { return }
+            lastSignature = currentSignature
+            notifyChange()
+        }
+
+        private func getSignature(for path: String) -> FileSignature {
             let attrs = try? FileManager.default.attributesOfItem(atPath: path)
-            return attrs?[.modificationDate] as? Date
+            return FileSignature(
+                modificationDate: attrs?[.modificationDate] as? Date,
+                fileSize: (attrs?[.size] as? NSNumber)?.uint64Value
+            )
         }
 
         deinit {
