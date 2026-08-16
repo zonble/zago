@@ -130,96 +130,100 @@ public enum LogoMeasurementConverter {
         locale localeStr: String? = nil,
         naturalScale: Bool = false
     ) -> String? {
-        let cleanUnit = normalizeUnitKey(unitStr)
-        let formatter = MeasurementFormatter()
-        if naturalScale {
-            formatter.unitOptions = .naturalScale
-        } else {
-            formatter.unitOptions = .providedUnit
-        }
+        #if os(Linux) || os(Windows)
+            return nil
+        #else
+            let cleanUnit = normalizeUnitKey(unitStr)
+            let formatter = MeasurementFormatter()
+            if naturalScale {
+                formatter.unitOptions = .naturalScale
+            } else {
+                formatter.unitOptions = .providedUnit
+            }
 
-        let unitStyle = (styleStr?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
-        switch unitStyle {
-        case "short":
-            formatter.unitStyle = .short
-        case "long":
-            formatter.unitStyle = .long
-        default:
-            formatter.unitStyle = .medium
-        }
+            let unitStyle = (styleStr?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
+            switch unitStyle {
+            case "short":
+                formatter.unitStyle = .short
+            case "long":
+                formatter.unitStyle = .long
+            default:
+                formatter.unitStyle = .medium
+            }
 
-        if let loc = localeStr?.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")), !loc.isEmpty {
-            formatter.locale = Locale(identifier: loc)
-        }
+            if let loc = localeStr?.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")), !loc.isEmpty {
+                formatter.locale = Locale(identifier: loc)
+            }
 
-        switch kind {
-        case .area:
-            guard let unit = areaUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .length:
-            guard let unit = lengthUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .volume:
-            guard let unit = volumeUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .angle:
-            guard let unit = angleUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .mass:
-            guard let unit = massUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .pressure:
-            guard let unit = pressureUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .acceleration:
-            guard let unit = accelerationUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .duration:
-            guard let unit = durationUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .frequency:
-            guard let unit = frequencyUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .speed:
-            guard let unit = speedUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .energy:
-            guard let unit = energyUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .power:
-            guard let unit = powerUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .temperature:
-            guard let unit = temperatureUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .illuminance:
-            guard let unit = illuminanceUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .electricCharge:
-            guard let unit = electricChargeUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .electricCurrent:
-            guard let unit = electricCurrentUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .electricPotentialDifference:
-            guard let unit = electricPotentialDifferenceUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .electricResistance:
-            guard let unit = electricResistanceUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .concentrationMass:
-            guard let unit = concentrationMassUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .dispersion:
-            guard let unit = dispersionUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .fuelEfficiency:
-            guard let unit = fuelEfficiencyUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        case .informationStorage:
-            guard let unit = informationStorageUnits[cleanUnit] else { return nil }
-            return formatter.string(from: Measurement(value: value, unit: unit))
-        }
+            switch kind {
+            case .area:
+                guard let unit = areaUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .length:
+                guard let unit = lengthUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .volume:
+                guard let unit = volumeUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .angle:
+                guard let unit = angleUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .mass:
+                guard let unit = massUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .pressure:
+                guard let unit = pressureUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .acceleration:
+                guard let unit = accelerationUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .duration:
+                guard let unit = durationUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .frequency:
+                guard let unit = frequencyUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .speed:
+                guard let unit = speedUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .energy:
+                guard let unit = energyUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .power:
+                guard let unit = powerUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .temperature:
+                guard let unit = temperatureUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .illuminance:
+                guard let unit = illuminanceUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .electricCharge:
+                guard let unit = electricChargeUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .electricCurrent:
+                guard let unit = electricCurrentUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .electricPotentialDifference:
+                guard let unit = electricPotentialDifferenceUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .electricResistance:
+                guard let unit = electricResistanceUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .concentrationMass:
+                guard let unit = concentrationMassUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .dispersion:
+                guard let unit = dispersionUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .fuelEfficiency:
+                guard let unit = fuelEfficiencyUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            case .informationStorage:
+                guard let unit = informationStorageUnits[cleanUnit] else { return nil }
+                return formatter.string(from: Measurement(value: value, unit: unit))
+            }
+        #endif
     }
 
     public static func formatResult(_ value: Double) -> String {
