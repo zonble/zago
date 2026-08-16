@@ -304,6 +304,58 @@ extension LogoEngine {
                             leftVal = ""
                         }
 
+                    case .formatArea, .formatLength, .formatVolume, .formatAngle, .formatMass,
+                        .formatPressure, .formatAcceleration, .formatDuration, .formatFrequency,
+                        .formatSpeed, .formatEnergy, .formatPower, .formatTemperature, .formatIlluminance,
+                        .formatElectricCharge, .formatElectricCurrent, .formatElectricPotentialDifference,
+                        .formatElectricResistance, .formatConcentrationMass, .formatDispersion,
+                        .formatFuelEfficiency, .formatInformationStorage:
+                        let cleanArgs = args.map { unquote($0) }
+                        guard cleanArgs.count >= 2, let val = Double(cleanArgs[0]) else {
+                            leftVal = ""
+                            break
+                        }
+                        let unitStr = cleanArgs[1]
+                        let style = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        let locale = cleanArgs.count > 3 ? cleanArgs[3] : nil
+                        let naturalScale = cleanArgs.count > 4 ? (cleanArgs[4].lowercased() == "true" || cleanArgs[4] == "1" || cleanArgs[4].lowercased() == "yes") : false
+
+                        let kind: LogoMeasurementConverter.DimensionKind
+                        switch variadicPrim {
+                        case .formatArea: kind = .area
+                        case .formatLength: kind = .length
+                        case .formatVolume: kind = .volume
+                        case .formatAngle: kind = .angle
+                        case .formatMass: kind = .mass
+                        case .formatPressure: kind = .pressure
+                        case .formatAcceleration: kind = .acceleration
+                        case .formatDuration: kind = .duration
+                        case .formatFrequency: kind = .frequency
+                        case .formatSpeed: kind = .speed
+                        case .formatEnergy: kind = .energy
+                        case .formatPower: kind = .power
+                        case .formatTemperature: kind = .temperature
+                        case .formatIlluminance: kind = .illuminance
+                        case .formatElectricCharge: kind = .electricCharge
+                        case .formatElectricCurrent: kind = .electricCurrent
+                        case .formatElectricPotentialDifference: kind = .electricPotentialDifference
+                        case .formatElectricResistance: kind = .electricResistance
+                        case .formatConcentrationMass: kind = .concentrationMass
+                        case .formatDispersion: kind = .dispersion
+                        case .formatFuelEfficiency: kind = .fuelEfficiency
+                        case .formatInformationStorage: kind = .informationStorage
+                        default: kind = .length
+                        }
+
+                        if let formatted = LogoMeasurementConverter.format(
+                            value: val, unit: unitStr, kind: kind, style: style, locale: locale, naturalScale: naturalScale)
+                        {
+                            leftVal = formatted
+                            setLastExpressionString(leftVal)
+                        } else {
+                            leftVal = ""
+                        }
+
                     default:
                         leftVal = ""
                         setLastExpressionString(leftVal)

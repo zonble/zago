@@ -131,4 +131,26 @@ struct LogoMeasurementTests {
     @Test func testParenthesizedConvert() throws {
         #expect(eval("(CONVERT.LENGTH 100 \"m \"cm)") == "10000")
     }
+
+    @Test func testFormatLength() throws {
+        let res1 = eval("FORMAT.LENGTH 100 \"m")
+        #expect(!res1.isEmpty)
+        let res2 = eval("FORMAT.LENGTH 1500 \"m \"long \"zh_TW \"true")
+        #expect(res2.contains("公里") || res2.contains("1.5"))
+    }
+
+    @Test func testFormatTemperature() throws {
+        let res = eval("FORMAT.TEMPERATURE 25 \"c \"short")
+        #expect(res.contains("25") && (res.contains("°C") || res.contains("C") || res.contains("deg")))
+    }
+
+    @Test func testFormatStorage() throws {
+        let res = eval("FORMAT.STORAGE 16 \"gb")
+        #expect(res.contains("16") && (res.contains("GB") || res.contains("gb") || res.contains("gigabytes")))
+    }
+
+    @Test func testParenthesizedFormat() throws {
+        let res = eval("(FORMAT.SPEED 100 \"kmh \"short)")
+        #expect(!res.isEmpty)
+    }
 }
