@@ -357,50 +357,66 @@ extension LogoEngine {
 
         case .to:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let rawName = reader.nextRawToken() {
-                let procName = rawName.uppercased()
-                if isReservedProcedureName(procName) {
-                    let errorMessage = "[LOGO Error: \(procName) is a reserved word/operator and cannot be redefined]"
-                    reportError(LogoError(code: 1, message: errorMessage), token: procName)
-                    while let token = reader.peekToken(), token.uppercased() != "END" {
-                        _ = reader.nextRawToken()
-                    }
-                    reader.commit(to: &index)
-                    return true
-                }
-                var params: [String] = []
-                while let token = reader.peekToken(), token.hasPrefix(":") {
-                    let paramName = String(token.dropFirst()).lowercased()
-                    if params.contains(paramName) {
-                        break
-                    }
-                    params.append(paramName)
-                    _ = reader.nextRawToken()
-                }
-                var docstring: String? = nil
-                if let token = reader.peekToken(), token.hasPrefix("\"") || token.hasPrefix("'"),
-                    reader.peekToken(offset: 2)?.uppercased() != "END"
-                {
-                    docstring = unquote(token)
-                    _ = reader.nextRawToken()
-                }
-                var procSourceTokens: [LogoToken] = []
-                let hasRootSourceTokens = tokens.count == rootSourceTokens.count
+            guard let rawName = reader.nextRawToken() else {
+                let errorMessage = "[LOGO Error: TO requires a procedure name]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "TO")
+                reader.commit(to: &index)
+                return true
+            }
+
+            let procName = rawName.uppercased()
+            if !isValidProcedureName(rawName) {
+                let errorMessage = "[LOGO Error: invalid procedure name: \(rawName)]"
+                reportError(LogoError(code: 1, message: errorMessage), token: rawName)
                 while let token = reader.peekToken(), token.uppercased() != "END" {
                     _ = reader.nextRawToken()
-                    if hasRootSourceTokens {
-                        procSourceTokens.append(rootSourceTokens[reader.position])
-                    } else {
-                        procSourceTokens.append(LogoToken(text: token, sourceRange: 0..<0))
-                    }
                 }
-                customProcedures[procName] = LogoProcedure(
-                    name: procName,
-                    parameters: params,
-                    docstring: docstring,
-                    bodyTokens: procSourceTokens
-                )
+                reader.commit(to: &index)
+                return true
             }
+
+            if isReservedProcedureName(procName) {
+                let errorMessage = "[LOGO Error: \(procName) is a reserved word/operator and cannot be redefined]"
+                reportError(LogoError(code: 1, message: errorMessage), token: procName)
+                while let token = reader.peekToken(), token.uppercased() != "END" {
+                    _ = reader.nextRawToken()
+                }
+                reader.commit(to: &index)
+                return true
+            }
+
+            var params: [String] = []
+            while let token = reader.peekToken(), token.hasPrefix(":") {
+                let paramName = String(token.dropFirst()).lowercased()
+                if params.contains(paramName) {
+                    break
+                }
+                params.append(paramName)
+                _ = reader.nextRawToken()
+            }
+            var docstring: String? = nil
+            if let token = reader.peekToken(), token.hasPrefix("\"") || token.hasPrefix("'"),
+                reader.peekToken(offset: 2)?.uppercased() != "END"
+            {
+                docstring = unquote(token)
+                _ = reader.nextRawToken()
+            }
+            var procSourceTokens: [LogoToken] = []
+            let hasRootSourceTokens = tokens.count == rootSourceTokens.count
+            while let token = reader.peekToken(), token.uppercased() != "END" {
+                _ = reader.nextRawToken()
+                if hasRootSourceTokens {
+                    procSourceTokens.append(rootSourceTokens[reader.position])
+                } else {
+                    procSourceTokens.append(LogoToken(text: token, sourceRange: 0..<0))
+                }
+            }
+            customProcedures[procName] = LogoProcedure(
+                name: procName,
+                parameters: params,
+                docstring: docstring,
+                bodyTokens: procSourceTokens
+            )
             reader.commit(to: &index)
             return true
 
