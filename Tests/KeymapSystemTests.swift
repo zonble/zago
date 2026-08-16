@@ -496,7 +496,7 @@ import Foundation
         editor.apply(.keymap(.modern))
         editor.processKey(.ctrl("h"))
         if case .replaceSearch = editor.currentPromptMode {
-            #expect(true)
+            #expect(Bool(true))
         } else {
             #expect(Bool(false), "Expected currentPromptMode to be .replaceSearch")
         }
