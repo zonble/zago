@@ -13,6 +13,73 @@ This document is divided into two main parts:
 1. **The Step-by-Step Guide**: From basic box diagramming to optional automation like variables, loops, and procedures.
 2. **The Complete Command Reference**: An exhaustive dictionary of all commands, math operations, data structures, and buffer settings.
 
+- [Editor LOGO Diagramming \& Editing Commands: Guide \& Reference](#editor-logo-diagramming--editing-commands-guide--reference)
+  - [🚀 Keybindings \& Triggering](#-keybindings--triggering)
+  - [Command Prompt Dispatch](#command-prompt-dispatch)
+- [📚 PART 1: Quick Start \& Essential Diagramming Guide](#-part-1-quick-start--essential-diagramming-guide)
+    - [How Editor LOGO Differs from Turtle Graphics](#how-editor-logo-differs-from-turtle-graphics)
+    - [Step 1: Drawing Framed Boxes (`BOX` and `DRAWBOX`)](#step-1-drawing-framed-boxes-box-and-drawbox)
+      - [`BOX` (Line-Oriented Frame)](#box-line-oriented-frame)
+      - [`DRAWBOX` (Canvas Overlay Frame)](#drawbox-canvas-overlay-frame)
+      - [Supported Alignments \& Styles](#supported-alignments--styles)
+    - [Step 2: Connector Lines \& Arrow Snapping (`LINE` and `VLINE`)](#step-2-connector-lines--arrow-snapping-line-and-vline)
+      - [Auto-Connect Mode (No Length Specified)](#auto-connect-mode-no-length-specified)
+      - [Arrow Modifiers \& Styles](#arrow-modifiers--styles)
+    - [Cursor Movement Rules for Drawing Primitives](#cursor-movement-rules-for-drawing-primitives)
+      - [Box Exit Position Modifiers (`AT:NE`, `AT:SE`, `AT:NW`, `AT:SW`, `AT:DOWN`)](#box-exit-position-modifiers-atne-atse-atnw-atsw-atdown)
+      - [Example Flow](#example-flow)
+    - [Step 3: Creating Grid Tables (`TABLE`)](#step-3-creating-grid-tables-table)
+    - [Step 4: Text Output \& Interactive Input (`TYPE`, `SHOW`, `READWORD`, `READCHAR`)](#step-4-text-output--interactive-input-type-show-readword-readchar)
+- [🎓 PART 2: Growing from Diagramming into Automation](#-part-2-growing-from-diagramming-into-automation)
+    - [1. Variables (`MAKE` and `:var`)](#1-variables-make-and-var)
+      - [Built-in System Metadata \& Environment Variables](#built-in-system-metadata--environment-variables)
+        - [1. System Metadata Variables](#1-system-metadata-variables)
+        - [2. Loop \& Iterator Variables](#2-loop--iterator-variables)
+        - [3. Editor State Reporters \& Environment Variables](#3-editor-state-reporters--environment-variables)
+    - [2. Loops (`REPEAT`, `WHILE`, `:#`, `:repcount`, `FOREACH`, `ISEQ`)](#2-loops-repeat-while--repcount-foreach-iseq)
+      - [`REPEAT`](#repeat)
+      - [`WHILE`](#while)
+      - [`FOREACH` and `ISEQ` (`RANGE`)](#foreach-and-iseq-range)
+    - [3. Conditionals (`IF` and `IFELSE`)](#3-conditionals-if-and-ifelse)
+    - [4. Custom Procedures (`TO ... END`)](#4-custom-procedures-to--end)
+      - [Single-Expression Procedures (Implicit Return) ✨](#single-expression-procedures-implicit-return-)
+      - [Multi-Statement Reporter Procedures (`OUTPUT` or `OP`)](#multi-statement-reporter-procedures-output-or-op)
+      - [Procedure Docstrings \& Documentation (`DOC`) 📖](#procedure-docstrings--documentation-doc-)
+    - [5. Pen Mode \& Turtle Graphics (`PD`, `PU`, `FD`, `BK`, `RT`, `LT`)](#5-pen-mode--turtle-graphics-pd-pu-fd-bk-rt-lt)
+- [📖 PART 3: Complete Command Reference \& Dictionary](#-part-3-complete-command-reference--dictionary)
+    - [Comments](#comments)
+    - [1. Text Insertion, Deletion \& Line Formatting](#1-text-insertion-deletion--line-formatting)
+    - [2. Cursor Navigation, Selection \& Canvas Positioning](#2-cursor-navigation-selection--canvas-positioning)
+    - [3. Classical Turtle Graphics \& ASCII Diagram Pen Mode](#3-classical-turtle-graphics--ascii-diagram-pen-mode)
+    - [4. Data Structures: Lists, Arrays, Words \& Sorting](#4-data-structures-lists-arrays-words--sorting)
+      - [Words / Strings](#words--strings)
+      - [Numbers](#numbers)
+      - [Lists](#lists)
+      - [Arrays](#arrays)
+      - [Differences Between Lists and Arrays](#differences-between-lists-and-arrays)
+    - [4.1 List Element Quoting \& Escaping Rules (UCBLogo Vertical Bar `|...|` Syntax)](#41-list-element-quoting--escaping-rules-ucblogo-vertical-bar--syntax)
+      - [1. Quoting Trigger Conditions](#1-quoting-trigger-conditions)
+      - [2. Escaping Rules Inside `|...|`](#2-escaping-rules-inside-)
+      - [3. Canonical Examples](#3-canonical-examples)
+      - [4. Practical Usage in Unix Pipe Workflows](#4-practical-usage-in-unix-pipe-workflows)
+    - [5. Predicates \& Type Checking](#5-predicates--type-checking)
+    - [6. Logical, Math \& Bitwise Operations](#6-logical-math--bitwise-operations)
+    - [7. Conditionals, Loops \& Higher-Order Functions](#7-conditionals-loops--higher-order-functions)
+    - [8. Multi-Buffer \& Buffer Operations](#8-multi-buffer--buffer-operations)
+    - [9. Editor Settings](#9-editor-settings)
+    - [10. Table Mode Safety](#10-table-mode-safety)
+  - [⚙️ `.zagorc` Integration](#️-zagorc-integration)
+  - [💡 Practical Real-World Macro Examples](#-practical-real-world-macro-examples)
+    - [1. Iterating and Transforming Data (`FOREACH`, `MAP`, `REDUCE`, `SORT`)](#1-iterating-and-transforming-data-foreach-map-reduce-sort)
+    - [2. Variable Date Assignment \& Foundation Date Formatting (`DATE`, `TIME`, `DATETIME` \& `BOX`)](#2-variable-date-assignment--foundation-date-formatting-date-time-datetime--box)
+      - [Calling Forms](#calling-forms)
+      - [Box Framing Example](#box-framing-example)
+    - [3. Multi-Column Layout Generator (`VLINE` \& `GOTO`)](#3-multi-column-layout-generator-vline--goto)
+    - [4. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)](#4-classical-turtle-graphics-square-box-fd-rt-pd)
+    - [5. Loop Drawing: Christmas Tree](#5-loop-drawing-christmas-tree)
+  - [🧪 Atomic Undo (`^Z`) Guarantee](#-atomic-undo-z-guarantee)
+  - [📜 History \& Origins of Editor LOGO](#-history--origins-of-editor-logo)
+
 ---
 
 ## 🚀 Keybindings & Triggering
@@ -170,10 +237,18 @@ Supported text alignments:
 Supported border styles:
 
 - `single`: `┌ ┐ └ ┘ ─ │`
+- `heavy`: `┏ ┓ ┗ ┛ ━ ┃`
 - `double`: `╔ ╗ ╚ ╝ ═ ║`
 - `round` / `rounded`: `╭ ╮ ╰ ╯ ─ │`
-- `double-round`: rounded corners with double horizontal/vertical strokes
+- `double-round`: `╭ ╮ ╰ ╯ ═ ║` (rounded corners with double horizontal/vertical strokes)
 - `ascii`: `+ - |`
+- `ascii-round`: `( ) + - |`
+- `triple-dash`: `┌ ┐ └ ┘ ┄ ┆` (triple dash light borders)
+- `heavy-triple-dash`: `┏ ┓ ┗ ┛ ┅ ┇` (triple dash heavy borders)
+- `quadruple-dash`: `┌ ┐ └ ┘ ┈ ┊` (quadruple dash light borders)
+- `heavy-quadruple-dash`: `┏ ┓ ┗ ┛ ┉ ┋` (quadruple dash heavy borders)
+- `double-dash`: `┌ ┐ └ ┘ ╌ ╎` (double dash light borders)
+- `heavy-double-dash`: `┏ ┓ ┗ ┛ ╍ ╏` (double dash heavy borders)
 
 ---
 
@@ -186,6 +261,7 @@ LINE 20
 VLINE 5
 LINE 30 DOUBLE
 VLINE 4 ASCII
+LINE 15 "triple-dash "arrow "stemmed
 ```
 
 Explicit `LINE` lengths are clamped to `1...200`, and explicit `VLINE` heights
@@ -198,7 +274,7 @@ When no length or height is specified (e.g., `LINE`, `VLINE`, `LINE ARROW`, `VLI
 
 - Scans forward through empty space.
 - **Without `ARROW`**: Scans until it reaches an existing box border or line, then fuses into a junction (e.g., `├`, `┬`, `┼`).
-- **With `ARROW`**: Scans until it reaches an existing box border, stops 1 cell before it, and places an arrowhead (`→` or `↓`) touching the border without altering the border.
+- **With `ARROW`**: Scans until it reaches an existing box border, stops 1 cell before it, and places an arrowhead touching the border without altering the border.
 
 Example: Connecting two boxes with `LINE ARROW`:
 
@@ -212,7 +288,9 @@ DRAWBOX 6 3 GOTO 2 1 LINE ARROW
 └──────┘        └──────┘
 ```
 
-Arrow modifiers:
+#### Arrow Modifiers & Styles
+
+Arrow direction modifiers:
 
 | Modifier | Horizontal | Vertical |
 | :--- | :--- | :--- |
@@ -225,6 +303,15 @@ Aliases:
 - `RIGHTARROW` / `DOWNARROW`: same as `ARROW`
 - `LEFTARROW` / `UPARROW`: same as `BACKARROW`
 - `BOTH` / `BIDIR`: same as `BOTHARROW`
+
+Arrow head styles:
+
+| Style | Right | Left | Down | Up |
+| :--- | :---: | :---: | :---: | :---: |
+| `solid` (default) | `▶` / `→` | `◀` / `←` | `▼` / `↓` | `▲` / `↑` |
+| `stemmed` | `->` | `<-` | `v` | `^` |
+| `hollow` | `▷` | `◁` | `▽` | `△` |
+| `small` | `▸` | `◂` | `▾` | `▴` |
 
 ---
 
@@ -254,7 +341,9 @@ All drawing commands start drawing at the **current cursor position** `(startLin
 *Note: Unquoted tokens like `SE` or `AT:SE` are parsed as exit positions. To draw a box containing the literal text "SE", quote it: `BOX 20 5 "SE"`.*
 
 #### Example Flow
+
 If cursor is at `(0, 0)`:
+
 1. `BOX 10 3 NE` draws a $10 \times 3$ box and leaves the cursor at `(0, 10)` (top-aligned for side-by-side placement).
 2. `BOX 10 3 AT:DOWN` draws a second box at `(0, 10)` and leaves the cursor at `(3, 10)` (below the box).
 
@@ -321,17 +410,20 @@ BOX :title CENTER ROUND
 Editor LOGO provides built-in system metadata and runtime state variables out of the box:
 
 ##### 1. System Metadata Variables
+
 - `:author`: Author signature (`"zonble"`).
 - `:version`: `zago` editor & engine version (e.g. `"1.3.1"`).
 - `:repository`: Project repository URL (`"https://github.com/zonble/zago"`).
 
 ##### 2. Loop & Iterator Variables
+
 - `:#` / `:repcount`: 1-based loop counter inside `REPEAT`, `FOREACH`, `MAP`, `FILTER`.
 - `:?` / `:?1`: Current item being processed inside functional templates (`MAP`, `FILTER`, `FOREACH`).
 - `:?2`, `:?3`, ...: Positional item values for multi-list iterations (e.g. `CROSSMAP`).
 - `:?rest`: Remaining unprocessed sublist inside `FOREACH` / `MAP`.
 
 ##### 3. Editor State Reporters & Environment Variables
+
 - `LINE` / `LINEINDEX` / `:line`: Current 1-based line number.
 - `COL` / `COLUMN` / `:col`: Current 1-based column number.
 - `LINES` / `LINECOUNT` / `:lines`: Total number of lines in current buffer.
@@ -540,19 +632,23 @@ TYPE "hello;world"
 | `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `READWORD` | `RW`, `READLINE`, `READ` | `READWORD [prompt]` | Reads a line of text input from user or stdin | `MAKE "name READWORD "Enter name: "` |
-| `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date with full Foundation locale, timezone, and calendar support (e.g. `DATE "full "zh_TW`, `DATE "GGGy年M月d日 "zh_TW "Asia/Taipei "roc`) | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
-| `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time with timezone and style presets (default: `HH:mm:ss`) | `TIME`, `TIME "medium "en_US "UTC` |
-| `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time | `DATETIME`, `DATETIME "iso8601` |
-| `FORMAT.DATE` | - | `FORMAT.DATE date [format] [locale] [tz] [cal]` | Formats any custom date (string, timestamp, `[Y M D]`, or plist) with Foundation options | `FORMAT.DATE [2026 12 25] "japanese` |
-| `FORMAT.NUMBER` | - | `FORMAT.NUMBER num [style] [locale] [curr]` | Formats numbers (spellout/Chinese words, financial uppercase 壹貳參, currency, percent, decimal, roman MMXXVI, ordinal) | `FORMAT.NUMBER 12345 "financial "zh_TW` |
+| `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date. `cal` accepts the supported calendar identifiers listed below. | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
+| `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time. `cal` accepts the supported calendar identifiers listed below. | `TIME`, `TIME "medium "en_US "UTC` |
+| `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time. `cal` accepts the supported calendar identifiers listed below. | `DATETIME`, `DATETIME "iso8601` |
+| `FORMAT.DATE` | - | `FORMAT.DATE date [format] [locale] [tz] [cal]` | Formats a custom date (string, timestamp, `[Y M D]`, or property list). `cal` accepts the supported calendar identifiers listed below. | `FORMAT.DATE [2026 12 25] "japanese` |
+| `FORMAT.NUMBER` | - | `FORMAT.NUMBER num [style] [locale] [currency]` | Formats numbers (spellout/Chinese words, financial uppercase 壹貳參, currency, percent, decimal, roman MMXXVI, ordinal). Use a property list for `precision`. | `FORMAT.NUMBER 1234.5 "currency "en_US "USD` |
 | `FORMAT.LIST` | - | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
 | `FORMAT.RELATIVETIME` | - | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
 | `FORMAT.BYTES` | - | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
+
+Calendar identifiers accepted by `DATE`, `TIME`, `DATETIME`, and `FORMAT.DATE` include `gregorian`/`western`, `roc`/`republicofchina`/`minguo`/`taiwan`, `japanese`/`japan`/`wareki`/`jp`, `buddhist`/`thai`, `chinese`/`lunar`, `islamic`/`islamiccivil`/`islamicrural`/`muslim`, `islamicummalqura`/`ummalqura`, `hebrew`/`jewish`, `persian`/`iran`, `indian`, `coptic`, `ethiopic`, and `ethiopicametemihret`.
+
+`FORMAT.LIST`, `FORMAT.RELATIVETIME`, and `DETECT.*` require the platform Foundation APIs that provide list formatting, relative date formatting, and text detection. On Linux and Windows, their keywords remain available for scripts and completion, but execution reports a platform-not-supported Logo error.
 | `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
 | `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
 | `NEWLINE` | `NL` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
-| `LINE` | - | `LINE [len] [style]` | Draws a horizontal line with smart junction fusion (`single`, `double`, `ascii`). Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"` |
-| `VLINE` | - | `VLINE [height] [style]` | Draws a vertical line with smart junction fusion (`single`, `double`, `ascii`). Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"` |
+| `LINE` | - | `LINE [len] [style] [arrow] [arrowStyle]` | Draws a horizontal line with smart junction fusion and arrow snapping. Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"`, `LINE ARROW STEMMED` |
+| `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line with smart junction fusion and arrow snapping. Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"`, `VLINE ARROW HOLLOW` |
 | `DEL` | `DELETE` | `DEL [n]` | Deletes $n$ characters forward | `DEL (2 + 3)` |
 | `BS` | `BACKSPACE` | `BS [n]` | Deletes $n$ characters backward | `BS 3` |
 | `DELETELINE` | `DELLINE`, `KILLLINE` | `DELETELINE [n]` | Deletes $n$ current lines | `DELETELINE` |
@@ -596,8 +692,11 @@ their own syntax and are not treated as general expressions.
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 (2 + 3) "round"` |
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
-| `LINE` | - | `LINE [length] [style] [arrow]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
-| `VLINE` | - | `VLINE [height] [style] [arrow]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
+| `LINE` | - | `LINE [length] [style] [arrow] [arrowStyle]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
+| `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
+| `TABLE` | - | `TABLE [rows] [cols] [cellWidth]` \| `TABLE BORDER style` \| `TABLE NEXTSTYLE` | Inserts a plain-text grid table at cursor or switches table border styles | `TABLE 3 3 12`, `TABLE BORDER "triple-dash`, `TABLE NEXTSTYLE` |
+| `INSET` | - | `INSET "text" [align] [style]` \| `INSET width height [style]` | Draws an inset box frame inside active selection or dimensions | `INSET 20 4 "double"` |
+| `FILL` | - | `FILL [width] [height] "pattern"` | Fills active canvas mark block, table cell, or specified rectangle with pattern text | `FILL "."`, `FILL 20 3 ".#"` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
@@ -739,8 +838,17 @@ TYPE ITEM 2 :cells
 | `TEXT` | `FULLTEXT` | `TEXT name` | Returns AST representation list of specified procedure | `TEXT "add` $\rightarrow$ `[[:a :b] [OUTPUT :a + :b]]` |
 | `DEFINE` | - | `DEFINE name specList` | Dynamically defines procedure from AST list structure | `DEFINE "add [[:a :b] [OUTPUT :a + :b]]` |
 | `ARITY` | - | `ARITY name` | Returns required parameter count of procedure | `ARITY "add` $\rightarrow$ `2` |
+| `DOC` | `DOCSTRING` | `DOC name` | Returns documentation string for primitive or procedure | `DOC "BOX`, `DOC "SUM` |
+| `SORT` | - | `SORT list [predicate]` | Sorts list in ascending order or using custom comparison predicate | `SORT [3 1 2]`, `SORT [?1 > ?2] [3 1 2]` |
 | `ERASE` | `ER` | `ERASE name` | Erases specified variable, procedure, or property list | `ERASE "x` |
+| `ERPS` | `ERASEPROCS` | `ERPS` | Erases all user-defined procedures | `ERPS` |
+| `ERNS` | `ERASENAMES` | `ERNS` | Erases all user-defined variables | `ERNS` |
 | `ERALL` | - | `ERALL` | Erases all variables, user procedures, and property lists | `ERALL` |
+| `DETECT.URL` | - | `DETECT.URL text` | Returns list of URLs found in text | `DETECT.URL "Visit https://google.com"` |
+| `DETECT.EMAIL` | - | `DETECT.EMAIL text` | Returns list of email addresses found in text | `DETECT.EMAIL "test@example.com"` |
+| `DETECT.PHONE` | - | `DETECT.PHONE text` | Returns list of phone numbers found in text | `DETECT.PHONE "Call +886-2-12345678"` |
+| `DETECT.DATE` | - | `DETECT.DATE text` | Returns list of date/time strings found in text | `DETECT.DATE "Due 2026-12-31"` |
+| `DETECT.ADDRESS` | - | `DETECT.ADDRESS text` | Returns list of street/postal addresses found in text | `DETECT.ADDRESS "100 台北市中正區..."` |
 | `COUNT` | - | `COUNT list\|array\|word` | Returns length count of items or characters | `COUNT [1 2 3]` |
 | `CHARCOUNT` | - | `CHARCOUNT text` | Counts Unicode grapheme characters in text | `CHARCOUNT "a👍中` |
 | `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK text` | Counts CJK scripts and CJK/fullwidth punctuation, excluding ASCII words and spaces | `CHARCOUNT.CJK "中文，API。` |
@@ -766,7 +874,7 @@ TYPE ITEM 2 :cells
 | `SUBSTRING` | `SUBSTR`, `SLICE` | `SUBSTRING string start [length]` | Extracts substring starting at 1-based `start` position | `SUBSTRING "Hello_World 1 5` |
 | `SEARCH` | - | `SEARCH haystack needle` | Searches string or list for occurrence of needle | `SEARCH "banana "an` |
 | `REPLACE` | `SUBSTITUTE` | `REPLACE old new string` | Replaces all occurrences of `old` with `new` in `string` | `REPLACE "foo "bar "foo_text` |
-| `TRIM` | `STRIP` | `TRIM string` | Removes leading and trailing whitespace from string | `TRIM "  hello  ` |
+| `TRIM` | `STRIP` | `TRIM string` | Removes leading and trailing whitespace from string | `TRIM "  hello` |
 | `REPEATSTR` | `STR_REPEAT` | `REPEATSTR count string` | Repeats string for `count` times | `REPEATSTR 5 "=` |
 | `IMPLODE` | `JOINSTR`, `JOIN_LIST` | `IMPLODE delimiter list` | Joins a list of values into a single string separated by `delimiter` | `IMPLODE ", " [apple banana]` |
 | `LINES` | `TO_LINES` | `LINES string` | Splits multiline string into a list of individual lines | `LINES :multilineText` |
@@ -793,11 +901,14 @@ TYPE ITEM 2 :cells
 In Editor LOGO, lists (`[ ... ]`) and arrays (`{ ... }`) store elements using space-separated Lisp-style S-expression syntax. When string elements contain whitespace or special delimiter characters, `zago` uses **UCBLogo-compliant Vertical Bar Quoting (`|...|`)** to preserve string boundaries without syntax errors.
 
 #### 1. Quoting Trigger Conditions
+
 A string element inside a LOGO list or array is automatically enclosed in `|...|` if it contains any of the following characters:
+
 - **Whitespace**: Space (` `), Tab (`\t`), Newline (`\n`).
 - **Delimiters & Quotes**: Double quotes (`"`), Brackets (`[` or `]`), Braces (`{` or `}`), Vertical Bar (`|`).
 
 #### 2. Escaping Rules Inside `|...|`
+
 - Backslashes `\` are escaped as `\\`.
 - Vertical bars `|` are escaped as `\|`.
 - Double quotes `"`, brackets `[]`, braces `{}`, and spaces remain **100% literal** without needing escape characters or breaking multi-word strings.
@@ -813,7 +924,9 @@ A string element inside a LOGO list or array is automatically enclosed in `|...|
 | `cat \| grep foo` | `|cat \| grep foo|` | `[|cat \| grep foo|]` | `"cat \| grep foo"` |
 
 #### 4. Practical Usage in Unix Pipe Workflows
+
 When piping multiline text through `LINES` and `FOREACH`, lines containing spaces, quotes, and Markdown syntax remain intact as single items:
+
 ```bash
 grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [ type ? nl ]'
 ```
@@ -886,23 +999,45 @@ grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [
 | `THING` | - | `THING name` | LOGO-compatible variable lookup; useful for dynamic names | `THING "width`, `THING :varname` |
 | `IF` | - | `IF cond [ block ]` | Executes block if condition is true | `IF :i > 5 [ TYPE "OK" ]` |
 | `IFELSE` | - | `IFELSE cond [ t_block ] [ f_block ]` | Branching if-else execution | `IFELSE :i == 2 [ TYPE "TWO" ] [ TYPE :i ]` |
+| `CASE` | - | `CASE val [ [val1 [block1]] ... [ELSE [default]] ]` | Multi-way branch matching on value | `CASE :x [ [1 [TYPE "one]] [2 [TYPE "two]] [ELSE [TYPE "other]]] ]` |
+| `COND` | - | `COND [ [cond1 [block1]] ... [ELSE [default]] ]` | Multi-way branch evaluating conditions in order | `COND [ [(:x > 0) [SHOW "pos]] [(:x < 0) [SHOW "neg]] [ELSE [SHOW "zero]] ]` |
 | `TEST` | - | `TEST cond` | Sets internal test flag for `IFTRUE`/`IFFALSE` | `TEST :i == 1` |
 | `IFTRUE` | `IFT` | `IFTRUE [ block ]` | Executes if preceding `TEST` was true | `IFT [ TYPE "Yes" ]` |
 | `IFFALSE` | `IFF` | `IFFALSE [ block ]` | Executes if preceding `TEST` was false | `IFF [ TYPE "No" ]` |
+| `ASSERT` | `EXPECT` | `ASSERT cond [message]` | Asserts condition; raises error if condition evaluates to false | `ASSERT (:x > 0) "Must be positive"` |
+| `LOCAL` | - | `LOCAL name` \| `LOCAL [name1 name2 ...]` | Declares local variable names in current procedure scope | `LOCAL "temp`, `LOCAL [a b c]` |
+| `PONS` | - | `PONS` | Prints out all defined variable names and values | `PONS` |
+| `POPS` | - | `POPS` | Prints out all user-defined procedure definitions | `POPS` |
+| `POVAS` | - | `POVAS` | Prints out all variables and procedure definitions | `POVAS` |
 | `REPEAT` | - | `REPEAT count [ block ]` | Loops enclosed code block $n$ times (built-in `:#` / `:repcount`) | `REPEAT 3 [ TYPE "! " ]` |
 | `FOR` | - | `FOR [var start end step] [ block ]` | For loop over range | `FOR [i 1 5 1] [ TYPE :i ]` |
 | `DOTIMES` | - | `DOTIMES [var count] [ block ]` | Loops counter from 0 to count-1 | `DOTIMES [i 5] [ TYPE :i ]` |
 | `WHILE` | - | `WHILE [ cond ] [ block ]` | Executes block while condition is true | `WHILE [ :i < 5 ] [ ... ]` |
+| `DO.WHILE` | - | `DO.WHILE [ block ] [ cond ]` | Executes block at least once while condition is true | `DO.WHILE [ MAKE "i :i + 1 ] [ :i < 5 ]` |
 | `UNTIL` | - | `UNTIL [ cond ] [ block ]` | Executes block until condition becomes true | `UNTIL [ :i >= 5 ] [ ... ]` |
+| `DO.UNTIL` | - | `DO.UNTIL [ block ] [ cond ]` | Executes block at least once until condition is true | `DO.UNTIL [ MAKE "i :i + 1 ] [ :i >= 5 ]` |
+| `CATCH` | - | `CATCH tag [ block ]` | Catches exceptions or early exits thrown with matching tag | `CATCH "err [ THROW "err "failed ]` |
+| `THROW` | - | `THROW tag [value]` | Throws an exception or unwinds stack to matching `CATCH` | `THROW "err "something_wrong` |
+| `ERROR` | - | `ERROR` | Returns last error code/message structure | `SHOW ERROR` |
 | `TO ... END` | - | `TO name ... END` | Defines custom reusable macro procedure | `TO HDR TYPE "# " END` |
 | `EXEC` | - | `EXEC proc_name` or `proc_name` | Executes custom procedure | `EXEC HDR` |
+| `APPLY` | - | `APPLY proc argList` | Invokes procedure or primitive with list of arguments | `APPLY "SUM [10 20]` $\rightarrow$ `30` |
+| `INVOKE` | - | `INVOKE proc arg1 ...` | Invokes procedure or primitive with specified arguments | `INVOKE "SUM 10 20` $\rightarrow$ `30` |
 | `FOREACH` | - | `FOREACH list [ template ]` | Iterates over list elements with template (`?`) | `FOREACH [1 2 3] [ TYPE ? ]` |
 | `MAP` | - | `MAP template list` | Maps list elements using template (`?` or `?1`) | `MAP [? * 2] [1 2 3]` $\rightarrow$ `[2 4 6]` |
+| `MAP.SE` | `MAPSE` | `MAP.SE template list` | Maps list elements and concatenates result sentences | `MAP.SE [LIST ? (? * 2)] [1 2]` $\rightarrow$ `[1 2 2 4]` |
 | `FILTER` | - | `FILTER template list` | Filters list elements matching template predicate | `FILTER [? > 2] [1 2 3 4]` $\rightarrow$ `[3 4]` |
+| `FIND` | - | `FIND template list` | Finds first item matching template predicate | `FIND [? > 2] [1 2 3 4]` $\rightarrow$ `3` |
 | `REDUCE` | - | `REDUCE template list` | Reduces list to single value using template (`?1`, `?2`) | `REDUCE [?1 + ?2] [1 2 3 4]` $\rightarrow$ `10` |
 | `CROSSMAP` | - | `CROSSMAP template lists` | Cartesian product map over multiple lists | `CROSSMAP [WORD ?1 ?2] [["a" "b"] ["1" "2"]]` |
+| `RUN` | - | `RUN [ block ]` | Evaluates and executes LOGO code block dynamically | `RUN [ TYPE "Hello ]` |
+| `RUNRESULT` | - | `RUNRESULT [ expr ]` | Evaluates expression and returns result wrapped in a list | `RUNRESULT [ 1 + 2 ]` $\rightarrow$ `[3]` |
+| `IGNORE` | - | `IGNORE expr` | Evaluates expression and discards its return value | `IGNORE SUM 1 2` |
+| `OUTPUT` | `OP`, `RETURN` | `OUTPUT expr` | Returns value from custom procedure | `OUTPUT :a + :b` |
 | `STOP` | - | `STOP` | Immediately exits active macro procedure or loop | `IF :err [ STOP ]` |
 | `WAIT` | - | `WAIT ms` | Pauses macro execution for specified milliseconds | `WAIT 500` |
+| `BYE` | - | `BYE` | Exits the interactive editor or program | `BYE` |
+| `READCHAR` | `RC`, `READKEY`, `RK` | `READCHAR` | Reads a single character/key from input | `MAKE "k READCHAR` |
 
 ---
 
@@ -1049,13 +1184,15 @@ SHOW :ordered
 
 `zago` features full Foundation-powered date and time formatting, supporting localized presets (`short`, `medium`, `long`, `full`, `iso8601`), custom Unicode patterns, custom Locales, TimeZones (IANA, abbreviations, numeric offsets), and Calendar systems (Gregorian, ROC/Minguo, Japanese/Wareki, Buddhist, Chinese Lunar, Islamic, Hebrew, etc.).
 
-#### Calling Forms:
+#### Calling Forms
+
 1. **Zero Arguments (Defaults)**:
    - `DATE` -> `"2026-08-15"`
    - `TIME` -> `"16:30:00"`
    - `DATETIME` -> `"2026-08-15 16:30:00"`
 
 2. **Positional Overloads**:
+
    ```logo
    ; Preset style + Locale
    SHOW (DATE "full "zh_TW)                   ; "2026年8月15日 星期六"
@@ -1069,6 +1206,7 @@ SHOW :ordered
    ```
 
 3. **Foundation Formatting Family (`FORMAT.xxx`)**:
+
    ```logo
    ; FORMAT.DATE (or DATEFORMAT)
    SHOW FORMAT.DATE [2026 12 25] "japanese                  ; "令和8年12月25日"
@@ -1097,6 +1235,7 @@ SHOW :ordered
    ```
 
 4. **Date Arithmetic & Differences (`DATE.ADD` & `DATE.DIFF`)**:
+
    ```logo
    ; Add / subtract time units
    MAKE "deadline DATE.ADD DATE 7 "days                     ; 7 days later
@@ -1108,13 +1247,15 @@ SHOW :ordered
    ```
 
 5. **Property List / Dictionary Format**:
+
    ```logo
    SHOW DATE [format "GGGy年M月d日" locale "zh_TW" tz "Asia/Taipei" calendar "roc"]
    SHOW DATE [format "iso8601" tz "UTC"]
-   SHOW FORMAT.NUMBER 1234.5 [style "currency" curr "USD" locale "en_US"]
+   SHOW FORMAT.NUMBER 1234.5 [style "currency" curr "USD" locale "en_US" precision 2]
    ```
 
-#### Box Framing Example:
+#### Box Framing Example
+
 ```logo
 MAKE "d (DATE "full "zh_TW)
 BOX :d "double"
