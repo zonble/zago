@@ -97,8 +97,9 @@ public enum LogoTokenizer {
                     index = script.index(after: index)
                     while index < script.endIndex {
                         current.append(script[index])
-                        if script[index] == "\"" { break }
+                        let ch = script[index]
                         index = script.index(after: index)
+                        if ch == "\"" { break }
                     }
                     flush()
                 } else {
@@ -108,7 +109,6 @@ public enum LogoTokenizer {
                         index = script.index(after: index)
                     }
                     flush()
-                    continue
                 }
             } else if character == "|" {
                 flush()
@@ -118,34 +118,38 @@ public enum LogoTokenizer {
                 while index < script.endIndex {
                     let inner = script[index]
                     current.append(inner)
+                    index = script.index(after: index)
                     if inner == "\\" && !escaped {
                         escaped = true
                     } else {
                         if inner == "|" && !escaped { break }
                         escaped = false
                     }
-                    index = script.index(after: index)
                 }
                 flush()
             } else if character == ";" {
                 flush()
                 index = script.index(after: index)
-                while index < script.endIndex && !script[index].isNewline { index = script.index(after: index) }
-                continue
+                while index < script.endIndex && !script[index].isNewline {
+                    index = script.index(after: index)
+                }
             } else if character == "-", current.isEmpty,
                 let next = script.index(index, offsetBy: 1, limitedBy: script.endIndex), next < script.endIndex,
                 script[next].isNumber
             {
                 current.append(character)
+                index = script.index(after: index)
             } else if delimiters.contains(character) {
                 flush()
                 tokens.append(String(character))
+                index = script.index(after: index)
             } else if character.isWhitespace {
                 flush()
+                index = script.index(after: index)
             } else {
                 current.append(character)
+                index = script.index(after: index)
             }
-            index = script.index(after: index)
         }
         flush()
         return tokenizeInfixOperators(tokens)

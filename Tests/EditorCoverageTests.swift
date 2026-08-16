@@ -690,4 +690,48 @@ private func makeEditor(
         #expect(tableEditor.runLogoScript("GOTO 1 1") == false)
         #expect(tableEditor.statusMessage == tableEditor.l10n.disabledInTableMode("GOTO"))
     }
+
+    @Test func testEvalNormalText() {
+        let editor = Editor(language: .en)
+        let text = "draw in it, execute parts of it, and decide what it should become."
+        editor.buffer.lines = [text]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        // Test 1: evalLogoCode on line
+        editor.evalLogoCode()
+
+        // Test 2: evalLogoCode on selection
+        editor.buffer.selectionMark = (line: 0, column: 0)
+        editor.buffer.columnIndex = text.count
+        editor.evalLogoCode()
+
+        // Test 3: direct execute on LogoEngine
+        editor.logoEngine.execute(text)
+
+        // Test 4: starting from 'execute'
+        editor.logoEngine.execute("execute parts of it, and decide what it should become.")
+
+        // Test 5: Markdown list with leading spaces
+        let linkText = "     - [Install on Windows (PowerShell)](#install-on-windows-powershell)"
+        editor.buffer.lines = [linkText]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.evalLogoCode()
+
+        // Test 6: Bracketed text starting with [
+        editor.logoEngine.execute("[Install on Windows (PowerShell)](#install-on-windows-powershell)")
+        editor.logoEngine.execute("- [Install on Windows (PowerShell)](#install-on-windows-powershell)")
+
+        // Test 7: Full README.md buffer with cursor at line with Install on Windows
+        if let readmeContent = try? String(contentsOfFile: "README.md", encoding: .utf8) {
+            let readmeEditor = Editor(language: .en)
+            readmeEditor.buffer.lines = readmeContent.components(separatedBy: .newlines)
+            if let lineIdx = readmeEditor.buffer.lines.firstIndex(where: { $0.contains("Install on Windows (PowerShell)") }) {
+                readmeEditor.buffer.lineIndex = lineIdx
+                readmeEditor.buffer.columnIndex = 5
+                readmeEditor.evalLogoCode()
+            }
+        }
+    }
 }

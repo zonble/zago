@@ -135,7 +135,7 @@ public struct TextBoxRenderer: Sendable {
                 prefix.append(character)
             } else {
                 firstOverlap = character
-                suffix = String(existingLine[existingLine.index(existingLine.startIndex, offsetBy: offset)...])
+                suffix = String(existingLine.dropFirst(offset))
                 break
             }
             currentWidth += width

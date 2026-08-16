@@ -162,15 +162,19 @@ class TextBuffer: SpellCheckableBuffer {
 
         if start.line == end.line {
             let line = lines[start.line]
-            let sIdx = line.index(line.startIndex, offsetBy: min(start.col, line.count))
-            let eIdx = line.index(line.startIndex, offsetBy: min(end.col, line.count))
+            let startCol = max(0, min(start.col, line.count))
+            let endCol = max(startCol, min(end.col, line.count))
+            let sIdx = line.index(line.startIndex, offsetBy: startCol)
+            let eIdx = line.index(line.startIndex, offsetBy: endCol)
             return String(line[sIdx..<eIdx])
         }
 
         let startLineStr = lines[start.line]
         let endLineStr = lines[end.line]
-        let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: min(start.col, startLineStr.count))
-        let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: min(end.col, endLineStr.count))
+        let startCol = max(0, min(start.col, startLineStr.count))
+        let endCol = max(0, min(end.col, endLineStr.count))
+        let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: startCol)
+        let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: endCol)
 
         var copiedLines: [String] = [String(startLineStr[sIdx...])]
         if start.line + 1 < end.line {
@@ -190,21 +194,26 @@ class TextBuffer: SpellCheckableBuffer {
 
         if start.line == end.line {
             var line = lines[start.line]
-            let sIdx = line.index(line.startIndex, offsetBy: min(start.col, line.count))
-            let eIdx = line.index(line.startIndex, offsetBy: min(end.col, line.count))
+            let startCol = max(0, min(start.col, line.count))
+            let endCol = max(startCol, min(end.col, line.count))
+            let sIdx = line.index(line.startIndex, offsetBy: startCol)
+            let eIdx = line.index(line.startIndex, offsetBy: endCol)
             let cutText = String(line[sIdx..<eIdx])
             line.removeSubrange(sIdx..<eIdx)
             lines[start.line] = line
             lineIndex = start.line
-            columnIndex = min(start.col, line.count)
+            columnIndex = startCol
             isModified = true
             return cutText
         } else {
             let startLineStr = lines[start.line]
             let endLineStr = lines[end.line]
 
-            let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: min(start.col, startLineStr.count))
-            let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: min(end.col, endLineStr.count))
+            let startCol = max(0, min(start.col, startLineStr.count))
+            let endCol = max(0, min(end.col, endLineStr.count))
+
+            let sIdx = startLineStr.index(startLineStr.startIndex, offsetBy: startCol)
+            let eIdx = endLineStr.index(endLineStr.startIndex, offsetBy: endCol)
 
             let firstLineCut = String(startLineStr[sIdx...])
             let lastLineCut = String(endLineStr[..<eIdx])
@@ -218,9 +227,12 @@ class TextBuffer: SpellCheckableBuffer {
             let remainingStart = String(startLineStr[..<sIdx])
             let remainingEnd = String(endLineStr[eIdx...])
 
-            lines.replaceSubrange(start.line...end.line, with: [remainingStart + remainingEnd])
+            lines[start.line] = remainingStart + remainingEnd
+            if start.line + 1 <= end.line {
+                lines.removeSubrange((start.line + 1)...end.line)
+            }
             lineIndex = start.line
-            columnIndex = min(start.col, remainingStart.count)
+            columnIndex = startCol
             isModified = true
             return cutLines.joined(separator: "\n")
         }
