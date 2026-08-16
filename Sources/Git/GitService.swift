@@ -4,6 +4,7 @@ public protocol GitServiceProtocol: Sendable {
     func detectRepository(for filePath: String?) -> GitRepositoryInfo?
     func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo
     func fetchDirectoryGitStatus(repoRoot: String) -> [String: String]
+    func repositoryStateChanged(for filePath: String?) -> Bool
 }
 
 /// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
@@ -12,8 +13,36 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
     private var repoRootCache: [String: String] = [:]
     private var branchCache: [String: String] = [:]
     private var headCache: [String: [String]] = [:]
+    private var repositoryStateCache: [String: RepositoryState] = [:]
+
+    private struct RepositoryState: Equatable {
+        let headModificationDate: Date?
+        let headFileSize: UInt64?
+        let refModificationDate: Date?
+        let refFileSize: UInt64?
+        let packedRefsModificationDate: Date?
+        let packedRefsFileSize: UInt64?
+    }
 
     public init() {}
+
+    /// Detects commits, branch switches, and other changes to the repository HEAD
+    /// without relying on the edited file's watcher notification.
+    public func repositoryStateChanged(for filePath: String?) -> Bool {
+        guard let repoInfo = detectRepository(for: filePath) else { return false }
+        let repoRoot = repoInfo.repoRootPath
+        let currentState = repositoryState(repoRoot: repoRoot)
+
+        guard let previousState = repositoryStateCache[repoRoot] else {
+            repositoryStateCache[repoRoot] = currentState
+            return false
+        }
+
+        guard previousState != currentState else { return false }
+        repositoryStateCache[repoRoot] = currentState
+        headCache.removeAll()
+        return true
+    }
 
     /// Detects if a file path or current working directory lives inside a Git repository and returns its metadata.
     public func detectRepository(for filePath: String?) -> GitRepositoryInfo? {
@@ -121,6 +150,7 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         repoRootCache.removeValue(forKey: dirPath)
         branchCache.removeAll()
         headCache.removeAll()
+        repositoryStateCache.removeAll()
     }
 
     // MARK: - Private Helpers
@@ -181,6 +211,41 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
             return nil
         }
         return Self.splitGitOutputLines(output)
+    }
+
+    private func repositoryState(repoRoot: String) -> RepositoryState {
+        let gitRoot = (repoRoot as NSString).appendingPathComponent(".git")
+        let headPath = (gitRoot as NSString).appendingPathComponent("HEAD")
+        let packedRefsPath = (gitRoot as NSString).appendingPathComponent("packed-refs")
+
+        var refPath: String?
+        if let headContent = try? String(contentsOfFile: headPath, encoding: .utf8) {
+            let head = headContent.trimmingCharacters(in: .whitespacesAndNewlines)
+            if head.hasPrefix("ref: ") {
+                let ref = String(head.dropFirst("ref: ".count))
+                refPath = (gitRoot as NSString).appendingPathComponent(ref)
+            }
+        }
+
+        let headAttributes = fileAttributes(at: headPath)
+        let refAttributes = refPath.flatMap(fileAttributes(at:))
+        let packedRefsAttributes = fileAttributes(at: packedRefsPath)
+        return RepositoryState(
+            headModificationDate: headAttributes.modificationDate,
+            headFileSize: headAttributes.fileSize,
+            refModificationDate: refAttributes?.modificationDate,
+            refFileSize: refAttributes?.fileSize,
+            packedRefsModificationDate: packedRefsAttributes.modificationDate,
+            packedRefsFileSize: packedRefsAttributes.fileSize
+        )
+    }
+
+    private func fileAttributes(at path: String) -> (modificationDate: Date?, fileSize: UInt64?) {
+        let attributes = try? FileManager.default.attributesOfItem(atPath: path)
+        return (
+            attributes?[.modificationDate] as? Date,
+            (attributes?[.size] as? NSNumber)?.uint64Value
+        )
     }
 
     /// Splits `git show` output the same way the editor buffer splits file contents.

@@ -55,6 +55,9 @@ public final class Editor: @unchecked Sendable {
     }
 
     func updateGitDiffIfNeeded() {
+        if !isGitDiffDirty && gitService.repositoryStateChanged(for: buffer.filePath) {
+            isGitDiffDirty = true
+        }
         guard isGitDiffDirty else { return }
         updateGitDiff()
     }
