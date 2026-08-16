@@ -537,48 +537,82 @@ class TextBuffer: SpellCheckableBuffer {
         case space
     }
 
-    /// Tokenizes paragraph text into wide characters, Latin words, and spaces.
-    private static func tokenizeForReflow(_ text: String) -> [VisualToken] {
-        var tokens: [VisualToken] = []
-        var currentLatin = ""
+    private struct ReflowToken {
+        let token: VisualToken
+        let sourceRange: Range<Int>
+    }
 
-        for ch in text {
+    /// Tokenizes paragraph text into wide characters, Latin words, and spaces with source ranges.
+    private static func tokenizeForReflow(_ text: String) -> [ReflowToken] {
+        var tokens: [ReflowToken] = []
+        var currentLatin = ""
+        var latinStart = 0
+
+        for (index, ch) in text.enumerated() {
             if ch.isWhitespace {
                 if !currentLatin.isEmpty {
-                    tokens.append(.latin(currentLatin))
+                    tokens.append(ReflowToken(token: .latin(currentLatin), sourceRange: latinStart..<index))
                     currentLatin = ""
                 }
-                if tokens.last != .space {
-                    tokens.append(.space)
+                if tokens.last?.token != .space {
+                    tokens.append(ReflowToken(token: .space, sourceRange: index..<(index + 1)))
                 }
             } else if ch.displayWidth >= 2 {
                 if !currentLatin.isEmpty {
-                    tokens.append(.latin(currentLatin))
+                    tokens.append(ReflowToken(token: .latin(currentLatin), sourceRange: latinStart..<index))
                     currentLatin = ""
                 }
-                tokens.append(.wide(ch))
+                tokens.append(ReflowToken(token: .wide(ch), sourceRange: index..<(index + 1)))
             } else {
+                if currentLatin.isEmpty {
+                    latinStart = index
+                }
                 currentLatin.append(ch)
             }
         }
 
         if !currentLatin.isEmpty {
-            tokens.append(.latin(currentLatin))
+            tokens.append(ReflowToken(token: .latin(currentLatin), sourceRange: latinStart..<text.count))
         }
 
-        if tokens.first == .space { tokens.removeFirst() }
-        if tokens.last == .space { tokens.removeLast() }
+        if tokens.first?.token == .space { tokens.removeFirst() }
+        if tokens.last?.token == .space { tokens.removeLast() }
 
         return tokens
     }
 
     /// Reflows visual tokens into lines bounded by targetWidth display columns.
-    private static func reflowVisualTokens(_ tokens: [VisualToken], targetWidth: Int) -> [String] {
+    private static func reflowVisualTokens(_ tokens: [ReflowToken], targetWidth: Int) -> [String] {
+        reflowVisualTokensWithCursor(tokens, targetWidth: targetWidth, cursorOffset: -1).lines
+    }
+
+    private static func reflowVisualTokensWithCursor(
+        _ tokens: [ReflowToken],
+        targetWidth: Int,
+        cursorOffset: Int
+    ) -> (lines: [String], relativeLine: Int, column: Int) {
         var resultLines: [String] = []
         var currentLine = ""
+        var targetLine: Int? = nil
+        var targetCol: Int? = nil
 
-        for token in tokens {
-            switch token {
+        for (i, reflowToken) in tokens.enumerated() {
+            let isTargetToken: Bool
+            if targetLine == nil && cursorOffset >= 0 {
+                if reflowToken.sourceRange.contains(cursorOffset) {
+                    isTargetToken = true
+                } else if cursorOffset == reflowToken.sourceRange.lowerBound {
+                    isTargetToken = true
+                } else if i == tokens.count - 1 && cursorOffset >= reflowToken.sourceRange.upperBound {
+                    isTargetToken = true
+                } else {
+                    isTargetToken = false
+                }
+            } else {
+                isTargetToken = false
+            }
+
+            switch reflowToken.token {
             case .wide(let ch):
                 let w = ch.displayWidth
                 if currentLine.displayWidth + w > targetWidth && !currentLine.isEmpty {
@@ -586,6 +620,12 @@ class TextBuffer: SpellCheckableBuffer {
                     currentLine = String(ch)
                 } else {
                     currentLine.append(ch)
+                }
+
+                if isTargetToken {
+                    targetLine = resultLines.count
+                    let offsetInToken = max(0, min(cursorOffset - reflowToken.sourceRange.lowerBound, 1))
+                    targetCol = currentLine.count - 1 + offsetInToken
                 }
 
             case .latin(let word):
@@ -608,7 +648,17 @@ class TextBuffer: SpellCheckableBuffer {
                     currentLine.append(word)
                 }
 
+                if isTargetToken {
+                    targetLine = resultLines.count
+                    let offsetInToken = max(0, min(cursorOffset - reflowToken.sourceRange.lowerBound, word.count))
+                    targetCol = (currentLine.count - word.count) + offsetInToken
+                }
+
             case .space:
+                if isTargetToken {
+                    targetLine = resultLines.count
+                    targetCol = currentLine.count
+                }
                 if !currentLine.isEmpty && !currentLine.hasSuffix(" ") {
                     if currentLine.displayWidth + 1 <= targetWidth {
                         currentLine.append(" ")
@@ -621,38 +671,69 @@ class TextBuffer: SpellCheckableBuffer {
             resultLines.append(currentLine.trimmingCharacters(in: .whitespaces))
         }
 
-        return resultLines.isEmpty ? [""] : resultLines
+        let finalLines = resultLines.isEmpty ? [""] : resultLines
+        let relLine = min(targetLine ?? (finalLines.count - 1), finalLines.count - 1)
+        let col = min(targetCol ?? finalLines[relLine].count, finalLines[relLine].count)
+
+        return (finalLines, relLine, col)
     }
 
     /// Joins lines of a paragraph into a single continuous text string, respecting CJK word boundaries.
     private static func joinParagraphLines(_ paragraphLines: [String]) -> String {
+        joinParagraphLinesWithCursor(paragraphLines, cursorLine: -1, cursorCol: -1).joined
+    }
+
+    private static func joinParagraphLinesWithCursor(
+        _ paragraphLines: [String],
+        cursorLine: Int,
+        cursorCol: Int
+    ) -> (joined: String, cursorOffset: Int) {
         var result = ""
-        for line in paragraphLines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty { continue }
+        var targetOffset: Int? = nil
+
+        for (i, line) in paragraphLines.enumerated() {
+            let col = i == cursorLine ? max(0, min(cursorCol, line.count)) : line.count
+            let leadingSpaces = line.prefix(while: { $0.isWhitespace }).count
+            let lineOffset = max(0, col - leadingSpaces)
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            if trimmedLine.isEmpty { continue }
+
             if result.isEmpty {
-                result = trimmed
-                continue
-            }
-            guard let lastChar = result.last, let firstChar = trimmed.first else {
-                result += trimmed
-                continue
-            }
-            if lastChar.displayWidth >= 2 && firstChar.displayWidth >= 2 {
-                result += trimmed
-            } else if lastChar.isWhitespace || firstChar.isWhitespace {
-                result += trimmed
+                if i == cursorLine {
+                    targetOffset = min(lineOffset, trimmedLine.count)
+                }
+                result = trimmedLine
             } else {
-                result += " " + trimmed
+                guard let lastChar = result.last, let firstChar = trimmedLine.first else {
+                    result += trimmedLine
+                    continue
+                }
+                let separator: String
+                if lastChar.displayWidth >= 2 && firstChar.displayWidth >= 2 {
+                    separator = ""
+                } else if lastChar.isWhitespace || firstChar.isWhitespace {
+                    separator = ""
+                } else {
+                    separator = " "
+                }
+                result += separator
+                if i == cursorLine && targetOffset == nil {
+                    targetOffset = result.count + min(lineOffset, trimmedLine.count)
+                }
+                result += trimmedLine
             }
         }
-        return result
+
+        return (result, targetOffset ?? result.count)
     }
 
     /// Justifies (reflows) the paragraph at current cursor position (^J) using visual column display widths.
     func justifyParagraph(targetWidth: Int = 72) {
         guard !lines.isEmpty else { return }
         clampCursor()
+
+        let origLineIndex = lineIndex
+        let origColumnIndex = columnIndex
 
         let currentLine = lines[lineIndex]
         if currentLine.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -693,30 +774,58 @@ class TextBuffer: SpellCheckableBuffer {
             let firstLine = lines[startLine]
             let body = String(firstLine.dropFirst(listInfo.itemPrefix.count))
             let continuationLines = endLine > startLine ? Array(lines[(startLine + 1)...endLine]) : []
-            let paragraphText = TextBuffer.joinParagraphLines([body] + continuationLines)
+            let relativeCursorLine = origLineIndex - startLine
+            let relativeCursorCol = relativeCursorLine == 0
+                ? max(0, origColumnIndex - listInfo.itemPrefix.count)
+                : origColumnIndex
+
+            let (paragraphText, cursorOffset) = TextBuffer.joinParagraphLinesWithCursor(
+                [body] + continuationLines,
+                cursorLine: relativeCursorLine,
+                cursorCol: relativeCursorCol
+            )
             let tokens = TextBuffer.tokenizeForReflow(paragraphText)
             let bodyWidth = max(1, targetWidth - listInfo.continuationPrefix.displayWidth)
-            let wrappedBody = TextBuffer.reflowVisualTokens(tokens, targetWidth: bodyWidth)
+            let (wrappedBody, relLine, bodyCol) = TextBuffer.reflowVisualTokensWithCursor(
+                tokens,
+                targetWidth: bodyWidth,
+                cursorOffset: cursorOffset
+            )
             let newParagraphLines = wrappedBody.enumerated().map { index, line in
                 (index == 0 ? listInfo.itemPrefix : listInfo.continuationPrefix) + line
             }
 
             lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
-            lineIndex = min(startLine, lines.count - 1)
-            columnIndex = 0
+
+            lineIndex = min(startLine + relLine, lines.count - 1)
+            clampCursor()
+            let prefix = relLine == 0 ? listInfo.itemPrefix : listInfo.continuationPrefix
+            columnIndex = min(prefix.count + bodyCol, lines[lineIndex].count)
             isModified = true
             return
         }
 
         // 2. Extract and reflow a regular paragraph using visual display width.
-        let paragraphText = TextBuffer.joinParagraphLines(Array(lines[startLine...endLine]))
+        let rawParagraphLines = Array(lines[startLine...endLine])
+        let relativeCursorLine = origLineIndex - startLine
+        let (paragraphText, cursorOffset) = TextBuffer.joinParagraphLinesWithCursor(
+            rawParagraphLines,
+            cursorLine: relativeCursorLine,
+            cursorCol: origColumnIndex
+        )
         let tokens = TextBuffer.tokenizeForReflow(paragraphText)
-        let newParagraphLines = TextBuffer.reflowVisualTokens(tokens, targetWidth: targetWidth)
+        let (newParagraphLines, relLine, col) = TextBuffer.reflowVisualTokensWithCursor(
+            tokens,
+            targetWidth: targetWidth,
+            cursorOffset: cursorOffset
+        )
 
         // 3. Replace original paragraph lines with reflowed lines.
         lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
-        lineIndex = min(startLine, lines.count - 1)
-        columnIndex = 0
+
+        lineIndex = min(startLine + relLine, lines.count - 1)
+        clampCursor()
+        columnIndex = min(col, lines[lineIndex].count)
         isModified = true
     }
 
