@@ -331,8 +331,10 @@ public enum LogoMeasurementConverter {
         reg(.terahertz, ["thz", "terahertz"])
         reg(.millihertz, ["millihertz"])
         reg(.microhertz, ["uhz", "microhertz"])
-        reg(.nanohertz, ["nhz", "nanohertz"])
-        reg(.framesPerSecond, ["fps", "framespersecond"])
+        reg(
+            UnitFrequency(symbol: "fps", converter: UnitConverterLinear(coefficient: 1.0)),
+            ["fps", "framespersecond"]
+        )
         return m
     }()
 
