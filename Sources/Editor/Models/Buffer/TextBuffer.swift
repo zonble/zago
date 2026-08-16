@@ -281,8 +281,13 @@ class TextBuffer: SpellCheckableBuffer {
 
     private struct ListPrefixInfo {
         let leadingWhitespace: String
+        let itemPrefix: String
         let nextPrefix: String
         let isEmptyItem: Bool
+
+        var continuationPrefix: String {
+            leadingWhitespace + String(repeating: " ", count: itemPrefix.count - leadingWhitespace.count)
+        }
     }
 
     private func parseListPrefix(_ text: String) -> ListPrefixInfo? {
@@ -296,6 +301,7 @@ class TextBuffer: SpellCheckableBuffer {
             let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             return ListPrefixInfo(
                 leadingWhitespace: leading,
+                itemPrefix: leading + String(rest.prefix(6)),
                 nextPrefix: leading + "- [ ] ",
                 isEmptyItem: isEmpty
             )
@@ -310,6 +316,7 @@ class TextBuffer: SpellCheckableBuffer {
                 let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 return ListPrefixInfo(
                     leadingWhitespace: leading,
+                    itemPrefix: leading + prefixStr,
                     nextPrefix: leading + "\(num + 1). ",
                     isEmptyItem: isEmpty
                 )
@@ -323,6 +330,7 @@ class TextBuffer: SpellCheckableBuffer {
             let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             return ListPrefixInfo(
                 leadingWhitespace: leading,
+                itemPrefix: leading + symbol,
                 nextPrefix: leading + symbol,
                 isEmptyItem: isEmpty
             )
@@ -639,7 +647,7 @@ class TextBuffer: SpellCheckableBuffer {
             return
         }
 
-        // 1. Find paragraph start and end line boundaries (separated by empty lines)
+        // 1. Find paragraph boundaries, or the individual list item boundaries.
         var startLine = lineIndex
         while startLine > 0 && !lines[startLine - 1].trimmingCharacters(in: .whitespaces).isEmpty {
             startLine -= 1
@@ -650,14 +658,50 @@ class TextBuffer: SpellCheckableBuffer {
             endLine += 1
         }
 
-        // 2. Extract paragraph text
-        let paragraphText = TextBuffer.joinParagraphLines(Array(lines[startLine...endLine]))
+        var listInfo: ListPrefixInfo?
+        var listItemStart = lineIndex
+        while listItemStart >= startLine {
+            if let info = parseListPrefix(lines[listItemStart]) {
+                listInfo = info
+                break
+            }
+            listItemStart -= 1
+        }
 
-        // 3. Tokenize and reflow using visual display width
+        if let listInfo {
+            startLine = listItemStart
+            endLine = startLine
+            while endLine < lines.count - 1,
+                !lines[endLine + 1].trimmingCharacters(in: .whitespaces).isEmpty,
+                parseListPrefix(lines[endLine + 1]) == nil
+            {
+                endLine += 1
+            }
+
+            let firstLine = lines[startLine]
+            let body = String(firstLine.dropFirst(listInfo.itemPrefix.count))
+            let continuationLines = endLine > startLine ? Array(lines[(startLine + 1)...endLine]) : []
+            let paragraphText = TextBuffer.joinParagraphLines([body] + continuationLines)
+            let tokens = TextBuffer.tokenizeForReflow(paragraphText)
+            let bodyWidth = max(1, targetWidth - listInfo.continuationPrefix.displayWidth)
+            let wrappedBody = TextBuffer.reflowVisualTokens(tokens, targetWidth: bodyWidth)
+            let newParagraphLines = wrappedBody.enumerated().map { index, line in
+                (index == 0 ? listInfo.itemPrefix : listInfo.continuationPrefix) + line
+            }
+
+            lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
+            lineIndex = min(startLine, lines.count - 1)
+            columnIndex = 0
+            isModified = true
+            return
+        }
+
+        // 2. Extract and reflow a regular paragraph using visual display width.
+        let paragraphText = TextBuffer.joinParagraphLines(Array(lines[startLine...endLine]))
         let tokens = TextBuffer.tokenizeForReflow(paragraphText)
         let newParagraphLines = TextBuffer.reflowVisualTokens(tokens, targetWidth: targetWidth)
 
-        // 4. Replace original paragraph lines with reflowed lines
+        // 3. Replace original paragraph lines with reflowed lines.
         lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
         lineIndex = min(startLine, lines.count - 1)
         columnIndex = 0
