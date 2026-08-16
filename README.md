@@ -1,7 +1,5 @@
 # `zago`: An Editor for the Many Natures of Text
 
-[繁體中文 README](README.zh_TW.md) | [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
-
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
@@ -69,7 +67,9 @@ editing model changes.
     - [Linux](#linux)
     - [Windows / Developers](#windows--developers)
   - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
+  - [Table Mode](#table-mode)
   - [Text Processing](#text-processing)
+  - [IPC Mode to Interact with AI Agents](#ipc-mode-to-interact-with-ai-agents)
   - [Command Examples](#command-examples)
   - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
     - [1. Interactive Editor \& System `$EDITOR` Mode](#1-interactive-editor--system-editor-mode)
@@ -88,29 +88,39 @@ editing model changes.
 
 ## Features
 
-- Markdown-first editing: write prose, jump through local document links,
-  navigate headings, and keep README-style documents close to their final form.
-- Table-aware editing: format Markdown pipe tables, move between table cells,
-  and edit table content without breaking borders.
-- Plain-text diagramming: draw boxes, arrow connector lines, fills, and table
-  layouts directly in the buffer.
+- Markdown-first editing: write prose, jump through local document
+  links, navigate headings, and keep README-style documents close to
+  their final form.
+- Table-aware editing: format Markdown pipe tables, move between table
+  cells, and edit table content without breaking borders.
+- Plain-text diagramming: draw boxes, arrow connector lines, fills, and
+  table layouts directly in the buffer.
 - Text processing for writers: count chars, words, lines, CJK chars, and
-  emojis; normalize CJK/ASCII spacing; transform selected text between scripts.
+  emojis; normalize CJK/ASCII spacing; transform selected text between
+  scripts.
 - Unicode-aware layout: CJK and emoji such as ✅, ❌, and ⚠️ keep boxes,
   tables, fills, rulers, and connector lines aligned.
-- Modeless typing & dual spatial modes: Ordinary typing always inserts text
-  directly. Press `M+V` to toggle between standard text stream mode and 2D
-  Canvas Mode for freeform grid navigation and block editing.
-- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo.
-- Dynamic softwrap, visual paragraph reflow, syntax highlighting, and Nano `.nanorc` syntax loading.
+- Modeless typing & dual spatial modes: Ordinary typing always inserts
+  text directly. Press `M+V` to toggle between standard text stream mode
+  and 2D Canvas Mode for freeform grid navigation and block editing.
+- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W`
+  copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo.
+- Dynamic softwrap, visual paragraph reflow, syntax highlighting, and
+  Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload.
-- Natural command prompt: press `Esc` and run editing commands such as `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
-- Lightweight automation: reuse command sequences with variables, loops, and procedures when editing becomes repetitive.
+- Natural command prompt: press `Esc` and run editing commands such as
+  `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
+- Lightweight automation: reuse command sequences with variables, loops,
+  and procedures when editing becomes repetitive.
 
 ## Requirements
 
 - macOS 14.0+, Linux, or Windows
-- On Windows, use Windows Terminal or another VT-enabled console with UTF-8 input enabled _(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may be intercepted by Windows Terminal's default hotkeys; disable them in **Settings -> Actions** to avoid conflicts with Canvas Mode arrow drawing)_
+- On Windows, use Windows Terminal or another VT-enabled console with
+  UTF-8 input enabled _(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may
+  be intercepted by Windows Terminal's default hotkeys; disable them in
+  **Settings -> Actions** to avoid conflicts with Canvas Mode arrow
+  drawing)_
 - Swift 6.0+
 - VT100 / ANSI-compatible terminal
 
@@ -125,9 +135,12 @@ brew install zago
 zago notes.txt
 ```
 
-If Homebrew refuses to install from an untrusted third-party tap, run the `brew tap --trust zonble/zago` line and install again.
+If Homebrew refuses to install from an untrusted third-party tap, run
+the `brew tap --trust zonble/zago` line and install again.
 
-On Linux, the Homebrew formula builds zago with Homebrew's `swift` package. Without Homebrew, install Swift 6 from your distribution or Swift.org and use the source build commands below.
+On Linux, the Homebrew formula builds zago with Homebrew's `swift`
+package. Without Homebrew, install Swift 6 from your distribution or
+Swift.org and use the source build commands below.
 
 ### Install with [Mint](https://github.com/yonaskolb/Mint)
 
@@ -149,7 +162,8 @@ curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
 zago notes.txt
 ```
 
-This downloads the pre-built static binary for your architecture (`x86_64` or `aarch64`) to `~/.local/bin`. No Swift toolchain required.
+This downloads the pre-built static binary for your architecture
+(`x86_64` or `aarch64`) to `~/.local/bin`. No Swift toolchain required.
 
 To install to a custom path, set `INSTALL_DIR`:
 
@@ -167,7 +181,9 @@ cd zago-bin
 makepkg -si
 ```
 
-This package installs a precompiled static binary. It is maintained and automatically updated to track upstream releases via GitHub Actions at [cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
+This package installs a precompiled static binary. It is maintained and
+automatically updated to track upstream releases via GitHub Actions at
+[cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
 
 ### Install on Windows (PowerShell)
 
@@ -175,7 +191,9 @@ This package installs a precompiled static binary. It is maintained and automati
 irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 ```
 
-This downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User PATH automatically. No Swift SDK required.
+This downloads the pre-built `zago.exe` to
+`%LOCALAPPDATA%\Programs\zago` and configures your User PATH
+automatically. No Swift SDK required.
 
 ## Build
 
@@ -193,7 +211,9 @@ swift build -c release
 
 ### Linux
 
-1. Install Swift 6.0+ toolchain using your distribution package manager, [swiftly](https://swiftlang.github.io/swiftly/), or from [Swift.org](https://www.swift.org/download/):
+1. Install Swift 6.0+ toolchain using your distribution package manager,
+   [swiftly](https://swiftlang.github.io/swiftly/), or from
+   [Swift.org](https://www.swift.org/download/):
 
    ```bash
    # On Linux with Homebrew:
@@ -232,7 +252,9 @@ _(Note: End users do not need to build from source or install Swift SDK. Use the
    winget install Swift.Toolchain
    ```
 
-2. Run PowerShell or Command Prompt as **Administrator** (required because dependencies such as `swift-argument-parser` create symbolic links on Windows during the build process).
+2. Run PowerShell or Command Prompt as **Administrator** (required because
+   dependencies such as `swift-argument-parser` create symbolic links on Windows
+   during the build process).
 
 3. Clone and build:
 
@@ -256,31 +278,88 @@ _(Note: End users do not need to build from source or install Swift SDK. Use the
 
 ## Text Mode & 2D Canvas Mode
 
-`zago` provides two complementary spatial editing modes. In both modes, typing remains modeless and inserts characters directly:
+`zago` provides two complementary spatial editing modes. In both modes, typing
+remains modeless and inserts characters directly:
 
-- **Text Mode** (Default): Standard linear text editing for prose and code. Selections follow linear text streams.
-- **Canvas Mode** (`M+V`): Unlocks 2D virtual space navigation beyond line ends. Supports 2D rectangular block selection (`Shift+Arrows`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without distorting surrounding text layout.
+- **Text Mode** (Default): Standard linear text editing for prose and code.
+  Selections follow linear text streams.
+- **Canvas Mode** (`F8` or `M+V`): Unlocks 2D virtual space navigation beyond line ends.
+  Supports 2D lines (`Shift+Arrows`), lines with arrows (`Ctrl+Shift+Arrows` or `Ctrl+Arrows`), block copy (`M+W`),
+  block cut (`^K`), and block paste (`^U`) without distorting surrounding text
+  layout.
 
 > [!TIP]
-> **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal actions (such as scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode, disable or unbind them in Windows Terminal via **Settings -> Actions**.
+>
+> **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up`
+> and `Ctrl+Shift+Down` are bound by default to terminal actions (such as
+> scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode,
+> disable or unbind them in Windows Terminal via **Settings -> Actions**. Or,
+> you can use Ctrl + Arrow keys alternatively.
+
+> [!TIP]
+>
+> Lots of terminal apps on Linux map Shift+Control+Arrow to terminal
+> scrolling. If you want to use these keys for Canvas Mode block selection, you
+> may need to disable that behavior in your terminal emulator.
 
 For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/user/mark.md).
 
-## Text Processing
+## Table Mode
 
-`zago` is still a text editor. The diagram tools sit on top of ordinary prose editing rather than replacing it:
+You can use the `F7` or `M+T` to enter Table Mode. In Table Mode, the cursor moves between table cells, and the table borders are preserved. Press `F7` again to exit Table Mode and return to Text Mode or Canvas Mode.
 
-- Linear text selection in Text Mode and Table Mode, including `Shift+Arrow` and `Shift+Home` / `Shift+End`, with selected text replaced by typing.
-- Paragraph justification (`^J`) for mixed CJK and Latin prose, using display width instead of byte or scalar counts.
-- Selection-based text transforms from the Tools menu: Traditional/Simplified Chinese conversion, Latin/Hiragana/Katakana/Romaji transliteration, and CJK/ASCII spacing normalization.
-- Text counts from the Tools menu. With a selection, `Word Count` reports that selection; without a selection, it reports the whole document. The status includes chars, words, lines, and only shows CJK chars or emojis when present.
-- Optional sub line numbers for fixed-width prose drafting: when a wrap column is set, long physical lines can show visual-row numbers and paragraph character counts.
-- Document link navigation with `M+O` for local Markdown, Org, reStructuredText, and AsciiDoc links.
-- Heading navigation and outline picker for Markdown, Org, reStructuredText, and AsciiDoc documents.
+## Text Processing in Text Mode
+
+`zago` is still a text editor. The diagram tools sit on top of ordinary
+prose editing rather than replacing it:
+
+- Linear text selection in Text Mode and Table Mode, including
+  `Shift+Arrow` and `Shift+Home` / `Shift+End`, with selected text
+  replaced by typing.
+- Paragraph justification (`^J`) for mixed CJK and Latin prose, using
+  display width instead of byte or scalar counts.
+- Selection-based text transforms from the Tools menu:
+  Traditional/Simplified Chinese conversion,
+  Latin/Hiragana/Katakana/Romaji transliteration, and CJK/ASCII spacing
+  normalization.
+- Text counts from the Tools menu. With a selection, `Word Count`
+  reports that selection; without a selection, it reports the whole
+  document. The status includes chars, words, lines, and only shows CJK
+  chars or emojis when present.
+- Optional sub line numbers for fixed-width prose drafting: when a wrap
+  column is set, long physical lines can show visual-row numbers and
+  paragraph character counts.
+- Document link navigation with `M+O` for local Markdown, Org,
+  reStructuredText, and AsciiDoc links.
+- Heading navigation and outline picker for Markdown, Org,
+  reStructuredText, and AsciiDoc documents.
+
+## IPC Mode to Interact with AI Agents
+
+`zago` supports a simple IPC protocol for AI agents to inspect the
+current buffer and propose LOGO commands to transform it. The let AI
+agents know how to interact with `zago`, please install the skill and
+mcp server:
+
+```sh
+zago --install-skill
+```
+
+To enable IPC mode, run `zago` with the `--ipc` flag.
+
+```sh
+zago --ipc notes.txt
+```
+
+Then, you can use prompts like `Write a summay of the current file using
+zago skill` to let the AI agent propose an update. When the AI agent
+sends the proposal, you can use Meta+A key to accept the proposal and
+apply the changes to the buffer.
 
 ## Command Examples
 
-Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for editing actions, shape generation, and turtle graphics:
+Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax
+for editing actions, shape generation, and turtle graphics:
 
 - **Movement & Text Insertion**:
 
@@ -310,10 +389,12 @@ Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax for edi
   ```
 
 - **ASCII Architecture Diagram**:
+
   ```logo
   DRAWBOX 18 3 "client" CENTER; GOTO 3 11; VLINE 3
   GOTO 5 1; DRAWBOX 18 5; GOTO 6 2; TYPE "     server     "
   ```
+
   ```text
   ┌────────────────┐
   │     client     │
@@ -328,11 +409,13 @@ For the complete command reference, see [Editor LOGO Documentation](docs/logo/re
 
 ## CLI Usage & Headless Scripting
 
-`zago` operates as an interactive TUI editor, a system `$EDITOR`, and a headless Unix pipe filter.
+`zago` operates as an interactive TUI editor, a system `$EDITOR`, and a
+headless Unix pipe filter.
 
 ### 1. Interactive Editor & System `$EDITOR` Mode
 
-Open files, jump to specific lines, edit piped stdin streams, or use `zago` as `export EDITOR=zago`:
+Open files, jump to specific lines, edit piped stdin streams, or use
+`zago` as `export EDITOR=zago`:
 
 ```bash
 # Open one or more files in the terminal TUI editor
@@ -350,7 +433,9 @@ zago -R /var/log/syslog
 
 ### 2. Headless Scripting & Unix Pipe Filter
 
-Execute LOGO scripts or inline LOGO code on stdin piped text or files without opening a TUI window, printing the resulting ASCII output directly to `stdout`:
+Execute LOGO scripts or inline LOGO code on stdin piped text or files
+without opening a TUI window, printing the resulting ASCII output
+directly to `stdout`:
 
 ```bash
 # Pipe stdin text into LOGO filter and wrap it in an ASCII box
@@ -387,26 +472,26 @@ zago --run generate_architecture.logo | pbcopy
 
 You probably don't.
 
-In agent-facing Markdown, the source is the interface. AI agents read the
-Markdown itself; they do not need a rendered HTML preview. `zago` focuses on
-making that source easier to write, shape, and maintain.
+In agent-facing Markdown, the source is the interface. AI agents read
+the Markdown itself; they do not need a rendered HTML preview. `zago`
+focuses on making that source easier to write, shape, and maintain.
 
 ### Why a TUI app when Electron apps exist?
 
-For the same reason AI agent CLIs exist: the terminal is still the shortest path
-between code, files, tools, and remote machines.
+For the same reason AI agent CLIs exist: the terminal is still the
+shortest path between code, files, tools, and remote machines.
 
 ### Why not Vim or Emacs?
 
 The features I want are not just Markdown syntax helpers. They touch the
-editor's interaction model: Text Mode and Canvas Mode, table-cell editing,
-rectangular canvas blocks, LOGO commands, selection-based text tools, status
-lines, menus, and key bindings.
+editor's interaction model: Text Mode and Canvas Mode, table-cell
+editing, rectangular canvas blocks, LOGO commands, selection-based text
+tools, status lines, menus, and key bindings.
 
-In a powerful plugin ecosystem, that kind of opinionated workflow can easily
-fight the host editor, existing user habits, and other plugins. `zago` keeps the
-surface smaller so these pieces can be designed as one coherent Markdown writing
-flow.
+In a powerful plugin ecosystem, that kind of opinionated workflow can
+easily fight the host editor, existing user habits, and other plugins.
+`zago` keeps the surface smaller so these pieces can be designed as one
+coherent Markdown writing flow.
 
 ### Why not Rust?
 
