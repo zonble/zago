@@ -215,7 +215,31 @@ struct TraditionalChineseStrings {
             DETECT.DATE text                     偵測日期，回傳 LOGO 清單
             DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 清單
 
-          7. CJK
+          7. 物理量與單位轉換 (Foundation Measurement)
+            CONVERT.AREA val from to             面積單位轉換（sqm, sqft, sqkm, acres, ha）
+            CONVERT.LENGTH val from to           長度距離轉換（m, km, cm, mm, in, ft, yd, mi, nmi）
+            CONVERT.VOLUME val from to           容積體積轉換（l, ml, gal, cup, floz, tbsp, tsp, m3）
+            CONVERT.ANGLE val from to            角度轉換（deg, rad, grad, rev, arcmin）
+            CONVERT.MASS val from to             質量重量轉換（kg, g, mg, lb, oz, ton, ct）
+            CONVERT.PRESSURE val from to         壓力轉換（pa, hpa, kpa, bar, mbar, atm, psi）
+            CONVERT.ACCELERATION val from to     加速度轉換（m/s2, g）
+            CONVERT.DURATION val from to         時間長度轉換（s, min, hr, ms, us, ns）
+            CONVERT.FREQUENCY val from to        頻率轉換（hz, khz, mhz, ghz, fps）
+            CONVERT.SPEED val from to            速度轉換（m/s, kmh, mph, knots）
+            CONVERT.ENERGY val from to           能量轉換（j, kj, mj, cal, kcal, kwh）
+            CONVERT.POWER val from to            功率轉換（w, kw, mw, gw, hp）
+            CONVERT.TEMPERATURE val from to      溫度轉換（c 攝氏, f 華氏, k 絕對溫標）
+            CONVERT.ILLUMINANCE val from to      照度轉換（lx 勒克斯）
+            CONVERT.ELECTRICCHARGE val from to   電荷量轉換（c 庫侖, ah 安時, mah 毫安時）
+            CONVERT.ELECTRICCURRENT val from to  電流轉換（a 安培, ma 毫安, ua 微安, ka）
+            CONVERT.VOLTAGE val from to          電壓轉換（v 伏特, mv 毫伏, uv, kv）
+            CONVERT.ELECTRICRESISTANCE val f t   電阻轉換（ohm 歐姆, kohm 千歐, megaohm 兆歐）
+            CONVERT.CONCENTRATIONMASS val f t    質量濃度轉換（g/l, mg/dl, mmol/l）
+            CONVERT.DISPERSION val from to       分散度/濃度轉換（ppm 百萬分率）
+            CONVERT.FUELEFFICIENCY val from to   油耗效率轉換（l/100km, mpg）
+            CONVERT.STORAGE val from to          數位儲存容量轉換（b, kb, mb, gb, tb, kib, mib）
+
+          8. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文
             TRANSFORM.TOHANT text / TOHANT       簡體中文轉繁體中文
             TRANSFORM.TOHIRAGANA text            轉日文平假名
@@ -227,19 +251,19 @@ struct TraditionalChineseStrings {
             CHARCOUNT.WORDS text                 統計英文單字數量
             CHARCOUNT.LINES text                 統計總行數
 
-          8. Turtle
+          9. Turtle
             PD / PU                              落筆 / 提筆 (Pen Down / Pen Up)
             FD len / BK len                      前進 / 後退指定長度
             RT / LT                              右轉 90° / 左轉 90° (無參數)
             SETHEADING dir                       設定繪圖方向 (UP, DOWN, LEFT, RIGHT)
             HEADING                              回傳目前繪圖方向
 
-          9. Regex
+          10. Regex
             REGEX.MATCH s "pattern"              正規表達式全字串匹配
             REGEX.REPLACE s "pat" "repl"         正規表達式全域搜尋與取代
             REGEX.FIND s "pattern"               正規表達式搜尋並回傳匹配項清單
 
-          10. Flow
+          11. Flow
             REPEAT n [ commands ]                重複執行 n 次（可用 :# 或 repcount）
             FOR [ var start end step ] [ ]       數值迴圈控制
             DOTIMES [ var n ] [ commands ]       執行 n 次 (var 從 0 至 n-1)
@@ -252,11 +276,11 @@ struct TraditionalChineseStrings {
             CASE val [ [ match [cmds] ] ]        多重模式匹配分支
             OUTPUT expr / OP / RETURN            自訂回傳值 (使 Procedure 成為 Reporter)
 
-          11. RC/RW
+          12. RC/RW
             READWORD [prompt] / RW               讀取整行文字輸入 (預設從 console/stdin)
             READCHAR [prompt] / RC               讀取單一字元按鍵 (預設從 console/stdin)
 
-          12. Math/Bitwise
+          13. Math/Bitwise
             ABS / INT / ROUND / SQRT             絕對值 / 無條件捨去 / 四捨五入 / 平方根
             MIN a b ... / MAX a b ...            取得極小值 / 極大值
             SIN / COS / TAN degrees              以角度為單位的三角函數
@@ -269,7 +293,7 @@ struct TraditionalChineseStrings {
             BIT.SHL a bits / LSHIFT              整數位元邏輯左移
             BIT.SHR a bits / RSHIFT              整數位元邏輯右移
 
-          13. Program
+          14. Program
             TO name :arg ... END                 定義自訂 Procedure
                                                  （單一運算式支援隱式回傳，免寫 OP）
             DEFINE "name [[args] [body]]         動態由 List 結構建立 User Procedure
@@ -282,7 +306,7 @@ struct TraditionalChineseStrings {
             ERASE "name / ER                     清除指定 Procedure 或變數
             ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 工作區
 
-          14. Higher function
+          15. Higher function
             MAP template list                    對 List 進行 Map 映射 (用 ? 代表項目)
             MAPSE template list                  對 List 進行 Map 映射並扁平化
             FILTER template list                 過濾符合條件的 List 項目
@@ -291,7 +315,7 @@ struct TraditionalChineseStrings {
             APPLY "proc args                     以名稱與參數 List 動態呼叫命令
             INVOKE "proc arg1 arg2               以名稱與獨立參數動態呼叫命令
 
-          15. 例外處理與斷言 (Exception Handling & Assertions)
+          16. 例外處理與斷言 (Exception Handling & Assertions)
             CATCH "tag [ commands ]              捕捉指定 Tag 的例外
                                                  （"ERROR 捕捉執行時期錯誤）
             THROW "tag                           拋出指定 Tag 的例外
@@ -299,7 +323,7 @@ struct TraditionalChineseStrings {
                                                 （條件為 false 時中斷並拋出錯誤）
             ERROR                                查詢上一次捕捉到的例外物件資訊物件
 
-          16. Predicate
+          17. Predicate
             WORD? LIST? ARRAY? NUMBER?           檢查資料型別是否為字串/清單/陣列/數值
             EMPTY? val                           檢查字串或清單是否為空
             EQUAL? a b / NOTEQUAL? a b           比較兩值是否相等 / 不相等
@@ -309,7 +333,7 @@ struct TraditionalChineseStrings {
             DEFINED? name                        檢查自訂密令是否存在
             NAME? name                           檢查指定名稱的變數是否存在
 
-          17. Buffer
+          18. Buffer
             BUFFERS / BUFFERLIST                 列出所有已開啟的文件列表
             BUFFER "name / BUFFER index          切換至指定名稱或索引的文件
             CLEARBUFFER                          清空當前文件的全部內容

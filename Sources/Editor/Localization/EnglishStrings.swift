@@ -222,7 +222,31 @@ struct EnglishStrings {
             DETECT.DATE text                     Detect dates; returns a list
             DETECT.ADDRESS text                  Detect postal addresses; returns a list
 
-          7. CJK text transforms & metrics
+          7. Measurements & Unit Conversions (Foundation)
+            CONVERT.AREA val from to             Convert area (sqm, sqft, sqkm, acres, ha)
+            CONVERT.LENGTH val from to           Convert length (m, km, cm, mm, in, ft, yd, mi, nmi)
+            CONVERT.VOLUME val from to           Convert volume (l, ml, gal, cup, floz, tbsp, tsp, m3)
+            CONVERT.ANGLE val from to            Convert angle (deg, rad, grad, rev, arcmin)
+            CONVERT.MASS val from to             Convert mass/weight (kg, g, mg, lb, oz, ton, ct)
+            CONVERT.PRESSURE val from to         Convert pressure (pa, hpa, kpa, bar, mbar, atm, psi)
+            CONVERT.ACCELERATION val from to     Convert acceleration (m/s2, g)
+            CONVERT.DURATION val from to         Convert duration (s, min, hr, ms, us, ns)
+            CONVERT.FREQUENCY val from to        Convert frequency (hz, khz, mhz, ghz, fps)
+            CONVERT.SPEED val from to            Convert speed (m/s, kmh, mph, knots)
+            CONVERT.ENERGY val from to           Convert energy (j, kj, mj, cal, kcal, kwh)
+            CONVERT.POWER val from to            Convert power (w, kw, mw, gw, hp)
+            CONVERT.TEMPERATURE val from to      Convert temperature (c, f, k)
+            CONVERT.ILLUMINANCE val from to      Convert illuminance (lx)
+            CONVERT.ELECTRICCHARGE val from to   Convert electric charge (c, ah, mah)
+            CONVERT.ELECTRICCURRENT val from to  Convert electric current (a, ma, ua, ka)
+            CONVERT.VOLTAGE val from to          Convert voltage/potential (v, mv, uv, kv)
+            CONVERT.ELECTRICRESISTANCE val f t   Convert electric resistance (ohm, kohm, megaohm)
+            CONVERT.CONCENTRATIONMASS val f t    Convert mass concentration (g/l, mg/dl, mmol/l)
+            CONVERT.DISPERSION val from to       Convert dispersion (ppm)
+            CONVERT.FUELEFFICIENCY val from to   Convert fuel efficiency (l/100km, mpg)
+            CONVERT.STORAGE val from to          Convert data storage (b, kb, mb, gb, tb, kib, mib)
+
+          8. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.
             TRANSFORM.TOHANT s / TOHANT          Convert Simp. Chinese to Trad.
             TRANSFORM.TOHIRAGANA s               Convert to Hiragana
@@ -234,19 +258,19 @@ struct EnglishStrings {
             CHARCOUNT.WORDS s                    Count words
             CHARCOUNT.LINES s                    Count total lines
 
-          8. Turtle drawing
+          9. Turtle drawing
             PD / PU                              Pen down / pen up
             FD len / BK len                      Move forward / back
             RT / LT                              Turn right / left
             SETHEADING dir                       Set heading (UP, DOWN, LEFT, RIGHT)
             HEADING                              Return current heading
 
-          9. RegEx operations
+          10. RegEx operations
             REGEX.MATCH s "pattern"              Full string regex match
             REGEX.REPLACE s "pat" "repl"         Global regex find and replace
             REGEX.FIND s "pattern"               Find all regex matches as a list
 
-          10. Control flow
+          11. Control flow
             REPEAT n [ commands ]                Repeat block n times (repcount or #)
             FOR [ var start end step ] [ ]       Numeric loop control
             DOTIMES [ var n ] [ commands ]       Repeat n times (var 0 to n-1)
@@ -259,11 +283,11 @@ struct EnglishStrings {
             CASE val [ [ match [cmds] ] ]        Multi-case pattern matching
             OUTPUT expr / OP / RETURN            Return value (reporter)
 
-          11. Interactive input (RC/RW)
+          12. Interactive input (RC/RW)
             READWORD [prompt] / RW               Read line input from user or stdin
             READCHAR [prompt] / RC               Read single keypress from user or stdin
 
-          12. Math & Bitwise operations
+          13. Math & Bitwise operations
             ABS / INT / ROUND / SQRT             Absolute / floor / round / square root
             MIN a b ... / MAX a b ...            Minimum / maximum value
             SIN / COS / TAN degrees              Trigonometric functions (degrees)
@@ -276,7 +300,7 @@ struct EnglishStrings {
             BIT.SHL a bits / LSHIFT              Bitwise logical shift left
             BIT.SHR a bits / RSHIFT              Bitwise logical shift right
 
-          13. Program & workspace management
+          14. Program & workspace management
             TO name :arg ... END                 Define custom procedure 
                                                  (single-expression procedures support
                                                  implicit return!)
@@ -291,7 +315,7 @@ struct EnglishStrings {
             ERASE "name / ER                     Erase procedure or variable
             ERPS / ERNS / ERALL                  Erase all user procedures / variables
 
-          14. Higher-order functions
+          15. Higher-order functions
             MAP template list                    Map list items using template
                                                  (? is current item)
             MAPSE template list                  Map list items and flatten results
@@ -301,7 +325,7 @@ struct EnglishStrings {
             APPLY "proc args                     Dynamically apply procedure with arg list
             INVOKE "proc arg1 arg2               Dynamically invoke procedure with arguments
 
-          15. Exception handling & Assertions
+          16. Exception handling & Assertions
             CATCH "tag [ commands ]              Catch exception tag 
                                                  ("ERROR catches runtime errors)
             THROW "tag                           Throw exception tag
@@ -309,7 +333,7 @@ struct EnglishStrings {
                                                  on false)
             ERROR                                Query last caught error info object
 
-          16. Predicates
+          17. Predicates
             WORD? LIST? ARRAY? NUMBER?           Check data type of value
             EMPTY? val                           Check if string or list is empty
             EQUAL? a b / NOTEQUAL? a b           Check equality / inequality
@@ -319,7 +343,7 @@ struct EnglishStrings {
             DEFINED? name                        Check if user-defined procedure exists
             NAME? name                           Check if variable exists
 
-          17. Buffer & multi-document operations
+          18. Buffer & multi-document operations
             BUFFERS / BUFFERLIST                 List all open buffer names
             BUFFER "name / BUFFER index          Switch to buffer by name or index
             CLEARBUFFER                          Clear all text in current buffer
