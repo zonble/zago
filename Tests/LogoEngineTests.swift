@@ -721,3 +721,14 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     logoEngine.execute("TO MYADD :a :b\nOUTPUT :a + :b\nEND")
     #expect(logoEngine.customProcedures["MYADD"] != nil)
 }
+
+@Test func testProcedureDefinitionRequiresAName() throws {
+    let logoEngine = LogoEngine()
+
+    logoEngine.execute("TO :x :y\nTYPE \"should not run\nEND")
+
+    #expect(logoEngine.customProcedures[":X"] == nil)
+    #expect(logoEngine.hasUncaughtError == true)
+    #expect(logoEngine.lastError?.message.contains("invalid procedure name") == true)
+    #expect(logoEngine.lastResult == nil)
+}
