@@ -640,10 +640,6 @@ TYPE "hello;world"
 | `FORMAT.LIST` | - | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
 | `FORMAT.RELATIVETIME` | - | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
 | `FORMAT.BYTES` | - | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
-
-Calendar identifiers accepted by `DATE`, `TIME`, `DATETIME`, and `FORMAT.DATE` include `gregorian`/`western`, `roc`/`republicofchina`/`minguo`/`taiwan`, `japanese`/`japan`/`wareki`/`jp`, `buddhist`/`thai`, `chinese`/`lunar`, `islamic`/`islamiccivil`/`islamicrural`/`muslim`, `islamicummalqura`/`ummalqura`, `hebrew`/`jewish`, `persian`/`iran`, `indian`, `coptic`, `ethiopic`, and `ethiopicametemihret`.
-
-`FORMAT.LIST`, `FORMAT.RELATIVETIME`, and `DETECT.*` require the platform Foundation APIs that provide list formatting, relative date formatting, and text detection. On Linux and Windows, their keywords remain available for scripts and completion, but execution reports a platform-not-supported Logo error.
 | `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
 | `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
 | `NEWLINE` | `NL` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
@@ -658,6 +654,10 @@ Calendar identifiers accepted by `DATE`, `TIME`, `DATETIME`, and `FORMAT.DATE` i
 | `INDENT` | - | `INDENT [n]` | Indents current line or selected lines by n tab units | `INDENT`, `INDENT 2` |
 | `OUTDENT` | - | `OUTDENT [n]` | Outdents current line or selected lines by n tab units | `OUTDENT` |
 | `JUSTIFY` | - | `JUSTIFY` | Reflows and justifies current paragraph | `JUSTIFY` |
+
+Calendar identifiers accepted by `DATE`, `TIME`, `DATETIME`, and `FORMAT.DATE` include `gregorian`/`western`, `roc`/`republicofchina`/`minguo`/`taiwan`, `japanese`/`japan`/`wareki`/`jp`, `buddhist`/`thai`, `chinese`/`lunar`, `islamic`/`islamiccivil`/`islamicrural`/`muslim`, `islamicummalqura`/`ummalqura`, `hebrew`/`jewish`, `persian`/`iran`, `indian`, `coptic`, `ethiopic`, and `ethiopicametemihret`.
+
+`FORMAT.LIST`, `FORMAT.RELATIVETIME`, and `DETECT.*` require the platform Foundation APIs that provide list formatting, relative date formatting, and text detection. On Linux and Windows, their keywords remain available for scripts and completion, but execution reports a platform-not-supported Logo error.
 
 ---
 
@@ -685,6 +685,10 @@ expressions, such as `GOTO (:row + 1) 1`, `BOX (:w + 2) 4`, or
 `LINE (10 * 2) DOUBLE`. Name arguments, option tokens, and block arguments keep
 their own syntax and are not treated as general expressions.
 
+### Drawing, Canvas & Table Commands
+
+| Command | Aliases | Syntax | Description | Example |
+| :--- | :--- | :--- | :--- | :--- |
 | `BOX` | - | `BOX "text" [align] [style]` | Inserts a box around text and pushes trailing text right (`left`, `center`, `right`) | `BOX "Hello World" "center"` |
 | `BOX` | - | `BOX width height [style]` | Inserts an empty box frame; dimensions clamp to width `3...200` and height `2...100` | `BOX (10 * 2) 5 "round"` |
 | `BOX` | - | `BOX` | In Canvas Mode with a block mark, frames the marked block; otherwise inserts the default empty frame | `BOX` |
@@ -694,8 +698,8 @@ their own syntax and are not treated as general expressions.
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
 | `LINE` | - | `LINE [length] [style] [arrow] [arrowStyle]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
 | `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
-| `TABLE` | - | `TABLE [rows] [cols] [cellWidth]` \| `TABLE BORDER style` \| `TABLE NEXTSTYLE` | Inserts a plain-text grid table at cursor or switches table border styles | `TABLE 3 3 12`, `TABLE BORDER "triple-dash`, `TABLE NEXTSTYLE` |
-| `INSET` | - | `INSET "text" [align] [style]` \| `INSET width height [style]` | Draws an inset box frame inside active selection or dimensions | `INSET 20 4 "double"` |
+| `TABLE` | - | `TABLE [rows] [cols] [cellWidth]`<br>`TABLE BORDER style`<br>`TABLE NEXTSTYLE` | Inserts a plain-text grid table at cursor or switches table border styles | `TABLE 3 3 12`, `TABLE BORDER "triple-dash`, `TABLE NEXTSTYLE` |
+| `INSET` | - | `INSET "text" [align] [style]`<br>`INSET width height [style]` | Draws an inset box frame inside active selection or dimensions | `INSET 20 4 "double"` |
 | `FILL` | - | `FILL [width] [height] "pattern"` | Fills active canvas mark block, table cell, or specified rectangle with pattern text | `FILL "."`, `FILL 20 3 ".#"` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
