@@ -81,6 +81,17 @@ import Testing
         #expect(editor.statusMessage == editor.l10n["status.directory_buffer_readonly"])
     }
 
+    @Test func testEvaluatingPlainTextReportsErrorWithoutTakingOverDocument() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = ["operation without taking over the document."]
+
+        editor.evalLogoCode()
+
+        #expect(editor.buffer.lines == ["operation without taking over the document."])
+        #expect(editor.logoEngine.hasUncaughtError == false)
+        #expect(editor.statusMessage == editor.l10n["status.logo_execution_error"])
+    }
+
     @Test func testLogoOutputOnDemandLoggingAndAutoRemoval() {
         let editor = Editor(filePath: "document.md")
         #expect(editor.buffers.count == 1)

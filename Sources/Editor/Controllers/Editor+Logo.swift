@@ -178,7 +178,7 @@ extension Editor: LogoEngineDelegate {
                 if start.line == end.line && start.line < lines.count {
                     let line = lines[start.line]
                     let sCol = max(0, min(start.column, line.count))
-                    let eCol = max(0, min(end.column, line.count))
+                    let eCol = max(sCol, min(end.column, line.count))
                     return .string(
                         String(
                             line[
@@ -584,12 +584,9 @@ extension Editor {
         if let mark = buffer.selectionMark {
             let (start, end) = TextBuffer.getOrderedRange(
                 mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
-            script = buffer.cutRange(
+            script = buffer.textRange(
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             startLine = start.line
-            // Restore selection text back into buffer
-            buffer.insertString(script)
-            buffer.selectionMark = mark
         }
         // Priority 2: Markdown ```logo ... ``` code fence
         else if let fence = extractMarkdownLogoFence() {
@@ -611,6 +608,13 @@ extension Editor {
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
+        guard let firstToken = LogoTokenizer.tokenize(cleanScript).first else { return }
+        guard isPotentialLogoScript(firstToken) else {
+            let message = "[LOGO Error: I don't know how to \(firstToken)]"
+            reportOperationResult(.failed(message, message: l10n["status.logo_execution_error"]))
+            return
+        }
+
         runLogoScript(
             script,
             resultPrefix: "[Eval] ",
@@ -618,6 +622,19 @@ extension Editor {
             debugSourceBuffer: sourceBuffer,
             debugStartLine: startLine
         )
+    }
+
+    private func isPotentialLogoScript(_ firstToken: String) -> Bool {
+        if LogoPrimitive.from(firstToken) != nil || logoEngine.customProcedures[firstToken.uppercased()] != nil {
+            return true
+        }
+        if firstToken == "(" || firstToken == "[" || firstToken.hasPrefix(":") || firstToken.hasPrefix("?") {
+            return true
+        }
+        if firstToken.hasPrefix("\"") || firstToken.hasPrefix("|") || Double(firstToken) != nil {
+            return true
+        }
+        return false
     }
 
     private func extractMarkdownLogoFence() -> (script: String, startLine: Int)? {
@@ -664,7 +681,8 @@ extension Editor {
             let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
             let upper = line.uppercased()
             let tokens = upper.split(separator: " ").map(String.init)
-            let hasTo = tokens.contains("TO")
+            guard let firstToken = tokens.first else { continue }
+            let hasTo = firstToken == "TO"
             let hasEnd = tokens.contains("END")
 
             if hasTo && hasEnd {

@@ -244,7 +244,9 @@ swift build -c release
 
 ### Windows / Developers
 
-_(Note: End users do not need to build from source or install Swift SDK. Use the PowerShell `irm` command above to install the pre-built binary.)_
+_(Note: End users do not need to build from source or install Swift SDK.
+Use the PowerShell `irm` command above to install the pre-built
+binary.)_
 
 1. Install the Swift SDK using `winget`:
 
@@ -252,9 +254,9 @@ _(Note: End users do not need to build from source or install Swift SDK. Use the
    winget install Swift.Toolchain
    ```
 
-2. Run PowerShell or Command Prompt as **Administrator** (required because
-   dependencies such as `swift-argument-parser` create symbolic links on Windows
-   during the build process).
+2. Run PowerShell or Command Prompt as **Administrator** (required
+   because dependencies such as `swift-argument-parser` create symbolic
+   links on Windows during the build process).
 
 3. Clone and build:
 
@@ -278,15 +280,16 @@ _(Note: End users do not need to build from source or install Swift SDK. Use the
 
 ## Text Mode & 2D Canvas Mode
 
-`zago` provides two complementary spatial editing modes. In both modes, typing
-remains modeless and inserts characters directly:
+`zago` provides two complementary spatial editing modes. In both modes,
+typing remains modeless and inserts characters directly:
 
-- **Text Mode** (Default): Standard linear text editing for prose and code.
-  Selections follow linear text streams.
-- **Canvas Mode** (`F8` or `M+V`): Unlocks 2D virtual space navigation beyond line ends.
-  Supports 2D lines (`Shift+Arrows`), lines with arrows (`Ctrl+Shift+Arrows` or `Ctrl+Arrows`), block copy (`M+W`),
-  block cut (`^K`), and block paste (`^U`) without distorting surrounding text
-  layout.
+- **Text Mode** (Default): Standard linear text editing for prose and
+  code. Selections follow linear text streams.
+- **Canvas Mode** (`F8` or `M+V`): Unlocks 2D virtual space navigation
+  beyond line ends. Supports 2D lines (`Shift+Arrows`), lines with
+  arrows (`Ctrl+Shift+Arrows` or `Ctrl+Arrows`), block copy (`M+W`),
+  block cut (`^K`), and block paste (`^U`) without distorting
+  surrounding text layout.
 
 > [!TIP]
 >
@@ -306,7 +309,10 @@ For details on selection rules and clipboard separation, see [Mark, selection, a
 
 ## Table Mode
 
-You can use the `F7` or `M+T` to enter Table Mode. In Table Mode, the cursor moves between table cells, and the table borders are preserved. Press `F7` again to exit Table Mode and return to Text Mode or Canvas Mode.
+You can use the `F7` or `M+T` to enter Table Mode. In Table Mode, the
+cursor moves between table cells, and the table borders are preserved.
+Press `F7` again to exit Table Mode and return to Text Mode or Canvas
+Mode.
 
 ## Text Processing in Text Mode
 
@@ -361,19 +367,18 @@ apply the changes to the buffer.
 Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax
 for editing actions, shape generation, and turtle graphics:
 
-- **Movement & Text Insertion**:
-
-  ```logo
-  MOVE HOME; TYPE "# "; MOVE END
-  ```
-
 - **Box & Fill**:
 
   ```logo
   BOX 30 5 CENTER ROUND
-  DRAWBOX 30 4 ROUND; GOTO 2 2; FILL "hi
+  DRAWBOX 30 4 ROUND
+  GOTO 2 2
+  FILL "hi
   ```
-
+- **Movement & Text Insertion**:
+  ```logo
+  MOVE HOME  TYPE "Hi MOVE END
+  ```
 - **Loops & Lists**:
 
   ```logo
@@ -391,8 +396,10 @@ for editing actions, shape generation, and turtle graphics:
 - **ASCII Architecture Diagram**:
 
   ```logo
-  DRAWBOX 18 3 "client" CENTER; GOTO 3 11; VLINE 3
-  GOTO 5 1; DRAWBOX 18 5; GOTO 6 2; TYPE "     server     "
+  DRAWBOX 18 3 "client" CENTER GOTO 3 11 VLINE 3
+  GOTO 5 1
+  DRAWBOX 18 5
+  GOTO 6 2 TYPE "     server     "
   ```
 
   ```text
@@ -406,6 +413,18 @@ for editing actions, shape generation, and turtle graphics:
   ```
 
 For the complete command reference, see [Editor LOGO Documentation](docs/logo/reference.md) and the [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
+
+## LOGO Environment
+
+`zago` has the feature to debug LOGO code and lookup built-in primitives
+and custom procedures. By default the debugger and error output are
+hidden, but you can type `set debug on` in the command bar to enable
+them.
+
+You can use the `logo break` command in the command bar to add or remove
+a break point. When the program stops on a break point, you can use
+commands like `logo continue`, `logo step`, `logo abort` and `logo eval`
+to control the debugger.
 
 ## CLI Usage & Headless Scripting
 
