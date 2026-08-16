@@ -225,6 +225,32 @@ struct FormatAndLayoutTests {
         #expect(buffer.lines[6] == "行。")
     }
 
+    @Test func testJustifyMarkdownListPreservesItemsAndHangingIndent() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "- This is a long Markdown list item that should remain a list after hard wrapping.",
+            "- The next list item must not be merged into the first one.",
+        ]
+        buffer.lineIndex = 0
+
+        buffer.justifyParagraph(targetWidth: 30)
+
+        #expect(buffer.lines[0].hasPrefix("- "))
+        #expect(buffer.lines.dropFirst().allSatisfy { $0.hasPrefix("  ") || $0.hasPrefix("- ") })
+        #expect(buffer.lines.contains { $0.hasPrefix("- The next") })
+    }
+
+    @Test func testJustifyMarkdownOrderedListPreservesMarker() throws {
+        let buffer = TextBuffer()
+        buffer.lines = ["12. This is a long ordered Markdown list item that needs wrapping."]
+        buffer.lineIndex = 0
+
+        buffer.justifyParagraph(targetWidth: 24)
+
+        #expect(buffer.lines[0].hasPrefix("12. "))
+        #expect(buffer.lines.dropFirst().allSatisfy { $0.hasPrefix("    ") })
+    }
+
     @Test func testJustifyUnwrapsShorterLinesUpward() throws {
         let buffer = TextBuffer()
         // 1. CJK short lines unwrapped upwards into a single line
