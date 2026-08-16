@@ -256,6 +256,54 @@ extension LogoEngine {
                         let text = args.first.map(unquote) ?? ""
                         leftVal = evaluateDetectPrimitive(variadicPrim, text: text)
 
+                    case .convertArea, .convertLength, .convertVolume, .convertAngle, .convertMass,
+                        .convertPressure, .convertAcceleration, .convertDuration, .convertFrequency,
+                        .convertSpeed, .convertEnergy, .convertPower, .convertTemperature, .convertIlluminance,
+                        .convertElectricCharge, .convertElectricCurrent, .convertElectricPotentialDifference,
+                        .convertElectricResistance, .convertConcentrationMass, .convertDispersion,
+                        .convertFuelEfficiency, .convertInformationStorage:
+                        let cleanArgs = args.map { unquote($0) }
+                        guard cleanArgs.count >= 3, let val = Double(cleanArgs[0]) else {
+                            leftVal = ""
+                            break
+                        }
+                        let fromUnit = cleanArgs[1]
+                        let toUnit = cleanArgs[2]
+                        let kind: LogoMeasurementConverter.DimensionKind
+                        switch variadicPrim {
+                        case .convertArea: kind = .area
+                        case .convertLength: kind = .length
+                        case .convertVolume: kind = .volume
+                        case .convertAngle: kind = .angle
+                        case .convertMass: kind = .mass
+                        case .convertPressure: kind = .pressure
+                        case .convertAcceleration: kind = .acceleration
+                        case .convertDuration: kind = .duration
+                        case .convertFrequency: kind = .frequency
+                        case .convertSpeed: kind = .speed
+                        case .convertEnergy: kind = .energy
+                        case .convertPower: kind = .power
+                        case .convertTemperature: kind = .temperature
+                        case .convertIlluminance: kind = .illuminance
+                        case .convertElectricCharge: kind = .electricCharge
+                        case .convertElectricCurrent: kind = .electricCurrent
+                        case .convertElectricPotentialDifference: kind = .electricPotentialDifference
+                        case .convertElectricResistance: kind = .electricResistance
+                        case .convertConcentrationMass: kind = .concentrationMass
+                        case .convertDispersion: kind = .dispersion
+                        case .convertFuelEfficiency: kind = .fuelEfficiency
+                        case .convertInformationStorage: kind = .informationStorage
+                        default: kind = .length
+                        }
+                        if let converted = LogoMeasurementConverter.convert(
+                            value: val, from: fromUnit, to: toUnit, kind: kind)
+                        {
+                            leftVal = LogoMeasurementConverter.formatResult(converted)
+                            setLastExpressionString(leftVal)
+                        } else {
+                            leftVal = ""
+                        }
+
                     default:
                         leftVal = ""
                         setLastExpressionString(leftVal)

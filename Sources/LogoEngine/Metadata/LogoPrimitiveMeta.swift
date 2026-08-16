@@ -67,6 +67,10 @@ extension LogoPrimitive {
         if let meta = stringMeta { return meta }
         if let meta = comparisonMeta { return meta }
         if let meta = logicalMeta { return meta }
+        if let meta = measurementMeta { return meta }
+        if let meta = detectMeta { return meta }
+        if let meta = dateTimeMeta { return meta }
+        if let meta = systemMeta { return meta }
         if let meta = mathMeta { return meta }
         preconditionFailure("Missing metadata for \(self)")
     }

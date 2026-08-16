@@ -259,6 +259,28 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case formatList
     case formatRelativeTime
     case formatBytes
+    case convertArea
+    case convertLength
+    case convertVolume
+    case convertAngle
+    case convertMass
+    case convertPressure
+    case convertAcceleration
+    case convertDuration
+    case convertFrequency
+    case convertSpeed
+    case convertEnergy
+    case convertPower
+    case convertTemperature
+    case convertIlluminance
+    case convertElectricCharge
+    case convertElectricCurrent
+    case convertElectricPotentialDifference
+    case convertElectricResistance
+    case convertConcentrationMass
+    case convertDispersion
+    case convertFuelEfficiency
+    case convertInformationStorage
     case detectURL
     case detectEmail
     case detectPhone
@@ -556,6 +578,36 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FORMAT.LIST"], .formatList),
         (["FORMAT.RELATIVETIME"], .formatRelativeTime),
         (["FORMAT.BYTES"], .formatBytes),
+        (["CONVERT.AREA"], .convertArea),
+        (["CONVERT.LENGTH"], .convertLength),
+        (["CONVERT.VOLUME"], .convertVolume),
+        (["CONVERT.ANGLE"], .convertAngle),
+        (["CONVERT.MASS"], .convertMass),
+        (["CONVERT.PRESSURE"], .convertPressure),
+        (["CONVERT.ACCELERATION"], .convertAcceleration),
+        (["CONVERT.DURATION"], .convertDuration),
+        (["CONVERT.FREQUENCY"], .convertFrequency),
+        (["CONVERT.SPEED"], .convertSpeed),
+        (["CONVERT.ENERGY"], .convertEnergy),
+        (["CONVERT.POWER"], .convertPower),
+        (["CONVERT.TEMPERATURE"], .convertTemperature),
+        (["CONVERT.ILLUMINANCE"], .convertIlluminance),
+        (["CONVERT.ELECTRICCHARGE", "CONVERT.ELECTRIC.CHARGE"], .convertElectricCharge),
+        (["CONVERT.ELECTRICCURRENT", "CONVERT.ELECTRIC.CURRENT"], .convertElectricCurrent),
+        (
+            [
+                "CONVERT.ELECTRICPOTENTIALDIFFERENCE", "CONVERT.ELECTRIC.POTENTIAL.DIFFERENCE", "CONVERT.VOLTAGE",
+                "CONVERT.ELECTRIC.POTENTIAL",
+            ], .convertElectricPotentialDifference
+        ),
+        (["CONVERT.ELECTRICRESISTANCE", "CONVERT.ELECTRIC.RESISTANCE"], .convertElectricResistance),
+        (["CONVERT.CONCENTRATIONMASS", "CONVERT.CONCENTRATION.MASS"], .convertConcentrationMass),
+        (["CONVERT.DISPERSION"], .convertDispersion),
+        (["CONVERT.FUELEFFICIENCY", "CONVERT.FUEL.EFFICIENCY"], .convertFuelEfficiency),
+        (
+            ["CONVERT.INFORMATIONSTORAGE", "CONVERT.INFORMATION.STORAGE", "CONVERT.STORAGE"],
+            .convertInformationStorage
+        ),
         (["DETECT.URL"], .detectURL),
         (["DETECT.EMAIL"], .detectEmail),
         (["DETECT.PHONE"], .detectPhone),
@@ -610,6 +662,11 @@ extension LogoPrimitive {
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,
         .dateformat, .dateadd, .datediff, .formatNumber, .formatList, .formatRelativeTime, .formatBytes,
+        .convertArea, .convertLength, .convertVolume, .convertAngle, .convertMass, .convertPressure,
+        .convertAcceleration, .convertDuration, .convertFrequency, .convertSpeed, .convertEnergy,
+        .convertPower, .convertTemperature, .convertIlluminance, .convertElectricCharge,
+        .convertElectricCurrent, .convertElectricPotentialDifference, .convertElectricResistance,
+        .convertConcentrationMass, .convertDispersion, .convertFuelEfficiency, .convertInformationStorage,
         .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress,
     ]
 }
