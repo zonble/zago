@@ -57,6 +57,12 @@ import Testing
     #expect(info.lineStatuses[1] == .unmodified)
 }
 
+@Test func testGitOutputLinesIgnoreTrailingNewlineSentinel() {
+    #expect(GitService.splitGitOutputLines("line 1\r\nline 2\r\n") == ["line 1", "line 2"])
+    #expect(GitService.splitGitOutputLines("line 1\nline 2") == ["line 1", "line 2"])
+    #expect(GitService.splitGitOutputLines("line 1\n\n") == ["line 1", ""])
+}
+
 @Test func testRealRepositoryDetectionWithRelativePaths() {
     let gitService = GitService()
 

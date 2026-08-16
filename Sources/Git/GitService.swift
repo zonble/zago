@@ -180,9 +180,21 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         else {
             return nil
         }
-        return output.components(separatedBy: "\n").map { line in
-            line.hasSuffix("\r") ? String(line.dropLast()) : line
+        return Self.splitGitOutputLines(output)
+    }
+
+    /// Splits `git show` output the same way the editor buffer splits file contents.
+    /// The final empty component produced by a trailing newline is a separator
+    /// sentinel, not an additional editor line.
+    static func splitGitOutputLines(_ output: String) -> [String] {
+        let normalized = output
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        var lines = normalized.components(separatedBy: "\n")
+        if normalized.hasSuffix("\n"), lines.count > 1 {
+            lines.removeLast()
         }
+        return lines.isEmpty ? [""] : lines
     }
 
     private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
