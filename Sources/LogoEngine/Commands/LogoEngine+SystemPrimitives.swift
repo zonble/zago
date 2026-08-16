@@ -46,6 +46,14 @@ extension LogoEngine {
         case .formatBytes:
             return evaluateFormatBytesPrimitive(tokens: tokens, index: &index)
 
+        case .convertArea, .convertLength, .convertVolume, .convertAngle, .convertMass,
+            .convertPressure, .convertAcceleration, .convertDuration, .convertFrequency,
+            .convertSpeed, .convertEnergy, .convertPower, .convertTemperature, .convertIlluminance,
+            .convertElectricCharge, .convertElectricCurrent, .convertElectricPotentialDifference,
+            .convertElectricResistance, .convertConcentrationMass, .convertDispersion,
+            .convertFuelEfficiency, .convertInformationStorage:
+            return evaluateMeasurementConvertPrimitive(prim, tokens: tokens, index: &index)
+
         case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let text = unquote(reader.nextExpression())
@@ -585,5 +593,51 @@ extension LogoEngine {
             setLastExpressionString(result)
             return result
         #endif
+    }
+
+    private func evaluateMeasurementConvertPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        let valStr = unquote(reader.nextExpression())
+        let fromUnitStr = unquote(reader.nextExpression())
+        let toUnitStr = unquote(reader.nextExpression())
+        reader.commit(to: &index)
+
+        guard let val = Double(valStr) else {
+            return ""
+        }
+
+        let kind: LogoMeasurementConverter.DimensionKind
+        switch prim {
+        case .convertArea: kind = .area
+        case .convertLength: kind = .length
+        case .convertVolume: kind = .volume
+        case .convertAngle: kind = .angle
+        case .convertMass: kind = .mass
+        case .convertPressure: kind = .pressure
+        case .convertAcceleration: kind = .acceleration
+        case .convertDuration: kind = .duration
+        case .convertFrequency: kind = .frequency
+        case .convertSpeed: kind = .speed
+        case .convertEnergy: kind = .energy
+        case .convertPower: kind = .power
+        case .convertTemperature: kind = .temperature
+        case .convertIlluminance: kind = .illuminance
+        case .convertElectricCharge: kind = .electricCharge
+        case .convertElectricCurrent: kind = .electricCurrent
+        case .convertElectricPotentialDifference: kind = .electricPotentialDifference
+        case .convertElectricResistance: kind = .electricResistance
+        case .convertConcentrationMass: kind = .concentrationMass
+        case .convertDispersion: kind = .dispersion
+        case .convertFuelEfficiency: kind = .fuelEfficiency
+        case .convertInformationStorage: kind = .informationStorage
+        default: return ""
+        }
+
+        if let converted = LogoMeasurementConverter.convert(value: val, from: fromUnitStr, to: toUnitStr, kind: kind) {
+            let res = LogoMeasurementConverter.formatResult(converted)
+            setLastExpressionString(res)
+            return res
+        }
+        return ""
     }
 }
