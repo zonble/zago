@@ -383,6 +383,107 @@ struct FormatAndLayoutTests {
         #expect(fullText.contains("Display Width"))
     }
 
+    @Test func testJustifyParagraphPreservesCursorPosition() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "Swift is a powerful and intuitive",
+            "programming language created by Apple",
+            "for building apps.",
+        ]
+        // Cursor is before 'l' in 'language' on line 1 (column 12)
+        buffer.lineIndex = 1
+        buffer.columnIndex = 12
+
+        buffer.justifyParagraph(targetWidth: 30)
+
+        // Reflowed line 1 is "intuitive programming language"
+        // Cursor must remain right before 'language' (column 22)
+        #expect(buffer.lineIndex == 1)
+        #expect(buffer.columnIndex == 22)
+        let line = buffer.lines[buffer.lineIndex]
+        let remaining = String(line.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("language"))
+    }
+
+    @Test func testJustifyChineseParagraphPreservesCursorPosition() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "這是一段很長的中文字段落，用來測試視覺對齊演算法",
+            "是否能在指定寬度內正確折行。",
+        ]
+        // Cursor on '視' in "視覺對齊演算法" on line 0 (char index 18)
+        let targetCharIndex = buffer.lines[0].firstIndex(of: "視")!
+        let targetCol = buffer.lines[0].distance(from: buffer.lines[0].startIndex, to: targetCharIndex)
+        buffer.lineIndex = 0
+        buffer.columnIndex = targetCol
+
+        buffer.justifyParagraph(targetWidth: 12)
+
+        // Target char '視' moved during reflow:
+        // Line 0: "這是一段很長"
+        // Line 1: "的中文字段落"
+        // Line 2: "，用來測試視"
+        let line = buffer.lines[buffer.lineIndex]
+        let remaining = String(line.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("視"))
+    }
+
+    @Test func testJustifyMixedCJKAndEnglishPreservesCursorPosition() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "Zago 是一個專為終端文字工作者設計的",
+            "現代化純文字編輯器，結合了 LOGO 繪圖與 Markdown 支援。",
+        ]
+        // Cursor on 'L' in "LOGO" on line 1
+        let targetIndex = buffer.lines[1].firstIndex(of: "L")!
+        let targetCol = buffer.lines[1].distance(from: buffer.lines[1].startIndex, to: targetIndex)
+        buffer.lineIndex = 1
+        buffer.columnIndex = targetCol
+
+        buffer.justifyParagraph(targetWidth: 28)
+
+        let line = buffer.lines[buffer.lineIndex]
+        let remaining = String(line.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("LOGO"))
+    }
+
+    @Test func testJustifyMarkdownListPreservesCursorPosition() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "- 這是一個包含 Markdown 清單符號的段落，測試重排時",
+            "  是否能正確跟隨游標所在的中文關鍵字位置。",
+        ]
+        // Cursor on '關' in "關鍵字" on line 1
+        let targetIndex = buffer.lines[1].firstIndex(of: "關")!
+        let targetCol = buffer.lines[1].distance(from: buffer.lines[1].startIndex, to: targetIndex)
+        buffer.lineIndex = 1
+        buffer.columnIndex = targetCol
+
+        buffer.justifyParagraph(targetWidth: 26)
+
+        let line = buffer.lines[buffer.lineIndex]
+        let remaining = String(line.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("關鍵字"))
+    }
+
+    @Test func testJustifyOrderedListPreservesCursorPosition() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "1. Apple designed Swift to be fast, safe, and modern for all developers.",
+        ]
+        // Cursor on 's' in "safe"
+        let safeIndex = buffer.lines[0].range(of: "safe")!.lowerBound
+        let targetCol = buffer.lines[0].distance(from: buffer.lines[0].startIndex, to: safeIndex)
+        buffer.lineIndex = 0
+        buffer.columnIndex = targetCol
+
+        buffer.justifyParagraph(targetWidth: 32)
+
+        let line = buffer.lines[buffer.lineIndex]
+        let remaining = String(line.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("safe"))
+    }
+
     @Test func testTerminalDisplayWidthHelpers() throws {
         #expect(Character("A").displayWidth == 1)
         #expect(Character("中").displayWidth == 2)
