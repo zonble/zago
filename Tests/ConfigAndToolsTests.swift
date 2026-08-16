@@ -5,6 +5,8 @@ import Testing
 @testable import Editor
 @testable import LogoEngine
 @testable import Syntax
+@testable import TextEncoding
+@testable import zago
 
 @Suite(.serialized)
 struct ConfigAndToolsTests {
@@ -687,6 +689,73 @@ struct ConfigAndToolsTests {
 
         fileIO.stopWatchingFile(at: tmpFile)
         try? FileManager.default.removeItem(atPath: tmpFile)
+    }
+
+    @Test func testProductionLocalEditorFileIOStrategyDetectsExternalWrites() throws {
+        final class AtomicCounter: @unchecked Sendable { var value = 0 }
+        let counter = AtomicCounter()
+
+        let fileIO = LocalEditorFileIOStrategy.shared
+        let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "test_prod_watcher_\(UUID().uuidString).txt"
+        ).path
+        try "prod-v1\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let semaphore = DispatchSemaphore(value: 0)
+
+        fileIO.startWatchingFile(at: tmpFile) {
+            counter.value += 1
+            semaphore.signal()
+        }
+
+        // Editor save through LocalEditorFileIOStrategy must not trigger external change
+        try fileIO.writeTextFile("prod-v1 - editor save\n", to: tmpFile, encoding: .utf8)
+        Thread.sleep(forTimeInterval: 0.2)
+        #expect(counter.value == 0)
+
+        // External atomic write must be detected by Darwin/Windows/Polling FileWatcher
+        try "prod-v2 - external modified\n".write(
+            to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
+        _ = semaphore.wait(timeout: .now() + 2.0)
+        #expect(counter.value >= 1)
+
+        fileIO.stopWatchingFile(at: tmpFile)
+        try? FileManager.default.removeItem(atPath: tmpFile)
+    }
+
+    @Test func testEditorAutoReloadsFromDiskWithRealFileWatcher() throws {
+        let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "test_editor_autoreload_\(UUID().uuidString).txt"
+        ).path
+        try "Original Disk Line\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let terminal = TestEditorTerminal.shared
+        let editor = Editor(
+            options: EditorOptions(filePaths: [tmpFile], autoReload: true),
+            dependencies: EditorDependencies(fileIOStrategy: LocalEditorFileIOStrategy.shared, terminal: terminal)
+        )
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(atPath: tmpFile)
+        }
+
+        #expect(editor.buffer.lines.first == "Original Disk Line")
+
+        // External modification
+        try "New Disk Line externally written\n".write(
+            to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
+
+        // Wait up to 2 seconds for the background file watcher to notify the editor loop
+        let deadline = Date().addingTimeInterval(2.0)
+        while Date() < deadline {
+            editor.drainExternalRequests()
+            if editor.buffer.lines.first == "New Disk Line externally written" {
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+
+        #expect(editor.buffer.lines.first == "New Disk Line externally written")
     }
 
 

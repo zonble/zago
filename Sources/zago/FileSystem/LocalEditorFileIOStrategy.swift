@@ -76,11 +76,13 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         else {
             throw EncodingError.unsupportedCharacters
         }
+        fileWatcher.stop()
         #if os(Windows)
             try data.write(to: URL(fileURLWithPath: normalized), options: [])
         #else
             try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         #endif
+        fileWatcher.start(path: normalized)
         fileWatcher.recordCurrentModificationDate()
     }
 
@@ -100,9 +102,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
         fileWatcher.onChange = {
-            DispatchQueue.main.async {
-                onChange()
-            }
+            onChange()
         }
         fileWatcher.start(path: normalizePath(path, isDirectory: false))
     }
