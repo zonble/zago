@@ -238,6 +238,8 @@ struct TraditionalChineseStrings {
             CONVERT.DISPERSION val from to       分散度/濃度轉換（ppm 百萬分率）
             CONVERT.FUELEFFICIENCY val from to   油耗效率轉換（l/100km, mpg）
             CONVERT.STORAGE val from to          數位儲存容量轉換（b, kb, mb, gb, tb, kib, mib）
+            FORMAT.<DIMENSION> val unit [style] [locale] [natural]
+                                                 度量衡格式化（如 FORMAT.LENGTH 1500 "m "long）
 
           8. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文

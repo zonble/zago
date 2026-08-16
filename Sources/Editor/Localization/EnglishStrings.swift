@@ -245,6 +245,8 @@ struct EnglishStrings {
             CONVERT.DISPERSION val from to       Convert dispersion (ppm)
             CONVERT.FUELEFFICIENCY val from to   Convert fuel efficiency (l/100km, mpg)
             CONVERT.STORAGE val from to          Convert data storage (b, kb, mb, gb, tb, kib, mib)
+            FORMAT.<DIMENSION> val unit [style] [locale] [natural]
+                                                 Format measurement (e.g. FORMAT.LENGTH 1500 "m "long)
 
           8. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.

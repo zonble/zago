@@ -281,6 +281,28 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case convertDispersion
     case convertFuelEfficiency
     case convertInformationStorage
+    case formatArea
+    case formatLength
+    case formatVolume
+    case formatAngle
+    case formatMass
+    case formatPressure
+    case formatAcceleration
+    case formatDuration
+    case formatFrequency
+    case formatSpeed
+    case formatEnergy
+    case formatPower
+    case formatTemperature
+    case formatIlluminance
+    case formatElectricCharge
+    case formatElectricCurrent
+    case formatElectricPotentialDifference
+    case formatElectricResistance
+    case formatConcentrationMass
+    case formatDispersion
+    case formatFuelEfficiency
+    case formatInformationStorage
     case detectURL
     case detectEmail
     case detectPhone
@@ -608,6 +630,36 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
             ["CONVERT.INFORMATIONSTORAGE", "CONVERT.INFORMATION.STORAGE", "CONVERT.STORAGE"],
             .convertInformationStorage
         ),
+        (["FORMAT.AREA", "FORMATAREA"], .formatArea),
+        (["FORMAT.LENGTH", "FORMATLENGTH"], .formatLength),
+        (["FORMAT.VOLUME", "FORMATVOLUME"], .formatVolume),
+        (["FORMAT.ANGLE", "FORMATANGLE"], .formatAngle),
+        (["FORMAT.MASS", "FORMATMASS"], .formatMass),
+        (["FORMAT.PRESSURE", "FORMATPRESSURE"], .formatPressure),
+        (["FORMAT.ACCELERATION", "FORMATACCELERATION"], .formatAcceleration),
+        (["FORMAT.DURATION", "FORMATDURATION"], .formatDuration),
+        (["FORMAT.FREQUENCY", "FORMATFREQUENCY"], .formatFrequency),
+        (["FORMAT.SPEED", "FORMATSPEED"], .formatSpeed),
+        (["FORMAT.ENERGY", "FORMATENERGY"], .formatEnergy),
+        (["FORMAT.POWER", "FORMATPOWER"], .formatPower),
+        (["FORMAT.TEMPERATURE", "FORMATTEMPERATURE"], .formatTemperature),
+        (["FORMAT.ILLUMINANCE", "FORMATILLUMINANCE"], .formatIlluminance),
+        (["FORMAT.ELECTRICCHARGE", "FORMAT.ELECTRIC.CHARGE", "FORMATELECTRICCHARGE"], .formatElectricCharge),
+        (["FORMAT.ELECTRICCURRENT", "FORMAT.ELECTRIC.CURRENT", "FORMATELECTRICCURRENT"], .formatElectricCurrent),
+        (
+            [
+                "FORMAT.ELECTRICPOTENTIALDIFFERENCE", "FORMAT.ELECTRIC.POTENTIAL.DIFFERENCE", "FORMAT.VOLTAGE",
+                "FORMAT.ELECTRIC.POTENTIAL", "FORMATVOLTAGE",
+            ], .formatElectricPotentialDifference
+        ),
+        (["FORMAT.ELECTRICRESISTANCE", "FORMAT.ELECTRIC.RESISTANCE", "FORMATELECTRICRESISTANCE"], .formatElectricResistance),
+        (["FORMAT.CONCENTRATIONMASS", "FORMAT.CONCENTRATION.MASS", "FORMATCONCENTRATIONMASS"], .formatConcentrationMass),
+        (["FORMAT.DISPERSION", "FORMATDISPERSION"], .formatDispersion),
+        (["FORMAT.FUELEFFICIENCY", "FORMAT.FUEL.EFFICIENCY", "FORMATFUELEFFICIENCY"], .formatFuelEfficiency),
+        (
+            ["FORMAT.INFORMATIONSTORAGE", "FORMAT.INFORMATION.STORAGE", "FORMAT.STORAGE", "FORMATSTORAGE"],
+            .formatInformationStorage
+        ),
         (["DETECT.URL"], .detectURL),
         (["DETECT.EMAIL"], .detectEmail),
         (["DETECT.PHONE"], .detectPhone),
@@ -667,6 +719,11 @@ extension LogoPrimitive {
         .convertPower, .convertTemperature, .convertIlluminance, .convertElectricCharge,
         .convertElectricCurrent, .convertElectricPotentialDifference, .convertElectricResistance,
         .convertConcentrationMass, .convertDispersion, .convertFuelEfficiency, .convertInformationStorage,
+        .formatArea, .formatLength, .formatVolume, .formatAngle, .formatMass, .formatPressure,
+        .formatAcceleration, .formatDuration, .formatFrequency, .formatSpeed, .formatEnergy,
+        .formatPower, .formatTemperature, .formatIlluminance, .formatElectricCharge,
+        .formatElectricCurrent, .formatElectricPotentialDifference, .formatElectricResistance,
+        .formatConcentrationMass, .formatDispersion, .formatFuelEfficiency, .formatInformationStorage,
         .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress,
     ]
 }
