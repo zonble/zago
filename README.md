@@ -306,7 +306,8 @@ typing remains modeless and inserts characters directly:
 > scrolling. If you want to use these keys for Canvas Mode block selection, you
 > may need to disable that behavior in your terminal emulator.
 
-For details on selection rules and clipboard separation, see [Mark, selection, and canvas behavior](docs/user/mark.md).
+For details on selection rules and clipboard separation, see 
+[Mark, selection, and canvas behavior](docs/user/mark.md).
 
 ## Table Mode
 
@@ -323,6 +324,9 @@ prose editing rather than replacing it:
 - Linear text selection in Text Mode and Table Mode, including
   `Shift+Arrow` and `Shift+Home` / `Shift+End`, with selected text
   replaced by typing.
+- Nano compatible syntax highlight: You can use the syntax highlight
+  configuration files for Nano in `zago`, just edit `.zagorc` like
+  `.nanorc`.
 - Paragraph justification (`^J`) for mixed CJK and Latin prose, using
   display width instead of byte or scalar counts.
 - Selection-based text transforms from the Tools menu:

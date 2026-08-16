@@ -13,8 +13,11 @@ extension Editor {
         if let path = buffer.filePath {
             currentWatchedPath = path
             fileIOStrategy.startWatchingFile(at: path) { [weak self] in
-                guard let self = self, self.displayConfig.autoReload else { return }
-                self.handleExternalFileChange()
+                guard let self = self else { return }
+                _ = try? self.performOnEditorLoop {
+                    guard self.displayConfig.autoReload else { return }
+                    self.handleExternalFileChange()
+                }
             }
         }
     }

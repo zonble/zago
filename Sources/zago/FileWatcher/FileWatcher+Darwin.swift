@@ -12,6 +12,7 @@ import Foundation
             let fileSize: UInt64?
         }
 
+        private let lock = NSLock()
         private var watchedPath: String? = nil
         private var lastSignature: FileSignature? = nil
         private var timerSource: (any DispatchSourceTimer)? = nil
@@ -26,7 +27,9 @@ import Foundation
             guard !path.isEmpty else { return }
 
             let normalized = (path as NSString).standardizingPath
-            watchedPath = normalized
+            lock.withLock {
+                watchedPath = normalized
+            }
 
             if FileManager.default.fileExists(atPath: normalized) {
                 startWatchingExistingFile(at: normalized)
@@ -36,37 +39,41 @@ import Foundation
         }
 
         func stop() {
-            if let timer = timerSource {
-                timer.cancel()
-                timerSource = nil
+            lock.withLock {
+                if let timer = timerSource {
+                    timer.cancel()
+                    timerSource = nil
+                }
+                if let src = source {
+                    src.cancel()
+                    source = nil
+                }
+                fileDescriptor = -1
+                watchedPath = nil
+                lastSignature = nil
             }
-            if let src = source {
-                src.cancel()
-                source = nil
-            }
-            fileDescriptor = -1
-            watchedPath = nil
-            lastSignature = nil
         }
 
         func recordCurrentModificationDate() {
-            guard let path = watchedPath else { return }
-            lastSignature = getSignature(for: path)
+            lock.withLock {
+                guard let path = watchedPath else { return }
+                lastSignature = getSignature(for: path)
+            }
         }
 
         private func startWatchingExistingFile(at path: String) {
-            fileDescriptor = open(path, O_EVTONLY)
-            guard fileDescriptor >= 0 else {
+            let isWatched = lock.withLock { watchedPath == path }
+            guard isWatched else { return }
+
+            let fd = open(path, O_EVTONLY)
+            guard fd >= 0 else {
                 startTimerFallback(for: path)
                 return
             }
 
-            lastSignature = getSignature(for: path)
-
-            let eventMask: DispatchSource.FileSystemEvent = [.write, .delete, .rename, .extend, .attrib]
             let src = DispatchSource.makeFileSystemObjectSource(
-                fileDescriptor: fileDescriptor,
-                eventMask: eventMask,
+                fileDescriptor: fd,
+                eventMask: [.write, .delete, .rename, .extend, .attrib],
                 queue: queue
             )
 
@@ -81,62 +88,111 @@ import Foundation
                 }
             }
 
-            src.setCancelHandler { [fd = fileDescriptor] in
-                if fd >= 0 {
-                    close(fd)
-                }
+            src.setCancelHandler {
+                close(fd)
             }
 
-            source = src
             src.resume()
+
+            lock.withLock {
+                guard watchedPath == path else {
+                    src.cancel()
+                    return
+                }
+                if let oldTimer = timerSource {
+                    oldTimer.cancel()
+                    timerSource = nil
+                }
+                if let oldSrc = source {
+                    oldSrc.cancel()
+                    source = nil
+                }
+                fileDescriptor = fd
+                source = src
+                lastSignature = getSignature(for: path)
+            }
         }
 
         private func reopenWatchedFile(at path: String) {
-            if let src = source {
-                src.cancel()
-                source = nil
+            lock.withLock {
+                if let src = source {
+                    src.cancel()
+                    source = nil
+                }
+                fileDescriptor = -1
             }
-            fileDescriptor = -1
 
             queue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                guard let self, self.watchedPath == path else { return }
+                guard let self else { return }
+                let shouldProceed = self.lock.withLock { self.watchedPath == path }
+                guard shouldProceed else { return }
+
                 if FileManager.default.fileExists(atPath: path) {
-                    self.notifyIfChanged(at: path)
+                    self.lock.withLock {
+                        self.lastSignature = self.getSignature(for: path)
+                    }
+                    self.notifyChange()
                     self.startWatchingExistingFile(at: path)
                 } else {
+                    self.notifyChange()
                     self.startTimerFallback(for: path)
                 }
             }
         }
 
         private func startTimerFallback(for path: String) {
-            if let timer = timerSource {
-                timer.cancel()
-                timerSource = nil
-            }
-            lastSignature = getSignature(for: path)
-
             let timer = DispatchSource.makeTimerSource(queue: queue)
             timer.schedule(deadline: .now() + 0.5, repeating: 0.5)
+
             timer.setEventHandler { [weak self] in
-                guard let self, let p = self.watchedPath, p == path else { return }
+                guard let self else { return }
+                let currentWatched = self.lock.withLock { self.watchedPath }
+                guard let currentWatched, currentWatched == path else { return }
 
                 if FileManager.default.fileExists(atPath: path) {
-                    timer.cancel()
-                    self.timerSource = nil
+                    self.lock.withLock {
+                        timer.cancel()
+                        if self.timerSource === timer {
+                            self.timerSource = nil
+                        }
+                    }
                     self.notifyIfChanged(at: path)
                     self.startWatchingExistingFile(at: path)
                     return
                 }
 
-                let currentSignature = self.getSignature(for: p)
-                if currentSignature != self.lastSignature {
-                    self.lastSignature = currentSignature
+                let currentSignature = self.getSignature(for: path)
+                let changed = self.lock.withLock { () -> Bool in
+                    if currentSignature != self.lastSignature {
+                        self.lastSignature = currentSignature
+                        return true
+                    }
+                    return false
+                }
+                if changed {
                     self.notifyChange()
                 }
             }
-            timerSource = timer
+
             timer.resume()
+
+            lock.withLock {
+                guard watchedPath == path else {
+                    timer.cancel()
+                    return
+                }
+                if let oldTimer = timerSource {
+                    oldTimer.cancel()
+                    timerSource = nil
+                }
+                if let oldSrc = source {
+                    oldSrc.cancel()
+                    source = nil
+                }
+                fileDescriptor = -1
+                lastSignature = getSignature(for: path)
+                timerSource = timer
+            }
         }
 
         private func notifyChange() {
@@ -145,9 +201,16 @@ import Foundation
 
         private func notifyIfChanged(at path: String) {
             let currentSignature = getSignature(for: path)
-            guard currentSignature != lastSignature else { return }
-            lastSignature = currentSignature
-            notifyChange()
+            let changed = lock.withLock { () -> Bool in
+                if currentSignature != self.lastSignature {
+                    self.lastSignature = currentSignature
+                    return true
+                }
+                return false
+            }
+            if changed {
+                notifyChange()
+            }
         }
 
         private func getSignature(for path: String) -> FileSignature {
