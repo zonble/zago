@@ -6,6 +6,7 @@ This document consolidates all cross-platform Gotchas, operating system differen
 
 ## Platform-Specific Foundation APIs
 
+### Unavailable Formatters & Detectors
 `RelativeDateTimeFormatter` is available in the Apple Foundation implementations used by
 macOS, but is not available in the Foundation implementations used by Linux or Windows.
 The relative-time formatter entry points in
@@ -24,6 +25,30 @@ Windows. The `DETECT.URL`, `DETECT.EMAIL`, `DETECT.PHONE`, `DETECT.DATE`, and
 `DETECT.ADDRESS` keywords remain available for completion and metadata, but execution
 reports a platform-not-supported Logo error on those platforms. Apple platforms use the
 system detector and return the original matched substrings as a Logo list.
+
+### Foundation `Measurement` & `swift-corelibs-foundation` Discrepancies
+`Measurement<UnitType: Dimension>` and `MeasurementFormatter` are supported on macOS,
+Linux, and Windows, but developers should be aware of the following differences:
+
+1. **Unit Constant Precision Differences**:
+   - `UnitLength.miles`: Apple Foundation uses the exact International Mile coefficient ($1609.344\text{ m}$), yielding exactly $5280\text{ ft}$ per mile. `swift-corelibs-foundation` on Linux/Windows historically used $1609.34\text{ m}$, yielding $5279.98687664\text{ ft}$.
+   - `UnitArea.squareFeet`: Apple Foundation uses International Foot squared ($0.09290304\text{ m}^2$, giving $10.763910417\text{ sqft/m}^2$). `swift-corelibs-foundation` used US Survey Foot squared ($0.0929034116\text{ m}^2$, giving $10.763915051\text{ sqft/m}^2$).
+   - **Testing Rule**: When asserting unit conversion results in unit tests (e.g. [`LogoMeasurementTests.swift`](../../Tests/LogoMeasurementTests.swift)), never use hard-coded full-precision string equality across platforms. Use floating-point delta checks (`abs(val - expected) < tolerance`) or prefix matching.
+
+2. **Missing Static Properties in Linux Foundation (Commit `747bd57`)**:
+   - `UnitFrequency.framesPerSecond` is defined on Apple platforms (macOS 10.15+) but omitted from `swift-corelibs-foundation`.
+   - Directly referencing `.framesPerSecond` causes Linux/Windows CI build failures: `error: type 'UnitFrequency' has no member 'framesPerSecond'`.
+   - **Solution**: Avoid relying on Apple-specific static property extensions. Instantiate portable unit instances using `UnitConverterLinear`:
+     ```swift
+     reg(
+         UnitFrequency(symbol: "fps", converter: UnitConverterLinear(coefficient: 1.0)),
+         ["fps", "framespersecond"]
+     )
+     ```
+
+3. **C Library Functions vs Swift Standard Library (Commit `d2d98ba`)**:
+   - Do not call `Darwin.round()` directly as the `Darwin` module does not exist on Linux or Windows (`error: cannot find 'Darwin' in scope`).
+   - **Solution**: Use portable Swift Standard Library `Double.rounded()`, or wrap platform-specific C calls in `#if canImport(Darwin)` / `#if canImport(Glibc)` guards.
 
 When adding Foundation-backed Logo primitives, check API availability on every CI target
 before sharing the implementation across platforms. Do not replace a platform formatter
