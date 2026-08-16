@@ -7,6 +7,13 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
     public let supportsDocumentOutline = true
     public let supportsListAutoIndent = true
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [
+            NSRegularExpression(pattern: #"^#{1,6}\s+"#),
+            NSRegularExpression(pattern: #"^---\s*$"#),
+        ]) ?? []
+    }
+
     public var rules: [SyntaxRule] {
         [
             // Front matter delimiters and fenced code blocks

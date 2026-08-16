@@ -480,3 +480,31 @@ import Testing
     #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 0) == "<!-- ")
     #expect(highlighter.commentPrefix(for: "doc.md", lines: mdLines, bufferLineIndex: 2) == "# ")
 }
+
+@Test func testUnsavedNewBufferDetectsLanguageFromFirstLine() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // 1. Python shebang in new buffer with no filePath
+    let pyLang = highlighter.detectLanguage(for: nil, firstLine: "#!/usr/bin/env python3")
+    #expect(pyLang?.name == "Python")
+
+    // 2. Shell shebang in new buffer
+    let shLang = highlighter.detectLanguage(for: nil, firstLine: "#!/bin/bash")
+    #expect(shLang?.name == "Shell")
+
+    // 3. Swift shebang in new buffer
+    let swiftLang = highlighter.detectLanguage(for: nil, firstLine: "#!/usr/bin/env swift")
+    #expect(swiftLang?.name == "Swift")
+
+    // 4. Markdown title in new buffer
+    let mdLang = highlighter.detectLanguage(for: nil, firstLine: "# My Project Title")
+    #expect(mdLang?.name == "Markdown")
+
+    // 5. Zagorc config directive in new buffer
+    let zagorcLang = highlighter.detectLanguage(for: nil, firstLine: "set linenumbers true")
+    #expect(zagorcLang?.name == "Zagorc")
+
+    // 6. LOGO procedure in new buffer
+    let logoLang = highlighter.detectLanguage(for: nil, firstLine: "TO DRAW_RECT")
+    #expect(logoLang?.name == "LOGO")
+}

@@ -296,9 +296,28 @@ class TextBuffer: SpellCheckableBuffer {
         let itemPrefix: String
         let nextPrefix: String
         let isEmptyItem: Bool
+        let isBlockquote: Bool
+        let explicitContinuationPrefix: String?
+
+        init(
+            leadingWhitespace: String,
+            itemPrefix: String,
+            nextPrefix: String,
+            isEmptyItem: Bool,
+            isBlockquote: Bool = false,
+            explicitContinuationPrefix: String? = nil
+        ) {
+            self.leadingWhitespace = leadingWhitespace
+            self.itemPrefix = itemPrefix
+            self.nextPrefix = nextPrefix
+            self.isEmptyItem = isEmptyItem
+            self.isBlockquote = isBlockquote
+            self.explicitContinuationPrefix = explicitContinuationPrefix
+        }
 
         var continuationPrefix: String {
-            leadingWhitespace + String(repeating: " ", count: itemPrefix.count - leadingWhitespace.count)
+            explicitContinuationPrefix
+                ?? (leadingWhitespace + String(repeating: " ", count: itemPrefix.count - leadingWhitespace.count))
         }
     }
 
@@ -345,6 +364,24 @@ class TextBuffer: SpellCheckableBuffer {
                 itemPrefix: leading + symbol,
                 nextPrefix: leading + symbol,
                 isEmptyItem: isEmpty
+            )
+        }
+
+        // 4. Blockquote: > or >> or > >
+        if rest.hasPrefix(">") {
+            let quoteMarker = String(rest.prefix(while: { $0 == ">" || $0 == " " || $0 == "\t" }))
+            let normalizedMarker = quoteMarker.hasSuffix(" ") ? quoteMarker : quoteMarker + " "
+            let afterPrefix = rest.dropFirst(quoteMarker.count)
+            let isEmpty = afterPrefix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            let fullPrefix = leading + (isEmpty ? quoteMarker : normalizedMarker)
+            let contPrefix = leading + normalizedMarker
+            return ListPrefixInfo(
+                leadingWhitespace: leading,
+                itemPrefix: fullPrefix,
+                nextPrefix: contPrefix,
+                isEmptyItem: isEmpty,
+                isBlockquote: true,
+                explicitContinuationPrefix: contPrefix
             )
         }
 
@@ -762,6 +799,64 @@ class TextBuffer: SpellCheckableBuffer {
         }
 
         if let listInfo {
+            if listInfo.isBlockquote {
+                startLine = lineIndex
+                while startLine > 0,
+                    let prevInfo = parseListPrefix(lines[startLine - 1]),
+                    prevInfo.isBlockquote,
+                    !lines[startLine - 1].trimmingCharacters(in: .whitespaces).isEmpty
+                {
+                    startLine -= 1
+                }
+
+                endLine = lineIndex
+                while endLine < lines.count - 1,
+                    let nextInfo = parseListPrefix(lines[endLine + 1]),
+                    nextInfo.isBlockquote,
+                    !lines[endLine + 1].trimmingCharacters(in: .whitespaces).isEmpty
+                {
+                    endLine += 1
+                }
+
+                var rawBodyLines: [String] = []
+                for idx in startLine...endLine {
+                    let line = lines[idx]
+                    if let info = parseListPrefix(line), info.isBlockquote {
+                        rawBodyLines.append(String(line.dropFirst(info.itemPrefix.count)))
+                    } else {
+                        rawBodyLines.append(line)
+                    }
+                }
+
+                let relativeCursorLine = origLineIndex - startLine
+                let currentLinePrefixCount = parseListPrefix(lines[origLineIndex])?.itemPrefix.count ?? 0
+                let relativeCursorCol = max(0, origColumnIndex - currentLinePrefixCount)
+
+                let (paragraphText, cursorOffset) = TextBuffer.joinParagraphLinesWithCursor(
+                    rawBodyLines,
+                    cursorLine: relativeCursorLine,
+                    cursorCol: relativeCursorCol
+                )
+                let tokens = TextBuffer.tokenizeForReflow(paragraphText)
+                let bodyWidth = max(1, targetWidth - listInfo.continuationPrefix.displayWidth)
+                let (wrappedBody, relLine, bodyCol) = TextBuffer.reflowVisualTokensWithCursor(
+                    tokens,
+                    targetWidth: bodyWidth,
+                    cursorOffset: cursorOffset
+                )
+                let newParagraphLines = wrappedBody.map { line in
+                    listInfo.continuationPrefix + line
+                }
+
+                lines.replaceSubrange(startLine...endLine, with: newParagraphLines)
+
+                lineIndex = min(startLine + relLine, lines.count - 1)
+                clampCursor()
+                columnIndex = min(listInfo.continuationPrefix.count + bodyCol, lines[lineIndex].count)
+                isModified = true
+                return
+            }
+
             startLine = listItemStart
             endLine = startLine
             while endLine < lines.count - 1,

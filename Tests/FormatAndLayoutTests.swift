@@ -484,6 +484,48 @@ struct FormatAndLayoutTests {
         #expect(remaining.hasPrefix("safe"))
     }
 
+    @Test func testJustifyMarkdownBlockquotePreservesQuotes() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "> aasdads",
+            "> asdfasdfsfdfd",
+        ]
+        buffer.lineIndex = 0
+        buffer.columnIndex = 0
+
+        // Target width = 72 unrolls both lines into one single quote line
+        buffer.justifyParagraph(targetWidth: 72)
+        #expect(buffer.lines.count == 1)
+        #expect(buffer.lines[0] == "> aasdads asdfasdfsfdfd")
+
+        // Wrapping back down to 14 columns preserves > on each wrapped line
+        buffer.justifyParagraph(targetWidth: 14)
+        #expect(buffer.lines.count == 2)
+        #expect(buffer.lines[0] == "> aasdads")
+        #expect(buffer.lines[1] == "> asdfasdfsfdfd")
+    }
+
+    @Test func testJustifyMarkdownNestedBlockquotePreservesQuotesAndCursor() throws {
+        let buffer = TextBuffer()
+        buffer.lines = [
+            ">> 第一行巢狀引用文字內容",
+            ">> 第二行繼續引用相關說明資料",
+        ]
+        // Put cursor on '相' in second line
+        let targetIndex = buffer.lines[1].range(of: "相")!.lowerBound
+        let targetCol = buffer.lines[1].distance(from: buffer.lines[1].startIndex, to: targetIndex)
+        buffer.lineIndex = 1
+        buffer.columnIndex = targetCol
+
+        buffer.justifyParagraph(targetWidth: 60)
+        #expect(buffer.lines.count == 1)
+        #expect(buffer.lines[0] == ">> 第一行巢狀引用文字內容第二行繼續引用相關說明資料")
+
+        let curLine = buffer.lines[buffer.lineIndex]
+        let remaining = String(curLine.dropFirst(buffer.columnIndex))
+        #expect(remaining.hasPrefix("相關說明資料"))
+    }
+
     @Test func testTerminalDisplayWidthHelpers() throws {
         #expect(Character("A").displayWidth == 1)
         #expect(Character("中").displayWidth == 2)

@@ -5,6 +5,10 @@ public struct PythonSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["py", "python"]
     public var commentPrefix: String { "# " }
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [NSRegularExpression(pattern: #"^#!.*python"#)]) ?? []
+    }
+
     public var rules: [SyntaxRule] {
         [
             makeRule("\"\"\"[^\"]*\"\"\"|'''[^']*'''|\"[^\"]*\"|'[^']*'", .string),

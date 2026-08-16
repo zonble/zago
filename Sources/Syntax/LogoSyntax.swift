@@ -6,6 +6,12 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["logo", "lg"]
     public var commentPrefix: String { "; " }
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [
+            NSRegularExpression(pattern: #"(?i)^\s*(to|make|repeat|drawbox|box|table|line)\b"#),
+        ]) ?? []
+    }
+
     static let keywordPattern: String = {
         let lineSubkeywords = [
             "ARROW", "RIGHTARROW", "DOWNARROW",
