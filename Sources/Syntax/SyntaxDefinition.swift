@@ -31,6 +31,7 @@ public protocol SyntaxDefinition: Sendable {
     var name: String { get }
     var fileExtensions: [String] { get }
     var rules: [SyntaxRule] { get }
+    var headerRules: [NSRegularExpression] { get }
     var commentPrefix: String { get }
     var supportsDocumentOutline: Bool { get }
     var supportsListAutoIndent: Bool { get }
@@ -51,6 +52,10 @@ public protocol SyntaxDefinition: Sendable {
 extension SyntaxDefinition {
     public func makeRule(_ patternStr: String, _ tokenType: SyntaxTokenType) -> SyntaxRule? {
         SyntaxRule(patternStr: patternStr, tokenType: tokenType)
+    }
+
+    public var headerRules: [NSRegularExpression] {
+        []
     }
 
     public var commentPrefix: String {
@@ -89,6 +94,7 @@ extension SyntaxDefinition {
             extensions: fileExtensions,
             rules: rules,
             commentPrefix: commentPrefix,
+            headerRules: headerRules,
             embeddedLanguageDetector: { lines, index in
                 self.detectEmbeddedLanguageName(in: lines, bufferLineIndex: index)
             },

@@ -5,6 +5,10 @@ public struct SwiftSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["swift"]
     public var commentPrefix: String { "// " }
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [NSRegularExpression(pattern: #"^#!.*swift"#)]) ?? []
+    }
+
     public var rules: [SyntaxRule] {
         [
             makeRule("\"[^\"]*\"", .string),

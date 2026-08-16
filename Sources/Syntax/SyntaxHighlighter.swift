@@ -175,30 +175,35 @@ public final class SyntaxHighlighter {
     public func detectLanguage(
         for filePath: String?, firstLine: String? = nil, magicDescription: String? = nil
     ) -> LanguageSyntax? {
-        guard let path = filePath, !path.isEmpty else { return nil }
-        let ext = (path as NSString).pathExtension.lowercased()
-        let filename = (path as NSString).lastPathComponent.lowercased()
+        if let path = filePath, !path.isEmpty {
+            let ext = (path as NSString).pathExtension.lowercased()
+            let filename = (path as NSString).lastPathComponent.lowercased()
 
-        if let extensionLanguage = languages.first(where: { lang in
-            lang.extensions.contains(ext) || lang.extensions.contains(filename)
-        }) {
-            return extensionLanguage
+            if let extensionLanguage = languages.first(where: { lang in
+                lang.extensions.contains(ext) || lang.extensions.contains(filename)
+            }) {
+                return extensionLanguage
+            }
         }
 
-        if let firstLine,
+        if let firstLine, !firstLine.isEmpty,
             let headerLanguage = languages.first(where: { lang in
                 lang.headerRules.contains { rule in
-                    rule.firstMatch(in: firstLine, options: [], range: NSRange(location: 0, length: (firstLine as NSString).length)) != nil
+                    rule.firstMatch(
+                        in: firstLine, options: [],
+                        range: NSRange(location: 0, length: (firstLine as NSString).length)) != nil
                 }
             })
         {
             return headerLanguage
         }
 
-        if let magicDescription {
+        if let magicDescription, !magicDescription.isEmpty {
             return languages.first { lang in
                 lang.magicRules.contains { rule in
-                    rule.firstMatch(in: magicDescription, options: [], range: NSRange(location: 0, length: (magicDescription as NSString).length)) != nil
+                    rule.firstMatch(
+                        in: magicDescription, options: [],
+                        range: NSRange(location: 0, length: (magicDescription as NSString).length)) != nil
                 }
             }
         }

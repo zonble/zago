@@ -10,6 +10,13 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["zagorc", ".zagorc"]
     public var commentPrefix: String { "# " }
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [
+            NSRegularExpression(pattern: #"(?i)^\s*(set|bind|logo|logo-script)\b"#),
+            NSRegularExpression(pattern: #"^#!.*zago"#),
+        ]) ?? []
+    }
+
     private static let directivePattern =
         #"(?i)^\s*(set|unset|bind|unbind|logo|logo-prelude|logo-script|endlogo)\b"#
 

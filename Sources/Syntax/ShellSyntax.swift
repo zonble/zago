@@ -5,6 +5,10 @@ public struct ShellSyntaxDefinition: SyntaxDefinition {
     public let fileExtensions = ["sh", "bash", "zsh", "shell"]
     public var commentPrefix: String { "# " }
 
+    public var headerRules: [NSRegularExpression] {
+        (try? [NSRegularExpression(pattern: #"^#!.*(sh|bash|zsh)"#)]) ?? []
+    }
+
     public var rules: [SyntaxRule] {
         [
             makeRule("\"[^\"]*\"|'[^']*'", .string),
