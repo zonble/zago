@@ -650,107 +650,118 @@ extension LogoEngine {
     }
 
     private func evaluateMeasurementFormatPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
-        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-        guard let valStr = reader.nextOptionalExpression(),
-            let unitStr = reader.nextOptionalExpression()
-        else { return "" }
+        #if os(Linux) || os(Windows)
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            _ = reader.nextOptionalExpression()
+            _ = reader.nextOptionalExpression()
+            reader.commit(to: &index)
+            let name = prim.meta.name
+            let message = "[LOGO Error: \(name) is not supported on this platform]"
+            reportError(LogoError(code: 1, message: message), token: name)
+            return ""
+        #else
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            guard let valStr = reader.nextOptionalExpression(),
+                let unitStr = reader.nextOptionalExpression()
+            else { return "" }
 
-        let val = Double(unquote(valStr)) ?? 0
-        let cleanUnit = unquote(unitStr)
+            let val = Double(unquote(valStr)) ?? 0
+            let cleanUnit = unquote(unitStr)
 
-        var style: String? = nil
-        var localeSpec: String? = nil
-        var naturalScale = false
+            var style: String? = nil
+            var localeSpec: String? = nil
+            var naturalScale = false
 
-        if reader.peekToken() == "[" {
-            let rawList = reader.nextExpression()
-            let parsed = LogoValue.parse(rawList)
-            if case .list(let items) = parsed {
-                var isDict = false
-                var i = 0
-                while i < items.count {
-                    let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                    if ["style", "fmt", "locale", "lang", "natural", "scale"].contains(cleanKey)
-                        && i + 1 < items.count
-                    {
-                        isDict = true
-                        let v = items[i + 1].stringValue
-                        switch cleanKey {
-                        case "style", "fmt": style = v
-                        case "locale", "lang": localeSpec = v
-                        case "natural", "scale": naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
-                        default: break
+            if reader.peekToken() == "[" {
+                let rawList = reader.nextExpression()
+                let parsed = LogoValue.parse(rawList)
+                if case .list(let items) = parsed {
+                    var isDict = false
+                    var i = 0
+                    while i < items.count {
+                        let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                        let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                        if ["style", "fmt", "locale", "lang", "natural", "scale"].contains(cleanKey)
+                            && i + 1 < items.count
+                        {
+                            isDict = true
+                            let v = items[i + 1].stringValue
+                            switch cleanKey {
+                            case "style", "fmt": style = v
+                            case "locale", "lang": localeSpec = v
+                            case "natural", "scale": naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
+                            default: break
+                            }
+                            i += 2
+                        } else {
+                            i += 1
                         }
-                        i += 2
-                    } else {
-                        i += 1
+                    }
+                    if !isDict {
+                        if items.count > 0 { style = items[0].stringValue }
+                        if items.count > 1 { localeSpec = items[1].stringValue }
+                        if items.count > 2 {
+                            let v = items[2].stringValue.lowercased()
+                            naturalScale = (v == "true" || v == "1" || v == "yes")
+                        }
                     }
                 }
-                if !isDict {
-                    if items.count > 0 { style = items[0].stringValue }
-                    if items.count > 1 { localeSpec = items[1].stringValue }
-                    if items.count > 2 {
-                        let v = items[2].stringValue.lowercased()
-                        naturalScale = (v == "true" || v == "1" || v == "yes")
-                    }
+            } else {
+                var positional: [String] = []
+                while positional.count < 3,
+                    let arg = reader.nextOptionalExpression()
+                {
+                    positional.append(unquote(arg))
+                }
+                if positional.count > 0 { style = positional[0] }
+                if positional.count > 1 { localeSpec = positional[1] }
+                if positional.count > 2 {
+                    let v = positional[2].lowercased()
+                    naturalScale = (v == "true" || v == "1" || v == "yes")
                 }
             }
-        } else {
-            var positional: [String] = []
-            while positional.count < 3,
-                let arg = reader.nextOptionalExpression()
-            {
-                positional.append(unquote(arg))
+
+            reader.commit(to: &index)
+
+            let kind: LogoMeasurementConverter.DimensionKind
+            switch prim {
+            case .formatArea: kind = .area
+            case .formatLength: kind = .length
+            case .formatVolume: kind = .volume
+            case .formatAngle: kind = .angle
+            case .formatMass: kind = .mass
+            case .formatPressure: kind = .pressure
+            case .formatAcceleration: kind = .acceleration
+            case .formatDuration: kind = .duration
+            case .formatFrequency: kind = .frequency
+            case .formatSpeed: kind = .speed
+            case .formatEnergy: kind = .energy
+            case .formatPower: kind = .power
+            case .formatTemperature: kind = .temperature
+            case .formatIlluminance: kind = .illuminance
+            case .formatElectricCharge: kind = .electricCharge
+            case .formatElectricCurrent: kind = .electricCurrent
+            case .formatElectricPotentialDifference: kind = .electricPotentialDifference
+            case .formatElectricResistance: kind = .electricResistance
+            case .formatConcentrationMass: kind = .concentrationMass
+            case .formatDispersion: kind = .dispersion
+            case .formatFuelEfficiency: kind = .fuelEfficiency
+            case .formatInformationStorage: kind = .informationStorage
+            default: return ""
             }
-            if positional.count > 0 { style = positional[0] }
-            if positional.count > 1 { localeSpec = positional[1] }
-            if positional.count > 2 {
-                let v = positional[2].lowercased()
-                naturalScale = (v == "true" || v == "1" || v == "yes")
+
+            if let formatted = LogoMeasurementConverter.format(
+                value: val,
+                unit: cleanUnit,
+                kind: kind,
+                style: style,
+                locale: localeSpec,
+                naturalScale: naturalScale
+            ) {
+                setLastExpressionString(formatted)
+                return formatted
             }
-        }
-
-        reader.commit(to: &index)
-
-        let kind: LogoMeasurementConverter.DimensionKind
-        switch prim {
-        case .formatArea: kind = .area
-        case .formatLength: kind = .length
-        case .formatVolume: kind = .volume
-        case .formatAngle: kind = .angle
-        case .formatMass: kind = .mass
-        case .formatPressure: kind = .pressure
-        case .formatAcceleration: kind = .acceleration
-        case .formatDuration: kind = .duration
-        case .formatFrequency: kind = .frequency
-        case .formatSpeed: kind = .speed
-        case .formatEnergy: kind = .energy
-        case .formatPower: kind = .power
-        case .formatTemperature: kind = .temperature
-        case .formatIlluminance: kind = .illuminance
-        case .formatElectricCharge: kind = .electricCharge
-        case .formatElectricCurrent: kind = .electricCurrent
-        case .formatElectricPotentialDifference: kind = .electricPotentialDifference
-        case .formatElectricResistance: kind = .electricResistance
-        case .formatConcentrationMass: kind = .concentrationMass
-        case .formatDispersion: kind = .dispersion
-        case .formatFuelEfficiency: kind = .fuelEfficiency
-        case .formatInformationStorage: kind = .informationStorage
-        default: return ""
-        }
-
-        if let formatted = LogoMeasurementConverter.format(
-            value: val,
-            unit: cleanUnit,
-            kind: kind,
-            style: style,
-            locale: localeSpec,
-            naturalScale: naturalScale
-        ) {
-            setLastExpressionString(formatted)
-            return formatted
-        }
-        return ""
+            return ""
+        #endif
     }
 }

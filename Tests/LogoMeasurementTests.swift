@@ -133,6 +133,7 @@ struct LogoMeasurementTests {
         #expect(eval("(CONVERT.LENGTH 100 \"m \"cm)") == "10000")
     }
 
+    #if !os(Linux) && !os(Windows)
     @Test func testFormatLength() throws {
         let res1 = eval("FORMAT.LENGTH 100 \"m")
         #expect(!res1.isEmpty)
@@ -154,4 +155,17 @@ struct LogoMeasurementTests {
         let res = eval("(FORMAT.SPEED 100 \"kmh \"short)")
         #expect(!res.isEmpty)
     }
+    #else
+    @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
+        let engine = LogoEngine()
+        var reported = false
+        engine.errorHandler = { error, _ in
+            if error.message.contains("not supported on this platform") {
+                reported = true
+            }
+        }
+        _ = eval("FORMAT.LENGTH 100 \"m", engine: engine)
+        #expect(reported)
+    }
+    #endif
 }

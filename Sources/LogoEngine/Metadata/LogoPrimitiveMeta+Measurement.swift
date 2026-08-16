@@ -349,7 +349,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.AREA 100 \"sqm \"long \"zh_TW", output: "100 平方公尺")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.AREA 100 \"sqm \"long \"zh_TW", output: "100 平方公尺")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatLength:
@@ -366,7 +367,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.LENGTH 1500 \"m \"long \"zh_TW \"true", output: "1.5 公里")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.LENGTH 1500 \"m \"long \"zh_TW \"true", output: "1.5 公里")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatVolume:
@@ -383,7 +385,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.VOLUME 2 \"l \"long \"zh_TW", output: "2 公升")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.VOLUME 2 \"l \"long \"zh_TW", output: "2 公升")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatAngle:
@@ -400,7 +403,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ANGLE 90 \"deg \"short", output: "90°")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ANGLE 90 \"deg \"short", output: "90°")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatMass:
@@ -417,7 +421,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.MASS 500 \"g \"long \"zh_TW", output: "500 公克")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.MASS 500 \"g \"long \"zh_TW", output: "500 公克")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatPressure:
@@ -434,7 +439,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.PRESSURE 1 \"atm \"short", output: "1 atm")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.PRESSURE 1 \"atm \"short", output: "1 atm")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatAcceleration:
@@ -451,7 +457,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ACCELERATION 9.81 \"m/s2 \"medium", output: "9.81 m/s²")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ACCELERATION 9.81 \"m/s2 \"medium", output: "9.81 m/s²")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatDuration:
@@ -468,7 +475,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.DURATION 2 \"hr \"long \"zh_TW", output: "2 小時")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.DURATION 2 \"hr \"long \"zh_TW", output: "2 小時")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatFrequency:
@@ -485,7 +493,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.FREQUENCY 60 \"hz \"short", output: "60 Hz")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.FREQUENCY 60 \"hz \"short", output: "60 Hz")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatSpeed:
@@ -502,7 +511,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.SPEED 100 \"kmh \"long \"zh_TW", output: "100 公里/小時")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.SPEED 100 \"kmh \"long \"zh_TW", output: "100 公里/小時")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatEnergy:
@@ -519,7 +529,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ENERGY 2000 \"kcal \"long \"zh_TW", output: "2,000 大卡")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ENERGY 2000 \"kcal \"long \"zh_TW", output: "2,000 大卡")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatPower:
@@ -536,7 +547,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.POWER 100 \"kw \"long \"zh_TW", output: "100 瓩")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.POWER 100 \"kw \"long \"zh_TW", output: "100 瓩")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatTemperature:
@@ -553,7 +565,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.TEMPERATURE 25 \"c \"long \"zh_TW", output: "25 攝氏度")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.TEMPERATURE 25 \"c \"long \"zh_TW", output: "25 攝氏度")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatIlluminance:
@@ -570,7 +583,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ILLUMINANCE 500 \"lx \"short", output: "500 lx")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ILLUMINANCE 500 \"lx \"short", output: "500 lx")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatElectricCharge:
@@ -587,7 +601,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCHARGE 5000 \"mah \"short", output: "5,000 mAh")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCHARGE 5000 \"mah \"short", output: "5,000 mAh")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatElectricCurrent:
@@ -604,7 +619,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCURRENT 2 \"a \"long \"zh_TW", output: "2 安培")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCURRENT 2 \"a \"long \"zh_TW", output: "2 安培")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatElectricPotentialDifference:
@@ -621,7 +637,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.VOLTAGE 110 \"v \"long \"zh_TW", output: "110 伏特")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.VOLTAGE 110 \"v \"long \"zh_TW", output: "110 伏特")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatElectricResistance:
@@ -638,7 +655,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICRESISTANCE 10 \"kohm \"long \"zh_TW", output: "10 千歐")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICRESISTANCE 10 \"kohm \"long \"zh_TW", output: "10 千歐")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatConcentrationMass:
@@ -655,7 +673,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.CONCENTRATIONMASS 100 \"mg/dl \"short", output: "100 mg/dL")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.CONCENTRATIONMASS 100 \"mg/dl \"short", output: "100 mg/dL")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatDispersion:
@@ -672,7 +691,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.DISPERSION 10 \"ppm \"short", output: "10 ppm")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.DISPERSION 10 \"ppm \"short", output: "10 ppm")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatFuelEfficiency:
@@ -689,7 +709,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.FUELEFFICIENCY 30 \"mpg \"short", output: "30 mpg")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.FUELEFFICIENCY 30 \"mpg \"short", output: "30 mpg")],
+                notes: "Not supported on Linux or Windows."
             )
 
         case .formatInformationStorage:
@@ -706,7 +727,8 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.STORAGE 16 \"gb \"long \"zh_TW", output: "16 GB")]
+                examples: [LogoPrimitiveExample(input: "FORMAT.STORAGE 16 \"gb \"long \"zh_TW", output: "16 GB")],
+                notes: "Not supported on Linux or Windows."
             )
 
         default:
