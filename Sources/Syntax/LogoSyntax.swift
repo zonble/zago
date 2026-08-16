@@ -8,7 +8,15 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
 
     public var headerRules: [NSRegularExpression] {
         (try? [
-            NSRegularExpression(pattern: #"(?i)^\s*(to|make|repeat|drawbox|box|table|line)\b"#),
+            NSRegularExpression(pattern: #"^#!\s*/.*\b(logo|zago)\b"#),
+            NSRegularExpression(pattern: #"^;\s*.*(logo|zago)"#),
+            NSRegularExpression(pattern: #"(?i)^\s*to\s+[a-zA-Z_][a-zA-Z0-9_.]*(\s+:[a-zA-Z0-9_]+)*\s*$"#),
+            NSRegularExpression(pattern: #"(?i)^\s*make\s+["':][a-zA-Z0-9_]"#),
+            NSRegularExpression(pattern: #"(?i)^\s*repeat\s+(\d+|:[a-zA-Z0-9_]+)\s*\["#),
+            NSRegularExpression(pattern: #"(?i)^\s*drawbox\b"#),
+            NSRegularExpression(pattern: #"(?i)^\s*box\s+(\d+|"[^"\n]*"|'[^'\n]*'|\[)"#),
+            NSRegularExpression(pattern: #"(?i)^\s*table\s+(\d+|\[)"#),
+            NSRegularExpression(pattern: #"(?i)^\s*line\s+(\d+|\[|"single|"double|"round|"heavy)"#),
         ]) ?? []
     }
 

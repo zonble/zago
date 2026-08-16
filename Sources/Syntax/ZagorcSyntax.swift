@@ -12,7 +12,9 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
 
     public var headerRules: [NSRegularExpression] {
         (try? [
-            NSRegularExpression(pattern: #"(?i)^\s*(set|bind|logo|logo-script)\b"#),
+            NSRegularExpression(pattern: #"(?i)^\s*set\s+(wrap|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|tab|lang|language|spell-language|border|arrow|git-diff|debug|regex)\b"#),
+            NSRegularExpression(pattern: #"(?i)^\s*(bind|unbind)\s+"#),
+            NSRegularExpression(pattern: #"(?i)^\s*(logo-script|logo-prelude|logo)\b"#),
             NSRegularExpression(pattern: #"^#!.*zago"#),
         ]) ?? []
     }

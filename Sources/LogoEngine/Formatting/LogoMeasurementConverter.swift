@@ -124,7 +124,7 @@ public enum LogoMeasurementConverter {
 
     public static func formatResult(_ value: Double) -> String {
         if value.isNaN || value.isInfinite { return "\(value)" }
-        let roundedInt = Darwin.round(value)
+        let roundedInt = value.rounded()
         if abs(value - roundedInt) < 1e-5 && abs(roundedInt) < Double(Int64.max) {
             return "\(Int64(roundedInt))"
         }
