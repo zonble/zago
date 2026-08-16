@@ -642,6 +642,12 @@ struct ConfigAndToolsTests {
             semaphore.signal()
         }
 
+        // A write performed through the file I/O strategy is an editor save and
+        // must not be reported as an external change by the watcher.
+        try fileIO.writeTextFile("v1 - editor save\n", to: tmpFile, encoding: .utf8)
+        Thread.sleep(forTimeInterval: 0.2)
+        #expect(counter.value == 0)
+
         // First atomic write (different string length ensures size changes immediately without needing Thread.sleep)
         try "v2 - modified content\n".write(
             to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
