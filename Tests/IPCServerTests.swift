@@ -748,7 +748,7 @@ final class IPCServerTests: XCTestCase {
 
             let socketURL = longDirectory.appendingPathComponent("zago-test.sock")
             let tokenURL = longDirectory.appendingPathComponent("zago-test.token")
-            FileManager.default.createFile(atPath: socketURL.path, contents: Data())
+            XCTAssertTrue(FileManager.default.createFile(atPath: socketURL.path, contents: Data()))
             XCTAssertTrue(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
 
             XCTAssertGreaterThan(
