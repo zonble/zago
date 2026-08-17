@@ -314,7 +314,7 @@ Linux and Windows while performing full locale-aware unit formatting on Apple pl
 
 ### Foundation `Measurement` (Unit Conversion) & `swift-corelibs-foundation` Discrepancies
 
-`Measurement<UnitType: Dimension>` (unit conversion via `CONVERT.*`) is supported across macOS,
+`Measurement<UnitType: Dimension>` (unit conversion via `CONVERT.MEASURE`) is supported across macOS,
 Linux, and Windows, but developers should be aware of the following differences:
 
 1. **Unit Constant Precision Differences**:
