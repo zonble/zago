@@ -6,7 +6,7 @@ import Foundation
 /// cannot shadow or override core engine keywords to ensure unambiguous parsing and token dispatch:
 ///
 /// 1. **Built-in Primitives**: Names matching any `LogoPrimitive` keyword or alias
-///    (e.g., `FORWARD`, `FD`, `REPEAT`, `MAKE`, `IF`, `PRINT`, `FORMAT.DATE`, `CONVERT.AREA`).
+///    (e.g., `FORWARD`, `FD`, `REPEAT`, `MAKE`, `IF`, `PRINT`, `FORMAT.DATE`, `CONVERT.MEASURE`).
 /// 2. **Infix Operators**: Names matching any `LogoOperator` symbol or word (e.g., `+`, `-`, `*`, `/`, `=`, `<>`).
 /// 3. **Structural Delimiters & Keywords**: Special syntax tokens including `END` (procedure terminator),
 ///    brackets `[` `]` `{` `}`, parentheses `(` `)`, and comment prefixes `;`, `#`, `//`.

@@ -110,12 +110,12 @@ struct EnglishStrings {
                                                  or box interior
             TABLE [rows cols width]              Insert ASCII table
 
-            Bounds: BOX/DRAWBOX clamp to width 3...200, height 2...100;
-                    LINE/VLINE clamp to length 1...200.
-            Borders: single, heavy, double, round, double-round, ascii, ascii-round
-                     triple-dash, heavy-triple-dash, quadruple-dash,
-                     heavy-quadruple-dash, double-dash, heavy-double-dash
-            Arrows:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+            • Bounds:  BOX/DRAWBOX clamp to width 3...200, height 2...100;
+                       LINE/VLINE clamp to length 1...200.
+            • Borders: single, heavy, double, round, double-round, ascii, ascii-round
+                       triple-dash, heavy-triple-dash, quadruple-dash,
+                       heavy-quadruple-dash, double-dash, heavy-double-dash
+            • Arrows:  solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
           2. Basic arithmetic & infix operators
             +  -  *  /  %  ^                     Infix math operators
@@ -203,7 +203,7 @@ struct EnglishStrings {
                 • MDARRAY dims (Creates a multi-dimensional array of specified 
                   dimensions,  e.g., MDARRAY [3 3] produces a 3 × 3 matrix)
 
-          6. Date, Time & Foundation Formatters
+          6. Date, Time & Formatters
             DATE [format] [locale] [tz] [cal]    Get current date (styles, timezones, 
                                                  calendars)
             TIME [format] [locale] [tz] [cal]    Get current time (default: "HH:mm:ss")
@@ -222,33 +222,16 @@ struct EnglishStrings {
             DETECT.DATE text                     Detect dates; returns a list
             DETECT.ADDRESS text                  Detect postal addresses; returns a list
 
-          7. Measurements & Unit Conversions (Foundation)
-            CONVERT.AREA val from to             Convert area (sqm, sqft, sqkm, acres, ha)
-            CONVERT.LENGTH val from to           Convert length (m, km, cm, mm, in, ft, yd, mi, nmi)
-            CONVERT.VOLUME val from to           Convert volume (l, ml, gal, cup, floz, tbsp, tsp, m3)
-            CONVERT.ANGLE val from to            Convert angle (deg, rad, grad, rev, arcmin)
-            CONVERT.MASS val from to             Convert mass/weight (kg, g, mg, lb, oz, ton, ct)
-            CONVERT.PRESSURE val from to         Convert pressure (pa, hpa, kpa, bar, mbar, atm, psi)
-            CONVERT.ACCELERATION val from to     Convert acceleration (m/s2, g)
-            CONVERT.DURATION val from to         Convert duration (s, min, hr, ms, us, ns)
-            CONVERT.FREQUENCY val from to        Convert frequency (hz, khz, mhz, ghz, fps)
-            CONVERT.SPEED val from to            Convert speed (m/s, kmh, mph, knots)
-            CONVERT.ENERGY val from to           Convert energy (j, kj, mj, cal, kcal, kwh)
-            CONVERT.POWER val from to            Convert power (w, kw, mw, gw, hp)
-            CONVERT.TEMPERATURE val from to      Convert temperature (c, f, k)
-            CONVERT.ILLUMINANCE val from to      Convert illuminance (lx)
-            CONVERT.ELECTRICCHARGE val from to   Convert electric charge (c, ah, mah)
-            CONVERT.ELECTRICCURRENT val from to  Convert electric current (a, ma, ua, ka)
-            CONVERT.VOLTAGE val from to          Convert voltage/potential (v, mv, uv, kv)
-            CONVERT.ELECTRICRESISTANCE val f t   Convert electric resistance (ohm, kohm, megaohm)
-            CONVERT.CONCENTRATIONMASS val f t    Convert mass concentration (g/l, mg/dl, mmol/l)
-            CONVERT.DISPERSION val from to       Convert dispersion (ppm)
-            CONVERT.FUELEFFICIENCY val from to   Convert fuel efficiency (l/100km, mpg)
-            CONVERT.STORAGE val from to          Convert data storage (b, kb, mb, gb, tb, kib, mib)
-            FORMAT.<DIMENSION> val unit [style] [locale] [natural]
-                                                 Format measurement (e.g. FORMAT.LENGTH 1500 "m "long)
-            MEASURE.ADD v1 u1 v2 u2 [targetUnit] Add measurements (e.g. 5 "km 300 "m "m -> 5300)
-            MEASURE.SUB v1 u1 v2 u2 [targetUnit] Subtract measurements (e.g. 1 "hr 15 "min "min -> 45)
+          7. Measurements & Unit Conversions
+            CONVERT.MEASURE val from to / m to   Convert measurements 
+                                                 (e.g. 1000 "m "km, 100 "c "f)
+            FORMAT.MEASURE val unit [style] [locale] [natural]
+                                                 Format measurement
+                                                 (e.g. FORMAT.MEASURE 1500 "m "long)
+            MEASURE.ADD v1 u1 v2 u2 [targetUnit] Add measurements 
+                                                 (e.g. 5 "km 300 "m "m -> 5300)
+            MEASURE.SUB v1 u1 v2 u2 [targetUnit] Subtract measurements
+                                                 (e.g. 1 "hr 15 "min "min -> 45)
             MEASURE.SCALE val unit factor        Scale measurement (e.g. 2.5 "km 3 -> 7.5)
             MEASURE.EQUAL? v1 u1 v2 u2 [tol]     Test measurement equality under conversion
             MEASURE.LESS? v1 u1 v2 u2            Test if measurement 1 < measurement 2
