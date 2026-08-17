@@ -521,6 +521,7 @@ struct LogoFormatters {
         style: PersonNameStyle = .default,
         locale: String? = nil
     ) -> String {
+        #if canImport(Darwin)
         var components = PersonNameComponents()
         if let given = givenName, !given.isEmpty { components.givenName = given }
         if let family = familyName, !family.isEmpty { components.familyName = family }
@@ -552,5 +553,55 @@ struct LogoFormatters {
         }
 
         return formatter.string(from: components)
+        #else
+        // Fallback for Linux / Windows / swift-corelibs-foundation where PersonNameComponentsFormatter is unavailable
+        if let full = fullName, (givenName == nil || givenName?.isEmpty == true) && (familyName == nil || familyName?.isEmpty == true) {
+            return full
+        }
+
+        let isCJKLocale: Bool = {
+            guard let loc = locale?.lowercased() else { return false }
+            return loc.hasPrefix("zh") || loc.hasPrefix("ja") || loc.hasPrefix("ko")
+        }()
+
+        let given = givenName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let middle = middleName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let family = familyName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let pfx = prefix?.trimmingCharacters(in: .whitespaces) ?? ""
+        let sfx = suffix?.trimmingCharacters(in: .whitespaces) ?? ""
+        let nick = nickname?.trimmingCharacters(in: .whitespaces) ?? ""
+
+        switch style {
+        case .abbreviated:
+            var abbr = ""
+            if !given.isEmpty, let f = given.first { abbr.append(f) }
+            if !family.isEmpty, let f = family.first { abbr.append(f) }
+            return abbr.isEmpty ? (fullName ?? "") : abbr.uppercased()
+
+        case .short:
+            if !nick.isEmpty { return nick }
+            if !given.isEmpty { return given }
+            if !family.isEmpty { return family }
+            return fullName ?? ""
+
+        case .long, .default, .medium:
+            if isCJKLocale {
+                var parts: [String] = []
+                if !pfx.isEmpty { parts.append(pfx) }
+                if !family.isEmpty { parts.append(family) }
+                if !given.isEmpty { parts.append(given) }
+                if !sfx.isEmpty { parts.append(sfx) }
+                return parts.joined()
+            } else {
+                var parts: [String] = []
+                if !pfx.isEmpty { parts.append(pfx) }
+                if !given.isEmpty { parts.append(given) }
+                if !middle.isEmpty { parts.append(middle) }
+                if !family.isEmpty { parts.append(family) }
+                if !sfx.isEmpty { parts.append(sfx) }
+                return parts.joined(separator: " ")
+            }
+        }
+        #endif
     }
 }
