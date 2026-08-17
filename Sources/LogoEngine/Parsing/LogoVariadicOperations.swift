@@ -15,6 +15,8 @@ internal func evaluateVariadicValuePrimitive(_ primitive: LogoPrimitive, argumen
             switch LogoValue.parse(argument) {
             case .list(let values), .array(let values):
                 items.append(contentsOf: values)
+            case .measurement(let val, let unit, _):
+                items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(val)), .string(unit)])
             case .string(let value):
                 items.append(.string(value))
             }

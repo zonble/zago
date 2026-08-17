@@ -308,7 +308,7 @@ matched substrings as a Logo list.
 
 `MeasurementFormatter` is explicitly marked unavailable in `swift-corelibs-foundation`
 on Linux and Windows (`@available(*, unavailable, message: "Not supported in swift-corelibs-foundation")`).
-The 22 `FORMAT.<DIMENSION>` primitives remain present in the keywords and metadata for
+The `FORMAT.MEASURE` primitive remains present in the keywords and metadata for
 documentation and completions, but execution reports a platform-not-supported Logo error on
 Linux and Windows while performing full locale-aware unit formatting on Apple platforms.
 

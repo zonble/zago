@@ -240,6 +240,14 @@ struct TraditionalChineseStrings {
             CONVERT.STORAGE val from to          數位儲存容量轉換（b, kb, mb, gb, tb, kib, mib）
             FORMAT.<DIMENSION> val unit [style] [locale] [natural]
                                                  度量衡格式化（如 FORMAT.LENGTH 1500 "m "long）
+            MEASURE.ADD v1 u1 v2 u2 [targetUnit] 度量衡跨單位加法（如 5 "km 300 "m "m -> 5300）
+            MEASURE.SUB v1 u1 v2 u2 [targetUnit] 度量衡跨單位減法（如 1 "hr 15 "min "min -> 45）
+            MEASURE.SCALE val unit factor        度量衡乘法倍數縮放（如 2.5 "km 3 -> 7.5）
+            MEASURE.EQUAL? v1 u1 v2 u2 [tol]     測試兩度量衡是否等值（自動換算單位）
+            MEASURE.LESS? v1 u1 v2 u2            測試量度 1 是否小於量度 2
+            MEASURE.GREATER? v1 u1 v2 u2         測試量度 1 是否大於量度 2
+            MEASURE.MIN v1 u1 v2 u2 [targetUnit] 取兩度量衡較小者
+            MEASURE.MAX v1 u1 v2 u2 [targetUnit] 取兩度量衡較大者
 
           8. CJK
             TRANSFORM.TOHANS text / TOHANS       繁體中文轉簡體中文

@@ -122,6 +122,122 @@ public enum LogoMeasurementConverter {
         }
     }
 
+    public static func findDimension(for unitStr: String) -> DimensionKind? {
+        let clean = normalizeUnitKey(unitStr)
+        if areaUnits[clean] != nil { return .area }
+        if lengthUnits[clean] != nil { return .length }
+        if volumeUnits[clean] != nil { return .volume }
+        if angleUnits[clean] != nil { return .angle }
+        if massUnits[clean] != nil { return .mass }
+        if pressureUnits[clean] != nil { return .pressure }
+        if accelerationUnits[clean] != nil { return .acceleration }
+        if durationUnits[clean] != nil { return .duration }
+        if frequencyUnits[clean] != nil { return .frequency }
+        if speedUnits[clean] != nil { return .speed }
+        if energyUnits[clean] != nil { return .energy }
+        if powerUnits[clean] != nil { return .power }
+        if temperatureUnits[clean] != nil { return .temperature }
+        if illuminanceUnits[clean] != nil { return .illuminance }
+        if electricChargeUnits[clean] != nil { return .electricCharge }
+        if electricCurrentUnits[clean] != nil { return .electricCurrent }
+        if electricPotentialDifferenceUnits[clean] != nil { return .electricPotentialDifference }
+        if electricResistanceUnits[clean] != nil { return .electricResistance }
+        if concentrationMassUnits[clean] != nil { return .concentrationMass }
+        if dispersionUnits[clean] != nil { return .dispersion }
+        if fuelEfficiencyUnits[clean] != nil { return .fuelEfficiency }
+        if informationStorageUnits[clean] != nil { return .informationStorage }
+        return nil
+    }
+
+    public static func convert(value: Double, from fromUnitStr: String, to toUnitStr: String) -> Double? {
+        guard let kindFrom = findDimension(for: fromUnitStr),
+            let kindTo = findDimension(for: toUnitStr),
+            kindFrom == kindTo
+        else {
+            return nil
+        }
+        return convert(value: value, from: fromUnitStr, to: toUnitStr, kind: kindFrom)
+    }
+
+    public static func add(
+        val1: Double, unit1: String,
+        val2: Double, unit2: String,
+        targetUnit: String? = nil
+    ) -> (value: Double, unit: String, dimension: DimensionKind)? {
+        guard let dim1 = findDimension(for: unit1),
+            let dim2 = findDimension(for: unit2),
+            dim1 == dim2
+        else { return nil }
+        let outUnit = targetUnit ?? unit1
+        guard let dimOut = findDimension(for: outUnit), dimOut == dim1 else { return nil }
+        guard let v1 = convert(value: val1, from: unit1, to: outUnit, kind: dim1),
+            let v2 = convert(value: val2, from: unit2, to: outUnit, kind: dim1)
+        else { return nil }
+        return (v1 + v2, outUnit, dim1)
+    }
+
+    public static func subtract(
+        val1: Double, unit1: String,
+        val2: Double, unit2: String,
+        targetUnit: String? = nil
+    ) -> (value: Double, unit: String, dimension: DimensionKind)? {
+        guard let dim1 = findDimension(for: unit1),
+            let dim2 = findDimension(for: unit2),
+            dim1 == dim2
+        else { return nil }
+        let outUnit = targetUnit ?? unit1
+        guard let dimOut = findDimension(for: outUnit), dimOut == dim1 else { return nil }
+        guard let v1 = convert(value: val1, from: unit1, to: outUnit, kind: dim1),
+            let v2 = convert(value: val2, from: unit2, to: outUnit, kind: dim1)
+        else { return nil }
+        return (v1 - v2, outUnit, dim1)
+    }
+
+    public static func scale(
+        value: Double, unit: String, factor: Double
+    ) -> (value: Double, unit: String, dimension: DimensionKind)? {
+        guard let dim = findDimension(for: unit) else { return nil }
+        return (value * factor, unit, dim)
+    }
+
+    public static func compare(
+        val1: Double, unit1: String,
+        val2: Double, unit2: String
+    ) -> (v1: Double, v2: Double)? {
+        guard let dim1 = findDimension(for: unit1),
+            let dim2 = findDimension(for: unit2),
+            dim1 == dim2
+        else { return nil }
+        guard let v2InUnit1 = convert(value: val2, from: unit2, to: unit1, kind: dim1) else { return nil }
+        return (val1, v2InUnit1)
+    }
+
+    public static func min(
+        val1: Double, unit1: String,
+        val2: Double, unit2: String,
+        targetUnit: String? = nil
+    ) -> (value: Double, unit: String, dimension: DimensionKind)? {
+        guard let (v1, v2) = compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else { return nil }
+        let outUnit = targetUnit ?? unit1
+        guard let dim = findDimension(for: unit1) else { return nil }
+        let smaller = v1 <= v2 ? val1 : v2
+        guard let result = convert(value: smaller, from: unit1, to: outUnit, kind: dim) else { return nil }
+        return (result, outUnit, dim)
+    }
+
+    public static func max(
+        val1: Double, unit1: String,
+        val2: Double, unit2: String,
+        targetUnit: String? = nil
+    ) -> (value: Double, unit: String, dimension: DimensionKind)? {
+        guard let (v1, v2) = compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else { return nil }
+        let outUnit = targetUnit ?? unit1
+        guard let dim = findDimension(for: unit1) else { return nil }
+        let greater = v1 >= v2 ? val1 : v2
+        guard let result = convert(value: greater, from: unit1, to: outUnit, kind: dim) else { return nil }
+        return (result, outUnit, dim)
+    }
+
     public static func format(
         value: Double,
         unit unitStr: String,
@@ -270,7 +386,7 @@ public enum LogoMeasurementConverter {
         return "\(rounded)"
     }
 
-    private static func normalizeUnitKey(_ s: String) -> String {
+    internal static func normalizeUnitKey(_ s: String) -> String {
         var clean = s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         clean = clean.trimmingCharacters(in: CharacterSet(charactersIn: "\"':;"))
         clean = clean.replacingOccurrences(of: " ", with: "")

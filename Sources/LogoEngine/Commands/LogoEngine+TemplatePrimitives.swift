@@ -81,6 +81,8 @@ extension LogoEngine {
                 switch parsed {
                 case .list(let listItems), .array(let listItems):
                     results.append(contentsOf: listItems.map { $0.description })
+                case .measurement(let v, let u, _):
+                    results.append(contentsOf: [LogoMeasurementConverter.formatResult(v), u])
                 case .string(let s):
                     if !s.isEmpty {
                         results.append(s)
@@ -94,6 +96,7 @@ extension LogoEngine {
             let templateStr = reader.nextExpression()
             let listStr = reader.nextExpression()
             reader.commit(to: &index)
+
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             var results: [String] = []
             for (i, item) in items.enumerated() {
@@ -110,6 +113,7 @@ extension LogoEngine {
             let templateStr = reader.nextExpression()
             let listStr = reader.nextExpression()
             reader.commit(to: &index)
+
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             for (i, item) in items.enumerated() {
                 let rest = Array(items[(i + 1)...])
@@ -125,13 +129,15 @@ extension LogoEngine {
             let templateStr = reader.nextExpression()
             let listStr = reader.nextExpression()
             reader.commit(to: &index)
+
             let items = LogoValue.parse(listStr).toListItems().map { $0.description }
             guard !items.isEmpty else { return "" }
+            guard items.count > 1 else { return items[0] }
+
             var accum = items[0]
-            for i in 1..<items.count {
-                let rest = Array(items[(i + 1)...])
-                accum = applyTemplate(
-                    templateStr: templateStr, args: [accum, items[i]], indexInLoop: i, restList: rest)
+            for (i, nextItem) in items.dropFirst().enumerated() {
+                let rest = Array(items[(i + 2)...])
+                accum = applyTemplate(templateStr: templateStr, args: [accum, nextItem], indexInLoop: i + 1, restList: rest)
             }
             return accum
 
@@ -204,6 +210,9 @@ extension LogoEngine {
             case .array(let items):
                 let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
                 return LogoValue.array(sortedItems).description
+
+            case .measurement:
+                return parsed.description
 
             case .string(let s):
                 if customTemplate == nil {
