@@ -838,6 +838,8 @@ TYPE ITEM 2 :cells
 | `REMDUP` | - | `REMDUP list` | Removes duplicate elements from list | `REMDUP [1 2 2 3 1]` |
 | `SPLIT` | - | `SPLIT str delimiter` | Splits string into list by delimiter | `SPLIT "a,b,c" ","` |
 | `SETITEM` | - | `SETITEM idx array val` | Sets 1-indexed element in array | `SETITEM 1 :arr "val"` |
+| `SETFIRST` | - | `SETFIRST list val` | Mutates first element of list in-place | `SETFIRST :myList 99` |
+| `SETBUTFIRST` | `SETBF` | `SETBUTFIRST list newRest` | Mutates rest of list in-place | `SETBF :myList [B C]` |
 | `PUSH` | - | `PUSH val list` | Pushes element to list variable | `PUSH 1 "myList"` |
 | `POP` | - | `POP list` | Pops element from list variable | `POP "myList"` |
 | `DEQUEUE` | - | `DEQUEUE list` | Removes and returns first element from list variable | `DEQUEUE "myQueue"` |
@@ -900,6 +902,13 @@ TYPE ITEM 2 :cells
 | `REGEX.MATCH` | - | `REGEX.MATCH pattern string` | Returns true if `string` matches regex `pattern` | `REGEX.MATCH "^#+ "#_Title` |
 | `REGEX.REPLACE` | - | `REGEX.REPLACE pattern replacement string` | Replaces all regex matches in `string` with `replacement` | `REGEX.REPLACE "\s+ "_ "a   b` |
 | `REGEX.FIND` | - | `REGEX.FIND pattern string` | Returns a list of all substrings matching regex `pattern` | `REGEX.FIND "\d+ "Item_42_and_100` |
+| `STANDOUT` | - | `STANDOUT text` | Wraps text with ANSI reverse standout escape codes | `STANDOUT "Alert"` |
+| `PARSE` | - | `PARSE string` | Parses string into a LOGO token list | `PARSE "[FD 10 RT]"` |
+| `RUNPARSE` | - | `RUNPARSE word` | Parses word string into tokenized list | `RUNPARSE "FD 10"` |
+| `CHARCOUNT.CJK` | - | `CHARCOUNT.CJK string` | Counts CJK ideograph characters in string | `CHARCOUNT.CJK "Hello 世界"` |
+| `CHARCOUNT.WORDS` | - | `CHARCOUNT.WORDS string` | Counts words in natural language string | `CHARCOUNT.WORDS "Quick brown fox"` |
+| `CHARCOUNT.EMOJI` | - | `CHARCOUNT.EMOJI string` | Counts emoji glyphs in string | `CHARCOUNT.EMOJI "🚀✨🎉"` |
+| `CHARCOUNT.LINES` | - | `CHARCOUNT.LINES string` | Counts lines in multiline string | `CHARCOUNT.LINES :multilineStr` |
 | `TRANSLIT` | `TRANSFORM` | `TRANSLIT transform-id text` | Applies an ICU String Transform or zago `Zago-*` writing transform | `TRANSLIT "Any-Hiragana "Sakura`, `TRANSLIT "Zago-CJK-Punctuation "Hello,` |
 | `SPACING.CJK` | - | `SPACING.CJK text` | Normalizes spacing between CJK script characters and ASCII words/numbers without changing punctuation | `SPACING.CJK "中文API測試` |
 | `TOHANS` | `TRANSFORM.TOHANS` | `TOHANS text` | Converts Traditional Chinese text to Simplified Chinese via `Hant-Hans` | `TOHANS "繁體中文` |
@@ -999,6 +1008,7 @@ grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [
 | `RANGE` | `ISEQ` | `RANGE start end [step]` | Generates inclusive integer sequence list | `RANGE 1 5` $\rightarrow$ `[1 2 3 4 5]`, `RANGE 1 10 2` |
 | `RSEQ` | - | `RSEQ start end count` | Generates real number sequence list | `RSEQ 0 1 5` |
 | `RANDOM` | - | `RANDOM max [min]` | Generates random integer in range | `RANDOM 100`, `RANDOM 10 20` |
+| `RERANDOM` | - | `RERANDOM [seed]` | Reseeds pseudorandom number generator | `RERANDOM 42` |
 | `BIT.AND`, `BIT.OR`, `BIT.XOR`, `BIT.NOT` | - | `BIT.AND a b` | Bitwise logic operations | `BIT.AND 5 3` |
 | `ASHIFT`, `LSHIFT` / `BIT.SHL`, `RSHIFT` / `BIT.SHR` | - | `BIT.SHL a shift` | Arithmetic and logical bit shifts | `BIT.SHL 1 4` |
 
