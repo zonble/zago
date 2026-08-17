@@ -114,25 +114,25 @@ public enum TextEncodingDetector {
     public static func displayName(for encoding: String.Encoding) -> String {
         switch encoding {
         case .utf8:
-            return "UTF-8"
+            "UTF-8"
         case .utf16, .utf16BigEndian, .utf16LittleEndian:
-            return "UTF-16"
+            "UTF-16"
         case .utf32, .utf32BigEndian, .utf32LittleEndian:
-            return "UTF-32"
+            "UTF-32"
         case .big5:
-            return "Big5"
+            "Big5"
         case .gb18030, .gbk:
-            return "GB18030"
+            "GB18030"
         case .shiftJISCustom:
-            return "Shift-JIS"
+            "Shift-JIS"
         case .eucJPCustom:
-            return "EUC-JP"
+            "EUC-JP"
         case .windowsCP1252:
-            return "Windows-1252"
+            "Windows-1252"
         case .isoLatin1:
-            return "ISO-8859-1"
+            "ISO-8859-1"
         default:
-            return "Encoding (\(encoding.rawValue))"
+            "Encoding (\(encoding.rawValue))"
         }
     }
 }
