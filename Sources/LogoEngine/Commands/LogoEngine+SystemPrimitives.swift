@@ -698,12 +698,9 @@ extension LogoEngine {
                         }
                     }
                     if !isDict {
-                        if items.count > 0 { style = items[0].stringValue }
-                        if items.count > 1 { localeSpec = items[1].stringValue }
-                        if items.count > 2 {
-                            let v = items[2].stringValue.lowercased()
-                            naturalScale = (v == "true" || v == "1" || v == "yes")
-                        }
+                        let strings = items.map { $0.stringValue }
+                        LogoMeasurementConverter.disambiguateFormatOptions(
+                            strings, style: &style, locale: &localeSpec, naturalScale: &naturalScale)
                     }
                 }
             } else {
@@ -713,12 +710,8 @@ extension LogoEngine {
                 {
                     positional.append(unquote(arg))
                 }
-                if positional.count > 0 { style = positional[0] }
-                if positional.count > 1 { localeSpec = positional[1] }
-                if positional.count > 2 {
-                    let v = positional[2].lowercased()
-                    naturalScale = (v == "true" || v == "1" || v == "yes")
-                }
+                LogoMeasurementConverter.disambiguateFormatOptions(
+                    positional, style: &style, locale: &localeSpec, naturalScale: &naturalScale)
             }
 
             reader.commit(to: &index)
