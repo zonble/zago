@@ -13,7 +13,7 @@
 時混合多種性質的內容，包括一般文章、程式碼、還有使用文字—用框線字元—繪製
 的圖表。我們讓 AI 產生這類的文件後，往往有繼續修改的需求—AI 一開始幫我們
 寫好了規劃，但之後可能發生需求變動或擴充，或是要繼續潤色之後才適合提供給
-其他人，但—現在流行的編輯器，其實不適合編輯當中的的圖表。
+其他人，但—現在流行的編輯器，其實不適合編輯當中的圖表。
 
 現在大多的純文字編輯器，都把文字當成一維空間，如果要修改圖表，往往要自己
 手動輸入一大堆的空白。西方為了編輯這些圖表，還發展了 ASCIIflow/MonoDraw
@@ -25,8 +25,8 @@
 標可以自由移動到任何還沒有輸入文字的部分，而且加上大量用來繪製框線的巨集
 。台灣人用這樣的編輯器，製作公文、法律與商業文書，而加上顏色控制碼之後，
 也打造了文字模式 BBS 的看板畫面等獨特在地文化。這種編輯器，反而更適合處
-理 AI 時代的 Markdown 檔案—在終端機機因為 AI 復興之後，一些過往的設計，
-反而更符合 AI 時代的需求。
+理 AI 時代的 Markdown 檔案—在終端機因為 AI 復興之後，一些過往的設計，反
+而更符合 AI 時代的需求。
 
 可惜的是，90 年代雖然本土編輯器百花齊放，但大部分都沒有延續到二十一世紀
 ，大多都在千禧年前後電腦走向圖形介面時逐漸凋零。我們也不可能直接回頭用
@@ -55,7 +55,9 @@ BOX "hi"」，就可以直接在文件中畫好一個內容是「hi」的方框�
     - [Arch Linux (AUR)](#arch-linux-aur)
     - [Windows (PowerShell)](#windows-powershell)
   - [文字模式與畫布模式](#文字模式與畫布模式)
+  - [表格模式](#表格模式)
   - [文字處理與文章編修功能](#文字處理與文章編修功能)
+  - [用來與 AI Agent 互動的 IPC 模式](#用來與-ai-agent-互動的-ipc-模式)
   - [指令範例 (Editor LOGO)](#指令範例-editor-logo)
   - [CLI 命令列與管道 (Pipe) 過濾器](#cli-命令列與管道-pipe-過濾器)
     - [1. 互動編輯器與系統 `$EDITOR`](#1-互動編輯器與系統-editor)
@@ -63,7 +65,6 @@ BOX "hi"」，就可以直接在文件中畫好一個內容是「hi」的方框�
     - [命令列選項說明](#命令列選項說明)
   - [文件連結](#文件連結)
   - [授權條款](#授權條款)
-
 
 ## zago 適合誰？
 
@@ -85,11 +86,10 @@ BOX "hi"」，就可以直接在文件中畫好一個內容是「hi」的方框�
 - **中英文排版與文字處理**：中英文/Emoji 字數統計、繁簡轉換、羅馬拼音轉換、CJK與英數字半形空格自動正規化。
 - **全角 CJK 與 Emoji 精確計算**：包含 ✅, ❌, ⚠️ 等 Emoji 與中文字元，確保表格與框線不歪斜。
 - **文字與畫布雙模式**：
-    - **文字模式**：與 Nano 相同的輸入模式
-    - **Canvas Mode** (`F8`)：使用 `Shift+Arrows` 直接畫線、支援區塊剪貼 (`^K` / `^U`)。
+  - **文字模式**：與 Nano 相同的輸入模式
+  - **Canvas Mode** (`F8`)：使用 `Shift+Arrows` 直接畫線、支援區塊剪貼 (`^K` / `^U`)。
 - **Nano 相容快捷鍵**：`^O` 存檔, `^X` 離開, `^W` 搜尋, `M+W` 複製, `^K` 剪切, `^U` 貼上, `^J` 段落重排, `^Z` 復原。
 - **多文件編輯**：每份文件擁有完全獨立的還原/重作歷史紀錄與設定。
-
 
 ## 安裝
 
@@ -105,7 +105,6 @@ zago notes.md
 ### Mint (Swift 套件管理器)
 
 在 macOS 上也可以使用 Mint 安裝
-
 
 ```bash
 mint install zonble/zago
@@ -141,39 +140,79 @@ irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 - **畫布模式 (Canvas Mode)** (`M+V`)：解鎖超越行尾限制的 2D 虛擬空間導覽。支援 2D 矩形區塊選取 (`Shift+方向鍵`)、區塊複製 (`M+W`)、區塊剪切 (`^K`) 與區塊貼上 (`^U`)，且不會破壞周圍文字與段落排版。
 
 > [!TIP]
-> **Windows Terminal 快捷鍵提醒**：在 Windows Terminal 中，`Ctrl+Shift+Up` 與 `Ctrl+Shift+Down` 預設被綁定為終端機視窗捲動。若欲在 Canvas Mode 中使用此快捷鍵繪製垂直箭頭，請至 Windows Terminal 的 **設定 -> 動作 (Settings -> Actions)** 中取消該快捷鍵綁定。
+>
+> **Windows Terminal 快捷鍵提醒**：在 Windows Terminal 中，
+> `Ctrl+Shift+Up` 與 `Ctrl+Shift+Down` 預設被綁定為終端機視窗捲動。若欲
+> 在 Canvas Mode 中使用此快捷鍵繪製垂直箭頭，請至 Windows Terminal 的 **
+> 設定 -> 動作 (Settings -> Actions)** 中取消該快捷鍵綁定。
 
 關於選取規則與剪貼簿隔離機制，請參閱 [標記、選取與 Canvas 模式說明](docs/user/mark.md)。
 
+## 表格模式
+
+在任何用框線組成的格子中，按下` F7` 按鍵，就可以進入表格模式，之後就只會
+編輯格子中的內容，不會破壞格線。
+
 ## 文字處理與文章編修功能
 
-`zago` 本質上仍是一款極致優化的文字編輯器，圖表與畫布工具是堆疊於文章寫作之上，而非取代日常文字編輯：
+`zago` 本質上仍是一款文字編輯器，包括以下功能
 
-- **線性選取與直接覆蓋**：包含 `Shift+方向鍵` 與 `Shift+Home` / `Shift+End` 的文字選取，直接打字即可取代選取文字。
-- **段落重排與左右對齊 (`^J`)**：專為中英混排 (CJK & Latin) 優化的左右對齊演算法，依據 Terminal 顯示寬度（Display Width）計算而非位元組或 Scalar。
-- **工具選單之文字轉換**：提供選取文字之繁簡體轉換、日文假名/羅馬字轉譯，以及 CJK 與英數字半形空格自動正規化。
-- **精準字數統計**：提供字元數、單詞數、行數統計。有選取範圍時統計該選取區塊，無選取時統計全檔；僅在文件中存在中文字元或 Emoji 時顯示 CJK/Emoji 統計項目。
-- **子行號與段落計數**：開啟軟換行 (Softwrap) 欄寬時，可顯示視覺行號 (Visual Line Numbers) 與段落字數，方便固定欄寬草稿寫作。
-- **文件連結跳轉 (`M+O`)**：支援本機 Markdown, Org, reStructuredText 與 AsciiDoc 文件內部連結跳轉。
-- **標題導覽與大綱選單 (`M+I`)**：自動解析 Markdown, Org, reStructuredText 與 AsciiDoc 的標題階層大綱並快速跳轉。
+- **選取/複製/貼上**：包含 `Shift+方向鍵` 與 `Shift+Home` / `Shift+End`
+  的文字選取，選取之後可以用快速鍵複製貼上，符合大部分編輯器習慣。。
+- **正確處理中英文字寬**：使用自動折行或是強制段落重排時（^J），都正確處
+  理中英文寬度。
+- **文字轉換**：選取文字後，可以做繁簡體轉換、日文假名/羅馬字轉譯，以及
+  在 CJK 與英數字之間加上半形空格。
+- **精準字數統計**：提供字元數、英文單詞數、行數統計。有選取範圍時統計該
+  選取區塊，無選取時統計全檔；僅在文件中存在中文字元或 Emoji 時顯示
+  CJK/Emoji 統計項目。
+- **子行號與段落計數**：開啟軟換行 (Softwrap) 欄寬時，可顯示視覺行號
+  (Visual Line Numbers) 與段落字數，方便固定欄寬草稿寫作。
+- **文件連結跳轉 (`M+O`)**：支援本機 Markdown, Org, reStructuredText 與
+  AsciiDoc 文件內部連結跳轉。
+- **標題導覽與大綱選單 (`M+I`)**：自動解析 Markdown, Org,
+  reStructuredText 與 AsciiDoc 的標題階層大綱並快速跳轉。
 
----
+## 用來與 AI Agent 互動的 IPC 模式
+
+`zago` 支援一套可以與 AI Aget 互動的 IPC 模式，讓 AI 往 `zago` 輸入內容
+或是執行特定命令。要開始使用 IPC 命令，請先安裝屬於 `zago` 的 AI Skill
+與 MCP server。
+
+```sh
+zago --install-skill
+```
+
+接著，用以下命令啟動 `zago`：
+
+```sh
+zago --ipc notes.txt
+```
+
+您可以在 AI Agent 中，使用像是「請用 zago skill 幫目前的文件寫一份摘要」
+之類的 prompt，讓 AI 產生內容提案。當 AI 將內容送到 zago 之後，可以按下
+M+A 接受提案。
 
 ## 指令範例 (Editor LOGO)
 
-按下 `Esc` 鍵即可進入指令列。指令採用簡潔的 Editor LOGO 語法，可用於快速編輯、文字繪圖與自動化巨集：
-
-- **文字移動與插入**：
-
-  ```logo
-  MOVE HOME; TYPE "# "; MOVE END
-  ```
+按下 `Esc` 鍵後，即可進入指令列。指令採用簡潔的語法，可用於文字繪圖，輸
+入日期等特殊內容，甚至是自動化巨集：
 
 - **繪製外框與區域填滿**：
 
   ```logo
   BOX 30 5 CENTER ROUND
-  DRAWBOX 30 4 ROUND; GOTO 2 2; FILL "hi
+  DRAWBOX 30 4 ROUND
+  GOTO 2 2
+  FILL "hi
+  ```
+
+- **文字移動與插入**：
+
+  ```logo
+  MOVE HOME
+  TYPE "# "
+  MOVE END
   ```
 
 - **迴圈與自動清單**：
@@ -226,9 +265,6 @@ zago notes.txt --wrap 80 --ruler
 # 開啟檔案並直接跳轉至第 42 行第 10 欄
 zago +42:10 notes.txt
 
-# 將管道資料傳入互動編輯器 Buffer
-cat server.log | zago
-
 # 以唯讀模式開啟檔案
 zago -R /var/log/syslog
 ```
@@ -250,15 +286,15 @@ cat data.txt | zago -s format_report.logo > diagram.txt
 
 ### 命令列選項說明
 
-| 選項 | 旗標 | 說明 |
-| :--- | :--- | :--- |
-| `files` | | 開啟檔案，`-` 代表 stdin 管道，或傳入 `+LINE[:COL]` 指定跳轉行號/欄號。 |
-| `-w`, `--wrap <col>` | | 指定軟換行欄寬 (例如 80)。 |
-| `-r`, `--ruler` | | 在視窗上方顯示經典 WordStar 風格標尺。 |
-| `-R`, `--readonly` | | 以唯讀模式開啟檔案。 |
-| `-e`, `--eval <code>` | | 無介面模式下執行單行 LOGO 程式碼並輸出至 stdout (支援 Pipe 輸入)。 |
-| `-s`, `--run`, `--script <file>` | | 無介面模式下執行 LOGO 腳本檔並輸出至 stdout (支援 Pipe 輸入)。 |
-| `--init` | | 產生預設的 `~/.zagorc` 設定檔。 |
+| 選項                             | 旗標 | 說明                                                                    |
+| :------------------------------- | :--- | :---------------------------------------------------------------------- |
+| `files`                          |      | 開啟檔案，`-` 代表 stdin 管道，或傳入 `+LINE[:COL]` 指定跳轉行號/欄號。 |
+| `-w`, `--wrap <col>`             |      | 指定軟換行欄寬 (例如 80)。                                              |
+| `-r`, `--ruler`                  |      | 在視窗上方顯示經典 WordStar 風格標尺。                                  |
+| `-R`, `--readonly`               |      | 以唯讀模式開啟檔案。                                                    |
+| `-e`, `--eval <code>`            |      | 無介面模式下執行單行 LOGO 程式碼並輸出至 stdout (支援 Pipe 輸入)。      |
+| `-s`, `--run`, `--script <file>` |      | 無介面模式下執行 LOGO 腳本檔並輸出至 stdout (支援 Pipe 輸入)。          |
+| `--init`                         |      | 產生預設的 `~/.zagorc` 設定檔。                                         |
 
 ---
 
