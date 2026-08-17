@@ -463,4 +463,94 @@ struct LogoFormatters {
 
         return formatter.string(fromByteCount: bytes)
     }
+
+    // MARK: - Person Name Formatter
+
+    enum PersonNameStyle {
+        case `default`
+        case short
+        case medium
+        case long
+        case abbreviated
+
+        static func parse(_ raw: String) -> PersonNameStyle {
+            let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
+            return switch clean {
+            case "short", "nickname", "given": .short
+            case "long", "full", "formal": .long
+            case "abbreviated", "abbr", "initials", "initial": .abbreviated
+            case "medium", "default", "standard": .medium
+            default: .medium
+            }
+        }
+
+        static func isStyleKeyword(_ raw: String) -> Bool {
+            let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
+            return ["short", "nickname", "given", "long", "full", "formal", "abbreviated", "abbr", "initials", "initial", "medium", "default", "standard"].contains(clean)
+        }
+    }
+
+    static func disambiguatePersonNameOptions(
+        _ args: [String],
+        style: inout PersonNameStyle,
+        locale: inout String?
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
+
+            if PersonNameStyle.isStyleKeyword(lower) {
+                style = PersonNameStyle.parse(lower)
+            } else {
+                locale = clean
+            }
+        }
+    }
+
+    static func formatPersonName(
+        givenName: String? = nil,
+        familyName: String? = nil,
+        middleName: String? = nil,
+        prefix: String? = nil,
+        suffix: String? = nil,
+        nickname: String? = nil,
+        fullName: String? = nil,
+        style: PersonNameStyle = .default,
+        locale: String? = nil
+    ) -> String {
+        var components = PersonNameComponents()
+        if let given = givenName, !given.isEmpty { components.givenName = given }
+        if let family = familyName, !family.isEmpty { components.familyName = family }
+        if let middle = middleName, !middle.isEmpty { components.middleName = middle }
+        if let pfx = prefix, !pfx.isEmpty { components.namePrefix = pfx }
+        if let sfx = suffix, !sfx.isEmpty { components.nameSuffix = sfx }
+        if let nick = nickname, !nick.isEmpty { components.nickname = nick }
+
+        let targetLocale = LogoDateTimeFormatter.parseLocale(locale)
+        let formatter = PersonNameComponentsFormatter()
+        formatter.locale = targetLocale
+
+        switch style {
+        case .default, .medium:
+            formatter.style = .medium
+        case .short:
+            formatter.style = .short
+        case .long:
+            formatter.style = .long
+        case .abbreviated:
+            formatter.style = .abbreviated
+        }
+
+        if let full = fullName, components.givenName == nil && components.familyName == nil {
+            if let parsed = formatter.personNameComponents(from: full) {
+                return formatter.string(from: parsed)
+            }
+            return full
+        }
+
+        return formatter.string(from: components)
+    }
 }

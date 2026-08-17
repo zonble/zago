@@ -256,11 +256,10 @@ extension LogoEngine {
 
                     case .formatBytes:
                         let cleanArgs = args.map { unquote($0) }
-                        guard !cleanArgs.isEmpty else {
-                            leftVal = "0 bytes"
+                        guard !cleanArgs.isEmpty, let bytes = Int64(cleanArgs[0]) else {
+                            leftVal = ""
                             break
                         }
-                        let bytes = Int64(Double(cleanArgs[0]) ?? 0)
                         var style: LogoFormatters.ByteCountStyle = .file
                         var locale: String? = nil
                         if cleanArgs.count > 1 {
@@ -268,6 +267,85 @@ extension LogoEngine {
                                 Array(cleanArgs.dropFirst()), style: &style, locale: &locale)
                         }
                         leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
+                        setLastExpressionString(leftVal)
+
+                    case .formatName:
+                        let cleanArgs = args.map { unquote($0) }
+                        guard !cleanArgs.isEmpty else {
+                            leftVal = ""
+                            break
+                        }
+                        var style: LogoFormatters.PersonNameStyle = .default
+                        var locale: String? = nil
+                        var given: String? = nil
+                        var family: String? = nil
+                        var middle: String? = nil
+                        var pfx: String? = nil
+                        var sfx: String? = nil
+                        var nick: String? = nil
+                        var fullName: String? = nil
+
+                        let firstArg = cleanArgs[0]
+                        let parsed = LogoValue.parse(firstArg)
+                        if case .list(let items) = parsed {
+                            let itemStrings = items.map { $0.stringValue }
+                            if itemStrings.count % 2 == 0 {
+                                var i = 0
+                                while i < itemStrings.count {
+                                    let key = itemStrings[i].lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' "))
+                                    let val = itemStrings[i + 1]
+                                    switch key {
+                                    case "given", "first", "firstname", "givenname": given = val
+                                    case "family", "last", "lastname", "familyname", "surname": family = val
+                                    case "middle", "middlename": middle = val
+                                    case "prefix", "title": pfx = val
+                                    case "suffix": sfx = val
+                                    case "nickname", "nick": nick = val
+                                    case "style": style = LogoFormatters.PersonNameStyle.parse(val)
+                                    case "locale", "loc": locale = val
+                                    case "name", "full", "fullname": fullName = val
+                                    default: break
+                                    }
+                                    i += 2
+                                }
+                            } else if itemStrings.count == 1 {
+                                fullName = itemStrings[0]
+                            } else if itemStrings.count >= 2 {
+                                given = itemStrings[0]
+                                family = itemStrings[1]
+                                if itemStrings.count > 2 {
+                                    let extra = Array(itemStrings.dropFirst(2))
+                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                }
+                            }
+                        } else if cleanArgs.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1]) {
+                            // Two positional arguments: givenName familyName [style] [locale]
+                            given = cleanArgs[0]
+                            family = cleanArgs[1]
+                            if cleanArgs.count > 2 {
+                                let extra = Array(cleanArgs.dropFirst(2))
+                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                            }
+                        } else {
+                            // Single full name or given name: name [style] [locale]
+                            fullName = cleanArgs[0]
+                            if cleanArgs.count > 1 {
+                                let extra = Array(cleanArgs.dropFirst(1))
+                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                            }
+                        }
+
+                        leftVal = LogoFormatters.formatPersonName(
+                            givenName: given,
+                            familyName: family,
+                            middleName: middle,
+                            prefix: pfx,
+                            suffix: sfx,
+                            nickname: nick,
+                            fullName: fullName,
+                            style: style,
+                            locale: locale
+                        )
                         setLastExpressionString(leftVal)
 
                     case .measureScale:

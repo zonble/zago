@@ -259,6 +259,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case formatList
     case formatRelativeTime
     case formatBytes
+    case formatName
     case convertMeasure
     case formatMeasure
     case measureAdd
@@ -566,6 +567,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FORMAT.LIST"], .formatList),
         (["FORMAT.RELATIVETIME"], .formatRelativeTime),
         (["FORMAT.BYTES"], .formatBytes),
+        (["FORMAT.NAME", "FORMATNAME"], .formatName),
         (["CONVERT.MEASURE"], .convertMeasure),
         (["FORMAT.MEASURE"], .formatMeasure),
         (["MEASURE.ADD"], .measureAdd),

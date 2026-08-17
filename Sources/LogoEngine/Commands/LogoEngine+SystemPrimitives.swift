@@ -46,6 +46,9 @@ extension LogoEngine {
         case .formatBytes:
             return evaluateFormatBytesPrimitive(tokens: tokens, index: &index)
 
+        case .formatName:
+            return evaluateFormatNamePrimitive(tokens: tokens, index: &index)
+
         case .convertMeasure:
             return evaluateMeasurementConvertPrimitive(prim, tokens: tokens, index: &index)
 
@@ -627,6 +630,92 @@ extension LogoEngine {
         reader.commit(to: &index)
 
         let res = LogoFormatters.formatBytes(bytes, style: style, locale: localeSpec)
+        setLastExpressionString(res)
+        return res
+    }
+
+    private func evaluateFormatNamePrimitive(tokens: [String], index: inout Int) -> String {
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let firstArg = reader.nextOptionalExpression() else { return "" }
+
+        var style: LogoFormatters.PersonNameStyle = .default
+        var localeSpec: String? = nil
+        var given: String? = nil
+        var family: String? = nil
+        var middle: String? = nil
+        var pfx: String? = nil
+        var sfx: String? = nil
+        var nick: String? = nil
+        var fullName: String? = nil
+
+        let parsed = LogoValue.parse(firstArg)
+        if case .list(let items) = parsed {
+            let itemStrings = items.map { $0.stringValue }
+            if itemStrings.count % 2 == 0 {
+                var i = 0
+                while i < itemStrings.count {
+                    let key = itemStrings[i].lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' "))
+                    let val = itemStrings[i + 1]
+                    switch key {
+                    case "given", "first", "firstname", "givenname": given = val
+                    case "family", "last", "lastname", "familyname", "surname": family = val
+                    case "middle", "middlename": middle = val
+                    case "prefix", "title": pfx = val
+                    case "suffix": sfx = val
+                    case "nickname", "nick": nick = val
+                    case "style": style = LogoFormatters.PersonNameStyle.parse(val)
+                    case "locale", "loc": localeSpec = val
+                    case "name", "full", "fullname": fullName = val
+                    default: break
+                    }
+                    i += 2
+                }
+            } else if itemStrings.count == 1 {
+                fullName = itemStrings[0]
+            } else if itemStrings.count >= 2 {
+                given = itemStrings[0]
+                family = itemStrings[1]
+                if itemStrings.count > 2 {
+                    let extra = Array(itemStrings.dropFirst(2))
+                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                }
+            }
+        } else {
+            var positional: [String] = [unquote(firstArg)]
+            while positional.count < 4,
+                let val = reader.nextOptionalExpression()
+            {
+                positional.append(unquote(val))
+            }
+            if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) {
+                given = positional[0]
+                family = positional[1]
+                if positional.count > 2 {
+                    let extra = Array(positional.dropFirst(2))
+                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                }
+            } else {
+                fullName = positional[0]
+                if positional.count > 1 {
+                    let extra = Array(positional.dropFirst(1))
+                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                }
+            }
+        }
+
+        reader.commit(to: &index)
+
+        let res = LogoFormatters.formatPersonName(
+            givenName: given,
+            familyName: family,
+            middleName: middle,
+            prefix: pfx,
+            suffix: sfx,
+            nickname: nick,
+            fullName: fullName,
+            style: style,
+            locale: localeSpec
+        )
         setLastExpressionString(res)
         return res
     }

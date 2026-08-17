@@ -352,5 +352,21 @@ import Testing
 
         let dateReversedFull = eval("FORMAT.DATE \"2026-12-31 \"zh_TW \"full")
         #expect(dateReversedFull.contains("2026") || dateReversedFull.contains("115"))
+
+        // 5. FORMAT.NAME
+        let nameWestern = eval("FORMAT.NAME \"Steve \"Jobs")
+        #expect(nameWestern.contains("Steve") && nameWestern.contains("Jobs"))
+
+        let nameWesternAbbr = eval("FORMAT.NAME \"Steve \"Jobs \"abbreviated")
+        #expect(nameWesternAbbr == "SJ" || nameWesternAbbr.contains("Jobs") || nameWesternAbbr.contains("S"))
+
+        let nameDict = eval("FORMAT.NAME [given \"Steve family \"Jobs prefix \"Dr.\"] \"long")
+        #expect(nameDict.contains("Jobs") && nameDict.contains("Steve"))
+
+        let nameChinese = eval("FORMAT.NAME \"大明 \"王 \"zh_TW")
+        #expect(nameChinese.contains("王") && nameChinese.contains("大明"))
+
+        let nameChineseLong = eval("FORMAT.NAME [given \"大明 family \"王] \"long \"zh_TW")
+        #expect(nameChineseLong.contains("王") && nameChineseLong.contains("大明"))
     }
 }
