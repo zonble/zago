@@ -112,9 +112,9 @@ struct TraditionalChineseStrings {
 
             • 邊界限制：BOX/DRAWBOX 寬 3...200、高 2...100；LINE/VLINE 1...200
             • 框線樣式：single, heavy, double, round, double-round, ascii, ascii-round
-                       triple-dash, heavy-triple-dash, quadruple-dash、
-                       heavy-quadruple-dash, double-dash, heavy-double-dash
-            •  箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
+                        triple-dash, heavy-triple-dash, quadruple-dash、
+                        heavy-quadruple-dash, double-dash, heavy-double-dash
+            • 箭頭樣式：solid (▲▼◀▶), stemmed (↑↓←→), hollow (△▽◁▷), small (▴▾◂▸)
 
           2. 四則運算與運算子
             +  -  *  /  %  ^                     加、減、乘、除、取餘數、次方
@@ -194,54 +194,37 @@ struct TraditionalChineseStrings {
                 • MDARRAY dims（建立指定維度的多維陣列，如 MDARRAY [3 3] 產生
                   3 × 3 矩陣）
 
-          6. 日期、時間與 Foundation 格式化工具
+          6. 日期、時間與格式
             DATE [format] [locale] [tz] [cal]    取得目前日期（支援樣式、時區、
-                                                 民國/和曆等曆法）
+                                                 民國/日本曆等曆法）
             TIME [format] [locale] [tz] [cal]    取得目前時間（預設："HH:mm:ss"）
-            DATETIME [fmt] [loc] [tz] [cal]      取得完整日期時間字串
-            DATE.ADD date amount [unit]          加減日期時間單位（天、月、時等）
-            DATE.DIFF date1 date2 [unit]         計算兩日期間距（天、月等）
-            FORMAT.DATE date [fmt] [loc] [tz]    格式化指定日期/時間戳記/清單
-            FORMAT.NUMBER num [style] [loc]      格式化數字（words 國字、caps 大寫
+            DATETIME [fmt] [loc] [tz] [cal]      取得完整日期與時間
+            DATE.ADD date amount [unit]          往一個日期上增加時間
+            DATE.DIFF date1 date2 [unit]         相減兩個日期之間的
+            FORMAT.DATE date [fmt] [loc] [tz]    指定日期格式（時間戳記/清單…等）
+            FORMAT.NUMBER num [style] [locale]   指定數字格式（words 國字、caps 大寫
                                                  支票、roman、money、pct）
             FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、
                                                  香蕉與芭樂）
-            FORMAT.RELATIVETIME val [unit] [loc] 相對時間（"昨天"、"3天前"、
+            FORMAT.RELATIVETIME val [unit] [loc] 指定相對時間格式（"昨天"、"3天前"、
                                                  "in 2 hours"）
-            FORMAT.BYTES bytes [style] [locale]  檔案與記憶體容量（"1 MB"、"1.07 GB"）
+            FORMAT.BYTES bytes [style] [locale]  指定電腦容量格式（"1 MB"、"1.07 GB"）
             DETECT.URL text                      偵測網址，回傳 LOGO 清單
             DETECT.EMAIL text                    偵測電子郵件地址，回傳 LOGO 清單
             DETECT.PHONE text                    偵測電話號碼，回傳 LOGO 清單
             DETECT.DATE text                     偵測日期，回傳 LOGO 清單
             DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 清單
 
-          7. 物理量與單位轉換 (Foundation Measurement)
-            CONVERT.AREA val from to             面積單位轉換（sqm, sqft, sqkm, acres, ha）
-            CONVERT.LENGTH val from to           長度距離轉換（m, km, cm, mm, in, ft, yd, mi, nmi）
-            CONVERT.VOLUME val from to           容積體積轉換（l, ml, gal, cup, floz, tbsp, tsp, m3）
-            CONVERT.ANGLE val from to            角度轉換（deg, rad, grad, rev, arcmin）
-            CONVERT.MASS val from to             質量重量轉換（kg, g, mg, lb, oz, ton, ct）
-            CONVERT.PRESSURE val from to         壓力轉換（pa, hpa, kpa, bar, mbar, atm, psi）
-            CONVERT.ACCELERATION val from to     加速度轉換（m/s2, g）
-            CONVERT.DURATION val from to         時間長度轉換（s, min, hr, ms, us, ns）
-            CONVERT.FREQUENCY val from to        頻率轉換（hz, khz, mhz, ghz, fps）
-            CONVERT.SPEED val from to            速度轉換（m/s, kmh, mph, knots）
-            CONVERT.ENERGY val from to           能量轉換（j, kj, mj, cal, kcal, kwh）
-            CONVERT.POWER val from to            功率轉換（w, kw, mw, gw, hp）
-            CONVERT.TEMPERATURE val from to      溫度轉換（c 攝氏, f 華氏, k 絕對溫標）
-            CONVERT.ILLUMINANCE val from to      照度轉換（lx 勒克斯）
-            CONVERT.ELECTRICCHARGE val from to   電荷量轉換（c 庫侖, ah 安時, mah 毫安時）
-            CONVERT.ELECTRICCURRENT val from to  電流轉換（a 安培, ma 毫安, ua 微安, ka）
-            CONVERT.VOLTAGE val from to          電壓轉換（v 伏特, mv 毫伏, uv, kv）
-            CONVERT.ELECTRICRESISTANCE val f t   電阻轉換（ohm 歐姆, kohm 千歐, megaohm 兆歐）
-            CONVERT.CONCENTRATIONMASS val f t    質量濃度轉換（g/l, mg/dl, mmol/l）
-            CONVERT.DISPERSION val from to       分散度/濃度轉換（ppm 百萬分率）
-            CONVERT.FUELEFFICIENCY val from to   油耗效率轉換（l/100km, mpg）
-            CONVERT.STORAGE val from to          數位儲存容量轉換（b, kb, mb, gb, tb, kib, mib）
-            FORMAT.<DIMENSION> val unit [style] [locale] [natural]
-                                                 度量衡格式化（如 FORMAT.LENGTH 1500 "m "long）
-            MEASURE.ADD v1 u1 v2 u2 [targetUnit] 度量衡跨單位加法（如 5 "km 300 "m "m -> 5300）
-            MEASURE.SUB v1 u1 v2 u2 [targetUnit] 度量衡跨單位減法（如 1 "hr 15 "min "min -> 45）
+          7. 物理量與單位轉換
+            CONVERT.MEASURE val from to / m to   度量衡單位轉換
+                                                （如 1000 "m "km、100 "c "f、[1 kg] "g）
+            FORMAT.MEASURE val unit [style] [locale] [natural]
+                                                 度量衡格式化
+                                                 如 FORMAT.MEASURE 1500 "m "long "zh_TW）
+            MEASURE.ADD v1 u1 v2 u2 [targetUnit] 度量衡跨單位加法
+                                                （如 5 "km 300 "m "m -> 5300）
+            MEASURE.SUB v1 u1 v2 u2 [targetUnit] 度量衡跨單位減法
+                                                （如 1 "hr 15 "min "min -> 45）
             MEASURE.SCALE val unit factor        度量衡乘法倍數縮放（如 2.5 "km 3 -> 7.5）
             MEASURE.EQUAL? v1 u1 v2 u2 [tol]     測試兩度量衡是否等值（自動換算單位）
             MEASURE.LESS? v1 u1 v2 u2            測試量度 1 是否小於量度 2

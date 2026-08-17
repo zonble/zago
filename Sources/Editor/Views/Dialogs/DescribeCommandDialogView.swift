@@ -471,24 +471,31 @@ final class DescribeCommandDialogView {
     }
 
     private func wrapText(_ text: String, maxLineWidth: Int, indent: String) -> [String] {
-        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-        guard !words.isEmpty else { return [indent + text] }
-
+        let rawLines = text.components(separatedBy: .newlines)
         var result: [String] = []
-        var currentLine = indent
 
-        for word in words {
-            if currentLine == indent {
-                currentLine += word
-            } else if (currentLine + " " + word).displayWidth <= maxLineWidth {
-                currentLine += " " + word
-            } else {
-                result.append(currentLine)
-                currentLine = indent + word
+        for rawLine in rawLines {
+            let trimmed = rawLine.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty {
+                result.append("")
+                continue
             }
-        }
-        if currentLine != indent {
-            result.append(currentLine)
+            let words = rawLine.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+            var currentLine = indent
+
+            for word in words {
+                if currentLine == indent {
+                    currentLine += word
+                } else if (currentLine + " " + word).displayWidth <= maxLineWidth {
+                    currentLine += " " + word
+                } else {
+                    result.append(currentLine)
+                    currentLine = indent + word
+                }
+            }
+            if currentLine != indent {
+                result.append(currentLine)
+            }
         }
         return result
     }
