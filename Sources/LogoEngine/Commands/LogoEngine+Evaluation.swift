@@ -270,11 +270,20 @@ extension LogoEngine {
                         setLastExpressionString(leftVal)
 
                     case .formatName:
-                        let cleanArgs = args.map { unquote($0) }
-                        guard !cleanArgs.isEmpty else {
+                        #if os(Linux) || os(Windows)
                             leftVal = ""
-                            break
-                        }
+                            reportError(
+                                LogoError(
+                                    code: 1,
+                                    message: "[LOGO Error: FORMAT.NAME is not supported on this platform]"),
+                                token: "FORMAT.NAME"
+                            )
+                        #else
+                            let cleanArgs = args.map { unquote($0) }
+                            guard !cleanArgs.isEmpty else {
+                                leftVal = ""
+                                break
+                            }
                         var style: LogoFormatters.PersonNameStyle = .default
                         var locale: String? = nil
                         var given: String? = nil
@@ -367,6 +376,7 @@ extension LogoEngine {
                             locale: locale
                         )
                         setLastExpressionString(leftVal)
+                        #endif
 
                     case .measureScale:
                         let cleanArgs = args.map { unquote($0) }

@@ -191,7 +191,7 @@ extension LogoPrimitive {
                     LogoPrimitiveExample(input: "FORMAT.NAME \"Steve \"Jobs \"abbreviated", output: "S. Jobs"),
                     LogoPrimitiveExample(input: "FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short", output: "Arthur"),
                 ],
-                notes: "Supports positional inputs (given family / given middle family), full name strings, and property lists ([given ... middle ... family ... prefix ... suffix ... nickname ...])."
+                notes: "Supports positional inputs (given family / given middle family), full name strings, and property lists ([given ... middle ... family ... prefix ... suffix ... nickname ...]). Not supported on Linux or Windows."
             )
 
         default:
