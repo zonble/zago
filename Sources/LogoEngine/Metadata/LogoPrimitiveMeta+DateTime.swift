@@ -173,6 +173,24 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "FORMAT.BYTES 1048576", output: "1 MB")]
             )
 
+        case .formatName:
+            return LogoPrimitiveMeta(
+                name: "FORMAT.NAME",
+                description: "Formats person name components (given, family, prefix, suffix) into localized name strings.",
+                localizedDescriptionKey: "logo.doc.formatname",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "nameOrGiven", required: true, description: "A full name string, given name, or property list [given family ...].", example: "Steve"),
+                    LogoPrimitiveParameter(name: "familyOrStyle", required: false, description: "Family name or formatting style.", example: "Jobs"),
+                    LogoPrimitiveParameter(name: "style", required: false, description: "Display style (short, medium, long, abbreviated).", example: "long", allowedValues: ["medium", "short", "long", "abbreviated"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "FORMAT.NAME \"Steve \"Jobs \"abbreviated", output: "S. Jobs"),
+                    LogoPrimitiveExample(input: "FORMAT.NAME [given \"Steve family \"Jobs] \"short", output: "Steve"),
+                ]
+            )
+
         default:
             return nil
         }

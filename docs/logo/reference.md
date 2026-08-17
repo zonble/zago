@@ -641,6 +641,7 @@ TYPE "hello;world"
 | `FORMAT.LIST` | - | `FORMAT.LIST list [type] [locale]` | Joins lists naturally in human languages (e.g. `and` -> "A, B, and C", `or` -> "A, B, or C", `unit` -> "A、B、C") | `FORMAT.LIST [蘋果 香蕉 芭樂] "and "zh_TW` |
 | `FORMAT.RELATIVETIME` | - | `FORMAT.RELATIVETIME val [unit] [locale]` | Formats relative time ("昨天", "3 days ago", "in 2 hours") from offsets or target dates | `FORMAT.RELATIVETIME -1 "day "zh_TW` |
 | `FORMAT.BYTES` | - | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
+| `FORMAT.NAME` | `FORMATNAME` | `FORMAT.NAME given family [style] [locale]` or `FORMAT.NAME [propList]` | Formats person name components (given, family, prefix, suffix) according to localized cultural conventions | `FORMAT.NAME "Steve "Jobs "abbreviated`, `FORMAT.NAME [given "Steve family "Jobs] "short` |
 | `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
 | `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
 | `CONVERT.MEASURE` | `CONVERT` | `CONVERT.MEASURE val fromUnit toUnit` or `CONVERT.MEASURE [val unit] toUnit` | Converts a measurement or numeric value between compatible units (length, mass, duration, speed, temperature, energy, power, storage, etc.) | `CONVERT.MEASURE 1000 "m "km`, `CONVERT.MEASURE 100 "c "f`, `CONVERT.MEASURE [2 hr] "min` |
@@ -1257,6 +1258,12 @@ SHOW :ordered
    ; FORMAT.BYTES
    SHOW FORMAT.BYTES 1048576                               ; "1 MB"
    SHOW FORMAT.BYTES 1073741824                            ; "1.07 GB"
+
+   ; FORMAT.NAME (Person Name Components Formatter)
+   SHOW FORMAT.NAME "Steve "Jobs "abbreviated              ; "S. Jobs"
+   SHOW FORMAT.NAME [given "Steve family "Jobs] "short     ; "Steve"
+   SHOW FORMAT.NAME [given "Steve family "Jobs prefix "Dr."] "long
+   ; => "Dr. Steve Jobs"
    ```
 
 4. **Date Arithmetic & Differences (`DATE.ADD` & `DATE.DIFF`)**:
