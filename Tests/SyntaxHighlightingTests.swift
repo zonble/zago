@@ -4,6 +4,23 @@ import Testing
 @testable import Editor
 @testable import Syntax
 
+@Test func testPlainTextFirstLineDoesNotTriggerSyntax() throws {
+    let highlighter = SyntaxHighlighter()
+    let lang = highlighter.detectLanguage(for: nil, firstLine: "this is 1 apple")
+    #expect(lang == nil)
+
+    // Verify NanoRC parser ignores catch-all header rules like "^.*"
+    let parser = NanoRCParser()
+    var languages: [LanguageSyntax] = []
+    let badNanoRC = """
+    syntax "bad" "\\.bad$"
+    header "^.*"
+    color yellow "[0-9]+"
+    """
+    parser.parseNanoRCContent(badNanoRC, into: &languages)
+    #expect(languages.first?.headerRules.isEmpty == true)
+}
+
 @Test func testSyntaxHighlighter() throws {
     let highlighter = SyntaxHighlighter()
 

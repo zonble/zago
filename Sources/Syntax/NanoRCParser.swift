@@ -109,6 +109,15 @@ public final class NanoRCParser {
                 let isHeader = line.hasPrefix("header ")
                 let patterns = parseQuotedTokens(String(line.dropFirst(isHeader ? 7 : 6)))
                 for pattern in patterns {
+                    let trimmed = pattern.trimmingCharacters(in: .whitespaces)
+                    // Guard against faulty third-party `.nanorc` definitions (such as community `reST.nanorc`)
+                    // that define overly broad / catch-all regexes like `header "^.*"` or `.*`.
+                    // In zago, `detectLanguage` dynamically evaluates the buffer's first line in memory.
+                    // A catch-all pattern would greedily match any typed text (e.g. "this is 1 apple"),
+                    // incorrectly hijacking language detection for all unnamed/plain-text buffers.
+                    if isHeader && ["^.*$", "^.*", ".*", "^.+$", "^.+", ".+", ""].contains(trimmed) {
+                        continue
+                    }
                     guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
                     if isHeader {
                         currentHeaderRules.append(regex)
