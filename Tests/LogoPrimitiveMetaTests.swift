@@ -97,6 +97,24 @@ import Testing
     }
 #endif
 
+    @Test func testReferenceMarkdownCoversAllPrimitives() throws {
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let refUrl = repoRoot.appendingPathComponent("docs/logo/reference.md")
+        guard FileManager.default.fileExists(atPath: refUrl.path) else { return }
+        let content = try String(contentsOf: refUrl, encoding: .utf8).uppercased()
+
+        var missing: [String] = []
+        for prim in availablePrimitives {
+            let metaName = prim.meta.name.uppercased()
+            if !content.contains(metaName) {
+                missing.append(metaName)
+            }
+        }
+        #expect(missing.isEmpty, "Missing primitives in reference.md: \(missing.joined(separator: ", "))")
+    }
+
     private var availablePrimitives: [LogoPrimitive] {
         LogoPrimitive.allCases
     }
