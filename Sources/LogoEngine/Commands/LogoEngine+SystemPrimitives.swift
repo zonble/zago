@@ -672,22 +672,41 @@ extension LogoEngine {
                 }
             } else if itemStrings.count == 1 {
                 fullName = itemStrings[0]
-            } else if itemStrings.count >= 2 {
+            } else if itemStrings.count == 2 {
                 given = itemStrings[0]
                 family = itemStrings[1]
-                if itemStrings.count > 2 {
+            } else if itemStrings.count >= 3 {
+                if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2]) && !LogoDateTimeFormatter.isLocaleName(itemStrings[2]) {
+                    given = itemStrings[0]
+                    middle = itemStrings[1]
+                    family = itemStrings[2]
+                    if itemStrings.count > 3 {
+                        let extra = Array(itemStrings.dropFirst(3))
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                    }
+                } else {
+                    given = itemStrings[0]
+                    family = itemStrings[1]
                     let extra = Array(itemStrings.dropFirst(2))
                     LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
                 }
             }
         } else {
             var positional: [String] = [unquote(firstArg)]
-            while positional.count < 4,
+            while positional.count < 5,
                 let val = reader.nextOptionalExpression()
             {
                 positional.append(unquote(val))
             }
-            if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) {
+            if positional.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[2]) && !LogoDateTimeFormatter.isLocaleName(positional[2]) {
+                given = positional[0]
+                middle = positional[1]
+                family = positional[2]
+                if positional.count > 3 {
+                    let extra = Array(positional.dropFirst(3))
+                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                }
+            } else if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) {
                 given = positional[0]
                 family = positional[1]
                 if positional.count > 2 {

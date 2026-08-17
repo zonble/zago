@@ -357,6 +357,12 @@ import Testing
         let nameWestern = eval("FORMAT.NAME \"Steve \"Jobs")
         #expect(nameWestern.contains("Steve") && nameWestern.contains("Jobs"))
 
+        let nameMiddlePositional = eval("FORMAT.NAME \"Arthur \"Conan \"Doyle \"long")
+        #expect(nameMiddlePositional.contains("Arthur") && nameMiddlePositional.contains("Conan") && nameMiddlePositional.contains("Doyle"))
+
+        let nameMiddleDict = eval("FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short")
+        #expect(nameMiddleDict == "Arthur" || nameMiddleDict == "Doyle" || nameMiddleDict == "Arthur Doyle")
+
         let nameWesternAbbr = eval("FORMAT.NAME \"Steve \"Jobs \"abbreviated")
         #expect(nameWesternAbbr == "SJ" || nameWesternAbbr.contains("Jobs") || nameWesternAbbr.contains("S"))
 

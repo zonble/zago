@@ -1004,5 +1004,32 @@ struct ConfigAndToolsTests {
             language: .zh_TW
         )
         _ = collisionDialog
+
+        // Test long syntax wrapping and bounds check for all built-in primitives
+        let formatNameDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "FORMAT.NAME",
+            language: .en
+        )
+        let l10n = L10n(language: .en)
+        let maxWidth = 70
+        let formatNameLines = formatNameDialog.buildSymbolDetails(for: "FORMAT.NAME", l10n: l10n, maxLineWidth: maxWidth)
+        #expect(!formatNameLines.isEmpty)
+        for line in formatNameLines {
+            #expect(line.displayWidth <= maxWidth)
+        }
+
+        // Verify all primitive describe lines format properly within typical dialog width
+        for alias in LogoPrimitive.keywordAliases {
+            let lines = formatNameDialog.buildSymbolDetails(for: alias, l10n: l10n, maxLineWidth: maxWidth)
+            #expect(!lines.isEmpty)
+            for line in lines {
+                if line.displayWidth > maxWidth {
+                    print("EXACT OVERFLOW [\(alias)]: width=\(line.displayWidth), line='\(line)'")
+                }
+                #expect(line.displayWidth <= maxWidth)
+            }
+        }
     }
 }

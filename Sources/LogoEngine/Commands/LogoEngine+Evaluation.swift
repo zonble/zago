@@ -310,13 +310,33 @@ extension LogoEngine {
                                 }
                             } else if itemStrings.count == 1 {
                                 fullName = itemStrings[0]
-                            } else if itemStrings.count >= 2 {
+                            } else if itemStrings.count == 2 {
                                 given = itemStrings[0]
                                 family = itemStrings[1]
-                                if itemStrings.count > 2 {
+                            } else if itemStrings.count >= 3 {
+                                if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2]) && !LogoDateTimeFormatter.isLocaleName(itemStrings[2]) {
+                                    given = itemStrings[0]
+                                    middle = itemStrings[1]
+                                    family = itemStrings[2]
+                                    if itemStrings.count > 3 {
+                                        let extra = Array(itemStrings.dropFirst(3))
+                                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                    }
+                                } else {
+                                    given = itemStrings[0]
+                                    family = itemStrings[1]
                                     let extra = Array(itemStrings.dropFirst(2))
                                     LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
                                 }
+                            }
+                        } else if cleanArgs.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1]) && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[2]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[2]) {
+                            // Three positional arguments: givenName middleName familyName [style] [locale]
+                            given = cleanArgs[0]
+                            middle = cleanArgs[1]
+                            family = cleanArgs[2]
+                            if cleanArgs.count > 3 {
+                                let extra = Array(cleanArgs.dropFirst(3))
+                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
                             }
                         } else if cleanArgs.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1]) {
                             // Two positional arguments: givenName familyName [style] [locale]

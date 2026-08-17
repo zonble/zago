@@ -176,19 +176,22 @@ extension LogoPrimitive {
         case .formatName:
             return LogoPrimitiveMeta(
                 name: "FORMAT.NAME",
-                description: "Formats person name components (given, family, prefix, suffix) into localized name strings.",
+                description: "Formats person name components (given, middle, family, prefix, suffix, nickname) into localized name strings.",
                 localizedDescriptionKey: "logo.doc.formatname",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "nameOrGiven", required: true, description: "A full name string, given name, or property list [given family ...].", example: "Steve"),
-                    LogoPrimitiveParameter(name: "familyOrStyle", required: false, description: "Family name or formatting style.", example: "Jobs"),
+                    LogoPrimitiveParameter(name: "givenOrFullName", required: true, description: "A full name string, given name, or property list [given family middle prefix suffix nickname ...].", example: "Arthur"),
+                    LogoPrimitiveParameter(name: "middleOrFamilyOrStyle", required: false, description: "Middle name, family name, or display style.", example: "Conan"),
+                    LogoPrimitiveParameter(name: "familyOrStyle", required: false, description: "Family name or display style.", example: "Doyle"),
                     LogoPrimitiveParameter(name: "style", required: false, description: "Display style (short, medium, long, abbreviated).", example: "long", allowedValues: ["medium", "short", "long", "abbreviated"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale (e.g. en_US, zh_TW, ja_JP).", example: "en_US"),
                 ],
                 examples: [
+                    LogoPrimitiveExample(input: "FORMAT.NAME \"Arthur \"Conan \"Doyle \"long", output: "Arthur Conan Doyle"),
                     LogoPrimitiveExample(input: "FORMAT.NAME \"Steve \"Jobs \"abbreviated", output: "S. Jobs"),
-                    LogoPrimitiveExample(input: "FORMAT.NAME [given \"Steve family \"Jobs] \"short", output: "Steve"),
-                ]
+                    LogoPrimitiveExample(input: "FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short", output: "Arthur"),
+                ],
+                notes: "Supports positional inputs (given family / given middle family), full name strings, and property lists ([given ... middle ... family ... prefix ... suffix ... nickname ...])."
             )
 
         default:
