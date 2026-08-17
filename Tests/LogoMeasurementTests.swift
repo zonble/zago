@@ -158,14 +158,8 @@ struct LogoMeasurementTests {
     #else
     @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
         let engine = LogoEngine()
-        var reported = false
-        engine.errorHandler = { error, _ in
-            if error.message.contains("not supported on this platform") {
-                reported = true
-            }
-        }
         _ = eval("FORMAT.LENGTH 100 \"m", engine: engine)
-        #expect(reported)
+        #expect(engine.lastError?.message.contains("not supported on this platform") == true)
     }
     #endif
 }
