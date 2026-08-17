@@ -190,9 +190,9 @@ extension UnicodeScalar {
             0xFE30...0xFE6F, 0xFF00...0xFF60, 0xFFE0...0xFFE6,
             0x20000...0x3FFFD,
             0x1F300...0x1FAFF:
-            return true
+            true
         default:
-            return false
+            false
         }
     }
 
@@ -206,9 +206,9 @@ extension UnicodeScalar {
             0xFE00...0xFE0F,  // Variation Selectors
             0xFE20...0xFE2F,  // Combining Half Marks
             0xE0100...0xE01EF:  // Variation Selectors Supplement
-            return true
+            true
         default:
-            return false
+            false
         }
     }
 }
