@@ -354,6 +354,7 @@ import Testing
         #expect(dateReversedFull.contains("2026") || dateReversedFull.contains("115"))
 
         // 5. FORMAT.NAME
+        #if !os(Linux) && !os(Windows)
         let nameWestern = eval("FORMAT.NAME \"Steve \"Jobs")
         #expect(nameWestern.contains("Steve") && nameWestern.contains("Jobs"))
 
@@ -374,5 +375,6 @@ import Testing
 
         let nameChineseLong = eval("FORMAT.NAME [given \"大明 family \"王] \"long \"zh_TW")
         #expect(nameChineseLong.contains("王") && nameChineseLong.contains("大明"))
+        #endif
     }
 }

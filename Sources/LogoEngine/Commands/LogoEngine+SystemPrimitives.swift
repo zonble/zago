@@ -636,7 +636,14 @@ extension LogoEngine {
 
     private func evaluateFormatNamePrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-        guard let firstArg = reader.nextOptionalExpression() else { return "" }
+        #if os(Linux) || os(Windows)
+            while reader.nextOptionalExpression() != nil {}
+            reader.commit(to: &index)
+            let message = "[LOGO Error: FORMAT.NAME is not supported on this platform]"
+            reportError(LogoError(code: 1, message: message), token: "FORMAT.NAME")
+            return ""
+        #else
+            guard let firstArg = reader.nextOptionalExpression() else { return "" }
 
         var style: LogoFormatters.PersonNameStyle = .default
         var localeSpec: String? = nil
@@ -737,6 +744,7 @@ extension LogoEngine {
         )
         setLastExpressionString(res)
         return res
+        #endif
     }
 
     internal func evaluateDetectPrimitive(_ primitive: LogoPrimitive, text: String) -> String {
