@@ -533,7 +533,7 @@ public enum LogoMeasurementConverter {
         reg(.megapascals, ["mpa", "megapascal", "megapascals"])
         reg(.gigapascals, ["gpa", "gigapascal", "gigapascals"])
         reg(.bars, ["bar", "bars"])
-        reg(.millibars, ["mbar", "mb", "millibar", "millibars"])
+        reg(.millibars, ["mbar", "millibar", "millibars"])
         reg(
             UnitPressure(symbol: "atm", converter: UnitConverterLinear(coefficient: 101325)),
             ["atm", "atmosphere", "atmospheres"]
@@ -550,7 +550,7 @@ public enum LogoMeasurementConverter {
             for k in keys { m[normalizeUnitKey(k)] = unit }
         }
         reg(.metersPerSecondSquared, ["m/s2", "m/s^2", "mps2", "meterspersecondsquared", "meterpersecondsquared"])
-        reg(.gravity, ["g", "gee", "gravity"])
+        reg(.gravity, ["gforce", "g_force", "gee", "gravity", "g"])
         return m
     }()
 

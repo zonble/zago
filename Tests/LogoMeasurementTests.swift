@@ -10,127 +10,117 @@ struct LogoMeasurementTests {
         return engine.evaluateExpression(tokens, index: &index)
     }
 
-    @Test func testConvertArea() throws {
-        #expect(eval("CONVERT.AREA 1 \"sqm \"sqft").starts(with: "10.7639"))
-        #expect(eval("CONVERT.AREA 1 \"sqkm \"sqm") == "1000000")
-        #expect(eval("CONVERT.AREA 1 \"ha \"sqm") == "10000")
-    }
+    @Test func testConvertMeasureScalarAcrossDimensions() throws {
+        // Area
+        #expect(eval("CONVERT.MEASURE 1 \"sqm \"sqft").starts(with: "10.7639"))
+        #expect(eval("CONVERT.MEASURE 1 \"sqkm \"sqm") == "1000000")
+        #expect(eval("CONVERT.MEASURE 1 \"ha \"sqm") == "10000")
 
-    @Test func testConvertLength() throws {
-        #expect(eval("CONVERT.LENGTH 1000 \"m \"km") == "1")
-        #expect(eval("CONVERT.LENGTH 1 \"in \"cm") == "2.54")
-        #expect(eval("CONVERT.LENGTH 1 \"ft \"in") == "12")
-        #expect(eval("CONVERT.LENGTH 1 \"yd \"ft") == "3")
-        let miToFt = Double(eval("CONVERT.LENGTH 1 \"mi \"ft")) ?? 0
+        // Length
+        #expect(eval("CONVERT.MEASURE 1000 \"m \"km") == "1")
+        #expect(eval("CONVERT.MEASURE 1 \"in \"cm") == "2.54")
+        #expect(eval("CONVERT.MEASURE 1 \"ft \"in") == "12")
+        #expect(eval("CONVERT.MEASURE 1 \"yd \"ft") == "3")
+        let miToFt = Double(eval("CONVERT.MEASURE 1 \"mi \"ft")) ?? 0
         #expect(abs(miToFt - 5280) < 0.1)
+
+        // Volume
+        #expect(eval("CONVERT.MEASURE 1000 \"ml \"l") == "1")
+        #expect(eval("CONVERT.MEASURE 1 \"l \"ml") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"m3 \"l") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"gal \"qt") == "4")
+
+        // Angle
+        #expect(eval("CONVERT.MEASURE 180 \"deg \"rad") == "3.141592654")
+        #expect(eval("CONVERT.MEASURE 1 \"rev \"deg") == "360")
+        #expect(eval("CONVERT.MEASURE 360 \"deg \"rev") == "1")
+
+        // Mass
+        #expect(eval("CONVERT.MEASURE 1 \"kg \"g") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"t \"kg") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"lb \"oz") == "16")
+
+        // Pressure
+        #expect(eval("CONVERT.MEASURE 1 \"bar \"kpa") == "100")
+        #expect(eval("CONVERT.MEASURE 1 \"hpa \"pa") == "100")
+
+        // Acceleration
+        #expect(eval("CONVERT.MEASURE 1 \"gforce \"m/s2") == "9.81")
+
+        // Duration
+        #expect(eval("CONVERT.MEASURE 1 \"hr \"min") == "60")
+        #expect(eval("CONVERT.MEASURE 2 \"min \"s") == "120")
+        #expect(eval("CONVERT.MEASURE 1000 \"ms \"s") == "1")
+
+        // Frequency
+        #expect(eval("CONVERT.MEASURE 1 \"ghz \"mhz") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"mhz \"khz") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"khz \"hz") == "1000")
+
+        // Speed
+        #expect(eval("CONVERT.MEASURE 36 \"kmh \"m/s") == "10")
+
+        // Energy
+        #expect(eval("CONVERT.MEASURE 1 \"kj \"j") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"kcal \"cal") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"kwh \"j") == "3600000")
+
+        // Power
+        #expect(eval("CONVERT.MEASURE 1 \"kw \"w") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"megawatt \"kw") == "1000")
+
+        // Temperature
+        #expect(eval("CONVERT.MEASURE 0 \"c \"f") == "32")
+        #expect(eval("CONVERT.MEASURE 100 \"c \"f") == "212")
+        #expect(eval("CONVERT.MEASURE 0 \"c \"k") == "273.15")
+
+        // Illuminance
+        #expect(eval("CONVERT.MEASURE 100 \"lx \"lx") == "100")
+
+        // Electric Charge
+        #expect(eval("CONVERT.MEASURE 5000 \"mah \"ah") == "5")
+
+        // Electric Current
+        #expect(eval("CONVERT.MEASURE 1500 \"ma \"amp") == "1.5")
+
+        // Voltage
+        #expect(eval("CONVERT.MEASURE 5 \"v \"mv") == "5000")
+
+        // Electric Resistance
+        #expect(eval("CONVERT.MEASURE 1 \"kohm \"ohm") == "1000")
+
+        // Concentration Mass
+        #expect(eval("CONVERT.MEASURE 1 \"g/l \"mg/dl") == "100")
+
+        // Dispersion
+        #expect(eval("CONVERT.MEASURE 10 \"ppm \"ppm") == "10")
+
+        // Fuel Efficiency
+        let resFuel = eval("CONVERT.MEASURE 30 \"mpg \"l/100km")
+        #expect(resFuel.starts(with: "7.84"))
+
+        // Storage
+        #expect(eval("CONVERT.MEASURE 1 \"gb \"mb") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"mb \"kb") == "1000")
+        #expect(eval("CONVERT.MEASURE 1 \"gib \"mib") == "1024")
+        #expect(eval("CONVERT.MEASURE 1 \"byte \"bit") == "8")
     }
 
-    @Test func testConvertVolume() throws {
-        #expect(eval("CONVERT.VOLUME 1000 \"ml \"l") == "1")
-        #expect(eval("CONVERT.VOLUME 1 \"l \"ml") == "1000")
-        #expect(eval("CONVERT.VOLUME 1 \"m3 \"l") == "1000")
-        #expect(eval("CONVERT.VOLUME 1 \"gal \"qt") == "4")
-    }
+    @Test func testConvertMeasureWithMeasurementInputs() throws {
+        // 2-argument conversion with Measurement objects
+        #expect(eval("CONVERT.MEASURE [1000 m] \"km") == "1")
+        #expect(eval("CONVERT.MEASURE (MEASURE.ADD 1 kg 500 g) \"g") == "1500")
+        #expect(eval("(CONVERT.MEASURE [2 hr] \"min)") == "120")
 
-    @Test func testConvertAngle() throws {
-        #expect(eval("CONVERT.ANGLE 180 \"deg \"rad") == "3.141592654")
-        #expect(eval("CONVERT.ANGLE 1 \"rev \"deg") == "360")
-        #expect(eval("CONVERT.ANGLE 360 \"deg \"rev") == "1")
-    }
-
-    @Test func testConvertMass() throws {
-        #expect(eval("CONVERT.MASS 1 \"kg \"g") == "1000")
-        #expect(eval("CONVERT.MASS 1 \"t \"kg") == "1000")
-        #expect(eval("CONVERT.MASS 1 \"lb \"oz") == "16")
-    }
-
-    @Test func testConvertPressure() throws {
-        #expect(eval("CONVERT.PRESSURE 1 \"bar \"kpa") == "100")
-        #expect(eval("CONVERT.PRESSURE 1 \"hpa \"pa") == "100")
-    }
-
-    @Test func testConvertAcceleration() throws {
-        #expect(eval("CONVERT.ACCELERATION 1 \"g \"m/s2") == "9.81")
-    }
-
-    @Test func testConvertDuration() throws {
-        #expect(eval("CONVERT.DURATION 1 \"hr \"min") == "60")
-        #expect(eval("CONVERT.DURATION 2 \"min \"s") == "120")
-        #expect(eval("CONVERT.DURATION 1000 \"ms \"s") == "1")
-    }
-
-    @Test func testConvertFrequency() throws {
-        #expect(eval("CONVERT.FREQUENCY 1 \"ghz \"mhz") == "1000")
-        #expect(eval("CONVERT.FREQUENCY 1 \"mhz \"khz") == "1000")
-        #expect(eval("CONVERT.FREQUENCY 1 \"khz \"hz") == "1000")
-    }
-
-    @Test func testConvertSpeed() throws {
-        #expect(eval("CONVERT.SPEED 36 \"kmh \"m/s") == "10")
-    }
-
-    @Test func testConvertEnergy() throws {
-        #expect(eval("CONVERT.ENERGY 1 \"kj \"j") == "1000")
-        #expect(eval("CONVERT.ENERGY 1 \"kcal \"cal") == "1000")
-        #expect(eval("CONVERT.ENERGY 1 \"kwh \"j") == "3600000")
-    }
-
-    @Test func testConvertPower() throws {
-        #expect(eval("CONVERT.POWER 1 \"kw \"w") == "1000")
-        #expect(eval("CONVERT.POWER 1 \"megawatt \"kw") == "1000")
-    }
-
-    @Test func testConvertTemperature() throws {
-        #expect(eval("CONVERT.TEMPERATURE 0 \"c \"f") == "32")
-        #expect(eval("CONVERT.TEMPERATURE 100 \"c \"f") == "212")
-        #expect(eval("CONVERT.TEMPERATURE 0 \"c \"k") == "273.15")
-    }
-
-    @Test func testConvertIlluminance() throws {
-        #expect(eval("CONVERT.ILLUMINANCE 100 \"lx \"lx") == "100")
-    }
-
-    @Test func testConvertElectricCharge() throws {
-        #expect(eval("CONVERT.ELECTRICCHARGE 5000 \"mah \"ah") == "5")
-        #expect(eval("CONVERT.ELECTRIC.CHARGE 1 \"ah \"mah") == "1000")
-    }
-
-    @Test func testConvertElectricCurrent() throws {
-        #expect(eval("CONVERT.ELECTRICCURRENT 1500 \"ma \"a") == "1.5")
-    }
-
-    @Test func testConvertElectricPotentialDifference() throws {
-        #expect(eval("CONVERT.ELECTRICPOTENTIALDIFFERENCE 5 \"v \"mv") == "5000")
-        #expect(eval("CONVERT.VOLTAGE 1 \"kv \"v") == "1000")
-    }
-
-    @Test func testConvertElectricResistance() throws {
-        #expect(eval("CONVERT.ELECTRICRESISTANCE 1 \"kohm \"ohm") == "1000")
-    }
-
-    @Test func testConvertConcentrationMass() throws {
-        #expect(eval("CONVERT.CONCENTRATIONMASS 1 \"g/l \"mg/dl") == "100")
-    }
-
-    @Test func testConvertDispersion() throws {
-        #expect(eval("CONVERT.DISPERSION 10 \"ppm \"ppm") == "10")
-    }
-
-    @Test func testConvertFuelEfficiency() throws {
-        let res = eval("CONVERT.FUELEFFICIENCY 30 \"mpg \"l/100km")
-        #expect(res.starts(with: "7.84"))
-    }
-
-    @Test func testConvertInformationStorage() throws {
-        #expect(eval("CONVERT.INFORMATIONSTORAGE 1 \"gb \"mb") == "1000")
-        #expect(eval("CONVERT.INFORMATIONSTORAGE 1 \"mb \"kb") == "1000")
-        #expect(eval("CONVERT.INFORMATIONSTORAGE 1 \"gib \"mib") == "1024")
-        #expect(eval("CONVERT.INFORMATIONSTORAGE 1 \"byte \"bit") == "8")
-        #expect(eval("CONVERT.STORAGE 1024 \"kib \"mib") == "1")
+        // Incompatible unit conversion error
+        let mismatchEngine = LogoEngine()
+        let resMismatch = eval("CONVERT.MEASURE 1000 \"m \"kg", engine: mismatchEngine)
+        #expect(resMismatch.isEmpty)
+        #expect(mismatchEngine.lastError?.message.contains("cannot convert 'm' (length) to 'kg' (mass)") == true)
     }
 
     @Test func testParenthesizedConvert() throws {
-        #expect(eval("(CONVERT.LENGTH 100 \"m \"cm)") == "10000")
+        #expect(eval("(CONVERT.MEASURE 100 \"m \"cm)") == "10000")
     }
 
     @Test func testMeasurementArithmetic() throws {

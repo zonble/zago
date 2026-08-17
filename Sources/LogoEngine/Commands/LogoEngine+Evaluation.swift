@@ -449,47 +449,51 @@ extension LogoEngine {
                         let text = args.first.map(unquote) ?? ""
                         leftVal = evaluateDetectPrimitive(variadicPrim, text: text)
 
-                    case .convertArea, .convertLength, .convertVolume, .convertAngle, .convertMass,
-                        .convertPressure, .convertAcceleration, .convertDuration, .convertFrequency,
-                        .convertSpeed, .convertEnergy, .convertPower, .convertTemperature, .convertIlluminance,
-                        .convertElectricCharge, .convertElectricCurrent, .convertElectricPotentialDifference,
-                        .convertElectricResistance, .convertConcentrationMass, .convertDispersion,
-                        .convertFuelEfficiency, .convertInformationStorage:
-                        let cleanArgs = args.map { unquote($0) }
-                        guard cleanArgs.count >= 3, let val = Double(cleanArgs[0]) else {
+                    case .convertMeasure:
+                        var val: Double = 0
+                        var fromUnit: String = ""
+                        var toUnit: String = ""
+
+                        if !args.isEmpty, case .measurement(let mVal, let mUnit, _) = LogoValue.parse(args[0]) {
+                            val = mVal
+                            fromUnit = mUnit
+                            guard args.count >= 2 else {
+                                leftVal = ""
+                                break
+                            }
+                            toUnit = unquote(args[1])
+                        } else {
+                            let cleanArgs = args.map { unquote($0) }
+                            guard cleanArgs.count >= 3, let v = Double(cleanArgs[0]) else {
+                                leftVal = ""
+                                break
+                            }
+                            val = v
+                            fromUnit = cleanArgs[1]
+                            toUnit = cleanArgs[2]
+                        }
+
+                        guard let dimFrom = LogoMeasurementConverter.findDimension(for: fromUnit) else {
+                            let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown source unit '\(fromUnit)']"
+                            reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                             leftVal = ""
                             break
                         }
-                        let fromUnit = cleanArgs[1]
-                        let toUnit = cleanArgs[2]
-                        let kind: LogoMeasurementConverter.DimensionKind
-                        switch variadicPrim {
-                        case .convertArea: kind = .area
-                        case .convertLength: kind = .length
-                        case .convertVolume: kind = .volume
-                        case .convertAngle: kind = .angle
-                        case .convertMass: kind = .mass
-                        case .convertPressure: kind = .pressure
-                        case .convertAcceleration: kind = .acceleration
-                        case .convertDuration: kind = .duration
-                        case .convertFrequency: kind = .frequency
-                        case .convertSpeed: kind = .speed
-                        case .convertEnergy: kind = .energy
-                        case .convertPower: kind = .power
-                        case .convertTemperature: kind = .temperature
-                        case .convertIlluminance: kind = .illuminance
-                        case .convertElectricCharge: kind = .electricCharge
-                        case .convertElectricCurrent: kind = .electricCurrent
-                        case .convertElectricPotentialDifference: kind = .electricPotentialDifference
-                        case .convertElectricResistance: kind = .electricResistance
-                        case .convertConcentrationMass: kind = .concentrationMass
-                        case .convertDispersion: kind = .dispersion
-                        case .convertFuelEfficiency: kind = .fuelEfficiency
-                        case .convertInformationStorage: kind = .informationStorage
-                        default: kind = .length
+                        guard let dimTo = LogoMeasurementConverter.findDimension(for: toUnit) else {
+                            let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown target unit '\(toUnit)']"
+                            reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                            leftVal = ""
+                            break
                         }
+                        guard dimFrom == dimTo else {
+                            let msg = "[LOGO Error: \(variadicPrim.meta.name) cannot convert '\(fromUnit)' (\(dimFrom)) to '\(toUnit)' (\(dimTo))]"
+                            reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                            leftVal = ""
+                            break
+                        }
+
                         if let converted = LogoMeasurementConverter.convert(
-                            value: val, from: fromUnit, to: toUnit, kind: kind)
+                            value: val, from: fromUnit, to: toUnit, kind: dimFrom)
                         {
                             leftVal = LogoMeasurementConverter.formatResult(converted)
                             setLastExpressionString(leftVal)
