@@ -74,9 +74,10 @@ This document is divided into two main parts:
     - [2. Variable Date Assignment \& Foundation Date Formatting (`DATE`, `TIME`, `DATETIME` \& `BOX`)](#2-variable-date-assignment--foundation-date-formatting-date-time-datetime--box)
       - [Calling Forms](#calling-forms)
       - [Box Framing Example](#box-framing-example)
-    - [3. Multi-Column Layout Generator (`VLINE` \& `GOTO`)](#3-multi-column-layout-generator-vline--goto)
-    - [4. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)](#4-classical-turtle-graphics-square-box-fd-rt-pd)
-    - [5. Loop Drawing: Christmas Tree](#5-loop-drawing-christmas-tree)
+    - [3. Unit Conversion \& Measurement Formatting (`CONVERT.MEASURE`, `FORMAT.MEASURE` \& `MEASURE.*`)](#3-unit-conversion--measurement-formatting-convertmeasure-formatmeasure--measure)
+    - [4. Multi-Column Layout Generator (`VLINE` \& `GOTO`)](#4-multi-column-layout-generator-vline--goto)
+    - [5. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)](#5-classical-turtle-graphics-square-box-fd-rt-pd)
+    - [6. Loop Drawing: Christmas Tree](#6-loop-drawing-christmas-tree)
   - [🧪 Atomic Undo (`^Z`) Guarantee](#-atomic-undo-z-guarantee)
   - [📜 History \& Origins of Editor LOGO](#-history--origins-of-editor-logo)
 
@@ -642,6 +643,16 @@ TYPE "hello;world"
 | `FORMAT.BYTES` | - | `FORMAT.BYTES bytes [style] [locale]` | Formats byte counts into human-readable sizes (`file`, `memory`, `bytes`, `decimal`) | `FORMAT.BYTES 1048576` |
 | `DATE.ADD` | - | `DATE.ADD date amount [unit]` | Adds/subtracts time units (`days`, `weeks`, `months`, `years`, `hours`, `minutes`, `seconds`) | `DATE.ADD DATE 7 "days` |
 | `DATE.DIFF` | - | `DATE.DIFF date1 date2 [unit]` | Calculates time difference between two dates in specified units | `DATE.DIFF "2026-12-31 DATE "days` |
+| `CONVERT.MEASURE` | `CONVERT` | `CONVERT.MEASURE val fromUnit toUnit` or `CONVERT.MEASURE [val unit] toUnit` | Converts a measurement or numeric value between compatible units (length, mass, duration, speed, temperature, energy, power, storage, etc.) | `CONVERT.MEASURE 1000 "m "km`, `CONVERT.MEASURE 100 "c "f`, `CONVERT.MEASURE [2 hr] "min` |
+| `FORMAT.MEASURE` | - | `FORMAT.MEASURE val [unit] [style] [locale] [naturalScale]` | Formats a measurement into localized strings with unit symbols/names (`short`, `medium`, `long`). Auto-scales if naturalScale is true. | `FORMAT.MEASURE 1500 "m "long "zh_TW "true`, `FORMAT.MEASURE [1.5 kg] "g "zh_TW` |
+| `MEASURE.ADD` | - | `MEASURE.ADD val1 unit1 val2 unit2 [targetUnit]` | Adds two measurements with automatic unit conversion | `MEASURE.ADD 5 "km 300 "m "m` |
+| `MEASURE.SUB` | - | `MEASURE.SUB val1 unit1 val2 unit2 [targetUnit]` | Subtracts the second measurement from the first with unit conversion | `MEASURE.SUB 1 "hr 15 "min "min` |
+| `MEASURE.SCALE` | - | `MEASURE.SCALE val unit factor` | Multiplies a measurement by a numeric scaling factor | `MEASURE.SCALE 2.5 "km 3` |
+| `MEASURE.EQUAL?` | - | `MEASURE.EQUAL? val1 unit1 val2 unit2 [tolerance]` | Tests if two measurements represent equal quantities under unit conversion | `MEASURE.EQUAL? 1000 "m 1 "km` |
+| `MEASURE.LESS?` | - | `MEASURE.LESS? val1 unit1 val2 unit2` | Tests if first measurement is less than second under unit conversion | `MEASURE.LESS? 500 "m 1 "km` |
+| `MEASURE.GREATER?` | - | `MEASURE.GREATER? val1 unit1 val2 unit2` | Tests if first measurement is greater than second under unit conversion | `MEASURE.GREATER? 1.5 "km 1000 "m` |
+| `MEASURE.MIN` | - | `MEASURE.MIN val1 unit1 val2 unit2 [targetUnit]` | Returns smaller of two measurements in target unit | `MEASURE.MIN 1 "km 800 "m "m` |
+| `MEASURE.MAX` | - | `MEASURE.MAX val1 unit1 val2 unit2 [targetUnit]` | Returns larger of two measurements in target unit | `MEASURE.MAX 1 "km 800 "m "m` |
 | `NEWLINE` | `NL` | `NEWLINE [n]` | Inserts $n$ newlines at current cursor | `NL`, `NEWLINE (1 + 1)` |
 | `LINE` | - | `LINE [len] [style] [arrow] [arrowStyle]` | Draws a horizontal line with smart junction fusion and arrow snapping. Without length, auto-connects to next border or stops before text. | `LINE`, `LINE (40 * 2) "double"`, `LINE ARROW STEMMED` |
 | `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line with smart junction fusion and arrow snapping. Without height, auto-connects to next border or stops before text. | `VLINE`, `VLINE (2 + 3) "double"`, `VLINE ARROW HOLLOW` |
@@ -1273,7 +1284,57 @@ BOX :d "double"
 ╚═════════════════════════╝
 ```
 
-### 3. Multi-Column Layout Generator (`VLINE` & `GOTO`)
+### 3. Unit Conversion & Measurement Formatting (`CONVERT.MEASURE`, `FORMAT.MEASURE` & `MEASURE.*`)
+
+`zago` provides comprehensive physical unit conversion, localized measurement string formatting, and measurement arithmetic across 18 dimensions (Length, Mass, Duration, Speed, Temperature, Storage, Energy, Power, Pressure, Volume, Area, Angle, Acceleration, Frequency, Illuminance, Electric Charge, Electric Current, Voltage, Resistance, Concentration Mass, Dispersion, Fuel Efficiency).
+
+1. **Unit Conversion (`CONVERT.MEASURE` / `CONVERT`)**:
+
+   ```logo
+   ; 3-argument form: value, fromUnit, toUnit
+   SHOW CONVERT.MEASURE 1000 "m "km                        ; "1"
+   SHOW CONVERT.MEASURE 100 "c "f                          ; "212"
+   SHOW CONVERT.MEASURE 1 "gb "mb                          ; "1000"
+   SHOW CONVERT.MEASURE 1 "gib "mib                        ; "1024"
+   SHOW CONVERT.MEASURE 1 "hr "min                         ; "60"
+
+   ; 2-argument form with measurement list [value unit]:
+   SHOW CONVERT.MEASURE [2 hr] "min                        ; "120"
+   SHOW CONVERT.MEASURE (MEASURE.ADD 1 kg 500 g) "g        ; "1500"
+   ```
+
+2. **Localized Measurement Formatting (`FORMAT.MEASURE`)**:
+
+   ```logo
+   ; Localized formatting with style (short / medium / long) and locale
+   SHOW FORMAT.MEASURE 1500 "m "long "zh_TW "true          ; "1.5 公里"
+   SHOW FORMAT.MEASURE [1.5 kg] "g "short "en_US           ; "1,500 g"
+   SHOW FORMAT.MEASURE (MEASURE.ADD 1 kg 100 g) "g "zh_TW  ; "1,100 g"
+   ```
+
+   > [!NOTE]
+   > `FORMAT.MEASURE` uses Apple Foundation `MeasurementFormatter` and is supported on macOS. On Linux/Windows, unit conversion (`CONVERT.MEASURE`) and arithmetic (`MEASURE.*`) work fully across all platforms.
+
+3. **Measurement Arithmetic & Comparisons (`MEASURE.ADD`, `MEASURE.SUB`, `MEASURE.SCALE`, `MEASURE.EQUAL?`)**:
+
+   ```logo
+   ; Add & subtract with automatic unit conversion
+   MAKE "totalLen MEASURE.ADD 5 "km 300 "m "m              ; "5300"
+   MAKE "timeDiff MEASURE.SUB 1 "hr 15 "min "min           ; "45"
+
+   ; Scaling by factor
+   MAKE "scaled MEASURE.SCALE 2.5 "km 3                    ; "7.5"
+
+   ; Comparison predicates under unit conversion
+   IF MEASURE.EQUAL? 1000 "m 1 "km [
+     SHOW "Lengths are equal!
+   ]
+   IF MEASURE.LESS? 500 "m 1 "km [
+     SHOW "500m is less than 1km
+   ]
+   ```
+
+### 4. Multi-Column Layout Generator (`VLINE` & `GOTO`)
 
 Draws a 2-column layout with vertical separator line (`║`) and header line:
 
@@ -1291,7 +1352,7 @@ Col A   ║ Col B
         ║
 ```
 
-### 4. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)
+### 5. Classical Turtle Graphics Square Box (`FD`, `RT`, `PD`)
 
 Draws a 5x5 square frame using classic LOGO Turtle Graphics with Pen Down and 90° right turns:
 
@@ -1309,7 +1370,7 @@ PD REPEAT 4 [ FD 5 RT 90 ] PU
 └────┘
 ```
 
-### 5. Loop Drawing: Christmas Tree
+### 6. Loop Drawing: Christmas Tree
 
 Loops are useful for small generated diagrams. This example draws a centered tree with stars and a trunk:
 
