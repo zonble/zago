@@ -136,7 +136,7 @@ public enum LogoMeasurementConverter {
             let cleanUnit = normalizeUnitKey(unitStr)
             var resolvedStyle = styleStr
             var resolvedLocale = localeStr
-            var resolvedNatural = naturalScale
+            let resolvedNatural = naturalScale
 
             let cleanStyle = styleStr?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))
             if let cs = cleanStyle, !["short", "medium", "long", "full", "default", "s", "m", "l"].contains(cs) {
