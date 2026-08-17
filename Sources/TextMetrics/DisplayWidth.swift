@@ -52,11 +52,16 @@ extension Character {
 
         var totalWidth = 0
         for scalar in unicodeScalars {
+            if scalar.isZeroWidthTerminalScalar {
+                continue
+            }
+            if scalar.isWideTerminalScalar {
+                totalWidth += 2
+                continue
+            }
             let width = scalar.terminalScalarWidth
             if width > 0 {
                 totalWidth += width
-            } else if scalar.isWideTerminalScalar {
-                totalWidth += 2
             }
         }
         if totalWidth > 0 {
@@ -69,9 +74,18 @@ extension Character {
 }
 
 extension String {
-    /// Returns the total terminal display width in columns.
+    /// Returns the total terminal display width in columns (ignoring ANSI escape sequences).
     public var displayWidth: Int {
-        reduce(0) { $0 + $1.displayWidth }
+        // Strip ANSI escape sequences (e.g. \u{1B}[31m, \u{1B}[0m, \u{1B}[1;36m, \u{1B}[m) so they don't count towards width
+        guard contains("\u{1B}") else {
+            return reduce(0) { $0 + $1.displayWidth }
+        }
+        let stripped = replacingOccurrences(
+            of: #"\u{001B}(?:\[[0-9;?]*[ -/]*[@-~]|\([a-zA-Z0-9]|[=>]|\[m)"#,
+            with: "",
+            options: .regularExpression
+        )
+        return stripped.reduce(0) { $0 + $1.displayWidth }
     }
 
     /// Pads or trims the string to the requested terminal display width.
@@ -185,7 +199,10 @@ extension UnicodeScalar {
 
     fileprivate var isWideTerminalScalar: Bool {
         switch value {
-        case 0x1100...0x115F, 0x2329...0x232A, 0x2E80...0xA4CF,
+        case 0x1100...0x115F, 0x2329...0x232A,
+            0x2E80...0x2FFF, // CJK Radicals, Kangxi Radicals, Ideographic Description
+            0x3000...0x303E, // CJK Symbols and Punctuation (excluding 303F)
+            0x3040...0x9FFF, // Hiragana, Katakana, Bopomofo, CJK Unified Ideographs
             0xAC00...0xD7A3, 0xF900...0xFAFF, 0xFE10...0xFE19,
             0xFE30...0xFE6F, 0xFF00...0xFF60, 0xFFE0...0xFFE6,
             0x20000...0x3FFFD,

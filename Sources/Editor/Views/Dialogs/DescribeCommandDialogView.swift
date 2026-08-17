@@ -288,7 +288,10 @@ final class DescribeCommandDialogView {
 
             let lineIndex = scrollOffset + r
             if lineIndex < lines.count {
-                let lineText = lines[lineIndex]
+                let rawText = lines[lineIndex]
+                let lineText = rawText.displayWidth > contentWidth
+                    ? rawText.visualSlice(startVisualColumn: 0, width: contentWidth).text
+                    : rawText
                 output += "\u{001B}[\(currentRow);\(startCol + 3)H\(lineText)\(ANSIStyle.reset)"
             }
         }
@@ -313,7 +316,7 @@ final class DescribeCommandDialogView {
         fflush(nil)
     }
 
-    private func buildSymbolDetails(for sym: String, l10n: L10n, maxLineWidth: Int = 68) -> [String] {
+    func buildSymbolDetails(for sym: String, l10n: L10n, maxLineWidth: Int = 68) -> [String] {
         let symUpper = sym.uppercased()
         let symLower = sym.lowercased()
 
@@ -348,33 +351,50 @@ final class DescribeCommandDialogView {
         }
 
         // 2. Editor Command
-        if let editor = editor {
-            let foundCmd = editor.commandRegistry.commands.first(where: {
-                $0.commandBarAliases.contains(symLower)
-                    || $0.id.rawValue.lowercased() == symLower
-                    || $0.name.lowercased() == symLower
-            })
+        if let cmd = editor?.commandRegistry.commands.first(where: {
+            $0.id.rawValue.lowercased() == symLower || $0.commandBarAliases.contains(where: { $0.lowercased() == symLower })
+        }) {
+            var cmdSection: [String] = []
+            let catTitle = editor?.menuBar.categories.first(where: { cat in
+                cat.items.contains(where: { $0.commandId == cmd.id })
+            })?.titleKey
+            let categoryName = catTitle != nil ? l10n[catTitle!] : l10n["describe_command.general_category"]
 
-            if let cmd = foundCmd {
-                var cmdSection: [String] = []
-                cmdSection.append("• " + l10n["describe_command.editor_command"].ansiStyled(style: ANSIStyle.boldYellow))
-                cmdSection.append("    " + l10n["describe_command.name"] + "\(cmd.name) [\(cmd.id.rawValue)]".ansiStyled(style: ANSIStyle.bold))
-                cmdSection.append("")
+            let titleTemplate = l10n["describe_command.editor_command"]
+            let titleStr = "• " + String(format: titleTemplate, categoryName)
+            cmdSection.append(contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map { $0.ansiStyled(style: ANSIStyle.boldYellow) })
 
-                cmdSection.append("• " + l10n["describe_command.description"].ansiStyled(style: ANSIStyle.boldCyan))
-                let locKey = "command.\(cmd.id.rawValue).description"
-                let locDesc = l10n[locKey]
-                let desc = (locDesc != locKey && !locDesc.isEmpty) ? locDesc : cmd.description
-                let wrapped = wrapText(desc, maxLineWidth: maxLineWidth, indent: "    ")
-                cmdSection.append(contentsOf: wrapped)
-
-                if !cmd.commandBarAliases.isEmpty {
-                    cmdSection.append("")
-                    cmdSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))
-                    cmdSection.append("    " + cmd.commandBarAliases.joined(separator: ", "))
+            let syntaxStr = cmd.commandBarAliases.first ?? cmd.id.rawValue
+            let syntaxHeader = l10n["describe_command.syntax"]
+            let subIndent = "        "
+            let wrappedWords = wrapText(
+                syntaxStr,
+                maxLineWidth: max(20, maxLineWidth - (4 + syntaxHeader.displayWidth)),
+                indent: ""
+            )
+            for (idx, line) in wrappedWords.enumerated() {
+                if idx == 0 {
+                    cmdSection.append("    " + syntaxHeader + line.ansiStyled(style: ANSIStyle.bold))
+                } else {
+                    cmdSection.append(subIndent + line.ansiStyled(style: ANSIStyle.bold))
                 }
-                sections.append(cmdSection)
             }
+
+            if cmd.commandBarAliases.count > 1 {
+                cmdSection.append("")
+                cmdSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))
+                let aliasStr = cmd.commandBarAliases.joined(separator: ", ")
+                cmdSection.append(contentsOf: wrapText(aliasStr, maxLineWidth: maxLineWidth, indent: "    "))
+            }
+            cmdSection.append("")
+
+            cmdSection.append("• " + l10n["describe_command.description"].ansiStyled(style: ANSIStyle.boldCyan))
+            let locKey = "command.\(cmd.id.rawValue).description"
+            let locDesc = l10n[locKey]
+            let desc = (locDesc != locKey && !locDesc.isEmpty) ? locDesc : cmd.description
+            let wrappedDesc = wrapText(desc, maxLineWidth: maxLineWidth, indent: "    ")
+            cmdSection.append(contentsOf: wrappedDesc)
+            sections.append(cmdSection)
         }
 
         // 3. Built-in LOGO Primitive
@@ -386,14 +406,27 @@ final class DescribeCommandDialogView {
                 : l10n["describe_command.source_zago"]
 
             let titleTemplate = l10n["describe_command.builtin_primitive"]
-            let titleStr = String(format: titleTemplate, sourceStr)
-            primSection.append("• " + titleStr.ansiStyled(style: ANSIStyle.boldYellow))
+            let titleStr = "• " + String(format: titleTemplate, sourceStr)
+            primSection.append(contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map { $0.ansiStyled(style: ANSIStyle.boldYellow) })
 
             let paramsStr = meta.parameters?.map { param in
                 param.required ? param.name : "[\(param.name)]"
             }.joined(separator: " ") ?? ""
-            let syntaxStr = paramsStr.isEmpty ? meta.name : "\(meta.name) \(paramsStr)"
-            primSection.append("    " + l10n["describe_command.syntax"] + syntaxStr.ansiStyled(style: ANSIStyle.bold))
+            let syntaxRaw = paramsStr.isEmpty ? meta.name : "\(meta.name) \(paramsStr)"
+            let syntaxHeader = l10n["describe_command.syntax"]
+            let subIndent = "        "
+            let wrappedWords = wrapText(
+                syntaxRaw,
+                maxLineWidth: max(20, maxLineWidth - (4 + syntaxHeader.displayWidth)),
+                indent: ""
+            )
+            for (idx, line) in wrappedWords.enumerated() {
+                if idx == 0 {
+                    primSection.append("    " + syntaxHeader + line.ansiStyled(style: ANSIStyle.bold))
+                } else {
+                    primSection.append(subIndent + line.ansiStyled(style: ANSIStyle.bold))
+                }
+            }
 
             let aliases = LogoPrimitive.keywordAliases.filter {
                 $0 != meta.name && LogoPrimitive.from($0) == prim
@@ -401,7 +434,8 @@ final class DescribeCommandDialogView {
             if !aliases.isEmpty {
                 primSection.append("")
                 primSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))
-                primSection.append("    " + aliases.joined(separator: ", "))
+                let aliasStr = aliases.joined(separator: ", ")
+                primSection.append(contentsOf: wrapText(aliasStr, maxLineWidth: maxLineWidth, indent: "    "))
             }
             primSection.append("")
 
@@ -431,11 +465,11 @@ final class DescribeCommandDialogView {
                 primSection.append("")
                 primSection.append("• " + l10n["describe_command.examples"].ansiStyled(style: ANSIStyle.boldCyan))
                 for example in examples {
-                    var exStr = "    " + example.input
+                    var exStr = example.input
                     if !example.output.isEmpty {
                         exStr += "  ->  " + example.output
                     }
-                    primSection.append(exStr)
+                    primSection.append(contentsOf: wrapText(exStr, maxLineWidth: maxLineWidth, indent: "    "))
                 }
             }
             sections.append(primSection)
@@ -446,7 +480,7 @@ final class DescribeCommandDialogView {
             var result: [String] = []
             result.append("• " + l10n["describe_command.not_found"].ansiStyled(style: ANSIStyle.boldYellow))
             let notFoundDesc = String(format: l10n["describe_command.not_found_desc"], sym)
-            result.append("    " + notFoundDesc)
+            result.append(contentsOf: wrapText(notFoundDesc, maxLineWidth: maxLineWidth, indent: "    "))
             return result
         }
 
@@ -457,7 +491,7 @@ final class DescribeCommandDialogView {
             result.append("")
         }
 
-        let divider = String(repeating: "─", count: min(68, maxLineWidth)).ansiStyled(style: ANSIStyle.dimGray)
+        let divider = String(repeating: "─", count: maxLineWidth).ansiStyled(style: ANSIStyle.dimGray)
         for (idx, section) in sections.enumerated() {
             if idx > 0 {
                 result.append("")
@@ -467,10 +501,19 @@ final class DescribeCommandDialogView {
             result.append(contentsOf: section)
         }
 
-        return result
+        return result.map { line in
+            if line.displayWidth > maxLineWidth {
+                return line.visualSlice(startVisualColumn: 0, width: maxLineWidth).text
+            }
+            return line
+        }
     }
 
-    private func wrapText(_ text: String, maxLineWidth: Int, indent: String) -> [String] {
+    private func wrapText(
+        _ text: String,
+        maxLineWidth: Int,
+        indent: String
+    ) -> [String] {
         let rawLines = text.components(separatedBy: .newlines)
         var result: [String] = []
 
@@ -481,19 +524,43 @@ final class DescribeCommandDialogView {
                 continue
             }
             let words = rawLine.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-            var currentLine = indent
+            var currentLine = ""
 
             for word in words {
-                if currentLine == indent {
-                    currentLine += word
-                } else if (currentLine + " " + word).displayWidth <= maxLineWidth {
-                    currentLine += " " + word
+                let candidate = currentLine.isEmpty ? (indent + word) : (currentLine + " " + word)
+                if candidate.displayWidth <= maxLineWidth {
+                    currentLine = candidate
                 } else {
-                    result.append(currentLine)
-                    currentLine = indent + word
+                    if !currentLine.isEmpty {
+                        result.append(currentLine)
+                        currentLine = ""
+                    }
+                    if (indent + word).displayWidth <= maxLineWidth {
+                        currentLine = indent + word
+                    } else {
+                        // Word itself is wider than maxLineWidth (e.g. continuous CJK)
+                        var remaining = word
+                        while !remaining.isEmpty {
+                            var chunk = ""
+                            var chunkWidth = 0
+                            let targetWidth = max(4, maxLineWidth - indent.displayWidth)
+                            for ch in remaining {
+                                if chunkWidth + ch.displayWidth > targetWidth { break }
+                                chunk.append(ch)
+                                chunkWidth += ch.displayWidth
+                            }
+                            if chunk.isEmpty {
+                                if let first = remaining.first {
+                                    chunk.append(first)
+                                }
+                            }
+                            result.append(indent + chunk)
+                            remaining = String(remaining.dropFirst(chunk.count))
+                        }
+                    }
                 }
             }
-            if currentLine != indent {
+            if !currentLine.isEmpty {
                 result.append(currentLine)
             }
         }
@@ -508,10 +575,19 @@ final class DescribeCommandDialogView {
         let reqBadge = param.required
             ? l10n["describe_command.param_required"]
             : l10n["describe_command.param_optional"]
-        let prefixPlain = "    • \(param.name) "
-        let reqBadgeStyled = reqBadge.ansiStyled(style: ANSIStyle.dimGray)
+        let headerRaw = "    • \(param.name) \(reqBadge)"
         let detailIndent = "      "
-        var result = [prefixPlain + reqBadgeStyled]
+        var result: [String] = []
+        let wrappedHeader = wrapText(headerRaw, maxLineWidth: maxLineWidth, indent: "    ")
+        for line in wrappedHeader {
+            if line.contains(reqBadge) {
+                let parts = line.components(separatedBy: reqBadge)
+                let styled = parts[0] + reqBadge.ansiStyled(style: ANSIStyle.dimGray) + parts.dropFirst().joined(separator: reqBadge)
+                result.append(styled)
+            } else {
+                result.append(line)
+            }
+        }
 
         if let description = param.description, !description.isEmpty {
             result.append(contentsOf: wrapText(
@@ -533,7 +609,7 @@ final class DescribeCommandDialogView {
                 indent: detailIndent))
         }
 
-        return result
+        return result.map { $0.displayWidth > maxLineWidth ? $0.visualSlice(startVisualColumn: 0, width: maxLineWidth).text : $0 }
     }
 
     private func formatScriptLines(_ text: String, maxLineWidth: Int, maxLines: Int = 5) -> [String] {
