@@ -155,6 +155,26 @@ struct LogoMeasurementTests {
         let res = eval("(FORMAT.SPEED 100 \"kmh \"short)")
         #expect(!res.isEmpty)
     }
+
+    @Test func testFormatAngleWithSmartLocaleDisambiguation() throws {
+        let resDirectLocale = eval("FORMAT.ANGLE 10 \"deg \"zh_TW")
+        #expect(resDirectLocale == "10°")
+
+        let resLongLocale = eval("FORMAT.ANGLE 10 \"deg \"long \"zh_TW")
+        #expect(resLongLocale == "10度")
+
+        let resReversedOrder = eval("FORMAT.ANGLE 10 \"deg \"zh_TW \"long")
+        #expect(resReversedOrder == "10度")
+
+        let resListDirect = eval("FORMAT.ANGLE 10 \"deg [\"zh_TW \"long]")
+        #expect(resListDirect == "10度")
+
+        let resListNamed = eval("FORMAT.ANGLE 10 \"deg [locale \"zh_TW style \"long]")
+        #expect(resListNamed == "10度")
+
+        let resParenthesized = eval("(FORMAT.ANGLE 10 \"deg \"zh_TW \"long)")
+        #expect(resParenthesized == "10度")
+    }
     #else
     @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
         let engine = LogoEngine()

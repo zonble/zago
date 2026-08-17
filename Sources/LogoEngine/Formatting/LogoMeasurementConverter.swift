@@ -134,26 +134,36 @@ public enum LogoMeasurementConverter {
             return nil
         #else
             let cleanUnit = normalizeUnitKey(unitStr)
+            var resolvedStyle = styleStr
+            var resolvedLocale = localeStr
+            var resolvedNatural = naturalScale
+
+            let cleanStyle = styleStr?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))
+            if let cs = cleanStyle, !["short", "medium", "long", "full", "default", "s", "m", "l"].contains(cs) {
+                if resolvedLocale == nil || resolvedLocale?.isEmpty == true {
+                    resolvedLocale = styleStr
+                    resolvedStyle = "medium"
+                }
+            }
+
             let formatter = MeasurementFormatter()
-            if naturalScale {
+            if resolvedNatural {
                 formatter.unitOptions = .naturalScale
             } else {
                 formatter.unitOptions = .providedUnit
             }
 
-            let unitStyle = (styleStr?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
+            let unitStyle = (resolvedStyle?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
             switch unitStyle {
-            case "short":
+            case "short", "s":
                 formatter.unitStyle = .short
-            case "long":
+            case "long", "l", "full":
                 formatter.unitStyle = .long
             default:
                 formatter.unitStyle = .medium
             }
 
-            if let loc = localeStr?.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")), !loc.isEmpty {
-                formatter.locale = Locale(identifier: loc)
-            }
+            formatter.locale = LogoDateTimeFormatter.parseLocale(resolvedLocale)
 
             switch kind {
             case .area:
@@ -224,6 +234,26 @@ public enum LogoMeasurementConverter {
                 return formatter.string(from: Measurement(value: value, unit: unit))
             }
         #endif
+    }
+
+    public static func disambiguateFormatOptions(
+        _ args: [String],
+        style: inout String?,
+        locale: inout String?,
+        naturalScale: inout Bool
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.lowercased()
+            if ["true", "false", "yes", "no"].contains(lower) {
+                naturalScale = (lower == "true" || lower == "yes")
+            } else if ["short", "medium", "long", "full", "default", "s", "m", "l"].contains(lower) {
+                style = lower
+            } else {
+                locale = clean
+            }
+        }
     }
 
     public static func formatResult(_ value: Double) -> String {

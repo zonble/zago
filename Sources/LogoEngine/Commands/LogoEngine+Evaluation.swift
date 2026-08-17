@@ -322,9 +322,13 @@ extension LogoEngine {
                                 break
                             }
                             let unitStr = cleanArgs[1]
-                            let style = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                            let locale = cleanArgs.count > 3 ? cleanArgs[3] : nil
-                            let naturalScale = cleanArgs.count > 4 ? (cleanArgs[4].lowercased() == "true" || cleanArgs[4] == "1" || cleanArgs[4].lowercased() == "yes") : false
+                            var style: String? = nil
+                            var locale: String? = nil
+                            var naturalScale = false
+                            if cleanArgs.count > 2 {
+                                LogoMeasurementConverter.disambiguateFormatOptions(
+                                    Array(cleanArgs.dropFirst(2)), style: &style, locale: &locale, naturalScale: &naturalScale)
+                            }
 
                             let kind: LogoMeasurementConverter.DimensionKind
                             switch variadicPrim {
