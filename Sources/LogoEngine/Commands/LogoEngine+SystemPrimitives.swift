@@ -448,20 +448,20 @@ extension LogoEngine {
                     }
                 }
                 if !isDict {
-                    if items.count > 0 { style = LogoFormatters.NumberStyle.parse(items[0].stringValue) }
-                    if items.count > 1 { localeSpec = items[1].stringValue }
+                    let strings = items.map { $0.stringValue }
+                    LogoFormatters.disambiguateNumberOptions(
+                        strings, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision)
                 }
             }
         } else {
             var positional: [String] = []
-            while positional.count < 3,
+            while positional.count < 4,
                 let val = reader.nextOptionalExpression()
             {
                 positional.append(unquote(val))
             }
-            if positional.count > 0 { style = LogoFormatters.NumberStyle.parse(positional[0]) }
-            if positional.count > 1 { localeSpec = positional[1] }
-            if positional.count > 2 { currencyCode = positional[2] }
+            LogoFormatters.disambiguateNumberOptions(
+                positional, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision)
         }
 
         reader.commit(to: &index)
@@ -500,15 +500,42 @@ extension LogoEngine {
         var type: LogoFormatters.ListType = .and
         var localeSpec: String? = nil
 
-        var positional: [String] = []
-        while positional.count < 2,
-            let val = reader.nextOptionalExpression()
-        {
-            positional.append(unquote(val))
+        if reader.peekToken() == "[" {
+            let rawList = reader.nextExpression()
+            let parsedOpts = LogoValue.parse(rawList)
+            if case .list(let optItems) = parsedOpts {
+                var isDict = false
+                var i = 0
+                while i < optItems.count {
+                    let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                    if ["type", "kind", "style", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
+                        isDict = true
+                        let val = optItems[i + 1].stringValue
+                        switch cleanKey {
+                        case "type", "kind", "style": type = LogoFormatters.ListType.parse(val)
+                        case "locale", "lang": localeSpec = val
+                        default: break
+                        }
+                        i += 2
+                    } else {
+                        i += 1
+                    }
+                }
+                if !isDict {
+                    let strings = optItems.map { $0.stringValue }
+                    LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec)
+                }
+            }
+        } else {
+            var positional: [String] = []
+            while positional.count < 2,
+                let val = reader.nextOptionalExpression()
+            {
+                positional.append(unquote(val))
+            }
+            LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec)
         }
-
-        if positional.count > 0 { type = LogoFormatters.ListType.parse(positional[0]) }
-        if positional.count > 1 { localeSpec = positional[1] }
 
         reader.commit(to: &index)
 
@@ -540,8 +567,9 @@ extension LogoEngine {
 
             let res: String
             if let val = Double(clean1) {
-                let unit = positional.count > 0 ? positional[0] : "days"
-                let locale = positional.count > 1 ? positional[1] : nil
+                var unit = "days"
+                var locale: String? = nil
+                LogoFormatters.disambiguateRelativeTimeOptions(positional, unit: &unit, locale: &locale)
                 res = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
             } else if let targetDate = LogoDateTimeFormatter.parseDate(clean1) {
                 let locale = positional.count > 0 ? positional[0] : nil
@@ -563,15 +591,42 @@ extension LogoEngine {
         var style: LogoFormatters.ByteCountStyle = .file
         var localeSpec: String? = nil
 
-        var positional: [String] = []
-        while positional.count < 2,
-            let val = reader.nextOptionalExpression()
-        {
-            positional.append(unquote(val))
+        if reader.peekToken() == "[" {
+            let rawList = reader.nextExpression()
+            let parsedOpts = LogoValue.parse(rawList)
+            if case .list(let optItems) = parsedOpts {
+                var isDict = false
+                var i = 0
+                while i < optItems.count {
+                    let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                    if ["style", "fmt", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
+                        isDict = true
+                        let val = optItems[i + 1].stringValue
+                        switch cleanKey {
+                        case "style", "fmt": style = LogoFormatters.ByteCountStyle.parse(val)
+                        case "locale", "lang": localeSpec = val
+                        default: break
+                        }
+                        i += 2
+                    } else {
+                        i += 1
+                    }
+                }
+                if !isDict {
+                    let strings = optItems.map { $0.stringValue }
+                    LogoFormatters.disambiguateBytesOptions(strings, style: &style, locale: &localeSpec)
+                }
+            }
+        } else {
+            var positional: [String] = []
+            while positional.count < 2,
+                let val = reader.nextOptionalExpression()
+            {
+                positional.append(unquote(val))
+            }
+            LogoFormatters.disambiguateBytesOptions(positional, style: &style, locale: &localeSpec)
         }
-
-        if positional.count > 0 { style = LogoFormatters.ByteCountStyle.parse(positional[0]) }
-        if positional.count > 1 { localeSpec = positional[1] }
 
         reader.commit(to: &index)
 

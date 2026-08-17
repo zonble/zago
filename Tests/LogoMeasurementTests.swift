@@ -175,6 +175,41 @@ struct LogoMeasurementTests {
         let resParenthesized = eval("(FORMAT.ANGLE 10 \"deg \"zh_TW \"long)")
         #expect(resParenthesized == "10度")
     }
+
+    @Test func testAll22MeasurementDimensionsSupportSmartParameters() throws {
+        let commands = [
+            ("FORMAT.AREA 100 \"sqm \"zh_TW", "平方公尺"),
+            ("FORMAT.LENGTH 100 \"m \"zh_TW \"long", "公尺"),
+            ("FORMAT.VOLUME 2 \"l \"zh_TW \"long", "公升"),
+            ("FORMAT.ANGLE 90 \"deg \"zh_TW \"long", "度"),
+            ("FORMAT.MASS 500 \"g \"zh_TW \"long", "克"),
+            ("FORMAT.PRESSURE 1 \"atm \"zh_TW", "atm"),
+            ("FORMAT.ACCELERATION 9.81 \"m/s2 \"zh_TW", "公尺/平方秒"),
+            ("FORMAT.DURATION 2 \"hr \"zh_TW \"long", "小時"),
+            ("FORMAT.FREQUENCY 60 \"hz \"zh_TW", "赫茲"),
+            ("FORMAT.SPEED 100 \"kmh \"zh_TW \"long", "公里"),
+            ("FORMAT.ENERGY 2000 \"kcal \"zh_TW \"long", "卡路里"),
+            ("FORMAT.POWER 100 \"kw \"zh_TW", "千瓦"),
+            ("FORMAT.TEMPERATURE 25 \"c \"zh_TW \"long", "度"),
+            ("FORMAT.ILLUMINANCE 500 \"lx \"zh_TW", "勒克斯"),
+            ("FORMAT.ELECTRICCHARGE 5000 \"mah \"zh_TW", "mAh"),
+            ("FORMAT.ELECTRICCURRENT 2 \"a \"zh_TW \"long", "安培"),
+            ("FORMAT.VOLTAGE 110 \"v \"zh_TW \"long", "伏特"),
+            ("FORMAT.ELECTRICPOTENTIALDIFFERENCE 110 \"v \"zh_TW \"long", "伏特"),
+            ("FORMAT.ELECTRICRESISTANCE 10 \"kohm \"zh_TW", "10"),
+            ("FORMAT.CONCENTRATIONMASS 100 \"mg/dl \"zh_TW", "g/L"),
+            ("FORMAT.DISPERSION 10 \"ppm \"zh_TW", "百萬分率"),
+            ("FORMAT.FUELEFFICIENCY 30 \"mpg \"zh_TW", "加侖"),
+            ("FORMAT.STORAGE 16 \"gb \"zh_TW \"long", "GB"),
+            ("FORMAT.INFORMATIONSTORAGE 16 \"gb \"zh_TW \"long", "GB"),
+        ]
+
+        for (cmd, expectedSubstring) in commands {
+            let res = eval(cmd)
+            #expect(!res.isEmpty, "Command returned empty: \(cmd)")
+            #expect(res.contains(expectedSubstring), "Command \(cmd) returned \(res), expected substring \(expectedSubstring)")
+        }
+    }
     #else
     @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
         let engine = LogoEngine()

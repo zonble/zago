@@ -30,6 +30,56 @@ struct LogoFormatters {
             default: .decimal
             }
         }
+
+        static func isStyleKeyword(_ raw: String) -> Bool {
+            let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
+            return [
+                "spellout", "words", "word", "text", "chinese", "cjk", "spoken",
+                "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional",
+                "daxie", "currency", "money", "curr", "cash",
+                "percent", "percentage", "pct",
+                "roman", "romannumeral",
+                "ordinal", "ord",
+                "decimal", "number", "num", "grouping",
+            ].contains(clean)
+        }
+    }
+
+    static func isCurrencyCode(_ raw: String) -> Bool {
+        let clean = raw.trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).uppercased()
+        if clean.count == 3 && clean.allSatisfy({ $0.isLetter }) {
+            return true
+        }
+        return ["NT$", "$", "€", "¥", "£", "NTD"].contains(clean)
+    }
+
+    static func disambiguateNumberOptions(
+        _ args: [String],
+        style: inout NumberStyle,
+        locale: inout String?,
+        currencyCode: inout String?,
+        precision: inout Int?
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
+
+            if let intVal = Int(lower), precision == nil, !NumberStyle.isStyleKeyword(lower) {
+                precision = intVal
+            } else if NumberStyle.isStyleKeyword(lower) {
+                style = NumberStyle.parse(lower)
+            } else if isCurrencyCode(clean) && currencyCode == nil && !LogoDateTimeFormatter.isLocaleName(clean) {
+                currencyCode = clean
+            } else if LogoDateTimeFormatter.isLocaleName(clean) && locale == nil {
+                locale = clean
+            } else if locale == nil {
+                locale = clean
+            } else if currencyCode == nil {
+                currencyCode = clean
+            }
+        }
     }
 
     static func formatNumber(
@@ -183,6 +233,30 @@ struct LogoFormatters {
             default: .and
             }
         }
+
+        static func isTypeKeyword(_ raw: String) -> Bool {
+            let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
+            return ["or", "disjunction", "unit", "narrow", "comma", "and", "standard", "conjunction"].contains(clean)
+        }
+    }
+
+    static func disambiguateListOptions(
+        _ args: [String],
+        type: inout ListType,
+        locale: inout String?
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
+
+            if ListType.isTypeKeyword(lower) {
+                type = ListType.parse(lower)
+            } else {
+                locale = clean
+            }
+        }
     }
 
     static func formatList(
@@ -232,6 +306,37 @@ struct LogoFormatters {
 
     // MARK: - Relative Date Time Formatter
 
+    static func isRelativeTimeUnit(_ raw: String) -> Bool {
+        let clean = raw.trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).lowercased()
+        return [
+            "second", "seconds", "sec", "s",
+            "minute", "minutes", "min",
+            "hour", "hours", "h", "hr", "hrs",
+            "day", "days", "d",
+            "week", "weeks", "w",
+            "month", "months", "m", "mon",
+            "year", "years", "y", "yr", "yrs"
+        ].contains(clean)
+    }
+
+    static func disambiguateRelativeTimeOptions(
+        _ args: [String],
+        unit: inout String,
+        locale: inout String?
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
+
+            if isRelativeTimeUnit(lower) {
+                unit = lower
+            } else {
+                locale = clean
+            }
+        }
+    }
+
     static func formatRelativeTime(
         value: Double,
         unit: String,
@@ -246,16 +351,16 @@ struct LogoFormatters {
             formatter.unitsStyle = .full
             formatter.dateTimeStyle = .named
 
-            let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
+            let cleanUnit = unit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' "))
             var comps = DateComponents()
             switch cleanUnit {
             case "second", "seconds", "sec", "s": comps.second = Int(value)
             case "minute", "minutes", "min": comps.minute = Int(value)
-            case "hour", "hours", "h": comps.hour = Int(value)
+            case "hour", "hours", "h", "hr", "hrs": comps.hour = Int(value)
             case "day", "days", "d": comps.day = Int(value)
             case "week", "weeks", "w": comps.weekOfYear = Int(value)
-            case "month", "months", "m": comps.month = Int(value)
-            case "year", "years", "y": comps.year = Int(value)
+            case "month", "months", "m", "mon": comps.month = Int(value)
+            case "year", "years", "y", "yr", "yrs": comps.year = Int(value)
             default: comps.day = Int(value)
             }
             return formatter.localizedString(from: comps)
@@ -298,6 +403,30 @@ struct LogoFormatters {
             case "bytes", "exact", "raw": .bytes
             case "file", "auto": .file
             default: .file
+            }
+        }
+
+        static func isStyleKeyword(_ raw: String) -> Bool {
+            let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
+            return ["memory", "mem", "binary", "bin", "decimal", "dec", "bytes", "exact", "raw", "file", "auto"].contains(clean)
+        }
+    }
+
+    static func disambiguateBytesOptions(
+        _ args: [String],
+        style: inout ByteCountStyle,
+        locale: inout String?
+    ) {
+        for arg in args {
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty { continue }
+            let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
+
+            if ByteCountStyle.isStyleKeyword(lower) {
+                style = ByteCountStyle.parse(lower)
+            } else {
+                locale = clean
             }
         }
     }
