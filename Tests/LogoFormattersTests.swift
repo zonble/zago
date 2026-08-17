@@ -297,4 +297,60 @@ import Testing
         let unquotedDocDoubleRes = engine.evaluateExpression(unquotedDocDoubleTokens, index: &index)
         #expect(unquotedDocDoubleRes == "計算數值的雙倍乘積")
     }
+
+    // MARK: - Smart Parameters Disambiguation Tests
+
+    @Test func testSmartParametersAcrossFormatters() {
+        let engine = LogoEngine()
+        func eval(_ code: String) -> String {
+            let tokens = LogoTokenizer.tokenize(code)
+            var index = 0
+            return engine.evaluateExpression(tokens, index: &index)
+        }
+
+        // 1. FORMAT.NUMBER
+        let numDirectLocale = eval("FORMAT.NUMBER 1000 \"zh_TW")
+        #expect(!numDirectLocale.isEmpty)
+
+        let numDirectWordsZh = eval("FORMAT.NUMBER 123 \"words \"zh_TW")
+        #expect(numDirectWordsZh.contains("一百二十三") || numDirectWordsZh.contains("一二三"))
+
+        let numReversedWordsZh = eval("FORMAT.NUMBER 123 \"zh_TW \"words")
+        #expect(numReversedWordsZh.contains("一百二十三") || numReversedWordsZh.contains("一二三"))
+
+        let numCurrencyOutOrder = eval("FORMAT.NUMBER 100 \"TWD \"currency \"zh_TW")
+        #expect(numCurrencyOutOrder.contains("100") || numCurrencyOutOrder.contains("NT$"))
+
+        let numParenthesized = eval("(FORMAT.NUMBER 123 \"zh_TW \"words)")
+        #expect(numParenthesized.contains("一百二十三") || numParenthesized.contains("一二三"))
+
+        // 2. FORMAT.BYTES
+        let bytesDirectLocale = eval("FORMAT.BYTES 1048576 \"zh_TW")
+        #expect(!bytesDirectLocale.isEmpty)
+
+        let bytesReversed = eval("FORMAT.BYTES 1048576 \"zh_TW \"bytes")
+        #expect(bytesReversed.contains("1,048,576 bytes") || bytesReversed.contains("1048576"))
+
+        let bytesDict = eval("FORMAT.BYTES 1048576 [locale \"zh_TW style \"bytes]")
+        #expect(bytesDict.contains("1,048,576 bytes") || bytesDict.contains("1048576"))
+
+#if !os(Linux) && !os(Windows)
+        // 3. FORMAT.LIST
+        let listDirectLocale = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW")
+        #expect(listDirectLocale.contains("蘋果") && listDirectLocale.contains("香蕉"))
+
+        let listReversedOr = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW \"or")
+        #expect(listReversedOr.contains("或") || listReversedOr.contains("or"))
+
+        let listDict = eval("FORMAT.LIST [蘋果 香蕉] [type \"or locale \"zh_TW]")
+        #expect(listDict.contains("或") || listDict.contains("or"))
+#endif
+
+        // 4. FORMAT.DATE
+        let dateDirectLocale = eval("FORMAT.DATE \"2026-12-31 \"zh_TW")
+        #expect(dateDirectLocale.contains("2026") || dateDirectLocale.contains("115"))
+
+        let dateReversedFull = eval("FORMAT.DATE \"2026-12-31 \"zh_TW \"full")
+        #expect(dateReversedFull.contains("2026") || dateReversedFull.contains("115"))
+    }
 }

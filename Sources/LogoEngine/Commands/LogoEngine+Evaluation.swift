@@ -180,10 +180,15 @@ extension LogoEngine {
                             break
                         }
                         let num = Double(cleanArgs[0]) ?? 0
-                        let style = cleanArgs.count > 1 ? LogoFormatters.NumberStyle.parse(cleanArgs[1]) : .decimal
-                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
-                        let curr = cleanArgs.count > 3 ? cleanArgs[3] : nil
-                        leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr)
+                        var style: LogoFormatters.NumberStyle = .decimal
+                        var locale: String? = nil
+                        var curr: String? = nil
+                        var precision: Int? = nil
+                        if cleanArgs.count > 1 {
+                            LogoFormatters.disambiguateNumberOptions(
+                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale, currencyCode: &curr, precision: &precision)
+                        }
+                        leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr, precision: precision)
                         setLastExpressionString(leftVal)
 
                     case .formatList:
@@ -205,8 +210,12 @@ extension LogoEngine {
                         case .list(let l), .array(let l): items = l.map { $0.stringValue }
                         case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
                         }
-                        let type = cleanArgs.count > 1 ? LogoFormatters.ListType.parse(cleanArgs[1]) : .and
-                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        var type: LogoFormatters.ListType = .and
+                        var locale: String? = nil
+                        if cleanArgs.count > 1 {
+                            LogoFormatters.disambiguateListOptions(
+                                Array(cleanArgs.dropFirst()), type: &type, locale: &locale)
+                        }
                         leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
                         setLastExpressionString(leftVal)
 #endif
@@ -228,8 +237,12 @@ extension LogoEngine {
                             }
                             let arg1 = cleanArgs[0]
                             if let val = Double(arg1) {
-                                let unit = cleanArgs.count > 1 ? cleanArgs[1] : "days"
-                                let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                                var unit = "days"
+                                var locale: String? = nil
+                                if cleanArgs.count > 1 {
+                                    LogoFormatters.disambiguateRelativeTimeOptions(
+                                        Array(cleanArgs.dropFirst()), unit: &unit, locale: &locale)
+                                }
                                 leftVal = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
                             } else if let targetDate = LogoDateTimeFormatter.parseDate(arg1) {
                                 let locale = cleanArgs.count > 1 ? cleanArgs[1] : nil
@@ -247,8 +260,12 @@ extension LogoEngine {
                             break
                         }
                         let bytes = Int64(Double(cleanArgs[0]) ?? 0)
-                        let style = cleanArgs.count > 1 ? LogoFormatters.ByteCountStyle.parse(cleanArgs[1]) : .file
-                        let locale = cleanArgs.count > 2 ? cleanArgs[2] : nil
+                        var style: LogoFormatters.ByteCountStyle = .file
+                        var locale: String? = nil
+                        if cleanArgs.count > 1 {
+                            LogoFormatters.disambiguateBytesOptions(
+                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale)
+                        }
                         leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
                         setLastExpressionString(leftVal)
 
