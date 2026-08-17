@@ -333,402 +333,150 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "CONVERT.INFORMATIONSTORAGE 1 \"gb \"mb", output: "1000")]
             )
 
-        // MARK: - FORMAT.* Measurement Metadata
+        // MARK: - FORMAT.MEASURE Metadata
 
-        case .formatArea:
-            let areaUnits = ["sqm", "m2", "sqkm", "km2", "sqcm", "cm2", "sqmm", "mm2", "squm", "sqnm", "sqin", "in2", "sqft", "ft2", "sqyd", "yd2", "sqmi", "mi2", "acre", "acres", "are", "ares", "ha", "hectares"]
+        case .formatMeasure:
             return LogoPrimitiveMeta(
-                name: "FORMAT.AREA",
-                description: "Formats area measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatarea",
+                name: "FORMAT.MEASURE",
+                description: "Formats a measurement or numeric value/unit pair into a localized string with unit symbols or names.",
+                localizedDescriptionKey: "logo.doc.formatmeasure",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric area value.", example: "100"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Area unit.", example: "sqm", allowedValues: areaUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
+                    LogoPrimitiveParameter(name: "measurementOrValue", required: true, description: "A measurement object [value unit] or numeric value.", example: "[1.5 kg]"),
+                    LogoPrimitiveParameter(name: "unitOrTargetUnit", required: false, description: "Unit or target conversion unit.", example: "g"),
+                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style (short, medium, long).", example: "long", allowedValues: ["medium", "short", "long"]),
+                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "zh_TW"),
                     LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.AREA 100 \"sqm \"long \"zh_TW", output: "100 平方公尺")],
+                examples: [
+                    LogoPrimitiveExample(input: "FORMAT.MEASURE (MEASURE.ADD 1 kg 100 g) \"g \"zh_TW", output: "1,100 g"),
+                    LogoPrimitiveExample(input: "FORMAT.MEASURE 1500 \"m \"long \"zh_TW \"true", output: "1.5 公里"),
+                ],
                 notes: "Not supported on Linux or Windows."
             )
 
-        case .formatLength:
-            let lengthUnits = ["m", "km", "cm", "mm", "um", "nm", "pm", "dm", "dam", "hm", "in", "ft", "yd", "mi", "nmi", "furlong", "fathom", "ly", "pc", "au"]
+        case .measureAdd:
             return LogoPrimitiveMeta(
-                name: "FORMAT.LENGTH",
-                description: "Formats length measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatlength",
+                name: "MEASURE.ADD",
+                description: "Adds two measurements with automatic unit conversion and returns the sum in the target unit.",
+                localizedDescriptionKey: "logo.doc.measureadd",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric length value.", example: "1500"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Length unit.", example: "m", allowedValues: lengthUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement numeric value.", example: "5"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement numeric value.", example: "300"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "m"),
+                    LogoPrimitiveParameter(name: "targetUnit", required: false, description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.LENGTH 1500 \"m \"long \"zh_TW \"true", output: "1.5 公里")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.ADD 5 \"km 300 \"m \"m", output: "5300")]
             )
 
-        case .formatVolume:
-            let volumeUnits = ["l", "ml", "cl", "dl", "kl", "m3", "km3", "cm3", "mm3", "in3", "ft3", "yd3", "mi3", "acrefeet", "bushel", "tsp", "tbsp", "floz", "cup", "pt", "qt", "gal", "imptsp", "imptbsp", "impfloz", "imppt", "impqt", "impgal"]
+        case .measureSub:
             return LogoPrimitiveMeta(
-                name: "FORMAT.VOLUME",
-                description: "Formats volume measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatvolume",
+                name: "MEASURE.SUB",
+                description: "Subtracts the second measurement from the first with automatic unit conversion.",
+                localizedDescriptionKey: "logo.doc.measuresub",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric volume value.", example: "2"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Volume unit.", example: "l", allowedValues: volumeUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement numeric value.", example: "1"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "hr"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement numeric value.", example: "15"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "min"),
+                    LogoPrimitiveParameter(name: "targetUnit", required: false, description: "Target unit for the result (defaults to unit1).", example: "min"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.VOLUME 2 \"l \"long \"zh_TW", output: "2 公升")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.SUB 1 \"hr 15 \"min \"min", output: "45")]
             )
 
-        case .formatAngle:
-            let angleUnits = ["deg", "rad", "grad", "rev", "arcmin", "arcsec"]
+        case .measureScale:
             return LogoPrimitiveMeta(
-                name: "FORMAT.ANGLE",
-                description: "Formats angle measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatangle",
+                name: "MEASURE.SCALE",
+                description: "Multiplies a measurement by a numeric scaling factor.",
+                localizedDescriptionKey: "logo.doc.measurescale",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric angle value.", example: "90"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Angle unit.", example: "deg", allowedValues: angleUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "value", required: true, description: "Numeric measurement value.", example: "2.5"),
+                    LogoPrimitiveParameter(name: "unit", required: true, description: "Measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "factor", required: true, description: "Scaling multiplier factor.", example: "3"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ANGLE 90 \"deg \"short", output: "90°")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.SCALE 2.5 \"km 3", output: "7.5")]
             )
 
-        case .formatMass:
-            let massUnits = ["kg", "g", "mg", "ug", "ng", "pg", "t", "lb", "oz", "ozt", "ct", "st", "ston", "slug"]
+        case .measureEqual:
             return LogoPrimitiveMeta(
-                name: "FORMAT.MASS",
-                description: "Formats mass/weight measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatmass",
+                name: "MEASURE.EQUAL?",
+                description: "Tests whether two measurements represent equal physical quantities under unit conversion.",
+                localizedDescriptionKey: "logo.doc.measureequal",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric mass value.", example: "500"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Mass unit.", example: "g", allowedValues: massUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement value.", example: "1000"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "m"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement value.", example: "1"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "tolerance", required: false, description: "Comparison delta tolerance in unit1.", example: "0.001"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.MASS 500 \"g \"long \"zh_TW", output: "500 公克")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.EQUAL? 1000 \"m 1 \"km", output: "true")]
             )
 
-        case .formatPressure:
-            let pressureUnits = ["pa", "hpa", "kpa", "mpa", "gpa", "bar", "mbar", "atm", "mmhg", "torr", "inhg", "psi"]
+        case .measureLess:
             return LogoPrimitiveMeta(
-                name: "FORMAT.PRESSURE",
-                description: "Formats pressure measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatpressure",
+                name: "MEASURE.LESS?",
+                description: "Tests whether the first measurement is strictly less than the second under unit conversion.",
+                localizedDescriptionKey: "logo.doc.measureless",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric pressure value.", example: "1"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Pressure unit.", example: "atm", allowedValues: pressureUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement value.", example: "500"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "m"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement value.", example: "1"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "km"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.PRESSURE 1 \"atm \"short", output: "1 atm")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.LESS? 500 \"m 1 \"km", output: "true")]
             )
 
-        case .formatAcceleration:
-            let accelerationUnits = ["m/s2", "g"]
+        case .measureGreater:
             return LogoPrimitiveMeta(
-                name: "FORMAT.ACCELERATION",
-                description: "Formats acceleration measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatacceleration",
+                name: "MEASURE.GREATER?",
+                description: "Tests whether the first measurement is strictly greater than the second under unit conversion.",
+                localizedDescriptionKey: "logo.doc.measuregreater",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric acceleration value.", example: "9.81"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Acceleration unit.", example: "m/s2", allowedValues: accelerationUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement value.", example: "1.5"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement value.", example: "1000"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "m"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ACCELERATION 9.81 \"m/s2 \"medium", output: "9.81 m/s²")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.GREATER? 1.5 \"km 1000 \"m", output: "true")]
             )
 
-        case .formatDuration:
-            let durationUnits = ["s", "min", "hr", "ms", "us", "ns", "ps"]
+        case .measureMin:
             return LogoPrimitiveMeta(
-                name: "FORMAT.DURATION",
-                description: "Formats time duration measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatduration",
+                name: "MEASURE.MIN",
+                description: "Returns the smaller of two measurements in the requested target unit.",
+                localizedDescriptionKey: "logo.doc.measuremin",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric duration value.", example: "2"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Duration unit.", example: "hr", allowedValues: durationUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement value.", example: "1"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement value.", example: "800"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "m"),
+                    LogoPrimitiveParameter(name: "targetUnit", required: false, description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.DURATION 2 \"hr \"long \"zh_TW", output: "2 小時")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.MIN 1 \"km 800 \"m \"m", output: "800")]
             )
 
-        case .formatFrequency:
-            let frequencyUnits = ["hz", "khz", "mhz", "ghz", "thz", "fps"]
+        case .measureMax:
             return LogoPrimitiveMeta(
-                name: "FORMAT.FREQUENCY",
-                description: "Formats frequency measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatfrequency",
+                name: "MEASURE.MAX",
+                description: "Returns the larger of two measurements in the requested target unit.",
+                localizedDescriptionKey: "logo.doc.measuremax",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric frequency value.", example: "60"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Frequency unit.", example: "hz", allowedValues: frequencyUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
+                    LogoPrimitiveParameter(name: "val1", required: true, description: "First measurement value.", example: "1"),
+                    LogoPrimitiveParameter(name: "unit1", required: true, description: "First measurement unit.", example: "km"),
+                    LogoPrimitiveParameter(name: "val2", required: true, description: "Second measurement value.", example: "800"),
+                    LogoPrimitiveParameter(name: "unit2", required: true, description: "Second measurement unit.", example: "m"),
+                    LogoPrimitiveParameter(name: "targetUnit", required: false, description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.FREQUENCY 60 \"hz \"short", output: "60 Hz")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatSpeed:
-            let speedUnits = ["m/s", "km/h", "kmh", "mph", "knots"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.SPEED",
-                description: "Formats speed measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatspeed",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric speed value.", example: "100"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Speed unit.", example: "kmh", allowedValues: speedUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.SPEED 100 \"kmh \"long \"zh_TW", output: "100 公里/小時")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatEnergy:
-            let energyUnits = ["j", "kj", "mj", "gj", "cal", "kcal", "kwh"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ENERGY",
-                description: "Formats energy measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatenergy",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric energy value.", example: "2000"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Energy unit.", example: "kcal", allowedValues: energyUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ENERGY 2000 \"kcal \"long \"zh_TW", output: "2,000 大卡")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatPower:
-            let powerUnits = ["w", "mw", "kw", "megawatt", "gw", "tw", "hp"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.POWER",
-                description: "Formats power measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatpower",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric power value.", example: "100"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Power unit.", example: "kw", allowedValues: powerUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.POWER 100 \"kw \"long \"zh_TW", output: "100 瓩")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatTemperature:
-            let temperatureUnits = ["c", "f", "k"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.TEMPERATURE",
-                description: "Formats temperature measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formattemperature",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric temperature value.", example: "25"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Temperature unit (c, f, k).", example: "c", allowedValues: temperatureUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.TEMPERATURE 25 \"c \"long \"zh_TW", output: "25 攝氏度")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatIlluminance:
-            let illuminanceUnits = ["lx", "lux"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ILLUMINANCE",
-                description: "Formats illuminance measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatilluminance",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric illuminance value.", example: "500"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Illuminance unit.", example: "lx", allowedValues: illuminanceUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ILLUMINANCE 500 \"lx \"short", output: "500 lx")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatElectricCharge:
-            let electricChargeUnits = ["c", "ah", "mah", "uah", "kiloamperehour", "megaamperehour"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ELECTRICCHARGE",
-                description: "Formats electric charge measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatelectriccharge",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric electric charge value.", example: "5000"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Charge unit.", example: "mah", allowedValues: electricChargeUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCHARGE 5000 \"mah \"short", output: "5,000 mAh")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatElectricCurrent:
-            let electricCurrentUnits = ["a", "ma", "ua", "ka", "megaamp"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ELECTRICCURRENT",
-                description: "Formats electric current measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatelectriccurrent",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric electric current value.", example: "2"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Current unit.", example: "a", allowedValues: electricCurrentUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICCURRENT 2 \"a \"long \"zh_TW", output: "2 安培")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatElectricPotentialDifference:
-            let electricPotentialUnits = ["v", "mv", "uv", "kv", "megavolt"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ELECTRICPOTENTIALDIFFERENCE",
-                description: "Formats voltage / electric potential difference measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatelectricpotentialdifference",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric voltage value.", example: "110"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Voltage unit.", example: "v", allowedValues: electricPotentialUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.VOLTAGE 110 \"v \"long \"zh_TW", output: "110 伏特")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatElectricResistance:
-            let electricResistanceUnits = ["ohm", "mohm", "uohm", "kohm", "megaohm"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.ELECTRICRESISTANCE",
-                description: "Formats electric resistance measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatelectricresistance",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric resistance value.", example: "10"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Resistance unit.", example: "kohm", allowedValues: electricResistanceUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.ELECTRICRESISTANCE 10 \"kohm \"long \"zh_TW", output: "10 千歐")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatConcentrationMass:
-            let concentrationMassUnits = ["g/l", "mg/dl", "mmol/l"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.CONCENTRATIONMASS",
-                description: "Formats mass concentration measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatconcentrationmass",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric concentration value.", example: "100"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Concentration unit.", example: "mg/dl", allowedValues: concentrationMassUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.CONCENTRATIONMASS 100 \"mg/dl \"short", output: "100 mg/dL")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatDispersion:
-            let dispersionUnits = ["ppm"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.DISPERSION",
-                description: "Formats dispersion measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatdispersion",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric dispersion value.", example: "10"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Dispersion unit.", example: "ppm", allowedValues: dispersionUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.DISPERSION 10 \"ppm \"short", output: "10 ppm")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatFuelEfficiency:
-            let fuelEfficiencyUnits = ["l/100km", "mpg", "imperialmpg"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.FUELEFFICIENCY",
-                description: "Formats fuel efficiency measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatfuelefficiency",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric fuel efficiency value.", example: "30"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Fuel efficiency unit.", example: "mpg", allowedValues: fuelEfficiencyUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.FUELEFFICIENCY 30 \"mpg \"short", output: "30 mpg")],
-                notes: "Not supported on Linux or Windows."
-            )
-
-        case .formatInformationStorage:
-            let infoStorageUnits = ["b", "kb", "mb", "gb", "tb", "pb", "eb", "zb", "yb", "bit", "kbit", "mbit", "gbit", "tbit", "pbit", "kib", "mib", "gib", "tib", "pib", "kibit", "mibit", "gibit"]
-            return LogoPrimitiveMeta(
-                name: "FORMAT.INFORMATIONSTORAGE",
-                description: "Formats data storage measurements into localized string with unit symbols or long names.",
-                localizedDescriptionKey: "logo.doc.formatinformationstorage",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "The numeric data storage value.", example: "16"),
-                    LogoPrimitiveParameter(name: "unit", required: true, description: "Storage unit.", example: "gb", allowedValues: infoStorageUnits),
-                    LogoPrimitiveParameter(name: "style", required: false, description: "Unit display style.", example: "medium", allowedValues: ["medium", "short", "long"]),
-                    LogoPrimitiveParameter(name: "locale", required: false, description: "Target locale.", example: "en_US"),
-                    LogoPrimitiveParameter(name: "naturalScale", required: false, description: "Auto-scale unit to natural magnitude.", example: "true"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.STORAGE 16 \"gb \"long \"zh_TW", output: "16 GB")],
-                notes: "Not supported on Linux or Windows."
+                examples: [LogoPrimitiveExample(input: "MEASURE.MAX 1 \"km 800 \"m \"m", output: "1000")]
             )
 
         default:

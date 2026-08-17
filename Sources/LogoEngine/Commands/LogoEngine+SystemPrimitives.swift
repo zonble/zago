@@ -54,13 +54,11 @@ extension LogoEngine {
             .convertFuelEfficiency, .convertInformationStorage:
             return evaluateMeasurementConvertPrimitive(prim, tokens: tokens, index: &index)
 
-        case .formatArea, .formatLength, .formatVolume, .formatAngle, .formatMass,
-            .formatPressure, .formatAcceleration, .formatDuration, .formatFrequency,
-            .formatSpeed, .formatEnergy, .formatPower, .formatTemperature, .formatIlluminance,
-            .formatElectricCharge, .formatElectricCurrent, .formatElectricPotentialDifference,
-            .formatElectricResistance, .formatConcentrationMass, .formatDispersion,
-            .formatFuelEfficiency, .formatInformationStorage:
+        case .formatMeasure:
             return evaluateMeasurementFormatPrimitive(prim, tokens: tokens, index: &index)
+
+        case .measureAdd, .measureSub, .measureScale, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax:
+            return evaluateMeasureOperationPrimitive(prim, tokens: tokens, index: &index)
 
         case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
@@ -76,6 +74,7 @@ extension LogoEngine {
             let res: String
             switch p {
             case .list(let items), .array(let items): res = "\(items.count)"
+            case .measurement: res = "2"
             case .string(let s): res = "\(s.count)"
             }
             setLastExpressionString(res)
@@ -488,6 +487,8 @@ extension LogoEngine {
         switch parsed {
         case .list(let l), .array(let l):
             items = l.map { $0.stringValue }
+        case .measurement(let val, let unit, _):
+            items = [LogoMeasurementConverter.formatResult(val), unit]
         case .string(let s):
             let clean = unquote(s)
             if clean.contains(" ") {
@@ -716,16 +717,37 @@ extension LogoEngine {
             return ""
         #else
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            guard let valStr = reader.nextOptionalExpression(),
-                let unitStr = reader.nextOptionalExpression()
-            else { return "" }
+            guard let firstArg = reader.nextOptionalExpression() else { return "" }
 
-            let val = Double(unquote(valStr)) ?? 0
-            let cleanUnit = unquote(unitStr)
+            var val: Double = 0
+            var cleanUnit: String = ""
+            let kind: LogoMeasurementConverter.DimensionKind
+
+            let parsedFirst = LogoValue.parse(firstArg)
+            if case .measurement(let mVal, let mUnit, let mDim) = parsedFirst {
+                val = mVal
+                cleanUnit = mUnit
+                kind = mDim
+            } else {
+                guard let unitStr = reader.nextOptionalExpression() else {
+                    reader.commit(to: &index)
+                    return ""
+                }
+                val = Double(unquote(firstArg)) ?? 0
+                cleanUnit = unquote(unitStr)
+                guard let inferredDim = LogoMeasurementConverter.findDimension(for: cleanUnit) else {
+                    let msg = "[LOGO Error: \(prim.meta.name) invalid or unknown unit '\(cleanUnit)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    reader.commit(to: &index)
+                    return ""
+                }
+                kind = inferredDim
+            }
 
             var style: String? = nil
             var localeSpec: String? = nil
             var naturalScale = false
+            var targetConversionUnit: String? = nil
 
             if reader.peekToken() == "[" {
                 let rawList = reader.nextExpression()
@@ -736,7 +758,7 @@ extension LogoEngine {
                     while i < items.count {
                         let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
                         let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                        if ["style", "fmt", "locale", "lang", "natural", "scale"].contains(cleanKey)
+                        if ["style", "fmt", "locale", "lang", "natural", "scale", "unit", "to"].contains(cleanKey)
                             && i + 1 < items.count
                         {
                             isDict = true
@@ -745,6 +767,7 @@ extension LogoEngine {
                             case "style", "fmt": style = v
                             case "locale", "lang": localeSpec = v
                             case "natural", "scale": naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
+                            case "unit", "to": targetConversionUnit = v
                             default: break
                             }
                             i += 2
@@ -754,6 +777,19 @@ extension LogoEngine {
                     }
                     if !isDict {
                         let strings = items.map { $0.stringValue }
+                        for s in strings {
+                            let unq = unquote(s)
+                            if let dim = LogoMeasurementConverter.findDimension(for: unq) {
+                                if dim == kind {
+                                    targetConversionUnit = unq
+                                } else {
+                                    let msg = "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
+                                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                                    reader.commit(to: &index)
+                                    return ""
+                                }
+                            }
+                        }
                         LogoMeasurementConverter.disambiguateFormatOptions(
                             strings, style: &style, locale: &localeSpec, naturalScale: &naturalScale)
                     }
@@ -763,7 +799,19 @@ extension LogoEngine {
                 while positional.count < 3,
                     let arg = reader.nextOptionalExpression()
                 {
-                    positional.append(unquote(arg))
+                    let unq = unquote(arg)
+                    if let dim = LogoMeasurementConverter.findDimension(for: unq) {
+                        if dim == kind {
+                            targetConversionUnit = unq
+                        } else {
+                            let msg = "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
+                            reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                            reader.commit(to: &index)
+                            return ""
+                        }
+                    } else {
+                        positional.append(unq)
+                    }
                 }
                 LogoMeasurementConverter.disambiguateFormatOptions(
                     positional, style: &style, locale: &localeSpec, naturalScale: &naturalScale)
@@ -771,31 +819,11 @@ extension LogoEngine {
 
             reader.commit(to: &index)
 
-            let kind: LogoMeasurementConverter.DimensionKind
-            switch prim {
-            case .formatArea: kind = .area
-            case .formatLength: kind = .length
-            case .formatVolume: kind = .volume
-            case .formatAngle: kind = .angle
-            case .formatMass: kind = .mass
-            case .formatPressure: kind = .pressure
-            case .formatAcceleration: kind = .acceleration
-            case .formatDuration: kind = .duration
-            case .formatFrequency: kind = .frequency
-            case .formatSpeed: kind = .speed
-            case .formatEnergy: kind = .energy
-            case .formatPower: kind = .power
-            case .formatTemperature: kind = .temperature
-            case .formatIlluminance: kind = .illuminance
-            case .formatElectricCharge: kind = .electricCharge
-            case .formatElectricCurrent: kind = .electricCurrent
-            case .formatElectricPotentialDifference: kind = .electricPotentialDifference
-            case .formatElectricResistance: kind = .electricResistance
-            case .formatConcentrationMass: kind = .concentrationMass
-            case .formatDispersion: kind = .dispersion
-            case .formatFuelEfficiency: kind = .fuelEfficiency
-            case .formatInformationStorage: kind = .informationStorage
-            default: return ""
+            if let targetUnit = targetConversionUnit,
+                let convertedVal = LogoMeasurementConverter.convert(value: val, from: cleanUnit, to: targetUnit, kind: kind)
+            {
+                val = convertedVal
+                cleanUnit = targetUnit
             }
 
             if let formatted = LogoMeasurementConverter.format(
@@ -811,5 +839,180 @@ extension LogoEngine {
             }
             return ""
         #endif
+    }
+
+    private func evaluateMeasureOperationPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let arg1 = reader.nextOptionalExpression() else { return "" }
+        let clean1 = unquote(arg1)
+        let parsed1 = LogoValue.parse(arg1)
+
+        switch prim {
+        case .measureScale:
+            let val: Double
+            let unit: String
+            let factor: Double
+
+            if case .measurement(let mVal, let mUnit, _) = parsed1 {
+                guard let factorStr = reader.nextOptionalExpression() else {
+                    reader.commit(to: &index)
+                    return ""
+                }
+                val = mVal
+                unit = mUnit
+                factor = Double(unquote(factorStr)) ?? 1
+            } else {
+                guard let unitStr = reader.nextOptionalExpression(),
+                    let factorStr = reader.nextOptionalExpression()
+                else {
+                    reader.commit(to: &index)
+                    return ""
+                }
+                val = Double(clean1) ?? 0
+                unit = unquote(unitStr)
+                factor = Double(unquote(factorStr)) ?? 1
+            }
+            reader.commit(to: &index)
+
+            guard let res = LogoMeasurementConverter.scale(value: val, unit: unit, factor: factor) else {
+                return ""
+            }
+            setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+            return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+
+        case .measureAdd, .measureSub, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax:
+            let val1: Double
+            let unit1: String
+            let val2: Double
+            let unit2: String
+            let targetUnit: String?
+
+            if case .measurement(let mVal1, let mUnit1, _) = parsed1 {
+                guard let arg2 = reader.nextOptionalExpression() else {
+                    reader.commit(to: &index)
+                    return ""
+                }
+                let parsed2 = LogoValue.parse(arg2)
+                if case .measurement(let mVal2, let mUnit2, _) = parsed2 {
+                    val1 = mVal1
+                    unit1 = mUnit1
+                    val2 = mVal2
+                    unit2 = mUnit2
+                } else {
+                    guard let unit2Str = reader.nextOptionalExpression() else {
+                        reader.commit(to: &index)
+                        return ""
+                    }
+                    val1 = mVal1
+                    unit1 = mUnit1
+                    val2 = Double(unquote(arg2)) ?? 0
+                    unit2 = unquote(unit2Str)
+                }
+            } else {
+                guard let unit1Str = reader.nextOptionalExpression(),
+                    let val2Str = reader.nextOptionalExpression(),
+                    let unit2Str = reader.nextOptionalExpression()
+                else {
+                    reader.commit(to: &index)
+                    return ""
+                }
+                val1 = Double(clean1) ?? 0
+                unit1 = unquote(unit1Str)
+                let parsedVal2 = LogoValue.parse(val2Str)
+                if case .measurement(let mVal2, let mUnit2, _) = parsedVal2 {
+                    val2 = mVal2
+                    unit2 = mUnit2
+                } else {
+                    val2 = Double(unquote(val2Str)) ?? 0
+                    unit2 = unquote(unit2Str)
+                }
+            }
+
+            if let dim1 = LogoMeasurementConverter.findDimension(for: unit1),
+                let peek = reader.peekToken(),
+                !LogoEngine.isArgumentBoundary(peek),
+                let peekDim = LogoMeasurementConverter.findDimension(for: unquote(peek)),
+                peekDim == dim1
+            {
+                targetUnit = reader.nextOptionalExpression().map(unquote)
+            } else {
+                targetUnit = nil
+            }
+            reader.commit(to: &index)
+
+            switch prim {
+            case .measureAdd:
+                guard let res = LogoMeasurementConverter.add(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return ""
+                }
+                setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+                return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+
+            case .measureSub:
+                guard let res = LogoMeasurementConverter.subtract(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return ""
+                }
+                setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+                return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+
+            case .measureEqual:
+                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return "false"
+                }
+                let tolerance = targetUnit.flatMap(Double.init) ?? 1e-6
+                let res = abs(v1 - v2) <= tolerance
+                setLastExpressionBoolean(res)
+                return res ? "true" : "false"
+
+            case .measureLess:
+                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return "false"
+                }
+                let res = v1 < v2
+                setLastExpressionBoolean(res)
+                return res ? "true" : "false"
+
+            case .measureGreater:
+                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return "false"
+                }
+                let res = v1 > v2
+                setLastExpressionBoolean(res)
+                return res ? "true" : "false"
+
+            case .measureMin:
+                guard let res = LogoMeasurementConverter.min(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return ""
+                }
+                setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+                return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+
+            case .measureMax:
+                guard let res = LogoMeasurementConverter.max(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                    let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                    reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
+                    return ""
+                }
+                setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+                return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+
+            default:
+                return ""
+            }
+        default:
+            return ""
+        }
     }
 }

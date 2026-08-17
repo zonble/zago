@@ -247,6 +247,14 @@ struct EnglishStrings {
             CONVERT.STORAGE val from to          Convert data storage (b, kb, mb, gb, tb, kib, mib)
             FORMAT.<DIMENSION> val unit [style] [locale] [natural]
                                                  Format measurement (e.g. FORMAT.LENGTH 1500 "m "long)
+            MEASURE.ADD v1 u1 v2 u2 [targetUnit] Add measurements (e.g. 5 "km 300 "m "m -> 5300)
+            MEASURE.SUB v1 u1 v2 u2 [targetUnit] Subtract measurements (e.g. 1 "hr 15 "min "min -> 45)
+            MEASURE.SCALE val unit factor        Scale measurement (e.g. 2.5 "km 3 -> 7.5)
+            MEASURE.EQUAL? v1 u1 v2 u2 [tol]     Test measurement equality under conversion
+            MEASURE.LESS? v1 u1 v2 u2            Test if measurement 1 < measurement 2
+            MEASURE.GREATER? v1 u1 v2 u2         Test if measurement 1 > measurement 2
+            MEASURE.MIN v1 u1 v2 u2 [targetUnit] Minimum of two measurements
+            MEASURE.MAX v1 u1 v2 u2 [targetUnit] Maximum of two measurements
 
           8. CJK text transforms & metrics
             TRANSFORM.TOHANS s / TOHANS          Convert Trad. Chinese to Simp.

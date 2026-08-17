@@ -1,10 +1,11 @@
 import Foundation
 
-/// Unified data value representation for LOGO (words, lists, and multi-dimensional arrays).
+/// Unified data value representation for LOGO (words, lists, multi-dimensional arrays, and physical measurements).
 enum LogoValue: Equatable, CustomStringConvertible {
     case string(String)
     case list([LogoValue])
     case array([LogoValue])
+    case measurement(value: Double, unit: String, dimension: LogoMeasurementConverter.DimensionKind)
 
     var isList: Bool {
         if case .list = self { return true }
@@ -21,9 +22,15 @@ enum LogoValue: Equatable, CustomStringConvertible {
         return false
     }
 
+    var isMeasurement: Bool {
+        if case .measurement = self { return true }
+        return false
+    }
+
     var isNumber: Bool {
         switch self {
         case .string(let s): return Double(s) != nil
+        case .measurement: return true
         default: return false
         }
     }
@@ -33,6 +40,7 @@ enum LogoValue: Equatable, CustomStringConvertible {
         case .string(let s): return s.isEmpty
         case .list(let l): return l.isEmpty
         case .array(let a): return a.isEmpty
+        case .measurement: return false
         }
     }
 
@@ -41,6 +49,8 @@ enum LogoValue: Equatable, CustomStringConvertible {
         case .string(let s): return s
         case .list(let items): return "[" + items.map { $0.stringValue }.joined(separator: " ") + "]"
         case .array(let items): return "{" + items.map { $0.stringValue }.joined(separator: " ") + "}"
+        case .measurement(let value, let unit, _):
+            return "[\(LogoMeasurementConverter.formatResult(value)) \(unit)]"
         }
     }
 
@@ -87,6 +97,8 @@ enum LogoValue: Equatable, CustomStringConvertible {
                 }
             }
             return "{" + formatted.joined(separator: " ") + "}"
+        case .measurement(let value, let unit, _):
+            return "[\(LogoMeasurementConverter.formatResult(value)) \(unit)]"
         }
     }
 
@@ -100,6 +112,13 @@ enum LogoValue: Equatable, CustomStringConvertible {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
             if inner.isEmpty { return .list([]) }
             let tokens = LogoTokenizer.tokenizeValueList(inner)
+            if tokens.count == 2,
+                let val = Double(tokens[0]),
+                let dim = LogoMeasurementConverter.findDimension(for: tokens[1])
+            {
+                let cleanUnit = LogoMeasurementConverter.normalizeUnitKey(tokens[1])
+                return .measurement(value: val, unit: cleanUnit, dimension: dim)
+            }
             return .list(tokens.map { parse($0) })
         } else if trimmed.hasPrefix("{") && trimmed.hasSuffix("}") {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)

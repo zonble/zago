@@ -58,7 +58,7 @@ extension LogoEngine {
         guard index < tokens.count else { return "" }
         guard !hasUncaughtError else { return "" }
 
-        var leftVal: String
+        var leftVal: String = ""
         var isParenthesized = false
         if tokens[index] == "(" {
             isParenthesized = true
@@ -208,6 +208,7 @@ extension LogoEngine {
                         let items: [String]
                         switch parsed {
                         case .list(let l), .array(let l): items = l.map { $0.stringValue }
+                        case .measurement(let val, let unit, _): items = [LogoMeasurementConverter.formatResult(val), unit]
                         case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
                         }
                         var type: LogoFormatters.ListType = .and
@@ -269,6 +270,181 @@ extension LogoEngine {
                         leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
                         setLastExpressionString(leftVal)
 
+                    case .measureScale:
+                        let cleanArgs = args.map { unquote($0) }
+                        let val: Double
+                        let unit: String
+                        let factor: Double
+
+                        if !args.isEmpty, case .measurement(let mVal, let mUnit, _) = LogoValue.parse(args[0]) {
+                            val = mVal
+                            unit = mUnit
+                            factor = args.count > 1 ? (Double(unquote(args[1])) ?? 1) : 1
+                        } else {
+                            guard cleanArgs.count >= 3,
+                                let v = Double(cleanArgs[0]),
+                                let f = Double(cleanArgs[2])
+                            else {
+                                leftVal = ""
+                                break
+                            }
+                            val = v
+                            unit = cleanArgs[1]
+                            factor = f
+                        }
+                        guard let res = LogoMeasurementConverter.scale(value: val, unit: unit, factor: factor) else {
+                            leftVal = ""
+                            break
+                        }
+                        let resStr = "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+                        leftVal = resStr
+                        setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+
+                    case .measureAdd, .measureSub, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax:
+                        let val1: Double
+                        let unit1: String
+                        let val2: Double
+                        let unit2: String
+                        let targetUnit: String?
+
+                        if !args.isEmpty, case .measurement(let mVal1, let mUnit1, _) = LogoValue.parse(args[0]) {
+                            val1 = mVal1
+                            unit1 = mUnit1
+                            if args.count > 1, case .measurement(let mVal2, let mUnit2, _) = LogoValue.parse(args[1]) {
+                                val2 = mVal2
+                                unit2 = mUnit2
+                                if args.count > 2,
+                                    let dim1 = LogoMeasurementConverter.findDimension(for: unit1),
+                                    let dimT = LogoMeasurementConverter.findDimension(for: unquote(args[2])),
+                                    dimT == dim1
+                                {
+                                    targetUnit = unquote(args[2])
+                                } else {
+                                    targetUnit = nil
+                                }
+                            } else if args.count > 2 {
+                                val2 = Double(unquote(args[1])) ?? 0
+                                unit2 = unquote(args[2])
+                                if args.count > 3,
+                                    let dim1 = LogoMeasurementConverter.findDimension(for: unit1),
+                                    let dimT = LogoMeasurementConverter.findDimension(for: unquote(args[3])),
+                                    dimT == dim1
+                                {
+                                    targetUnit = unquote(args[3])
+                                } else {
+                                    targetUnit = nil
+                                }
+                            } else {
+                                leftVal = ""
+                                break
+                            }
+                        } else {
+                            let cleanArgs = args.map { unquote($0) }
+                            guard cleanArgs.count >= 4,
+                                let v1 = Double(cleanArgs[0]),
+                                let v2 = Double(cleanArgs[2])
+                            else {
+                                leftVal = ""
+                                break
+                            }
+                            val1 = v1
+                            unit1 = cleanArgs[1]
+                            val2 = v2
+                            unit2 = cleanArgs[3]
+                            if cleanArgs.count > 4,
+                                let dim1 = LogoMeasurementConverter.findDimension(for: unit1),
+                                let dimT = LogoMeasurementConverter.findDimension(for: cleanArgs[4]),
+                                dimT == dim1
+                            {
+                                targetUnit = cleanArgs[4]
+                            } else {
+                                targetUnit = nil
+                            }
+                        }
+
+                        switch variadicPrim {
+                        case .measureAdd:
+                            guard let res = LogoMeasurementConverter.add(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = ""
+                                break
+                            }
+                            let str = "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+                            leftVal = str
+                            setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+
+                        case .measureSub:
+                            guard let res = LogoMeasurementConverter.subtract(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = ""
+                                break
+                            }
+                            let str = "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+                            leftVal = str
+                            setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+
+                        case .measureEqual:
+                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = "false"
+                                break
+                            }
+                            let tolerance = targetUnit.flatMap(Double.init) ?? 1e-6
+                            let res = abs(v1 - v2) <= tolerance
+                            leftVal = res ? "true" : "false"
+                            setLastExpressionBoolean(res)
+
+                        case .measureLess:
+                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = "false"
+                                break
+                            }
+                            let res = v1 < v2
+                            leftVal = res ? "true" : "false"
+                            setLastExpressionBoolean(res)
+
+                        case .measureGreater:
+                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = "false"
+                                break
+                            }
+                            let res = v1 > v2
+                            leftVal = res ? "true" : "false"
+                            setLastExpressionBoolean(res)
+
+                        case .measureMin:
+                            guard let res = LogoMeasurementConverter.min(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = ""
+                                break
+                            }
+                            let str = "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+                            leftVal = str
+                            setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+
+                        case .measureMax:
+                            guard let res = LogoMeasurementConverter.max(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                                reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                leftVal = ""
+                                break
+                            }
+                            let str = "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
+                            leftVal = str
+                            setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
+
+                        default:
+                            break
+                        }
+
                     case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
                         let text = args.first.map(unquote) ?? ""
                         leftVal = evaluateDetectPrimitive(variadicPrim, text: text)
@@ -321,57 +497,72 @@ extension LogoEngine {
                             leftVal = ""
                         }
 
-                    case .formatArea, .formatLength, .formatVolume, .formatAngle, .formatMass,
-                        .formatPressure, .formatAcceleration, .formatDuration, .formatFrequency,
-                        .formatSpeed, .formatEnergy, .formatPower, .formatTemperature, .formatIlluminance,
-                        .formatElectricCharge, .formatElectricCurrent, .formatElectricPotentialDifference,
-                        .formatElectricResistance, .formatConcentrationMass, .formatDispersion,
-                        .formatFuelEfficiency, .formatInformationStorage:
+                    case .formatMeasure:
                         #if os(Linux) || os(Windows)
                             let name = variadicPrim.meta.name
                             let message = "[LOGO Error: \(name) is not supported on this platform]"
                             reportError(LogoError(code: 1, message: message), token: name)
                             leftVal = ""
                         #else
-                            let cleanArgs = args.map { unquote($0) }
-                            guard cleanArgs.count >= 2, let val = Double(cleanArgs[0]) else {
-                                leftVal = ""
-                                break
+                            var val: Double = 0
+                            var unitStr: String = ""
+                            var remainingArgs: [String] = []
+                            let kind: LogoMeasurementConverter.DimensionKind
+
+                            if !args.isEmpty, case .measurement(let mVal, let mUnit, let mDim) = LogoValue.parse(args[0]) {
+                                val = mVal
+                                unitStr = mUnit
+                                kind = mDim
+                                remainingArgs = Array(args.dropFirst().map { unquote($0) })
+                            } else {
+                                let cleanArgs = args.map { unquote($0) }
+                                guard cleanArgs.count >= 2, let v = Double(cleanArgs[0]) else {
+                                    leftVal = ""
+                                    break
+                                }
+                                val = v
+                                unitStr = cleanArgs[1]
+                                guard let inferredDim = LogoMeasurementConverter.findDimension(for: unitStr) else {
+                                    let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown unit '\(unitStr)']"
+                                    reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                    leftVal = ""
+                                    break
+                                }
+                                kind = inferredDim
+                                remainingArgs = Array(cleanArgs.dropFirst(2))
                             }
-                            let unitStr = cleanArgs[1]
+
                             var style: String? = nil
                             var locale: String? = nil
                             var naturalScale = false
-                            if cleanArgs.count > 2 {
-                                LogoMeasurementConverter.disambiguateFormatOptions(
-                                    Array(cleanArgs.dropFirst(2)), style: &style, locale: &locale, naturalScale: &naturalScale)
-                            }
+                            var targetConversionUnit: String? = nil
 
-                            let kind: LogoMeasurementConverter.DimensionKind
-                            switch variadicPrim {
-                            case .formatArea: kind = .area
-                            case .formatLength: kind = .length
-                            case .formatVolume: kind = .volume
-                            case .formatAngle: kind = .angle
-                            case .formatMass: kind = .mass
-                            case .formatPressure: kind = .pressure
-                            case .formatAcceleration: kind = .acceleration
-                            case .formatDuration: kind = .duration
-                            case .formatFrequency: kind = .frequency
-                            case .formatSpeed: kind = .speed
-                            case .formatEnergy: kind = .energy
-                            case .formatPower: kind = .power
-                            case .formatTemperature: kind = .temperature
-                            case .formatIlluminance: kind = .illuminance
-                            case .formatElectricCharge: kind = .electricCharge
-                            case .formatElectricCurrent: kind = .electricCurrent
-                            case .formatElectricPotentialDifference: kind = .electricPotentialDifference
-                            case .formatElectricResistance: kind = .electricResistance
-                            case .formatConcentrationMass: kind = .concentrationMass
-                            case .formatDispersion: kind = .dispersion
-                            case .formatFuelEfficiency: kind = .fuelEfficiency
-                            case .formatInformationStorage: kind = .informationStorage
-                            default: kind = .length
+                            var positional: [String] = []
+                            var hasInvalidUnit = false
+                            for arg in remainingArgs {
+                                if let dim = LogoMeasurementConverter.findDimension(for: arg) {
+                                    if dim == kind {
+                                        targetConversionUnit = arg
+                                    } else {
+                                        let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid unit '\(arg)' (expected \(kind) unit, got \(dim))]"
+                                        reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
+                                        leftVal = ""
+                                        hasInvalidUnit = true
+                                        break
+                                    }
+                                } else {
+                                    positional.append(arg)
+                                }
+                            }
+                            if hasInvalidUnit { break }
+                            LogoMeasurementConverter.disambiguateFormatOptions(
+                                positional, style: &style, locale: &locale, naturalScale: &naturalScale)
+
+                            if let targetUnit = targetConversionUnit,
+                                let convertedVal = LogoMeasurementConverter.convert(value: val, from: unitStr, to: targetUnit, kind: kind)
+                            {
+                                val = convertedVal
+                                unitStr = targetUnit
                             }
 
                             if let formatted = LogoMeasurementConverter.format(

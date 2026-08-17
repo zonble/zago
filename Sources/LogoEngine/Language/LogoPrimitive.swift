@@ -281,28 +281,15 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case convertDispersion
     case convertFuelEfficiency
     case convertInformationStorage
-    case formatArea
-    case formatLength
-    case formatVolume
-    case formatAngle
-    case formatMass
-    case formatPressure
-    case formatAcceleration
-    case formatDuration
-    case formatFrequency
-    case formatSpeed
-    case formatEnergy
-    case formatPower
-    case formatTemperature
-    case formatIlluminance
-    case formatElectricCharge
-    case formatElectricCurrent
-    case formatElectricPotentialDifference
-    case formatElectricResistance
-    case formatConcentrationMass
-    case formatDispersion
-    case formatFuelEfficiency
-    case formatInformationStorage
+    case formatMeasure
+    case measureAdd
+    case measureSub
+    case measureScale
+    case measureEqual
+    case measureLess
+    case measureGreater
+    case measureMin
+    case measureMax
     case detectURL
     case detectEmail
     case detectPhone
@@ -630,35 +617,15 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
             ["CONVERT.INFORMATIONSTORAGE", "CONVERT.STORAGE"],
             .convertInformationStorage
         ),
-        (["FORMAT.AREA"], .formatArea),
-        (["FORMAT.LENGTH"], .formatLength),
-        (["FORMAT.VOLUME"], .formatVolume),
-        (["FORMAT.ANGLE"], .formatAngle),
-        (["FORMAT.MASS"], .formatMass),
-        (["FORMAT.PRESSURE"], .formatPressure),
-        (["FORMAT.ACCELERATION"], .formatAcceleration),
-        (["FORMAT.DURATION"], .formatDuration),
-        (["FORMAT.FREQUENCY"], .formatFrequency),
-        (["FORMAT.SPEED"], .formatSpeed),
-        (["FORMAT.ENERGY"], .formatEnergy),
-        (["FORMAT.POWER"], .formatPower),
-        (["FORMAT.TEMPERATURE"], .formatTemperature),
-        (["FORMAT.ILLUMINANCE"], .formatIlluminance),
-        (["FORMAT.ELECTRICCHARGE", "FORMAT.ELECTRIC.CHARGE"], .formatElectricCharge),
-        (["FORMAT.ELECTRICCURRENT", "FORMAT.ELECTRIC.CURRENT"], .formatElectricCurrent),
-        (
-            [
-                "FORMAT.ELECTRICPOTENTIALDIFFERENCE", "FORMAT.ELECTRIC.POTENTIAL.DIFFERENCE", "FORMAT.VOLTAGE",
-            ], .formatElectricPotentialDifference
-        ),
-        (["FORMAT.ELECTRICRESISTANCE", "FORMAT.ELECTRIC.RESISTANCE"], .formatElectricResistance),
-        (["FORMAT.CONCENTRATIONMASS", "FORMAT.CONCENTRATION.MASS"], .formatConcentrationMass),
-        (["FORMAT.DISPERSION"], .formatDispersion),
-        (["FORMAT.FUELEFFICIENCY", "FORMAT.FUEL.EFFICIENCY"], .formatFuelEfficiency),
-        (
-            ["FORMAT.INFORMATIONSTORAGE", "FORMAT.STORAGE"],
-            .formatInformationStorage
-        ),
+        (["FORMAT.MEASURE"], .formatMeasure),
+        (["MEASURE.ADD"], .measureAdd),
+        (["MEASURE.SUB"], .measureSub),
+        (["MEASURE.SCALE"], .measureScale),
+        (["MEASURE.EQUAL?", "MEASURE.EQUALP"], .measureEqual),
+        (["MEASURE.LESS?", "MEASURE.LESSP"], .measureLess),
+        (["MEASURE.GREATER?", "MEASURE.GREATERP"], .measureGreater),
+        (["MEASURE.MIN"], .measureMin),
+        (["MEASURE.MAX"], .measureMax),
         (["DETECT.URL"], .detectURL),
         (["DETECT.EMAIL"], .detectEmail),
         (["DETECT.PHONE"], .detectPhone),
@@ -718,11 +685,8 @@ extension LogoPrimitive {
         .convertPower, .convertTemperature, .convertIlluminance, .convertElectricCharge,
         .convertElectricCurrent, .convertElectricPotentialDifference, .convertElectricResistance,
         .convertConcentrationMass, .convertDispersion, .convertFuelEfficiency, .convertInformationStorage,
-        .formatArea, .formatLength, .formatVolume, .formatAngle, .formatMass, .formatPressure,
-        .formatAcceleration, .formatDuration, .formatFrequency, .formatSpeed, .formatEnergy,
-        .formatPower, .formatTemperature, .formatIlluminance, .formatElectricCharge,
-        .formatElectricCurrent, .formatElectricPotentialDifference, .formatElectricResistance,
-        .formatConcentrationMass, .formatDispersion, .formatFuelEfficiency, .formatInformationStorage,
+        .formatMeasure,
+        .measureAdd, .measureSub, .measureScale, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax,
         .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress,
     ]
 }

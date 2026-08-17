@@ -45,10 +45,12 @@ extension LogoEngine {
             var items: [LogoValue] = []
             switch p1 {
             case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
+            case .measurement(let v, let u, _): items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
             case .string(let s): items.append(.string(s))
             }
             switch p2 {
             case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
+            case .measurement(let v, let u, _): items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
             case .string(let s): items.append(.string(s))
             }
             return LogoValue.list(items).description
@@ -69,6 +71,8 @@ extension LogoEngine {
             case .array(var items):
                 items.insert(p1, at: 0)
                 return LogoValue.array(items).description
+            case .measurement(let v, let u, _):
+                return LogoValue.list([p1, .string(LogoMeasurementConverter.formatResult(v)), .string(u)]).description
             case .string(let s):
                 return v1 + s
             }
@@ -89,15 +93,34 @@ extension LogoEngine {
             case .array(var items):
                 items.append(p1)
                 return LogoValue.array(items).description
+            case .measurement(let v, let u, _):
+                return LogoValue.list([.string(LogoMeasurementConverter.formatResult(v)), .string(u), p1]).description
             case .string(let s):
                 return s + v1
             }
 
         case .array:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            let count = reader.nextInteger(default: 1)
+            let sizeVal = reader.nextExpression()
             reader.commit(to: &index)
-            let items = Array(repeating: LogoValue.string(""), count: max(1, count))
+            let sizeList = LogoValue.parse(sizeVal)
+            var dimensions: [Int] = []
+            switch sizeList {
+            case .list(let items), .array(let items):
+                dimensions = items.compactMap { Int($0.description) }
+            case .measurement(let v, _, _):
+                dimensions = [Int(v)]
+            case .string(let s):
+                if let single = Int(s) {
+                    dimensions = [single]
+                } else {
+                    dimensions = s.split(separator: " ").compactMap { Int($0) }
+                }
+            }
+            guard !dimensions.isEmpty else { return "{}" }
+
+            let totalElements = dimensions.reduce(1, *)
+            let items = Array(repeating: LogoValue.string(""), count: max(1, totalElements))
             return LogoValue.array(items).description
 
         case .mdarray:
@@ -173,6 +196,7 @@ extension LogoEngine {
             return switch p {
             case .list(let items): LogoValue.list(items.reversed()).description
             case .array(let items): LogoValue.array(items.reversed()).description
+            case .measurement(let v, let u, _): LogoValue.list([.string(u), .string(LogoMeasurementConverter.formatResult(v))]).description
             case .string(let s): String(s.reversed())
             }
 
@@ -191,6 +215,8 @@ extension LogoEngine {
             switch p {
             case .list(let items), .array(let items):
                 return items.first?.description ?? ""
+            case .measurement(let v, _, _):
+                return LogoMeasurementConverter.formatResult(v)
             case .string(let s):
                 return s.first != nil ? String(s.first!) : ""
             }
@@ -203,6 +229,8 @@ extension LogoEngine {
             switch p {
             case .list(let items), .array(let items):
                 return items.last?.description ?? ""
+            case .measurement(_, let u, _):
+                return u
             case .string(let s):
                 return s.last != nil ? String(s.last!) : ""
             }
@@ -218,11 +246,15 @@ extension LogoEngine {
                     switch item {
                     case .list(let subItems), .array(let subItems):
                         return subItems.first ?? .string("")
+                    case .measurement(let v, _, _):
+                        return .string(LogoMeasurementConverter.formatResult(v))
                     case .string(let s):
                         return s.first != nil ? .string(String(s.first!)) : .string("")
                     }
                 }
                 return LogoValue.list(firstItems).description
+            case .measurement(let v, _, _):
+                return LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))]).description
             case .string(let s):
                 let firstItems = s.map { LogoValue.string(String($0)) }
                 return LogoValue.list(firstItems).description
@@ -241,11 +273,15 @@ extension LogoEngine {
                         return .list(Array(subItems.dropFirst()))
                     case .array(let subItems):
                         return .array(Array(subItems.dropFirst()))
+                    case .measurement(_, let u, _):
+                        return .list([.string(u)])
                     case .string(let s):
                         return .string(String(s.dropFirst()))
                     }
                 }
                 return LogoValue.list(bfItems).description
+            case .measurement(_, let u, _):
+                return LogoValue.list([.string(u)]).description
             case .string(let s):
                 return String(s.dropFirst())
             }
@@ -262,6 +298,8 @@ extension LogoEngine {
             case .array(let items):
                 let rest = items.dropFirst()
                 return LogoValue.array(Array(rest)).description
+            case .measurement(_, let u, _):
+                return LogoValue.list([.string(u)]).description
             case .string(let s):
                 return String(s.dropFirst())
             }
@@ -278,6 +316,8 @@ extension LogoEngine {
             case .array(let items):
                 let rest = items.dropLast()
                 return LogoValue.array(Array(rest)).description
+            case .measurement(let v, _, _):
+                return LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))]).description
             case .string(let s):
                 return String(s.dropLast())
             }
@@ -294,6 +334,10 @@ extension LogoEngine {
                 if zeroIdx >= 0 && zeroIdx < items.count {
                     return items[zeroIdx].description
                 }
+                return ""
+            case .measurement(let v, let u, _):
+                if zeroIdx == 0 { return LogoMeasurementConverter.formatResult(v) }
+                if zeroIdx == 1 { return u }
                 return ""
             case .string(let s):
                 let chars = Array(s)
@@ -313,6 +357,8 @@ extension LogoEngine {
                 guard !items.isEmpty else { return "" }
                 let randomIdx = Int.random(in: 0..<items.count)
                 return items[randomIdx].description
+            case .measurement(let v, let u, _):
+                return Bool.random() ? LogoMeasurementConverter.formatResult(v) : u
             case .string(let s):
                 guard !s.isEmpty else { return "" }
                 let randomIdx = Int.random(in: 0..<s.count)
@@ -335,6 +381,9 @@ extension LogoEngine {
             case .array(let items):
                 let filtered = items.filter { $0.description != targetStr }
                 return LogoValue.array(filtered).description
+            case .measurement(let v, let u, _):
+                let items: [LogoValue] = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                return LogoValue.list(items.filter { $0.description != targetStr }).description
             case .string(let s):
                 if targetStr.count == 1, let targetChar = targetStr.first {
                     let filtered = s.filter { $0 != targetChar }
@@ -374,6 +423,8 @@ extension LogoEngine {
                     }
                 }
                 return LogoValue.array(result).description
+            case .measurement:
+                return p.description
             case .string(let s):
                 var seen = Set<Character>()
                 var result = ""
@@ -424,6 +475,10 @@ extension LogoEngine {
                 result.append(.array(currentChunk))
                 return LogoValue.array(result).description
 
+            case .measurement(let v, let u, _):
+                let items: [LogoValue] = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                return LogoValue.list(items).description
+
             case .string(let s):
                 if delimStr.isEmpty {
                     return LogoValue.list(s.map { LogoValue.string(String($0)) }).description
@@ -456,6 +511,8 @@ extension LogoEngine {
             switch indicesList {
             case .list(let items), .array(let items):
                 indices = items.compactMap { Int($0.description) }
+            case .measurement(let v, _, _):
+                indices = [Int(v)]
             default:
                 if let single = Int(idxVal) {
                     indices = [single]
@@ -471,6 +528,10 @@ extension LogoEngine {
                 case .list(let items), .array(let items):
                     guard zeroIdx >= 0 && zeroIdx < items.count else { return "" }
                     currentVal = items[zeroIdx]
+                case .measurement(let v, let u, _):
+                    if zeroIdx == 0 { currentVal = .string(LogoMeasurementConverter.formatResult(v)) }
+                    else if zeroIdx == 1 { currentVal = .string(u) }
+                    else { return "" }
                 case .string(let s):
                     guard zeroIdx >= 0 && zeroIdx < s.count else { return "" }
                     let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
@@ -501,6 +562,9 @@ extension LogoEngine {
                     return popped.description
                 }
                 return ""
+            case .measurement(let v, let u, _):
+                variables[varName] = LogoValue.list([.string(u)]).description
+                return LogoMeasurementConverter.formatResult(v)
             case .string(let s):
                 if !s.isEmpty {
                     let popped = String(s.first!)
@@ -525,18 +589,21 @@ extension LogoEngine {
                     return popped.description
                 }
                 return ""
-            case .string(let s):
-                if !s.isEmpty {
-                    let popped = String(s.first!)
-                    variables[varName] = String(s.dropFirst())
-                    return popped
-                }
-                return ""
             case .array(var items):
                 if !items.isEmpty {
                     let popped = items.removeFirst()
                     variables[varName] = LogoValue.array(items).description
                     return popped.description
+                }
+                return ""
+            case .measurement(let v, let u, _):
+                variables[varName] = LogoValue.list([.string(u)]).description
+                return LogoMeasurementConverter.formatResult(v)
+            case .string(let s):
+                if !s.isEmpty {
+                    let popped = String(s.first!)
+                    variables[varName] = String(s.dropFirst())
+                    return popped
                 }
                 return ""
             }
@@ -731,6 +798,7 @@ extension LogoEngine {
             let p = LogoValue.parse(v)
             switch p {
             case .list(let items), .array(let items): return items.isEmpty.logoString
+            case .measurement: return false.logoString
             case .string(let s): return s.isEmpty.logoString
             }
 
@@ -783,6 +851,8 @@ extension LogoEngine {
             switch p {
             case .list(let items), .array(let items):
                 return items.map { $0.description }.contains(needle).logoString
+            case .measurement(let v, let u, _):
+                return (needle == LogoMeasurementConverter.formatResult(v) || needle == u).logoString
             case .string(let s):
                 return s.contains(needle).logoString
             }
@@ -801,6 +871,14 @@ extension LogoEngine {
             case .array(let items):
                 guard let matchIndex = items.firstIndex(where: { $0.description == target }) else { return "" }
                 return LogoValue.array(Array(items[matchIndex...])).description
+            case .measurement(let v, let u, _):
+                let strV = LogoMeasurementConverter.formatResult(v)
+                if target == strV {
+                    return LogoValue.list([.string(strV), .string(u)]).description
+                } else if target == u {
+                    return LogoValue.list([.string(u)]).description
+                }
+                return ""
             case .string(let s):
                 guard let range = s.range(of: target) else { return "" }
                 return String(s[range.lowerBound...])
@@ -1008,6 +1086,8 @@ extension LogoEngine {
                 switch parsedArg {
                 case .list(let items), .array(let items):
                     rawArgs.append(contentsOf: items.map { $0.description })
+                case .measurement(let v, let u, _):
+                    rawArgs.append(contentsOf: [LogoMeasurementConverter.formatResult(v), u])
                 case .string:
                     rawArgs.append(argVal)
                 }

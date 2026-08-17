@@ -52,6 +52,12 @@ extension LogoEngine {
                             items[zeroIdx] = parseLogoValuePreservingWhitespace(newVal)
                             resultStr = LogoValue.array(items).description
                         }
+                    case .measurement(let v, let u, _):
+                        var items: [LogoValue] = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                        if zeroIdx >= 0 && zeroIdx < items.count {
+                            items[zeroIdx] = parseLogoValuePreservingWhitespace(newVal)
+                            resultStr = LogoValue.list(items).description
+                        }
                     case .string(var s):
                         if zeroIdx >= 0 && zeroIdx < s.count {
                             let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)
@@ -95,6 +101,8 @@ extension LogoEngine {
                             items[0] = newElem
                         }
                         variables[varName] = LogoValue.array(items).description
+                    case .measurement(_, let u, _):
+                        variables[varName] = LogoValue.list([newElem, .string(u)]).description
                     case .string(var s):
                         if s.isEmpty {
                             s = newVal
@@ -123,6 +131,7 @@ extension LogoEngine {
                         var tailItems: [LogoValue] = []
                         switch newTailParsed {
                         case .list(let t), .array(let t): tailItems = t
+                        case .measurement(let v, let u, _): tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.list([head] + tailItems).description
@@ -131,9 +140,18 @@ extension LogoEngine {
                         var tailItems: [LogoValue] = []
                         switch newTailParsed {
                         case .list(let t), .array(let t): tailItems = t
+                        case .measurement(let v, let u, _): tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.array([head] + tailItems).description
+                    case .measurement(let v, _, _):
+                        var tailItems: [LogoValue] = []
+                        switch newTailParsed {
+                        case .list(let t), .array(let t): tailItems = t
+                        case .measurement(let mv, let mu, _): tailItems = [.string(LogoMeasurementConverter.formatResult(mv)), .string(mu)]
+                        case .string(let s): tailItems = [.string(s)]
+                        }
+                        variables[varName] = LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))] + tailItems).description
                     case .string(let s):
                         let head = s.prefix(1)
                         variables[varName] = String(head) + newVal
@@ -167,8 +185,8 @@ extension LogoEngine {
                     var rootVal = LogoValue.parse(currentValStr)
 
                     func updateNested(value: LogoValue, path: [Int], replacement: LogoValue) -> LogoValue {
-                        guard let head = path.first else { return replacement }
-                        let zeroIdx = head - 1
+                        guard let firstIdx = path.first else { return replacement }
+                        let zeroIdx = firstIdx - 1
                         let tail = Array(path.dropFirst())
 
                         switch value {
@@ -183,6 +201,13 @@ extension LogoEngine {
                                 items[zeroIdx] = updateNested(
                                     value: items[zeroIdx], path: tail, replacement: replacement)
                                 return .array(items)
+                            }
+                        case .measurement(let v, let u, _):
+                            var items: [LogoValue] = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                            if zeroIdx >= 0 && zeroIdx < items.count {
+                                items[zeroIdx] = updateNested(
+                                    value: items[zeroIdx], path: tail, replacement: replacement)
+                                return .list(items)
                             }
                         case .string(var s):
                             if tail.isEmpty && zeroIdx >= 0 && zeroIdx < s.count {
@@ -217,6 +242,8 @@ extension LogoEngine {
                 case .array(var items):
                     items.insert(LogoValue.parse(itemVal), at: 0)
                     variables[varName] = LogoValue.array(items).description
+                case .measurement(let v, let u, _):
+                    variables[varName] = LogoValue.list([LogoValue.parse(itemVal), .string(LogoMeasurementConverter.formatResult(v)), .string(u)]).description
                 case .string(let s):
                     variables[varName] = itemVal + s
                 }
@@ -239,6 +266,8 @@ extension LogoEngine {
                 case .array(var items):
                     items.append(LogoValue.parse(itemVal))
                     variables[varName] = LogoValue.array(items).description
+                case .measurement(let v, let u, _):
+                    variables[varName] = LogoValue.list([.string(LogoMeasurementConverter.formatResult(v)), .string(u), LogoValue.parse(itemVal)]).description
                 case .string(let s):
                     variables[varName] = s + itemVal
                 }
@@ -268,6 +297,8 @@ extension LogoEngine {
                     items.removeFirst()
                     variables[varName] = LogoValue.array(items).description
                 }
+            case .measurement(_, let u, _):
+                variables[varName] = LogoValue.list([.string(u)]).description
             }
             return true
 
