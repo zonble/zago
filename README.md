@@ -9,30 +9,36 @@
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 
-AI-generated documents rarely have one fixed nature. A single piece of text may
-contain prose, code, a table, a diagram, an instruction, and a suggestion that
-still needs to be checked. Human beings then have to read it, reorganize it,
-draw in it, execute parts of it, and decide what it should become.
+AI-generated documents rarely have one fixed nature. A single piece of
+text may contain prose, code, a table, a diagram, an instruction, and a
+suggestion that still needs to be checked. Human beings then have to
+read it, reorganize it, draw in it, execute parts of it, and decide what
+it should become.
 
-Most tools respond by sending each nature of text to a different application.
-`zago` takes the opposite approach: keep the text in one visible space, and let
-the editor expose a different property of that text when the work requires it.
+Most tools respond by sending each nature of text to a different
+application. `zago` takes the opposite approach: keep the text in one
+visible space, and let the editor expose a different property of that
+text when the work requires it.
 
-Text Mode treats it as a stream. Table Mode treats it as structure. Canvas Mode
-treats it as a two-dimensional space. The buffer remains ordinary, readable text
-throughout.
+Text Mode treats it as a stream. Table Mode treats it as structure.
+Canvas Mode treats it as a two-dimensional space. The buffer remains
+ordinary, readable text throughout.
 
 `zago` is a terminal editor for this kind of work: writing, structuring,
-drawing, transforming, and collaborating with AI around the text currently in
-focus. The human chooses the focus; AI can inspect that text and propose an
-operation without taking over the document.
+drawing, transforming, and collaborating with AI around the text
+currently in focus. The human chooses the focus; AI can inspect that
+text and propose an operation without taking over the document.
 
 ## Why zago?
 
-`zago` is for people who do not want to split a mixed document between a text
-editor, a table tool, a diagram app, and an AI chat window just to make one piece
-of work understandable. It keeps the surrounding context present while the
-editing model changes.
+`zago` is for people who do not want to split a mixed document between a
+text editor, a table tool, a diagram app, and an AI chat window just to
+make one piece of work understandable. It keeps the surrounding context
+present while the editing model changes.
+
+`zago` does not replace your existing code editor, such as vim, emacs,
+VSCode and so on. It is an alternative tool to help you to edit mixed
+documents.
 
 ## Who is zago for?
 
@@ -294,17 +300,19 @@ typing remains modeless and inserts characters directly:
 
 > [!TIP]
 >
-> **Windows Terminal Shortcut Tip**: In Windows Terminal, `Ctrl+Shift+Up`
-> and `Ctrl+Shift+Down` are bound by default to terminal actions (such as
-> scrolling). To use these shortcuts for drawing vertical arrows in Canvas Mode,
-> disable or unbind them in Windows Terminal via **Settings -> Actions**. Or,
-> you can use Ctrl + Arrow keys alternatively.
+> **Windows Terminal Shortcut Tip**: In Windows Terminal,
+> `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal
+> actions (such as scrolling). To use these shortcuts for drawing
+> vertical arrows in Canvas Mode, disable or unbind them in Windows
+> Terminal via **Settings -> Actions**. Or, you can use Ctrl + Arrow
+> keys alternatively.
 
 > [!TIP]
 >
 > Lots of terminal apps on Linux map Shift+Control+Arrow to terminal
-> scrolling. If you want to use these keys for Canvas Mode block selection, you
-> may need to disable that behavior in your terminal emulator.
+> scrolling. If you want to use these keys for Canvas Mode block
+> selection, you may need to disable that behavior in your terminal
+> emulator.
 
 For details on selection rules and clipboard separation, see 
 [Mark, selection, and canvas behavior](docs/user/mark.md).
