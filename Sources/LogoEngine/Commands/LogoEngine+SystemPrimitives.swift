@@ -1096,7 +1096,7 @@ extension LogoEngine {
 
             if let dim1 = LogoMeasurementConverter.findDimension(for: unit1),
                 let peek = reader.peekToken(),
-                !LogoEngine.isArgumentBoundary(peek),
+                !isArgumentBoundary(peek),
                 let peekDim = LogoMeasurementConverter.findDimension(for: unquote(peek)),
                 peekDim == dim1
             {

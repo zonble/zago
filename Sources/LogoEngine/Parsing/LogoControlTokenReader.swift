@@ -36,9 +36,11 @@ internal struct LogoControlTokenReader {
     }
 
     mutating func nextOptionalExpression(
-        isBoundary: (String) -> Bool = { LogoEngine.isArgumentBoundary($0) }
+        isBoundary: ((String) -> Bool)? = nil
     ) -> String? {
-        guard let token = peekToken(), !isBoundary(token) else { return nil }
+        let engine = self.engine
+        let boundary = isBoundary ?? { engine.isArgumentBoundary($0) }
+        guard let token = peekToken(), !boundary(token) else { return nil }
         return nextExpression()
     }
 

@@ -27,7 +27,7 @@ extension LogoEngine {
             reader.commit(to: &index)
             return nextToken
         }
-        guard !LogoEngine.isArgumentBoundary(nextToken) else { return nil }
+        guard !isArgumentBoundary(nextToken) else { return nil }
         let evaluated = reader.nextExpression()
         if LogoHeading.parse(evaluated) != nil {
             reader.commit(to: &index)

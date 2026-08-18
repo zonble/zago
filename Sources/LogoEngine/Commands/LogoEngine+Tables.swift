@@ -10,7 +10,7 @@ extension LogoEngine {
 
     private func consumeNextTableBorderStyle(_ tokens: [String], index: inout Int) -> String? {
         guard index + 1 < tokens.count else { return nil }
-        guard !LogoEngine.isArgumentBoundary(tokens[index + 1]) else { return nil }
+        guard !isArgumentBoundary(tokens[index + 1]) else { return nil }
 
         var evalIndex = index + 1
         let singleToken = unquote(evaluateExpression(tokens, index: &evalIndex))
@@ -48,14 +48,14 @@ extension LogoEngine {
             delegate.logoEngine(self, performAction: .nextBorderStyle)
             hasSetStatusMessage = true
         } else if let rows = parseIntExpressionArgument(
-            tokens, index: &index, isBoundary: LogoEngine.isArgumentBoundary)
+            tokens, index: &index, isBoundary: isArgumentBoundary)
         {
             let cols = consumeNextTableIntArgument(tokens, index: &index) ?? 3
             let cellWidth = consumeNextTableIntArgument(tokens, index: &index)
             delegate.logoEngine(self, performAction: .createTable(rows: rows, cols: cols, cellWidth: cellWidth))
             hasSetStatusMessage = true
         } else {
-            if index >= tokens.count || LogoEngine.isArgumentBoundary(tokens[index]) {
+            if index >= tokens.count || isArgumentBoundary(tokens[index]) {
                 index -= 1
             }
             createDefaultTable()

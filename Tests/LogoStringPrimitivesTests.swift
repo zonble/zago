@@ -23,6 +23,11 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     #expect(LogoTokenizer.tokenize(":pc<=:len") == [":pc", "<=", ":len"])
 }
 
+@Test func testLogoTokenizerSplitsDelimitersFollowingSingleQuotedWord() {
+    #expect(LogoTokenizer.tokenize("(FORMAT.DATE :today \"roc)") == ["(", "FORMAT.DATE", ":today", "\"roc", ")"])
+    #expect(LogoTokenizer.tokenize("(\"a) [\"b]") == ["(", "\"a", ")", "[", "\"b", "]"])
+}
+
 @Test func testLogoEnvironmentPreservesFormattedLeadingWhitespace() {
     var environment = LogoEnvironment()
     environment["formatted"] = "    3.1416"

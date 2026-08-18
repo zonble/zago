@@ -178,4 +178,41 @@ import Testing
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "138")
     }
+
+    @Test func testCustomCommandProcedureActsAsStatementBoundary() {
+        let script = """
+        to li :x type word "- " :x end
+        make "today [2026 8 18]
+        li FORMAT.DATE :today "full "en_US
+        li FORMAT.DATE :today "roc
+        li FORMAT.DATE (DATE.ADD :today 2 days) "roc
+        """
+        final class BufferDelegate: LogoEngineDelegate, @unchecked Sendable {
+            var lines: [String] = []
+            func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {
+                if case .insertText(let text) = action {
+                    lines.append(text)
+                }
+            }
+            func logoEngine(_ engine: LogoEngine, queryState query: LogoEditorQuery) -> LogoEditorQueryResult? { nil }
+        }
+        let delegate = BufferDelegate()
+        let engine = LogoEngine(delegate: delegate)
+        engine.execute(script)
+        #expect(delegate.lines.count == 3)
+        #expect(delegate.lines[0] == "- Tuesday, August 18, 2026")
+        #expect(delegate.lines[1] == "- 民國 115年8月18日")
+        #expect(delegate.lines[2] == "- 民國 2026年8月20日")
+    }
+
+    @Test func testCustomReporterProcedureEvaluatesAsArgument() {
+        let script = """
+        to mydate output [2026 8 18] end
+        to myfmt output "roc end
+        make "result FORMAT.DATE mydate myfmt
+        """
+        let engine = LogoEngine()
+        engine.execute(script)
+        #expect(engine.variables["result"] == "民國 115年8月18日")
+    }
 }
