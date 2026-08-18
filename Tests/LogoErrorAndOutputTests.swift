@@ -432,10 +432,10 @@ import Testing
                 IF :n <= 0 [ OUTPUT 0 ]
                 OUTPUT 1 + (COUNTDOWN :n - 1)
             END
-            MAKE "result COUNTDOWN 5
+            MAKE "result COUNTDOWN 20
             """
         editor.runLogoScript(script)
         #expect(editor.logoEngine.hasUncaughtError == false)
-        #expect(editor.logoEngine.variables["result"] == "5")
+        #expect(editor.logoEngine.variables["result"] == "20")
     }
 }

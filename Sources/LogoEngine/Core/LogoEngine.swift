@@ -98,9 +98,9 @@ public final class LogoEngine: @unchecked Sendable {
     internal var currentThrowTag: String? = nil
     internal var currentThrowValue: String? = nil
     internal var procedureCallDepth: Int = 0
-    internal let maxProcedureCallDepth: Int = 12
+    internal let maxProcedureCallDepth: Int = 64
     internal var expressionCallDepth: Int = 0
-    internal let maxExpressionCallDepth: Int = 64
+    internal let maxExpressionCallDepth: Int = 128
     internal static let defaultMaxLoopIterations: Int = 10_000
     internal var maxLoopIterations: Int = LogoEngine.defaultMaxLoopIterations
 
@@ -173,9 +173,11 @@ public final class LogoEngine: @unchecked Sendable {
         abortRequested = false
         byeFlag = false
         executionState = .running
-        Thread.detachNewThread { [weak self] in
+        let thread = Thread { [weak self] in
             self?.executeScript(script)
         }
+        thread.stackSize = 8 * 1024 * 1024
+        thread.start()
         while executionState == .running {
             debuggerCondition.wait()
         }

@@ -39,7 +39,7 @@ import Testing
 
     @Test func testFizzBuzzExample() throws {
         let output = try executeScriptFile("fizzbuzz.logo")
-        #expect(output.contains("===_FizzBuzz_Demo_1_to_15_==="))
+        #expect(output.contains("===_FizzBuzz_Demo_(1_to_15)_==="))
         #expect(output.contains(" 3:_Fizz"))
         #expect(output.contains(" 5:_Buzz"))
         #expect(output.contains("15:_FizzBuzz"))
@@ -72,7 +72,7 @@ import Testing
 
     @Test func testLeetCode053MaxSubarrayExample() throws {
         let output = try executeScriptFile("leetcode_053_max_subarray.logo")
-        #expect(output.contains("===_LeetCode_053:_Maximum_Subarray_Kadane's_Algorithm_==="))
+        #expect(output.contains("===_LeetCode_053:_Maximum_Subarray_(Kadane's_Algorithm)_==="))
         #expect(output.contains("max_sum:_6"))
     }
 
@@ -231,7 +231,7 @@ import Testing
         #expect(output.contains("sorted_list:_[10 20 30 40 50]"))
         #expect(output.contains("formatted_pi:_    3.1416"))
         #expect(output.contains("indexes_of_a_in_banana:_[2 4 6]"))
-        #expect(output.contains("to_hiraganakatakanaかたかな"))
+        #expect(output.contains("to_hiragana(katakana):_かたかな"))
     }
 
     @Test func testPropertyListDemoExample() throws {
