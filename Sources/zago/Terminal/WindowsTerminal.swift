@@ -339,6 +339,10 @@ import Foundation
                 break
             }
 
+            if firstUnit == 8 {
+                return .ctrlBackspace
+            }
+
             if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(firstUnit)) {
                 return controlKey
             }
@@ -346,7 +350,13 @@ import Foundation
             if firstUnit == 27 {
                 guard let secondUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .esc }
                 if secondUnit == 8 || secondUnit == 127 {
-                    return .ctrlBackspace
+                    return .altBackspace
+                }
+                if secondUnit == 13 || secondUnit == 10 {
+                    return .altEnter
+                }
+                if secondUnit == 9 {
+                    return .altTab
                 }
                 switch secondUnit {
                 case UInt16(UInt8(ascii: "[")):
@@ -369,17 +379,17 @@ import Foundation
                         }
                         return ANSIKeyMapping.resolve(seqString)
                     }
-                    return .esc
+                    return .unknown
 
                 case UInt16(UInt8(ascii: "O")):
-                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .esc }
-                    return ANSIKeyMapping.resolveSS3Code(UInt8(truncatingIfNeeded: thirdUnit))
+                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .unknown }
+                    return ANSIKeyMapping.resolveSS3Code(UInt8(truncatingIfNeeded: thirdUnit)) ?? .unknown
 
                 case 32...126:
                     return .alt(Character(UnicodeScalar(UInt32(secondUnit))!))
 
                 default:
-                    return .esc
+                    return .unknown
                 }
             }
 

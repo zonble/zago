@@ -118,7 +118,7 @@ final class KeymapManager {
         // Common UI, Dialogs & Actions
         register(.macroLogo, .esc, .alt(":"))
         register(.editDelete, .delete, .ctrl("D"), .ctrl("d"))
-        register(.editDeleteLine, .ctrlBackspace)
+        register(.editDeleteLine, .ctrlBackspace, .altBackspace)
         register(.editBacktab, .backtab)
         register(.tableToggle, .f7, .alt("T"), .alt("t"))
         register(.canvasToggle, .f8, .alt("V"), .alt("v"))
@@ -276,7 +276,7 @@ final class KeymapManager {
         register(.promptComplete, .tab, mode: .prompt)
         register(.promptHistoryPrev, .arrowUp, mode: .prompt)
         register(.promptHistoryNext, .arrowDown, mode: .prompt)
-        register(.promptClearLine, .ctrlBackspace, mode: .prompt)
+        register(.promptClearLine, .ctrlBackspace, .altBackspace, mode: .prompt)
         register(.selectLeft, .shiftArrowLeft, .ctrlShiftArrowLeft, .ctrlShift("B"), .ctrlShift("b"), mode: .prompt)
         register(.selectRight, .shiftArrowRight, .ctrlShiftArrowRight, .ctrlShift("F"), .ctrlShift("f"), mode: .prompt)
 
