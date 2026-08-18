@@ -24,18 +24,21 @@ This document outlines the architecture, cross-platform mechanisms, atomic save 
 │  LocalEditorFileIOStrategy                                │
 │       │                                                   │
 │       ▼                                                   │
-│  FileWatcher wrapper (Sources/zago/FileWatcher/)          │
+│  FileWatcher wrapper (Sources/FileWatcher/)               │
 │       ├── DarwinFileWatcher: DispatchSource / kqueue      │
-│       ├── WindowsFileWatcher: Win32 notifications         │
-│       └── PollingFileWatcher: DispatchSourceTimer polling │
-└───────────────────────────────────────────────────────────┘
+│       ├── WindowsFileWatcher: ReadDirectoryChangesW       │
+│       └── PollingFileWatcher: mtime polling fallback      │
+└───────────────────────┬───────────────────────────────────┘
+                        │
+                        ▼
+         FileSystem Kernel Notifications
 ```
 
 ---
 
 ## 2. Platform-Specific Watcher Implementations
 
-`FileWatcher` is a small public wrapper over platform-specific implementations in `Sources/zago/FileWatcher/`. It uses native kernel event notifications on Darwin and Windows, falling back to lightweight `mtime` polling on Linux and other platforms.
+`FileWatcher` is a small public wrapper over platform-specific implementations in `Sources/FileWatcher/`. It uses native kernel event notifications on Darwin and Windows, falling back to lightweight `mtime` polling on Linux and other platforms.
 
 ### 2.1 macOS (Darwin) - `DispatchSourceFileSystemObject`
 - Opens a file descriptor using `open(path, O_EVTONLY)`. `O_EVTONLY` opens the file descriptor strictly for event monitoring without requesting read/write locks or modifying file access times.

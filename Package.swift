@@ -22,11 +22,15 @@ let package = Package(
         .library(name: "IPCServer", targets: ["IPCServer"]),
         .library(name: "ANSIStyle", targets: ["ANSIStyle"]),
         .library(name: "Editor", targets: ["Editor"]),
+        .library(name: "FileWatcher", targets: ["FileWatcher"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
     ],
     targets: [
+        .target(
+            name: "FileWatcher"
+        ),
         .target(
             name: "TextMetrics"
         ),
@@ -89,6 +93,7 @@ let package = Package(
                 "DocumentOutline",
                 "Drawing",
                 "Editor",
+                "FileWatcher",
                 "Git",
                 "IPCServer",
                 "LogoEngine",
@@ -98,7 +103,7 @@ let package = Package(
         .testTarget(
             name: "zagoTests",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "IPCServer", "LogoEngine",
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
                 "SpellChecker",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],

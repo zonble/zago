@@ -146,7 +146,7 @@ line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
   macOS `kqueue` (`open(path, O_EVTONLY)`), atomic `rename` unlinks the open
   file descriptor, emitting `.rename` / `.delete` events to the old inode.
 - **Solution**:
-  [`DarwinFileWatcher`](../../Sources/zago/FileWatcher/FileWatcher+Darwin.swift)
+  [`DarwinFileWatcher`](../../Sources/FileWatcher/FileWatcher+Darwin.swift)
   intercepts `.rename` / `.delete` events and invokes `reopenWatchedFile(at:)`.
   After a `0.05s` settling delay, it re-opens the file path (binding to the new
   inode) and triggers the reload prompt.
