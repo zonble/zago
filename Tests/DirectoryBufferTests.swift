@@ -3,7 +3,8 @@ import Testing
 
 @testable import Editor
 
-@Suite struct DirectoryBufferTests {
+@Suite(.serialized)
+struct DirectoryBufferTests {
 
     @Test func testDirectoryBufferInitializationAndFormatting() throws {
         let tempDir = FileManager.default.temporaryDirectory
@@ -17,8 +18,6 @@ import Testing
         try FileManager.default.createDirectory(at: hiddenSubDir, withIntermediateDirectories: true)
         try "# Notes".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
         try "*.swp".write(to: hiddenFileURL, atomically: testAtomicallyOption, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
         let editor = Editor(
             options: EditorOptions(filePaths: [workDir.path], autoReload: false),
             dependencies: EditorDependencies(
@@ -26,13 +25,18 @@ import Testing
                 terminal: TestEditorTerminal.shared
             )
         )
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
         let buffer = editor.buffer
         #expect(buffer is DirectoryBuffer)
         #expect(buffer.isDirectoryBuffer == true)
         #expect(buffer.isReadOnly == true)
         #expect(buffer.allowsLogoExecution == false)
 
-        let dirBuffer = buffer as! DirectoryBuffer
+        let dirBuffer = try #require(buffer as? DirectoryBuffer)
         let l10n = L10n()
         #expect(dirBuffer.lines.count >= 5)
         #expect(dirBuffer.lines[0].contains(l10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
@@ -76,7 +80,7 @@ import Testing
         }
         #expect(editor.buffer is DirectoryBuffer)
 
-        let dirBuffer = editor.buffer as! DirectoryBuffer
+        let dirBuffer = try #require(editor.buffer as? DirectoryBuffer)
 
         // Find line index for subfolder
         if let idx = dirBuffer.lines.firstIndex(where: { $0.hasSuffix("▸ subfolder/") }) {
@@ -109,6 +113,7 @@ import Testing
     @Test func testDirAndLsCommandBarCommands() throws {
         let tempDir = FileManager.default.temporaryDirectory
         let editor = Editor()
+        defer { editor.stopFileWatcherForCurrentBuffer() }
         let initialBufCount = editor.buffers.count
 
         let res = editor.commandBarRegistry.dispatch("dir \(tempDir.path)", editor: editor)
@@ -137,9 +142,12 @@ import Testing
 
         try FileManager.default.createDirectory(at: childDir, withIntermediateDirectories: true)
         try "marker".write(to: markerFile, atomically: testAtomicallyOption, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
         let editor = Editor()
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
         let pathWithParentComponent = childDir.appendingPathComponent("..").path
         let res = editor.commandBarRegistry.dispatch("dir \(pathWithParentComponent)", editor: editor)
 
@@ -176,6 +184,7 @@ import Testing
     @Test func testDirCommandExpandsHomeDirectory() throws {
         let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
         let editor = Editor()
+        defer { editor.stopFileWatcherForCurrentBuffer() }
         let res = editor.commandBarRegistry.dispatch("dir ~", editor: editor)
 
         #expect(res == .handled)
@@ -186,6 +195,7 @@ import Testing
     @Test func testDirectoryBufferReadOnlyAndLogoBlock() throws {
         let tempDir = FileManager.default.temporaryDirectory
         let editor = Editor(filePath: tempDir.path)
+        defer { editor.stopFileWatcherForCurrentBuffer() }
         #expect(editor.buffer.isDirectoryBuffer == true)
 
         let initialLinesCount = editor.buffer.lines.count
@@ -214,12 +224,14 @@ import Testing
         try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
         let binaryData = Data([0x00, 0x01, 0x02, 0xFF, 0xFE])
         try binaryData.write(to: binFile)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
         let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
         #expect(editor.buffer is DirectoryBuffer)
 
-        let dirBuffer = editor.buffer as! DirectoryBuffer
+        let dirBuffer = try #require(editor.buffer as? DirectoryBuffer)
         if let idx = dirBuffer.lines.firstIndex(where: { $0.contains("app.bin") }) {
             dirBuffer.lineIndex = idx
             dirBuffer.activateEntry(editor: editor)
@@ -248,12 +260,14 @@ import Testing
 
         try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
         try "Content".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
         let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
         #expect(editor.buffer is DirectoryBuffer)
 
-        let dirBuffer = editor.buffer as! DirectoryBuffer
+        let dirBuffer = try #require(editor.buffer as? DirectoryBuffer)
         // Line 3 is '.. (up a dir)'
         dirBuffer.lineIndex = 3
         let outputLine3 = editor.renderer.render(editor: editor, rows: 12, cols: 60)
@@ -280,11 +294,13 @@ import Testing
         try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
         let longText = (1...100).map { "Line \($0)" }.joined(separator: "\n")
         try longText.write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: workDir) }
-
         let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
         #expect(editor.buffer is DirectoryBuffer)
-        let dirBuffer = editor.buffer as! DirectoryBuffer
+        let dirBuffer = try #require(editor.buffer as? DirectoryBuffer)
         #expect(dirBuffer.topVLineIndex == 0)
 
         // Find and open sample.txt
