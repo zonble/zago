@@ -67,34 +67,17 @@ References:
 Possible extractions are `MCPProtocolSession`, `ZagoToolCatalog`,
 `ZagoToolDispatcher`, `ZagoSessionSelector`, and `MCPStdioTransport`.
 
-### Medium: LayoutEngine duplicates the wrapping algorithm
+### Medium: LayoutEngine duplicates the wrapping algorithm (Resolved)
 
-`computeLineChunks` and `visitWrappedLine` both implement the ASCII and Unicode
-wrapping loops, word-boundary rules, hanging indentation, and chunk boundaries.
-The collecting and visiting APIs should share one wrapping implementation.
+`computeLineChunks` and `visitWrappedLine` originally duplicated the ASCII and Unicode
+wrapping loops. This was consolidated so `visitWrappedLine` delegates directly to
+the cached `wrapLine` / `computeLineChunks` pipeline.
 
-References:
+### Medium: AI history is global state (Resolved)
 
-- `Sources/Editor/Models/LayoutEngine.swift:295-354`
-- `Sources/Editor/Models/LayoutEngine.swift:356-533`
-
-This is a direct *Duplicated Code* risk: a future wrapping fix can easily be
-applied to one path and missed by the other.
-
-### Medium: AI history is global state
-
-`AIHistoryLogManager.shared` makes all editor instances share one in-memory
-history and makes tests depend on global lifecycle and cleanup. This does not
-match the current focused-editor model particularly well.
-
-References:
-
-- `Sources/Editor/Models/AIHistoryLog.swift:31-62`
-- `Sources/Editor/Commands/ProposalCommands.swift:74-100`
-- `Sources/Editor/Controllers/Editor+ExternalRequests.swift:263-265`
-
-An injected `AIHistoryStore` with an in-memory implementation for tests would
-make ownership explicit and remove the singleton dependency.
+`AIHistoryLogManager.shared` was removed and replaced with an injected `AIHistoryStore`
+(`InMemoryAIHistoryStore`) adhering to `AIHistoryStoring`, owned individually by each `Editor`
+instance via `EditorDependencies`.
 
 ### Medium: Cross-module values are often Stringly Typed
 

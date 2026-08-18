@@ -303,6 +303,10 @@ final class LayoutEngine {
             return asciiLineChunks(line, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent)
         }
 
+        return unicodeLineChunks(line, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent)
+    }
+
+    private func unicodeLineChunks(_ line: String, effectiveWrap: Int, hangingIndent: Int) -> [CachedVirtualChunk] {
         var chunks: [CachedVirtualChunk] = []
         var currentCharIndex = 0
         var subIndex = 0
@@ -351,139 +355,6 @@ final class LayoutEngine {
             subIndex += 1
         }
         return chunks
-    }
-
-    @discardableResult
-    private func visitWrappedLine(
-        _ line: String,
-        bufferLineIndex: Int,
-        effectiveWrap: Int,
-        _ body: (VirtualLine) -> Bool
-    ) -> Bool {
-        if line.isEmpty {
-            return body(
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
-                    subLineIndex: 0,
-                    text: "",
-                    startCol: 0,
-                    endCol: 0)
-            )
-        }
-
-        let hangingIndent = listWrapIndent ? Self.calculateListHangingIndent(in: line) : 0
-
-        if line.utf8.allSatisfy({ $0 < 0x80 }) {
-            return visitASCIIWrappedLine(
-                line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap, hangingIndent: hangingIndent, body
-            )
-        }
-
-        var currentCharIndex = 0
-        var subIndex = 0
-        let chars = Array(line)
-        let totalChars = chars.count
-
-        while currentCharIndex < totalChars {
-            var currentWidth = 0
-            var endIndex = currentCharIndex
-            var lastWordBoundary = -1
-            let chunkLimit =
-                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
-
-            while endIndex < totalChars {
-                let ch = chars[endIndex]
-                let w = ch.displayWidth
-
-                if currentWidth + w > chunkLimit && endIndex > currentCharIndex {
-                    break
-                }
-
-                if ch.isWhitespace || ch.displayWidth >= 2 || ch.isPunctuation {
-                    lastWordBoundary = endIndex
-                }
-
-                currentWidth += w
-                endIndex += 1
-            }
-
-            if endIndex < totalChars && lastWordBoundary > currentCharIndex {
-                endIndex = lastWordBoundary + 1
-            } else if endIndex == currentCharIndex {
-                endIndex = currentCharIndex + 1
-            }
-
-            let shouldContinue = body(
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
-                    subLineIndex: subIndex,
-                    text: String(chars[currentCharIndex..<endIndex]),
-                    startCol: currentCharIndex,
-                    endCol: endIndex
-                ))
-            if !shouldContinue {
-                return false
-            }
-
-            currentCharIndex = endIndex
-            subIndex += 1
-        }
-        return true
-    }
-
-    @discardableResult
-    private func visitASCIIWrappedLine(
-        _ line: String,
-        bufferLineIndex: Int,
-        effectiveWrap: Int,
-        hangingIndent: Int,
-        _ body: (VirtualLine) -> Bool
-    ) -> Bool {
-        let bytes = Array(line.utf8)
-        var currentIndex = 0
-        var subIndex = 0
-
-        while currentIndex < bytes.count {
-            var endIndex = currentIndex
-            var lastWordBoundary = -1
-            let chunkLimit =
-                (subIndex > 0 && hangingIndent > 0) ? max(10, effectiveWrap - hangingIndent) : effectiveWrap
-
-            while endIndex < bytes.count {
-                if endIndex - currentIndex + 1 > chunkLimit && endIndex > currentIndex {
-                    break
-                }
-
-                if Self.isASCIIWordBoundary(bytes[endIndex]) {
-                    lastWordBoundary = endIndex
-                }
-
-                endIndex += 1
-            }
-
-            if endIndex < bytes.count && lastWordBoundary > currentIndex {
-                endIndex = lastWordBoundary + 1
-            } else if endIndex == currentIndex {
-                endIndex = currentIndex + 1
-            }
-
-            let text = String(decoding: bytes[currentIndex..<endIndex], as: UTF8.self)
-            let shouldContinue = body(
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
-                    subLineIndex: subIndex,
-                    text: text,
-                    startCol: currentIndex,
-                    endCol: endIndex
-                ))
-            if !shouldContinue {
-                return false
-            }
-
-            currentIndex = endIndex
-            subIndex += 1
-        }
-        return true
     }
 
     private func asciiLineChunks(_ line: String, effectiveWrap: Int, hangingIndent: Int) -> [CachedVirtualChunk] {
@@ -532,26 +403,20 @@ final class LayoutEngine {
         return chunks
     }
 
-    private func virtualCursorInWrappedLine(
-        lineIndex: Int,
-        columnIndex: Int,
-        wrappedLine: [VirtualLine]
-    ) -> (vLineOffset: Int, vColIndex: Int) {
-        for (offset, vLine) in wrappedLine.enumerated() {
-            let isLastSubline = offset == wrappedLine.count - 1
-            if isLastSubline {
-                if columnIndex >= vLine.startCol && columnIndex <= vLine.endCol {
-                    return (offset, columnIndex - vLine.startCol)
-                }
-            } else if columnIndex >= vLine.startCol && columnIndex < vLine.endCol {
-                return (offset, columnIndex - vLine.startCol)
+    @discardableResult
+    private func visitWrappedLine(
+        _ line: String,
+        bufferLineIndex: Int,
+        effectiveWrap: Int,
+        _ body: (VirtualLine) -> Bool
+    ) -> Bool {
+        let vLines = wrapLine(line, bufferLineIndex: bufferLineIndex, effectiveWrap: effectiveWrap)
+        for vLine in vLines {
+            if !body(vLine) {
+                return false
             }
         }
-
-        if let last = wrappedLine.last {
-            return (max(0, wrappedLine.count - 1), last.text.count)
-        }
-        return (0, 0)
+        return true
     }
 
     private static func isASCIIWordBoundary(_ byte: UInt8) -> Bool {
