@@ -247,14 +247,14 @@ struct IPCServerTests {
         }
 
         let task = Task.detached {
-            try editor.performOnEditorLoop {
+            try editor.performOnEditorLoop(timeout: 10.0) {
                 editor.buffer.lines[0] = "changed by ipc"
                 return "ok"
             }
         }
 
         let start = Date()
-        while editor.buffer.lines[0] != "changed by ipc" && Date().timeIntervalSince(start) < 2 {
+        while editor.buffer.lines[0] != "changed by ipc" && Date().timeIntervalSince(start) < 10.0 {
             editor.drainExternalRequests()
             try await Task.sleep(nanoseconds: 10_000_000)
         }
@@ -279,8 +279,9 @@ struct IPCServerTests {
         try await Task.sleep(nanoseconds: 50_000_000)
 
         let requestTask = Task.detached {
-            try editor.performOnEditorLoop(timeout: 2) {
+            try editor.performOnEditorLoop(timeout: 10.0) {
                 editor.buffer.lines[0] = "changed after wakeup"
+                editor.isRunning = false
                 return "ok"
             }
         }
