@@ -689,12 +689,12 @@ import Testing
         Issue.record("Expected ^G to cancel active prompt in modern mode")
     }
 
-    // 5. In Modern preset without selection, ^C cancels prompt
+    // 5. In Modern preset, ^G and Esc cancel prompt, while ^C is dedicated to copy
     editor.promptLogoMacro()
-    editor.processKey(.ctrl("c"))
+    editor.processKey(.ctrl("g"))
     if case .none = editor.currentPromptMode {
     } else {
-        Issue.record("Expected ^C without selection to cancel prompt in modern mode")
+        Issue.record("Expected ^G to cancel active prompt in modern mode")
     }
 }
 

@@ -291,9 +291,9 @@ final class KeymapManager {
 
         case .modern:
             register(.promptCancel, .esc, .ctrl("G"), .ctrl("g"), mode: .prompt)
-            register(.editCut, .ctrl("X"), .ctrl("x"), .ctrl("K"), .ctrl("k"), mode: .prompt)
-            register(.editCopy, .ctrl("C"), .ctrl("c"), .alt("W"), .alt("w"), mode: .prompt)
-            register(.editUncut, .ctrl("V"), .ctrl("v"), .ctrl("U"), .ctrl("u"), mode: .prompt)
+            register(.editCut, .ctrl("X"), .ctrl("x"), mode: .prompt)
+            register(.editCopy, .ctrl("C"), .ctrl("c"), mode: .prompt)
+            register(.editUncut, .ctrl("V"), .ctrl("v"), mode: .prompt)
             register(.selectAll, .ctrl("A"), .ctrl("a"), mode: .prompt)
             register(.moveHome, .home, mode: .prompt)
             register(.moveEnd, .end, mode: .prompt)

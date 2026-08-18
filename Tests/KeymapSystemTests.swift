@@ -132,6 +132,27 @@ import Testing
         #expect(keymap.resolve(key: .ctrl("V"), in: .canvas) == .movePgdn)
     }
 
+    @Test func testPromptModeKeyBindingsAcrossPresets() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // Classic Prompt: ^K is editCut, ^U is editUncut, M-W is editCopy, ^C/^G/ESC is promptCancel
+        #expect(keymap.resolve(key: .ctrl("k"), in: .prompt) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("u"), in: .prompt) == .editUncut)
+        #expect(keymap.resolve(key: .alt("w"), in: .prompt) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .prompt) == .promptCancel)
+        #expect(keymap.resolve(key: .ctrl("g"), in: .prompt) == .promptCancel)
+        #expect(keymap.resolve(key: .esc, in: .prompt) == .promptCancel)
+
+        // Modern Prompt: ^X is editCut, ^C is editCopy, ^V is editUncut, ^G/ESC is promptCancel
+        keymap.loadPreset(.modern)
+        #expect(keymap.resolve(key: .ctrl("x"), in: .prompt) == .editCut)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .prompt) == .editCopy)
+        #expect(keymap.resolve(key: .ctrl("v"), in: .prompt) == .editUncut)
+        #expect(keymap.resolve(key: .ctrl("g"), in: .prompt) == .promptCancel)
+        #expect(keymap.resolve(key: .esc, in: .prompt) == .promptCancel)
+        #expect(keymap.resolve(key: .ctrl("c"), in: .prompt) != .promptCancel)
+    }
+
     @Test func testHomeEndAndSelectAllKeyBindingsAcrossPresetsAndModes() throws {
         let keymap = KeymapManager(preset: .classic)
 
