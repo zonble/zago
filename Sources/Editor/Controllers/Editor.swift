@@ -501,7 +501,6 @@ public final class Editor: @unchecked Sendable {
 
     func applyOperationResult(_ result: EditorOperationResult) {
         if let message = result.statusMessage {
-            guard statusMessage != message else { return }
             setStatusMessage(message)
         }
     }

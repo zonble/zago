@@ -1032,4 +1032,37 @@ struct ConfigAndToolsTests {
             }
         }
     }
+
+    @Test
+    func testRepeatedStatusMessageUpdatesRefreshDisplayTime() throws {
+        let editor = Editor()
+
+        // 1. Initial status message
+        editor.reportOperationResult(EditorOperationResult.succeeded(message: "Saved 10 lines"))
+        #expect(editor.statusMessage == "Saved 10 lines")
+        let firstTime = try #require(editor.statusMessageTime)
+
+        // Manually simulate an earlier timestamp (e.g. 10 seconds ago)
+        editor.statusMessageTime = Date(timeIntervalSinceNow: -10)
+        #expect(Date().timeIntervalSince(editor.statusMessageTime!) >= 5.0)
+
+        // 2. Reporting identical status message again MUST update statusMessageTime
+        editor.reportOperationResult(EditorOperationResult.succeeded(message: "Saved 10 lines"))
+        #expect(editor.statusMessage == "Saved 10 lines")
+        let secondTime = try #require(editor.statusMessageTime)
+        #expect(secondTime > firstTime)
+        #expect(Date().timeIntervalSince(secondTime) < 5.0)
+
+        // 3. Repeating Logo execution with identical output refreshes status line
+        _ = editor.runLogoScript("SHOW 42")
+        #expect(editor.statusMessage == "42")
+        let logoFirstTime = try #require(editor.statusMessageTime)
+
+        editor.statusMessageTime = Date(timeIntervalSinceNow: -10)
+        _ = editor.runLogoScript("SHOW 42")
+        #expect(editor.statusMessage == "42")
+        let logoSecondTime = try #require(editor.statusMessageTime)
+        #expect(logoSecondTime > logoFirstTime)
+    }
 }
+
