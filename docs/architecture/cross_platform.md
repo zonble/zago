@@ -312,6 +312,13 @@ The `FORMAT.MEASURE` primitive remains present in the keywords and metadata for
 documentation and completions, but execution reports a platform-not-supported Logo error on
 Linux and Windows while performing full locale-aware unit formatting on Apple platforms.
 
+`PersonNameComponentsFormatter` is also unavailable in `swift-corelibs-foundation`
+on Linux and Windows (`@available(*, unavailable, message: "Person name components formatting isn't available in swift-corelibs-foundation")`).
+The `FORMAT.NAME` (and alias `FORMATNAME`) primitive remains present in the keywords
+and metadata for documentation and completions, but execution reports a
+platform-not-supported Logo error on Linux and Windows while performing full
+locale-aware name formatting on macOS.
+
 ### Foundation `Measurement` (Unit Conversion) & `swift-corelibs-foundation` Discrepancies
 
 `Measurement<UnitType: Dimension>` (unit conversion via `CONVERT.MEASURE`) is supported across macOS,
