@@ -377,4 +377,65 @@ import Testing
         #expect(editor.logoEngine.customProcedures["CDATE"] == nil)
         #expect(editor.logoEngine.customProcedures["CNUM"] == nil)
     }
+
+    @Test func testProcedureRecursionLimitProtection() {
+        let editor = Editor()
+        let script = """
+            TO INFINITE_REC
+                INFINITE_REC
+            END
+            INFINITE_REC
+            """
+        editor.runLogoScript(script)
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoEngine.lastError?.message.contains("Procedure recursion limit exceeded") == true)
+    }
+
+    @Test func testArgumentEvaluationRecursionProtection() {
+        let editor = Editor()
+        let script = """
+            TO PASS :x
+                OUTPUT :x
+            END
+            TO REC_ARG
+                OUTPUT PASS REC_ARG
+            END
+            REC_ARG
+            """
+        editor.runLogoScript(script)
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoEngine.lastError?.message.contains("Procedure recursion limit exceeded") == true)
+    }
+
+    @Test func testCatchRecursionLimitError() {
+        let editor = Editor()
+        let script = """
+            TO INF_REC
+                INF_REC
+            END
+            MAKE "recovered "no
+            CATCH "ERROR [
+                INF_REC
+            ]
+            MAKE "recovered "yes
+            """
+        editor.runLogoScript(script)
+        #expect(editor.logoEngine.hasUncaughtError == false)
+        #expect(editor.logoEngine.variables["recovered"] == "yes")
+        #expect(editor.logoEngine.lastError?.message.contains("Procedure recursion limit exceeded") == true)
+    }
+
+    @Test func testDeepLegitimateRecursionWithinLimit() {
+        let editor = Editor()
+        let script = """
+            TO COUNTDOWN :n
+                IF :n <= 0 [ OUTPUT 0 ]
+                OUTPUT 1 + (COUNTDOWN :n - 1)
+            END
+            MAKE "result COUNTDOWN 5
+            """
+        editor.runLogoScript(script)
+        #expect(editor.logoEngine.hasUncaughtError == false)
+        #expect(editor.logoEngine.variables["result"] == "5")
+    }
 }

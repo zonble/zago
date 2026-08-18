@@ -185,11 +185,11 @@ extension LogoEngine {
                 let tag = unquote(rawTag).lowercased()
                 var bIdx = 0
                 executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                if let throwTag = currentThrowTag, throwTag == tag || tag == "error" {
-                    let thrownVal = currentThrowValue ?? ""
+                if (hasUncaughtError || currentThrowTag != nil) && (currentThrowTag == tag || tag == "error") {
+                    let thrownVal = currentThrowValue ?? lastError?.message ?? "Error"
                     currentThrowTag = nil
                     currentThrowValue = nil
-                    lastError = LogoError(code: 1, message: thrownVal.isEmpty ? "Error" : thrownVal)
+                    lastError = LogoError(code: 1, message: thrownVal)
                     hasUncaughtError = false
                     if !thrownVal.isEmpty {
                         lastResult = thrownVal

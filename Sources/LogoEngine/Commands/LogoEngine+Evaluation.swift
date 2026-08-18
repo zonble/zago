@@ -57,6 +57,13 @@ extension LogoEngine {
     internal func evaluateExpression(_ tokens: [String], index: inout Int) -> String {
         guard index < tokens.count else { return "" }
         guard !hasUncaughtError else { return "" }
+        guard expressionCallDepth < maxExpressionCallDepth else {
+            let message = "[LOGO Error: Expression evaluation depth limit exceeded]"
+            reportError(LogoError(code: 1, message: message), token: tokens.indices.contains(index) ? tokens[index] : "EXPRESSION")
+            return ""
+        }
+        expressionCallDepth += 1
+        defer { expressionCallDepth -= 1 }
 
         var leftVal: String = ""
         var isParenthesized = false
@@ -916,10 +923,12 @@ extension LogoEngine {
     internal func invokeProcedure(_ proc: LogoProcedure, tokens: [String], index: inout Int) -> String? {
         guard procedureCallDepth < maxProcedureCallDepth else {
             let message = "[Procedure recursion limit exceeded: \(proc.name)]"
-            lastError = LogoError(code: 1, message: message, procedureName: proc.name)
-            delegate?.logoEngine(self, performAction: .setStatusMessage(message))
-            hasSetStatusMessage = true
+            reportError(LogoError(code: 1, message: message, procedureName: proc.name), token: proc.name)
             return nil
+        }
+        procedureCallDepth += 1
+        defer {
+            procedureCallDepth -= 1
         }
 
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
@@ -930,13 +939,13 @@ extension LogoEngine {
         }
         reader.commit(to: &index)
 
+        guard !hasUncaughtError else { return nil }
+
         let initialScope = Dictionary(zip(proc.parameters, args), uniquingKeysWith: { _, last in last })
         variables.pushScope(initialValues: initialScope)
-        procedureCallDepth += 1
         executionFrames.append(
             LogoExecutionFrame(procedureName: proc.name, token: nil, scopeDepth: variables.scopeDepth))
         defer {
-            procedureCallDepth -= 1
             variables.popScope()
             executionFrames.removeLast()
         }
