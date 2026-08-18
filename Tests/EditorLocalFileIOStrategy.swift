@@ -81,12 +81,23 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         else {
             throw EncodingError.unsupportedCharacters
         }
-        #if os(Windows)
-            try data.write(to: URL(fileURLWithPath: normalized), options: [])
-        #else
-            try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
-        #endif
-        recordCurrentModificationDate(for: normalized)
+        let entry = lock.withLock { watchedPaths[normalized] }
+        let writeBlock = {
+            #if os(Windows)
+                try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            #else
+                try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+            #endif
+            if let entry {
+                entry.state.snapshot = self.getSnapshot(for: normalized)
+            }
+        }
+
+        if let entry {
+            try entry.queue.sync(execute: writeBlock)
+        } else {
+            try writeBlock()
+        }
     }
 
     func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
