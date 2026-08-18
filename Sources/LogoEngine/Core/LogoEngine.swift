@@ -98,7 +98,9 @@ public final class LogoEngine: @unchecked Sendable {
     internal var currentThrowTag: String? = nil
     internal var currentThrowValue: String? = nil
     internal var procedureCallDepth: Int = 0
-    internal let maxProcedureCallDepth: Int = 32
+    internal let maxProcedureCallDepth: Int = 12
+    internal var expressionCallDepth: Int = 0
+    internal let maxExpressionCallDepth: Int = 64
     internal static let defaultMaxLoopIterations: Int = 10_000
     internal var maxLoopIterations: Int = LogoEngine.defaultMaxLoopIterations
 
@@ -185,6 +187,8 @@ public final class LogoEngine: @unchecked Sendable {
         lastError = nil
         hasUncaughtError = false
         hasSetStatusMessage = false
+        procedureCallDepth = 0
+        expressionCallDepth = 0
 
         let sourceTokens = LogoTokenizer.tokenizeTokens(script)
         let tokens = sourceTokens.map(\.text)
