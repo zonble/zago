@@ -1,0 +1,101 @@
+; ==============================================================================
+; Merge Sort Algorithm (in zago Editor LOGO)
+; ==============================================================================
+; Recursively divides a list into two halves, sorts them, and merges them back.
+; Time Complexity: O(N log N)
+; Space Complexity: O(N)
+; ==============================================================================
+
+TO MERGE :left :right
+  LOCAL "res
+  LOCAL "l
+  LOCAL "r
+  LOCAL "l1
+  LOCAL "r1
+  MAKE "res []
+  MAKE "l :left
+  MAKE "r :right
+  WHILE [AND (NOT EMPTY? :l) (NOT EMPTY? :r)] [
+    MAKE "l1 FIRST :l
+    MAKE "r1 FIRST :r
+    IFELSE :l1 <= :r1 [
+      MAKE "res LPUT :l1 :res
+      MAKE "l BUTFIRST :l
+    ] [
+      MAKE "res LPUT :r1 :res
+      MAKE "r BUTFIRST :r
+    ]
+  ]
+  IFELSE EMPTY? :l [
+    OUTPUT (SE :res :r)
+  ] [
+    OUTPUT (SE :res :l)
+  ]
+END
+
+TO TAKE :n :lst
+  LOCAL "res
+  LOCAL "cur
+  LOCAL "i
+  MAKE "res []
+  MAKE "cur :lst
+  MAKE "i 1
+  WHILE [AND (:i <= :n) (NOT EMPTY? :cur)] [
+    MAKE "res LPUT (FIRST :cur) :res
+    MAKE "cur BUTFIRST :cur
+    MAKE "i :i + 1
+  ]
+  OUTPUT :res
+END
+
+TO DROP :n :lst
+  LOCAL "cur
+  LOCAL "i
+  MAKE "cur :lst
+  MAKE "i 1
+  WHILE [AND (:i <= :n) (NOT EMPTY? :cur)] [
+    MAKE "cur BUTFIRST :cur
+    MAKE "i :i + 1
+  ]
+  OUTPUT :cur
+END
+
+TO MERGESORT :lst
+  LOCAL "len
+  LOCAL "mid
+  LOCAL "left
+  LOCAL "right
+  LOCAL "sleft
+  LOCAL "sright
+  MAKE "len COUNT :lst
+  IFELSE :len <= 1 [
+    OUTPUT :lst
+  ] [
+    MAKE "mid INT (:len / 2)
+    MAKE "left TAKE :mid :lst
+    MAKE "right DROP :mid :lst
+    MAKE "sleft MERGESORT :left
+    MAKE "sright MERGESORT :right
+    OUTPUT MERGE :sleft :sright
+  ]
+END
+
+; Test cases
+TYPE "===_Merge_Sort_Demo_===
+TYPE CHAR 10
+
+MAKE "arr1 [38 27 43 3 9 82 10]
+TYPE FORMAT "original:_%s" (LIST :arr1)
+TYPE CHAR 10
+MAKE "sorted1 MERGESORT :arr1
+TYPE FORMAT "sorted:___%s" (LIST :sorted1)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+MAKE "arr2 [5 -2 8 0 1 -9 4 3 2]
+TYPE FORMAT "original:_%s" (LIST :arr2)
+TYPE CHAR 10
+MAKE "sorted2 MERGESORT :arr2
+TYPE FORMAT "sorted:___%s" (LIST :sorted2)
+TYPE CHAR 10

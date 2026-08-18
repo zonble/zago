@@ -1,0 +1,190 @@
+; ==============================================================================
+; Trie (Prefix Tree / 字典樹) in zago Editor LOGO
+; ==============================================================================
+; A tree data structure used for efficient string retrieval, prefix matching,
+; and autocomplete suggestions, implemented using LOGO Property Lists (PPROP/GPROP).
+;
+; Time Complexity:
+; - Insert: O(L) where L is word length
+; - Search: O(L)
+; - StartsWith: O(P) where P is prefix length
+; - Autocomplete: O(P + K) where K is number of matched characters
+; ==============================================================================
+
+; ------------------------------------------------------------------------------
+; Insert a word into the Trie
+; ------------------------------------------------------------------------------
+TO TRIE_INSERT :word
+  LOCAL "cur
+  LOCAL "w
+  LOCAL "ch
+  LOCAL "child
+  LOCAL "kids
+  MAKE "cur "root
+  MAKE "w :word
+  WHILE [NOT EMPTY? :w] [
+    MAKE "ch FIRST :w
+    MAKE "w BUTFIRST :w
+    MAKE "child GPROP :cur :ch
+    IF EMPTY? :child [
+      MAKE "child GENSYM
+      PPROP :cur :ch :child
+      MAKE "kids GPROP :cur "chars
+      IF EMPTY? :kids [ MAKE "kids [] ]
+      PPROP :cur "chars (LPUT :ch :kids)
+    ]
+    MAKE "cur :child
+  ]
+  PPROP :cur "is_end "true
+END
+
+; ------------------------------------------------------------------------------
+; Search complete word
+; ------------------------------------------------------------------------------
+TO TRIE_SEARCH :word
+  LOCAL "cur
+  LOCAL "w
+  LOCAL "ch
+  LOCAL "child
+  LOCAL "end_flag
+  MAKE "cur "root
+  MAKE "w :word
+  WHILE [NOT EMPTY? :w] [
+    MAKE "ch FIRST :w
+    MAKE "w BUTFIRST :w
+    MAKE "child GPROP :cur :ch
+    IF EMPTY? :child [ OUTPUT "false ]
+    MAKE "cur :child
+  ]
+  MAKE "end_flag GPROP :cur "is_end
+  IFELSE :end_flag = "true [ OUTPUT "true ] [ OUTPUT "false ]
+END
+
+; ------------------------------------------------------------------------------
+; Check if any word starts with prefix
+; ------------------------------------------------------------------------------
+TO TRIE_STARTSWITH :prefix
+  LOCAL "cur
+  LOCAL "p
+  LOCAL "ch
+  LOCAL "child
+  MAKE "cur "root
+  MAKE "p :prefix
+  WHILE [NOT EMPTY? :p] [
+    MAKE "ch FIRST :p
+    MAKE "p BUTFIRST :p
+    MAKE "child GPROP :cur :ch
+    IF EMPTY? :child [ OUTPUT "false ]
+    MAKE "cur :child
+  ]
+  OUTPUT "true
+END
+
+; ------------------------------------------------------------------------------
+; Autocomplete / Prefix Search (Iterative DFS Stack)
+; ------------------------------------------------------------------------------
+TO TRIE_COLLECT_WORDS :start_node :start_prefix
+  LOCAL "res
+  LOCAL "stack
+  LOCAL "top
+  LOCAL "node_id
+  LOCAL "pfx
+  LOCAL "end_flag
+  LOCAL "chars
+  LOCAL "i
+  LOCAL "ch
+  LOCAL "child
+  LOCAL "next_pfx
+  MAKE "res []
+  MAKE "stack FPUT (LIST :start_node :start_prefix) []
+  WHILE [NOT EMPTY? :stack] [
+    MAKE "top FIRST :stack
+    MAKE "stack BUTFIRST :stack
+    MAKE "node_id ITEM 1 :top
+    MAKE "pfx ITEM 2 :top
+    MAKE "end_flag GPROP :node_id "is_end
+    IF :end_flag = "true [
+      MAKE "res LPUT :pfx :res
+    ]
+    MAKE "chars GPROP :node_id "chars
+    IF NOT EMPTY? :chars [
+      MAKE "i COUNT :chars
+      WHILE [:i >= 1] [
+        MAKE "ch ITEM :i :chars
+        MAKE "child GPROP :node_id :ch
+        MAKE "next_pfx WORD :pfx :ch
+        MAKE "stack FPUT (LIST :child :next_pfx) :stack
+        MAKE "i :i - 1
+      ]
+    ]
+  ]
+  OUTPUT :res
+END
+
+TO TRIE_AUTOCOMPLETE :prefix
+  LOCAL "cur
+  LOCAL "p
+  LOCAL "ch
+  LOCAL "child
+  LOCAL "res
+  MAKE "cur "root
+  MAKE "p :prefix
+  WHILE [NOT EMPTY? :p] [
+    MAKE "ch FIRST :p
+    MAKE "p BUTFIRST :p
+    MAKE "child GPROP :cur :ch
+    IF EMPTY? :child [ OUTPUT [] ]
+    MAKE "cur :child
+  ]
+  MAKE "res TRIE_COLLECT_WORDS :cur :prefix
+  OUTPUT :res
+END
+
+; ------------------------------------------------------------------------------
+; Demo & Verification
+; ------------------------------------------------------------------------------
+TYPE "===_Trie_Prefix_Tree_Demo_===
+TYPE CHAR 10
+
+MAKE "dictionary [apple app application ban banana band banner cat]
+TYPE FORMAT "inserting_words:_%s" (LIST :dictionary)
+TYPE CHAR 10
+
+FOREACH :dictionary [
+  TRIE_INSERT ?
+]
+
+; Search tests
+MAKE "s_apple TRIE_SEARCH "apple
+TYPE FORMAT "search_apple:_______%s" (LIST :s_apple)
+TYPE CHAR 10
+
+MAKE "s_app TRIE_SEARCH "app
+TYPE FORMAT "search_app:_________%s" (LIST :s_app)
+TYPE CHAR 10
+
+MAKE "s_appl TRIE_SEARCH "appl
+TYPE FORMAT "search_appl:________%s" (LIST :s_appl)
+TYPE CHAR 10
+
+; Prefix / StartsWith tests
+MAKE "sw_app TRIE_STARTSWITH "app
+TYPE FORMAT "startswith_app:_____%s" (LIST :sw_app)
+TYPE CHAR 10
+
+MAKE "sw_ban TRIE_STARTSWITH "ban
+TYPE FORMAT "startswith_ban:_____%s" (LIST :sw_ban)
+TYPE CHAR 10
+
+MAKE "sw_dog TRIE_STARTSWITH "dog
+TYPE FORMAT "startswith_dog:_____%s" (LIST :sw_dog)
+TYPE CHAR 10
+
+; Autocomplete suggestions
+MAKE "auto_app TRIE_AUTOCOMPLETE "app
+TYPE FORMAT "autocomplete_app:___%s" (LIST :auto_app)
+TYPE CHAR 10
+
+MAKE "auto_ban TRIE_AUTOCOMPLETE "ban
+TYPE FORMAT "autocomplete_ban:___%s" (LIST :auto_ban)
+TYPE CHAR 10

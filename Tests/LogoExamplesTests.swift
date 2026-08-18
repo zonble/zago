@@ -250,4 +250,54 @@ import Testing
         #expect(output.contains("multiply_3_7:_21"))
         #expect(output.contains("names_after_erase_x:_[y]"))
     }
+
+    @Test func testMergeSortExample() throws {
+        let output = try executeScriptFile("merge_sort.logo")
+        #expect(output.contains("===_Merge_Sort_Demo_==="))
+        #expect(output.contains("sorted:___[3 9 10 27 38 43 82]"))
+        #expect(output.contains("sorted:___[-9 -2 0 1 2 3 4 5 8]"))
+    }
+
+    @Test func testQuickSortExample() throws {
+        let output = try executeScriptFile("quick_sort.logo")
+        #expect(output.contains("===_Quick_Sort_Demo_==="))
+        #expect(output.contains("sorted:___[10 30 40 50 70 80 90]"))
+        #expect(output.contains("sorted:___[1 2 2 3 3 4 8]"))
+    }
+
+    @Test func testBinarySearchExample() throws {
+        let output = try executeScriptFile("binary_search.logo")
+        #expect(output.contains("===_Binary_Search_Demo_==="))
+        #expect(output.contains("search_23_-> 1-based_index:_6"))
+        #expect(output.contains("search_5_-> 1-based_index:_2"))
+        #expect(output.contains("search_50_-> 1-based_index:_0_(0_means_not_found)"))
+    }
+
+    @Test func testTowerOfHanoiExample() throws {
+        let output = try executeScriptFile("tower_of_hanoi.logo")
+        #expect(output.contains("===_Tower_of_Hanoi_Demo_3_disks_==="))
+        #expect(output.contains("Move_disk_1_from_A_to_C"))
+        #expect(output.contains("Move_disk_3_from_A_to_C"))
+    }
+
+    @Test func testRedBlackTreeExample() throws {
+        let output = try executeScriptFile("red_black_tree.logo")
+        #expect(output.contains("===_Red_Black_Tree_Demo_==="))
+        #expect(output.contains("inorder_traversal:_[1 5 10 15 20 25 30]"))
+        #expect(output.contains("search_15:_true"))
+        #expect(output.contains("search_99:_false"))
+        #expect(output.contains("root_node:_20_(color:_b)"))
+    }
+
+    @Test func testTrieExample() throws {
+        let output = try executeScriptFile("trie.logo")
+        #expect(output.contains("===_Trie_Prefix_Tree_Demo_==="))
+        #expect(output.contains("search_apple:_______true"))
+        #expect(output.contains("search_app:_________true"))
+        #expect(output.contains("search_appl:________false"))
+        #expect(output.contains("startswith_app:_____true"))
+        #expect(output.contains("startswith_dog:_____false"))
+        #expect(output.contains("autocomplete_app:___[app apple application]"))
+        #expect(output.contains("autocomplete_ban:___[ban banana band banner]"))
+    }
 }

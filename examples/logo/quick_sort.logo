@@ -1,0 +1,62 @@
+; ==============================================================================
+; Quick Sort Algorithm (in zago Editor LOGO)
+; ==============================================================================
+; Selects a pivot, partitions the list into elements less than, equal to,
+; and greater than the pivot, and recursively sorts the sublists.
+; Time Complexity: Average O(N log N), Worst O(N^2)
+; ==============================================================================
+
+TO QUICKSORT :lst
+  LOCAL "len
+  MAKE "len COUNT :lst
+  IF :len <= 1 [ OUTPUT :lst ]
+  LOCAL "pivot
+  LOCAL "rest
+  LOCAL "less
+  LOCAL "equal
+  LOCAL "greater
+  LOCAL "x
+  LOCAL "sless
+  LOCAL "sgreater
+  MAKE "pivot FIRST :lst
+  MAKE "rest BUTFIRST :lst
+  MAKE "less []
+  MAKE "equal (LIST :pivot)
+  MAKE "greater []
+  WHILE [NOT EMPTY? :rest] [
+    MAKE "x FIRST :rest
+    IFELSE :x < :pivot [
+      MAKE "less LPUT :x :less
+    ] [
+      IFELSE :x = :pivot [
+        MAKE "equal LPUT :x :equal
+      ] [
+        MAKE "greater LPUT :x :greater
+      ]
+    ]
+    MAKE "rest BUTFIRST :rest
+  ]
+  MAKE "sless QUICKSORT :less
+  MAKE "sgreater QUICKSORT :greater
+  OUTPUT (SE :sless :equal :sgreater)
+END
+
+; Test cases
+TYPE "===_Quick_Sort_Demo_===
+TYPE CHAR 10
+
+MAKE "arr1 [10 80 30 90 40 50 70]
+TYPE FORMAT "original:_%s" (LIST :arr1)
+TYPE CHAR 10
+MAKE "sorted1 QUICKSORT :arr1
+TYPE FORMAT "sorted:___%s" (LIST :sorted1)
+TYPE CHAR 10
+
+TYPE CHAR 10
+
+MAKE "arr2 [4 2 2 8 3 3 1]
+TYPE FORMAT "original:_%s" (LIST :arr2)
+TYPE CHAR 10
+MAKE "sorted2 QUICKSORT :arr2
+TYPE FORMAT "sorted:___%s" (LIST :sorted2)
+TYPE CHAR 10

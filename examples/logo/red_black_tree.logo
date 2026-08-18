@@ -1,0 +1,258 @@
+; ==============================================================================
+; Red-Black Tree in zago Editor LOGO
+; ==============================================================================
+; A self-balancing binary search tree based on Chris Okasaki's functional
+; Red-Black Tree balance algorithm.
+;
+; Properties:
+; 1. Every node is either Red ("R") or Black ("B").
+; 2. The root is always Black ("B").
+; 3. No two Red nodes are adjacent (a Red node cannot have a Red parent/child).
+; 4. Every path from root to leaves contains the same number of Black nodes.
+;
+; Node structure: [color left_child value right_child]
+; Empty tree (NIL): [] (treated as Black)
+;
+; Time Complexity:
+; - Search: O(log N)
+; - Insert: O(log N)
+; ==============================================================================
+
+TO MAKE_NODE :color :left :val :right
+  OUTPUT (LIST :color :left :val :right)
+END
+
+TO COLOR :node
+  IFELSE EMPTY? :node [ OUTPUT "B ] [ OUTPUT ITEM 1 :node ]
+END
+
+TO LEFT_CHILD :node
+  IFELSE EMPTY? :node [ OUTPUT [] ] [ OUTPUT ITEM 2 :node ]
+END
+
+TO NODE_VAL :node
+  IFELSE EMPTY? :node [ OUTPUT 0 ] [ OUTPUT ITEM 3 :node ]
+END
+
+TO RIGHT_CHILD :node
+  IFELSE EMPTY? :node [ OUTPUT [] ] [ OUTPUT ITEM 4 :node ]
+END
+
+TO IS_RED :node
+  IFELSE EMPTY? :node [
+    OUTPUT "false
+  ] [
+    OUTPUT (ITEM 1 :node) = "R
+  ]
+END
+
+; ------------------------------------------------------------------------------
+; Okasaki Balancing Function
+; Fixes 4 red-red violation patterns into a single balanced tree:
+; 1. B (R (R a x b) y c) z d  ->  R (B a x b) y (B c z d)
+; 2. B (R a x (R b y c)) z d  ->  R (B a x b) y (B c z d)
+; 3. B a x (R (R b y c) z d)  ->  R (B a x b) y (B c z d)
+; 4. B a x (R b y (R c z d))  ->  R (B a x b) y (B c z d)
+; ------------------------------------------------------------------------------
+TO BALANCE :color :left :val :right
+  IF :color = "B [
+    ; Pattern 1 & 2: Left child is Red
+    IF IS_RED :left [
+      LOCAL "left_left
+      MAKE "left_left LEFT_CHILD :left
+      IF IS_RED :left_left [
+        LOCAL "a
+        LOCAL "x
+        LOCAL "b
+        LOCAL "y
+        LOCAL "c
+        LOCAL "z
+        LOCAL "d
+        LOCAL "new_l
+        LOCAL "new_r
+        MAKE "a LEFT_CHILD :left_left
+        MAKE "x NODE_VAL :left_left
+        MAKE "b RIGHT_CHILD :left_left
+        MAKE "y NODE_VAL :left
+        MAKE "c RIGHT_CHILD :left
+        MAKE "z :val
+        MAKE "d :right
+        MAKE "new_l MAKE_NODE "B :a :x :b
+        MAKE "new_r MAKE_NODE "B :c :z :d
+        OUTPUT MAKE_NODE "R :new_l :y :new_r
+      ]
+
+      LOCAL "left_right
+      MAKE "left_right RIGHT_CHILD :left
+      IF IS_RED :left_right [
+        LOCAL "a
+        LOCAL "x
+        LOCAL "b
+        LOCAL "y
+        LOCAL "c
+        LOCAL "z
+        LOCAL "d
+        LOCAL "new_l
+        LOCAL "new_r
+        MAKE "a LEFT_CHILD :left
+        MAKE "x NODE_VAL :left
+        MAKE "b LEFT_CHILD :left_right
+        MAKE "y NODE_VAL :left_right
+        MAKE "c RIGHT_CHILD :left_right
+        MAKE "z :val
+        MAKE "d :right
+        MAKE "new_l MAKE_NODE "B :a :x :b
+        MAKE "new_r MAKE_NODE "B :c :z :d
+        OUTPUT MAKE_NODE "R :new_l :y :new_r
+      ]
+    ]
+
+    ; Pattern 3 & 4: Right child is Red
+    IF IS_RED :right [
+      LOCAL "right_left
+      MAKE "right_left LEFT_CHILD :right
+      IF IS_RED :right_left [
+        LOCAL "a
+        LOCAL "x
+        LOCAL "b
+        LOCAL "y
+        LOCAL "c
+        LOCAL "z
+        LOCAL "d
+        LOCAL "new_l
+        LOCAL "new_r
+        MAKE "a :left
+        MAKE "x :val
+        MAKE "b LEFT_CHILD :right_left
+        MAKE "y NODE_VAL :right_left
+        MAKE "c RIGHT_CHILD :right_left
+        MAKE "z NODE_VAL :right
+        MAKE "d RIGHT_CHILD :right
+        MAKE "new_l MAKE_NODE "B :a :x :b
+        MAKE "new_r MAKE_NODE "B :c :z :d
+        OUTPUT MAKE_NODE "R :new_l :y :new_r
+      ]
+
+      LOCAL "right_right
+      MAKE "right_right RIGHT_CHILD :right
+      IF IS_RED :right_right [
+        LOCAL "a
+        LOCAL "x
+        LOCAL "b
+        LOCAL "y
+        LOCAL "c
+        LOCAL "z
+        LOCAL "d
+        LOCAL "new_l
+        LOCAL "new_r
+        MAKE "a :left
+        MAKE "x :val
+        MAKE "b LEFT_CHILD :right
+        MAKE "y NODE_VAL :right
+        MAKE "c LEFT_CHILD :right_right
+        MAKE "z NODE_VAL :right_right
+        MAKE "d RIGHT_CHILD :right_right
+        MAKE "new_l MAKE_NODE "B :a :x :b
+        MAKE "new_r MAKE_NODE "B :c :z :d
+        OUTPUT MAKE_NODE "R :new_l :y :new_r
+      ]
+    ]
+  ]
+
+  OUTPUT MAKE_NODE :color :left :val :right
+END
+
+; ------------------------------------------------------------------------------
+; Red-Black Tree Insertion
+; ------------------------------------------------------------------------------
+TO RBT_INS :x :tree
+  IF EMPTY? :tree [
+    OUTPUT MAKE_NODE "R [] :x []
+  ]
+  LOCAL "c
+  LOCAL "l
+  LOCAL "v
+  LOCAL "r
+  LOCAL "sub
+  MAKE "c COLOR :tree
+  MAKE "l LEFT_CHILD :tree
+  MAKE "v NODE_VAL :tree
+  MAKE "r RIGHT_CHILD :tree
+  IF :x < :v [
+    MAKE "sub RBT_INS :x :l
+    OUTPUT BALANCE :c :sub :v :r
+  ]
+  IF :x > :v [
+    MAKE "sub RBT_INS :x :r
+    OUTPUT BALANCE :c :l :v :sub
+  ]
+  OUTPUT :tree
+END
+
+TO RBT_INSERT :x :tree
+  LOCAL "t
+  MAKE "t RBT_INS :x :tree
+  ; Root is always black
+  OUTPUT MAKE_NODE "B (LEFT_CHILD :t) (NODE_VAL :t) (RIGHT_CHILD :t)
+END
+
+; ------------------------------------------------------------------------------
+; Tree Traversal & Search
+; ------------------------------------------------------------------------------
+TO INORDER :tree
+  IF EMPTY? :tree [ OUTPUT [] ]
+  LOCAL "left_list
+  LOCAL "right_list
+  LOCAL "v
+  MAKE "left_list INORDER (LEFT_CHILD :tree)
+  MAKE "right_list INORDER (RIGHT_CHILD :tree)
+  MAKE "v NODE_VAL :tree
+  OUTPUT (SE :left_list :v :right_list)
+END
+
+TO RBT_SEARCH :x :tree
+  IF EMPTY? :tree [ OUTPUT "false ]
+  LOCAL "v
+  MAKE "v NODE_VAL :tree
+  IF :x = :v [ OUTPUT "true ]
+  IFELSE :x < :v [
+    OUTPUT RBT_SEARCH :x (LEFT_CHILD :tree)
+  ] [
+    OUTPUT RBT_SEARCH :x (RIGHT_CHILD :tree)
+  ]
+END
+
+; ------------------------------------------------------------------------------
+; Demo & Verification
+; ------------------------------------------------------------------------------
+TYPE "===_Red_Black_Tree_Demo_===
+TYPE CHAR 10
+
+; Insert elements into RBT
+MAKE "values [10 20 30 15 25 5 1]
+TYPE FORMAT "inserting_values:_%s" (LIST :values)
+TYPE CHAR 10
+
+MAKE "tree []
+FOREACH :values [
+  MAKE "tree RBT_INSERT ? :tree
+]
+
+; In-order traversal gives perfectly sorted values
+MAKE "sorted_inorder INORDER :tree
+TYPE FORMAT "inorder_traversal:_%s" (LIST :sorted_inorder)
+TYPE CHAR 10
+
+; Search tests
+MAKE "find15 RBT_SEARCH 15 :tree
+TYPE FORMAT "search_15:_%s" (LIST :find15)
+TYPE CHAR 10
+
+MAKE "find99 RBT_SEARCH 99 :tree
+TYPE FORMAT "search_99:_%s" (LIST :find99)
+TYPE CHAR 10
+
+MAKE "root_color COLOR :tree
+MAKE "root_val NODE_VAL :tree
+TYPE FORMAT "root_node:_%d_(color:_%s)" (LIST :root_val :root_color)
+TYPE CHAR 10

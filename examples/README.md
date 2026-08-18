@@ -14,6 +14,12 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`reflection_demo.logo`](logo/reflection_demo.logo) | Workspace & Reflection | **Reflection & Dynamic Metaprogramming** | `NAMES`, `PROCEDURES`, `CONTENTS`, `TEXT`, `DEFINE`, `ARITY`, `ERASE`, `ERALL` |
 | [`logo_in_logo_interpreter.logo`](logo/logo_in_logo_interpreter.logo) | Self-Hosting Metaprogramming | **Self-Hosting LOGO Interpreter in LOGO** | AST Walker, Env symbol tables, `DEF` / `CALL` procs |
 | [`brainfuck.logo`](logo/brainfuck.logo) | Interpreter | Full **Brainfuck (BF)** interpreter running inside `zago` LOGO | `ARRAY`, `WHILE` loops, `CHAR`, `ORD`, `SETITEM` |
+| [`merge_sort.logo`](logo/merge_sort.logo) | Classic Algo | **Merge Sort** Divide & conquer sorting | Recursion, `FIRST`, `BUTFIRST`, `FPUT`, `COUNT` |
+| [`quick_sort.logo`](logo/quick_sort.logo) | Classic Algo | **Quick Sort** In-place partition sorting | Recursion, `FILTER`, `SE`, `LPUT`, `BUTFIRST` |
+| [`binary_search.logo`](logo/binary_search.logo) | Classic Algo | **Binary Search ** O(log N) search | `WHILE` loop, `ITEM`, `INT` midpoint arithmetic |
+| [`tower_of_hanoi.logo`](logo/tower_of_hanoi.logo) | Classic Algo | **Tower of Hanoi** Classic recursive puzzle | Recursion, `FORMAT`, multiple peg parameters |
+| [`red_black_tree.logo`](logo/red_black_tree.logo) | Data Structure | **Red-Black Tree** Self-balancing BST (Okasaki) | Balance rotation, `IFELSE`, `INORDER`, `RBT_SEARCH` |
+| [`trie.logo`](logo/trie.logo) | Data Structure | **Trie** Fast prefix retrieval & Autocomplete | `PPROP`, `GPROP`, `GENSYM`, `TRIE_AUTOCOMPLETE` |
 | [`fizzbuzz.logo`](logo/fizzbuzz.logo) | Classic Algo | Classic **FizzBuzz** (1 to N) implementation | `WHILE` loop, `%` modulo, `FORMAT` |
 
 ---
