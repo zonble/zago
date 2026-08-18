@@ -48,7 +48,7 @@ This directory holds the detailed user, language, architecture, and development 
 ## AI & IPC
 
 - [AI editor operation protocol](ai-ipc/protocol.md): JSON-RPC 2.0 API methods, buffer queries, ghost overlay previews, Editor LOGO execution, and permission matrix.
-- [AI-native terminal canvas plan](ai-ipc/plan.md): architectural proposal and roadmap for IPC sockets, JSON-RPC, ghost overlays, and AI skill integration.
+- [AI & IPC architecture and milestone summary](ai-ipc/plan.md): completed architecture, capabilities, ghost overlays, MCP integration, and design boundaries.
 
 ## Development
 
