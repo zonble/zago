@@ -273,12 +273,21 @@ extension Renderer {
         case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
             .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
-            helpItems1 = [
-                ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),
-            ]
-            helpItems2 = [
-                ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
-            ]
+            if editor?.keymapManager.activePreset == .modern {
+                helpItems1 = [
+                    ("Enter", tr("help.confirm")), ("^G", tr("help.cancel")), ("^X", tr("help.cut_text")),
+                ]
+                helpItems2 = [
+                    ("^C", tr("help.copy_text")), ("^V", tr("help.uncut_text")), ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
+                ]
+            } else {
+                helpItems1 = [
+                    ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^K", tr("help.cut_text")),
+                ]
+                helpItems2 = [
+                    ("^U", tr("help.uncut_text")), ("M+W", tr("help.copy_text")), ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
+                ]
+            }
 
         case .describeKey:
             helpItems1 = []

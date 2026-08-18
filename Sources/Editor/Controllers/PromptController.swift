@@ -94,11 +94,6 @@ final class PromptController: KeyInputHandler {
 
         let cmd = editor?.keymapManager.resolve(key: key, in: .prompt)
 
-        if cmd == .editCopy, selectionRange() == nil {
-            cancel()
-            return true
-        }
-
         switch cmd {
         case .promptCancel:
             cancel()
@@ -576,12 +571,25 @@ final class PromptController: KeyInputHandler {
             _ = deletePromptSelectionIfNeeded()
             return
         }
+        guard !inputText.isEmpty else { return }
         let clamped = max(0, min(cursorIndex, inputText.count))
         let chars = Array(inputText)
-        guard clamped < chars.count else { return }
-        editor?.clipboardText = String(chars[clamped...])
-        inputText = String(chars[..<clamped])
-        cursorIndex = clamped
+        if clamped == 0 {
+            // Cut entire line
+            editor?.clipboardText = inputText
+            inputText = ""
+            cursorIndex = 0
+        } else if clamped < chars.count {
+            // Cut suffix from cursor
+            editor?.clipboardText = String(chars[clamped...])
+            inputText = String(chars[..<clamped])
+            cursorIndex = clamped
+        } else {
+            // Cursor is at the end, cut entire line
+            editor?.clipboardText = inputText
+            inputText = ""
+            cursorIndex = 0
+        }
         selectionAnchorIndex = nil
     }
 

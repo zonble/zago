@@ -31,7 +31,8 @@ struct RendererChromeTests {
         #expect(!searchHelp.contains("Help"))
         #expect(searchHelp.contains("Cancel"))
         #expect(searchHelp.contains("Confirm"))
-        #expect(searchHelp.contains("Clear"))
+        #expect(searchHelp.contains("Cut Text"))
+        #expect(searchHelp.contains("UnCut Text"))
         #expect(searchHelp.contains("Move"))
         #expect(searchHelp.contains("Jump"))
 
