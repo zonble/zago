@@ -88,7 +88,7 @@ public enum ANSIKeyMapping {
     /// Maps ASCII control codes (e.g. 13 -> .enter, 9 -> .tab, 1...26 -> Ctrl+A..Z) to `Key`.
     public static func resolveControlCode(_ code: UInt32) -> Key? {
         switch code {
-        case 13, 10: return .enter
+        case 13: return .enter
         case 9: return .tab
         case 127: return .backspace
         case 30: return .mark
