@@ -105,8 +105,21 @@ public enum LogoTokenizer {
                     flush()
                 } else {
                     index = script.index(after: index)
-                    while index < script.endIndex && !script[index].isWhitespace && !bracketDelimiters.contains(script[index]) {
-                        current.append(script[index])
+                    var parenDepth = 0
+                    while index < script.endIndex {
+                        let ch = script[index]
+                        if ch.isWhitespace { break }
+                        if ch == "[" || ch == "]" || ch == "{" || ch == "}" { break }
+                        if ch == "(" {
+                            parenDepth += 1
+                        } else if ch == ")" {
+                            if parenDepth > 0 {
+                                parenDepth -= 1
+                            } else {
+                                break
+                            }
+                        }
+                        current.append(ch)
                         index = script.index(after: index)
                     }
                     flush()
@@ -158,7 +171,7 @@ public enum LogoTokenizer {
 
     static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
         rawTokens.flatMap { word in
-            guard !((word.hasPrefix("\"") && word.hasSuffix("\"")) || (word.hasPrefix("|") && word.hasSuffix("|")))
+            guard !(word.hasPrefix("\"") || word.hasPrefix("|"))
             else { return [word] }
             var parts: [String] = []
             var current = ""

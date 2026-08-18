@@ -633,6 +633,9 @@ TYPE "hello;world"
 | `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `READWORD` | `RW`, `READLINE`, `READ` | `READWORD [prompt]` | Reads a line of text input from user or stdin | `MAKE "name READWORD "Enter name: "` |
+| `UUID` | `GUID` | `UUID [version] [uppercase]` | Generates a UUID string (v4 random or v7 time-ordered) | `UUID`, `UUID "v7`, `UUID "v4 "true` |
+| `UUID?` | `IS_UUID` | `UUID? str` | Checks if string is a valid UUID representation | `UUID? "550e8400-e29b-41d4-a716-446655440000` |
+| `UUID.TIME` | `UUID.DATETIME` | `UUID.TIME uuid_v7_str [format] [locale] [tz]` | Extracts embedded creation timestamp from a UUID v7 string | `UUID.TIME (UUID "v7)` |
 | `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date. `cal` accepts the supported calendar identifiers listed below. | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
 | `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time. `cal` accepts the supported calendar identifiers listed below. | `TIME`, `TIME "medium "en_US "UTC` |
 | `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time. `cal` accepts the supported calendar identifiers listed below. | `DATETIME`, `DATETIME "iso8601` |

@@ -26,6 +26,8 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
 @Test func testLogoTokenizerSplitsDelimitersFollowingSingleQuotedWord() {
     #expect(LogoTokenizer.tokenize("(FORMAT.DATE :today \"roc)") == ["(", "FORMAT.DATE", ":today", "\"roc", ")"])
     #expect(LogoTokenizer.tokenize("(\"a) [\"b]") == ["(", "\"a", ")", "[", "\"b", "]"])
+    #expect(LogoTokenizer.tokenize("TYPE \"===_FizzBuzz_Demo_(1_to_15)_===") == ["TYPE", "\"===_FizzBuzz_Demo_(1_to_15)_==="])
+    #expect(LogoTokenizer.tokenize("TYPE \"to_hiragana(katakana):_") == ["TYPE", "\"to_hiragana(katakana):_"])
 }
 
 @Test func testLogoEnvironmentPreservesFormattedLeadingWhitespace() {
