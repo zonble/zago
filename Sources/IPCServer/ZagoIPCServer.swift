@@ -372,9 +372,9 @@ extension ZagoIPCServer {
                     FlushFileBuffers(pipeHandle)
                     DisconnectNamedPipe(pipeHandle)
                     CloseHandle(pipeHandle)
-                }
-                if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
-                    delegate?.ipcServer(self, clientDidDisconnect: client)
+                    if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                        delegate?.ipcServer(self, clientDidDisconnect: client)
+                    }
                 }
             }
 
@@ -646,9 +646,9 @@ extension ZagoIPCServer {
                 lock.unlock()
                 if ownsDescriptor {
                     close(clientFD)
-                }
-                if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
-                    delegate?.ipcServer(self, clientDidDisconnect: client)
+                    if let client = jsonRPCParser.unregisterClient(connectionId: connectionId) {
+                        delegate?.ipcServer(self, clientDidDisconnect: client)
+                    }
                 }
             }
 
