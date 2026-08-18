@@ -401,3 +401,56 @@ let fd = socket(Int32(AF_UNIX), sockType, 0)
 
 This guarantees strict type safety when compiling C socket code under Swift 6 on
 macOS, Linux (Glibc), and Musl environments.
+
+---
+
+## 11. Natural Language Word Breaking & CJK Segmentation (`byWords` vs Non-Darwin Fallback)
+
+### The Problem
+
+Terminal word navigation (`Alt+F` / `Alt+B`, `moveWordForward()` / `moveWordBackward()`) and word metrics rely on finding word boundaries in text containing mixed Latin and CJK prose:
+
+1. **`NSString.EnumerationOptions.byWords` Unavailable on Linux / Windows**:
+   `byWords` is explicitly marked unavailable in `swift-corelibs-foundation` (`@available(*, unavailable, message: "Enumeration by words isn't supported in swift-corelibs-foundation")`). Calling it on Linux or Windows fails at compile time.
+2. **Dictionary vs Rule-Based Segmentation**:
+   - **macOS (Darwin)**: `enumerateSubstrings(options: .byWords)` delegates to Apple's CoreFoundation / ICU dictionary lexicon, segmenting CJK compounds into semantic words (e.g. `"「你好世界」"` is segmented into `"你"`, `"好"`, `"世界"`).
+   - **Linux / Windows**: Lacks the Apple proprietary CJK lexicon dictionary in open-source Foundation.
+
+### Architectural Solution
+
+In [`TextAnalyzer.swift`](../../Sources/TextTransform/TextAnalyzer.swift), `TextAnalyzer.wordRanges(in:)` branches by platform:
+
+```swift
+#if canImport(Darwin)
+// Darwin: Uses native ICU dictionary-backed word enumeration
+text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, range, _, _ in
+    ...
+}
+#else
+// Non-Darwin: Portable unicode boundary scanning
+// - Latin / ASCII words: continuous word character sequences ([a-zA-Z0-9_]+)
+// - CJK Ideographs: each discrete CJK character is an individual word boundary
+for character in text {
+    if TextUnicodeClassifier.isCJKScriptCharacter(character) {
+        if let start = wordStart {
+            ranges.append(start..<index)
+            wordStart = nil
+        }
+        ranges.append(index..<(index + 1))
+    } else if TextUnicodeClassifier.isUnicodeWordCharacter(character) {
+        if wordStart == nil { wordStart = index }
+    } else {
+        if let start = wordStart {
+            ranges.append(start..<index)
+            wordStart = nil
+        }
+    }
+    index += 1
+}
+#endif
+```
+
+### Testing Strategy
+
+In [`TextBufferTests.swift`](../../Tests/TextBufferTests.swift), `testCJKWordNavigation` uses `#if canImport(Darwin)` to verify dictionary-segmented stops (`2 -> 3 -> 5`) on macOS and `#else` to verify per-character discrete stops (`2 -> 3 -> 4 -> 5`) on Linux and Windows.
+
