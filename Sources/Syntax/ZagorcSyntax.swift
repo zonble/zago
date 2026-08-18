@@ -12,7 +12,10 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
 
     public var headerRules: [NSRegularExpression] {
         (try? [
-            NSRegularExpression(pattern: #"(?i)^\s*set\s+(wrap|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|tab|lang|language|spell-language|border|arrow|git-diff|debug|regex)\b"#),
+            NSRegularExpression(
+                pattern:
+                    #"(?i)^\s*set\s+(wrap|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|tab|lang|language|spell-language|border|arrow|git-diff|debug|regex)\b"#
+            ),
             NSRegularExpression(pattern: #"(?i)^\s*(bind|unbind)\s+"#),
             NSRegularExpression(pattern: #"(?i)^\s*(logo-script|logo-prelude|logo)\b"#),
             NSRegularExpression(pattern: #"^#!.*zago"#),
@@ -34,7 +37,8 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
             makeRule(Self.settingPattern, .typeOrAttribute),
             makeRule(LogoSyntaxDefinition.keywordPattern, .keyword),
             makeRule(#":(#|[a-zA-Z0-9_]+)"#, .typeOrAttribute),
-            makeRule(#"\b(true|false|on|off|none|single|double|round|ascii|solid|stemmed|hollow|small)\b"#, .typeOrAttribute),
+            makeRule(
+                #"\b(true|false|on|off|none|single|double|round|ascii|solid|stemmed|hollow|small)\b"#, .typeOrAttribute),
             makeRule(#"\b\d+\b"#, .number),
         ].compactMap { $0 }
     }

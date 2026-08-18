@@ -472,7 +472,7 @@ extension Editor {
                 bottomLine: rect.bottomLine,
                 leftColumn: rect.leftColumn,
                 rightColumnExclusive: rect.rightColumnExclusive
-        )
+            )
         else { return true }
         guard !fillText.isEmpty else {
             reportOperationResult(.noOp(message: l10n["status.fill_text_required"]))

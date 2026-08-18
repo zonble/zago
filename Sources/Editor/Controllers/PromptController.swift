@@ -453,10 +453,12 @@ final class PromptController: KeyInputHandler {
 
     private var isTextEditingPromptMode: Bool {
         switch mode {
-        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText, .tableDimensions,
+        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText,
+            .tableDimensions,
             .gotoLine:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .describeKey, .logoReadWord, .logoReadChar:
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .describeKey,
+            .logoReadWord, .logoReadChar:
             return false
         }
     }

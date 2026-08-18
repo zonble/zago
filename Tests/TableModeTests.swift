@@ -963,7 +963,7 @@ import Testing
     // 2. Test Copy (Ctrl+C) in Modern Mode inside cell
     editor.processKey(.ctrl("c"))
     #expect(editor.clipboardText?.contains("Hello") == true)
-    #expect(editor.buffer.lines[1].contains("Hello")) // Cell text still intact
+    #expect(editor.buffer.lines[1].contains("Hello"))  // Cell text still intact
 
     // 3. Move to second cell and Paste (Ctrl+V)
     editor.processKey(.tab)
@@ -985,4 +985,3 @@ import Testing
     editor.processKey(.ctrl("u"))
     #expect(editor.buffer.lines[1].contains("Alias"))
 }
-

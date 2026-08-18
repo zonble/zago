@@ -1,5 +1,5 @@
-import Foundation
 import Config
+import Foundation
 
 /// Manages layered keymaps (Base Keymap + Mode Overlays) and Keymap Presets.
 final class KeymapManager {
@@ -250,7 +250,9 @@ final class KeymapManager {
 
         // Canvas Mode Overlays
         register(.canvasDrawLine, .shiftArrowRight, .shiftArrowLeft, .shiftArrowUp, .shiftArrowDown, mode: .canvas)
-        register(.canvasDrawArrow, .ctrlShiftArrowRight, .ctrlShiftArrowLeft, .ctrlShiftArrowUp, .ctrlShiftArrowDown, mode: .canvas)
+        register(
+            .canvasDrawArrow, .ctrlShiftArrowRight, .ctrlShiftArrowLeft, .ctrlShiftArrowUp, .ctrlShiftArrowDown,
+            mode: .canvas)
         register(.editMark, .alt("B"), .alt("b"), .ctrl("^"), .mark, mode: .canvas)
 
         switch preset {

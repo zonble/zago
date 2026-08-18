@@ -316,7 +316,8 @@ private func makeEditor(
         #expect(editor.proposalQueue.currentProposal?.reason.contains("Drafted payment flow") == true)
 
         // ConfigLoader debugMode test
-        let configLoader = ConfigLoader(provider: InMemoryConfigFileProvider(homePath: "/home/user", currentPath: "/home/user"))
+        let configLoader = ConfigLoader(
+            provider: InMemoryConfigFileProvider(homePath: "/home/user", currentPath: "/home/user"))
         var config = EditorConfig()
         configLoader.parseConfigContent("set debug true", into: &config)
         #expect(config.debugMode == true)
@@ -382,7 +383,9 @@ private func makeEditor(
 
         // Verify renderSubLineInfo is suppressed (returns nil) for proposal overlay lines
         for overlayLine in overlayLines {
-            #expect(editor.renderer.renderSubLineInfo(editor: editor, virtualLine: overlayLine, subLineCount: 5, isEnabled: true) == nil)
+            #expect(
+                editor.renderer.renderSubLineInfo(
+                    editor: editor, virtualLine: overlayLine, subLineCount: 5, isEnabled: true) == nil)
         }
     }
 
@@ -430,7 +433,7 @@ private func makeEditor(
             "│ Header 1       │ Header 2       │",
             "├────────────────┼────────────────┤",
             "│ Cell 1         │ Cell 2         │",
-            "└────────────────┴────────────────┘"
+            "└────────────────┴────────────────┘",
         ]
         editor.buffer.lines = tableLines
         editor.buffer.lineIndex = 1
@@ -448,7 +451,8 @@ private func makeEditor(
             type: .text
         )
         let fileProposal = AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
-        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Insert breaking lines", affectedFiles: [fileProposal])
+        let proposal = AIProposal(
+            clientId: "test", clientName: "Test", reason: "Insert breaking lines", affectedFiles: [fileProposal])
         editor.proposalQueue.pushProposal(proposal)
 
         let acceptCmd = AcceptProposalCommand()
@@ -466,9 +470,11 @@ private func makeEditor(
         editor.buffer.selectionMark = (line: 0, column: 0)
 
         let chunk = ProposalChunk(targetLine: 2, targetCol: 1, lines: ["inserted"], insertMode: .d1Insert, type: .text)
-        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Test", affectedFiles: [
-            AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
-        ])
+        let proposal = AIProposal(
+            clientId: "test", clientName: "Test", reason: "Test",
+            affectedFiles: [
+                AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
+            ])
         editor.proposalQueue.pushProposal(proposal)
 
         let acceptCmd = AcceptProposalCommand()
@@ -484,7 +490,7 @@ private func makeEditor(
             "│ Header 1       │ Header 2       │",
             "├────────────────┼────────────────┤",
             "│ Cell 1         │ Cell 2         │",
-            "└────────────────┴────────────────┘"
+            "└────────────────┴────────────────┘",
         ]
         editor.buffer.lines = tableLines
         editor.buffer.lineIndex = 1
@@ -502,9 +508,11 @@ private func makeEditor(
             insertMode: .d1Insert,
             type: .text
         )
-        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Breaking", affectedFiles: [
-            AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
-        ])
+        let proposal = AIProposal(
+            clientId: "test", clientName: "Test", reason: "Breaking",
+            affectedFiles: [
+                AffectedFileProposal(filePath: "active", bufferId: editor.buffer.id, chunks: [chunk])
+            ])
         editor.proposalQueue.pushProposal(proposal)
 
         let acceptCmd = AcceptProposalCommand()
@@ -532,12 +540,15 @@ private func makeEditor(
 
         let editor = Editor()
         editor.buffers = [buf1, buf2]
-        editor.currentBufferIndex = 0 // active is file1.txt
+        editor.currentBufferIndex = 0  // active is file1.txt
 
-        let chunk = ProposalChunk(targetLine: 1, targetCol: 1, lines: ["inserted file2"], insertMode: .d1Insert, type: .text)
-        let proposal = AIProposal(clientId: "test", clientName: "Test", reason: "Target file2", affectedFiles: [
-            AffectedFileProposal(filePath: "/path/to/file2.txt", bufferId: buf2.id, chunks: [chunk])
-        ])
+        let chunk = ProposalChunk(
+            targetLine: 1, targetCol: 1, lines: ["inserted file2"], insertMode: .d1Insert, type: .text)
+        let proposal = AIProposal(
+            clientId: "test", clientName: "Test", reason: "Target file2",
+            affectedFiles: [
+                AffectedFileProposal(filePath: "/path/to/file2.txt", bufferId: buf2.id, chunks: [chunk])
+            ])
         editor.proposalQueue.pushProposal(proposal)
 
         let acceptCmd = AcceptProposalCommand()
@@ -572,7 +583,8 @@ private func makeEditor(
 
         #expect(l10nEN["status.buffer_readonly_bracketed"] == "[ Buffer is read-only ]")
         #expect(l10nZH["status.buffer_readonly_bracketed"] == "[ Buffer 為唯讀 ]")
-        #expect(l10nEN["status.markdown_table_text_mode"] == "[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]")
+        #expect(
+            l10nEN["status.markdown_table_text_mode"] == "[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]")
         #expect(l10nZH["status.markdown_table_text_mode"] == "[ Markdown/Org 表格請在文字模式編輯 (Tab / ^J) ]")
         #expect(l10nEN["prompt.logo_input"] == "Input: ")
         #expect(l10nZH["prompt.logo_input"] == "輸入：")
@@ -631,7 +643,9 @@ private func makeEditor(
 
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex)?.integerValue == 5)
         #expect(
-            delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue == ["first.txt", "second.txt"])
+            delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue == [
+                "first.txt", "second.txt",
+            ])
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex)?.integerValue == 0)
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText)?.stringValue == "A中B\ntail")
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified)?.boolValue == true)
@@ -666,7 +680,8 @@ private func makeEditor(
         let tableDelegate: LogoEngineDelegate = tableEditor
         #expect(tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .hasTableCell)?.boolValue == true)
         #expect(
-            tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle)?.borderStyleValue == .single
+            tableDelegate.logoEngine(tableEditor.logoEngine, queryState: .defaultBorderStyle)?.borderStyleValue
+                == .single
         )
     }
 
@@ -727,7 +742,9 @@ private func makeEditor(
         if let readmeContent = try? String(contentsOfFile: "README.md", encoding: .utf8) {
             let readmeEditor = Editor(language: .en)
             readmeEditor.buffer.lines = readmeContent.components(separatedBy: .newlines)
-            if let lineIdx = readmeEditor.buffer.lines.firstIndex(where: { $0.contains("Install on Windows (PowerShell)") }) {
+            if let lineIdx = readmeEditor.buffer.lines.firstIndex(where: {
+                $0.contains("Install on Windows (PowerShell)")
+            }) {
                 readmeEditor.buffer.lineIndex = lineIdx
                 readmeEditor.buffer.columnIndex = 5
                 readmeEditor.evalLogoCode()

@@ -1,5 +1,5 @@
-import Foundation
 import ANSIStyle
+import Foundation
 import Testing
 import TextMetrics
 

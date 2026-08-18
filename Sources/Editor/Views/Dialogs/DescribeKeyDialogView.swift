@@ -106,7 +106,8 @@ final class DescribeKeyDialogView {
             if r < lines.count {
                 let lineText = lines[r]
                 let maxLineWidth = max(1, dialogWidth - 6)
-                let visibleText = lineText.displayWidth > maxLineWidth
+                let visibleText =
+                    lineText.displayWidth > maxLineWidth
                     ? lineText.visualSlice(startVisualColumn: 0, width: maxLineWidth).text
                     : lineText
                 output += "\u{001B}[\(currentRow);\(startCol + 3)H\(visibleText)"
@@ -234,7 +235,8 @@ final class DescribeKeyDialogView {
                 } else {
                     let slice = remaining.visualSlice(startVisualColumn: 0, width: maxLineWidth - 1)
                     wrapped.append(slice.text)
-                    remaining = String(remaining.dropFirst(slice.endCharacterOffset)).trimmingCharacters(in: .whitespaces)
+                    remaining = String(remaining.dropFirst(slice.endCharacterOffset)).trimmingCharacters(
+                        in: .whitespaces)
                 }
             }
         }

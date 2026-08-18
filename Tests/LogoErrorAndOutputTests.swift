@@ -316,7 +316,7 @@ import Testing
             "```",
             "MAKE \"d 4",
             "TO DOUBLE :x :x * 2 END",
-            "MAKE \"e (DOUBLE 5)"
+            "MAKE \"e (DOUBLE 5)",
         ]
 
         // 1. Cursor on line 0 (ordinary single line) -> only line 0 is evaluated
@@ -362,7 +362,7 @@ import Testing
             "",
             "MAKE \"line9 9",
             "",
-            "MAKE \"line11 11"
+            "MAKE \"line11 11",
         ]
 
         // Ensure when cursor is on line 6 (MAKE "line7 7"),

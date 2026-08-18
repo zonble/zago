@@ -200,9 +200,9 @@ extension UnicodeScalar {
     fileprivate var isWideTerminalScalar: Bool {
         switch value {
         case 0x1100...0x115F, 0x2329...0x232A,
-            0x2E80...0x2FFF, // CJK Radicals, Kangxi Radicals, Ideographic Description
-            0x3000...0x303E, // CJK Symbols and Punctuation (excluding 303F)
-            0x3040...0x9FFF, // Hiragana, Katakana, Bopomofo, CJK Unified Ideographs
+            0x2E80...0x2FFF,  // CJK Radicals, Kangxi Radicals, Ideographic Description
+            0x3000...0x303E,  // CJK Symbols and Punctuation (excluding 303F)
+            0x3040...0x9FFF,  // Hiragana, Katakana, Bopomofo, CJK Unified Ideographs
             0xAC00...0xD7A3, 0xF900...0xFAFF, 0xFE10...0xFE19,
             0xFE30...0xFE6F, 0xFF00...0xFF60, 0xFFE0...0xFFE6,
             0x20000...0x3FFFD,

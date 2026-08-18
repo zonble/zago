@@ -1,5 +1,5 @@
-import Foundation
 import ANSIStyle
+import Foundation
 import Testing
 
 @testable import Editor
@@ -669,7 +669,7 @@ import Testing
     editor.processKey(.ctrl("x"))
     #expect(editor.promptInputText == "")
     #expect(editor.clipboardText == "hello world")
-    #expect(editor.isRunning == true) // shouldn't exit on ^X in modern preset!
+    #expect(editor.isRunning == true)  // shouldn't exit on ^X in modern preset!
 
     // ^V pastes
     editor.processKey(.ctrl("v"))

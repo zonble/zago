@@ -456,7 +456,8 @@ struct EnglishStrings {
         "status.logo_debug_not_paused": "[LOGO Debug] Execution is not paused",
         "status.logo_debug_breakpoint_set": "[LOGO Debug] Breakpoint set at line %d",
         "status.logo_debug_breakpoint_cleared": "[LOGO Debug] Breakpoint cleared at line %d",
-        "status.logo_debug_usage": "[LOGO Debug] Usage: :logo break | breaks | eval [expression] | debug | continue | step | abort",
+        "status.logo_debug_usage":
+            "[LOGO Debug] Usage: :logo break | breaks | eval [expression] | debug | continue | step | abort",
         "status.logo_debug_result": "[LOGO Debug] %@",
         "debug.logo_title": "LOGO Debugger",
         "debug.paused_at": "Paused at %@",
@@ -904,11 +905,13 @@ struct EnglishStrings {
         "ai.proposal.no_pending_accept": "[AI Proposal] No pending proposal to accept",
         "ai.proposal.no_pending_reject": "[AI Proposal] No pending proposal to reject",
         "ai.proposal.accepted": "[AI Proposal] Accepted changes from %@ (^Z to Undo)",
-        "ai.proposal.accepted_table_exited": "[AI Proposal] Accepted changes (Table Mode exited due to table grid structure changes)",
+        "ai.proposal.accepted_table_exited":
+            "[AI Proposal] Accepted changes (Table Mode exited due to table grid structure changes)",
         "ai.proposal.rejected": "[AI Proposal] Rejected proposal from %@",
         "ai.proposal.queue_empty": "[AI Proposal] Queue is empty",
         "ai.proposal.preview_item": "[AI Proposal] (%d/%d) '%@'",
-        "ai.proposal.mock_generated": "🤖 [Mock AI Proposal] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
+        "ai.proposal.mock_generated":
+            "🤖 [Mock AI Proposal] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
         "ai.proposal.received": "🤖 [AI Proposal from %@] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
         "ai.proposal.queue_indicator": "[AI Queue %d/%d]",
 

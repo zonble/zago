@@ -22,7 +22,7 @@ extension Editor {
         guard
             let snapshot = buffer.performUndo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
-        )
+            )
         else {
             reportOperationResult(.noOp(message: l10n["status.already_oldest"]))
             return
@@ -43,7 +43,7 @@ extension Editor {
         guard
             let snapshot = buffer.performRedo(
                 canvasVisualColumn: isCanvasModeActive ? canvasVisualColumn : nil
-        )
+            )
         else {
             reportOperationResult(.noOp(message: l10n["status.already_newest"]))
             return

@@ -463,11 +463,12 @@ import TextMetrics
     let heavyEditor = Editor()
     let heavyEngine = LogoEngine(delegate: heavyEditor)
     heavyEngine.execute("TABLE BORDER heavy TABLE 1 1 3")
-    #expect(heavyEditor.buffer.lines == [
-        "┏━━━┓",
-        "┃   ┃",
-        "┗━━━┛",
-    ])
+    #expect(
+        heavyEditor.buffer.lines == [
+            "┏━━━┓",
+            "┃   ┃",
+            "┗━━━┛",
+        ])
 }
 
 @Test func testLogoEngineTemplatePrimitives() throws {
@@ -685,7 +686,8 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     mockDelegate.charResponse = nil
 
     // Should report error and stop execution even inside a loop
-    logoEngine.execute("MAKE \"count 0\nWHILE [TRUE] [\n  MAKE \"count :count + 1\n  MAKE \"input READWORD \"Prompt:\n]")
+    logoEngine.execute(
+        "MAKE \"count 0\nWHILE [TRUE] [\n  MAKE \"count :count + 1\n  MAKE \"input READWORD \"Prompt:\n]")
     #expect(logoEngine.hasUncaughtError == true)
     #expect(logoEngine.lastError?.message.contains("Stopped by user") == true)
     #expect(logoEngine.variables["count"] == "1")

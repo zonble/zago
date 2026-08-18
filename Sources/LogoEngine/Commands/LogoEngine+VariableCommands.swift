@@ -131,7 +131,8 @@ extension LogoEngine {
                         var tailItems: [LogoValue] = []
                         switch newTailParsed {
                         case .list(let t), .array(let t): tailItems = t
-                        case .measurement(let v, let u, _): tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                        case .measurement(let v, let u, _):
+                            tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.list([head] + tailItems).description
@@ -140,7 +141,8 @@ extension LogoEngine {
                         var tailItems: [LogoValue] = []
                         switch newTailParsed {
                         case .list(let t), .array(let t): tailItems = t
-                        case .measurement(let v, let u, _): tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                        case .measurement(let v, let u, _):
+                            tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.array([head] + tailItems).description
@@ -148,10 +150,12 @@ extension LogoEngine {
                         var tailItems: [LogoValue] = []
                         switch newTailParsed {
                         case .list(let t), .array(let t): tailItems = t
-                        case .measurement(let mv, let mu, _): tailItems = [.string(LogoMeasurementConverter.formatResult(mv)), .string(mu)]
+                        case .measurement(let mv, let mu, _):
+                            tailItems = [.string(LogoMeasurementConverter.formatResult(mv)), .string(mu)]
                         case .string(let s): tailItems = [.string(s)]
                         }
-                        variables[varName] = LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))] + tailItems).description
+                        variables[varName] =
+                            LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))] + tailItems).description
                     case .string(let s):
                         let head = s.prefix(1)
                         variables[varName] = String(head) + newVal
@@ -243,7 +247,10 @@ extension LogoEngine {
                     items.insert(LogoValue.parse(itemVal), at: 0)
                     variables[varName] = LogoValue.array(items).description
                 case .measurement(let v, let u, _):
-                    variables[varName] = LogoValue.list([LogoValue.parse(itemVal), .string(LogoMeasurementConverter.formatResult(v)), .string(u)]).description
+                    variables[varName] =
+                        LogoValue.list([
+                            LogoValue.parse(itemVal), .string(LogoMeasurementConverter.formatResult(v)), .string(u),
+                        ]).description
                 case .string(let s):
                     variables[varName] = itemVal + s
                 }
@@ -267,7 +274,10 @@ extension LogoEngine {
                     items.append(LogoValue.parse(itemVal))
                     variables[varName] = LogoValue.array(items).description
                 case .measurement(let v, let u, _):
-                    variables[varName] = LogoValue.list([.string(LogoMeasurementConverter.formatResult(v)), .string(u), LogoValue.parse(itemVal)]).description
+                    variables[varName] =
+                        LogoValue.list([
+                            .string(LogoMeasurementConverter.formatResult(v)), .string(u), LogoValue.parse(itemVal),
+                        ]).description
                 case .string(let s):
                     variables[varName] = s + itemVal
                 }

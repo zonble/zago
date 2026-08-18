@@ -105,11 +105,11 @@ struct WindowsZagoIPCSessionLocator: ZagoIPCSessionLocating {
                 let resourceValues = try? tokenURL.resourceValues(forKeys: [.contentModificationDateKey])
                 let instanceId = tokenURL.deletingPathExtension().lastPathComponent
                 return (
-                        ZagoIPCSession(
-                            instanceId: instanceId,
-                            endpointPath: #"\\.\pipe\\#(instanceId)"#,
-                            tokenPath: tokenURL.path
-                        ),
+                    ZagoIPCSession(
+                        instanceId: instanceId,
+                        endpointPath: #"\\.\pipe\\#(instanceId)"#,
+                        tokenPath: tokenURL.path
+                    ),
                     resourceValues?.contentModificationDate ?? .distantPast
                 )
             }

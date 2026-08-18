@@ -117,13 +117,17 @@ public struct TextBoxRenderer: Sendable {
     ) -> String {
         switch mode {
         case .insert:
-            return mergeInsertedRow(existingLine: existingLine, startCol: startCol, row: row, isTop: isTop, isBottom: isBottom)
+            return mergeInsertedRow(
+                existingLine: existingLine, startCol: startCol, row: row, isTop: isTop, isBottom: isBottom)
         case .overlay:
-            return mergeOverlayRow(existingLine: existingLine, startCol: startCol, row: row, isTop: isTop, isBottom: isBottom)
+            return mergeOverlayRow(
+                existingLine: existingLine, startCol: startCol, row: row, isTop: isTop, isBottom: isBottom)
         }
     }
 
-    private func mergeInsertedRow(existingLine: String, startCol: Int, row: String, isTop: Bool, isBottom: Bool) -> String {
+    private func mergeInsertedRow(existingLine: String, startCol: Int, row: String, isTop: Bool, isBottom: Bool)
+        -> String
+    {
         var prefix = ""
         var suffix = ""
         var firstOverlap: Character?
@@ -145,13 +149,17 @@ public struct TextBoxRenderer: Sendable {
             prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
         }
 
-        return prefix + mergeRenderedRow(
-            row: row, isTop: isTop, isBottom: isBottom, existing: { position in
-                position == 0 ? firstOverlap : nil
-            }) + suffix
+        return prefix
+            + mergeRenderedRow(
+                row: row, isTop: isTop, isBottom: isBottom,
+                existing: { position in
+                    position == 0 ? firstOverlap : nil
+                }) + suffix
     }
 
-    private func mergeOverlayRow(existingLine: String, startCol: Int, row: String, isTop: Bool, isBottom: Bool) -> String {
+    private func mergeOverlayRow(existingLine: String, startCol: Int, row: String, isTop: Bool, isBottom: Bool)
+        -> String
+    {
         var prefix = ""
         var suffix = ""
         var existingRegion: [Character] = []
@@ -174,15 +182,17 @@ public struct TextBoxRenderer: Sendable {
             prefix += String(repeating: " ", count: startCol - prefix.displayWidth)
         }
 
-        return prefix + mergeRenderedRow(
-            row: row, isTop: isTop, isBottom: isBottom, existing: { position in
-                var width = 0
-                for character in existingRegion {
-                    if width == position { return character }
-                    width += character.displayWidth
-                }
-                return nil
-            }) + suffix
+        return prefix
+            + mergeRenderedRow(
+                row: row, isTop: isTop, isBottom: isBottom,
+                existing: { position in
+                    var width = 0
+                    for character in existingRegion {
+                        if width == position { return character }
+                        width += character.displayWidth
+                    }
+                    return nil
+                }) + suffix
     }
 
     private func mergeRenderedRow(
@@ -197,20 +207,29 @@ public struct TextBoxRenderer: Sendable {
             let isLeft = position == 0
             let isRight = position + character.displayWidth == row.displayWidth
             let mask: UInt8
-            if isTop && isLeft { mask = 6 }
-            else if isTop && isRight { mask = 12 }
-            else if isBottom && isLeft { mask = 3 }
-            else if isBottom && isRight { mask = 9 }
-            else if isTop || isBottom { mask = 10 }
-            else if isLeft || isRight { mask = 5 }
-            else { mask = 0 }
+            if isTop && isLeft {
+                mask = 6
+            } else if isTop && isRight {
+                mask = 12
+            } else if isBottom && isLeft {
+                mask = 3
+            } else if isBottom && isRight {
+                mask = 9
+            } else if isTop || isBottom {
+                mask = 10
+            } else if isLeft || isRight {
+                mask = 5
+            } else {
+                mask = 0
+            }
 
             if mask != 0, let existingCharacter = existing(position) {
-                result.append(fuseLineCharacter(
-                    existing: existingCharacter,
-                    defaultNewCharacter: character,
-                    addingMask: mask
-                ))
+                result.append(
+                    fuseLineCharacter(
+                        existing: existingCharacter,
+                        defaultNewCharacter: character,
+                        addingMask: mask
+                    ))
             } else {
                 result.append(character)
             }

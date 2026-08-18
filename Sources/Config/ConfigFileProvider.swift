@@ -32,7 +32,8 @@ extension ConfigFileProvider {
         if path.hasPrefix("/") {
             return path
         }
-        let base = sourcePath.map { ($0 as NSString).deletingLastPathComponent }
+        let base =
+            sourcePath.map { ($0 as NSString).deletingLastPathComponent }
             ?? currentDirectoryPath()
         return (base as NSString).appendingPathComponent(path)
     }

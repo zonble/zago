@@ -96,9 +96,10 @@ public protocol ZagoIPCServerDelegate: AnyObject {
         _ server: any ZagoIPCServer, showPreviewFor client: IPCClientIdentity, reason: String,
         affectedFiles: [AffectedFilePayload]
     ) throws -> Bool
-    func ipcServer(_ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?) throws -> (
-        success: Bool, result: String, error: String?
-    )
+    func ipcServer(_ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?)
+        throws -> (
+            success: Bool, result: String, error: String?
+        )
     func ipcServer(_ server: any ZagoIPCServer, clientDidDisconnect client: IPCClientIdentity)
 }
 

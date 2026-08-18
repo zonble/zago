@@ -95,10 +95,13 @@ class TextBuffer: SpellCheckableBuffer {
         return true
     }
 
-    func replaceContents(_ text: String, filePath: String? = nil, isModified: Bool = false, defaultLineEnding: LineEnding = .lf) {
+    func replaceContents(
+        _ text: String, filePath: String? = nil, isModified: Bool = false, defaultLineEnding: LineEnding = .lf
+    ) {
         self.lineEnding = LineEnding.detect(in: text, fallback: defaultLineEnding)
         self.hasTrailingNewline = text.hasSuffix("\r\n") || text.hasSuffix("\n") || text.hasSuffix("\r")
-        let normalized = text
+        let normalized =
+            text
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
         let fileLines = normalized.components(separatedBy: "\n")
@@ -870,7 +873,8 @@ class TextBuffer: SpellCheckableBuffer {
             let body = String(firstLine.dropFirst(listInfo.itemPrefix.count))
             let continuationLines = endLine > startLine ? Array(lines[(startLine + 1)...endLine]) : []
             let relativeCursorLine = origLineIndex - startLine
-            let relativeCursorCol = relativeCursorLine == 0
+            let relativeCursorCol =
+                relativeCursorLine == 0
                 ? max(0, origColumnIndex - listInfo.itemPrefix.count)
                 : origColumnIndex
 

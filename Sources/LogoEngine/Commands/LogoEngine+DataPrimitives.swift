@@ -45,12 +45,14 @@ extension LogoEngine {
             var items: [LogoValue] = []
             switch p1 {
             case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
-            case .measurement(let v, let u, _): items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
+            case .measurement(let v, let u, _):
+                items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
             case .string(let s): items.append(.string(s))
             }
             switch p2 {
             case .list(let listItems), .array(let listItems): items.append(contentsOf: listItems)
-            case .measurement(let v, let u, _): items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
+            case .measurement(let v, let u, _):
+                items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(v)), .string(u)])
             case .string(let s): items.append(.string(s))
             }
             return LogoValue.list(items).description
@@ -196,7 +198,8 @@ extension LogoEngine {
             return switch p {
             case .list(let items): LogoValue.list(items.reversed()).description
             case .array(let items): LogoValue.array(items.reversed()).description
-            case .measurement(let v, let u, _): LogoValue.list([.string(u), .string(LogoMeasurementConverter.formatResult(v))]).description
+            case .measurement(let v, let u, _):
+                LogoValue.list([.string(u), .string(LogoMeasurementConverter.formatResult(v))]).description
             case .string(let s): String(s.reversed())
             }
 
@@ -529,9 +532,13 @@ extension LogoEngine {
                     guard zeroIdx >= 0 && zeroIdx < items.count else { return "" }
                     currentVal = items[zeroIdx]
                 case .measurement(let v, let u, _):
-                    if zeroIdx == 0 { currentVal = .string(LogoMeasurementConverter.formatResult(v)) }
-                    else if zeroIdx == 1 { currentVal = .string(u) }
-                    else { return "" }
+                    if zeroIdx == 0 {
+                        currentVal = .string(LogoMeasurementConverter.formatResult(v))
+                    } else if zeroIdx == 1 {
+                        currentVal = .string(u)
+                    } else {
+                        return ""
+                    }
                 case .string(let s):
                     guard zeroIdx >= 0 && zeroIdx < s.count else { return "" }
                     let strIdx = s.index(s.startIndex, offsetBy: zeroIdx)

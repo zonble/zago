@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Config
 @testable import Editor
 
@@ -42,7 +43,8 @@ import Foundation
 
     @Test func testSaveBufferPreservesLineEndingAndAppendsTrailingNewlineByDefault() throws {
         let fileIO = MemoryEditorFileIOStrategy(files: ["/tmp/crlf.txt": "first\r\nsecond\r\n"])
-        let editor = Editor(dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
+        let editor = Editor(
+            dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
         editor.loadFileContent(into: editor.buffer, path: "/tmp/crlf.txt")
 
         #expect(editor.buffer.lineEnding == LineEnding.crlf)
@@ -58,7 +60,8 @@ import Foundation
 
     @Test func testNoTrailingNewlinePreservation() throws {
         let fileIO = MemoryEditorFileIOStrategy(files: ["/tmp/notrailing.txt": "first\nsecond"])
-        let editor = Editor(dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
+        let editor = Editor(
+            dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared))
         editor.loadFileContent(into: editor.buffer, path: "/tmp/notrailing.txt")
 
         #expect(editor.buffer.hasTrailingNewline == false)
@@ -82,7 +85,8 @@ import Foundation
         let options = EditorOptions(defaultLineEnding: .crlf)
         let editor = Editor(
             options: options,
-            dependencies: EditorDependencies(fileIOStrategy: TestLocalEditorFileIOStrategy.shared, terminal: TestEditorTerminal.shared)
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared, terminal: TestEditorTerminal.shared)
         )
 
         // Newly created empty buffer uses the injected platform default

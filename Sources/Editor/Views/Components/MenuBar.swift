@@ -134,23 +134,23 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
                     MenuItem(
                         titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug,
-                        isVisible: { 
+                        isVisible: {
                             if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
                                 return false
                             }
-                            return $0.isLogoUIEnabled 
+                            return $0.isLogoUIEnabled
                         }),
                     MenuItem(
                         titleKey: "menu.buffer.output", hotkeyChar: "o", commandId: .logoOutput,
-                        isVisible: { 
+                        isVisible: {
                             if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
                                 return false
                             }
-                            return $0.isLogoUIEnabled 
+                            return $0.isLogoUIEnabled
                         }),
                     MenuItem(
                         titleKey: "menu.buffer.clear_output", hotkeyChar: "c", commandId: .logoClearOutput,
-                        isVisible: { 
+                        isVisible: {
                             if $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true {
                                 return false
                             }
@@ -187,49 +187,56 @@ final class MenuBar {
                         titleKey: "menu.borders.single", hotkeyChar: "s",
                         action: { editor in
                             editor.defaultBorderStyle = .single
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.single.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.single.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .single }),
                     MenuItem(
                         titleKey: "menu.borders.heavy", hotkeyChar: "h",
                         action: { editor in
                             editor.defaultBorderStyle = .heavy
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.heavy.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.heavy.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .heavy }),
                     MenuItem(
                         titleKey: "menu.borders.double", hotkeyChar: "d",
                         action: { editor in
                             editor.defaultBorderStyle = .double
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.double.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.double.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .double }),
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
                             editor.defaultBorderStyle = .round
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.round.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.round.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .round }),
                     MenuItem(
                         titleKey: "menu.borders.double_round", hotkeyChar: "u",
                         action: { editor in
                             editor.defaultBorderStyle = .doubleRound
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .doubleRound }),
                     MenuItem(
                         titleKey: "menu.borders.ascii", hotkeyChar: "a",
                         action: { editor in
                             editor.defaultBorderStyle = .ascii
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.ascii.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.ascii.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
                     MenuItem(
                         titleKey: "menu.borders.ascii_round", hotkeyChar: "c",
                         action: { editor in
                             editor.defaultBorderStyle = .asciiRound
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue)))
+                            editor.reportOperationResult(
+                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .asciiRound }),
                     borderStyleItem(.tripleDash, titleKey: "menu.borders.triple_dash", hotkeyChar: "t"),

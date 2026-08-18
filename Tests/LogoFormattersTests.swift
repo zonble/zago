@@ -48,7 +48,7 @@ import Testing
     }
 
     @Test func testFormatNumberFinancialChineseLarge() {
-        let res = LogoFormatters.formatFinancialChinese(10050208)
+        let res = LogoFormatters.formatFinancialChinese(10_050_208)
         #expect(res.contains("壹仟") && res.contains("萬") && res.contains("零"))
     }
 
@@ -73,10 +73,12 @@ import Testing
     }
 
     @Test func testFormatNumberCurrency() {
-        let resUSD = LogoFormatters.formatNumber(1234.5, style: .currency, locale: "en_US", currencyCode: "USD", precision: 2)
+        let resUSD = LogoFormatters.formatNumber(
+            1234.5, style: .currency, locale: "en_US", currencyCode: "USD", precision: 2)
         #expect(resUSD.contains("1,234.50") || resUSD.contains("$"))
 
-        let resJPY = LogoFormatters.formatNumber(1234, style: .currency, locale: "ja_JP", currencyCode: "JPY", precision: 0)
+        let resJPY = LogoFormatters.formatNumber(
+            1234, style: .currency, locale: "ja_JP", currencyCode: "JPY", precision: 0)
         #expect(resJPY.contains("1,234") || resJPY.contains("¥"))
     }
 
@@ -103,7 +105,7 @@ import Testing
         var index = 0
         let tokens = [
             "FORMAT.NUMBER", "1234.5",
-            "[", "style", "\"currency", "curr", "\"USD", "locale", "\"en_US", "]"
+            "[", "style", "\"currency", "curr", "\"USD", "locale", "\"en_US", "]",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res.contains("1,234.50") || res.contains("$"))
@@ -111,89 +113,89 @@ import Testing
 
     // MARK: - FORMAT.LIST Tests
 
-#if !os(Linux) && !os(Windows)
-    @Test func testFormatListAndTraditionalChinese() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.LIST", "[", "蘋果", "香蕉", "芭樂", "]", "\"and", "\"zh_TW"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res.contains("蘋果") && res.contains("香蕉") && res.contains("芭樂"))
-    }
+    #if !os(Linux) && !os(Windows)
+        @Test func testFormatListAndTraditionalChinese() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.LIST", "[", "蘋果", "香蕉", "芭樂", "]", "\"and", "\"zh_TW"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res.contains("蘋果") && res.contains("香蕉") && res.contains("芭樂"))
+        }
 
-    @Test func testFormatListAndEnglish() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.LIST", "[", "Alice", "Bob", "Charlie", "]", "\"and", "\"en_US"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res.contains("Alice") && res.contains("Bob") && res.contains("Charlie"))
-        #expect(res.contains("and"))
-    }
+        @Test func testFormatListAndEnglish() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.LIST", "[", "Alice", "Bob", "Charlie", "]", "\"and", "\"en_US"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res.contains("Alice") && res.contains("Bob") && res.contains("Charlie"))
+            #expect(res.contains("and"))
+        }
 
-    @Test func testFormatListOrTraditionalChinese() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.LIST", "[", "蘋果", "香蕉", "芭樂", "]", "\"or", "\"zh_TW"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res.contains("或"))
-    }
+        @Test func testFormatListOrTraditionalChinese() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.LIST", "[", "蘋果", "香蕉", "芭樂", "]", "\"or", "\"zh_TW"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res.contains("或"))
+        }
 
-    @Test func testFormatListOrEnglish() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.LIST", "[", "Alice", "Bob", "Charlie", "]", "\"or", "\"en_US"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res.contains("or"))
-    }
+        @Test func testFormatListOrEnglish() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.LIST", "[", "Alice", "Bob", "Charlie", "]", "\"or", "\"en_US"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res.contains("or"))
+        }
 
-    @Test func testFormatListUnitNarrow() {
-        let res = LogoFormatters.formatList(["A", "B", "C"], type: .unit, locale: "zh_TW")
-        #expect(res == "A、B、C")
+        @Test func testFormatListUnitNarrow() {
+            let res = LogoFormatters.formatList(["A", "B", "C"], type: .unit, locale: "zh_TW")
+            #expect(res == "A、B、C")
 
-        let resEn = LogoFormatters.formatList(["A", "B", "C"], type: .unit, locale: "en_US")
-        #expect(resEn == "A, B, C")
-    }
+            let resEn = LogoFormatters.formatList(["A", "B", "C"], type: .unit, locale: "en_US")
+            #expect(resEn == "A, B, C")
+        }
 
-    @Test func testFormatListEdgeCases() {
-        #expect(LogoFormatters.formatList([], type: .and) == "")
-        #expect(LogoFormatters.formatList(["Solo"], type: .and) == "Solo")
-        #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "zh_TW") == "A或B")
-        #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "en_US") == "A or B")
-    }
+        @Test func testFormatListEdgeCases() {
+            #expect(LogoFormatters.formatList([], type: .and) == "")
+            #expect(LogoFormatters.formatList(["Solo"], type: .and) == "Solo")
+            #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "zh_TW") == "A或B")
+            #expect(LogoFormatters.formatList(["A", "B"], type: .or, locale: "en_US") == "A or B")
+        }
 
     #endif
 
     // MARK: - FORMAT.RELATIVETIME Tests
 
-#if !os(Linux) && !os(Windows)
-    @Test func testFormatRelativeTimeYesterdayChinese() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.RELATIVETIME", "-1", "\"day", "\"zh_TW"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res == "昨天" || res.contains("天前") || res.contains("1天前"))
-    }
+    #if !os(Linux) && !os(Windows)
+        @Test func testFormatRelativeTimeYesterdayChinese() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.RELATIVETIME", "-1", "\"day", "\"zh_TW"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res == "昨天" || res.contains("天前") || res.contains("1天前"))
+        }
 
-    @Test func testFormatRelativeTimeDaysAgoEnglish() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.RELATIVETIME", "-3", "\"days", "\"en_US"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res == "3 days ago")
-    }
+        @Test func testFormatRelativeTimeDaysAgoEnglish() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.RELATIVETIME", "-3", "\"days", "\"en_US"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res == "3 days ago")
+        }
 
-    @Test func testFormatRelativeTimeFutureHoursEnglish() {
-        let engine = LogoEngine()
-        var index = 0
-        let tokens = ["FORMAT.RELATIVETIME", "2", "\"hours", "\"en_US"]
-        let res = engine.evaluateExpression(tokens, index: &index)
-        #expect(res == "in 2 hours")
-    }
+        @Test func testFormatRelativeTimeFutureHoursEnglish() {
+            let engine = LogoEngine()
+            var index = 0
+            let tokens = ["FORMAT.RELATIVETIME", "2", "\"hours", "\"en_US"]
+            let res = engine.evaluateExpression(tokens, index: &index)
+            #expect(res == "in 2 hours")
+        }
 
-    @Test func testFormatRelativeTimeTargetDate() {
-        let target = Date().addingTimeInterval(-86400 * 2) // 2 days ago
-        let res = LogoFormatters.formatRelativeDate(target: target, locale: "en_US")
-        #expect(res.contains("2 days ago") || res.contains("days ago"))
-    }
+        @Test func testFormatRelativeTimeTargetDate() {
+            let target = Date().addingTimeInterval(-86400 * 2)  // 2 days ago
+            let res = LogoFormatters.formatRelativeDate(target: target, locale: "en_US")
+            #expect(res.contains("2 days ago") || res.contains("days ago"))
+        }
 
     #endif
 
@@ -213,12 +215,12 @@ import Testing
     }
 
     @Test func testFormatBytesExact() {
-        let res = LogoFormatters.formatBytes(1048576, style: .bytes, locale: "en_US")
+        let res = LogoFormatters.formatBytes(1_048_576, style: .bytes, locale: "en_US")
         #expect(res.contains("1,048,576 bytes"))
     }
 
     @Test func testFormatBytesMemory() {
-        let res = LogoFormatters.formatBytes(1048576, style: .memory)
+        let res = LogoFormatters.formatBytes(1_048_576, style: .memory)
         #expect(res.contains("MB") || res.contains("1 MB"))
     }
 
@@ -231,12 +233,12 @@ import Testing
         let resNum = engine.evaluateExpression(tokensNum, index: &index)
         #expect(resNum == "MMXXVI")
 
-#if !os(Linux) && !os(Windows)
-        index = 0
-        let tokensList = ["(", "FORMAT.LIST", "[", "One", "Two", "]", "\"or", "\"en_US", ")"]
-        let resList = engine.evaluateExpression(tokensList, index: &index)
-        #expect(resList == "One or Two")
-#endif
+        #if !os(Linux) && !os(Windows)
+            index = 0
+            let tokensList = ["(", "FORMAT.LIST", "[", "One", "Two", "]", "\"or", "\"en_US", ")"]
+            let resList = engine.evaluateExpression(tokensList, index: &index)
+            #expect(resList == "One or Two")
+        #endif
 
         index = 0
         let tokensBytes = ["(", "FORMAT.BYTES", "1048576", "\"bytes", "\"en_US", ")"]
@@ -277,12 +279,13 @@ import Testing
         #expect(docRes == "將阿拉伯數字轉為繁體中文公文大寫")
 
         // Multi-line body docstring
-        engine.execute("""
-        TO 雙倍 :n
-          "計算數值的雙倍乘積"
-          :n * 2
-        END
-        """)
+        engine.execute(
+            """
+            TO 雙倍 :n
+              "計算數值的雙倍乘積"
+              :n * 2
+            END
+            """)
 
         #expect(engine.customProcedures["雙倍"]?.docstring == "計算數值的雙倍乘積")
 
@@ -334,17 +337,17 @@ import Testing
         let bytesDict = eval("FORMAT.BYTES 1048576 [locale \"zh_TW style \"bytes]")
         #expect(bytesDict.contains("1,048,576 bytes") || bytesDict.contains("1048576"))
 
-#if !os(Linux) && !os(Windows)
-        // 3. FORMAT.LIST
-        let listDirectLocale = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW")
-        #expect(listDirectLocale.contains("蘋果") && listDirectLocale.contains("香蕉"))
+        #if !os(Linux) && !os(Windows)
+            // 3. FORMAT.LIST
+            let listDirectLocale = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW")
+            #expect(listDirectLocale.contains("蘋果") && listDirectLocale.contains("香蕉"))
 
-        let listReversedOr = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW \"or")
-        #expect(listReversedOr.contains("或") || listReversedOr.contains("or"))
+            let listReversedOr = eval("FORMAT.LIST [蘋果 香蕉 橘子] \"zh_TW \"or")
+            #expect(listReversedOr.contains("或") || listReversedOr.contains("or"))
 
-        let listDict = eval("FORMAT.LIST [蘋果 香蕉] [type \"or locale \"zh_TW]")
-        #expect(listDict.contains("或") || listDict.contains("or"))
-#endif
+            let listDict = eval("FORMAT.LIST [蘋果 香蕉] [type \"or locale \"zh_TW]")
+            #expect(listDict.contains("或") || listDict.contains("or"))
+        #endif
 
         // 4. FORMAT.DATE
         let dateDirectLocale = eval("FORMAT.DATE \"2026-12-31 \"zh_TW")
@@ -355,26 +358,28 @@ import Testing
 
         // 5. FORMAT.NAME
         #if !os(Linux) && !os(Windows)
-        let nameWestern = eval("FORMAT.NAME \"Steve \"Jobs")
-        #expect(nameWestern.contains("Steve") && nameWestern.contains("Jobs"))
+            let nameWestern = eval("FORMAT.NAME \"Steve \"Jobs")
+            #expect(nameWestern.contains("Steve") && nameWestern.contains("Jobs"))
 
-        let nameMiddlePositional = eval("FORMAT.NAME \"Arthur \"Conan \"Doyle \"long")
-        #expect(nameMiddlePositional.contains("Arthur") && nameMiddlePositional.contains("Conan") && nameMiddlePositional.contains("Doyle"))
+            let nameMiddlePositional = eval("FORMAT.NAME \"Arthur \"Conan \"Doyle \"long")
+            #expect(
+                nameMiddlePositional.contains("Arthur") && nameMiddlePositional.contains("Conan")
+                    && nameMiddlePositional.contains("Doyle"))
 
-        let nameMiddleDict = eval("FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short")
-        #expect(nameMiddleDict == "Arthur" || nameMiddleDict == "Doyle" || nameMiddleDict == "Arthur Doyle")
+            let nameMiddleDict = eval("FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short")
+            #expect(nameMiddleDict == "Arthur" || nameMiddleDict == "Doyle" || nameMiddleDict == "Arthur Doyle")
 
-        let nameWesternAbbr = eval("FORMAT.NAME \"Steve \"Jobs \"abbreviated")
-        #expect(nameWesternAbbr == "SJ" || nameWesternAbbr.contains("Jobs") || nameWesternAbbr.contains("S"))
+            let nameWesternAbbr = eval("FORMAT.NAME \"Steve \"Jobs \"abbreviated")
+            #expect(nameWesternAbbr == "SJ" || nameWesternAbbr.contains("Jobs") || nameWesternAbbr.contains("S"))
 
-        let nameDict = eval("FORMAT.NAME [given \"Steve family \"Jobs prefix \"Dr.\"] \"long")
-        #expect(nameDict.contains("Jobs") && nameDict.contains("Steve"))
+            let nameDict = eval("FORMAT.NAME [given \"Steve family \"Jobs prefix \"Dr.\"] \"long")
+            #expect(nameDict.contains("Jobs") && nameDict.contains("Steve"))
 
-        let nameChinese = eval("FORMAT.NAME \"大明 \"王 \"zh_TW")
-        #expect(nameChinese.contains("王") && nameChinese.contains("大明"))
+            let nameChinese = eval("FORMAT.NAME \"大明 \"王 \"zh_TW")
+            #expect(nameChinese.contains("王") && nameChinese.contains("大明"))
 
-        let nameChineseLong = eval("FORMAT.NAME [given \"大明 family \"王] \"long \"zh_TW")
-        #expect(nameChineseLong.contains("王") && nameChineseLong.contains("大明"))
+            let nameChineseLong = eval("FORMAT.NAME [given \"大明 family \"王] \"long \"zh_TW")
+            #expect(nameChineseLong.contains("王") && nameChineseLong.contains("大明"))
         #endif
     }
 }

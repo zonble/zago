@@ -57,13 +57,6 @@ import TextMetrics
     #expect(coordinator.activeBuffer.id == replacement.id)
 }
 
-
-
-
-
-
-
-
 @Test func testEditorUndoStack() throws {
     let editor = Editor()
     #expect(editor.buffer.lines[0] == "")
@@ -101,7 +94,6 @@ import TextMetrics
     editor.processKey(.ctrlShift("z"))
     #expect(editor.buffer.lines[0] == "ac")
 }
-
 
 @Test func testSwitchingBufferPreservesPerBufferUndoHistory() throws {
     let editor = Editor()
@@ -470,13 +462,6 @@ import TextMetrics
     #expect(editor.buffer.columnIndex == 25)
 }
 
-
-
-
-
-
-
-
 @Test func testTextModeGotoDoesNotAutoExtendBuffer() throws {
     let editor = Editor()
     editor.buffer.lines = ["one", "two"]
@@ -487,10 +472,6 @@ import TextMetrics
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.buffer.columnIndex == 1)
 }
-
-
-
-
 
 @Test func testEscAndAltColonTriggersLogoPrompt() throws {
     let editor = Editor()
@@ -608,12 +589,6 @@ import TextMetrics
     #expect(editor.buffer.selectionMark == nil)
     #expect(editor.buffer.lines == ["aXdef"])
 }
-
-
-
-
-
-
 
 @Test func testCtrlBackspaceDeleteLineCommand() throws {
     let editor = Editor()
@@ -835,7 +810,6 @@ import TextMetrics
     editor.renderer.invalidateScreenCache()
     #expect(editor.renderer.isScreenCacheValid == false)
 }
-
 
 @Test func testJoinLineAndSplitLineCommands() throws {
     let editor = Editor()

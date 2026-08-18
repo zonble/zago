@@ -274,9 +274,9 @@ struct Zago: ParsableCommand {
         }
 
         #if os(Windows)
-        let platformDefaultLineEnding: LineEnding = .crlf
+            let platformDefaultLineEnding: LineEnding = .crlf
         #else
-        let platformDefaultLineEnding: LineEnding = .lf
+            let platformDefaultLineEnding: LineEnding = .lf
         #endif
 
         let baseOptions = EditorOptions(

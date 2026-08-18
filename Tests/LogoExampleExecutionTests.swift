@@ -7,7 +7,8 @@ import Testing
 @Suite struct LogoExampleExecutionTests {
     @Test func testAllExampleLogoScriptsExecutionAndExpectedOutput() throws {
         let fm = FileManager.default
-        let examplesUrl = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("examples").appendingPathComponent("logo")
+        let examplesUrl = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("examples")
+            .appendingPathComponent("logo")
         let files = try fm.contentsOfDirectory(at: examplesUrl, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "logo" }
 

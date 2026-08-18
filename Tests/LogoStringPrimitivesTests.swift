@@ -45,7 +45,11 @@ private func eval(_ script: String, engine: LogoEngine = LogoEngine()) -> String
     engine.shouldPauseBeforeToken = { $0.text.uppercased() == "TYPE" }
 
     engine.execute("TYPE \"A")
-    #expect(engine.executionState == .paused(LogoExecutionFrame(procedureName: nil, token: LogoToken(text: "TYPE", sourceRange: 0..<4), scopeDepth: 1)))
+    #expect(
+        engine.executionState
+            == .paused(
+                LogoExecutionFrame(
+                    procedureName: nil, token: LogoToken(text: "TYPE", sourceRange: 0..<4), scopeDepth: 1)))
     #expect(editor.buffer.lines == [""])
 
     engine.continueExecution()
@@ -176,7 +180,8 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
 @Test func testLogoComparisonExpressionsCanFeedLogicPrimitives() throws {
     let editor = Editor()
 
-    editor.runLogoScript("MAKE \"a \"1 MAKE \"b \"2 MAKE \"c \"3 IFELSE AND (:a = :b) (:b = :c) [ APPEND \"bad ] [ APPEND \"ok ]")
+    editor.runLogoScript(
+        "MAKE \"a \"1 MAKE \"b \"2 MAKE \"c \"3 IFELSE AND (:a = :b) (:b = :c) [ APPEND \"bad ] [ APPEND \"ok ]")
 
     #expect(editor.buffer.lines.joined(separator: "\n").contains("ok"))
 }
@@ -191,7 +196,8 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
         )
     )
 
-    editor.runLogoScript("APPEND \"before MAKE \"word READWORD \"Prompt: APPEND :word MAKE \"key READCHAR \"Key: APPEND :key")
+    editor.runLogoScript(
+        "APPEND \"before MAKE \"word READWORD \"Prompt: APPEND :word MAKE \"key READCHAR \"Key: APPEND :key")
 
     #expect(terminal.writes.contains { $0.contains("before") })
     #expect(editor.logoEngine.hasUncaughtError == false)

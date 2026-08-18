@@ -66,16 +66,11 @@ struct UndoSnapshot: Equatable, Codable {
     }
 
     static func == (lhs: UndoSnapshot, rhs: UndoSnapshot) -> Bool {
-        lhs.lines == rhs.lines &&
-        lhs.lineIndex == rhs.lineIndex &&
-        lhs.columnIndex == rhs.columnIndex &&
-        lhs.selectionMarkLine == rhs.selectionMarkLine &&
-        lhs.selectionMarkCol == rhs.selectionMarkCol &&
-        lhs.canvasVisualColumn == rhs.canvasVisualColumn &&
-        lhs.isModified == rhs.isModified &&
-        lhs.isTableModeActive == rhs.isTableModeActive &&
-        lhs.currentTableCell == rhs.currentTableCell &&
-        lhs.author == rhs.author
+        lhs.lines == rhs.lines && lhs.lineIndex == rhs.lineIndex && lhs.columnIndex == rhs.columnIndex
+            && lhs.selectionMarkLine == rhs.selectionMarkLine && lhs.selectionMarkCol == rhs.selectionMarkCol
+            && lhs.canvasVisualColumn == rhs.canvasVisualColumn && lhs.isModified == rhs.isModified
+            && lhs.isTableModeActive == rhs.isTableModeActive && lhs.currentTableCell == rhs.currentTableCell
+            && lhs.author == rhs.author
     }
 }
 

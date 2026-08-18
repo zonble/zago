@@ -126,7 +126,9 @@ extension Renderer {
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
             let label = labelPrefix + plainMenuTitleWithHotkey(parts[0], hotkeyChar: item.hotkeyChar)
             let shortcut: String
-            if let cmd = item.commandId, let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) {
+            if let cmd = item.commandId,
+                let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode)
+            {
                 shortcut = keyLabel
             } else if parts.count > 1 {
                 shortcut = parts[1]
@@ -155,7 +157,9 @@ extension Renderer {
                 labelPrefix
                 + menuTitleWithUnderlinedHotkey(parts[0], hotkeyChar: item.hotkeyChar, appendMissingHotkey: true)
             let shortcut: String
-            if let cmd = item.commandId, let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) {
+            if let cmd = item.commandId,
+                let keyLabel = editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode)
+            {
                 shortcut = keyLabel
             } else if parts.count > 1 {
                 shortcut = parts[1]

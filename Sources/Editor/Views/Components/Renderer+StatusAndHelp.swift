@@ -270,7 +270,8 @@ extension Renderer {
                 ("N", tr("help.no")), ("^C", tr("help.cancel")),
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions, .gotoLine, .spellCheck,
+        case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
+            .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
             helpItems1 = [
                 ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^U", tr("help.clear")),

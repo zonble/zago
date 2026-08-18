@@ -245,7 +245,8 @@ final class DescribeCommandDialogView {
 
         cachedLines = lines
 
-        let dialogHeight = isInputMode
+        let dialogHeight =
+            isInputMode
             ? min(maxDialogHeight, lines.count + 2)
             : min(maxDialogHeight, max(12, lines.count + 2))
 
@@ -289,7 +290,8 @@ final class DescribeCommandDialogView {
             let lineIndex = scrollOffset + r
             if lineIndex < lines.count {
                 let rawText = lines[lineIndex]
-                let lineText = rawText.displayWidth > contentWidth
+                let lineText =
+                    rawText.displayWidth > contentWidth
                     ? rawText.visualSlice(startVisualColumn: 0, width: contentWidth).text
                     : rawText
                 output += "\u{001B}[\(currentRow);\(startCol + 3)H\(lineText)\(ANSIStyle.reset)"
@@ -326,10 +328,13 @@ final class DescribeCommandDialogView {
         if let proc = editor?.logoEngine.customProcedures[symUpper] {
             var procSection: [String] = []
             procSection.append("• " + l10n["describe_command.user_procedure"].ansiStyled(style: ANSIStyle.boldYellow))
-            let paramsStr = proc.parameters.isEmpty
+            let paramsStr =
+                proc.parameters.isEmpty
                 ? l10n["describe_command.no_parameters"]
                 : proc.parameters.map { ":" + $0 }.joined(separator: " ")
-            procSection.append("    " + l10n["describe_command.syntax"] + "\(proc.name) \(paramsStr)".ansiStyled(style: ANSIStyle.bold))
+            procSection.append(
+                "    " + l10n["describe_command.syntax"] + "\(proc.name) \(paramsStr)".ansiStyled(style: ANSIStyle.bold)
+            )
             procSection.append("")
 
             procSection.append("• " + l10n["describe_command.docstring"].ansiStyled(style: ANSIStyle.boldCyan))
@@ -352,7 +357,8 @@ final class DescribeCommandDialogView {
 
         // 2. Editor Command
         if let cmd = editor?.commandRegistry.commands.first(where: {
-            $0.id.rawValue.lowercased() == symLower || $0.commandBarAliases.contains(where: { $0.lowercased() == symLower })
+            $0.id.rawValue.lowercased() == symLower
+                || $0.commandBarAliases.contains(where: { $0.lowercased() == symLower })
         }) {
             var cmdSection: [String] = []
             let catTitle = editor?.menuBar.categories.first(where: { cat in
@@ -362,7 +368,10 @@ final class DescribeCommandDialogView {
 
             let titleTemplate = l10n["describe_command.editor_command"]
             let titleStr = "• " + String(format: titleTemplate, categoryName)
-            cmdSection.append(contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map { $0.ansiStyled(style: ANSIStyle.boldYellow) })
+            cmdSection.append(
+                contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map {
+                    $0.ansiStyled(style: ANSIStyle.boldYellow)
+                })
 
             let syntaxStr = cmd.commandBarAliases.first ?? cmd.id.rawValue
             let syntaxHeader = l10n["describe_command.syntax"]
@@ -401,17 +410,22 @@ final class DescribeCommandDialogView {
         if let prim = LogoPrimitive.from(sym) {
             var primSection: [String] = []
             let meta = prim.meta
-            let sourceStr = (meta.source == .ucbLogo)
+            let sourceStr =
+                (meta.source == .ucbLogo)
                 ? l10n["describe_command.source_ucb_logo"]
                 : l10n["describe_command.source_zago"]
 
             let titleTemplate = l10n["describe_command.builtin_primitive"]
             let titleStr = "• " + String(format: titleTemplate, sourceStr)
-            primSection.append(contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map { $0.ansiStyled(style: ANSIStyle.boldYellow) })
+            primSection.append(
+                contentsOf: wrapText(titleStr, maxLineWidth: maxLineWidth, indent: "").map {
+                    $0.ansiStyled(style: ANSIStyle.boldYellow)
+                })
 
-            let paramsStr = meta.parameters?.map { param in
-                param.required ? param.name : "[\(param.name)]"
-            }.joined(separator: " ") ?? ""
+            let paramsStr =
+                meta.parameters?.map { param in
+                    param.required ? param.name : "[\(param.name)]"
+                }.joined(separator: " ") ?? ""
             let syntaxRaw = paramsStr.isEmpty ? meta.name : "\(meta.name) \(paramsStr)"
             let syntaxHeader = l10n["describe_command.syntax"]
             let subIndent = "        "
@@ -572,7 +586,8 @@ final class DescribeCommandDialogView {
         l10n: L10n,
         maxLineWidth: Int
     ) -> [String] {
-        let reqBadge = param.required
+        let reqBadge =
+            param.required
             ? l10n["describe_command.param_required"]
             : l10n["describe_command.param_optional"]
         let headerRaw = "    • \(param.name) \(reqBadge)"
@@ -582,7 +597,9 @@ final class DescribeCommandDialogView {
         for line in wrappedHeader {
             if line.contains(reqBadge) {
                 let parts = line.components(separatedBy: reqBadge)
-                let styled = parts[0] + reqBadge.ansiStyled(style: ANSIStyle.dimGray) + parts.dropFirst().joined(separator: reqBadge)
+                let styled =
+                    parts[0] + reqBadge.ansiStyled(style: ANSIStyle.dimGray)
+                    + parts.dropFirst().joined(separator: reqBadge)
                 result.append(styled)
             } else {
                 result.append(line)
@@ -590,10 +607,11 @@ final class DescribeCommandDialogView {
         }
 
         if let description = param.description, !description.isEmpty {
-            result.append(contentsOf: wrapText(
-                l10n["describe_command.parameter_description"] + description,
-                maxLineWidth: maxLineWidth,
-                indent: detailIndent))
+            result.append(
+                contentsOf: wrapText(
+                    l10n["describe_command.parameter_description"] + description,
+                    maxLineWidth: maxLineWidth,
+                    indent: detailIndent))
         }
 
         if !param.allowedValues.isEmpty {
@@ -603,13 +621,16 @@ final class DescribeCommandDialogView {
         }
 
         if let example = param.example, !example.isEmpty {
-            result.append(contentsOf: wrapText(
-                l10n["describe_command.parameter_example"] + example,
-                maxLineWidth: maxLineWidth,
-                indent: detailIndent))
+            result.append(
+                contentsOf: wrapText(
+                    l10n["describe_command.parameter_example"] + example,
+                    maxLineWidth: maxLineWidth,
+                    indent: detailIndent))
         }
 
-        return result.map { $0.displayWidth > maxLineWidth ? $0.visualSlice(startVisualColumn: 0, width: maxLineWidth).text : $0 }
+        return result.map {
+            $0.displayWidth > maxLineWidth ? $0.visualSlice(startVisualColumn: 0, width: maxLineWidth).text : $0
+        }
     }
 
     private func formatScriptLines(_ text: String, maxLineWidth: Int, maxLines: Int = 5) -> [String] {
@@ -635,7 +656,8 @@ final class DescribeCommandDialogView {
                 } else {
                     let slice = remaining.visualSlice(startVisualColumn: 0, width: maxLineWidth - 1)
                     wrapped.append(slice.text)
-                    remaining = String(remaining.dropFirst(slice.endCharacterOffset)).trimmingCharacters(in: .whitespaces)
+                    remaining = String(remaining.dropFirst(slice.endCharacterOffset)).trimmingCharacters(
+                        in: .whitespaces)
                 }
             }
         }

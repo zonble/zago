@@ -27,7 +27,9 @@ public enum LogoMeasurementConverter {
         case informationStorage
     }
 
-    public static func convert(value: Double, from fromUnitStr: String, to toUnitStr: String, kind: DimensionKind) -> Double? {
+    public static func convert(value: Double, from fromUnitStr: String, to toUnitStr: String, kind: DimensionKind)
+        -> Double?
+    {
         let fromClean = normalizeUnitKey(fromUnitStr)
         let toClean = normalizeUnitKey(toUnitStr)
 
@@ -97,15 +99,21 @@ public enum LogoMeasurementConverter {
             return Measurement(value: value, unit: from).converted(to: to).value
 
         case .electricPotentialDifference:
-            guard let from = electricPotentialDifferenceUnits[fromClean], let to = electricPotentialDifferenceUnits[toClean] else { return nil }
+            guard let from = electricPotentialDifferenceUnits[fromClean],
+                let to = electricPotentialDifferenceUnits[toClean]
+            else { return nil }
             return Measurement(value: value, unit: from).converted(to: to).value
 
         case .electricResistance:
-            guard let from = electricResistanceUnits[fromClean], let to = electricResistanceUnits[toClean] else { return nil }
+            guard let from = electricResistanceUnits[fromClean], let to = electricResistanceUnits[toClean] else {
+                return nil
+            }
             return Measurement(value: value, unit: from).converted(to: to).value
 
         case .concentrationMass:
-            guard let from = concentrationMassUnits[fromClean], let to = concentrationMassUnits[toClean] else { return nil }
+            guard let from = concentrationMassUnits[fromClean], let to = concentrationMassUnits[toClean] else {
+                return nil
+            }
             return Measurement(value: value, unit: from).converted(to: to).value
 
         case .dispersion:
@@ -117,7 +125,9 @@ public enum LogoMeasurementConverter {
             return Measurement(value: value, unit: from).converted(to: to).value
 
         case .informationStorage:
-            guard let from = informationStorageUnits[fromClean], let to = informationStorageUnits[toClean] else { return nil }
+            guard let from = informationStorageUnits[fromClean], let to = informationStorageUnits[toClean] else {
+                return nil
+            }
             return Measurement(value: value, unit: from).converted(to: to).value
         }
     }
@@ -269,7 +279,8 @@ public enum LogoMeasurementConverter {
                 formatter.unitOptions = .providedUnit
             }
 
-            let unitStyle = (resolvedStyle?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
+            let unitStyle =
+                (resolvedStyle?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))) ?? "medium"
             switch unitStyle {
             case "short", "s":
                 formatter.unitStyle = .short
@@ -359,7 +370,8 @@ public enum LogoMeasurementConverter {
         naturalScale: inout Bool
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.lowercased()
             if ["true", "false", "yes", "no"].contains(lower) {
@@ -405,8 +417,12 @@ public enum LogoMeasurementConverter {
         }
         reg(.squareMeters, ["sqm", "m2", "squaremeter", "squaremeters", "squaremetres", "sqmeter", "sqmeters"])
         reg(.squareKilometers, ["sqkm", "km2", "squarekilometer", "squarekilometers", "sqkilometer", "sqkilometers"])
-        reg(.squareCentimeters, ["sqcm", "cm2", "squarecentimeter", "squarecentimeters", "sqcentimeter", "sqcentimeters"])
-        reg(.squareMillimeters, ["sqmm", "mm2", "squaremillimeter", "squaremillimeters", "sqmillimeter", "sqmillimeters"])
+        reg(
+            .squareCentimeters,
+            ["sqcm", "cm2", "squarecentimeter", "squarecentimeters", "sqcentimeter", "sqcentimeters"])
+        reg(
+            .squareMillimeters,
+            ["sqmm", "mm2", "squaremillimeter", "squaremillimeters", "sqmillimeter", "sqmillimeters"])
         reg(.squareMicrometers, ["squm", "um2", "squaremicrometer", "squaremicrometers"])
         reg(.squareNanometers, ["sqnm", "nm2", "squarenanometer", "squarenanometers"])
         reg(.squareInches, ["sqin", "in2", "squareinch", "squareinches", "sqinch", "sqinches"])
@@ -720,7 +736,9 @@ public enum LogoMeasurementConverter {
         }
         reg(.gramsPerLiter, ["g/l", "g/L", "gramperliter", "gramsperliter"])
         reg(.milligramsPerDeciliter, ["mg/dl", "mg/dL", "milligramperdeciliter", "milligramsperdeciliter"])
-        reg(.millimolesPerLiter(withGramsPerMole: 18.0182), ["mmol/l", "mmol/L", "millimoleperliter", "millimolesperliter"])
+        reg(
+            .millimolesPerLiter(withGramsPerMole: 18.0182),
+            ["mmol/l", "mmol/L", "millimoleperliter", "millimolesperliter"])
         return m
     }()
 

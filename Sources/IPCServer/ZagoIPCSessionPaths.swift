@@ -58,12 +58,12 @@ enum ZagoIPCSessionPaths {
                     directory.appendingPathComponent(tokenName).path
                 )
             #else
-            let socketPath = directory.appendingPathComponent(socketName).path
-            guard socketPath.utf8CString.count <= unixSocketPathByteLimit else { continue }
-            return (
-                socketPath,
-                directory.appendingPathComponent(tokenName).path
-            )
+                let socketPath = directory.appendingPathComponent(socketName).path
+                guard socketPath.utf8CString.count <= unixSocketPathByteLimit else { continue }
+                return (
+                    socketPath,
+                    directory.appendingPathComponent(tokenName).path
+                )
             #endif
         }
 
@@ -74,10 +74,10 @@ enum ZagoIPCSessionPaths {
                 fallbackDirectory.appendingPathComponent(tokenName).path
             )
         #else
-        return (
-            fallbackDirectory.appendingPathComponent(socketName).path,
-            fallbackDirectory.appendingPathComponent(tokenName).path
-        )
+            return (
+                fallbackDirectory.appendingPathComponent(socketName).path,
+                fallbackDirectory.appendingPathComponent(tokenName).path
+            )
         #endif
     }
 }

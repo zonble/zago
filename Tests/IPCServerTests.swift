@@ -166,7 +166,9 @@ final class IPCServerTests: XCTestCase {
             true
         }
 
-        func ipcServer(_ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?) throws -> (
+        func ipcServer(
+            _ server: any ZagoIPCServer, executeLogoFor client: IPCClientIdentity, script: String, mode: String?
+        ) throws -> (
             success: Bool, result: String, error: String?
         ) {
             let result = editor.externalExecuteLogo(
@@ -512,7 +514,8 @@ final class IPCServerTests: XCTestCase {
         let registration = try send(
             server,
             method: "zago.client.register",
-            params: RegistrationParams(auth: "test-token", clientId: "selection-test", clientName: "Selection Test", color: nil),
+            params: RegistrationParams(
+                auth: "test-token", clientId: "selection-test", clientName: "Selection Test", color: nil),
             id: 0,
             connectionId: "conn-selection"
         )
@@ -661,70 +664,70 @@ final class IPCServerTests: XCTestCase {
                 sessionToken: "mcp-test-token"
             )
         #endif
-            ipcServer.delegate = ipcDelegate
-            ipcServer.dataSource = ipcDelegate
-            try ipcServer.start()
-            defer { ipcServer.stop() }
+        ipcServer.delegate = ipcDelegate
+        ipcServer.dataSource = ipcDelegate
+        try ipcServer.start()
+        defer { ipcServer.stop() }
 
-            let session = ZagoIPCSession(
-                instanceId: "zago-mcp-test",
-                endpointPath: ipcServer.socketPath,
-                tokenPath: ipcServer.tokenPath
-            )
-            let liveServer = ZagoMCPServer(
-                sessionLocator: FixedSessionLocator(locatedSessions: [session])
-            )
-            _ = liveServer.handleLine(initializeLine)
-            _ = liveServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
-            )
+        let session = ZagoIPCSession(
+            instanceId: "zago-mcp-test",
+            endpointPath: ipcServer.socketPath,
+            tokenPath: ipcServer.tokenPath
+        )
+        let liveServer = ZagoMCPServer(
+            sessionLocator: FixedSessionLocator(locatedSessions: [session])
+        )
+        _ = liveServer.handleLine(initializeLine)
+        _ = liveServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+        )
 
-            let selectResponse = try XCTUnwrap(
-                liveServer.handleLine(
-                    "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_select_instance\",\"arguments\":{\"instanceId\":\"zago-mcp-test\"}}}"
-                )
+        let selectResponse = try XCTUnwrap(
+            liveServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_select_instance\",\"arguments\":{\"instanceId\":\"zago-mcp-test\"}}}"
             )
-            XCTAssertTrue(selectResponse.contains("Selected zago instance"))
+        )
+        XCTAssertTrue(selectResponse.contains("Selected zago instance"))
 
-            let buffersResponse = try XCTUnwrap(
-                liveServer.handleLine(
-                    "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
-                )
+        let buffersResponse = try XCTUnwrap(
+            liveServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
             )
-            let buffersJSON = try XCTUnwrap(
-                JSONSerialization.jsonObject(with: Data(buffersResponse.utf8)) as? [String: Any]
-            )
-            let buffersResult = try XCTUnwrap(buffersJSON["result"] as? [String: Any])
-            XCTAssertNil(buffersResult["isError"])
-            let content = try XCTUnwrap(buffersResult["content"] as? [[String: Any]])
-            let text = try XCTUnwrap(content.first?["text"] as? String)
-            XCTAssertTrue(text.contains("activeBufferId"))
+        )
+        let buffersJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(buffersResponse.utf8)) as? [String: Any]
+        )
+        let buffersResult = try XCTUnwrap(buffersJSON["result"] as? [String: Any])
+        XCTAssertNil(buffersResult["isError"])
+        let content = try XCTUnwrap(buffersResult["content"] as? [[String: Any]])
+        let text = try XCTUnwrap(content.first?["text"] as? String)
+        XCTAssertTrue(text.contains("activeBufferId"))
 
-            let previewResponse = try XCTUnwrap(
-                liveServer.handleLine(
-                    "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_overlay_preview\",\"arguments\":{\"lines\":[\"hello\"]}}}"
-                )
+        let previewResponse = try XCTUnwrap(
+            liveServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_overlay_preview\",\"arguments\":{\"lines\":[\"hello\"]}}}"
             )
-            let previewJSON = try XCTUnwrap(
-                JSONSerialization.jsonObject(with: Data(previewResponse.utf8)) as? [String: Any]
-            )
-            let previewResult = try XCTUnwrap(previewJSON["result"] as? [String: Any])
-            XCTAssertNil(previewResult["isError"])
+        )
+        let previewJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(previewResponse.utf8)) as? [String: Any]
+        )
+        let previewResult = try XCTUnwrap(previewJSON["result"] as? [String: Any])
+        XCTAssertNil(previewResult["isError"])
 
-            let selectionResponse = try XCTUnwrap(
-                liveServer.handleLine(
-                    "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_selection\",\"arguments\":{}}}"
-                )
+        let selectionResponse = try XCTUnwrap(
+            liveServer.handleLine(
+                "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_selection\",\"arguments\":{}}}"
             )
-            let selectionJSON = try XCTUnwrap(
-                JSONSerialization.jsonObject(with: Data(selectionResponse.utf8)) as? [String: Any]
-            )
-            let selectionResult = try XCTUnwrap(selectionJSON["result"] as? [String: Any])
-            XCTAssertNil(selectionResult["isError"])
-            let selectionContent = try XCTUnwrap(selectionResult["content"] as? [[String: Any]])
-            let selectionText = try XCTUnwrap(selectionContent.first?["text"] as? String)
-            XCTAssertTrue(selectionText.contains("\"hasSelection\" : true"))
-            XCTAssertTrue(selectionText.contains("\"text\" : \"pha\\nbe\""))
+        )
+        let selectionJSON = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(selectionResponse.utf8)) as? [String: Any]
+        )
+        let selectionResult = try XCTUnwrap(selectionJSON["result"] as? [String: Any])
+        XCTAssertNil(selectionResult["isError"])
+        let selectionContent = try XCTUnwrap(selectionResult["content"] as? [[String: Any]])
+        let selectionText = try XCTUnwrap(selectionContent.first?["text"] as? String)
+        XCTAssertTrue(selectionText.contains("\"hasSelection\" : true"))
+        XCTAssertTrue(selectionText.contains("\"text\" : \"pha\\nbe\""))
     }
 
     func testDefaultPosixIPCServerUsesShortSocketPath() throws {

@@ -13,7 +13,9 @@ extension LogoEngine {
         lastExpressionValue = .string(value ? "true" : "false")
     }
 
-    internal func setLastExpressionMeasurement(value: Double, unit: String, dimension: LogoMeasurementConverter.DimensionKind) {
+    internal func setLastExpressionMeasurement(
+        value: Double, unit: String, dimension: LogoMeasurementConverter.DimensionKind
+    ) {
         lastExpressionValue = .measurement(value: value, unit: unit, dimension: dimension)
     }
 

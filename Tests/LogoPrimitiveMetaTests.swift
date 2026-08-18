@@ -50,7 +50,10 @@ import Testing
     }
 
     @Test func testMetadataMatchesSupportedOptionalArguments() {
-        let lineStyles = ["single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash", "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash"]
+        let lineStyles = [
+            "single", "heavy", "double", "round", "double-round", "ascii", "ascii-round", "triple-dash",
+            "heavy-triple-dash", "quadruple-dash", "heavy-quadruple-dash", "double-dash", "heavy-double-dash",
+        ]
         #expect(LogoPrimitive.line.meta.parameters?[1].allowedValues == lineStyles)
         #expect(LogoPrimitive.vline.meta.parameters?[1].allowedValues == lineStyles)
         #expect(LogoPrimitive.justify.meta.parameters == nil)
@@ -59,17 +62,26 @@ import Testing
         #expect(LogoPrimitive.formatList.meta.notes == "Not supported on Linux or Windows.")
         #expect(LogoPrimitive.formatList.meta.parameters?[0].description == "The list or array to format.")
         #expect(LogoPrimitive.formatList.meta.parameters?[0].example == "[A B C]")
-        #expect(LogoPrimitive.dateformat.meta.parameters?[0].description == "The date or date-time string to parse and format.")
+        #expect(
+            LogoPrimitive.dateformat.meta.parameters?[0].description
+                == "The date or date-time string to parse and format.")
         #expect(LogoPrimitive.dateformat.meta.parameters?[0].example == "2026-12-31")
-        #expect(LogoPrimitive.dateformat.meta.parameters?[1].allowedValues == ["short", "medium", "long", "full", "iso8601"])
+        #expect(
+            LogoPrimitive.dateformat.meta.parameters?[1].allowedValues == [
+                "short", "medium", "long", "full", "iso8601",
+            ])
         #expect(LogoPrimitive.dateformat.meta.parameters?[3].example == "Asia/Taipei")
         #expect(LogoPrimitive.dateformat.meta.parameters?[4].example == "gregorian")
         #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("roc") == true)
         #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("gregorian") == true)
         #expect(LogoPrimitive.dateformat.meta.parameters?[4].allowedValues.contains("not-a-calendar") == false)
-        #expect(LogoPrimitive.formatNumber.meta.parameters?[3].description == "The ISO 4217 currency code used by the currency style.")
+        #expect(
+            LogoPrimitive.formatNumber.meta.parameters?[3].description
+                == "The ISO 4217 currency code used by the currency style.")
         #expect(LogoPrimitive.formatNumber.meta.parameters?[3].example == "USD")
-        #expect(LogoPrimitive.formatNumber.meta.parameters?[4].description == "The exact number of fraction digits for numeric styles.")
+        #expect(
+            LogoPrimitive.formatNumber.meta.parameters?[4].description
+                == "The exact number of fraction digits for numeric styles.")
         #expect(LogoPrimitive.formatNumber.meta.parameters?[4].example == "2")
         #expect(LogoPrimitive.invoke.meta.parameters?.last?.name == "...")
         #expect(LogoPrimitive.sort.meta.parameters?.map(\.name) == ["list", "order", "template"])
@@ -79,23 +91,23 @@ import Testing
         #expect(LogoPrimitive.from("FORMAT.RELATIVETIME") == .formatRelativeTime)
     }
 
-#if os(Linux) || os(Windows)
-    @Test func testListFormatterReportsUnsupportedPlatformError() {
-        let engine = LogoEngine()
-        var index = 0
-        _ = engine.evaluateExpression(["FORMAT.LIST", "[", "A", "B", "]"], index: &index)
-        #expect(engine.lastError?.message == "[LOGO Error: FORMAT.LIST is not supported on this platform]")
-    }
-#endif
+    #if os(Linux) || os(Windows)
+        @Test func testListFormatterReportsUnsupportedPlatformError() {
+            let engine = LogoEngine()
+            var index = 0
+            _ = engine.evaluateExpression(["FORMAT.LIST", "[", "A", "B", "]"], index: &index)
+            #expect(engine.lastError?.message == "[LOGO Error: FORMAT.LIST is not supported on this platform]")
+        }
+    #endif
 
-#if os(Linux) || os(Windows)
-    @Test func testRelativeTimeReportsUnsupportedPlatformError() {
-        let engine = LogoEngine()
-        var index = 0
-        _ = engine.evaluateExpression(["FORMAT.RELATIVETIME", "-1", "\"day"], index: &index)
-        #expect(engine.lastError?.message == "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]")
-    }
-#endif
+    #if os(Linux) || os(Windows)
+        @Test func testRelativeTimeReportsUnsupportedPlatformError() {
+            let engine = LogoEngine()
+            var index = 0
+            _ = engine.evaluateExpression(["FORMAT.RELATIVETIME", "-1", "\"day"], index: &index)
+            #expect(engine.lastError?.message == "[LOGO Error: FORMAT.RELATIVETIME is not supported on this platform]")
+        }
+    #endif
 
     @Test func testReferenceMarkdownCoversAllPrimitives() throws {
         let repoRoot = URL(fileURLWithPath: #filePath)

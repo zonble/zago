@@ -38,12 +38,12 @@ public enum LineEnding: String, Sendable, CaseIterable {
 
         var prevWasCR = false
         for scalar in text.unicodeScalars {
-            if scalar.value == 0x0D { // \r
+            if scalar.value == 0x0D {  // \r
                 if prevWasCR {
                     crCount += 1
                 }
                 prevWasCR = true
-            } else if scalar.value == 0x0A { // \n
+            } else if scalar.value == 0x0A {  // \n
                 if prevWasCR {
                     crlfCount += 1
                     prevWasCR = false

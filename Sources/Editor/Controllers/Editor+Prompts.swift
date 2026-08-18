@@ -81,13 +81,15 @@ extension Editor {
             }
             self.lastSearchQuery = query
             self.promptInputText = ""
-            self.currentPromptMode = .replaceWith(searchQuery: query, completion: { [weak self] replacement in
-                guard let self = self, let replacement = replacement else {
-                    self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_search"] ?? ""))
-                    return
-                }
-                self.searchController.startInteractiveReplace(query: query, replacement: replacement)
-            })
+            self.currentPromptMode = .replaceWith(
+                searchQuery: query,
+                completion: { [weak self] replacement in
+                    guard let self = self, let replacement = replacement else {
+                        self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_search"] ?? ""))
+                        return
+                    }
+                    self.searchController.startInteractiveReplace(query: query, replacement: replacement)
+                })
         })
     }
 

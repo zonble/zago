@@ -147,31 +147,31 @@ struct LogoMeasurementTests {
 
     @Test func testMeasurementPipeliningAndDimensionSafety() throws {
         #if !os(Linux) && !os(Windows)
-        // 1. Direct Pipeline into FORMAT.MEASURE with target unit conversion
-        let resWithTarget = eval("FORMAT.MEASURE (MEASURE.ADD 1 \"kg 3 \"g) \"g \"zh_TW")
-        #expect(resWithTarget.contains("1,003") || resWithTarget.contains("1003"))
-        #expect(resWithTarget.contains("g") || resWithTarget.contains("克") || resWithTarget.contains("公克"))
+            // 1. Direct Pipeline into FORMAT.MEASURE with target unit conversion
+            let resWithTarget = eval("FORMAT.MEASURE (MEASURE.ADD 1 \"kg 3 \"g) \"g \"zh_TW")
+            #expect(resWithTarget.contains("1,003") || resWithTarget.contains("1003"))
+            #expect(resWithTarget.contains("g") || resWithTarget.contains("克") || resWithTarget.contains("公克"))
 
-        // 2. Direct Pipeline into FORMAT.MEASURE preserving default unit (kg)
-        let resDefault = eval("FORMAT.MEASURE (MEASURE.ADD 1 \"kg 3 \"g) \"zh_TW")
-        #expect(resDefault.contains("1.003"))
-        #expect(resDefault.contains("公斤") || resDefault.contains("kg"))
+            // 2. Direct Pipeline into FORMAT.MEASURE preserving default unit (kg)
+            let resDefault = eval("FORMAT.MEASURE (MEASURE.ADD 1 \"kg 3 \"g) \"zh_TW")
+            #expect(resDefault.contains("1.003"))
+            #expect(resDefault.contains("公斤") || resDefault.contains("kg"))
 
-        // 3. Unquoted unit words in nested call
-        let resUnquoted = eval("FORMAT.MEASURE (MEASURE.ADD 1 kg 3 g) \"g \"zh_TW")
-        #expect(resUnquoted.contains("1,003") || resUnquoted.contains("1003"))
-        #expect(resUnquoted.contains("g") || resUnquoted.contains("克") || resUnquoted.contains("公克"))
+            // 3. Unquoted unit words in nested call
+            let resUnquoted = eval("FORMAT.MEASURE (MEASURE.ADD 1 kg 3 g) \"g \"zh_TW")
+            #expect(resUnquoted.contains("1,003") || resUnquoted.contains("1003"))
+            #expect(resUnquoted.contains("g") || resUnquoted.contains("克") || resUnquoted.contains("公克"))
 
-        // 4. Passing incompatible unit 'km' as target conversion to mass measurement reports error
-        let invalidUnitEngine = LogoEngine()
-        let invalidUnitRes = eval("FORMAT.MEASURE (MEASURE.ADD 1 kg 100 g) km", engine: invalidUnitEngine)
-        #expect(invalidUnitRes.isEmpty)
-        #expect(invalidUnitEngine.lastError?.message.contains("invalid unit 'km'") == true)
+            // 4. Passing incompatible unit 'km' as target conversion to mass measurement reports error
+            let invalidUnitEngine = LogoEngine()
+            let invalidUnitRes = eval("FORMAT.MEASURE (MEASURE.ADD 1 kg 100 g) km", engine: invalidUnitEngine)
+            #expect(invalidUnitRes.isEmpty)
+            #expect(invalidUnitEngine.lastError?.message.contains("invalid unit 'km'") == true)
 
-        // 5. Direct nested unparenthesized format with English locale
-        let resEn = eval("FORMAT.MEASURE MEASURE.ADD 1 kg 100 g en")
-        #expect(!resEn.isEmpty)
-        #expect(resEn.contains("1.1") || resEn.contains("2.425"))
+            // 5. Direct nested unparenthesized format with English locale
+            let resEn = eval("FORMAT.MEASURE MEASURE.ADD 1 kg 100 g en")
+            #expect(!resEn.isEmpty)
+            #expect(resEn.contains("1.1") || resEn.contains("2.425"))
         #endif
     }
 
@@ -188,79 +188,84 @@ struct LogoMeasurementTests {
     }
 
     #if !os(Linux) && !os(Windows)
-    @Test func testFormatMeasureScalarValues() throws {
-        let res1 = eval("FORMAT.MEASURE 100 \"m")
-        #expect(!res1.isEmpty)
-        let res2 = eval("FORMAT.MEASURE 1500 \"m \"long \"zh_TW \"true")
-        #expect(res2.contains("公里") || res2.contains("1.5"))
+        @Test func testFormatMeasureScalarValues() throws {
+            let res1 = eval("FORMAT.MEASURE 100 \"m")
+            #expect(!res1.isEmpty)
+            let res2 = eval("FORMAT.MEASURE 1500 \"m \"long \"zh_TW \"true")
+            #expect(res2.contains("公里") || res2.contains("1.5"))
 
-        let resTemp = eval("FORMAT.MEASURE 25 \"c \"short")
-        #expect(resTemp.contains("25") && (resTemp.contains("°C") || resTemp.contains("C") || resTemp.contains("deg")))
+            let resTemp = eval("FORMAT.MEASURE 25 \"c \"short")
+            #expect(
+                resTemp.contains("25") && (resTemp.contains("°C") || resTemp.contains("C") || resTemp.contains("deg")))
 
-        let resStorage = eval("FORMAT.MEASURE 16 \"gb")
-        #expect(resStorage.contains("16") && (resStorage.contains("GB") || resStorage.contains("gb") || resStorage.contains("gigabytes")))
+            let resStorage = eval("FORMAT.MEASURE 16 \"gb")
+            #expect(
+                resStorage.contains("16")
+                    && (resStorage.contains("GB") || resStorage.contains("gb") || resStorage.contains("gigabytes")))
 
-        let resParen = eval("(FORMAT.MEASURE 100 \"kmh \"short)")
-        #expect(!resParen.isEmpty)
-    }
-
-    @Test func testFormatMeasureWithSmartLocaleDisambiguation() throws {
-        let resDirectLocale = eval("FORMAT.MEASURE 10 \"deg \"zh_TW")
-        #expect(resDirectLocale == "10°")
-
-        let resLongLocale = eval("FORMAT.MEASURE 10 \"deg \"long \"zh_TW")
-        #expect(resLongLocale == "10度")
-
-        let resReversedOrder = eval("FORMAT.MEASURE 10 \"deg \"zh_TW \"long")
-        #expect(resReversedOrder == "10度")
-
-        let resListDirect = eval("FORMAT.MEASURE 10 \"deg [\"zh_TW \"long]")
-        #expect(resListDirect == "10度")
-
-        let resListNamed = eval("FORMAT.MEASURE 10 \"deg [locale \"zh_TW style \"long]")
-        #expect(resListNamed == "10度")
-
-        let resParenthesized = eval("(FORMAT.MEASURE 10 \"deg \"zh_TW \"long)")
-        #expect(resParenthesized == "10度")
-    }
-
-    @Test func testAll22MeasurementDimensionsFormatViaUnifiedFormatMeasure() throws {
-        let commands = [
-            ("FORMAT.MEASURE 100 \"sqm \"zh_TW", "平方公尺"),
-            ("FORMAT.MEASURE 100 \"m \"zh_TW \"long", "公尺"),
-            ("FORMAT.MEASURE 2 \"l \"zh_TW \"long", "公升"),
-            ("FORMAT.MEASURE 90 \"deg \"zh_TW \"long", "度"),
-            ("FORMAT.MEASURE 500 \"g \"zh_TW \"long", "克"),
-            ("FORMAT.MEASURE 1 \"atm \"zh_TW", "atm"),
-            ("FORMAT.MEASURE 9.81 \"m/s2 \"zh_TW", "公尺/平方秒"),
-            ("FORMAT.MEASURE 2 \"hr \"zh_TW \"long", "小時"),
-            ("FORMAT.MEASURE 60 \"hz \"zh_TW", "赫茲"),
-            ("FORMAT.MEASURE 100 \"kmh \"zh_TW \"long", "公里"),
-            ("FORMAT.MEASURE 2000 \"kcal \"zh_TW \"long", "卡路里"),
-            ("FORMAT.MEASURE 100 \"kw \"zh_TW", "千瓦"),
-            ("FORMAT.MEASURE 25 \"c \"zh_TW \"long", "度"),
-            ("FORMAT.MEASURE 500 \"lx \"zh_TW", "勒克斯"),
-            ("FORMAT.MEASURE 5000 \"mah \"zh_TW", "mAh"),
-            ("FORMAT.MEASURE 2 \"amp \"zh_TW \"long", "安培"),
-            ("FORMAT.MEASURE 110 \"v \"zh_TW \"long", "伏特"),
-            ("FORMAT.MEASURE 10 \"kohm \"zh_TW", "10"),
-            ("FORMAT.MEASURE 100 \"mg/dl \"zh_TW", "g/L"),
-            ("FORMAT.MEASURE 10 \"ppm \"zh_TW", "百萬分率"),
-            ("FORMAT.MEASURE 30 \"mpg \"zh_TW", "加侖"),
-            ("FORMAT.MEASURE 16 \"gb \"zh_TW \"long", "GB"),
-        ]
-
-        for (cmd, expectedSubstring) in commands {
-            let res = eval(cmd)
-            #expect(!res.isEmpty, "Command returned empty: \(cmd)")
-            #expect(res.contains(expectedSubstring), "Command \(cmd) returned \(res), expected substring \(expectedSubstring)")
+            let resParen = eval("(FORMAT.MEASURE 100 \"kmh \"short)")
+            #expect(!resParen.isEmpty)
         }
-    }
+
+        @Test func testFormatMeasureWithSmartLocaleDisambiguation() throws {
+            let resDirectLocale = eval("FORMAT.MEASURE 10 \"deg \"zh_TW")
+            #expect(resDirectLocale == "10°")
+
+            let resLongLocale = eval("FORMAT.MEASURE 10 \"deg \"long \"zh_TW")
+            #expect(resLongLocale == "10度")
+
+            let resReversedOrder = eval("FORMAT.MEASURE 10 \"deg \"zh_TW \"long")
+            #expect(resReversedOrder == "10度")
+
+            let resListDirect = eval("FORMAT.MEASURE 10 \"deg [\"zh_TW \"long]")
+            #expect(resListDirect == "10度")
+
+            let resListNamed = eval("FORMAT.MEASURE 10 \"deg [locale \"zh_TW style \"long]")
+            #expect(resListNamed == "10度")
+
+            let resParenthesized = eval("(FORMAT.MEASURE 10 \"deg \"zh_TW \"long)")
+            #expect(resParenthesized == "10度")
+        }
+
+        @Test func testAll22MeasurementDimensionsFormatViaUnifiedFormatMeasure() throws {
+            let commands = [
+                ("FORMAT.MEASURE 100 \"sqm \"zh_TW", "平方公尺"),
+                ("FORMAT.MEASURE 100 \"m \"zh_TW \"long", "公尺"),
+                ("FORMAT.MEASURE 2 \"l \"zh_TW \"long", "公升"),
+                ("FORMAT.MEASURE 90 \"deg \"zh_TW \"long", "度"),
+                ("FORMAT.MEASURE 500 \"g \"zh_TW \"long", "克"),
+                ("FORMAT.MEASURE 1 \"atm \"zh_TW", "atm"),
+                ("FORMAT.MEASURE 9.81 \"m/s2 \"zh_TW", "公尺/平方秒"),
+                ("FORMAT.MEASURE 2 \"hr \"zh_TW \"long", "小時"),
+                ("FORMAT.MEASURE 60 \"hz \"zh_TW", "赫茲"),
+                ("FORMAT.MEASURE 100 \"kmh \"zh_TW \"long", "公里"),
+                ("FORMAT.MEASURE 2000 \"kcal \"zh_TW \"long", "卡路里"),
+                ("FORMAT.MEASURE 100 \"kw \"zh_TW", "千瓦"),
+                ("FORMAT.MEASURE 25 \"c \"zh_TW \"long", "度"),
+                ("FORMAT.MEASURE 500 \"lx \"zh_TW", "勒克斯"),
+                ("FORMAT.MEASURE 5000 \"mah \"zh_TW", "mAh"),
+                ("FORMAT.MEASURE 2 \"amp \"zh_TW \"long", "安培"),
+                ("FORMAT.MEASURE 110 \"v \"zh_TW \"long", "伏特"),
+                ("FORMAT.MEASURE 10 \"kohm \"zh_TW", "10"),
+                ("FORMAT.MEASURE 100 \"mg/dl \"zh_TW", "g/L"),
+                ("FORMAT.MEASURE 10 \"ppm \"zh_TW", "百萬分率"),
+                ("FORMAT.MEASURE 30 \"mpg \"zh_TW", "加侖"),
+                ("FORMAT.MEASURE 16 \"gb \"zh_TW \"long", "GB"),
+            ]
+
+            for (cmd, expectedSubstring) in commands {
+                let res = eval(cmd)
+                #expect(!res.isEmpty, "Command returned empty: \(cmd)")
+                #expect(
+                    res.contains(expectedSubstring),
+                    "Command \(cmd) returned \(res), expected substring \(expectedSubstring)")
+            }
+        }
     #else
-    @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
-        let engine = LogoEngine()
-        _ = eval("FORMAT.MEASURE 100 \"m", engine: engine)
-        #expect(engine.lastError?.message.contains("not supported on this platform") == true)
-    }
+        @Test func testFormatMeasurementReportsUnsupportedOnNonDarwin() throws {
+            let engine = LogoEngine()
+            _ = eval("FORMAT.MEASURE 100 \"m", engine: engine)
+            #expect(engine.lastError?.message.contains("not supported on this platform") == true)
+        }
     #endif
 }
