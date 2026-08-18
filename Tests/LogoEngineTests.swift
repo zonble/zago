@@ -13,6 +13,9 @@ import TextMetrics
     logoEngine.delegate = ed1
     logoEngine.execute("MAKE \"x 1 REPEAT 3 [ MAKE \"x :x + 1 ] TYPE :x")
     #expect(ed1.buffer.lines[0] == "4")
+
+    logoEngine.execute("if 1 + 1 = 2 [show \"hi\"]")
+    #expect(ed1.statusMessage == "hi")
 }
 
 @Test func testSection4ArithmeticPrimitives() throws {

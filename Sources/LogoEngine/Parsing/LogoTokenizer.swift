@@ -104,7 +104,7 @@ public enum LogoTokenizer {
                     flush()
                 } else {
                     index = script.index(after: index)
-                    while index < script.endIndex && !script[index].isWhitespace {
+                    while index < script.endIndex && !script[index].isWhitespace && script[index] != "[" && script[index] != "]" {
                         current.append(script[index])
                         index = script.index(after: index)
                     }
@@ -208,7 +208,7 @@ public enum LogoTokenizer {
                     (previous.isWhitespace || previous == "[" || previous == "{")
                     && !nextCharacter.isWhitespace && nextCharacter != "]" && nextCharacter != "}"
                 if startsAnotherWord && sawSpace { return false }
-                if !startsAnotherWord && sawSpace { return true }
+                if !startsAnotherWord { return true }
             }
             previous = character
             index = source.index(after: index)
