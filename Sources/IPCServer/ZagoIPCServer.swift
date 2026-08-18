@@ -328,11 +328,11 @@ extension ZagoIPCServer {
                 CreateNamedPipeW(
                     pathPointer,
                     DWORD(PIPE_ACCESS_DUPLEX),
-                    DWORD(PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT),
-                    DWORD(limits.maxConnections),
+                    DWORD(PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT),
+                    DWORD(255),
                     DWORD(limits.maxPayloadBytes),
                     DWORD(limits.maxPayloadBytes),
-                    DWORD(limits.clientIdleTimeout * 1_000),
+                    0,
                     nil
                 )
             }
@@ -343,21 +343,7 @@ extension ZagoIPCServer {
         }
 
         private func waitForClientConnection(_ pipeHandle: HANDLE) -> Bool {
-            while isListening {
-                if ConnectNamedPipe(pipeHandle, nil) || GetLastError() == ERROR_PIPE_CONNECTED {
-                    var mode = DWORD(PIPE_READMODE_BYTE | PIPE_WAIT)
-                    _ = SetNamedPipeHandleState(pipeHandle, &mode, nil, nil)
-                    return true
-                }
-
-                let error = GetLastError()
-                if error == ERROR_PIPE_LISTENING {
-                    Thread.sleep(forTimeInterval: 0.01)
-                    continue
-                }
-                return false
-            }
-            return false
+            ConnectNamedPipe(pipeHandle, nil) || GetLastError() == ERROR_PIPE_CONNECTED
         }
 
         private func handleClientConnection(pipeHandle: HANDLE, connectionId: String) {
