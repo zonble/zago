@@ -275,6 +275,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case detectPhone
     case detectDate
     case detectAddress
+    case uuid
+    case isUUID
+    case uuidTime
     case search
     case sort
     case fill
@@ -583,6 +586,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["DETECT.PHONE"], .detectPhone),
         (["DETECT.DATE"], .detectDate),
         (["DETECT.ADDRESS"], .detectAddress),
+        (["UUID", "GUID"], .uuid),
+        (["UUID?", "UUIDP", "VALID.UUID?", "VALID.UUIDP"], .isUUID),
+        (["UUID.TIME", "UUID.DATETIME"], .uuidTime),
         (["SEARCH"], .search),
     ]
 

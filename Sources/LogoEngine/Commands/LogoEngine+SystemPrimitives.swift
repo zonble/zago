@@ -65,6 +65,32 @@ extension LogoEngine {
             reader.commit(to: &index)
             return evaluateDetectPrimitive(prim, text: text)
 
+        case .uuid:
+            return evaluateUUIDPrimitive(tokens: tokens, index: &index)
+
+        case .isUUID:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let valid = LogoUUIDGenerator.isValidUUID(input)
+            setLastExpressionBoolean(valid)
+            return valid ? "true" : "false"
+
+        case .uuidTime:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            guard let date = LogoUUIDGenerator.extractV7Date(from: input) else {
+                let msg = "[LOGO Error: UUID '\(input)' is not a valid UUID v7 with extractable timestamp]"
+                reportError(LogoError(code: 1, message: msg), token: "UUID.TIME")
+                return ""
+            }
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let dateStr = formatter.string(from: date)
+            setLastExpressionString(dateStr)
+            return dateStr
+
         case .count:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let v = reader.nextExpression()
@@ -205,6 +231,18 @@ extension LogoEngine {
         let inputText = unquote(reader.nextExpression())
         reader.commit(to: &index)
         return "\(count(inputText))"
+    }
+
+    private func evaluateUUIDPrimitive(tokens: [String], index: inout Int) -> String {
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        var flavor = "v4"
+        if let arg = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+            flavor = unquote(arg)
+        }
+        reader.commit(to: &index)
+        let generated = LogoUUIDGenerator.generate(flavor: flavor)
+        setLastExpressionString(generated)
+        return generated
     }
 
     private func evaluateDateTimePrimitive(
