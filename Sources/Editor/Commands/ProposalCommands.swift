@@ -25,7 +25,12 @@ struct AcceptProposalCommand: Command {
             let targetBuffer: TextBuffer?
             if let bId = file.bufferId, let matched = editor.buffers.first(where: { $0.id == bId }) {
                 targetBuffer = matched
-            } else if let fPath = file.filePath, fPath != "active", let matched = editor.buffers.first(where: { $0.filePath == fPath || ($0.filePath != nil && NSString(string: $0.filePath!).lastPathComponent == fPath) }) {
+            } else if let fPath = file.filePath, fPath != "active",
+                let matched = editor.buffers.first(where: {
+                    $0.filePath == fPath
+                        || ($0.filePath != nil && NSString(string: $0.filePath!).lastPathComponent == fPath)
+                })
+            {
                 targetBuffer = matched
             } else {
                 targetBuffer = editor.buffer
@@ -50,9 +55,11 @@ struct AcceptProposalCommand: Command {
             if let cell = editor.currentTableCell {
                 if cell.minLine < 0 || cell.maxLine >= editor.buffer.lines.count {
                     tableBroken = true
-                } else if let newCell = detector.detectCell(in: editor.buffer.lines, line: currentLine, col: currentCol) {
-                    if newCell.minLine != cell.minLine || newCell.maxLine != cell.maxLine ||
-                       newCell.minCol != cell.minCol || newCell.maxCol != cell.maxCol {
+                } else if let newCell = detector.detectCell(in: editor.buffer.lines, line: currentLine, col: currentCol)
+                {
+                    if newCell.minLine != cell.minLine || newCell.maxLine != cell.maxLine
+                        || newCell.minCol != cell.minCol || newCell.maxCol != cell.maxCol
+                    {
                         tableBroken = true
                     }
                 } else {
@@ -185,7 +192,7 @@ struct MockAISuggestionCommand: Command {
             proposalLines = [
                 "┌──────────────────┐",
                 "│ Mock AI Proposal │",
-                "└──────────────────┘"
+                "└──────────────────┘",
             ]
             reason = "Mock AI Proposal"
         }

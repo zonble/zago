@@ -98,7 +98,8 @@ let package = Package(
         .testTarget(
             name: "zagoTests",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "IPCServer", "LogoEngine", "SpellChecker",
+                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "Git", "IPCServer", "LogoEngine",
+                "SpellChecker",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],
             path: "Tests"

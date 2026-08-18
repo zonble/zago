@@ -13,10 +13,10 @@ import Testing
     let parser = NanoRCParser()
     var languages: [LanguageSyntax] = []
     let badNanoRC = """
-    syntax "bad" "\\.bad$"
-    header "^.*"
-    color yellow "[0-9]+"
-    """
+        syntax "bad" "\\.bad$"
+        header "^.*"
+        color yellow "[0-9]+"
+        """
     parser.parseNanoRCContent(badNanoRC, into: &languages)
     #expect(languages.first?.headerRules.isEmpty == true)
 }

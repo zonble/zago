@@ -196,7 +196,8 @@ final class SearchController: KeyInputHandler {
 
             var searchStart = searchRange.lowerBound
             while searchStart < searchRange.upperBound,
-                let range = line.range(of: query, options: [.caseInsensitive], range: searchStart..<searchRange.upperBound)
+                let range = line.range(
+                    of: query, options: [.caseInsensitive], range: searchStart..<searchRange.upperBound)
             {
                 let column = line.distance(from: line.startIndex, to: range.lowerBound)
                 let length = line.distance(from: range.lowerBound, to: range.upperBound)
@@ -289,8 +290,11 @@ final class SearchController: KeyInputHandler {
         guard let editor else { return }
         editor.saveUndoSnapshot()
 
-        let candidates = editor.isRegexSearchEnabled
-            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { regexSearchCandidates(regex: $0) } ?? []
+        let candidates =
+            editor.isRegexSearchEnabled
+            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map {
+                regexSearchCandidates(regex: $0)
+            } ?? []
             : plainSearchCandidates(query: query)
 
         guard !candidates.isEmpty else {
@@ -311,8 +315,11 @@ final class SearchController: KeyInputHandler {
     ) {
         guard let editor else { return }
 
-        let candidates = editor.isRegexSearchEnabled
-            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { regexSearchCandidates(regex: $0) } ?? []
+        let candidates =
+            editor.isRegexSearchEnabled
+            ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map {
+                regexSearchCandidates(regex: $0)
+            } ?? []
             : plainSearchCandidates(query: query)
 
         guard candidateIndex < candidates.count else {
@@ -357,10 +364,17 @@ final class SearchController: KeyInputHandler {
             case .all:
                 var count = replacedCount
                 while true {
-                    let remaining = editor.isRegexSearchEnabled
-                        ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map { self.regexSearchCandidates(regex: $0) } ?? []
+                    let remaining =
+                        editor.isRegexSearchEnabled
+                        ? (try? NSRegularExpression(pattern: query, options: [.caseInsensitive])).map {
+                            self.regexSearchCandidates(regex: $0)
+                        } ?? []
                         : self.plainSearchCandidates(query: query)
-                    guard let first = remaining.first(where: { self.isAtOrAfter($0, line: candidate.line, column: 0, includeEqual: true) }) ?? remaining.first else {
+                    guard
+                        let first = remaining.first(where: {
+                            self.isAtOrAfter($0, line: candidate.line, column: 0, includeEqual: true)
+                        }) ?? remaining.first
+                    else {
                         break
                     }
                     self.replaceCandidate(first, with: replacement)

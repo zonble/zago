@@ -10,9 +10,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.sum",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by SUM.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by SUM.", example: "1"),
-                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by SUM.", example: "..."),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by SUM.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by SUM.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "...", required: false, description: "The ... argument. Used by SUM.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "SUM 10 20", output: "30")]
             )
@@ -24,9 +27,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.min",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by MIN.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by MIN.", example: "1"),
-                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by MIN.", example: "..."),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by MIN.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by MIN.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "...", required: false, description: "The ... argument. Used by MIN.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "MIN 5 2 9", output: "2")]
             )
@@ -38,9 +44,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.max",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by MAX.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by MAX.", example: "1"),
-                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by MAX.", example: "..."),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by MAX.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by MAX.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "...", required: false, description: "The ... argument. Used by MAX.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "MAX 5 2 9", output: "9")]
             )
@@ -52,8 +61,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.difference",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by DIFFERENCE.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by DIFFERENCE.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by DIFFERENCE.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by DIFFERENCE.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "DIFFERENCE 10 3", output: "7")]
             )
@@ -65,9 +76,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.product",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by PRODUCT.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by PRODUCT.", example: "1"),
-                    LogoPrimitiveParameter(name: "...", required: false, description: "The ... argument. Used by PRODUCT.", example: "..."),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by PRODUCT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by PRODUCT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "...", required: false, description: "The ... argument. Used by PRODUCT.", example: "..."),
                 ],
                 examples: [LogoPrimitiveExample(input: "PRODUCT 5 6", output: "30")]
             )
@@ -79,8 +93,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.quotient",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by QUOTIENT.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by QUOTIENT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by QUOTIENT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by QUOTIENT.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "QUOTIENT 10 2", output: "5")]
             )
@@ -92,8 +108,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.power",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "base", required: true, description: "The base argument. Used by POWER.", example: "value"),
-                    LogoPrimitiveParameter(name: "exponent", required: true, description: "The exponent argument. Used by POWER.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "base", required: true, description: "The base argument. Used by POWER.", example: "value"
+                    ),
+                    LogoPrimitiveParameter(
+                        name: "exponent", required: true, description: "The exponent argument. Used by POWER.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "POWER 2 8", output: "256")]
             )
@@ -105,8 +125,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.remainder",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by REMAINDER.", example: "1"),
-                    LogoPrimitiveParameter(name: "div", required: true, description: "The div argument. Used by REMAINDER.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by REMAINDER.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "div", required: true, description: "The div argument. Used by REMAINDER.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "REMAINDER 10 3", output: "1")]
             )
@@ -118,8 +141,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.modulo",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by MODULO.", example: "1"),
-                    LogoPrimitiveParameter(name: "div", required: true, description: "The div argument. Used by MODULO.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by MODULO.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "div", required: true, description: "The div argument. Used by MODULO.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MODULO -1 10", output: "9")]
             )
@@ -130,7 +155,10 @@ extension LogoPrimitive {
                 description: "Returns arithmetic negation of number (-num).",
                 localizedDescriptionKey: "logo.doc.minus",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by MINUS.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by MINUS.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "MINUS 42", output: "-42")]
             )
 
@@ -140,7 +168,10 @@ extension LogoPrimitive {
                 description: "Returns absolute value of number.",
                 localizedDescriptionKey: "logo.doc.abs",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by ABS.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by ABS.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "ABS -5", output: "5")]
             )
 
@@ -150,7 +181,10 @@ extension LogoPrimitive {
                 description: "Truncates floating-point number to integer.",
                 localizedDescriptionKey: "logo.doc.int",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by INT.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by INT.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "INT 3.8", output: "3")]
             )
 
@@ -160,7 +194,10 @@ extension LogoPrimitive {
                 description: "Rounds number to nearest integer.",
                 localizedDescriptionKey: "logo.doc.round",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by ROUND.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by ROUND.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "ROUND 3.6", output: "4")]
             )
 
@@ -170,7 +207,10 @@ extension LogoPrimitive {
                 description: "Calculates square root of non-negative number.",
                 localizedDescriptionKey: "logo.doc.sqrt",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by SQRT.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by SQRT.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "SQRT 144", output: "12")]
             )
 
@@ -180,7 +220,10 @@ extension LogoPrimitive {
                 description: "Calculates exponential function (e ^ num).",
                 localizedDescriptionKey: "logo.doc.exp",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by EXP.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by EXP.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "EXP 1", output: "2.718281828459045")]
             )
 
@@ -190,7 +233,10 @@ extension LogoPrimitive {
                 description: "Calculates base-10 logarithm of number.",
                 localizedDescriptionKey: "logo.doc.log10",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by LOG10.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by LOG10.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "LOG10 100", output: "2")]
             )
 
@@ -200,7 +246,10 @@ extension LogoPrimitive {
                 description: "Calculates natural logarithm (base e) of number.",
                 localizedDescriptionKey: "logo.doc.ln",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by LN.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by LN.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "LN 2.718281828459045", output: "1")]
             )
 
@@ -210,7 +259,10 @@ extension LogoPrimitive {
                 description: "Calculates inverse tangent in degrees.",
                 localizedDescriptionKey: "logo.doc.arctan",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by ARCTAN.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by ARCTAN.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "ARCTAN 1", output: "45")]
             )
 
@@ -220,7 +272,11 @@ extension LogoPrimitive {
                 description: "Calculates sine of angle in degrees.",
                 localizedDescriptionKey: "logo.doc.sin",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "degrees", required: true, description: "The degrees argument. Used by SIN.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "degrees", required: true, description: "The degrees argument. Used by SIN.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "SIN 90", output: "1")]
             )
 
@@ -230,7 +286,11 @@ extension LogoPrimitive {
                 description: "Calculates cosine of angle in degrees.",
                 localizedDescriptionKey: "logo.doc.cos",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "degrees", required: true, description: "The degrees argument. Used by COS.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "degrees", required: true, description: "The degrees argument. Used by COS.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "COS 0", output: "1")]
             )
 
@@ -240,7 +300,11 @@ extension LogoPrimitive {
                 description: "Calculates tangent of angle in degrees.",
                 localizedDescriptionKey: "logo.doc.tan",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "degrees", required: true, description: "The degrees argument. Used by TAN.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "degrees", required: true, description: "The degrees argument. Used by TAN.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "TAN 45", output: "1")]
             )
 
@@ -250,7 +314,11 @@ extension LogoPrimitive {
                 description: "Calculates inverse tangent in radians.",
                 localizedDescriptionKey: "logo.doc.radarctan",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "radians", required: true, description: "The radians argument. Used by RADARCTAN.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "radians", required: true, description: "The radians argument. Used by RADARCTAN.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RADARCTAN 1", output: "0.7853981633974483")]
             )
 
@@ -260,7 +328,11 @@ extension LogoPrimitive {
                 description: "Calculates sine of angle in radians.",
                 localizedDescriptionKey: "logo.doc.radsin",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "radians", required: true, description: "The radians argument. Used by RADSIN.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "radians", required: true, description: "The radians argument. Used by RADSIN.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RADSIN 1.5707963267948966", output: "1")]
             )
 
@@ -270,7 +342,11 @@ extension LogoPrimitive {
                 description: "Calculates cosine of angle in radians.",
                 localizedDescriptionKey: "logo.doc.radcos",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "radians", required: true, description: "The radians argument. Used by RADCOS.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "radians", required: true, description: "The radians argument. Used by RADCOS.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RADCOS 0", output: "1")]
             )
 
@@ -280,7 +356,11 @@ extension LogoPrimitive {
                 description: "Calculates tangent of angle in radians.",
                 localizedDescriptionKey: "logo.doc.radtan",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "radians", required: true, description: "The radians argument. Used by RADTAN.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "radians", required: true, description: "The radians argument. Used by RADTAN.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RADTAN 0.7853981633974483", output: "1")]
             )
 
@@ -291,8 +371,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.iseq",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "start", required: true, description: "The start argument. Used by ISEQ.", example: "value"),
-                    LogoPrimitiveParameter(name: "end", required: true, description: "The end argument. Used by ISEQ.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "start", required: true, description: "The start argument. Used by ISEQ.",
+                        example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "end", required: true, description: "The end argument. Used by ISEQ.", example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "ISEQ 1 5", output: "[1 2 3 4 5]")]
             )
@@ -304,9 +387,13 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.rseq",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "start", required: true, description: "The start argument. Used by RSEQ.", example: "value"),
-                    LogoPrimitiveParameter(name: "end", required: true, description: "The end argument. Used by RSEQ.", example: "value"),
-                    LogoPrimitiveParameter(name: "count", required: true, description: "The number of items. Used by RSEQ.", example: "3"),
+                    LogoPrimitiveParameter(
+                        name: "start", required: true, description: "The start argument. Used by RSEQ.",
+                        example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "end", required: true, description: "The end argument. Used by RSEQ.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "count", required: true, description: "The number of items. Used by RSEQ.", example: "3"),
                 ],
                 examples: [LogoPrimitiveExample(input: "RSEQ 0 1 5", output: "[0 0.25 0.5 0.75 1]")]
             )
@@ -317,7 +404,11 @@ extension LogoPrimitive {
                 description: "Generates pseudorandom integer from 0 to limit - 1.",
                 localizedDescriptionKey: "logo.doc.random",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "limit", required: true, description: "The limit argument. Used by RANDOM.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "limit", required: true, description: "The limit argument. Used by RANDOM.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RANDOM 100")]
             )
 
@@ -327,7 +418,11 @@ extension LogoPrimitive {
                 description: "Reseeds the random number generator.",
                 localizedDescriptionKey: "logo.doc.rerandom",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "seed", required: false, description: "The seed argument. Used by RERANDOM.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "seed", required: false, description: "The seed argument. Used by RERANDOM.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "RERANDOM 42")]
             )
 
@@ -338,9 +433,13 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.form",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by FORM.", example: "1"),
-                    LogoPrimitiveParameter(name: "width", required: true, description: "The width. Used by FORM.", example: "3"),
-                    LogoPrimitiveParameter(name: "precision", required: true, description: "The precision argument. Used by FORM.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by FORM.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "width", required: true, description: "The width. Used by FORM.", example: "3"),
+                    LogoPrimitiveParameter(
+                        name: "precision", required: true, description: "The precision argument. Used by FORM.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORM 3.14159 8 2", output: "    3.14")]
             )
@@ -352,8 +451,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.bitand",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by BITAND.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by BITAND.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by BITAND.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by BITAND.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.AND 6 3", output: "2")]
             )
@@ -365,8 +466,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.bitor",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by BITOR.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by BITOR.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by BITOR.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by BITOR.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.OR 4 2", output: "6")]
             )
@@ -378,8 +481,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.bitxor",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by BITXOR.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by BITXOR.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by BITXOR.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by BITXOR.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "BIT.XOR 5 3", output: "6")]
             )
@@ -390,7 +495,10 @@ extension LogoPrimitive {
                 description: "Performs bitwise NOT operation on an integer.",
                 localizedDescriptionKey: "logo.doc.bitnot",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by BITNOT.", example: "1")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by BITNOT.", example: "1")
+                ],
                 examples: [LogoPrimitiveExample(input: "BIT.NOT 0", output: "-1")]
             )
 
@@ -401,8 +509,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.ashift",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by ASHIFT.", example: "1"),
-                    LogoPrimitiveParameter(name: "bits", required: true, description: "The bits argument. Used by ASHIFT.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by ASHIFT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "bits", required: true, description: "The bits argument. Used by ASHIFT.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "ASHIFT 4 2", output: "16")]
             )
@@ -414,8 +525,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.lshift",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by LSHIFT.", example: "1"),
-                    LogoPrimitiveParameter(name: "bits", required: true, description: "The bits argument. Used by LSHIFT.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by LSHIFT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "bits", required: true, description: "The bits argument. Used by LSHIFT.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "LSHIFT 1 3", output: "8")]
             )
@@ -427,8 +541,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.rshift",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "num", required: true, description: "The num argument. Used by RSHIFT.", example: "1"),
-                    LogoPrimitiveParameter(name: "bits", required: true, description: "The bits argument. Used by RSHIFT.", example: "value"),
+                    LogoPrimitiveParameter(
+                        name: "num", required: true, description: "The num argument. Used by RSHIFT.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "bits", required: true, description: "The bits argument. Used by RSHIFT.",
+                        example: "value"),
                 ],
                 examples: [LogoPrimitiveExample(input: "RSHIFT 16 2", output: "4")]
             )

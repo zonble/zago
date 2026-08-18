@@ -16,8 +16,9 @@ extension Editor {
             }
             let targetLine = oneBasedLine - 1
             let targetColumn = (oneBasedColumn ?? buffer.columnIndex + 1) - 1
-            guard let clamped = tableModeController.clampedPositionInCurrentCell(
-                line: targetLine, column: targetColumn)
+            guard
+                let clamped = tableModeController.clampedPositionInCurrentCell(
+                    line: targetLine, column: targetColumn)
             else {
                 return reportOperationResult(.noOp(message: l10n["status.goto_disabled_in_table_mode"]))
             }
@@ -65,9 +66,9 @@ extension Editor {
         return reportOperationResult(
             .succeeded(
                 message: l10n.cursorInfo(
-                currentLine: currentLine, totalLines: buffer.lines.count,
-                percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
-                totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1)))
+                    currentLine: currentLine, totalLines: buffer.lines.count,
+                    percent: Int(Double(currentLine) / Double(buffer.lines.count) * 100), currentCol: currentCol,
+                    totalCol: line.count + 1, visualCol: visualCol, totalVisualCol: line.displayWidth + 1)))
     }
 
     func openDirectoryBuffer(path: String? = nil) {

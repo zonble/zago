@@ -55,7 +55,8 @@ extension LogoEngine {
         case .formatMeasure:
             return evaluateMeasurementFormatPrimitive(prim, tokens: tokens, index: &index)
 
-        case .measureAdd, .measureSub, .measureScale, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax:
+        case .measureAdd, .measureSub, .measureScale, .measureEqual, .measureLess, .measureGreater, .measureMin,
+            .measureMax:
             return evaluateMeasureOperationPrimitive(prim, tokens: tokens, index: &index)
 
         case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
@@ -471,77 +472,77 @@ extension LogoEngine {
 
     private func evaluateFormatListPrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-#if os(Linux) || os(Windows)
-        while reader.nextOptionalExpression() != nil {}
-        reader.commit(to: &index)
-        let message = "[LOGO Error: FORMAT.LIST is not supported on this platform]"
-        reportError(LogoError(code: 1, message: message), token: "FORMAT.LIST")
-        return ""
-#else
-        guard let listStr = reader.nextOptionalExpression() else { return "" }
-        let parsed = LogoValue.parse(listStr)
+        #if os(Linux) || os(Windows)
+            while reader.nextOptionalExpression() != nil {}
+            reader.commit(to: &index)
+            let message = "[LOGO Error: FORMAT.LIST is not supported on this platform]"
+            reportError(LogoError(code: 1, message: message), token: "FORMAT.LIST")
+            return ""
+        #else
+            guard let listStr = reader.nextOptionalExpression() else { return "" }
+            let parsed = LogoValue.parse(listStr)
 
-        var items: [String] = []
-        switch parsed {
-        case .list(let l), .array(let l):
-            items = l.map { $0.stringValue }
-        case .measurement(let val, let unit, _):
-            items = [LogoMeasurementConverter.formatResult(val), unit]
-        case .string(let s):
-            let clean = unquote(s)
-            if clean.contains(" ") {
-                items = clean.split(separator: " ").map { String($0) }
-            } else {
-                items = [clean]
+            var items: [String] = []
+            switch parsed {
+            case .list(let l), .array(let l):
+                items = l.map { $0.stringValue }
+            case .measurement(let val, let unit, _):
+                items = [LogoMeasurementConverter.formatResult(val), unit]
+            case .string(let s):
+                let clean = unquote(s)
+                if clean.contains(" ") {
+                    items = clean.split(separator: " ").map { String($0) }
+                } else {
+                    items = [clean]
+                }
             }
-        }
 
-        var type: LogoFormatters.ListType = .and
-        var localeSpec: String? = nil
+            var type: LogoFormatters.ListType = .and
+            var localeSpec: String? = nil
 
-        if reader.peekToken() == "[" {
-            let rawList = reader.nextExpression()
-            let parsedOpts = LogoValue.parse(rawList)
-            if case .list(let optItems) = parsedOpts {
-                var isDict = false
-                var i = 0
-                while i < optItems.count {
-                    let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                    if ["type", "kind", "style", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
-                        isDict = true
-                        let val = optItems[i + 1].stringValue
-                        switch cleanKey {
-                        case "type", "kind", "style": type = LogoFormatters.ListType.parse(val)
-                        case "locale", "lang": localeSpec = val
-                        default: break
+            if reader.peekToken() == "[" {
+                let rawList = reader.nextExpression()
+                let parsedOpts = LogoValue.parse(rawList)
+                if case .list(let optItems) = parsedOpts {
+                    var isDict = false
+                    var i = 0
+                    while i < optItems.count {
+                        let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                        let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
+                        if ["type", "kind", "style", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
+                            isDict = true
+                            let val = optItems[i + 1].stringValue
+                            switch cleanKey {
+                            case "type", "kind", "style": type = LogoFormatters.ListType.parse(val)
+                            case "locale", "lang": localeSpec = val
+                            default: break
+                            }
+                            i += 2
+                        } else {
+                            i += 1
                         }
-                        i += 2
-                    } else {
-                        i += 1
+                    }
+                    if !isDict {
+                        let strings = optItems.map { $0.stringValue }
+                        LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec)
                     }
                 }
-                if !isDict {
-                    let strings = optItems.map { $0.stringValue }
-                    LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec)
+            } else {
+                var positional: [String] = []
+                while positional.count < 2,
+                    let val = reader.nextOptionalExpression()
+                {
+                    positional.append(unquote(val))
                 }
+                LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec)
             }
-        } else {
-            var positional: [String] = []
-            while positional.count < 2,
-                let val = reader.nextOptionalExpression()
-            {
-                positional.append(unquote(val))
-            }
-            LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec)
-        }
 
-        reader.commit(to: &index)
+            reader.commit(to: &index)
 
-        let res = LogoFormatters.formatList(items, type: type, locale: localeSpec)
-        setLastExpressionString(res)
-        return res
-#endif
+            let res = LogoFormatters.formatList(items, type: type, locale: localeSpec)
+            setLastExpressionString(res)
+            return res
+        #endif
     }
 
     private func evaluateFormatRelativeTimePrimitive(tokens: [String], index: inout Int) -> String {
@@ -645,105 +646,114 @@ extension LogoEngine {
         #else
             guard let firstArg = reader.nextOptionalExpression() else { return "" }
 
-        var style: LogoFormatters.PersonNameStyle = .default
-        var localeSpec: String? = nil
-        var given: String? = nil
-        var family: String? = nil
-        var middle: String? = nil
-        var pfx: String? = nil
-        var sfx: String? = nil
-        var nick: String? = nil
-        var fullName: String? = nil
+            var style: LogoFormatters.PersonNameStyle = .default
+            var localeSpec: String? = nil
+            var given: String? = nil
+            var family: String? = nil
+            var middle: String? = nil
+            var pfx: String? = nil
+            var sfx: String? = nil
+            var nick: String? = nil
+            var fullName: String? = nil
 
-        let parsed = LogoValue.parse(firstArg)
-        if case .list(let items) = parsed {
-            let itemStrings = items.map { $0.stringValue }
-            if itemStrings.count % 2 == 0 {
-                var i = 0
-                while i < itemStrings.count {
-                    let key = itemStrings[i].lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' "))
-                    let val = itemStrings[i + 1]
-                    switch key {
-                    case "given", "first", "firstname", "givenname": given = val
-                    case "family", "last", "lastname", "familyname", "surname": family = val
-                    case "middle", "middlename": middle = val
-                    case "prefix", "title": pfx = val
-                    case "suffix": sfx = val
-                    case "nickname", "nick": nick = val
-                    case "style": style = LogoFormatters.PersonNameStyle.parse(val)
-                    case "locale", "loc": localeSpec = val
-                    case "name", "full", "fullname": fullName = val
-                    default: break
+            let parsed = LogoValue.parse(firstArg)
+            if case .list(let items) = parsed {
+                let itemStrings = items.map { $0.stringValue }
+                if itemStrings.count % 2 == 0 {
+                    var i = 0
+                    while i < itemStrings.count {
+                        let key = itemStrings[i].lowercased().trimmingCharacters(
+                            in: CharacterSet(charactersIn: ":\"' "))
+                        let val = itemStrings[i + 1]
+                        switch key {
+                        case "given", "first", "firstname", "givenname": given = val
+                        case "family", "last", "lastname", "familyname", "surname": family = val
+                        case "middle", "middlename": middle = val
+                        case "prefix", "title": pfx = val
+                        case "suffix": sfx = val
+                        case "nickname", "nick": nick = val
+                        case "style": style = LogoFormatters.PersonNameStyle.parse(val)
+                        case "locale", "loc": localeSpec = val
+                        case "name", "full", "fullname": fullName = val
+                        default: break
+                        }
+                        i += 2
                     }
-                    i += 2
-                }
-            } else if itemStrings.count == 1 {
-                fullName = itemStrings[0]
-            } else if itemStrings.count == 2 {
-                given = itemStrings[0]
-                family = itemStrings[1]
-            } else if itemStrings.count >= 3 {
-                if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2]) && !LogoDateTimeFormatter.isLocaleName(itemStrings[2]) {
+                } else if itemStrings.count == 1 {
+                    fullName = itemStrings[0]
+                } else if itemStrings.count == 2 {
                     given = itemStrings[0]
-                    middle = itemStrings[1]
-                    family = itemStrings[2]
-                    if itemStrings.count > 3 {
-                        let extra = Array(itemStrings.dropFirst(3))
+                    family = itemStrings[1]
+                } else if itemStrings.count >= 3 {
+                    if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
+                        && !LogoDateTimeFormatter.isLocaleName(itemStrings[2])
+                    {
+                        given = itemStrings[0]
+                        middle = itemStrings[1]
+                        family = itemStrings[2]
+                        if itemStrings.count > 3 {
+                            let extra = Array(itemStrings.dropFirst(3))
+                            LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                        }
+                    } else {
+                        given = itemStrings[0]
+                        family = itemStrings[1]
+                        let extra = Array(itemStrings.dropFirst(2))
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                    }
+                }
+            } else {
+                var positional: [String] = [unquote(firstArg)]
+                while positional.count < 5,
+                    let val = reader.nextOptionalExpression()
+                {
+                    positional.append(unquote(val))
+                }
+                if positional.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
+                    && !LogoDateTimeFormatter.isLocaleName(positional[1])
+                    && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[2])
+                    && !LogoDateTimeFormatter.isLocaleName(positional[2])
+                {
+                    given = positional[0]
+                    middle = positional[1]
+                    family = positional[2]
+                    if positional.count > 3 {
+                        let extra = Array(positional.dropFirst(3))
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                    }
+                } else if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
+                    && !LogoDateTimeFormatter.isLocaleName(positional[1])
+                {
+                    given = positional[0]
+                    family = positional[1]
+                    if positional.count > 2 {
+                        let extra = Array(positional.dropFirst(2))
                         LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
                     }
                 } else {
-                    given = itemStrings[0]
-                    family = itemStrings[1]
-                    let extra = Array(itemStrings.dropFirst(2))
-                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                    fullName = positional[0]
+                    if positional.count > 1 {
+                        let extra = Array(positional.dropFirst(1))
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                    }
                 }
             }
-        } else {
-            var positional: [String] = [unquote(firstArg)]
-            while positional.count < 5,
-                let val = reader.nextOptionalExpression()
-            {
-                positional.append(unquote(val))
-            }
-            if positional.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[2]) && !LogoDateTimeFormatter.isLocaleName(positional[2]) {
-                given = positional[0]
-                middle = positional[1]
-                family = positional[2]
-                if positional.count > 3 {
-                    let extra = Array(positional.dropFirst(3))
-                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
-                }
-            } else if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1]) && !LogoDateTimeFormatter.isLocaleName(positional[1]) {
-                given = positional[0]
-                family = positional[1]
-                if positional.count > 2 {
-                    let extra = Array(positional.dropFirst(2))
-                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
-                }
-            } else {
-                fullName = positional[0]
-                if positional.count > 1 {
-                    let extra = Array(positional.dropFirst(1))
-                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
-                }
-            }
-        }
 
-        reader.commit(to: &index)
+            reader.commit(to: &index)
 
-        let res = LogoFormatters.formatPersonName(
-            givenName: given,
-            familyName: family,
-            middleName: middle,
-            prefix: pfx,
-            suffix: sfx,
-            nickname: nick,
-            fullName: fullName,
-            style: style,
-            locale: localeSpec
-        )
-        setLastExpressionString(res)
-        return res
+            let res = LogoFormatters.formatPersonName(
+                givenName: given,
+                familyName: family,
+                middleName: middle,
+                prefix: pfx,
+                suffix: sfx,
+                nickname: nick,
+                fullName: fullName,
+                style: style,
+                locale: localeSpec
+            )
+            setLastExpressionString(res)
+            return res
         #endif
     }
 
@@ -770,7 +780,9 @@ extension LogoEngine {
         #endif
     }
 
-    private func evaluateMeasurementConvertPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
+    private func evaluateMeasurementConvertPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int)
+        -> String
+    {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         let firstArg = reader.nextExpression()
 
@@ -801,7 +813,8 @@ extension LogoEngine {
             return ""
         }
         guard dimFrom == dimTo else {
-            let msg = "[LOGO Error: \(prim.meta.name) cannot convert '\(fromUnit)' (\(dimFrom)) to '\(toUnit)' (\(dimTo))]"
+            let msg =
+                "[LOGO Error: \(prim.meta.name) cannot convert '\(fromUnit)' (\(dimFrom)) to '\(toUnit)' (\(dimTo))]"
             reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
             return ""
         }
@@ -814,7 +827,8 @@ extension LogoEngine {
         return ""
     }
 
-    private func evaluateMeasurementFormatPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
+    private func evaluateMeasurementFormatPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String
+    {
         #if os(Linux) || os(Windows)
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             _ = reader.nextOptionalExpression()
@@ -875,7 +889,8 @@ extension LogoEngine {
                             switch cleanKey {
                             case "style", "fmt": style = v
                             case "locale", "lang": localeSpec = v
-                            case "natural", "scale": naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
+                            case "natural", "scale":
+                                naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
                             case "unit", "to": targetConversionUnit = v
                             default: break
                             }
@@ -892,7 +907,8 @@ extension LogoEngine {
                                 if dim == kind {
                                     targetConversionUnit = unq
                                 } else {
-                                    let msg = "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
+                                    let msg =
+                                        "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
                                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                                     reader.commit(to: &index)
                                     return ""
@@ -913,7 +929,8 @@ extension LogoEngine {
                         if dim == kind {
                             targetConversionUnit = unq
                         } else {
-                            let msg = "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
+                            let msg =
+                                "[LOGO Error: \(prim.meta.name) invalid unit '\(unq)' (expected \(kind) unit, got \(dim))]"
                             reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                             reader.commit(to: &index)
                             return ""
@@ -929,7 +946,8 @@ extension LogoEngine {
             reader.commit(to: &index)
 
             if let targetUnit = targetConversionUnit,
-                let convertedVal = LogoMeasurementConverter.convert(value: val, from: cleanUnit, to: targetUnit, kind: kind)
+                let convertedVal = LogoMeasurementConverter.convert(
+                    value: val, from: cleanUnit, to: targetUnit, kind: kind)
             {
                 val = convertedVal
                 cleanUnit = targetUnit
@@ -950,7 +968,8 @@ extension LogoEngine {
         #endif
     }
 
-    private func evaluateMeasureOperationPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String {
+    private func evaluateMeasureOperationPrimitive(_ prim: LogoPrimitive, tokens: [String], index: inout Int) -> String
+    {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         guard let arg1 = reader.nextOptionalExpression() else { return "" }
         let clean1 = unquote(arg1)
@@ -1051,7 +1070,10 @@ extension LogoEngine {
 
             switch prim {
             case .measureAdd:
-                guard let res = LogoMeasurementConverter.add(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                guard
+                    let res = LogoMeasurementConverter.add(
+                        val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return ""
@@ -1060,7 +1082,10 @@ extension LogoEngine {
                 return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
 
             case .measureSub:
-                guard let res = LogoMeasurementConverter.subtract(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                guard
+                    let res = LogoMeasurementConverter.subtract(
+                        val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return ""
@@ -1069,7 +1094,9 @@ extension LogoEngine {
                 return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
 
             case .measureEqual:
-                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                guard
+                    let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return "false"
@@ -1080,7 +1107,9 @@ extension LogoEngine {
                 return res ? "true" : "false"
 
             case .measureLess:
-                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                guard
+                    let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return "false"
@@ -1090,7 +1119,9 @@ extension LogoEngine {
                 return res ? "true" : "false"
 
             case .measureGreater:
-                guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
+                guard
+                    let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return "false"
@@ -1100,7 +1131,10 @@ extension LogoEngine {
                 return res ? "true" : "false"
 
             case .measureMin:
-                guard let res = LogoMeasurementConverter.min(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                guard
+                    let res = LogoMeasurementConverter.min(
+                        val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return ""
@@ -1109,7 +1143,10 @@ extension LogoEngine {
                 return "[\(LogoMeasurementConverter.formatResult(res.value)) \(res.unit)]"
 
             case .measureMax:
-                guard let res = LogoMeasurementConverter.max(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
+                guard
+                    let res = LogoMeasurementConverter.max(
+                        val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                else {
                     let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                     reportError(LogoError(code: 1, message: msg), token: prim.meta.name)
                     return ""

@@ -5,7 +5,8 @@ extension EditorSettingKey {
         let value = rawValue.lowercased()
         switch self {
         case .wrap:
-            let column = (value == "off" || value == "false" || value == "none") ? nil : Int(value).flatMap { $0 > 0 ? $0 : nil }
+            let column =
+                (value == "off" || value == "false" || value == "none") ? nil : Int(value).flatMap { $0 > 0 ? $0 : nil }
             return .wrap(column: column)
         case .ruler: return .ruler(SettingBoolean.parse(value))
         case .lineNumbers: return .lineNumbers(SettingBoolean.parse(value))

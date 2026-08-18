@@ -120,7 +120,8 @@ final class ProposalQueue: @unchecked Sendable {
                 for cIndex in 0..<pendingProposals[pIndex].affectedFiles[fIndex].chunks.count {
                     let targetLine = pendingProposals[pIndex].affectedFiles[fIndex].chunks[cIndex].targetLine
                     if targetLine >= aboveLine {
-                        pendingProposals[pIndex].affectedFiles[fIndex].chunks[cIndex].targetLine = max(1, targetLine + delta)
+                        pendingProposals[pIndex].affectedFiles[fIndex].chunks[cIndex].targetLine = max(
+                            1, targetLine + delta)
                     }
                 }
             }

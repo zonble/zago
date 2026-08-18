@@ -61,10 +61,11 @@ final class TextDocumentView {
         let (rows, cols) = terminal.getWindowSize()
         guard rows > 2, cols > 0 else { return }
         var output = ANSIStyle.cursorHome
-        output += title.paddedToDisplayWidth(cols).ansiStyled(
-            style: ANSIStyle.inverse,
-            endStyle: ANSIStyle.resetShort
-        ) + "\r\n"
+        output +=
+            title.paddedToDisplayWidth(cols).ansiStyled(
+                style: ANSIStyle.inverse,
+                endStyle: ANSIStyle.resetShort
+            ) + "\r\n"
 
         let availableHeight = max(1, rows - 2)
         topIndex = max(0, min(topIndex, max(0, lines.count - availableHeight)))

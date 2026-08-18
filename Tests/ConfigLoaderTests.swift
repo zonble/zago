@@ -7,16 +7,16 @@ import Testing
 
 @Suite(.serialized)
 struct ConfigLoaderTests {
-struct TestLocalConfigFileProvider: ConfigFileProvider {
-    init() {}
-    func homeDirectoryPath() -> String { FileManager.default.homeDirectoryForCurrentUser.path }
-    func currentDirectoryPath() -> String { FileManager.default.currentDirectoryPath }
-    func fileExists(atPath path: String) -> Bool { FileManager.default.fileExists(atPath: path) }
-    func readString(atPath path: String) throws -> String { try String(contentsOfFile: path, encoding: .utf8) }
-    func writeString(_ content: String, toPath path: String) throws {
-        try content.write(toFile: path, atomically: false, encoding: .utf8)
+    struct TestLocalConfigFileProvider: ConfigFileProvider {
+        init() {}
+        func homeDirectoryPath() -> String { FileManager.default.homeDirectoryForCurrentUser.path }
+        func currentDirectoryPath() -> String { FileManager.default.currentDirectoryPath }
+        func fileExists(atPath path: String) -> Bool { FileManager.default.fileExists(atPath: path) }
+        func readString(atPath path: String) throws -> String { try String(contentsOfFile: path, encoding: .utf8) }
+        func writeString(_ content: String, toPath path: String) throws {
+            try content.write(toFile: path, atomically: false, encoding: .utf8)
+        }
     }
-}
 
     @Test func testInMemoryConfigFileProviderAndWasmAbstraction() throws {
         let mockProvider = InMemoryConfigFileProvider(
@@ -279,9 +279,9 @@ struct TestLocalConfigFileProvider: ConfigFileProvider {
             files: [
                 "/home/user/.zagorc": "include \"~/.nano/custom.nanorc\"\n",
                 "/home/user/.nano/custom.nanorc": """
-                    syntax "customlang" "\\.custom$"
-                    color cyan "\\b(foo|bar)\\b"
-                    """,
+                syntax "customlang" "\\.custom$"
+                color cyan "\\b(foo|bar)\\b"
+                """,
             ])
         let loader = ConfigLoader(provider: provider)
         var config = EditorConfig()

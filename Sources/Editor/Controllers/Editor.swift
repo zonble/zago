@@ -389,7 +389,9 @@ public final class Editor: @unchecked Sendable {
 
         for (key, cmdId) in config.customKeyBinds {
             if let script = resolveLogoScript(for: cmdId, using: config) {
-                let scriptLabel = cmdId.hasPrefix("logo:") ? String(cmdId.dropFirst(5)) : (cmdId.hasPrefix("macro:") ? String(cmdId.dropFirst(6)) : cmdId)
+                let scriptLabel =
+                    cmdId.hasPrefix("logo:")
+                    ? String(cmdId.dropFirst(5)) : (cmdId.hasPrefix("macro:") ? String(cmdId.dropFirst(6)) : cmdId)
                 let customCmd = BlockCommand(
                     id: .customMacro, name: "Macro", description: "Execute LOGO script '\(scriptLabel)'"
                 ) { editor in
@@ -415,7 +417,8 @@ public final class Editor: @unchecked Sendable {
         }
 
         if config.syntaxErrorCount > 0 {
-            reportOperationResult(.failed("Config syntax errors", message: l10n.configLoadedWithErrors(config.syntaxErrorCount)))
+            reportOperationResult(
+                .failed("Config syntax errors", message: l10n.configLoadedWithErrors(config.syntaxErrorCount)))
         }
     }
 

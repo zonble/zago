@@ -62,7 +62,8 @@ struct LogoFormatters {
         precision: inout Int?
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
@@ -247,7 +248,8 @@ struct LogoFormatters {
         locale: inout String?
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
@@ -267,41 +269,41 @@ struct LogoFormatters {
         guard !items.isEmpty else { return "" }
         if items.count == 1 { return items[0] }
 
-#if os(Linux) || os(Windows)
-        return ""
-#else
-        let loc = LogoDateTimeFormatter.parseLocale(locale)
-        let isChinese = loc.identifier.lowercased().hasPrefix("zh")
+        #if os(Linux) || os(Windows)
+            return ""
+        #else
+            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let isChinese = loc.identifier.lowercased().hasPrefix("zh")
 
-        switch type {
-        case .and:
-            let formatter = ListFormatter()
-            formatter.locale = loc
-            return formatter.string(from: items) ?? items.joined(separator: ", ")
+            switch type {
+            case .and:
+                let formatter = ListFormatter()
+                formatter.locale = loc
+                return formatter.string(from: items) ?? items.joined(separator: ", ")
 
-        case .or:
-            if isChinese {
-                if items.count == 2 {
-                    return "\(items[0])或\(items[1])"
+            case .or:
+                if isChinese {
+                    if items.count == 2 {
+                        return "\(items[0])或\(items[1])"
+                    }
+                    let head = items.dropLast().joined(separator: "、")
+                    return "\(head)或\(items.last ?? "")"
+                } else {
+                    if items.count == 2 {
+                        return "\(items[0]) or \(items[1])"
+                    }
+                    let head = items.dropLast().joined(separator: ", ")
+                    return "\(head), or \(items.last ?? "")"
                 }
-                let head = items.dropLast().joined(separator: "、")
-                return "\(head)或\(items.last ?? "")"
-            } else {
-                if items.count == 2 {
-                    return "\(items[0]) or \(items[1])"
-                }
-                let head = items.dropLast().joined(separator: ", ")
-                return "\(head), or \(items.last ?? "")"
-            }
 
-        case .unit:
-            if isChinese {
-                return items.joined(separator: "、")
-            } else {
-                return items.joined(separator: ", ")
+            case .unit:
+                if isChinese {
+                    return items.joined(separator: "、")
+                } else {
+                    return items.joined(separator: ", ")
+                }
             }
-        }
-#endif
+        #endif
     }
 
     // MARK: - Relative Date Time Formatter
@@ -315,7 +317,7 @@ struct LogoFormatters {
             "day", "days", "d",
             "week", "weeks", "w",
             "month", "months", "m", "mon",
-            "year", "years", "y", "yr", "yrs"
+            "year", "years", "y", "yr", "yrs",
         ].contains(clean)
     }
 
@@ -325,7 +327,8 @@ struct LogoFormatters {
         locale: inout String?
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
@@ -409,7 +412,8 @@ struct LogoFormatters {
         static func isStyleKeyword(_ raw: String) -> Bool {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
-            return ["memory", "mem", "binary", "bin", "decimal", "dec", "bytes", "exact", "raw", "file", "auto"].contains(clean)
+            return ["memory", "mem", "binary", "bin", "decimal", "dec", "bytes", "exact", "raw", "file", "auto"]
+                .contains(clean)
         }
     }
 
@@ -419,7 +423,8 @@ struct LogoFormatters {
         locale: inout String?
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
@@ -488,7 +493,10 @@ struct LogoFormatters {
         static func isStyleKeyword(_ raw: String) -> Bool {
             let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
-            return ["short", "nickname", "given", "long", "full", "formal", "abbreviated", "abbr", "initials", "initial", "medium", "default", "standard"].contains(clean)
+            return [
+                "short", "nickname", "given", "long", "full", "formal", "abbreviated", "abbr", "initials", "initial",
+                "medium", "default", "standard",
+            ].contains(clean)
         }
     }
 
@@ -498,7 +506,8 @@ struct LogoFormatters {
         locale: inout String?
     ) {
         for arg in args {
-            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(in: .whitespacesAndNewlines)
+            let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
+                in: .whitespacesAndNewlines)
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
@@ -522,39 +531,39 @@ struct LogoFormatters {
         locale: String? = nil
     ) -> String {
         #if canImport(Darwin)
-        var components = PersonNameComponents()
-        if let given = givenName, !given.isEmpty { components.givenName = given }
-        if let family = familyName, !family.isEmpty { components.familyName = family }
-        if let middle = middleName, !middle.isEmpty { components.middleName = middle }
-        if let pfx = prefix, !pfx.isEmpty { components.namePrefix = pfx }
-        if let sfx = suffix, !sfx.isEmpty { components.nameSuffix = sfx }
-        if let nick = nickname, !nick.isEmpty { components.nickname = nick }
+            var components = PersonNameComponents()
+            if let given = givenName, !given.isEmpty { components.givenName = given }
+            if let family = familyName, !family.isEmpty { components.familyName = family }
+            if let middle = middleName, !middle.isEmpty { components.middleName = middle }
+            if let pfx = prefix, !pfx.isEmpty { components.namePrefix = pfx }
+            if let sfx = suffix, !sfx.isEmpty { components.nameSuffix = sfx }
+            if let nick = nickname, !nick.isEmpty { components.nickname = nick }
 
-        let targetLocale = LogoDateTimeFormatter.parseLocale(locale)
-        let formatter = PersonNameComponentsFormatter()
-        formatter.locale = targetLocale
+            let targetLocale = LogoDateTimeFormatter.parseLocale(locale)
+            let formatter = PersonNameComponentsFormatter()
+            formatter.locale = targetLocale
 
-        switch style {
-        case .default, .medium:
-            formatter.style = .medium
-        case .short:
-            formatter.style = .short
-        case .long:
-            formatter.style = .long
-        case .abbreviated:
-            formatter.style = .abbreviated
-        }
-
-        if let full = fullName, components.givenName == nil && components.familyName == nil {
-            if let parsed = formatter.personNameComponents(from: full) {
-                return formatter.string(from: parsed)
+            switch style {
+            case .default, .medium:
+                formatter.style = .medium
+            case .short:
+                formatter.style = .short
+            case .long:
+                formatter.style = .long
+            case .abbreviated:
+                formatter.style = .abbreviated
             }
-            return full
-        }
 
-        return formatter.string(from: components)
+            if let full = fullName, components.givenName == nil && components.familyName == nil {
+                if let parsed = formatter.personNameComponents(from: full) {
+                    return formatter.string(from: parsed)
+                }
+                return full
+            }
+
+            return formatter.string(from: components)
         #else
-        return ""
+            return ""
         #endif
     }
 }

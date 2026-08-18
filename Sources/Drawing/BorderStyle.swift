@@ -260,8 +260,8 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     }
 }
 
-private extension TableBorderCharacters {
-    func withLines(horizontal: String, vertical: String) -> TableBorderCharacters {
+extension TableBorderCharacters {
+    fileprivate func withLines(horizontal: String, vertical: String) -> TableBorderCharacters {
         TableBorderCharacters(
             topLeft: topLeft, topJoin: topJoin, topRight: topRight,
             midLeft: midLeft, midJoin: midJoin, midRight: midRight,

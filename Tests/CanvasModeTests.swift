@@ -756,4 +756,3 @@ import TextMetrics
     #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
     #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 4)
 }
-

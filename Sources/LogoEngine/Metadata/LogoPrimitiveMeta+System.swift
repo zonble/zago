@@ -9,7 +9,11 @@ extension LogoPrimitive {
                 description: "Searches text in editor buffer and highlights occurrences.",
                 localizedDescriptionKey: "logo.doc.search",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "query", required: true, description: "The query argument. Used by SEARCH.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "query", required: true, description: "The query argument. Used by SEARCH.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "SEARCH \"hello")]
             )
 
@@ -20,10 +24,15 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.sort",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "list", required: true, description: "The list to process. Used by SORT.", example: "[A B C]"),
                     LogoPrimitiveParameter(
-                        name: "order", required: false, description: "The order argument. Used by SORT.", example: "desc", allowedValues: ["desc", "descending", "greaterp", "greater?"]),
-                    LogoPrimitiveParameter(name: "template", required: false, description: "The Logo template to apply. Used by SORT.", example: "[FD 1]"),
+                        name: "list", required: true, description: "The list to process. Used by SORT.",
+                        example: "[A B C]"),
+                    LogoPrimitiveParameter(
+                        name: "order", required: false, description: "The order argument. Used by SORT.",
+                        example: "desc", allowedValues: ["desc", "descending", "greaterp", "greater?"]),
+                    LogoPrimitiveParameter(
+                        name: "template", required: false, description: "The Logo template to apply. Used by SORT.",
+                        example: "[FD 1]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SORT [3 1 4 1 5 9]", output: "[1 1 3 4 5 9]")]
             )
@@ -35,9 +44,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.fill",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "width", required: false, description: "The width. Used by FILL.", example: "3"),
-                    LogoPrimitiveParameter(name: "height", required: false, description: "The height. Used by FILL.", example: "3"),
-                    LogoPrimitiveParameter(name: "text", required: true, description: "The text value. Used by FILL.", example: "text"),
+                    LogoPrimitiveParameter(
+                        name: "width", required: false, description: "The width. Used by FILL.", example: "3"),
+                    LogoPrimitiveParameter(
+                        name: "height", required: false, description: "The height. Used by FILL.", example: "3"),
+                    LogoPrimitiveParameter(
+                        name: "text", required: true, description: "The text value. Used by FILL.", example: "text"),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "FILL \".\""),
@@ -51,7 +63,11 @@ extension LogoPrimitive {
                 description: "Prompts user to enter a line of text input.",
                 localizedDescriptionKey: "logo.doc.readword",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "prompt", required: false, description: "The prompt argument. Used by READWORD.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "prompt", required: false, description: "The prompt argument. Used by READWORD.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "MAKE \"name READWORD \"Name: ")]
             )
 
@@ -61,7 +77,11 @@ extension LogoPrimitive {
                 description: "Prompts user to press a single character key.",
                 localizedDescriptionKey: "logo.doc.readchar",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "prompt", required: false, description: "The prompt argument. Used by READCHAR.", example: "value")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "prompt", required: false, description: "The prompt argument. Used by READCHAR.",
+                        example: "value")
+                ],
                 examples: [LogoPrimitiveExample(input: "MAKE \"k READCHAR")]
             )
 
@@ -107,7 +127,11 @@ extension LogoPrimitive {
                 description: "Returns definition token list of named procedure.",
                 localizedDescriptionKey: "logo.doc.text",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "procname", required: true, description: "The procname argument. Used by TEXT.", example: "text")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "procname", required: true, description: "The procname argument. Used by TEXT.",
+                        example: "text")
+                ],
                 examples: [LogoPrimitiveExample(input: "TEXT \"square")]
             )
 
@@ -118,8 +142,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.define",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "procname", required: true, description: "The procname argument. Used by DEFINE.", example: "text"),
-                    LogoPrimitiveParameter(name: "textList", required: true, description: "The textList argument. Used by DEFINE.", example: "[A B C]"),
+                    LogoPrimitiveParameter(
+                        name: "procname", required: true, description: "The procname argument. Used by DEFINE.",
+                        example: "text"),
+                    LogoPrimitiveParameter(
+                        name: "textList", required: true, description: "The textList argument. Used by DEFINE.",
+                        example: "[A B C]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "DEFINE \"double [[n] [OUTPUT :n * 2]]")]
             )
@@ -130,7 +158,11 @@ extension LogoPrimitive {
                 description: "Erases named custom procedure definition.",
                 localizedDescriptionKey: "logo.doc.erase",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "procname", required: true, description: "The procname argument. Used by ERASE.", example: "text")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "procname", required: true, description: "The procname argument. Used by ERASE.",
+                        example: "text")
+                ],
                 examples: [LogoPrimitiveExample(input: "ERASE \"oldProc")]
             )
 
@@ -167,7 +199,11 @@ extension LogoPrimitive {
                 description: "Returns expected argument count of procedure or primitive.",
                 localizedDescriptionKey: "logo.doc.arity",
                 source: .ucbLogo,
-                parameters: [LogoPrimitiveParameter(name: "procname", required: true, description: "The procname argument. Used by ARITY.", example: "text")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "procname", required: true, description: "The procname argument. Used by ARITY.",
+                        example: "text")
+                ],
                 examples: [LogoPrimitiveExample(input: "ARITY \"sum", output: "2")]
             )
 
@@ -177,7 +213,10 @@ extension LogoPrimitive {
                 description: "Returns documentation docstring for procedure or built-in primitive.",
                 localizedDescriptionKey: "logo.doc.doc",
                 source: .zago,
-                parameters: [LogoPrimitiveParameter(name: "name", required: true, description: "The name. Used by DOC.", example: "text")],
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "name", required: true, description: "The name. Used by DOC.", example: "text")
+                ],
                 examples: [LogoPrimitiveExample(input: "DOC \"BOX")]
             )
 

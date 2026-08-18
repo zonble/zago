@@ -349,7 +349,8 @@ struct LogoCoverageTests {
         }
 
         for prim in allPrimitives {
-            #expect(mappedPrimitives.contains(prim), "LogoPrimitive .\(prim) is not mapped in LogoPrimitive.rawMappings")
+            #expect(
+                mappedPrimitives.contains(prim), "LogoPrimitive .\(prim) is not mapped in LogoPrimitive.rawMappings")
         }
 
         #expect(mappedPrimitives.count == allPrimitives.count)

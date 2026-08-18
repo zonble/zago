@@ -446,7 +446,8 @@ struct TraditionalChineseStrings {
         "status.logo_debug_not_paused": "[LOGO 除錯] 執行未暫停",
         "status.logo_debug_breakpoint_set": "[LOGO 除錯] 已在第 %d 行設定中斷點",
         "status.logo_debug_breakpoint_cleared": "[LOGO 除錯] 已清除第 %d 行中斷點",
-        "status.logo_debug_usage": "[LOGO 除錯] 用法：:logo break | breaks | eval [expression] | debug | continue | step | abort",
+        "status.logo_debug_usage":
+            "[LOGO 除錯] 用法：:logo break | breaks | eval [expression] | debug | continue | step | abort",
         "status.logo_debug_result": "[LOGO 除錯] %@",
         "debug.logo_title": "LOGO 除錯器",
         "debug.paused_at": "暫停於 %@",

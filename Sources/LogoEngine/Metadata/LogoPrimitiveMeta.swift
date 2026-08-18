@@ -12,7 +12,9 @@ public struct LogoPrimitiveParameter: Sendable, Equatable {
     public let example: String?
     public let allowedValues: [String]
 
-    public init(name: String, required: Bool, description: String? = nil, example: String? = nil, allowedValues: [String] = []) {
+    public init(
+        name: String, required: Bool, description: String? = nil, example: String? = nil, allowedValues: [String] = []
+    ) {
         self.name = name
         self.required = required
         self.description = description

@@ -1,5 +1,5 @@
-import Foundation
 import Config
+import Foundation
 
 /// Encapsulates a two-way mapping between input Keys and executable CommandIDs.
 struct Keymap: Sendable {

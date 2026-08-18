@@ -186,40 +186,45 @@ extension LogoEngine {
                         var precision: Int? = nil
                         if cleanArgs.count > 1 {
                             LogoFormatters.disambiguateNumberOptions(
-                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale, currencyCode: &curr, precision: &precision)
+                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale, currencyCode: &curr,
+                                precision: &precision)
                         }
-                        leftVal = LogoFormatters.formatNumber(num, style: style, locale: locale, currencyCode: curr, precision: precision)
+                        leftVal = LogoFormatters.formatNumber(
+                            num, style: style, locale: locale, currencyCode: curr, precision: precision)
                         setLastExpressionString(leftVal)
 
                     case .formatList:
-#if os(Linux) || os(Windows)
-                        leftVal = ""
-                        reportError(
-                            LogoError(code: 1, message: "[LOGO Error: FORMAT.LIST is not supported on this platform]"),
-                            token: "FORMAT.LIST"
-                        )
-#else
-                        let cleanArgs = args.map { unquote($0) }
-                        guard !cleanArgs.isEmpty else {
+                        #if os(Linux) || os(Windows)
                             leftVal = ""
-                            break
-                        }
-                        let parsed = LogoValue.parse(cleanArgs[0])
-                        let items: [String]
-                        switch parsed {
-                        case .list(let l), .array(let l): items = l.map { $0.stringValue }
-                        case .measurement(let val, let unit, _): items = [LogoMeasurementConverter.formatResult(val), unit]
-                        case .string(let s): items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
-                        }
-                        var type: LogoFormatters.ListType = .and
-                        var locale: String? = nil
-                        if cleanArgs.count > 1 {
-                            LogoFormatters.disambiguateListOptions(
-                                Array(cleanArgs.dropFirst()), type: &type, locale: &locale)
-                        }
-                        leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
-                        setLastExpressionString(leftVal)
-#endif
+                            reportError(
+                                LogoError(
+                                    code: 1, message: "[LOGO Error: FORMAT.LIST is not supported on this platform]"),
+                                token: "FORMAT.LIST"
+                            )
+                        #else
+                            let cleanArgs = args.map { unquote($0) }
+                            guard !cleanArgs.isEmpty else {
+                                leftVal = ""
+                                break
+                            }
+                            let parsed = LogoValue.parse(cleanArgs[0])
+                            let items: [String]
+                            switch parsed {
+                            case .list(let l), .array(let l): items = l.map { $0.stringValue }
+                            case .measurement(let val, let unit, _):
+                                items = [LogoMeasurementConverter.formatResult(val), unit]
+                            case .string(let s):
+                                items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
+                            }
+                            var type: LogoFormatters.ListType = .and
+                            var locale: String? = nil
+                            if cleanArgs.count > 1 {
+                                LogoFormatters.disambiguateListOptions(
+                                    Array(cleanArgs.dropFirst()), type: &type, locale: &locale)
+                            }
+                            leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
+                            setLastExpressionString(leftVal)
+                        #endif
 
                     case .formatRelativeTime:
                         #if os(Linux) || os(Windows)
@@ -284,98 +289,111 @@ extension LogoEngine {
                                 leftVal = ""
                                 break
                             }
-                        var style: LogoFormatters.PersonNameStyle = .default
-                        var locale: String? = nil
-                        var given: String? = nil
-                        var family: String? = nil
-                        var middle: String? = nil
-                        var pfx: String? = nil
-                        var sfx: String? = nil
-                        var nick: String? = nil
-                        var fullName: String? = nil
+                            var style: LogoFormatters.PersonNameStyle = .default
+                            var locale: String? = nil
+                            var given: String? = nil
+                            var family: String? = nil
+                            var middle: String? = nil
+                            var pfx: String? = nil
+                            var sfx: String? = nil
+                            var nick: String? = nil
+                            var fullName: String? = nil
 
-                        let firstArg = cleanArgs[0]
-                        let parsed = LogoValue.parse(firstArg)
-                        if case .list(let items) = parsed {
-                            let itemStrings = items.map { $0.stringValue }
-                            if itemStrings.count % 2 == 0 {
-                                var i = 0
-                                while i < itemStrings.count {
-                                    let key = itemStrings[i].lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' "))
-                                    let val = itemStrings[i + 1]
-                                    switch key {
-                                    case "given", "first", "firstname", "givenname": given = val
-                                    case "family", "last", "lastname", "familyname", "surname": family = val
-                                    case "middle", "middlename": middle = val
-                                    case "prefix", "title": pfx = val
-                                    case "suffix": sfx = val
-                                    case "nickname", "nick": nick = val
-                                    case "style": style = LogoFormatters.PersonNameStyle.parse(val)
-                                    case "locale", "loc": locale = val
-                                    case "name", "full", "fullname": fullName = val
-                                    default: break
+                            let firstArg = cleanArgs[0]
+                            let parsed = LogoValue.parse(firstArg)
+                            if case .list(let items) = parsed {
+                                let itemStrings = items.map { $0.stringValue }
+                                if itemStrings.count % 2 == 0 {
+                                    var i = 0
+                                    while i < itemStrings.count {
+                                        let key = itemStrings[i].lowercased().trimmingCharacters(
+                                            in: CharacterSet(charactersIn: ":\"' "))
+                                        let val = itemStrings[i + 1]
+                                        switch key {
+                                        case "given", "first", "firstname", "givenname": given = val
+                                        case "family", "last", "lastname", "familyname", "surname": family = val
+                                        case "middle", "middlename": middle = val
+                                        case "prefix", "title": pfx = val
+                                        case "suffix": sfx = val
+                                        case "nickname", "nick": nick = val
+                                        case "style": style = LogoFormatters.PersonNameStyle.parse(val)
+                                        case "locale", "loc": locale = val
+                                        case "name", "full", "fullname": fullName = val
+                                        default: break
+                                        }
+                                        i += 2
                                     }
-                                    i += 2
-                                }
-                            } else if itemStrings.count == 1 {
-                                fullName = itemStrings[0]
-                            } else if itemStrings.count == 2 {
-                                given = itemStrings[0]
-                                family = itemStrings[1]
-                            } else if itemStrings.count >= 3 {
-                                if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2]) && !LogoDateTimeFormatter.isLocaleName(itemStrings[2]) {
-                                    given = itemStrings[0]
-                                    middle = itemStrings[1]
-                                    family = itemStrings[2]
-                                    if itemStrings.count > 3 {
-                                        let extra = Array(itemStrings.dropFirst(3))
-                                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
-                                    }
-                                } else {
+                                } else if itemStrings.count == 1 {
+                                    fullName = itemStrings[0]
+                                } else if itemStrings.count == 2 {
                                     given = itemStrings[0]
                                     family = itemStrings[1]
-                                    let extra = Array(itemStrings.dropFirst(2))
+                                } else if itemStrings.count >= 3 {
+                                    if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
+                                        && !LogoDateTimeFormatter.isLocaleName(itemStrings[2])
+                                    {
+                                        given = itemStrings[0]
+                                        middle = itemStrings[1]
+                                        family = itemStrings[2]
+                                        if itemStrings.count > 3 {
+                                            let extra = Array(itemStrings.dropFirst(3))
+                                            LogoFormatters.disambiguatePersonNameOptions(
+                                                extra, style: &style, locale: &locale)
+                                        }
+                                    } else {
+                                        given = itemStrings[0]
+                                        family = itemStrings[1]
+                                        let extra = Array(itemStrings.dropFirst(2))
+                                        LogoFormatters.disambiguatePersonNameOptions(
+                                            extra, style: &style, locale: &locale)
+                                    }
+                                }
+                            } else if cleanArgs.count >= 3
+                                && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
+                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1])
+                                && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[2])
+                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[2])
+                            {
+                                // Three positional arguments: givenName middleName familyName [style] [locale]
+                                given = cleanArgs[0]
+                                middle = cleanArgs[1]
+                                family = cleanArgs[2]
+                                if cleanArgs.count > 3 {
+                                    let extra = Array(cleanArgs.dropFirst(3))
+                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                }
+                            } else if cleanArgs.count >= 2
+                                && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
+                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1])
+                            {
+                                // Two positional arguments: givenName familyName [style] [locale]
+                                given = cleanArgs[0]
+                                family = cleanArgs[1]
+                                if cleanArgs.count > 2 {
+                                    let extra = Array(cleanArgs.dropFirst(2))
+                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                }
+                            } else {
+                                // Single full name or given name: name [style] [locale]
+                                fullName = cleanArgs[0]
+                                if cleanArgs.count > 1 {
+                                    let extra = Array(cleanArgs.dropFirst(1))
                                     LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
                                 }
                             }
-                        } else if cleanArgs.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1]) && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[2]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[2]) {
-                            // Three positional arguments: givenName middleName familyName [style] [locale]
-                            given = cleanArgs[0]
-                            middle = cleanArgs[1]
-                            family = cleanArgs[2]
-                            if cleanArgs.count > 3 {
-                                let extra = Array(cleanArgs.dropFirst(3))
-                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
-                            }
-                        } else if cleanArgs.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1]) && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1]) {
-                            // Two positional arguments: givenName familyName [style] [locale]
-                            given = cleanArgs[0]
-                            family = cleanArgs[1]
-                            if cleanArgs.count > 2 {
-                                let extra = Array(cleanArgs.dropFirst(2))
-                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
-                            }
-                        } else {
-                            // Single full name or given name: name [style] [locale]
-                            fullName = cleanArgs[0]
-                            if cleanArgs.count > 1 {
-                                let extra = Array(cleanArgs.dropFirst(1))
-                                LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
-                            }
-                        }
 
-                        leftVal = LogoFormatters.formatPersonName(
-                            givenName: given,
-                            familyName: family,
-                            middleName: middle,
-                            prefix: pfx,
-                            suffix: sfx,
-                            nickname: nick,
-                            fullName: fullName,
-                            style: style,
-                            locale: locale
-                        )
-                        setLastExpressionString(leftVal)
+                            leftVal = LogoFormatters.formatPersonName(
+                                givenName: given,
+                                familyName: family,
+                                middleName: middle,
+                                prefix: pfx,
+                                suffix: sfx,
+                                nickname: nick,
+                                fullName: fullName,
+                                style: style,
+                                locale: locale
+                            )
+                            setLastExpressionString(leftVal)
                         #endif
 
                     case .measureScale:
@@ -408,7 +426,8 @@ extension LogoEngine {
                         leftVal = resStr
                         setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
 
-                    case .measureAdd, .measureSub, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax:
+                    case .measureAdd, .measureSub, .measureEqual, .measureLess, .measureGreater, .measureMin,
+                        .measureMax:
                         let val1: Double
                         let unit1: String
                         let val2: Double
@@ -472,8 +491,12 @@ extension LogoEngine {
 
                         switch variadicPrim {
                         case .measureAdd:
-                            guard let res = LogoMeasurementConverter.add(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let res = LogoMeasurementConverter.add(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = ""
                                 break
@@ -483,8 +506,12 @@ extension LogoEngine {
                             setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
 
                         case .measureSub:
-                            guard let res = LogoMeasurementConverter.subtract(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let res = LogoMeasurementConverter.subtract(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = ""
                                 break
@@ -494,8 +521,12 @@ extension LogoEngine {
                             setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
 
                         case .measureEqual:
-                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let (v1, v2) = LogoMeasurementConverter.compare(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = "false"
                                 break
@@ -506,8 +537,12 @@ extension LogoEngine {
                             setLastExpressionBoolean(res)
 
                         case .measureLess:
-                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let (v1, v2) = LogoMeasurementConverter.compare(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = "false"
                                 break
@@ -517,8 +552,12 @@ extension LogoEngine {
                             setLastExpressionBoolean(res)
 
                         case .measureGreater:
-                            guard let (v1, v2) = LogoMeasurementConverter.compare(val1: val1, unit1: unit1, val2: val2, unit2: unit2) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let (v1, v2) = LogoMeasurementConverter.compare(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = "false"
                                 break
@@ -528,8 +567,12 @@ extension LogoEngine {
                             setLastExpressionBoolean(res)
 
                         case .measureMin:
-                            guard let res = LogoMeasurementConverter.min(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let res = LogoMeasurementConverter.min(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = ""
                                 break
@@ -539,8 +582,12 @@ extension LogoEngine {
                             setLastExpressionMeasurement(value: res.value, unit: res.unit, dimension: res.dimension)
 
                         case .measureMax:
-                            guard let res = LogoMeasurementConverter.max(val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit) else {
-                                let msg = "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
+                            guard
+                                let res = LogoMeasurementConverter.max(
+                                    val1: val1, unit1: unit1, val2: val2, unit2: unit2, targetUnit: targetUnit)
+                            else {
+                                let msg =
+                                    "[LOGO Error: Incompatible or invalid measurement units '\(unit1)' and '\(unit2)']"
                                 reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                 leftVal = ""
                                 break
@@ -582,19 +629,22 @@ extension LogoEngine {
                         }
 
                         guard let dimFrom = LogoMeasurementConverter.findDimension(for: fromUnit) else {
-                            let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown source unit '\(fromUnit)']"
+                            let msg =
+                                "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown source unit '\(fromUnit)']"
                             reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                             leftVal = ""
                             break
                         }
                         guard let dimTo = LogoMeasurementConverter.findDimension(for: toUnit) else {
-                            let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown target unit '\(toUnit)']"
+                            let msg =
+                                "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown target unit '\(toUnit)']"
                             reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                             leftVal = ""
                             break
                         }
                         guard dimFrom == dimTo else {
-                            let msg = "[LOGO Error: \(variadicPrim.meta.name) cannot convert '\(fromUnit)' (\(dimFrom)) to '\(toUnit)' (\(dimTo))]"
+                            let msg =
+                                "[LOGO Error: \(variadicPrim.meta.name) cannot convert '\(fromUnit)' (\(dimFrom)) to '\(toUnit)' (\(dimTo))]"
                             reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                             leftVal = ""
                             break
@@ -621,7 +671,9 @@ extension LogoEngine {
                             var remainingArgs: [String] = []
                             let kind: LogoMeasurementConverter.DimensionKind
 
-                            if !args.isEmpty, case .measurement(let mVal, let mUnit, let mDim) = LogoValue.parse(args[0]) {
+                            if !args.isEmpty,
+                                case .measurement(let mVal, let mUnit, let mDim) = LogoValue.parse(args[0])
+                            {
                                 val = mVal
                                 unitStr = mUnit
                                 kind = mDim
@@ -635,7 +687,8 @@ extension LogoEngine {
                                 val = v
                                 unitStr = cleanArgs[1]
                                 guard let inferredDim = LogoMeasurementConverter.findDimension(for: unitStr) else {
-                                    let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown unit '\(unitStr)']"
+                                    let msg =
+                                        "[LOGO Error: \(variadicPrim.meta.name) invalid or unknown unit '\(unitStr)']"
                                     reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                     leftVal = ""
                                     break
@@ -656,7 +709,8 @@ extension LogoEngine {
                                     if dim == kind {
                                         targetConversionUnit = arg
                                     } else {
-                                        let msg = "[LOGO Error: \(variadicPrim.meta.name) invalid unit '\(arg)' (expected \(kind) unit, got \(dim))]"
+                                        let msg =
+                                            "[LOGO Error: \(variadicPrim.meta.name) invalid unit '\(arg)' (expected \(kind) unit, got \(dim))]"
                                         reportError(LogoError(code: 1, message: msg), token: variadicPrim.meta.name)
                                         leftVal = ""
                                         hasInvalidUnit = true
@@ -671,14 +725,16 @@ extension LogoEngine {
                                 positional, style: &style, locale: &locale, naturalScale: &naturalScale)
 
                             if let targetUnit = targetConversionUnit,
-                                let convertedVal = LogoMeasurementConverter.convert(value: val, from: unitStr, to: targetUnit, kind: kind)
+                                let convertedVal = LogoMeasurementConverter.convert(
+                                    value: val, from: unitStr, to: targetUnit, kind: kind)
                             {
                                 val = convertedVal
                                 unitStr = targetUnit
                             }
 
                             if let formatted = LogoMeasurementConverter.format(
-                                value: val, unit: unitStr, kind: kind, style: style, locale: locale, naturalScale: naturalScale)
+                                value: val, unit: unitStr, kind: kind, style: style, locale: locale,
+                                naturalScale: naturalScale)
                             {
                                 leftVal = formatted
                                 setLastExpressionString(leftVal)

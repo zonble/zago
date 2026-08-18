@@ -41,7 +41,6 @@ struct ConfigAndToolsTests {
         #expect(titleLineMulti.contains("zago \(ZagoVersion.current) [2/2]"))
     }
 
-
     @Test func testHelpContent() throws {
         let terminal = TestEditorTerminal.shared
         let l10n = L10n()
@@ -110,7 +109,8 @@ struct ConfigAndToolsTests {
         let logoEditor = Editor(filePath: "program.LOGO")
         menuBar.updateCategories(for: logoEditor)
         let logoCommands = Set(menuBar.categories.flatMap(\.items).compactMap(\.commandId))
-        #expect(logoCommands.isSuperset(of: [.logoOutput, .logoDebug, .logoClearOutput, .logoReference, .logoWorkspace]))
+        #expect(
+            logoCommands.isSuperset(of: [.logoOutput, .logoDebug, .logoClearOutput, .logoReference, .logoWorkspace]))
         #expect(logoEditor.commandRegistry.completionNames(for: logoEditor).contains("logo"))
     }
 
@@ -248,7 +248,6 @@ struct ConfigAndToolsTests {
         editor.apply(.wrap(column: 4))
         #expect(editor.layoutEngine.wrapColumn == 10)
     }
-
 
     @Test func testZagoSkillDefinitionInConfig() throws {
         let markdown = ZagoSkillDefinition.markdown
@@ -588,9 +587,6 @@ struct ConfigAndToolsTests {
         #expect(editor.statusMessage == editor.l10n["status.config_reloaded"])
     }
 
-
-
-
     @Test func testIPCSettingEmitsTypedEffect() throws {
         let editor = Editor()
         let recorder = EffectRecorder()
@@ -604,7 +600,6 @@ struct ConfigAndToolsTests {
         #expect(editor.displayConfig.ipcEnabled == false)
         #expect(recorder.effects == [.ipcEnabled(true), .ipcEnabled(false)])
     }
-
 
     @Test func testFileWatcherAndAutoReload() throws {
         let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
@@ -727,7 +722,8 @@ struct ConfigAndToolsTests {
         let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
             "test_editor_autoreload_\(UUID().uuidString).txt"
         ).path
-        try "Original Disk Line\n".write(to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
+        try "Original Disk Line\n".write(
+            to: URL(fileURLWithPath: tmpFile), atomically: testAtomicallyOption, encoding: .utf8)
 
         let terminal = TestEditorTerminal.shared
         let editor = Editor(
@@ -757,8 +753,6 @@ struct ConfigAndToolsTests {
 
         #expect(editor.buffer.lines.first == "New Disk Line externally written")
     }
-
-
 
     @Test func testLocalization() throws {
         let l10nEN = L10n(language: .en)
@@ -912,8 +906,6 @@ struct ConfigAndToolsTests {
         #expect(zhWorkspace.contains("（無）"))
     }
 
-
-
     @Test func testHeadlessLogoScriptExecution() throws {
         let editor = Editor()
         editor.runLogoScript("BOX 20 4")
@@ -1014,7 +1006,8 @@ struct ConfigAndToolsTests {
         )
         let l10n = L10n(language: .en)
         let maxWidth = 70
-        let formatNameLines = formatNameDialog.buildSymbolDetails(for: "FORMAT.NAME", l10n: l10n, maxLineWidth: maxWidth)
+        let formatNameLines = formatNameDialog.buildSymbolDetails(
+            for: "FORMAT.NAME", l10n: l10n, maxLineWidth: maxWidth)
         #expect(!formatNameLines.isEmpty)
         for line in formatNameLines {
             #expect(line.displayWidth <= maxWidth)
@@ -1065,4 +1058,3 @@ struct ConfigAndToolsTests {
         #expect(logoSecondTime > logoFirstTime)
     }
 }
-

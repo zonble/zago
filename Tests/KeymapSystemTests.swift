@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Config
 @testable import Editor
 
@@ -349,7 +350,7 @@ import Foundation
 
         // Open menu bar in Classic mode
         editor.menuBarController.isActive = true
-        editor.menuBar.categoryIndex = 0 // File Menu
+        editor.menuBar.categoryIndex = 0  // File Menu
         editor.menuBar.setupCategories()
 
         let (_, _, classicFileLines) = renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
@@ -370,20 +371,20 @@ import Foundation
         editor.apply(.keymap(.modern))
         editor.menuBar.updateCategories(for: editor)
 
-        editor.menuBar.categoryIndex = 0 // File Menu
+        editor.menuBar.categoryIndex = 0  // File Menu
         let (_, _, modernFileLines) = renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
         let modernFileStr = modernFileLines.joined(separator: "\n")
         #expect(modernFileStr.contains("^Q"))
 
         // Check Edit menu in Modern mode
-        editor.menuBar.categoryIndex = 1 // Edit Menu
+        editor.menuBar.categoryIndex = 1  // Edit Menu
         let (_, _, modernEditLines) = renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
         let modernEditStr = modernEditLines.joined(separator: "\n")
-        #expect(modernEditStr.contains("^X")) // Cut is ^X
-        #expect(modernEditStr.contains("^C")) // Copy is ^C
-        #expect(modernEditStr.contains("^V")) // Paste is ^V
-        #expect(modernEditStr.contains("^F")) // Search is ^F
-        #expect(modernEditStr.contains("^Z")) // Undo is ^Z
+        #expect(modernEditStr.contains("^X"))  // Cut is ^X
+        #expect(modernEditStr.contains("^C"))  // Copy is ^C
+        #expect(modernEditStr.contains("^V"))  // Paste is ^V
+        #expect(modernEditStr.contains("^F"))  // Search is ^F
+        #expect(modernEditStr.contains("^Z"))  // Undo is ^Z
 
         // Check Tools menu in Modern mode: Eval LOGO is ^E
         if let toolsIdx = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.tools" }) {
@@ -583,7 +584,8 @@ import Foundation
         var macroConfig = EditorConfig()
         macroConfig.customKeyBinds = [
             Key.alt("t"): "logo:insert-title",
-            Key.alt("h"): "logo:MOVE HOME TYPE \"# Long Header Description Section\" MOVE END TYPE \"\n---\n\" MOVE HOME",
+            Key.alt("h"):
+                "logo:MOVE HOME TYPE \"# Long Header Description Section\" MOVE END TYPE \"\n---\n\" MOVE HOME",
         ]
         let configSource = EditorConfigSource(initial: macroConfig, reload: { macroConfig })
         let macroEditor = Editor(

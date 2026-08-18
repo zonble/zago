@@ -150,7 +150,9 @@ enum HelpContent {
         }
     }
 
-    private static func formatHelpKeys(for commandID: CommandID, in mode: EditorMode, keymapManager: KeymapManager, language: Language) -> String {
+    private static func formatHelpKeys(
+        for commandID: CommandID, in mode: EditorMode, keymapManager: KeymapManager, language: Language
+    ) -> String {
         let keys = keymapManager.keys(for: commandID, in: mode)
         var labels: [String] = []
         for key in keys {
@@ -171,9 +173,11 @@ enum HelpContent {
                 itemLines = range.map { L10n.string("\(prefix)_\($0)", language: language) }
             case .items(let items):
                 itemLines = items.map { item in
-                    let keyLabel = formatHelpKeys(for: item.commandID, in: item.mode, keymapManager: keymapManager, language: language)
+                    let keyLabel = formatHelpKeys(
+                        for: item.commandID, in: item.mode, keymapManager: keymapManager, language: language)
                     let desc = L10n.string(item.descriptionKey, language: language)
-                    let padCount = keyLabel == L10n.string("key.ctrl_shift_arrow", language: language) && language == .zh_TW
+                    let padCount =
+                        keyLabel == L10n.string("key.ctrl_shift_arrow", language: language) && language == .zh_TW
                         ? 2
                         : max(1, 19 - keyLabel.displayWidth)
                     let paddedKey = keyLabel + String(repeating: " ", count: padCount)

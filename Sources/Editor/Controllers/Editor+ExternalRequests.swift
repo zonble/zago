@@ -275,8 +275,8 @@ extension Editor {
     }
 }
 
-private extension String {
-    subscript(safeCharacterRange range: Range<Int>) -> Substring {
+extension String {
+    fileprivate subscript(safeCharacterRange range: Range<Int>) -> Substring {
         let lower = max(0, min(range.lowerBound, count))
         let upper = max(lower, min(range.upperBound, count))
         let lowerIndex = index(startIndex, offsetBy: lower)

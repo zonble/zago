@@ -291,7 +291,7 @@ struct FormatAndLayoutTests {
         #expect(editor.fillColumn == 20)
 
         editor.buffer.lines = [
-            "This is a long sentence that should be wrapped according to fill column setting.",
+            "This is a long sentence that should be wrapped according to fill column setting."
         ]
         editor.buffer.lineIndex = 0
 
@@ -319,7 +319,9 @@ struct FormatAndLayoutTests {
 
         #expect(buffer.lines.count > 1)
         for (i, line) in buffer.lines.enumerated() {
-            #expect(line.displayWidth <= 40, "Line \(i) exceeded target width 40: \(line) (displayWidth: \(line.displayWidth))")
+            #expect(
+                line.displayWidth <= 40,
+                "Line \(i) exceeded target width 40: \(line) (displayWidth: \(line.displayWidth))")
         }
 
         // Verify content integrity: all characters preserved without stray spaces between Chinese chars
@@ -345,7 +347,9 @@ struct FormatAndLayoutTests {
 
         #expect(buffer.lines.count >= 5)
         for (i, line) in buffer.lines.enumerated() {
-            #expect(line.displayWidth <= 50, "Line \(i) exceeded target width 50: '\(line)' (displayWidth: \(line.displayWidth))")
+            #expect(
+                line.displayWidth <= 50,
+                "Line \(i) exceeded target width 50: '\(line)' (displayWidth: \(line.displayWidth))")
             #expect(!line.hasPrefix(" "))
             #expect(!line.hasSuffix(" "))
         }
@@ -372,7 +376,9 @@ struct FormatAndLayoutTests {
 
         #expect(buffer.lines.count >= 5)
         for (i, line) in buffer.lines.enumerated() {
-            #expect(line.displayWidth <= 36, "Line \(i) exceeded target width 36: '\(line)' (displayWidth: \(line.displayWidth))")
+            #expect(
+                line.displayWidth <= 36,
+                "Line \(i) exceeded target width 36: '\(line)' (displayWidth: \(line.displayWidth))")
         }
 
         // Verify key terms and characters are kept intact
@@ -469,7 +475,7 @@ struct FormatAndLayoutTests {
     @Test func testJustifyOrderedListPreservesCursorPosition() throws {
         let buffer = TextBuffer()
         buffer.lines = [
-            "1. Apple designed Swift to be fast, safe, and modern for all developers.",
+            "1. Apple designed Swift to be fast, safe, and modern for all developers."
         ]
         // Cursor on 's' in "safe"
         let safeIndex = buffer.lines[0].range(of: "safe")!.lowerBound
@@ -1052,21 +1058,5 @@ struct FormatAndLayoutTests {
         let syntaxMultiSpaceRst = editor.syntaxForLine(at: 2)
         #expect(syntaxMultiSpaceRst?.name == "LOGO")
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

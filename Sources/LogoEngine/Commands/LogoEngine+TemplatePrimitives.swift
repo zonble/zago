@@ -137,7 +137,8 @@ extension LogoEngine {
             var accum = items[0]
             for (i, nextItem) in items.dropFirst().enumerated() {
                 let rest = Array(items[(i + 2)...])
-                accum = applyTemplate(templateStr: templateStr, args: [accum, nextItem], indexInLoop: i + 1, restList: rest)
+                accum = applyTemplate(
+                    templateStr: templateStr, args: [accum, nextItem], indexInLoop: i + 1, restList: rest)
             }
             return accum
 

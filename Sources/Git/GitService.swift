@@ -252,7 +252,8 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
     /// The final empty component produced by a trailing newline is a separator
     /// sentinel, not an additional editor line.
     static func splitGitOutputLines(_ output: String) -> [String] {
-        let normalized = output
+        let normalized =
+            output
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
         var lines = normalized.components(separatedBy: "\n")

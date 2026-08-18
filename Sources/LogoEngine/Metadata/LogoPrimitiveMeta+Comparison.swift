@@ -10,8 +10,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.less",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by LESS.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by LESS.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by LESS.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by LESS.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "LESS? 3 5", output: "true")]
             )
@@ -23,8 +25,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.greater",
                 source: .ucbLogo,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by GREATER.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by GREATER.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by GREATER.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by GREATER.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "GREATER? 10 5", output: "true")]
             )
@@ -36,8 +40,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.lessequal",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by LESSOREQUAL.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by LESSOREQUAL.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by LESSOREQUAL.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by LESSOREQUAL.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "LESSEQUAL? 5 5", output: "true")]
             )
@@ -49,8 +55,10 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.greaterequal",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "a", required: true, description: "The a argument. Used by GREATEROREQUAL.", example: "1"),
-                    LogoPrimitiveParameter(name: "b", required: true, description: "The b argument. Used by GREATEROREQUAL.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "a", required: true, description: "The a argument. Used by GREATEROREQUAL.", example: "1"),
+                    LogoPrimitiveParameter(
+                        name: "b", required: true, description: "The b argument. Used by GREATEROREQUAL.", example: "1"),
                 ],
                 examples: [LogoPrimitiveExample(input: "GREATEREQUAL? 10 5", output: "true")]
             )

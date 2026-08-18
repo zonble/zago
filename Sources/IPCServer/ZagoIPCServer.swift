@@ -184,7 +184,8 @@ extension ZagoIPCServer {
         let tokenPath: String
         let limits: IPCServerLimits
         private let jsonRPCParser: JSONRPCParser
-        private let queue = DispatchQueue(label: "org.zago.ipcserver.windows", qos: .userInitiated, attributes: .concurrent)
+        private let queue = DispatchQueue(
+            label: "org.zago.ipcserver.windows", qos: .userInitiated, attributes: .concurrent)
         private var pendingPipeHandle: HANDLE?
         private var activeConnections: [String: HANDLE] = [:]
         private let lock = NSLock()

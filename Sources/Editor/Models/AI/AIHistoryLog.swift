@@ -7,7 +7,7 @@ public struct AIHistoryEntry: Codable, Equatable, Identifiable, Sendable {
     public let clientName: String
     public let reason: String
     public let affectedFiles: [AffectedFileProposal]
-    public let decision: String // "accepted", "rejected", "undone"
+    public let decision: String  // "accepted", "rejected", "undone"
 
     public init(
         id: String = "hist-\(UUID().uuidString.prefix(8))",

@@ -60,7 +60,7 @@ import Testing
     }
 
     @Test func testCustomPatternFormatting() {
-        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 2023-11-14 22:13:20 UTC
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)  // 2023-11-14 22:13:20 UTC
         let formatted = LogoDateTimeFormatter.format(
             date: fixedDate,
             mode: .date,
@@ -73,7 +73,7 @@ import Testing
     }
 
     @Test func testISO8601Formatting() {
-        let fixedDate = Date(timeIntervalSince1970: 1700000000)
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
         let formatted = LogoDateTimeFormatter.format(
             date: fixedDate,
             mode: .dateTime,
@@ -85,7 +85,7 @@ import Testing
     }
 
     @Test func testMinguoROCCalendar() {
-        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 2023-11-14 (民國112年)
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)  // 2023-11-14 (民國112年)
         let formatted = LogoDateTimeFormatter.format(
             date: fixedDate,
             mode: .date,
@@ -98,7 +98,7 @@ import Testing
     }
 
     @Test func testTimeZonesAndOffsets() {
-        let fixedDate = Date(timeIntervalSince1970: 1700000000) // 22:13:20 UTC -> 07:13:20 (+09:00 next day)
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)  // 22:13:20 UTC -> 07:13:20 (+09:00 next day)
         let formattedTokyo = LogoDateTimeFormatter.format(
             date: fixedDate,
             mode: .time,
@@ -121,7 +121,7 @@ import Testing
         var index = 0
         let tokens = [
             "DATE",
-            "[", "format", "\"yyyy-MM-dd", "tz", "\"UTC", "calendar", "\"gregorian", "]"
+            "[", "format", "\"yyyy-MM-dd", "tz", "\"UTC", "calendar", "\"gregorian", "]",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(!res.isEmpty)
@@ -132,7 +132,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "(", "DATE", "\"iso8601", "\"en_US", "\"UTC", ")"
+            "(", "DATE", "\"iso8601", "\"en_US", "\"UTC", ")",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(!res.isEmpty)
@@ -143,7 +143,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "FORMAT.DATE", "[", "2026", "12", "25", "]", "\"japanese"
+            "FORMAT.DATE", "[", "2026", "12", "25", "]", "\"japanese",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res.contains("令和8年") || res.contains("12月25日"))
@@ -153,7 +153,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "FORMAT.DATE", "\"2026-08-31T15:00:00Z", "\"yyyy/MM/dd", "\"UTC"
+            "FORMAT.DATE", "\"2026-08-31T15:00:00Z", "\"yyyy/MM/dd", "\"UTC",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "2026/08/31")
@@ -163,7 +163,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATE.ADD", "\"2026-08-15", "7", "\"days"
+            "DATE.ADD", "\"2026-08-15", "7", "\"days",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "2026-08-22")
@@ -173,7 +173,7 @@ import Testing
         let engine = LogoEngine()
         var index = 0
         let tokens = [
-            "DATE.DIFF", "\"2026-12-31", "\"2026-08-15", "\"days"
+            "DATE.DIFF", "\"2026-12-31", "\"2026-08-15", "\"days",
         ]
         let res = engine.evaluateExpression(tokens, index: &index)
         #expect(res == "138")

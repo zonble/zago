@@ -95,7 +95,8 @@ final class Renderer {
         let (cursorVLineIdx, cursorVColIdx): (Int, Int)
         if editor.isCanvasModeActive {
             let baseCanvasLines = editor.layoutEngine.computeCanvasLines(from: editor.buffer.lines)
-            virtualLines = expandVirtualLinesWithProposal(virtualLines: baseCanvasLines, editor: editor, textWidth: textWidth)
+            virtualLines = expandVirtualLinesWithProposal(
+                virtualLines: baseCanvasLines, editor: editor, textWidth: textWidth)
             virtualLineStartIndex = 0
             totalVirtualLineCount = virtualLines.count
             (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
@@ -105,7 +106,8 @@ final class Renderer {
             )
         } else {
             let baseVLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: textWidth)
-            virtualLines = expandVirtualLinesWithProposal(virtualLines: baseVLines, editor: editor, textWidth: textWidth)
+            virtualLines = expandVirtualLinesWithProposal(
+                virtualLines: baseVLines, editor: editor, textWidth: textWidth)
             virtualLineStartIndex = 0
             totalVirtualLineCount = virtualLines.count
             (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
@@ -223,7 +225,8 @@ final class Renderer {
                 let isFirstSubLine = (vLine.subLineIndex == 0)
 
                 if showBreakpointGutter {
-                    let hasBreakpoint = isFirstSubLine
+                    let hasBreakpoint =
+                        isFirstSubLine
                         && editor.debuggerController.hasBreakpoint(in: editor.buffer, line: vLine.bufferLineIndex)
                     lineOutput += hasBreakpoint ? "●" : " "
                 }
@@ -301,52 +304,54 @@ final class Renderer {
                     lineOutput += vLine.text.ansiStyled(style: ANSIStyle.aiGhostOverlay)
                 } else {
                     for cIdxInVLine in 0..<baseChars.count {
-                    let ch = baseChars[cIdxInVLine]
-                    let realCol = renderedStartCol + cIdxInVLine
-                    let charVisualColumn =
-                        editor.isCanvasModeActive
-                        ? editor.canvasHorizontalOffset + renderedDisplayWidth
-                        : realCol
-                    let isCellActive: Bool
-                    if let (cellLeft, cellRight) = activeCellBounds {
-                        isCellActive = realCol > cellLeft && realCol < cellRight
-                    } else {
-                        isCellActive = false
-                    }
+                        let ch = baseChars[cIdxInVLine]
+                        let realCol = renderedStartCol + cIdxInVLine
+                        let charVisualColumn =
+                            editor.isCanvasModeActive
+                            ? editor.canvasHorizontalOffset + renderedDisplayWidth
+                            : realCol
+                        let isCellActive: Bool
+                        if let (cellLeft, cellRight) = activeCellBounds {
+                            isCellActive = realCol > cellLeft && realCol < cellRight
+                        } else {
+                            isCellActive = false
+                        }
 
-                    let renderedText = renderText(
-                        for: ch,
-                        atDisplayColumn: renderedDisplayWidth,
-                        tabSize: editor.displayConfig.tabSize)
+                        let renderedText = renderText(
+                            for: ch,
+                            atDisplayColumn: renderedDisplayWidth,
+                            tabSize: editor.displayConfig.tabSize)
 
-                    if editor.isCanvasModeActive
-                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
-                    {
-                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                    } else if !editor.isCanvasModeActive
-                        && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
-                    {
-                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                    } else if isDirBufferSelectedLine {
-                        lineOutput += renderedText
-                    } else if !editor.isCanvasModeActive
-                        && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
-                    {
-                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasCursor)
-                    } else if isCellActive {
-                        lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasActiveCell)
-                    } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
-                        let tok = tokenTypes[realCol]
-                        lineOutput += renderedText.ansiStyled(style: tok.ansiColor)
-                    } else {
-                        lineOutput += renderedText
+                        if editor.isCanvasModeActive
+                            && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
+                        {
+                            lineOutput += renderedText.ansiStyled(
+                                style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if !editor.isCanvasModeActive
+                            && editor.buffer.isCharacterSelected(line: vLine.bufferLineIndex, col: realCol)
+                        {
+                            lineOutput += renderedText.ansiStyled(
+                                style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if isDirBufferSelectedLine {
+                            lineOutput += renderedText
+                        } else if !editor.isCanvasModeActive
+                            && editor.searchController.isSearchMatchCharacter(line: vLine.bufferLineIndex, col: realCol)
+                        {
+                            lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasCursor)
+                        } else if isCellActive {
+                            lineOutput += renderedText.ansiStyled(style: ANSIStyle.canvasActiveCell)
+                        } else if realCol < tokenTypes.count && tokenTypes[realCol] != .normal {
+                            let tok = tokenTypes[realCol]
+                            lineOutput += renderedText.ansiStyled(style: tok.ansiColor)
+                        } else {
+                            lineOutput += renderedText
+                        }
+                        renderedDisplayWidth += displayWidth(
+                            for: ch,
+                            atDisplayColumn: renderedDisplayWidth,
+                            tabSize: editor.displayConfig.tabSize)
                     }
-                    renderedDisplayWidth += displayWidth(
-                        for: ch,
-                        atDisplayColumn: renderedDisplayWidth,
-                        tabSize: editor.displayConfig.tabSize)
                 }
-            }
 
                 if editor.isCanvasModeActive && !vLine.isProposalOverlay {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
@@ -612,7 +617,8 @@ final class Renderer {
 
     private func renderText(for character: Character, atDisplayColumn displayColumn: Int, tabSize: Int) -> String {
         if character == "\t" {
-            return String(repeating: " ", count: displayWidth(for: character, atDisplayColumn: displayColumn, tabSize: tabSize))
+            return String(
+                repeating: " ", count: displayWidth(for: character, atDisplayColumn: displayColumn, tabSize: tabSize))
         }
         return String(character)
     }
@@ -679,13 +685,13 @@ final class Renderer {
 
         var matchingChunks: [ProposalChunk] = []
         for file in proposal.affectedFiles {
-            let matches = (file.bufferId != nil && file.bufferId == editor.buffer.id) ||
-                          file.filePath == "active" ||
-                          (bufferFileName != nil && file.filePath == bufferFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
-                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
-                          (bufferFileName == nil && file.bufferId == nil)
+            let matches =
+                (file.bufferId != nil && file.bufferId == editor.buffer.id) || file.filePath == "active"
+                || (bufferFileName != nil && file.filePath == bufferFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName))
+                || (!currentFileName.isEmpty && file.filePath == currentFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!))
+                || (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 matchingChunks.append(contentsOf: file.chunks)
             }
@@ -730,28 +736,30 @@ final class Renderer {
                 let topBorderStr = "┌" + headerText + String(repeating: "─", count: remDashCount) + "┐"
                 let topCol = max(0, chunk.targetCol - 1)
                 let topIndent = String(repeating: " ", count: topCol)
-                expanded.append(VirtualLine(
-                    bufferLineIndex: lineIdx,
-                    subLineIndex: 0,
-                    text: topIndent + topBorderStr,
-                    startCol: 0,
-                    endCol: topBorderStr.count,
-                    isProposalOverlay: true
-                ))
+                expanded.append(
+                    VirtualLine(
+                        bufferLineIndex: lineIdx,
+                        subLineIndex: 0,
+                        text: topIndent + topBorderStr,
+                        startCol: 0,
+                        endCol: topBorderStr.count,
+                        isProposalOverlay: true
+                    ))
 
                 // Inner content lines
                 var boxSubLineIdx = 1
                 for contentStr in wrappedBoxContent {
                     let padCount = max(0, boxWidth - 3 - contentStr.displayWidth)
                     let boxContentLine = "│ " + contentStr + String(repeating: " ", count: padCount) + "│"
-                    expanded.append(VirtualLine(
-                        bufferLineIndex: lineIdx,
-                        subLineIndex: boxSubLineIdx,
-                        text: topIndent + boxContentLine,
-                        startCol: 0,
-                        endCol: boxContentLine.count,
-                        isProposalOverlay: true
-                    ))
+                    expanded.append(
+                        VirtualLine(
+                            bufferLineIndex: lineIdx,
+                            subLineIndex: boxSubLineIdx,
+                            text: topIndent + boxContentLine,
+                            startCol: 0,
+                            endCol: boxContentLine.count,
+                            isProposalOverlay: true
+                        ))
                     boxSubLineIdx += 1
                 }
 
@@ -759,14 +767,15 @@ final class Renderer {
                 let hintText = "─ " + actionHint + " "
                 let bottomDashCount = max(0, boxWidth - 2 - hintText.displayWidth)
                 let bottomBorderStr = "└" + hintText + String(repeating: "─", count: bottomDashCount) + "┘"
-                expanded.append(VirtualLine(
-                    bufferLineIndex: lineIdx,
-                    subLineIndex: boxSubLineIdx,
-                    text: topIndent + bottomBorderStr,
-                    startCol: 0,
-                    endCol: bottomBorderStr.count,
-                    isProposalOverlay: true
-                ))
+                expanded.append(
+                    VirtualLine(
+                        bufferLineIndex: lineIdx,
+                        subLineIndex: boxSubLineIdx,
+                        text: topIndent + bottomBorderStr,
+                        startCol: 0,
+                        endCol: bottomBorderStr.count,
+                        isProposalOverlay: true
+                    ))
                 boxSubLineIdx += 1
 
                 if let vLines = linesByBufferLine[lineIdx] {
@@ -801,13 +810,13 @@ final class Renderer {
         let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = (file.bufferId != nil && file.bufferId == buffer.id) ||
-                          file.filePath == "active" ||
-                          (bufferFileName != nil && file.filePath == bufferFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
-                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
-                          (bufferFileName == nil && file.bufferId == nil)
+            let matches =
+                (file.bufferId != nil && file.bufferId == buffer.id) || file.filePath == "active"
+                || (bufferFileName != nil && file.filePath == bufferFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName))
+                || (!currentFileName.isEmpty && file.filePath == currentFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!))
+                || (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 for chunk in file.chunks {
                     let clientName = proposal.clientName.isEmpty ? "antigravity-ai" : proposal.clientName
@@ -872,13 +881,13 @@ final class Renderer {
         let bufferFileName = buffer.filePath
         let currentFileName = bufferFileName.map { NSString(string: $0).lastPathComponent } ?? ""
         for file in proposal.affectedFiles {
-            let matches = (file.bufferId != nil && file.bufferId == buffer.id) ||
-                          file.filePath == "active" ||
-                          (bufferFileName != nil && file.filePath == bufferFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName)) ||
-                          (!currentFileName.isEmpty && file.filePath == currentFileName) ||
-                          (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!)) ||
-                          (bufferFileName == nil && file.bufferId == nil)
+            let matches =
+                (file.bufferId != nil && file.bufferId == buffer.id) || file.filePath == "active"
+                || (bufferFileName != nil && file.filePath == bufferFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && file.filePath!.hasSuffix(currentFileName))
+                || (!currentFileName.isEmpty && file.filePath == currentFileName)
+                || (!currentFileName.isEmpty && file.filePath != nil && currentFileName.hasSuffix(file.filePath!))
+                || (bufferFileName == nil && file.bufferId == nil)
             if matches {
                 for chunk in file.chunks {
                     let startLine = chunk.targetLine - 1
