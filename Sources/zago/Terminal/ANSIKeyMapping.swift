@@ -56,6 +56,14 @@ public enum ANSIKeyMapping {
         // Ctrl + Left/Right Word Navigation
         "1;5D": .ctrl("B"), "5D": .ctrl("B"),
         "1;5C": .ctrl("F"), "5C": .ctrl("F"),
+
+        // Ctrl + Backspace & Alt + Backspace (Kitty / xterm modifyOtherKeys / iTerm2)
+        "127;5u": .ctrlBackspace, "8;5u": .ctrlBackspace, "27;5;127~": .ctrlBackspace, "27;5;8~": .ctrlBackspace,
+        "127;3u": .altBackspace, "8;3u": .altBackspace, "27;3;127~": .altBackspace, "27;3;8~": .altBackspace,
+
+        // Alt + Enter & Alt + Tab
+        "13;3u": .altEnter, "10;3u": .altEnter, "27;3;13~": .altEnter, "27;3;10~": .altEnter,
+        "9;3u": .altTab, "27;3;9~": .altTab,
     ]
 
     private static let singleCharCSITable: [UInt8: Key] = [
@@ -63,10 +71,6 @@ public enum ANSIKeyMapping {
         UInt8(ascii: "B"): .arrowDown,
         UInt8(ascii: "C"): .arrowRight,
         UInt8(ascii: "D"): .arrowLeft,
-        UInt8(ascii: "a"): .shiftArrowUp,
-        UInt8(ascii: "b"): .shiftArrowDown,
-        UInt8(ascii: "c"): .shiftArrowRight,
-        UInt8(ascii: "d"): .shiftArrowLeft,
         UInt8(ascii: "H"): .home,
         UInt8(ascii: "F"): .end,
         UInt8(ascii: "Z"): .backtab,
@@ -84,7 +88,7 @@ public enum ANSIKeyMapping {
     /// Maps ASCII control codes (e.g. 13 -> .enter, 9 -> .tab, 1...26 -> Ctrl+A..Z) to `Key`.
     public static func resolveControlCode(_ code: UInt32) -> Key? {
         switch code {
-        case 13: return .enter
+        case 13, 10: return .enter
         case 9: return .tab
         case 127: return .backspace
         case 30: return .mark
@@ -105,8 +109,8 @@ public enum ANSIKeyMapping {
     }
 
     /// Resolves single-character SS3 sequence (e.g. `ESC O P` -> `.f1`, `ESC O H` -> `.home`).
-    public static func resolveSS3Code(_ byte: UInt8) -> Key {
-        singleCharSS3Table[byte] ?? .esc
+    public static func resolveSS3Code(_ byte: UInt8) -> Key? {
+        singleCharSS3Table[byte]
     }
 
     /// Resolves an ANSI sequence string (e.g. "11~", "1;2D") to a normalized `Key`.

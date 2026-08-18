@@ -132,7 +132,7 @@ final class DirectoryBuffer: TextBuffer {
             return true
         case .arrowUp, .arrowDown, .arrowLeft, .arrowRight, .home, .end, .pageUp, .pageDown, .resize:
             return false
-        case .delete, .ctrlBackspace:
+        case .delete, .ctrlBackspace, .altBackspace:
             editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))
             return true
         case .char(let ch):

@@ -15,6 +15,10 @@ public enum KeyParser {
         case "ctrl-shift-right", "ctrl-shift-arrow-right", "c-s-right", "c-s-arrow-right": return .ctrlShiftArrowRight
         case "ctrl-shift-up", "ctrl-shift-arrow-up", "c-s-up", "c-s-arrow-up": return .ctrlShiftArrowUp
         case "ctrl-shift-down", "ctrl-shift-arrow-down", "c-s-down", "c-s-arrow-down": return .ctrlShiftArrowDown
+        case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs", "^backspace", "^bs": return .ctrlBackspace
+        case "alt-backspace", "alt-bs", "m-backspace", "m-bs", "opt-backspace", "option-backspace": return .altBackspace
+        case "alt-enter", "alt-return", "m-enter", "m-return", "opt-enter", "opt-return", "option-enter", "option-return": return .altEnter
+        case "alt-tab", "m-tab", "opt-tab", "option-tab": return .altTab
         default:
             break
         }
@@ -62,6 +66,7 @@ public enum KeyParser {
         case "pagedown", "page-down", "pgdn": .pageDown
         case "backspace", "bs": .backspace
         case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs": .ctrlBackspace
+        case "alt-backspace", "alt-bs", "m-backspace", "m-bs", "opt-backspace", "option-backspace": .altBackspace
         case "delete", "del": .delete
         case "enter", "return": .enter
         case "tab": .tab

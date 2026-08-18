@@ -3,6 +3,7 @@ import Testing
 
 @testable import Config
 @testable import Editor
+@testable import zago
 
 @Suite struct KeymapSystemTests {
 
@@ -619,5 +620,38 @@ import Testing
         #expect(describeKeyItem != nil)
         #expect(describeKeyItem?.titleKey == "menu.help.describe_key")
         #expect(describeKeyItem?.hotkeyChar == "k")
+    }
+
+    @Test func testBackspaceKeyResolutionAndMapping() throws {
+        let keymap = KeymapManager(preset: .classic)
+        #expect(keymap.resolve(key: .ctrlBackspace, in: .text) == .editDeleteLine)
+        #expect(keymap.resolve(key: .altBackspace, in: .text) == .editDeleteLine)
+        #expect(keymap.resolve(key: .ctrlBackspace, in: .prompt) == .promptClearLine)
+        #expect(keymap.resolve(key: .altBackspace, in: .prompt) == .promptClearLine)
+
+        #expect(KeyParser.parse("ctrl-backspace") == .ctrlBackspace)
+        #expect(KeyParser.parse("c-bs") == .ctrlBackspace)
+        #expect(KeyParser.parse("alt-backspace") == .altBackspace)
+        #expect(KeyParser.parse("opt-backspace") == .altBackspace)
+        #expect(KeyParser.parse("m-bs") == .altBackspace)
+
+        #expect(ANSIKeyMapping.resolve("127;5u") == .ctrlBackspace)
+        #expect(ANSIKeyMapping.resolve("8;5u") == .ctrlBackspace)
+        #expect(ANSIKeyMapping.resolve("127;3u") == .altBackspace)
+        #expect(ANSIKeyMapping.resolve("8;3u") == .altBackspace)
+    }
+
+    @Test func testAltEnterAndEscapeFallbackResolution() throws {
+        #expect(KeyParser.parse("alt-enter") == .altEnter)
+        #expect(KeyParser.parse("m-enter") == .altEnter)
+        #expect(KeyParser.parse("opt-return") == .altEnter)
+        #expect(KeyParser.parse("alt-tab") == .altTab)
+
+        #expect(ANSIKeyMapping.resolve("13;3u") == .altEnter)
+        #expect(ANSIKeyMapping.resolve("10;3u") == .altEnter)
+        #expect(ANSIKeyMapping.resolve("9;3u") == .altTab)
+
+        #expect(ANSIKeyMapping.resolveSS3Code(UInt8(ascii: "P")) == .f1)
+        #expect(ANSIKeyMapping.resolveSS3Code(UInt8(ascii: "?")) == nil)
     }
 }

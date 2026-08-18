@@ -178,6 +178,10 @@ import Foundation
                 break
             }
 
+            if firstByte == 8 {
+                return .ctrlBackspace
+            }
+
             if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(firstByte)) {
                 return controlKey
             }
@@ -185,7 +189,13 @@ import Foundation
             if firstByte == 27 {
                 guard let secondByte = readByte(timeoutMs: 50) else { return .esc }
                 if secondByte == 8 || secondByte == 127 {
-                    return .ctrlBackspace
+                    return .altBackspace
+                }
+                if secondByte == 13 || secondByte == 10 {
+                    return .altEnter
+                }
+                if secondByte == 9 {
+                    return .altTab
                 }
                 switch secondByte {
                 case UInt8(ascii: "["):
@@ -197,7 +207,7 @@ import Foundation
                         var seqString = String(UnicodeScalar(thirdByte))
                         while let nextByte = readByte(timeoutMs: 50) {
                             if nextByte == UInt8(ascii: "~")
-                                || (nextByte >= UInt8(ascii: "A") && nextByte <= UInt8(ascii: "Z"))
+                                 || (nextByte >= UInt8(ascii: "A") && nextByte <= UInt8(ascii: "Z"))
                                 || (nextByte >= UInt8(ascii: "a") && nextByte <= UInt8(ascii: "z"))
                             {
                                 seqString.append(Character(UnicodeScalar(nextByte)))
@@ -210,15 +220,15 @@ import Foundation
                     return .unknown
 
                 case UInt8(ascii: "O"):
-                    guard let thirdByte = readByte(timeoutMs: 50) else { return .esc }
-                    return ANSIKeyMapping.resolveSS3Code(thirdByte)
+                    guard let thirdByte = readByte(timeoutMs: 50) else { return .unknown }
+                    return ANSIKeyMapping.resolveSS3Code(thirdByte) ?? .unknown
 
                 case 32...126:
                     let ch = Character(UnicodeScalar(secondByte))
                     return .alt(ch)
 
                 default:
-                    return .esc
+                    return .unknown
                 }
             }
 

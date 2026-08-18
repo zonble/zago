@@ -16,9 +16,12 @@ public enum Key: Equatable, Hashable, Sendable {
     case pageDown
     case backspace
     case ctrlBackspace
+    case altBackspace
     case delete
     case enter
+    case altEnter
     case tab
+    case altTab
     case backtab
     case mark
     case esc
@@ -77,11 +80,14 @@ extension Key {
         case .pageUp: return "PgUp"
         case .pageDown: return "PgDn"
         case .tab: return "Tab"
+        case .altTab: return "M+Tab"
         case .backtab: return "⇧+Tab"
         case .enter: return "Enter"
+        case .altEnter: return "M+Enter"
         case .esc: return "Esc"
         case .backspace: return "BS"
         case .ctrlBackspace: return "^BS"
+        case .altBackspace: return "M+BS"
         case .delete: return "Del"
         case .mark: return "Mark"
         case .char(let ch): return String(ch)
