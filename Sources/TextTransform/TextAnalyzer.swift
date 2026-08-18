@@ -63,7 +63,13 @@ public enum TextAnalyzer {
         var wordStart: Int? = nil
         var index = 0
         for character in text {
-            if TextUnicodeClassifier.isUnicodeWordCharacter(character) || TextUnicodeClassifier.isCJKScriptCharacter(character) {
+            if TextUnicodeClassifier.isCJKScriptCharacter(character) {
+                if let start = wordStart {
+                    ranges.append(start..<index)
+                    wordStart = nil
+                }
+                ranges.append(index..<(index + 1))
+            } else if TextUnicodeClassifier.isUnicodeWordCharacter(character) {
                 if wordStart == nil {
                     wordStart = index
                 }

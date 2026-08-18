@@ -252,6 +252,7 @@ import Testing
     buffer.lineIndex = 0
     buffer.columnIndex = 0
 
+    #if canImport(Darwin)
     // Move forward skips 「 and stops after 你 (1..<2)
     buffer.moveWordForward()
     #expect(buffer.columnIndex == 2)  // after 你
@@ -275,6 +276,32 @@ import Testing
     // Move backward moves before 你
     buffer.moveWordBackward()
     #expect(buffer.columnIndex == 1)  // before 你
+    #else
+    // Non-Darwin platforms without ICU lexicon dictionary perform per-character CJK navigation
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 2)  // after 你
+
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 3)  // after 好
+
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 4)  // after 世
+
+    buffer.moveWordForward()
+    #expect(buffer.columnIndex == 5)  // after 界
+
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 4)  // before 界
+
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 3)  // before 世
+
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 2)  // before 好
+
+    buffer.moveWordBackward()
+    #expect(buffer.columnIndex == 1)  // before 你
+    #endif
 }
 
 @Test func testCtrlShiftWordNavigationKeyDispatch() {

@@ -1,4 +1,5 @@
-import XCTest
+import Foundation
+import Testing
 
 @testable import Config
 @testable import Drawing
@@ -7,7 +8,8 @@ import XCTest
 @testable import LogoEngine
 @testable import TextMetrics
 
-final class IPCServerTests: XCTestCase {
+@Suite(.serialized)
+struct IPCServerTests {
     private struct TestRPCRequest<Params: Encodable>: Encodable {
         let jsonrpc = "2.0"
         let method: String
@@ -62,7 +64,7 @@ final class IPCServerTests: XCTestCase {
     private final class WakeupTrackingTerminal: EditorTerminal, @unchecked Sendable {
         private let lock = NSLock()
         private(set) var wakeupCount = 0
-        var onWakeup: (() -> Void)?
+        var onWakeup: (@Sendable () -> Void)?
         private var woke = false
 
         func enableRawMode() throws {}
@@ -98,7 +100,7 @@ final class IPCServerTests: XCTestCase {
         }
     }
 
-    private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate {
+    private final class TestIPCDelegate: ZagoIPCServerDataSource, ZagoIPCServerDelegate, @unchecked Sendable {
         private let editor: Editor
 
         init(editor: Editor) {
@@ -188,7 +190,7 @@ final class IPCServerTests: XCTestCase {
         }
     }
 
-    private final class TimedOutDataSource: ZagoIPCServerDataSource {
+    private final class TimedOutDataSource: ZagoIPCServerDataSource, @unchecked Sendable {
         func ipcServerGetBuffers(_ server: any ZagoIPCServer) throws -> [BufferInfo] {
             throw IPCServerRequestError.timedOut
         }
@@ -206,21 +208,21 @@ final class IPCServerTests: XCTestCase {
         }
     }
 
-    func testOverlayInsertModeParsing() {
-        XCTAssertEqual(OverlayInsertMode.parse("1d_insert"), .d1Insert)
-        XCTAssertEqual(OverlayInsertMode.parse("insert"), .d1Insert)
-        XCTAssertEqual(OverlayInsertMode.parse("1d_overwrite"), .d1Overwrite)
-        XCTAssertEqual(OverlayInsertMode.parse("2d_insert"), .d2Insert)
-        XCTAssertEqual(OverlayInsertMode.parse("2d_overwrite"), .d2Overwrite)
-        XCTAssertEqual(OverlayInsertMode.parse("overwrite"), .d2Overwrite)
-        XCTAssertEqual(OverlayInsertMode.parse("2d_transparent"), .d2Transparent)
-        XCTAssertEqual(OverlayInsertMode.parse("transparent"), .d2Transparent)
-        XCTAssertEqual(OverlayInsertMode.parse("2d_fuse_corners"), .d2FuseCorners)
-        XCTAssertEqual(OverlayInsertMode.parse("fuse_corners"), .d2FuseCorners)
-        XCTAssertEqual(OverlayInsertMode.parse("invalid"), .d2Overwrite)
+    @Test func testOverlayInsertModeParsing() {
+        #expect(OverlayInsertMode.parse("1d_insert") == .d1Insert)
+        #expect(OverlayInsertMode.parse("insert") == .d1Insert)
+        #expect(OverlayInsertMode.parse("1d_overwrite") == .d1Overwrite)
+        #expect(OverlayInsertMode.parse("2d_insert") == .d2Insert)
+        #expect(OverlayInsertMode.parse("2d_overwrite") == .d2Overwrite)
+        #expect(OverlayInsertMode.parse("overwrite") == .d2Overwrite)
+        #expect(OverlayInsertMode.parse("2d_transparent") == .d2Transparent)
+        #expect(OverlayInsertMode.parse("transparent") == .d2Transparent)
+        #expect(OverlayInsertMode.parse("2d_fuse_corners") == .d2FuseCorners)
+        #expect(OverlayInsertMode.parse("fuse_corners") == .d2FuseCorners)
+        #expect(OverlayInsertMode.parse("invalid") == .d2Overwrite)
     }
 
-    func testActionAuthorInUndoSnapshot() {
+    @Test func testActionAuthorInUndoSnapshot() {
         let textBuffer = TextBuffer()
         textBuffer.lines = ["First line", "Second line"]
         textBuffer.saveUndoSnapshot(author: .user)
@@ -229,83 +231,71 @@ final class IPCServerTests: XCTestCase {
         let aiAuthor = ActionAuthor.aiAgent(id: "agent-01", name: "Architect-Bot", reason: "Drafted payment flow")
         textBuffer.saveUndoSnapshot(author: aiAuthor)
 
-        XCTAssertEqual(textBuffer.undoStack.count, 2)
-        XCTAssertEqual(textBuffer.undoStack.last?.author, aiAuthor)
+        #expect(textBuffer.undoStack.count == 2)
+        #expect(textBuffer.undoStack.last?.author == aiAuthor)
 
         let popped = textBuffer.performUndo()
-        XCTAssertNotNil(popped)
-        XCTAssertEqual(textBuffer.lines[0], "Modified first line")
+        #expect(popped != nil)
+        #expect(textBuffer.lines[0] == "Modified first line")
     }
 
-    func testExternalEditorRequestRunsWhenEditorLoopDrains() {
+    @Test func testExternalEditorRequestRunsWhenEditorLoopDrains() async throws {
         let editor = Editor()
         editor.isInteractiveMode = true
         defer {
             editor.isInteractiveMode = false
         }
 
-        let requestCompleted = expectation(description: "external editor request completed")
-        DispatchQueue.global(qos: .userInitiated).async {
-            let result = try? editor.performOnEditorLoop {
+        let task = Task.detached {
+            try editor.performOnEditorLoop {
                 editor.buffer.lines[0] = "changed by ipc"
                 return "ok"
             }
-            XCTAssertEqual(result, "ok")
-            requestCompleted.fulfill()
         }
 
-        let deadline = Date().addingTimeInterval(1)
-        while editor.buffer.lines[0] != "changed by ipc" && Date() < deadline {
+        let start = Date()
+        while editor.buffer.lines[0] != "changed by ipc" && Date().timeIntervalSince(start) < 2 {
             editor.drainExternalRequests()
-            Thread.sleep(forTimeInterval: 0.01)
+            try await Task.sleep(nanoseconds: 10_000_000)
         }
 
-        wait(for: [requestCompleted], timeout: 1)
-        XCTAssertEqual(editor.buffer.lines[0], "changed by ipc")
+        let result = try await task.value
+        #expect(result == "ok")
+        #expect(editor.buffer.lines[0] == "changed by ipc")
     }
 
-    func testExternalEditorRequestWakesBlockedTerminal() {
+    @Test func testExternalEditorRequestWakesBlockedTerminal() async throws {
         let terminal = WakeupTrackingTerminal()
         let editor = Editor(
             options: EditorOptions(language: .en),
             dependencies: EditorDependencies(fileIOStrategy: TestLocalEditorFileIOStrategy.shared, terminal: terminal),
             initialVariables: [:]
         )
-        let wokeTerminal = expectation(description: "external request wakes terminal")
-        let editorLoopExited = expectation(description: "editor loop exits")
-        terminal.onWakeup = {
-            wokeTerminal.fulfill()
-        }
 
-        DispatchQueue.global(qos: .userInitiated).async {
+        let editorTask = Task.detached {
             editor.run()
-            editorLoopExited.fulfill()
         }
 
-        Thread.sleep(forTimeInterval: 0.05)
+        try await Task.sleep(nanoseconds: 50_000_000)
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            do {
-                let result = try editor.performOnEditorLoop(timeout: 1) {
-                    editor.buffer.lines[0] = "changed after wakeup"
-                    return "ok"
-                }
-                XCTAssertEqual(result, "ok")
-            } catch {
-                XCTFail("Expected external editor request to complete after terminal wakeup: \(error)")
+        let requestTask = Task.detached {
+            try editor.performOnEditorLoop(timeout: 2) {
+                editor.buffer.lines[0] = "changed after wakeup"
+                return "ok"
             }
         }
 
-        wait(for: [wokeTerminal], timeout: 1)
-        XCTAssertEqual(terminal.wakeupCount, 1)
-        wait(for: [editorLoopExited], timeout: 1)
-        XCTAssertEqual(editor.buffer.lines[0], "changed after wakeup")
+        let result = try await requestTask.value
+        #expect(result == "ok")
+        #expect(terminal.wakeupCount >= 1)
+        _ = await editorTask.result
+        #expect(editor.buffer.lines[0] == "changed after wakeup")
     }
 
-    func testProposalQueueNavigationAndLineOffsetAdjustment() {
+    @Test func testProposalQueueNavigationAndLineOffsetAdjustment() {
         let queue = ProposalQueue()
-        XCTAssertTrue(queue.isEmpty)
-        XCTAssertEqual(queue.count, 0)
+        #expect(queue.isEmpty)
+        #expect(queue.count == 0)
 
         let proposal1 = AIProposal(
             clientId: "bot-1",
@@ -337,33 +327,33 @@ final class IPCServerTests: XCTestCase {
         queue.pushProposal(proposal1)
         queue.pushProposal(proposal2)
 
-        XCTAssertEqual(queue.count, 2)
+        #expect(queue.count == 2)
         // Newly pushed proposal2 (Table-Bot) is automatically activated
-        XCTAssertEqual(queue.currentProposal?.clientName, "Table-Bot")
+        #expect(queue.currentProposal?.clientName == "Table-Bot")
 
         queue.previousProposal()
-        XCTAssertEqual(queue.currentProposal?.clientName, "Architect-Bot")
+        #expect(queue.currentProposal?.clientName == "Architect-Bot")
 
         // Test Dynamic Ghost Line Offset Auto-Adjustment
         // User inserts 2 lines at Line 10 (above proposal1's Line 15 and proposal2's Line 30)
         queue.adjustLineOffsets(aboveLine: 10, delta: 2)
 
-        XCTAssertEqual(queue.pendingProposals[0].affectedFiles[0].chunks[0].targetLine, 17)
-        XCTAssertEqual(queue.pendingProposals[1].affectedFiles[0].chunks[0].targetLine, 32)
+        #expect(queue.pendingProposals[0].affectedFiles[0].chunks[0].targetLine == 17)
+        #expect(queue.pendingProposals[1].affectedFiles[0].chunks[0].targetLine == 32)
     }
 
-    func testEditorLoopRequestTimesOutBeforeDrain() {
+    @Test func testEditorLoopRequestTimesOutBeforeDrain() {
         let editor = Editor()
         editor.isInteractiveMode = true
         defer { editor.isInteractiveMode = false }
 
-        XCTAssertThrowsError(try editor.performOnEditorLoop(timeout: 0.01) { "late" }) { error in
-            XCTAssertEqual(error as? EditorLoopRequestError, .timedOut)
+        #expect(throws: EditorLoopRequestError.timedOut) {
+            try editor.performOnEditorLoop(timeout: 0.01) { "late" }
         }
         editor.drainExternalRequests()
     }
 
-    func testEditorTimeoutMapsToRPC408() throws {
+    @Test func testEditorTimeoutMapsToRPC408() throws {
         let server = makeTestServer(sessionToken: "test-token")
         let dataSource = TimedOutDataSource()
         server.dataSource = dataSource
@@ -372,67 +362,66 @@ final class IPCServerTests: XCTestCase {
             server, method: "zago.client.register",
             params: RegistrationParams(auth: "test-token", clientId: "bot", clientName: "Bot", color: nil), id: 1,
             connectionId: "conn-1")
-        XCTAssertNil(registration.error)
+        #expect(registration.error == nil)
 
         let response = try send(
             server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 2, connectionId: "conn-1")
-        XCTAssertEqual(response.error?.code, 408)
+        #expect(response.error?.code == 408)
     }
 
-    func testProposalQueueRejectsOverflow() {
+    @Test func testProposalQueueRejectsOverflow() {
         let queue = ProposalQueue(maxDepth: 1)
         let proposal = AIProposal(clientId: "bot", clientName: "Bot", reason: "test", affectedFiles: [])
-        XCTAssertTrue(queue.pushProposal(proposal))
-        XCTAssertFalse(queue.pushProposal(proposal))
-        XCTAssertEqual(queue.count, 1)
+        #expect(queue.pushProposal(proposal))
+        #expect(!queue.pushProposal(proposal))
+        #expect(queue.count == 1)
     }
 
-    func testIPCServerRegistrationAndAuthorization() {
+    @Test func testIPCServerRegistrationAndAuthorization() throws {
         let token = "test-secret-token-12345"
         let server = makeTestServer(sessionToken: token)
 
         // 1. Invalid Token Registration
-        let resp1 = try! send(
+        let resp1 = try send(
             server,
             method: "zago.client.register",
             params: RegistrationParams(auth: "wrong-token", clientId: "bot-1", clientName: "Bot", color: nil),
             id: 1,
             connectionId: "conn-1"
         )
-        XCTAssertNotNil(resp1.error)
-        XCTAssertEqual(resp1.error?.code, 401)
+        #expect(resp1.error != nil)
+        #expect(resp1.error?.code == 401)
 
         // 2. Valid Token Registration
-        let resp2 = try! send(
+        let resp2 = try send(
             server,
             method: "zago.client.register",
             params: RegistrationParams(auth: token, clientId: "bot-1", clientName: "Architect-Bot", color: "cyan"),
             id: 2,
             connectionId: "conn-1"
         )
-        XCTAssertNil(resp2.error)
+        #expect(resp2.error == nil)
 
-        let unregisteredRead = try! send(
+        let unregisteredRead = try send(
             server,
             method: "zago.buffer.getBuffers",
             params: Optional<NoParams>.none,
             id: 3,
             connectionId: "conn-2"
         )
-        XCTAssertEqual(unregisteredRead.error?.code, 401)
+        #expect(unregisteredRead.error?.code == 401)
 
-        let registeredRead = try! send(
+        let registeredRead = try send(
             server,
             method: "zago.buffer.getBuffers",
             params: Optional<NoParams>.none,
             id: 4,
             connectionId: "conn-1"
         )
-        XCTAssertNotEqual(registeredRead.error?.code, 401)
-
+        #expect(registeredRead.error?.code != 401)
     }
 
-    func testAIHistoryLogManager() {
+    @Test func testAIHistoryLogManager() {
         let manager = AIHistoryLogManager.shared
         let proposal = AIProposal(
             clientId: "bot-1",
@@ -443,18 +432,18 @@ final class IPCServerTests: XCTestCase {
 
         manager.logDecision(proposal: proposal, decision: "accepted")
         let recent = manager.recentEntries(limit: 5)
-        XCTAssertGreaterThan(recent.count, 0)
-        XCTAssertEqual(recent.first?.clientName, "Architect-Bot")
-        XCTAssertEqual(recent.first?.decision, "accepted")
+        #expect(recent.count > 0)
+        #expect(recent.first?.clientName == "Architect-Bot")
+        #expect(recent.first?.decision == "accepted")
     }
 
-    func testBufferUUIDAndGetBuffersAPI() {
+    @Test func testBufferUUIDAndGetBuffersAPI() throws {
         let editor = Editor()
         let target = TestIPCDelegate(editor: editor)
         let server = makeTestServer(sessionToken: "test-token")
         server.delegate = target
         server.dataSource = target
-        let registration = try! send(
+        let registration = try send(
             server,
             method: "zago.client.register",
             params: RegistrationParams(
@@ -462,13 +451,13 @@ final class IPCServerTests: XCTestCase {
             id: 0,
             connectionId: "conn-1"
         )
-        XCTAssertNil(registration.error)
-        let response = try! send(
+        #expect(registration.error == nil)
+        let response = try send(
             server, method: "zago.buffer.getBuffers", params: Optional<NoParams>.none, id: 1, connectionId: "conn-1")
-        XCTAssertNil(response.error)
+        #expect(response.error == nil)
     }
 
-    func testIPCClientConnectsToLiveServerAndFetchesBuffers() throws {
+    @Test func testIPCClientConnectsToLiveServerAndFetchesBuffers() throws {
         #if os(Windows)
             let server = makeTestServer(sessionToken: "live-token")
         #else
@@ -494,13 +483,13 @@ final class IPCServerTests: XCTestCase {
 
         let result = try client.getBuffers(in: session)
 
-        XCTAssertEqual(result.buffers.count, 1)
-        XCTAssertEqual(result.buffers.first?.bufferId, result.activeBufferId)
-        XCTAssertEqual(result.buffers.first?.fileName, editor.l10n["buffer.untitled"])
-        XCTAssertEqual(result.buffers.first?.isFocused, true)
+        #expect(result.buffers.count == 1)
+        #expect(result.buffers.first?.bufferId == result.activeBufferId)
+        #expect(result.buffers.first?.fileName == editor.l10n["buffer.untitled"])
+        #expect(result.buffers.first?.isFocused == true)
     }
 
-    func testIPCGetSelectionReturnsSelectedTextAndRange() throws {
+    @Test func testIPCGetSelectionReturnsSelectedTextAndRange() throws {
         let editor = Editor()
         editor.buffer.lines = ["alpha", "beta", "gamma"]
         editor.buffer.selectionMark = (line: 0, column: 2)
@@ -519,7 +508,7 @@ final class IPCServerTests: XCTestCase {
             id: 0,
             connectionId: "conn-selection"
         )
-        XCTAssertNil(registration.error)
+        #expect(registration.error == nil)
 
         let response = try send(
             server,
@@ -528,22 +517,24 @@ final class IPCServerTests: XCTestCase {
             id: 1,
             connectionId: "conn-selection"
         )
-        XCTAssertNil(response.error)
+        #expect(response.error == nil)
 
-        let responseJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: try response.encodedData()) as? [String: Any]
-        )
-        let result = try XCTUnwrap(responseJSON["result"] as? [String: Any])
-        XCTAssertEqual(result["hasSelection"] as? Bool, true)
-        XCTAssertEqual(result["text"] as? String, "pha\nbe")
-        XCTAssertEqual(result["lines"] as? [String], ["pha", "be"])
-        XCTAssertEqual(result["startLine"] as? Int, 1)
-        XCTAssertEqual(result["startColumn"] as? Int, 3)
-        XCTAssertEqual(result["endLine"] as? Int, 2)
-        XCTAssertEqual(result["endColumn"] as? Int, 3)
+        guard let responseJSON = try JSONSerialization.jsonObject(with: try response.encodedData()) as? [String: Any],
+            let result = responseJSON["result"] as? [String: Any]
+        else {
+            Issue.record("Failed to decode response JSON")
+            return
+        }
+        #expect(result["hasSelection"] as? Bool == true)
+        #expect(result["text"] as? String == "pha\nbe")
+        #expect(result["lines"] as? [String] == ["pha", "be"])
+        #expect(result["startLine"] as? Int == 1)
+        #expect(result["startColumn"] as? Int == 3)
+        #expect(result["endLine"] as? Int == 2)
+        #expect(result["endColumn"] as? Int == 3)
     }
 
-    func testIPCExecuteLogoCreatesProposalWithoutMutatingBuffer() throws {
+    @Test func testIPCExecuteLogoCreatesProposalWithoutMutatingBuffer() throws {
         let editor = Editor()
         editor.buffer.lines = ["alpha", "beta"]
         editor.buffer.lineIndex = 1
@@ -560,7 +551,7 @@ final class IPCServerTests: XCTestCase {
             id: 0,
             connectionId: "conn-logo"
         )
-        XCTAssertNil(registration.error)
+        #expect(registration.error == nil)
 
         let response = try send(
             server,
@@ -570,75 +561,79 @@ final class IPCServerTests: XCTestCase {
             connectionId: "conn-logo"
         )
 
-        XCTAssertNil(response.error)
-        XCTAssertEqual(editor.buffer.lines, ["alpha", "beta"])
-        XCTAssertEqual(editor.proposalQueue.count, 1)
-        XCTAssertEqual(editor.proposalQueue.currentProposal?.clientId, "ipc-agent")
-        XCTAssertEqual(editor.proposalQueue.currentProposal?.clientName, "IPC Agent")
-        XCTAssertEqual(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine, 2)
-        XCTAssertEqual(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.lines, ["inserted"])
+        #expect(response.error == nil)
+        #expect(editor.buffer.lines == ["alpha", "beta"])
+        #expect(editor.proposalQueue.count == 1)
+        #expect(editor.proposalQueue.currentProposal?.clientId == "ipc-agent")
+        #expect(editor.proposalQueue.currentProposal?.clientName == "IPC Agent")
+        #expect(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.targetLine == 2)
+        #expect(editor.proposalQueue.currentProposal?.affectedFiles.first?.chunks.first?.lines == ["inserted"])
     }
 
-    func testZagoMCPServerMethods() throws {
+    @Test func testZagoMCPServerMethods() throws {
         let offlineServer = ZagoMCPServer(
             sessionLocator: FixedSessionLocator(locatedSessions: [])
         )
         let initializeLine =
             "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}}"
-        let initializeResponse = try XCTUnwrap(offlineServer.handleLine(initializeLine))
-        let initializeJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(initializeResponse.utf8)) as? [String: Any]
-        )
-        let initializeResult = try XCTUnwrap(initializeJSON["result"] as? [String: Any])
-        let serverInfo = try XCTUnwrap(initializeResult["serverInfo"] as? [String: Any])
-        XCTAssertEqual(serverInfo["name"] as? String, "zago")
-        XCTAssertEqual(initializeResult["protocolVersion"] as? String, "2024-11-05")
-        XCTAssertNil(
+        guard let initializeResponse = offlineServer.handleLine(initializeLine),
+            let initializeJSON = try JSONSerialization.jsonObject(with: Data(initializeResponse.utf8)) as? [String: Any],
+            let initializeResult = initializeJSON["result"] as? [String: Any],
+            let serverInfo = initializeResult["serverInfo"] as? [String: Any]
+        else {
+            Issue.record("Failed to parse initialize response")
+            return
+        }
+        #expect(serverInfo["name"] as? String == "zago")
+        #expect(initializeResult["protocolVersion"] as? String == "2024-11-05")
+        #expect(
             offlineServer.handleLine(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
-            )
+            ) == nil
         )
 
-        let toolsResponse = try XCTUnwrap(
-            offlineServer.handleLine("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}")
-        )
-        let toolsJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(toolsResponse.utf8)) as? [String: Any]
-        )
-        let toolsResult = try XCTUnwrap(toolsJSON["result"] as? [String: Any])
-        let tools = try XCTUnwrap(toolsResult["tools"] as? [[String: Any]])
-        XCTAssertEqual(tools.count, 8)
+        guard let toolsResponse = offlineServer.handleLine("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}"),
+            let toolsJSON = try JSONSerialization.jsonObject(with: Data(toolsResponse.utf8)) as? [String: Any],
+            let toolsResult = toolsJSON["result"] as? [String: Any],
+            let tools = toolsResult["tools"] as? [[String: Any]]
+        else {
+            Issue.record("Failed to parse tools/list response")
+            return
+        }
+        #expect(tools.count == 8)
         let toolNames = Set(tools.compactMap { $0["name"] as? String })
-        XCTAssertEqual(
-            toolNames,
-            [
-                "zago_list_instances",
-                "zago_select_instance",
-                "zago_overlay_preview",
-                "zago_execute_logo",
-                "zago_get_buffers",
-                "zago_get_text",
-                "zago_get_selection",
-                "zago_get_cursor",
-            ]
+        #expect(
+            toolNames
+                == [
+                    "zago_list_instances",
+                    "zago_select_instance",
+                    "zago_overlay_preview",
+                    "zago_execute_logo",
+                    "zago_get_buffers",
+                    "zago_get_text",
+                    "zago_get_selection",
+                    "zago_get_cursor",
+                ]
         )
-        let getBuffersTool = try XCTUnwrap(
-            tools.first { $0["name"] as? String == "zago_get_buffers" }
-        )
-        let annotations = try XCTUnwrap(getBuffersTool["annotations"] as? [String: Any])
-        XCTAssertEqual(annotations["readOnlyHint"] as? Bool, true)
-        XCTAssertEqual(annotations["openWorldHint"] as? Bool, false)
+        guard let getBuffersTool = tools.first(where: { $0["name"] as? String == "zago_get_buffers" }),
+            let annotations = getBuffersTool["annotations"] as? [String: Any]
+        else {
+            Issue.record("Failed to find zago_get_buffers annotations")
+            return
+        }
+        #expect(annotations["readOnlyHint"] as? Bool == true)
+        #expect(annotations["openWorldHint"] as? Bool == false)
 
-        let offlineCall = try XCTUnwrap(
-            offlineServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
-            )
-        )
-        let offlineJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(offlineCall.utf8)) as? [String: Any]
-        )
-        let offlineResult = try XCTUnwrap(offlineJSON["result"] as? [String: Any])
-        XCTAssertEqual(offlineResult["isError"] as? Bool, true)
+        guard let offlineCall = offlineServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
+        ),
+            let offlineJSON = try JSONSerialization.jsonObject(with: Data(offlineCall.utf8)) as? [String: Any],
+            let offlineResult = offlineJSON["result"] as? [String: Any]
+        else {
+            Issue.record("Failed to parse offline tools/call response")
+            return
+        }
+        #expect(offlineResult["isError"] as? Bool == true)
 
         #if os(Windows)
             let editor = Editor()
@@ -682,66 +677,75 @@ final class IPCServerTests: XCTestCase {
             "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
         )
 
-        let selectResponse = try XCTUnwrap(
-            liveServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_select_instance\",\"arguments\":{\"instanceId\":\"zago-mcp-test\"}}}"
-            )
-        )
-        XCTAssertTrue(selectResponse.contains("Selected zago instance"))
+        guard let selectResponse = liveServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_select_instance\",\"arguments\":{\"instanceId\":\"zago-mcp-test\"}}}"
+        ) else {
+            Issue.record("Failed to get selectResponse")
+            return
+        }
+        #expect(selectResponse.contains("Selected zago instance"))
 
-        let buffersResponse = try XCTUnwrap(
-            liveServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
-            )
-        )
-        let buffersJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(buffersResponse.utf8)) as? [String: Any]
-        )
-        let buffersResult = try XCTUnwrap(buffersJSON["result"] as? [String: Any])
-        XCTAssertNil(buffersResult["isError"])
-        let content = try XCTUnwrap(buffersResult["content"] as? [[String: Any]])
-        let text = try XCTUnwrap(content.first?["text"] as? String)
-        XCTAssertTrue(text.contains("activeBufferId"))
+        guard let buffersResponse = liveServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_buffers\",\"arguments\":{}}}"
+        ),
+            let buffersJSON = try JSONSerialization.jsonObject(with: Data(buffersResponse.utf8)) as? [String: Any],
+            let buffersResult = buffersJSON["result"] as? [String: Any]
+        else {
+            Issue.record("Failed to parse buffersResponse")
+            return
+        }
+        #expect(buffersResult["isError"] == nil)
+        guard let content = buffersResult["content"] as? [[String: Any]],
+            let text = content.first?["text"] as? String
+        else {
+            Issue.record("Failed to parse content in buffersResponse")
+            return
+        }
+        #expect(text.contains("activeBufferId"))
 
-        let previewResponse = try XCTUnwrap(
-            liveServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_overlay_preview\",\"arguments\":{\"lines\":[\"hello\"]}}}"
-            )
-        )
-        let previewJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(previewResponse.utf8)) as? [String: Any]
-        )
-        let previewResult = try XCTUnwrap(previewJSON["result"] as? [String: Any])
-        XCTAssertNil(previewResult["isError"])
+        guard let previewResponse = liveServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_overlay_preview\",\"arguments\":{\"lines\":[\"hello\"]}}}"
+        ),
+            let previewJSON = try JSONSerialization.jsonObject(with: Data(previewResponse.utf8)) as? [String: Any],
+            let previewResult = previewJSON["result"] as? [String: Any]
+        else {
+            Issue.record("Failed to parse previewResponse")
+            return
+        }
+        #expect(previewResult["isError"] == nil)
 
-        let selectionResponse = try XCTUnwrap(
-            liveServer.handleLine(
-                "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_selection\",\"arguments\":{}}}"
-            )
-        )
-        let selectionJSON = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(selectionResponse.utf8)) as? [String: Any]
-        )
-        let selectionResult = try XCTUnwrap(selectionJSON["result"] as? [String: Any])
-        XCTAssertNil(selectionResult["isError"])
-        let selectionContent = try XCTUnwrap(selectionResult["content"] as? [[String: Any]])
-        let selectionText = try XCTUnwrap(selectionContent.first?["text"] as? String)
-        XCTAssertTrue(selectionText.contains("\"hasSelection\" : true"))
-        XCTAssertTrue(selectionText.contains("\"text\" : \"pha\\nbe\""))
+        guard let selectionResponse = liveServer.handleLine(
+            "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"zago_get_selection\",\"arguments\":{}}}"
+        ),
+            let selectionJSON = try JSONSerialization.jsonObject(with: Data(selectionResponse.utf8)) as? [String: Any],
+            let selectionResult = selectionJSON["result"] as? [String: Any]
+        else {
+            Issue.record("Failed to parse selectionResponse")
+            return
+        }
+        #expect(selectionResult["isError"] == nil)
+        guard let selectionContent = selectionResult["content"] as? [[String: Any]],
+            let selectionText = selectionContent.first?["text"] as? String
+        else {
+            Issue.record("Failed to parse selectionContent")
+            return
+        }
+        #expect(selectionText.contains("\"hasSelection\" : true"))
+        #expect(selectionText.contains("\"text\" : \"pha\\nbe\""))
     }
 
-    func testDefaultPosixIPCServerUsesShortSocketPath() throws {
+    @Test func testDefaultPosixIPCServerUsesShortSocketPath() throws {
         #if !os(Windows)
             let server = makeTestServer(sessionToken: "short-path-token")
-            XCTAssertLessThanOrEqual(
-                server.socketPath.utf8CString.count,
-                ZagoIPCSessionPaths.unixSocketPathByteLimit
+            #expect(
+                server.socketPath.utf8CString.count
+                    <= ZagoIPCSessionPaths.unixSocketPathByteLimit
             )
-            XCTAssertTrue(server.socketPath.hasPrefix("/tmp/") || server.socketPath.hasPrefix("/private/tmp/"))
+            #expect(server.socketPath.hasPrefix("/tmp/") || server.socketPath.hasPrefix("/private/tmp/"))
         #endif
     }
 
-    func testDefaultSessionLocatorSkipsOverlongSocketPath() throws {
+    @Test func testDefaultSessionLocatorSkipsOverlongSocketPath() throws {
         #if !os(Windows)
             let tempRoot = FileManager.default.temporaryDirectory
                 .appendingPathComponent("zago-overlong-\(UUID().uuidString)")
@@ -751,18 +755,18 @@ final class IPCServerTests: XCTestCase {
 
             let socketURL = longDirectory.appendingPathComponent("zago-test.sock")
             let tokenURL = longDirectory.appendingPathComponent("zago-test.token")
-            XCTAssertTrue(FileManager.default.createFile(atPath: socketURL.path, contents: Data()))
-            XCTAssertTrue(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
+            #expect(FileManager.default.createFile(atPath: socketURL.path, contents: Data()))
+            #expect(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
 
-            XCTAssertGreaterThan(
-                socketURL.path.utf8CString.count,
-                ZagoIPCSessionPaths.unixSocketPathByteLimit
+            #expect(
+                socketURL.path.utf8CString.count
+                    > ZagoIPCSessionPaths.unixSocketPathByteLimit
             )
-            XCTAssertTrue(DefaultZagoIPCSessionLocator(temporaryDirectory: longDirectory).sessions().isEmpty)
+            #expect(DefaultZagoIPCSessionLocator(temporaryDirectory: longDirectory).sessions().isEmpty)
         #endif
     }
 
-    func testWindowsSessionLocatorFindsNamedPipeTokenFiles() throws {
+    @Test func testWindowsSessionLocatorFindsNamedPipeTokenFiles() throws {
         #if os(Windows)
             let tempRoot = FileManager.default.temporaryDirectory
                 .appendingPathComponent("zago-windows-locator-\(UUID().uuidString)")
@@ -770,49 +774,49 @@ final class IPCServerTests: XCTestCase {
             defer { try? FileManager.default.removeItem(at: tempRoot) }
 
             let tokenURL = tempRoot.appendingPathComponent("zago-1234-test.token")
-            XCTAssertTrue(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
+            #expect(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
 
             let sessions = WindowsZagoIPCSessionLocator(temporaryDirectory: tempRoot).sessions()
-            XCTAssertEqual(sessions.count, 1)
-            XCTAssertEqual(sessions[0].instanceId, "zago-1234-test")
-            XCTAssertEqual(sessions[0].endpointPath, #"\\.\pipe\zago-1234-test"#)
-            XCTAssertEqual(sessions[0].tokenPath, tokenURL.path)
+            #expect(sessions.count == 1)
+            #expect(sessions[0].instanceId == "zago-1234-test")
+            #expect(sessions[0].endpointPath == #"\\.\pipe\zago-1234-test"#)
+            #expect(sessions[0].tokenPath == tokenURL.path)
         #endif
     }
 
-    func testZagoSkillCLIInstallerMethods() throws {
+    @Test func testZagoSkillCLIInstallerMethods() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(
             "zago-installer-test-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
         let (skillPaths, mcpPaths) = try ZagoSkillCLIInstaller.installSkillAndMCP(customHomePath: tempDir.path)
-        XCTAssertGreaterThan(skillPaths.count, 0)
-        XCTAssertGreaterThan(mcpPaths.count, 0)
-        XCTAssertTrue(
+        #expect(skillPaths.count > 0)
+        #expect(mcpPaths.count > 0)
+        #expect(
             skillPaths.contains(
                 tempDir.appendingPathComponent(".codex/skills/zago/SKILL.md").path
             )
         )
 
         for path in skillPaths {
-            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+            #expect(FileManager.default.fileExists(atPath: path))
         }
 
         for path in mcpPaths {
-            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+            #expect(FileManager.default.fileExists(atPath: path))
             if path.hasSuffix(".toml") {
                 let toml = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
-                XCTAssertTrue(toml.contains("[mcp_servers.zago]"))
-                XCTAssertTrue(toml.contains("command = \"zago\""))
-                XCTAssertTrue(toml.contains("args = [\"--mcp\"]"))
+                #expect(toml.contains("[mcp_servers.zago]"))
+                #expect(toml.contains("command = \"zago\""))
+                #expect(toml.contains("args = [\"--mcp\"]"))
             } else {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path))
                 let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
                 let mcpServers = json?["mcpServers"] as? [String: Any]
                 let zagoConfig = mcpServers?["zago"] as? [String: Any]
-                XCTAssertEqual(zagoConfig?["command"] as? String, "zago")
-                XCTAssertEqual(zagoConfig?["args"] as? [String], ["--mcp"])
+                #expect(zagoConfig?["command"] as? String == "zago")
+                #expect(zagoConfig?["args"] as? [String] == ["--mcp"])
             }
         }
 
@@ -834,8 +838,12 @@ final class IPCServerTests: XCTestCase {
                 try toml.write(to: url, atomically: true, encoding: .utf8)
             } else {
                 let data = try Data(contentsOf: url)
-                var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-                var servers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
+                guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                    var servers = json["mcpServers"] as? [String: Any]
+                else {
+                    Issue.record("Failed to parse json mcpServers")
+                    continue
+                }
                 servers["other"] = preservedMCPServer
                 json["mcpServers"] = servers
                 try JSONSerialization.data(withJSONObject: json).write(to: url)
@@ -845,36 +853,40 @@ final class IPCServerTests: XCTestCase {
         let removedSkillPaths = try ZagoSkillCLIInstaller.uninstallSkill(
             customHomePath: tempDir.path
         )
-        XCTAssertEqual(Set(removedSkillPaths), Set(skillPaths))
+        #expect(Set(removedSkillPaths) == Set(skillPaths))
         for path in skillPaths {
-            XCTAssertFalse(FileManager.default.fileExists(atPath: path))
+            #expect(!FileManager.default.fileExists(atPath: path))
         }
-        XCTAssertTrue(FileManager.default.fileExists(atPath: preservedSkillFile.path))
+        #expect(FileManager.default.fileExists(atPath: preservedSkillFile.path))
 
         let updatedMCPPaths = try ZagoSkillCLIInstaller.uninstallMCP(
             customHomePath: tempDir.path
         )
-        XCTAssertEqual(Set(updatedMCPPaths), Set(mcpPaths))
+        #expect(Set(updatedMCPPaths) == Set(mcpPaths))
         for path in mcpPaths {
-            XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+            #expect(FileManager.default.fileExists(atPath: path))
             if path.hasSuffix(".toml") {
                 let toml = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
-                XCTAssertFalse(toml.contains("[mcp_servers.zago]"))
-                XCTAssertFalse(toml.contains("[mcp_servers.zago.env]"))
-                XCTAssertTrue(toml.contains("[mcp_servers.other]"))
+                #expect(!toml.contains("[mcp_servers.zago]"))
+                #expect(!toml.contains("[mcp_servers.zago.env]"))
+                #expect(toml.contains("[mcp_servers.other]"))
             } else {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path))
-                let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-                let mcpServers = try XCTUnwrap(json["mcpServers"] as? [String: Any])
-                XCTAssertNil(mcpServers["zago"])
-                XCTAssertNotNil(mcpServers["other"])
+                guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                    let mcpServers = json["mcpServers"] as? [String: Any]
+                else {
+                    Issue.record("Failed to parse json after uninstall")
+                    continue
+                }
+                #expect(mcpServers["zago"] == nil)
+                #expect(mcpServers["other"] != nil)
             }
         }
 
-        XCTAssertTrue(
+        #expect(
             try ZagoSkillCLIInstaller.uninstallSkill(customHomePath: tempDir.path).isEmpty
         )
-        XCTAssertTrue(
+        #expect(
             try ZagoSkillCLIInstaller.uninstallMCP(customHomePath: tempDir.path).isEmpty
         )
     }

@@ -140,9 +140,8 @@ import Foundation
             timer.schedule(deadline: .now() + 0.5, repeating: 0.5)
             timer.setEventHandler { [weak self] in
                 guard let self else { return }
-                let (isMatching, currentSig) = self.stateLock.withLock { () -> (Bool, FileSignature?) in
-                    guard self.watchedPath == path else { return (false, nil) }
-                    return (true, self.lastSignature)
+                let isMatching = self.stateLock.withLock {
+                    self.watchedPath == path
                 }
                 guard isMatching else { return }
 
