@@ -126,7 +126,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
         public var language: String
 
         private let checker = NSSpellChecker.shared
-        private let documentTag: Int
+        private let documentTag: Int = 0
         private let usesSystemChecker: Bool
         private let fallbackEngine: FallbackCheckerEngine
         private var ignoredWords: Set<String> = []
@@ -134,23 +134,16 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
 
         public init(language: String = "en_US") {
             self.language = language
-            self.documentTag = NSSpellChecker.uniqueSpellDocumentTag()
             self.fallbackEngine = FallbackCheckerEngine(language: language)
             let probe = checker.checkSpelling(
                 of: "hello",
                 startingAt: 0,
                 language: bcp47LanguageTag(language),
                 wrap: false,
-                inSpellDocumentWithTag: documentTag,
+                inSpellDocumentWithTag: 0,
                 wordCount: nil
             )
             self.usesSystemChecker = probe.location == NSNotFound
-        }
-
-        deinit {
-            if usesSystemChecker && documentTag != 0 {
-                checker.closeSpellDocument(withTag: documentTag)
-            }
         }
 
         public func isCorrect(_ word: String) -> Bool {
@@ -166,7 +159,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
                 startingAt: 0,
                 language: bcp47LanguageTag(language),
                 wrap: false,
-                inSpellDocumentWithTag: documentTag,
+                inSpellDocumentWithTag: 0,
                 wordCount: nil
             )
             return range.location == NSNotFound
@@ -178,7 +171,7 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
                 forWordRange: nsRange,
                 in: word,
                 language: bcp47LanguageTag(language),
-                inSpellDocumentWithTag: documentTag
+                inSpellDocumentWithTag: 0
             )
             return guesses?.isEmpty == false ? guesses! : fallbackEngine.suggestions(for: word)
         }
@@ -186,7 +179,6 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
         public func ignoreWord(_ word: String) {
             let clean = normalizedWord(word)
             ignoredWords.insert(clean)
-            checker.ignoreWord(word, inSpellDocumentWithTag: documentTag)
             fallbackEngine.ignoreWord(word)
         }
 
