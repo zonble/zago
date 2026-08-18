@@ -380,24 +380,28 @@ final class ZagoIPCClient {
 
     #if os(Windows)
         private func connect(to path: String) throws -> HANDLE {
-            _ = withWindowsWideString(path) { pathPointer in
-                WaitNamedPipeW(pathPointer, 5_000)
+            let deadline = Date().addingTimeInterval(5.0)
+            while Date() < deadline {
+                _ = withWindowsWideString(path) { pathPointer in
+                    WaitNamedPipeW(pathPointer, 1_000)
+                }
+                let handle = withWindowsWideString(path) { pathPointer in
+                    CreateFileW(
+                        pathPointer,
+                        DWORD(GENERIC_READ) | DWORD(bitPattern: GENERIC_WRITE),
+                        0,
+                        nil,
+                        DWORD(OPEN_EXISTING),
+                        0,
+                        nil
+                    )
+                }
+                if handle != INVALID_HANDLE_VALUE && handle != nil {
+                    return handle!
+                }
+                Thread.sleep(forTimeInterval: 0.05)
             }
-            let handle = withWindowsWideString(path) { pathPointer in
-                CreateFileW(
-                    pathPointer,
-                    DWORD(GENERIC_READ) | DWORD(bitPattern: GENERIC_WRITE),
-                    0,
-                    nil,
-                    DWORD(OPEN_EXISTING),
-                    0,
-                    nil
-                )
-            }
-            guard handle != INVALID_HANDLE_VALUE, handle != nil else {
-                throw ZagoIPCClientError.connectionFailed(path)
-            }
-            return handle!
+            throw ZagoIPCClientError.connectionFailed(path)
         }
 
         private func exchange<Request: Encodable, Result: Decodable>(
