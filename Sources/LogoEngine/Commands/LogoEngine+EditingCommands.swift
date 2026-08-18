@@ -14,7 +14,7 @@ extension LogoEngine {
         consume: (String) -> Void
     ) {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-        while let nextToken = reader.peekToken(), !LogoEngine.isArgumentBoundary(nextToken) {
+        while let nextToken = reader.peekToken(), !isArgumentBoundary(nextToken) {
             consume(reader.nextExpression())
         }
         reader.commit(to: &index)

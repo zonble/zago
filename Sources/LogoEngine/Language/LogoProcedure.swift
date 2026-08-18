@@ -22,6 +22,19 @@ public struct LogoProcedure: Sendable {
             bodyTokens: bodyTokenTexts.map { LogoToken(text: $0, sourceRange: 0..<0) })
     }
 
+    /// Returns true if this procedure is a Reporter (returns a value via `OUTPUT`/`OP`/`RETURN`
+    /// or consists of a single evaluated expression).
+    public var isReporter: Bool {
+        let bodyTexts = bodyTokens.map(\.text)
+        guard !bodyTexts.isEmpty else { return false }
+        for t in bodyTexts {
+            if let prim = LogoPrimitive.from(t), prim == .output {
+                return true
+            }
+        }
+        return isSingleExpression
+    }
+
     /// Returns true if the procedure body does not contain statement commands (like MAKE, FORWARD, BOX, etc.),
     /// enabling implicit return of its single evaluated expression.
     var isSingleExpression: Bool {

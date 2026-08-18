@@ -80,7 +80,8 @@ public enum LogoTokenizer {
         var tokens: [String] = []
         var current = ""
         let operatorDelimiters = Set(LogoOperator.allCases.filter(\.isArithmetic).compactMap { $0.rawValue.first })
-        let delimiters = Set<Character>(["[", "]", "{", "}", "(", ")"]).union(operatorDelimiters)
+        let bracketDelimiters: Set<Character> = ["[", "]", "{", "}", "(", ")"]
+        let delimiters = bracketDelimiters.union(operatorDelimiters)
         var index = script.startIndex
         func flush() {
             if !current.isEmpty {
@@ -104,7 +105,7 @@ public enum LogoTokenizer {
                     flush()
                 } else {
                     index = script.index(after: index)
-                    while index < script.endIndex && !script[index].isWhitespace && script[index] != "[" && script[index] != "]" {
+                    while index < script.endIndex && !script[index].isWhitespace && !bracketDelimiters.contains(script[index]) {
                         current.append(script[index])
                         index = script.index(after: index)
                     }

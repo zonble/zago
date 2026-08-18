@@ -414,7 +414,7 @@ extension LogoEngine {
         case .local:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             while let t = reader.peekToken() {
-                if LogoEngine.isArgumentBoundary(t) { break }
+                if isArgumentBoundary(t) { break }
                 _ = reader.nextRawToken()
                 let varName = unquote(t).trimmingCharacters(in: CharacterSet(charactersIn: ":\"")).lowercased()
                 if !varName.isEmpty {

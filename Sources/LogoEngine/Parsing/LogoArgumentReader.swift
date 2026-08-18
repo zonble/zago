@@ -36,7 +36,8 @@ internal struct LogoArgumentReader {
     }
 
     mutating func nextOptionalExpression() -> String? {
-        nextOptionalExpression { LogoEngine.isArgumentBoundary($0) }
+        let engine = self.engine
+        return nextOptionalExpression { engine.isArgumentBoundary($0) }
     }
 
     mutating func nextOptionalExpression(isBoundary: (String) -> Bool) -> String? {
@@ -60,7 +61,8 @@ internal struct LogoArgumentReader {
     mutating func nextOptionalInteger(
         isBoundary: ((String) -> Bool)? = nil
     ) -> Int? {
-        let boundary = isBoundary ?? { LogoEngine.isArgumentBoundary($0) }
+        let engine = self.engine
+        let boundary = isBoundary ?? { engine.isArgumentBoundary($0) }
         guard index + 1 < tokens.count else { return nil }
         var nextIndex = index + 1
         guard

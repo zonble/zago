@@ -55,6 +55,16 @@ extension LogoEngine {
         }
     }
 
+    internal func isArgumentBoundary(_ token: String) -> Bool {
+        if LogoEngine.isStatementCommand(token) || token == "]" || token == ")" {
+            return true
+        }
+        if let proc = customProcedures[token.uppercased()], !proc.isReporter {
+            return true
+        }
+        return false
+    }
+
     internal static func isArgumentBoundary(_ token: String) -> Bool {
         LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
     }
