@@ -1,0 +1,24 @@
+; ==============================================================================
+; Tower of Hanoi Algorithm (in zago Editor LOGO)
+; ==============================================================================
+; Solves the classic Tower of Hanoi puzzle recursively.
+; Moves `n` disks from source peg `from_peg` to target peg `to_peg` using `aux_peg`.
+; Time Complexity: O(2^N)
+; ==============================================================================
+
+TO HANOI :n :from_peg :to_peg :aux_peg
+  IFELSE :n = 1 [
+    TYPE FORMAT "Move_disk_1_from_%s_to_%s" (LIST :from_peg :to_peg)
+    TYPE CHAR 10
+  ] [
+    HANOI (:n - 1) :from_peg :aux_peg :to_peg
+    TYPE FORMAT "Move_disk_%d_from_%s_to_%s" (LIST :n :from_peg :to_peg)
+    TYPE CHAR 10
+    HANOI (:n - 1) :aux_peg :to_peg :from_peg
+  ]
+END
+
+; Test cases
+TYPE "===_Tower_of_Hanoi_Demo_3_disks_===
+TYPE CHAR 10
+HANOI 3 "A "C "B

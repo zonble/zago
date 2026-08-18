@@ -1,0 +1,52 @@
+; ==============================================================================
+; Binary Search Algorithm (in zago Editor LOGO)
+; ==============================================================================
+; Searches for a target value within a sorted array. Returns 1-based index
+; if found, or 0 if not found.
+; Time Complexity: O(log N)
+; ==============================================================================
+
+TO BINARYSEARCH :arr :target
+  LOCAL "low
+  LOCAL "high
+  LOCAL "mid
+  LOCAL "val
+  MAKE "low 1
+  MAKE "high COUNT :arr
+  WHILE [:low <= :high] [
+    MAKE "mid INT ((:low + :high) / 2)
+    MAKE "val ITEM :mid :arr
+    IF :val = :target [
+      OUTPUT :mid
+    ]
+    IFELSE :val < :target [
+      MAKE "low :mid + 1
+    ] [
+      MAKE "high :mid - 1
+    ]
+  ]
+  OUTPUT 0
+END
+
+; Test cases
+TYPE "===_Binary_Search_Demo_===
+TYPE CHAR 10
+
+MAKE "sorted_arr [2 5 8 12 16 23 38 56 72 91]
+TYPE FORMAT "array:_%s" (LIST :sorted_arr)
+TYPE CHAR 10
+
+MAKE "target1 23
+MAKE "idx1 BINARYSEARCH :sorted_arr :target1
+TYPE FORMAT "search_%d_-> 1-based_index:_%d" (LIST :target1 :idx1)
+TYPE CHAR 10
+
+MAKE "target2 5
+MAKE "idx2 BINARYSEARCH :sorted_arr :target2
+TYPE FORMAT "search_%d_-> 1-based_index:_%d" (LIST :target2 :idx2)
+TYPE CHAR 10
+
+MAKE "target3 50
+MAKE "idx3 BINARYSEARCH :sorted_arr :target3
+TYPE FORMAT "search_%d_-> 1-based_index:_%d_(0_means_not_found)" (LIST :target3 :idx3)
+TYPE CHAR 10
