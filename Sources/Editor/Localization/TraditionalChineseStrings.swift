@@ -604,6 +604,15 @@ struct TraditionalChineseStrings {
         "helpview.logo_8": "    DATE / TIME / SET  插入當前日期時間、設定編輯器選項",
         "helpview.logo_9": "    IF / IFELSE        條件判斷（IF 條件 [...] / IFELSE 條件 [...] [...]）",
 
+        "helpview.sec_substitute": "  指令列快捷操作與搜尋取代（/、s/、goto、eof）：",
+        "helpview.substitute_1": "    /<搜尋字串>              向後搜尋文字或正規表達式樣式",
+        "helpview.substitute_2": "    s/<搜尋>/<取代>/[旗標]    於當前行或選取範圍內進行取代",
+        "helpview.substitute_3": "    %s/<搜尋>/<取代>/[旗標]   於整個 Buffer（全部行數）進行全域取代",
+        "helpview.substitute_4": "    旗標：g (全部取代)、i (忽略大小寫)、r (正規) | 分隔符：/ 或 ,",
+        "helpview.substitute_5": "    s/z(.*?)e/ddddd/r        正規表達式比對與分組捕獲替換（$1...）",
+        "helpview.substitute_6": "    <行號>[:欄位] / goto     跳轉至指定行號或行列（例如 42、:42、42:10）",
+        "helpview.substitute_7": "    eof / end-of-file        快速將游標移動至檔案結尾（檔尾）",
+
         "helpview.footer": "  ↑/↓/上頁/下頁: 捲動 | 任意鍵：返回編輯器",
 
         // Common Messages

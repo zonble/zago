@@ -56,13 +56,42 @@ struct ConfigAndToolsTests {
         #expect(
             HelpContent.lines(language: .en).contains(
                 "    ⇧+Arrow            Draw box lines and move the canvas cursor"))
+        #expect(HelpContent.lines(language: .en).contains("  COMMAND BAR ACTIONS & SUBSTITUTION (/, s/, goto, eof):"))
         #expect(
             HelpContent.lines(language: .en).contains(
-                "    ^⇧+Arrow / ^+Arrow Draw arrow lines with an arrowhead at the endpoint"))
+                "    /<query>                 Search text or regex pattern in buffer"))
+        #expect(
+            HelpContent.lines(language: .en).contains(
+                "    s/<find>/<rep>/[flags]   Substitute in current line or selection"))
+        #expect(
+            HelpContent.lines(language: .en).contains(
+                "    s/z(.*?)e/ddddd/r        Regex substitution ($1, $2 capture groups)"))
+        #expect(
+            HelpContent.lines(language: .en).contains(
+                "    <line>[:col] / goto      Jump to line/column (e.g. 42, :42, 42:10)"))
+        #expect(
+            HelpContent.lines(language: .en).contains(
+                "    eof / end-of-file        Move cursor to the end of buffer"))
         #expect(HelpContent.lines(language: .zh_TW).contains("  游標移動與導航："))
         #expect(HelpContent.lines(language: .zh_TW).contains("  畫布模式："))
         #expect(HelpContent.lines(language: .zh_TW).contains("    ⇧+方向鍵           畫出框線並移動畫布游標"))
         #expect(HelpContent.lines(language: .zh_TW).contains("    ^⇧+方向鍵/^+方向鍵  畫出框線並在終點放置箭頭"))
+        #expect(HelpContent.lines(language: .zh_TW).contains("  指令列快捷操作與搜尋取代（/、s/、goto、eof）："))
+        #expect(
+            HelpContent.lines(language: .zh_TW).contains(
+                "    /<搜尋字串>              向後搜尋文字或正規表達式樣式"))
+        #expect(
+            HelpContent.lines(language: .zh_TW).contains(
+                "    s/<搜尋>/<取代>/[旗標]    於當前行或選取範圍內進行取代"))
+        #expect(
+            HelpContent.lines(language: .zh_TW).contains(
+                "    s/z(.*?)e/ddddd/r        正規表達式比對與分組捕獲替換（$1...）"))
+        #expect(
+            HelpContent.lines(language: .zh_TW).contains(
+                "    <行號>[:欄位] / goto     跳轉至指定行號或行列（例如 42、:42、42:10）"))
+        #expect(
+            HelpContent.lines(language: .zh_TW).contains(
+                "    eof / end-of-file        快速將游標移動至檔案結尾（檔尾）"))
     }
 
     @Test func testClearLogoOutputMenuItemInMenuBar() throws {

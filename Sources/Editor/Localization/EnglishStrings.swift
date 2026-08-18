@@ -614,6 +614,15 @@ struct EnglishStrings {
         "helpview.logo_8": "    DATE / TIME / SET  Insert date/time, configure editor settings",
         "helpview.logo_9": "    IF / IFELSE        Conditional logic (IF cond [...] / IFELSE cond [...] [...])",
 
+        "helpview.sec_substitute": "  COMMAND BAR ACTIONS & SUBSTITUTION (/, s/, goto, eof):",
+        "helpview.substitute_1": "    /<query>                 Search text or regex pattern in buffer",
+        "helpview.substitute_2": "    s/<find>/<rep>/[flags]   Substitute in current line or selection",
+        "helpview.substitute_3": "    %s/<find>/<rep>/[flags]  Substitute in entire buffer (all lines)",
+        "helpview.substitute_4": "    Flags: g (global), i (ignore case), r (regex) | Delim: / or ,",
+        "helpview.substitute_5": "    s/z(.*?)e/ddddd/r        Regex substitution ($1, $2 capture groups)",
+        "helpview.substitute_6": "    <line>[:col] / goto      Jump to line/column (e.g. 42, :42, 42:10)",
+        "helpview.substitute_7": "    eof / end-of-file        Move cursor to the end of buffer",
+
         "helpview.footer": "  Up/Dn/PgUp/PgDn: Scroll | Press any key to return",
 
         // Common Messages
