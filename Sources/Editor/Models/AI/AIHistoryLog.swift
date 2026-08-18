@@ -28,15 +28,23 @@ public struct AIHistoryEntry: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
-final class AIHistoryLogManager: @unchecked Sendable {
-    static let shared = AIHistoryLogManager()
+public protocol AIHistoryStoring: AnyObject, Sendable {
+    var entries: [AIHistoryEntry] { get }
+    func logDecision(proposal: AIProposal, decision: String)
+    func recentEntries(limit: Int) -> [AIHistoryEntry]
+    func clear()
+}
 
-    private(set) var entries: [AIHistoryEntry] = []
+public final class InMemoryAIHistoryStore: AIHistoryStoring, @unchecked Sendable {
+    public private(set) var entries: [AIHistoryEntry] = []
     private let lock = NSLock()
+    private let maxEntries: Int
 
-    private init() {}
+    public init(maxEntries: Int = 200) {
+        self.maxEntries = maxEntries
+    }
 
-    func logDecision(proposal: AIProposal, decision: String) {
+    public func logDecision(proposal: AIProposal, decision: String) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -50,14 +58,23 @@ final class AIHistoryLogManager: @unchecked Sendable {
             decision: decision
         )
         entries.insert(entry, at: 0)
-        if entries.count > 200 {
+        if entries.count > maxEntries {
             entries.removeLast()
         }
     }
 
-    func recentEntries(limit: Int = 20) -> [AIHistoryEntry] {
+    public func recentEntries(limit: Int = 20) -> [AIHistoryEntry] {
         lock.lock()
         defer { lock.unlock() }
         return Array(entries.prefix(limit))
     }
+
+    public func clear() {
+        lock.lock()
+        defer { lock.unlock() }
+        entries.removeAll()
+    }
 }
+
+public typealias AIHistoryStore = InMemoryAIHistoryStore
+public typealias AIHistoryLogManager = InMemoryAIHistoryStore

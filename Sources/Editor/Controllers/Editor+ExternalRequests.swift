@@ -262,7 +262,7 @@ extension Editor {
     }
 
     public func externalGetHistory(limit: Int) -> [AIHistoryEntry] {
-        AIHistoryLogManager.shared.recentEntries(limit: limit)
+        historyStore.recentEntries(limit: limit)
     }
 
     private func resolveExternalBufferTarget(_ target: String?) -> TextBuffer? {

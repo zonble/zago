@@ -422,8 +422,8 @@ struct IPCServerTests {
         #expect(registeredRead.error?.code != 401)
     }
 
-    @Test func testAIHistoryLogManager() {
-        let manager = AIHistoryLogManager.shared
+    @Test func testAIHistoryStore() {
+        let store = InMemoryAIHistoryStore()
         let proposal = AIProposal(
             clientId: "bot-1",
             clientName: "Architect-Bot",
@@ -431,9 +431,9 @@ struct IPCServerTests {
             affectedFiles: []
         )
 
-        manager.logDecision(proposal: proposal, decision: "accepted")
-        let recent = manager.recentEntries(limit: 5)
-        #expect(recent.count > 0)
+        store.logDecision(proposal: proposal, decision: "accepted")
+        let recent = store.recentEntries(limit: 5)
+        #expect(recent.count == 1)
         #expect(recent.first?.clientName == "Architect-Bot")
         #expect(recent.first?.decision == "accepted")
     }
@@ -775,13 +775,15 @@ struct IPCServerTests {
             defer { try? FileManager.default.removeItem(at: tempRoot) }
 
             let tokenURL = tempRoot.appendingPathComponent("zago-1234-test.token")
-            #expect(FileManager.default.createFile(atPath: tokenURL.path, contents: Data("token".utf8)))
+            try Data("token".utf8).write(to: tokenURL)
 
             let sessions = WindowsZagoIPCSessionLocator(temporaryDirectory: tempRoot).sessions()
             #expect(sessions.count == 1)
-            #expect(sessions[0].instanceId == "zago-1234-test")
-            #expect(sessions[0].endpointPath == #"\\.\pipe\zago-1234-test"#)
-            #expect(sessions[0].tokenPath == tokenURL.path)
+            if let first = sessions.first {
+                #expect(first.instanceId == "zago-1234-test")
+                #expect(first.endpointPath == #"\\.\pipe\zago-1234-test"#)
+                #expect(first.tokenPath == tokenURL.path)
+            }
         #endif
     }
 
