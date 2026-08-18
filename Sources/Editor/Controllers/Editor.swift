@@ -168,6 +168,7 @@ public final class Editor: @unchecked Sendable {
     var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
     let proposalQueue = ProposalQueue()
+    public let historyStore: any AIHistoryStoring
     private let editorLoopRequests = EditorLoopRequestQueue()
     private var editorLoopThread: Thread?
 
@@ -218,6 +219,7 @@ public final class Editor: @unchecked Sendable {
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
         self.gitService = dependencies.gitService
+        self.historyStore = dependencies.historyStore
         self.configProvider = configSource.reload
 
         let initialBuffers: [TextBuffer]
