@@ -148,7 +148,9 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
         }
 
         deinit {
-            checker.closeSpellDocument(withTag: documentTag)
+            if usesSystemChecker && documentTag != 0 {
+                checker.closeSpellDocument(withTag: documentTag)
+            }
         }
 
         public func isCorrect(_ word: String) -> Bool {
