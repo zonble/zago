@@ -77,11 +77,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             throw EncodingError.unsupportedCharacters
         }
         fileWatcher.stop()
-        #if os(Windows)
-            try data.write(to: URL(fileURLWithPath: normalized), options: [])
-        #else
-            try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
-        #endif
+        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         fileWatcher.start(path: normalized)
         fileWatcher.recordCurrentModificationDate()
     }
