@@ -223,15 +223,18 @@ extension ZagoIPCServer {
                 at: tokenURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            let tokenCreated = FileManager.default.createFile(
-                atPath: tokenPath,
-                contents: sessionToken.data(using: .utf8)
-            )
-            guard tokenCreated else {
+            do {
+                guard let tokenData = sessionToken.data(using: .utf8) else {
+                    throw NSError(
+                        domain: "ZagoIPCServer", code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "Invalid session token encoding"])
+                }
+                try tokenData.write(to: tokenURL, options: .atomic)
+            } catch {
                 throw NSError(
                     domain: "ZagoIPCServer", code: 1,
                     userInfo: [
-                        NSLocalizedDescriptionKey: "Failed to create IPC session token"
+                        NSLocalizedDescriptionKey: "Failed to create IPC session token: \(error.localizedDescription)"
                     ])
             }
 
@@ -251,7 +254,7 @@ extension ZagoIPCServer {
                 CloseHandle(pendingPipeHandle)
                 self.pendingPipeHandle = nil
             }
-            try? FileManager.default.removeItem(atPath: tokenPath)
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: tokenPath))
             for (connectionId, pipeHandle) in activeConnections {
                 DisconnectNamedPipe(pipeHandle)
                 CloseHandle(pipeHandle)

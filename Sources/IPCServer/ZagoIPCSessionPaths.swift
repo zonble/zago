@@ -17,15 +17,27 @@ enum ZagoIPCSessionPaths {
     #endif
 
     static func candidateTemporaryDirectories() -> [URL] {
-        var candidates: [URL] = [
-            URL(fileURLWithPath: "/tmp", isDirectory: true),
-            URL(fileURLWithPath: "/private/tmp", isDirectory: true),
-            URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true),
-        ]
-
-        if let tmpDir = ProcessInfo.processInfo.environment["TMPDIR"], !tmpDir.isEmpty {
-            candidates.append(URL(fileURLWithPath: tmpDir, isDirectory: true))
-        }
+        #if os(Windows)
+            var candidates: [URL] = [
+                FileManager.default.temporaryDirectory,
+                URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true),
+            ]
+            if let temp = ProcessInfo.processInfo.environment["TEMP"], !temp.isEmpty {
+                candidates.append(URL(fileURLWithPath: temp, isDirectory: true))
+            }
+            if let tmp = ProcessInfo.processInfo.environment["TMP"], !tmp.isEmpty {
+                candidates.append(URL(fileURLWithPath: tmp, isDirectory: true))
+            }
+        #else
+            var candidates: [URL] = [
+                URL(fileURLWithPath: "/tmp", isDirectory: true),
+                URL(fileURLWithPath: "/private/tmp", isDirectory: true),
+                URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true),
+            ]
+            if let tmpDir = ProcessInfo.processInfo.environment["TMPDIR"], !tmpDir.isEmpty {
+                candidates.append(URL(fileURLWithPath: tmpDir, isDirectory: true))
+            }
+        #endif
 
         var seen: Set<String> = []
         return candidates.compactMap { url in
