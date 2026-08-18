@@ -45,9 +45,10 @@ public enum TextAnalyzer {
         }
     }
 
-    /// Finds all word ranges in `text` using ICU natural language word breaking (`byWords`).
+    /// Finds all word ranges in `text` using ICU natural language word breaking (`byWords`) on Darwin, or portable word boundary scanning on Linux/Windows.
     public static func wordRanges(in text: String) -> [Range<Int>] {
         guard !text.isEmpty else { return [] }
+        #if canImport(Darwin)
         var ranges: [Range<Int>] = []
         text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, substringRange, _, _ in
             let lower = text.distance(from: text.startIndex, to: substringRange.lowerBound)
@@ -57,6 +58,28 @@ public enum TextAnalyzer {
             }
         }
         return ranges
+        #else
+        var ranges: [Range<Int>] = []
+        var wordStart: Int? = nil
+        var index = 0
+        for character in text {
+            if TextUnicodeClassifier.isUnicodeWordCharacter(character) || TextUnicodeClassifier.isCJKScriptCharacter(character) {
+                if wordStart == nil {
+                    wordStart = index
+                }
+            } else {
+                if let start = wordStart {
+                    ranges.append(start..<index)
+                    wordStart = nil
+                }
+            }
+            index += 1
+        }
+        if let start = wordStart {
+            ranges.append(start..<index)
+        }
+        return ranges
+        #endif
     }
 
     /// Computes next word boundary index after `currentIndex` using ICU word breaking.
