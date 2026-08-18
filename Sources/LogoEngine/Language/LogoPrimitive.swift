@@ -278,6 +278,16 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case uuid
     case isUUID
     case uuidTime
+    case base64Encode
+    case base64Decode
+    case isBase64
+    case urlEncode
+    case urlDecode
+    case hexEncode
+    case hexDecode
+    case hashSha256
+    case hashSha1
+    case hashMd5
     case search
     case sort
     case fill
@@ -589,6 +599,16 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["UUID", "GUID"], .uuid),
         (["UUID?", "UUIDP", "VALID.UUID?", "VALID.UUIDP"], .isUUID),
         (["UUID.TIME", "UUID.DATETIME"], .uuidTime),
+        (["BASE64.ENCODE", "B64.ENCODE", "BASE64ENCODE", "B64ENCODE"], .base64Encode),
+        (["BASE64.DECODE", "B64.DECODE", "BASE64DECODE", "B64DECODE"], .base64Decode),
+        (["BASE64?", "BASE64P", "B64?", "B64P", "VALID.BASE64?"], .isBase64),
+        (["URL.ENCODE", "URLENCODE"], .urlEncode),
+        (["URL.DECODE", "URLDECODE"], .urlDecode),
+        (["HEX.ENCODE", "HEXENCODE", "HEX"], .hexEncode),
+        (["HEX.DECODE", "HEXDECODE", "UNHEX"], .hexDecode),
+        (["HASH.SHA256", "SHA256"], .hashSha256),
+        (["HASH.SHA1", "SHA1"], .hashSha1),
+        (["HASH.MD5", "MD5"], .hashMd5),
         (["SEARCH"], .search),
     ]
 

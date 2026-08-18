@@ -322,6 +322,150 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "REGEX.FIND \"abc-123 \"[0-9]+", output: "[123]")]
             )
 
+        case .base64Encode:
+            LogoPrimitiveMeta(
+                name: "BASE64.ENCODE",
+                description: "Encodes a UTF-8 string to Base64 format.",
+                localizedDescriptionKey: "logo.doc.base64encode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true, description: "Text to encode to Base64.", example: "Hello World")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "BASE64.ENCODE \"Hello", output: "SGVsbG8=")
+                ]
+            )
+
+        case .base64Decode:
+            LogoPrimitiveMeta(
+                name: "BASE64.DECODE",
+                description: "Decodes a Base64 encoded string back to UTF-8 text.",
+                localizedDescriptionKey: "logo.doc.base64decode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "b64_text", required: true, description: "Base64 text to decode.", example: "SGVsbG8=")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "BASE64.DECODE \"SGVsbG8=", output: "Hello")
+                ]
+            )
+
+        case .isBase64:
+            LogoPrimitiveMeta(
+                name: "BASE64?",
+                description: "Tests whether a string is valid Base64 encoded format.",
+                localizedDescriptionKey: "logo.doc.isbase64",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "string", required: true, description: "String to test for Base64 validity.", example: "SGVsbG8=")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "BASE64? \"SGVsbG8=", output: "true"),
+                    LogoPrimitiveExample(input: "BASE64? \"hello", output: "false")
+                ]
+            )
+
+        case .urlEncode:
+            LogoPrimitiveMeta(
+                name: "URL.ENCODE",
+                description: "Percent-encodes a string for use in URLs.",
+                localizedDescriptionKey: "logo.doc.urlencode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true, description: "Text string to URL encode.", example: "hello world")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "URL.ENCODE \"hello_world", output: "hello_world"),
+                    LogoPrimitiveExample(input: "URL.ENCODE \"你好", output: "%E4%BD%A0%E5%A5%BD")
+                ]
+            )
+
+        case .urlDecode:
+            LogoPrimitiveMeta(
+                name: "URL.DECODE",
+                description: "Decodes a percent-encoded URL string.",
+                localizedDescriptionKey: "logo.doc.urldecode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "url_text", required: true, description: "Percent-encoded URL string to decode.", example: "%E4%BD%A0%E5%A5%BD")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "URL.DECODE \"%E4%BD%A0%E5%A5%BD", output: "你好")
+                ]
+            )
+
+        case .hexEncode:
+            LogoPrimitiveMeta(
+                name: "HEX.ENCODE",
+                description: "Encodes an integer into 0xXXXX format or UTF-8 text into hex bytes.",
+                localizedDescriptionKey: "logo.doc.hexencode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "value", required: true, description: "Integer number or text string to encode.", example: "255")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "HEX.ENCODE 255", output: "0xFF"),
+                    LogoPrimitiveExample(input: "HEX.ENCODE \"abc", output: "616263")
+                ]
+            )
+
+        case .hexDecode:
+            LogoPrimitiveMeta(
+                name: "HEX.DECODE",
+                description: "Decodes 0xXXXX to decimal integer or hex bytes to UTF-8 text.",
+                localizedDescriptionKey: "logo.doc.hexdecode",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "hex_string", required: true, description: "0x hex number or hex byte string to decode.", example: "0xFF")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "HEX.DECODE \"0xFF", output: "255"),
+                    LogoPrimitiveExample(input: "HEX.DECODE \"616263", output: "abc")
+                ]
+            )
+
+        case .hashSha256:
+            LogoPrimitiveMeta(
+                name: "HASH.SHA256",
+                description: "Computes the 64-character lowercase SHA-256 hex digest of a string.",
+                localizedDescriptionKey: "logo.doc.hashsha256",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true, description: "Text to hash.", example: "zago")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "HASH.SHA256 \"zago", output: "a8c9c415e3c160a7da0b080e3ad97dbde9fb7dc26f961a9ab36b0f35c1b990eb")
+                ]
+            )
+
+        case .hashSha1:
+            LogoPrimitiveMeta(
+                name: "HASH.SHA1",
+                description: "Computes the 40-character lowercase SHA-1 hex digest of a string.",
+                localizedDescriptionKey: "logo.doc.hashsha1",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true, description: "Text to hash.", example: "zago")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "HASH.SHA1 \"zago", output: "c638cf03c5bc5b232cd77bce0187768802868ac4")
+                ]
+            )
+
+        case .hashMd5:
+            LogoPrimitiveMeta(
+                name: "HASH.MD5",
+                description: "Computes the 32-character lowercase MD5 hex digest of a string.",
+                localizedDescriptionKey: "logo.doc.hashmd5",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(name: "text", required: true, description: "Text to hash.", example: "zago")
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "HASH.MD5 \"zago", output: "d8bbeea6bd5b4499ac006dd6bdece342")
+                ]
+            )
+
         default: nil
         }
     }
