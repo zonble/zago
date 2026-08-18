@@ -1,117 +1,98 @@
-# Zago AI/IPC Plan
+# Zago AI/IPC Architecture & Completed Milestone
 
-## 1. Core Idea
+## 1. Overview & Core Philosophy
 
-Zago is an editor for text whose form is not fixed in advance. AI output may mix
-prose, code, tables, diagrams, commands, and tentative proposals in one place.
-The editor therefore needs to let a human inspect, select, transform, execute,
-preview, accept, and reject different kinds of text without forcing the text into
-a single format first.
+The AI and IPC subsystems in `zago` have reached a stable milestone. This document summarizes the completed architecture, capabilities, and established design boundaries.
 
-The AI in Zago is not a multi-document workspace manager. It helps the human with
-the text currently in focus: the current selection, line, table cell, Canvas
-region, or LOGO program. The human chooses the focus; the agent proposes an
-operation on that focus.
+Zago is an editor for text whose visual and structured form is not fixed in advance. Plain text, Markdown tables, ASCII/Unicode box diagrams, and Editor LOGO scripts exist in the same buffer space. The AI/IPC integration is built around a single foundational premise:
 
-The goal of the AI/IPC work is not to let an agent silently edit files. It is to
-give an external agent a controlled view of the live editor and a reversible
-proposal path. The human remains responsible for deciding what the text becomes.
+> **"Zago helps a human with this text."**
 
-## 2. The LOGO Model
+Zago is not a background multi-document agent workspace or an autonomous file writer. Instead, it provides external AI agents with:
+1. A controlled, read-only view of the live editor's current focus (selection, cursor, buffer, or active table/canvas region).
+2. A reversible, human-in-the-loop proposal channel using non-destructive ghost text overlays.
+3. Safe execution of Editor LOGO scripts to generate structured drawings and tables.
 
-LOGO provides the right mental model for this scope. LOGO does not operate a
-collection of documents. It operates one turtle:
+The human user remains in full control of deciding what text enters the buffer and when.
 
-- one current position;
-- one heading and drawing state;
-- one visible text space;
-- one sequence of observable actions.
+---
 
-`BOX`, `LINE`, `TABLE`, and text transformations are consequences of that turtle
-acting in a text space. The AI/IPC layer follows the same rule: one active editor
-focus, one current proposal, and one human-visible result at a time.
+## 2. Completed Capabilities (現況總結)
 
-## 3. Implemented Foundation
+### 2.1 Cross-Platform IPC Transport
+* **JSON-RPC 2.0 over Local Sockets**:
+  * **POSIX (macOS & Linux)**: Unix domain sockets in `/tmp/zago-<pid>-<nonce>.sock` with signal-safe lifecycle and non-blocking shutdown.
+  * **Windows**: Named pipes (`\\.\pipe\zago-<pid>-<nonce>`) using `PIPE_NOWAIT` polling during listen and transitioning to `PIPE_WAIT` upon connection for thread-safe, hang-free teardown.
+* **Authentication & Session Tokens**:
+  * Ephemeral token files (`.token`) with strict permissions restrict IPC access to the local user session.
+  * Explicit client registration handshake (`zago.client.register`).
 
-The following parts of the original plan are implemented:
+### 2.2 Thread-Safe Editor Loop Dispatch
+* **Single-Writer Actor Model**: IPC worker threads never mutate buffer lines or cursor state directly.
+* **`performOnEditorLoop` & Wakeup Bridge**:
+  * External requests enqueue closures into `editorLoopRequests` and unblock the main editor thread via `terminal.wakeup()`.
+  * **POSIX**: Self-pipe write unblocking `poll()`.
+  * **Windows**: Synthetic NUL `KEY_EVENT` via `WriteConsoleInputW` paired with atomic `wakeupRequested` tracking.
+  * Timeouts (default 0.5s–10s) prevent stalled client connections from hanging the editor.
 
-- Cross-platform IPC server with JSON-RPC 2.0, client registration, session
-  authentication, and request handling on the editor loop.
-- Buffer discovery, text reads, cursor reads, and selected-text reads. Selection
-  responses include text, individual lines, and one-based start/end positions.
-- Ghost proposal overlays that do not mutate the target buffer until accepted.
-- Multiple affected-file and chunk fields are accepted by the IPC payload model,
-  but they are not the primary user interaction model.
-- Four overlay insertion modes: `1d_insert`, `1d_overwrite`, `2d_insert`,
-  `2d_overwrite`, `2d_transparent`, and `2d_fuse_corners`.
-- External LOGO execution through a proposal-producing IPC request.
-- AI-authored undo snapshots, proposal history entries, and history retrieval.
-- MCP access to running Zago instances, including explicit instance selection.
-- MCP tools for overlay preview, LOGO execution, buffers, text, selection, and
-  cursor state.
-- Editor LOGO support for light, heavy, double, round, double-round, ASCII, and
-  ASCII-rounded borders. Heavy uses the Unicode box-drawing set
-  `┏━┓┃┣╋┫┗┻┛`.
+### 2.3 Buffer & Focus Inspection APIs
+* `zago.buffer.getBuffers`: Discovers open buffers and active buffer target.
+* `zago.buffer.getText`: Reads full buffer contents or sliced line ranges.
+* `zago.buffer.getSelection`: Retrieves selected text, individual lines, and 1-based start/end coordinates.
+* `zago.buffer.getCursor`: Reads line, column, visual column, and current editor mode (Text, Canvas, Table).
 
-The current behavior is intentionally proposal-oriented: an IPC or MCP agent can
-prepare a change, but buffer mutation still happens through the editor's normal
-proposal acceptance flow.
+### 2.4 Ghost Overlay Proposals
+* `zago.overlay.showPreview`: Injects tentative text proposals rendered in Dim Gray (`#808080`) ghost overlays.
+* **Insertion Modes**:
+  * `1d_insert` & `1d_overwrite` (line-oriented text changes).
+  * `2d_insert`, `2d_overwrite`, `2d_transparent`, and `2d_fuse_corners` (2D spatial ASCII/Unicode box and diagram placement).
+* Buffers are only mutated when the user explicitly accepts the proposal via editor keybindings.
 
-## 4. Current User Scenarios
+### 2.5 Safe Editor LOGO Execution
+* `zago.buffer.executeLogo`: Evaluates Editor LOGO scripts within a sandboxed context and routes output as a ghost proposal onto the active buffer, preserving undo history.
 
-### Help with the current text
+### 2.6 AI History & Attribution
+* Records AI client identity, rationale, affected lines, and timestamps.
+* `zago.history.getEntries`: Allows clients to inspect previous proposal actions.
 
-An agent reads the current selection or cursor context, generates LOGO or overlay
-content, and sends a ghost preview. The user can inspect the result in the same
-visible text space before accepting it.
+### 2.7 Model Context Protocol (MCP) Server
+* Built-in `zago --mcp` binary mode implementing the Model Context Protocol (MCP) over stdio.
+* Exposes 8 standard tools:
+  * `zago_list_instances`
+  * `zago_select_instance`
+  * `zago_get_buffers`
+  * `zago_get_text`
+  * `zago_get_selection`
+  * `zago_get_cursor`
+  * `zago_overlay_preview`
+  * `zago_execute_logo`
+* Ready out-of-the-box for Antigravity, Claude Desktop, and OpenAI Codex CLI.
 
-### Transform this selection
+### 2.8 CLI Integration & Skill Installer
+* `zago --install-skill` and `zago --uninstall-skill` automate deployment of Zago skills and MCP server configuration into `~/.agents` and `~/.codex`.
 
-An agent reads selected prose, code, or table content, transforms it externally,
-and sends the result as an overlay. Selection reads are the main bridge between
-the user's attention and the agent.
+---
 
-### Draw here
+## 3. Established Design Invariants & Boundaries
 
-An agent parses a local piece of context, generates table or diagram lines, and
-previews them at the current position. Zago's table, Canvas, LOGO, and display-
-width logic remain available without asking the user to manage another document.
+The following design decisions are intentionally finalized:
 
-## 5. Current Boundaries
+| Boundary | Decision & Rationale |
+| :--- | :--- |
+| **Human-in-the-Loop** | Agents propose; humans review and accept/reject. No silent background file writes. |
+| **Single Active Focus** | Interactions target the currently focused buffer/region rather than complex multi-document batch edits. |
+| **No Global Workspace Mutations** | Workspace-wide multi-file atomic transactions are out of scope. |
+| **Visual Geometry as Shared Engine Logic** | CJK display widths, box borders (`┏━┓┃┗━┛`), Table cells, and Canvas coordinates are handled by Zago's layout engine, not re-implemented by agents. |
 
-These ideas remain design targets rather than completed features:
+---
 
-- There is no implemented `zago.event.selectionTriggered` outbound event from an
-  Alt+A command.
-- Proposal navigation currently uses the editor's existing AI proposal controls;
-  the planned Alt+Y/Alt+N/Alt+R and accept-all/reject-all key scheme is not the
-  current contract.
-- There is no implemented `zago.queue.getPending` or history reapply method.
-- The editor can have multiple buffers, but AI interaction is intentionally
-  centered on one active buffer and one visible focus. Workspace-wide atomic undo
-  and multi-file proposal presentation are not promised.
-- Ghost cursors, agent-colored cursors, rationale popups, and OS peer-credential
-  verification are not part of the current stable surface.
-- Payload and script size limits exist; a general-purpose background execution
-  scheduler and a 500 ms LOGO watchdog are future safeguards, not current API
-  guarantees.
+## 4. Maintenance & Future Backlog
 
-## 6. Next Steps
+With the core AI/IPC foundation completed, the subsystem is in **maintenance mode**. Potential future enhancements are backlog candidates rather than active development requirements:
 
-1. Make the single-focus proposal state explicit in the editor and protocol.
-2. Add a read-only selection-trigger event only if it improves the current-focus
-   workflow; keep the existing pull-based `getSelection` path stable.
-3. Avoid multi-agent queue features unless a concrete single-user workflow
-   proves that they reduce attention cost.
-4. Add protocol fixtures generated from the live JSON-RPC and MCP schemas so
-   documentation and implementation cannot drift.
-5. Continue treating border styles, table cells, Canvas coordinates, and CJK
-   display widths as shared editor geometry rather than agent-specific logic.
-
-## 7. Design Principle
-
-> Zago helps a human with this text.
-
-The IPC layer is successful when an agent can understand the current focus and
-make a precise, inspectable proposal without taking ownership of the editor or
-forcing the human to manage parallel work.
+1. **`Alt+A` / `selectionTriggered` Outbound Event**:
+   * An optional event notification when the user presses `Alt+A` to push current selection to a connected agent.
+2. **Watchdog for External LOGO Evaluation**:
+   * A 500ms execution safeguard to terminate runaway loops (`WHILE true [...]`) generated by external scripts.
+3. **Protocol Fixtures Generator**:
+   * Automated schema validation tests to prevent JSON-RPC and MCP schema drift.
