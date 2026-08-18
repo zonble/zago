@@ -669,7 +669,7 @@ TYPE "hello;world"
 
 Calendar identifiers accepted by `DATE`, `TIME`, `DATETIME`, and `FORMAT.DATE` include `gregorian`/`western`, `roc`/`republicofchina`/`minguo`/`taiwan`, `japanese`/`japan`/`wareki`/`jp`, `buddhist`/`thai`, `chinese`/`lunar`, `islamic`/`islamiccivil`/`islamicrural`/`muslim`, `islamicummalqura`/`ummalqura`, `hebrew`/`jewish`, `persian`/`iran`, `indian`, `coptic`, `ethiopic`, and `ethiopicametemihret`.
 
-`FORMAT.LIST`, `FORMAT.RELATIVETIME`, and `DETECT.*` require the platform Foundation APIs that provide list formatting, relative date formatting, and text detection. On Linux and Windows, their keywords remain available for scripts and completion, but execution reports a platform-not-supported Logo error.
+`FORMAT.LIST`, `FORMAT.RELATIVETIME`, `FORMAT.NAME`, `FORMAT.MEASURE`, and `DETECT.*` require the platform Foundation APIs that provide list formatting, relative date formatting, person name formatting, measurement formatting, and text detection. On Linux and Windows, their keywords remain available for scripts and completion, but execution reports a platform-not-supported Logo error.
 
 ---
 
