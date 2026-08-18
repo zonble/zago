@@ -91,6 +91,94 @@ extension LogoEngine {
             setLastExpressionString(dateStr)
             return dateStr
 
+        case .base64Encode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let encoded = LogoDataCodec.base64Encode(input)
+            setLastExpressionString(encoded)
+            return encoded
+
+        case .base64Decode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            guard let decoded = LogoDataCodec.base64Decode(input) else {
+                let msg = "[LOGO Error: Invalid Base64 input string '\(input)']"
+                reportError(LogoError(code: 1, message: msg), token: "BASE64.DECODE")
+                return ""
+            }
+            setLastExpressionString(decoded)
+            return decoded
+
+        case .isBase64:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let valid = LogoDataCodec.isValidBase64(input)
+            setLastExpressionBoolean(valid)
+            return valid ? "true" : "false"
+
+        case .urlEncode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let encoded = LogoDataCodec.urlEncode(input)
+            setLastExpressionString(encoded)
+            return encoded
+
+        case .urlDecode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let decoded = LogoDataCodec.urlDecode(input)
+            setLastExpressionString(decoded)
+            return decoded
+
+        case .hexEncode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let encoded = LogoDataCodec.hexEncode(input)
+            setLastExpressionString(encoded)
+            return encoded
+
+        case .hexDecode:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            guard let decoded = LogoDataCodec.hexDecode(input) else {
+                let msg = "[LOGO Error: Invalid Hex input string '\(input)']"
+                reportError(LogoError(code: 1, message: msg), token: "HEX.DECODE")
+                return ""
+            }
+            setLastExpressionString(decoded)
+            return decoded
+
+        case .hashSha256:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let hash = LogoDataCodec.sha256(input)
+            setLastExpressionString(hash)
+            return hash
+
+        case .hashSha1:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let hash = LogoDataCodec.sha1(input)
+            setLastExpressionString(hash)
+            return hash
+
+        case .hashMd5:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            let input = unquote(reader.nextExpression())
+            reader.commit(to: &index)
+            let hash = LogoDataCodec.md5(input)
+            setLastExpressionString(hash)
+            return hash
+
         case .count:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let v = reader.nextExpression()

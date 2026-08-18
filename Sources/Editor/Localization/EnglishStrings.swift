@@ -224,6 +224,10 @@ struct EnglishStrings {
             UUID [flavor]                        Generate UUID (v4, v7, nil, short, nano)
             UUID? string                         Test if string is a valid UUID
             UUID.TIME uuid_v7                    Extract ISO8601 timestamp from UUID v7
+            BASE64.ENCODE s / BASE64.DECODE s    Encode / decode Base64 string (or BASE64?)
+            URL.ENCODE s / URL.DECODE s          Percent-encode / decode URL string
+            HEX.ENCODE v / HEX.DECODE hex        Encode integer (0xX) or text to hex, or decode
+            HASH.SHA256 s / HASH.MD5 s / SHA1    Compute cryptographic hash digest
 
           7. Measurements & Unit Conversions
             CONVERT.MEASURE val from to / m to   Convert measurements 

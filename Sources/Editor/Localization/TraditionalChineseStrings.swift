@@ -217,6 +217,10 @@ struct TraditionalChineseStrings {
             UUID [flavor]                        生成唯一識別碼（v4 隨機、v7 時間排序、nil 全零、short/nano 短碼）
             UUID? string                         檢查字串是否為有效 UUID
             UUID.TIME uuid_v7                    從 UUID v7 提取時間戳記字串
+            BASE64.ENCODE s / BASE64.DECODE s    Base64 編碼/解碼（或 BASE64? 驗證格式）
+            URL.ENCODE s / URL.DECODE s          URL 百分比編碼/解碼
+            HEX.ENCODE v / HEX.DECODE hex        整數(0xX)或文字轉 16 進位編碼與解碼
+            HASH.SHA256 s / HASH.MD5 s / SHA1    計算 SHA-256、MD5、SHA-1 雜湊摘要
 
           7. 物理量與單位轉換
             CONVERT.MEASURE val from to / m to   度量衡單位轉換

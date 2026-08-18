@@ -636,6 +636,16 @@ TYPE "hello;world"
 | `UUID` | `GUID` | `UUID [version] [uppercase]` | Generates a UUID string (v4 random or v7 time-ordered) | `UUID`, `UUID "v7`, `UUID "v4 "true` |
 | `UUID?` | `IS_UUID` | `UUID? str` | Checks if string is a valid UUID representation | `UUID? "550e8400-e29b-41d4-a716-446655440000` |
 | `UUID.TIME` | `UUID.DATETIME` | `UUID.TIME uuid_v7_str [format] [locale] [tz]` | Extracts embedded creation timestamp from a UUID v7 string | `UUID.TIME (UUID "v7)` |
+| `BASE64.ENCODE` | `B64.ENCODE`, `BASE64ENCODE` | `BASE64.ENCODE text` | Encodes a UTF-8 string to Base64 format | `BASE64.ENCODE "Hello` |
+| `BASE64.DECODE` | `B64.DECODE`, `BASE64DECODE` | `BASE64.DECODE b64_text` | Decodes a Base64 encoded string back to UTF-8 text | `BASE64.DECODE "SGVsbG8=` |
+| `BASE64?` | `B64?`, `VALID.BASE64?` | `BASE64? string` | Tests whether a string is valid Base64 encoded format | `BASE64? "SGVsbG8=` |
+| `URL.ENCODE` | `URLENCODE` | `URL.ENCODE text` | Percent-encodes a string for use in URLs | `URL.ENCODE "你好` |
+| `URL.DECODE` | `URLDECODE` | `URL.DECODE url_text` | Decodes a percent-encoded URL string | `URL.DECODE "%E4%BD%A0%E5%A5%BD"` |
+| `HEX.ENCODE` | `HEXENCODE`, `HEX` | `HEX.ENCODE value` | Encodes integer to 0xXXXX or text to lowercase hex bytes | `HEX.ENCODE 255`, `HEX.ENCODE "abc` |
+| `HEX.DECODE` | `HEXDECODE`, `UNHEX` | `HEX.DECODE hex_string` | Decodes 0xXXXX to decimal integer or hex bytes to UTF-8 text | `HEX.DECODE "0xFF"`, `HEX.DECODE "616263"` |
+| `HASH.SHA256` | `SHA256` | `HASH.SHA256 text` | Computes the 64-character lowercase SHA-256 hex digest of a string | `HASH.SHA256 "zago"` |
+| `HASH.SHA1` | `SHA1` | `HASH.SHA1 text` | Computes the 40-character lowercase SHA-1 hex digest of a string | `HASH.SHA1 "zago"` |
+| `HASH.MD5` | `MD5` | `HASH.MD5 text` | Computes the 32-character lowercase MD5 hex digest of a string | `HASH.MD5 "zago"` |
 | `DATE` | - | `DATE [format] [locale] [tz] [cal]` | Evaluates/inserts formatted date. `cal` accepts the supported calendar identifiers listed below. | `DATE`, `MAKE "d" DATE "iso8601 "UTC` |
 | `TIME` | - | `TIME [format] [locale] [tz] [cal]` | Evaluates/inserts formatted time. `cal` accepts the supported calendar identifiers listed below. | `TIME`, `TIME "medium "en_US "UTC` |
 | `DATETIME` | `TIMESTAMP`, `NOW` | `DATETIME [format] [locale] [tz] [cal]` | Evaluates/inserts combined date and time. `cal` accepts the supported calendar identifiers listed below. | `DATETIME`, `DATETIME "iso8601` |
@@ -1015,6 +1025,23 @@ grep "^#" README.md | zago -e 'make "a lines buffertext clearbuffer foreach :a [
 | `RERANDOM` | - | `RERANDOM [seed]` | Reseeds pseudorandom number generator | `RERANDOM 42` |
 | `BIT.AND`, `BIT.OR`, `BIT.XOR`, `BIT.NOT` | - | `BIT.AND a b` | Bitwise logic operations | `BIT.AND 5 3` |
 | `ASHIFT`, `LSHIFT` / `BIT.SHL`, `RSHIFT` / `BIT.SHR` | - | `BIT.SHL a shift` | Arithmetic and logical bit shifts | `BIT.SHL 1 4` |
+
+---
+
+### 6.1 Data Encodings & Cryptographic Hashing
+
+| Command | Aliases | Syntax | Description | Example |
+| :--- | :--- | :--- | :--- | :--- |
+| `BASE64.ENCODE` | `B64.ENCODE`, `BASE64ENCODE` | `BASE64.ENCODE text` | Encodes UTF-8 text string to Base64 format | `BASE64.ENCODE "Hello` $\rightarrow$ `"SGVsbG8="` |
+| `BASE64.DECODE` | `B64.DECODE`, `BASE64DECODE` | `BASE64.DECODE b64_text` | Decodes Base64 string back to UTF-8 text | `BASE64.DECODE "SGVsbG8="` $\rightarrow$ `"Hello"` |
+| `BASE64?` | `B64?`, `VALID.BASE64?` | `BASE64? string` | Tests whether a string is a valid Base64 encoded format | `BASE64? "SGVsbG8="` $\rightarrow$ `"true"` |
+| `URL.ENCODE` | `URLENCODE` | `URL.ENCODE text` | Percent-encodes text string for safe URL query components | `URL.ENCODE "你好"` $\rightarrow$ `"%E4%BD%A0%E5%A5%BD"` |
+| `URL.DECODE` | `URLDECODE` | `URL.DECODE url_text` | Decodes percent-encoded URL string back to plain text | `URL.DECODE "%E4%BD%A0%E5%A5%BD"` $\rightarrow$ `"你好"` |
+| `HEX.ENCODE` | `HEXENCODE`, `HEX` | `HEX.ENCODE value` | Encodes integer to `0xXXXX` or UTF-8 text to hex bytes | `HEX.ENCODE 255` $\rightarrow$ `"0xFF"`, `HEX.ENCODE "abc"` $\rightarrow$ `"616263"` |
+| `HEX.DECODE` | `HEXDECODE`, `UNHEX` | `HEX.DECODE hex_string` | Decodes `0xXXXX` to integer decimal or hex bytes to UTF-8 | `HEX.DECODE "0xFF"` $\rightarrow$ `"255"`, `HEX.DECODE "616263"` $\rightarrow$ `"abc"` |
+| `HASH.SHA256` | `SHA256` | `HASH.SHA256 text` | Computes 64-char lowercase SHA-256 hex digest | `HASH.SHA256 "zago"` |
+| `HASH.SHA1` | `SHA1` | `HASH.SHA1 text` | Computes 40-char lowercase SHA-1 hex digest | `HASH.SHA1 "zago"` |
+| `HASH.MD5` | `MD5` | `HASH.MD5 text` | Computes 32-char lowercase MD5 hex digest | `HASH.MD5 "zago"` |
 
 ---
 
