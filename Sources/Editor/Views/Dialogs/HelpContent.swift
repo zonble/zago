@@ -100,6 +100,7 @@ enum HelpContent {
         ),
         Section(titleKey: "helpview.sec_set", itemPrefix: "helpview.set", itemRange: 1...23),
         Section(titleKey: "helpview.sec_logo", itemPrefix: "helpview.logo", itemRange: 1...9),
+        Section(titleKey: "helpview.sec_substitute", itemPrefix: "helpview.substitute", itemRange: 1...7),
     ]
 
     static func lines(
