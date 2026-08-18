@@ -459,46 +459,8 @@ final class PromptController: KeyInputHandler {
     }
 
     private func movePromptWordForward() {
-        let textChars = Array(inputText)
-        if cursorIndex >= textChars.count { return }
-
-        var idx = cursorIndex
-
-        enum CharCategory {
-            case asciiWord
-            case cjkScript
-            case nonWord
-        }
-
-        func category(at i: Int) -> CharCategory {
-            let ch = textChars[i]
-            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
-                return .cjkScript
-            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
-                return .asciiWord
-            } else {
-                return .nonWord
-            }
-        }
-
-        while idx < textChars.count && category(at: idx) == .nonWord {
-            idx += 1
-        }
-
-        if idx >= textChars.count {
-            cursorIndex = textChars.count
-            return
-        }
-
-        let cat = category(at: idx)
-        if cat == .cjkScript {
-            cursorIndex = idx + 1
-        } else if cat == .asciiWord {
-            while idx < textChars.count && category(at: idx) == .asciiWord {
-                idx += 1
-            }
-            cursorIndex = idx
-        }
+        guard cursorIndex < inputText.count else { return }
+        cursorIndex = TextAnalyzer.nextWordIndex(in: inputText, from: cursorIndex)
     }
 
     private func selectAllPromptText() {
@@ -605,46 +567,8 @@ final class PromptController: KeyInputHandler {
     }
 
     private func movePromptWordBackward() {
-        let textChars = Array(inputText)
-        if cursorIndex == 0 { return }
-
-        var idx = min(cursorIndex, textChars.count)
-
-        enum CharCategory {
-            case asciiWord
-            case cjkScript
-            case nonWord
-        }
-
-        func category(at i: Int) -> CharCategory {
-            let ch = textChars[i]
-            if TextUnicodeClassifier.isCJKScriptCharacter(ch) {
-                return .cjkScript
-            } else if TextUnicodeClassifier.isASCIIWordCharacter(ch) {
-                return .asciiWord
-            } else {
-                return .nonWord
-            }
-        }
-
-        while idx > 0 && category(at: idx - 1) == .nonWord {
-            idx -= 1
-        }
-
-        if idx == 0 {
-            cursorIndex = 0
-            return
-        }
-
-        let cat = category(at: idx - 1)
-        if cat == .cjkScript {
-            cursorIndex = idx - 1
-        } else if cat == .asciiWord {
-            while idx > 0 && category(at: idx - 1) == .asciiWord {
-                idx -= 1
-            }
-            cursorIndex = idx
-        }
+        guard cursorIndex > 0 else { return }
+        cursorIndex = TextAnalyzer.previousWordIndex(in: inputText, from: cursorIndex)
     }
 
     private func replacePromptPrefix(_ replacement: String) {

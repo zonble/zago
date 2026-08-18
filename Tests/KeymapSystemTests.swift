@@ -153,6 +153,29 @@ import Testing
         #expect(keymap.resolve(key: .ctrl("c"), in: .prompt) != .promptCancel)
     }
 
+    @Test func testWordNavigationKeyBindingsAcrossPresetsAndModes() throws {
+        let keymap = KeymapManager(preset: .classic)
+
+        // In text mode: Alt+F / Alt+B are word navigation
+        #expect(keymap.resolve(key: .alt("f"), in: .text) == .moveWordForward)
+        #expect(keymap.resolve(key: .alt("F"), in: .text) == .moveWordForward)
+        #expect(keymap.resolve(key: .alt("b"), in: .text) == .moveWordBackward)
+        #expect(keymap.resolve(key: .alt("B"), in: .text) == .moveWordBackward)
+
+        // In table mode: Alt+F / Alt+B are word navigation
+        #expect(keymap.resolve(key: .alt("f"), in: .table) == .moveWordForward)
+        #expect(keymap.resolve(key: .alt("b"), in: .table) == .moveWordBackward)
+
+        // In canvas mode: Alt+B is editMark, Alt+F is moveWordForward (or not overridden)
+        #expect(keymap.resolve(key: .alt("b"), in: .canvas) == .editMark)
+        #expect(keymap.resolve(key: .alt("B"), in: .canvas) == .editMark)
+        #expect(keymap.resolve(key: .alt("b"), in: .text) != .editMark)
+
+        // In prompt mode: Alt+F / Alt+B are word navigation
+        #expect(keymap.resolve(key: .alt("f"), in: .prompt) == .moveWordForward)
+        #expect(keymap.resolve(key: .alt("b"), in: .prompt) == .moveWordBackward)
+    }
+
     @Test func testHomeEndAndSelectAllKeyBindingsAcrossPresetsAndModes() throws {
         let keymap = KeymapManager(preset: .classic)
 

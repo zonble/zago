@@ -221,6 +221,9 @@ struct EnglishStrings {
             DETECT.PHONE text                    Detect phone numbers; returns a list
             DETECT.DATE text                     Detect dates; returns a list
             DETECT.ADDRESS text                  Detect postal addresses; returns a list
+            UUID [flavor]                        Generate UUID (v4, v7, nil, short)
+            UUID? string                         Test if string is a valid UUID
+            UUID.TIME uuid_v7                    Extract ISO8601 timestamp from UUID v7
 
           7. Measurements & Unit Conversions
             CONVERT.MEASURE val from to / m to   Convert measurements 

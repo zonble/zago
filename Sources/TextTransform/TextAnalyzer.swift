@@ -45,4 +45,43 @@ public enum TextAnalyzer {
         }
     }
 
+    /// Finds all word ranges in `text` using ICU natural language word breaking (`byWords`).
+    public static func wordRanges(in text: String) -> [Range<Int>] {
+        guard !text.isEmpty else { return [] }
+        var ranges: [Range<Int>] = []
+        text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, substringRange, _, _ in
+            let lower = text.distance(from: text.startIndex, to: substringRange.lowerBound)
+            let upper = text.distance(from: text.startIndex, to: substringRange.upperBound)
+            if lower < upper {
+                ranges.append(lower..<upper)
+            }
+        }
+        return ranges
+    }
+
+    /// Computes next word boundary index after `currentIndex` using ICU word breaking.
+    public static func nextWordIndex(in text: String, from currentIndex: Int) -> Int {
+        let textCount = text.count
+        guard currentIndex < textCount else { return textCount }
+        let ranges = wordRanges(in: text)
+        for range in ranges {
+            if range.upperBound > currentIndex {
+                // If cursor is before the word, jumping to its end
+                return range.upperBound
+            }
+        }
+        return textCount
+    }
+
+    /// Computes previous word boundary index before `currentIndex` using ICU word breaking.
+    public static func previousWordIndex(in text: String, from currentIndex: Int) -> Int {
+        guard currentIndex > 0 else { return 0 }
+        let ranges = wordRanges(in: text)
+        for range in ranges.reversed() {
+            if range.lowerBound < currentIndex {
+                return range.lowerBound
+            }
+        }
+        return 0
+    }
 }

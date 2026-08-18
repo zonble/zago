@@ -102,8 +102,8 @@ final class KeymapManager {
 
     private func loadBasePreset(_ preset: KeymapPreset) {
         // Universal Navigation
-        register(.moveWordBackward, .ctrlArrowLeft, .ctrlShift("B"), .ctrlShift("b"))
-        register(.moveWordForward, .ctrlArrowRight, .ctrlShift("F"), .ctrlShift("f"))
+        register(.moveWordBackward, .ctrlArrowLeft, .ctrlShift("B"), .ctrlShift("b"), .alt("B"), .alt("b"))
+        register(.moveWordForward, .ctrlArrowRight, .ctrlShift("F"), .ctrlShift("f"), .alt("F"), .alt("f"))
 
         // Selection (Shift + Navigation)
         register(.selectLeft, .shiftArrowLeft)
@@ -123,6 +123,7 @@ final class KeymapManager {
         register(.tableToggle, .f7, .alt("T"), .alt("t"))
         register(.canvasToggle, .f8, .alt("V"), .alt("v"))
         register(.borderStyle, .alt("S"), .alt("s"))
+        register(.editMark, .ctrl("^"), .mark)
         register(.logoOutput, .alt("L"), .alt("l"))
         register(.logoCanvas, .alt("C"), .alt("c"))
         register(.editToggleComment, .ctrl("/"))
@@ -163,7 +164,6 @@ final class KeymapManager {
             register(.editJustify, .ctrl("J"), .ctrl("j"))
             register(.editEvalLogo, .ctrl("Q"), .ctrl("q"))
             register(.editCancelSelection, .ctrl("G"), .ctrl("g"))
-            register(.editMark, .alt("B"), .alt("b"), .mark)
 
             // Files & Buffers
             register(.fileSave, .ctrl("S"), .ctrl("s"))
@@ -208,7 +208,6 @@ final class KeymapManager {
             register(.selectAll, .ctrl("A"), .ctrl("a"))
             register(.editTab, .tab)
             register(.editCancelSelection, .ctrl("G"), .ctrl("g"))
-            register(.editMark, .alt("B"), .alt("b"), .mark)
 
             // Files & Buffers
             register(.fileSave, .ctrl("S"), .ctrl("s"))

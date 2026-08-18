@@ -737,3 +737,48 @@ private final class MockReadDelegate: LogoEngineDelegate, @unchecked Sendable {
     #expect(logoEngine.lastError?.message.contains("invalid procedure name") == true)
     #expect(logoEngine.lastResult == nil)
 }
+
+@Test func testUUIDPrimitives() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. Default UUID (v4)
+    logoEngine.execute("UUID")
+    let v4 = logoEngine.lastResult ?? ""
+    #expect(LogoUUIDGenerator.isValidUUID(v4) == true)
+    #expect(v4.count == 36)
+    #expect(v4 == v4.lowercased())
+
+    // 2. Explicit v4 / random
+    logoEngine.execute("UUID \"v4")
+    let explicitV4 = logoEngine.lastResult ?? ""
+    #expect(LogoUUIDGenerator.isValidUUID(explicitV4) == true)
+
+    // 3. Nil UUID
+    logoEngine.execute("UUID \"nil")
+    #expect(logoEngine.lastResult == "00000000-0000-0000-0000-000000000000")
+
+    // 4. Short / Nano ID
+    logoEngine.execute("UUID \"short")
+    let shortId = logoEngine.lastResult ?? ""
+    #expect(shortId.count == 8)
+
+    // 5. UUID v7
+    logoEngine.execute("UUID \"v7")
+    let v7 = logoEngine.lastResult ?? ""
+    #expect(LogoUUIDGenerator.isValidUUID(v7) == true)
+    #expect(v7.contains("-7"))
+
+    // 6. UUID? predicate
+    logoEngine.execute("UUID? :v7")
+    logoEngine.execute("UUID? \"018f4a3c-b1d5-7123-8abc-def012345678")
+    #expect(logoEngine.lastResult == "true")
+
+    logoEngine.execute("UUID? \"not-a-valid-uuid")
+    #expect(logoEngine.lastResult == "false")
+
+    // 7. UUID.TIME extraction
+    logoEngine.execute("MAKE \"my_v7 UUID \"v7")
+    logoEngine.execute("UUID.TIME :my_v7")
+    let timeStr = logoEngine.lastResult ?? ""
+    #expect(timeStr.contains("T") && timeStr.contains("Z"))
+}

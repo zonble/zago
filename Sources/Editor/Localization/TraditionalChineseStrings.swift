@@ -214,6 +214,9 @@ struct TraditionalChineseStrings {
             DETECT.PHONE text                    偵測電話號碼，回傳 LOGO 清單
             DETECT.DATE text                     偵測日期，回傳 LOGO 清單
             DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 清單
+            UUID [flavor]                        生成唯一識別碼（v4 隨機、v7 時間排序、nil 全零、short 短碼）
+            UUID? string                         檢查字串是否為有效 UUID
+            UUID.TIME uuid_v7                    從 UUID v7 提取時間戳記字串
 
           7. 物理量與單位轉換
             CONVERT.MEASURE val from to / m to   度量衡單位轉換
