@@ -1,4 +1,5 @@
 import Editor
+import FileWatcher
 import Foundation
 import TextEncoding
 
