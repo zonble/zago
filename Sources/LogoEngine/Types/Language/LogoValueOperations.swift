@@ -44,11 +44,3 @@ internal func numericExtremum(of value: LogoValue, preferMaximum: Bool) -> Doubl
     }
     return result
 }
-
-internal func logoIsTrue(_ value: String) -> Bool {
-    let clean = value.lowercased().trimmingCharacters(in: .whitespaces)
-    if clean == "1" || clean == "true" { return true }
-    if clean == "0" || clean == "false" || clean.isEmpty { return false }
-    if let number = Double(clean) { return number != 0 }
-    return true
-}

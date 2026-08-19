@@ -1,39 +1,39 @@
 import Foundation
 
-/// Unified data value representation for LOGO (words, lists, multi-dimensional arrays, and physical measurements).
-enum LogoValue: Equatable, CustomStringConvertible {
+/// Unified data value representation for LOGO (words, lists, multi-dimensional arrays, physical measurements, and date values).
+public enum LogoValue: Equatable, CustomStringConvertible, Sendable {
     case string(String)
     case list([LogoValue])
     case array([LogoValue])
-    case measurement(value: Double, unit: String, dimension: LogoMeasurementConverter.DimensionKind)
+    case measurement(value: Double, unit: String, dimension: LogoDimensionKind)
     case date(date: Date, calendar: Calendar.Identifier, timeZone: TimeZone)
 
-    var isList: Bool {
+    public var isList: Bool {
         if case .list = self { return true }
         return false
     }
 
-    var isArray: Bool {
+    public var isArray: Bool {
         if case .array = self { return true }
         return false
     }
 
-    var isWord: Bool {
+    public var isWord: Bool {
         if case .string = self { return true }
         return false
     }
 
-    var isMeasurement: Bool {
+    public var isMeasurement: Bool {
         if case .measurement = self { return true }
         return false
     }
 
-    var isDate: Bool {
+    public var isDate: Bool {
         if case .date = self { return true }
         return false
     }
 
-    var isNumber: Bool {
+    public var isNumber: Bool {
         switch self {
         case .string(let s): return Double(s) != nil
         case .measurement: return true
@@ -41,7 +41,7 @@ enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         switch self {
         case .string(let s): return s.isEmpty
         case .list(let l): return l.isEmpty
@@ -50,7 +50,7 @@ enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    var stringValue: String {
+    public var stringValue: String {
         switch self {
         case .string(let s): return s
         case .list(let items): return "[" + items.map { $0.stringValue }.joined(separator: " ") + "]"
@@ -62,8 +62,21 @@ enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
+    public func toListItems() -> [LogoValue] {
+        switch self {
+        case .list(let items), .array(let items):
+            return items
+        case .measurement(let val, let unit, _):
+            return [.string(LogoMeasurementConverter.formatResult(val)), .string(unit)]
+        case .date:
+            return [.string(description)]
+        case .string:
+            return [self]
+        }
+    }
+
     /// Serializes LOGO value into valid LOGO canonical syntax string (using UCBLogo |...| quoting for strings with whitespace/quotes/brackets).
-    func toLogoSyntaxString() -> String {
+    public func toLogoSyntaxString() -> String {
         switch self {
         case .string(let str):
             return str
@@ -112,11 +125,11 @@ enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    var description: String {
-        return toLogoSyntaxString()
+    public var description: String {
+        toLogoSyntaxString()
     }
 
-    static func parse(_ raw: String) -> LogoValue {
+    public static func parse(_ raw: String) -> LogoValue {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.hasPrefix("[") && trimmed.hasSuffix("]") {
             let inner = String(trimmed.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -149,11 +162,10 @@ enum LogoValue: Equatable, CustomStringConvertible {
         }
     }
 
-    static func parsePreservingWhitespace(_ raw: String) -> LogoValue {
+    public static func parsePreservingWhitespace(_ raw: String) -> LogoValue {
         guard raw == raw.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return .string(raw)
         }
         return parse(raw)
     }
-
 }
