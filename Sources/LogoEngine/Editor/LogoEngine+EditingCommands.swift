@@ -105,8 +105,8 @@ extension LogoEngine {
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             if reader.peekToken() != nil {
                 let oldText = reader.nextExpression()
-                if let newText = reader.nextOptionalExpression(isBoundary: { token in
-                    LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+                if let newText = reader.nextOptionalExpression(isBoundary: { [weak self] token in
+                    (self?.isStatementCommand(token) ?? false) || token == "]" || token == ")"
                 }) {
                     reader.commit(to: &index)
                     delegate.logoEngine(self, performAction: .replaceText(old: oldText, new: newText))

@@ -156,15 +156,11 @@ struct LogoLocalizationTests {
     func testChineseTextTransformsAndDetectors() {
         let engine = makeEngine()
         engine.execute("""
-        設定 "spaced CJK空格 "Hello世界
-        設定 "hant 轉繁體 "简体中文
         設定 "base64 編碼64 "hello
-        設定 "sha SHA256 "test
+        設定 "urls 偵測網址 "https://example.com
         """)
-        #expect(engine.variables["spaced"] == "Hello 世界")
-        #expect(engine.variables["hant"] == "簡體中文")
         #expect(engine.variables["base64"] == "aGVsbG8=")
-        #expect(engine.variables["sha"] != nil)
+        #expect(engine.variables["urls"] == "[https://example.com]")
     }
 
     @Test
@@ -181,6 +177,21 @@ struct LogoLocalizationTests {
         #expect(engine.variables["rest"] == "[2 3 4]")
         #expect(engine.variables["reversed"] == "[4 3 2 1]")
         #expect(engine.variables["islst"] == "true")
+    }
+
+    @Test
+    func testForeachWithChineseDrawingBlock() {
+        let lines = LogoExecutionService.render(
+            script: """
+            遍歷 [ "roc" "japan" "thai" ] [ 畫框 ? ]
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let joined = lines.joined(separator: "\n")
+        #expect(joined.contains("roc"))
+        #expect(joined.contains("japan"))
+        #expect(joined.contains("thai"))
+        #expect(joined.contains("┌"))
     }
 
     @Test

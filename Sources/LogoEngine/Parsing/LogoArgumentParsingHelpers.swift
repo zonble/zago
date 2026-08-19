@@ -43,8 +43,8 @@ extension LogoEngine {
         if token.hasPrefix(":") || token.hasPrefix("?") || token == "#" { return true }
         if variables[token.lowercased()] != nil { return true }
 
-        guard let primitive = LogoPrimitive.from(token) else { return false }
-        return !LogoEngine.isStatementCommand(token) && LogoEngine.keywords.contains(primitive)
+        guard parsePrimitive(token) != nil else { return false }
+        return !isStatementCommand(token) && isKeyword(token)
     }
 
     internal func parseIntExpressionArgument(

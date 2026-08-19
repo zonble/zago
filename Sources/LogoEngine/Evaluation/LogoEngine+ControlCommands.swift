@@ -450,7 +450,7 @@ extension LogoEngine {
             reader.nextBlock()
             ?? reader.tokensUntil { token in
                 token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
-                    || LogoEngine.isStatementCommand(token)
+                    || self.isStatementCommand(token)
             }
 
         let isTrue = evaluateCondition(condTokens)
@@ -460,7 +460,7 @@ extension LogoEngine {
             customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
         } else if let token = reader.peekToken(), isQuotedWordToken(token) || token.hasPrefix(":") {
             let msgTokens = reader.tokensUntil {
-                LogoEngine.isStatementCommand($0) || $0 == "]" || $0 == ")"
+                self.isStatementCommand($0) || $0 == "]" || $0 == ")"
             }
             customMsg = msgTokens.map { unquote($0) }.joined(separator: " ")
         }

@@ -152,7 +152,7 @@ extension LogoEngine {
                 consumedAny = true
                 cursor = evalIndex
                 lastConsumedIndex = cursor
-            } else if !LogoEngine.isStatementCommand(token) {
+            } else if !self.isStatementCommand(token) {
                 var intEvalIndex = cursor
                 if let parsedLength = parseIntExpressionArgument(
                     tokens, index: &intEvalIndex, isBoundary: isLineArgumentBoundary)
@@ -180,9 +180,11 @@ extension LogoEngine {
 
     private func isLineArgumentBoundary(_ token: String) -> Bool {
         let unquoted = unquote(token)
-        return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+        return self.isStatementCommand(token) || token == "]" || token == ")"
             || LineArrowMode(token: unquoted.uppercased()) != nil
-            || BorderStyle.isStyleToken(unquoted) || ArrowStyle.isStyleToken(unquoted)
+            || BorderStyle.isStyleToken(unquoted)
+            || pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) != nil
+            || ArrowStyle.isStyleToken(unquoted)
     }
 
     internal var currentArrowStyle: ArrowStyle {

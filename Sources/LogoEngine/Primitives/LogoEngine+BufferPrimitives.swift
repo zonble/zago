@@ -56,10 +56,10 @@ extension LogoEngine {
     }
 
     internal func isArgumentBoundary(_ token: String) -> Bool {
-        if LogoEngine.isStatementCommand(token) || token == "]" || token == ")" {
+        if self.isStatementCommand(token) || token == "]" || token == ")" {
             return true
         }
-        if let proc = customProcedures[token.uppercased()], !proc.isReporter {
+        if let proc = customProcedures[token.uppercased()], !proc.isReporter(registry: pluginRegistry) {
             return true
         }
         return false

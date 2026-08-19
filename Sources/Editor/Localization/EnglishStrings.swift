@@ -860,7 +860,6 @@ struct EnglishStrings {
         "menu.borders.heavy_quad": "Heavy Quad     ┏┉┉┓",
         "menu.borders.double_dash": "Double Dash    ┌╌╌┐",
         "menu.borders.heavy_double": "Heavy Double   ┏╍╍┓",
-        "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "Next Style\tM+S",
         "menu.borders.arrow_solid": "Arrow: Solid   ▲▼◀▶",
         "menu.borders.arrow_stemmed": "Arrow: Stemmed ↑↓←→",
