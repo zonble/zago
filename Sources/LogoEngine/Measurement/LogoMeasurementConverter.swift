@@ -233,7 +233,7 @@ public enum LogoMeasurementConverter {
         locale localeStr: String? = nil,
         naturalScale: Bool = false
     ) -> String? {
-        #if os(Linux) || os(Windows)
+        #if !canImport(Darwin)
             return nil
         #else
             let cleanUnit = normalizeUnitKey(unitStr)

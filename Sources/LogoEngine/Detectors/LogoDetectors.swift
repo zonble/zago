@@ -2,7 +2,7 @@ import Foundation
 
 internal enum LogoDetectors {
     static func detect(_ text: String, kind: LogoDetectorKind) -> [String] {
-        #if os(Linux) || os(Windows)
+        #if !canImport(Darwin)
             return []
         #else
             let types: NSTextCheckingResult.CheckingType = [.link, .phoneNumber, .date, .address]

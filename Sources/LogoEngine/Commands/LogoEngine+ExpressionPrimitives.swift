@@ -37,6 +37,10 @@ extension LogoEngine {
             ?? evaluateMathPrimitives(tokens, index: &index)
             ?? evaluateBufferPrimitives(tokens, index: &index)
             ?? evaluateTemplatePrimitives(tokens, index: &index)
+            ?? evaluateDatePrimitives(tokens, index: &index)
+            ?? evaluateMeasurementPrimitives(tokens, index: &index)
+            ?? evaluateFormattingPrimitives(tokens, index: &index)
+            ?? evaluateCodecAndDetectorPrimitives(tokens, index: &index)
             ?? evaluateSystemPrimitives(tokens, index: &index)
 
         if let result, primitive != .date, primitive != .time {

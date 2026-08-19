@@ -305,4 +305,94 @@ extension LogoEngine {
             return nil
         }
     }
+
+    internal func applyTemplate(templateStr: String, args: [String], indexInLoop: Int = 1, restList: [String] = [])
+        -> String
+    {
+        let clean = templateStr.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let prevHash = variables["#"]
+        let prevRest = variables["?rest"]
+        let prevQuestion = variables["?"]
+        defer {
+            if let v = prevHash { variables["#"] = v } else { variables.removeValue(forKey: "#") }
+            if let v = prevRest { variables["?rest"] = v } else { variables.removeValue(forKey: "?rest") }
+            if let v = prevQuestion { variables["?"] = v } else { variables.removeValue(forKey: "?") }
+        }
+
+        variables["#"] = "\(indexInLoop)"
+        variables["?rest"] = restList.joined(separator: " ")
+
+        if clean.hasPrefix("[") && clean.hasSuffix("]") {
+            let tTokens = LogoTokenizer.tokenize(clean)
+            var idx = 0
+            if !tTokens.isEmpty && tTokens[0] == "[" {
+                let inner = extractBlockTokens(tokens: tTokens, index: &idx)
+                if !inner.isEmpty && inner[0] == "[" {
+                    var iIdx = 0
+                    let params = extractBlockTokens(tokens: inner, index: &iIdx)
+                    iIdx += 1
+                    for (i, p) in params.enumerated() {
+                        let pName = unquote(p).lowercased()
+                        variables[pName] = i < args.count ? args[i] : ""
+                    }
+                    let bodyTokens = Array(inner[iIdx...])
+                    if !bodyTokens.isEmpty {
+                        if bodyTokens[0] == "[" {
+                            var bIdx = 0
+                            let stmtBlock = extractBlockTokens(tokens: bodyTokens, index: &bIdx)
+                            var subReturn: String? = nil
+                            var sIdx = 0
+                            executeTokens(stmtBlock, index: &sIdx, frameReturn: &subReturn)
+                            return subReturn ?? lastResult ?? ""
+                        } else if LogoEngine.isStatementCommand(bodyTokens[0]) {
+                            var subReturn: String? = nil
+                            var sIdx = 0
+                            executeTokens(bodyTokens, index: &sIdx, frameReturn: &subReturn)
+                            return subReturn ?? lastResult ?? ""
+                        } else {
+                            var bIdx = 0
+                            return evaluateExpression(bodyTokens, index: &bIdx)
+                        }
+                    }
+                } else {
+                    variables["?"] = args.first ?? ""
+                    for (i, arg) in args.enumerated() {
+                        variables["?\(i + 1)"] = arg
+                    }
+                    if !inner.isEmpty {
+                        if LogoEngine.isStatementCommand(inner[0]) {
+                            var subReturn: String? = nil
+                            var sIdx = 0
+                            executeTokens(inner, index: &sIdx, frameReturn: &subReturn)
+                            return subReturn ?? lastResult ?? ""
+                        } else {
+                            let hasComparison = inner.contains {
+                                $0 == "=" || $0 == "==" || $0 == "!=" || $0 == "<" || $0 == ">" || $0 == "<="
+                                    || $0 == ">=" || $0 == "EQUAL?" || $0 == "NOTEQUAL?"
+                            }
+                            if hasComparison {
+                                return evaluateCondition(inner) ? "1" : "0"
+                            } else {
+                                var bIdx = 0
+                                return evaluateExpression(inner, index: &bIdx)
+                            }
+                        }
+                    }
+                    return ""
+                }
+            }
+        }
+
+        let procName = unquote(clean).uppercased()
+        if let proc = customProcedures[procName] {
+            let callTokens = [procName] + args
+            var cIdx = 0
+            return invokeProcedure(proc, tokens: callTokens, index: &cIdx) ?? ""
+        } else {
+            let callTokens = [procName] + args
+            var cIdx = 0
+            return evaluateTokenOrCommand(callTokens, index: &cIdx)
+        }
+    }
 }
