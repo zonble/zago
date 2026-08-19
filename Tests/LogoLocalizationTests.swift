@@ -81,6 +81,24 @@ struct LogoLocalizationTests {
         #expect(joined.contains("╔") || joined.contains("═"))
         #expect(joined.contains("標題"))
         #expect(joined.contains("內容"))
+
+        let dashedLines = LogoExecutionService.render(
+            script: """
+            畫框 10 4 三段虛線
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let dashedJoined = dashedLines.joined(separator: "\n")
+        #expect(dashedJoined.contains("┄"))
+
+        let doubleDashLines = LogoExecutionService.render(
+            script: """
+            畫框 10 4 二段虛線
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let doubleDashJoined = doubleDashLines.joined(separator: "\n")
+        #expect(doubleDashJoined.contains("╌"))
     }
 
     @Test
