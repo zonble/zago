@@ -29,7 +29,7 @@ public enum LogoListFormatter {
         guard !items.isEmpty else { return "" }
         if items.count == 1 { return items[0] }
 
-        #if os(Linux) || os(Windows)
+        #if !canImport(Darwin)
             return ""
         #else
             let loc = Locale(logoLocaleSpec: locale)

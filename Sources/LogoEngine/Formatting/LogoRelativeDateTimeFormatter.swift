@@ -39,7 +39,7 @@ public enum LogoRelativeDateTimeFormatter {
         unit: String,
         locale: String? = nil
     ) -> String {
-        #if os(Linux) || os(Windows)
+        #if !canImport(Darwin)
             return ""
         #else
             let loc = Locale(logoLocaleSpec: locale)
@@ -69,7 +69,7 @@ public enum LogoRelativeDateTimeFormatter {
         reference: Date = Date(),
         locale: String? = nil
     ) -> String {
-        #if os(Linux) || os(Windows)
+        #if !canImport(Darwin)
             return ""
         #else
             let loc = Locale(logoLocaleSpec: locale)
