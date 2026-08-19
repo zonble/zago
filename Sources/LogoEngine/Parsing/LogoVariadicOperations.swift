@@ -17,6 +17,8 @@ internal func evaluateVariadicValuePrimitive(_ primitive: LogoPrimitive, argumen
                 items.append(contentsOf: values)
             case .measurement(let val, let unit, _):
                 items.append(contentsOf: [.string(LogoMeasurementConverter.formatResult(val)), .string(unit)])
+            case .date:
+                items.append(.string(argument))
             case .string(let value):
                 items.append(.string(value))
             }

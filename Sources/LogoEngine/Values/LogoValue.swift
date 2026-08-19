@@ -6,6 +6,7 @@ enum LogoValue: Equatable, CustomStringConvertible {
     case list([LogoValue])
     case array([LogoValue])
     case measurement(value: Double, unit: String, dimension: LogoMeasurementConverter.DimensionKind)
+    case date(date: Date, calendar: Calendar.Identifier, timeZone: TimeZone)
 
     var isList: Bool {
         if case .list = self { return true }
@@ -27,6 +28,11 @@ enum LogoValue: Equatable, CustomStringConvertible {
         return false
     }
 
+    var isDate: Bool {
+        if case .date = self { return true }
+        return false
+    }
+
     var isNumber: Bool {
         switch self {
         case .string(let s): return Double(s) != nil
@@ -40,7 +46,7 @@ enum LogoValue: Equatable, CustomStringConvertible {
         case .string(let s): return s.isEmpty
         case .list(let l): return l.isEmpty
         case .array(let a): return a.isEmpty
-        case .measurement: return false
+        case .measurement, .date: return false
         }
     }
 
@@ -51,6 +57,8 @@ enum LogoValue: Equatable, CustomStringConvertible {
         case .array(let items): return "{" + items.map { $0.stringValue }.joined(separator: " ") + "}"
         case .measurement(let value, let unit, _):
             return "[\(LogoMeasurementConverter.formatResult(value)) \(unit)]"
+        case .date(let date, let calId, let tz):
+            return LogoDateTimeFormatter.formatDateValue(date, calendar: calId, timeZone: tz)
         }
     }
 
@@ -99,6 +107,8 @@ enum LogoValue: Equatable, CustomStringConvertible {
             return "{" + formatted.joined(separator: " ") + "}"
         case .measurement(let value, let unit, _):
             return "[\(LogoMeasurementConverter.formatResult(value)) \(unit)]"
+        case .date(let date, let calId, let tz):
+            return LogoDateTimeFormatter.formatDateValue(date, calendar: calId, timeZone: tz)
         }
     }
 

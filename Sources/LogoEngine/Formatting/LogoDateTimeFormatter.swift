@@ -347,6 +347,52 @@ struct LogoDateTimeFormatter {
         return formatter.string(from: date)
     }
 
+    static func calendarIdentifier(for name: String?) -> Calendar.Identifier {
+        parseCalendar(name).identifier
+    }
+
+    static func defaultLocaleForCalendar(_ identifier: Calendar.Identifier) -> String? {
+        switch identifier {
+        case .republicOfChina, .chinese: return "zh_TW"
+        case .japanese: return "ja_JP"
+        case .buddhist: return "th_TH"
+        default: return nil
+        }
+    }
+
+    static func calendarName(for identifier: Calendar.Identifier) -> String {
+        switch identifier {
+        case .republicOfChina: return "roc"
+        case .japanese: return "japanese"
+        case .buddhist: return "buddhist"
+        case .chinese: return "chinese"
+        case .islamic: return "islamic"
+        case .islamicUmmAlQura: return "ummalqura"
+        case .hebrew: return "hebrew"
+        case .persian: return "persian"
+        case .indian: return "indian"
+        case .coptic: return "coptic"
+        case .ethiopicAmeteMihret: return "ethiopic"
+        case .gregorian: return "gregorian"
+        default: return "gregorian"
+        }
+    }
+
+    static func formatDateValue(_ date: Date, calendar: Calendar.Identifier, timeZone: TimeZone) -> String {
+        let calName = calendarName(for: calendar)
+        let locale = defaultLocaleForCalendar(calendar)
+        if calendar == .gregorian {
+            let cal = Calendar(identifier: .gregorian)
+            let comps = cal.dateComponents(in: timeZone, from: date)
+            if (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0 || (comps.second ?? 0) != 0 {
+                return format(date: date, mode: .dateTime, formatSpec: "yyyy-MM-dd HH:mm:ss", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+            } else {
+                return format(date: date, mode: .date, formatSpec: "yyyy-MM-dd", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+            }
+        }
+        return format(date: date, mode: .date, formatSpec: "long", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+    }
+
     static func parseDate(
         _ raw: String,
         defaultCalendar: Calendar = Calendar(identifier: .gregorian),
@@ -373,7 +419,32 @@ struct LogoDateTimeFormatter {
             return Date(timeIntervalSince1970: timestamp)
         }
 
+        // Check if string contains ROC era characters ("民國")
+        if trimmed.contains("民國") {
+            let rocFormatter = DateFormatter()
+            rocFormatter.locale = Locale(identifier: "zh_TW")
+            rocFormatter.calendar = Calendar(identifier: .republicOfChina)
+            rocFormatter.timeZone = defaultTimeZone
+            for p in ["Gy年M月d日", "G y年M月d日", "G y年MM月dd日", "Gy年MM月dd日", "y年M月d日", "y年MM月dd日"] {
+                rocFormatter.dateFormat = p
+                if let d = rocFormatter.date(from: trimmed) { return d }
+            }
+        }
+
+        // Check if string contains Japanese era names ("令和", "平成", "昭和", "大正", "明治")
+        if ["令和", "平成", "昭和", "大正", "明治"].contains(where: { trimmed.contains($0) }) {
+            let jaFormatter = DateFormatter()
+            jaFormatter.locale = Locale(identifier: "ja_JP")
+            jaFormatter.calendar = Calendar(identifier: .japanese)
+            jaFormatter.timeZone = defaultTimeZone
+            for p in ["Gy年M月d日", "G y年M月d日", "G y年MM月dd日", "Gy年MM月dd日", "y年M月d日", "y年MM月dd日"] {
+                jaFormatter.dateFormat = p
+                if let d = jaFormatter.date(from: trimmed) { return d }
+            }
+        }
+
         let iso = ISO8601DateFormatter()
+        iso.timeZone = defaultTimeZone
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let d = iso.date(from: trimmed) { return d }
 
@@ -389,13 +460,28 @@ struct LogoDateTimeFormatter {
             "yyyy.MM.dd",
             "MM/dd/yyyy",
             "dd/MM/yyyy",
+            "y-MM-dd HH:mm:ss",
+            "y-MM-dd",
+            "y/MM/dd",
+            "y.MM.dd",
+            "y-M-d",
+            "y/M/d",
             "HH:mm:ss",
         ]
+
+        // If year looks like a 4-digit Gregorian year (> 1000), use Gregorian calendar
+        let calToUse: Calendar
+        if let firstToken = trimmed.split(whereSeparator: { !$0.isNumber }).first,
+           let num = Int(firstToken), num > 1000 {
+            calToUse = Calendar(identifier: .gregorian)
+        } else {
+            calToUse = defaultCalendar
+        }
 
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = defaultTimeZone
-        formatter.calendar = defaultCalendar
+        formatter.calendar = calToUse
 
         for pattern in standardPatterns {
             formatter.dateFormat = pattern

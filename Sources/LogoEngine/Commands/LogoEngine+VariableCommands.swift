@@ -64,6 +64,8 @@ extension LogoEngine {
                             s.replaceSubrange(strIdx...strIdx, with: newVal)
                             resultStr = s
                         }
+                    case .date:
+                        break
                     }
 
                     if let res = resultStr {
@@ -103,6 +105,8 @@ extension LogoEngine {
                         variables[varName] = LogoValue.array(items).description
                     case .measurement(_, let u, _):
                         variables[varName] = LogoValue.list([newElem, .string(u)]).description
+                    case .date:
+                        variables[varName] = newVal
                     case .string(var s):
                         if s.isEmpty {
                             s = newVal
@@ -133,6 +137,7 @@ extension LogoEngine {
                         case .list(let t), .array(let t): tailItems = t
                         case .measurement(let v, let u, _):
                             tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                        case .date: tailItems = [newTailParsed]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.list([head] + tailItems).description
@@ -143,6 +148,7 @@ extension LogoEngine {
                         case .list(let t), .array(let t): tailItems = t
                         case .measurement(let v, let u, _):
                             tailItems = [.string(LogoMeasurementConverter.formatResult(v)), .string(u)]
+                        case .date: tailItems = [newTailParsed]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] = LogoValue.array([head] + tailItems).description
@@ -152,10 +158,13 @@ extension LogoEngine {
                         case .list(let t), .array(let t): tailItems = t
                         case .measurement(let mv, let mu, _):
                             tailItems = [.string(LogoMeasurementConverter.formatResult(mv)), .string(mu)]
+                        case .date: tailItems = [newTailParsed]
                         case .string(let s): tailItems = [.string(s)]
                         }
                         variables[varName] =
                             LogoValue.list([.string(LogoMeasurementConverter.formatResult(v))] + tailItems).description
+                    case .date:
+                        variables[varName] = newVal
                     case .string(let s):
                         let head = s.prefix(1)
                         variables[varName] = String(head) + newVal
@@ -219,6 +228,8 @@ extension LogoEngine {
                                 s.replaceSubrange(strIdx...strIdx, with: replacement.description)
                                 return .string(s)
                             }
+                        case .date:
+                            break
                         }
                         return value
                     }
@@ -251,6 +262,8 @@ extension LogoEngine {
                         LogoValue.list([
                             LogoValue.parse(itemVal), .string(LogoMeasurementConverter.formatResult(v)), .string(u),
                         ]).description
+                case .date:
+                    variables[varName] = LogoValue.list([LogoValue.parse(itemVal), parsed]).description
                 case .string(let s):
                     variables[varName] = itemVal + s
                 }
@@ -278,6 +291,8 @@ extension LogoEngine {
                         LogoValue.list([
                             .string(LogoMeasurementConverter.formatResult(v)), .string(u), LogoValue.parse(itemVal),
                         ]).description
+                case .date:
+                    variables[varName] = LogoValue.list([parsed, LogoValue.parse(itemVal)]).description
                 case .string(let s):
                     variables[varName] = s + itemVal
                 }
@@ -309,6 +324,8 @@ extension LogoEngine {
                 }
             case .measurement(_, let u, _):
                 variables[varName] = LogoValue.list([.string(u)]).description
+            case .date:
+                variables[varName] = ""
             }
             return true
 

@@ -83,6 +83,8 @@ extension LogoEngine {
                     results.append(contentsOf: listItems.map { $0.description })
                 case .measurement(let v, let u, _):
                     results.append(contentsOf: [LogoMeasurementConverter.formatResult(v), u])
+                case .date:
+                    results.append(parsed.description)
                 case .string(let s):
                     if !s.isEmpty {
                         results.append(s)
@@ -215,7 +217,7 @@ extension LogoEngine {
                 let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
                 return LogoValue.array(sortedItems).description
 
-            case .measurement:
+            case .measurement, .date:
                 return parsed.description
 
             case .string(let s):
@@ -285,7 +287,7 @@ extension LogoEngine {
                 let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
                 return LogoValue.array(sortedItems).description
 
-            case .measurement:
+            case .measurement, .date:
                 return parsed.description
 
             case .string(let s):

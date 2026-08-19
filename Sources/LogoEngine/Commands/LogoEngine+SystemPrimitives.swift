@@ -49,6 +49,9 @@ extension LogoEngine {
         case .formatName:
             return evaluateFormatNamePrimitive(tokens: tokens, index: &index)
 
+        case .convertCalendar:
+            return evaluateConvertCalendarPrimitive(tokens: tokens, index: &index)
+
         case .convertMeasure:
             return evaluateMeasurementConvertPrimitive(prim, tokens: tokens, index: &index)
 
@@ -188,6 +191,7 @@ extension LogoEngine {
             switch p {
             case .list(let items), .array(let items): res = "\(items.count)"
             case .measurement: res = "2"
+            case .date: res = "\(p.stringValue.count)"
             case .string(let s): res = "\(s.count)"
             }
             setLastExpressionString(res)
@@ -478,10 +482,15 @@ extension LogoEngine {
 
         reader.commit(to: &index)
 
-        let parsedCal = LogoDateTimeFormatter.parseCalendar(calendarSpec)
         let parsedTz = LogoDateTimeFormatter.parseTimeZone(timeZoneSpec)
-        let parsedDate =
-            LogoDateTimeFormatter.parseDate(dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz) ?? Date()
+        let parsedDate: Date
+        let parsedVal = LogoValue.parse(dateVal)
+        switch parsedVal {
+        case .date(let d, _, _):
+            parsedDate = d
+        default:
+            parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultTimeZone: parsedTz) ?? Date()
+        }
 
         let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
         let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
@@ -496,6 +505,59 @@ extension LogoEngine {
         )
         setLastExpressionDateTime(result)
         return result
+    }
+
+    private func evaluateConvertCalendarPrimitive(tokens: [String], index: inout Int) -> String {
+        var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+        guard let dateToken = reader.nextOptionalExpression() else { return "" }
+        guard let targetCalToken = reader.nextOptionalExpression() else {
+            reader.commit(to: &index)
+            return ""
+        }
+
+        var sourceCalToken: String? = nil
+        var formatToken: String? = nil
+
+        while let nextTok = reader.nextOptionalExpression() {
+            let clean = unquote(nextTok)
+            if LogoDateTimeFormatter.isCalendarName(clean) && sourceCalToken == nil {
+                sourceCalToken = clean
+            } else if formatToken == nil {
+                formatToken = clean
+            }
+        }
+        reader.commit(to: &index)
+
+        let targetCalName = unquote(targetCalToken)
+        let targetCalId = LogoDateTimeFormatter.calendarIdentifier(for: targetCalName)
+        let sourceCal = sourceCalToken.map { LogoDateTimeFormatter.parseCalendar($0) } ?? Calendar(identifier: .gregorian)
+
+        let parsedDate: Date
+        let parsedVal = LogoValue.parse(dateToken)
+        switch parsedVal {
+        case .date(let d, _, _):
+            parsedDate = d
+        default:
+            let cleanDateStr = unquote(dateToken)
+            parsedDate = LogoDateTimeFormatter.parseDate(cleanDateStr, defaultCalendar: sourceCal) ?? Date()
+        }
+
+        if let fmt = formatToken, !fmt.isEmpty {
+            let res = LogoDateTimeFormatter.format(
+                date: parsedDate,
+                mode: .date,
+                formatSpec: fmt,
+                localeSpec: LogoDateTimeFormatter.defaultLocaleForCalendar(targetCalId),
+                calendarSpec: targetCalName
+            )
+            setLastExpressionDateTime(res)
+            return res
+        }
+
+        let dateValue = LogoValue.date(date: parsedDate, calendar: targetCalId, timeZone: TimeZone.current)
+        let res = dateValue.stringValue
+        setLastExpressionDateTime(res)
+        return res
     }
 
     private func evaluateDateAddPrimitive(tokens: [String], index: inout Int) -> String {
@@ -614,6 +676,8 @@ extension LogoEngine {
                 items = l.map { $0.stringValue }
             case .measurement(let val, let unit, _):
                 items = [LogoMeasurementConverter.formatResult(val), unit]
+            case .date:
+                items = [parsed.stringValue]
             case .string(let s):
                 let clean = unquote(s)
                 if clean.contains(" ") {

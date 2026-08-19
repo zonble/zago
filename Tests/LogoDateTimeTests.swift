@@ -202,7 +202,29 @@ import Testing
         #expect(delegate.lines.count == 3)
         #expect(delegate.lines[0] == "- Tuesday, August 18, 2026")
         #expect(delegate.lines[1] == "- 民國 115年8月18日")
-        #expect(delegate.lines[2] == "- 民國 2026年8月20日")
+        #expect(delegate.lines[2] == "- 民國 115年8月20日")
+    }
+
+    @Test func testConvertCalendarPrimitives() {
+        let engine = LogoEngine()
+
+        engine.execute("CONVERT.CALENDAR \"2026-08-19 \"roc")
+        #expect(engine.lastResult == "民國 115年8月19日")
+
+        engine.execute("CONVERT.CALENDAR \"2026-08-19 \"roc \"yyyy/MM/dd")
+        #expect(engine.lastResult == "0115/08/19" || engine.lastResult == "115/08/19")
+
+        engine.execute("CONVERT.CALENDAR \"2026-08-19 \"japanese")
+        #expect(engine.lastResult == "令和8年8月19日")
+
+        engine.execute("CONVERT.CALENDAR \"民國115年8月19日 \"gregorian")
+        #expect(engine.lastResult == "2026-08-19")
+
+        engine.execute("CONVERT.CALENDAR \"令和8年8月19日 \"gregorian")
+        #expect(engine.lastResult == "2026-08-19")
+
+        engine.execute("CONVERT.CALENDAR [115 8 19] \"gregorian \"roc")
+        #expect(engine.lastResult == "2026-08-19")
     }
 
     @Test func testCustomReporterProcedureEvaluatesAsArgument() {

@@ -201,7 +201,8 @@ struct TraditionalChineseStrings {
             TIME [format] [locale] [tz] [cal]    取得目前時間（預設："HH:mm:ss"）
             DATETIME [fmt] [loc] [tz] [cal]      取得完整日期與時間
             DATE.ADD date amount [unit]          往一個日期上增加時間
-            DATE.DIFF date1 date2 [unit]         相減兩個日期之間的
+            DATE.DIFF date1 date2 [unit]         相減兩個日期之間的差距
+            CONVERT.CALENDAR d cal [src] [fmt]   跨曆法轉換日期（民國曆、和曆、佛曆等）
             FORMAT.DATE date [fmt] [loc] [tz]    指定日期格式（時間戳記/清單…等）
             FORMAT.NUMBER num [style] [locale]   指定數字格式（words 國字、caps 大寫
                                                  支票、roman、money、pct）
