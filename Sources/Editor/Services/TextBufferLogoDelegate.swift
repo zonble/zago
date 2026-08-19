@@ -172,6 +172,9 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
         case .defaultArrowStyle:
             return .arrowStyle(defaultArrowStyle)
 
+        case .defaultBorderRounded:
+            return .bool(buffer.isBorderRounded)
+
         case .hasCanvasBlockMark, .canvasBlockFrame, .hasTableCell:
             return nil
 
@@ -337,7 +340,7 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
         )
 
         let style = borderStyle ?? defaultBorderStyle
-        let isRound = rounded ?? false
+        let isRound = rounded ?? buffer.isBorderRounded
         let chars = style.tableCharacters(rounded: isRound)
         let h = String(repeating: chars.horizontal, count: cellWidth)
         let content = String(repeating: " ", count: cellWidth)

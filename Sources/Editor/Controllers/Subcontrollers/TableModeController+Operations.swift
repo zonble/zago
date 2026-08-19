@@ -208,7 +208,7 @@ extension TableModeController {
         let origLine = editor.buffer.lineIndex
         let origCol = editor.buffer.columnIndex
         let style = borderStyle ?? editor.defaultBorderStyle
-        let isRound = rounded ?? false
+        let isRound = rounded ?? editor.isBorderRounded
         let rowCount = max(TableLimits.minRows, min(rows, TableLimits.maxRows))
         let colCount = max(TableLimits.minCols, min(cols, TableLimits.maxCols))
         let cellWidth = max(

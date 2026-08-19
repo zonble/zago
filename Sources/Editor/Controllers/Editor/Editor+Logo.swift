@@ -146,6 +146,8 @@ extension Editor: LogoEngineDelegate {
             return .borderStyle(defaultBorderStyle)
         case .defaultArrowStyle:
             return .arrowStyle(defaultArrowStyle)
+        case .defaultBorderRounded:
+            return .bool(isBorderRounded)
         case .hasCanvasBlockMark:
             return .bool(isCanvasModeActive && !isTableModeActive && buffer.canvasBlockMark != nil)
         case .canvasBlockFrame:

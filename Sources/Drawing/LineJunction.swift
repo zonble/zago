@@ -58,11 +58,31 @@ public func canvasMask(for character: Character?, style _: BorderStyle = .single
     }
 }
 
-public func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character {
+public func lineCharacter(forMask mask: UInt8, style: BorderStyle, rounded: Bool = false) -> Character {
     let normalizedMask = mask == 0 ? CanvasDrawDirection.right.mask : mask
-    let chars = style.tableCharacters
+    let chars = style.tableCharacters(rounded: rounded)
 
     if style == .ascii {
+        if rounded {
+            switch normalizedMask {
+            case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask,
+                 CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
+                return "/"
+            case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask,
+                 CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
+                return "\\"
+            case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
+                CanvasDrawDirection.left.mask,
+                CanvasDrawDirection.right.mask:
+                return Character(chars.horizontal)
+            case CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask,
+                CanvasDrawDirection.up.mask,
+                CanvasDrawDirection.down.mask:
+                return Character(chars.vertical)
+            default:
+                return "+"
+            }
+        }
         return switch normalizedMask {
         case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
             CanvasDrawDirection.left.mask,
@@ -74,6 +94,21 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle) -> Character 
             Character(chars.vertical)
         default:
             "+"
+        }
+    }
+
+    if rounded {
+        switch normalizedMask {
+        case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask:
+            return Character(chars.topLeft)
+        case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask:
+            return Character(chars.topRight)
+        case CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
+            return Character(chars.bottomLeft)
+        case CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
+            return Character(chars.bottomRight)
+        default:
+            break
         }
     }
 
@@ -117,7 +152,7 @@ public func lineStyle(for character: Character) -> BorderStyle? {
     case "┉", "┋": return .heavyQuadrupleDash
     case "╌", "╎": return .doubleDash
     case "╍", "╏": return .heavyDoubleDash
-    case "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼", "╵", "╶", "╷", "╴": return .single
+    case "│", "─", "┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼", "╵", "╶", "╷", "╴", "╭", "╮", "╰", "╯": return .single
     default: return nil
     }
 }
@@ -126,7 +161,8 @@ public func fuseLineCharacter(
     existing: Character,
     defaultNewCharacter: Character,
     addingMask: UInt8,
-    existingMask: UInt8? = nil
+    existingMask: UInt8? = nil,
+    rounded: Bool = false
 ) -> Character {
     let existingMask = existingMask ?? canvasMask(for: existing)
     guard existingMask != 0 else { return defaultNewCharacter }
@@ -144,7 +180,7 @@ public func fuseLineCharacter(
     } else {
         style = .single
     }
-    return lineCharacter(forMask: existingMask | addingMask, style: style)
+    return lineCharacter(forMask: existingMask | addingMask, style: style, rounded: rounded)
 }
 
 /// Fuses an existing line character with a new movement mask using the existing line style.

@@ -67,6 +67,7 @@ public enum LogoEditorQuery {
     case lineAt(Int)
     case defaultBorderStyle
     case defaultArrowStyle
+    case defaultBorderRounded
     case hasCanvasBlockMark
     case canvasBlockFrame
     case hasTableCell
