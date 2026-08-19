@@ -233,8 +233,20 @@ import Testing
     submitCommandBar("set wrap 4", editor: editor)
     #expect(editor.layoutEngine.wrapColumn == 10)
 
+    submitCommandBar("set wrap     60", editor: editor)
+    #expect(editor.layoutEngine.wrapColumn == 60)
+
+    submitCommandBar("set   wrap   80", editor: editor)
+    #expect(editor.layoutEngine.wrapColumn == 80)
+
     submitCommandBar("unset wrap", editor: editor)
     #expect(editor.layoutEngine.wrapColumn == nil)
+
+    submitCommandBar("unset   wrap", editor: editor)
+    #expect(editor.layoutEngine.wrapColumn == nil)
+
+    submitCommandBar("set   tab    4", editor: editor)
+    #expect(editor.displayConfig.tabSize == 4)
 
     submitCommandBar("set canvas-mode on", editor: editor)
     #expect(editor.isCanvasModeActive == true)
