@@ -757,3 +757,19 @@ import TextMetrics
     #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
     #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 4)
 }
+
+@Test func testCanvasModeShiftArrowWithRoundedCorners() throws {
+    let editor = Editor()
+    editor.isBorderRounded = true
+    editor.switchToCanvasMode()
+
+    editor.processKey(.shiftArrowRight)
+    #expect(editor.buffer.lines[0] == "─")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 1)
+
+    editor.processKey(.shiftArrowDown)
+    #expect(editor.buffer.lines[0] == "─╮")
+    #expect(editor.buffer.lineIndex == 1)
+    #expect(editor.canvasVisualColumn == 1)
+}

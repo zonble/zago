@@ -8,22 +8,25 @@ extension LogoEngine {
     }
 
     private func defaultBoxStyle() -> BoxStyle {
+        let isRounded = queryBool(.defaultBorderRounded) ?? false
         guard let style = queryBorderStyle(.defaultBorderStyle) else {
-            return .single
+            return BorderStyle.single.boxStyle(rounded: isRounded)
         }
-        return style.boxStyle
+        return style.boxStyle(rounded: isRounded)
     }
 
     private func boxStyle(named styleName: String, isRound: Bool? = nil) -> BoxStyle {
+        let defaultRound = queryBool(.defaultBorderRounded) ?? false
         if styleName.isEmpty {
-            let defaultStyle = queryBorderStyle(.defaultBorderStyle) ?? .single
-            return defaultStyle.boxStyle(rounded: isRound ?? false)
+            let defaultStyle = queryBorderStyle(.defaultBorderStyle) ?? BorderStyle.single
+            return defaultStyle.boxStyle(rounded: isRound ?? defaultRound)
         }
         if let dsl = StyleDSL.parseBoxStyle(styleName) {
-            return dsl.border.boxStyle(rounded: isRound ?? dsl.rounded)
+            let round = isRound ?? (styleName.hasSuffix(")") ? dsl.rounded : defaultRound)
+            return dsl.border.boxStyle(rounded: round)
         }
         let border = BorderStyle.from(styleName)
-        let round = isRound ?? false
+        let round = isRound ?? defaultRound
         return border.boxStyle(rounded: round)
     }
 

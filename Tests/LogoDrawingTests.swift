@@ -692,3 +692,17 @@ import TextMetrics
     logoEngine2.execute(script2)
     #expect(editor2.buffer.lines[0] == "42")
 }
+
+@Test func testBoxAndTableHonorIsBorderRoundedWhenParamOmitted() throws {
+    let editor = Editor()
+    editor.isBorderRounded = true
+    editor.logoEngine.execute("BOX 6 3")
+    #expect(editor.buffer.lines[0] == "╭────╮")
+    #expect(editor.buffer.lines[1] == "│    │")
+    #expect(editor.buffer.lines[2] == "╰────╯")
+
+    let editor2 = Editor()
+    editor2.isBorderRounded = true
+    editor2.logoEngine.execute("TABLE 2 2 4")
+    #expect(editor2.buffer.lines[0] == "╭────┬────╮")
+}

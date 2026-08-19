@@ -516,7 +516,7 @@ extension Editor {
         }
 
         writeCanvasCharacter(
-            lineCharacter(forMask: mask, style: style), lineIndex: lineIndex, visualColumn: visualColumn)
+            lineCharacter(forMask: mask, style: style, rounded: isBorderRounded), lineIndex: lineIndex, visualColumn: visualColumn)
     }
 
     private func adjacentCanvasLineContinues(

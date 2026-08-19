@@ -44,7 +44,11 @@ public struct BoxDrawer: Sendable {
                     let newMask = canvasMask(for: renderedCharacter, style: borderStyle)
                     if existingMask != 0 && newMask != 0 {
                         let blendedMask = existingMask | newMask
-                        renderedCharacter = lineCharacter(forMask: blendedMask, style: borderStyle)
+                        renderedCharacter = lineCharacter(
+                            forMask: blendedMask,
+                            style: borderStyle,
+                            rounded: style.topLeft == "╭" || style.topLeft == "/"
+                        )
                     }
                 }
 
