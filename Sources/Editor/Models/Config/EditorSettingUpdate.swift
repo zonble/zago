@@ -2,7 +2,8 @@ import Foundation
 
 extension EditorSettingKey {
     func makeUpdate(value rawValue: String) -> EditorSettingUpdate? {
-        let value = rawValue.lowercased()
+        let trimmedRaw = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value = trimmedRaw.lowercased()
         switch self {
         case .wrap:
             let column =
