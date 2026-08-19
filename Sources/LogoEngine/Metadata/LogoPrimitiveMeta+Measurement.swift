@@ -51,7 +51,7 @@ extension LogoPrimitive {
                         example: "g"),
                     LogoPrimitiveParameter(
                         name: "style", required: false, description: "Unit display style (short, medium, long).",
-                        example: "long", allowedValues: ["medium", "short", "long"]),
+                        example: "long", allowedValues: LogoMeasurementUnitStyle.allCases.map(\.rawValue)),
                     LogoPrimitiveParameter(
                         name: "locale", required: false, description: "Target locale.", example: "zh_TW"),
                     LogoPrimitiveParameter(

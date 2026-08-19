@@ -83,6 +83,31 @@ final class MenuBar {
                 isChecked: { $0.defaultArrowStyle == style })
         }
 
+        func textTransformItem(id: String, labelKey: String, titleKey: String, hotkeyChar: Character) -> MenuItem {
+            MenuItem(
+                titleKey: titleKey,
+                hotkeyChar: hotkeyChar,
+                action: { editor in
+                    editor.transformSelectedText(id: id, label: editor.l10n[labelKey])
+                },
+                isVisible: { $0.hasActiveTextSelection() })
+        }
+
+        func wrapColumnItem(_ width: Int?, titleKey: String, hotkeyChar: Character) -> MenuItem {
+            MenuItem(
+                titleKey: titleKey,
+                hotkeyChar: hotkeyChar,
+                action: { editor in
+                    editor.layoutEngine.setWrapColumn(width)
+                    if let width {
+                        editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(width)))
+                    } else {
+                        editor.reportOperationResult(.succeeded(message: editor.l10n["status.wrap_column_reset"]))
+                    }
+                },
+                isChecked: { $0.layoutEngine.wrapColumn == width })
+        }
+
         var baseCategories: [MenuCategory] = [
             MenuCategory(
                 titleKey: "menu.file", hotkeyChar: "f",
@@ -180,49 +205,27 @@ final class MenuBar {
             MenuCategory(
                 titleKey: "menu.selection", hotkeyChar: "n",
                 items: [
-                    MenuItem(
-                        titleKey: "menu.tools.transform_tohant", hotkeyChar: "h",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Hans-Hant", label: editor.l10n["transform.tohant"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_tohans", hotkeyChar: "s",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Hant-Hans", label: editor.l10n["transform.tohans"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_tolatin", hotkeyChar: "a",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Any-Latin", label: editor.l10n["transform.tolatin"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_hiragana", hotkeyChar: "i",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Any-Hiragana", label: editor.l10n["transform.hiragana"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_katakana", hotkeyChar: "k",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Any-Katakana", label: editor.l10n["transform.katakana"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_romaji", hotkeyChar: "j",
-                        action: { editor in
-                            editor.transformSelectedText(id: "Any-Latin", label: editor.l10n["transform.romaji"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
-                    MenuItem(
-                        titleKey: "menu.tools.transform_cjk_spacing", hotkeyChar: "c",
-                        action: { editor in
-                            editor.transformSelectedText(
-                                id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
-                        },
-                        isVisible: { $0.hasActiveTextSelection() }),
+                    textTransformItem(
+                        id: "Hans-Hant", labelKey: "transform.tohant", titleKey: "menu.tools.transform_tohant",
+                        hotkeyChar: "h"),
+                    textTransformItem(
+                        id: "Hant-Hans", labelKey: "transform.tohans", titleKey: "menu.tools.transform_tohans",
+                        hotkeyChar: "s"),
+                    textTransformItem(
+                        id: "Any-Latin", labelKey: "transform.tolatin", titleKey: "menu.tools.transform_tolatin",
+                        hotkeyChar: "a"),
+                    textTransformItem(
+                        id: "Any-Hiragana", labelKey: "transform.hiragana", titleKey: "menu.tools.transform_hiragana",
+                        hotkeyChar: "i"),
+                    textTransformItem(
+                        id: "Any-Katakana", labelKey: "transform.katakana", titleKey: "menu.tools.transform_katakana",
+                        hotkeyChar: "k"),
+                    textTransformItem(
+                        id: "Any-Latin", labelKey: "transform.romaji", titleKey: "menu.tools.transform_romaji",
+                        hotkeyChar: "j"),
+                    textTransformItem(
+                        id: "Zago-CJK-Spacing", labelKey: "transform.cjk_spacing",
+                        titleKey: "menu.tools.transform_cjk_spacing", hotkeyChar: "c"),
                 ],
                 isVisible: { $0.hasActiveTextSelection() }
             ),
@@ -300,34 +303,10 @@ final class MenuBar {
                             editor.displayConfig.showRuler.toggle()
                         },
                         isChecked: { $0.displayConfig.showRuler }),
-                    MenuItem(
-                        titleKey: "menu.tools.wrap_80", hotkeyChar: "8",
-                        action: { editor in
-                            editor.layoutEngine.setWrapColumn(80)
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(80)))
-                        },
-                        isChecked: { $0.layoutEngine.wrapColumn == 80 }),
-                    MenuItem(
-                        titleKey: "menu.tools.wrap_60", hotkeyChar: "6",
-                        action: { editor in
-                            editor.layoutEngine.setWrapColumn(60)
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(60)))
-                        },
-                        isChecked: { $0.layoutEngine.wrapColumn == 60 }),
-                    MenuItem(
-                        titleKey: "menu.tools.wrap_40", hotkeyChar: "4",
-                        action: { editor in
-                            editor.layoutEngine.setWrapColumn(40)
-                            editor.reportOperationResult(.succeeded(message: editor.l10n.wrapColumnSet(40)))
-                        },
-                        isChecked: { $0.layoutEngine.wrapColumn == 40 }),
-                    MenuItem(
-                        titleKey: "menu.tools.wrap_reset", hotkeyChar: "0",
-                        action: { editor in
-                            editor.layoutEngine.setWrapColumn(nil)
-                            editor.reportOperationResult(.succeeded(message: editor.l10n["status.wrap_column_reset"]))
-                        },
-                        isChecked: { $0.layoutEngine.wrapColumn == nil }),
+                    wrapColumnItem(80, titleKey: "menu.tools.wrap_80", hotkeyChar: "8"),
+                    wrapColumnItem(60, titleKey: "menu.tools.wrap_60", hotkeyChar: "6"),
+                    wrapColumnItem(40, titleKey: "menu.tools.wrap_40", hotkeyChar: "4"),
+                    wrapColumnItem(nil, titleKey: "menu.tools.wrap_reset", hotkeyChar: "0"),
                 ]),
         ]
 
