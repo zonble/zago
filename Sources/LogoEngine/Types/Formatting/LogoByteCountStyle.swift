@@ -27,6 +27,16 @@ public enum LogoByteCountStyle: Sendable, Equatable {
         }
     }
 
+    public var countStyle: ByteCountFormatter.CountStyle? {
+        switch self {
+        case .file: return .file
+        case .memory: return .memory
+        case .binary: return .binary
+        case .decimal: return .decimal
+        case .bytes: return nil
+        }
+    }
+
     public static func parse(_ raw: String) -> LogoByteCountStyle {
         LogoByteCountStyle(keyword: raw) ?? .file
     }

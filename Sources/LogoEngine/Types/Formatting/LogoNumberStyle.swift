@@ -33,6 +33,17 @@ public enum LogoNumberStyle: Sendable, Equatable {
         }
     }
 
+    public var numberFormatterStyle: NumberFormatter.Style? {
+        switch self {
+        case .ordinal: return .ordinal
+        case .spellout: return .spellOut
+        case .currency: return .currency
+        case .percent: return .percent
+        case .decimal: return .decimal
+        case .roman, .financial: return nil
+        }
+    }
+
     public static func parse(_ raw: String) -> LogoNumberStyle {
         LogoNumberStyle(keyword: raw) ?? .decimal
     }

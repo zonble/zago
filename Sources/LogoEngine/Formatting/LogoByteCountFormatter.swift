@@ -26,7 +26,7 @@ public enum LogoByteCountFormatter {
         style: LogoByteCountStyle = .file,
         locale: String? = nil
     ) -> String {
-        if style == .bytes {
+        guard let countStyle = style.countStyle else {
             let numFormatter = NumberFormatter()
             numFormatter.locale = LogoDateTimeFormatter.parseLocale(locale)
             numFormatter.numberStyle = .decimal
@@ -37,20 +37,7 @@ public enum LogoByteCountFormatter {
         let formatter = ByteCountFormatter()
         formatter.includesUnit = true
         formatter.isAdaptive = true
-
-        switch style {
-        case .file:
-            formatter.countStyle = .file
-        case .memory:
-            formatter.countStyle = .memory
-        case .binary:
-            formatter.countStyle = .binary
-        case .decimal:
-            formatter.countStyle = .decimal
-        case .bytes:
-            break
-        }
-
+        formatter.countStyle = countStyle
         return formatter.string(fromByteCount: bytes)
     }
 }
