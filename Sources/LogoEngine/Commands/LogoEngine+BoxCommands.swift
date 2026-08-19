@@ -40,7 +40,7 @@ extension LogoEngine {
             let width = max(3, min(w, 200))
             var height: Int? = nil
             var textContent: String? = nil
-            var align = "left"
+            var align: BoxAlignment = .left
             var hasExplicitAlign = false
             var styleName = ""
             var exitPos: BoxExitPosition = .ne
@@ -73,7 +73,7 @@ extension LogoEngine {
                 if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
                     exitPos = parsedExit
                 } else if let parsedAlign = BoxAlignment(val) {
-                    align = parsedAlign.rawValue
+                    align = parsedAlign
                     hasExplicitAlign = true
                 } else if BorderStyle.isStyleToken(val) {
                     styleName = val
@@ -84,7 +84,7 @@ extension LogoEngine {
 
             if let text = textContent {
                 if !hasExplicitAlign {
-                    align = "center"
+                    align = .center
                 }
                 drawBoxAroundText(
                     text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName),
@@ -99,7 +99,7 @@ extension LogoEngine {
         // Mode 2: BOX "text" [width] [align/style/exit]
         let textContent = evaluateExpression(tokens, index: &index)
         var targetWidth: Int? = nil
-        var align = "left"
+        var align: BoxAlignment = .left
         var styleName = ""
         var exitPos: BoxExitPosition = .ne
 
@@ -108,7 +108,7 @@ extension LogoEngine {
             if let width = parseBoxDimensionArgument(tokens, index: &widthIndex) {
                 index = widthIndex
                 targetWidth = max(3, min(width, 200))
-                align = "center"
+                align = .center
             }
         }
 
@@ -132,7 +132,7 @@ extension LogoEngine {
             if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
-                align = parsedAlign.rawValue
+                align = parsedAlign
             } else if BorderStyle.isStyleToken(val) {
                 styleName = val
             }
@@ -239,7 +239,7 @@ extension LogoEngine {
     }
 
     private func drawBoxAroundText(
-        _ text: String, targetWidth: Int?, targetHeight: Int?, align: String, style: BoxStyle, mode: BoxDrawMode,
+        _ text: String, targetWidth: Int?, targetHeight: Int?, align: BoxAlignment, style: BoxStyle, mode: BoxDrawMode,
         exitPos: BoxExitPosition = .ne
     ) {
         guard let editor = self.delegate else { return }

@@ -954,15 +954,7 @@ extension LogoEngine {
             reportError(LogoError(code: 1, message: message), token: name)
             return ""
         #else
-            let kind: LogoDetectorKind
-            switch primitive {
-            case .detectURL: kind = .url
-            case .detectEmail: kind = .email
-            case .detectPhone: kind = .phone
-            case .detectDate: kind = .date
-            case .detectAddress: kind = .address
-            default: return ""
-            }
+            guard let kind = LogoDetectorKind(primitive) else { return "" }
             let matches = LogoDetectors.detect(text, kind: kind)
             let result = LogoValue.list(matches.map(LogoValue.string)).description
             setLastExpressionString(result)

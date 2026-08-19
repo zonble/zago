@@ -5,6 +5,17 @@ public enum LogoDateTimeMode: Sendable, Equatable {
     case date
     case time
     case dateTime
+
+    public init?(raw: String) {
+        let clean = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let stripped = clean.hasPrefix(":") ? String(clean.dropFirst()) : clean
+        switch stripped {
+        case "date": self = .date
+        case "time": self = .time
+        case "datetime", "date_time", "dateTime": self = .dateTime
+        default: return nil
+        }
+    }
 }
 
 /// Supported style presets and custom pattern specifications for date/time formatting.
@@ -16,25 +27,30 @@ public enum LogoDateTimeStylePreset: Sendable, Equatable {
     case iso8601
     case custom(String)
 
-    public static func parse(_ raw: String, mode: LogoDateTimeMode) -> LogoDateTimeStylePreset {
+    public init(raw: String, mode: LogoDateTimeMode) {
         let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let clean = lower.hasPrefix(":") ? String(lower.dropFirst()) : lower
         switch clean {
-        case "short": return .short
-        case "medium", "med": return .medium
-        case "long": return .long
-        case "full": return .full
-        case "iso8601", "iso": return .iso8601
+        case "short": self = .short
+        case "medium", "med": self = .medium
+        case "long": self = .long
+        case "full": self = .full
+        case "iso8601", "iso": self = .iso8601
         default:
             if clean.isEmpty {
                 switch mode {
-                case .date: return .custom("yyyy-MM-dd")
-                case .time: return .custom("HH:mm:ss")
-                case .dateTime: return .custom("yyyy-MM-dd HH:mm:ss")
+                case .date: self = .custom("yyyy-MM-dd")
+                case .time: self = .custom("HH:mm:ss")
+                case .dateTime: self = .custom("yyyy-MM-dd HH:mm:ss")
                 }
+            } else {
+                self = .custom(raw)
             }
-            return .custom(raw)
         }
+    }
+
+    public static func parse(_ raw: String, mode: LogoDateTimeMode) -> LogoDateTimeStylePreset {
+        LogoDateTimeStylePreset(raw: raw, mode: mode)
     }
 
     public static func isPresetName(_ name: String) -> Bool {
