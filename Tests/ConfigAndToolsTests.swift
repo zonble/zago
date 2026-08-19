@@ -344,30 +344,27 @@ struct ConfigAndToolsTests {
         editor.buffer.lines = ["中文API測試"]
         editor.menuBar.updateCategories(for: editor)
 
-        var toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
+        var selectionCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.selection" })
+        #expect(selectionCategory == nil)
 
         editor.buffer.selectionMark = (line: 0, column: 0)
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = editor.buffer.lines[0].count
         editor.menuBar.updateCategories(for: editor)
 
-        toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohant" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohans" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tolatin" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_hiragana" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_katakana" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_romaji" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == true)
+        selectionCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.selection" })
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohant" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tohans" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_tolatin" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_hiragana" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_katakana" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_romaji" }) == true)
+        #expect(selectionCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == true)
 
         editor.switchToCanvasMode()
         editor.menuBar.updateCategories(for: editor)
-        toolsCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.tools" })
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.word_count" }) == true)
-        #expect(toolsCategory?.items.contains(where: { $0.titleKey == "menu.tools.transform_cjk_spacing" }) == false)
+        selectionCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.selection" })
+        #expect(selectionCategory == nil)
     }
 
     @Test func testCanvasMarkMenuItemOnlyVisibleInCanvasMode() throws {
