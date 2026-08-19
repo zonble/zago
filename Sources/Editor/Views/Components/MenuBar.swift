@@ -208,22 +208,6 @@ final class MenuBar {
                         },
                         isChecked: { $0.defaultBorderStyle == .double }),
                     MenuItem(
-                        titleKey: "menu.borders.round", hotkeyChar: "r",
-                        action: { editor in
-                            editor.defaultBorderStyle = .round
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.round.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .round }),
-                    MenuItem(
-                        titleKey: "menu.borders.double_round", hotkeyChar: "u",
-                        action: { editor in
-                            editor.defaultBorderStyle = .doubleRound
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.doubleRound.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .doubleRound }),
-                    MenuItem(
                         titleKey: "menu.borders.ascii", hotkeyChar: "a",
                         action: { editor in
                             editor.defaultBorderStyle = .ascii
@@ -231,14 +215,6 @@ final class MenuBar {
                                 .succeeded(message: editor.l10n.defaultBorder(BorderStyle.ascii.rawValue)))
                         },
                         isChecked: { $0.defaultBorderStyle == .ascii }),
-                    MenuItem(
-                        titleKey: "menu.borders.ascii_round", hotkeyChar: "c",
-                        action: { editor in
-                            editor.defaultBorderStyle = .asciiRound
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.asciiRound.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .asciiRound }),
                     borderStyleItem(.tripleDash, titleKey: "menu.borders.triple_dash", hotkeyChar: "t"),
                     borderStyleItem(.heavyTripleDash, titleKey: "menu.borders.heavy_triple", hotkeyChar: "g"),
                     borderStyleItem(.quadrupleDash, titleKey: "menu.borders.quad_dash", hotkeyChar: "q"),
@@ -246,6 +222,12 @@ final class MenuBar {
                     borderStyleItem(.doubleDash, titleKey: "menu.borders.double_dash", hotkeyChar: "j"),
                     borderStyleItem(.heavyDoubleDash, titleKey: "menu.borders.heavy_double", hotkeyChar: "k"),
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                    MenuItem(
+                        titleKey: "menu.borders.round", hotkeyChar: "r",
+                        action: { editor in
+                            editor.isBorderRounded.toggle()
+                        },
+                        isChecked: { $0.isBorderRounded }),
                     MenuItem(
                         titleKey: "menu.borders.arrow_solid", hotkeyChar: "1",
                         action: { editor in

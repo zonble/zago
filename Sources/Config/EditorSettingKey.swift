@@ -1,4 +1,5 @@
 import Foundation
+import Drawing
 
 /// Canonical setting keys shared by `.zagorc` and the editor command bar.
 public enum EditorSettingKey: String, CaseIterable, Sendable {
@@ -37,8 +38,8 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .tab, .listIndentSize: return ["2", "4", "8"]
         case .language: return Language.allCases.map(\.rawValue)
         case .spellLanguage: return ["en_US", "zh_TW"]
-        case .border: return ["single", "double", "round", "double-round", "ascii", "ascii-round"]
-        case .arrow: return ["solid", "stemmed", "hollow", "small"]
+        case .border: return BorderStyle.allCases.map(\.rawValue)
+        case .arrow: return ArrowStyle.allCases.map(\.rawValue)
         case .keymap: return ["classic", "modern"]
         case .modernbindings: return ["on", "off"]
         }

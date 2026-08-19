@@ -167,19 +167,17 @@ public func isLineCharacter(_ character: Character) -> Bool {
 
 public func arrowHead(
     for direction: CanvasDrawDirection,
-    style: BorderStyle,
+    style: BorderStyle = .single,
     arrowStyle: ArrowStyle = .solid
 ) -> Character {
-    if style == .ascii {
-        return switch direction {
+    switch arrowStyle {
+    case .ascii:
+        switch direction {
         case .up: "^"
         case .down: "v"
         case .left: "<"
         case .right: ">"
         }
-    }
-
-    return switch arrowStyle {
     case .solid:
         switch direction {
         case .up: "▲"

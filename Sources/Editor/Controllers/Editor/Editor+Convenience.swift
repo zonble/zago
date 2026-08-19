@@ -90,6 +90,11 @@ extension Editor {
         set { buffer.borderStyle = newValue }
     }
 
+    var isBorderRounded: Bool {
+        get { buffer.isBorderRounded }
+        set { buffer.isBorderRounded = newValue }
+    }
+
     var defaultArrowStyle: ArrowStyle {
         get { buffer.arrowStyle }
         set { buffer.arrowStyle = newValue }

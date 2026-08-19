@@ -840,7 +840,7 @@ struct TraditionalChineseStrings {
         "menu.borders.single": "單線       ┌──┐",
         "menu.borders.heavy": "粗線       ┏━━┓",
         "menu.borders.double": "雙線       ╔══╗",
-        "menu.borders.round": "單線圓角   ╭──╮",
+        "menu.borders.round": "圓角",
         "menu.borders.double_round": "雙線圓角   ╭══╮",
         "menu.borders.ascii": "ASCII      +--+",
         "menu.borders.ascii_round": "ASCII 圓角 /--\\",

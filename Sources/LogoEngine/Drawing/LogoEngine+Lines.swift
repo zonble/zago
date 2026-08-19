@@ -137,7 +137,18 @@ extension LogoEngine {
             let evalRaw = unquote(evaluateExpression(tokens, index: &evalIndex))
             let upper = evalRaw.uppercased()
 
-            if let arrowMode = LineArrowMode(token: upper) {
+            if let lineDsl = StyleDSL.parseLineStyle(evalRaw) {
+                setStyle(lineDsl.border.rawValue)
+                if lineDsl.arrowMode != .none {
+                    setArrowMode(lineDsl.arrowMode)
+                }
+                if let arrowStyle = lineDsl.endArrowStyle ?? lineDsl.startArrowStyle {
+                    setArrowHeadStyle?(arrowStyle)
+                }
+                consumedAny = true
+                cursor = evalIndex
+                lastConsumedIndex = cursor
+            } else if let arrowMode = LineArrowMode(token: upper) {
                 setArrowMode(arrowMode)
                 consumedAny = true
                 cursor = evalIndex

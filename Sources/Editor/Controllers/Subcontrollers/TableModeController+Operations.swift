@@ -196,6 +196,8 @@ extension TableModeController {
         rows: Int = 3,
         cols: Int = 3,
         cellWidth requestedCellWidth: Int? = nil,
+        borderStyle: BorderStyle? = nil,
+        rounded: Bool? = nil,
         enterMode: Bool = false,
         saveSnapshot: Bool = true
     ) {
@@ -205,7 +207,8 @@ extension TableModeController {
         }
         let origLine = editor.buffer.lineIndex
         let origCol = editor.buffer.columnIndex
-        let style = editor.defaultBorderStyle
+        let style = borderStyle ?? editor.defaultBorderStyle
+        let isRound = rounded ?? false
         let rowCount = max(TableLimits.minRows, min(rows, TableLimits.maxRows))
         let colCount = max(TableLimits.minCols, min(cols, TableLimits.maxCols))
         let cellWidth = max(
@@ -213,7 +216,7 @@ extension TableModeController {
             min(requestedCellWidth ?? TableLimits.defaultCellWidth, TableLimits.maxCellWidth)
         )
 
-        let chars = style.tableCharacters
+        let chars = style.tableCharacters(rounded: isRound)
         let h = String(repeating: chars.horizontal, count: cellWidth)
         let content = String(repeating: " ", count: cellWidth)
         var tableLines: [String] = []

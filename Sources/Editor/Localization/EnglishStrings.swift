@@ -850,7 +850,7 @@ struct EnglishStrings {
         "menu.borders.single": "Single         ┌──┐",
         "menu.borders.heavy": "Heavy          ┏━━┓",
         "menu.borders.double": "Double         ╔══╗",
-        "menu.borders.round": "Round          ╭──╮",
+        "menu.borders.round": "Rounded Corners",
         "menu.borders.double_round": "Double Round   ╭══╮",
         "menu.borders.ascii": "ASCII          +--+",
         "menu.borders.ascii_round": "ASCII Round    /--\\",

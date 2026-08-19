@@ -57,7 +57,7 @@ struct ConfigLoaderTests {
             set linenumbers off
             set sublinenumbers on
             set canvas-mode on
-            set border round
+            set border double
             set spell-language en
             set trim-trailing-whitespace on
             set auto-reload on
@@ -86,7 +86,7 @@ struct ConfigLoaderTests {
         loader.parseConfigFile(at: tmpFile, into: &config)
 
         #expect(config.loadedFilePath == tmpFile)
-        #expect(config.defaultBorderStyle == .round)
+        #expect(config.defaultBorderStyle == .double)
         #expect(config.spellLanguage == "en")
         #expect(config.trimTrailingWhitespaceOnSave == true)
         #expect(config.autoReload == true)
@@ -299,7 +299,7 @@ struct ConfigLoaderTests {
         let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
         var config = EditorConfig()
         let configContent = """
-            set border round
+            set border triple-dash
             """
         let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(
             "test_border_config_\(UUID().uuidString).zagorc"
@@ -308,7 +308,7 @@ struct ConfigLoaderTests {
         defer { try? FileManager.default.removeItem(atPath: tempFile) }
 
         loader.parseConfigFile(at: tempFile, into: &config)
-        #expect(config.defaultBorderStyle == .round)
+        #expect(config.defaultBorderStyle == .tripleDash)
 
         let editor = Editor()
         editor.apply(.border(.double, rawValue: "double"))
@@ -368,7 +368,7 @@ struct ConfigLoaderTests {
             set trim-trailing-whitespace on
             set lang zh_TW
             set spell-language en_GB
-            set border ascii-round
+            set border heavy
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
@@ -389,7 +389,7 @@ struct ConfigLoaderTests {
         #expect(config.trimTrailingWhitespaceOnSave == true)
         #expect(config.language == .zh_TW)
         #expect(config.spellLanguage == "en_gb")
-        #expect(config.defaultBorderStyle == .asciiRound)
+        #expect(config.defaultBorderStyle == .heavy)
         #expect(config.syntaxErrorCount == 0)
     }
 
@@ -590,7 +590,7 @@ struct ConfigLoaderTests {
         """.write(to: URL(fileURLWithPath: localZagorc), atomically: testAtomicallyOption, encoding: .utf8)
         try """
         set wrap 55
-        set border round
+        set border heavy
         """.write(to: URL(fileURLWithPath: localSerc), atomically: testAtomicallyOption, encoding: .utf8)
 
         let loader = ConfigLoader(provider: TestLocalConfigFileProvider())
@@ -605,7 +605,7 @@ struct ConfigLoaderTests {
         let sercConfig = loader.loadConfig()
         #expect(sercConfig.loadedFilePath == localSerc)
         #expect(sercConfig.wrapColumn == 55)
-        #expect(sercConfig.defaultBorderStyle == .round)
+        #expect(sercConfig.defaultBorderStyle == .heavy)
     }
 
     @Test func testConfigLoaderDoesNotParseSameHomeAndCurrentZagorcTwice() {

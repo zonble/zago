@@ -111,10 +111,7 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     case single = "single"
     case heavy = "heavy"
     case double = "double"
-    case round = "round"
-    case doubleRound = "double-round"
     case ascii = "ascii"
-    case asciiRound = "ascii-round"
     case tripleDash = "triple-dash"
     case heavyTripleDash = "heavy-triple-dash"
     case quadrupleDash = "quadruple-dash"
@@ -123,33 +120,28 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     case heavyDoubleDash = "heavy-double-dash"
 
     public init?(_ token: String) {
-        switch token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased() {
+        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
+        switch clean {
         case "single":
             self = .single
         case "heavy":
             self = .heavy
         case "double":
             self = .double
-        case "round", "rounded":
-            self = .round
-        case "doubleround", "double-round", "double_round", "rounddouble", "round-double", "round_double":
-            self = .doubleRound
         case "ascii":
             self = .ascii
-        case "asciiround", "ascii-round", "ascii_round", "asciirounded", "ascii-rounded", "ascii_rounded":
-            self = .asciiRound
-        case "tripledash", "triple-dash", "triple_dash":
-            self = .tripleDash
-        case "heavytripledash", "heavy-triple-dash", "heavy_triple_dash":
-            self = .heavyTripleDash
-        case "quadrupledash", "quadruple-dash", "quadruple_dash":
-            self = .quadrupleDash
-        case "heavyquadrupledash", "heavy-quadruple-dash", "heavy_quadruple_dash":
-            self = .heavyQuadrupleDash
-        case "doubledash", "double-dash", "double_dash":
+        case "double-dash":
             self = .doubleDash
-        case "heavydoubledash", "heavy-double-dash", "heavy_double_dash":
+        case "heavy-double-dash":
             self = .heavyDoubleDash
+        case "triple-dash":
+            self = .tripleDash
+        case "heavy-triple-dash":
+            self = .heavyTripleDash
+        case "quad-dash", "quadruple-dash":
+            self = .quadrupleDash
+        case "heavy-quad-dash", "heavy-quadruple-dash":
+            self = .heavyQuadrupleDash
         default:
             return nil
         }
@@ -160,84 +152,78 @@ public enum BorderStyle: String, CaseIterable, Codable, Sendable {
     }
 
     public static func isStyleToken(_ token: String) -> Bool {
-        BorderStyle(token) != nil
+        BorderStyle(token) != nil || StyleDSL.parseBoxStyle(token) != nil || StyleDSL.parseLineStyle(token) != nil
     }
 
     public var boxStyle: BoxStyle {
-        switch self {
-        case .single: .single
-        case .heavy: .heavy
-        case .double: .double
-        case .round: .round
-        case .doubleRound: .doubleRound
-        case .ascii: .ascii
-        case .asciiRound: .asciiRound
-        case .tripleDash: .tripleDash
-        case .heavyTripleDash: .heavyTripleDash
-        case .quadrupleDash: .quadrupleDash
-        case .heavyQuadrupleDash: .heavyQuadrupleDash
-        case .doubleDash: .doubleDash
-        case .heavyDoubleDash: .heavyDoubleDash
-        }
+        boxStyle(rounded: false)
+    }
+
+    public func boxStyle(rounded: Bool) -> BoxStyle {
+        BoxStyle.style(for: self, rounded: rounded)
     }
 
     public var tableCharacters: TableBorderCharacters {
+        tableCharacters(rounded: false)
+    }
+
+    public func tableCharacters(rounded: Bool) -> TableBorderCharacters {
+        let base: TableBorderCharacters
         switch self {
         case .heavy:
-            TableBorderCharacters(
+            base = TableBorderCharacters(
                 topLeft: "┏", topJoin: "┳", topRight: "┓",
                 midLeft: "┣", midJoin: "╋", midRight: "┫",
                 bottomLeft: "┗", bottomJoin: "┻", bottomRight: "┛",
                 horizontal: "━", vertical: "┃")
         case .double:
-            TableBorderCharacters(
+            base = TableBorderCharacters(
                 topLeft: "╔", topJoin: "╦", topRight: "╗",
                 midLeft: "╠", midJoin: "╬", midRight: "╣",
                 bottomLeft: "╚", bottomJoin: "╩", bottomRight: "╝",
                 horizontal: "═", vertical: "║")
-        case .round:
-            TableBorderCharacters(
-                topLeft: "╭", topJoin: "┬", topRight: "╮",
-                midLeft: "├", midJoin: "┼", midRight: "┤",
-                bottomLeft: "╰", bottomJoin: "┴", bottomRight: "╯",
-                horizontal: "─", vertical: "│")
-        case .doubleRound:
-            TableBorderCharacters(
-                topLeft: "╭", topJoin: "╦", topRight: "╮",
-                midLeft: "╠", midJoin: "╬", midRight: "╣",
-                bottomLeft: "╰", bottomJoin: "╩", bottomRight: "╯",
-                horizontal: "═", vertical: "║")
         case .ascii:
-            TableBorderCharacters(
+            base = TableBorderCharacters(
                 topLeft: "+", topJoin: "+", topRight: "+",
                 midLeft: "+", midJoin: "+", midRight: "+",
                 bottomLeft: "+", bottomJoin: "+", bottomRight: "+",
                 horizontal: "-", vertical: "|")
-        case .asciiRound:
-            TableBorderCharacters(
-                topLeft: "/", topJoin: "+", topRight: "\\",
-                midLeft: "+", midJoin: "+", midRight: "+",
-                bottomLeft: "\\", bottomJoin: "+", bottomRight: "/",
-                horizontal: "-", vertical: "|")
         case .single:
-            TableBorderCharacters(
+            base = TableBorderCharacters(
                 topLeft: "┌", topJoin: "┬", topRight: "┐",
                 midLeft: "├", midJoin: "┼", midRight: "┤",
                 bottomLeft: "└", bottomJoin: "┴", bottomRight: "┘",
                 horizontal: "─", vertical: "│")
         case .tripleDash:
-            BorderStyle.single.tableCharacters.withLines(horizontal: "┄", vertical: "┆")
+            base = BorderStyle.single.tableCharacters.withLines(horizontal: "┄", vertical: "┆")
         case .heavyTripleDash:
-            BorderStyle.heavy.tableCharacters.withLines(horizontal: "┅", vertical: "┇")
+            base = BorderStyle.heavy.tableCharacters.withLines(horizontal: "┅", vertical: "┇")
         case .quadrupleDash:
-            BorderStyle.single.tableCharacters.withLines(horizontal: "┈", vertical: "┊")
+            base = BorderStyle.single.tableCharacters.withLines(horizontal: "┈", vertical: "┊")
         case .heavyQuadrupleDash:
-            BorderStyle.heavy.tableCharacters.withLines(horizontal: "┉", vertical: "┋")
+            base = BorderStyle.heavy.tableCharacters.withLines(horizontal: "┉", vertical: "┋")
         case .doubleDash:
-            BorderStyle.single.tableCharacters.withLines(horizontal: "╌", vertical: "╎")
+            base = BorderStyle.single.tableCharacters.withLines(horizontal: "╌", vertical: "╎")
         case .heavyDoubleDash:
-            BorderStyle.heavy.tableCharacters.withLines(horizontal: "╍", vertical: "╏")
+            base = BorderStyle.heavy.tableCharacters.withLines(horizontal: "╍", vertical: "╏")
         }
+
+        if rounded {
+            if self == .ascii {
+                return TableBorderCharacters(
+                    topLeft: "/", topJoin: base.topJoin, topRight: "\\",
+                    midLeft: base.midLeft, midJoin: base.midJoin, midRight: base.midRight,
+                    bottomLeft: "\\", bottomJoin: base.bottomJoin, bottomRight: "/",
+                    horizontal: base.horizontal, vertical: base.vertical)
+            } else {
+                return TableBorderCharacters(
+                    topLeft: "╭", topJoin: base.topJoin, topRight: "╮",
+                    midLeft: base.midLeft, midJoin: base.midJoin, midRight: base.midRight,
+                    bottomLeft: "╰", bottomJoin: base.bottomJoin, bottomRight: "╯",
+                    horizontal: base.horizontal, vertical: base.vertical)
+            }
+        }
+        return base
     }
 
     /// The character used by a horizontal line command for this style.
@@ -298,14 +284,8 @@ public struct BoxStyle: Sendable {
         topLeft: "┏", topChar: "━", topRight: "┓", sideChar: "┃", bottomLeft: "┗", bottomChar: "━", bottomRight: "┛")
     public static let double = BoxStyle(
         topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
-    public static let round = BoxStyle(
-        topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
-    public static let doubleRound = BoxStyle(
-        topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
     public static let ascii = BoxStyle(
         topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
-    public static let asciiRound = BoxStyle(
-        topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
     public static let tripleDash = BoxStyle(
         topLeft: "┌", topChar: "┄", topRight: "┐", sideChar: "┆", bottomLeft: "└", bottomChar: "┄", bottomRight: "┘")
     public static let heavyTripleDash = BoxStyle(
@@ -319,8 +299,56 @@ public struct BoxStyle: Sendable {
     public static let heavyDoubleDash = BoxStyle(
         topLeft: "┏", topChar: "╍", topRight: "┓", sideChar: "╏", bottomLeft: "┗", bottomChar: "╍", bottomRight: "┛")
 
+    public static func style(for border: BorderStyle, rounded: Bool = false) -> BoxStyle {
+        switch border {
+        case .single:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
+                : BoxStyle(topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
+        case .heavy:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "━", topRight: "╮", sideChar: "┃", bottomLeft: "╰", bottomChar: "━", bottomRight: "╯")
+                : BoxStyle(topLeft: "┏", topChar: "━", topRight: "┓", sideChar: "┃", bottomLeft: "┗", bottomChar: "━", bottomRight: "┛")
+        case .double:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
+                : BoxStyle(topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
+        case .ascii:
+            return rounded
+                ? BoxStyle(topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
+                : BoxStyle(topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
+        case .tripleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "┄", topRight: "╮", sideChar: "┆", bottomLeft: "╰", bottomChar: "┄", bottomRight: "╯")
+                : BoxStyle(topLeft: "┌", topChar: "┄", topRight: "┐", sideChar: "┆", bottomLeft: "└", bottomChar: "┄", bottomRight: "┘")
+        case .heavyTripleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "┅", topRight: "╮", sideChar: "┇", bottomLeft: "╰", bottomChar: "┅", bottomRight: "╯")
+                : BoxStyle(topLeft: "┏", topChar: "┅", topRight: "┓", sideChar: "┇", bottomLeft: "┗", bottomChar: "┅", bottomRight: "┛")
+        case .quadrupleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "┈", topRight: "╮", sideChar: "┊", bottomLeft: "╰", bottomChar: "┈", bottomRight: "╯")
+                : BoxStyle(topLeft: "┌", topChar: "┈", topRight: "┐", sideChar: "┊", bottomLeft: "└", bottomChar: "┈", bottomRight: "┘")
+        case .heavyQuadrupleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "┉", topRight: "╮", sideChar: "┋", bottomLeft: "╰", bottomChar: "┉", bottomRight: "╯")
+                : BoxStyle(topLeft: "┏", topChar: "┉", topRight: "┓", sideChar: "┋", bottomLeft: "┗", bottomChar: "┉", bottomRight: "┛")
+        case .doubleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "╌", topRight: "╮", sideChar: "╎", bottomLeft: "╰", bottomChar: "╌", bottomRight: "╯")
+                : BoxStyle(topLeft: "┌", topChar: "╌", topRight: "┐", sideChar: "╎", bottomLeft: "└", bottomChar: "╌", bottomRight: "┘")
+        case .heavyDoubleDash:
+            return rounded
+                ? BoxStyle(topLeft: "╭", topChar: "╍", topRight: "╮", sideChar: "╏", bottomLeft: "╰", bottomChar: "╍", bottomRight: "╯")
+                : BoxStyle(topLeft: "┏", topChar: "╍", topRight: "┓", sideChar: "╏", bottomLeft: "┗", bottomChar: "╍", bottomRight: "┛")
+        }
+    }
+
     public static func from(_ str: String) -> BoxStyle {
-        BorderStyle.from(str).boxStyle
+        if let dsl = StyleDSL.parseBoxStyle(str) {
+            return BoxStyle.style(for: dsl.border, rounded: dsl.rounded)
+        }
+        return BorderStyle.from(str).boxStyle
     }
 
     public static func isStyleToken(_ token: String) -> Bool {
