@@ -3,6 +3,7 @@
 import Foundation
 import Git
 import LogoEngine
+import LogoLocalization
 import SpellChecker
 import Syntax
 
@@ -408,6 +409,15 @@ public final class Editor: @unchecked Sendable {
         defaultBorderStyle = config.defaultBorderStyle
         defaultArrowStyle = config.defaultArrowStyle
         spellChecker.setLanguage(config.spellLanguage)
+
+        for dialectId in config.loadedDialects {
+            if let dialect = LogoLocalizationRegistry.dialect(for: dialectId) {
+                logoEngine.register(plugin: dialect)
+            }
+        }
+        if language == .zh_TW && !logoEngine.pluginRegistry.contains(id: "zh-TW") {
+            logoEngine.register(plugin: LogoTraditionalChinesePlugin())
+        }
 
         let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)
         if !prelude.isEmpty {

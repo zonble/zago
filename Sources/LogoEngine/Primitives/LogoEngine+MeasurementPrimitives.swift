@@ -7,7 +7,7 @@ extension LogoEngine {
     /// `MEASURE.SCALE`, `MEASURE.EQUAL?`, `MEASURE.LESS?`, `MEASURE.GREATER?`,
     /// `MEASURE.MIN`, `MEASURE.MAX`.
     internal func evaluateMeasurementPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .convertMeasure:

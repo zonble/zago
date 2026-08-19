@@ -16,6 +16,7 @@ public final class ConfigLoader {
         case logo
         case logoPrelude = "logo-prelude"
         case logoScript = "logo-script"
+        case load
     }
 
     public let provider: any ConfigFileProvider
@@ -161,6 +162,18 @@ public final class ConfigLoader {
                         continue
                     }
                     logoBlock = .prelude(lines: [])
+                case .load:
+                    guard tokens.count >= 2 else {
+                        recordSyntaxError(in: &config)
+                        continue
+                    }
+                    if tokens.count >= 3 && tokens[1].lowercased() == "dialect" {
+                        config.loadedDialects.append(tokens[2].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
+                    } else if tokens[1].lowercased() == "dialect" {
+                        recordSyntaxError(in: &config)
+                    } else {
+                        config.loadedDialects.append(tokens[1].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
+                    }
                 }
             } else {
                 recordSyntaxError(in: &config)
@@ -329,10 +342,10 @@ public final class ConfigLoader {
     ) throws -> String {
         let path = targetPath ?? (provider.homeDirectoryPath() as NSString).appendingPathComponent(".zagorc")
         let content = """
-            # zago Configuration File (.zagorc)
-            # Lines starting with '#' are comments.
+            ## zago Configuration File (.zagorc)
+            ## Lines starting with '#' are comments.
 
-            # View & Layout Options
+            ## View & Layout Options
             set wrap 80
             set fill 72
             set ruler on
@@ -351,25 +364,25 @@ public final class ConfigLoader {
             set arrow solid
             set keymap classic
 
-            # Interface Language
+            ## Interface Language
             # set lang en
 
-            # Spell Checker Language
+            ## Spell Checker Language
             # set spell-language en_US
 
-            # IPC Socket Server
+            ## IPC Socket Server
             # set ipc on
 
-            # Custom Key Bindings
+            ## Custom Key Bindings
             # bind <key> <command_id_or_macro>
             # bind ^T search.find
             # bind alt-t table.toggle
             # bind alt-h logo:MOVE HOME TYPE "# " MOVE END
             # unbind ^K
 
-            # LOGO Prelude & Named Scripts
-            # Prelude code runs once on the editor's persistent LOGO engine.
-            # Named scripts can be triggered with bind <key> logo:<script-name>.
+            ## LOGO Prelude & Named Scripts
+            ## Prelude code runs once on the editor's persistent LOGO engine.
+            ## Named scripts can be triggered with bind <key> logo:<script-name>.
             #
             # logo-prelude
             #   MAKE "boxWidth 30
@@ -389,8 +402,12 @@ public final class ConfigLoader {
             # bind alt-b logo:FILLBOX "hi
             # bind alt-t logo:insert-title
 
-            # On macOS, you can install `nanorc` and include its syntax definitions 
-            # for additional highlighting.
+            ## Load LOGO Dialects
+            
+            # load dialect zh-TW
+
+            ## On macOS, you can install `nanorc` and include its syntax definitions 
+            ## for additional highlighting.
 
             # include "/opt/homebrew/share/nanorc/apacheconf.nanorc"
             # include "/opt/homebrew/share/nanorc/arduino.nanorc"

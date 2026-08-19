@@ -40,7 +40,7 @@ extension LogoEngine {
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
         }
-        let finalResult = procReturn ?? (proc.isSingleExpression ? lastResult : nil)
+        let finalResult = procReturn ?? (proc.isSingleExpression(registry: pluginRegistry) ? lastResult : nil)
         lastResult = savedLastResult
         return finalResult
     }

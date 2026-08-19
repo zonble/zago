@@ -3,7 +3,7 @@ import Foundation
 extension LogoEngine {
     /// Evaluates Editor Buffer Query Primitives (buffers, buffer, row, col, getline, selection, etc.).
     internal func evaluateBufferPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .buffers:

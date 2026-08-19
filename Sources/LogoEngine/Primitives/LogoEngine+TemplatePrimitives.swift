@@ -8,7 +8,7 @@ extension LogoEngine {
     /// - **Primitives**: `APPLY`, `INVOKE`, `MAP`, `MAPSE`, `FILTER`, `FIND`, `REDUCE`, `CROSSMAP`, `SORT`
     /// - **Return Type**: `String?` (evaluated result string or `nil`).
     internal func evaluateTemplatePrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .uppercase:

@@ -54,6 +54,8 @@ public final class LogoEngine: @unchecked Sendable {
     internal var isPenDown: Bool = true
     internal var heading: LogoHeading = .right
 
+    public let pluginRegistry: LogoPluginRegistry
+
     /// Set of built-in statement commands that perform side-effects and do not return values to callers.
     internal static let statementCommands = LogoPrimitive.statementCommands
 
@@ -63,6 +65,36 @@ public final class LogoEngine: @unchecked Sendable {
     internal static let keywords: Set<LogoPrimitive> = statementCommands.union(expressionPrimitives)
 
     internal static let variadicPrimitives = LogoPrimitive.variadicPrimitives
+
+    public func register(plugin: any LogoParserPlugin) {
+        pluginRegistry.register(plugin)
+    }
+
+    public func unregister(pluginId: String) {
+        pluginRegistry.unregister(id: pluginId)
+    }
+
+    public func parsePrimitive(_ token: String) -> LogoPrimitive? {
+        LogoPrimitive.from(token, registry: pluginRegistry)
+    }
+
+    public func parseOperator(_ token: String) -> LogoOperator? {
+        LogoOperator.from(token, registry: pluginRegistry)
+    }
+
+    public func parseHeading(_ token: String) -> LogoHeading? {
+        pluginRegistry.parseHeading(token) ?? LogoHeading(token)
+    }
+
+    public func isKeyword(_ token: String) -> Bool {
+        guard let prim = parsePrimitive(token) else { return false }
+        return Self.keywords.contains(prim)
+    }
+
+    public func isStatementCommand(_ token: String) -> Bool {
+        guard let prim = parsePrimitive(token) else { return false }
+        return Self.statementCommands.contains(prim)
+    }
 
     internal static func isKeyword(_ token: String) -> Bool {
         guard let prim = LogoPrimitive.from(token) else { return false }
@@ -81,8 +113,8 @@ public final class LogoEngine: @unchecked Sendable {
     internal func optionalCommandArgument(_ tokens: [String], index: inout Int) -> String? {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         guard
-            let value = reader.nextOptionalExpression(isBoundary: { token in
-                LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+            let value = reader.nextOptionalExpression(isBoundary: { [weak self] token in
+                (self?.isStatementCommand(token) ?? LogoEngine.isStatementCommand(token)) || token == "]" || token == ")"
             })
         else { return nil }
         reader.commit(to: &index)
@@ -106,9 +138,14 @@ public final class LogoEngine: @unchecked Sendable {
 
     public weak var delegate: LogoEngineDelegate?
 
-    public init(delegate: LogoEngineDelegate? = nil, initialVariables: [String: String] = [:]) {
+    public init(
+        delegate: LogoEngineDelegate? = nil,
+        initialVariables: [String: String] = [:],
+        pluginRegistry: LogoPluginRegistry = LogoPluginRegistry()
+    ) {
         self.delegate = delegate
         self.variables = LogoEnvironment(initialValues: initialVariables)
+        self.pluginRegistry = pluginRegistry
     }
 
     public func abortExecution() {
@@ -249,7 +286,7 @@ public final class LogoEngine: @unchecked Sendable {
             }
 
             // Step 1: Built-in Statement Command
-            if let prim = LogoPrimitive.from(token),
+            if let prim = parsePrimitive(token),
                 executeStatementCommand(prim, tokens: tokens, index: &index, frameReturn: &frameReturn)
             {
                 index += 1
@@ -323,10 +360,10 @@ public final class LogoEngine: @unchecked Sendable {
             return false
         }
         let upper = clean.uppercased()
-        if customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil {
+        if customProcedures[upper] != nil || parsePrimitive(clean) != nil || LogoPrimitive.from(upper) != nil {
             return false
         }
-        if LogoOperator.from(clean) != nil {
+        if parseOperator(clean) != nil {
             return false
         }
         return true

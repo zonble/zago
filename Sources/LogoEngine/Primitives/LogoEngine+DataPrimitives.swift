@@ -7,7 +7,7 @@ extension LogoEngine {
 
     /// Evaluates UCB LOGO Data Structure Primitives (constructors, selectors, mutators, predicates, queries).
     internal func evaluateDataStructurePrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         // ---------------------------------------------------------------------

@@ -2,6 +2,7 @@ import Diagram
 import Drawing
 import Foundation
 import LogoEngine
+import LogoLocalization
 
 /// Application service for executing LOGO scripts either in headless mode or within a buffer context.
 public final class LogoExecutionService: @unchecked Sendable {
@@ -13,7 +14,8 @@ public final class LogoExecutionService: @unchecked Sendable {
         initialVariables: [String: String] = [:],
         tabSize: Int = 4,
         borderStyle: BorderStyle = .single,
-        arrowStyle: ArrowStyle = .solid
+        arrowStyle: ArrowStyle = .solid,
+        plugins: [any LogoParserPlugin] = []
     ) -> [String] {
         let buffer = TextBuffer()
         let delegate = TextBufferLogoDelegate(
@@ -22,7 +24,8 @@ public final class LogoExecutionService: @unchecked Sendable {
             defaultArrowStyle: arrowStyle,
             tabSize: tabSize
         )
-        let engine = LogoEngine(delegate: delegate, initialVariables: initialVariables)
+        let registry = LogoPluginRegistry(plugins: plugins)
+        let engine = LogoEngine(delegate: delegate, initialVariables: initialVariables, pluginRegistry: registry)
         engine.execute(script)
         let lines = buffer.lines
         guard lines.count > 1 || lines.first?.isEmpty == false else {
@@ -39,6 +42,7 @@ public final class LogoExecutionService: @unchecked Sendable {
         defaultBorderStyle: BorderStyle = .single,
         defaultArrowStyle: ArrowStyle = .solid,
         tabSize: Int = 4,
+        plugins: [any LogoParserPlugin] = [],
         hooks: LogoUIHooks = .empty
     ) -> (lastResult: String?, output: [String]) {
         final class OutputCollector: @unchecked Sendable {
@@ -59,7 +63,8 @@ public final class LogoExecutionService: @unchecked Sendable {
             tabSize: tabSize,
             hooks: combinedHooks
         )
-        let engine = LogoEngine(delegate: delegate, initialVariables: initialVariables)
+        let registry = LogoPluginRegistry(plugins: plugins)
+        let engine = LogoEngine(delegate: delegate, initialVariables: initialVariables, pluginRegistry: registry)
         engine.execute(script)
         return (engine.lastResult, collector.lines)
     }

@@ -642,14 +642,20 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         self = prim
     }
 
-    /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum.
-    public static func parse(_ token: String) -> LogoPrimitive? {
-        LogoPrimitive(token: token)
+    /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum, optionally checking a plugin registry.
+    public static func parse(_ token: String, registry: LogoPluginRegistry? = nil) -> LogoPrimitive? {
+        if let registry, let prim = registry.parsePrimitive(token) {
+            return prim
+        }
+        return LogoPrimitive(token: token)
     }
 
-    /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum.
-    public static func from(_ token: String) -> LogoPrimitive? {
-        LogoPrimitive(token: token)
+    /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum, optionally checking a plugin registry.
+    public static func from(_ token: String, registry: LogoPluginRegistry? = nil) -> LogoPrimitive? {
+        if let registry, let prim = registry.parsePrimitive(token) {
+            return prim
+        }
+        return LogoPrimitive(token: token)
     }
 }
 
