@@ -523,11 +523,24 @@ import TextMetrics
     logoEngine.execute("SORT.LOCALIZED DESC [v1.2 v1.10 v1.9]")
     #expect(logoEngine.lastResult == "[v1.10 v1.9 v1.2]")
 
-    logoEngine.execute("SORT.NATURAL ASC [item20 item3 item1]")
+    logoEngine.execute("SORT.LOCALIZED ASC [item20 item3 item1]")
     #expect(logoEngine.lastResult == "[item1 item3 item20]")
+
+    logoEngine.execute("SORT.LOCALIZED \"de_DE [ä b a]")
+    #expect(logoEngine.lastResult == "[a ä b]")
+
+    logoEngine.execute("SORT.LOCALIZED \"sv_SE [z ä a]")
+    #expect(logoEngine.lastResult == "[a z ä]")
+
+    logoEngine.execute("SORT.LOCALIZED DESC \"de_DE [ä b a]")
+    #expect(logoEngine.lastResult == "[b ä a]")
 
     logoEngine.execute("SORT.LOCALIZED \"cba30a2\"")
     #expect(logoEngine.lastResult?.isEmpty == false)
+
+    logoEngine.execute("MAKE \"a [1 4 5 62 6 7 2 6 0 9]")
+    logoEngine.execute("SHOW SORT :a")
+    #expect(editor.statusMessage == "[0 1 2 4 5 6 6 7 9 62]")
 }
 
 @Test func testLogoValueTypeCoercionsAndArrays() throws {
