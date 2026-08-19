@@ -177,6 +177,9 @@ extension LogoEngine {
                 if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
                     descending = true
                     _ = reader.nextRawToken()
+                } else if modifier == "asc" || modifier == "ascending" || modifier == "lessp" || modifier == "less?" {
+                    descending = false
+                    _ = reader.nextRawToken()
                 }
             }
             guard reader.peekToken() != nil else { return nil }
@@ -219,6 +222,64 @@ extension LogoEngine {
                 if customTemplate == nil {
                     let sortedChars = descending ? Array(s).sorted(by: >) : Array(s).sorted(by: <)
                     return String(sortedChars)
+                } else {
+                    let sortedChars = Array(s).map { String($0) }.sorted { isLessThan($0, $1) }
+                    return sortedChars.joined()
+                }
+            }
+
+        case .sortLocalized:
+            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
+            var descending = false
+            if let nextToken = reader.peekToken() {
+                let modifier = unquote(nextToken).lowercased()
+                if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
+                    descending = true
+                    _ = reader.nextRawToken()
+                } else if modifier == "asc" || modifier == "ascending" || modifier == "lessp" || modifier == "less?" {
+                    descending = false
+                    _ = reader.nextRawToken()
+                }
+            }
+            guard reader.peekToken() != nil else { return nil }
+            let dataStr = reader.nextExpression()
+            let parsed = LogoValue.parse(dataStr)
+            var customTemplate: String? = nil
+
+            if let nextToken = reader.peekToken() {
+                if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil {
+                    customTemplate = reader.nextExpression()
+                }
+            }
+            reader.commit(to: &index)
+
+            let isLessThan: (String, String) -> Bool = { a, b in
+                if let t = customTemplate {
+                    let res = self.applyTemplate(templateStr: t, args: [a, b])
+                    return logoIsTrue(res)
+                } else {
+                    let comparison = a.localizedStandardCompare(b)
+                    return descending ? comparison == .orderedDescending : comparison == .orderedAscending
+                }
+            }
+
+            switch parsed {
+            case .list(let items):
+                let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
+                return LogoValue.list(sortedItems).description
+
+            case .array(let items):
+                let sortedItems = items.sorted { isLessThan($0.description, $1.description) }
+                return LogoValue.array(sortedItems).description
+
+            case .measurement:
+                return parsed.description
+
+            case .string(let s):
+                if customTemplate == nil {
+                    let chars = Array(s).map { String($0) }
+                    let sortedChars = chars.sorted { isLessThan($0, $1) }
+                    return sortedChars.joined()
                 } else {
                     let sortedChars = Array(s).map { String($0) }.sorted { isLessThan($0, $1) }
                     return sortedChars.joined()

@@ -176,6 +176,7 @@ struct EnglishStrings {
             REMOVE item list                     Remove items matching target
             REMDUP list                          Remove duplicates from list
             SORT list [template]                 Sort list items
+            SORT.LOCALIZED list [template]       Natural localized sort
             ARRAY size / MDARRAY dims            Create 1D or multi-dimensional arrays
             MDITEM dims arr / MDSETITEM dims v   Get/set multi-dimensional element
             LISTTOARRAY list / ARRAYTOLIST arr   Convert list to array / array to list

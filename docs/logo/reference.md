@@ -870,7 +870,7 @@ TYPE ITEM 2 :cells
 | `DEFINE` | - | `DEFINE name specList` | Dynamically defines procedure from AST list structure | `DEFINE "add [[:a :b] [OUTPUT :a + :b]]` |
 | `ARITY` | - | `ARITY name` | Returns required parameter count of procedure | `ARITY "add` $\rightarrow$ `2` |
 | `DOC` | `DOCSTRING` | `DOC name` | Returns documentation string for primitive or procedure | `DOC "BOX`, `DOC "SUM` |
-| `SORT` | - | `SORT list [predicate]` | Sorts list in ascending order or using custom comparison predicate | `SORT [3 1 2]`, `SORT [?1 > ?2] [3 1 2]` |
+| `SORT.LOCALIZED` | `SORT.NATURAL` | `SORT.LOCALIZED [ASC\|DESC] data [template]` | Sorts list, array, or word using natural localized order | `SORT.LOCALIZED ["file10.txt "file2.txt "file1.txt]`, `SORT.LOCALIZED "DESC ["v1.2 "v1.10 "v1.9]` |
 | `ERASE` | `ER` | `ERASE name` | Erases specified variable, procedure, or property list | `ERASE "x` |
 | `ERPS` | `ERASEPROCS` | `ERPS` | Erases all user-defined procedures | `ERPS` |
 | `ERNS` | `ERASENAMES` | `ERNS` | Erases all user-defined variables | `ERNS` |
