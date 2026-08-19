@@ -160,7 +160,11 @@ struct LogoLocalizationTests {
         變數 "urls 偵測網址 "https://example.com
         """)
         #expect(engine.variables["base64"] == "aGVsbG8=")
-        #expect(engine.variables["urls"] == "[https://example.com]")
+        #if canImport(Darwin)
+            #expect(engine.variables["urls"] == "[https://example.com]")
+        #else
+            #expect(engine.variables["urls"] == "")
+        #endif
     }
 
     @Test

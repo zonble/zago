@@ -219,22 +219,17 @@ extension ZagoIPCServer {
             guard !isListening else { return }
 
             let tokenURL = URL(fileURLWithPath: tokenPath)
-            try FileManager.default.createDirectory(
+            try? FileManager.default.createDirectory(
                 at: tokenURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            do {
-                guard let tokenData = sessionToken.data(using: .utf8) else {
-                    throw NSError(
-                        domain: "ZagoIPCServer", code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "Invalid session token encoding"])
-                }
-                try tokenData.write(to: tokenURL, options: .atomic)
-            } catch {
+            guard let tokenData = sessionToken.data(using: .utf8),
+                FileManager.default.createFile(atPath: tokenPath, contents: tokenData)
+            else {
                 throw NSError(
                     domain: "ZagoIPCServer", code: 1,
                     userInfo: [
-                        NSLocalizedDescriptionKey: "Failed to create IPC session token: \(error.localizedDescription)"
+                        NSLocalizedDescriptionKey: "Failed to create IPC session token at \(tokenPath)"
                     ])
             }
 
