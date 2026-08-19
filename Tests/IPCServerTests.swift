@@ -431,11 +431,12 @@ struct IPCServerTests {
             affectedFiles: []
         )
 
-        store.logDecision(proposal: proposal, decision: "accepted")
+        store.logDecision(proposal: proposal, decision: .accepted)
         let recent = store.recentEntries(limit: 5)
         #expect(recent.count == 1)
         #expect(recent.first?.clientName == "Architect-Bot")
-        #expect(recent.first?.decision == "accepted")
+        #expect(recent.first?.decision == .accepted)
+        #expect(recent.first?.decisionString == "accepted")
     }
 
     @Test func testBufferUUIDAndGetBuffersAPI() throws {

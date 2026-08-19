@@ -76,7 +76,7 @@ struct AcceptProposalCommand: Command {
             }
         }
 
-        editor.historyStore.logDecision(proposal: current, decision: "accepted")
+        editor.historyStore.logDecision(proposal: current, decision: .accepted)
         editor.proposalQueue.rejectCurrent()
         let message: String
         if editor.isTableModeActive {
@@ -103,7 +103,7 @@ struct RejectProposalCommand: Command {
             return .noOp(message: editor.l10n["ai.proposal.no_pending_reject"])
         }
 
-        editor.historyStore.logDecision(proposal: current, decision: "rejected")
+        editor.historyStore.logDecision(proposal: current, decision: .rejected)
         editor.proposalQueue.rejectCurrent()
         let message = String(format: editor.l10n["ai.proposal.rejected"], current.clientName)
         editor.renderer.invalidateScreenCache()

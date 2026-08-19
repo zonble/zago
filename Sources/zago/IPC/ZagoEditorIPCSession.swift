@@ -141,7 +141,7 @@ final class ZagoEditorIPCSession: ZagoIPCServerDataSource, ZagoIPCServerDelegate
                     id: entry.id,
                     author: entry.clientName,
                     reason: entry.reason,
-                    action: entry.decision,
+                    action: entry.decision.rawValue,
                     timestamp: self.dateFormatter.string(from: entry.timestamp)
                 )
             }
