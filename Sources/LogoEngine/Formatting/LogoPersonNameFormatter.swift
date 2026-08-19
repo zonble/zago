@@ -44,17 +44,7 @@ public enum LogoPersonNameFormatter {
             let targetLocale = LogoDateTimeFormatter.parseLocale(locale)
             let formatter = PersonNameComponentsFormatter()
             formatter.locale = targetLocale
-
-            switch style {
-            case .default, .medium:
-                formatter.style = .medium
-            case .short:
-                formatter.style = .short
-            case .long:
-                formatter.style = .long
-            case .abbreviated:
-                formatter.style = .abbreviated
-            }
+            formatter.style = style.formatterStyle
 
             if let full = fullName, components.givenName == nil && components.familyName == nil {
                 if let parsed = formatter.personNameComponents(from: full) {

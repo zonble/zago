@@ -48,61 +48,30 @@ public enum LogoNumberFormatter {
     ) -> String {
         let loc = LogoDateTimeFormatter.parseLocale(locale)
 
-        switch style {
-        case .roman:
-            return formatRoman(Int(number))
-
-        case .financial:
-            return formatFinancialChinese(Int(number))
-
-        case .ordinal:
+        if let numStyle = style.numberFormatterStyle {
             let formatter = NumberFormatter()
             formatter.locale = loc
-            formatter.numberStyle = .ordinal
-            if let precision = precision {
-                formatter.minimumFractionDigits = precision
-                formatter.maximumFractionDigits = precision
-            }
-            return formatter.string(from: NSNumber(value: number)) ?? "\(Int(number))"
-
-        case .spellout:
-            let formatter = NumberFormatter()
-            formatter.locale = loc
-            formatter.numberStyle = .spellOut
-            return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
-
-        case .currency:
-            let formatter = NumberFormatter()
-            formatter.locale = loc
-            formatter.numberStyle = .currency
-            if let code = currencyCode, !code.isEmpty {
+            formatter.numberStyle = numStyle
+            if style == .currency, let code = currencyCode, !code.isEmpty {
                 formatter.currencyCode = code.uppercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
             }
             if let precision = precision {
                 formatter.minimumFractionDigits = precision
                 formatter.maximumFractionDigits = precision
             }
-            return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
-
-        case .percent:
-            let formatter = NumberFormatter()
-            formatter.locale = loc
-            formatter.numberStyle = .percent
-            if let precision = precision {
-                formatter.minimumFractionDigits = precision
-                formatter.maximumFractionDigits = precision
+            if let str = formatter.string(from: NSNumber(value: number)) {
+                return str
             }
-            return formatter.string(from: NSNumber(value: number)) ?? "\(number * 100)%"
+            return style == .percent ? "\(number * 100)%" : "\(number)"
+        }
 
-        case .decimal:
-            let formatter = NumberFormatter()
-            formatter.locale = loc
-            formatter.numberStyle = .decimal
-            if let precision = precision {
-                formatter.minimumFractionDigits = precision
-                formatter.maximumFractionDigits = precision
-            }
-            return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
+        switch style {
+        case .roman:
+            return formatRoman(Int(number))
+        case .financial:
+            return formatFinancialChinese(Int(number))
+        default:
+            return "\(number)"
         }
     }
 
