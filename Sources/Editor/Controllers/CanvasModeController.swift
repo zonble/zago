@@ -136,16 +136,6 @@ final class CanvasModeController: KeyInputHandler {
 // MARK: - Editor Canvas Domain Extensions
 
 extension Editor {
-    struct CanvasBlockClipboard: Sendable, Equatable {
-        let width: Int
-        let rows: [String]
-
-        init(width: Int, rows: [String]) {
-            self.width = width
-            self.rows = rows
-        }
-    }
-
     struct CanvasBlockRectangle: Sendable, Equatable {
         let topLine: Int
         let bottomLine: Int

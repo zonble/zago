@@ -6,27 +6,17 @@ extension Editor {
 
     func startFileWatcherForCurrentBuffer() {
         updateGitDiff()
-        if let oldPath = currentWatchedPath {
-            fileIOStrategy.stopWatchingFile(at: oldPath)
-            currentWatchedPath = nil
-        }
-        if let path = buffer.filePath {
-            currentWatchedPath = path
-            fileIOStrategy.startWatchingFile(at: path) { [weak self] in
-                guard let self = self else { return }
-                _ = try? self.performOnEditorLoop {
-                    guard self.displayConfig.autoReload else { return }
-                    self.handleExternalFileChange()
-                }
+        fileWatcherCoordinator.startWatching(path: buffer.filePath) { [weak self] in
+            guard let self = self else { return }
+            _ = try? self.performOnEditorLoop {
+                guard self.displayConfig.autoReload else { return }
+                self.handleExternalFileChange()
             }
         }
     }
 
     func stopFileWatcherForCurrentBuffer() {
-        if let oldPath = currentWatchedPath {
-            fileIOStrategy.stopWatchingFile(at: oldPath)
-            currentWatchedPath = nil
-        }
+        fileWatcherCoordinator.stopWatching()
     }
 
     /// Handles external file system modifications detected by FileWatcher.

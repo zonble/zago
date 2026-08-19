@@ -8,6 +8,12 @@ import Syntax
 
 typealias SearchMatch = SearchController.SearchMatch
 
+public typealias CanvasBlockClipboardType = CanvasBlockClipboard
+
+extension Editor {
+    public typealias CanvasBlockClipboard = CanvasBlockClipboardType
+}
+
 /// Nano-style UI state machine and core editor engine.
 public final class Editor: @unchecked Sendable {
     let terminal: EditorTerminal
@@ -35,8 +41,16 @@ public final class Editor: @unchecked Sendable {
     var statusMessage: String = ""
     var statusMessageTime: Date?
 
-    var clipboardText: String? = nil
-    var canvasBlockClipboard: CanvasBlockClipboard? = nil
+    let clipboardCoordinator = ClipboardCoordinator()
+
+    var clipboardText: String? {
+        get { clipboardCoordinator.clipboardText }
+        set { clipboardCoordinator.clipboardText = newValue }
+    }
+    var canvasBlockClipboard: CanvasBlockClipboard? {
+        get { clipboardCoordinator.canvasBlockClipboard }
+        set { clipboardCoordinator.canvasBlockClipboard = newValue }
+    }
 
     /// History log lines recorded by LOGO commands, stored internally until user opens *LOGO Output* buffer.
     var logoOutputHistory: [String] = []
@@ -134,8 +148,14 @@ public final class Editor: @unchecked Sendable {
 
     var isRegexSearchEnabled: Bool = false
 
-    var lastMutationTime: Date?
-    var lastIsPaste: Bool = false
+    var lastMutationTime: Date? {
+        get { clipboardCoordinator.lastMutationTime }
+        set { clipboardCoordinator.lastMutationTime = newValue }
+    }
+    var lastIsPaste: Bool {
+        get { clipboardCoordinator.lastIsPaste }
+        set { clipboardCoordinator.lastIsPaste = newValue }
+    }
 
     let syntaxHighlighter = SyntaxHighlighter()
 
@@ -157,11 +177,14 @@ public final class Editor: @unchecked Sendable {
     let commandRegistry = CommandRegistry()
     var commandBarRegistry: CommandRegistry { commandRegistry }
     var fileIOStrategy: EditorFileIOStrategy
+    let fileWatcherCoordinator: FileWatcherCoordinator
     var language: Language = .detectSystemLanguage()
     var usesExplicitLanguage: Bool = false
     var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
-    var currentWatchedPath: String? = nil
+    var currentWatchedPath: String? {
+        fileWatcherCoordinator.currentWatchedPath
+    }
 
     typealias DisplayConfig = RuntimeConfig
     var runtimeConfig: RuntimeConfig
@@ -227,6 +250,7 @@ public final class Editor: @unchecked Sendable {
         self.initialLogoVariable = initialVariables ?? [:]
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
+        self.fileWatcherCoordinator = FileWatcherCoordinator(fileIOStrategy: dependencies.fileIOStrategy)
         self.gitService = dependencies.gitService
         self.gitCoordinator = GitCoordinator(gitService: dependencies.gitService)
         self.historyStore = dependencies.historyStore
