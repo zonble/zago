@@ -132,7 +132,7 @@ extension LogoEngine {
                         let dateVal = cleanArgs[0]
                         let restArgs = Array(cleanArgs.dropFirst())
                         let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
-                        let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
+                        let parsedTz = TimeZone(logoTimeZoneSpec: tz)
                         let parsedDate: Date
                         let parsedVal = LogoValue.parse(dateVal)
                         switch parsedVal {
@@ -344,7 +344,7 @@ extension LogoEngine {
                                     family = itemStrings[1]
                                 } else if itemStrings.count >= 3 {
                                     if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
-                                        && !LogoDateTimeFormatter.isLocaleName(itemStrings[2])
+                                        && !Locale.isLogoLocaleSpec(itemStrings[2])
                                     {
                                         given = itemStrings[0]
                                         middle = itemStrings[1]
@@ -364,9 +364,9 @@ extension LogoEngine {
                                 }
                             } else if cleanArgs.count >= 3
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
-                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1])
+                                && !Locale.isLogoLocaleSpec(cleanArgs[1])
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[2])
-                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[2])
+                                && !Locale.isLogoLocaleSpec(cleanArgs[2])
                             {
                                 // Three positional arguments: givenName middleName familyName [style] [locale]
                                 given = cleanArgs[0]
@@ -378,7 +378,7 @@ extension LogoEngine {
                                 }
                             } else if cleanArgs.count >= 2
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
-                                && !LogoDateTimeFormatter.isLocaleName(cleanArgs[1])
+                                && !Locale.isLogoLocaleSpec(cleanArgs[1])
                             {
                                 // Two positional arguments: givenName familyName [style] [locale]
                                 given = cleanArgs[0]
@@ -630,15 +630,15 @@ extension LogoEngine {
                         var formatToken: String? = nil
 
                         for tok in cleanArgs.dropFirst(2) {
-                            if LogoDateTimeFormatter.isCalendarName(tok) && sourceCalToken == nil {
+                            if Calendar.Identifier(logoCalendarName: tok) != nil && sourceCalToken == nil {
                                 sourceCalToken = tok
                             } else if formatToken == nil {
                                 formatToken = tok
                             }
                         }
 
-                        let targetCalId = LogoDateTimeFormatter.calendarIdentifier(for: targetCalName)
-                        let sourceCal = sourceCalToken.map { LogoDateTimeFormatter.parseCalendar($0) } ?? Calendar(identifier: .gregorian)
+                        let targetCalId = Calendar.Identifier(logoCalendarName: targetCalName) ?? .gregorian
+                        let sourceCal = sourceCalToken.map { Calendar(identifier: Calendar.Identifier(logoCalendarName: $0) ?? .gregorian) } ?? Calendar(identifier: .gregorian)
 
                         let parsedDate: Date
                         let parsedVal = LogoValue.parse(dateToken)
@@ -654,7 +654,7 @@ extension LogoEngine {
                                 date: parsedDate,
                                 mode: .date,
                                 formatSpec: fmt,
-                                localeSpec: LogoDateTimeFormatter.defaultLocaleForCalendar(targetCalId),
+                                localeSpec: targetCalId.defaultLocaleIdentifier,
                                 calendarSpec: targetCalName
                             )
                             setLastExpressionDateTime(res)

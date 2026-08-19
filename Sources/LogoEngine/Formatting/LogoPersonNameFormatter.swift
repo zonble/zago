@@ -41,7 +41,7 @@ public enum LogoPersonNameFormatter {
             if let sfx = suffix, !sfx.isEmpty { components.nameSuffix = sfx }
             if let nick = nickname, !nick.isEmpty { components.nickname = nick }
 
-            let targetLocale = LogoDateTimeFormatter.parseLocale(locale)
+            let targetLocale = Locale(logoLocaleSpec: locale)
             let formatter = PersonNameComponentsFormatter()
             formatter.locale = targetLocale
             formatter.style = style.formatterStyle

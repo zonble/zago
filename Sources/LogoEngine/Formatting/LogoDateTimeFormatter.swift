@@ -5,22 +5,6 @@ public struct LogoDateTimeFormatter {
     public typealias Mode = LogoDateTimeMode
     public typealias StylePreset = LogoDateTimeStylePreset
 
-    public static func isCalendarName(_ name: String) -> Bool {
-        Calendar.Identifier(logoCalendarName: name) != nil
-    }
-
-    public static func isStylePresetName(_ name: String) -> Bool {
-        LogoDateTimeStylePreset.isPresetName(name)
-    }
-
-    public static func isLocaleName(_ name: String) -> Bool {
-        Locale.isLogoLocaleSpec(name)
-    }
-
-    public static func isTimeZoneName(_ name: String) -> Bool {
-        TimeZone.isLogoTimeZoneSpec(name)
-    }
-
     public static func resolveArguments(
         _ args: [String],
         mode: Mode
@@ -35,13 +19,13 @@ public struct LogoDateTimeFormatter {
             guard !clean.isEmpty else { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if isCalendarName(lower) && cal == nil {
+            if Calendar.Identifier(logoCalendarName: lower) != nil && cal == nil {
                 cal = clean
-            } else if isLocaleName(clean) && locale == nil {
+            } else if Locale.isLogoLocaleSpec(clean) && locale == nil {
                 locale = clean
-            } else if isTimeZoneName(clean) && tz == nil {
+            } else if TimeZone.isLogoTimeZoneSpec(clean) && tz == nil {
                 tz = clean
-            } else if isStylePresetName(lower) && format == nil {
+            } else if StylePreset.isPresetName(lower) && format == nil {
                 format = clean
             } else if format == nil {
                 format = clean
@@ -67,18 +51,6 @@ public struct LogoDateTimeFormatter {
         return (format, locale, tz, cal)
     }
 
-    public static func parseCalendar(_ raw: String?) -> Calendar {
-        Calendar(identifier: Calendar.Identifier(logoCalendarName: raw) ?? .gregorian)
-    }
-
-    public static func parseTimeZone(_ raw: String?) -> TimeZone {
-        TimeZone(logoTimeZoneSpec: raw)
-    }
-
-    public static func parseLocale(_ raw: String?) -> Locale {
-        Locale(logoLocaleSpec: raw)
-    }
-
     public static func format(
         date: Date = Date(),
         mode: Mode,
@@ -88,9 +60,9 @@ public struct LogoDateTimeFormatter {
         calendarSpec: String? = nil
     ) -> String {
         let preset = StylePreset.parse(formatSpec ?? "", mode: mode)
-        let locale = parseLocale(localeSpec)
-        let timeZone = parseTimeZone(timeZoneSpec)
-        var calendar = parseCalendar(calendarSpec)
+        let locale = Locale(logoLocaleSpec: localeSpec)
+        let timeZone = TimeZone(logoTimeZoneSpec: timeZoneSpec)
+        var calendar = Calendar(identifier: Calendar.Identifier(logoCalendarName: calendarSpec) ?? .gregorian)
         calendar.locale = locale
         calendar.timeZone = timeZone
 
@@ -124,21 +96,9 @@ public struct LogoDateTimeFormatter {
         return formatter.string(from: date)
     }
 
-    public static func calendarIdentifier(for name: String?) -> Calendar.Identifier {
-        Calendar.Identifier(logoCalendarName: name) ?? .gregorian
-    }
-
-    public static func defaultLocaleForCalendar(_ identifier: Calendar.Identifier) -> String? {
-        identifier.defaultLocaleIdentifier
-    }
-
-    public static func calendarName(for identifier: Calendar.Identifier) -> String {
-        identifier.logoCalendarName
-    }
-
     public static func formatDateValue(_ date: Date, calendar: Calendar.Identifier, timeZone: TimeZone) -> String {
-        let calName = calendarName(for: calendar)
-        let locale = defaultLocaleForCalendar(calendar)
+        let calName = calendar.logoCalendarName
+        let locale = calendar.defaultLocaleIdentifier
         if calendar == .gregorian {
             let cal = Calendar(identifier: .gregorian)
             let comps = cal.dateComponents(in: timeZone, from: date)

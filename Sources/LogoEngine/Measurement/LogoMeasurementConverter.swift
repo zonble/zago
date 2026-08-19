@@ -267,7 +267,7 @@ public enum LogoMeasurementConverter {
                 formatter.unitStyle = .medium
             }
 
-            formatter.locale = LogoDateTimeFormatter.parseLocale(resolvedLocale)
+            formatter.locale = Locale(logoLocaleSpec: resolvedLocale)
 
             switch kind {
             case .area:
