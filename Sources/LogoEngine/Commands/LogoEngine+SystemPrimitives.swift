@@ -482,7 +482,7 @@ extension LogoEngine {
 
         reader.commit(to: &index)
 
-        let parsedTz = LogoDateTimeFormatter.parseTimeZone(timeZoneSpec)
+        let parsedTz = TimeZone(logoTimeZoneSpec: timeZoneSpec)
         let parsedDate: Date
         let parsedVal = LogoValue.parse(dateVal)
         switch parsedVal {
@@ -520,7 +520,7 @@ extension LogoEngine {
 
         while let nextTok = reader.nextOptionalExpression() {
             let clean = unquote(nextTok)
-            if LogoDateTimeFormatter.isCalendarName(clean) && sourceCalToken == nil {
+            if Calendar.Identifier(logoCalendarName: clean) != nil && sourceCalToken == nil {
                 sourceCalToken = clean
             } else if formatToken == nil {
                 formatToken = clean
@@ -529,8 +529,8 @@ extension LogoEngine {
         reader.commit(to: &index)
 
         let targetCalName = unquote(targetCalToken)
-        let targetCalId = LogoDateTimeFormatter.calendarIdentifier(for: targetCalName)
-        let sourceCal = sourceCalToken.map { LogoDateTimeFormatter.parseCalendar($0) } ?? Calendar(identifier: .gregorian)
+        let targetCalId = Calendar.Identifier(logoCalendarName: targetCalName) ?? .gregorian
+        let sourceCal = sourceCalToken.map { Calendar(identifier: Calendar.Identifier(logoCalendarName: $0) ?? .gregorian) } ?? Calendar(identifier: .gregorian)
 
         let parsedDate: Date
         let parsedVal = LogoValue.parse(dateToken)
@@ -547,7 +547,7 @@ extension LogoEngine {
                 date: parsedDate,
                 mode: .date,
                 formatSpec: fmt,
-                localeSpec: LogoDateTimeFormatter.defaultLocaleForCalendar(targetCalId),
+                localeSpec: targetCalId.defaultLocaleIdentifier,
                 calendarSpec: targetCalName
             )
             setLastExpressionDateTime(res)
@@ -876,7 +876,7 @@ extension LogoEngine {
                     family = itemStrings[1]
                 } else if itemStrings.count >= 3 {
                     if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
-                        && !LogoDateTimeFormatter.isLocaleName(itemStrings[2])
+                        && !Locale.isLogoLocaleSpec(itemStrings[2])
                     {
                         given = itemStrings[0]
                         middle = itemStrings[1]
@@ -900,9 +900,9 @@ extension LogoEngine {
                     positional.append(unquote(val))
                 }
                 if positional.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
-                    && !LogoDateTimeFormatter.isLocaleName(positional[1])
+                    && !Locale.isLogoLocaleSpec(positional[1])
                     && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[2])
-                    && !LogoDateTimeFormatter.isLocaleName(positional[2])
+                    && !Locale.isLogoLocaleSpec(positional[2])
                 {
                     given = positional[0]
                     middle = positional[1]
@@ -912,7 +912,7 @@ extension LogoEngine {
                         LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
                     }
                 } else if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
-                    && !LogoDateTimeFormatter.isLocaleName(positional[1])
+                    && !Locale.isLogoLocaleSpec(positional[1])
                 {
                     given = positional[0]
                     family = positional[1]

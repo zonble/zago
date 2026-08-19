@@ -244,8 +244,8 @@ extension LogoEngine {
                 } else if lower == "asc" {
                     descending = false
                     _ = reader.nextRawToken()
-                } else if LogoDateTimeFormatter.isLocaleName(unquoted) {
-                    targetLocale = LogoDateTimeFormatter.parseLocale(unquoted)
+                } else if Locale.isLogoLocaleSpec(unquoted) {
+                    targetLocale = Locale(logoLocaleSpec: unquoted)
                     _ = reader.nextRawToken()
                 } else {
                     break

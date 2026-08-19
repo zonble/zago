@@ -28,7 +28,7 @@ public enum LogoByteCountFormatter {
     ) -> String {
         guard let countStyle = style.countStyle else {
             let numFormatter = NumberFormatter()
-            numFormatter.locale = LogoDateTimeFormatter.parseLocale(locale)
+            numFormatter.locale = Locale(logoLocaleSpec: locale)
             numFormatter.numberStyle = .decimal
             let numStr = numFormatter.string(from: NSNumber(value: bytes)) ?? "\(bytes)"
             return "\(numStr) bytes"

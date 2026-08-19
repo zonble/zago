@@ -42,7 +42,7 @@ public enum LogoRelativeDateTimeFormatter {
         #if os(Linux) || os(Windows)
             return ""
         #else
-            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let loc = Locale(logoLocaleSpec: locale)
             let formatter = RelativeDateTimeFormatter()
             formatter.locale = loc
             formatter.unitsStyle = .full
@@ -72,7 +72,7 @@ public enum LogoRelativeDateTimeFormatter {
         #if os(Linux) || os(Windows)
             return ""
         #else
-            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let loc = Locale(logoLocaleSpec: locale)
             let formatter = RelativeDateTimeFormatter()
             formatter.locale = loc
             formatter.unitsStyle = .full

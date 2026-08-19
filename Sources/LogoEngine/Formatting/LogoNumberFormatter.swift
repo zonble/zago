@@ -27,9 +27,9 @@ public enum LogoNumberFormatter {
                 precision = intVal
             } else if LogoNumberStyle.isStyleKeyword(lower) {
                 style = LogoNumberStyle.parse(lower)
-            } else if isCurrencyCode(clean) && currencyCode == nil && !LogoDateTimeFormatter.isLocaleName(clean) {
+            } else if isCurrencyCode(clean) && currencyCode == nil && !Locale.isLogoLocaleSpec(clean) {
                 currencyCode = clean
-            } else if LogoDateTimeFormatter.isLocaleName(clean) && locale == nil {
+            } else if Locale.isLogoLocaleSpec(clean) && locale == nil {
                 locale = clean
             } else if locale == nil {
                 locale = clean
@@ -46,7 +46,7 @@ public enum LogoNumberFormatter {
         currencyCode: String? = nil,
         precision: Int? = nil
     ) -> String {
-        let loc = LogoDateTimeFormatter.parseLocale(locale)
+        let loc = Locale(logoLocaleSpec: locale)
 
         if let numStyle = style.numberFormatterStyle {
             let formatter = NumberFormatter()

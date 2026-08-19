@@ -32,7 +32,7 @@ public enum LogoListFormatter {
         #if os(Linux) || os(Windows)
             return ""
         #else
-            let loc = LogoDateTimeFormatter.parseLocale(locale)
+            let loc = Locale(logoLocaleSpec: locale)
             let isChinese = loc.identifier.lowercased().hasPrefix("zh")
 
             switch type {
