@@ -935,6 +935,29 @@ struct ConfigAndToolsTests {
         #expect(zhWorkspace.contains("（無）"))
     }
 
+    @Test func testStyleDSLReferenceContent() throws {
+        let enRef = StyleDSLReferenceContent.lines(language: .en).joined(separator: "\n")
+        #expect(enRef.contains("Style DSL Reference"))
+        #expect(enRef.contains("BOX 10 5 -)"))
+        #expect(enRef.contains("DRAWBOX 10 5 -)"))
+        #expect(enRef.contains("TABLE 3 3 8 -)"))
+        #expect(enRef.contains("LINE 15 \"->\""))
+        #expect(enRef.contains("VLINE 6 \"++|>\""))
+
+        let zhRef = StyleDSLReferenceContent.lines(language: .zh_TW).joined(separator: "\n")
+        #expect(zhRef.contains("Style DSL 語法參考"))
+        #expect(zhRef.contains("BOX 10 5 -)"))
+        #expect(zhRef.contains("DRAWBOX 10 5 -)"))
+        #expect(zhRef.contains("TABLE 3 3 8 -)"))
+        #expect(zhRef.contains("LINE 15 \"->\""))
+        #expect(zhRef.contains("VLINE 6 \"++|>\""))
+
+        let editor = Editor()
+        let cmd = StyleDSLReferenceCommand()
+        #expect(cmd.id == .styleDSLReference)
+        #expect(cmd.commandBarAliases.contains("styledsl"))
+    }
+
     @Test func testHeadlessLogoScriptExecution() throws {
         let editor = Editor()
         editor.runLogoScript("BOX 20 4")

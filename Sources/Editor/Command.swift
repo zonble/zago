@@ -137,6 +137,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     // Macro & UI
     case macroLogo = "macro.logo"
     case logoReference = "logo.reference"
+    case styleDSLReference = "style.dsl.reference"
     case logoWorkspace = "logo.workspace"
     case logoOutput = "logo.output"
     case logoClearOutput = "logo.clear_output"

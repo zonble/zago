@@ -94,6 +94,72 @@ struct EnglishStrings {
         "textview.footer": "  Up/Down/PgUp/PgDn/Home/End: Scroll | Any other key: Close",
         "logoview.reference_title": "  zago - Editor LOGO Reference",
         "logoview.workspace_title": "  zago - Editor LOGO Workspace",
+        "styledsl.reference_title": "  zago - Style DSL Reference",
+        "styledsl.content": """
+
+          Style DSL Reference (Plain-Text Diagram Shorthand)
+          ================================================================
+
+          Style DSL provides concise, ASCII-art-like shorthand syntax for boxes,
+          tables, lines, and directional arrows in drawing commands.
+
+          1. Border Style Tokens
+          ----------------------------------------------------------------
+            -       Single line (─ │ ┌ ┐ └ ┘)
+            +       Heavy bold line (━ ┃ ┏ ┓ ┗ ┛)
+            =       Double line (═ ║ ╔ ╗ ╚ ╝)
+            a       ASCII text (+ - |)
+            --      Double dash (╌ ╎ ┌ ┐ └ ┘)
+            ++      Heavy double dash (╍ ╏ ┏ ┓ ┗ ┛)
+            ---     Triple dash (┄ ┆ ┌ ┐ └ ┘)
+            +++     Heavy triple dash (┅ ┇ ┏ ┓ ┗ ┛)
+            ----    Quadruple dash (┈ ┊ ┌ ┐ └ ┘)
+            ++++    Heavy quadruple dash (┉ ┋ ┏ ┓ ┗ ┛)
+
+          2. Rounded Corner Modifier
+          ----------------------------------------------------------------
+            Append ")" to any border token or name to make corners rounded:
+            -)      Single rounded box (╭ ╮ ╰ ╯)
+            +)      Heavy rounded box (╭ ╮ ╰ ┛)
+            =)      Double rounded box (╭ ╮ ╰ ╯)
+            a)      ASCII rounded box (/ \\ \\ /)
+            ---)    Triple-dash rounded box
+            ++++)   Heavy quadruple-dash rounded box
+
+          3. Arrow Shapes (for LINE and VLINE)
+          ----------------------------------------------------------------
+            <   >   Standard / ASCII arrow (← / → / ↑ / ↓)
+            <<  >>  Solid filled arrow (◀ / ▶ / ▲ / ▼)
+            <|  |>  Hollow triangular arrow (◁ / ▷ / △ / ▽)
+            <~  ~>  Stemmed arrow (◄ / ► / ↑ / ↓)
+            <.  .>  Small triangular arrow (◂ / ▸ / ▴ / ▾)
+
+          4. Command Usage Examples
+          ----------------------------------------------------------------
+            • BOX & DRAWBOX:
+                BOX 10 5 -)            Draw 10x5 single rounded box
+                BOX 14 4 =             Draw 14x4 double border box
+                BOX 12 4 +)            Draw 12x4 heavy rounded box
+                BOX 16 5 ---)          Draw 16x5 triple-dash rounded box
+                BOX "Hello" -)         Draw centered text in a single rounded box
+                BOX "Alert!" +         Draw centered text in a heavy box
+                DRAWBOX 10 5 -)        Draw overlay rounded box at cursor/mark
+
+            • TABLE:
+                TABLE 3 3 8 -)         Create 3x3 table with 8-col cells and rounded corners
+                TABLE 2 4 10 =         Create 2x4 double-bordered table
+                TABLE 3 3 6 +)         Create 3x3 heavy-line rounded table
+
+            • LINE & VLINE:
+                LINE 15 "->"           15-char horizontal single line with right standard arrow
+                LINE 12 "<=>"          12-char double line with bidirectional standard arrows
+                LINE 20 "<<=>>"        20-char double line with bidirectional solid arrows
+                LINE 10 "<~+"          10-char heavy line with left stemmed arrow
+                LINE 16 "-->>"         16-char double-dash line with right solid arrow
+                LINE 18 "<|+++|>"      18-char heavy triple-dash with bidirectional hollow arrows
+                VLINE 6 "++|>"         6-line vertical heavy double-dash with downward hollow arrow
+                VLINE 8 "<.---.>"      8-line vertical triple-dash with bidirectional small arrows
+        """,
         "logoref.content": """
 
           Editor LOGO is a plain-text diagram language. Start with shapes, lines,
@@ -903,6 +969,7 @@ struct EnglishStrings {
 
         "menu.help.show": "Show Help Reference",
         "menu.help.logo_reference": "Editor LOGO Reference",
+        "menu.help.style_dsl": "Style DSL Reference",
         "menu.help.describe_key": "Describe Key",
         "menu.help.describe_command": "Describe Command & Procedure",
         "menu.help.logo_workspace": "Editor LOGO Workspace",
