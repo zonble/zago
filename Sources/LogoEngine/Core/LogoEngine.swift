@@ -86,6 +86,13 @@ public final class LogoEngine: @unchecked Sendable {
         pluginRegistry.parseHeading(token) ?? LogoHeading(token)
     }
 
+    public func parseBoolean(_ token: String) -> Bool? {
+        let clean = token.lowercased()
+        if clean == "true" || clean == "1" || clean == "round" || clean == "rounded" { return true }
+        if clean == "false" || clean == "0" { return false }
+        return pluginRegistry.parseBoolean(token)
+    }
+
     public func isKeyword(_ token: String) -> Bool {
         guard let prim = parsePrimitive(token) else { return false }
         return Self.keywords.contains(prim)

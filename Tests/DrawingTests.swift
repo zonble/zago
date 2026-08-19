@@ -20,9 +20,7 @@ import Testing
         #expect(double == .double)
         #expect(double.tableCharacters.topLeft == "╔")
 
-        let round = BorderStyle.from("round")
-        #expect(round == .round)
-        #expect(round.tableCharacters.topLeft == "╭")
+        #expect(single.tableCharacters(rounded: true).topLeft == "╭")
 
         let ascii = BorderStyle.from("ascii")
         #expect(ascii == .ascii)
@@ -105,12 +103,18 @@ import Testing
         #expect(stemmedBuffer.lineString(at: 1) == "│")
         #expect(stemmedBuffer.lineString(at: 2) == "↓")
 
-        // ASCII Mode forces ASCII arrow regardless of ArrowStyle setting
+        // ASCII line can use solid Unicode arrow or default ASCII arrow
         let asciiBuffer = StringArrayDrawingBuffer()
         drawer.drawLine(
             buffer: asciiBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .ascii,
-            arrowStyle: .solid)
+            arrowStyle: .ascii)
         #expect(asciiBuffer.lineString(at: 0) == "--->")
+
+        let asciiSolidBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: asciiSolidBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .ascii,
+            arrowStyle: .solid)
+        #expect(asciiSolidBuffer.lineString(at: 0) == "---▶")
     }
 
     @Test func testDashedLineCharacters() {

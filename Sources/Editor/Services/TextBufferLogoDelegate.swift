@@ -65,8 +65,8 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
         case .outdentLines(let levels):
             outdentSelectedOrCurrentLines(levels: levels)
 
-        case .createTable(let rows, let cols, let cellWidth):
-            createTable(rows: rows, cols: cols, cellWidth: cellWidth)
+        case .createTable(let rows, let cols, let cellWidth, let borderStyle, let rounded):
+            createTable(rows: rows, cols: cols, cellWidth: cellWidth, borderStyle: borderStyle, rounded: rounded)
 
         case .setBorderStyle(let style):
             if let s = BorderStyle(style) {
@@ -325,7 +325,13 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
         buffer.clampCursor()
     }
 
-    private func createTable(rows: Int, cols: Int, cellWidth requestedCellWidth: Int?) {
+    private func createTable(
+        rows: Int,
+        cols: Int,
+        cellWidth requestedCellWidth: Int?,
+        borderStyle: BorderStyle? = nil,
+        rounded: Bool? = nil
+    ) {
         let rowCount = max(TableLimits.minRows, min(rows, TableLimits.maxRows))
         let colCount = max(TableLimits.minCols, min(cols, TableLimits.maxCols))
         let cellWidth = max(
@@ -333,7 +339,9 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
             min(requestedCellWidth ?? TableLimits.defaultCellWidth, TableLimits.maxCellWidth)
         )
 
-        let chars = defaultBorderStyle.tableCharacters
+        let style = borderStyle ?? defaultBorderStyle
+        let isRound = rounded ?? false
+        let chars = style.tableCharacters(rounded: isRound)
         let h = String(repeating: chars.horizontal, count: cellWidth)
         let content = String(repeating: " ", count: cellWidth)
         var tableLines: [String] = []

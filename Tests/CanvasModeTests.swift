@@ -148,6 +148,7 @@ import TextMetrics
 @Test func testCanvasModeCtrlShiftArrowDrawsArrows() throws {
     let editor = Editor()
     editor.defaultBorderStyle = .ascii
+    editor.defaultArrowStyle = .ascii
     editor.switchToCanvasMode()
 
     editor.processKey(.ctrlShiftArrowRight)

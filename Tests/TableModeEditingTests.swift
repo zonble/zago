@@ -99,16 +99,7 @@ import TextMetrics
     #expect(editor.defaultBorderStyle == .double)
 
     editor.processKey(.alt("s"))
-    #expect(editor.defaultBorderStyle == .round)
-
-    editor.processKey(.alt("s"))
-    #expect(editor.defaultBorderStyle == .doubleRound)
-
-    editor.processKey(.alt("s"))
     #expect(editor.defaultBorderStyle == .ascii)
-
-    editor.processKey(.alt("s"))
-    #expect(editor.defaultBorderStyle == .asciiRound)
 
     editor.processKey(.alt("s"))
     #expect(editor.defaultBorderStyle == .tripleDash)

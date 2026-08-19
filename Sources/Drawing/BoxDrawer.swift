@@ -17,14 +17,12 @@ public struct BoxDrawer: Sendable {
         guard width >= 2 && height >= 2 else { return }
 
         let borderStyle: BorderStyle
-        if style.topChar == "=" {
+        if style.topChar == "=" || style.topChar == "═" {
             borderStyle = .double
-        } else if style.topLeft == "+" {
+        } else if style.topChar == "━" {
+            borderStyle = .heavy
+        } else if style.topLeft == "+" || style.topLeft == "/" || style.topChar == "-" {
             borderStyle = .ascii
-        } else if style.topLeft == "/" {
-            borderStyle = .asciiRound
-        } else if style.topLeft == "╭" {
-            borderStyle = style.topChar == "=" ? .doubleRound : .round
         } else if let dashedStyle = BorderStyle.allCases.first(where: {
             $0.isDashed && $0.horizontalLineCharacter == style.topChar
         }) {

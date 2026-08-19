@@ -65,18 +65,9 @@ struct CycleBorderStyleCommand: Command {
             editor.defaultBorderStyle = .double
             message = editor.l10n.defaultBorder("Double Unicode (╔═║)")
         case .double:
-            editor.defaultBorderStyle = .round
-            message = editor.l10n.defaultBorder("Round Unicode (╭─│)")
-        case .round:
-            editor.defaultBorderStyle = .doubleRound
-            message = editor.l10n.defaultBorder("Double Round Unicode (╭═║)")
-        case .doubleRound:
             editor.defaultBorderStyle = .ascii
             message = editor.l10n.defaultBorder("ASCII (+-|)")
         case .ascii:
-            editor.defaultBorderStyle = .asciiRound
-            message = editor.l10n.defaultBorder("ASCII Rounded (/-\\|)")
-        case .asciiRound:
             editor.defaultBorderStyle = .tripleDash
             message = editor.l10n.defaultBorder("Triple Dash (┌┄┆)")
         case .tripleDash:

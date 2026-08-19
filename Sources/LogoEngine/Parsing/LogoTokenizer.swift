@@ -1,4 +1,5 @@
 import Foundation
+import Drawing
 
 public struct LogoToken: Equatable, Sendable {
     public let text: String
@@ -153,6 +154,9 @@ public enum LogoTokenizer {
             {
                 current.append(character)
                 index = script.index(after: index)
+            } else if current.isEmpty, let dslToken = extractStyleDSLToken(from: script, startingAt: index) {
+                tokens.append(dslToken.text)
+                index = dslToken.endIndex
             } else if delimiters.contains(character) {
                 flush()
                 tokens.append(String(character))
@@ -169,9 +173,26 @@ public enum LogoTokenizer {
         return tokenizeInfixOperators(tokens)
     }
 
+    private static func extractStyleDSLToken(from script: String, startingAt index: String.Index) -> (text: String, endIndex: String.Index)? {
+        var peek = index
+        while peek < script.endIndex {
+            let ch = script[peek]
+            if ch.isWhitespace || ch == "[" || ch == "]" || ch == "{" || ch == "}" || ch == "(" || ch == ";" {
+                break
+            }
+            peek = script.index(after: peek)
+        }
+        let candidate = String(script[index..<peek])
+        guard candidate.count > 1 else { return nil }
+        if StyleDSL.parseBoxStyle(candidate) != nil || StyleDSL.parseLineStyle(candidate) != nil {
+            return (candidate, peek)
+        }
+        return nil
+    }
+
     static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
         rawTokens.flatMap { word in
-            guard !(word.hasPrefix("\"") || word.hasPrefix("|"))
+            guard !(word.hasPrefix("\"") || word.hasPrefix("|") || StyleDSL.parseLineStyle(word) != nil || StyleDSL.parseBoxStyle(word) != nil)
             else { return [word] }
             var parts: [String] = []
             var current = ""

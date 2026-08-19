@@ -20,15 +20,14 @@ import Testing
 
     // 1. Drawing / ArrowStyle
     @Test func testArrowStyleParsingAndMethods() {
+        #expect(ArrowStyle("ascii") == .ascii)
         #expect(ArrowStyle("solid") == .solid)
-        #expect(ArrowStyle("fill") == .solid)
         #expect(ArrowStyle("stemmed") == .stemmed)
-        #expect(ArrowStyle("line") == .stemmed)
         #expect(ArrowStyle("hollow") == .hollow)
         #expect(ArrowStyle("small") == .small)
         #expect(ArrowStyle("unknown") == nil)
 
-        #expect(ArrowStyle.from("outline") == .hollow)
+        #expect(ArrowStyle.from("hollow") == .hollow)
         #expect(ArrowStyle.from("invalid") == .solid)
         #expect(ArrowStyle.isStyleToken("small") == true)
         #expect(ArrowStyle.isStyleToken("bogus") == false)

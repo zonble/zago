@@ -153,13 +153,19 @@ public final class TableCellDetector: Sendable {
         let chars = Array(lines[topLine])
         guard leftCol < chars.count else { return .single }
         let ch = chars[leftCol]
-        if ch == "┏" {
+        if ch == "┏" || ch == "━" || ch == "┳" || ch == "┃" {
             return .heavy
-        } else if ch == "╭" {
-            return chars.contains("═") || chars.contains("╦") ? .doubleRound : .round
         } else if ch == "║" || ch == "═" || ch == "╔" || ch == "╦" {
             return .double
-        } else if ch == "+" {
+        } else if ch == "╭" {
+            if chars.contains("═") || chars.contains("╦") {
+                return .double
+            } else if chars.contains("━") || chars.contains("┳") || chars.contains("┃") {
+                return .heavy
+            } else {
+                return .single
+            }
+        } else if ch == "+" || ch == "/" || ch == "-" {
             return .ascii
         } else if let dashedStyle = BorderStyle.allCases.first(where: {
             $0.isDashed && chars.contains($0.horizontalLineCharacter)

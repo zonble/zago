@@ -29,7 +29,7 @@ public enum LogoEditorAction {
     case replaceText(old: String, new: String)
     case indentLines(levels: Int)
     case outdentLines(levels: Int)
-    case createTable(rows: Int, cols: Int, cellWidth: Int?)
+    case createTable(rows: Int, cols: Int, cellWidth: Int?, borderStyle: BorderStyle? = nil, rounded: Bool? = nil)
     case setBorderStyle(String)
     case setArrowStyle(String)
     case nextBorderStyle

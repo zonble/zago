@@ -64,6 +64,9 @@ public struct LogoPrimitiveMeta: Sendable, Equatable {
 extension LogoPrimitive {
     public var meta: LogoPrimitiveMeta {
         if let meta = statementMeta { return meta }
+        if let meta = controlMeta { return meta }
+        if let meta = drawingMeta { return meta }
+        if let meta = editMeta { return meta }
         if let meta = bufferMeta { return meta }
         if let meta = dataMeta { return meta }
         if let meta = stringMeta { return meta }
