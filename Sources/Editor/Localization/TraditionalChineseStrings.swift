@@ -719,6 +719,7 @@ struct TraditionalChineseStrings {
         "menu.tools": "工具(T)",
         "menu.diagrams": "圖表(D)",
         "menu.help": "說明(H)",
+        "menu.selection": "選擇範圍(N)",
 
         // Menu Bar Items
         "menu.file.new": "新建空白頁\t^N",

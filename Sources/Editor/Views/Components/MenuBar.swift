@@ -73,6 +73,16 @@ final class MenuBar {
                 isChecked: { $0.defaultBorderStyle == style })
         }
 
+        func arrowStyleItem(_ style: ArrowStyle, titleKey: String, hotkeyChar: Character) -> MenuItem {
+            MenuItem(
+                titleKey: titleKey,
+                hotkeyChar: hotkeyChar,
+                action: { editor in
+                    editor.defaultArrowStyle = style
+                },
+                isChecked: { $0.defaultArrowStyle == style })
+        }
+
         var baseCategories: [MenuCategory] = [
             MenuCategory(
                 titleKey: "menu.file", hotkeyChar: "f",
@@ -168,106 +178,8 @@ final class MenuBar {
                 ],
                 isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".logo") == true }),
             MenuCategory(
-                titleKey: "menu.shapes", hotkeyChar: "s",
+                titleKey: "menu.selection", hotkeyChar: "n",
                 items: [
-                    MenuItem(titleKey: "menu.shapes.box", hotkeyChar: "b", action: { $0.runLogoScript("BOX") }),
-                    MenuItem(
-                        titleKey: "menu.shapes.draw_box", hotkeyChar: "d", action: { $0.runLogoScript("DRAWBOX") }),
-                    MenuItem(titleKey: "menu.shapes.line", hotkeyChar: "l", action: { $0.runLogoScript("LINE") }),
-                    MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
-                    MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
-                    MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
-                    MenuItem(titleKey: "menu.shapes.symbols", hotkeyChar: "s", commandId: .symbolPicker),
-                ],
-                isVisible: { $0.buffer.allowsLogoExecution }),
-            MenuCategory(
-                titleKey: "menu.borders", hotkeyChar: "o",
-                items: [
-                    MenuItem(
-                        titleKey: "menu.borders.single", hotkeyChar: "s",
-                        action: { editor in
-                            editor.defaultBorderStyle = .single
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.single.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .single }),
-                    MenuItem(
-                        titleKey: "menu.borders.heavy", hotkeyChar: "h",
-                        action: { editor in
-                            editor.defaultBorderStyle = .heavy
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.heavy.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .heavy }),
-                    MenuItem(
-                        titleKey: "menu.borders.double", hotkeyChar: "d",
-                        action: { editor in
-                            editor.defaultBorderStyle = .double
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.double.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .double }),
-                    MenuItem(
-                        titleKey: "menu.borders.ascii", hotkeyChar: "a",
-                        action: { editor in
-                            editor.defaultBorderStyle = .ascii
-                            editor.reportOperationResult(
-                                .succeeded(message: editor.l10n.defaultBorder(BorderStyle.ascii.rawValue)))
-                        },
-                        isChecked: { $0.defaultBorderStyle == .ascii }),
-                    borderStyleItem(.tripleDash, titleKey: "menu.borders.triple_dash", hotkeyChar: "t"),
-                    borderStyleItem(.heavyTripleDash, titleKey: "menu.borders.heavy_triple", hotkeyChar: "g"),
-                    borderStyleItem(.quadrupleDash, titleKey: "menu.borders.quad_dash", hotkeyChar: "q"),
-                    borderStyleItem(.heavyQuadrupleDash, titleKey: "menu.borders.heavy_quad", hotkeyChar: "w"),
-                    borderStyleItem(.doubleDash, titleKey: "menu.borders.double_dash", hotkeyChar: "j"),
-                    borderStyleItem(.heavyDoubleDash, titleKey: "menu.borders.heavy_double", hotkeyChar: "k"),
-                    MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
-                    MenuItem(
-                        titleKey: "menu.borders.round", hotkeyChar: "r",
-                        action: { editor in
-                            editor.isBorderRounded.toggle()
-                        },
-                        isChecked: { $0.isBorderRounded }),
-                    MenuItem(
-                        titleKey: "menu.borders.arrow_solid", hotkeyChar: "1",
-                        action: { editor in
-                            editor.defaultArrowStyle = .solid
-                        },
-                        isChecked: { $0.defaultArrowStyle == .solid }),
-                    MenuItem(
-                        titleKey: "menu.borders.arrow_stemmed", hotkeyChar: "2",
-                        action: { editor in
-                            editor.defaultArrowStyle = .stemmed
-                        },
-                        isChecked: { $0.defaultArrowStyle == .stemmed }),
-                    MenuItem(
-                        titleKey: "menu.borders.arrow_hollow", hotkeyChar: "3",
-                        action: { editor in
-                            editor.defaultArrowStyle = .hollow
-                        },
-                        isChecked: { $0.defaultArrowStyle == .hollow }),
-                    MenuItem(
-                        titleKey: "menu.borders.arrow_small", hotkeyChar: "4",
-                        action: { editor in
-                            editor.defaultArrowStyle = .small
-                        },
-                        isChecked: { $0.defaultArrowStyle == .small }),
-                ]),
-            MenuCategory(
-                titleKey: "menu.tools", hotkeyChar: "t",
-                items: [
-                    MenuItem(
-                        titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo,
-                        isVisible: { $0.buffer.allowsLogoExecution }),
-                    MenuItem(
-                        titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
-                        isVisible: { $0.buffer.allowsLogoExecution }),
-                    MenuItem(
-                        titleKey: "menu.tools.word_count", hotkeyChar: "w",
-                        action: { editor in
-                            editor.showTextCounts()
-                        },
-                        isVisible: { !$0.buffer.isDirectoryBuffer }),
                     MenuItem(
                         titleKey: "menu.tools.transform_tohant", hotkeyChar: "h",
                         action: { editor in
@@ -311,6 +223,63 @@ final class MenuBar {
                                 id: "Zago-CJK-Spacing", label: editor.l10n["transform.cjk_spacing"])
                         },
                         isVisible: { $0.hasActiveTextSelection() }),
+                ],
+                isVisible: { $0.hasActiveTextSelection() }
+            ),
+            MenuCategory(
+                titleKey: "menu.shapes", hotkeyChar: "s",
+                items: [
+                    MenuItem(titleKey: "menu.shapes.box", hotkeyChar: "b", action: { $0.runLogoScript("BOX") }),
+                    MenuItem(
+                        titleKey: "menu.shapes.draw_box", hotkeyChar: "d", action: { $0.runLogoScript("DRAWBOX") }),
+                    MenuItem(titleKey: "menu.shapes.line", hotkeyChar: "l", action: { $0.runLogoScript("LINE") }),
+                    MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
+                    MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
+                    MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
+                    MenuItem(titleKey: "menu.shapes.symbols", hotkeyChar: "s", commandId: .symbolPicker),
+                ],
+                isVisible: { $0.buffer.allowsLogoExecution }),
+            MenuCategory(
+                titleKey: "menu.borders", hotkeyChar: "o",
+                items: [
+                    borderStyleItem(.single, titleKey: "menu.borders.single", hotkeyChar: "s"),
+                    borderStyleItem(.heavy, titleKey: "menu.borders.heavy", hotkeyChar: "h"),
+                    borderStyleItem(.double, titleKey: "menu.borders.double", hotkeyChar: "d"),
+                    borderStyleItem(.ascii, titleKey: "menu.borders.ascii", hotkeyChar: "a"),
+                    borderStyleItem(.doubleDash, titleKey: "menu.borders.double_dash", hotkeyChar: "j"),
+                    borderStyleItem(.heavyDoubleDash, titleKey: "menu.borders.heavy_double", hotkeyChar: "k"),
+                    borderStyleItem(.tripleDash, titleKey: "menu.borders.triple_dash", hotkeyChar: "t"),
+                    borderStyleItem(.heavyTripleDash, titleKey: "menu.borders.heavy_triple", hotkeyChar: "g"),
+                    borderStyleItem(.quadrupleDash, titleKey: "menu.borders.quad_dash", hotkeyChar: "q"),
+                    borderStyleItem(.heavyQuadrupleDash, titleKey: "menu.borders.heavy_quad", hotkeyChar: "w"),
+                    MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                    MenuItem(
+                        titleKey: "menu.borders.round", hotkeyChar: "r",
+                        action: { editor in
+                            editor.isBorderRounded.toggle()
+                        },
+                        isChecked: { $0.isBorderRounded }),
+                    arrowStyleItem(.solid, titleKey: "menu.borders.arrow_solid", hotkeyChar: "1"),
+                    arrowStyleItem(.stemmed, titleKey: "menu.borders.arrow_stemmed", hotkeyChar: "2"),
+                    arrowStyleItem(.hollow, titleKey: "menu.borders.arrow_hollow", hotkeyChar: "3"),
+                    arrowStyleItem(.small, titleKey: "menu.borders.arrow_small", hotkeyChar: "4"),
+                ]),
+            MenuCategory(
+                titleKey: "menu.tools", hotkeyChar: "t",
+                items: [
+                    MenuItem(
+                        titleKey: "menu.tools.logo", hotkeyChar: "l", commandId: .macroLogo,
+                        isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(
+                        titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
+                        isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(
+                        titleKey: "menu.tools.word_count", hotkeyChar: "w",
+                        action: { editor in
+                            editor.showTextCounts()
+                        },
+                        isVisible: { !$0.buffer.isDirectoryBuffer }),
+
                     MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in

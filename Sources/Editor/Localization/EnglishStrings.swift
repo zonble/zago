@@ -729,6 +729,7 @@ struct EnglishStrings {
         "menu.tools": "Tools",
         "menu.diagrams": "Diagrams",
         "menu.help": "Help",
+        "menu.selection": "Selection",
 
         // Menu Bar Items
         "menu.file.new": "New Buffer\t^N",
