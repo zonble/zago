@@ -25,6 +25,15 @@ public enum LogoMeasurementConverter {
         case dispersion
         case fuelEfficiency
         case informationStorage
+
+        public init?(unit: String) {
+            guard let kind = LogoMeasurementConverter.findDimension(for: unit) else { return nil }
+            self = kind
+        }
+
+        public static func parse(unit: String) -> DimensionKind? {
+            DimensionKind(unit: unit)
+        }
     }
 
     public static func convert(value: Double, from fromUnitStr: String, to toUnitStr: String, kind: DimensionKind)

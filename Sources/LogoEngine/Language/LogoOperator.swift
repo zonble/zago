@@ -21,8 +21,18 @@ enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     case greaterOrEqual = ">="
 
     /// Resolves an operator string to a strongly-typed LogoOperator enum.
+    init?(token: String) {
+        self.init(rawValue: token)
+    }
+
+    /// Resolves an operator string to a strongly-typed LogoOperator enum.
+    static func parse(_ token: String) -> LogoOperator? {
+        LogoOperator(token: token)
+    }
+
+    /// Resolves an operator string to a strongly-typed LogoOperator enum.
     static func from(_ token: String) -> LogoOperator? {
-        LogoOperator(rawValue: token)
+        LogoOperator(token: token)
     }
 
     static let tokens = Set(allCases.map(\.rawValue))

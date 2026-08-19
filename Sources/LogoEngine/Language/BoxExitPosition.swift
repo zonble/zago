@@ -1,5 +1,6 @@
 import Foundation
 
+/// Defines the cursor exit position after drawing a box in LogoEngine.
 public enum BoxExitPosition: String, Sendable, CaseIterable {
     case ne
     case se
@@ -17,5 +18,9 @@ public enum BoxExitPosition: String, Sendable, CaseIterable {
         case "down", "atdown", "bottom", "s", "south": self = .down
         default: return nil
         }
+    }
+
+    public static func parse(_ raw: String) -> BoxExitPosition? {
+        BoxExitPosition(raw)
     }
 }

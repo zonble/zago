@@ -62,7 +62,7 @@ public struct TextBoxRenderer: Sendable {
         text: String,
         targetWidth: Int?,
         targetHeight: Int?,
-        alignment: String,
+        alignment: BoxAlignment = .left,
         style: BoxStyle
     ) -> (rows: [String], width: Int, height: Int) {
         let rawLines = text.replacingOccurrences(of: "\\n", with: "\n").components(separatedBy: "\n")
@@ -90,11 +90,12 @@ public struct TextBoxRenderer: Sendable {
             let line = row - 1 < textLines.count ? textLines[row - 1] : ""
             let textWidth = line.displayWidth
             let offset: Int
-            if alignment == "center" || alignment == "centre" {
+            switch alignment {
+            case .center:
                 offset = max(0, (innerWidth - textWidth) / 2)
-            } else if alignment == "right" {
+            case .right:
                 offset = max(0, innerWidth - textWidth)
-            } else {
+            case .left:
                 offset = innerWidth > textWidth ? 1 : 0
             }
 

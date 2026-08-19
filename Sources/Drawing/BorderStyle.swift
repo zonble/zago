@@ -328,7 +328,7 @@ public struct BoxStyle: Sendable {
     }
 }
 
-public enum BoxAlignment: String, Sendable {
+public enum BoxAlignment: String, Sendable, CaseIterable {
     case left
     case center
     case right
@@ -344,5 +344,9 @@ public enum BoxAlignment: String, Sendable {
         default:
             return nil
         }
+    }
+
+    public static func parse(_ token: String) -> BoxAlignment? {
+        BoxAlignment(token)
     }
 }

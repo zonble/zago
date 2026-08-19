@@ -34,23 +34,22 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    static func parse(_ raw: String) -> LogoHeading? {
+    init?(raw: String) {
         let clean = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         let unquoted =
             clean.hasPrefix("\"")
             ? String(clean.dropFirst()) : (clean.hasPrefix(":") ? String(clean.dropFirst()) : clean)
         let stripped = unquoted.trimmingCharacters(in: CharacterSet(charactersIn: "\"|")).uppercased()
-        return switch stripped {
-        case "UP", "TOP":
-            .up
-        case "RIGHT":
-            .right
-        case "DOWN", "BOTTOM":
-            .down
-        case "LEFT":
-            .left
-        default:
-            nil
+        switch stripped {
+        case "UP", "TOP": self = .up
+        case "RIGHT": self = .right
+        case "DOWN", "BOTTOM": self = .down
+        case "LEFT": self = .left
+        default: return nil
         }
+    }
+
+    static func parse(_ raw: String) -> LogoHeading? {
+        LogoHeading(raw: raw)
     }
 }
