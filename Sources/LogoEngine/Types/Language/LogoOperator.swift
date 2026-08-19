@@ -1,7 +1,7 @@
 import Foundation
 
 /// Strongly-typed enum representing infix arithmetic and comparison operators in LOGO expressions.
-enum LogoOperator: String, CaseIterable, Equatable, Sendable {
+public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     // Arithmetic Operators
     case add = "+"
     case subtract = "-"
@@ -21,24 +21,30 @@ enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     case greaterOrEqual = ">="
 
     /// Resolves an operator string to a strongly-typed LogoOperator enum.
-    init?(token: String) {
+    public init?(token: String) {
         self.init(rawValue: token)
     }
 
-    /// Resolves an operator string to a strongly-typed LogoOperator enum.
-    static func parse(_ token: String) -> LogoOperator? {
-        LogoOperator(token: token)
+    /// Resolves an operator string to a strongly-typed LogoOperator enum, optionally checking a plugin registry.
+    public static func parse(_ token: String, registry: LogoPluginRegistry? = nil) -> LogoOperator? {
+        if let registry, let op = registry.parseOperator(token) {
+            return op
+        }
+        return LogoOperator(token: token)
     }
 
-    /// Resolves an operator string to a strongly-typed LogoOperator enum.
-    static func from(_ token: String) -> LogoOperator? {
-        LogoOperator(token: token)
+    /// Resolves an operator string to a strongly-typed LogoOperator enum, optionally checking a plugin registry.
+    public static func from(_ token: String, registry: LogoPluginRegistry? = nil) -> LogoOperator? {
+        if let registry, let op = registry.parseOperator(token) {
+            return op
+        }
+        return LogoOperator(token: token)
     }
 
-    static let tokens = Set(allCases.map(\.rawValue))
+    public static let tokens = Set(allCases.map(\.rawValue))
 
     /// Whether this operator is an arithmetic operator (+, -, *, /, %, ^).
-    var isArithmetic: Bool {
+    public var isArithmetic: Bool {
         switch self {
         case .add, .subtract, .multiply, .divide, .modulo, .power:
             return true
@@ -48,7 +54,7 @@ enum LogoOperator: String, CaseIterable, Equatable, Sendable {
     }
 
     /// Whether this operator is a comparison operator (==, =, !=, <>, <, <=, >, >=).
-    var isComparison: Bool {
+    public var isComparison: Bool {
         switch self {
         case .equal, .aliasEqual, .notEqual, .aliasNotEqual, .lessThan, .lessOrEqual, .greaterThan, .greaterOrEqual:
             return true
@@ -57,5 +63,5 @@ enum LogoOperator: String, CaseIterable, Equatable, Sendable {
         }
     }
 
-    var isSingleCharacter: Bool { rawValue.count == 1 }
+    public var isSingleCharacter: Bool { rawValue.count == 1 }
 }

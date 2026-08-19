@@ -7,7 +7,7 @@ private func mathOptionalArgumentBoundary(_ token: String) -> Bool {
 extension LogoEngine {
     /// Evaluates Numeric, Math, Bitwise, Logical, and Formatting Primitives.
     internal func evaluateMathPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .sum:

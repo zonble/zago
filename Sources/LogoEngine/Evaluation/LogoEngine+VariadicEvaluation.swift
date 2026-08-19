@@ -6,7 +6,7 @@ extension LogoEngine {
         guard index < tokens.count && tokens[index] == "(" else { return "" }
         index += 1
         var leftVal: String = ""
-        if index < tokens.count, LogoPrimitive.from(tokens[index]) == .ifElseCondition {
+        if index < tokens.count, parsePrimitive(tokens[index]) == .ifElseCondition {
                 index += 1
                 var condTokens: [String] = []
                 while index < tokens.count && tokens[index] != "[" {
@@ -29,7 +29,7 @@ extension LogoEngine {
                 var blockIndex = 0
                 leftVal = selectedBlock.isEmpty ? "" : evaluateExpression(selectedBlock, index: &blockIndex)
                 setLastExpressionString(leftVal)
-            } else if index < tokens.count, let variadicPrim = LogoPrimitive.from(tokens[index]),
+            } else if index < tokens.count, let variadicPrim = parsePrimitive(tokens[index]),
                 LogoEngine.isVariadicPrimitive(variadicPrim)
             {
                 let args = evaluateVariadicArguments(tokens, index: &index)

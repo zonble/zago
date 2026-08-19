@@ -14,7 +14,7 @@ extension LogoEngine {
 
         var idx = 0
         let leftValStr = evaluateExpression(tokensToEval, index: &idx)
-        let resBool = logoIsTrue(leftValStr)
+        let resBool = logoIsTrue(leftValStr, registry: pluginRegistry)
 
         if idx >= tokensToEval.count - 1 {
             return resBool
@@ -22,7 +22,7 @@ extension LogoEngine {
 
         if idx + 1 < tokensToEval.count {
             let opToken = tokensToEval[idx + 1]
-            if let op = LogoOperator.from(opToken), op.isComparison {
+            if let op = parseOperator(opToken), op.isComparison {
                 idx += 2
                 let rightValStr = evaluateExpression(tokensToEval, index: &idx)
 

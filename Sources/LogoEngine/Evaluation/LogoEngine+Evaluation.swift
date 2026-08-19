@@ -31,7 +31,7 @@ extension LogoEngine {
             if nextToken == ")" || nextToken == "]" {
                 break
             }
-            if let op = LogoOperator.from(nextToken) {
+            if let op = parseOperator(nextToken) {
                 if op.isArithmetic {
                     index += 2
                     guard index < tokens.count else { break }

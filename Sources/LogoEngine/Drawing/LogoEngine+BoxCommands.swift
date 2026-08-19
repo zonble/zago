@@ -61,8 +61,9 @@ extension LogoEngine {
                 let isQuoted = isQuotedWordToken(rawToken)
                 let unquotedRaw = unquote(rawToken)
                 let val: String
-                if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
-                    || BoxExitPosition(unquotedRaw) != nil
+                let resolvedRawStyle = pluginRegistry.resolveKeyword(unquotedRaw, domain: .borderStyle) ?? unquotedRaw
+                if BorderStyle.isStyleToken(resolvedRawStyle) || BoxAlignment(unquotedRaw) != nil
+                    || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
                 {
                     val = unquotedRaw
                 } else {
@@ -70,13 +71,14 @@ extension LogoEngine {
                 }
                 index = evalIndex
 
-                if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
+                let resolvedStyle = pluginRegistry.resolveKeyword(val, domain: .borderStyle) ?? val
+                if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
                     exitPos = parsedExit
                 } else if let parsedAlign = BoxAlignment(val) {
                     align = parsedAlign
                     hasExplicitAlign = true
-                } else if BorderStyle.isStyleToken(val) {
-                    styleName = val
+                } else if BorderStyle.isStyleToken(resolvedStyle) {
+                    styleName = resolvedStyle
                 } else if textContent == nil {
                     textContent = val
                 }
@@ -120,8 +122,9 @@ extension LogoEngine {
             let isQuoted = isQuotedWordToken(rawToken)
             let unquotedRaw = unquote(rawToken)
             let val: String
-            if BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
-                || BoxExitPosition(unquotedRaw) != nil
+            let resolvedRawStyle = pluginRegistry.resolveKeyword(unquotedRaw, domain: .borderStyle) ?? unquotedRaw
+            if BorderStyle.isStyleToken(resolvedRawStyle) || BoxAlignment(unquotedRaw) != nil
+                || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
             {
                 val = unquotedRaw
             } else {
@@ -129,12 +132,13 @@ extension LogoEngine {
             }
             index = evalIndex
 
-            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? BoxExitPosition(val) : nil {
+            let resolvedStyle = pluginRegistry.resolveKeyword(val, domain: .borderStyle) ?? val
+            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign
-            } else if BorderStyle.isStyleToken(val) {
-                styleName = val
+            } else if BorderStyle.isStyleToken(resolvedStyle) {
+                styleName = resolvedStyle
             }
         }
 
@@ -145,7 +149,7 @@ extension LogoEngine {
 
     private func isExpressionPrimitiveToken(_ token: String) -> Bool {
         let clean = token.uppercased()
-        if let prim = LogoPrimitive.from(clean), LogoEngine.expressionPrimitives.contains(prim) {
+        if let prim = parsePrimitive(clean), LogoEngine.expressionPrimitives.contains(prim) {
             return true
         }
         return false
@@ -161,28 +165,33 @@ extension LogoEngine {
 
         return parseIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
-            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-                || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
-                || BoxExitPosition(unquoted) != nil
+            let resolvedStyle = self.pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) ?? unquoted
+            return self.isStatementCommand(token) || token == "]" || token == ")"
+                || BorderStyle.isStyleToken(resolvedStyle) || BoxAlignment(unquoted) != nil
+                || self.pluginRegistry.parseExitPosition(unquoted) != nil || BoxExitPosition(unquoted) != nil
         }
     }
 
     private func consumeNextBoxDimensionArgument(_ tokens: [String], index: inout Int) -> Int? {
         consumeNextIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
-            return LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
-                || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
-                || BoxExitPosition(unquoted) != nil
+            let resolvedStyle = self.pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) ?? unquoted
+            return self.isStatementCommand(token) || token == "]" || token == ")"
+                || BorderStyle.isStyleToken(resolvedStyle) || BoxAlignment(unquoted) != nil
+                || self.pluginRegistry.parseExitPosition(unquoted) != nil || BoxExitPosition(unquoted) != nil
         }
     }
 
     private func shouldStopBoxArgumentScan(at token: String) -> Bool {
         if token == "]" || token == ")" { return true }
         let unquoted = unquote(token)
-        if BoxAlignment(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || BoxExitPosition(unquoted) != nil {
+        let resolvedStyle = pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) ?? unquoted
+        if BoxAlignment(unquoted) != nil || BorderStyle.isStyleToken(resolvedStyle)
+            || pluginRegistry.parseExitPosition(unquoted) != nil || BoxExitPosition(unquoted) != nil
+        {
             return false
         }
-        return LogoEngine.isStatementCommand(token)
+        return isStatementCommand(token)
     }
 
     private func drawBoxFrame(

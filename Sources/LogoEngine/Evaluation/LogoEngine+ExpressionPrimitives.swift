@@ -30,7 +30,7 @@ extension LogoEngine {
     ///   - index: Current token index pointer (inout).
     /// - Returns: Evaluated string result if handled, `nil` otherwise.
     internal func evaluateExpressionPrimitive(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let primitive = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let primitive = parsePrimitive(tokens[index]) else { return nil }
 
         let result =
             evaluateDataStructurePrimitives(tokens, index: &index)

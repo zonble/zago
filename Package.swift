@@ -23,6 +23,7 @@ let package = Package(
         .library(name: "ANSIStyle", targets: ["ANSIStyle"]),
         .library(name: "Editor", targets: ["Editor"]),
         .library(name: "FileWatcher", targets: ["FileWatcher"]),
+        .library(name: "LogoLocalization", targets: ["LogoLocalization"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
@@ -59,6 +60,10 @@ let package = Package(
             dependencies: ["Drawing", "TextMetrics", "TextTransform"]
         ),
         .target(
+            name: "LogoLocalization",
+            dependencies: ["LogoEngine"]
+        ),
+        .target(
             name: "TextTransform"
         ),
         .target(
@@ -82,7 +87,7 @@ let package = Package(
         .target(
             name: "Editor",
             dependencies: [
-                "ANSIStyle", "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "SpellChecker",
+                "ANSIStyle", "Config", "Diagram", "DocumentOutline", "Drawing", "Git", "LogoEngine", "LogoLocalization", "SpellChecker",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
             ]
         ),
@@ -97,6 +102,7 @@ let package = Package(
                 "Git",
                 "IPCServer",
                 "LogoEngine",
+                "LogoLocalization",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
@@ -104,7 +110,7 @@ let package = Package(
             name: "zagoTests",
             dependencies: [
                 "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
-                "SpellChecker",
+                "LogoLocalization", "SpellChecker",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],
             path: "Tests"

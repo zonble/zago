@@ -9,7 +9,7 @@ extension LogoEngine {
     ///
     /// Evaluates Data Detectors, UUID generation, Base64/Hex/URL encoding, and Hashes.
     internal func evaluateCodecAndDetectorPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:

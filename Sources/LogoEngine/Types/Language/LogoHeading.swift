@@ -1,13 +1,13 @@
 import Foundation
 
 /// Strongly-typed 4-directional heading for the LOGO turtle in the character grid.
-enum LogoHeading: String, Sendable, CaseIterable, Equatable {
+public enum LogoHeading: String, Sendable, CaseIterable, Equatable {
     case up = "UP"
     case right = "RIGHT"
     case down = "DOWN"
     case left = "LEFT"
 
-    var turnedRight: LogoHeading {
+    public var turnedRight: LogoHeading {
         switch self {
         case .up: .right
         case .right: .down
@@ -16,7 +16,7 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    var turnedLeft: LogoHeading {
+    public var turnedLeft: LogoHeading {
         switch self {
         case .up: .left
         case .left: .down
@@ -25,7 +25,7 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    var opposite: LogoHeading {
+    public var opposite: LogoHeading {
         switch self {
         case .up: .down
         case .right: .left
@@ -34,7 +34,11 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    init?(raw: String) {
+    public init?(raw: String) {
+        self.init(raw)
+    }
+
+    public init?(_ raw: String) {
         let clean = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         let unquoted =
             clean.hasPrefix("\"")
@@ -49,7 +53,10 @@ enum LogoHeading: String, Sendable, CaseIterable, Equatable {
         }
     }
 
-    static func parse(_ raw: String) -> LogoHeading? {
-        LogoHeading(raw: raw)
+    public static func parse(_ raw: String, registry: LogoPluginRegistry? = nil) -> LogoHeading? {
+        if let registry, let heading = registry.parseHeading(raw) {
+            return heading
+        }
+        return LogoHeading(raw)
     }
 }

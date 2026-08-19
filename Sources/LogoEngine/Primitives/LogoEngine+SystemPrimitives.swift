@@ -10,7 +10,7 @@ extension LogoEngine {
     ///
     /// Evaluates system state, character operations, text analysis/transformation, and console input primitives.
     internal func evaluateSystemPrimitives(_ tokens: [String], index: inout Int) -> String? {
-        guard index < tokens.count, let prim = LogoPrimitive.from(tokens[index]) else { return nil }
+        guard index < tokens.count, let prim = parsePrimitive(tokens[index]) else { return nil }
 
         switch prim {
         case .count:

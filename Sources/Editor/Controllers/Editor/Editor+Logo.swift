@@ -549,7 +549,7 @@ extension Editor {
         in tokens: [String], visitedProcedures: Set<String>
     ) -> String? {
         for token in tokens {
-            if let primitive = LogoPrimitive.from(token),
+            if let primitive = logoEngine.parsePrimitive(token),
                 Self.tableModeBlockedLogoPrimitives.contains(primitive)
             {
                 return token.uppercased()
@@ -625,7 +625,9 @@ extension Editor {
     }
 
     private func isPotentialLogoScript(_ firstToken: String) -> Bool {
-        if LogoPrimitive.from(firstToken) != nil || logoEngine.customProcedures[firstToken.uppercased()] != nil {
+        if logoEngine.parsePrimitive(firstToken) != nil || logoEngine.parseOperator(firstToken) != nil
+            || logoEngine.customProcedures[firstToken.uppercased()] != nil
+        {
             return true
         }
         if firstToken == "(" || firstToken == "[" || firstToken.hasPrefix(":") || firstToken.hasPrefix("?") {

@@ -24,29 +24,37 @@ public struct LogoProcedure: Sendable {
 
     /// Returns true if this procedure is a Reporter (returns a value via `OUTPUT`/`OP`/`RETURN`
     /// or consists of a single evaluated expression).
-    public var isReporter: Bool {
+    public func isReporter(registry: LogoPluginRegistry? = nil) -> Bool {
         let bodyTexts = bodyTokens.map(\.text)
         guard !bodyTexts.isEmpty else { return false }
         for t in bodyTexts {
-            if let prim = LogoPrimitive.from(t), prim == .output {
+            if let prim = LogoPrimitive.from(t, registry: registry), prim == .output {
                 return true
             }
         }
-        return isSingleExpression
+        return isSingleExpression(registry: registry)
+    }
+
+    public var isReporter: Bool {
+        isReporter(registry: nil)
     }
 
     /// Returns true if the procedure body does not contain statement commands (like MAKE, FORWARD, BOX, etc.),
     /// enabling implicit return of its single evaluated expression.
-    var isSingleExpression: Bool {
+    public func isSingleExpression(registry: LogoPluginRegistry? = nil) -> Bool {
         let bodyTexts = bodyTokens.map(\.text)
         guard !bodyTexts.isEmpty else { return false }
         for t in bodyTexts {
-            if let prim = LogoPrimitive.from(t) {
+            if let prim = LogoPrimitive.from(t, registry: registry) {
                 if LogoPrimitive.statementCommands.contains(prim) && prim != .output && prim != .stop {
                     return false
                 }
             }
         }
         return true
+    }
+
+    var isSingleExpression: Bool {
+        isSingleExpression(registry: nil)
     }
 }
