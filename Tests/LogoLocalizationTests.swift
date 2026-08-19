@@ -153,6 +153,37 @@ struct LogoLocalizationTests {
     }
 
     @Test
+    func testChineseTextTransformsAndDetectors() {
+        let engine = makeEngine()
+        engine.execute("""
+        設定 "spaced CJK空格 "Hello世界
+        設定 "hant 轉繁體 "简体中文
+        設定 "base64 編碼64 "hello
+        設定 "sha SHA256 "test
+        """)
+        #expect(engine.variables["spaced"] == "Hello 世界")
+        #expect(engine.variables["hant"] == "簡體中文")
+        #expect(engine.variables["base64"] == "aGVsbG8=")
+        #expect(engine.variables["sha"] != nil)
+    }
+
+    @Test
+    func testChineseHigherOrderAndDataStructures() {
+        let engine = makeEngine()
+        engine.execute("""
+        設定 "nums [ 1 2 3 4 ]
+        設定 "firstNum 第一個 :nums
+        設定 "rest 除了第一個 :nums
+        設定 "reversed 反轉 :nums
+        設定 "isLst 清單? :nums
+        """)
+        #expect(engine.variables["firstnum"] == "1")
+        #expect(engine.variables["rest"] == "[2 3 4]")
+        #expect(engine.variables["reversed"] == "[4 3 2 1]")
+        #expect(engine.variables["islst"] == "true")
+    }
+
+    @Test
     func testCustomProcedureInChinese() {
         let engine = makeEngine()
         engine.execute("""
