@@ -949,7 +949,6 @@ struct ConfigAndToolsTests {
         #expect(zhRef.contains("LINE 15 \"->\""))
         #expect(zhRef.contains("VLINE 6 \"++|>\""))
 
-        let editor = Editor()
         let cmd = StyleDSLReferenceCommand()
         #expect(cmd.id == .styleDSLReference)
         #expect(cmd.commandBarAliases.contains("styledsl"))
