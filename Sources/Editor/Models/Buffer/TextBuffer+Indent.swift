@@ -1,12 +1,9 @@
 import Foundation
 
-// MARK: - Editor Smart Tab, Indent & Outdent Extension
-
-extension Editor {
-    /// Detects whether line at index is a markup list item (Markdown, Org-Mode, reST, AsciiDoc).
-    func isListItemLine(at lineIndex: Int) -> Bool {
-        guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return false }
-        let trimmed = buffer.lines[lineIndex].trimmingCharacters(in: .whitespaces)
+extension String {
+    /// Detects whether line is a markup list item (Markdown, Org-Mode, reST, AsciiDoc).
+    public var isMarkupListItem: Bool {
+        let trimmed = trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty { return false }
 
         // Markdown / Org / reST / AsciiDoc list prefixes:
@@ -24,29 +21,37 @@ extension Editor {
         }
         return false
     }
+}
+
+extension TextBuffer {
+    /// Detects whether line at index is a markup list item (Markdown, Org-Mode, reST, AsciiDoc).
+    public func isListItemLine(at lineIndex: Int) -> Bool {
+        guard lineIndex >= 0 && lineIndex < lines.count else { return false }
+        return lines[lineIndex].isMarkupListItem
+    }
 
     /// Indents the currently selected text block by injecting spaces at line starts.
-    func indentSelectedBlock(spaces: Int) {
-        guard let mark = buffer.selectionMark else { return }
+    public func indentSelectedBlock(spaces: Int) {
+        guard let mark = selectionMark else { return }
         let (start, end) = TextBuffer.getOrderedRange(
-            mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            mark1: mark, mark2: (line: lineIndex, column: columnIndex))
         let startLine = start.line
         let endLine = end.line
 
         for lineIdx in startLine...endLine {
             let padding = String(repeating: " ", count: spaces)
-            buffer.lines[lineIdx] = padding + buffer.lines[lineIdx]
+            lines[lineIdx] = padding + lines[lineIdx]
         }
 
-        buffer.selectionMark = (line: mark.line, column: mark.column + spaces)
-        buffer.columnIndex += spaces
+        selectionMark = (line: mark.line, column: mark.column + spaces)
+        columnIndex += spaces
     }
 
     /// Outdents the currently selected text block by removing up to `spaces` leading spaces from line starts.
-    func outdentSelectedBlock(spaces: Int) {
-        guard let mark = buffer.selectionMark else { return }
+    public func outdentSelectedBlock(spaces: Int) {
+        guard let mark = selectionMark else { return }
         let (start, end) = TextBuffer.getOrderedRange(
-            mark1: mark, mark2: (line: buffer.lineIndex, column: buffer.columnIndex))
+            mark1: mark, mark2: (line: lineIndex, column: columnIndex))
         let startLine = start.line
         let endLine = end.line
 
@@ -54,47 +59,47 @@ extension Editor {
         var endLineRemoved = 0
 
         for lineIdx in startLine...endLine {
-            let line = buffer.lines[lineIdx]
+            let line = lines[lineIdx]
             var removed = 0
             while removed < spaces && line.hasPrefix(String(repeating: " ", count: removed + 1)) {
                 removed += 1
             }
             if removed > 0 {
-                buffer.lines[lineIdx] = String(line.dropFirst(removed))
+                lines[lineIdx] = String(line.dropFirst(removed))
             }
             if lineIdx == startLine { startLineRemoved = removed }
             if lineIdx == endLine { endLineRemoved = removed }
         }
 
         let removedMark = (mark.line == startLine) ? startLineRemoved : endLineRemoved
-        buffer.selectionMark = (line: mark.line, column: max(0, mark.column - removedMark))
+        selectionMark = (line: mark.line, column: max(0, mark.column - removedMark))
 
-        let currentLineRemoved = (buffer.lineIndex == startLine) ? startLineRemoved : endLineRemoved
-        buffer.columnIndex = max(0, buffer.columnIndex - currentLineRemoved)
+        let currentLineRemoved = (lineIndex == startLine) ? startLineRemoved : endLineRemoved
+        columnIndex = max(0, columnIndex - currentLineRemoved)
     }
 
     /// Indents the line at lineIndex at the very beginning of the line.
-    func indentLine(at lineIndex: Int, spaces: Int) {
-        guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
+    public func indentLine(at lineIndex: Int, spaces: Int) {
+        guard lineIndex >= 0 && lineIndex < lines.count else { return }
         let padding = String(repeating: " ", count: spaces)
-        buffer.lines[lineIndex] = padding + buffer.lines[lineIndex]
-        if buffer.lineIndex == lineIndex {
-            buffer.columnIndex += spaces
+        lines[lineIndex] = padding + lines[lineIndex]
+        if self.lineIndex == lineIndex {
+            columnIndex += spaces
         }
     }
 
     /// Outdents the line at lineIndex by removing up to `spaces` leading spaces from line start.
-    func outdentLine(at lineIndex: Int, spaces: Int) {
-        guard lineIndex >= 0 && lineIndex < buffer.lines.count else { return }
-        let line = buffer.lines[lineIndex]
+    public func outdentLine(at lineIndex: Int, spaces: Int) {
+        guard lineIndex >= 0 && lineIndex < lines.count else { return }
+        let line = lines[lineIndex]
         var removed = 0
         while removed < spaces && line.hasPrefix(String(repeating: " ", count: removed + 1)) {
             removed += 1
         }
         if removed > 0 {
-            buffer.lines[lineIndex] = String(line.dropFirst(removed))
-            if buffer.lineIndex == lineIndex {
-                buffer.columnIndex = max(0, buffer.columnIndex - removed)
+            lines[lineIndex] = String(line.dropFirst(removed))
+            if self.lineIndex == lineIndex {
+                columnIndex = max(0, columnIndex - removed)
             }
         }
     }
