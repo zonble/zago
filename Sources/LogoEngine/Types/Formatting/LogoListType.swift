@@ -1,7 +1,7 @@
 import Foundation
 
 /// Supported list join types for LogoEngine list formatting.
-public enum LogoListType: Sendable, Equatable {
+public enum LogoListType: String, CaseIterable, Sendable, Equatable {
     case and
     case or
     case unit

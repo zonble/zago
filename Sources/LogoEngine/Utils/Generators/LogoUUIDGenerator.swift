@@ -2,6 +2,7 @@ import Foundation
 
 /// Fast, RFC-compliant UUID generation, validation, and metadata extraction for LOGO Engine.
 public enum LogoUUIDGenerator {
+    public static let allowedFlavors: [String] = ["v4", "v7", "nil", "short", "nano"]
     /// Generates a UUID string according to the requested flavor/version.
     /// - Parameters:
     ///   - flavor: `"v4"`, `"random"`, `"v7"`, `"time"`, `"nil"`, `"empty"`, `"short"`, `"nano"`. Defaults to `"v4"`.

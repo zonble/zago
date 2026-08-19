@@ -137,7 +137,7 @@ The current border styles are:
 | `ascii` | `+--+` |
 | `ascii-round` | `/--\\` |
 
-Heavy is supported by `BOX`, `TABLE BORDER heavy`, `LINE heavy`, `VLINE heavy`,
+Heavy is supported by `BOX`, `TABLE 3 3 10 "heavy"`, `LINE heavy`, `VLINE heavy`,
 Canvas junction fusion, and table-cell detection.
 
 ## 5. MCP Mapping

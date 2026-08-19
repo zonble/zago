@@ -3,10 +3,7 @@ import Drawing
 
 private let borderStyleAllowedValues = BorderStyle.allCases.map(\.rawValue)
 private let arrowStyleAllowedValues = ArrowStyle.allCases.map(\.rawValue)
-private let arrowDirectionAllowedValues = [
-    "arrow", "backarrow", "botharrow", "rightarrow", "leftarrow", "downarrow", "uparrow",
-    "both", "bidir",
-]
+private let arrowDirectionAllowedValues = LineArrowMode.allKeywords.map { $0.lowercased() }
 
 private func boxParameters(for commandName: String) -> [LogoPrimitiveParameter] {
     [
@@ -122,7 +119,7 @@ extension LogoPrimitive {
         case .table:
             LogoPrimitiveMeta(
                 name: "TABLE",
-                description: "Creates a Unicode/ASCII table grid or changes table border style.",
+                description: "Creates a Unicode/ASCII table grid at current cursor position.",
                 localizedDescriptionKey: "logo.doc.table",
                 source: .zago,
                 parameters: [
@@ -135,18 +132,19 @@ extension LogoPrimitive {
                         name: "cellwidth", required: false, description: "The cellwidth argument. Used by TABLE.",
                         example: "3"),
                     LogoPrimitiveParameter(
-                        name: "mode", required: false, description: "The operating mode. Used by TABLE.",
-                        example: "BORDER", allowedValues: ["BORDER", "NEXTSTYLE"]),
-                    LogoPrimitiveParameter(
-                        name: "borderStyle", required: false, description: "The borderStyle argument. Used by TABLE.",
+                        name: "style", required: false, description: "The formatting or border style. Used by TABLE.",
                         example: "single",
                         allowedValues: borderStyleAllowedValues),
+                    LogoPrimitiveParameter(
+                        name: "rounded", required: false,
+                        description: "Whether table corners are rounded. Used by TABLE.",
+                        example: "true",
+                        allowedValues: ["true", "false"]),
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "TABLE"),
                     LogoPrimitiveExample(input: "TABLE 3 4 12"),
-                    LogoPrimitiveExample(input: "TABLE BORDER \"double"),
-                    LogoPrimitiveExample(input: "TABLE NEXTSTYLE"),
+                    LogoPrimitiveExample(input: "TABLE 3 3 10 \"double"),
                 ]
             )
 

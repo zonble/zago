@@ -636,7 +636,7 @@ import TextMetrics
 @Test func testTableAndFillEvaluateTemplateAndVariableArguments() throws {
     let editor1 = Editor()
     let logoEngine1 = LogoEngine(delegate: editor1)
-    logoEngine1.execute("MAKE \"st\" \"double\" TABLE BORDER :st TABLE 3 3")
+    logoEngine1.execute("MAKE \"st\" \"double\" TABLE 3 3 3 :st")
     #expect(editor1.buffer.lines[0].contains("╔"))
 
     let editor2 = Editor()

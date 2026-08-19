@@ -114,6 +114,10 @@ extension TimeZone {
 }
 
 extension Calendar.Component {
+    public static let supportedLogoUnitNames: [String] = [
+        "days", "weeks", "months", "years", "hours", "minutes", "seconds"
+    ]
+
     public init(_ rawUnit: String) {
         let cleanUnit = rawUnit.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
         switch cleanUnit {
@@ -130,6 +134,10 @@ extension Calendar.Component {
 }
 
 extension Calendar.Identifier {
+    public static let supportedLogoCalendarNames: [String] = [
+        "gregorian", "japanese", "buddhist", "roc", "islamic", "hebrew", "chinese"
+    ]
+
     public init?(logoCalendarName: String?) {
         guard let raw = logoCalendarName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !raw.isEmpty else {
             return nil

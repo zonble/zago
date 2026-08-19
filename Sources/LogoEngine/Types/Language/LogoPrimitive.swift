@@ -289,7 +289,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case hashSha256
     case hashSha1
     case hashMd5
-    case search
     case sort
     case sortLocalized
     case fill
@@ -613,7 +612,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["HASH.SHA256", "SHA256"], .hashSha256),
         (["HASH.SHA1", "SHA1"], .hashSha1),
         (["HASH.MD5", "MD5"], .hashMd5),
-        (["SEARCH"], .search),
     ]
 
     private static let primitiveMap: [String: LogoPrimitive] = {
@@ -669,7 +667,7 @@ extension LogoPrimitive {
         .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag,
-        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .search, .fill, .end, .mdsetItem,
+        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .fill, .end, .mdsetItem,
         .setFirst, .setBFL, .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
 

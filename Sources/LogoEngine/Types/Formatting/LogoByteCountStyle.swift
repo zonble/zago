@@ -1,7 +1,7 @@
 import Foundation
 
 /// Supported byte count styles for LogoEngine byte count formatting.
-public enum LogoByteCountStyle: Sendable, Equatable {
+public enum LogoByteCountStyle: String, CaseIterable, Sendable, Equatable {
     case file
     case memory
     case binary

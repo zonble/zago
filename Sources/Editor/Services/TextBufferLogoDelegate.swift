@@ -88,9 +88,6 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
              .editMark, .editCut, .editUncut, .editJustify:
             hooks.onDispatchCommand?(action)
 
-        case .search(let query):
-            hooks.onSearch?(query)
-
         case .markModified:
             buffer.isModified = true
 

@@ -46,6 +46,11 @@ struct StyleDSLTests {
         #expect(StyleDSL.parseBoxStyle("++++")?.border == .heavyQuadrupleDash)
         #expect(StyleDSL.parseBoxStyle("++++)")?.border == .heavyQuadrupleDash)
         #expect(StyleDSL.parseBoxStyle("++++)")?.rounded == true)
+
+        // Invalid box DSLs
+        #expect(StyleDSL.parseBoxStyle("") == nil)
+        #expect(StyleDSL.parseBoxStyle("xyz") == nil)
+        #expect(StyleDSL.parseBoxStyle("---x") == nil)
     }
 
     @Test
@@ -68,17 +73,28 @@ struct StyleDSLTests {
         #expect(bothArrow?.border == .single)
         #expect(bothArrow?.arrowMode == .both)
 
-        let complexLine = StyleDSL.parseLineStyle("<~+|>")
-        #expect(complexLine?.border == .heavy)
-        #expect(complexLine?.arrowMode == .both)
-        #expect(complexLine?.startArrowStyle == .stemmed)
-        #expect(complexLine?.endArrowStyle == .hollow)
+        let stemmedHollow = StyleDSL.parseLineStyle("<~+|>")
+        #expect(stemmedHollow?.border == .heavy)
+        #expect(stemmedHollow?.arrowMode == .both)
+        #expect(stemmedHollow?.startArrowStyle == .stemmed)
+        #expect(stemmedHollow?.endArrowStyle == .hollow)
 
         let solidDoubleDash = StyleDSL.parseLineStyle("<<+++>>")
         #expect(solidDoubleDash?.border == .heavyTripleDash)
         #expect(solidDoubleDash?.arrowMode == .both)
         #expect(solidDoubleDash?.startArrowStyle == .solid)
         #expect(solidDoubleDash?.endArrowStyle == .solid)
+
+        let smallArrows = StyleDSL.parseLineStyle("<.=.>")
+        #expect(smallArrows?.border == .double)
+        #expect(smallArrows?.arrowMode == .both)
+        #expect(smallArrows?.startArrowStyle == .small)
+        #expect(smallArrows?.endArrowStyle == .small)
+
+        // Invalid line DSLs
+        #expect(StyleDSL.parseLineStyle("") == nil)
+        #expect(StyleDSL.parseLineStyle(">>>") == nil)
+        #expect(StyleDSL.parseLineStyle("invalid") == nil)
     }
 
     @Test
@@ -100,6 +116,18 @@ struct StyleDSLTests {
 
         let heavyTripleDashRounded = BoxStyle.style(for: .heavyTripleDash, rounded: true)
         #expect(heavyTripleDashRounded.topLeft == "╭" && heavyTripleDashRounded.topChar == "┅" && heavyTripleDashRounded.bottomRight == "╯")
+
+        let doubleDashRounded = BoxStyle.style(for: .doubleDash, rounded: true)
+        #expect(doubleDashRounded.topLeft == "╭" && doubleDashRounded.topChar == "╌" && doubleDashRounded.bottomRight == "╯")
+
+        let heavyDoubleDashRounded = BoxStyle.style(for: .heavyDoubleDash, rounded: true)
+        #expect(heavyDoubleDashRounded.topLeft == "╭" && heavyDoubleDashRounded.topChar == "╍" && heavyDoubleDashRounded.bottomRight == "╯")
+
+        let quadDashRounded = BoxStyle.style(for: .quadrupleDash, rounded: true)
+        #expect(quadDashRounded.topLeft == "╭" && quadDashRounded.topChar == "┈" && quadDashRounded.bottomRight == "╯")
+
+        let heavyQuadDashRounded = BoxStyle.style(for: .heavyQuadrupleDash, rounded: true)
+        #expect(heavyQuadDashRounded.topLeft == "╭" && heavyQuadDashRounded.topChar == "┉" && heavyQuadDashRounded.bottomRight == "╯")
     }
 
     @Test
@@ -119,6 +147,11 @@ struct StyleDSLTests {
         #expect(doubleBox[1] == "║    ║")
         #expect(doubleBox[2] == "╰════╯")
 
+        let asciiRoundBox = LogoExecutionService.render(script: "BOX 6 3 a)")
+        #expect(asciiRoundBox[0] == "/----\\")
+        #expect(asciiRoundBox[1] == "|    |")
+        #expect(asciiRoundBox[2] == "\\----/")
+
         let tripleDashRoundBox = LogoExecutionService.render(script: "BOX 6 3 ---)")
         #expect(tripleDashRoundBox[0] == "╭┄┄┄┄╮")
         #expect(tripleDashRoundBox[1] == "┆    ┆")
@@ -129,5 +162,16 @@ struct StyleDSLTests {
 
         let solidLine = LogoExecutionService.render(script: "LINE 5 <<+++>>")
         #expect(solidLine[0] == "◀┅┅┅▶")
+
+        let vlineRendered = LogoExecutionService.render(script: "VLINE 4 ->")
+        #expect(vlineRendered == ["│", "│", "│", "v"])
+
+        let solidVline = LogoExecutionService.render(script: "VLINE 4 <<=>>")
+        #expect(solidVline == ["▲", "║", "║", "▼"])
+
+        let tableRound = LogoExecutionService.render(script: "TABLE 1 1 4 =)")
+        #expect(tableRound[0] == "╭════╮")
+        #expect(tableRound[1] == "║    ║")
+        #expect(tableRound[2] == "╰════╯")
     }
 }

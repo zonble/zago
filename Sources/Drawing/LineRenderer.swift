@@ -6,6 +6,12 @@ public enum LineArrowMode: Sendable {
     case backward
     case both
 
+    public static let allKeywords: [String] = [
+        "ARROW", "RIGHTARROW", "DOWNARROW",
+        "BACKARROW", "LEFTARROW", "UPARROW",
+        "BOTHARROW", "BOTH", "BIDIR",
+    ]
+
     public var hasForwardArrow: Bool { self == .forward || self == .both }
     public var hasBackwardArrow: Bool { self == .backward || self == .both }
 

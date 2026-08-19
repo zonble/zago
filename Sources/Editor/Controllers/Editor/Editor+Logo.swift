@@ -56,8 +56,6 @@ extension Editor: LogoEngineDelegate {
         case .editCut: _ = commandRegistry.dispatch(id: .editCut, editor: self)
         case .editUncut: _ = commandRegistry.dispatch(id: .editUncut, editor: self)
         case .editJustify: _ = commandRegistry.dispatch(id: .editJustify, editor: self)
-        case .search(let query):
-            searchController.performSearch(query: query)
         case .markModified:
             buffer.isModified = true
         case .updateLineIndex(let lineIndex):
