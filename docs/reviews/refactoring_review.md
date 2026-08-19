@@ -79,20 +79,11 @@ the cached `wrapLine` / `computeLineChunks` pipeline.
 (`InMemoryAIHistoryStore`) adhering to `AIHistoryStoring`, owned individually by each `Editor`
 instance via `EditorDependencies`.
 
-### Medium: Cross-module values are often Stringly Typed
+### Medium: Cross-module values are often Stringly Typed (Resolved)
 
-History actions, cursor modes, LOGO modes, and related IPC values are represented
-as strings. These values cross module boundaries, so spelling errors and missing
-cases are discovered at runtime rather than at compile time.
-
-References:
-
-- `Sources/Editor/Models/AIHistoryLog.swift:3-10`
-- `Sources/IPCServer/ZagoIPCServerContracts.swift:34-47`
-- `Sources/IPCServer/ZagoIPCServerContracts.swift:83-101`
-- `Sources/Editor/Controllers/Editor+ExternalRequests.swift:140-152`
-
-Use enums internally and convert to protocol strings only at the IPC boundary.
+History actions, cursor modes, and proposal decisions are now strongly typed using Swift enums
+(`AIProposalDecision`, `EditorMode`) throughout the internal subsystems, converting to
+protocol strings only at the IPC boundary.
 
 ### Medium: External LOGO execution constructs a complete scratch Editor (Resolved)
 
