@@ -10,16 +10,22 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     public init() {}
 
     private static let primitiveMap: [String: LogoPrimitive] = [
+        "換行": .newline,
+        "新行": .newline,
+
         // Drawing & Shapes
         "畫框": .drawBox,
-        "矩形": .box,
-        "框": .drawBox,
+        "插入框": .box,
+        "加框": .box,
+        "框": .box,
+        "打": .type,
         "打字": .type,
         "輸入": .type,
-        "寫字": .type,
+        "寫": .type,
         "畫線": .line,
+        "畫橫線": .line,
         "橫線": .line,
-        "垂直線": .vline,
+        "畫直線": .vline,
         "直線": .vline,
         "表格": .table,
         "填滿": .fill,
@@ -27,23 +33,29 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "清畫布": .clearBuffer,
         "跳至": .goto,
         "前往": .goto,
-        "定位": .goto,
-        "到行": .gotoline,
-        "到欄": .gotocol,
-        "到列": .gotoline,
-        "頂端": .top,
-        "底端": .bottom,
-        "行首": .lineStart,
-        "行尾": .lineEnd,
+        "去": .goto,
+        "去這行": .gotoline,
+        "去這欄": .gotocol,
+        "去這列": .gotoline,
+        "去最上面": .top,
+        "去檔頭": .top,
+        "去最下面": .bottom,
+        "去檔尾": .top,
+        "去行首": .lineStart,
+        "去行尾": .lineEnd,
 
         // Turtle Graphics
         "前進": .forward,
+        "往前": .forward,
         "前": .forward,
         "後退": .back,
+        "往後": .back,
         "後": .back,
         "右轉": .turnRight,
+        "往右": .turnRight,
         "右": .turnRight,
         "左轉": .turnLeft,
+        "往左": .turnLeft,
         "左": .turnLeft,
         "落筆": .penDown,
         "提筆": .penUp,
@@ -52,9 +64,14 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
 
         // Control & Execution
         "重複": .repeatLoop,
+        "要是": .ifCondition,
         "如果": .ifCondition,
         "若": .ifCondition,
-        "否則": .ifElseCondition,
+        "若是": .ifCondition,
+        "假如": .ifCondition,
+        "假使": .ifCondition,
+        "要是否則": .ifElseCondition,
+        "要是不然": .ifElseCondition,
         "迴圈": .forLoop,
         "當": .whileLoop,
         "直到": .untilLoop,
@@ -94,6 +111,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "商": .quotient,
         "除": .quotient,
         "餘數": .remainder,
+        "餘": .remainder,
         "模": .modulo,
         "次方": .power,
         "負數": .minus,
@@ -102,6 +120,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "四捨五入": .round,
         "平方根": .sqrt,
         "開根號": .sqrt,
+        "根號": .sqrt,
         "隨機": .random,
         "最小值": .min,
         "最大值": .max,
@@ -111,8 +130,10 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "並且": .andLogic,
         "或": .orLogic,
         "或者": .orLogic,
+        "或是": .orLogic,
         "非": .notLogic,
         "反": .notLogic,
+        "不是": .notLogic,
         "異或": .xorLogic,
 
         // Data Structures & Collections
@@ -130,8 +151,12 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "最後": .last,
         "尾": .last,
         "除了第一個": .butFirst,
+        "第一個外": .butFirst,
+        "第一個之外": .butFirst,
         "去頭": .butFirst,
         "除了最後": .butLast,
+        "最後一個外": .butLast,
+        "最後一個之外": .butLast,
         "去尾": .butLast,
         "項目": .item,
         "計數": .count,
@@ -141,23 +166,25 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "清單?": .isList,
         "單字?": .isWord,
         "空?": .isEmpty,
+        "的?": .isEmpty,
         "等於?": .isEqual,
         "相同?": .isEqual,
         "包含?": .isMember,
+        "有?": .isMember,
 
         // Formatting & Date
         "日期": .date,
         "時間": .time,
         "現在": .datetime,
-        "格式化日期": .dateformat,
-        "格式化數字": .formatNumber,
-        "格式化清單": .formatList,
-        "格式化時間": .formatRelativeTime,
-        "格式化位元組": .formatBytes,
-        "格式化姓名": .formatName,
+        "輸出日期": .dateformat,
+        "輸出數字": .formatNumber,
+        "輸出清單": .formatList,
+        "輸出時間": .formatRelativeTime,
+        "輸出位元組": .formatBytes,
+        "輸出姓名": .formatName,
         "轉換曆法": .convertCalendar,
         "轉換度量": .convertMeasure,
-        "格式化度量": .formatMeasure,
+        "輸出度量": .formatMeasure,
 
         // Codecs & Detectors
         "編碼64": .base64Encode,
@@ -233,8 +260,8 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         switch token.lowercased() {
         case "貨幣", "金額", "錢": return .currency
         case "百分比", "比例": return .percent
-        case "中文數字", "大寫", "大寫數字", "讀音", "念法": return .spellout
-        case "金融", "大寫金融": return .financial
+        case "中文數字", "讀音", "念法": return .spellout
+        case "金融", "大寫金融", "大寫", "大寫數字": return .financial
         case "羅馬數字", "羅馬": return .roman
         case "序數", "第幾": return .ordinal
         case "十進位", "小數", "一般數字": return .decimal
@@ -277,14 +304,18 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         case .borderStyle:
             switch token.lowercased() {
             case "單線", "單": return "single"
+            case "粗線", "粗": return "heavy"
             case "雙線", "雙": return "double"
-            case "圓角", "圓": return "round"
-            case "雙圓角": return "double-round"
-            case "純字元", "字元": return "ascii"
-            case "字元圓角": return "ascii-round"
-            case "粗線", "粗": return "thick"
-            case "虛線": return "dashed"
-            case "點線": return "dotted"
+            case "圓角", "圓", "單線圓角": return "round"
+            case "雙線圓角", "雙圓角": return "double-round"
+            case "純字元", "字元", "ascii": return "ascii"
+            case "字元圓角", "ascii圓角", "ascii 圓角": return "ascii-round"
+            case "三段虛線", "三虛線", "三段線": return "triple-dash"
+            case "粗三段虛線", "粗三虛線", "粗三段線": return "heavy-triple-dash"
+            case "四段虛線", "四虛線", "四段線": return "quadruple-dash"
+            case "粗四段虛線", "粗四虛線", "粗四段線": return "heavy-quadruple-dash"
+            case "二段虛線", "雙虛線", "雙段虛線", "二段線": return "double-dash"
+            case "粗二段虛線", "粗雙虛線", "粗雙段虛線", "粗二段線": return "heavy-double-dash"
             default: return nil
             }
         case .calendar:
