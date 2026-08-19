@@ -94,19 +94,12 @@ References:
 
 Use enums internally and convert to protocol strings only at the IPC boundary.
 
-### Medium: External LOGO execution constructs a complete scratch Editor
+### Medium: External LOGO execution constructs a complete scratch Editor (Resolved)
 
-`externalExecuteLogo` creates a full `Editor` only to obtain a temporary LOGO
-execution buffer. This couples a rendering/proposal operation to the complete
-editor runtime and can make the operation more expensive or surprising as the
-editor gains more initialization behavior.
-
-Reference:
-
-- `Sources/Editor/Controllers/Editor+ExternalRequests.swift:226-242`
-
-A smaller `LogoExecutionContext` or drawing-buffer abstraction would keep this
-path focused on LOGO evaluation and generated text.
+`externalExecuteLogo` previously created a full `Editor` to obtain a temporary LOGO
+execution buffer. This was refactored by extracting `TextBufferLogoDelegate` and
+`LogoExecutionService.render(script:...)`, allowing headless preview and execution
+to run directly on standalone `TextBuffer` instances without Editor or UI dependencies.
 
 ## Recommended order
 

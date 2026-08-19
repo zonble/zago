@@ -225,21 +225,13 @@ extension Editor {
     }
 
     private func renderExternalLogoProposalLines(script: String) -> [String] {
-        let scratch = Editor(
-            options: EditorOptions(language: language),
-            dependencies: EditorDependencies(
-                fileIOStrategy: fileIOStrategy,
-                terminal: terminal,
-                gitService: gitService
-            ),
-            initialVariables: [:]
+        LogoExecutionService.render(
+            script: script,
+            initialVariables: [:],
+            tabSize: displayConfig.tabSize,
+            borderStyle: defaultBorderStyle,
+            arrowStyle: defaultArrowStyle
         )
-        scratch.logoEngine.execute(script)
-        let lines = scratch.buffer.lines
-        guard lines.count > 1 || lines.first?.isEmpty == false else {
-            return [""]
-        }
-        return lines
     }
 
     public func externalExecuteLogo(script: String, mode: String?) -> EditorExternalLogoResult {
