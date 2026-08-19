@@ -290,6 +290,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case hashMd5
     case search
     case sort
+    case sortLocalized
     case fill
     case readWord
     case readChar
@@ -326,6 +327,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FILL"], .fill),
         (["INSET"], .inset),
         (["SORT"], .sort),
+        (["SORT.LOCALIZED", "SORT.NATURAL", "SORT:LOCALIZED", "SORT:NATURAL"], .sortLocalized),
         (["MAKE", "VAR"], .make),
         (["NAME"], .name),
         (["THING"], .thing),
@@ -648,7 +650,7 @@ extension LogoPrimitive {
         .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag,
-        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .search, .sort, .fill, .end, .mdsetItem,
+        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .search, .sort, .sortLocalized, .fill, .end, .mdsetItem,
         .setFirst, .setBFL, .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
 

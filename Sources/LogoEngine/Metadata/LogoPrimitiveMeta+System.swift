@@ -29,12 +29,35 @@ extension LogoPrimitive {
                         example: "[A B C]"),
                     LogoPrimitiveParameter(
                         name: "order", required: false, description: "The order argument. Used by SORT.",
-                        example: "desc", allowedValues: ["desc", "descending", "greaterp", "greater?"]),
+                        example: "desc", allowedValues: ["asc", "ascending", "desc", "descending", "lessp", "greaterp", "greater?"]),
                     LogoPrimitiveParameter(
                         name: "template", required: false, description: "The Logo template to apply. Used by SORT.",
                         example: "[FD 1]"),
                 ],
                 examples: [LogoPrimitiveExample(input: "SORT [3 1 4 1 5 9]", output: "[1 1 3 4 5 9]")]
+            )
+
+        case .sortLocalized:
+            return LogoPrimitiveMeta(
+                name: "SORT.LOCALIZED",
+                description: "Sorts elements in list, array, or string using natural localized order.",
+                localizedDescriptionKey: "logo.doc.sort.localized",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "list", required: true, description: "The list or string to process. Used by SORT.LOCALIZED.",
+                        example: "[item1 item10 item2]"),
+                    LogoPrimitiveParameter(
+                        name: "order", required: false, description: "The order argument. Used by SORT.LOCALIZED.",
+                        example: "desc", allowedValues: ["asc", "ascending", "desc", "descending", "lessp", "greaterp"]),
+                    LogoPrimitiveParameter(
+                        name: "template", required: false, description: "The Logo template to apply. Used by SORT.LOCALIZED.",
+                        example: "[?1 < ?2]"),
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "SORT.LOCALIZED [\"file10.txt \"file2.txt \"file1.txt]", output: "[\"file1.txt \"file2.txt \"file10.txt]"),
+                    LogoPrimitiveExample(input: "SORT.LOCALIZED \"desc [\"v1.2 \"v1.10 \"v1.9]", output: "[\"v1.10 \"v1.9 \"v1.2]")
+                ]
             )
 
         case .fill:

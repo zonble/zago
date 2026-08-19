@@ -172,6 +172,7 @@ struct TraditionalChineseStrings {
             PICK list|array                      隨機抽樣單一項目
             REMOVE item list / REMDUP list       移除指定項目 / 移除重複項目
             SORT list [template]                 排序清單項目
+            SORT.LOCALIZED list [template]       自然語意排序清單項目
             ARRAY size / MDARRAY dims            建立一維或多維 Array 陣列
             MDITEM dims arr / MDSETITEM dims v   存取/修改多維陣列元素
             LISTTOARRAY list / ARRAYTOLIST arr   List 與 Array 轉置
