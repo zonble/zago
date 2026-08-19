@@ -59,7 +59,9 @@ extension LogoEngine {
         guard !hasUncaughtError else { return "" }
         guard expressionCallDepth < maxExpressionCallDepth else {
             let message = "[LOGO Error: Expression evaluation depth limit exceeded]"
-            reportError(LogoError(code: 1, message: message), token: tokens.indices.contains(index) ? tokens[index] : "EXPRESSION")
+            reportError(
+                LogoError(code: 1, message: message),
+                token: tokens.indices.contains(index) ? tokens[index] : "EXPRESSION")
             return ""
         }
         expressionCallDepth += 1

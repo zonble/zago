@@ -17,7 +17,9 @@ public enum KeyParser {
         case "ctrl-shift-down", "ctrl-shift-arrow-down", "c-s-down", "c-s-arrow-down": return .ctrlShiftArrowDown
         case "ctrl-backspace", "ctrl-bs", "c-backspace", "c-bs", "^backspace", "^bs": return .ctrlBackspace
         case "alt-backspace", "alt-bs", "m-backspace", "m-bs", "opt-backspace", "option-backspace": return .altBackspace
-        case "alt-enter", "alt-return", "m-enter", "m-return", "opt-enter", "opt-return", "option-enter", "option-return": return .altEnter
+        case "alt-enter", "alt-return", "m-enter", "m-return", "opt-enter", "opt-return", "option-enter",
+            "option-return":
+            return .altEnter
         case "alt-tab", "m-tab", "opt-tab", "option-tab": return .altTab
         default:
             break

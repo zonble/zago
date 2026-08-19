@@ -49,42 +49,43 @@ public enum TextAnalyzer {
     public static func wordRanges(in text: String) -> [Range<Int>] {
         guard !text.isEmpty else { return [] }
         #if canImport(Darwin)
-        var ranges: [Range<Int>] = []
-        text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, substringRange, _, _ in
-            let lower = text.distance(from: text.startIndex, to: substringRange.lowerBound)
-            let upper = text.distance(from: text.startIndex, to: substringRange.upperBound)
-            if lower < upper {
-                ranges.append(lower..<upper)
+            var ranges: [Range<Int>] = []
+            text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) {
+                _, substringRange, _, _ in
+                let lower = text.distance(from: text.startIndex, to: substringRange.lowerBound)
+                let upper = text.distance(from: text.startIndex, to: substringRange.upperBound)
+                if lower < upper {
+                    ranges.append(lower..<upper)
+                }
             }
-        }
-        return ranges
+            return ranges
         #else
-        var ranges: [Range<Int>] = []
-        var wordStart: Int? = nil
-        var index = 0
-        for character in text {
-            if TextUnicodeClassifier.isCJKScriptCharacter(character) {
-                if let start = wordStart {
-                    ranges.append(start..<index)
-                    wordStart = nil
+            var ranges: [Range<Int>] = []
+            var wordStart: Int? = nil
+            var index = 0
+            for character in text {
+                if TextUnicodeClassifier.isCJKScriptCharacter(character) {
+                    if let start = wordStart {
+                        ranges.append(start..<index)
+                        wordStart = nil
+                    }
+                    ranges.append(index..<(index + 1))
+                } else if TextUnicodeClassifier.isUnicodeWordCharacter(character) {
+                    if wordStart == nil {
+                        wordStart = index
+                    }
+                } else {
+                    if let start = wordStart {
+                        ranges.append(start..<index)
+                        wordStart = nil
+                    }
                 }
-                ranges.append(index..<(index + 1))
-            } else if TextUnicodeClassifier.isUnicodeWordCharacter(character) {
-                if wordStart == nil {
-                    wordStart = index
-                }
-            } else {
-                if let start = wordStart {
-                    ranges.append(start..<index)
-                    wordStart = nil
-                }
+                index += 1
             }
-            index += 1
-        }
-        if let start = wordStart {
-            ranges.append(start..<index)
-        }
-        return ranges
+            if let start = wordStart {
+                ranges.append(start..<index)
+            }
+            return ranges
         #endif
     }
 

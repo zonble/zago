@@ -282,7 +282,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "flavor", required: false,
                         description: "UUID version or format: v4, v7, nil, short.", example: "v7",
-                        allowedValues: ["v4", "v7", "nil", "short", "nano"]),
+                        allowedValues: ["v4", "v7", "nil", "short", "nano"])
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "UUID"),
@@ -301,7 +301,7 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(
                         name: "string", required: true, description: "The string to test.",
-                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"),
+                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "UUID? \"f47ac10b-58cc-4372-a567-0e02b2c3d479", output: "true"),
@@ -318,10 +318,10 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(
                         name: "uuid_v7_string", required: true, description: "A valid UUID v7 string.",
-                        example: "018f4a3c-b1d5-7123-8abc-def012345678"),
+                        example: "018f4a3c-b1d5-7123-8abc-def012345678")
                 ],
                 examples: [
-                    LogoPrimitiveExample(input: "UUID.TIME (UUID \"v7)"),
+                    LogoPrimitiveExample(input: "UUID.TIME (UUID \"v7)")
                 ]
             )
 
