@@ -251,7 +251,7 @@ struct InsertTabCommand: Command {
 
         // 3. Selection Active -> Block Indent
         if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
-            editor.indentSelectedBlock(spaces: editor.displayConfig.tabSize)
+            editor.buffer.indentSelectedBlock(spaces: editor.displayConfig.tabSize)
             return .succeeded
         }
 
@@ -268,11 +268,11 @@ struct InsertTabCommand: Command {
             let col = editor.buffer.columnIndex
             let leadingSpaces = line.prefix(while: { $0 == " " || $0 == "\t" }).count
 
-            if editor.isListItemLine(at: lineIndex) {
-                editor.indentLine(at: lineIndex, spaces: editor.displayConfig.listIndentSize)
+            if editor.buffer.isListItemLine(at: lineIndex) {
+                editor.buffer.indentLine(at: lineIndex, spaces: editor.displayConfig.listIndentSize)
                 return .succeeded
             } else if col <= leadingSpaces {
-                editor.indentLine(at: lineIndex, spaces: editor.displayConfig.tabSize)
+                editor.buffer.indentLine(at: lineIndex, spaces: editor.displayConfig.tabSize)
                 return .succeeded
             } else {
                 let tabStop = editor.displayConfig.tabSize
@@ -325,7 +325,7 @@ struct InsertBacktabCommand: Command {
 
         // 3. Selection Active -> Block Outdent
         if editor.displayConfig.smartTab && editor.buffer.selectionMark != nil && !editor.isCanvasModeActive {
-            editor.outdentSelectedBlock(spaces: editor.displayConfig.tabSize)
+            editor.buffer.outdentSelectedBlock(spaces: editor.displayConfig.tabSize)
             return .succeeded
         }
 
@@ -333,14 +333,14 @@ struct InsertBacktabCommand: Command {
         if editor.displayConfig.smartTab {
             let lineIndex = editor.buffer.lineIndex
             let outdentSpaces =
-                editor.isListItemLine(at: lineIndex)
+                editor.buffer.isListItemLine(at: lineIndex)
                 ? editor.displayConfig.listIndentSize : editor.displayConfig.tabSize
-            editor.outdentLine(at: lineIndex, spaces: outdentSpaces)
+            editor.buffer.outdentLine(at: lineIndex, spaces: outdentSpaces)
             return .succeeded
         }
 
         // 5. Fallback Line Outdent
-        editor.outdentLine(at: editor.buffer.lineIndex, spaces: editor.displayConfig.tabSize)
+        editor.buffer.outdentLine(at: editor.buffer.lineIndex, spaces: editor.displayConfig.tabSize)
         return .succeeded
     }
 }

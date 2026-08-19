@@ -57,7 +57,8 @@ import Testing
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = 0
 
-        #expect(editor.isListItemLine(at: 0) == true)
+        #expect(editor.buffer.isListItemLine(at: 0) == true)
+        #expect(sample.isMarkupListItem == true)
 
         // Indent list item by default listIndentSize (2 spaces)
         _ = editor.commandRegistry.dispatch(key: Key.tab, editor: editor)
