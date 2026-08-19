@@ -157,31 +157,31 @@ struct TraditionalChineseStrings {
             PADLEFT s len [char]                 左側對齊填補字元至指定長度
             PADRIGHT s len [char]                右側對齊填補字元至指定長度
             FORMAT "fmt" val ...                 依照 C 語言 printf 格式化字串
-            COUNT item                           計算字串長度或清單項目數
+            COUNT item                           計算字串長度或列表項目數
             ASCII char / CHAR code               取得 ASCII 碼 / 依 ASCII 碼產生字元
 
           5. Lists, Arrays & Plist
             LIST a b ...                         建立 List
-            SENTENCE a b / SE                    合併多個字串或清單為扁平 List
+            SENTENCE a b / SE                    合併多個字串或列表為扁平 List
             FIRST data / LAST data               取得第一項或最後一項
             BUTFIRST data / BUTLAST data         除去第一項或最後一項
             ITEM n data                          取得 1-based 指定位置項目
-            FPUT item list / LPUT item list      於清單首位或末位插入項目
-            FIRSTS list / BUTFIRSTS list         取得子清單首項集 / 其餘項集
-            COMBINE a b / REVERSE list           接合或反轉清單
+            FPUT item list / LPUT item list      於列表首位或末位插入項目
+            FIRSTS list / BUTFIRSTS list         取得子列表首項集 / 其餘項集
+            COMBINE a b / REVERSE list           接合或反轉列表
             PICK list|array                      隨機抽樣單一項目
             REMOVE item list / REMDUP list       移除指定項目 / 移除重複項目
-            SORT list [template]                 排序清單項目
-            SORT.LOCALIZED list [template]       自然語意排序清單項目
+            SORT list [template]                 排序列表項目
+            SORT.LOCALIZED list [template]       自然語意排序列表項目
             ARRAY size / MDARRAY dims            建立一維或多維 Array 陣列
             MDITEM dims arr / MDSETITEM dims v   存取/修改多維陣列元素
             LISTTOARRAY list / ARRAYTOLIST arr   List 與 Array 轉置
-            PPROP "plist "prop val               設定屬性清單數值
-            GPROP "plist "prop                   讀取屬性清單數值
-            REMPROP "plist "prop                 從屬性清單移除屬性
-            PLIST "plist / PLISTS                取得完整屬性清單 / 列出所有屬性清單
+            PPROP "plist "prop val               設定屬性列表數值
+            GPROP "plist "prop                   讀取屬性列表數值
+            REMPROP "plist "prop                 從屬性列表移除屬性
+            PLIST "plist / PLISTS                取得完整屬性列表 / 列出所有屬性列表
 
-            • List (清單)：使用 中括號 [ ... ] 包裹，元素間以空格分隔。
+            • List (列表)：使用 中括號 [ ... ] 包裹，元素間以空格分隔。
               • 例如：[apple banana orange] 或 [1 2 3]
               • 動態列表：長度可隨時伸縮，適合做首尾增刪與列表拼接。
               • 常用建立與操作 Primitives：LIST、SENTENCE (或 SE)、FPUT (頭部插入)、
@@ -203,19 +203,19 @@ struct TraditionalChineseStrings {
             DATE.ADD date amount [unit]          往一個日期上增加時間
             DATE.DIFF date1 date2 [unit]         相減兩個日期之間的差距
             CONVERT.CALENDAR d cal [src] [fmt]   跨曆法轉換日期（民國曆、和曆、佛曆等）
-            FORMAT.DATE date [fmt] [loc] [tz]    指定日期格式（時間戳記/清單…等）
+            FORMAT.DATE date [fmt] [loc] [tz]    指定日期格式（時間戳記/列表…等）
             FORMAT.NUMBER num [style] [locale]   指定數字格式（words 國字、caps 大寫
                                                  支票、roman、money、pct）
-            FORMAT.LIST list [type] [locale]     自然語言清單連接（"and" -> 蘋果、
+            FORMAT.LIST list [type] [locale]     自然語言列表連接（"and" -> 蘋果、
                                                  香蕉與芭樂）
             FORMAT.RELATIVETIME val [unit] [loc] 指定相對時間格式（"昨天"、"3天前"、
                                                  "in 2 hours"）
             FORMAT.BYTES bytes [style] [locale]  指定電腦容量格式（"1 MB"、"1.07 GB"）
-            DETECT.URL text                      偵測網址，回傳 LOGO 清單
-            DETECT.EMAIL text                    偵測電子郵件地址，回傳 LOGO 清單
-            DETECT.PHONE text                    偵測電話號碼，回傳 LOGO 清單
-            DETECT.DATE text                     偵測日期，回傳 LOGO 清單
-            DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 清單
+            DETECT.URL text                      偵測網址，回傳 LOGO 列表
+            DETECT.EMAIL text                    偵測電子郵件地址，回傳 LOGO 列表
+            DETECT.PHONE text                    偵測電話號碼，回傳 LOGO 列表
+            DETECT.DATE text                     偵測日期，回傳 LOGO 列表
+            DETECT.ADDRESS text                  偵測郵遞地址，回傳 LOGO 列表
             UUID [flavor]                        生成唯一識別碼（v4 隨機、v7 時間排序、nil 全零、short/nano 短碼）
             UUID? string                         檢查字串是否為有效 UUID
             UUID.TIME uuid_v7                    從 UUID v7 提取時間戳記字串
@@ -263,7 +263,7 @@ struct TraditionalChineseStrings {
           10. Regex
             REGEX.MATCH s "pattern"              正規表達式全字串匹配
             REGEX.REPLACE s "pat" "repl"         正規表達式全域搜尋與取代
-            REGEX.FIND s "pattern"               正規表達式搜尋並回傳匹配項清單
+            REGEX.FIND s "pattern"               正規表達式搜尋並回傳匹配項列表
 
           11. Flow
             REPEAT n [ commands ]                重複執行 n 次（可用 :# 或 repcount）
@@ -301,9 +301,9 @@ struct TraditionalChineseStrings {
             DEFINE "name [[args] [body]]         動態由 List 結構建立 User Procedure
             TEXT "name                           取得 Procedure 的原始定義文字/結構
             ARITY "name                          取得 Procedure 的參數個數 (Arity)
-            PROCEDURES / PROCS                   列出所有自訂 Procedure 名稱清單
-            PRIMITIVES / PRIMS                   列出所有 Built-in Primitive 名稱清單
-            NAMES                                列出所有全域變數名稱清單
+            PROCEDURES / PROCS                   列出所有自訂 Procedure 名稱列表
+            PRIMITIVES / PRIMS                   列出所有 Built-in Primitive 名稱列表
+            NAMES                                列出所有全域變數名稱列表
             CONTENTS                             列出工作區完整內容
             ERASE "name / ER                     清除指定 Procedure 或變數
             ERPS / ERNS / ERALL                  清除所有自訂程序 / 全域變數 / 工作區
@@ -326,8 +326,8 @@ struct TraditionalChineseStrings {
             ERROR                                查詢上一次捕捉到的例外物件資訊物件
 
           17. Predicate
-            WORD? LIST? ARRAY? NUMBER?           檢查資料型別是否為字串/清單/陣列/數值
-            EMPTY? val                           檢查字串或清單是否為空
+            WORD? LIST? ARRAY? NUMBER?           檢查資料型別是否為字串/列表/陣列/數值
+            EMPTY? val                           檢查字串或列表是否為空
             EQUAL? a b / NOTEQUAL? a b           比較兩值是否相等 / 不相等
             LESS? a b / GREATER? a b             比較大小 (小於 / 大於)
             PROCEDURE? name                      檢查內建或自訂命令是否存在
@@ -586,9 +586,9 @@ struct TraditionalChineseStrings {
         "helpview.set_6": "    canvas-mode <on|off>      啟動畫布模式",
         "helpview.set_7": "    syntax <on|off>           開啟/關閉語法上色",
         "helpview.set_8": "    tab <size>                設定 Tab 縮排寬度（例如 set tab 4）",
-        "helpview.set_9": "    smarttab <on|off>         開啟/關閉智慧縮排與清單巢狀縮排",
-        "helpview.set_10": "    list-indent-size <size>  設定清單項目（符號/數字）縮排格數",
-        "helpview.set_11": "    list-wrap-indent <on|off> 清單折行時是否對齊內容內縮",
+        "helpview.set_9": "    smarttab <on|off>         開啟/關閉智慧縮排與列表巢狀縮排",
+        "helpview.set_10": "    list-indent-size <size>  設定列表項目（符號/數字）縮排格數",
+        "helpview.set_11": "    list-wrap-indent <on|off> 列表折行時是否對齊內容內縮",
         "helpview.set_12": "    autoreload <on|off>      自動重新載入外部修改的檔案",
         "helpview.set_13": "    trim-trailing-whitespace 儲存時自動清除行尾空白",
         "helpview.set_14": "    nonewlines <on|off>      停用儲存時自動補結尾換行",
@@ -942,7 +942,7 @@ struct TraditionalChineseStrings {
         "describe_command.builtin_primitive": "內建 LOGO 指令 (%@)",
         "describe_command.source_ucb_logo": "UCB LOGO 標準",
         "describe_command.source_zago": "Zago 擴充指令",
-        "describe_command.parameters": "參數清單：",
+        "describe_command.parameters": "參數列表：",
         "describe_command.parameter_description": "說明：",
         "describe_command.parameter_example": "範例：",
         "describe_command.param_required": "(必填)",
