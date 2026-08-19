@@ -82,6 +82,7 @@ public final class Editor: @unchecked Sendable {
     )
 
     let promptController = PromptController()
+    let externalRequestService = ExternalRequestService()
 
     // Keymap Manager
     let keymapManager = KeymapManager()
