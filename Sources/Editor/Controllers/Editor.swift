@@ -44,31 +44,39 @@ public final class Editor: @unchecked Sendable {
     let spellChecker = SpellChecker()
 
     let gitService: GitServiceProtocol
+    let gitCoordinator: GitCoordinator
 
     /// Git Diff & Repository context for current buffer
-    var gitDiffInfo: GitDiffInfo = .empty
+    var gitDiffInfo: GitDiffInfo {
+        get { gitCoordinator.currentDiffInfo }
+        set { gitCoordinator.currentDiffInfo = newValue }
+    }
 
-    var isGitDiffDirty: Bool = true
+    var isGitDiffDirty: Bool {
+        get { gitCoordinator.isDirty }
+        set { gitCoordinator.isDirty = newValue }
+    }
 
     func markGitDiffDirty() {
-        isGitDiffDirty = true
+        gitCoordinator.markDirty()
     }
 
     func updateGitDiffIfNeeded() {
-        if !isGitDiffDirty && gitService.repositoryStateChanged(for: buffer.filePath) {
-            isGitDiffDirty = true
-        }
-        guard isGitDiffDirty else { return }
-        updateGitDiff()
+        gitCoordinator.updateIfNeeded(
+            filePath: buffer.filePath,
+            currentLines: buffer.lines,
+            showGitDiff: displayConfig.showGitDiff,
+            isScratchBuffer: buffer.isScratchBuffer
+        )
     }
 
     func updateGitDiff() {
-        isGitDiffDirty = false
-        guard displayConfig.showGitDiff, !buffer.isScratchBuffer else {
-            gitDiffInfo = .empty
-            return
-        }
-        gitDiffInfo = gitService.computeDiffSync(filePath: buffer.filePath, currentLines: buffer.lines)
+        gitCoordinator.update(
+            filePath: buffer.filePath,
+            currentLines: buffer.lines,
+            showGitDiff: displayConfig.showGitDiff,
+            isScratchBuffer: buffer.isScratchBuffer
+        )
     }
 
     /// Flag indicating whether the editor is running in interactive TUI mode.
@@ -220,6 +228,7 @@ public final class Editor: @unchecked Sendable {
         self.terminal = dependencies.terminal
         self.fileIOStrategy = dependencies.fileIOStrategy
         self.gitService = dependencies.gitService
+        self.gitCoordinator = GitCoordinator(gitService: dependencies.gitService)
         self.historyStore = dependencies.historyStore
         self.configProvider = configSource.reload
 
