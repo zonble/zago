@@ -14,8 +14,8 @@ extension LogoEngine {
         _ tokens: [String],
         index: inout Int
     ) -> LogoSizedTextArguments {
-        let boundary: (String) -> Bool = { token in
-            LogoEngine.isStatementCommand(token) || token == "]" || token == ")"
+        let boundary: (String) -> Bool = { [weak self] token in
+            (self?.isStatementCommand(token) ?? false) || token == "]" || token == ")"
         }
 
         // FILL and INSET are dispatched after their command token has already

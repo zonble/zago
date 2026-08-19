@@ -850,7 +850,6 @@ struct TraditionalChineseStrings {
         "menu.borders.heavy_quad": "粗四段虛線 ┏┉┉┓",
         "menu.borders.double_dash": "二段虛線   ┌╌╌┐",
         "menu.borders.heavy_double": "粗二段虛線 ┏╍╍┓",
-        "menu.borders.markdown": "Markdown",
         "menu.borders.next_style": "下一種框線\tM+S",
         "menu.borders.arrow_solid": "箭頭：實心 ▲▼◀▶",
         "menu.borders.arrow_stemmed": "箭頭：細線 ↑↓←→",

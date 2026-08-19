@@ -345,7 +345,7 @@ extension LogoEngine {
                             var sIdx = 0
                             executeTokens(stmtBlock, index: &sIdx, frameReturn: &subReturn)
                             return subReturn ?? lastResult ?? ""
-                        } else if LogoEngine.isStatementCommand(bodyTokens[0]) {
+                        } else if self.isStatementCommand(bodyTokens[0]) {
                             var subReturn: String? = nil
                             var sIdx = 0
                             executeTokens(bodyTokens, index: &sIdx, frameReturn: &subReturn)
@@ -361,7 +361,7 @@ extension LogoEngine {
                         variables["?\(i + 1)"] = arg
                     }
                     if !inner.isEmpty {
-                        if LogoEngine.isStatementCommand(inner[0]) {
+                        if self.isStatementCommand(inner[0]) {
                             var subReturn: String? = nil
                             var sIdx = 0
                             executeTokens(inner, index: &sIdx, frameReturn: &subReturn)
