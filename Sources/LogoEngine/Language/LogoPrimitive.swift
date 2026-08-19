@@ -260,6 +260,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case formatRelativeTime
     case formatBytes
     case formatName
+    case convertCalendar
     case convertMeasure
     case formatMeasure
     case measureAdd
@@ -583,6 +584,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["FORMAT.RELATIVETIME"], .formatRelativeTime),
         (["FORMAT.BYTES"], .formatBytes),
         (["FORMAT.NAME", "FORMATNAME"], .formatName),
+        (["CONVERT.CALENDAR"], .convertCalendar),
         (["CONVERT.MEASURE"], .convertMeasure),
         (["FORMAT.MEASURE"], .formatMeasure),
         (["MEASURE.ADD"], .measureAdd),
@@ -660,6 +662,7 @@ extension LogoPrimitive {
     internal static let variadicPrimitives: Set<Self> = [
         .word, .list, .sentence, .sum, .product, .min, .max, .andLogic, .orLogic, .date, .time, .datetime,
         .dateformat, .dateadd, .datediff, .formatNumber, .formatList, .formatRelativeTime, .formatBytes,
+        .convertCalendar,
         .convertMeasure,
         .formatMeasure,
         .measureAdd, .measureSub, .measureScale, .measureEqual, .measureLess, .measureGreater, .measureMin, .measureMax,

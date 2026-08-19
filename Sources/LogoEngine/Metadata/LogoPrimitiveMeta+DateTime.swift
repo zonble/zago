@@ -272,6 +272,35 @@ extension LogoPrimitive {
                     "Supports positional inputs (given family / given middle family), full name strings, and property lists ([given ... middle ... family ... prefix ... suffix ... nickname ...]). Not supported on Linux or Windows."
             )
 
+        case .convertCalendar:
+            return LogoPrimitiveMeta(
+                name: "CONVERT.CALENDAR",
+                description: "Converts date between calendar systems (e.g. Gregorian, ROC, Japanese Wareki, Buddhist).",
+                localizedDescriptionKey: "logo.doc.convertcalendar",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "date", required: true,
+                        description: "The date string, date value, or date components list to convert.", example: "2026-08-19"),
+                    LogoPrimitiveParameter(
+                        name: "targetCalendar", required: true,
+                        description: "The target calendar system.", example: "roc",
+                        allowedValues: ["roc", "japanese", "gregorian", "buddhist", "chinese", "islamic", "hebrew"]),
+                    LogoPrimitiveParameter(
+                        name: "sourceCalendar", required: false,
+                        description: "The source calendar system if input date is not in Gregorian calendar.", example: "roc",
+                        allowedValues: ["roc", "japanese", "gregorian", "buddhist", "chinese", "islamic", "hebrew"]),
+                    LogoPrimitiveParameter(
+                        name: "format", required: false,
+                        description: "Optional custom date format pattern for output.", example: "yyyy/MM/dd"),
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "CONVERT.CALENDAR \"2026-08-19 \"roc", output: "民國115年8月19日"),
+                    LogoPrimitiveExample(input: "CONVERT.CALENDAR \"2026-08-19 \"japanese", output: "令和8年8月19日"),
+                    LogoPrimitiveExample(input: "CONVERT.CALENDAR \"民國115年8月19日 \"gregorian", output: "2026-08-19"),
+                ]
+            )
+
         case .uuid:
             return LogoPrimitiveMeta(
                 name: "UUID",

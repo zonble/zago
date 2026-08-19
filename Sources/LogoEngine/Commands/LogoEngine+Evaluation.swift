@@ -132,12 +132,15 @@ extension LogoEngine {
                         let dateVal = cleanArgs[0]
                         let restArgs = Array(cleanArgs.dropFirst())
                         let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(restArgs, mode: .dateTime)
-                        let parsedCal = LogoDateTimeFormatter.parseCalendar(cal)
                         let parsedTz = LogoDateTimeFormatter.parseTimeZone(tz)
-                        let parsedDate =
-                            LogoDateTimeFormatter.parseDate(
-                                dateVal, defaultCalendar: parsedCal, defaultTimeZone: parsedTz)
-                            ?? Date()
+                        let parsedDate: Date
+                        let parsedVal = LogoValue.parse(dateVal)
+                        switch parsedVal {
+                        case .date(let d, _, _):
+                            parsedDate = d
+                        default:
+                            parsedDate = LogoDateTimeFormatter.parseDate(dateVal, defaultTimeZone: parsedTz) ?? Date()
+                        }
                         let hasTime = dateVal.contains(":") || (dateVal.contains("T") && dateVal.contains(":"))
                         let mode: LogoDateTimeFormatter.Mode = hasTime ? .dateTime : .date
                         leftVal = LogoDateTimeFormatter.format(
@@ -222,6 +225,8 @@ extension LogoEngine {
                             case .list(let l), .array(let l): items = l.map { $0.stringValue }
                             case .measurement(let val, let unit, _):
                                 items = [LogoMeasurementConverter.formatResult(val), unit]
+                            case .date:
+                                items = [parsed.stringValue]
                             case .string(let s):
                                 items = s.contains(" ") ? s.split(separator: " ").map { String($0) } : [s]
                             }
@@ -612,6 +617,54 @@ extension LogoEngine {
                     case .detectURL, .detectEmail, .detectPhone, .detectDate, .detectAddress:
                         let text = args.first.map(unquote) ?? ""
                         leftVal = evaluateDetectPrimitive(variadicPrim, text: text)
+
+                    case .convertCalendar:
+                        let cleanArgs = args.map { unquote($0) }
+                        guard cleanArgs.count >= 2 else {
+                            leftVal = ""
+                            break
+                        }
+                        let dateToken = cleanArgs[0]
+                        let targetCalName = cleanArgs[1]
+                        var sourceCalToken: String? = nil
+                        var formatToken: String? = nil
+
+                        for tok in cleanArgs.dropFirst(2) {
+                            if LogoDateTimeFormatter.isCalendarName(tok) && sourceCalToken == nil {
+                                sourceCalToken = tok
+                            } else if formatToken == nil {
+                                formatToken = tok
+                            }
+                        }
+
+                        let targetCalId = LogoDateTimeFormatter.calendarIdentifier(for: targetCalName)
+                        let sourceCal = sourceCalToken.map { LogoDateTimeFormatter.parseCalendar($0) } ?? Calendar(identifier: .gregorian)
+
+                        let parsedDate: Date
+                        let parsedVal = LogoValue.parse(dateToken)
+                        switch parsedVal {
+                        case .date(let d, _, _):
+                            parsedDate = d
+                        default:
+                            parsedDate = LogoDateTimeFormatter.parseDate(dateToken, defaultCalendar: sourceCal) ?? Date()
+                        }
+
+                        if let fmt = formatToken, !fmt.isEmpty {
+                            let res = LogoDateTimeFormatter.format(
+                                date: parsedDate,
+                                mode: .date,
+                                formatSpec: fmt,
+                                localeSpec: LogoDateTimeFormatter.defaultLocaleForCalendar(targetCalId),
+                                calendarSpec: targetCalName
+                            )
+                            setLastExpressionDateTime(res)
+                            leftVal = res
+                        } else {
+                            let dateValue = LogoValue.date(date: parsedDate, calendar: targetCalId, timeZone: TimeZone.current)
+                            let res = dateValue.stringValue
+                            setLastExpressionDateTime(res)
+                            leftVal = res
+                        }
 
                     case .convertMeasure:
                         var val: Double = 0

@@ -211,6 +211,7 @@ struct EnglishStrings {
             DATETIME [fmt] [loc] [tz] [cal]      Get combined date & time string
             DATE.ADD date amount [unit]          Add/subtract time units (days, hours, etc.)
             DATE.DIFF date1 date2 [unit]         Difference between dates in specified units
+            CONVERT.CALENDAR d target [src] [fmt] Convert date between calendar systems (ROC, etc.)
             FORMAT.DATE date [fmt] [loc] [tz]    Format custom date/timestamp/list
             FORMAT.NUMBER num [style] [loc]      Format number (words, caps, roman, 
                                                  money, pct)

@@ -16,6 +16,8 @@ internal func numericSum(of value: LogoValue) -> Double {
         return Double(string) ?? 0
     case .measurement(let val, _, _):
         return val
+    case .date:
+        return 0
     case .list(let items), .array(let items):
         return items.reduce(0) { $0 + numericSum(of: $1) }
     }
@@ -27,6 +29,8 @@ internal func numericValues(in value: LogoValue) -> [Double] {
         return Double(string).map { [$0] } ?? []
     case .measurement(let val, _, _):
         return [val]
+    case .date:
+        return []
     case .list(let items), .array(let items):
         return items.flatMap { numericValues(in: $0) }
     }

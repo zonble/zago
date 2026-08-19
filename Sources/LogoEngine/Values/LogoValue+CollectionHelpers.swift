@@ -7,6 +7,8 @@ extension LogoValue {
         case .string(let s): return [.string(s)]
         case .measurement(let val, let unit, _):
             return [.string(LogoMeasurementConverter.formatResult(val)), .string(unit)]
+        case .date:
+            return [self]
         }
     }
 }

@@ -557,6 +557,20 @@ import TextMetrics
     #expect(logoEngine.lastResult == "x")
 }
 
+@Test func testLogoValueDateRepresentation() throws {
+    let d = DateComponents(calendar: Calendar(identifier: .gregorian), year: 2026, month: 8, day: 19).date!
+    let vGreg = LogoValue.date(date: d, calendar: .gregorian, timeZone: TimeZone.current)
+    #expect(vGreg.stringValue == "2026-08-19")
+    #expect(vGreg.isDate == true)
+
+    let vRoc = LogoValue.date(date: d, calendar: .republicOfChina, timeZone: TimeZone.current)
+    #expect(vRoc.stringValue.contains("115"))
+    #expect(vRoc.isDate == true)
+
+    let vJa = LogoValue.date(date: d, calendar: .japanese, timeZone: TimeZone.current)
+    #expect(vJa.stringValue.contains("令和8年"))
+}
+
 @Test func testLogoVariableAndPropertyCommands() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
