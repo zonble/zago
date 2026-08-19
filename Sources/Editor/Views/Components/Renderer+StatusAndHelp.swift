@@ -278,14 +278,16 @@ extension Renderer {
                     ("Enter", tr("help.confirm")), ("^G", tr("help.cancel")), ("^X", tr("help.cut_text")),
                 ]
                 helpItems2 = [
-                    ("^C", tr("help.copy_text")), ("^V", tr("help.uncut_text")), ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
+                    ("^C", tr("help.copy_text")), ("^V", tr("help.uncut_text")), ("←/→", tr("help.move")),
+                    ("Home/End", tr("help.jump")),
                 ]
             } else {
                 helpItems1 = [
                     ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^K", tr("help.cut_text")),
                 ]
                 helpItems2 = [
-                    ("^U", tr("help.uncut_text")), ("M+W", tr("help.copy_text")), ("←/→", tr("help.move")), ("Home/End", tr("help.jump")),
+                    ("^U", tr("help.uncut_text")), ("M+W", tr("help.copy_text")), ("←/→", tr("help.move")),
+                    ("Home/End", tr("help.jump")),
                 ]
             }
 

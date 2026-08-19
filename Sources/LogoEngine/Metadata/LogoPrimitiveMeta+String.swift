@@ -329,7 +329,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.base64encode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "text", required: true, description: "Text to encode to Base64.", example: "Hello World")
+                    LogoPrimitiveParameter(
+                        name: "text", required: true, description: "Text to encode to Base64.", example: "Hello World")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "BASE64.ENCODE \"Hello", output: "SGVsbG8=")
@@ -343,7 +344,8 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.base64decode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "b64_text", required: true, description: "Base64 text to decode.", example: "SGVsbG8=")
+                    LogoPrimitiveParameter(
+                        name: "b64_text", required: true, description: "Base64 text to decode.", example: "SGVsbG8=")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "BASE64.DECODE \"SGVsbG8=", output: "Hello")
@@ -357,11 +359,13 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.isbase64",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "string", required: true, description: "String to test for Base64 validity.", example: "SGVsbG8=")
+                    LogoPrimitiveParameter(
+                        name: "string", required: true, description: "String to test for Base64 validity.",
+                        example: "SGVsbG8=")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "BASE64? \"SGVsbG8=", output: "true"),
-                    LogoPrimitiveExample(input: "BASE64? \"hello", output: "false")
+                    LogoPrimitiveExample(input: "BASE64? \"hello", output: "false"),
                 ]
             )
 
@@ -372,11 +376,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.urlencode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "text", required: true, description: "Text string to URL encode.", example: "hello world")
+                    LogoPrimitiveParameter(
+                        name: "text", required: true, description: "Text string to URL encode.", example: "hello world")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "URL.ENCODE \"hello_world", output: "hello_world"),
-                    LogoPrimitiveExample(input: "URL.ENCODE \"你好", output: "%E4%BD%A0%E5%A5%BD")
+                    LogoPrimitiveExample(input: "URL.ENCODE \"你好", output: "%E4%BD%A0%E5%A5%BD"),
                 ]
             )
 
@@ -387,7 +392,9 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.urldecode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "url_text", required: true, description: "Percent-encoded URL string to decode.", example: "%E4%BD%A0%E5%A5%BD")
+                    LogoPrimitiveParameter(
+                        name: "url_text", required: true, description: "Percent-encoded URL string to decode.",
+                        example: "%E4%BD%A0%E5%A5%BD")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "URL.DECODE \"%E4%BD%A0%E5%A5%BD", output: "你好")
@@ -401,11 +408,13 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.hexencode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "value", required: true, description: "Integer number or text string to encode.", example: "255")
+                    LogoPrimitiveParameter(
+                        name: "value", required: true, description: "Integer number or text string to encode.",
+                        example: "255")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "HEX.ENCODE 255", output: "0xFF"),
-                    LogoPrimitiveExample(input: "HEX.ENCODE \"abc", output: "616263")
+                    LogoPrimitiveExample(input: "HEX.ENCODE \"abc", output: "616263"),
                 ]
             )
 
@@ -416,11 +425,13 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.hexdecode",
                 source: .zago,
                 parameters: [
-                    LogoPrimitiveParameter(name: "hex_string", required: true, description: "0x hex number or hex byte string to decode.", example: "0xFF")
+                    LogoPrimitiveParameter(
+                        name: "hex_string", required: true, description: "0x hex number or hex byte string to decode.",
+                        example: "0xFF")
                 ],
                 examples: [
                     LogoPrimitiveExample(input: "HEX.DECODE \"0xFF", output: "255"),
-                    LogoPrimitiveExample(input: "HEX.DECODE \"616263", output: "abc")
+                    LogoPrimitiveExample(input: "HEX.DECODE \"616263", output: "abc"),
                 ]
             )
 
@@ -434,7 +445,9 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(name: "text", required: true, description: "Text to hash.", example: "zago")
                 ],
                 examples: [
-                    LogoPrimitiveExample(input: "HASH.SHA256 \"zago", output: "a8c9c415e3c160a7da0b080e3ad97dbde9fb7dc26f961a9ab36b0f35c1b990eb")
+                    LogoPrimitiveExample(
+                        input: "HASH.SHA256 \"zago",
+                        output: "a8c9c415e3c160a7da0b080e3ad97dbde9fb7dc26f961a9ab36b0f35c1b990eb")
                 ]
             )
 

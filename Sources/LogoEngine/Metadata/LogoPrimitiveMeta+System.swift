@@ -40,27 +40,28 @@ extension LogoPrimitive {
         case .sortLocalized:
             return LogoPrimitiveMeta(
                 name: "SORT.LOCALIZED",
-                description: "Sorts elements in list, array, or string using natural localized order and optional locale.",
+                description: "Sorts elements in list, array, or string using natural localized order.",
                 localizedDescriptionKey: "logo.doc.sort.localized",
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(
-                        name: "list", required: true, description: "The list or string to process. Used by SORT.LOCALIZED.",
+                        name: "list", required: true,
+                        description: "The list or string to process. Used by SORT.LOCALIZED.",
                         example: "[item1 item10 item2]"),
                     LogoPrimitiveParameter(
                         name: "order", required: false, description: "The order argument. Used by SORT.LOCALIZED.",
                         example: "desc", allowedValues: ["asc", "desc"]),
                     LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale identifier (e.g., 'zh_Hant', 'ja_JP', 'de_DE'). Used by SORT.LOCALIZED.",
-                        example: "zh_Hant"),
-                    LogoPrimitiveParameter(
-                        name: "template", required: false, description: "The Logo template to apply. Used by SORT.LOCALIZED.",
+                        name: "template", required: false,
+                        description: "The Logo template to apply. Used by SORT.LOCALIZED.",
                         example: "[?1 < ?2]"),
                 ],
                 examples: [
-                    LogoPrimitiveExample(input: "SORT.LOCALIZED [\"file10.txt \"file2.txt \"file1.txt]", output: "[\"file1.txt \"file2.txt \"file10.txt]"),
-                    LogoPrimitiveExample(input: "SORT.LOCALIZED \"desc [\"v1.2 \"v1.10 \"v1.9]", output: "[\"v1.10 \"v1.9 \"v1.2]"),
-                    LogoPrimitiveExample(input: "SORT.LOCALIZED \"de_DE [\"ä \"b \"a]", output: "[\"a \"ä \"b]")
+                    LogoPrimitiveExample(
+                        input: "SORT.LOCALIZED [\"file10.txt \"file2.txt \"file1.txt]",
+                        output: "[\"file1.txt \"file2.txt \"file10.txt]"),
+                    LogoPrimitiveExample(
+                        input: "SORT.LOCALIZED \"desc [\"v1.2 \"v1.10 \"v1.9]", output: "[\"v1.10 \"v1.9 \"v1.2]"),
                 ]
             )
 
