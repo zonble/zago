@@ -174,10 +174,10 @@ extension LogoEngine {
             var descending = false
             if let nextToken = reader.peekToken() {
                 let modifier = unquote(nextToken).lowercased()
-                if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
+                if modifier == "desc" {
                     descending = true
                     _ = reader.nextRawToken()
-                } else if modifier == "asc" || modifier == "ascending" || modifier == "lessp" || modifier == "less?" {
+                } else if modifier == "asc" {
                     descending = false
                     _ = reader.nextRawToken()
                 }
@@ -231,14 +231,22 @@ extension LogoEngine {
         case .sortLocalized:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var descending = false
-            if let nextToken = reader.peekToken() {
-                let modifier = unquote(nextToken).lowercased()
-                if modifier == "desc" || modifier == "descending" || modifier == "greaterp" || modifier == "greater?" {
+            var targetLocale = Locale.autoupdatingCurrent
+
+            while let nextToken = reader.peekToken() {
+                let unquoted = unquote(nextToken)
+                let lower = unquoted.lowercased()
+                if lower == "desc" {
                     descending = true
                     _ = reader.nextRawToken()
-                } else if modifier == "asc" || modifier == "ascending" || modifier == "lessp" || modifier == "less?" {
+                } else if lower == "asc" {
                     descending = false
                     _ = reader.nextRawToken()
+                } else if LogoDateTimeFormatter.isLocaleName(unquoted) {
+                    targetLocale = LogoDateTimeFormatter.parseLocale(unquoted)
+                    _ = reader.nextRawToken()
+                } else {
+                    break
                 }
             }
             guard reader.peekToken() != nil else { return nil }
@@ -258,7 +266,12 @@ extension LogoEngine {
                     let res = self.applyTemplate(templateStr: t, args: [a, b])
                     return logoIsTrue(res)
                 } else {
-                    let comparison = a.localizedStandardCompare(b)
+                    let comparison = a.compare(
+                        b,
+                        options: [.caseInsensitive, .numeric, .widthInsensitive, .forcedOrdering],
+                        range: nil,
+                        locale: targetLocale
+                    )
                     return descending ? comparison == .orderedDescending : comparison == .orderedAscending
                 }
             }
