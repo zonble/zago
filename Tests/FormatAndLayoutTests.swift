@@ -456,7 +456,7 @@ struct FormatAndLayoutTests {
     @Test func testJustifyMarkdownListPreservesCursorPosition() throws {
         let buffer = TextBuffer()
         buffer.lines = [
-            "- 這是一個包含 Markdown 清單符號的段落，測試重排時",
+            "- 這是一個包含 Markdown 列表符號的段落，測試重排時",
             "  是否能正確跟隨游標所在的中文關鍵字位置。",
         ]
         // Cursor on '關' in "關鍵字" on line 1

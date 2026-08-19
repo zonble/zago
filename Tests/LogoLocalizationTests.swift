@@ -45,12 +45,12 @@ struct LogoLocalizationTests {
     func testTraditionalChineseIfConditionAndOperators() {
         let engine = makeEngine()
         engine.execute("""
-        如果 10 大於 5 [ 設定 "x "Pass ] [ 設定 "x "Fail ]
+        如果 10 大於 5 [ 變數 "x "Pass ] [ 變數 "x "Fail ]
         """)
         #expect(engine.variables["x"] == "Pass")
 
         engine.execute("""
-        如果 3 等於 3 [ 設定 "y "Equal ]
+        如果 3 等於 3 [ 變數 "y "Equal ]
         """)
         #expect(engine.variables["y"] == "Equal")
     }
@@ -59,9 +59,9 @@ struct LogoLocalizationTests {
     func testTraditionalChineseMathPrimitives() {
         let engine = makeEngine()
         engine.execute("""
-        設定 "sumResult 總和 15 25
-        設定 "diffResult 差 50 20
-        設定 "prodResult 積 6 7
+        變數 "sumResult 總和 15 25
+        變數 "diffResult 相差 50 20
+        變數 "prodResult 相積 6 7
         """)
         #expect(engine.variables["sumresult"] == "40")
         #expect(engine.variables["diffresult"] == "30")
@@ -156,8 +156,8 @@ struct LogoLocalizationTests {
     func testChineseTextTransformsAndDetectors() {
         let engine = makeEngine()
         engine.execute("""
-        設定 "base64 編碼64 "hello
-        設定 "urls 偵測網址 "https://example.com
+        變數 "base64 Base64編碼 "hello
+        變數 "urls 偵測網址 "https://example.com
         """)
         #expect(engine.variables["base64"] == "aGVsbG8=")
         #expect(engine.variables["urls"] == "[https://example.com]")
@@ -167,11 +167,11 @@ struct LogoLocalizationTests {
     func testChineseHigherOrderAndDataStructures() {
         let engine = makeEngine()
         engine.execute("""
-        設定 "nums [ 1 2 3 4 ]
-        設定 "firstNum 第一個 :nums
-        設定 "rest 除了第一個 :nums
-        設定 "reversed 反轉 :nums
-        設定 "isLst 清單? :nums
+        變數 "nums [ 1 2 3 4 ]
+        變數 "firstNum 第一個 :nums
+        變數 "rest 除了第一個 :nums
+        變數 "reversed 反轉 :nums
+        變數 "isLst 列表? :nums
         """)
         #expect(engine.variables["firstnum"] == "1")
         #expect(engine.variables["rest"] == "[2 3 4]")
@@ -201,7 +201,7 @@ struct LogoLocalizationTests {
         定義 "問候 [ [ 名字 ] [
             輸出 接字 "你好， :名字
         ] ]
-        設定 "msg 問候 "世界
+        變數 "msg 問候 "世界
         """)
         #expect(engine.variables["msg"] == "你好，世界")
     }
