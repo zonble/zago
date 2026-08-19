@@ -4,6 +4,8 @@ import Drawing
 private let borderStyleAllowedValues = BorderStyle.allCases.map(\.rawValue)
 private let arrowStyleAllowedValues = ArrowStyle.allCases.map(\.rawValue)
 private let arrowDirectionAllowedValues = LineArrowMode.allKeywords.map { $0.lowercased() }
+private let boxAlignmentAllowedValues = BoxAlignment.allCases.map(\.rawValue)
+private let boxExitPositionAllowedValues = BoxExitPosition.allCases.map(\.rawValue)
 
 private let boxStyleDSLNote = """
     Supports Style DSL for border styles and rounded corners:
@@ -34,14 +36,14 @@ private func boxParameters(for commandName: String) -> [LogoPrimitiveParameter] 
             name: "text", required: false, description: "The text value. Used by \(commandName).", example: "text"),
         LogoPrimitiveParameter(
             name: "align", required: false, description: "The align argument. Used by \(commandName).",
-            example: "left", allowedValues: ["left", "center", "right"]),
+            example: "left", allowedValues: boxAlignmentAllowedValues),
         LogoPrimitiveParameter(
             name: "style", required: false, description: "The formatting or border style. Used by \(commandName).",
             example: "single",
             allowedValues: borderStyleAllowedValues),
         LogoPrimitiveParameter(
             name: "exit", required: false, description: "The exit argument. Used by \(commandName).",
-            example: "ne", allowedValues: ["ne", "se", "nw", "sw", "down"]),
+            example: "ne", allowedValues: boxExitPositionAllowedValues),
     ]
 }
 

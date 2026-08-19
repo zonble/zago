@@ -1,4 +1,4 @@
-import Foundation
+private let sortOrderAllowedValues = LogoSortOrder.allCases.map(\.rawValue)
 
 extension LogoPrimitive {
     var systemMeta: LogoPrimitiveMeta? {
@@ -15,7 +15,7 @@ extension LogoPrimitive {
                         example: "[A B C]"),
                     LogoPrimitiveParameter(
                         name: "order", required: false, description: "The order argument. Used by SORT.",
-                        example: "desc", allowedValues: ["asc", "desc"]),
+                        example: "desc", allowedValues: sortOrderAllowedValues),
                     LogoPrimitiveParameter(
                         name: "template", required: false, description: "The Logo template to apply. Used by SORT.",
                         example: "[FD 1]"),
@@ -36,7 +36,7 @@ extension LogoPrimitive {
                         example: "[item1 item10 item2]"),
                     LogoPrimitiveParameter(
                         name: "order", required: false, description: "The order argument. Used by SORT.LOCALIZED.",
-                        example: "desc", allowedValues: ["asc", "desc"]),
+                        example: "desc", allowedValues: sortOrderAllowedValues),
                     LogoPrimitiveParameter(
                         name: "template", required: false,
                         description: "The Logo template to apply. Used by SORT.LOCALIZED.",
