@@ -5,6 +5,25 @@ private let borderStyleAllowedValues = BorderStyle.allCases.map(\.rawValue)
 private let arrowStyleAllowedValues = ArrowStyle.allCases.map(\.rawValue)
 private let arrowDirectionAllowedValues = LineArrowMode.allKeywords.map { $0.lowercased() }
 
+private let boxStyleDSLNote = """
+    Supports Style DSL for border styles and rounded corners:
+    • Borders: - (single), + (heavy), = (double), a (ascii), -- (double dash), ++ (heavy double dash), --- (triple dash), +++ (heavy triple dash), ---- (quad dash), ++++ (heavy quad dash)
+    • Rounded corners: append ")" (e.g. -), +), =), a), ---), ++++))
+    """
+
+private let tableStyleDSLNote = """
+    Supports Style DSL for border styles and rounded corners:
+    • Borders: - (single), + (heavy), = (double), a (ascii), -- (double dash), ++ (heavy double dash), --- (triple dash), +++ (heavy triple dash), ---- (quad dash), ++++ (heavy quad dash)
+    • Rounded corners: append ")" (e.g. -), +), =), a), ---), ++++))
+    """
+
+private let lineStyleDSLNote = """
+    Supports Style DSL with concise format [startArrow][border][endArrow]:
+    • Borders: - (single), + (heavy), = (double), a (ascii), --, ++, ---, +++, ----, ++++
+    • Arrows: < > (standard), << >> (solid), <| |> (hollow), <~ ~> (stemmed), <. .> (small)
+    • Examples: "->", "<=>", "<<=>>", "<~+", "-->>", "<|+++|>"
+    """
+
 private func boxParameters(for commandName: String) -> [LogoPrimitiveParameter] {
     [
         LogoPrimitiveParameter(
@@ -56,7 +75,12 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.box",
                 source: .zago,
                 parameters: boxParameters(for: "BOX"),
-                examples: [LogoPrimitiveExample(input: "BOX 30 5 \"Window \"center \"double")]
+                examples: [
+                    LogoPrimitiveExample(input: "BOX 30 5 \"Window \"center \"double"),
+                    LogoPrimitiveExample(input: "BOX 20 4 \"Hello -)"),
+                    LogoPrimitiveExample(input: "BOX 16 5 =)"),
+                ],
+                notes: boxStyleDSLNote
             )
 
         case .drawBox:
@@ -66,7 +90,11 @@ extension LogoPrimitive {
                 localizedDescriptionKey: "logo.doc.drawbox",
                 source: .zago,
                 parameters: boxParameters(for: "DRAWBOX"),
-                examples: [LogoPrimitiveExample(input: "DRAWBOX 20 6 \"Popup \"center \"round")]
+                examples: [
+                    LogoPrimitiveExample(input: "DRAWBOX 20 6 \"Popup \"center \"round"),
+                    LogoPrimitiveExample(input: "DRAWBOX 20 6 -)"),
+                ],
+                notes: boxStyleDSLNote
             )
 
         case .inset:
@@ -100,7 +128,9 @@ extension LogoPrimitive {
                 examples: [
                     LogoPrimitiveExample(input: "LINE 40 \"single"),
                     LogoPrimitiveExample(input: "LINE 10 \"arrow \"hollow"),
-                ]
+                    LogoPrimitiveExample(input: "LINE 20 \"<<=>>\""),
+                ],
+                notes: lineStyleDSLNote
             )
 
         case .vline:
@@ -113,7 +143,9 @@ extension LogoPrimitive {
                 examples: [
                     LogoPrimitiveExample(input: "VLINE 8 \"single"),
                     LogoPrimitiveExample(input: "VLINE 5 \"arrow \"stemmed"),
-                ]
+                    LogoPrimitiveExample(input: "VLINE 6 \"++|>\""),
+                ],
+                notes: lineStyleDSLNote
             )
 
         case .table:
@@ -145,7 +177,9 @@ extension LogoPrimitive {
                     LogoPrimitiveExample(input: "TABLE"),
                     LogoPrimitiveExample(input: "TABLE 3 4 12"),
                     LogoPrimitiveExample(input: "TABLE 3 3 10 \"double"),
-                ]
+                    LogoPrimitiveExample(input: "TABLE 3 3 8 -)"),
+                ],
+                notes: tableStyleDSLNote
             )
 
         case .newline:

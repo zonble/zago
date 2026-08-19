@@ -377,6 +377,9 @@ final class MenuBar {
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
                         isVisible: { $0.isLogoUIEnabled }),
                     MenuItem(
+                        titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference,
+                        isVisible: { $0.isLogoUIEnabled }),
+                    MenuItem(
                         titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace,
                         isVisible: { $0.isLogoUIEnabled }),
                 ])

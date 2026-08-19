@@ -99,6 +99,7 @@ extension Editor {
         // UI & Macro Commands
         commandRegistry.register(LogoMacroCommand())
         commandRegistry.register(LogoReferenceCommand())
+        commandRegistry.register(StyleDSLReferenceCommand())
         commandRegistry.register(LogoWorkspaceCommand())
         commandRegistry.register(LogoOutputCommand())
         commandRegistry.register(ClearLogoOutputCommand())

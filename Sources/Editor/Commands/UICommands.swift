@@ -37,6 +37,28 @@ struct LogoReferenceCommand: Command {
     }
 }
 
+struct StyleDSLReferenceCommand: Command {
+    let id: CommandID = .styleDSLReference
+    let name = "Style DSL Reference"
+    let description = "Show Style DSL syntax and usage reference"
+    let commandBarAliases = ["help-style", "help-styledsl", "styledsl"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        TextDocumentView(
+            terminal: editor.terminal,
+            title: editor.l10n["styledsl.reference_title"],
+            lines: StyleDSLReferenceContent.lines(language: editor.language),
+            footer: editor.l10n["textview.footer"]
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+        return .succeeded
+    }
+}
+
 struct LogoWorkspaceCommand: Command {
     let id: CommandID = .logoWorkspace
     let name = "Editor LOGO Workspace"
