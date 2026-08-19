@@ -2,6 +2,8 @@ import Foundation
 
 /// Supported styles for person name formatting in LogoEngine.
 public enum LogoPersonNameStyle: Sendable, Equatable {
+    public static let allowedStyleNames: [String] = ["medium", "short", "long", "abbreviated"]
+
     case `default`
     case short
     case medium

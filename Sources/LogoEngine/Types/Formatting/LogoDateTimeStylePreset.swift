@@ -2,6 +2,8 @@ import Foundation
 
 /// Supported style presets and custom pattern specifications for date/time formatting.
 public enum LogoDateTimeStylePreset: Sendable, Equatable {
+    public static let allowedPresetNames: [String] = ["short", "medium", "long", "full", "iso8601"]
+
     case short
     case medium
     case long

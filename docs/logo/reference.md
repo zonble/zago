@@ -355,8 +355,7 @@ If cursor is at `(0, 0)`:
 `TABLE` inserts plain-text grid tables at the cursor position.
 
 ```logo
-TABLE BORDER ROUND
-TABLE 2 2 16
+TABLE 2 2 16 "round
 ```
 
 `TABLE rows cols cellWidth` accepts optional numeric expressions. Rows are clamped to `1...50`, columns to `1...20`, and cell width to `1...40`.
@@ -724,13 +723,12 @@ their own syntax and are not treated as general expressions.
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
 | `LINE` | - | `LINE [length] [style] [arrow] [arrowStyle]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
 | `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
-| `TABLE` | - | `TABLE [rows] [cols] [cellWidth]`<br>`TABLE BORDER style`<br>`TABLE NEXTSTYLE` | Inserts a plain-text grid table at cursor or switches table border styles | `TABLE 3 3 12`, `TABLE BORDER "triple-dash`, `TABLE NEXTSTYLE` |
+| `TABLE` | - | `TABLE [rows] [cols] [cellWidth] [style] [rounded]` | Inserts a plain-text grid table at cursor | `TABLE 3 3 12`, `TABLE 3 3 12 "double` |
 | `INSET` | - | `INSET "text" [align] [style]`<br>`INSET width height [style]` | Draws an inset box frame inside active selection or dimensions | `INSET 20 4 "double"` |
 | `FILL` | - | `FILL [width] [height] "pattern"` | Fills active canvas mark block, table cell, or specified rectangle with pattern text | `FILL "."`, `FILL 20 3 ".#"` |
 | `MARK` | - | `MARK` | Toggles the rectangular canvas block mark in canvas mode | `MARK` |
 | `CUT` | - | `CUT` | Cuts selected text or current line to clipboard | `CUT` |
 | `PASTE` | `UNCUT` | `PASTE` | Pastes clipboard text at current cursor | `PASTE` |
-| `FIND` | `SEARCH` | `FIND "query"` | Case-insensitive forward text search | `FIND "func"` |
 
 ---
 
@@ -904,7 +902,6 @@ TYPE ITEM 2 :cells
 | `STARTSWITH?` | `HAS_PREFIX?` | `STARTSWITH? prefix string` | Returns true if `string` starts with `prefix` | `STARTSWITH? "# "#_Title` |
 | `ENDSWITH?` | `ENDSP`, `HAS_SUFFIX?` | `ENDSWITH? suffix string` | Returns true if `string` ends with `suffix` | `ENDSWITH? ".md "file.md` |
 | `SUBSTRING` | `SUBSTR`, `SLICE` | `SUBSTRING string start [length]` | Extracts substring starting at 1-based `start` position | `SUBSTRING "Hello_World 1 5` |
-| `SEARCH` | - | `SEARCH haystack needle` | Searches string or list for occurrence of needle | `SEARCH "banana "an` |
 | `REPLACE` | `SUBSTITUTE` | `REPLACE old new string` | Replaces all occurrences of `old` with `new` in `string` | `REPLACE "foo "bar "foo_text` |
 | `TRIM` | `STRIP` | `TRIM string` | Removes leading and trailing whitespace from string | `TRIM "  hello` |
 | `REPEATSTR` | `STR_REPEAT` | `REPEATSTR count string` | Repeats string for `count` times | `REPEATSTR 5 "=` |

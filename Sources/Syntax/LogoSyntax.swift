@@ -1,3 +1,4 @@
+import Drawing
 import Foundation
 import LogoEngine
 
@@ -21,12 +22,7 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
     }
 
     static let keywordPattern: String = {
-        let lineSubkeywords = [
-            "ARROW", "RIGHTARROW", "DOWNARROW",
-            "BACKARROW", "LEFTARROW", "UPARROW",
-            "BOTHARROW", "BOTH", "BIDIR",
-        ]
-        let aliases = (LogoPrimitive.keywordAliases + lineSubkeywords)
+        let aliases = (LogoPrimitive.keywordAliases + LineArrowMode.allKeywords)
             .map { NSRegularExpression.escapedPattern(for: $0) }
             .joined(separator: "|")
         return "(?i)(?<![A-Za-z0-9_.?])(\(aliases))(?![A-Za-z0-9_.?])"

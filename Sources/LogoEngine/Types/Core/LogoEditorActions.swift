@@ -34,7 +34,6 @@ public enum LogoEditorAction {
     case setArrowStyle(String)
     case nextBorderStyle
     case moveCursorVirtual(Int)
-    case search(String)
     case markModified
     case updateLineIndex(Int)
     case updateColumnIndex(Int)

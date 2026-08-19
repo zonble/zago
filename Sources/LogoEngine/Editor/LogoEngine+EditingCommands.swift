@@ -174,23 +174,6 @@ extension LogoEngine {
             delegate.logoEngine(self, performAction: .editJustify)
             return true
 
-        case .find, .search:
-            index += 1
-            if index < tokens.count {
-                let nextToken = tokens[index]
-                if nextToken.hasPrefix("[") || customProcedures[nextToken.uppercased()] != nil
-                    || (index + 1 < tokens.count && tokens[index + 1].hasPrefix("["))
-                {
-                    index -= 1
-                    let val = evaluateExpression(tokens, index: &index)
-                    lastResult = val
-                } else {
-                    let query = evaluateExpression(tokens, index: &index)
-                    delegate.logoEngine(self, performAction: .search(query))
-                }
-            }
-            return true
-
         case .clearBuffer:
             delegate.logoEngine(self, performAction: .clearBuffer)
             return true

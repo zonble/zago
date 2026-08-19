@@ -1,14 +1,14 @@
 import Foundation
 
 /// Defines formatting styles for numbers in LogoEngine.
-public enum LogoNumberStyle: Sendable, Equatable {
-    case decimal
-    case percent
-    case currency
-    case spellout
-    case financial
-    case roman
-    case ordinal
+public enum LogoNumberStyle: String, CaseIterable, Sendable, Equatable {
+    case decimal = "decimal"
+    case currency = "currency"
+    case percent = "percent"
+    case roman = "roman"
+    case financial = "financial"
+    case ordinal = "ordinal"
+    case spellout = "spellout"
 
     public init?(keyword raw: String) {
         let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

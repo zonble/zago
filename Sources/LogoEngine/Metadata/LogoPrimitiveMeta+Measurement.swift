@@ -1,31 +1,8 @@
 import Foundation
 
+private let supportedUnitsNote = LogoDimensionKind.supportedUnitsNote
+
 extension LogoPrimitive {
-    private static let supportedUnitsNote: String = """
-        Supported measurement dimensions and units:
-        • Area: sqm, m2, sqkm, km2, sqcm, cm2, sqmm, mm2, squm, sqnm, sqin, in2, sqft, ft2, sqyd, yd2, sqmi, mi2, acre, are, ha
-        • Length: m, km, cm, mm, um, nm, pm, dm, dam, hm, in, ft, yd, mi, nmi, furlong, fathom, ly, pc, au
-        • Volume: l, ml, cl, dl, kl, m3, km3, cm3, mm3, in3, ft3, yd3, mi3, acrefeet, bushel, tsp, tbsp, floz, cup, pt, qt, gal
-        • Angle: deg, rad, grad, rev, arcmin, arcsec
-        • Mass: kg, g, mg, ug, ng, pg, t, lb, oz, ozt, ct, st, slug
-        • Pressure: pa, hpa, kpa, mpa, gpa, bar, mbar, atm, mmhg, torr, inhg, psi
-        • Acceleration: m/s2, gforce, gee, gravity
-        • Duration: s, sec, min, hr, h, day, d, ms, us, ns, ps
-        • Frequency: hz, khz, mhz, ghz, thz, fps, rpm
-        • Speed: m/s, km/h, kmh, mph, knot, kn
-        • Energy: j, kj, mj, gj, cal, kcal, wh, kwh, mwh, btu, ev
-        • Power: w, kw, mw, gw, hp, ps
-        • Temperature: c, celsius, f, fahrenheit, k, kelvin
-        • Illuminance: lx, lux
-        • Electric Charge: c, coulomb, ah, mah, uah
-        • Electric Current: a, amp, ma, ua, ka
-        • Voltage: v, mv, kv, uv, megavolt
-        • Resistance: ohm, kohm, mohm, microohm
-        • Concentration Mass: g/l, mg/dl, mmol/l
-        • Dispersion: ppm
-        • Fuel Efficiency: l/100km, mpg, imperialmpg
-        • Information Storage: b, byte, kb, mb, gb, tb, pb, bit, kbit, mbit, gbit, kib, mib, gib, tib
-        """
 
     var measurementMeta: LogoPrimitiveMeta? {
         switch self {
@@ -53,7 +30,7 @@ extension LogoPrimitive {
                     LogoPrimitiveExample(input: "CONVERT.MEASURE 100 \"c \"f", output: "212"),
                     LogoPrimitiveExample(input: "CONVERT.MEASURE (MEASURE.ADD 1 kg 500 g) \"g", output: "1500"),
                 ],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         // MARK: - FORMAT.MEASURE Metadata
@@ -86,7 +63,7 @@ extension LogoPrimitive {
                         input: "FORMAT.MEASURE (MEASURE.ADD 1 kg 100 g) \"g \"zh_TW", output: "1,100 g"),
                     LogoPrimitiveExample(input: "FORMAT.MEASURE 1500 \"m \"long \"zh_TW \"true", output: "1.5 公里"),
                 ],
-                notes: "Not supported on Linux or Windows.\n\n" + Self.supportedUnitsNote
+                notes: "Not supported on Linux or Windows.\n\n" + supportedUnitsNote
             )
 
         case .measureAdd:
@@ -110,7 +87,7 @@ extension LogoPrimitive {
                         description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.ADD 5 \"km 300 \"m \"m", output: "5300")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureSub:
@@ -133,7 +110,7 @@ extension LogoPrimitive {
                         description: "Target unit for the result (defaults to unit1).", example: "min"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.SUB 1 \"hr 15 \"min \"min", output: "45")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureScale:
@@ -151,7 +128,7 @@ extension LogoPrimitive {
                         name: "factor", required: true, description: "Scaling multiplier factor.", example: "3"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.SCALE 2.5 \"km 3", output: "7.5")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureEqual:
@@ -175,7 +152,7 @@ extension LogoPrimitive {
                         example: "0.001"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.EQUAL? 1000 \"m 1 \"km", output: "true")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureLess:
@@ -196,7 +173,7 @@ extension LogoPrimitive {
                         name: "unit2", required: true, description: "Second measurement unit.", example: "km"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.LESS? 500 \"m 1 \"km", output: "true")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureGreater:
@@ -217,7 +194,7 @@ extension LogoPrimitive {
                         name: "unit2", required: true, description: "Second measurement unit.", example: "m"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.GREATER? 1.5 \"km 1000 \"m", output: "true")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureMin:
@@ -240,7 +217,7 @@ extension LogoPrimitive {
                         description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.MIN 1 \"km 800 \"m \"m", output: "800")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         case .measureMax:
@@ -263,7 +240,7 @@ extension LogoPrimitive {
                         description: "Target unit for the result (defaults to unit1).", example: "m"),
                 ],
                 examples: [LogoPrimitiveExample(input: "MEASURE.MAX 1 \"km 800 \"m \"m", output: "1000")],
-                notes: Self.supportedUnitsNote
+                notes: supportedUnitsNote
             )
 
         default:

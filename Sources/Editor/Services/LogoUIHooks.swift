@@ -11,7 +11,6 @@ public struct LogoUIHooks: @unchecked Sendable {
     public var onReadWord: (@Sendable (String) -> String?)?
     public var onReadChar: (@Sendable (String) -> String?)?
     public var onAppendOutput: (@Sendable (String) -> Void)?
-    public var onSearch: (@Sendable (String) -> Void)?
     public var onFillCanvasBlock: (@Sendable (String) -> Bool)?
     public var onQueryExtra: (@Sendable (LogoEditorQuery) -> LogoEditorQueryResult?)?
 
@@ -23,7 +22,6 @@ public struct LogoUIHooks: @unchecked Sendable {
         onReadWord: (@Sendable (String) -> String?)? = nil,
         onReadChar: (@Sendable (String) -> String?)? = nil,
         onAppendOutput: (@Sendable (String) -> Void)? = nil,
-        onSearch: (@Sendable (String) -> Void)? = nil,
         onFillCanvasBlock: (@Sendable (String) -> Bool)? = nil,
         onQueryExtra: (@Sendable (LogoEditorQuery) -> LogoEditorQueryResult?)? = nil
     ) {
@@ -34,7 +32,6 @@ public struct LogoUIHooks: @unchecked Sendable {
         self.onReadWord = onReadWord
         self.onReadChar = onReadChar
         self.onAppendOutput = onAppendOutput
-        self.onSearch = onSearch
         self.onFillCanvasBlock = onFillCanvasBlock
         self.onQueryExtra = onQueryExtra
     }

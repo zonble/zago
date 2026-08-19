@@ -219,7 +219,6 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "折疊": .reduce,
         "累計": .reduce,
         "交叉映射": .crossmap,
-        "搜尋": .search,
 
         // Math & Arithmetic
         "總和": .sum,

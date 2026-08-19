@@ -3,20 +3,6 @@ import Foundation
 extension LogoPrimitive {
     var systemMeta: LogoPrimitiveMeta? {
         switch self {
-        case .search:
-            return LogoPrimitiveMeta(
-                name: "SEARCH",
-                description: "Searches text in editor buffer and highlights occurrences.",
-                localizedDescriptionKey: "logo.doc.search",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "query", required: true, description: "The query argument. Used by SEARCH.",
-                        example: "value")
-                ],
-                examples: [LogoPrimitiveExample(input: "SEARCH \"hello")]
-            )
-
         case .sort:
             return LogoPrimitiveMeta(
                 name: "SORT",

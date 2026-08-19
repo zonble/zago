@@ -455,17 +455,9 @@ import TextMetrics
     #expect(expressionEditor.buffer.lines.count == 9)
     #expect(expressionEditor.buffer.lines[0] == "┌──────┬──────┬──────┐")
 
-    let editor3 = Editor()
-    let logoEngine3 = LogoEngine(delegate: editor3)
-    logoEngine3.execute("TABLE BORDER double-round")
-    #expect(logoEngine3.hasSetStatusMessage)
-
-    logoEngine3.execute("TABLE NEXTSTYLE")
-    #expect(logoEngine3.hasSetStatusMessage)
-
     let heavyEditor = Editor()
     let heavyEngine = LogoEngine(delegate: heavyEditor)
-    heavyEngine.execute("TABLE BORDER heavy TABLE 1 1 3")
+    heavyEngine.execute("TABLE 1 1 3 \"heavy\"")
     #expect(
         heavyEditor.buffer.lines == [
             "┏━━━┓",

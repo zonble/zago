@@ -1,82 +1,73 @@
 import Foundation
 
+private let presetAllowedValues = LogoDateTimeStylePreset.allowedPresetNames
+private let calendarAllowedValues = Calendar.Identifier.supportedLogoCalendarNames
+private let unitAllowedValues = Calendar.Component.supportedLogoUnitNames
+
+private func currentDateTimeParameters(
+    for commandName: String,
+    formatExample: String,
+    localeDescription: String
+) -> [LogoPrimitiveParameter] {
+    [
+        LogoPrimitiveParameter(
+            name: "format", required: false, description: "The format to use. Used by \(commandName).",
+            example: formatExample,
+            allowedValues: presetAllowedValues),
+        LogoPrimitiveParameter(
+            name: "locale", required: false, description: localeDescription,
+            example: "en_US"),
+        LogoPrimitiveParameter(
+            name: "timezone", required: false, description: "The timezone name. Used by \(commandName).",
+            example: "UTC"),
+        LogoPrimitiveParameter(
+            name: "calendar", required: false, description: "The calendar type. Used by \(commandName).",
+            example: "gregorian",
+            allowedValues: calendarAllowedValues),
+    ]
+}
+
 extension LogoPrimitive {
     var dateTimeMeta: LogoPrimitiveMeta? {
-        switch self {
+        return switch self {
         case .date:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "DATE",
                 description: "Returns formatted current date string.",
                 localizedDescriptionKey: "logo.doc.date",
                 source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "format", required: false, description: "The format to use. Used by DATE.",
-                        example: "full",
-                        allowedValues: ["short", "medium", "long", "full", "iso8601"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale to format the date. Used by DATE.",
-                        example: "en_US"),
-                    LogoPrimitiveParameter(
-                        name: "timezone", required: false, description: "The timezone name. Used by DATE.",
-                        example: "UTC"),
-                    LogoPrimitiveParameter(
-                        name: "calendar", required: false, description: "The calendar type. Used by DATE.",
-                        example: "gregorian"),
-                ],
+                parameters: currentDateTimeParameters(
+                    for: "DATE", formatExample: "full",
+                    localeDescription: "The locale to format the date. Used by DATE."),
                 examples: [LogoPrimitiveExample(input: "DATE")]
             )
 
         case .time:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "TIME",
                 description: "Returns formatted current time string.",
                 localizedDescriptionKey: "logo.doc.time",
                 source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "format", required: false, description: "The format to use. Used by TIME.",
-                        example: "medium",
-                        allowedValues: ["short", "medium", "long", "full", "iso8601"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale to format the time. Used by TIME.",
-                        example: "en_US"),
-                    LogoPrimitiveParameter(
-                        name: "timezone", required: false, description: "The timezone name. Used by TIME.",
-                        example: "UTC"),
-                    LogoPrimitiveParameter(
-                        name: "calendar", required: false, description: "The calendar type. Used by TIME.",
-                        example: "gregorian"),
-                ],
+                parameters: currentDateTimeParameters(
+                    for: "TIME", formatExample: "medium",
+                    localeDescription: "The locale to format the time. Used by TIME."),
                 examples: [LogoPrimitiveExample(input: "TIME")]
             )
 
         case .datetime:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "DATETIME",
                 description: "Returns formatted current date and time string.",
                 localizedDescriptionKey: "logo.doc.datetime",
                 source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "format", required: false, description: "The format to use. Used by DATETIME.",
-                        example: "iso8601",
-                        allowedValues: ["short", "medium", "long", "full", "iso8601"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale to format. Used by DATETIME.",
-                        example: "en_US"),
-                    LogoPrimitiveParameter(
-                        name: "timezone", required: false, description: "The timezone name. Used by DATETIME.",
-                        example: "UTC"),
-                    LogoPrimitiveParameter(
-                        name: "calendar", required: false, description: "The calendar type. Used by DATETIME.",
-                        example: "gregorian"),
-                ],
+                parameters: currentDateTimeParameters(
+                    for: "DATETIME", formatExample: "iso8601",
+                    localeDescription: "The locale to format. Used by DATETIME."),
                 examples: [LogoPrimitiveExample(input: "DATETIME")]
             )
 
         case .dateformat:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "FORMAT.DATE",
                 description: "Parses date string and reformats using locale, timezone, or custom style.",
                 localizedDescriptionKey: "logo.doc.dateformat",
@@ -88,7 +79,7 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "format", required: false,
                         description: "The format specifier or custom date template (e.g. yyyy-MM-dd).", example: "long",
-                        allowedValues: ["short", "medium", "long", "full", "iso8601"]),
+                        allowedValues: presetAllowedValues),
                     LogoPrimitiveParameter(
                         name: "locale", required: false, description: "The target locale identifier.", example: "zh_TW"),
                     LogoPrimitiveParameter(
@@ -97,13 +88,13 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "calendar", required: false, description: "The calendar system to use.",
                         example: "gregorian",
-                        allowedValues: ["gregorian", "japanese", "buddhist", "roc", "islamic", "hebrew", "chinese"]),
+                        allowedValues: calendarAllowedValues),
                 ],
                 examples: [LogoPrimitiveExample(input: "FORMAT.DATE \"2026-12-31 \"full \"zh_TW")]
             )
 
         case .dateadd:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "DATE.ADD",
                 description: "Adds or subtracts date components (days, weeks, months, years) from date.",
                 localizedDescriptionKey: "logo.doc.dateadd",
@@ -118,13 +109,13 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "unit", required: false, description: "The unit used for the operation. Used by DATEADD.",
                         example: "days",
-                        allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),
+                        allowedValues: unitAllowedValues),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE.ADD DATE 7 \"days")]
             )
 
         case .datediff:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "DATE.DIFF",
                 description: "Calculates time difference between two dates in specified units.",
                 localizedDescriptionKey: "logo.doc.datediff",
@@ -139,63 +130,13 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "unit", required: false,
                         description: "The unit used for the operation. Used by DATEDIFF.", example: "days",
-                        allowedValues: ["days", "weeks", "months", "years", "hours", "minutes", "seconds"]),
+                        allowedValues: unitAllowedValues),
                 ],
                 examples: [LogoPrimitiveExample(input: "DATE.DIFF \"2026-12-31 DATE \"days")]
             )
 
-        case .formatNumber:
-            return LogoPrimitiveMeta(
-                name: "FORMAT.NUMBER",
-                description:
-                    "Formats number using localized decimal, currency, percent, roman, or financial CJK uppercase.",
-                localizedDescriptionKey: "logo.doc.formatnumber",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "num", required: true, description: "The number to format.", example: "1234.5"),
-                    LogoPrimitiveParameter(
-                        name: "style", required: false, description: "The number representation to use.",
-                        example: "currency",
-                        allowedValues: ["decimal", "currency", "percent", "roman", "financial", "ordinal", "spellout"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false,
-                        description: "The locale used for decimal separators, symbols, and words.", example: "en_US"),
-                    LogoPrimitiveParameter(
-                        name: "currency", required: false,
-                        description: "The ISO 4217 currency code used by the currency style.", example: "USD"),
-                    LogoPrimitiveParameter(
-                        name: "precision", required: false,
-                        description: "The exact number of fraction digits for numeric styles.", example: "2"),
-                ],
-                examples: [
-                    LogoPrimitiveExample(input: "FORMAT.NUMBER 1234.5 \"currency \"en_US \"USD", output: "$1,234.50"),
-                    LogoPrimitiveExample(input: "FORMAT.NUMBER 10050208 \"financial", output: "壹仟零伍萬零貳佰零捌"),
-                ]
-            )
-
-        case .formatList:
-            return LogoPrimitiveMeta(
-                name: "FORMAT.LIST",
-                description: "Formats list into localized natural language string (and, or, unit).",
-                localizedDescriptionKey: "logo.doc.formatlist",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "list", required: true, description: "The list or array to format.", example: "[A B C]"),
-                    LogoPrimitiveParameter(
-                        name: "type", required: false, description: "The list conjunction style.", example: "and",
-                        allowedValues: ["and", "or", "unit"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale used for formatting.",
-                        example: "en_US"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.LIST [A B C] \"and \"en_US", output: "A, B, and C")],
-                notes: "Not supported on Linux or Windows."
-            )
-
         case .formatRelativeTime:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "FORMAT.RELATIVETIME",
                 description: "Formats relative elapsed time description (e.g. '2 hours ago').",
                 localizedDescriptionKey: "logo.doc.formatrelativetime",
@@ -213,67 +154,8 @@ extension LogoPrimitive {
                 notes: "Not supported on Linux or Windows."
             )
 
-        case .formatBytes:
-            return LogoPrimitiveMeta(
-                name: "FORMAT.BYTES",
-                description: "Formats byte counts into human-readable memory or file sizes (KB, MB, GB).",
-                localizedDescriptionKey: "logo.doc.formatbytes",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "bytes", required: true, description: "The bytes argument. Used by FORMATBYTES.",
-                        example: "value"),
-                    LogoPrimitiveParameter(
-                        name: "style", required: false,
-                        description: "The formatting or border style. Used by FORMATBYTES.", example: "file",
-                        allowedValues: ["file", "memory", "binary", "decimal", "bytes"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "The locale identifier. Used by FORMATBYTES.",
-                        example: "en_US"),
-                ],
-                examples: [LogoPrimitiveExample(input: "FORMAT.BYTES 1048576", output: "1 MB")]
-            )
-
-        case .formatName:
-            return LogoPrimitiveMeta(
-                name: "FORMAT.NAME",
-                description:
-                    "Formats person name components (given, middle, family, prefix, suffix, nickname) into localized name strings.",
-                localizedDescriptionKey: "logo.doc.formatname",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "givenOrFullName", required: true,
-                        description:
-                            "A full name string, given name, or property list [given family middle prefix suffix nickname ...].",
-                        example: "Arthur"),
-                    LogoPrimitiveParameter(
-                        name: "middleOrFamilyOrStyle", required: false,
-                        description: "Middle name, family name, or display style.", example: "Conan"),
-                    LogoPrimitiveParameter(
-                        name: "familyOrStyle", required: false, description: "Family name or display style.",
-                        example: "Doyle"),
-                    LogoPrimitiveParameter(
-                        name: "style", required: false,
-                        description: "Display style (short, medium, long, abbreviated).", example: "long",
-                        allowedValues: ["medium", "short", "long", "abbreviated"]),
-                    LogoPrimitiveParameter(
-                        name: "locale", required: false, description: "Target locale (e.g. en_US, zh_TW, ja_JP).",
-                        example: "en_US"),
-                ],
-                examples: [
-                    LogoPrimitiveExample(
-                        input: "FORMAT.NAME \"Arthur \"Conan \"Doyle \"long", output: "Arthur Conan Doyle"),
-                    LogoPrimitiveExample(input: "FORMAT.NAME \"Steve \"Jobs \"abbreviated", output: "S. Jobs"),
-                    LogoPrimitiveExample(
-                        input: "FORMAT.NAME [given \"Arthur middle \"Conan family \"Doyle] \"short", output: "Arthur"),
-                ],
-                notes:
-                    "Supports positional inputs (given family / given middle family), full name strings, and property lists ([given ... middle ... family ... prefix ... suffix ... nickname ...]). Not supported on Linux or Windows."
-            )
-
         case .convertCalendar:
-            return LogoPrimitiveMeta(
+            LogoPrimitiveMeta(
                 name: "CONVERT.CALENDAR",
                 description: "Converts date between calendar systems (e.g. Gregorian, ROC, Japanese Wareki, Buddhist).",
                 localizedDescriptionKey: "logo.doc.convertcalendar",
@@ -285,11 +167,11 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "targetCalendar", required: true,
                         description: "The target calendar system.", example: "roc",
-                        allowedValues: ["roc", "japanese", "gregorian", "buddhist", "chinese", "islamic", "hebrew"]),
+                        allowedValues: calendarAllowedValues),
                     LogoPrimitiveParameter(
                         name: "sourceCalendar", required: false,
                         description: "The source calendar system if input date is not in Gregorian calendar.", example: "roc",
-                        allowedValues: ["roc", "japanese", "gregorian", "buddhist", "chinese", "islamic", "hebrew"]),
+                        allowedValues: calendarAllowedValues),
                     LogoPrimitiveParameter(
                         name: "format", required: false,
                         description: "Optional custom date format pattern for output.", example: "yyyy/MM/dd"),
@@ -301,61 +183,8 @@ extension LogoPrimitive {
                 ]
             )
 
-        case .uuid:
-            return LogoPrimitiveMeta(
-                name: "UUID",
-                description: "Generates a unique identifier string (UUID v4, v7, nil, or short ID).",
-                localizedDescriptionKey: "logo.doc.uuid",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "flavor", required: false,
-                        description: "UUID version or format: v4, v7, nil, short.", example: "v7",
-                        allowedValues: ["v4", "v7", "nil", "short", "nano"])
-                ],
-                examples: [
-                    LogoPrimitiveExample(input: "UUID"),
-                    LogoPrimitiveExample(input: "UUID \"v7"),
-                    LogoPrimitiveExample(input: "UUID \"nil", output: "00000000-0000-0000-0000-000000000000"),
-                    LogoPrimitiveExample(input: "UUID \"short"),
-                ]
-            )
-
-        case .isUUID:
-            return LogoPrimitiveMeta(
-                name: "UUID?",
-                description: "Tests whether a string is a valid UUID representation.",
-                localizedDescriptionKey: "logo.doc.is_uuid",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "string", required: true, description: "The string to test.",
-                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479")
-                ],
-                examples: [
-                    LogoPrimitiveExample(input: "UUID? \"f47ac10b-58cc-4372-a567-0e02b2c3d479", output: "true"),
-                    LogoPrimitiveExample(input: "UUID? \"hello", output: "false"),
-                ]
-            )
-
-        case .uuidTime:
-            return LogoPrimitiveMeta(
-                name: "UUID.TIME",
-                description: "Extracts ISO8601 timestamp string from a UUID v7 identifier.",
-                localizedDescriptionKey: "logo.doc.uuid_time",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "uuid_v7_string", required: true, description: "A valid UUID v7 string.",
-                        example: "018f4a3c-b1d5-7123-8abc-def012345678")
-                ],
-                examples: [
-                    LogoPrimitiveExample(input: "UUID.TIME (UUID \"v7)")
-                ]
-            )
-
         default:
-            return nil
+            nil
         }
     }
 }
