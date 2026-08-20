@@ -8,21 +8,37 @@ extension LogoEngine {
         switch prim {
         case .make:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            if let rawName = reader.nextRawToken() {
-                let varName = normalizeVariableName(rawName)
-                let val = reader.nextExpression()
-                variables[varName] = val
+            guard let rawName = reader.nextRawToken(), !isArgumentBoundary(rawName) else {
+                let errorMessage = "[LOGO Error: Not enough inputs to MAKE]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "MAKE")
+                return true
             }
+            guard reader.hasArgumentToken else {
+                let errorMessage = "[LOGO Error: Not enough inputs to MAKE]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "MAKE")
+                return true
+            }
+            let varName = normalizeVariableName(rawName)
+            let val = reader.nextExpression()
+            variables[varName] = val
             reader.commit(to: &index)
             return true
 
         case .name:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            let val = reader.nextExpression()
-            if let rawName = reader.nextRawToken() {
-                let varName = normalizeVariableName(rawName)
-                variables[varName] = val
+            guard reader.hasArgumentToken else {
+                let errorMessage = "[LOGO Error: Not enough inputs to NAME]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "NAME")
+                return true
             }
+            let val = reader.nextExpression()
+            guard let rawName = reader.nextRawToken(), !isArgumentBoundary(rawName) else {
+                let errorMessage = "[LOGO Error: Not enough inputs to NAME]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "NAME")
+                return true
+            }
+            let varName = normalizeVariableName(rawName)
+            variables[varName] = val
             reader.commit(to: &index)
             return true
 

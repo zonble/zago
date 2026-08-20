@@ -16,6 +16,11 @@ extension LogoEngine {
         var args: [String] = []
         for _ in proc.parameters {
             guard !hasUncaughtError else { return nil }
+            guard reader.hasArgumentToken else {
+                let message = "[LOGO Error: Not enough inputs to \(proc.name)]"
+                reportError(LogoError(code: 1, message: message), token: proc.name)
+                return nil
+            }
             args.append(reader.nextExpression())
         }
         reader.commit(to: &index)

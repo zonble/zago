@@ -60,6 +60,11 @@ internal struct LogoArgumentReader {
         return nextExpression()
     }
 
+    var hasArgumentToken: Bool {
+        guard let peek = peekToken() else { return false }
+        return !engine.isArgumentBoundary(peek)
+    }
+
     func peekToken(offset: Int = 1) -> String? {
         var position = index + 1
         var skipped = 0
