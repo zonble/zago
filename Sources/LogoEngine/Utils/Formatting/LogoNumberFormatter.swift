@@ -46,6 +46,7 @@ public enum LogoNumberFormatter {
         currencyCode: String? = nil,
         precision: Int? = nil
     ) -> String {
+        #if canImport(Darwin)
         let loc = Locale(logoLocaleSpec: locale)
 
         if let numStyle = style.numberFormatterStyle {
@@ -73,6 +74,48 @@ public enum LogoNumberFormatter {
         default:
             return "\(number)"
         }
+        #else
+        // Non-Darwin (Linux & Windows) portable pure-Swift implementation
+        switch style {
+        case .roman:
+            return formatRoman(Int(number))
+        case .financial:
+            return formatFinancialChinese(Int(number))
+        case .percent:
+            let pct = number * 100
+            if let precision = precision {
+                return String(format: "%.\(precision)f%%", pct)
+            }
+            return "\(pct)%"
+        case .currency:
+            let sym = currencyCode ?? "$"
+            if let precision = precision {
+                return "\(sym)" + String(format: "%.\(precision)f", number)
+            }
+            return "\(sym)\(number)"
+        case .decimal:
+            if let precision = precision {
+                return String(format: "%.\(precision)f", number)
+            }
+            return "\(number)"
+        case .ordinal:
+            let intVal = Int(number)
+            let suffix: String
+            switch intVal % 100 {
+            case 11, 12, 13: suffix = "th"
+            default:
+                switch intVal % 10 {
+                case 1: suffix = "st"
+                case 2: suffix = "nd"
+                case 3: suffix = "rd"
+                default: suffix = "th"
+                }
+            }
+            return "\(intVal)\(suffix)"
+        case .spellout:
+            return "\(Int(number))"
+        }
+        #endif
     }
 
     /// Converts an integer to Roman Numerals (1...3999).

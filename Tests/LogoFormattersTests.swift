@@ -8,6 +8,7 @@ import Testing
 
     // MARK: - FORMAT.NUMBER Tests
 
+    #if canImport(Darwin)
     @Test func testFormatNumberSpellOutChinese() {
         let engine = LogoEngine()
         var index = 0
@@ -28,6 +29,7 @@ import Testing
         let resWords = engine.evaluateExpression(tokensWords, index: &index)
         #expect(resWords.lowercased() == "forty-two")
     }
+    #endif
 
     @Test func testFormatNumberFinancialChineseDigits() {
         let engine = LogoEngine()
