@@ -45,19 +45,21 @@ extension LogoEngine {
                 var isDict = false
                 var i = 0
                 while i < items.count {
-                    let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                    if ["style", "fmt", "locale", "lang", "currency", "curr", "precision", "digits"].contains(cleanKey)
-                        && i + 1 < items.count
-                    {
+                    let key = items[i].stringValue
+                    if let field = parseFormatOptionField(key), i + 1 < items.count {
                         isDict = true
                         let val = items[i + 1].stringValue
-                        switch cleanKey {
-                        case "style", "fmt": style = LogoFormatters.NumberStyle.parse(val)
-                        case "locale", "lang": localeSpec = val
-                        case "currency", "curr": currencyCode = val
-                        case "precision", "digits": precision = Int(val)
-                        default: break
+                        switch field {
+                        case .style, .format:
+                            style = parseNumberStyle(val) ?? LogoFormatters.NumberStyle.parse(val)
+                        case .locale, .language:
+                            localeSpec = val
+                        case .currency:
+                            currencyCode = val
+                        case .precision:
+                            precision = Int(val)
+                        default:
+                            break
                         }
                         i += 2
                     } else {
@@ -130,15 +132,17 @@ extension LogoEngine {
                     var isDict = false
                     var i = 0
                     while i < optItems.count {
-                        let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                        let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                        if ["type", "kind", "style", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
+                        let key = optItems[i].stringValue
+                        if let field = parseFormatOptionField(key), i + 1 < optItems.count {
                             isDict = true
                             let val = optItems[i + 1].stringValue
-                            switch cleanKey {
-                            case "type", "kind", "style": type = LogoFormatters.ListType.parse(val)
-                            case "locale", "lang": localeSpec = val
-                            default: break
+                            switch field {
+                            case .type, .style, .format:
+                                type = parseListType(val) ?? LogoFormatters.ListType.parse(val)
+                            case .locale, .language:
+                                localeSpec = val
+                            default:
+                                break
                             }
                             i += 2
                         } else {

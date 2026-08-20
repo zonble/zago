@@ -47,6 +47,8 @@ struct LogoTokenParsingAndFieldsTests {
 
     @Test
     func testLogoFormatOptionFieldParsing() {
+        #expect(LogoFormatOptionField.parse("type") == .type)
+        #expect(LogoFormatOptionField.parse("kind") == .type)
         #expect(LogoFormatOptionField.parse("style") == .style)
         #expect(LogoFormatOptionField.parse("fmt") == .format)
         #expect(LogoFormatOptionField.parse("format") == .format)
@@ -59,6 +61,9 @@ struct LogoTokenParsingAndFieldsTests {
         #expect(LogoFormatOptionField.parse("precision") == .precision)
         #expect(LogoFormatOptionField.parse("prec") == .precision)
         #expect(LogoFormatOptionField.parse("unit") == .unit)
+        #expect(LogoFormatOptionField.parse("to") == .unit)
+        #expect(LogoFormatOptionField.parse("natural") == .naturalScale)
+        #expect(LogoFormatOptionField.parse("scale") == .naturalScale)
         #expect(LogoFormatOptionField.parse("calendar") == .calendar)
         #expect(LogoFormatOptionField.parse("date") == .date)
         #expect(LogoFormatOptionField.parse("time") == .time)
@@ -85,12 +90,17 @@ struct LogoTokenParsingAndFieldsTests {
         #expect(plugin.parsePersonNameField("風格") == .style)
         #expect(plugin.parsePersonNameField("語言") == .locale)
 
+        #expect(plugin.parseFormatOptionField("類型") == .type)
+        #expect(plugin.parseFormatOptionField("種類") == .type)
         #expect(plugin.parseFormatOptionField("風格") == .style)
         #expect(plugin.parseFormatOptionField("樣式") == .style)
         #expect(plugin.parseFormatOptionField("語言") == .locale)
         #expect(plugin.parseFormatOptionField("貨幣") == .currency)
         #expect(plugin.parseFormatOptionField("精度") == .precision)
         #expect(plugin.parseFormatOptionField("單位") == .unit)
+        #expect(plugin.parseFormatOptionField("轉為") == .unit)
+        #expect(plugin.parseFormatOptionField("自然換算") == .naturalScale)
+        #expect(plugin.parseFormatOptionField("自動換算") == .naturalScale)
         #expect(plugin.parseFormatOptionField("曆法") == .calendar)
         #expect(plugin.parseFormatOptionField("日期") == .date)
         #expect(plugin.parseFormatOptionField("時間") == .time)
@@ -173,6 +183,19 @@ struct LogoTokenParsingAndFieldsTests {
         // 2. FORMAT.BYTES with Chinese dictionary
         engine.execute("變數 \"bytes (位元格式 1048576 [ \"風格 \"記憶體 \"語言 \"zh-TW ])")
         #expect(engine.variables["bytes"]?.contains("MB") == true || engine.variables["bytes"]?.contains("1") == true)
+
+        // 3. FORMAT.NUMBER with Chinese dictionary
+        engine.execute("變數 \"num (數字格式 1234.56 [ \"風格 \"貨幣 \"貨幣 \"USD \"語言 \"en-US ])")
+        #expect(engine.variables["num"]?.contains("1,234.56") == true || engine.variables["num"]?.contains("$") == true)
+
+        // 4. FORMAT.LIST with Chinese dictionary
+        engine.execute("變數 \"list (清單格式 [ \"蘋果 \"香蕉 \"橘子 ] [ \"類型 \"以及 \"語言 \"zh-TW ])")
+        #expect(engine.variables["list"]?.contains("蘋果") == true)
+        #expect(engine.variables["list"]?.contains("香蕉") == true)
+
+        // 5. FORMAT.MEASUREMENT with Chinese dictionary
+        engine.execute("變數 \"m (度量格式 1500 \"m [ \"轉為 \"km \"自然換算 \"假 ])")
+        #expect(engine.variables["m"]?.contains("1.5") == true || engine.variables["m"]?.contains("km") == true)
     }
     #endif
 }

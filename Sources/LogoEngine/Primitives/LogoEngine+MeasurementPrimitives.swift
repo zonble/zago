@@ -124,20 +124,21 @@ extension LogoEngine {
                     var isDict = false
                     var i = 0
                     while i < items.count {
-                        let key = items[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                        let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                        if ["style", "fmt", "locale", "lang", "natural", "scale", "unit", "to"].contains(cleanKey)
-                            && i + 1 < items.count
-                        {
+                        let key = items[i].stringValue
+                        if let field = parseFormatOptionField(key), i + 1 < items.count {
                             isDict = true
                             let v = items[i + 1].stringValue
-                            switch cleanKey {
-                            case "style", "fmt": style = v
-                            case "locale", "lang": localeSpec = v
-                            case "natural", "scale":
-                                naturalScale = (v.lowercased() == "true" || v == "1" || v.lowercased() == "yes")
-                            case "unit", "to": targetConversionUnit = v
-                            default: break
+                            switch field {
+                            case .style, .format:
+                                style = v
+                            case .locale, .language:
+                                localeSpec = v
+                            case .naturalScale:
+                                naturalScale = parseBoolean(v) ?? (v.lowercased() == "yes")
+                            case .unit:
+                                targetConversionUnit = v
+                            default:
+                                break
                             }
                             i += 2
                         } else {

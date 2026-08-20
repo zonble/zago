@@ -484,6 +484,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "日期相減": .datediff,
         "數字格式": .formatNumber,
         "列表格式": .formatList,
+        "清單格式": .formatList,
         "時間格式": .formatRelativeTime,
         "相對時間格式": .formatRelativeTime,
         "位元格式": .formatBytes,
@@ -679,11 +680,13 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     public func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? {
         let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
         switch clean {
+        case "類型", "種類": return .type
         case "風格", "樣式", "格式": return .style
         case "語言", "語系", "地區": return .locale
         case "貨幣", "幣別": return .currency
         case "精度", "小數位", "位數": return .precision
-        case "單位": return .unit
+        case "單位", "轉為", "目標單位": return .unit
+        case "自然換算", "自動換算", "適當單位": return .naturalScale
         case "曆法", "日曆": return .calendar
         case "日期": return .date
         case "時間": return .time
