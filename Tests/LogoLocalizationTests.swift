@@ -188,7 +188,7 @@ struct LogoLocalizationTests {
         let engine = makeEngine()
         engine.execute("""
         變數 "nums [ 1 2 3 4 ]
-        變數 "firstNum 第一個 :nums
+        變數 "firstNum 取第一個 :nums
         變數 "rest 除了第一個 :nums
         變數 "reversed 反轉 :nums
         變數 "isLst 列表? :nums
@@ -514,11 +514,11 @@ struct LogoLocalizationTests {
         engine.execute("如果 2 大於 5 則 [ 變數 \"flag \"TrueWithFiller ] 不然 [ 變數 \"flag \"FalseWithOtherwise ]")
         #expect(engine.variables["flag"] == "FalseWithOtherwise")
 
-        // 4. Natural Chinese if synonyms (要是 / 假如 / 若是)
+        // 4. Natural Chinese if synonyms (要是 / 若 / 如果)
         engine.execute("要是 10 大於 5 [ 變數 \"flag \"IfSynonymTrue ] [ 變數 \"flag \"IfSynonymFalse ]")
         #expect(engine.variables["flag"] == "IfSynonymTrue")
 
-        engine.execute("假如 2 大於 5 則 [ 變數 \"flag \"IfSynonymTrue ] 否則 [ 變數 \"flag \"IfSynonymFalse ]")
+        engine.execute("若 2 大於 5 則 [ 變數 \"flag \"IfSynonymTrue ] 否則 [ 變數 \"flag \"IfSynonymFalse ]")
         #expect(engine.variables["flag"] == "IfSynonymFalse")
 
         // 5. Parenthesized ternary expression reporter
