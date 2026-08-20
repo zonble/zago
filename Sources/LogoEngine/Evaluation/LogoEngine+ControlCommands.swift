@@ -1,6 +1,10 @@
 import Foundation
 
 extension LogoEngine {
+    private func isEndToken(_ token: String) -> Bool {
+        token.uppercased() == "END" || parsePrimitive(token) == .end
+    }
+
     /// Executes Logo control flow statement commands (.output, .if, .repeat, .for, .while, .catch, .to, etc.).
     /// Returns `true` if the primitive was handled by this module, `false` otherwise.
     internal func executeControlCommand(
@@ -375,7 +379,7 @@ extension LogoEngine {
             if !isValidProcedureName(rawName) {
                 let errorMessage = "[LOGO Error: invalid procedure name: \(rawName)]"
                 reportError(LogoError(code: 1, message: errorMessage), token: rawName)
-                while let token = reader.peekToken(), token.uppercased() != "END" {
+                while let token = reader.peekToken(), !isEndToken(token) {
                     _ = reader.nextRawToken()
                 }
                 reader.commit(to: &index)
@@ -385,7 +389,7 @@ extension LogoEngine {
             if isReservedProcedureName(procName) {
                 let errorMessage = "[LOGO Error: \(procName) is a reserved word/operator and cannot be redefined]"
                 reportError(LogoError(code: 1, message: errorMessage), token: procName)
-                while let token = reader.peekToken(), token.uppercased() != "END" {
+                while let token = reader.peekToken(), !isEndToken(token) {
                     _ = reader.nextRawToken()
                 }
                 reader.commit(to: &index)
@@ -403,14 +407,14 @@ extension LogoEngine {
             }
             var docstring: String? = nil
             if let token = reader.peekToken(), token.hasPrefix("\"") || token.hasPrefix("'"),
-                reader.peekToken(offset: 2)?.uppercased() != "END"
+                let nextTok = reader.peekToken(offset: 2), !isEndToken(nextTok)
             {
                 docstring = unquote(token)
                 _ = reader.nextRawToken()
             }
             var procSourceTokens: [LogoToken] = []
             let hasRootSourceTokens = tokens.count == rootSourceTokens.count
-            while let token = reader.peekToken(), token.uppercased() != "END" {
+            while let token = reader.peekToken(), !isEndToken(token) {
                 _ = reader.nextRawToken()
                 if hasRootSourceTokens {
                     procSourceTokens.append(rootSourceTokens[reader.position])
