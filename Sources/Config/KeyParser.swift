@@ -81,6 +81,8 @@ public enum KeyParser {
         case "shift-down", "shift-arrow-down": .shiftArrowDown
         case "shift-home", "s-home": .shiftHome
         case "shift-end", "s-end": .shiftEnd
+        case "shift-pageup", "shift-page-up", "shift-pgup", "s-pageup", "s-page-up", "s-pgup": .shiftPageUp
+        case "shift-pagedown", "shift-page-down", "shift-pgdn", "s-pagedown", "s-page-down", "s-pgdn": .shiftPageDown
         case "f1": .f1
         case "f2": .f2
         case "f3": .f3

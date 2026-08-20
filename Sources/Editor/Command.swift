@@ -53,6 +53,8 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case selectDown = "select.down"
     case selectHome = "select.home"
     case selectEnd = "select.end"
+    case selectPgup = "select.pgup"
+    case selectPgdn = "select.pgdn"
     case selectWordForward = "select.word_forward"
     case selectWordBackward = "select.word_backward"
 

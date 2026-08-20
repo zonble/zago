@@ -60,6 +60,22 @@ final class TableModeController: KeyInputHandler {
             extendTableSelectionRight(cell: cell)
             return true
 
+        case .shiftHome:
+            extendTableSelectionHome(cell: cell)
+            return true
+
+        case .shiftEnd:
+            extendTableSelectionEnd(cell: cell)
+            return true
+
+        case .shiftPageUp:
+            extendTableSelectionPageUp(cell: cell)
+            return true
+
+        case .shiftPageDown:
+            extendTableSelectionPageDown(cell: cell)
+            return true
+
         case .ctrlShiftArrowRight:
             editor.saveUndoSnapshot()
             resizeCurrentTableCellWidth(delta: 1)

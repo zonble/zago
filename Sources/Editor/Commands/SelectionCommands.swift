@@ -127,6 +127,52 @@ struct SelectEndCommand: Command {
     }
 }
 
+struct SelectPgupCommand: Command {
+    let id: CommandID = .selectPgup
+    let name = "Select Previous Page"
+    let description = "Extend selection backward one page"
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
+        var message: String?
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            message = editor.l10n["status.mark_set"]
+        }
+        let (rows, _) = editor.terminal.getWindowSize()
+        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
+        return .succeeded(message: message)
+    }
+}
+
+struct SelectPgdnCommand: Command {
+    let id: CommandID = .selectPgdn
+    let name = "Select Next Page"
+    let description = "Extend selection forward one page"
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        guard !editor.isCanvasModeActive, !editor.isTableModeActive else { return .noOp }
+        var message: String?
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            message = editor.l10n["status.mark_set"]
+        }
+        let (rows, _) = editor.terminal.getWindowSize()
+        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
+        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        editor.moveCursorVirtual(deltaRow: mainAreaHeight)
+        return .succeeded(message: message)
+    }
+}
+
 struct SelectAllCommand: Command {
     let id: CommandID = .selectAll
     let name = "Select All"

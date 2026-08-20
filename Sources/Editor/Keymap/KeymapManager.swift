@@ -112,6 +112,8 @@ final class KeymapManager {
         register(.selectDown, .shiftArrowDown)
         register(.selectHome, .shiftHome)
         register(.selectEnd, .shiftEnd)
+        register(.selectPgup, .shiftPageUp)
+        register(.selectPgdn, .shiftPageDown)
         register(.selectWordBackward, .ctrlShiftArrowLeft)
         register(.selectWordForward, .ctrlShiftArrowRight)
 

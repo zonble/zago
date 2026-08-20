@@ -180,7 +180,26 @@ import Testing
     #expect(editor.buffer.textRange(start: (line: 0, col: 3), end: (line: 0, col: 6)) == "def")
 }
 
-@Test func testShiftHomeAndShiftEndDoNotStartTextSelectionOutsideTextMode() throws {
+@Test func testTextModeShiftPageUpAndShiftPageDownExtendSelection() throws {
+    let editor = Editor()
+    editor.buffer.lines = Array(repeating: "Line of text", count: 60)
+    editor.buffer.lineIndex = 30
+    editor.buffer.columnIndex = 4
+
+    editor.processKey(.shiftPageUp)
+
+    #expect(editor.buffer.selectionMark?.line == 30)
+    #expect(editor.buffer.selectionMark?.column == 4)
+    #expect(editor.buffer.lineIndex < 30)
+
+    editor.processKey(.shiftPageDown)
+
+    #expect(editor.buffer.selectionMark?.line == 30)
+    #expect(editor.buffer.selectionMark?.column == 4)
+    #expect(editor.buffer.lineIndex > 0)
+}
+
+@Test func testShiftKeysDoNotStartTextSelectionInCanvasMode() throws {
     let canvasEditor = Editor()
     canvasEditor.buffer.lines = ["abcdef"]
     canvasEditor.switchToCanvasMode()
@@ -191,15 +210,47 @@ import Testing
     #expect(canvasEditor.buffer.selectionMark == nil)
     #expect(canvasEditor.buffer.columnIndex == 3)
 
-    let tableEditor = Editor()
-    tableEditor.buffer.lines = ["abcdef"]
-    tableEditor.isTableModeActive = true
-    tableEditor.buffer.lineIndex = 0
-    tableEditor.buffer.columnIndex = 3
+    canvasEditor.processKey(.shiftEnd)
+    #expect(canvasEditor.buffer.selectionMark == nil)
 
-    tableEditor.processKey(.shiftEnd)
-    #expect(tableEditor.buffer.selectionMark == nil)
-    #expect(tableEditor.buffer.columnIndex == 3)
+    canvasEditor.processKey(.shiftPageUp)
+    #expect(canvasEditor.buffer.selectionMark == nil)
+
+    canvasEditor.processKey(.shiftPageDown)
+    #expect(canvasEditor.buffer.selectionMark == nil)
+}
+
+@Test func testTableModeShiftKeysExtendSelectionWithinCellBounds() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌─────────────────┐",
+        "│ Header cell     │",
+        "├─────────────────┤",
+        "│ Multi-line row  │",
+        "│ Second line row │",
+        "└─────────────────┘",
+    ]
+    editor.buffer.lineIndex = 3
+    editor.buffer.columnIndex = 5 // inside "Multi-line row"
+    editor.tableModeController.toggleTableMode()
+
+    editor.processKey(.shiftHome)
+    #expect(editor.buffer.selectionMark?.line == 3)
+    #expect(editor.buffer.selectionMark?.column == 5)
+    #expect(editor.buffer.lineIndex == 3)
+    #expect(editor.buffer.columnIndex == 1) // innerMinCol (after left border '│')
+
+    editor.processKey(.shiftEnd)
+    #expect(editor.buffer.lineIndex == 3)
+    #expect(editor.buffer.columnIndex == 17) // innerMaxCol (before right border '|')
+
+    editor.processKey(.shiftPageDown)
+    #expect(editor.buffer.lineIndex == 4) // clamped within cell's innerMaxLine
+    #expect(editor.buffer.columnIndex >= 2 && editor.buffer.columnIndex <= 17)
+
+    editor.processKey(.shiftPageUp)
+    #expect(editor.buffer.lineIndex == 3) // clamped within cell's innerMinLine
+    #expect(editor.buffer.columnIndex >= 2 && editor.buffer.columnIndex <= 17)
 }
 
 @Test func testTextCopySelectionKeepsSelectionCursorAndBuffer() throws {

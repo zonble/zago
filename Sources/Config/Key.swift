@@ -40,6 +40,8 @@ public enum Key: Equatable, Hashable, Sendable {
     case ctrlArrowDown
     case shiftHome
     case shiftEnd
+    case shiftPageUp
+    case shiftPageDown
     case ctrlShiftArrowLeft
     case ctrlShiftArrowRight
     case ctrlShiftArrowUp
@@ -77,6 +79,8 @@ extension Key {
         case .end: return "End"
         case .shiftHome: return "⇧+Home"
         case .shiftEnd: return "⇧+End"
+        case .shiftPageUp: return "⇧+PgUp"
+        case .shiftPageDown: return "⇧+PgDn"
         case .pageUp: return "PgUp"
         case .pageDown: return "PgDn"
         case .tab: return "Tab"

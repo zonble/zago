@@ -28,7 +28,9 @@ public enum ANSIKeyMapping {
         "1;2A": .shiftArrowUp, "2A": .shiftArrowUp,
         "1;2B": .shiftArrowDown, "2B": .shiftArrowDown,
         "1;2H": .shiftHome, "2H": .shiftHome, "1;2~": .shiftHome, "2~": .shiftHome,
-        "1;2F": .shiftEnd, "2F": .shiftEnd, "4;2~": .shiftEnd,
+        "1;2F": .shiftEnd, "2F": .shiftEnd, "4;2~": .shiftEnd, "4;2": .shiftEnd,
+        "5;2~": .shiftPageUp, "5;2": .shiftPageUp,
+        "6;2~": .shiftPageDown, "6;2": .shiftPageDown,
 
         // Backtab / Shift + Tab
         "Z": .backtab, "1;2Z": .backtab, "2Z": .backtab, "9;2u": .backtab,
