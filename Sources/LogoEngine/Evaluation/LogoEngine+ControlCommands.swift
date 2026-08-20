@@ -38,60 +38,82 @@ extension LogoEngine {
 
         case .run:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if reader.peekToken() != nil {
-                if let block = reader.nextBlock() {
-                    var bIdx = 0
-                    executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                } else {
-                    let scriptStr = reader.nextExpression() ?? ""
-                    let block = LogoTokenizer.tokenize(scriptStr)
-                    var bIdx = 0
-                    executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                }
+            guard reader.hasArgumentToken else {
+                let errorMessage = "[LOGO Error: Not enough inputs to RUN]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "RUN")
+                return true
             }
-            reader.commit(to: &index)
+            if let block = reader.nextBlock() {
+                reader.commit(to: &index)
+                var bIdx = 0
+                executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
+            } else {
+                let scriptStr = reader.nextExpression() ?? ""
+                reader.commit(to: &index)
+                let block = LogoTokenizer.tokenize(scriptStr)
+                var bIdx = 0
+                executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
+            }
             return true
 
         case .runResult:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if reader.peekToken() != nil {
-                var block: [String] = []
-                if let rawBlock = reader.nextBlock() {
-                    block = rawBlock
-                } else {
-                    let scriptStr = reader.nextExpression() ?? ""
-                    block = LogoTokenizer.tokenize(scriptStr)
-                }
-                reader.commit(to: &index)
-                var bIdx = 0
-                var subReturn: String? = nil
-                executeTokens(block, index: &bIdx, frameReturn: &subReturn)
-                if let r = subReturn, !r.isEmpty {
-                    lastResult = "[\(r)]"
-                } else {
-                    lastResult = "[]"
-                }
+            guard reader.hasArgumentToken else {
+                let errorMessage = "[LOGO Error: Not enough inputs to RUNRESULT]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "RUNRESULT")
+                return true
+            }
+            var block: [String] = []
+            if let rawBlock = reader.nextBlock() {
+                block = rawBlock
+            } else {
+                let scriptStr = reader.nextExpression() ?? ""
+                block = LogoTokenizer.tokenize(scriptStr)
+            }
+            reader.commit(to: &index)
+            var bIdx = 0
+            var subReturn: String? = nil
+            executeTokens(block, index: &bIdx, frameReturn: &subReturn)
+            if let r = subReturn, !r.isEmpty {
+                lastResult = "[\(r)]"
+            } else {
+                lastResult = "[]"
             }
             return true
 
         case .repeatLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            let countStr = reader.nextExpression() ?? ""
-            let count = Int(countStr) ?? 1
-            if let block = reader.nextBlock() {
-                reader.commit(to: &index)
-                guard count > 0 else { return true }
-                for r in 1...count {
-                    guard guardLoopIteration("REPEAT", iteration: r) else { break }
-                    repCount = r
-                    variables["#"] = "\(r)"
-                    variables["repcount"] = "\(r)"
-                    var bIdx = 0
-                    executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
-                    if frameReturn != nil || byeFlag || currentThrowTag != nil || hasUncaughtError { break }
-                }
+            guard reader.hasArgumentToken else {
+                let errorMessage = "[LOGO Error: Not enough inputs to REPEAT]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
+                return true
+            }
+            guard let countStr = reader.nextExpression(), !countStr.isEmpty else {
+                let errorMessage = "[LOGO Error: Not enough inputs to REPEAT]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
+                return true
+            }
+            guard let count = Int(countStr) else {
+                let errorMessage = "[LOGO Error: REPEAT doesn't like \(countStr) as count input]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
+                return true
+            }
+            guard let block = reader.nextBlock() else {
+                let errorMessage = "[LOGO Error: Not enough inputs to REPEAT]"
+                reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
+                return true
             }
             reader.commit(to: &index)
+            guard count > 0 else { return true }
+            for r in 1...count {
+                guard guardLoopIteration("REPEAT", iteration: r) else { break }
+                repCount = r
+                variables["#"] = "\(r)"
+                variables["repcount"] = "\(r)"
+                var bIdx = 0
+                executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
+                if frameReturn != nil || byeFlag || currentThrowTag != nil || hasUncaughtError { break }
+            }
             return true
 
         case .stop:

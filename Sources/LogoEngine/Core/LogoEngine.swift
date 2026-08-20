@@ -401,9 +401,19 @@ public final class LogoEngine: @unchecked Sendable {
     }
 
     internal func reportError(_ error: LogoError, token: String = "") {
-        lastError = error
+        var err = error
+        if err.callStack.isEmpty {
+            err.callStack = executionFrames
+        }
+        if err.token == nil {
+            err.token = executionFrames.last?.token
+        }
+        if err.procedureName == nil {
+            err.procedureName = executionFrames.reversed().first(where: { $0.procedureName != nil })?.procedureName
+        }
+        lastError = err
         hasUncaughtError = true
-        delegate?.logoEngine(self, performAction: .setStatusMessage(error.message))
+        delegate?.logoEngine(self, performAction: .setStatusMessage(err.message))
         hasSetStatusMessage = true
     }
 

@@ -22,7 +22,6 @@ extension Editor: LogoEngineDelegate {
             insertNewlineForLogo()
         case .setStatusMessage(let msg):
             reportOperationResult(.succeeded(message: msg))
-            appendLogoOutput(msg)
         case .deleteChar:
             buffer.delete()
         case .backspaceChar:
@@ -522,9 +521,12 @@ extension Editor {
         }
 
         if logoEngine.hasUncaughtError, let err = logoEngine.lastError {
-            let errText =
-                "[ERROR \(err.code)]: \(err.message)" + (err.procedureName.map { " in procedure '\($0)'" } ?? "")
+            let (errText, callStackText) = formatLogoErrorMessage(
+                err, script: script, debugStartLine: debugStartLine)
             appendLogoOutput(errText)
+            if let callStackText {
+                appendLogoOutput(callStackText)
+            }
             reportOperationResult(.failed(err.message, message: l10n["status.logo_execution_error"]))
         } else if logoEngine.hasSetStatusMessage {
             // Status message set by engine
@@ -539,6 +541,74 @@ extension Editor {
         }
 
         return true
+    }
+
+    private func formatLogoErrorMessage(
+        _ err: LogoError,
+        script: String,
+        debugStartLine: Int
+    ) -> (errorLine: String, callStackLine: String?) {
+        var isAssertion = false
+        var innerMsg = err.message
+        if innerMsg.hasPrefix("[LOGO Assertion Failed: ") && innerMsg.hasSuffix("]") {
+            isAssertion = true
+            innerMsg = String(innerMsg.dropFirst(24).dropLast(1))
+        } else if innerMsg.hasPrefix("[LOGO Error: ") && innerMsg.hasSuffix("]") {
+            innerMsg = String(innerMsg.dropFirst(13).dropLast(1))
+        } else if innerMsg.hasPrefix("[") && innerMsg.hasSuffix("]") {
+            innerMsg = String(innerMsg.dropFirst(1).dropLast(1))
+        }
+
+        let prefixTag = isAssertion ? "LOGO Assertion Failed" : "LOGO Error"
+        let pos = calculateLineAndColumn(for: err.token, in: script, startLine: debugStartLine)
+
+        let errorLine: String
+        switch (pos, err.procedureName) {
+        case let (pos?, proc?) where !proc.isEmpty:
+            errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col) in procedure '\(proc)': \(innerMsg)]"
+        case let (pos?, _):
+            errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col): \(innerMsg)]"
+        case let (nil, proc?) where !proc.isEmpty:
+            errorLine = "[\(prefixTag) in procedure '\(proc)': \(innerMsg)]"
+        case (nil, _):
+            errorLine = "[\(prefixTag): \(innerMsg)]"
+        }
+
+        var callStackLine: String? = nil
+        let frames = err.callStack.filter { $0.procedureName != nil || $0.token != nil }
+        if frames.count > 1 {
+            let stackItems: [String] = frames.reversed().map { frame in
+                let name = frame.procedureName ?? "top-level"
+                if let framePos = calculateLineAndColumn(for: frame.token, in: script, startLine: debugStartLine) {
+                    return "\(name) (line \(framePos.line))"
+                } else {
+                    return name
+                }
+            }
+            if !stackItems.isEmpty {
+                callStackLine = "  in " + stackItems.joined(separator: " <- ")
+            }
+        }
+
+        return (errorLine, callStackLine)
+    }
+
+    private func calculateLineAndColumn(
+        for token: LogoToken?,
+        in script: String,
+        startLine: Int
+    ) -> (line: Int, col: Int)? {
+        guard let token, token.sourceRange.lowerBound >= 0, token.sourceRange.lowerBound <= script.count else {
+            return nil
+        }
+        let prefix = script.prefix(token.sourceRange.lowerBound)
+        let relativeLine = prefix.reduce(0) { $1 == "\n" ? $0 + 1 : $0 }
+        let lastNewline = prefix.lastIndex(of: "\n")
+        let colOffset =
+            lastNewline.map { prefix.distance(from: prefix.index(after: $0), to: prefix.endIndex) } ?? prefix.count
+        let line = startLine + relativeLine + 1
+        let col = colOffset + 1
+        return (line, col)
     }
 
     private func firstTableModeBlockedLogoToken(in script: String) -> String? {
@@ -608,13 +678,6 @@ extension Editor {
         let cleanScript = script.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanScript.isEmpty else { return }
 
-        guard let firstToken = LogoTokenizer.tokenize(cleanScript).first else { return }
-        guard isPotentialLogoScript(firstToken) else {
-            let message = "[LOGO Error: I don't know how to \(firstToken)]"
-            reportOperationResult(.failed(message, message: l10n["status.logo_execution_error"]))
-            return
-        }
-
         runLogoScript(
             script,
             resultPrefix: "[Eval] ",
@@ -622,21 +685,6 @@ extension Editor {
             debugSourceBuffer: sourceBuffer,
             debugStartLine: startLine
         )
-    }
-
-    private func isPotentialLogoScript(_ firstToken: String) -> Bool {
-        if logoEngine.parsePrimitive(firstToken) != nil || logoEngine.parseOperator(firstToken) != nil
-            || logoEngine.customProcedures[firstToken.uppercased()] != nil
-        {
-            return true
-        }
-        if firstToken == "(" || firstToken == "[" || firstToken.hasPrefix(":") || firstToken.hasPrefix("?") {
-            return true
-        }
-        if firstToken.hasPrefix("\"") || firstToken.hasPrefix("|") || Double(firstToken) != nil {
-            return true
-        }
-        return false
     }
 
     private func extractMarkdownLogoFence() -> (script: String, startLine: Int)? {

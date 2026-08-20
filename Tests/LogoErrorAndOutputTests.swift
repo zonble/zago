@@ -88,8 +88,141 @@ import Testing
         editor.evalLogoCode()
 
         #expect(editor.buffer.lines == ["operation without taking over the document."])
-        #expect(editor.logoEngine.hasUncaughtError == false)
+        #expect(editor.logoEngine.hasUncaughtError == true)
         #expect(editor.statusMessage == editor.l10n["status.logo_execution_error"])
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: I don't know how to operation]") })
+    }
+
+    @Test func testEvaluatingMarkdownLogoFenceWithInvalidTokenReportsErrorToConsole() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "# Header",
+            "```logo",
+            "This is a test",
+            "```",
+        ]
+        editor.buffer.lineIndex = 2
+
+        editor.evalLogoCode()
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.statusMessage == editor.l10n["status.logo_execution_error"])
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 3, col 1: I don't know how to This]") })
+    }
+
+    @Test func testProcedureCallStackErrorFormatting() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "TO INNER",
+            "  UNKNOWN_COMMAND",
+            "END",
+            "TO OUTER",
+            "  INNER",
+            "END",
+            "OUTER",
+        ]
+        editor.buffer.lineIndex = 6
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 2, col 3 in procedure 'INNER': I don't know how to UNKNOWN_COMMAND]") })
+        #expect(editor.logoOutputHistory.contains { $0.contains("in INNER (line 2) <- OUTER (line 5) <- top-level (line 7)") })
+    }
+
+    @Test func testAssertionErrorFormattingWithLineAndColumn() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "MAKE \"x 5",
+            "ASSERT :x > 10 \"x must be greater than 10",
+        ]
+        editor.buffer.lineIndex = 1
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Assertion Failed at line 2, col 1: x must be greater than 10]") })
+    }
+
+    @Test func testMissingInputsToProcedureThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "TO ADD_TWO :a :b",
+            "  OUTPUT :a + :b",
+            "END",
+            "ADD_TWO 10",
+        ]
+        editor.buffer.lineIndex = 3
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 4, col 1: Not enough inputs to ADD_TWO]") })
+    }
+
+    @Test func testMissingInputsToMakeThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "MAKE \"x",
+        ]
+        editor.buffer.lineIndex = 0
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: Not enough inputs to MAKE]") })
+    }
+
+    @Test func testTypeFollowedByTypeThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "TYPE TYPE",
+        ]
+        editor.buffer.lineIndex = 0
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: Not enough inputs to TYPE]") })
+    }
+
+    @Test func testMissingInputsToShowThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "SHOW",
+        ]
+        editor.buffer.lineIndex = 0
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: Not enough inputs to SHOW]") })
+    }
+
+    @Test func testMissingInputsToRepeatThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "REPEAT 4",
+        ]
+        editor.buffer.lineIndex = 0
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: Not enough inputs to REPEAT]") })
+    }
+
+    @Test func testMissingInputsToRunThrowsError() {
+        let editor = Editor(filePath: "document.md")
+        editor.buffer.lines = [
+            "RUN",
+        ]
+        editor.buffer.lineIndex = 0
+
+        editor.runLogoScript(editor.buffer.lines.joined(separator: "\n"), debugStartLine: 0)
+
+        #expect(editor.logoEngine.hasUncaughtError == true)
+        #expect(editor.logoOutputHistory.contains { $0.contains("[LOGO Error at line 1, col 1: Not enough inputs to RUN]") })
     }
 
     @Test func testLogoOutputOnDemandLoggingAndAutoRemoval() {
