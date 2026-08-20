@@ -1,6 +1,7 @@
 import Foundation
+import NumberHelpers
 
-/// Advanced Foundation-powered Byte Count formatter for LogoEngine.
+/// Advanced Byte Count formatter for LogoEngine backed by NumberHelpers and Foundation.
 public enum LogoByteCountFormatter {
     public static func disambiguateOptions(
         _ args: [String],
@@ -26,6 +27,7 @@ public enum LogoByteCountFormatter {
         style: LogoByteCountStyle = .file,
         locale: String? = nil
     ) -> String {
+        #if canImport(Darwin)
         guard let countStyle = style.countStyle else {
             let numFormatter = NumberFormatter()
             numFormatter.locale = Locale(logoLocaleSpec: locale)
@@ -39,5 +41,16 @@ public enum LogoByteCountFormatter {
         formatter.isAdaptive = true
         formatter.countStyle = countStyle
         return formatter.string(fromByteCount: bytes)
+        #else
+        switch style {
+        case .bytes:
+            let numStr = NumberFormatHelper.formatWithGrouping(Double(bytes))
+            return "\(numStr) bytes"
+        case .binary, .memory:
+            return NumberFormatHelper.formatBytes(bytes, isBinary: true)
+        case .decimal, .file:
+            return NumberFormatHelper.formatBytes(bytes, isBinary: false)
+        }
+        #endif
     }
 }

@@ -509,6 +509,18 @@ final class ZagoIPCClient {
                     socklen_t(MemoryLayout<timeval>.size)
                 )
             }
+            #if canImport(Darwin)
+            var noSigpipe: Int32 = 1
+            _ = withUnsafePointer(to: &noSigpipe) {
+                setsockopt(
+                    fileDescriptor,
+                    SOL_SOCKET,
+                    SO_NOSIGPIPE,
+                    $0,
+                    socklen_t(MemoryLayout<Int32>.size)
+                )
+            }
+            #endif
 
             let result = withUnsafePointer(to: &address) { pointer in
                 pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {

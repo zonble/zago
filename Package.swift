@@ -23,6 +23,7 @@ let package = Package(
         .library(name: "ANSIStyle", targets: ["ANSIStyle"]),
         .library(name: "Editor", targets: ["Editor"]),
         .library(name: "FileWatcher", targets: ["FileWatcher"]),
+        .library(name: "NumberHelpers", targets: ["NumberHelpers"]),
         .library(name: "LogoLocalization", targets: ["LogoLocalization"]),
         .library(name: "SystemClipboard", targets: ["SystemClipboard"]),
     ],
@@ -30,6 +31,9 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
     ],
     targets: [
+        .target(
+            name: "NumberHelpers"
+        ),
         .target(
             name: "FileWatcher"
         ),
@@ -58,7 +62,7 @@ let package = Package(
         ),
         .target(
             name: "LogoEngine",
-            dependencies: ["Drawing", "TextMetrics", "TextTransform"]
+            dependencies: ["Drawing", "NumberHelpers", "TextMetrics", "TextTransform"]
         ),
         .target(
             name: "LogoLocalization",
@@ -120,7 +124,7 @@ let package = Package(
             name: "zagoTests",
             dependencies: [
                 "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
-                "LogoLocalization", "SpellChecker", "SystemClipboard",
+                "LogoLocalization", "NumberHelpers", "SpellChecker", "SystemClipboard",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],
             path: "Tests"
