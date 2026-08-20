@@ -5,6 +5,7 @@ import Foundation
 import Git
 import IPCServer
 import LogoEngine
+import SystemClipboard
 
 #if os(Windows)
     import WinSDK
@@ -145,10 +146,12 @@ struct Zago: ParsableCommand {
             let terminal: EditorTerminal = PosixTerminal()
         #endif
         let gitService = GitService()
+        let clipboardStrategy = SystemClipboardStrategy()
         let dependencies = EditorDependencies(
             fileIOStrategy: fileIOStrategy,
             terminal: terminal,
-            gitService: gitService
+            gitService: gitService,
+            clipboardStrategy: clipboardStrategy
         )
         let configProvider = { ConfigLoader(provider: LocalConfigFileProvider()).loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)

@@ -42,7 +42,7 @@ public final class Editor: @unchecked Sendable {
     var statusMessage: String = ""
     var statusMessageTime: Date?
 
-    let clipboardCoordinator = ClipboardCoordinator()
+    let clipboardCoordinator: ClipboardCoordinator
 
     var clipboardText: String? {
         get { clipboardCoordinator.clipboardText }
@@ -255,6 +255,7 @@ public final class Editor: @unchecked Sendable {
         self.gitService = dependencies.gitService
         self.gitCoordinator = GitCoordinator(gitService: dependencies.gitService)
         self.historyStore = dependencies.historyStore
+        self.clipboardCoordinator = ClipboardCoordinator(strategy: dependencies.clipboardStrategy)
         self.configProvider = configSource.reload
 
         let initialBuffers: [TextBuffer]
