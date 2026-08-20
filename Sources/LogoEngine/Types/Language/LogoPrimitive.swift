@@ -79,7 +79,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case runResult
     case ignore
     case to
-    case exec
 
     // Multi-Buffer & Buffer Primitives
     case buffers
@@ -403,7 +402,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["RUNRESULT"], .runResult),
         (["IGNORE"], .ignore),
         (["TO"], .to),
-        (["EXEC"], .exec),
 
         // Buffer Primitives
         (["BUFFERS", "BUFFERLIST"], .buffers),
@@ -667,7 +665,7 @@ extension LogoPrimitive {
         .gotocol, .clearBuffer, .ifCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag,
-        .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .fill, .end, .mdsetItem,
+        .throwTag, .wait, .bye, .ignore, .foreach, .to, .fill, .end, .mdsetItem,
         .setFirst, .setBFL, .pprop, .remprop, .define, .erase, .erps, .erns, .erall,
     ]
 

@@ -50,6 +50,6 @@ extension LogoEngine {
             }
         }
 
-        return logoIsTrue(leftValStr)
+        return logoIsTrue(leftValStr, registry: pluginRegistry)
     }
 }

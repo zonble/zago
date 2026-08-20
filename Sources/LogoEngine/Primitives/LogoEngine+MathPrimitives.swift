@@ -1,9 +1,5 @@
 import Foundation
 
-private func mathOptionalArgumentBoundary(_ token: String) -> Bool {
-    LogoEngine.isKeyword(token) || token == "]" || token == ")"
-}
-
 extension LogoEngine {
     /// Evaluates Numeric, Math, Bitwise, Logical, and Formatting Primitives.
     internal func evaluateMathPrimitives(_ tokens: [String], index: inout Int) -> String? {
@@ -78,7 +74,7 @@ extension LogoEngine {
         case .quotient:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let a = reader.nextDouble()
-            if let rawB = reader.nextOptionalExpression(isBoundary: mathOptionalArgumentBoundary) {
+            if let rawB = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
                 let b = Double(rawB) ?? 1
                 reader.commit(to: &index)
                 return formatNum(b != 0 ? a / b : 0)
@@ -225,7 +221,7 @@ extension LogoEngine {
             let start = reader.nextInteger(default: 1)
             let end = reader.nextInteger(default: start)
             var step = start <= end ? 1 : -1
-            if let rawStep = reader.nextOptionalExpression(isBoundary: mathOptionalArgumentBoundary) {
+            if let rawStep = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
                 let parsedStep = Int(rawStep) ?? step
                 if parsedStep != 0 {
                     step = parsedStep
@@ -252,7 +248,7 @@ extension LogoEngine {
         case .random:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let firstVal = reader.nextInteger(default: 10)
-            if let rawSecond = reader.nextOptionalExpression(isBoundary: mathOptionalArgumentBoundary) {
+            if let rawSecond = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
                 let secondVal = Int(rawSecond) ?? firstVal
                 let low = min(firstVal, secondVal)
                 let high = max(firstVal, secondVal)

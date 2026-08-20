@@ -89,8 +89,8 @@ final class LogoTestResultBox: @unchecked Sendable {
     logoEngine.execute("REPEAT 3 [ TYPE \"!\" ]")
     #expect(editor.buffer.lines[0] == "Hello World!!!")
 
-    // 3. TO ... END Procedure definition & EXEC
-    logoEngine.execute("TO BULLET MOVE END TYPE \" - item\" END EXEC BULLET")
+    // 3. TO ... END Procedure definition & call
+    logoEngine.execute("TO BULLET MOVE END TYPE \" - item\" END BULLET")
     #expect(editor.buffer.lines[0] == "Hello World!!! - item")
 
     // 4. Variables and Arithmetic test

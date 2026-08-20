@@ -1,10 +1,6 @@
 import Foundation
 import TextTransform
 
-private func systemOptionalArgumentBoundary(_ token: String) -> Bool {
-    LogoEngine.isKeyword(token) || token == "]" || token == ")"
-}
-
 extension LogoEngine {
     /// System & Environment Primitives Evaluator (`evaluateSystemPrimitives`)
     ///
@@ -102,7 +98,7 @@ extension LogoEngine {
         case .readWord:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var prompt = ""
-            if let value = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+            if let value = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
                 prompt = unquote(value)
             }
             reader.commit(to: &index)
@@ -115,7 +111,7 @@ extension LogoEngine {
         case .readChar:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var prompt = ""
-            if let value = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+            if let value = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
                 prompt = unquote(value)
             }
             reader.commit(to: &index)

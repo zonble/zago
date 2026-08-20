@@ -529,4 +529,23 @@ struct LogoLocalizationTests {
         engine.execute("變數 \"res3 (要是 10 大於 5 [ \"通過 ] [ \"不通過 ])")
         #expect(engine.variables["res3"] == "通過")
     }
+
+    @Test
+    func testTraditionalChineseCaseAndCondWithOtherwise() {
+        let engine = makeEngine()
+
+        // 1. 分支情況 (CASE) with 否則
+        engine.execute("""
+        變數 "x 99
+        分支情況 :x [ [[1 2] [ 變數 "res "Low ]] [[3 4] [ 變數 "res "Medium ]] [否則 [ 變數 "res "Other ]] ]
+        """)
+        #expect(engine.variables["res"] == "Other")
+
+        // 2. 條件判斷 (COND) with 不然
+        engine.execute("""
+        變數 "score 75
+        條件判斷 [ [[ :score 大於等於 90 ] [ 變數 "grade "A ]] [[ :score 大於等於 70 ] [ 變數 "grade "B ]] [不然 [ 變數 "grade "F ]] ]
+        """)
+        #expect(engine.variables["grade"] == "B")
+    }
 }

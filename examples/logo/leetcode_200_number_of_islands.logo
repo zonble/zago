@@ -49,7 +49,7 @@ WHILE [ :r <= 3 ] [
         MAKE "val MDITEM :pos :grid
         IF ( :val = 1 ) [
             MAKE "islands :islands + 1
-            EXEC SINK :r :c
+            SINK :r :c
         ]
         MAKE "c :c + 1
     ]

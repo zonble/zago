@@ -1,9 +1,5 @@
 import Foundation
 
-private func systemOptionalArgumentBoundary(_ token: String) -> Bool {
-    LogoEngine.isKeyword(token) || token == "]" || token == ")"
-}
-
 extension LogoEngine {
     /// Codec & Detector Primitives Evaluator (`evaluateCodecAndDetectorPrimitives`)
     ///
@@ -155,7 +151,7 @@ extension LogoEngine {
     private func evaluateUUIDPrimitive(tokens: [String], index: inout Int) -> String {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         var flavor = "v4"
-        if let arg = reader.nextOptionalExpression(isBoundary: systemOptionalArgumentBoundary) {
+        if let arg = reader.nextOptionalExpression(isBoundary: { [weak self] in (self?.isKeyword($0) ?? LogoEngine.isKeyword($0)) || $0 == "]" || $0 == ")" }) {
             flavor = unquote(arg)
         }
         reader.commit(to: &index)

@@ -257,7 +257,7 @@ struct LogoCoverageTests {
         engine.currentThrowTag = nil
         engine.currentThrowValue = nil
 
-        engine.execute("TO ADDONE :x OUTPUT :x + 1 END EXEC ADDONE 4")
+        engine.execute("TO ADDONE :x OUTPUT :x + 1 END ADDONE 4")
         #expect(engine.lastResult == "5")
 
         engine.execute("TO HALT MAKE \"stopTest 1 STOP MAKE \"stopTest 2 END HALT")
