@@ -69,7 +69,7 @@ import Foundation
             guard size > 0, let ptr = GlobalLock(handle) else { return nil }
             defer { GlobalUnlock(handle) }
 
-            let data = Data(bytes: ptr, count: size)
+            let data = Data(bytes: ptr, count: Int(size))
             return try? JSONDecoder().decode(CanvasBlockClipboard.self, from: data)
         }
 
@@ -86,7 +86,7 @@ import Foundation
             let utf16 = Array(text.utf16) + [0]
             let byteCount = utf16.count * MemoryLayout<WCHAR>.size
 
-            guard let hGlobal = GlobalAlloc(UINT(GMEM_MOVEABLE), byteCount) else { return }
+            guard let hGlobal = GlobalAlloc(UINT(GMEM_MOVEABLE), SIZE_T(byteCount)) else { return }
             guard let ptr = GlobalLock(hGlobal) else {
                 GlobalFree(hGlobal)
                 return
@@ -102,7 +102,7 @@ import Foundation
 
         private func setCustomData(format: UINT, data: Data) {
             let byteCount = data.count
-            guard byteCount > 0, let hGlobal = GlobalAlloc(UINT(GMEM_MOVEABLE), byteCount) else { return }
+            guard byteCount > 0, let hGlobal = GlobalAlloc(UINT(GMEM_MOVEABLE), SIZE_T(byteCount)) else { return }
             guard let ptr = GlobalLock(hGlobal) else {
                 GlobalFree(hGlobal)
                 return
