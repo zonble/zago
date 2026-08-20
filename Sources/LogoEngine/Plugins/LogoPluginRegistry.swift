@@ -185,6 +185,25 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         return nil
     }
 
+    public func isFillerToken(_ token: String) -> Bool {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if plugin.isFillerToken(token) {
+                return true
+            }
+        }
+        return false
+    }
+
+    public var allFillerTokens: Set<String> {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        return currentPlugins.reduce(into: Set<String>()) { $0.formUnion($1.fillerTokens) }
+    }
+
     public var allKeywordAliases: [String] {
         lock.lock()
         let currentPlugins = plugins

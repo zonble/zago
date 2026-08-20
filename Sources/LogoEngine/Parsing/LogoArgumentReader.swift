@@ -16,18 +16,32 @@ internal struct LogoArgumentReader {
         self.index = index
     }
 
+    mutating func skipFillerTokens() {
+        while index + 1 < tokens.count {
+            let nextTok = tokens[index + 1]
+            if !nextTok.hasPrefix("\"") && !nextTok.hasPrefix(":") && !nextTok.hasPrefix("[") && !nextTok.hasPrefix("(") && engine.isFillerToken(nextTok) {
+                index += 1
+            } else {
+                break
+            }
+        }
+    }
+
     mutating func nextExpression() -> String {
+        skipFillerTokens()
         index += 1
         return engine.evaluateExpression(tokens, index: &index)
     }
 
     mutating func nextRawToken() -> String? {
+        skipFillerTokens()
         guard index + 1 < tokens.count else { return nil }
         index += 1
         return tokens[index]
     }
 
     mutating func nextRawExpression() -> (raw: String, value: String)? {
+        skipFillerTokens()
         guard index + 1 < tokens.count else { return nil }
         index += 1
         let raw = tokens[index]
@@ -41,14 +55,32 @@ internal struct LogoArgumentReader {
     }
 
     mutating func nextOptionalExpression(isBoundary: (String) -> Bool) -> String? {
+        skipFillerTokens()
         guard index + 1 < tokens.count, !isBoundary(tokens[index + 1]) else { return nil }
         return nextExpression()
     }
 
     func peekToken(offset: Int = 1) -> String? {
-        let position = index + offset
-        guard tokens.indices.contains(position) else { return nil }
-        return tokens[position]
+        var position = index + 1
+        var skipped = 0
+        while position < tokens.count && skipped < offset - 1 {
+            let t = tokens[position]
+            if !t.hasPrefix("\"") && !t.hasPrefix(":") && !t.hasPrefix("[") && !t.hasPrefix("(") && engine.isFillerToken(t) {
+                position += 1
+            } else {
+                skipped += 1
+                position += 1
+            }
+        }
+        while position < tokens.count {
+            let t = tokens[position]
+            if !t.hasPrefix("\"") && !t.hasPrefix(":") && !t.hasPrefix("[") && !t.hasPrefix("(") && engine.isFillerToken(t) {
+                position += 1
+            } else {
+                return t
+            }
+        }
+        return nil
     }
 
     mutating func nextInteger(default defaultValue: Int = 0) -> Int {
@@ -61,6 +93,7 @@ internal struct LogoArgumentReader {
     mutating func nextOptionalInteger(
         isBoundary: ((String) -> Bool)? = nil
     ) -> Int? {
+        skipFillerTokens()
         let engine = self.engine
         let boundary = isBoundary ?? { engine.isArgumentBoundary($0) }
         guard index + 1 < tokens.count else { return nil }

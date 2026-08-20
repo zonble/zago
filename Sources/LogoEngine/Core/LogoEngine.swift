@@ -105,6 +105,10 @@ public final class LogoEngine: @unchecked Sendable {
         pluginRegistry.parseDateTimeStylePreset(token) ?? (LogoDateTimeStylePreset.isPresetName(token) ? LogoDateTimeStylePreset(raw: token, mode: mode) : nil)
     }
 
+    public func isFillerToken(_ token: String) -> Bool {
+        pluginRegistry.isFillerToken(token)
+    }
+
     public func isKeyword(_ token: String) -> Bool {
         guard let prim = parsePrimitive(token) else { return false }
         return Self.keywords.contains(prim)
@@ -304,6 +308,11 @@ public final class LogoEngine: @unchecked Sendable {
                 return
             }
 
+            if isFillerToken(token) && !token.hasPrefix("\"") && !token.hasPrefix(":") && !token.hasPrefix("[") && !token.hasPrefix("(") {
+                index += 1
+                continue
+            }
+
             // Step 1: Built-in Statement Command
             if let prim = parsePrimitive(token),
                 executeStatementCommand(prim, tokens: tokens, index: &index, frameReturn: &frameReturn)
@@ -383,6 +392,9 @@ public final class LogoEngine: @unchecked Sendable {
             return false
         }
         if parseOperator(clean) != nil {
+            return false
+        }
+        if isFillerToken(clean) {
             return false
         }
         return true

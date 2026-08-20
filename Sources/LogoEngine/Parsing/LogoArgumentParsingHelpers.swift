@@ -52,6 +52,9 @@ extension LogoEngine {
         index: inout Int,
         isBoundary: (String) -> Bool
     ) -> Int? {
+        while index < tokens.count && isFillerToken(tokens[index]) && !isQuotedWordToken(tokens[index]) && !tokens[index].hasPrefix(":") && !tokens[index].hasPrefix("[") && !tokens[index].hasPrefix("(") {
+            index += 1
+        }
         guard index < tokens.count else { return nil }
         let originalIndex = index
         let token = tokens[index]

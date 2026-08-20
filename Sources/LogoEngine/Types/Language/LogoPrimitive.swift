@@ -636,7 +636,9 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
 
     /// Resolves a string token (case-insensitive) to a strongly-typed LogoPrimitive enum.
     public init?(token: String) {
-        guard let prim = Self.primitiveMap[token.uppercased()] else { return nil }
+        let clean = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.hasPrefix("\"") && !clean.hasPrefix("'") && !clean.hasPrefix(":") else { return nil }
+        guard let prim = Self.primitiveMap[clean.uppercased()] else { return nil }
         self = prim
     }
 
