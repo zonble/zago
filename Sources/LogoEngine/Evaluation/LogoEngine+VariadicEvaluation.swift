@@ -719,6 +719,36 @@ extension LogoEngine {
                             var positional: [String] = []
                             var hasInvalidUnit = false
                             for arg in remainingArgs {
+                                if arg.hasPrefix("[") && arg.hasSuffix("]") {
+                                    let parsed = LogoValue.parse(arg)
+                                    if case .list(let items) = parsed {
+                                        var isDict = false
+                                        var i = 0
+                                        while i < items.count {
+                                            let key = items[i].stringValue
+                                            if let field = parseFormatOptionField(key), i + 1 < items.count {
+                                                isDict = true
+                                                let v = unquote(items[i + 1].stringValue)
+                                                switch field {
+                                                case .style, .format:
+                                                    style = v
+                                                case .locale, .language:
+                                                    locale = v
+                                                case .naturalScale:
+                                                    naturalScale = parseBoolean(v) ?? (v.lowercased() == "yes")
+                                                case .unit:
+                                                    targetConversionUnit = v
+                                                default:
+                                                    break
+                                                }
+                                                i += 2
+                                            } else {
+                                                i += 1
+                                            }
+                                        }
+                                        if isDict { continue }
+                                    }
+                                }
                                 if let dim = LogoMeasurementConverter.findDimension(for: arg) {
                                     if dim == kind {
                                         targetConversionUnit = arg

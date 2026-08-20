@@ -2,6 +2,7 @@ import Foundation
 
 /// Common key fields supported in formatting options dictionaries.
 public enum LogoFormatOptionField: String, CaseIterable, Sendable, Equatable {
+    case type
     case style
     case format
     case locale
@@ -9,6 +10,7 @@ public enum LogoFormatOptionField: String, CaseIterable, Sendable, Equatable {
     case currency
     case precision
     case unit
+    case naturalScale
     case calendar
     case date
     case time
@@ -16,13 +18,15 @@ public enum LogoFormatOptionField: String, CaseIterable, Sendable, Equatable {
     public static func parse(_ raw: String) -> LogoFormatOptionField? {
         let clean = raw.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
         switch clean {
+        case "type", "kind": return .type
         case "style": return .style
         case "fmt", "format": return .format
         case "locale", "loc": return .locale
         case "lang", "language": return .language
         case "currency", "curr": return .currency
         case "precision", "prec", "digits": return .precision
-        case "unit": return .unit
+        case "unit", "to": return .unit
+        case "natural", "scale": return .naturalScale
         case "calendar", "cal": return .calendar
         case "date": return .date
         case "time": return .time
