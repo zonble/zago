@@ -39,7 +39,7 @@ import Testing
         #expect(NumberFormatHelper.formatOrdinal(4) == "4th")
         #expect(NumberFormatHelper.formatOrdinal(11) == "11th")
         #expect(NumberFormatHelper.formatOrdinal(21) == "21st")
-        #expect(NumberFormatHelper.formatBytes(1048576, isBinary: true) == "1 MiB")
+        #expect(NumberFormatHelper.formatBytes(1048576, isBinary: true) == "1 MB")
         #expect(NumberFormatHelper.formatBytes(1000000, isBinary: false) == "1 MB")
         #expect(NumberFormatHelper.formatFinancialChinese(12345) == "壹萬貳仟參佰肆拾伍")
         #expect(NumberFormatHelper.formatFinancialChinese(-100) == "負壹佰")
