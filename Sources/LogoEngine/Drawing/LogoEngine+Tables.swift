@@ -24,7 +24,9 @@ extension LogoEngine {
         var borderStyle: BorderStyle? = nil
         var isRound: Bool? = nil
 
-        if let parsedRows = parseIntExpressionArgument(tokens, index: &index, isBoundary: isArgumentBoundary) {
+        if let parsedRows = parseIntExpressionArgument(
+            tokens, index: &index, isBoundary: isArgumentBoundary)
+        {
             rows = parsedRows
             if let parsedCols = consumeNextTableIntArgument(tokens, index: &index) {
                 cols = parsedCols
@@ -41,22 +43,22 @@ extension LogoEngine {
             let rawToken = tokens[evalIndex]
             let unquoted = unquote(rawToken)
             let val: String
-            if parseBoolean(unquoted) != nil || parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || StyleDSL.parseBoxStyle(unquoted) != nil {
+            if parseRoundModifier(unquoted) != nil || parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || StyleDSL.parseBoxStyle(unquoted) != nil {
                 val = unquoted
             } else {
                 val = unquote(evaluateExpression(tokens, index: &evalIndex))
             }
             index = evalIndex
 
-            if let boolVal = parseBoolean(val) {
+            if let boolVal = parseRoundModifier(val) {
                 isRound = boolVal
+            } else if let b = parseBorderStyle(val) {
+                borderStyle = b
             } else if let dsl = StyleDSL.parseBoxStyle(val) {
                 borderStyle = dsl.border
                 if dsl.rounded || val.hasSuffix(")") {
                     isRound = dsl.rounded
                 }
-            } else if let b = parseBorderStyle(val) {
-                borderStyle = b
             } else if let intVal = Int(val), cellWidth == nil {
                 cellWidth = intVal
             }
@@ -73,5 +75,11 @@ extension LogoEngine {
             )
         )
         hasSetStatusMessage = true
+    }
+
+    private func parseRoundModifier(_ token: String) -> Bool? {
+        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "\"': "))
+        if clean == "round" || clean == "rounded" { return true }
+        return parseBoolean(token)
     }
 }

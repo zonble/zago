@@ -5,7 +5,8 @@ public enum LogoListFormatter {
     public static func disambiguateOptions(
         _ args: [String],
         type: inout LogoListType,
-        locale: inout String?
+        locale: inout String?,
+        parseType: ((String) -> LogoListType?)? = nil
     ) {
         for arg in args {
             let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
@@ -13,7 +14,9 @@ public enum LogoListFormatter {
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if LogoListType.isTypeKeyword(lower) {
+            if let custom = parseType?(clean) ?? parseType?(lower) {
+                type = custom
+            } else if LogoListType.isTypeKeyword(lower) {
                 type = LogoListType.parse(lower)
             } else {
                 locale = clean

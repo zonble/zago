@@ -76,7 +76,7 @@ extension LogoEngine {
                 let val: String
                 if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
                     || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
-                    || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoolean(unquotedRaw) != nil
+                    || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoxRoundArgument(unquotedRaw) != nil
                 {
                     val = unquotedRaw
                 } else {
@@ -91,7 +91,7 @@ extension LogoEngine {
                     hasExplicitAlign = true
                 } else if textContent == nil && isQuoted && val.count == 1 {
                     textContent = val
-                } else if let parsedBool = parseBoolean(val) {
+                } else if let parsedBool = parseBoxRoundArgument(val) {
                     isRound = parsedBool
                 } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
                     styleName = val
@@ -141,7 +141,7 @@ extension LogoEngine {
             let val: String
             if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
                 || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
-                || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoolean(unquotedRaw) != nil
+                || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoxRoundArgument(unquotedRaw) != nil
             {
                 val = unquotedRaw
             } else {
@@ -153,7 +153,7 @@ extension LogoEngine {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign
-            } else if let parsedBool = parseBoolean(val) {
+            } else if let parsedBool = parseBoxRoundArgument(val) {
                 isRound = parsedBool
             } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
                 styleName = val
@@ -163,6 +163,12 @@ extension LogoEngine {
         drawBoxAroundText(
             textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName, isRound: isRound),
             mode: mode, exitPos: exitPos)
+    }
+
+    private func parseBoxRoundArgument(_ token: String) -> Bool? {
+        let clean = token.lowercased()
+        if clean == "round" || clean == "rounded" { return true }
+        return parseBoolean(token)
     }
 
     private func isExpressionPrimitiveToken(_ token: String) -> Bool {

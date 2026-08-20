@@ -147,7 +147,7 @@ extension LogoEngine {
                     }
                     if !isDict {
                         let strings = optItems.map { $0.stringValue }
-                        LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec)
+                        LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec, parseType: { [weak self] in self?.parseListType($0) })
                     }
                 }
             } else {
@@ -157,7 +157,7 @@ extension LogoEngine {
                 {
                     positional.append(unquote(val))
                 }
-                LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec)
+                LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec, parseType: { [weak self] in self?.parseListType($0) })
             }
 
             reader.commit(to: &index)
@@ -221,15 +221,17 @@ extension LogoEngine {
                 var isDict = false
                 var i = 0
                 while i < optItems.count {
-                    let key = optItems[i].stringValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                    let cleanKey = key.hasPrefix(":") ? String(key.dropFirst()) : key
-                    if ["style", "fmt", "locale", "lang"].contains(cleanKey) && i + 1 < optItems.count {
+                    let key = optItems[i].stringValue
+                    if let field = parseFormatOptionField(key), i + 1 < optItems.count {
                         isDict = true
                         let val = optItems[i + 1].stringValue
-                        switch cleanKey {
-                        case "style", "fmt": style = LogoFormatters.ByteCountStyle.parse(val)
-                        case "locale", "lang": localeSpec = val
-                        default: break
+                        switch field {
+                        case .style, .format:
+                            style = parseByteCountStyle(val) ?? LogoFormatters.ByteCountStyle.parse(val)
+                        case .locale, .language:
+                            localeSpec = val
+                        default:
+                            break
                         }
                         i += 2
                     } else {
@@ -238,7 +240,7 @@ extension LogoEngine {
                 }
                 if !isDict {
                     let strings = optItems.map { $0.stringValue }
-                    LogoFormatters.disambiguateBytesOptions(strings, style: &style, locale: &localeSpec)
+                    LogoFormatters.disambiguateBytesOptions(strings, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
                 }
             }
         } else {
@@ -248,7 +250,7 @@ extension LogoEngine {
             {
                 positional.append(unquote(val))
             }
-            LogoFormatters.disambiguateBytesOptions(positional, style: &style, locale: &localeSpec)
+            LogoFormatters.disambiguateBytesOptions(positional, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
         }
 
         reader.commit(to: &index)
@@ -285,20 +287,20 @@ extension LogoEngine {
                 if itemStrings.count % 2 == 0 {
                     var i = 0
                     while i < itemStrings.count {
-                        let key = itemStrings[i].lowercased().trimmingCharacters(
-                            in: CharacterSet(charactersIn: ":\"' "))
+                        let key = itemStrings[i]
                         let val = itemStrings[i + 1]
-                        switch key {
-                        case "given", "first", "firstname", "givenname", "名", "名字": given = val
-                        case "family", "last", "lastname", "familyname", "surname", "姓", "姓氏": family = val
-                        case "middle", "middlename", "中間名": middle = val
-                        case "prefix", "title", "稱謂", "頭銜": pfx = val
-                        case "suffix", "後綴": sfx = val
-                        case "nickname", "nick", "暱稱", "綽號": nick = val
-                        case "style", "風格": style = pluginRegistry.parsePersonNameStyle(val) ?? LogoFormatters.PersonNameStyle.parse(val)
-                        case "locale", "loc", "語言": localeSpec = val
-                        case "name", "full", "fullname", "全名", "姓名": fullName = val
-                        default: break
+                        if let field = parsePersonNameField(key) {
+                            switch field {
+                            case .givenName: given = val
+                            case .familyName: family = val
+                            case .middleName: middle = val
+                            case .prefix: pfx = val
+                            case .suffix: sfx = val
+                            case .nickname: nick = val
+                            case .style: style = parsePersonNameStyle(val) ?? LogoFormatters.PersonNameStyle.parse(val)
+                            case .locale: localeSpec = val
+                            case .fullName: fullName = val
+                            }
                         }
                         i += 2
                     }
@@ -308,7 +310,8 @@ extension LogoEngine {
                     given = itemStrings[0]
                     family = itemStrings[1]
                 } else if itemStrings.count >= 3 {
-                    if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
+                    if parsePersonNameStyle(itemStrings[2]) == nil
+                        && !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
                         && !Locale.isLogoLocaleSpec(itemStrings[2])
                     {
                         given = itemStrings[0]
@@ -316,13 +319,13 @@ extension LogoEngine {
                         family = itemStrings[2]
                         if itemStrings.count > 3 {
                             let extra = Array(itemStrings.dropFirst(3))
-                            LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                            LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                         }
                     } else {
                         given = itemStrings[0]
                         family = itemStrings[1]
                         let extra = Array(itemStrings.dropFirst(2))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 }
             } else {
@@ -332,8 +335,11 @@ extension LogoEngine {
                 {
                     positional.append(unquote(val))
                 }
-                if positional.count >= 3 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
+                if positional.count >= 3
+                    && parsePersonNameStyle(positional[1]) == nil
+                    && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
                     && !Locale.isLogoLocaleSpec(positional[1])
+                    && parsePersonNameStyle(positional[2]) == nil
                     && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[2])
                     && !Locale.isLogoLocaleSpec(positional[2])
                 {
@@ -342,22 +348,24 @@ extension LogoEngine {
                     family = positional[2]
                     if positional.count > 3 {
                         let extra = Array(positional.dropFirst(3))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
-                } else if positional.count >= 2 && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
+                } else if positional.count >= 2
+                    && parsePersonNameStyle(positional[1]) == nil
+                    && !LogoFormatters.PersonNameStyle.isStyleKeyword(positional[1])
                     && !Locale.isLogoLocaleSpec(positional[1])
                 {
                     given = positional[0]
                     family = positional[1]
                     if positional.count > 2 {
                         let extra = Array(positional.dropFirst(2))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 } else {
                     fullName = positional[0]
                     if positional.count > 1 {
                         let extra = Array(positional.dropFirst(1))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec)
+                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 }
             }

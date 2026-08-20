@@ -55,7 +55,13 @@ public protocol LogoParserPlugin: Sendable {
     /// Parses a localized/custom token into a `LogoPersonNameStyle`.
     func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle?
 
-    /// Set of grammatical filler / noise tokens (e.g. "為", "次", "則") provided by this plugin.
+    /// Parses a localized/custom token into a `LogoPersonNameField`.
+    func parsePersonNameField(_ token: String) -> LogoPersonNameField?
+
+    /// Parses a localized/custom token into a `LogoFormatOptionField`.
+    func parseFormatOptionField(_ token: String) -> LogoFormatOptionField?
+
+    /// Set of grammatical filler / noise tokens (e.g. noise words) provided by this plugin.
     var fillerTokens: Set<String> { get }
 
     /// Returns whether the given token is a grammatical filler / noise token that should be skipped during argument parsing.
@@ -80,6 +86,8 @@ public extension LogoParserPlugin {
     func parseListType(_ token: String) -> LogoListType? { nil }
     func parseByteCountStyle(_ token: String) -> LogoByteCountStyle? { nil }
     func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle? { nil }
+    func parsePersonNameField(_ token: String) -> LogoPersonNameField? { nil }
+    func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? { nil }
     var fillerTokens: Set<String> { [] }
     func isFillerToken(_ token: String) -> Bool {
         fillerTokens.contains(token.lowercased())

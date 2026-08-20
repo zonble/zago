@@ -172,7 +172,8 @@ extension LogoEngine {
                             var locale: String? = nil
                             if cleanArgs.count > 1 {
                                 LogoFormatters.disambiguateListOptions(
-                                    Array(cleanArgs.dropFirst()), type: &type, locale: &locale)
+                                    Array(cleanArgs.dropFirst()), type: &type, locale: &locale,
+                                    parseType: { [weak self] in self?.parseListType($0) })
                             }
                             leftVal = LogoFormatters.formatList(items, type: type, locale: locale)
                             setLastExpressionString(leftVal)
@@ -198,7 +199,7 @@ extension LogoEngine {
                                 var unit = "days"
                                 var locale: String? = nil
                                 if cleanArgs.count > 1 {
-                                    LogoFormatters.disambiguateRelativeTimeOptions(
+                                    LogoRelativeDateTimeFormatter.disambiguateOptions(
                                         Array(cleanArgs.dropFirst()), unit: &unit, locale: &locale)
                                 }
                                 leftVal = LogoFormatters.formatRelativeTime(value: val, unit: unit, locale: locale)
@@ -221,7 +222,8 @@ extension LogoEngine {
                         var locale: String? = nil
                         if cleanArgs.count > 1 {
                             LogoFormatters.disambiguateBytesOptions(
-                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale)
+                                Array(cleanArgs.dropFirst()), style: &style, locale: &locale,
+                                parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
                         }
                         leftVal = LogoFormatters.formatBytes(bytes, style: style, locale: locale)
                         setLastExpressionString(leftVal)
@@ -258,20 +260,20 @@ extension LogoEngine {
                                 if itemStrings.count % 2 == 0 {
                                     var i = 0
                                     while i < itemStrings.count {
-                                        let key = itemStrings[i].lowercased().trimmingCharacters(
-                                            in: CharacterSet(charactersIn: ":\"' "))
+                                        let key = itemStrings[i]
                                         let val = itemStrings[i + 1]
-                                        switch key {
-                                        case "given", "first", "firstname", "givenname": given = val
-                                        case "family", "last", "lastname", "familyname", "surname": family = val
-                                        case "middle", "middlename": middle = val
-                                        case "prefix", "title": pfx = val
-                                        case "suffix": sfx = val
-                                        case "nickname", "nick": nick = val
-                                        case "style": style = LogoFormatters.PersonNameStyle.parse(val)
-                                        case "locale", "loc": locale = val
-                                        case "name", "full", "fullname": fullName = val
-                                        default: break
+                                        if let field = parsePersonNameField(key) {
+                                            switch field {
+                                            case .givenName: given = val
+                                            case .familyName: family = val
+                                            case .middleName: middle = val
+                                            case .prefix: pfx = val
+                                            case .suffix: sfx = val
+                                            case .nickname: nick = val
+                                            case .style: style = parsePersonNameStyle(val) ?? LogoFormatters.PersonNameStyle.parse(val)
+                                            case .locale: locale = val
+                                            case .fullName: fullName = val
+                                            }
                                         }
                                         i += 2
                                     }
@@ -281,7 +283,8 @@ extension LogoEngine {
                                     given = itemStrings[0]
                                     family = itemStrings[1]
                                 } else if itemStrings.count >= 3 {
-                                    if !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
+                                    if parsePersonNameStyle(itemStrings[2]) == nil
+                                        && !LogoFormatters.PersonNameStyle.isStyleKeyword(itemStrings[2])
                                         && !Locale.isLogoLocaleSpec(itemStrings[2])
                                     {
                                         given = itemStrings[0]
@@ -290,19 +293,23 @@ extension LogoEngine {
                                         if itemStrings.count > 3 {
                                             let extra = Array(itemStrings.dropFirst(3))
                                             LogoFormatters.disambiguatePersonNameOptions(
-                                                extra, style: &style, locale: &locale)
+                                                extra, style: &style, locale: &locale,
+                                                parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                                         }
                                     } else {
                                         given = itemStrings[0]
                                         family = itemStrings[1]
                                         let extra = Array(itemStrings.dropFirst(2))
                                         LogoFormatters.disambiguatePersonNameOptions(
-                                            extra, style: &style, locale: &locale)
+                                            extra, style: &style, locale: &locale,
+                                            parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                                     }
                                 }
                             } else if cleanArgs.count >= 3
+                                && parsePersonNameStyle(cleanArgs[1]) == nil
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
                                 && !Locale.isLogoLocaleSpec(cleanArgs[1])
+                                && parsePersonNameStyle(cleanArgs[2]) == nil
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[2])
                                 && !Locale.isLogoLocaleSpec(cleanArgs[2])
                             {
@@ -312,9 +319,12 @@ extension LogoEngine {
                                 family = cleanArgs[2]
                                 if cleanArgs.count > 3 {
                                     let extra = Array(cleanArgs.dropFirst(3))
-                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                    LogoFormatters.disambiguatePersonNameOptions(
+                                        extra, style: &style, locale: &locale,
+                                        parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                                 }
                             } else if cleanArgs.count >= 2
+                                && parsePersonNameStyle(cleanArgs[1]) == nil
                                 && !LogoFormatters.PersonNameStyle.isStyleKeyword(cleanArgs[1])
                                 && !Locale.isLogoLocaleSpec(cleanArgs[1])
                             {
@@ -323,14 +333,18 @@ extension LogoEngine {
                                 family = cleanArgs[1]
                                 if cleanArgs.count > 2 {
                                     let extra = Array(cleanArgs.dropFirst(2))
-                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                    LogoFormatters.disambiguatePersonNameOptions(
+                                        extra, style: &style, locale: &locale,
+                                        parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                                 }
                             } else {
                                 // Single full name or given name: name [style] [locale]
                                 fullName = cleanArgs[0]
                                 if cleanArgs.count > 1 {
                                     let extra = Array(cleanArgs.dropFirst(1))
-                                    LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &locale)
+                                    LogoFormatters.disambiguatePersonNameOptions(
+                                        extra, style: &style, locale: &locale,
+                                        parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                                 }
                             }
 

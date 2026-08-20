@@ -185,6 +185,30 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         return nil
     }
 
+    public func parsePersonNameField(_ token: String) -> LogoPersonNameField? {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if let field = plugin.parsePersonNameField(token) {
+                return field
+            }
+        }
+        return nil
+    }
+
+    public func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if let field = plugin.parseFormatOptionField(token) {
+                return field
+            }
+        }
+        return nil
+    }
+
     public func isFillerToken(_ token: String) -> Bool {
         lock.lock()
         let currentPlugins = plugins

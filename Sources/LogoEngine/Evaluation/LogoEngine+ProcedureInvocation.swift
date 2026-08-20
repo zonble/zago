@@ -70,8 +70,7 @@ extension LogoEngine {
     }
 
     private func isElseClauseToken(_ token: String) -> Bool {
-        let upper = token.uppercased()
-        return upper == "ELSE" || token == "否則" || token == "不然"
+        token.uppercased() == "ELSE" || isFillerToken(token)
     }
 
     private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?) -> String? {
