@@ -109,9 +109,7 @@ public enum NumberFormatHelper {
         let isNegative = bytes < 0
         let absBytes = Double(abs(bytes))
         let base: Double = isBinary ? 1024.0 : 1000.0
-        let units = isBinary
-            ? ["bytes", "KiB", "MiB", "GiB", "TiB", "PiB"]
-            : ["bytes", "kB", "MB", "GB", "TB", "PB"]
+        let units = ["bytes", "KB", "MB", "GB", "TB", "PB"]
 
         var val = absBytes
         var unitIdx = 0
