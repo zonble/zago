@@ -706,3 +706,21 @@ import TextMetrics
     editor2.logoEngine.execute("TABLE 2 2 4")
     #expect(editor2.buffer.lines[0] == "╭────┬────╮")
 }
+
+@Test func testTableWithOptionalDimensionsAndStyles() throws {
+    let editor1 = Editor()
+    editor1.logoEngine.execute("TABLE 3 \"double \"round")
+    #expect(editor1.buffer.lines[0].starts(with: "╭"))
+    #expect(editor1.buffer.lines[0].contains("╦"))
+
+    let editor2 = Editor()
+    editor2.logoEngine.execute("TABLE \"double \"round")
+    #expect(editor2.buffer.lines[0].starts(with: "╭"))
+    #expect(editor2.buffer.lines[0].contains("╦"))
+
+    let editor3 = Editor()
+    editor3.logoEngine.execute("TABLE -)")
+    #expect(editor3.buffer.lines[0].starts(with: "╭"))
+    #expect(editor3.buffer.lines[0].contains("┬"))
+}
+
