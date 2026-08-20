@@ -19,7 +19,7 @@ extension LogoEngine {
     ///    `.pop`)
     /// 2. `executeControlCommand` (Control flow and procedure definitions:
     ///    `.ifCondition`, `.repeatLoop`, `.forLoop`,
-    ///    `.whileLoop`, `.catchTag`, `.to`, `.exec`)
+    ///    `.whileLoop`, `.catchTag`, `.to`)
     /// 3. `executeEditingCommand` (Text editing and buffer operations: `.type`,
     ///    `.show`, `.delete`, `.move`, `.cut`, buffer actions)
     /// 4. `executeDrawingCommand` (Turtle graphics, lines, boxes, and tables:

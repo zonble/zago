@@ -69,6 +69,26 @@ extension LogoEngine {
         return block
     }
 
+    private func isElseClauseToken(_ token: String) -> Bool {
+        let upper = token.uppercased()
+        if upper == "ELSE" || token == "否則" || token == "不然" { return true }
+        return false
+    }
+
+    private func executeClauseBody(_ clause: [String], index: inout Int) -> String? {
+        if index < clause.count && clause[index] == "[" {
+            let body = extractBlockTokens(tokens: clause, index: &index)
+            var bIdx = 0
+            var dummyFrameReturn: String? = nil
+            executeTokens(body, index: &bIdx, frameReturn: &dummyFrameReturn)
+            return dummyFrameReturn ?? lastResult ?? ""
+        } else {
+            var dummyFrameReturn: String? = nil
+            executeTokens(clause, index: &index, frameReturn: &dummyFrameReturn)
+            return dummyFrameReturn ?? lastResult ?? ""
+        }
+    }
+
     internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String]) -> String? {
         var idx = 0
         while idx < clausesBlock.count {
@@ -76,19 +96,15 @@ extension LogoEngine {
                 let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
                 if !clause.isEmpty {
                     var cIdx = 0
-                    if clause[cIdx].uppercased() == "ELSE" {
+                    if isElseClauseToken(clause[cIdx]) {
                         cIdx += 1
-                        var dummyFrameReturn: String? = nil
-                        executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
-                        return dummyFrameReturn ?? lastResult ?? ""
+                        return executeClauseBody(clause, index: &cIdx)
                     } else if clause[cIdx] == "[" {
                         let matches = extractBlockTokens(tokens: clause, index: &cIdx)
                         cIdx += 1
                         let isMatch = matches.contains { unquote($0) == targetVal }
                         if isMatch {
-                            var dummyFrameReturn: String? = nil
-                            executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
-                            return dummyFrameReturn ?? lastResult ?? ""
+                            return executeClauseBody(clause, index: &cIdx)
                         }
                     }
                 }
@@ -105,18 +121,14 @@ extension LogoEngine {
                 let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
                 if !clause.isEmpty {
                     var cIdx = 0
-                    if clause[cIdx].uppercased() == "ELSE" {
+                    if isElseClauseToken(clause[cIdx]) {
                         cIdx += 1
-                        var dummyFrameReturn: String? = nil
-                        executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
-                        return dummyFrameReturn ?? lastResult ?? ""
+                        return executeClauseBody(clause, index: &cIdx)
                     } else if clause[cIdx] == "[" {
                         let condTokens = extractBlockTokens(tokens: clause, index: &cIdx)
                         cIdx += 1
                         if evaluateCondition(condTokens) {
-                            var dummyFrameReturn: String? = nil
-                            executeTokens(clause, index: &cIdx, frameReturn: &dummyFrameReturn)
-                            return dummyFrameReturn ?? lastResult ?? ""
+                            return executeClauseBody(clause, index: &cIdx)
                         }
                     }
                 }

@@ -1,9 +1,5 @@
 import Foundation
 
-private func systemOptionalArgumentBoundary(_ token: String) -> Bool {
-    LogoEngine.isKeyword(token) || token == "]" || token == ")"
-}
-
 extension LogoEngine {
     /// Date & Calendar Primitives Evaluator (`evaluateDatePrimitives`)
     ///

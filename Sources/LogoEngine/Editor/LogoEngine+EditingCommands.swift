@@ -226,7 +226,7 @@ extension LogoEngine {
             if index < tokens.count {
                 let firstVal = evaluateExpression(tokens, index: &index)
                 if !isQuotedWordToken(tokens[index]), let line1Based = Int(firstVal),
-                    index + 1 < tokens.count && !LogoEngine.isKeyword(tokens[index + 1]) && tokens[index + 1] != "]"
+                    index + 1 < tokens.count && !isKeyword(tokens[index + 1]) && tokens[index + 1] != "]"
                 {
                     index += 1
                     let textVal = unquote(evaluateExpression(tokens, index: &index))

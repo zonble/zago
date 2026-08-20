@@ -147,7 +147,10 @@ extension LogoEngine {
 
         case .testCondition:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            let condTokens = reader.tokensUntil { token in
+            let condTokens = reader.tokensUntil { [weak self] token in
+                if let prim = self?.parsePrimitive(token), prim == .ifTrue || prim == .ifFalse {
+                    return true
+                }
                 let upper = token.uppercased()
                 return upper == "IFTRUE" || upper == "IFT" || upper == "IFFALSE" || upper == "IFF"
                     || token == "[" || token == "]"
@@ -429,18 +432,6 @@ extension LogoEngine {
                 bodyTokens: procSourceTokens
             )
             reader.commit(to: &index)
-            return true
-
-        case .exec:
-            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            if let rawName = reader.nextRawToken() {
-                let procName = rawName.uppercased()
-                reader.commit(to: &index)
-                if let proc = customProcedures[procName] {
-                    let ret = invokeProcedure(proc, tokens: tokens, index: &index)
-                    if let r = ret, !r.isEmpty { lastResult = r }
-                }
-            }
             return true
 
         case .end:

@@ -566,20 +566,6 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "TO SQUARE :n OUTPUT :n * :n END")]
             )
 
-        case .exec:
-            LogoPrimitiveMeta(
-                name: "EXEC",
-                description: "Loads and executes external LOGO script file.",
-                localizedDescriptionKey: "logo.doc.exec",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "filepath", required: true, description: "The file path. Used by EXEC.",
-                        example: "file.txt")
-                ],
-                examples: [LogoPrimitiveExample(input: "EXEC \"setup.logo")]
-            )
-
         default:
             nil
         }
