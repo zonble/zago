@@ -136,7 +136,8 @@ extension LogoEngine {
                         if cleanArgs.count > 1 {
                             LogoFormatters.disambiguateNumberOptions(
                                 Array(cleanArgs.dropFirst()), style: &style, locale: &locale, currencyCode: &curr,
-                                precision: &precision)
+                                precision: &precision,
+                                parseStyle: { [weak self] in self?.parseNumberStyle($0) })
                         }
                         leftVal = LogoFormatters.formatNumber(
                             num, style: style, locale: locale, currencyCode: curr, precision: precision)

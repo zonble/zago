@@ -356,6 +356,8 @@ struct LogoLocalizationTests {
         #expect(engine.parseBorderStyle("雙線") == .double)
         #expect(engine.parseCalendarIdentifier("民國曆") == .republicOfChina)
         #expect(engine.parseDateTimeStylePreset("完整") == .long)
+        #expect(engine.parseNumberStyle("金融") == .financial)
+        #expect(engine.parseNumberStyle("百分比") == .percent)
 
         registry.unregister(id: "zh-TW")
         #expect(!registry.contains(id: "zh-TW"))
@@ -547,5 +549,22 @@ struct LogoLocalizationTests {
         狀況處置 [ [[ :score 大於等於 90 ] [ 變數 "grade "A ]] [[ :score 大於等於 70 ] [ 變數 "grade "B ]] [不然 [ 變數 "grade "F ]] ]
         """)
         #expect(engine.variables["grade"] == "B")
+    }
+
+    @Test
+    func testTraditionalChineseNumberFormatting() {
+        let engine = makeEngine()
+
+        // 1. 數字格式 with 中文風格 (百分比)
+        engine.execute("變數 \"pct (數字格式 0.85 \"百分比)")
+        #expect(engine.variables["pct"]?.contains("85") == true)
+
+        // 2. 數字格式 with 金融 (大寫中文金額)
+        engine.execute("變數 \"fin (數字格式 123 \"金融)")
+        #expect(engine.variables["fin"] == "壹佰貳拾參")
+
+        // 3. 數字格式 with 中文數字 (spellout with zh-TW locale)
+        engine.execute("變數 \"sp (數字格式 100 \"中文數字 \"zh-TW)")
+        #expect(engine.variables["sp"]?.contains("百") == true || engine.variables["sp"]?.contains("一百") == true)
     }
 }

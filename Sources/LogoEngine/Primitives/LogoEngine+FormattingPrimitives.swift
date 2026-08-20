@@ -67,7 +67,8 @@ extension LogoEngine {
                 if !isDict {
                     let strings = items.map { $0.stringValue }
                     LogoFormatters.disambiguateNumberOptions(
-                        strings, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision)
+                        strings, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision,
+                        parseStyle: { [weak self] in self?.parseNumberStyle($0) })
                 }
             }
         } else {
@@ -78,7 +79,8 @@ extension LogoEngine {
                 positional.append(unquote(val))
             }
             LogoFormatters.disambiguateNumberOptions(
-                positional, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision)
+                positional, style: &style, locale: &localeSpec, currencyCode: &currencyCode, precision: &precision,
+                parseStyle: { [weak self] in self?.parseNumberStyle($0) })
         }
 
         reader.commit(to: &index)
