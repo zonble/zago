@@ -6,7 +6,7 @@ extension LogoPrimitive {
         case .ifCondition:
             LogoPrimitiveMeta(
                 name: "IF",
-                description: "Conditionally executes instructions if predicate expression is true.",
+                description: "Conditionally executes instructions if predicate is true, with optional else-branch (alias: IFELSE).",
                 localizedDescriptionKey: "logo.doc.if",
                 source: .ucbLogo,
                 parameters: [
@@ -16,28 +16,14 @@ extension LogoPrimitive {
                     LogoPrimitiveParameter(
                         name: "thenBlock", required: true,
                         description: "The instructions to run if true. Used by IF.", example: "[FD 1]"),
+                    LogoPrimitiveParameter(
+                        name: "elseBlock", required: false,
+                        description: "The optional instructions to run if false. Used by IF/IFELSE.", example: "[BK 1]"),
                 ],
-                examples: [LogoPrimitiveExample(input: "IF :x > 0 [ TYPE \"Positive NL ]")]
-            )
-
-        case .ifElseCondition:
-            LogoPrimitiveMeta(
-                name: "IFELSE",
-                description: "Evaluates condition, executing thenBlock if true or elseBlock if false.",
-                localizedDescriptionKey: "logo.doc.ifelse",
-                source: .ucbLogo,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "condition", required: true, description: "The condition to evaluate. Used by IFELSE.",
-                        example: "1"),
-                    LogoPrimitiveParameter(
-                        name: "thenBlock", required: true,
-                        description: "The instructions to run if true. Used by IFELSE.", example: "[FD 1]"),
-                    LogoPrimitiveParameter(
-                        name: "elseBlock", required: true,
-                        description: "The instructions to run if false. Used by IFELSE.", example: "[FD 1]"),
-                ],
-                examples: [LogoPrimitiveExample(input: "IFELSE :x > 0 [ TYPE \"Positive ] [ TYPE \"Non-Positive ]")]
+                examples: [
+                    LogoPrimitiveExample(input: "IF :x > 0 [ TYPE \"Positive NL ]"),
+                    LogoPrimitiveExample(input: "IF :x > 0 [ TYPE \"Positive ] [ TYPE \"Non-Positive ]"),
+                ]
             )
 
         case .output:

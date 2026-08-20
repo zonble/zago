@@ -25,26 +25,11 @@ extension LogoEngine {
             let isTrue = evaluateCondition(condTokens)
 
             if let trueBlock = reader.nextBlock() {
-                if isTrue {
-                    var bIdx = 0
-                    executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
-                }
-            }
-            reader.commit(to: &index)
-            return true
-
-        case .ifElseCondition:
-            var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
-
-            let isTrue = evaluateCondition(condTokens)
-
-            if let trueBlock = reader.nextBlock() {
-                let falseBlock = reader.nextBlock() ?? []
+                let falseBlock = reader.nextBlock()
                 var bIdx = 0
                 if isTrue {
                     executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
-                } else if !falseBlock.isEmpty {
+                } else if let falseBlock {
                     executeTokens(falseBlock, index: &bIdx, frameReturn: &frameReturn)
                 }
             }

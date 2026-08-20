@@ -6,30 +6,33 @@ extension LogoEngine {
         guard index < tokens.count && tokens[index] == "(" else { return "" }
         index += 1
         var leftVal: String = ""
-        if index < tokens.count, parsePrimitive(tokens[index]) == .ifElseCondition {
+        if index < tokens.count, parsePrimitive(tokens[index]) == .ifCondition {
+            index += 1
+            var condTokens: [String] = []
+            while index < tokens.count && tokens[index] != "[" {
+                condTokens.append(tokens[index])
                 index += 1
-                var condTokens: [String] = []
-                while index < tokens.count && tokens[index] != "[" {
-                    condTokens.append(tokens[index])
-                    index += 1
-                }
+            }
 
-                let isTrue = evaluateCondition(condTokens)
-                var trueBlock: [String] = []
-                var falseBlock: [String] = []
-                if index < tokens.count && tokens[index] == "[" {
-                    trueBlock = extractBlockTokens(tokens: tokens, index: &index)
-                }
-                if index + 1 < tokens.count && tokens[index + 1] == "[" {
-                    index += 1
-                    falseBlock = extractBlockTokens(tokens: tokens, index: &index)
-                }
+            let isTrue = evaluateCondition(condTokens)
+            var trueBlock: [String] = []
+            var falseBlock: [String] = []
+            if index < tokens.count && tokens[index] == "[" {
+                trueBlock = extractBlockTokens(tokens: tokens, index: &index)
+            }
+            while index + 1 < tokens.count && isFillerToken(tokens[index + 1]) && !tokens[index + 1].hasPrefix("\"") && !tokens[index + 1].hasPrefix(":") && !tokens[index + 1].hasPrefix("[") {
+                index += 1
+            }
+            if index + 1 < tokens.count && tokens[index + 1] == "[" {
+                index += 1
+                falseBlock = extractBlockTokens(tokens: tokens, index: &index)
+            }
 
-                let selectedBlock = isTrue ? trueBlock : falseBlock
-                var blockIndex = 0
-                leftVal = selectedBlock.isEmpty ? "" : evaluateExpression(selectedBlock, index: &blockIndex)
-                setLastExpressionString(leftVal)
-            } else if index < tokens.count, let variadicPrim = parsePrimitive(tokens[index]),
+            let selectedBlock = isTrue ? trueBlock : falseBlock
+            var blockIndex = 0
+            leftVal = selectedBlock.isEmpty ? "" : evaluateExpression(selectedBlock, index: &blockIndex)
+            setLastExpressionString(leftVal)
+        } else if index < tokens.count, let variadicPrim = parsePrimitive(tokens[index]),
                 LogoEngine.isVariadicPrimitive(variadicPrim)
             {
                 let args = evaluateVariadicArguments(tokens, index: &index)

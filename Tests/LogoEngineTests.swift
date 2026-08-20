@@ -227,6 +227,25 @@ import TextMetrics
     logoEngine.execute("MAKE \"i\" 2 IFELSE :i > 5 [ TYPE \"YES\" ] [ TYPE \"NO\" ]")
     #expect(ifElseEditor2.buffer.lines[0] == "NO")
 
+    // Unified IF supporting 2 blocks directly
+    let unifiedIfTrue = Editor()
+    logoEngine.delegate = unifiedIfTrue
+    logoEngine.execute("MAKE \"i\" 10 IF :i > 5 [ TYPE \"YES\" ] [ TYPE \"NO\" ]")
+    #expect(unifiedIfTrue.buffer.lines[0] == "YES")
+
+    let unifiedIfFalse = Editor()
+    logoEngine.delegate = unifiedIfFalse
+    logoEngine.execute("MAKE \"i\" 2 IF :i > 5 [ TYPE \"YES\" ] [ TYPE \"NO\" ]")
+    #expect(unifiedIfFalse.buffer.lines[0] == "NO")
+
+    // Parenthesized ternary expressions (IF and IFELSE)
+    logoEngine.execute("MAKE \"ternary1 (IF 10 > 5 [ \"PASS ] [ \"FAIL ])")
+    #expect(logoEngine.variables["ternary1"] == "PASS")
+    logoEngine.execute("MAKE \"ternary2 (IF 2 > 5 [ \"PASS ] [ \"FAIL ])")
+    #expect(logoEngine.variables["ternary2"] == "FAIL")
+    logoEngine.execute("MAKE \"ternary3 (IFELSE 10 > 5 [ \"PASS ] [ \"FAIL ])")
+    #expect(logoEngine.variables["ternary3"] == "PASS")
+
     let loopEditor = Editor()
     logoEngine.delegate = loopEditor
     logoEngine.execute("MAKE \"i\" 1 REPEAT 3 [ IFELSE :i == 2 [ TYPE \"TWO\" ] [ TYPE :i ] MAKE \"i\" ( :i + 1 ) ]")
