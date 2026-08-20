@@ -462,4 +462,51 @@ struct LogoLocalizationTests {
         #expect(plugin.parseOperator("'大於'") == nil)
         #expect(plugin.parseOperator(":大於") == nil)
     }
+
+    @Test
+    func testUnifiedChineseIfAndIfElseDualBranchAndTernary() {
+        let engine = makeEngine()
+
+        // 1. Single-branch 如果
+        engine.execute("變數 \"flag \"Init")
+        engine.execute("如果 10 大於 5 [ 變數 \"flag \"Pass1 ]")
+        #expect(engine.variables["flag"] == "Pass1")
+
+        engine.execute("如果 2 大於 5 [ 變數 \"flag \"Failed ]")
+        #expect(engine.variables["flag"] == "Pass1")
+
+        // 2. Dual-branch 如果 (consecutive blocks)
+        engine.execute("如果 10 大於 5 [ 變數 \"flag \"TrueBranch ] [ 變數 \"flag \"FalseBranch ]")
+        #expect(engine.variables["flag"] == "TrueBranch")
+
+        engine.execute("如果 2 大於 5 [ 變數 \"flag \"TrueBranch ] [ 變數 \"flag \"FalseBranch ]")
+        #expect(engine.variables["flag"] == "FalseBranch")
+
+        // 3. Dual-branch 如果 with filler tokens (則 / 否則 / 不然)
+        engine.execute("如果 10 大於 5 則 [ 變數 \"flag \"TrueWithFiller ] 否則 [ 變數 \"flag \"FalseWithFiller ]")
+        #expect(engine.variables["flag"] == "TrueWithFiller")
+
+        engine.execute("如果 2 大於 5 則 [ 變數 \"flag \"TrueWithFiller ] 否則 [ 變數 \"flag \"FalseWithFiller ]")
+        #expect(engine.variables["flag"] == "FalseWithFiller")
+
+        engine.execute("如果 2 大於 5 則 [ 變數 \"flag \"TrueWithFiller ] 不然 [ 變數 \"flag \"FalseWithOtherwise ]")
+        #expect(engine.variables["flag"] == "FalseWithOtherwise")
+
+        // 4. Natural Chinese if synonyms (要是 / 假如 / 若是)
+        engine.execute("要是 10 大於 5 [ 變數 \"flag \"IfSynonymTrue ] [ 變數 \"flag \"IfSynonymFalse ]")
+        #expect(engine.variables["flag"] == "IfSynonymTrue")
+
+        engine.execute("假如 2 大於 5 則 [ 變數 \"flag \"IfSynonymTrue ] 否則 [ 變數 \"flag \"IfSynonymFalse ]")
+        #expect(engine.variables["flag"] == "IfSynonymFalse")
+
+        // 5. Parenthesized ternary expression reporter
+        engine.execute("變數 \"res1 (如果 10 大於 5 [ \"通過 ] [ \"不通過 ])")
+        #expect(engine.variables["res1"] == "通過")
+
+        engine.execute("變數 \"res2 (如果 2 大於 5 則 [ \"通過 ] 否則 [ \"不通過 ])")
+        #expect(engine.variables["res2"] == "不通過")
+
+        engine.execute("變數 \"res3 (要是 10 大於 5 [ \"通過 ] [ \"不通過 ])")
+        #expect(engine.variables["res3"] == "通過")
+    }
 }

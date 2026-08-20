@@ -43,7 +43,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case setHeading
     case headingPrimitive
     case ifCondition
-    case ifElseCondition
     case output
     case repeatLoop
     case forLoop
@@ -367,8 +366,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["LT", "LEFT"], .turnLeft),
         (["SETHEADING", "SETH"], .setHeading),
         (["HEADING"], .headingPrimitive),
-        (["IF"], .ifCondition),
-        (["IFELSE"], .ifElseCondition),
+        (["IF", "IFELSE"], .ifCondition),
         (["OUTPUT", "OP", "RETURN"], .output),
         (["REPEAT"], .repeatLoop),
         (["FOR"], .forLoop),
@@ -666,7 +664,7 @@ extension LogoPrimitive {
         .appendText, .prependText, .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
         .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .vline, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading, .setline, .gotoline,
-        .gotocol, .clearBuffer, .ifCondition, .ifElseCondition, .output, .run, .repeatLoop, .forLoop,
+        .gotocol, .clearBuffer, .ifCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,
         .testCondition, .assertCondition, .local, .pons, .pops, .povas, .ifTrue, .ifFalse, .stop, .catchTag,
         .throwTag, .wait, .bye, .ignore, .foreach, .to, .exec, .fill, .end, .mdsetItem,

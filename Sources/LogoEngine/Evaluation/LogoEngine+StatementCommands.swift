@@ -18,7 +18,7 @@ extension LogoEngine {
     ///    `.make`, `.name`, `.setItem`, `.setFirst`, `.setBFL`, `.push`,
     ///    `.pop`)
     /// 2. `executeControlCommand` (Control flow and procedure definitions:
-    ///    `.ifCondition`, `.ifElseCondition`, `.repeatLoop`, `.forLoop`,
+    ///    `.ifCondition`, `.repeatLoop`, `.forLoop`,
     ///    `.whileLoop`, `.catchTag`, `.to`, `.exec`)
     /// 3. `executeEditingCommand` (Text editing and buffer operations: `.type`,
     ///    `.show`, `.delete`, `.move`, `.cut`, buffer actions)

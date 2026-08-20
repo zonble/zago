@@ -146,24 +146,12 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "重複": .repeatLoop,
         "要是": .ifCondition,
         "如果": .ifCondition,
+        "若": .ifCondition,
         "若是": .ifCondition,
         "假如": .ifCondition,
         "假使": .ifCondition,
         "假若": .ifCondition,
         "倘若": .ifCondition,
-        "如果否則": .ifElseCondition,
-        "要是否則": .ifElseCondition,
-        "若是否則": .ifElseCondition,
-        "假如否則": .ifElseCondition,
-        "假使否則": .ifElseCondition,
-        "假若否則": .ifElseCondition,
-        "倘若否則": .ifElseCondition,
-        "如果不然": .ifElseCondition,
-        "要是不然": .ifElseCondition,
-        "若是不然": .ifElseCondition,
-        "假使不然": .ifElseCondition,
-        "假若不然": .ifElseCondition,
-        "倘若不然": .ifElseCondition,
         "計數迴圈": .forLoop,   
         "當": .whileLoop,
         "只要": .whileLoop,
@@ -712,7 +700,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     }
 
     public var fillerTokens: Set<String> {
-        ["為", "成", "次", "到", "至", "則"]
+        ["為", "成", "次", "到", "至", "則", "否則", "不然"]
     }
 
     public var keywordAliases: [String] {
@@ -724,7 +712,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
                 "單線", "粗線", "雙線", "純字元", "三段虛線", "粗三段虛線", "四段虛線", "粗四段虛線", "二段虛線", "粗二段虛線",
                 "西曆", "公曆", "陽曆", "民國曆", "民國", "日本曆", "和曆", "農曆", "陰曆", "中曆", "佛曆", "伊斯蘭曆", "猶太曆",
                 "簡短", "標準", "完整", "全部",
-                "為", "成", "次", "到", "至", "則",
+                "為", "成", "次", "到", "至", "則", "否則", "不然",
             ]
     }
 }
