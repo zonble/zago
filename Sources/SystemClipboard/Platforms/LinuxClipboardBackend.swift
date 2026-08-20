@@ -91,7 +91,7 @@ import Foundation
         }
 
         private func runCommandWithOutput(_ args: [String]) -> String? {
-            guard let executable = args.first else { return false }
+            guard let executable = args.first else { return nil }
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/\(executable)")
             if !FileManager.default.fileExists(atPath: process.executableURL?.path ?? "") {
