@@ -89,15 +89,10 @@ public enum LogoNumberFormatter {
             return "\(pct)%"
         case .currency:
             let sym = currencyCode ?? "$"
-            if let precision = precision {
-                return "\(sym)" + String(format: "%.\(precision)f", number)
-            }
-            return "\(sym)\(number)"
+            let numStr = formatWithGrouping(number, precision: precision ?? 2)
+            return "\(sym)\(numStr)"
         case .decimal:
-            if let precision = precision {
-                return String(format: "%.\(precision)f", number)
-            }
-            return "\(number)"
+            return formatWithGrouping(number, precision: precision)
         case .ordinal:
             let intVal = Int(number)
             let suffix: String
@@ -116,6 +111,36 @@ public enum LogoNumberFormatter {
             return "\(Int(number))"
         }
         #endif
+    }
+
+    private static func formatWithGrouping(_ number: Double, precision: Int?) -> String {
+        let formattedStr: String
+        if let precision = precision {
+            formattedStr = String(format: "%.\(precision)f", number)
+        } else {
+            if number.rounded() == number && !number.isInfinite && !number.isNaN && abs(number) < 1e12 {
+                formattedStr = String(Int(number))
+            } else {
+                formattedStr = "\(number)"
+            }
+        }
+        let parts = formattedStr.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        let integerPart = parts[0]
+        let isNegative = integerPart.hasPrefix("-")
+        let digitsOnly = isNegative ? integerPart.dropFirst() : integerPart[...]
+        var groupedDigits = ""
+        let count = digitsOnly.count
+        for (i, char) in digitsOnly.enumerated() {
+            if i > 0 && (count - i) % 3 == 0 {
+                groupedDigits.append(",")
+            }
+            groupedDigits.append(char)
+        }
+        let finalInt = (isNegative ? "-" : "") + groupedDigits
+        if parts.count > 1 {
+            return "\(finalInt).\(parts[1])"
+        }
+        return finalInt
     }
 
     /// Converts an integer to Roman Numerals (1...3999).
