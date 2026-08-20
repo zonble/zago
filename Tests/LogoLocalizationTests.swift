@@ -360,8 +360,10 @@ struct LogoLocalizationTests {
         #expect(engine.variables["numres"]?.contains("壹") == true || engine.variables["numres"]?.contains("佰") == true || engine.variables["numres"] == "100")
 
         // 2. List formatting
+        #if canImport(Darwin)
         engine.execute("變數 \"itemRes 列表格式 [ \"蘋果 \"香蕉 ] \"且")
         #expect(engine.variables["itemres"]?.contains("蘋果") == true)
+        #endif
 
         // 3. Byte Count formatting
         engine.execute("變數 \"byteRes 檔案大小格式 1048576 \"檔案大小")
@@ -374,8 +376,10 @@ struct LogoLocalizationTests {
         #endif
 
         // 5. Calendar convert
+        #if canImport(Darwin)
         engine.execute("變數 \"calRes 轉換曆法 \"2026-08-19 \"民國曆")
         #expect(engine.variables["calres"]?.contains("民國") == true || engine.variables["calres"]?.contains("115") == true)
+        #endif
     }
 
     @Test
