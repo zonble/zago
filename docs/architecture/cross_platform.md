@@ -454,3 +454,42 @@ for character in text {
 
 In [`TextBufferTests.swift`](../../Tests/TextBufferTests.swift), `testCJKWordNavigation` uses `#if canImport(Darwin)` to verify dictionary-segmented stops (`2 -> 3 -> 5`) on macOS and `#else` to verify per-character discrete stops (`2 -> 3 -> 4 -> 5`) on Linux and Windows.
 
+---
+
+## 12. Non-Darwin Foundation `Locale` & `NumberFormatter` (`Locale.autoupdatingCurrent` Crash)
+
+### The Pitfall: `NSAutoLocale` Lacks `_cfObject` in `swift-corelibs-foundation`
+
+When configuring Foundation formatters (such as `NumberFormatter`, `DateFormatter`, `ListFormatter`):
+
+- **Darwin (macOS)**: `Locale.autoupdatingCurrent` returns an `NSLocale` instance with a fully backed CoreFoundation `CFLocaleRef` (`_cfObject`).
+- **Linux / Windows (`swift-corelibs-foundation`)**: `Locale.autoupdatingCurrent` returns an `NSAutoLocale` proxy object. This proxy object **does not implement a backing `_cfObject` pointer**.
+
+When passing `formatter.locale = Locale.autoupdatingCurrent` and subsequently calling `formatter.string(from: number)`:
+1. `NumberFormatter.State.formatter()` attempts to obtain `(formatter.locale as NSLocale)._cfObject`.
+2. Accessing `_cfObject` on `NSAutoLocale` in `libFoundation.so` hits an illegal instruction (`UD2` / Signal 4 / SIGILL on Linux, Access Violation `0xC0000005` on Windows).
+3. The test runner or editor process terminates abruptly (`exit code 1`).
+
+### Architectural Solution: Always Use `Locale.current`
+
+In [`LogoDateTimeExtensions.swift`](../../Sources/LogoEngine/Types/Formatting/LogoDateTimeExtensions.swift) and [`LogoEngine+TemplatePrimitives.swift`](../../Sources/LogoEngine/Primitives/LogoEngine+TemplatePrimitives.swift):
+
+- Never use `Locale.autoupdatingCurrent` for formatter configuration or localized sorting.
+- Always instantiate concrete, fully backed locales via **`Locale.current`** or `Locale(identifier: "...")`.
+
+```swift
+public init(logoLocaleSpec raw: String?) {
+    guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+        self = .current // NOT .autoupdatingCurrent
+        return
+    }
+    let clean = raw.hasPrefix(":") ? String(raw.dropFirst()) : raw
+    let lower = clean.lowercased()
+    if lower == "system" || lower == "current" {
+        self = .current // NOT .autoupdatingCurrent
+        return
+    }
+    ...
+}
+```
+
