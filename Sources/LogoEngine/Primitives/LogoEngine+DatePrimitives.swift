@@ -79,7 +79,7 @@ extension LogoEngine {
 
                 if !isDict {
                     let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(
-                        items.map { $0.stringValue }, mode: mode)
+                        items.map { $0.stringValue }, mode: mode, registry: pluginRegistry)
                     formatSpec = f
                     localeSpec = l
                     timeZoneSpec = tz
@@ -96,7 +96,7 @@ extension LogoEngine {
             }
 
             if !positional.isEmpty {
-                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(positional, mode: mode)
+                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(positional, mode: mode, registry: pluginRegistry)
                 formatSpec = f
                 localeSpec = l
                 timeZoneSpec = tz
@@ -221,16 +221,18 @@ extension LogoEngine {
 
         while let nextTok = reader.nextOptionalExpression() {
             let clean = unquote(nextTok)
-            if Calendar.Identifier(logoCalendarName: clean) != nil && sourceCalToken == nil {
-                sourceCalToken = clean
+            if let parsedCal = pluginRegistry.parseCalendarIdentifier(clean) ?? Calendar.Identifier(logoCalendarName: clean) {
+                if sourceCalToken == nil {
+                    sourceCalToken = parsedCal.logoCalendarName
+                }
             } else if formatToken == nil {
                 formatToken = clean
             }
         }
         reader.commit(to: &index)
 
-        let targetCalName = unquote(targetCalToken)
-        let targetCalId = Calendar.Identifier(logoCalendarName: targetCalName) ?? .gregorian
+        let rawTargetCalName = unquote(targetCalToken)
+        let targetCalId = pluginRegistry.parseCalendarIdentifier(rawTargetCalName) ?? Calendar.Identifier(logoCalendarName: rawTargetCalName) ?? .gregorian
         let sourceCal = sourceCalToken.map { Calendar(identifier: Calendar.Identifier(logoCalendarName: $0) ?? .gregorian) } ?? Calendar(identifier: .gregorian)
 
         let parsedDate: Date
@@ -249,7 +251,7 @@ extension LogoEngine {
                 mode: .date,
                 formatSpec: fmt,
                 localeSpec: targetCalId.defaultLocaleIdentifier,
-                calendarSpec: targetCalName
+                calendarSpec: targetCalId.logoCalendarName
             )
             setLastExpressionDateTime(res)
             return res

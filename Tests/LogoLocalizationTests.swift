@@ -209,4 +209,172 @@ struct LogoLocalizationTests {
         """)
         #expect(engine.variables["msg"] == "你好，世界")
     }
+
+    @Test
+    func testTraditionalChineseDateTimeAndCalendarKeywords() {
+        let lines = LogoExecutionService.render(
+            script: """
+            換行 打字 轉簡體 現在時間 full "民國曆
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        #expect(!lines.isEmpty)
+        let joined = lines.joined(separator: "\n")
+        #expect(!joined.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    @Test
+    func testLogoParserPluginProtocolDefaultImplementations() {
+        struct MinimalPlugin: LogoParserPlugin {
+            let id = "minimal"
+        }
+
+        let plugin = MinimalPlugin()
+        #expect(plugin.id == "minimal")
+        #expect(plugin.displayName == "minimal")
+        #expect(plugin.aliases.isEmpty)
+        #expect(plugin.parsePrimitive("token") == nil)
+        #expect(plugin.parseOperator("token") == nil)
+        #expect(plugin.parseHeading("token") == nil)
+        #expect(plugin.parseBoolean("token") == nil)
+        #expect(plugin.parseExitPosition("token") == nil)
+        #expect(plugin.parseBorderStyle("token") == nil)
+        #expect(plugin.parseCalendarIdentifier("token") == nil)
+        #expect(plugin.parseDateTimeStylePreset("token") == nil)
+        #expect(plugin.parseNumberStyle("token") == nil)
+        #expect(plugin.parseListType("token") == nil)
+        #expect(plugin.parseByteCountStyle("token") == nil)
+        #expect(plugin.parsePersonNameStyle("token") == nil)
+        #expect(plugin.keywordAliases.isEmpty)
+    }
+
+    @Test
+    func testTraditionalChinesePluginAllParserMethods() {
+        let plugin = LogoTraditionalChinesePlugin()
+        #expect(plugin.id == "zh-TW")
+        #expect(plugin.displayName.contains("繁體中文"))
+        #expect(plugin.aliases.contains("zh-Hant"))
+
+        // 1. Primitive
+        #expect(plugin.parsePrimitive("畫框") == .drawBox)
+        #expect(plugin.parsePrimitive("打字") == .type)
+
+        // 2. Operator
+        #expect(plugin.parseOperator("大於") == .greaterThan)
+        #expect(plugin.parseOperator("等於") == .equal)
+
+        // 3. Heading
+        #expect(plugin.parseHeading("北") == .up)
+        #expect(plugin.parseHeading("東") == .right)
+
+        // 4. Boolean
+        #expect(plugin.parseBoolean("真") == true)
+        #expect(plugin.parseBoolean("假") == false)
+
+        // 5. ExitPosition
+        #expect(plugin.parseExitPosition("東北") == .ne)
+        #expect(plugin.parseExitPosition("西南") == .sw)
+
+        // 6. BorderStyle
+        #expect(plugin.parseBorderStyle("雙線") == .double)
+        #expect(plugin.parseBorderStyle("三段虛線") == .tripleDash)
+
+        // 7. CalendarIdentifier
+        #expect(plugin.parseCalendarIdentifier("民國曆") == .republicOfChina)
+        #expect(plugin.parseCalendarIdentifier("和曆") == .japanese)
+        #expect(plugin.parseCalendarIdentifier("農曆") == .chinese)
+
+        // 8. DateTimeStylePreset
+        #expect(plugin.parseDateTimeStylePreset("完整") == .long)
+        #expect(plugin.parseDateTimeStylePreset("簡短") == .short)
+
+        // 9. NumberStyle
+        #expect(plugin.parseNumberStyle("金融") == .financial)
+        #expect(plugin.parseNumberStyle("中文數字") == .spellout)
+
+        // 10. ListType
+        #expect(plugin.parseListType("且") == .and)
+        #expect(plugin.parseListType("或") == .or)
+
+        // 11. ByteCountStyle
+        #expect(plugin.parseByteCountStyle("檔案大小") == .file)
+        #expect(plugin.parseByteCountStyle("記憶體") == .memory)
+
+        // 12. PersonNameStyle
+        #expect(plugin.parsePersonNameStyle("簡短") == .short)
+        #expect(plugin.parsePersonNameStyle("詳細") == .long)
+
+        // 13. KeywordAliases
+        #expect(!plugin.keywordAliases.isEmpty)
+        #expect(plugin.keywordAliases.contains("畫框"))
+        #expect(plugin.keywordAliases.contains("民國曆"))
+    }
+
+    @Test
+    func testPluginRegistryAndEngineComprehensiveDelegation() {
+        let registry = LogoPluginRegistry()
+        let plugin = LogoTraditionalChinesePlugin()
+        registry.register(plugin)
+
+        #expect(registry.contains(id: "zh-TW"))
+        #expect(registry.contains(id: "zh-Hant"))
+        #expect(!registry.contains(id: "fr"))
+
+        #expect(registry.parsePrimitive("畫框") == .drawBox)
+        #expect(registry.parseOperator("大於") == .greaterThan)
+        #expect(registry.parseHeading("北") == .up)
+        #expect(registry.parseBoolean("真") == true)
+        #expect(registry.parseExitPosition("東北") == .ne)
+        #expect(registry.parseBorderStyle("雙線") == .double)
+        #expect(registry.parseCalendarIdentifier("民國曆") == .republicOfChina)
+        #expect(registry.parseDateTimeStylePreset("完整") == .long)
+        #expect(registry.parseNumberStyle("金融") == .financial)
+        #expect(registry.parseListType("且") == .and)
+        #expect(registry.parseByteCountStyle("檔案大小") == .file)
+        #expect(registry.parsePersonNameStyle("簡短") == .short)
+        #expect(!registry.allKeywordAliases.isEmpty)
+
+        let engine = LogoEngine(pluginRegistry: registry)
+        #expect(engine.parseHeading("北") == .up)
+        #expect(engine.parseBoolean("真") == true)
+        #expect(engine.parseBorderStyle("雙線") == .double)
+        #expect(engine.parseCalendarIdentifier("民國曆") == .republicOfChina)
+        #expect(engine.parseDateTimeStylePreset("完整") == .long)
+
+        registry.unregister(id: "zh-TW")
+        #expect(!registry.contains(id: "zh-TW"))
+        #expect(registry.parsePrimitive("畫框") == nil)
+
+        registry.register(plugin)
+        #expect(registry.contains(id: "zh-TW"))
+        registry.clear()
+        #expect(registry.registeredPlugins.isEmpty)
+    }
+
+    @Test
+    func testTraditionalChineseEndToEndExecutionForAllDomains() {
+        let engine = makeEngine()
+
+        // 1. Number Style formatting
+        engine.execute("變數 \"numRes 數字格式 100 \"金融")
+        #expect(engine.variables["numres"]?.contains("壹") == true || engine.variables["numres"]?.contains("佰") == true || engine.variables["numres"] == "100")
+
+        // 2. List formatting
+        engine.execute("變數 \"itemRes 列表格式 [ \"蘋果 \"香蕉 ] \"且")
+        #expect(engine.variables["itemres"]?.contains("蘋果") == true)
+
+        // 3. Byte Count formatting
+        engine.execute("變數 \"byteRes 檔案大小格式 1048576 \"檔案大小")
+        #expect(engine.variables["byteres"]?.contains("MB") == true || engine.variables["byteres"]?.contains("1") == true)
+
+        // 4. Person name formatting
+        #if canImport(Darwin)
+        engine.execute("變數 \"nameRes 姓名格式 [ \"姓 \"王 \"名 \"小明 ] \"簡短")
+        #expect(engine.variables["nameres"]?.contains("王") == true)
+        #endif
+
+        // 5. Calendar convert
+        engine.execute("變數 \"calRes 轉換曆法 \"2026-08-19 \"民國曆")
+        #expect(engine.variables["calres"]?.contains("民國") == true || engine.variables["calres"]?.contains("115") == true)
+    }
 }

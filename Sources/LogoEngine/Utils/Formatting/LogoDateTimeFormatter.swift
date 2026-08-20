@@ -7,7 +7,8 @@ public struct LogoDateTimeFormatter {
 
     public static func resolveArguments(
         _ args: [String],
-        mode: Mode
+        mode: Mode,
+        registry: LogoPluginRegistry? = nil
     ) -> (format: String?, locale: String?, tz: String?, cal: String?) {
         var format: String? = nil
         var locale: String? = nil
@@ -19,13 +20,15 @@ public struct LogoDateTimeFormatter {
             guard !clean.isEmpty else { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if Calendar.Identifier(logoCalendarName: lower) != nil && cal == nil {
-                cal = clean
+            if let parsedCal = registry?.parseCalendarIdentifier(clean) ?? registry?.parseCalendarIdentifier(lower) ?? Calendar.Identifier(logoCalendarName: lower) {
+                if cal == nil {
+                    cal = parsedCal.logoCalendarName
+                }
             } else if Locale.isLogoLocaleSpec(clean) && locale == nil {
                 locale = clean
             } else if TimeZone.isLogoTimeZoneSpec(clean) && tz == nil {
                 tz = clean
-            } else if StylePreset.isPresetName(lower) && format == nil {
+            } else if (registry?.parseDateTimeStylePreset(clean) != nil || registry?.parseDateTimeStylePreset(lower) != nil || StylePreset.isPresetName(lower)) && format == nil {
                 format = clean
             } else if format == nil {
                 format = clean

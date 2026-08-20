@@ -93,6 +93,18 @@ public final class LogoEngine: @unchecked Sendable {
         return pluginRegistry.parseBoolean(token)
     }
 
+    public func parseBorderStyle(_ token: String) -> BorderStyle? {
+        pluginRegistry.parseBorderStyle(token) ?? BorderStyle(token)
+    }
+
+    public func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? {
+        pluginRegistry.parseCalendarIdentifier(token) ?? Calendar.Identifier(logoCalendarName: token)
+    }
+
+    public func parseDateTimeStylePreset(_ token: String, mode: LogoDateTimeMode = .dateTime) -> LogoDateTimeStylePreset? {
+        pluginRegistry.parseDateTimeStylePreset(token) ?? (LogoDateTimeStylePreset.isPresetName(token) ? LogoDateTimeStylePreset(raw: token, mode: mode) : nil)
+    }
+
     public func isKeyword(_ token: String) -> Bool {
         guard let prim = parsePrimitive(token) else { return false }
         return Self.keywords.contains(prim)

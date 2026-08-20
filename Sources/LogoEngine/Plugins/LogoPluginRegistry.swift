@@ -1,6 +1,7 @@
+import Drawing
 import Foundation
 
-/// Manages a chain of `LogoParserPlugin` instances for localized and domain-specific token parsing.
+/// Central registry managing active `LogoParserPlugin` instances.
 public final class LogoPluginRegistry: @unchecked Sendable {
     private var plugins: [any LogoParserPlugin] = []
     private let lock = NSLock()
@@ -9,49 +10,36 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         self.plugins = plugins
     }
 
-    /// Registers a plugin into the registry.
+    public func contains(id: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return plugins.contains { $0.id == id || $0.aliases.contains(id) }
+    }
+
     public func register(_ plugin: any LogoParserPlugin) {
         lock.lock()
         defer { lock.unlock() }
-        plugins.removeAll { $0.id.lowercased() == plugin.id.lowercased() }
+        plugins.removeAll { $0.id == plugin.id }
         plugins.append(plugin)
     }
 
-    /// Unregisters a plugin by its ID or alias.
     public func unregister(id: String) {
         lock.lock()
         defer { lock.unlock() }
-        let cleanId = id.lowercased()
-        plugins.removeAll {
-            $0.id.lowercased() == cleanId || $0.aliases.contains { $0.lowercased() == cleanId }
-        }
+        plugins.removeAll { $0.id == id }
     }
 
-    /// Removes all registered plugins.
-    public func removeAll() {
+    public func clear() {
         lock.lock()
         defer { lock.unlock() }
         plugins.removeAll()
     }
 
-    /// Returns all registered plugins.
-    public var allPlugins: [any LogoParserPlugin] {
+    public var registeredPlugins: [any LogoParserPlugin] {
         lock.lock()
         defer { lock.unlock() }
         return plugins
     }
-
-    /// Checks if a plugin with the given ID or alias is registered.
-    public func contains(id: String) -> Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        let cleanId = id.lowercased()
-        return plugins.contains {
-            $0.id.lowercased() == cleanId || $0.aliases.contains { $0.lowercased() == cleanId }
-        }
-    }
-
-    // MARK: - Dispatch Hooks
 
     public func parsePrimitive(_ token: String) -> LogoPrimitive? {
         lock.lock()
@@ -94,8 +82,8 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         let currentPlugins = plugins
         lock.unlock()
         for plugin in currentPlugins {
-            if let b = plugin.parseBoolean(token) {
-                return b
+            if let val = plugin.parseBoolean(token) {
+                return val
             }
         }
         return nil
@@ -108,6 +96,42 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         for plugin in currentPlugins {
             if let pos = plugin.parseExitPosition(token) {
                 return pos
+            }
+        }
+        return nil
+    }
+
+    public func parseBorderStyle(_ token: String) -> BorderStyle? {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if let style = plugin.parseBorderStyle(token) {
+                return style
+            }
+        }
+        return nil
+    }
+
+    public func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if let cal = plugin.parseCalendarIdentifier(token) {
+                return cal
+            }
+        }
+        return nil
+    }
+
+    public func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset? {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        for plugin in currentPlugins {
+            if let preset = plugin.parseDateTimeStylePreset(token) {
+                return preset
             }
         }
         return nil
@@ -156,18 +180,6 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         for plugin in currentPlugins {
             if let style = plugin.parsePersonNameStyle(token) {
                 return style
-            }
-        }
-        return nil
-    }
-
-    public func resolveKeyword(_ token: String, domain: LogoKeywordDomain) -> String? {
-        lock.lock()
-        let currentPlugins = plugins
-        lock.unlock()
-        for plugin in currentPlugins {
-            if let resolved = plugin.resolveKeyword(token, domain: domain) {
-                return resolved
             }
         }
         return nil

@@ -661,35 +661,50 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         }
     }
 
-    public func resolveKeyword(_ token: String, domain: LogoKeywordDomain) -> String? {
-        switch domain {
-        case .borderStyle:
-            switch token.lowercased() {
-            case "單線", "單": return "single"
-            case "粗線", "粗": return "heavy"
-            case "雙線", "雙": return "double"
-            case "圓角", "圓", "單線圓角": return "round"
-            case "雙線圓角", "雙圓角": return "double-round"
-            case "純字元", "字元", "ascii": return "ascii"
-            case "字元圓角", "ascii圓角", "ascii 圓角": return "ascii-round"
-            case "三段虛線", "三虛線", "三段線": return "triple-dash"
-            case "粗三段虛線", "粗三虛線", "粗三段線": return "heavy-triple-dash"
-            case "四段虛線", "四虛線", "四段線": return "quadruple-dash"
-            case "粗四段虛線", "粗四虛線", "粗四段線": return "heavy-quadruple-dash"
-            case "二段虛線", "雙虛線", "雙段虛線", "二段線": return "double-dash"
-            case "粗二段虛線", "粗雙虛線", "粗雙段虛線", "粗二段線": return "heavy-double-dash"
-            default: return nil
-            }
-        case .calendar:
-            switch token.lowercased() {
-            case "西曆", "公曆", "陽曆": return "gregorian"
-            case "民國曆", "民國": return "roc"
-            case "日本曆", "和曆": return "japanese"
-            case "農曆", "陰曆", "中曆": return "chinese"
-            default: return nil
-            }
-        default:
-            return nil
+    public func parseBorderStyle(_ token: String) -> BorderStyle? {
+        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
+        switch clean {
+        case "單線", "單": return .single
+        case "粗線", "粗": return .heavy
+        case "雙線", "雙": return .double
+        case "純字元", "字元", "ascii": return .ascii
+        case "三段虛線", "三虛線", "三段線": return .tripleDash
+        case "粗三段虛線", "粗三虛線", "粗三段線": return .heavyTripleDash
+        case "四段虛線", "四虛線", "四段線": return .quadrupleDash
+        case "粗四段虛線", "粗四虛線", "粗四段線": return .heavyQuadrupleDash
+        case "二段虛線", "雙虛線", "雙段虛線", "二段線": return .doubleDash
+        case "粗二段虛線", "粗雙虛線", "粗雙段虛線", "粗二段線": return .heavyDoubleDash
+        default: return nil
+        }
+    }
+
+    public func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? {
+        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
+        switch clean {
+        case "西曆", "公曆", "陽曆": return .gregorian
+        case "民國曆", "民國": return .republicOfChina
+        case "日本曆", "和曆": return .japanese
+        case "農曆", "陰曆", "中曆": return .chinese
+        case "佛曆", "泰國曆", "泰曆": return .buddhist
+        case "伊斯蘭曆", "回曆": return .islamic
+        case "猶太曆", "希伯來曆": return .hebrew
+        case "波斯曆", "伊朗曆": return .persian
+        case "印度曆": return .indian
+        case "科普特曆": return .coptic
+        case "衣索比亞曆": return .ethiopicAmeteMihret
+        default: return nil
+        }
+    }
+
+    public func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset? {
+        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
+        switch clean {
+        case "簡短", "簡稱", "短": return .short
+        case "標準", "中等", "中": return .medium
+        case "完整", "詳細", "長": return .long
+        case "全部", "全", "最詳": return .full
+        case "iso8601", "iso": return .iso8601
+        default: return nil
         }
     }
 
@@ -698,5 +713,10 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
             + Array(Self.operatorMap.keys)
             + Array(Self.headingMap.keys)
             + Array(Self.booleanMap.keys)
+            + [
+                "單線", "粗線", "雙線", "純字元", "三段虛線", "粗三段虛線", "四段虛線", "粗四段虛線", "二段虛線", "粗二段虛線",
+                "西曆", "公曆", "陽曆", "民國曆", "民國", "日本曆", "和曆", "農曆", "陰曆", "中曆", "佛曆", "伊斯蘭曆", "猶太曆",
+                "簡短", "標準", "完整", "全部",
+            ]
     }
 }
