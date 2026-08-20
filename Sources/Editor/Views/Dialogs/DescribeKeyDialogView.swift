@@ -124,8 +124,16 @@ final class DescribeKeyDialogView {
             output += "\u{001B}[\(bottomRow);\(footerPos)H\(styledFooter)"
         }
 
-        // Position cursor at bottom-right corner of terminal
-        output += "\u{001B}[\(rows);\(cols)H"
+        // Position cursor: at prompt typing position when waiting for key, or bottom-right corner when displaying details
+        switch state {
+        case .waitingForKey:
+            let promptRow = startRow + 2
+            let promptText = l10n["dialog.describe_key.prompt"]
+            let promptCol = startCol + 3 + promptText.displayWidth
+            output += "\u{001B}[\(promptRow);\(promptCol)H"
+        case .showingDetails:
+            output += "\u{001B}[\(rows);\(cols)H"
+        }
 
         terminal.write(output)
     }
