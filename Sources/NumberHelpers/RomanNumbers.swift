@@ -23,8 +23,7 @@
 
 import Foundation
 
-@objc
-public enum RomanNumbersErrors: Int, Error, LocalizedError {
+public enum RomanNumbersErrors: Int, Error, LocalizedError, Sendable {
     case tooLarge
     case tooSmall
     case invalidInput
@@ -41,7 +40,7 @@ public enum RomanNumbersErrors: Int, Error, LocalizedError {
     }
 }
 
-@objc public enum RomanNumbersStyle: Int {
+public enum RomanNumbersStyle: Int, Sendable {
     case alphabets
     case fullWidthUpper
     case fullWidthLower
@@ -79,9 +78,7 @@ extension RomanNumbersStyle {
     }
 }
 
-@objc
-public class RomanNumbers: NSObject {
-    @objc(convertWithInt:style:error:)
+public enum RomanNumbers {
     public static func convert(input: Int, style: RomanNumbersStyle = .alphabets) throws -> String {
         if input > 3999 {
             throw RomanNumbersErrors.tooLarge
@@ -124,7 +121,6 @@ public class RomanNumbers: NSObject {
         return result
     }
 
-    @objc(convertWithString:style:error:)
     public static func convert(string: String, style: RomanNumbersStyle = .alphabets) throws
         -> String
     {

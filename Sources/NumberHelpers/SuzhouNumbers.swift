@@ -25,7 +25,7 @@ import Foundation
 
 /// Helps to convert Arabic numbers to Sushou numbers (蘇州碼, A kind of
 /// ancient Chinese number)
-public class SuzhouNumbers: NSObject {
+public enum SuzhouNumbers {
 
     static private let verticalDigits: [Character: String] = [
         "0": "〇", "1": "〡", "2": "〢", "3": "〣", "4": "〤",
@@ -53,7 +53,7 @@ public class SuzhouNumbers: NSObject {
     ///   - preferInitialVertical: If vertical digits like 〡,〢, and 〣 are
     ///         preferred than 一, 二 and 三.
     /// - Returns: The output
-    @objc static public func generate(
+    public static func generate(
         intPart: String, decPart: String,
         unit: String = "",
         preferInitialVertical: Bool = true
