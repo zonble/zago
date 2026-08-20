@@ -50,6 +50,58 @@ extension TableModeController {
         clampTableModeCursor()
     }
 
+    func extendTableSelectionHome(cell: TableCell) {
+        guard let editor else { return }
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
+        }
+        let line = editor.buffer.lines[editor.buffer.lineIndex]
+        let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        editor.buffer.columnIndex = leftBorder + 1
+        clampTableModeCursor()
+    }
+
+    func extendTableSelectionEnd(cell: TableCell) {
+        guard let editor else { return }
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
+        }
+        let line = editor.buffer.lines[editor.buffer.lineIndex]
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+        editor.buffer.columnIndex = max(leftBorder + 1, rightBorder - 1)
+        clampTableModeCursor()
+    }
+
+    func extendTableSelectionPageUp(cell: TableCell) {
+        guard let editor else { return }
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
+        }
+        let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+        editor.buffer.lineIndex = cell.innerMinLine
+        editor.buffer.columnIndex = getCharIndexForVisualColumn(
+            in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
+        clampTableModeCursor()
+    }
+
+    func extendTableSelectionPageDown(cell: TableCell) {
+        guard let editor else { return }
+        if editor.buffer.selectionMark == nil {
+            editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+            editor.reportOperationResult(.succeeded(message: editor.l10n["status.mark_set"]))
+        }
+        let vCol = getVisualColumn(in: editor.buffer.lines[editor.buffer.lineIndex], col: editor.buffer.columnIndex)
+        editor.buffer.lineIndex = cell.innerMaxLine
+        editor.buffer.columnIndex = getCharIndexForVisualColumn(
+            in: editor.buffer.lines[editor.buffer.lineIndex], targetVisualCol: vCol)
+        clampTableModeCursor()
+    }
+
     private struct TableSelectionSegment {
         let line: Int
         let startCol: Int

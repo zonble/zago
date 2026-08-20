@@ -23,6 +23,8 @@ extension Editor {
         commandRegistry.register(SelectDownCommand())
         commandRegistry.register(SelectHomeCommand())
         commandRegistry.register(SelectEndCommand())
+        commandRegistry.register(SelectPgupCommand())
+        commandRegistry.register(SelectPgdnCommand())
 
         // Editing Commands
         commandRegistry.register(DeleteLineCommand())
