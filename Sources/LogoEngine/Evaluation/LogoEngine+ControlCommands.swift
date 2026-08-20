@@ -354,7 +354,7 @@ extension LogoEngine {
             }
             let targetVal = unquote(rawTarget)
             reader.commit(to: &index)
-            let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock)
+            let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &frameReturn)
             if let res = result {
                 lastResult = res
             }
@@ -363,7 +363,7 @@ extension LogoEngine {
         case .condSwitch:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
             if let clausesBlock = reader.nextBlock() {
-                let result = evaluateCondClauses(clausesBlock: clausesBlock)
+                let result = evaluateCondClauses(clausesBlock: clausesBlock, frameReturn: &frameReturn)
                 if let res = result { lastResult = res }
             }
             reader.commit(to: &index)
@@ -417,12 +417,16 @@ extension LogoEngine {
             }
             var procSourceTokens: [LogoToken] = []
             let hasRootSourceTokens = tokens.count == rootSourceTokens.count
-            while let token = reader.peekToken(), !isEndToken(token) {
-                _ = reader.nextRawToken()
+            while reader.index + 1 < tokens.count {
+                let nextTok = tokens[reader.index + 1]
+                if isEndToken(nextTok) {
+                    break
+                }
+                _ = reader.nextRawToken(skipFillers: false)
                 if hasRootSourceTokens {
                     procSourceTokens.append(rootSourceTokens[reader.position])
                 } else {
-                    procSourceTokens.append(LogoToken(text: token, sourceRange: 0..<0))
+                    procSourceTokens.append(LogoToken(text: nextTok, sourceRange: 0..<0))
                 }
             }
             customProcedures[procName] = LogoProcedure(

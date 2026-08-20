@@ -252,6 +252,52 @@ import TextMetrics
     #expect(loopEditor.buffer.lines[0] == "1TWO3")
 }
 
+@Test func testCaseAndCondWithOutputInProcedures() throws {
+    let logoEngine = LogoEngine()
+
+    // 1. COND with OP in procedure
+    logoEngine.execute("""
+    TO EVAL_COND :val
+        COND [
+            [[:val <= 0] [OP "NonPositive]]
+            [[:val <= 10] OP "Small]
+            [[:val <= 100] [OP "Medium]]
+            [ELSE [OP "Large]]
+        ]
+    END
+    MAKE "r1 EVAL_COND -5
+    MAKE "r2 EVAL_COND 7
+    MAKE "r3 EVAL_COND 50
+    MAKE "r4 EVAL_COND 999
+    """)
+
+    #expect(logoEngine.variables["r1"] == "NonPositive")
+    #expect(logoEngine.variables["r2"] == "Small")
+    #expect(logoEngine.variables["r3"] == "Medium")
+    #expect(logoEngine.variables["r4"] == "Large")
+
+    // 2. CASE with OP in procedure
+    logoEngine.execute("""
+    TO EVAL_CASE :code
+        CASE :code [
+            [[200 201] [OP "OK]]
+            [[400 404] OP "ClientError]
+            [[500] [OP "ServerError]]
+            [ELSE [OP "Unknown]]
+        ]
+    END
+    MAKE "c1 EVAL_CASE 200
+    MAKE "c2 EVAL_CASE 404
+    MAKE "c3 EVAL_CASE 500
+    MAKE "c4 EVAL_CASE 999
+    """)
+
+    #expect(logoEngine.variables["c1"] == "OK")
+    #expect(logoEngine.variables["c2"] == "ClientError")
+    #expect(logoEngine.variables["c3"] == "ServerError")
+    #expect(logoEngine.variables["c4"] == "Unknown")
+}
+
 @Test func testLogoFloatingPointArithmetic() throws {
     let logoEngine = LogoEngine()
 

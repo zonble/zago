@@ -75,21 +75,19 @@ extension LogoEngine {
         return false
     }
 
-    private func executeClauseBody(_ clause: [String], index: inout Int) -> String? {
+    private func executeClauseBody(_ clause: [String], index: inout Int, frameReturn: inout String?) -> String? {
         if index < clause.count && clause[index] == "[" {
             let body = extractBlockTokens(tokens: clause, index: &index)
             var bIdx = 0
-            var dummyFrameReturn: String? = nil
-            executeTokens(body, index: &bIdx, frameReturn: &dummyFrameReturn)
-            return dummyFrameReturn ?? lastResult ?? ""
+            executeTokens(body, index: &bIdx, frameReturn: &frameReturn)
+            return frameReturn ?? lastResult ?? ""
         } else {
-            var dummyFrameReturn: String? = nil
-            executeTokens(clause, index: &index, frameReturn: &dummyFrameReturn)
-            return dummyFrameReturn ?? lastResult ?? ""
+            executeTokens(clause, index: &index, frameReturn: &frameReturn)
+            return frameReturn ?? lastResult ?? ""
         }
     }
 
-    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String]) -> String? {
+    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String? {
         var idx = 0
         while idx < clausesBlock.count {
             if clausesBlock[idx] == "[" {
@@ -98,13 +96,42 @@ extension LogoEngine {
                     var cIdx = 0
                     if isElseClauseToken(clause[cIdx]) {
                         cIdx += 1
-                        return executeClauseBody(clause, index: &cIdx)
+                        return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
                     } else if clause[cIdx] == "[" {
                         let matches = extractBlockTokens(tokens: clause, index: &cIdx)
                         cIdx += 1
                         let isMatch = matches.contains { unquote($0) == targetVal }
                         if isMatch {
-                            return executeClauseBody(clause, index: &cIdx)
+                            return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
+                        }
+                    }
+                }
+            }
+            idx += 1
+        }
+        return nil
+    }
+
+    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String]) -> String? {
+        var dummy: String? = nil
+        return evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &dummy)
+    }
+
+    internal func evaluateCondClauses(clausesBlock: [String], frameReturn: inout String?) -> String? {
+        var idx = 0
+        while idx < clausesBlock.count {
+            if clausesBlock[idx] == "[" {
+                let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
+                if !clause.isEmpty {
+                    var cIdx = 0
+                    if isElseClauseToken(clause[cIdx]) {
+                        cIdx += 1
+                        return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
+                    } else if clause[cIdx] == "[" {
+                        let condTokens = extractBlockTokens(tokens: clause, index: &cIdx)
+                        cIdx += 1
+                        if evaluateCondition(condTokens) {
+                            return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
                         }
                     }
                 }
@@ -115,26 +142,7 @@ extension LogoEngine {
     }
 
     internal func evaluateCondClauses(clausesBlock: [String]) -> String? {
-        var idx = 0
-        while idx < clausesBlock.count {
-            if clausesBlock[idx] == "[" {
-                let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
-                if !clause.isEmpty {
-                    var cIdx = 0
-                    if isElseClauseToken(clause[cIdx]) {
-                        cIdx += 1
-                        return executeClauseBody(clause, index: &cIdx)
-                    } else if clause[cIdx] == "[" {
-                        let condTokens = extractBlockTokens(tokens: clause, index: &cIdx)
-                        cIdx += 1
-                        if evaluateCondition(condTokens) {
-                            return executeClauseBody(clause, index: &cIdx)
-                        }
-                    }
-                }
-            }
-            idx += 1
-        }
-        return nil
+        var dummy: String? = nil
+        return evaluateCondClauses(clausesBlock: clausesBlock, frameReturn: &dummy)
     }
 }

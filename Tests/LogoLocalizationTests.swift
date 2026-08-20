@@ -2,7 +2,7 @@ import Config
 import Drawing
 @testable import Editor
 import Foundation
-import LogoEngine
+@testable import LogoEngine
 import LogoLocalization
 import Testing
 
@@ -549,6 +549,54 @@ struct LogoLocalizationTests {
         狀況處置 [ [[ :score 大於等於 90 ] [ 變數 "grade "A ]] [[ :score 大於等於 70 ] [ 變數 "grade "B ]] [不然 [ 變數 "grade "F ]] ]
         """)
         #expect(engine.variables["grade"] == "B")
+    }
+
+    @Test
+    func testTraditionalChineseCaseAndCondWithOutputInProcedures() {
+        let engine = makeEngine()
+
+        engine.execute("""
+        宣告 判斷BMI :bmi
+            遇狀況 [
+                [[:bmi <= 0] [回報 "你是鬼吧]]
+                [[:bmi <= 18.5] [回報 "過輕]]
+                [[:bmi <= 24] [回報 "正常]]
+                [[:bmi <= 27] [回報 "過重]]
+                [否則 [回報 "肥胖]]
+            ]
+        結束
+        變數 "b1 判斷BMI -1
+        變數 "b2 判斷BMI 18
+        變數 "b3 判斷BMI 22
+        變數 "b4 判斷BMI 26
+        變數 "b5 判斷BMI 30
+        """)
+
+        #expect(engine.variables["b1"] == "你是鬼吧")
+        #expect(engine.variables["b2"] == "過輕")
+        #expect(engine.variables["b3"] == "正常")
+        #expect(engine.variables["b4"] == "過重")
+        #expect(engine.variables["b5"] == "肥胖")
+
+        engine.execute("""
+        宣告 判斷等級 :score
+            按照 :score [
+                [[100 90] [回報 "優秀]]
+                [[80 70]  [回報 "良好]]
+                [[60]     [回報 "及格]]
+                [否則     [回報 "不及格]]
+            ]
+        結束
+        變數 "s1 判斷等級 90
+        變數 "s2 判斷等級 70
+        變數 "s3 判斷等級 60
+        變數 "s4 判斷等級 45
+        """)
+
+        #expect(engine.variables["s1"] == "優秀")
+        #expect(engine.variables["s2"] == "良好")
+        #expect(engine.variables["s3"] == "及格")
+        #expect(engine.variables["s4"] == "不及格")
     }
 
     @Test

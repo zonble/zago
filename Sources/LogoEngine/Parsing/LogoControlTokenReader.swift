@@ -56,8 +56,10 @@ internal struct LogoControlTokenReader {
         return !engine.isArgumentBoundary(peek)
     }
 
-    mutating func nextRawToken() -> String? {
-        skipFillerTokens()
+    mutating func nextRawToken(skipFillers: Bool = true) -> String? {
+        if skipFillers {
+            skipFillerTokens()
+        }
         guard index + 1 < tokens.count else { return nil }
         index += 1
         return tokens[index]
