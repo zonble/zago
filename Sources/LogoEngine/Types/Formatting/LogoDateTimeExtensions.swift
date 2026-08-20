@@ -7,22 +7,36 @@ extension Locale {
 
     public init(logoLocaleSpec raw: String?) {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            #if canImport(Darwin)
             self = .current
+            #else
+            self = NSLocale.current as Locale
+            #endif
             return
         }
         let clean = raw.hasPrefix(":") ? String(raw.dropFirst()) : raw
         let lower = clean.lowercased()
         if lower == "system" || lower == "current" {
+            #if canImport(Darwin)
             self = .current
+            #else
+            self = NSLocale.current as Locale
+            #endif
             return
         }
+        let identifier: String
         if clean.count == 4 && !clean.contains("_") && !clean.contains("-") {
             let lang = String(clean.prefix(2)).lowercased()
             let region = String(clean.suffix(2)).uppercased()
-            self = Locale(identifier: "\(lang)_\(region)")
-            return
+            identifier = "\(lang)_\(region)"
+        } else {
+            identifier = clean
         }
-        self = Locale(identifier: clean)
+        #if canImport(Darwin)
+        self = Locale(identifier: identifier)
+        #else
+        self = NSLocale(localeIdentifier: identifier) as Locale
+        #endif
     }
 
     public static func isLogoLocaleSpec(_ name: String) -> Bool {
