@@ -105,6 +105,10 @@ public final class LogoEngine: @unchecked Sendable {
         pluginRegistry.parseDateTimeStylePreset(token) ?? (LogoDateTimeStylePreset.isPresetName(token) ? LogoDateTimeStylePreset(raw: token, mode: mode) : nil)
     }
 
+    public func parseNumberStyle(_ token: String) -> LogoNumberStyle? {
+        pluginRegistry.parseNumberStyle(token) ?? (LogoNumberStyle.isStyleKeyword(token) ? LogoNumberStyle.parse(token) : nil)
+    }
+
     public func isFillerToken(_ token: String) -> Bool {
         pluginRegistry.isFillerToken(token)
     }

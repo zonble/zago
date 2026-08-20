@@ -18,14 +18,16 @@ public enum LogoFormatters {
         style: inout NumberStyle,
         locale: inout String?,
         currencyCode: inout String?,
-        precision: inout Int?
+        precision: inout Int?,
+        parseStyle: ((String) -> NumberStyle?)? = nil
     ) {
         LogoNumberFormatter.disambiguateOptions(
             args,
             style: &style,
             locale: &locale,
             currencyCode: &currencyCode,
-            precision: &precision
+            precision: &precision,
+            parseStyle: parseStyle
         )
     }
 

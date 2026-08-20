@@ -16,7 +16,8 @@ public enum LogoNumberFormatter {
         style: inout LogoNumberStyle,
         locale: inout String?,
         currencyCode: inout String?,
-        precision: inout Int?
+        precision: inout Int?,
+        parseStyle: ((String) -> LogoNumberStyle?)? = nil
     ) {
         for arg in args {
             let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
@@ -24,10 +25,10 @@ public enum LogoNumberFormatter {
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if let intVal = Int(lower), precision == nil, !LogoNumberStyle.isStyleKeyword(lower) {
+            if let parsedStyle = parseStyle?(clean) ?? parseStyle?(lower) ?? (LogoNumberStyle.isStyleKeyword(lower) ? LogoNumberStyle.parse(lower) : nil) {
+                style = parsedStyle
+            } else if let intVal = Int(lower), precision == nil {
                 precision = intVal
-            } else if LogoNumberStyle.isStyleKeyword(lower) {
-                style = LogoNumberStyle.parse(lower)
             } else if isCurrencyCode(clean) && currencyCode == nil && !Locale.isLogoLocaleSpec(clean) {
                 currencyCode = clean
             } else if Locale.isLogoLocaleSpec(clean) && locale == nil {
