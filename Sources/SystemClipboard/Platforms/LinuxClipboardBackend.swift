@@ -3,6 +3,7 @@ import Foundation
 
 #if os(Linux) || os(Android)
     internal final class LinuxClipboardBackend: EditorClipboardStrategy, @unchecked Sendable {
+        private var inMemoryText: String? = nil
         private var inMemoryBlock: CanvasBlockClipboard? = nil
         private let lock = NSLock()
 
@@ -12,6 +13,7 @@ import Foundation
             lock.lock()
             defer { lock.unlock() }
 
+            inMemoryText = text
             inMemoryBlock = nil
             writeToSystemClipboard(text)
         }
@@ -22,6 +24,7 @@ import Foundation
 
             inMemoryBlock = block
             let plainText = block.rows.joined(separator: "\n")
+            inMemoryText = plainText
             writeToSystemClipboard(plainText)
         }
 
@@ -29,7 +32,10 @@ import Foundation
             lock.lock()
             defer { lock.unlock() }
 
-            return readFromSystemClipboard()
+            if let systemText = readFromSystemClipboard() {
+                return systemText
+            }
+            return inMemoryText
         }
 
         func getBlock() -> CanvasBlockClipboard? {
@@ -43,6 +49,7 @@ import Foundation
             lock.lock()
             defer { lock.unlock() }
 
+            inMemoryText = nil
             inMemoryBlock = nil
             writeToSystemClipboard("")
         }
