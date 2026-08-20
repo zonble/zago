@@ -287,15 +287,15 @@ extension LogoEngine {
                             in: CharacterSet(charactersIn: ":\"' "))
                         let val = itemStrings[i + 1]
                         switch key {
-                        case "given", "first", "firstname", "givenname": given = val
-                        case "family", "last", "lastname", "familyname", "surname": family = val
-                        case "middle", "middlename": middle = val
-                        case "prefix", "title": pfx = val
-                        case "suffix": sfx = val
-                        case "nickname", "nick": nick = val
-                        case "style": style = LogoFormatters.PersonNameStyle.parse(val)
-                        case "locale", "loc": localeSpec = val
-                        case "name", "full", "fullname": fullName = val
+                        case "given", "first", "firstname", "givenname", "名", "名字": given = val
+                        case "family", "last", "lastname", "familyname", "surname", "姓", "姓氏": family = val
+                        case "middle", "middlename", "中間名": middle = val
+                        case "prefix", "title", "稱謂", "頭銜": pfx = val
+                        case "suffix", "後綴": sfx = val
+                        case "nickname", "nick", "暱稱", "綽號": nick = val
+                        case "style", "風格": style = pluginRegistry.parsePersonNameStyle(val) ?? LogoFormatters.PersonNameStyle.parse(val)
+                        case "locale", "loc", "語言": localeSpec = val
+                        case "name", "full", "fullname", "全名", "姓名": fullName = val
                         default: break
                         }
                         i += 2

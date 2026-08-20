@@ -1,17 +1,5 @@
+import Drawing
 import Foundation
-
-/// Defines domain categories for domain-specific keywords and parameter options.
-public enum LogoKeywordDomain: String, Sendable, CaseIterable {
-    case borderStyle
-    case exitPosition
-    case numberStyle
-    case listType
-    case byteCountStyle
-    case personNameStyle
-    case calendar
-    case unit
-    case general
-}
 
 /// Protocol for extensible language and dialect plugins in LOGO.
 ///
@@ -20,7 +8,7 @@ public enum LogoKeywordDomain: String, Sendable, CaseIterable {
 /// - Operators (`LogoOperator`)
 /// - Headings (`LogoHeading`)
 /// - Boolean literals (`Bool`)
-/// - Domain options (border styles, exit positions, format options, etc.)
+/// - Domain options (border styles, exit positions, calendar identifiers, format options, etc.)
 public protocol LogoParserPlugin: Sendable {
     /// Primary identifier for this dialect/plugin (e.g. "zh-TW", "zh-Hans", "ja").
     var id: String { get }
@@ -46,6 +34,15 @@ public protocol LogoParserPlugin: Sendable {
     /// Parses a localized/custom token into a `BoxExitPosition`.
     func parseExitPosition(_ token: String) -> BoxExitPosition?
 
+    /// Parses a localized/custom token into a `BorderStyle`.
+    func parseBorderStyle(_ token: String) -> BorderStyle?
+
+    /// Parses a localized/custom token into a `Calendar.Identifier`.
+    func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier?
+
+    /// Parses a localized/custom token into a `LogoDateTimeStylePreset`.
+    func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset?
+
     /// Parses a localized/custom token into a `LogoNumberStyle`.
     func parseNumberStyle(_ token: String) -> LogoNumberStyle?
 
@@ -57,9 +54,6 @@ public protocol LogoParserPlugin: Sendable {
 
     /// Parses a localized/custom token into a `LogoPersonNameStyle`.
     func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle?
-
-    /// Resolves a domain-specific keyword token to its canonical internal string identifier.
-    func resolveKeyword(_ token: String, domain: LogoKeywordDomain) -> String?
 
     /// All keyword aliases provided by this plugin (for auto-completion and syntax highlighting).
     var keywordAliases: [String] { get }
@@ -73,10 +67,12 @@ public extension LogoParserPlugin {
     func parseHeading(_ token: String) -> LogoHeading? { nil }
     func parseBoolean(_ token: String) -> Bool? { nil }
     func parseExitPosition(_ token: String) -> BoxExitPosition? { nil }
+    func parseBorderStyle(_ token: String) -> BorderStyle? { nil }
+    func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? { nil }
+    func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset? { nil }
     func parseNumberStyle(_ token: String) -> LogoNumberStyle? { nil }
     func parseListType(_ token: String) -> LogoListType? { nil }
     func parseByteCountStyle(_ token: String) -> LogoByteCountStyle? { nil }
     func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle? { nil }
-    func resolveKeyword(_ token: String, domain: LogoKeywordDomain) -> String? { nil }
     var keywordAliases: [String] { [] }
 }

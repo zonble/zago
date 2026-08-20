@@ -41,23 +41,21 @@ extension LogoEngine {
             let rawToken = tokens[evalIndex]
             let unquoted = unquote(rawToken)
             let val: String
-            let resolved = pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) ?? unquoted
-            if parseBoolean(unquoted) != nil || BorderStyle.isStyleToken(resolved) || StyleDSL.parseBoxStyle(unquoted) != nil {
+            if parseBoolean(unquoted) != nil || parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || StyleDSL.parseBoxStyle(unquoted) != nil {
                 val = unquoted
             } else {
                 val = unquote(evaluateExpression(tokens, index: &evalIndex))
             }
             index = evalIndex
 
-            let resolvedVal = pluginRegistry.resolveKeyword(val, domain: .borderStyle) ?? val
             if let boolVal = parseBoolean(val) {
                 isRound = boolVal
-            } else if let dsl = StyleDSL.parseBoxStyle(resolvedVal) {
+            } else if let dsl = StyleDSL.parseBoxStyle(val) {
                 borderStyle = dsl.border
-                if dsl.rounded || resolvedVal.hasSuffix(")") {
+                if dsl.rounded || val.hasSuffix(")") {
                     isRound = dsl.rounded
                 }
-            } else if let b = BorderStyle(resolvedVal) {
+            } else if let b = parseBorderStyle(val) {
                 borderStyle = b
             } else if let intVal = Int(val), cellWidth == nil {
                 cellWidth = intVal

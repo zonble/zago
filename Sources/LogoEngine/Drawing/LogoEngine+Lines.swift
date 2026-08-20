@@ -194,7 +194,7 @@ extension LogoEngine {
         return self.isStatementCommand(token) || token == "]" || token == ")"
             || LineArrowMode(token: unquoted.uppercased()) != nil
             || BorderStyle.isStyleToken(unquoted)
-            || pluginRegistry.resolveKeyword(unquoted, domain: .borderStyle) != nil
+            || pluginRegistry.parseBorderStyle(unquoted) != nil
             || ArrowStyle.isStyleToken(unquoted)
     }
 
