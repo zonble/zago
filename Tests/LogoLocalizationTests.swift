@@ -42,6 +42,22 @@ struct LogoLocalizationTests {
     }
 
     @Test
+    func testTraditionalChineseProcedureDefinitionWithDeclareAndEnd() {
+        let lines = LogoExecutionService.render(
+            script: """
+            宣告 BMI :體重 :身高
+                輸出 相除 :體重 (相乘 :身高 :身高)
+            結束
+
+            打字 BMI 90 1.8
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let joined = lines.joined(separator: "\n")
+        #expect(joined.contains("27.77777777777778") || joined.contains("27.777"))
+    }
+
+    @Test
     func testTraditionalChineseIfConditionAndOperators() {
         let engine = makeEngine()
         engine.execute("""
