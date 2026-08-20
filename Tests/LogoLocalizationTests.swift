@@ -377,4 +377,89 @@ struct LogoLocalizationTests {
         engine.execute("變數 \"calRes 轉換曆法 \"2026-08-19 \"民國曆")
         #expect(engine.variables["calres"]?.contains("民國") == true || engine.variables["calres"]?.contains("115") == true)
     }
+
+    @Test
+    func testTraditionalChineseFillerTokens() {
+        let engine = makeEngine()
+
+        // 1. 稱 1 為 "a (filler token "為")
+        engine.execute("稱 1 為 \"a")
+        #expect(engine.variables["a"] == "1")
+
+        // 2. 稱 2 為 :b (filler token "為" with variable colon)
+        engine.execute("稱 2 為 :b")
+        #expect(engine.variables["b"] == "2")
+
+        // 3. 重複 3 次 [ 打字 "A ] (filler token "次")
+        let lines = LogoExecutionService.render(
+            script: """
+            重複 3 次 [ 打字 "A ]
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let joined = lines.joined(separator: "\n")
+        #expect(joined.contains("AAA"))
+
+        // 4. 如果 10 大於 5 則 [ 變數 "flag "Pass ] (filler token "則")
+        engine.execute("如果 10 大於 5 則 [ 變數 \"flag \"Pass ]")
+        #expect(engine.variables["flag"] == "Pass")
+
+        // 5. Quoted string literals matching filler tokens should NOT be skipped
+        let renderFor = LogoExecutionService.render(
+            script: """
+            打字 "為
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        #expect(renderFor.joined(separator: "\n").contains("為"))
+
+        // 6. Variable named "為" should work normally
+        engine.execute("變數 \"為 999")
+        #expect(engine.variables["為"] == "999")
+        engine.execute("變數 \"c :為")
+        #expect(engine.variables["c"] == "999")
+
+        // 7. Plugin registry filler checks
+        #expect(engine.isFillerToken("為"))
+        #expect(engine.isFillerToken("成"))
+        #expect(engine.isFillerToken("次"))
+        #expect(engine.isFillerToken("到"))
+        #expect(engine.isFillerToken("至"))
+        #expect(engine.isFillerToken("則"))
+        #expect(!engine.isFillerToken("畫框"))
+    }
+
+    @Test
+    func testQuotedKeywordLiteralDoesNotResolveToPrimitiveOrOperator() {
+        let lines = LogoExecutionService.render(
+            script: """
+            如果 (大於 3 2) [ 打字 "大於 ]
+            """,
+            plugins: [LogoTraditionalChinesePlugin()]
+        )
+        let joined = lines.joined(separator: "\n")
+        #expect(joined.contains("大於"))
+    }
+
+    @Test
+    func testPluginParsePrimitiveAndOperatorPrefixGuards() {
+        let plugin = LogoTraditionalChinesePlugin()
+
+        // Bare tokens
+        #expect(plugin.parsePrimitive("畫框") == .drawBox)
+        #expect(plugin.parsePrimitive("打字") == .type)
+        #expect(plugin.parseOperator("大於") == .greaterThan)
+        #expect(plugin.parseOperator("等於") == .equal)
+
+        // Quoted words, single-quoted strings, and colon variable references must be nil
+        #expect(plugin.parsePrimitive("\"畫框") == nil)
+        #expect(plugin.parsePrimitive("\"畫框\"") == nil)
+        #expect(plugin.parsePrimitive("'畫框'") == nil)
+        #expect(plugin.parsePrimitive(":畫框") == nil)
+
+        #expect(plugin.parseOperator("\"大於") == nil)
+        #expect(plugin.parseOperator("\"大於\"") == nil)
+        #expect(plugin.parseOperator("'大於'") == nil)
+        #expect(plugin.parseOperator(":大於") == nil)
+    }
 }

@@ -22,7 +22,9 @@ public enum LogoOperator: String, CaseIterable, Equatable, Sendable {
 
     /// Resolves an operator string to a strongly-typed LogoOperator enum.
     public init?(token: String) {
-        self.init(rawValue: token)
+        let clean = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.hasPrefix("\"") && !clean.hasPrefix("'") && !clean.hasPrefix(":") else { return nil }
+        self.init(rawValue: clean)
     }
 
     /// Resolves an operator string to a strongly-typed LogoOperator enum, optionally checking a plugin registry.

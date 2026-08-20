@@ -19,7 +19,7 @@ extension LogoEngine {
         case .name:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             let val = reader.nextExpression()
-            if let rawName = reader.nextOptionalExpression() {
+            if let rawName = reader.nextRawToken() {
                 let varName = normalizeVariableName(rawName)
                 variables[varName] = val
             }

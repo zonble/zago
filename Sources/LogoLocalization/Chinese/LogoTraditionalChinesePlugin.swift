@@ -591,12 +591,15 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     ]
 
     public func parsePrimitive(_ token: String) -> LogoPrimitive? {
-        let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; "))
+        let clean = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.hasPrefix("\"") && !clean.hasPrefix("'") && !clean.hasPrefix(":") else { return nil }
         return Self.primitiveMap[clean.uppercased()] ?? Self.primitiveMap[clean]
     }
 
     public func parseOperator(_ token: String) -> LogoOperator? {
-        Self.operatorMap[token]
+        let clean = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.hasPrefix("\"") && !clean.hasPrefix("'") && !clean.hasPrefix(":") else { return nil }
+        return Self.operatorMap[clean]
     }
 
     public func parseHeading(_ token: String) -> LogoHeading? {
@@ -708,6 +711,10 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         }
     }
 
+    public var fillerTokens: Set<String> {
+        ["為", "成", "次", "到", "至", "則"]
+    }
+
     public var keywordAliases: [String] {
         Array(Self.primitiveMap.keys)
             + Array(Self.operatorMap.keys)
@@ -717,6 +724,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
                 "單線", "粗線", "雙線", "純字元", "三段虛線", "粗三段虛線", "四段虛線", "粗四段虛線", "二段虛線", "粗二段虛線",
                 "西曆", "公曆", "陽曆", "民國曆", "民國", "日本曆", "和曆", "農曆", "陰曆", "中曆", "佛曆", "伊斯蘭曆", "猶太曆",
                 "簡短", "標準", "完整", "全部",
+                "為", "成", "次", "到", "至", "則",
             ]
     }
 }

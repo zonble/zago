@@ -127,6 +127,39 @@ import Testing
         #expect(missing.isEmpty, "Missing primitives in reference.md: \(missing.joined(separator: ", "))")
     }
 
+    @Test func testLogoPrimitiveTokenInitializationAndPrefixGuards() {
+        // Valid bare tokens
+        #expect(LogoPrimitive(token: "FORWARD") == .forward)
+        #expect(LogoPrimitive(token: "fd") == .forward)
+        #expect(LogoPrimitive(token: "MAKE") == .make)
+
+        // Quoted words, single-quoted strings, and colon variable references must be nil
+        #expect(LogoPrimitive(token: "\"FORWARD") == nil)
+        #expect(LogoPrimitive(token: "\"forward\"") == nil)
+        #expect(LogoPrimitive(token: "'FORWARD'") == nil)
+        #expect(LogoPrimitive(token: ":FORWARD") == nil)
+        #expect(LogoPrimitive(token: ":fd") == nil)
+        #expect(LogoPrimitive.from("\"MAKE\"") == nil)
+        #expect(LogoPrimitive.parse(":make") == nil)
+    }
+
+    @Test func testLogoOperatorTokenInitializationAndPrefixGuards() {
+        // Valid bare operators
+        #expect(LogoOperator(token: "+") == .add)
+        #expect(LogoOperator(token: "-") == .subtract)
+        #expect(LogoOperator(token: ">") == .greaterThan)
+        #expect(LogoOperator(token: "==") == .equal)
+        #expect(LogoOperator(token: "=") == .aliasEqual)
+
+        // Quoted operators and colon variable references must be nil
+        #expect(LogoOperator(token: "\"+") == nil)
+        #expect(LogoOperator(token: "\"+\"") == nil)
+        #expect(LogoOperator(token: "'+'") == nil)
+        #expect(LogoOperator(token: ":+") == nil)
+        #expect(LogoOperator(token: "\">\"") == nil)
+        #expect(LogoOperator(token: ":=") == nil)
+    }
+
     private var availablePrimitives: [LogoPrimitive] {
         LogoPrimitive.allCases
     }
