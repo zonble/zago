@@ -7,13 +7,13 @@ extension Locale {
 
     public init(logoLocaleSpec raw: String?) {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
-            self = .autoupdatingCurrent
+            self = .current
             return
         }
         let clean = raw.hasPrefix(":") ? String(raw.dropFirst()) : raw
         let lower = clean.lowercased()
         if lower == "system" || lower == "current" {
-            self = .autoupdatingCurrent
+            self = .current
             return
         }
         if clean.count == 4 && !clean.contains("_") && !clean.contains("-") {

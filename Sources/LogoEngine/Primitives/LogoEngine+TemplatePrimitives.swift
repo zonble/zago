@@ -233,7 +233,7 @@ extension LogoEngine {
         case .sortLocalized:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             var descending = false
-            var targetLocale = Locale.autoupdatingCurrent
+            var targetLocale = Locale.current
 
             while let nextToken = reader.peekToken() {
                 let unquoted = unquote(nextToken)
