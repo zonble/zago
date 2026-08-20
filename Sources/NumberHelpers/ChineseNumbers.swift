@@ -24,13 +24,12 @@
 import Foundation
 
 /// Helps to convert Arabic numbers to Chinese numbers
-@objc public class ChineseNumbers: NSObject {
+public enum ChineseNumbers {
 
     /// Represents uppercase or lowercase Chinese numbers
     /// - lowercase: like 一、二、三
     /// - uppercase: like 壹、貳、參
-    @objc(ChineseNumbersCase)
-    public enum Case: Int {
+    public enum Case: Int, Sendable {
         case lowercase
         case uppercase
 
@@ -69,7 +68,7 @@ import Foundation
     ///   - decPart: The decimal part of the number
     ///   - digitCase: Whether in uppercase or lowercase
     /// - Returns: The output
-    @objc static public func generate(intPart: String, decPart: String, digitCase: Case) -> String {
+    public static func generate(intPart: String, decPart: String, digitCase: Case) -> String {
 
         func convert4Digits(_ subString: Substring, zeroEverHappened: Bool = false) -> String {
             var zeroHappened = zeroEverHappened
