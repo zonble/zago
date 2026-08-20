@@ -1105,4 +1105,64 @@ struct ConfigAndToolsTests {
         let logoSecondTime = try #require(editor.statusMessageTime)
         #expect(logoSecondTime > logoFirstTime)
     }
+
+    @Test
+    func testDescribeKeyAndCommandDialogCursorPositioning() throws {
+        final class CapturingTerminal: EditorTerminal, @unchecked Sendable {
+            var rows = 24
+            var cols = 80
+            var keys: [Key] = []
+            var writtenOutputs: [String] = []
+
+            func enableRawMode() throws {}
+            func disableRawMode() {}
+            func getWindowSize() -> (rows: Int, cols: Int) { (rows, cols) }
+            func readKey() -> Key {
+                if !keys.isEmpty {
+                    return keys.removeFirst()
+                }
+                return .esc
+            }
+            func readPendingText(firstChar: Character) -> String { String(firstChar) }
+            func write(_ text: String) { writtenOutputs.append(text) }
+            func hideCursor() {}
+            func showCursor() {}
+            func clearScreen() {}
+            func readNonInteractiveLine(prompt: String) -> String? { nil }
+            func readNonInteractiveChar(prompt: String) -> String? { nil }
+            func wakeup() {}
+        }
+
+        let editor = Editor()
+
+        // 1. DescribeKey: waitingForKey vs showingDetails
+        let keyTerminal = CapturingTerminal()
+        keyTerminal.keys = [.char("a"), .esc]
+        let keyDialog = DescribeKeyDialogView(terminal: keyTerminal, editor: editor, language: .en)
+        keyDialog.show()
+
+        #expect(keyTerminal.writtenOutputs.count >= 2)
+        // First render: waitingForKey -> cursor should be at prompt row, NOT bottom-right (24;80)
+        let firstKeyOutput = keyTerminal.writtenOutputs[0]
+        #expect(!firstKeyOutput.hasSuffix("\u{001B}[24;80H"))
+
+        // Second render: showingDetails -> cursor MUST be at bottom-right (24;80)
+        let secondKeyOutput = keyTerminal.writtenOutputs[1]
+        #expect(secondKeyOutput.hasSuffix("\u{001B}[24;80H"))
+
+        // 2. DescribeCommand: inputMode vs details mode
+        let cmdTerminal = CapturingTerminal()
+        cmdTerminal.keys = [.char("f"), .char("d"), .enter, .esc]
+        let cmdDialog = DescribeCommandDialogView(terminal: cmdTerminal, editor: editor, symbol: nil, language: .en)
+        cmdDialog.show()
+
+        #expect(cmdTerminal.writtenOutputs.count >= 2)
+        // Initial input render: cursor should be on input line, NOT bottom-right (24;80)
+        let firstCmdOutput = cmdTerminal.writtenOutputs[0]
+        #expect(!firstCmdOutput.hasSuffix("\u{001B}[24;80H"))
+
+        // After pressing enter with "fd", showing details -> cursor MUST be at bottom-right (24;80)
+        let lastCmdOutput = cmdTerminal.writtenOutputs.last!
+        #expect(lastCmdOutput.hasSuffix("\u{001B}[24;80H"))
+    }
 }

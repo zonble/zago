@@ -221,7 +221,7 @@ final class DescribeCommandDialogView {
             var inputLines = [
                 "",
                 promptLabel,
-                "> " + inputText + "█",
+                "> " + inputText,
                 "",
             ]
             if !tabCandidates.isEmpty {
@@ -312,8 +312,14 @@ final class DescribeCommandDialogView {
             output += "\u{001B}[\(bottomRow);\(footerPos)H\(styledFooter)"
         }
 
-        // Position cursor at bottom-right corner
-        output += "\u{001B}[\(rows);\(cols)H"
+        // Position cursor: at typing position in input mode, or bottom-right corner when displaying details
+        if isInputMode {
+            let inputRow = startRow + 3
+            let inputCol = startCol + 3 + ("> " + inputText).displayWidth
+            output += "\u{001B}[\(inputRow);\(inputCol)H"
+        } else {
+            output += "\u{001B}[\(rows);\(cols)H"
+        }
         terminal.write(output)
         fflush(nil)
     }
