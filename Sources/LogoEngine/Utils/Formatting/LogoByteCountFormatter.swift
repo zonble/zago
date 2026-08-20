@@ -6,7 +6,8 @@ public enum LogoByteCountFormatter {
     public static func disambiguateOptions(
         _ args: [String],
         style: inout LogoByteCountStyle,
-        locale: inout String?
+        locale: inout String?,
+        parseStyle: ((String) -> LogoByteCountStyle?)? = nil
     ) {
         for arg in args {
             let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
@@ -14,7 +15,9 @@ public enum LogoByteCountFormatter {
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if LogoByteCountStyle.isStyleKeyword(lower) {
+            if let custom = parseStyle?(clean) ?? parseStyle?(lower) {
+                style = custom
+            } else if LogoByteCountStyle.isStyleKeyword(lower) {
                 style = LogoByteCountStyle.parse(lower)
             } else {
                 locale = clean

@@ -16,7 +16,7 @@ extension LogoEngine {
     }
 
     private func isHeadingDirectionToken(_ token: String) -> Bool {
-        LogoHeading.parse(token) != nil
+        parseHeading(token) != nil
     }
 
     private func consumeOptionalHeadingArgument(_ tokens: [String], index: inout Int) -> String? {
@@ -29,7 +29,7 @@ extension LogoEngine {
         }
         guard !isArgumentBoundary(nextToken) else { return nil }
         let evaluated = reader.nextExpression()
-        if LogoHeading.parse(evaluated) != nil {
+        if parseHeading(evaluated) != nil {
             reader.commit(to: &index)
             return evaluated
         }
@@ -58,7 +58,7 @@ extension LogoEngine {
 
         case .setHeading:
             if let dirStr = consumeOptionalHeadingArgument(tokens, index: &index),
-                let dir = LogoHeading.parse(dirStr)
+                let dir = parseHeading(dirStr)
             {
                 heading = dir
             }

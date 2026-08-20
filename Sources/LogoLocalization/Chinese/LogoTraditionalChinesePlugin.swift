@@ -660,6 +660,37 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         }
     }
 
+    public func parsePersonNameField(_ token: String) -> LogoPersonNameField? {
+        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        switch clean {
+        case "名", "名字", "名氏": return .givenName
+        case "姓", "姓氏": return .familyName
+        case "字", "中間名": return .middleName
+        case "稱謂", "頭銜", "職稱": return .prefix
+        case "後綴", "後稱": return .suffix
+        case "暱稱", "綽號", "號": return .nickname
+        case "全名", "姓名": return .fullName
+        case "風格", "樣式": return .style
+        case "語言", "語系", "地區": return .locale
+        default: return nil
+        }
+    }
+
+    public func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? {
+        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        switch clean {
+        case "風格", "樣式", "格式": return .style
+        case "語言", "語系", "地區": return .locale
+        case "貨幣", "幣別": return .currency
+        case "精度", "小數位", "位數": return .precision
+        case "單位": return .unit
+        case "曆法", "日曆": return .calendar
+        case "日期": return .date
+        case "時間": return .time
+        default: return nil
+        }
+    }
+
     public func parseBorderStyle(_ token: String) -> BorderStyle? {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
         switch clean {

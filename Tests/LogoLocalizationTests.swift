@@ -635,4 +635,28 @@ struct LogoLocalizationTests {
         engine.execute("變數 \"sp (數字格式 100 \"中文數字 \"zh-TW)")
         #expect(engine.variables["sp"]?.contains("百") == true || engine.variables["sp"]?.contains("一百") == true)
     }
+
+    @Test
+    func testTraditionalChineseAdvancedFormattingAndHeadings() {
+        let engine = makeEngine()
+
+        // 1. 列表格式 with 中文類型
+        #if canImport(Darwin)
+        engine.execute("變數 \"lst (列表格式 [ \"蘋果 \"香蕉 \"芭樂 ] \"以及 \"zh-TW)")
+        #expect(engine.variables["lst"]?.contains("蘋果") == true)
+        #endif
+
+        // 2. 位元格式 with 中文風格
+        #if canImport(Darwin)
+        engine.execute("變數 \"mem (位元格式 1048576 \"記憶體 \"zh-TW)")
+        #expect(engine.variables["mem"]?.contains("MB") == true || engine.variables["mem"]?.contains("1") == true)
+        #endif
+
+        // 3. 朝向 with 中文方向
+        engine.execute("朝向 \"左")
+        #expect(engine.heading == .left)
+
+        engine.execute("朝向 \"上")
+        #expect(engine.heading == .up)
+    }
 }

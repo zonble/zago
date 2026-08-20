@@ -5,7 +5,8 @@ public enum LogoPersonNameFormatter {
     public static func disambiguateOptions(
         _ args: [String],
         style: inout LogoPersonNameStyle,
-        locale: inout String?
+        locale: inout String?,
+        parseStyle: ((String) -> LogoPersonNameStyle?)? = nil
     ) {
         for arg in args {
             let clean = arg.trimmingCharacters(in: CharacterSet(charactersIn: "\"':; ")).trimmingCharacters(
@@ -13,7 +14,9 @@ public enum LogoPersonNameFormatter {
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if LogoPersonNameStyle.isStyleKeyword(lower) {
+            if let custom = parseStyle?(clean) ?? parseStyle?(lower) {
+                style = custom
+            } else if LogoPersonNameStyle.isStyleKeyword(lower) {
                 style = LogoPersonNameStyle.parse(lower)
             } else {
                 locale = clean

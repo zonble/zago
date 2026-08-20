@@ -60,9 +60,10 @@ public enum LogoFormatters {
     public static func disambiguateListOptions(
         _ args: [String],
         type: inout ListType,
-        locale: inout String?
+        locale: inout String?,
+        parseType: ((String) -> ListType?)? = nil
     ) {
-        LogoListFormatter.disambiguateOptions(args, type: &type, locale: &locale)
+        LogoListFormatter.disambiguateOptions(args, type: &type, locale: &locale, parseType: parseType)
     }
 
     public static func formatList(
@@ -108,9 +109,10 @@ public enum LogoFormatters {
     public static func disambiguateBytesOptions(
         _ args: [String],
         style: inout ByteCountStyle,
-        locale: inout String?
+        locale: inout String?,
+        parseStyle: ((String) -> ByteCountStyle?)? = nil
     ) {
-        LogoByteCountFormatter.disambiguateOptions(args, style: &style, locale: &locale)
+        LogoByteCountFormatter.disambiguateOptions(args, style: &style, locale: &locale, parseStyle: parseStyle)
     }
 
     public static func formatBytes(
@@ -126,9 +128,10 @@ public enum LogoFormatters {
     public static func disambiguatePersonNameOptions(
         _ args: [String],
         style: inout PersonNameStyle,
-        locale: inout String?
+        locale: inout String?,
+        parseStyle: ((String) -> PersonNameStyle?)? = nil
     ) {
-        LogoPersonNameFormatter.disambiguateOptions(args, style: &style, locale: &locale)
+        LogoPersonNameFormatter.disambiguateOptions(args, style: &style, locale: &locale, parseStyle: parseStyle)
     }
 
     public static func formatPersonName(
