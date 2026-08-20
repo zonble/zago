@@ -9,6 +9,7 @@ public enum LogoNumberStyle: String, CaseIterable, Sendable, Equatable {
     case financial = "financial"
     case ordinal = "ordinal"
     case spellout = "spellout"
+    case suzhou = "suzhou"
 
     public init?(keyword raw: String) {
         let lower = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -18,6 +19,8 @@ public enum LogoNumberStyle: String, CaseIterable, Sendable, Equatable {
             self = .spellout
         case "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional", "daxie":
             self = .financial
+        case "suzhou", "suzhounumeral", "suzhoucode", "huama":
+            self = .suzhou
         case "currency", "money", "curr", "cash":
             self = .currency
         case "percent", "percentage", "pct":
@@ -40,7 +43,7 @@ public enum LogoNumberStyle: String, CaseIterable, Sendable, Equatable {
         case .currency: return .currency
         case .percent: return .percent
         case .decimal: return .decimal
-        case .roman, .financial: return nil
+        case .roman, .financial, .suzhou: return nil
         }
     }
 

@@ -615,6 +615,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         case "百分比", "比例": return .percent
         case "中文數字", "讀音", "念法": return .spellout
         case "金融", "大寫金融", "大寫", "大寫數字": return .financial
+        case "蘇州碼", "花碼": return .suzhou
         case "羅馬數字", "羅馬": return .roman
         case "序數", "第幾": return .ordinal
         case "十進位", "小數", "一般數字": return .decimal

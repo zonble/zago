@@ -1,6 +1,7 @@
 import Foundation
+import NumberHelpers
 
-/// Advanced Foundation-powered Number formatter for LogoEngine.
+/// Advanced Number formatter for LogoEngine backed by Foundation and NumberHelpers.
 public enum LogoNumberFormatter {
     public static func isCurrencyCode(_ raw: String) -> Bool {
         let clean = raw.trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).uppercased()
@@ -71,16 +72,20 @@ public enum LogoNumberFormatter {
             return formatRoman(Int(number))
         case .financial:
             return formatFinancialChinese(Int(number))
+        case .suzhou:
+            return formatSuzhou(number)
         default:
             return "\(number)"
         }
         #else
-        // Non-Darwin (Linux & Windows) portable pure-Swift implementation
+        // Non-Darwin (Linux & Windows) portable pure-Swift implementation backed by NumberHelpers
         switch style {
         case .roman:
             return formatRoman(Int(number))
         case .financial:
             return formatFinancialChinese(Int(number))
+        case .suzhou:
+            return formatSuzhou(number)
         case .percent:
             let pct = number * 100
             if let precision = precision {
@@ -108,105 +113,36 @@ public enum LogoNumberFormatter {
             }
             return "\(intVal)\(suffix)"
         case .spellout:
+            let isChinese = locale?.lowercased().contains("zh") == true
+            if isChinese {
+                return formatChineseNumber(Int(number), uppercase: false)
+            }
             return "\(Int(number))"
         }
         #endif
     }
 
     private static func formatWithGrouping(_ number: Double, precision: Int?) -> String {
-        let formattedStr: String
-        if let precision = precision {
-            formattedStr = String(format: "%.\(precision)f", number)
-        } else {
-            if number.rounded() == number && !number.isInfinite && !number.isNaN && abs(number) < 1e12 {
-                formattedStr = String(Int(number))
-            } else {
-                formattedStr = "\(number)"
-            }
-        }
-        let parts = formattedStr.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
-        let integerPart = parts[0]
-        let isNegative = integerPart.hasPrefix("-")
-        let digitsOnly = isNegative ? integerPart.dropFirst() : integerPart[...]
-        var groupedDigits = ""
-        let count = digitsOnly.count
-        for (i, char) in digitsOnly.enumerated() {
-            if i > 0 && (count - i) % 3 == 0 {
-                groupedDigits.append(",")
-            }
-            groupedDigits.append(char)
-        }
-        let finalInt = (isNegative ? "-" : "") + groupedDigits
-        if parts.count > 1 {
-            return "\(finalInt).\(parts[1])"
-        }
-        return finalInt
+        NumberFormatHelper.formatWithGrouping(number, precision: precision)
     }
 
     /// Converts an integer to Roman Numerals (1...3999).
     public static func formatRoman(_ num: Int) -> String {
-        guard num > 0, num < 4000 else { return "\(num)" }
-        let mappings: [(int: Int, roman: String)] = [
-            (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
-            (100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
-            (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
-        ]
-        var res = ""
-        var n = num
-        for m in mappings {
-            while n >= m.int {
-                res += m.roman
-                n -= m.int
-            }
-        }
-        return res
+        NumberFormatHelper.formatRoman(num)
     }
 
     /// Converts an integer to traditional Chinese financial uppercase (大寫金額/數字: 零壹貳參肆伍陸柒捌玖拾佰仟萬億).
     public static func formatFinancialChinese(_ num: Int) -> String {
-        if num == 0 { return "零" }
-        if num < 0 { return "負" + formatFinancialChinese(-num) }
+        NumberFormatHelper.formatFinancialChinese(num)
+    }
 
-        let digits = ["零", "壹", "貳", "參", "肆", "伍", "陸", "柒", "捌", "玖"]
-        let units = ["", "拾", "佰", "仟"]
-        let bigUnits = ["", "萬", "億", "兆"]
+    /// Converts an integer to Chinese numbers (lowercase or uppercase).
+    public static func formatChineseNumber(_ num: Int, uppercase: Bool = false) -> String {
+        NumberFormatHelper.formatChineseNumber(num, uppercase: uppercase)
+    }
 
-        var res = ""
-        var n = num
-        var sectionIndex = 0
-
-        while n > 0 {
-            let section = n % 10000
-            if section > 0 {
-                var sectionStr = ""
-                var temp = section
-                var zeroFlag = false
-
-                for unitIndex in 0..<4 {
-                    let d = temp % 10
-                    if d == 0 {
-                        if !zeroFlag && !sectionStr.isEmpty {
-                            zeroFlag = true
-                            sectionStr = digits[0] + sectionStr
-                        }
-                    } else {
-                        zeroFlag = false
-                        sectionStr = digits[d] + units[unitIndex] + sectionStr
-                    }
-                    temp /= 10
-                }
-                res = sectionStr + bigUnits[sectionIndex] + res
-            } else if !res.isEmpty && !res.hasPrefix("零") {
-                res = "零" + res
-            }
-            n /= 10000
-            sectionIndex += 1
-        }
-
-        // Clean up redundant leading zeros
-        while res.hasPrefix("零") && res.count > 1 {
-            res.removeFirst()
-        }
-        return res
+    /// Converts a number to ancient Chinese Suzhou numerals (蘇州碼 / 花碼).
+    public static func formatSuzhou(_ number: Double) -> String {
+        NumberFormatHelper.formatSuzhou(number)
     }
 }
