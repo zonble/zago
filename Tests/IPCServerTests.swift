@@ -460,13 +460,7 @@ struct IPCServerTests {
     }
 
     @Test func testIPCClientConnectsToLiveServerAndFetchesBuffers() throws {
-        #if os(Windows)
-            let server = makeTestServer(sessionToken: "live-token")
-        #else
-            let socketPath = FileManager.default.temporaryDirectory
-                .appendingPathComponent("zago-live-\(UUID().uuidString.prefix(8)).sock").path
-            let server = makeTestServer(socketPath: socketPath, sessionToken: "live-token")
-        #endif
+        let server = makeTestServer(sessionToken: "live-token")
         let editor = Editor()
         editor.buffer.lines = ["alpha", "beta"]
         let target = TestIPCDelegate(editor: editor)
@@ -637,30 +631,13 @@ struct IPCServerTests {
         }
         #expect(offlineResult["isError"] as? Bool == true)
 
-        #if os(Windows)
-            let editor = Editor()
-            editor.buffer.lines = ["alpha", "beta"]
-            editor.buffer.selectionMark = (line: 0, column: 2)
-            editor.buffer.lineIndex = 1
-            editor.buffer.columnIndex = 2
-            let ipcDelegate = TestIPCDelegate(editor: editor)
-            let ipcServer = makeTestServer(
-                sessionToken: "mcp-test-token"
-            )
-        #else
-            let socketPath = FileManager.default.temporaryDirectory
-                .appendingPathComponent("zmcp-\(UUID().uuidString.prefix(8)).sock").path
-            let editor = Editor()
-            editor.buffer.lines = ["alpha", "beta"]
-            editor.buffer.selectionMark = (line: 0, column: 2)
-            editor.buffer.lineIndex = 1
-            editor.buffer.columnIndex = 2
-            let ipcDelegate = TestIPCDelegate(editor: editor)
-            let ipcServer = makeTestServer(
-                socketPath: socketPath,
-                sessionToken: "mcp-test-token"
-            )
-        #endif
+        let editor = Editor()
+        editor.buffer.lines = ["alpha", "beta"]
+        editor.buffer.selectionMark = (line: 0, column: 2)
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 2
+        let ipcDelegate = TestIPCDelegate(editor: editor)
+        let ipcServer = makeTestServer(sessionToken: "mcp-test-token")
         ipcServer.delegate = ipcDelegate
         ipcServer.dataSource = ipcDelegate
         try ipcServer.start()
