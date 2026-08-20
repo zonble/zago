@@ -24,6 +24,7 @@ let package = Package(
         .library(name: "Editor", targets: ["Editor"]),
         .library(name: "FileWatcher", targets: ["FileWatcher"]),
         .library(name: "LogoLocalization", targets: ["LogoLocalization"]),
+        .library(name: "SystemClipboard", targets: ["SystemClipboard"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
@@ -91,6 +92,14 @@ let package = Package(
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform",
             ]
         ),
+        .target(
+            name: "SystemClipboard",
+            dependencies: ["Editor"],
+            linkerSettings: [
+                .linkedFramework("AppKit", .when(platforms: [.macOS])),
+                .linkedLibrary("user32", .when(platforms: [.windows])),
+            ]
+        ),
         .executableTarget(
             name: "zago",
             dependencies: [
@@ -103,6 +112,7 @@ let package = Package(
                 "IPCServer",
                 "LogoEngine",
                 "LogoLocalization",
+                "SystemClipboard",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
@@ -110,7 +120,7 @@ let package = Package(
             name: "zagoTests",
             dependencies: [
                 "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
-                "LogoLocalization", "SpellChecker",
+                "LogoLocalization", "SpellChecker", "SystemClipboard",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
             ],
             path: "Tests"
