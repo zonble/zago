@@ -717,7 +717,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     }
 
     public var fillerTokens: Set<String> {
-        ["為", "成", "次", "到", "至", "則", "否則", "不然"]
+        ["為", "成", "次", "步", "到", "至", "則", "否則", "不然"]
     }
 
     public var keywordAliases: [String] {

@@ -109,8 +109,10 @@ public final class LogoEngine: @unchecked Sendable {
         pluginRegistry.parseNumberStyle(token) ?? (LogoNumberStyle.isStyleKeyword(token) ? LogoNumberStyle.parse(token) : nil)
     }
 
+    public static let standardFillerTokens: Set<String> = ["THEN"]
+
     public func isFillerToken(_ token: String) -> Bool {
-        pluginRegistry.isFillerToken(token)
+        Self.standardFillerTokens.contains(token.uppercased()) || pluginRegistry.isFillerToken(token)
     }
 
     public func isKeyword(_ token: String) -> Bool {
