@@ -71,43 +71,37 @@ extension LogoEngine {
 
     private func isElseClauseToken(_ token: String) -> Bool {
         let upper = token.uppercased()
-        if upper == "ELSE" || token == "否則" || token == "不然" { return true }
-        return false
+        return upper == "ELSE" || token == "否則" || token == "不然"
     }
 
-    private func executeClauseBody(_ clause: [String], index: inout Int, frameReturn: inout String?) -> String? {
-        if index < clause.count && clause[index] == "[" {
-            let body = extractBlockTokens(tokens: clause, index: &index)
+    private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?) -> String? {
+        if let bodyBlock = reader.nextBlock() {
             var bIdx = 0
-            executeTokens(body, index: &bIdx, frameReturn: &frameReturn)
+            executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
             return frameReturn ?? lastResult ?? ""
         } else {
-            executeTokens(clause, index: &index, frameReturn: &frameReturn)
+            var bIdx = reader.position + 1
+            executeTokens(clause, index: &bIdx, frameReturn: &frameReturn)
             return frameReturn ?? lastResult ?? ""
         }
     }
 
     internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String? {
-        var idx = 0
-        while idx < clausesBlock.count {
-            if clausesBlock[idx] == "[" {
-                let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
-                if !clause.isEmpty {
-                    var cIdx = 0
-                    if isElseClauseToken(clause[cIdx]) {
-                        cIdx += 1
-                        return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
-                    } else if clause[cIdx] == "[" {
-                        let matches = extractBlockTokens(tokens: clause, index: &cIdx)
-                        cIdx += 1
-                        let isMatch = matches.contains { unquote($0) == targetVal }
-                        if isMatch {
-                            return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
-                        }
+        var reader = LogoControlTokenReader(engine: self, tokens: clausesBlock, index: -1)
+        while let clause = reader.nextBlock() {
+            guard !clause.isEmpty else { continue }
+            var clauseReader = LogoControlTokenReader(engine: self, tokens: clause, index: -1)
+            if let firstToken = clauseReader.nextRawToken(skipFillers: false), isElseClauseToken(firstToken) {
+                return executeClauseBody(clause, reader: &clauseReader, frameReturn: &frameReturn)
+            } else {
+                clauseReader = LogoControlTokenReader(engine: self, tokens: clause, index: -1)
+                if let matches = clauseReader.nextBlock() {
+                    let isMatch = matches.contains { unquote($0) == targetVal }
+                    if isMatch {
+                        return executeClauseBody(clause, reader: &clauseReader, frameReturn: &frameReturn)
                     }
                 }
             }
-            idx += 1
         }
         return nil
     }
@@ -118,25 +112,20 @@ extension LogoEngine {
     }
 
     internal func evaluateCondClauses(clausesBlock: [String], frameReturn: inout String?) -> String? {
-        var idx = 0
-        while idx < clausesBlock.count {
-            if clausesBlock[idx] == "[" {
-                let clause = extractBlockTokens(tokens: clausesBlock, index: &idx)
-                if !clause.isEmpty {
-                    var cIdx = 0
-                    if isElseClauseToken(clause[cIdx]) {
-                        cIdx += 1
-                        return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
-                    } else if clause[cIdx] == "[" {
-                        let condTokens = extractBlockTokens(tokens: clause, index: &cIdx)
-                        cIdx += 1
-                        if evaluateCondition(condTokens) {
-                            return executeClauseBody(clause, index: &cIdx, frameReturn: &frameReturn)
-                        }
+        var reader = LogoControlTokenReader(engine: self, tokens: clausesBlock, index: -1)
+        while let clause = reader.nextBlock() {
+            guard !clause.isEmpty else { continue }
+            var clauseReader = LogoControlTokenReader(engine: self, tokens: clause, index: -1)
+            if let firstToken = clauseReader.nextRawToken(skipFillers: false), isElseClauseToken(firstToken) {
+                return executeClauseBody(clause, reader: &clauseReader, frameReturn: &frameReturn)
+            } else {
+                clauseReader = LogoControlTokenReader(engine: self, tokens: clause, index: -1)
+                if let condTokens = clauseReader.nextBlock() {
+                    if evaluateCondition(condTokens) {
+                        return executeClauseBody(clause, reader: &clauseReader, frameReturn: &frameReturn)
                     }
                 }
             }
-            idx += 1
         }
         return nil
     }

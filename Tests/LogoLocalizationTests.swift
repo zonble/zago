@@ -597,6 +597,26 @@ struct LogoLocalizationTests {
         #expect(engine.variables["s2"] == "良好")
         #expect(engine.variables["s3"] == "及格")
         #expect(engine.variables["s4"] == "不及格")
+
+        // 3. 遇狀況 with 則 filler token
+        engine.execute("""
+        宣告 肥滋巴滋 :數字
+            遇狀況 [
+                [[都成立 (取餘 :數字 3 = 0) (取餘 :數字 5 = 0)] 則 [回報 "肥滋巴滋"]]
+                [[取餘 :數字 3 = 0] 則 [回報 "肥滋"]]
+                [[取餘 :數字 5 = 0] 則 [回報 "芭資"]]
+                [否則 則 [回報 :數字] ]
+            ]
+        結束
+        變數 "fb15 肥滋巴滋 15
+        變數 "fb9  肥滋巴滋 9
+        變數 "fb10 肥滋巴滋 10
+        變數 "fb7  肥滋巴滋 7
+        """)
+        #expect(engine.variables["fb15"] == "肥滋巴滋")
+        #expect(engine.variables["fb9"] == "肥滋")
+        #expect(engine.variables["fb10"] == "芭資")
+        #expect(engine.variables["fb7"] == "7")
     }
 
     @Test
