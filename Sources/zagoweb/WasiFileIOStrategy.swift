@@ -84,7 +84,7 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
             throw EncodingError.unsupportedCharacters
         }
         let url = URL(fileURLWithPath: path)
-        try data.write(to: url, options: .atomic)
+        try data.write(to: url)
     }
 
     public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {}
