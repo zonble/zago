@@ -8,6 +8,7 @@ let package = Package(
     ],
     products: [
         .executable(name: "zago", targets: ["zago"]),
+        .executable(name: "zagoweb", targets: ["zagoweb"]),
         .library(name: "TextMetrics", targets: ["TextMetrics"]),
         .library(name: "Drawing", targets: ["Drawing"]),
         .library(name: "DocumentOutline", targets: ["DocumentOutline"]),
@@ -119,6 +120,16 @@ let package = Package(
                 "SystemClipboard",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
+        ),
+        .executableTarget(
+            name: "zagoweb",
+            dependencies: [
+                "Config",
+                "Editor",
+                "Git",
+                "LogoEngine",
+            ],
+            path: "Sources/zagoweb"
         ),
         .testTarget(
             name: "zagoTests",

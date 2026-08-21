@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>zago — Web Terminal Editor</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐢</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-icon">🐢</span>
+          <span class="brand-title">zago</span>
+          <span class="brand-badge">Wasm</span>
+        </div>
+        <div class="actions">
+          <button id="btn-open-file" class="action-btn" title="Open / Upload file">
+            <span class="btn-icon">📁</span> Open File
+          </button>
+          <input type="file" id="file-input" style="display: none" />
+          <button id="btn-download-file" class="action-btn" title="Download current buffer">
+            <span class="btn-icon">💾</span> Export / Download
+          </button>
+          <button id="btn-clear-storage" class="action-btn secondary" title="Reset workspace & storage">
+            <span class="btn-icon">🧹</span> Reset
+          </button>
+          <button id="btn-help" class="action-btn secondary" title="View Documentation">
+            <span class="btn-icon">❓</span> Docs
+          </button>
+        </div>
+      </header>
+
+      <main id="terminal-container"></main>
+
+      <footer class="bottom-bar">
+        <span class="hint">^X Exit &bull; ^O Save &bull; ^T Spell &bull; ^K Cut &bull; ^U Paste &bull; ESC ESC Canvas</span>
+        <span class="version">zago WebAssembly Edition</span>
+      </footer>
+    </div>
+
+    <!-- Modal for Help / Docs -->
+    <dialog id="help-dialog" class="help-dialog">
+      <div class="dialog-content">
+        <h2>Welcome to zago on WebAssembly!</h2>
+        <p><strong>zago</strong> is a lightweight terminal text editor with powerful plain-text diagramming and built-in Editor LOGO.</p>
+        <h3>Useful Shortcuts:</h3>
+        <ul>
+          <li><code>Ctrl + O</code> / <code>Cmd + S</code> : Save buffer</li>
+          <li><code>Ctrl + X</code> : Exit editor</li>
+          <li><code>Ctrl + G</code> : Open help / command list</li>
+          <li><code>ESC ESC</code> : Toggle Canvas Mode (draw boxes, arrows, and tables)</li>
+          <li><code>Ctrl + T</code> : Spell check / suggestions</li>
+        </ul>
+        <div class="dialog-actions">
+          <button id="btn-close-help" class="action-btn">Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

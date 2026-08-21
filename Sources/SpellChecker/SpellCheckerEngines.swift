@@ -190,8 +190,9 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
     }
 #endif
 
-public final class UnixSpellCheckerEngine: SpellCheckerEngine {
-    public var language: String {
+#if !os(WASI)
+    public final class UnixSpellCheckerEngine: SpellCheckerEngine {
+        public var language: String {
         didSet {
             commandLineChecker = CommandLineSpellChecker(language: language)
             loadDictionary()
@@ -349,6 +350,7 @@ private final class CommandLineSpellChecker {
         return nil
     }
 }
+#endif
 
 // MARK: - Windows Engine
 

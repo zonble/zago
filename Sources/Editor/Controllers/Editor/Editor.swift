@@ -203,7 +203,9 @@ public final class Editor: @unchecked Sendable {
     let proposalQueue = ProposalQueue()
     public let historyStore: any AIHistoryStoring
     private let editorLoopRequests = EditorLoopRequestQueue()
-    private var editorLoopThread: Thread?
+    #if !os(WASI)
+        private var editorLoopThread: Thread?
+    #endif
 
     private struct ResolvedConfig {
         let wrapColumn: Int?
@@ -488,15 +490,25 @@ public final class Editor: @unchecked Sendable {
     /// Starts the editor event loop.
     public func run() {
         isInteractiveMode = true
-        editorLoopThread = Thread.current
-        defer {
-            editorLoopThread = nil
-            isInteractiveMode = false
-            effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
-            terminal.clearScreen()
-            terminal.showCursor()
-            terminal.disableRawMode()
-        }
+        #if !os(WASI)
+            editorLoopThread = Thread.current
+            defer {
+                editorLoopThread = nil
+                isInteractiveMode = false
+                effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
+                terminal.clearScreen()
+                terminal.showCursor()
+                terminal.disableRawMode()
+            }
+        #else
+            defer {
+                isInteractiveMode = false
+                effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
+                terminal.clearScreen()
+                terminal.showCursor()
+                terminal.disableRawMode()
+            }
+        #endif
 
         do {
             try terminal.enableRawMode()
@@ -528,16 +540,20 @@ public final class Editor: @unchecked Sendable {
     }
 
     public func performOnEditorLoop<T>(timeout: TimeInterval = 0.5, _ operation: @escaping () -> T) throws -> T {
-        if !isInteractiveMode || Thread.current === editorLoopThread {
+        #if os(WASI)
             return operation()
-        }
+        #else
+            if !isInteractiveMode || Thread.current === editorLoopThread {
+                return operation()
+            }
 
-        let request = EditorLoopRequest(operation: operation)
-        editorLoopRequests.enqueue {
-            request.execute()
-        }
-        terminal.wakeup()
-        return try request.wait(timeout: timeout)
+            let request = EditorLoopRequest(operation: operation)
+            editorLoopRequests.enqueue {
+                request.execute()
+            }
+            terminal.wakeup()
+            return try request.wait(timeout: timeout)
+        #endif
     }
 
     func drainExternalRequests() {

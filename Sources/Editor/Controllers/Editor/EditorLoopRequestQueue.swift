@@ -23,6 +23,9 @@ final class EditorLoopRequestQueue {
     }
 }
 
+#if !os(WASI)
+import Dispatch
+
 final class EditorLoopRequest<Result> {
     private enum State: Equatable { case pending, executing, completed, cancelled }
 
@@ -69,3 +72,4 @@ final class EditorLoopRequest<Result> {
         throw EditorLoopRequestError.timedOut
     }
 }
+#endif

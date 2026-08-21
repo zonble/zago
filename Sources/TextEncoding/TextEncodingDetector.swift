@@ -1,9 +1,5 @@
 import Foundation
 
-#if canImport(CoreFoundation)
-    import CoreFoundation
-#endif
-
 extension String.Encoding {
     /// Big5 (Traditional Chinese) encoding
     public static let big5 = String.Encoding(rawValue: 0x8000_0A03)

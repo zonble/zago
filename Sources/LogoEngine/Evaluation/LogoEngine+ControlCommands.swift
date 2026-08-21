@@ -135,12 +135,14 @@ extension LogoEngine {
                 reader.commit(to: &index)
                 if let val = Double(timeStr), val > 0 {
                     delegate?.logoEngine(self, performAction: .refreshScreen)
-                    let isTesting =
-                        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-                        || ProcessInfo.processInfo.processName.contains("XCTest")
-                        || ProcessInfo.processInfo.processName.contains("swiftpm-testing-helper")
-                    let delay = isTesting ? min(val / 60000.0, 0.001) : val / 60.0
-                    Thread.sleep(forTimeInterval: delay)
+                    #if !os(WASI)
+                        let isTesting =
+                            ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+                            || ProcessInfo.processInfo.processName.contains("XCTest")
+                            || ProcessInfo.processInfo.processName.contains("swiftpm-testing-helper")
+                        let delay = isTesting ? min(val / 60000.0, 0.001) : val / 60.0
+                        Thread.sleep(forTimeInterval: delay)
+                    #endif
                 }
             }
             return true
