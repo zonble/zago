@@ -2,7 +2,7 @@ import Foundation
 
 public enum ZagoVersion {
     /// Single Source of Truth for the `zago` editor version number.
-    public static let current = "1.3.1"
+    public static let current = "1.4.0"
     public static let author = "zonble"
     public static let email = "zonble@gmail.com"
     public static let repository = "https://github.com/zonble/zago"
