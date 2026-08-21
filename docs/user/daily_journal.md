@@ -31,11 +31,11 @@ by `.zagorc`:
 
 Possible settings:
 
-| Setting Key | Alias | Values / Type | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `launch-to-journal` | `launch_to_journal` | `on` / `off` | `off` | Planned startup shortcut for opening today's journal. |
-| `journal-folder` | `journal_folder` | String / Path | `~/Journal` | Planned destination directory for the journal. |
-| `journal-filename-format` | `journal_filename_format` | String | `YYYY_MM_DD.md` | Planned filename template for the daily journal. |
+| Setting Key | Values / Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `launch-to-journal` | `on` / `off` | `off` | Planned startup shortcut for opening today's journal. |
+| `journal-folder` | String / Path | `~/Journal` | Planned destination directory for the journal. |
+| `journal-filename-format` | String | `YYYY_MM_DD.md` | Planned filename template for the daily journal. |
 
 ## Possible Startup Behavior
 
@@ -50,8 +50,6 @@ current design commitment.
 
 ## Possible In-Editor Shortcut
 
-- `:journal` or `:today`: possible future commands for opening today's journal.
-- A future `OPEN-JOURNAL` LOGO command could provide the same action to scripts.
+- `:journal`: command for opening today's journal.
 
-These commands do not exist yet. When implemented, they should open or switch to
-the journal file and leave all normal editor modes and AI workflows unchanged.
+This command opens or switches to the journal file and leaves all normal editor modes and AI workflows unchanged.
