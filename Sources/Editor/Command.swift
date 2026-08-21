@@ -107,6 +107,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileEditConfig = "file.edit_config"
     case fileReloadConfig = "file.reload_config"
     case fileRunLogo = "file.run_logo"
+    case openJournal = "tools.journal"
 
     // Table Mode Operations
     case tableNextCell = "table.next_cell"

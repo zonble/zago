@@ -21,6 +21,8 @@ public struct EditorOptions {
     public var defaultLineEnding: LineEnding?
     public var backup: Bool?
     public var backupDir: String?
+    public var launchToJournal: Bool?
+    public var journalFolder: String?
 
     public init(
         filePaths: [String] = [],
@@ -41,7 +43,9 @@ public struct EditorOptions {
         keymapPreset: KeymapPreset? = nil,
         defaultLineEnding: LineEnding? = nil,
         backup: Bool? = nil,
-        backupDir: String? = nil
+        backupDir: String? = nil,
+        launchToJournal: Bool? = nil,
+        journalFolder: String? = nil
     ) {
         self.filePaths = filePaths
         self.wrapColumn = wrapColumn
@@ -62,5 +66,7 @@ public struct EditorOptions {
         self.defaultLineEnding = defaultLineEnding
         self.backup = backup
         self.backupDir = backupDir
+        self.launchToJournal = launchToJournal
+        self.journalFolder = journalFolder
     }
 }

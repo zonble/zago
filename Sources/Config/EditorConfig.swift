@@ -48,6 +48,11 @@ public struct EditorConfig {
     /// Custom directory path to store backup files. If nil, backups are created in the same directory as the original file.
     public var backupDir: String? = nil
 
+    /// Whether to open today's daily journal when starting zago without explicit file arguments. Defaults to false.
+    public var launchToJournal: Bool = false
+    /// Destination directory path for storing daily journals. If nil, defaults to ~/Documents/zago_journal or ~/zago_journal.
+    public var journalFolder: String? = nil
+
     public init() {}
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {

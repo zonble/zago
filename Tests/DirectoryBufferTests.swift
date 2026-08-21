@@ -324,4 +324,33 @@ struct DirectoryBufferTests {
             Issue.record("Expected sample.txt in directory buffer")
         }
     }
+
+    @Test func testDirCommandInNonExistentDirectoryFallsBackToExistingParent() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let baseDir = tempDir.appendingPathComponent("test_base_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: baseDir) }
+
+        let nonExistentSubDir = baseDir.appendingPathComponent("non_existent_journal")
+        let nonExistentFile = nonExistentSubDir.appendingPathComponent("today.md")
+
+        let editor = Editor(
+            options: EditorOptions(filePaths: [nonExistentFile.path], autoReload: false),
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        defer { editor.stopFileWatcherForCurrentBuffer() }
+
+        #expect(editor.buffer.filePath == nonExistentFile.path)
+
+        // Invoke :dir
+        editor.openDirectoryBuffer(path: nil)
+
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffer.isDirectoryBuffer == true)
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(dirBuf.directoryPath == baseDir.path)
+    }
 }

@@ -81,6 +81,11 @@ struct Zago: ParsableCommand {
     var backupDir: String?
 
     @Flag(
+        name: [.customShort("j"), .customLong("journal")],
+        help: "Open today's daily journal.")
+    var journal: Bool = false
+
+    @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
@@ -307,7 +312,8 @@ struct Zago: ParsableCommand {
             keymapPreset: keymap,
             defaultLineEnding: platformDefaultLineEnding,
             backup: backup ? true : nil,
-            backupDir: backupDir
+            backupDir: backupDir,
+            launchToJournal: journal ? true : nil
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false

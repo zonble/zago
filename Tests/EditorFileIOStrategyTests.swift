@@ -129,6 +129,10 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
         "/tmp"
     }
 
+    func documentDirectoryPath() -> String {
+        "/home/tester/Documents"
+    }
+
     var watchedPath: String? = nil
     var watcherCallback: (@Sendable () -> Void)? = nil
 
@@ -559,4 +563,102 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     #expect(!editor.promptController.isActive)
     #expect(editor.buffer.isModified == true)
     #expect(editor.buffer.lines == ["modified text"])
+}
+
+@Test func testTodayJournalPathResolution() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let fixedDate = Date(timeIntervalSince1970: 1774224000) // 2026-03-23 UTC
+
+    let defaultPath = Editor.resolveTodayJournalPath(
+        configuredFolder: nil,
+        fileIO: fileIO,
+        date: fixedDate
+    )
+    #expect(defaultPath.hasSuffix(".md"))
+    #expect(defaultPath.contains("zago_journal"))
+
+    let customPath = Editor.resolveTodayJournalPath(
+        configuredFolder: "/home/tester/MyNotes",
+        fileIO: fileIO,
+        date: fixedDate
+    )
+    #expect(customPath.hasPrefix("/home/tester/MyNotes/"))
+    #expect(customPath.hasSuffix(".md"))
+}
+
+@Test func testEditorStartupWithLaunchToJournal() throws {
+    let fileIO = MemoryEditorFileIOStrategy(directories: ["/home/tester/Documents/zago_journal"])
+    var config = EditorConfig()
+    config.launchToJournal = true
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en),
+        configSource: EditorConfigSource(initial: config, reload: { config }),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath != nil)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.filePath?.hasSuffix(".md") == true)
+}
+
+@Test func testEditorStartupWithExplicitJournalOption() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en, launchToJournal: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath != nil)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.filePath?.hasSuffix(".md") == true)
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+    #expect(editor.buffer.lineIndex == 1)
+}
+
+@Test func testEditorOpenTodayJournalCommand() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/first.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    #expect(editor.buffer.filePath == "/first.txt")
+
+    // Run :journal
+    let result = editor.commandRegistry.dispatch("journal", editor: editor)
+    #expect(result == .handled)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+
+    let journalBufferPath = editor.buffer.filePath!
+
+    // Switch to prev buffer
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "/first.txt")
+
+    // Run :journal again -> switches back to existing journal buffer
+    let result2 = editor.commandRegistry.dispatch(":journal", editor: editor)
+    #expect(result2 == .handled)
+    #expect(editor.buffer.filePath == journalBufferPath)
+    #expect(editor.buffers.count == 2)
+}
+
+@Test func testJournalSavingBufferCreatesDirectoryAndFile() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en, launchToJournal: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+    editor.buffer.lines.append("Wrote some great code today.")
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: nil)
+    #expect(result.isSucceeded)
+    #expect(editor.buffer.isModified == false)
+
+    let savedPath = editor.buffer.filePath!
+    #expect(fileIO.files[savedPath]?.contains("Wrote some great code today.") == true)
 }

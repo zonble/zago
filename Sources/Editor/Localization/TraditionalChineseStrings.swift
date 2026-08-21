@@ -926,6 +926,7 @@ struct TraditionalChineseStrings {
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
         "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
 
+        "menu.tools.journal": "今日日記",
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.tools.word_count": "字數統計",

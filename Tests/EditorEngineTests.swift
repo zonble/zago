@@ -681,7 +681,9 @@ import TextMetrics
     // 7. Test executing menu item via Enter
     editor.processKey(.f1)  // Activate menu
     editor.menuBar.categoryIndex = editor.menuBar.categories.firstIndex(where: { $0.titleKey == "menu.tools" })!
-    editor.menuBar.itemIndex = 0  // Command Prompt
+    editor.menuBar.itemIndex = editor.menuBar.currentCategory.items.firstIndex(where: {
+        $0.titleKey == "menu.tools.logo"
+    })!
     editor.processKey(.enter)  // Execute
     #expect(editor.isMenuBarActive == false)
     if case .logoMacro = editor.currentPromptMode {

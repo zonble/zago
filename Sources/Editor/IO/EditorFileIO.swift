@@ -193,6 +193,9 @@ public protocol EditorFileIOStrategy: AnyObject {
 
     /// Returns absolute path to system temporary directory.
     func temporaryDirectoryPath() -> String
+
+    /// Returns absolute path to user's Documents directory, or fallback directory.
+    func documentDirectoryPath() -> String
 }
 
 extension EditorFileIOStrategy {
@@ -215,5 +218,18 @@ extension EditorFileIOStrategy {
 
     public func temporaryDirectoryPath() -> String {
         FileManager.default.temporaryDirectory.path
+    }
+
+    public func documentDirectoryPath() -> String {
+        if let docsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
+            FileManager.default.fileExists(atPath: docsUrl.path) {
+            return docsUrl.path
+        }
+        let home = homeDirectoryPath()
+        let candidate = childPath("Documents", in: home)
+        if fileInfo(at: candidate).exists {
+            return candidate
+        }
+        return home
     }
 }

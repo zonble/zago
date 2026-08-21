@@ -704,4 +704,38 @@ struct ConfigLoaderTests {
         #expect(unsetConfig.backupDir == nil)
         #expect(unsetConfig.syntaxErrorCount == 0)
     }
+
+    @Test func testDailyJournalConfigDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set launch-to-journal on
+                set journal-folder ~/Notes/Journal
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.launchToJournal == true)
+        #expect(config.journalFolder == "~/Notes/Journal")
+        #expect(config.syntaxErrorCount == 0)
+
+        let unsetProvider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set launch-to-journal on
+                unset launch-to-journal
+                set journal-folder off
+                """
+            ]
+        )
+        let unsetConfig = ConfigLoader(provider: unsetProvider).loadConfig()
+        #expect(unsetConfig.launchToJournal == false)
+        #expect(unsetConfig.journalFolder == nil)
+        #expect(unsetConfig.syntaxErrorCount == 0)
+    }
 }

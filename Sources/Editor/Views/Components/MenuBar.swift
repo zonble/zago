@@ -276,6 +276,7 @@ final class MenuBar {
                     MenuItem(
                         titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
                         isVisible: { $0.buffer.allowsLogoExecution }),
+                    MenuItem(titleKey: "menu.tools.journal", hotkeyChar: "j", commandId: .openJournal),
                     MenuItem(
                         titleKey: "menu.tools.word_count", hotkeyChar: "w",
                         action: { editor in

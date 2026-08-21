@@ -14,7 +14,7 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
         (try? [
             NSRegularExpression(
                 pattern:
-                    #"(?i)^\s*set\s+(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir)\b"#
+                    #"(?i)^\s*set\s+(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|launch-to-journal|journal-folder)\b"#
             ),
             NSRegularExpression(pattern: #"(?i)^\s*(bind|unbind|load|include)\s+"#),
             NSRegularExpression(pattern: #"(?i)^\s*(logo-script|logo-prelude|logo)\b"#),
@@ -26,7 +26,7 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
         #"(?i)^\s*(set|unset|bind|unbind|load|include|logo|logo-prelude|logo-script|endlogo)\b"#
 
     private static let settingPattern =
-        #"(?i)\b(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|dialect)\b"#
+        #"(?i)\b(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|launch-to-journal|journal-folder|dialect)\b"#
 
     public var rules: [SyntaxRule] {
         [
