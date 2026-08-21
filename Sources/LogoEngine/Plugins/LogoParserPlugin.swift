@@ -69,6 +69,9 @@ public protocol LogoParserPlugin: Sendable {
 
     /// All keyword aliases provided by this plugin (for auto-completion and syntax highlighting).
     var keywordAliases: [String] { get }
+
+    /// Returns all dialect aliases for the specified primitive.
+    func aliases(for primitive: LogoPrimitive) -> [String]
 }
 
 public extension LogoParserPlugin {
@@ -93,4 +96,5 @@ public extension LogoParserPlugin {
         fillerTokens.contains(token.lowercased())
     }
     var keywordAliases: [String] { [] }
+    func aliases(for primitive: LogoPrimitive) -> [String] { [] }
 }

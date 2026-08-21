@@ -234,4 +234,15 @@ public final class LogoPluginRegistry: @unchecked Sendable {
         lock.unlock()
         return currentPlugins.flatMap(\.keywordAliases)
     }
+
+    public func aliases(for primitive: LogoPrimitive) -> [String] {
+        lock.lock()
+        let currentPlugins = plugins
+        lock.unlock()
+        var result: [String] = []
+        for plugin in currentPlugins {
+            result.append(contentsOf: plugin.aliases(for: primitive))
+        }
+        return result
+    }
 }

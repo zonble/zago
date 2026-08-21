@@ -198,4 +198,44 @@ struct LogoTokenParsingAndFieldsTests {
         #expect(engine.variables["m"]?.contains("1.5") == true || engine.variables["m"]?.contains("km") == true)
     }
     #endif
+
+    @Test
+    func testChineseKeywordsReflectionAndIntrospection() {
+        let engine = makeEngine()
+
+        // 1. DOC with Chinese keyword
+        engine.execute("變數 \"docBox (DOC \"畫框)")
+        #expect(engine.variables["docbox"]?.contains("box") == true || engine.variables["docbox"]?.contains("border") == true)
+
+        engine.execute("變數 \"docForward (DOC \"前進)")
+        #expect(engine.variables["docforward"]?.contains("turtle") == true || engine.variables["docforward"]?.contains("forward") == true)
+
+        // 2. ARITY with Chinese keyword
+        engine.execute("變數 \"arityBox (ARITY \"畫框)")
+        #expect(engine.variables["aritybox"] == "1")
+
+        // 3. PRIMITIVE? and PROCEDURE? with Chinese keyword
+        engine.execute("變數 \"isPrim (PRIMITIVE? \"畫框)")
+        #expect(engine.variables["isprim"] == "true")
+
+        engine.execute("變數 \"isProc (PROCEDURE? \"前進)")
+        #expect(engine.variables["isproc"] == "true")
+    }
+
+    @Test
+    func testLogoLocalizationRegistryQueryHelpers() {
+        #expect(LogoLocalizationRegistry.parsePrimitive("畫框") == .drawBox)
+        #expect(LogoLocalizationRegistry.parsePrimitive("前進") == .forward)
+        #expect(LogoLocalizationRegistry.parsePrimitive("未知關鍵字") == nil)
+
+        let boxAliases = LogoLocalizationRegistry.aliases(for: .box)
+        #expect(boxAliases.contains("加框") || boxAliases.contains("插入框"))
+
+        #expect(LogoLocalizationRegistry.allKeywordAliases.contains("畫框"))
+        #expect(LogoLocalizationRegistry.allKeywordAliases.contains("前進"))
+
+        #expect(LogoLocalizationRegistry.allFillerTokens.contains("則"))
+        #expect(LogoLocalizationRegistry.allFillerTokens.contains("步"))
+        #expect(LogoLocalizationRegistry.allFillerTokens.contains("次"))
+    }
 }
