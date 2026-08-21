@@ -55,16 +55,8 @@ CLEAR
 GOTO 2 2
 BOX 42 8 DOUBLE
 GOTO 4 4
-TYPE "Hello from zago Virtual OS!"
 GOTO 5 4
 TYPE "Full VFS + Directory Navigation Enabled"
-`;
-
-const DEFAULT_CONFIG = `# zago Editor Configuration
-tab_size = 4
-expand_tab = true
-line_numbers = true
-status_bar = true
 `;
 
 const DEFAULT_EXAMPLE_DIAGRAM = `Component Architecture
@@ -109,14 +101,6 @@ export class VirtualOSStorage {
           content: encoder.encode(DEFAULT_DEMO_LOGO),
           mtime: now,
           size: DEFAULT_DEMO_LOGO.length,
-        },
-        {
-          path: "/workspace/.zago.conf",
-          name: ".zago.conf",
-          isDirectory: false,
-          content: encoder.encode(DEFAULT_CONFIG),
-          mtime: now,
-          size: DEFAULT_CONFIG.length,
         },
         {
           path: "/workspace/examples/diagram.txt",
