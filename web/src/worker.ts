@@ -90,6 +90,7 @@ async function startWasm(wasmUrl: string, initialNodes: VFSNode[]) {
     stdoutFd,
     stdoutFd,
     new PreopenDirectory("/workspace", workspaceDir),
+    new PreopenDirectory(".", workspaceDir),
   ];
 
   const wasiInstance = new WASI(
