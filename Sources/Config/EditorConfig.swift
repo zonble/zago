@@ -36,6 +36,13 @@ public struct EditorConfig {
     public var syntaxErrorCount: Int = 0
     public var loadedFilePath: String? = nil
 
+    /// Maximum file size in bytes allowed to open (0 means no limit). Defaults to 50 MB.
+    public var maxFileSizeBytes: Int64 = 50 * 1024 * 1024
+    /// File size threshold in bytes above which large file degradation mode is active. Defaults to 5 MB.
+    public var largeFileThresholdBytes: Int64 = 5 * 1024 * 1024
+    /// Maximum line character length allowed for regex syntax highlighting. Defaults to 10,000 characters.
+    public var maxLineHighlightLength: Int = 10000
+
     public init() {}
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {

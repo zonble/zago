@@ -92,6 +92,16 @@ extension Editor {
             openDirectoryBuffer(path: expanded)
             return .succeeded
         }
+        if maxFileSizeBytes > 0 && info.size > maxFileSizeBytes {
+            let error = EditorFileError.fileTooLarge(size: info.size, limit: maxFileSizeBytes)
+            let message = error.localizedDescription
+            if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
+                switchToBuffer(index: existingIndex)
+            } else {
+                openNewBuffer(filePath: expanded)
+            }
+            return reportOperationResult(.failed(message, message: l10n.errorOpeningFile(error: message)))
+        }
         if info.exists {
             do {
                 _ = try fileIOStrategy.readTextFile(at: expanded)
@@ -323,6 +333,12 @@ extension Editor {
             let isModern = resolve(value, current: keymapManager.activePreset == .modern)
             keymapManager.loadPreset(isModern ? .modern : .classic)
             reportOperationResult(.succeeded(message: "Modern keybindings \(isModern ? "enabled" : "disabled")"))
+        case .maxFileSize(let bytes):
+            maxFileSizeBytes = bytes
+        case .largeFileThreshold(let bytes):
+            largeFileThresholdBytes = bytes
+        case .maxLineHighlightLength(let len):
+            syntaxHighlighter.maxLineHighlightLength = len
         }
     }
 

@@ -28,13 +28,30 @@ extension Editor {
         -> EditorOperationResult
     {
         let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
-        guard fileIOStrategy.fileInfo(at: expandedPath).exists else {
+        let info = fileIOStrategy.fileInfo(at: expandedPath)
+        guard info.exists else {
             targetBuffer.replaceContents(
                 "", filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.fileEncoding = .utf8
             targetBuffer.loadErrorDescription = nil
             targetBuffer.isReadOnly = false
+            targetBuffer.isLargeFileMode = false
+            targetBuffer.fileSize = 0
             return .succeeded
+        }
+
+        if maxFileSizeBytes > 0 && info.size > maxFileSizeBytes {
+            let error = EditorFileError.fileTooLarge(size: info.size, limit: maxFileSizeBytes)
+            let message = error.localizedDescription
+            targetBuffer.replaceContents(
+                "[\(message)]", filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
+            targetBuffer.fileEncoding = .utf8
+            targetBuffer.loadErrorDescription = message
+            targetBuffer.isReadOnly = true
+            targetBuffer.isLargeFileMode = false
+            targetBuffer.fileSize = info.size
+            return reportOperationResult(
+                .failed(message, message: reportStatus ? l10n.errorOpeningFile(error: message) : nil))
         }
 
         do {
@@ -45,7 +62,17 @@ extension Editor {
                 result.content, filePath: expandedPath, isModified: false, defaultLineEnding: defaultLineEnding)
             targetBuffer.lineIndex = 0
             targetBuffer.columnIndex = 0
-            return .succeeded
+            targetBuffer.fileSize = info.size
+
+            if largeFileThresholdBytes > 0 && info.size >= largeFileThresholdBytes {
+                targetBuffer.isLargeFileMode = true
+                let sizeFormatted = ByteCountFormatter.string(fromByteCount: info.size, countStyle: .file)
+                let statusMessage = String(format: l10n["status.large_file_mode"], sizeFormatted)
+                return reportOperationResult(.succeeded(message: reportStatus ? statusMessage : nil))
+            } else {
+                targetBuffer.isLargeFileMode = false
+                return .succeeded
+            }
         } catch {
             let message = error.localizedDescription
             targetBuffer.replaceContents(
@@ -53,6 +80,8 @@ extension Editor {
             targetBuffer.fileEncoding = .utf8
             targetBuffer.loadErrorDescription = message
             targetBuffer.isReadOnly = true
+            targetBuffer.isLargeFileMode = false
+            targetBuffer.fileSize = info.size
             return reportOperationResult(
                 .failed(message, message: reportStatus ? l10n.errorOpeningFile(error: message) : nil))
         }
@@ -65,12 +94,21 @@ extension Editor {
             return reportOperationResult(.failed(message, message: reportStatus ? message : nil))
         }
 
+        let info = fileIOStrategy.fileInfo(at: path)
+        if maxFileSizeBytes > 0 && info.size > maxFileSizeBytes {
+            let error = EditorFileError.fileTooLarge(size: info.size, limit: maxFileSizeBytes)
+            let message = error.localizedDescription
+            return reportOperationResult(.failed(message, message: reportStatus ? message : nil))
+        }
+
         do {
             let result = try fileIOStrategy.readTextFile(at: path)
             targetBuffer.fileEncoding = result.encoding
             targetBuffer.loadErrorDescription = nil
             targetBuffer.replaceContents(
                 result.content, filePath: path, isModified: false, defaultLineEnding: defaultLineEnding)
+            targetBuffer.fileSize = info.size
+            targetBuffer.isLargeFileMode = (largeFileThresholdBytes > 0 && info.size >= largeFileThresholdBytes)
             targetBuffer.clampCursor()
             return reportOperationResult(.succeeded(message: reportStatus ? l10n["status.file_reloaded"] : nil))
         } catch {
@@ -85,6 +123,13 @@ extension Editor {
             return reportOperationResult(.noOp(message: l10n["status.read_only"]))
         }
         let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let info = fileIOStrategy.fileInfo(at: expandedPath)
+        if maxFileSizeBytes > 0 && info.size > maxFileSizeBytes {
+            let error = EditorFileError.fileTooLarge(size: info.size, limit: maxFileSizeBytes)
+            let message = error.localizedDescription
+            return reportOperationResult(.failed(message, message: l10n.errorInsertingFile(error: message)))
+        }
+
         do {
             let result = try fileIOStrategy.readTextFile(at: expandedPath)
             saveUndoSnapshot()

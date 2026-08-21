@@ -1,4 +1,5 @@
 import Foundation
+import Syntax
 import Testing
 import TextEncoding
 
@@ -53,7 +54,7 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
             return EditorFileInfo(exists: true, isDirectory: true)
         }
         if let text = files[normalized] {
-            return EditorFileInfo(exists: true, isDirectory: false, isBinary: text.contains("\u{0}"))
+            return EditorFileInfo(exists: true, isDirectory: false, isBinary: text.contains("\u{0}"), size: Int64(text.utf8.count))
         }
         return EditorFileInfo(exists: false, isDirectory: false)
     }
@@ -349,4 +350,54 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     editor.processKey(.char(Character("y")))
     #expect(editor.buffer.lines == ["updated on disk"])
     #expect(editor.buffer.isModified == false)
+}
+
+@Test func testHardLimitFileTooLarge() throws {
+    let largeContent = String(repeating: "A", count: 2000)
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/huge.txt": largeContent])
+    let editor = Editor(
+        options: EditorOptions(language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.maxFileSizeBytes = 1000
+
+    let result = editor.openBuffer(path: "/huge.txt")
+    #expect(!result.isSucceeded)
+    #expect(editor.buffer.isReadOnly == true)
+    #expect(editor.buffer.isLargeFileMode == false)
+    #expect(editor.buffer.lines.first?.contains("File too large") == true)
+}
+
+@Test func testSoftLimitLargeFileMode() throws {
+    let content = String(repeating: "Hello world\n", count: 100)
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/medium.txt": content])
+    let editor = Editor(
+        options: EditorOptions(language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.largeFileThresholdBytes = 500
+    editor.maxFileSizeBytes = 50000
+
+    let result = editor.openBuffer(path: "/medium.txt")
+    #expect(result.isSucceeded)
+    #expect(editor.buffer.isReadOnly == false)
+    #expect(editor.buffer.isLargeFileMode == true)
+    #expect(editor.buffer.lines.count > 1)
+}
+
+@Test func testMaxLineHighlightLengthSkipsRegexTokenization() throws {
+    let highlighter = SyntaxHighlighter()
+    highlighter.maxLineHighlightLength = 30
+    guard let swiftSyntax = highlighter.findLanguage(named: "swift") else {
+        Issue.record("Swift syntax not found")
+        return
+    }
+
+    let shortLine = "let foo = 123"
+    let shortTokens = highlighter.tokenTypes(for: shortLine, syntax: swiftSyntax)
+    #expect(shortTokens.contains(.keyword))
+
+    let longLine = "let foo = 123 // " + String(repeating: "extremely long line content ", count: 5)
+    let longTokens = highlighter.tokenTypes(for: longLine, syntax: swiftSyntax)
+    #expect(longTokens.allSatisfy { $0 == .normal })
 }

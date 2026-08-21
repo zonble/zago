@@ -624,4 +624,38 @@ struct ConfigLoaderTests {
         #expect(config.wrapColumn == 72)
         #expect(config.syntaxErrorCount == 1)
     }
+
+    @Test func testByteSizeParsing() {
+        #expect(ConfigLoader.parseByteSize("50MB") == Int64(50 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("5mb") == Int64(5 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("1GB") == Int64(1024 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("512KB") == Int64(512 * 1024))
+        #expect(ConfigLoader.parseByteSize("256k") == Int64(256 * 1024))
+        #expect(ConfigLoader.parseByteSize("1024b") == Int64(1024))
+        #expect(ConfigLoader.parseByteSize("2048") == Int64(2048))
+        #expect(ConfigLoader.parseByteSize("off") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("none") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("0") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("invalid") == nil)
+    }
+
+    @Test func testFileSizeLimitDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set max-file-size 100MB
+                set large-file-threshold 10MB
+                set max-line-highlight-length 5000
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.maxFileSizeBytes == 100 * 1024 * 1024)
+        #expect(config.largeFileThresholdBytes == 10 * 1024 * 1024)
+        #expect(config.maxLineHighlightLength == 5000)
+        #expect(config.syntaxErrorCount == 0)
+    }
 }

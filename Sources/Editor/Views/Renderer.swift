@@ -262,7 +262,7 @@ final class Renderer {
                     : renderedLineText
 
                 let currentLanguage =
-                    editor.displayConfig.enableSyntaxHighlight
+                    (editor.displayConfig.enableSyntaxHighlight && !editor.buffer.isLargeFileMode)
                     ? editor.syntaxForLine(at: vLine.bufferLineIndex)
                     : nil
                 let tokenTypes =
@@ -517,7 +517,10 @@ final class Renderer {
 
         let numStr = String(format: "%4d ", lineNumber)
         let hasGitDiff =
-            editor.displayConfig.showGitDiff && editor.gitDiffInfo.hasDiffMarkers && !editor.buffer.isScratchBuffer
+            editor.displayConfig.showGitDiff
+            && editor.gitDiffInfo.hasDiffMarkers
+            && !editor.buffer.isScratchBuffer
+            && !editor.buffer.isLargeFileMode
 
         if hasGitDiff {
             let status = editor.gitDiffInfo.lineStatuses[lineIdx] ?? .unmodified

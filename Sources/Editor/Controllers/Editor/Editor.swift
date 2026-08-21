@@ -198,6 +198,8 @@ public final class Editor: @unchecked Sendable {
     var isLogoUIEnabled: Bool {
         debugMode || buffer.filePath?.lowercased().hasSuffix(".logo") == true
     }
+    var maxFileSizeBytes: Int64 = 50 * 1024 * 1024
+    var largeFileThresholdBytes: Int64 = 5 * 1024 * 1024
     var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
     let proposalQueue = ProposalQueue()
@@ -406,6 +408,9 @@ public final class Editor: @unchecked Sendable {
     /// Applies custom user configuration loaded from ~/.serc or ./.serc files.
     func applyCustomConfig(_ config: EditorConfig) {
         syntaxHighlighter.loadNanoRCContent(config.nanoRCContent)
+        syntaxHighlighter.maxLineHighlightLength = config.maxLineHighlightLength
+        maxFileSizeBytes = config.maxFileSizeBytes
+        largeFileThresholdBytes = config.largeFileThresholdBytes
         customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
         defaultArrowStyle = config.defaultArrowStyle

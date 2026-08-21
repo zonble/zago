@@ -48,6 +48,15 @@ extension EditorSettingKey {
         case .fill:
             guard let width = Int(value), width > 0 else { return nil }
             return .fill(width)
+        case .maxFileSize:
+            guard let bytes = ConfigLoader.parseByteSize(value), bytes >= 0 else { return nil }
+            return .maxFileSize(bytes)
+        case .largeFileThreshold:
+            guard let bytes = ConfigLoader.parseByteSize(value), bytes >= 0 else { return nil }
+            return .largeFileThreshold(bytes)
+        case .maxLineHighlightLength:
+            guard let len = Int(value), len > 0 else { return nil }
+            return .maxLineHighlightLength(len)
         }
     }
 }
@@ -77,6 +86,9 @@ public enum EditorSettingUpdate {
     case ipc(Bool?)
     case keymap(KeymapPreset)
     case modernbindings(Bool?)
+    case maxFileSize(Int64)
+    case largeFileThreshold(Int64)
+    case maxLineHighlightLength(Int)
 }
 
 public enum EditorEffect: Equatable {
