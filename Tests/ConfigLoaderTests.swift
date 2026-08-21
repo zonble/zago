@@ -658,4 +658,38 @@ struct ConfigLoaderTests {
         #expect(config.maxLineHighlightLength == 5000)
         #expect(config.syntaxErrorCount == 0)
     }
+
+    @Test func testBackupConfigDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set backup
+                set backupdir ~/.zago_backups
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.backup == true)
+        #expect(config.backupDir == "~/.zago_backups")
+        #expect(config.syntaxErrorCount == 0)
+
+        let unsetProvider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set backup
+                unset backup
+                set backupdir off
+                """
+            ]
+        )
+        let unsetConfig = ConfigLoader(provider: unsetProvider).loadConfig()
+        #expect(unsetConfig.backup == false)
+        #expect(unsetConfig.backupDir == nil)
+        #expect(unsetConfig.syntaxErrorCount == 0)
+    }
 }

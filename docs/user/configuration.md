@@ -60,10 +60,13 @@ set trim-trailing-whitespace off
 set lang zh_TW
 set spell-language en_US
 set spell-lang de_DE
-set syntax true
-set mouse true
-set backup true
-set backupdir ~/.zagorc-backups
+set backup on
+set backup off
+unset backup
+set backupdir ~/.zago_backups
+set max-file-size 50MB
+set large-file-threshold 5MB
+set max-line-highlight-length 10000
 ```
 
 Options configured in `.zagorc` apply when the editor starts.

@@ -98,6 +98,28 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         }
     }
 
+    public func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        let targetDir = parentDirectory(of: normalizedTarget)
+        if !fileManager.fileExists(atPath: targetDir) {
+            try fileManager.createDirectory(atPath: targetDir, withIntermediateDirectories: true)
+        }
+        if fileManager.fileExists(atPath: normalizedTarget) {
+            try fileManager.removeItem(atPath: normalizedTarget)
+        }
+        try fileManager.copyItem(atPath: normalizedSource, toPath: normalizedTarget)
+    }
+
+    public func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        return fileManager.isWritableFile(atPath: normalized)
+    }
+
+    public func temporaryDirectoryPath() -> String {
+        fileManager.temporaryDirectory.path
+    }
+
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {
         fileWatcher.onChange = {
             onChange()

@@ -43,6 +43,11 @@ public struct EditorConfig {
     /// Maximum line character length allowed for regex syntax highlighting. Defaults to 10,000 characters.
     public var maxLineHighlightLength: Int = 10000
 
+    /// Whether to automatically create a backup file (<filename>~) before saving existing files. Defaults to false.
+    public var backup: Bool = false
+    /// Custom directory path to store backup files. If nil, backups are created in the same directory as the original file.
+    public var backupDir: String? = nil
+
     public init() {}
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {

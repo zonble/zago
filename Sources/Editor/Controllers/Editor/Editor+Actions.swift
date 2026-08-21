@@ -339,6 +339,16 @@ extension Editor {
             largeFileThresholdBytes = bytes
         case .maxLineHighlightLength(let len):
             syntaxHighlighter.maxLineHighlightLength = len
+        case .backup(let value):
+            backup = resolve(value, current: backup)
+            reportOperationResult(.succeeded(message: "Backup \(backup ? "enabled" : "disabled")"))
+        case .backupDir(let dir):
+            backupDir = dir
+            if let dir {
+                reportOperationResult(.succeeded(message: "Backup directory set to \(dir)"))
+            } else {
+                reportOperationResult(.succeeded(message: "Backup directory reset to default"))
+            }
         }
     }
 

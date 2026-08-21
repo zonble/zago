@@ -30,13 +30,15 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case maxFileSize = "max-file-size"
     case largeFileThreshold = "large-file-threshold"
     case maxLineHighlightLength = "max-line-highlight-length"
+    case backup
+    case backupDir = "backupdir"
 
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
         case .fill: return ["72", "80"]
         case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab, .listWrapIndent,
-            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines:
+            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines, .backup:
             return ["on", "off"]
         case .tab, .listIndentSize: return ["2", "4", "8"]
         case .language: return Language.allCases.map(\.rawValue)
@@ -48,16 +50,17 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .maxFileSize: return ["50MB", "100MB", "off"]
         case .largeFileThreshold: return ["5MB", "10MB", "off"]
         case .maxLineHighlightLength: return ["10000", "5000"]
+        case .backupDir: return ["~/.zago_backups"]
         }
     }
 
     var supportsConfigUnset: Bool {
         switch self {
         case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
-            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines:
+            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines, .backup:
             return true
         case .listIndentSize, .tab, .fill, .language, .spellLanguage, .border, .arrow, .regex, .keymap,
-            .maxFileSize, .largeFileThreshold, .maxLineHighlightLength:
+            .maxFileSize, .largeFileThreshold, .maxLineHighlightLength, .backupDir:
             return false
         }
     }

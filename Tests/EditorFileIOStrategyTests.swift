@@ -1,3 +1,4 @@
+import Config
 import Foundation
 import Syntax
 import Testing
@@ -102,6 +103,30 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
             entries.append(EditorDirectoryEntry(name: rest, path: path, isDirectory: false))
         }
         return entries
+    }
+
+    var copyErrors: [String: Error] = [:]
+    var nonWritableDirectories: Set<String> = []
+
+    func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        if let error = copyErrors[normalizedSource] ?? copyErrors[normalizedTarget] {
+            throw error
+        }
+        guard let content = files[normalizedSource] else {
+            throw NSError(domain: "MemoryEditorFileIOStrategy", code: 1)
+        }
+        files[normalizedTarget] = content
+    }
+
+    func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        return !nonWritableDirectories.contains(normalized)
+    }
+
+    func temporaryDirectoryPath() -> String {
+        "/tmp"
     }
 
     var watchedPath: String? = nil
@@ -400,4 +425,138 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     let longLine = "let foo = 123 // " + String(repeating: "extremely long line content ", count: 5)
     let longTokens = highlighter.tokenTypes(for: longLine, syntax: swiftSyntax)
     #expect(longTokens.allSatisfy { $0 == .normal })
+}
+
+@Test func testAutomaticBackupOnSaveInSameDirectory() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "original content\n"])
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+
+    editor.buffer.lines = ["modified content"]
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: "/doc.txt")
+    #expect(result.isSucceeded)
+    #expect(fileIO.files["/doc.txt~"] == "original content\n")
+    #expect(fileIO.files["/doc.txt"] == "modified content\n")
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testAutomaticBackupOnSaveInCustomDirectory() throws {
+    let fileIO = MemoryEditorFileIOStrategy(
+        files: ["/notes/doc.txt": "alpha beta\n"],
+        directories: ["/backups"]
+    )
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/notes/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+    editor.apply(.backupDir("/backups"))
+
+    editor.buffer.lines = ["updated content"]
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: "/notes/doc.txt")
+    #expect(result.isSucceeded)
+    #expect(fileIO.files["/backups/doc.txt~"] == "alpha beta\n")
+    #expect(fileIO.files["/notes/doc.txt"] == "updated content\n")
+}
+
+@Test func testAutomaticBackupFailureConfirmPrompt() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "original content\n"])
+    fileIO.copyErrors["/doc.txt"] = NSError(domain: "Disk", code: 28, userInfo: [NSLocalizedDescriptionKey: "No space left on device"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+
+    editor.buffer.lines = ["modified content"]
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/doc.txt")
+
+    // Must be in .confirmBackupFailure prompt mode
+    guard case .confirmBackupFailure = editor.currentPromptMode else {
+        Issue.record("Expected .confirmBackupFailure prompt mode")
+        return
+    }
+
+    // User chooses 'N' -> save is cancelled, original file remains intact
+    editor.processKey(.char("n"))
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/doc.txt"] == "original content\n")
+    #expect(editor.buffer.isModified == true)
+
+    // User tries saving again and chooses 'Y' -> proceeds to save despite backup failure
+    _ = editor.saveBuffer(path: "/doc.txt")
+    guard case .confirmBackupFailure = editor.currentPromptMode else {
+        Issue.record("Expected .confirmBackupFailure prompt mode")
+        return
+    }
+    editor.processKey(.char("y"))
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/doc.txt"] == "modified content\n")
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testSaveFailureTriggersSafePathPromptAndRecovery() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/etc/hosts": "127.0.0.1 localhost\n"])
+    fileIO.writeErrors["/etc/hosts"] = NSError(domain: "POSIX", code: 13, userInfo: [NSLocalizedDescriptionKey: "Permission denied"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/etc/hosts"], language: .en, readOnly: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    #expect(editor.buffer.isReadOnly == true)
+
+    editor.buffer.lines.append("192.168.1.1 test.local")
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/etc/hosts")
+
+    // Must trigger .saveFilePath prefilled with home fallback path
+    guard case .saveFilePath = editor.currentPromptMode else {
+        Issue.record("Expected .saveFilePath prompt mode on save failure")
+        return
+    }
+    #expect(editor.promptInputText == "/home/tester/hosts")
+
+    // User hits Enter to confirm saving to /home/tester/hosts
+    editor.processKey(.enter)
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/home/tester/hosts"] != nil)
+    #expect(fileIO.files["/home/tester/hosts"]?.contains("192.168.1.1") == true)
+    #expect(editor.buffer.filePath == "/home/tester/hosts")
+    #expect(editor.buffer.isReadOnly == false)
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testSaveFailureCancelledKeepsBufferModified() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/readonly/doc.txt": "hello\n"])
+    fileIO.writeErrors["/readonly/doc.txt"] = NSError(domain: "POSIX", code: 13, userInfo: [NSLocalizedDescriptionKey: "Permission denied"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/readonly/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.buffer.lines = ["modified text"]
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/readonly/doc.txt")
+    guard case .saveFilePath = editor.currentPromptMode else {
+        Issue.record("Expected .saveFilePath prompt mode")
+        return
+    }
+
+    // Cancel prompt
+    editor.processKey(.ctrl("c"))
+    #expect(!editor.promptController.isActive)
+    #expect(editor.buffer.isModified == true)
+    #expect(editor.buffer.lines == ["modified text"])
 }

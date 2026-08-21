@@ -115,6 +115,28 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
         }
     }
 
+    func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        let targetDir = parentDirectory(of: normalizedTarget)
+        if !fileManager.fileExists(atPath: targetDir) {
+            try fileManager.createDirectory(atPath: targetDir, withIntermediateDirectories: true)
+        }
+        if fileManager.fileExists(atPath: normalizedTarget) {
+            try fileManager.removeItem(atPath: normalizedTarget)
+        }
+        try fileManager.copyItem(atPath: normalizedSource, toPath: normalizedTarget)
+    }
+
+    func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        return fileManager.isWritableFile(atPath: normalized)
+    }
+
+    func temporaryDirectoryPath() -> String {
+        fileManager.temporaryDirectory.path
+    }
+
     private final class WatcherState: @unchecked Sendable {
         var snapshot: (exists: Bool, mtime: Date?, size: UInt64?)
         init(snapshot: (exists: Bool, mtime: Date?, size: UInt64?)) { self.snapshot = snapshot }
