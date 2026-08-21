@@ -1,12 +1,17 @@
 import {
   WASI,
-  File,
   PreopenDirectory,
   ConsoleStdout,
   Fd,
   Inode,
 } from "@bjorn3/browser_wasi_shim";
 import { SharedStdin } from "./shared-stdin";
+import {
+  VFSNode,
+  VirtualOSStorage,
+  buildInodeTree,
+  dumpInodeTree,
+} from "./vfs";
 
 class SharedStdinFd extends Fd {
   constructor(private stdin: SharedStdin) {
@@ -33,47 +38,44 @@ class SharedStdinFd extends Fd {
 
 let sharedStdin: SharedStdin | null = null;
 let workspaceDir = new Map<string, Inode>();
+let isRunning = false;
 
 self.onmessage = async (event: MessageEvent) => {
-  const { type, data, files, sharedBuffer } = event.data;
+  const { type, data, nodes, sharedBuffer } = event.data;
 
   switch (type) {
     case "init":
       if (sharedBuffer) {
         sharedStdin = new SharedStdin(sharedBuffer);
       }
-      await startWasm(data?.wasmUrl || "./zago.wasm", files || {});
+      await startWasm(data?.wasmUrl || "./zago.wasm", nodes || []);
       break;
 
-    case "save_sync":
-      syncFilesToMainThread();
+    case "flush_vfs":
+      await flushVFSToIndexedDB();
       break;
   }
 };
 
-function syncFilesToMainThread() {
-  const fileUpdates: Record<string, string> = {};
-  const decoder = new TextDecoder("utf-8");
-  for (const [filename, inode] of workspaceDir.entries()) {
-    if (inode instanceof File && inode.data) {
-      fileUpdates[filename] = decoder.decode(inode.data);
-    }
+async function flushVFSToIndexedDB() {
+  if (!isRunning) return;
+  try {
+    const nodes = dumpInodeTree(workspaceDir, "/workspace");
+    await VirtualOSStorage.saveNodes(nodes);
+    self.postMessage({ type: "vfs_synced", count: nodes.length });
+  } catch (err) {
+    console.error("[VFS Flush Error]", err);
   }
-  self.postMessage({ type: "files_synced", files: fileUpdates });
 }
 
-async function startWasm(wasmUrl: string, initialFiles: Record<string, string>) {
+async function startWasm(wasmUrl: string, initialNodes: VFSNode[]) {
   if (!sharedStdin) {
     sharedStdin = new SharedStdin();
   }
   const stdinFd = new SharedStdinFd(sharedStdin);
-  workspaceDir = new Map<string, Inode>();
 
-  const encoder = new TextEncoder();
-  for (const [filename, content] of Object.entries(initialFiles)) {
-    const bytes = encoder.encode(content);
-    workspaceDir.set(filename, new File(bytes));
-  }
+  // Build hierarchical Inode tree from initial VFS nodes
+  workspaceDir = buildInodeTree(initialNodes);
 
   const stdoutDecoder = new TextDecoder("utf-8");
   const stdoutFd = new ConsoleStdout((buffer: Uint8Array) => {
@@ -98,6 +100,7 @@ async function startWasm(wasmUrl: string, initialFiles: Record<string, string>) 
       "TERM=xterm-256color",
       "COLORTERM=truecolor",
       "LC_ALL=en_US.UTF-8",
+      "HOME=/workspace",
     ],
     fds,
     { debug: false }
@@ -111,15 +114,17 @@ async function startWasm(wasmUrl: string, initialFiles: Record<string, string>) 
     }
 
     const wasmBytes = await response.arrayBuffer();
-    self.postMessage({ type: "status", status: "Instantiating zago.wasm..." });
+    self.postMessage({ type: "status", status: "Instantiating zago.wasm Virtual OS..." });
 
     const { instance } = await WebAssembly.instantiate(wasmBytes, {
       wasi_snapshot_preview1: wasiInstance.wasiImport,
     });
 
     self.postMessage({ type: "ready" });
+    isRunning = true;
 
-    setInterval(syncFilesToMainThread, 2000);
+    // Debounced automatic background sync (every 1000ms)
+    setInterval(flushVFSToIndexedDB, 1000);
 
     wasiInstance.start(instance as any);
   } catch (error: any) {

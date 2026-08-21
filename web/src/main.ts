@@ -2,7 +2,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
-import { WorkspaceStorage } from "./storage";
+import { VirtualOSStorage } from "./vfs";
 import { SharedStdin } from "./shared-stdin";
 
 async function main() {
@@ -13,8 +13,8 @@ async function main() {
     term.focus();
   });
 
-  // Initialize storage with defaults
-  await WorkspaceStorage.initializeDefaults();
+  // Initialize VFS storage with defaults
+  await VirtualOSStorage.initializeDefaults();
 
   // Create and configure xterm.js instance
   const term = new Terminal({
@@ -54,15 +54,8 @@ async function main() {
   term.open(container);
   fitAddon.fit();
 
-  // Load all existing files from storage
-  const fileNames = await WorkspaceStorage.listFiles();
-  const initialFiles: Record<string, string> = {};
-  for (const name of fileNames) {
-    const content = await WorkspaceStorage.getFile(name);
-    if (content !== undefined) {
-      initialFiles[name] = content;
-    }
-  }
+  // Load all VFS nodes from IndexedDB
+  const nodes = await VirtualOSStorage.getAllNodes();
 
   // Shared Stdin ring buffer between UI thread and Worker
   const sharedStdin = new SharedStdin();
@@ -74,7 +67,7 @@ async function main() {
 
   function setupWorker(w: Worker) {
     w.onmessage = async (event: MessageEvent) => {
-      const { type, data, status, message, files } = event.data;
+      const { type, data, status, message } = event.data;
 
       switch (type) {
         case "stdout":
@@ -94,16 +87,6 @@ async function main() {
           }
           break;
 
-        case "files_synced":
-          if (files) {
-            for (const [filename, content] of Object.entries(files)) {
-              if (typeof content === "string") {
-                await WorkspaceStorage.saveFile(filename, content);
-              }
-            }
-          }
-          break;
-
         case "error":
           term.write(`\r\n\x1b[31;1m[zago error]\x1b[0m ${message}\r\n`);
           break;
@@ -118,7 +101,7 @@ async function main() {
     w.postMessage({
       type: "init",
       data: { wasmUrl },
-      files: initialFiles,
+      nodes,
       sharedBuffer: sharedStdin.sharedBuffer,
     });
   }
@@ -137,43 +120,69 @@ async function main() {
   window.addEventListener("resize", handleResize);
 
   // UI Button Bindings
-  const btnOpenFile = document.getElementById("btn-open-file");
+  const btnImport = document.getElementById("btn-import");
   const fileInput = document.getElementById("file-input") as HTMLInputElement;
-  const btnDownload = document.getElementById("btn-download-file");
+  const btnExportZip = document.getElementById("btn-export-zip");
   const btnReset = document.getElementById("btn-clear-storage");
+  const btnHelp = document.getElementById("btn-help");
+  const helpDialog = document.getElementById("help-dialog") as HTMLDialogElement;
+  const btnCloseHelp = document.getElementById("btn-close-help");
 
-  if (btnOpenFile && fileInput) {
-    btnOpenFile.addEventListener("click", () => fileInput.click());
+  if (btnImport && fileInput) {
+    btnImport.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      const text = await file.text();
-      await WorkspaceStorage.saveFile(file.name, text);
-      alert(`File "${file.name}" imported to workspace. Restart to open.`);
+      try {
+        if (file.name.endsWith(".zip")) {
+          const zipData = await file.arrayBuffer();
+          const count = await VirtualOSStorage.importWorkspaceZip(zipData);
+          alert(`Successfully imported ${count} files from "${file.name}" into /workspace.\nReloading to mount new filesystem...`);
+          location.reload();
+        } else {
+          const buffer = await file.arrayBuffer();
+          await VirtualOSStorage.importSingleFile(file.name, new Uint8Array(buffer));
+          alert(`Imported "${file.name}" to /workspace.\nReloading to open...`);
+          location.reload();
+        }
+      } catch (err: any) {
+        alert(`Failed to import file: ${err?.message || err}`);
+      }
     });
   }
 
-  if (btnDownload) {
-    btnDownload.addEventListener("click", async () => {
-      const content = (await WorkspaceStorage.getFile("welcome.md")) || "";
-      const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "welcome.md";
-      a.click();
-      URL.revokeObjectURL(url);
+  if (btnExportZip) {
+    btnExportZip.addEventListener("click", async () => {
+      // First ask worker to flush latest Inode state
+      worker.postMessage({ type: "flush_vfs" });
+      setTimeout(async () => {
+        const blob = await VirtualOSStorage.exportWorkspaceZip();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `zago-workspace-${new Date().toISOString().slice(0, 10)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 200);
     });
   }
 
   if (btnReset) {
     btnReset.addEventListener("click", async () => {
-      if (confirm("Reset virtual workspace storage to defaults?")) {
-        await WorkspaceStorage.clearAll();
+      if (confirm("Reset Virtual OS and IndexedDB filesystem to default state?")) {
+        await VirtualOSStorage.clearAll();
         location.reload();
       }
     });
+  }
+
+  if (btnHelp && helpDialog) {
+    btnHelp.addEventListener("click", () => helpDialog.showModal());
+  }
+
+  if (btnCloseHelp && helpDialog) {
+    btnCloseHelp.addEventListener("click", () => helpDialog.close());
   }
 }
 
