@@ -36,6 +36,23 @@ public struct EditorConfig {
     public var syntaxErrorCount: Int = 0
     public var loadedFilePath: String? = nil
 
+    /// Maximum file size in bytes allowed to open (0 means no limit). Defaults to 50 MB.
+    public var maxFileSizeBytes: Int64 = 50 * 1024 * 1024
+    /// File size threshold in bytes above which large file degradation mode is active. Defaults to 5 MB.
+    public var largeFileThresholdBytes: Int64 = 5 * 1024 * 1024
+    /// Maximum line character length allowed for regex syntax highlighting. Defaults to 10,000 characters.
+    public var maxLineHighlightLength: Int = 10000
+
+    /// Whether to automatically create a backup file (<filename>~) before saving existing files. Defaults to false.
+    public var backup: Bool = false
+    /// Custom directory path to store backup files. If nil, backups are created in the same directory as the original file.
+    public var backupDir: String? = nil
+
+    /// Whether to open today's daily journal when starting zago without explicit file arguments. Defaults to false.
+    public var launchToJournal: Bool = false
+    /// Destination directory path for storing daily journals. If nil, defaults to ~/Documents/zago_journal or ~/zago_journal.
+    public var journalFolder: String? = nil
+
     public init() {}
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {

@@ -51,7 +51,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             isDirectory: isDir.boolValue,
             isBinary: isDir.boolValue ? false : isBinaryFile(at: normalized),
             isExecutable: isDir.boolValue ? false : fileManager.isExecutableFile(atPath: normalized),
-            modificationDate: attrs?[.modificationDate] as? Date
+            modificationDate: attrs?[.modificationDate] as? Date,
+            size: isDir.boolValue ? 0 : EditorFileInfo.fileSize(from: attrs)
         )
     }
 
@@ -77,6 +78,10 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         else {
             throw EncodingError.unsupportedCharacters
         }
+        let parentDir = parentDirectory(of: normalized)
+        if !fileManager.fileExists(atPath: parentDir) {
+            try fileManager.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+        }
         fileWatcher.stop()
         try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         fileWatcher.start(path: normalized)
@@ -95,6 +100,41 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
                 isExecutable: info.isExecutable
             )
         }
+    }
+
+    public func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        let targetDir = parentDirectory(of: normalizedTarget)
+        if !fileManager.fileExists(atPath: targetDir) {
+            try fileManager.createDirectory(atPath: targetDir, withIntermediateDirectories: true)
+        }
+        if fileManager.fileExists(atPath: normalizedTarget) {
+            try fileManager.removeItem(atPath: normalizedTarget)
+        }
+        try fileManager.copyItem(atPath: normalizedSource, toPath: normalizedTarget)
+    }
+
+    public func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        return fileManager.isWritableFile(atPath: normalized)
+    }
+
+    public func temporaryDirectoryPath() -> String {
+        fileManager.temporaryDirectory.path
+    }
+
+    public func documentDirectoryPath() -> String {
+        if let docsUrl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
+            fileManager.fileExists(atPath: docsUrl.path) {
+            return docsUrl.path
+        }
+        let home = homeDirectoryPath()
+        let candidate = childPath("Documents", in: home)
+        if fileInfo(at: candidate).exists {
+            return candidate
+        }
+        return home
     }
 
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {

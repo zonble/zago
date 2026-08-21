@@ -48,6 +48,31 @@ extension EditorSettingKey {
         case .fill:
             guard let width = Int(value), width > 0 else { return nil }
             return .fill(width)
+        case .maxFileSize:
+            guard let bytes = ConfigLoader.parseByteSize(value), bytes >= 0 else { return nil }
+            return .maxFileSize(bytes)
+        case .largeFileThreshold:
+            guard let bytes = ConfigLoader.parseByteSize(value), bytes >= 0 else { return nil }
+            return .largeFileThreshold(bytes)
+        case .maxLineHighlightLength:
+            guard let len = Int(value), len > 0 else { return nil }
+            return .maxLineHighlightLength(len)
+        case .backup:
+            return .backup(SettingBoolean.parse(value))
+        case .backupDir:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                return .backupDir(nil)
+            }
+            return .backupDir(clean)
+        case .launchToJournal:
+            return .launchToJournal(SettingBoolean.parse(value))
+        case .journalFolder:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                return .journalFolder(nil)
+            }
+            return .journalFolder(clean)
         }
     }
 }
@@ -77,6 +102,13 @@ public enum EditorSettingUpdate {
     case ipc(Bool?)
     case keymap(KeymapPreset)
     case modernbindings(Bool?)
+    case maxFileSize(Int64)
+    case largeFileThreshold(Int64)
+    case maxLineHighlightLength(Int)
+    case backup(Bool?)
+    case backupDir(String?)
+    case launchToJournal(Bool?)
+    case journalFolder(String?)
 }
 
 public enum EditorEffect: Equatable {

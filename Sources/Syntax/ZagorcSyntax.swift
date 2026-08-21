@@ -14,19 +14,19 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
         (try? [
             NSRegularExpression(
                 pattern:
-                    #"(?i)^\s*set\s+(wrap|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|tab|lang|language|spell-language|border|arrow|git-diff|debug|regex)\b"#
+                    #"(?i)^\s*set\s+(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|launch-to-journal|journal-folder)\b"#
             ),
-            NSRegularExpression(pattern: #"(?i)^\s*(bind|unbind)\s+"#),
+            NSRegularExpression(pattern: #"(?i)^\s*(bind|unbind|load|include)\s+"#),
             NSRegularExpression(pattern: #"(?i)^\s*(logo-script|logo-prelude|logo)\b"#),
             NSRegularExpression(pattern: #"^#!.*zago"#),
         ]) ?? []
     }
 
     private static let directivePattern =
-        #"(?i)^\s*(set|unset|bind|unbind|logo|logo-prelude|logo-script|endlogo)\b"#
+        #"(?i)^\s*(set|unset|bind|unbind|load|include|logo|logo-prelude|logo-script|endlogo)\b"#
 
     private static let settingPattern =
-        #"(?i)\b(wrap|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|tab|lang|language|spell-language|border|arrow|git-diff|debug|regex)\b"#
+        #"(?i)\b(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|launch-to-journal|journal-folder|dialect)\b"#
 
     public var rules: [SyntaxRule] {
         [
@@ -38,8 +38,9 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
             makeRule(LogoSyntaxDefinition.keywordPattern, .keyword),
             makeRule(#":(#|[a-zA-Z0-9_]+)"#, .typeOrAttribute),
             makeRule(
-                #"\b(true|false|on|off|none|single|double|round|ascii|solid|stemmed|hollow|small)\b"#, .typeOrAttribute),
-            makeRule(#"\b\d+\b"#, .number),
+                #"(?i)\b(true|false|on|off|none|single|double|triple-dash|round|ascii|heavy|solid|stemmed|hollow|small|classic|modern|vscode|cua|zh-TW|zh_TW|en|en_US)\b"#,
+                .typeOrAttribute),
+            makeRule(#"(?i)\b\d+(GB|MB|KB|k|b)?\b"#, .number),
         ].compactMap { $0 }
     }
 }

@@ -20,6 +20,7 @@ final class PromptController: KeyInputHandler {
         case confirmExitSave(completion: (Bool?) -> Void)
         case confirmExternalReload(completion: (Bool) -> Void)
         case confirmEncodingFallback(originalEncoding: String.Encoding, completion: (Bool) -> Void)
+        case confirmBackupFailure(error: String, completion: (Bool) -> Void)
         case search(completion: (String?) -> Void)
         case replaceSearch(completion: (String?) -> Void)
         case replaceWith(searchQuery: String, completion: (String?) -> Void)
@@ -207,6 +208,9 @@ final class PromptController: KeyInputHandler {
         case .confirmEncodingFallback(_, let completion):
             mode = .none
             completion(false)
+        case .confirmBackupFailure(_, let completion):
+            mode = .none
+            completion(false)
         case .search(let completion):
             mode = .none
             completion(nil)
@@ -283,6 +287,18 @@ final class PromptController: KeyInputHandler {
         case .confirmEncodingFallback(_, let completion):
             switch key {
             case .char("y"), .char("Y"):
+                mode = .none
+                completion(true)
+            case .char("n"), .char("N"):
+                mode = .none
+                completion(false)
+            default:
+                break
+            }
+
+        case .confirmBackupFailure(_, let completion):
+            switch key {
+            case .char("y"), .char("Y"), .enter:
                 mode = .none
                 completion(true)
             case .char("n"), .char("N"):
@@ -452,7 +468,7 @@ final class PromptController: KeyInputHandler {
             .tableDimensions,
             .gotoLine:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmReplace, .describeKey,
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure, .confirmReplace, .describeKey,
             .logoReadWord, .logoReadChar:
             return false
         }
@@ -745,7 +761,7 @@ final class PromptController: KeyInputHandler {
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("^C", tr("help.cancel"))]
         case .confirmExternalReload:
             return [("Y/Enter", tr("help.yes")), ("N", tr("help.no")), ("^C", tr("help.cancel"))]
-        case .confirmEncodingFallback:
+        case .confirmEncodingFallback, .confirmBackupFailure:
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("^C", tr("help.cancel"))]
         case .confirmReplace:
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("A", tr("help.all")), ("^C", tr("help.cancel"))]

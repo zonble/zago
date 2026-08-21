@@ -301,7 +301,8 @@ struct LogoLocalizationTests {
         #expect(plugin.parseCalendarIdentifier("農曆") == .chinese)
 
         // 8. DateTimeStylePreset
-        #expect(plugin.parseDateTimeStylePreset("完整") == .long)
+        #expect(plugin.parseDateTimeStylePreset("詳細") == .long)
+        #expect(plugin.parseDateTimeStylePreset("完整") == .full)
         #expect(plugin.parseDateTimeStylePreset("簡短") == .short)
 
         // 9. NumberStyle
@@ -343,7 +344,8 @@ struct LogoLocalizationTests {
         #expect(registry.parseExitPosition("東北") == .ne)
         #expect(registry.parseBorderStyle("雙線") == .double)
         #expect(registry.parseCalendarIdentifier("民國曆") == .republicOfChina)
-        #expect(registry.parseDateTimeStylePreset("完整") == .long)
+        #expect(registry.parseDateTimeStylePreset("詳細") == .long)
+        #expect(registry.parseDateTimeStylePreset("完整") == .full)
         #expect(registry.parseNumberStyle("金融") == .financial)
         #expect(registry.parseListType("且") == .and)
         #expect(registry.parseByteCountStyle("檔案大小") == .file)
@@ -355,7 +357,8 @@ struct LogoLocalizationTests {
         #expect(engine.parseBoolean("真") == true)
         #expect(engine.parseBorderStyle("雙線") == .double)
         #expect(engine.parseCalendarIdentifier("民國曆") == .republicOfChina)
-        #expect(engine.parseDateTimeStylePreset("完整") == .long)
+        #expect(engine.parseDateTimeStylePreset("詳細") == .long)
+        #expect(engine.parseDateTimeStylePreset("完整") == .full)
         #expect(engine.parseNumberStyle("金融") == .financial)
         #expect(engine.parseNumberStyle("百分比") == .percent)
 

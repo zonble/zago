@@ -114,6 +114,8 @@ public final class SyntaxHighlighter {
     private var languages: [LanguageSyntax] = []
     private let cacheLock = NSLock()
     private var tokenCache: [String: [SyntaxTokenType]] = [:]
+    /// Maximum line character length allowed for regex syntax highlighting. Defaults to 10,000 characters.
+    public var maxLineHighlightLength: Int = 10000
 
     public init() {
         setupBuiltInLanguages()
@@ -298,6 +300,9 @@ public final class SyntaxHighlighter {
     /// Returns token type map for each character in line based on syntax rules.
     public func tokenTypes(for line: String, syntax: LanguageSyntax) -> [SyntaxTokenType] {
         guard !line.isEmpty else { return [] }
+        if line.count > maxLineHighlightLength {
+            return [SyntaxTokenType](repeating: .normal, count: line.count)
+        }
         let cacheKey = "\(syntax.name):\(line)"
 
         cacheLock.lock()

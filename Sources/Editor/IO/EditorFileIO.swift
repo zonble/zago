@@ -7,6 +7,20 @@ public enum EncodingError: Error {
     case unsupportedCharacters
 }
 
+/// Errors thrown during file reading or size validation.
+public enum EditorFileError: LocalizedError, Equatable, Sendable {
+    case fileTooLarge(size: Int64, limit: Int64)
+
+    public var errorDescription: String? {
+        switch self {
+        case .fileTooLarge(let size, let limit):
+            let sizeFormatted = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+            let limitFormatted = ByteCountFormatter.string(fromByteCount: limit, countStyle: .file)
+            return "File too large: \(sizeFormatted) (limit: \(limitFormatted)). Use 'less' or 'head' instead."
+        }
+    }
+}
+
 /// Metadata information about a file or directory.
 public struct EditorFileInfo: Sendable, Equatable {
     /// Whether the file or directory exists on disk.
@@ -19,19 +33,41 @@ public struct EditorFileInfo: Sendable, Equatable {
     public let isExecutable: Bool
     /// Last modification timestamp, if available.
     public let modificationDate: Date?
+    /// File size in bytes.
+    public let size: Int64
 
     public init(
         exists: Bool,
         isDirectory: Bool,
         isBinary: Bool = false,
         isExecutable: Bool = false,
-        modificationDate: Date? = nil
+        modificationDate: Date? = nil,
+        size: Int64 = 0
     ) {
         self.exists = exists
         self.isDirectory = isDirectory
         self.isBinary = isBinary
         self.isExecutable = isExecutable
         self.modificationDate = modificationDate
+        self.size = size
+    }
+
+    /// Safely extracts file size in bytes as `Int64` across macOS, Linux, and Windows from FileManager attributes.
+    public static func fileSize(from attributes: [FileAttributeKey: Any]?) -> Int64 {
+        guard let rawSize = attributes?[.size] else { return 0 }
+        if let u64 = rawSize as? UInt64 {
+            return Int64(u64)
+        }
+        if let num = rawSize as? NSNumber {
+            return num.int64Value
+        }
+        if let i64 = rawSize as? Int64 {
+            return i64
+        }
+        if let intVal = rawSize as? Int {
+            return Int64(intVal)
+        }
+        return 0
     }
 }
 
@@ -148,9 +184,52 @@ public protocol EditorFileIOStrategy: AnyObject {
     ///
     /// - Parameter path: Target file path to unwatch.
     func stopWatchingFile(at path: String)
+
+    /// Copies an existing file at sourcePath to targetPath.
+    func copyFile(at sourcePath: String, to targetPath: String) throws
+
+    /// Returns whether the target directory exists and has write permissions.
+    func isDirectoryWritable(at path: String) -> Bool
+
+    /// Returns absolute path to system temporary directory.
+    func temporaryDirectoryPath() -> String
+
+    /// Returns absolute path to user's Documents directory, or fallback directory.
+    func documentDirectoryPath() -> String
 }
 
 extension EditorFileIOStrategy {
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {}
     public func stopWatchingFile(at path: String) {}
+
+    public func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        let read = try readTextFile(at: normalizedSource)
+        try writeTextFile(read.content, to: normalizedTarget, encoding: read.encoding)
+    }
+
+    public func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        let info = fileInfo(at: normalized)
+        guard info.exists, info.isDirectory else { return false }
+        return FileManager.default.isWritableFile(atPath: normalized)
+    }
+
+    public func temporaryDirectoryPath() -> String {
+        FileManager.default.temporaryDirectory.path
+    }
+
+    public func documentDirectoryPath() -> String {
+        if let docsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
+            FileManager.default.fileExists(atPath: docsUrl.path) {
+            return docsUrl.path
+        }
+        let home = homeDirectoryPath()
+        let candidate = childPath("Documents", in: home)
+        if fileInfo(at: candidate).exists {
+            return candidate
+        }
+        return home
+    }
 }

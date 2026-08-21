@@ -1,4 +1,6 @@
+import Config
 import Foundation
+import Syntax
 import Testing
 import TextEncoding
 
@@ -53,7 +55,7 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
             return EditorFileInfo(exists: true, isDirectory: true)
         }
         if let text = files[normalized] {
-            return EditorFileInfo(exists: true, isDirectory: false, isBinary: text.contains("\u{0}"))
+            return EditorFileInfo(exists: true, isDirectory: false, isBinary: text.contains("\u{0}"), size: Int64(text.utf8.count))
         }
         return EditorFileInfo(exists: false, isDirectory: false)
     }
@@ -101,6 +103,34 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
             entries.append(EditorDirectoryEntry(name: rest, path: path, isDirectory: false))
         }
         return entries
+    }
+
+    var copyErrors: [String: Error] = [:]
+    var nonWritableDirectories: Set<String> = []
+
+    func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        if let error = copyErrors[normalizedSource] ?? copyErrors[normalizedTarget] {
+            throw error
+        }
+        guard let content = files[normalizedSource] else {
+            throw NSError(domain: "MemoryEditorFileIOStrategy", code: 1)
+        }
+        files[normalizedTarget] = content
+    }
+
+    func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        return !nonWritableDirectories.contains(normalized)
+    }
+
+    func temporaryDirectoryPath() -> String {
+        "/tmp"
+    }
+
+    func documentDirectoryPath() -> String {
+        "/home/tester/Documents"
     }
 
     var watchedPath: String? = nil
@@ -349,4 +379,286 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     editor.processKey(.char(Character("y")))
     #expect(editor.buffer.lines == ["updated on disk"])
     #expect(editor.buffer.isModified == false)
+}
+
+@Test func testHardLimitFileTooLarge() throws {
+    let largeContent = String(repeating: "A", count: 2000)
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/huge.txt": largeContent])
+    let editor = Editor(
+        options: EditorOptions(language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.maxFileSizeBytes = 1000
+
+    let result = editor.openBuffer(path: "/huge.txt")
+    #expect(!result.isSucceeded)
+    #expect(editor.buffer.isReadOnly == true)
+    #expect(editor.buffer.isLargeFileMode == false)
+    #expect(editor.buffer.lines.first?.contains("File too large") == true)
+}
+
+@Test func testSoftLimitLargeFileMode() throws {
+    let content = String(repeating: "Hello world\n", count: 100)
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/medium.txt": content])
+    let editor = Editor(
+        options: EditorOptions(language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.largeFileThresholdBytes = 500
+    editor.maxFileSizeBytes = 50000
+
+    let result = editor.openBuffer(path: "/medium.txt")
+    #expect(result.isSucceeded)
+    #expect(editor.buffer.isReadOnly == false)
+    #expect(editor.buffer.isLargeFileMode == true)
+    #expect(editor.buffer.lines.count > 1)
+}
+
+@Test func testMaxLineHighlightLengthSkipsRegexTokenization() throws {
+    let highlighter = SyntaxHighlighter()
+    highlighter.maxLineHighlightLength = 30
+    guard let swiftSyntax = highlighter.findLanguage(named: "swift") else {
+        Issue.record("Swift syntax not found")
+        return
+    }
+
+    let shortLine = "let foo = 123"
+    let shortTokens = highlighter.tokenTypes(for: shortLine, syntax: swiftSyntax)
+    #expect(shortTokens.contains(.keyword))
+
+    let longLine = "let foo = 123 // " + String(repeating: "extremely long line content ", count: 5)
+    let longTokens = highlighter.tokenTypes(for: longLine, syntax: swiftSyntax)
+    #expect(longTokens.allSatisfy { $0 == .normal })
+}
+
+@Test func testAutomaticBackupOnSaveInSameDirectory() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "original content\n"])
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+
+    editor.buffer.lines = ["modified content"]
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: "/doc.txt")
+    #expect(result.isSucceeded)
+    #expect(fileIO.files["/doc.txt~"] == "original content\n")
+    #expect(fileIO.files["/doc.txt"] == "modified content\n")
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testAutomaticBackupOnSaveInCustomDirectory() throws {
+    let fileIO = MemoryEditorFileIOStrategy(
+        files: ["/notes/doc.txt": "alpha beta\n"],
+        directories: ["/backups"]
+    )
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/notes/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+    editor.apply(.backupDir("/backups"))
+
+    editor.buffer.lines = ["updated content"]
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: "/notes/doc.txt")
+    #expect(result.isSucceeded)
+    #expect(fileIO.files["/backups/doc.txt~"] == "alpha beta\n")
+    #expect(fileIO.files["/notes/doc.txt"] == "updated content\n")
+}
+
+@Test func testAutomaticBackupFailureConfirmPrompt() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "original content\n"])
+    fileIO.copyErrors["/doc.txt"] = NSError(domain: "Disk", code: 28, userInfo: [NSLocalizedDescriptionKey: "No space left on device"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.apply(.backup(true))
+
+    editor.buffer.lines = ["modified content"]
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/doc.txt")
+
+    // Must be in .confirmBackupFailure prompt mode
+    guard case .confirmBackupFailure = editor.currentPromptMode else {
+        Issue.record("Expected .confirmBackupFailure prompt mode")
+        return
+    }
+
+    // User chooses 'N' -> save is cancelled, original file remains intact
+    editor.processKey(.char("n"))
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/doc.txt"] == "original content\n")
+    #expect(editor.buffer.isModified == true)
+
+    // User tries saving again and chooses 'Y' -> proceeds to save despite backup failure
+    _ = editor.saveBuffer(path: "/doc.txt")
+    guard case .confirmBackupFailure = editor.currentPromptMode else {
+        Issue.record("Expected .confirmBackupFailure prompt mode")
+        return
+    }
+    editor.processKey(.char("y"))
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/doc.txt"] == "modified content\n")
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testSaveFailureTriggersSafePathPromptAndRecovery() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/etc/hosts": "127.0.0.1 localhost\n"])
+    fileIO.writeErrors["/etc/hosts"] = NSError(domain: "POSIX", code: 13, userInfo: [NSLocalizedDescriptionKey: "Permission denied"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/etc/hosts"], language: .en, readOnly: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    #expect(editor.buffer.isReadOnly == true)
+
+    editor.buffer.lines.append("192.168.1.1 test.local")
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/etc/hosts")
+
+    // Must trigger .saveFilePath prefilled with home fallback path
+    guard case .saveFilePath = editor.currentPromptMode else {
+        Issue.record("Expected .saveFilePath prompt mode on save failure")
+        return
+    }
+    #expect(editor.promptInputText == "/home/tester/hosts")
+
+    // User hits Enter to confirm saving to /home/tester/hosts
+    editor.processKey(.enter)
+    #expect(!editor.promptController.isActive)
+    #expect(fileIO.files["/home/tester/hosts"] != nil)
+    #expect(fileIO.files["/home/tester/hosts"]?.contains("192.168.1.1") == true)
+    #expect(editor.buffer.filePath == "/home/tester/hosts")
+    #expect(editor.buffer.isReadOnly == false)
+    #expect(editor.buffer.isModified == false)
+}
+
+@Test func testSaveFailureCancelledKeepsBufferModified() throws {
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/readonly/doc.txt": "hello\n"])
+    fileIO.writeErrors["/readonly/doc.txt"] = NSError(domain: "POSIX", code: 13, userInfo: [NSLocalizedDescriptionKey: "Permission denied"])
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/readonly/doc.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    editor.buffer.lines = ["modified text"]
+    editor.buffer.isModified = true
+
+    _ = editor.saveBuffer(path: "/readonly/doc.txt")
+    guard case .saveFilePath = editor.currentPromptMode else {
+        Issue.record("Expected .saveFilePath prompt mode")
+        return
+    }
+
+    // Cancel prompt
+    editor.processKey(.ctrl("c"))
+    #expect(!editor.promptController.isActive)
+    #expect(editor.buffer.isModified == true)
+    #expect(editor.buffer.lines == ["modified text"])
+}
+
+@Test func testTodayJournalPathResolution() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let fixedDate = Date(timeIntervalSince1970: 1774224000) // 2026-03-23 UTC
+
+    let defaultPath = Editor.resolveTodayJournalPath(
+        configuredFolder: nil,
+        fileIO: fileIO,
+        date: fixedDate
+    )
+    #expect(defaultPath.hasSuffix(".md"))
+    #expect(defaultPath.contains("zago_journal"))
+
+    let customPath = Editor.resolveTodayJournalPath(
+        configuredFolder: "/home/tester/MyNotes",
+        fileIO: fileIO,
+        date: fixedDate
+    )
+    #expect(customPath.hasPrefix("/home/tester/MyNotes/"))
+    #expect(customPath.hasSuffix(".md"))
+}
+
+@Test func testEditorStartupWithLaunchToJournal() throws {
+    let fileIO = MemoryEditorFileIOStrategy(directories: ["/home/tester/Documents/zago_journal"])
+    var config = EditorConfig()
+    config.launchToJournal = true
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en),
+        configSource: EditorConfigSource(initial: config, reload: { config }),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath != nil)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.filePath?.hasSuffix(".md") == true)
+}
+
+@Test func testEditorStartupWithExplicitJournalOption() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en, launchToJournal: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.filePath != nil)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.filePath?.hasSuffix(".md") == true)
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+    #expect(editor.buffer.lineIndex == 1)
+}
+
+@Test func testEditorOpenTodayJournalCommand() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/first.txt"], language: .en),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+    #expect(editor.buffer.filePath == "/first.txt")
+
+    // Run :journal
+    let result = editor.commandRegistry.dispatch("journal", editor: editor)
+    #expect(result == .handled)
+    #expect(editor.buffer.filePath?.contains("zago_journal") == true)
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+
+    let journalBufferPath = editor.buffer.filePath!
+
+    // Switch to prev buffer
+    editor.prevBuffer()
+    #expect(editor.buffer.filePath == "/first.txt")
+
+    // Run :journal again -> switches back to existing journal buffer
+    let result2 = editor.commandRegistry.dispatch(":journal", editor: editor)
+    #expect(result2 == .handled)
+    #expect(editor.buffer.filePath == journalBufferPath)
+    #expect(editor.buffers.count == 2)
+}
+
+@Test func testJournalSavingBufferCreatesDirectoryAndFile() throws {
+    let fileIO = MemoryEditorFileIOStrategy()
+    let editor = Editor(
+        options: EditorOptions(filePaths: [], language: .en, launchToJournal: true),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared)
+    )
+
+    #expect(editor.buffer.lines.first?.hasPrefix("# ") == true)
+    editor.buffer.lines.append("Wrote some great code today.")
+    editor.buffer.isModified = true
+
+    let result = editor.saveBuffer(path: nil)
+    #expect(result.isSucceeded)
+    #expect(editor.buffer.isModified == false)
+
+    let savedPath = editor.buffer.filePath!
+    #expect(fileIO.files[savedPath]?.contains("Wrote some great code today.") == true)
 }

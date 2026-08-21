@@ -1,57 +1,54 @@
 # Daily Journal Shortcut (日記快捷入口)
 
-This is a planned convenience shortcut, not a separate editor mode.
+This is a convenience shortcut, not a separate editor mode.
 
-The idea is simple: when Zago is opened without an explicit file, a shortcut can
-open today's journal file. After it opens, the user remains in the normal Zago
-editing environment and can use Text, Table, Canvas, Logo, and AI assistance as
-usual.
+The idea is simple: when Zago is opened without an explicit file (or with the `-j / --journal` flag), a shortcut can
+open today's journal file (`YYYY_MM_DD.md`, e.g. `2026_08_22.md`). After it opens, the user remains in the normal Zago
+editing environment and can use Text, Table, Canvas, Logo, and AI assistance as usual.
 
-The journal shortcut should help a person get to the text they are thinking about;
-it should not introduce another document model or make Zago manage a collection
-of notes.
+The journal shortcut helps a person get to the text they are thinking about; it does not introduce another document model or make Zago manage a collection of notes.
 
-No journal shortcut or related configuration is implemented yet.
+## Configuration
 
-## Possible Configuration
-
-The following is a possible future configuration. It is not currently accepted
-by `.zagorc`:
+In `~/.zagorc`:
 
 ```nanorc
-# Planned: launch into today's journal when zago starts without CLI file arguments
+## Launch into today's journal when zago starts without CLI file arguments
 # set launch-to-journal on
 
-# Planned: set the journal directory
-# set journal-folder ~/Journal
+## Set destination directory for the daily journal
+# set journal-folder ~/Documents/zago_journal
 
-# Planned: customize the daily journal filename
-# set journal-filename-format YYYY_MM_DD.md
+## Cloud storage examples:
+## iCloud Drive (macOS):
+# set journal-folder ~/Library/Mobile\ Documents/com~apple~CloudDocs/zago_journal
+## Google Drive (macOS):
+# set journal-folder ~/Library/CloudStorage/GoogleDrive-user@example.com/My\ Drive/zago_journal
+## Google Drive (Windows):
+# set journal-folder G:/My Drive/zago_journal
+## Dropbox (macOS / Windows):
+# set journal-folder ~/Dropbox/zago_journal
+## OneDrive (macOS / Windows):
+# set journal-folder ~/OneDrive/zago_journal
 ```
 
-Possible settings:
+Settings:
 
-| Setting Key | Alias | Values / Type | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `launch-to-journal` | `launch_to_journal` | `on` / `off` | `off` | Planned startup shortcut for opening today's journal. |
-| `journal-folder` | `journal_folder` | String / Path | `~/Journal` | Planned destination directory for the journal. |
-| `journal-filename-format` | `journal_filename_format` | String | `YYYY_MM_DD.md` | Planned filename template for the daily journal. |
+| Setting Key | Values / Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `launch-to-journal` | `on` / `off` | `off` | Startup shortcut for opening today's journal. |
+| `journal-folder` | String / Path | `~/Documents/zago_journal` | Destination directory for daily journals. |
 
-## Possible Startup Behavior
+Daily journal files are automatically named in `YYYY_MM_DD.md` format (for example `2026_08_22.md`).
 
-1. An explicit CLI file always wins over the shortcut.
-2. The shortcut may create the journal directory if it is missing, subject to
-   normal file-system permissions.
-3. If today's journal does not exist, the shortcut may open a new buffer bound to
-   that path.
+## CLI Options
 
-Cloud-storage keyword resolution is intentionally a later consideration, not a
-current design commitment.
+- `-j` / `--journal`: Launch directly into today's journal file.
+- An explicit CLI file argument (e.g. `zago doc.txt`) always takes precedence over `launch-to-journal`.
 
-## Possible In-Editor Shortcut
+## In-Editor Shortcuts
 
-- `:journal` or `:today`: possible future commands for opening today's journal.
-- A future `OPEN-JOURNAL` LOGO command could provide the same action to scripts.
+- **Command Bar**: `:journal` opens or switches to today's journal buffer.
+- **Menu Bar**: **Tools (工具)** → **Today's Journal (今日日記)** (`menu.tools.journal`).
 
-These commands do not exist yet. When implemented, they should open or switch to
-the journal file and leave all normal editor modes and AI workflows unchanged.
+This shortcut opens or switches to the journal file and leaves all normal editor modes and AI workflows unchanged.

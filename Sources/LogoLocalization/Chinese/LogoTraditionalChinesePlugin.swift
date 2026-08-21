@@ -160,6 +160,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "依": .caseSwitch,
         "按照": .caseSwitch,
         "依照": .caseSwitch,
+        "依據": .caseSwitch,
         "遇": .condSwitch,
         "遇狀況": .condSwitch,
         "狀況處置": .condSwitch,
@@ -171,6 +172,9 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "定義": .define,
         "宣告": .to,
         "自訂": .to,
+        "函式": .to,
+        "辦法": .to,
+        "措施": .to,
         "變數": .make,
         "定": .make,
         "稱": .name,
@@ -181,6 +185,8 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "回報": .output,
         "停止": .stop,
         "結束": .end,
+        "完畢": .end,
+        "以上": .end,
         "等待": .wait,
         "離開": .bye,
         "委交": .apply,
@@ -196,6 +202,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "忽略": .ignore,
         "遍歷": .foreach,
         "走訪": .foreach,
+        "循": .foreach,
         "映射": .map,
         "映射連接": .mapSe,
         "過濾": .filter,
@@ -280,6 +287,10 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "大於等於": .greaterOrEqual,
         "前者較小": .less,
         "前者較大": .greater,
+        "前者少於": .less,
+        "前者多於": .greater,
+        "前者遜於": .less,
+        "前者超過": .greater,
         "前者小於等於": .lessOrEqual,
         "前者大於等於": .greaterOrEqual,
 
@@ -291,11 +302,12 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "列表": .list,
         "句子": .sentence,
         "接句": .sentence,
-        "成句": .sentence,
-        "首加": .fput,
+        "前方加入": .fput,
+        "後方加入": .lput,
         "前加": .fput,
-        "尾加": .lput,
         "後加": .lput,
+        "首加": .fput,
+        "尾加": .lput,
         "陣列": .array,
         "多維陣列": .mdarray,
         "設定多維項目": .mdsetItem,
@@ -326,6 +338,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "取任一項": .pick,
         "隨機選取": .pick,
         "隨機抽取": .pick,
+        "摸彩": .pick,
         "移除": .remove,
         "去重": .remdup,
         "移除重複": .remdup,
@@ -382,12 +395,12 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "是成員?": .isMember,
         "是成員嗎?": .isMember,
         "有?": .isMember,
-        "有嗎?": .isMember,
         "是子字串?": .isSubstring,
         "是子字串嗎?": .isSubstring,
         "子字串?": .isSubstring,
         "是函式?": .isProcedure,
-        "是程序?": .isProcedure,
+        "是辦法?": .isProcedure,
+        "是措施": .isProcedure,
         "是原語?": .isPrimitive,
         "是內建?": .isPrimitive,
         "是內建的?": .isPrimitive,
@@ -423,8 +436,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "中文字數": .charCountCJK,
         "CJK字數": .charCountCJK,
         "單字數": .charCountWords,
-        "詞數": .charCountWords,
-        "表情數": .charCountEmoji,
+        "顏文字數": .charCountEmoji,
         "Emoji數": .charCountEmoji,
         "Emoji字數": .charCountEmoji,
         "行數統計": .charCountLines,
@@ -448,13 +460,13 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "修剪": .trim,
         "去前後空白": .trim,
         "重複字串": .repeatstr,
-        "連接": .join,
-        "合併": .join,
+        "連接字串": .join,
+        "合併字串": .join,
         "行列表": .lines,
         "分行列表": .lines,
         "合行": .unlines,
         "合併行列表": .unlines,
-        "格式": .format,
+        "字串格式": .format,
         "左填補": .padleft,
         "右填補": .padright,
         "正則比對": .regexMatch,
@@ -487,6 +499,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "檔案大小格式": .formatBytes,
         "姓名格式": .formatName,
         "轉換曆法": .convertCalendar,
+        "曆法轉換": .convertCalendar,
         "轉換度量": .convertMeasure,
         "度量轉換": .convertMeasure,
         "度量格式": .formatMeasure,
@@ -711,7 +724,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
         switch clean {
         case "西曆", "公曆", "陽曆": return .gregorian
-        case "民國曆", "民國": return .republicOfChina
+        case "民國曆", "民國", "國曆": return .republicOfChina
         case "日本曆", "和曆": return .japanese
         case "農曆", "陰曆", "中曆": return .chinese
         case "佛曆", "泰國曆", "泰曆": return .buddhist
@@ -730,8 +743,8 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         switch clean {
         case "簡短", "簡稱", "短": return .short
         case "標準", "中等", "中": return .medium
-        case "完整", "詳細", "長": return .long
-        case "全部", "全", "最詳": return .full
+        case "詳細", "較長", "長": return .long
+        case "全部", "完整", "最詳": return .full
         case "iso8601", "iso": return .iso8601
         default: return nil
         }

@@ -66,8 +66,10 @@ struct TraditionalChineseStrings {
         // Prompts
         "prompt.write_name": "寫出檔案名稱：",
         "prompt.confirm_exit_save": "是否儲存已修改的內容？(回答 \"N\" 將捨棄修改)：",
-        "prompt.confirm_reload": "檔案已在磁碟上變更。是否重新載入？（答「N」將保留本地緩衝區）：",
+        "prompt.confirm_reload": "檔案已在外部被修改，是否重新載入？（按 N 將保留編輯器中的內容）：",
         "prompt.encoding_fallback": "編碼 \"%@\" 無法支援新文字，是否改以 UTF-8 格式儲存？(y/n) ",
+        "prompt.backup_failed_continue": "無法建立備份檔案（%@），仍要繼續存檔嗎？(y/n) ",
+        "prompt.save_failed_retry_path": "儲存失敗（%@），請另存至其他路徑：",
         "prompt.search": "搜尋",
         "prompt.replace_search": "搜尋並取代",
         "prompt.replace_with": "取代為：",
@@ -458,6 +460,7 @@ struct TraditionalChineseStrings {
         "status.word_kept": "保留原字詞",
         "status.no_misspelled": "[ 未發現拼錯字詞 ]",
         "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
+        "status.large_file_mode": "[ 已啟用大檔案降級模式 (%@)：已停用語法突顯與 Git Diff ]",
         "status.saved_as_utf8": "[ 已改用 UTF-8 儲存 ]",
         "status.save_cancelled": "[ 存檔已取消 ]",
         "status.kept_local": "[ 已保留本地修改 ]",
@@ -923,6 +926,7 @@ struct TraditionalChineseStrings {
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
         "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
 
+        "menu.tools.journal": "今日日記",
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.tools.word_count": "字數統計",

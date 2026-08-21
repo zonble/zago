@@ -336,6 +336,18 @@ struct ConfigLoaderTests {
         let codeTokens = highlighter.tokenTypes(for: "MAKE \"i\" 80", syntax: syntax)
         #expect(codeTokens.contains(.keyword))
         #expect(codeTokens.contains(.number))
+
+        let loadDialectTokens = highlighter.tokenTypes(for: "load dialect zh-TW", syntax: syntax)
+        #expect(loadDialectTokens.contains(.keyword))
+        #expect(loadDialectTokens.contains(.typeOrAttribute))
+
+        let setBackupTokens = highlighter.tokenTypes(for: "set backup on", syntax: syntax)
+        #expect(setBackupTokens.contains(.keyword))
+        #expect(setBackupTokens.contains(.typeOrAttribute))
+
+        let setMaxFileSizeTokens = highlighter.tokenTypes(for: "set max-file-size 50MB", syntax: syntax)
+        #expect(setMaxFileSizeTokens.contains(.keyword))
+        #expect(setMaxFileSizeTokens.contains(.number))
     }
 
     @Test func testConfigLoaderParsesCanonicalSettingsAndUnset() throws {
@@ -623,5 +635,107 @@ struct ConfigLoaderTests {
         let config = ConfigLoader(provider: provider).loadConfig()
         #expect(config.wrapColumn == 72)
         #expect(config.syntaxErrorCount == 1)
+    }
+
+    @Test func testByteSizeParsing() {
+        #expect(ConfigLoader.parseByteSize("50MB") == Int64(50 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("5mb") == Int64(5 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("1GB") == Int64(1024 * 1024 * 1024))
+        #expect(ConfigLoader.parseByteSize("512KB") == Int64(512 * 1024))
+        #expect(ConfigLoader.parseByteSize("256k") == Int64(256 * 1024))
+        #expect(ConfigLoader.parseByteSize("1024b") == Int64(1024))
+        #expect(ConfigLoader.parseByteSize("2048") == Int64(2048))
+        #expect(ConfigLoader.parseByteSize("off") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("none") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("0") == Int64(0))
+        #expect(ConfigLoader.parseByteSize("invalid") == nil)
+    }
+
+    @Test func testFileSizeLimitDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set max-file-size 100MB
+                set large-file-threshold 10MB
+                set max-line-highlight-length 5000
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.maxFileSizeBytes == 100 * 1024 * 1024)
+        #expect(config.largeFileThresholdBytes == 10 * 1024 * 1024)
+        #expect(config.maxLineHighlightLength == 5000)
+        #expect(config.syntaxErrorCount == 0)
+    }
+
+    @Test func testBackupConfigDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set backup
+                set backupdir ~/.zago_backups
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.backup == true)
+        #expect(config.backupDir == "~/.zago_backups")
+        #expect(config.syntaxErrorCount == 0)
+
+        let unsetProvider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set backup
+                unset backup
+                set backupdir off
+                """
+            ]
+        )
+        let unsetConfig = ConfigLoader(provider: unsetProvider).loadConfig()
+        #expect(unsetConfig.backup == false)
+        #expect(unsetConfig.backupDir == nil)
+        #expect(unsetConfig.syntaxErrorCount == 0)
+    }
+
+    @Test func testDailyJournalConfigDirectives() {
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set launch-to-journal on
+                set journal-folder ~/Notes/Journal
+                """
+            ]
+        )
+
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.launchToJournal == true)
+        #expect(config.journalFolder == "~/Notes/Journal")
+        #expect(config.syntaxErrorCount == 0)
+
+        let unsetProvider = InMemoryConfigFileProvider(
+            homePath: "/home/user",
+            currentPath: "/home/user",
+            files: [
+                "/home/user/.zagorc": """
+                set launch-to-journal on
+                unset launch-to-journal
+                set journal-folder off
+                """
+            ]
+        )
+        let unsetConfig = ConfigLoader(provider: unsetProvider).loadConfig()
+        #expect(unsetConfig.launchToJournal == false)
+        #expect(unsetConfig.journalFolder == nil)
+        #expect(unsetConfig.syntaxErrorCount == 0)
     }
 }

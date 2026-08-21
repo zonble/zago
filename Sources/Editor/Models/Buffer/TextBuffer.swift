@@ -47,6 +47,8 @@ class TextBuffer: SpellCheckableBuffer {
         get { isReadOnlyStored }
         set { isReadOnlyStored = newValue }
     }
+    var isLargeFileMode: Bool = false
+    var fileSize: Int64 = 0
     var allowsLogoExecution: Bool { true }
     var isDirectoryBuffer: Bool { false }
     var isScratchBuffer: Bool {

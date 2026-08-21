@@ -318,7 +318,78 @@ public final class ConfigLoader {
             } else {
                 recordSyntaxError(in: &config)
             }
+        case .maxFileSize:
+            guard let bytes = Self.parseByteSize(value), bytes >= 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.maxFileSizeBytes = bytes
+        case .largeFileThreshold:
+            guard let bytes = Self.parseByteSize(value), bytes >= 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.largeFileThresholdBytes = bytes
+        case .maxLineHighlightLength:
+            guard let len = Int(value), len > 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.maxLineHighlightLength = len
+        case .backup:
+            guard let enabled = SettingBoolean.parse(value, emptyValue: true) else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.backup = enabled
+        case .backupDir:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                config.backupDir = nil
+            } else {
+                config.backupDir = clean
+            }
+        case .launchToJournal:
+            guard let enabled = SettingBoolean.parse(value, emptyValue: true) else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.launchToJournal = enabled
+        case .journalFolder:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                config.journalFolder = nil
+            } else {
+                config.journalFolder = clean
+            }
         }
+    }
+
+    /// Parses string byte size expressions like "50MB", "5mb", "1024KB", "1024", "none", "off", "0".
+    public static func parseByteSize(_ value: String) -> Int64? {
+        let clean = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if clean == "none" || clean == "off" || clean == "0" {
+            return 0
+        }
+        if clean.hasSuffix("gb") {
+            guard let num = Double(clean.dropLast(2).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024 * 1024 * 1024)
+        }
+        if clean.hasSuffix("mb") {
+            guard let num = Double(clean.dropLast(2).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024 * 1024)
+        }
+        if clean.hasSuffix("kb") || clean.hasSuffix("k") {
+            let suffix = clean.hasSuffix("kb") ? 2 : 1
+            guard let num = Double(clean.dropLast(suffix).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024)
+        }
+        if clean.hasSuffix("b") {
+            guard let num = Int64(clean.dropLast(1).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return num
+        }
+        guard let num = Int64(clean) else { return nil }
+        return num
     }
 
     private func applyUnset(_ name: String, into config: inout EditorConfig) {
@@ -363,6 +434,30 @@ public final class ConfigLoader {
             set border single
             set arrow solid
             set keymap classic
+
+            ## File Protection & Size Limits
+            set max-file-size 50MB
+            set large-file-threshold 5MB
+            set max-line-highlight-length 10000
+
+            ## Automatic Backup (GNU nano compatible)
+            set backup off
+            # set backupdir ~/.zago_backups
+
+            ## Daily Journal
+            # set launch-to-journal on
+            # set journal-folder ~/Documents/zago_journal
+            ## Cloud storage examples:
+            ## iCloud Drive (macOS):
+            # set journal-folder ~/Library/Mobile\\ Documents/com~apple~CloudDocs/zago_journal
+            ## Google Drive (macOS):
+            # set journal-folder ~/Library/CloudStorage/GoogleDrive-user@example.com/My\\ Drive/zago_journal
+            ## Google Drive (Windows):
+            # set journal-folder G:/My Drive/zago_journal
+            ## Dropbox (macOS / Windows):
+            # set journal-folder ~/Dropbox/zago_journal
+            ## OneDrive (macOS / Windows):
+            # set journal-folder ~/OneDrive/zago_journal
 
             ## Interface Language
             # set lang en

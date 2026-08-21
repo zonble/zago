@@ -1,176 +1,203 @@
-# Styles
+# Editor LOGO Style DSL & Typography Reference
 
-## Style set
+`zago` features a concise, visual **Style DSL** (Domain Specific Language) for styling ASCII and Unicode boxes, tables, and connector lines directly in Editor LOGO and editor drawing commands.
 
-A box/table stye set is composed by
+---
 
-- Border Style (enum)
-- Round (bool)
+## 🧭 Overview
 
-A line style set is composed by
+The Style DSL allows expressing borders, rounded corners, line weights, dashed patterns, and directional arrows with intuitive shorthand character combinations (e.g. `-`, `-)]`, `+)`, `==`, `->`, `<~+|>`, `<<+++>>`).
 
-- Border Style (enum)
-- Arrow (enum)
+### Core Applications:
+- **`BOX` & `TABLE`**: Sets border weight/dash pattern and optional rounded corners (`)`).
+- **`LINE` & `VLINE`**: Sets border weight/dash pattern along with start/end arrow styles.
 
-## Border Styles
+---
 
-| Name                 | Logo param        | Style DSL |
-| -------------------- | ----------------- | --------- |
-| Single               | single            | -         |
-| Heavy                | heavy             | +         |
-| Double               | double            | =         |
-| Ascii                | ascii             | A         |
-| Double Dash          | double-hash       | --        |
-| Heavy Double Dash    | heavy-double-dash | ++        |
-| Triple Dash          | triple-dash       | ---       |
-| Heavy Triple Dash    | heavy-triple-dash | +++       |
-| Quadruple Dash       | quard-dash        | ----      |
-| Heavy Quadruple Dash | heavy-quad-dash   | ++++      |
+## 📦 1. Box & Table Style DSL
 
-## Arrow Styles
+### Syntax
 
-| Name      | Symbols | Style DSL |
-| --------- | ------- | --------- |
-| Solid     | ▲▼◀▶    | << >>     |
-| Stemmed   | ↑↓←→    | <~ ~>     |
-| Hollow    | △▽◁▷    | <\| \|>   |
-| Small     | ▴▾◂▸    | <.  .>    |
-| [Default] |         | < >       |
+```text
+[border-shorthand][)]
+```
 
-## LOGO Syntax
+- **`border-shorthand`**: Defines the border style and line weight.
+- **`)`** *(optional)*: Appending a closing parenthesis `)` toggles **rounded corners**.
 
-### BOX
+### Border Shorthands & Primitive Names
 
-BOX [content] [w] [h] [text] [border-style] [round]
+| Border Style | Style DSL | LOGO Keywords | Chinese Dialect | Description |
+| :--- | :---: | :--- | :--- | :--- |
+| **Single** | `-` | `single`, `normal` | `單線`, `一般` | Standard single light line (`┌─┐`) |
+| **Heavy** | `+` | `heavy`, `bold` | `粗線`, `粗體` | Bold heavy line (`┏━┓`) |
+| **Double** | `=` | `double` | `雙線` | Double line (`╔═╗`) |
+| **ASCII** | `a` / `A` | `ascii` | `ascii`, `純文字` | Plain ASCII characters (`+--+`) |
+| **Double Dash** | `--` | `double-dash` | `二段虛線`, `雙虛線` | 2-dash segmented line (`┌╌┐`) |
+| **Heavy Double Dash** | `++` | `heavy-double-dash` | `粗二段虛線` | Heavy 2-dash line (`┏╍┓`) |
+| **Triple Dash** | `---` | `triple-dash` | `三段虛線` | 3-dash segmented line (`┌┄┐`) |
+| **Heavy Triple Dash** | `+++` | `heavy-triple-dash` | `粗三段虛線` | Heavy 3-dash line (`┏┅┓`) |
+| **Quadruple Dash** | `----` | `quad-dash`, `quadruple-dash` | `四段虛線` | 4-dash dotted line (`┌┈┐`) |
+| **Heavy Quadruple Dash** | `++++` | `heavy-quad-dash` | `粗四段虛線` | Heavy 4-dash line (`┏┉┓`) |
 
-or
+---
 
-BOX [content] [w] [h] [text] [style-dsl]
+## 🔲 Box Visual Preview Matrix
 
-### Table
+### Standard Square Corners (`[border]`)
 
-TABLE [content] [row] [col] [border-style] [round]
+```text
+Single (-)          Heavy (+)           Double (=)          ASCII (a)
+┌────────┐          ┏━━━━━━━━┓          ╔════════╗          +--------+
+│ Text   │          ┃ Text   ┃          ║ Text   ║          | Text   |
+└────────┘          ┗━━━━━━━━┛          ╚════════╝          +--------+
 
-or
+Double Dash (--)    Triple Dash (---)   Quad Dash (----)
+┌╌╌╌╌╌╌╌╌┐          ┌┄┄┄┄┄┄┄┄┐          ┌┈┈┈┈┈┈┈┈┐
+╎ Text   ╎          ┆ Text   ┆          ┊ Text   ┊
+└╌╌╌╌╌╌╌╌┘          └┄┄┄┄┄┄┄┄┘          └┈┈┈┈┈┈┈┈┘
 
-BOX [content] [row] [col] [style-dsl]
+Heavy Double (++)   Heavy Triple (+++)  Heavy Quad (++++)
+┏╍╍╍╍╍╍╍╍┓          ┏┅┅┅┅┅┅┅┅┓          ┏┉┉┉┉┉┉┉┉┓
+╏ Text   ╏          ┇ Text   ┇          ┋ Text   ┋
+┗╍╍╍╍╍╍╍╍┛          ┗┅┅┅┅┅┅┅┅┛          ┗┉┉┉┉┉┉┉┉┛
+```
 
-### LINE & VLINE
+### Rounded Corners (`[border])`)
 
-LINE [length] [border-style] [arrow|backarrow|bothaarrow] [arrow-style]
+```text
+Single (-))         Heavy (+))          Double (=))         ASCII (a))
+╭────────╮          ╭━━━━━━━━╮          ╭════════╮          /--------\
+│ Text   │          ┃ Text   ┃          ║ Text   ║          | Text   |
+╰────────╯          ╰━━━━━━━━╯          ╰════════╯          \--------/
 
-or
+Double Dash (--))   Triple Dash (---))  Quad Dash (----))
+╭╌╌╌╌╌╌╌╌╮          ╭┄┄┄┄┄┄┄┄╮          ╭┈┈┈┈┈┈┈┈╮
+╎ Text   ╎          ┆ Text   ┆          ┊ Text   ┊
+╰╌╌╌╌╌╌╌╌╯          ╰┄┄┄┄┄┄┄┄╯          ╰┈┈┈┈┈┈┈┈╯
 
-LINE length [style-dsl]
+Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
+╭╍╍╍╍╍╍╍╍╮          ╭┅┅┅┅┅┅┅┅╮          ╭┉┉┉┉┉┉┉┉╮
+╏ Text   ╏          ┇ Text   ┇          ┋ Text   ┋
+╰╍╍╍╍╍╍╍╍╯          ╰┅┅┅┅┅┅┅┅╯          ╰┉┉┉┉┉┉┉┉╯
+```
 
+---
 
-## Boxes with Border Styles but not rounded
+## 🏹 2. Line & Connector Style DSL
 
-### Single
-┌────────┐
-│        │
-└────────┘
-### Heavy
-┏━━━━━━━━┓
-┃        ┃
-┗━━━━━━━━┛
-### Double
-╔════════╗
-║        ║
-╚════════╝
-### Ascii
-+--------+
-|        |
-+--------+
-### Double Dash
-┌╌╌╌╌╌╌╌╌┐
-╎        ╎
-└╌╌╌╌╌╌╌╌┘
-### Heavy Double Dash
-┏╍╍╍╍╍╍╍╍┓
-╏        ╏
-┗╍╍╍╍╍╍╍╍┛
-### Triple Dash
-┌┄┄┄┄┄┄┄┄┐
-┆        ┆
-└┄┄┄┄┄┄┄┄┘
-### Heavy Triple Dash
-┏┅┅┅┅┅┅┅┅┓
-┇        ┇
-┗┅┅┅┅┅┅┅┅┛
-### Quad Dash
-┌┈┈┈┈┈┈┈┈┐
-┊        ┊
-└┈┈┈┈┈┈┈┈┘
-### Heavy Quad Dash
-┏┉┉┉┉┉┉┉┉┓
-┋        ┋
-┗┉┉┉┉┉┉┉┉┛
+### Syntax
 
-## Boxes with Border Styles and rounded
+```text
+[start-arrow][border-shorthand][end-arrow]
+```
 
-### Single
-╭────────╮
-│        │
-╰────────╯
-### Heavy
-╭━━━━━━━━╮
-┃        ┃
-╰━━━━━━━━┛
-### Double
-╭════════╮
-║        ║
-╰════════╯
-### Ascii
-/--------\
-|        |
-\--------/
-### Double Dash
-╭╌╌╌╌╌╌╌╌╮
-╎        ╎
-╰╌╌╌╌╌╌╌╌╯
-### Heavy Double Dash
-╭╍╍╍╍╍╍╍╍╮
-╏        ╏
-╰╍╍╍╍╍╍╍╍╯
-### Triple Dash
-╭┄┄┄┄┄┄┄┄╮
-┆        ┆
-╰┄┄┄┄┄┄┄┄╯
-### Heavy Triple Dash
-╭┅┅┅┅┅┅┅┅╮
-┇        ┇
-╰┅┅┅┅┅┅┅┅╯
-### Quad Dash
-╭┈┈┈┈┈┈┈┈╮
-┊        ┊
-╰┈┈┈┈┈┈┈┈╯
-### Heavy Quad Dash
-╭┉┉┉┉┉┉┉┉╮
-┋        ┋
-╰┉┉┉┉┉┉┉┉╯
+- **`start-arrow`** *(optional)*: Arrowhead pointing backwards / upwards.
+- **`border-shorthand`** *(optional, defaults to `-`)*: Line style and dash weight.
+- **`end-arrow`** *(optional)*: Arrowhead pointing forwards / downwards.
 
-## BOX Style DSL
+### Arrowhead Styles
 
-Syntax: [border-enum][rounded]
+| Arrow Style | Start Symbol | End Symbol | Start DSL | End DSL | Horizontal Symbols | Vertical Symbols |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **ASCII / Default** | `<` | `>` | `<` | `>` | `←` / `→` or `<` / `>` | `^` / `v` |
+| **Solid** | `◀` / `▲` | `▶` / `▼` | `<<` | `>>` | `◀` `▶` | `▲` `▼` |
+| **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
+| **Hollow** | `◁` / `△` | `▷` / `▽` | `<\|` | `\|>` | `◁` `▷` | `△` `▽` |
+| **Small** | `◂` / `▴` | `▸` / `▾` | `<.` | `.>` | `◂` `▸` | `▴` `▾` |
 
-Examples:
+### Common Line DSL Combinations
 
-- "-": single
-- "-)": single + round
-- "+": heavy
-- "+)": heavy + round
-- "+++)": heavy triple dash + round
-- "a": ascii border
+| Line DSL | Visual Rendering (`LINE 6`) | Visual Rendering (`VLINE 4`) | Description |
+| :--- | :--- | :--- | :--- |
+| `-` | `──────` | `│` `│` `│` `│` | Plain single line |
+| `->` | `─────>` | `│` `│` `│` `v` | Forward standard arrow |
+| `<-` | `<─────` | `^` `│` `│` `│` | Backward standard arrow |
+| `<->` | `<────>` | `^` `│` `│` `v` | Bidirectional standard arrow |
+| `<<=>>` | `◀════▶` | `▲` `║` `║` `▼` | Double line with solid triangles |
+| `<~+~>` | `←━━━━→` | `↑` `┃` `┃` `↓` | Heavy line with stemmed arrows |
+| `<\|---\|>` | `◁┄┄┄┄▷` | `△` `┆` `┆` `▽` | Triple-dash line with hollow arrows |
+| `<.++.>` | `◂╍╍╍╍▸` | `▴` `╏` `╏` `▾` | Heavy double-dash line with small arrows |
+| `<~+\|>` | `←━━━━▷` | `↑` `┃` `┃` `▽` | Asymmetric: stemmed start, hollow end |
 
-## LINE/VLINE Style DSL
+---
 
-Syntax: [begin arrow][border style][end arrow]
+## 💻 3. LOGO Command Integration
 
-Examples:
+### `BOX`
 
-- "-" single
-- "->" single with default arrow
-- "<-" single with default back arrow
-- "<->" single with default both arrow
-- "<~+|>" Stemmed back arrow, heavy border and hollow arrow
+Draws an ASCII/Unicode box with optional content, dimensions, text alignment, and style.
+
+```logo
+; Using Style DSL
+BOX "Title 16 5 CENTER -)
+BOX 20 4 =)
+BOX "Alert 18 3 +)
+
+; Using Keywords
+BOX "Title 16 5 CENTER DOUBLE ROUND
+BOX 20 4 HEAVY
+```
+
+### `TABLE`
+
+Draws a grid table with specified rows, columns, cell width, and style.
+
+```logo
+; Using Style DSL
+TABLE 2 3 6 =)
+TABLE 3 2 8 -)
+
+; Using Keywords
+TABLE 2 3 6 DOUBLE ROUND
+TABLE 3 2 8 TRIPLE-DASH
+```
+
+### `LINE` & `VLINE`
+
+Draws horizontal or vertical connector lines with lengths and style DSL.
+
+```logo
+; Horizontal lines
+LINE 10 ->
+LINE 12 <<=>>
+LINE 8 <~+~>
+
+; Vertical lines
+VLINE 6 ->
+VLINE 5 <<=>>
+VLINE 4 <|---| >
+```
+
+---
+
+## 🌐 4. Traditional Chinese Dialect Support
+
+All border and arrow keywords are fully supported in Traditional Chinese:
+
+```logo
+; 中文方言繪圖範例
+畫框 "系統架構 20 5 居中 雙線 圓角
+畫表格 2 3 8 三段虛線 圓角
+橫線 12 ->
+直線 6 <<=>>
+```
+
+| 中文關鍵字 | 對應 Style DSL | 說明 |
+| :--- | :---: | :--- |
+| `單線` / `一般` | `-` | 單線細框 |
+| `粗線` / `粗體` | `+` | 粗線實心框 |
+| `雙線` | `=` | 雙實線框 |
+| `二段虛線` | `--` | 兩段式虛線 |
+| `三段虛線` | `---` | 三段式虛線 |
+| `四段虛線` | `----` | 四段式點狀虛線 |
+| `圓角` | `)` | 圓弧轉角 |
+
+---
+
+## 🛠️ Implementation References
+
+- **Parser Engine**: [`Sources/Drawing/StyleDSL.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/StyleDSL.swift)
+- **Box Rendering**: [`Sources/Drawing/BoxStyle.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/BoxStyle.swift)
+- **Line Rendering**: [`Sources/Drawing/LineDrawer.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/LineDrawer.swift)
+- **Unit & Property Tests**: [`Tests/StyleDSLTests.swift`](file:///Users/zonble/Work/zago/Tests/StyleDSLTests.swift)
