@@ -336,6 +336,19 @@ public final class ConfigLoader {
                 return
             }
             config.maxLineHighlightLength = len
+        case .backup:
+            guard let enabled = SettingBoolean.parse(value, emptyValue: true) else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.backup = enabled
+        case .backupDir:
+            let clean = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean == "off" || clean == "none" {
+                config.backupDir = nil
+            } else {
+                config.backupDir = clean
+            }
         }
     }
 
@@ -408,6 +421,15 @@ public final class ConfigLoader {
             set border single
             set arrow solid
             set keymap classic
+
+            ## File Protection & Size Limits
+            set max-file-size 50MB
+            set large-file-threshold 5MB
+            set max-line-highlight-length 10000
+
+            ## Automatic Backup (GNU nano compatible)
+            set backup off
+            # set backupdir ~/.zago_backups
 
             ## Interface Language
             # set lang en

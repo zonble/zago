@@ -68,6 +68,8 @@ struct EnglishStrings {
         "prompt.confirm_exit_save": "Save modified buffer? (Answering \"N\" will discard changes) : ",
         "prompt.confirm_reload": "File changed on disk. Reload? (Answering \"N\" will keep local buffer): ",
         "prompt.encoding_fallback": "Encoding \"%@\" cannot represent new text. Convert and save as UTF-8? (y/n) ",
+        "prompt.backup_failed_continue": "Could not create backup file (%@). Continue saving anyway? (y/n) ",
+        "prompt.save_failed_retry_path": "Save failed (%@). Save to another path: ",
         "prompt.search": "Search",
         "prompt.replace_search": "Search (to replace)",
         "prompt.replace_with": "Replace with: ",

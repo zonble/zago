@@ -254,7 +254,7 @@ extension Renderer {
                 ]
             }
 
-        case .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback:
+        case .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure:
             helpItems1 = [
                 ("Y", tr("help.yes")), ("^C", tr("help.cancel")),
             ]
@@ -526,6 +526,9 @@ extension Renderer {
         case .confirmEncodingFallback(let originalEncoding, _):
             let name = TextEncodingDetector.displayName(for: originalEncoding)
             promptPrefix = String(format: editor.l10n["prompt.encoding_fallback"], name)
+            isConfirmation = true
+        case .confirmBackupFailure(let error, _):
+            promptPrefix = String(format: editor.l10n["prompt.backup_failed_continue"], error)
             isConfirmation = true
         case .search:
             let defaultHint = editor.lastSearchQuery.isEmpty ? "" : " [default: \(editor.lastSearchQuery)]"

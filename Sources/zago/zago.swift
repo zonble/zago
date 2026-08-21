@@ -71,6 +71,16 @@ struct Zago: ParsableCommand {
     var readonly: Bool = false
 
     @Flag(
+        name: [.customShort("B"), .customLong("backup")],
+        help: "Back up existing files to <filename>~ when saving.")
+    var backup: Bool = false
+
+    @Option(
+        name: [.customShort("C"), .customLong("backupdir"), .customLong("backup-dir")],
+        help: "Set directory to store backup files.")
+    var backupDir: String?
+
+    @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
@@ -295,7 +305,9 @@ struct Zago: ParsableCommand {
             readOnly: readonly,
             pipedInput: pipedInputData,
             keymapPreset: keymap,
-            defaultLineEnding: platformDefaultLineEnding
+            defaultLineEnding: platformDefaultLineEnding,
+            backup: backup ? true : nil,
+            backupDir: backupDir
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false

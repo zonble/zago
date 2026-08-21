@@ -200,6 +200,8 @@ public final class Editor: @unchecked Sendable {
     }
     var maxFileSizeBytes: Int64 = 50 * 1024 * 1024
     var largeFileThresholdBytes: Int64 = 5 * 1024 * 1024
+    var backup: Bool = false
+    var backupDir: String? = nil
     var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
     let proposalQueue = ProposalQueue()
@@ -214,6 +216,8 @@ public final class Editor: @unchecked Sendable {
         let usesExplicitLanguage: Bool
         let spellLanguage: String
         let baseMode: EditorBaseMode
+        let backup: Bool
+        let backupDir: String?
     }
 
     private static func resolveConfig(options: EditorOptions, config: EditorConfig) -> ResolvedConfig {
@@ -240,7 +244,9 @@ public final class Editor: @unchecked Sendable {
             language: configuredLanguage ?? Language.detectSystemLanguage(),
             usesExplicitLanguage: configuredLanguage != nil,
             spellLanguage: options.spellLanguage ?? config.spellLanguage,
-            baseMode: config.startInCanvasMode ? .canvas : .text
+            baseMode: config.startInCanvasMode ? .canvas : .text,
+            backup: options.backup ?? config.backup,
+            backupDir: options.backupDir ?? config.backupDir
         )
     }
 
@@ -283,6 +289,8 @@ public final class Editor: @unchecked Sendable {
         self.runtimeConfig = resolved.display
         self.debugMode = configSource.initial.debugMode
         self.defaultBaseMode = resolved.baseMode
+        self.backup = resolved.backup
+        self.backupDir = resolved.backupDir
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
@@ -411,6 +419,8 @@ public final class Editor: @unchecked Sendable {
         syntaxHighlighter.maxLineHighlightLength = config.maxLineHighlightLength
         maxFileSizeBytes = config.maxFileSizeBytes
         largeFileThresholdBytes = config.largeFileThresholdBytes
+        backup = config.backup
+        backupDir = config.backupDir
         customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
         defaultArrowStyle = config.defaultArrowStyle

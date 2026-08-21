@@ -142,19 +142,93 @@ extension Editor {
         }
     }
 
+    func suggestedSafeSavePath(for originalPath: String?) -> String {
+        let baseFilename: String
+        if let originalPath, !originalPath.isEmpty {
+            let normalized = fileIOStrategy.normalizePath(originalPath, isDirectory: false)
+            let lastComponent = URL(fileURLWithPath: normalized).lastPathComponent
+            baseFilename = lastComponent.isEmpty ? "untitled.txt" : lastComponent
+        } else {
+            baseFilename = "untitled.txt"
+        }
+
+        let homeDir = fileIOStrategy.homeDirectoryPath()
+        if fileIOStrategy.isDirectoryWritable(at: homeDir) {
+            return fileIOStrategy.childPath(baseFilename, in: homeDir)
+        }
+
+        let tempDir = fileIOStrategy.temporaryDirectoryPath()
+        if fileIOStrategy.isDirectoryWritable(at: tempDir) {
+            return fileIOStrategy.childPath(baseFilename, in: tempDir)
+        }
+
+        return fileIOStrategy.childPath(baseFilename, in: fileIOStrategy.currentDirectoryPath())
+    }
+
     @discardableResult
     func saveBufferContent(
         to path: String,
         forcedEncoding: String.Encoding? = nil,
         onSuccess: (() -> Void)? = nil
     ) -> EditorOperationResult {
-        do {
-            if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
-                _ = buffer.trimTrailingWhitespace()
+        if displayConfig.trimTrailingWhitespaceOnSave && !buffer.isDirectoryBuffer {
+            _ = buffer.trimTrailingWhitespace()
+        }
+
+        let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let targetEncoding = forcedEncoding ?? buffer.fileEncoding
+
+        if backup && fileIOStrategy.fileInfo(at: expandedPath).exists {
+            let backupPath: String
+            if let customDir = backupDir, !customDir.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                let expandedDir = fileIOStrategy.normalizePath(customDir, isDirectory: true)
+                let filename = URL(fileURLWithPath: expandedPath).lastPathComponent
+                backupPath = fileIOStrategy.childPath(filename + "~", in: expandedDir)
+            } else {
+                backupPath = expandedPath + "~"
             }
 
-            let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
-            let targetEncoding = forcedEncoding ?? buffer.fileEncoding
+            do {
+                try fileIOStrategy.copyFile(at: expandedPath, to: backupPath)
+            } catch {
+                let message = error.localizedDescription
+                currentPromptMode = .confirmBackupFailure(error: message) { [weak self] continueAnyway in
+                    guard let self = self else { return }
+                    if continueAnyway {
+                        self.applyOperationResult(
+                            self.performSaveBufferWrite(
+                                to: expandedPath,
+                                originalPath: path,
+                                targetEncoding: targetEncoding,
+                                forcedEncoding: forcedEncoding,
+                                onSuccess: onSuccess
+                            )
+                        )
+                    } else {
+                        self.reportOperationResult(.cancelled(message: self.l10n["status.save_cancelled"]))
+                    }
+                }
+                return .prompting
+            }
+        }
+
+        return performSaveBufferWrite(
+            to: expandedPath,
+            originalPath: path,
+            targetEncoding: targetEncoding,
+            forcedEncoding: forcedEncoding,
+            onSuccess: onSuccess
+        )
+    }
+
+    private func performSaveBufferWrite(
+        to expandedPath: String,
+        originalPath: String,
+        targetEncoding: String.Encoding,
+        forcedEncoding: String.Encoding?,
+        onSuccess: (() -> Void)?
+    ) -> EditorOperationResult {
+        do {
             let separator = buffer.lineEnding.separator
             var fileContent = buffer.lines.joined(separator: separator)
             if buffer.hasTrailingNewline && !fileContent.isEmpty && !fileContent.hasSuffix(separator) {
@@ -169,6 +243,7 @@ extension Editor {
             buffer.filePath = expandedPath
             buffer.fileEncoding = targetEncoding
             buffer.isModified = false
+            buffer.isReadOnly = false
             buffer.loadErrorDescription = nil
 
             for b in buffers {
@@ -181,7 +256,7 @@ extension Editor {
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
                 message = l10n["status.saved_as_utf8"]
             } else {
-                message = l10n.wroteToFile("\(path) (\(buffer.lines.count) lines)")
+                message = l10n.wroteToFile("\(originalPath) (\(buffer.lines.count) lines)")
             }
             onSuccess?()
             return reportOperationResult(.succeeded(message: message))
@@ -191,7 +266,7 @@ extension Editor {
                 guard let self = self else { return }
                 if confirmed {
                     self.applyOperationResult(
-                        self.saveBufferContent(to: path, forcedEncoding: .utf8, onSuccess: onSuccess))
+                        self.saveBufferContent(to: originalPath, forcedEncoding: .utf8, onSuccess: onSuccess))
                 } else {
                     self.reportOperationResult(.cancelled(message: self.l10n["status.save_cancelled"]))
                 }
@@ -199,6 +274,20 @@ extension Editor {
             return .prompting
         } catch {
             let message = error.localizedDescription
+            let fallbackPath = suggestedSafeSavePath(for: expandedPath)
+            promptInputText = fallbackPath
+            promptCursorIndex = fallbackPath.count
+            currentPromptMode = .saveFilePath { [weak self] newPath in
+                guard let self = self, let newPath = newPath, !newPath.isEmpty else {
+                    self?.reportOperationResult(.cancelled(message: self?.l10n["status.save_cancelled"] ?? ""))
+                    return
+                }
+                self.applyOperationResult(
+                    self.saveBufferContent(to: newPath, forcedEncoding: forcedEncoding, onSuccess: onSuccess)
+                )
+            }
+            statusMessage = l10n.errorSavingFile(error: message)
+            statusMessageTime = Date()
             return reportOperationResult(.failed(message, message: l10n.errorSavingFile(error: message)))
         }
     }

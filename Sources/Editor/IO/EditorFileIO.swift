@@ -184,9 +184,36 @@ public protocol EditorFileIOStrategy: AnyObject {
     ///
     /// - Parameter path: Target file path to unwatch.
     func stopWatchingFile(at path: String)
+
+    /// Copies an existing file at sourcePath to targetPath.
+    func copyFile(at sourcePath: String, to targetPath: String) throws
+
+    /// Returns whether the target directory exists and has write permissions.
+    func isDirectoryWritable(at path: String) -> Bool
+
+    /// Returns absolute path to system temporary directory.
+    func temporaryDirectoryPath() -> String
 }
 
 extension EditorFileIOStrategy {
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {}
     public func stopWatchingFile(at path: String) {}
+
+    public func copyFile(at sourcePath: String, to targetPath: String) throws {
+        let normalizedSource = normalizePath(sourcePath, isDirectory: false)
+        let normalizedTarget = normalizePath(targetPath, isDirectory: false)
+        let read = try readTextFile(at: normalizedSource)
+        try writeTextFile(read.content, to: normalizedTarget, encoding: read.encoding)
+    }
+
+    public func isDirectoryWritable(at path: String) -> Bool {
+        let normalized = normalizePath(path, isDirectory: true)
+        let info = fileInfo(at: normalized)
+        guard info.exists, info.isDirectory else { return false }
+        return FileManager.default.isWritableFile(atPath: normalized)
+    }
+
+    public func temporaryDirectoryPath() -> String {
+        FileManager.default.temporaryDirectory.path
+    }
 }

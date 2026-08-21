@@ -57,6 +57,14 @@ extension EditorSettingKey {
         case .maxLineHighlightLength:
             guard let len = Int(value), len > 0 else { return nil }
             return .maxLineHighlightLength(len)
+        case .backup:
+            return .backup(SettingBoolean.parse(value))
+        case .backupDir:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                return .backupDir(nil)
+            }
+            return .backupDir(clean)
         }
     }
 }
@@ -89,6 +97,8 @@ public enum EditorSettingUpdate {
     case maxFileSize(Int64)
     case largeFileThreshold(Int64)
     case maxLineHighlightLength(Int)
+    case backup(Bool?)
+    case backupDir(String?)
 }
 
 public enum EditorEffect: Equatable {

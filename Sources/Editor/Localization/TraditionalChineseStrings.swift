@@ -66,8 +66,10 @@ struct TraditionalChineseStrings {
         // Prompts
         "prompt.write_name": "寫出檔案名稱：",
         "prompt.confirm_exit_save": "是否儲存已修改的內容？(回答 \"N\" 將捨棄修改)：",
-        "prompt.confirm_reload": "檔案已在磁碟上變更。是否重新載入？（答「N」將保留本地緩衝區）：",
+        "prompt.confirm_reload": "檔案已在外部被修改，是否重新載入？（按 N 將保留編輯器中的內容）：",
         "prompt.encoding_fallback": "編碼 \"%@\" 無法支援新文字，是否改以 UTF-8 格式儲存？(y/n) ",
+        "prompt.backup_failed_continue": "無法建立備份檔案（%@），仍要繼續存檔嗎？(y/n) ",
+        "prompt.save_failed_retry_path": "儲存失敗（%@），請另存至其他路徑：",
         "prompt.search": "搜尋",
         "prompt.replace_search": "搜尋並取代",
         "prompt.replace_with": "取代為：",
