@@ -22,6 +22,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Editor LOGO pen mode](logo/pen_mode.md): `PD` / `PU` line drawing mode.
 - [Editor LOGO string primitives](logo/string_primitives.md): proposed string primitive expansion.
 - [Editor LOGO text transliteration](logo/text_transliteration.md): ICU String Transform primitive for text/script conversion.
+- [Editor LOGO security & sandbox design](logo/security_and_sandbox.md): why `zago` strictly rejects OS shell commands and process execution.
 
 ## Features
 
