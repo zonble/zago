@@ -255,3 +255,17 @@ struct ReloadConfigCommand: Command {
         return .succeeded
     }
 }
+
+struct OpenJournalCommand: Command {
+    let id: CommandID = .openJournal
+    let name = "Today's Journal"
+    let description = "Open or switch to today's daily journal"
+    let commandBarAliases = ["journal", ":journal"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.openTodayJournal()
+    }
+}

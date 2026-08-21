@@ -76,7 +76,28 @@ extension Editor {
             path
             ?? (buffer.filePath != nil
                 ? fileIOStrategy.parentDirectory(of: buffer.filePath!) : fileIOStrategy.currentDirectoryPath())
-        let expanded = fileIOStrategy.normalizePath(dirPath, isDirectory: true)
+        var expanded = fileIOStrategy.normalizePath(dirPath, isDirectory: true)
+
+        var checkPath = expanded
+        while true {
+            let info = fileIOStrategy.fileInfo(at: checkPath)
+            if info.exists && info.isDirectory {
+                expanded = checkPath
+                break
+            }
+            let parent = fileIOStrategy.parentDirectory(of: checkPath)
+            if parent == checkPath || parent.isEmpty {
+                let cur = fileIOStrategy.currentDirectoryPath()
+                if fileIOStrategy.fileInfo(at: cur).exists {
+                    expanded = cur
+                } else {
+                    expanded = fileIOStrategy.homeDirectoryPath()
+                }
+                break
+            }
+            checkPath = parent
+        }
+
         if let existingIndex = buffers.firstIndex(where: { $0.filePath == expanded }) {
             switchToBuffer(index: existingIndex)
         } else {
@@ -348,6 +369,16 @@ extension Editor {
                 reportOperationResult(.succeeded(message: "Backup directory set to \(dir)"))
             } else {
                 reportOperationResult(.succeeded(message: "Backup directory reset to default"))
+            }
+        case .launchToJournal(let value):
+            launchToJournal = resolve(value, current: launchToJournal)
+            reportOperationResult(.succeeded(message: "Launch to journal \(launchToJournal ? "enabled" : "disabled")"))
+        case .journalFolder(let folder):
+            journalFolder = folder
+            if let folder {
+                reportOperationResult(.succeeded(message: "Journal folder set to \(folder)"))
+            } else {
+                reportOperationResult(.succeeded(message: "Journal folder reset to default"))
             }
         }
     }

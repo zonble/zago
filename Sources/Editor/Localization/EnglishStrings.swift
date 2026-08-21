@@ -936,6 +936,7 @@ struct EnglishStrings {
         "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
         "menu.borders.arrow_small": "Arrow: Small   ▴▾◂▸",
 
+        "menu.tools.journal": "Today's Journal",
         "menu.tools.logo": "Command Prompt...\tEsc",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.tools.word_count": "Word Count",

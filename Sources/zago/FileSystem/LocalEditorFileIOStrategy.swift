@@ -78,6 +78,10 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         else {
             throw EncodingError.unsupportedCharacters
         }
+        let parentDir = parentDirectory(of: normalized)
+        if !fileManager.fileExists(atPath: parentDir) {
+            try fileManager.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+        }
         fileWatcher.stop()
         try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
         fileWatcher.start(path: normalized)
@@ -118,6 +122,19 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func temporaryDirectoryPath() -> String {
         fileManager.temporaryDirectory.path
+    }
+
+    public func documentDirectoryPath() -> String {
+        if let docsUrl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
+            fileManager.fileExists(atPath: docsUrl.path) {
+            return docsUrl.path
+        }
+        let home = homeDirectoryPath()
+        let candidate = childPath("Documents", in: home)
+        if fileInfo(at: candidate).exists {
+            return candidate
+        }
+        return home
     }
 
     public func startWatchingFile(at path: String, onChange: @escaping @Sendable () -> Void) {

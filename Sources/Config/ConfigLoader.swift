@@ -343,11 +343,24 @@ public final class ConfigLoader {
             }
             config.backup = enabled
         case .backupDir:
-            let clean = value.trimmingCharacters(in: .whitespacesAndNewlines)
-            if clean.isEmpty || clean == "off" || clean == "none" {
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
                 config.backupDir = nil
             } else {
                 config.backupDir = clean
+            }
+        case .launchToJournal:
+            guard let enabled = SettingBoolean.parse(value, emptyValue: true) else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.launchToJournal = enabled
+        case .journalFolder:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                config.journalFolder = nil
+            } else {
+                config.journalFolder = clean
             }
         }
     }
@@ -430,6 +443,21 @@ public final class ConfigLoader {
             ## Automatic Backup (GNU nano compatible)
             set backup off
             # set backupdir ~/.zago_backups
+
+            ## Daily Journal
+            # set launch-to-journal on
+            # set journal-folder ~/Documents/zago_journal
+            ## Cloud storage examples:
+            ## iCloud Drive (macOS):
+            # set journal-folder ~/Library/Mobile\\ Documents/com~apple~CloudDocs/zago_journal
+            ## Google Drive (macOS):
+            # set journal-folder ~/Library/CloudStorage/GoogleDrive-user@example.com/My\\ Drive/zago_journal
+            ## Google Drive (Windows):
+            # set journal-folder G:/My Drive/zago_journal
+            ## Dropbox (macOS / Windows):
+            # set journal-folder ~/Dropbox/zago_journal
+            ## OneDrive (macOS / Windows):
+            # set journal-folder ~/OneDrive/zago_journal
 
             ## Interface Language
             # set lang en

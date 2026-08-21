@@ -323,4 +323,69 @@ extension Editor {
             closeCurrentBuffer()
         }
     }
+
+    /// Resolves the canonical file path for today's daily journal.
+    static func resolveTodayJournalPath(
+        configuredFolder: String?,
+        fileIO: EditorFileIOStrategy,
+        date: Date = Date()
+    ) -> String {
+        let folder: String
+        if let configured = configuredFolder?.trimmingCharacters(in: .whitespacesAndNewlines), !configured.isEmpty {
+            folder = fileIO.normalizePath(configured, isDirectory: true)
+        } else {
+            let docDir = fileIO.documentDirectoryPath()
+            folder = fileIO.childPath("zago_journal", in: docDir)
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy_MM_dd"
+        let dateString = formatter.string(from: date)
+        let filename = "\(dateString).md"
+
+        return fileIO.childPath(filename, in: folder)
+    }
+
+    /// Returns the default markdown title header for a new daily journal entry.
+    static func defaultJournalInitialTitle(date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy/MM/dd"
+        return "# \(formatter.string(from: date))"
+    }
+
+    /// Populates a newly created empty daily journal buffer with a title header if the file does not exist on disk.
+    static func populateNewJournalBufferIfNeeded(
+        _ buffer: TextBuffer,
+        fileIO: EditorFileIOStrategy,
+        date: Date = Date()
+    ) {
+        guard let path = buffer.filePath else { return }
+        let info = fileIO.fileInfo(at: path)
+        if !info.exists && buffer.lines.allSatisfy(\.isEmpty) {
+            let title = defaultJournalInitialTitle(date: date)
+            buffer.lines = [title, ""]
+            buffer.lineIndex = 1
+            buffer.columnIndex = 0
+            buffer.isModified = false
+        }
+    }
+
+    /// Returns the target file path for today's journal in the current editor environment.
+    func todayJournalFilePath() -> String {
+        Self.resolveTodayJournalPath(
+            configuredFolder: journalFolder,
+            fileIO: fileIOStrategy
+        )
+    }
+
+    /// Opens or switches to today's daily journal buffer.
+    @discardableResult
+    func openTodayJournal() -> EditorOperationResult {
+        let targetPath = todayJournalFilePath()
+        let result = openBuffer(path: targetPath)
+        Self.populateNewJournalBufferIfNeeded(buffer, fileIO: fileIOStrategy)
+        return result
+    }
 }

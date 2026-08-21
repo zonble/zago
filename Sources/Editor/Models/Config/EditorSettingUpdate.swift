@@ -65,6 +65,14 @@ extension EditorSettingKey {
                 return .backupDir(nil)
             }
             return .backupDir(clean)
+        case .launchToJournal:
+            return .launchToJournal(SettingBoolean.parse(value))
+        case .journalFolder:
+            let clean = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if clean.isEmpty || clean.lowercased() == "off" || clean.lowercased() == "none" {
+                return .journalFolder(nil)
+            }
+            return .journalFolder(clean)
         }
     }
 }
@@ -99,6 +107,8 @@ public enum EditorSettingUpdate {
     case maxLineHighlightLength(Int)
     case backup(Bool?)
     case backupDir(String?)
+    case launchToJournal(Bool?)
+    case journalFolder(String?)
 }
 
 public enum EditorEffect: Equatable {

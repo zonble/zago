@@ -73,6 +73,7 @@ extension Editor {
         commandRegistry.register(ExitEditorCommand())
         commandRegistry.register(EditConfigCommand())
         commandRegistry.register(ReloadConfigCommand())
+        commandRegistry.register(OpenJournalCommand())
 
         // Table Mode Commands
         commandRegistry.register(TableNextCellCommand())

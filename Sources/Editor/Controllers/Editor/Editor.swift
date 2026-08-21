@@ -147,6 +147,9 @@ public final class Editor: @unchecked Sendable {
     var defaultLineEnding: LineEnding = .lf
     var fillColumn: Int = 72
 
+    public var launchToJournal: Bool = false
+    public var journalFolder: String? = nil
+
     var isRegexSearchEnabled: Bool = false
 
     var lastMutationTime: Date? {
@@ -218,6 +221,8 @@ public final class Editor: @unchecked Sendable {
         let baseMode: EditorBaseMode
         let backup: Bool
         let backupDir: String?
+        let launchToJournal: Bool
+        let journalFolder: String?
     }
 
     private static func resolveConfig(options: EditorOptions, config: EditorConfig) -> ResolvedConfig {
@@ -246,7 +251,9 @@ public final class Editor: @unchecked Sendable {
             spellLanguage: options.spellLanguage ?? config.spellLanguage,
             baseMode: config.startInCanvasMode ? .canvas : .text,
             backup: options.backup ?? config.backup,
-            backupDir: options.backupDir ?? config.backupDir
+            backupDir: options.backupDir ?? config.backupDir,
+            launchToJournal: options.launchToJournal ?? config.launchToJournal,
+            journalFolder: options.journalFolder ?? config.journalFolder
         )
     }
 
@@ -266,8 +273,24 @@ public final class Editor: @unchecked Sendable {
         self.clipboardCoordinator = ClipboardCoordinator(strategy: dependencies.clipboardStrategy)
         self.configProvider = configSource.reload
 
+        let resolved = Self.resolveConfig(options: options, config: configSource.initial)
+
         let initialBuffers: [TextBuffer]
-        if options.filePaths.isEmpty {
+        let shouldLaunchJournal = options.filePaths.isEmpty && resolved.launchToJournal && options.pipedInput == nil
+        if shouldLaunchJournal {
+            let journalPath = Self.resolveTodayJournalPath(
+                configuredFolder: resolved.journalFolder,
+                fileIO: dependencies.fileIOStrategy
+            )
+            let journalBuffer = Self.makeBuffer(
+                filePath: journalPath,
+                fileIO: dependencies.fileIOStrategy,
+                gitService: dependencies.gitService,
+                language: options.language ?? configSource.initial.language ?? .detectSystemLanguage()
+            )
+            Self.populateNewJournalBufferIfNeeded(journalBuffer, fileIO: dependencies.fileIOStrategy)
+            initialBuffers = [journalBuffer]
+        } else if options.filePaths.isEmpty {
             initialBuffers = [TextBuffer()]
         } else {
             initialBuffers = options.filePaths.map {
@@ -281,7 +304,6 @@ public final class Editor: @unchecked Sendable {
         }
         self.bufferCoordinator = BufferCoordinator(buffers: initialBuffers)
 
-        let resolved = Self.resolveConfig(options: options, config: configSource.initial)
         self.language = resolved.language
         self.usesExplicitLanguage = resolved.usesExplicitLanguage
         self.spellChecker.setLanguage(resolved.spellLanguage)
@@ -291,6 +313,8 @@ public final class Editor: @unchecked Sendable {
         self.defaultBaseMode = resolved.baseMode
         self.backup = resolved.backup
         self.backupDir = resolved.backupDir
+        self.launchToJournal = resolved.launchToJournal
+        self.journalFolder = resolved.journalFolder
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
@@ -313,6 +337,9 @@ public final class Editor: @unchecked Sendable {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
             } else if let path = buffer.filePath {
                 _ = loadFileContent(into: buffer, path: path, reportStatus: false)
+                if shouldLaunchJournal && path == Self.resolveTodayJournalPath(configuredFolder: resolved.journalFolder, fileIO: dependencies.fileIOStrategy) {
+                    Self.populateNewJournalBufferIfNeeded(buffer, fileIO: dependencies.fileIOStrategy)
+                }
             }
         }
 
@@ -421,6 +448,8 @@ public final class Editor: @unchecked Sendable {
         largeFileThresholdBytes = config.largeFileThresholdBytes
         backup = config.backup
         backupDir = config.backupDir
+        launchToJournal = config.launchToJournal
+        journalFolder = config.journalFolder
         customBoundKeys = Set(config.customKeyBinds.keys)
         defaultBorderStyle = config.defaultBorderStyle
         defaultArrowStyle = config.defaultArrowStyle

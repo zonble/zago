@@ -83,6 +83,10 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             throw EncodingError.unsupportedCharacters
         }
         let entry = lock.withLock { watchedPaths[normalized] }
+        let parentDir = parentDirectory(of: normalized)
+        if !fileManager.fileExists(atPath: parentDir) {
+            try fileManager.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+        }
         let writeBlock = {
             #if os(Windows)
                 try data.write(to: URL(fileURLWithPath: normalized), options: [])
@@ -135,6 +139,19 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
 
     func temporaryDirectoryPath() -> String {
         fileManager.temporaryDirectory.path
+    }
+
+    func documentDirectoryPath() -> String {
+        if let docsUrl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
+            fileManager.fileExists(atPath: docsUrl.path) {
+            return docsUrl.path
+        }
+        let home = homeDirectoryPath()
+        let candidate = childPath("Documents", in: home)
+        if fileInfo(at: candidate).exists {
+            return candidate
+        }
+        return home
     }
 
     private final class WatcherState: @unchecked Sendable {
