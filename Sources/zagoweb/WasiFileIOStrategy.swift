@@ -2,6 +2,10 @@ import Editor
 import Foundation
 import TextEncoding
 
+#if canImport(WASILibc)
+    import WASILibc
+#endif
+
 public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
     private let fileManager: FileManager
 
@@ -39,7 +43,7 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
 
     public func fileInfo(at path: String) -> EditorFileInfo {
         let normalized = normalizePath(path)
-        if normalized == "/workspace" || normalized == "/" {
+        if normalized == "/workspace" || normalized == "/" || normalized == "." {
             return EditorFileInfo(
                 exists: true,
                 isDirectory: true,
@@ -55,44 +59,58 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
             let rel = String(normalized.dropFirst("/workspace/".count))
             exists = fileManager.fileExists(atPath: rel, isDirectory: &isDir)
         }
-        let isDirectory = isDir.boolValue
-        var modificationDate: Date? = nil
-
-        if exists, let attrs = (try? fileManager.attributesOfItem(atPath: normalized)) ?? (try? fileManager.attributesOfItem(atPath: ".")) {
-            modificationDate = attrs[.modificationDate] as? Date
-        }
 
         return EditorFileInfo(
             exists: exists,
-            isDirectory: isDirectory,
+            isDirectory: isDir.boolValue,
             isBinary: false,
             isExecutable: false,
-            modificationDate: modificationDate
+            modificationDate: Date()
         )
     }
 
     public func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
         let normalized = normalizePath(path, isDirectory: true)
-        let candidates = [normalized, ".", String(normalized.dropFirst("/workspace/".count))]
 
-        var items: [String] = []
-        for candidate in candidates {
-            if let list = try? fileManager.contentsOfDirectory(atPath: candidate), !list.isEmpty {
-                items = list
-                break
+        #if canImport(WASILibc)
+            let candidates = [
+                normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized == "/workspace" ? "." : normalized),
+                normalized,
+                ".",
+            ]
+
+            for candidate in candidates {
+                if let dir = WASILibc.opendir(candidate) {
+                    defer { WASILibc.closedir(dir) }
+                    var entries: [EditorDirectoryEntry] = []
+                    while let entryPtr = WASILibc.readdir(dir) {
+                        let entry = entryPtr.pointee
+                        // In WASILibc __struct_dirent.h, d_ino is 8 bytes, d_type is 1 byte, d_name starts at offset 9
+                        let namePtr = UnsafeRawPointer(entryPtr).advanced(by: 9).assumingMemoryBound(to: CChar.self)
+                        let name = String(cString: namePtr)
+                        if name == "." || name == ".." || name.isEmpty { continue }
+
+                        let isDir = (entry.d_type == 3) // 3 = DT_DIR (wasi.FILETYPE_DIRECTORY)
+                        let fullPath = (normalized as NSString).appendingPathComponent(name)
+                        entries.append(EditorDirectoryEntry(
+                            name: name,
+                            path: fullPath,
+                            isDirectory: isDir,
+                            isExecutable: false
+                        ))
+                    }
+                    if !entries.isEmpty {
+                        return entries
+                    }
+                }
             }
-        }
-        if items.isEmpty {
-            items = (try? fileManager.contentsOfDirectory(atPath: normalized)) ?? []
-        }
+        #endif
 
+        let items = (try? fileManager.contentsOfDirectory(atPath: normalized)) ?? (try? fileManager.contentsOfDirectory(atPath: ".")) ?? []
         return items.map { name in
             let full = (normalized as NSString).appendingPathComponent(name)
             var isDir: ObjCBool = false
-            var exists = fileManager.fileExists(atPath: full, isDirectory: &isDir)
-            if !exists {
-                exists = fileManager.fileExists(atPath: name, isDirectory: &isDir)
-            }
+            _ = fileManager.fileExists(atPath: full, isDirectory: &isDir)
             return EditorDirectoryEntry(
                 name: name,
                 path: full,
