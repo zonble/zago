@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+## [1.4.0] - 2026-08-21
+
+Major feature release introducing Foundation Measurement conversions and formatters, extensible dialect localization architecture (Traditional Chinese), data detection and codec primitives, procedural docstring introspection, enhanced keymaps, dashed box drawing styles, and CJK-aware syntax highlighting.
+
+### Added
+
+- **Extensible Logo Dialects & Traditional Chinese Localization**:
+  - Added `LogoParserPlugin` and `LogoLocalizationRegistry` architecture for registering multilingual LOGO dialects.
+  - Implemented `LogoTraditionalChinesePlugin` supporting Chinese keywords for primitives, operators, headings, styles, and natural language filler tokens (`則`, `否則`, `步`, `次`, `成`, `為`, `到`, `至`).
+  - Added localized keyword and filler token support in syntax highlighting with Unicode boundary detection, Tab auto-completion, and command introspection.
+- **Foundation Measurement & Unit Primitives**:
+  - Added `CONVERT.MEASURE` and `FORMAT.MEASURE` supporting 22 measurement dimensions with natural scaling, custom units, and localized dictionary options.
+  - Added measurement arithmetic and comparisons: `MEASURE.ADD`, `MEASURE.SUB`, `MEASURE.SCALE`, `MEASURE.EQUAL?`, `MEASURE.LESS?`, `MEASURE.GREATER?`, `MEASURE.MIN`, `MEASURE.MAX`.
+- **Foundation Date & Formatting Suite**:
+  - Added `DATEFORMAT`, `DATEADD`, `DATEDIFF`, and consolidated formatters (`FORMAT.NUMBER`, `FORMAT.LIST`, `FORMAT.RELATIVETIME`, `FORMAT.BYTES`, `FORMAT.NAME`).
+- **Data Detection & Codec Primitives**:
+  - Added data detection primitives: `DETECT.URL`, `DETECT.EMAIL`, `DETECT.PHONE`, `DETECT.DATE`, `DETECT.ADDRESS`.
+  - Added Base64/Hex/URL codec, UUID operations, and SHA-256/SHA-1/MD5 hashing primitives.
+- **Introspection & Help Modal**:
+  - Added `DESCRIBE` (`help-command`) and `Describe Key` interactive modal dialog views with Tab auto-completion, scrolling, and primitive metadata inspection.
+  - Added procedural docstrings (`TO ... "docstring" ... END`), `DOC`, `ARITY`, `PRIMITIVE?`, and `PROCEDURE?` reporters.
+- **Drawing & Canvas Enhancements**:
+  - Added dashed border styles (`triple-dash`, `heavy-triple-dash`, `quadruple-dash`, `heavy-quadruple-dash`, `double-dash`, `heavy-double-dash`).
+  - Added table mode border style switching and enhanced arrow connectors.
+- **Keymap System**:
+  - Implemented layered mode-aware `KeymapManager` supporting Classic and Modern presets.
+- **Editing & Formatting**:
+  - Added paragraph reflow/justify, fill column configuration, and platform-aware line endings.
+
+### Changed
+
+- **Syntax Highlighting Engine**: Upgraded `LogoSyntaxDefinition` and `SyntaxHighlighter` with dynamic dialect registration and Unicode character class boundaries.
+- **Primitive Metadata**: Centralized primitive parameter metadata and cross-platform compatibility guards.
+
 ## [1.3.1] - 2026-08-14
 
 Linux release build compatibility fix.
@@ -33,7 +67,7 @@ Core editor reliability, typed command workflows, and terminal UI improvements.
 - **File Permissions**: Handled files without read or write permission through the editor file workflow.
 - **Terminal Layout**: Fixed tab display widths, directory buffer alignment, and directory buffer cursor positioning when the ruler is enabled.
 
-## 1.2.5 - 2026-08-09
+## [1.2.5] - 2026-08-09
 
 Fix CJK Markdown list softwrap hanging indent terminal cursor positioning and bundle missing `_FoundationICU.dll` in Windows release package.
 
@@ -42,7 +76,7 @@ Fix CJK Markdown list softwrap hanging indent terminal cursor positioning and bu
 - **CJK Markdown List Softwrap Cursor (`Renderer.swift`)**: Fixed terminal ANSI cursor positioning for softwrapped Markdown list sublines when `listWrapIndent` is enabled. Correctly added `hangingIndent` width to subline display width calculation so the cursor lands right after line-ending CJK characters.
 - **Windows Release Packaging (`release.yml`)**: Added `_Foundation*.dll` and `*icu*.dll` pattern matching to bundle `_FoundationICU.dll` into `zago-windows-x64.zip` release archives.
 
-## 1.2.4 - 2026-08-09
+## [1.2.4] - 2026-08-09
 
 Windows release DLL bundling fix, cross-platform AI skill installer, Canvas mode Ctrl+Arrow arrow line drawing, and outline title truncation.
 
@@ -57,7 +91,7 @@ Windows release DLL bundling fix, cross-platform AI skill installer, Canvas mode
 - **Document Outline View (`DocumentOutlineView.swift`)**: Added automatic ellipsis truncation (`…`) for long heading titles exceeding terminal width, and ensured ESC key exits cleanly without screen artifacts.
 - **Markdown Pipe Table Formatting (`PipeTableFormatter.swift`)**: Ignored `+` as border column separator and supported escaped pipes (`\|`).
 
-## 1.2.3 - 2026-08-09
+## [1.2.3] - 2026-08-09
 
 Optimized Windows release archive size by filtering only essential Swift Runtime DLLs.
 
@@ -66,7 +100,7 @@ Optimized Windows release archive size by filtering only essential Swift Runtime
 - **Windows Release Size Optimization (`release.yml`)**: Filtered Windows `.zip` archive to bundle strictly essential Swift Runtime DLLs (`swiftCore`, `swiftFoundation`, `swiftDispatch`, `swiftWinSDK`, `swiftCRT`, `blocksRuntime`), reducing release zip size from ~300MB down to ~12MB by excluding toolchain/compiler binaries.
 - **Windows Installer Script (`install.ps1`)**: Ensured all runtime DLLs are copied to `$installDir` and the executable is copied and renamed to `$targetExe` (`zago.exe`).
 
-## 1.2.2 - 2026-08-09
+## [1.2.2] - 2026-08-09
 
 Standalone Windows distribution bundling Swift Runtime DLLs and installer script enhancements.
 
@@ -75,7 +109,7 @@ Standalone Windows distribution bundling Swift Runtime DLLs and installer script
 - **Windows Standalone Packaging (`release.yml`)**: Automated bundling of Swift Runtime DLLs (`swiftCore.dll`, `swiftFoundation.dll`, `swiftDispatch.dll`, etc.) into `zago-windows-x64.zip` for standalone execution on Windows environments without Swift installed.
 - **Windows Installer Script (`install.ps1`)**: Updated installer script to copy all bundled DLLs to `$installDir` alongside `zago.exe` and ensure the binary is always renamed to `zago.exe`.
 
-## 1.2.1 - 2026-08-09
+## [1.2.1] - 2026-08-09
 
 On-demand LOGO Output logging and automatic buffer list removal on toggle off.
 
@@ -84,7 +118,7 @@ On-demand LOGO Output logging and automatic buffer list removal on toggle off.
 - **On-Demand LOGO Output Buffer**: Running LOGO scripts or commands now logs output history silently in the background without automatically adding `*LOGO Output*` buffer to the active buffer tab list.
 - **Auto-Remove on Toggle Off**: Toggling off `*LOGO Output*` (`Alt+L` / `M+L`) switches back to the primary file and removes `*LOGO Output*` from the buffer list, preventing tab bar clutter and exit prompt friction (`^X`).
 
-## 1.2.0 - 2026-08-09
+## [1.2.0] - 2026-08-09
 
 Interactive TUI Markdown Symbol Picker, Logo string manipulation primitives, dedicated Logo Run Menu, and Views directory architecture refactoring.
 
@@ -107,7 +141,7 @@ Interactive TUI Markdown Symbol Picker, Logo string manipulation primitives, ded
 - Fixed file watcher self-save race condition on Windows by synchronizing baseline modification date snapshot updates on serial queues (`queue.sync`).
 - Cleaned up documentation, updated `AGENT.md`, and enforced relative markdown links across all documentation files.
 
-## 1.1.1 - 2026-08-07
+## [1.1.1] - 2026-08-07
 
 Extracted `Drawing` & `DocumentOutline` SPM targets, added customizable `ArrowStyle` for Unicode arrows, decoupled `Config` dependencies, and enhanced help documentation.
 
@@ -124,7 +158,7 @@ Extracted `Drawing` & `DocumentOutline` SPM targets, added customizable `ArrowSt
 - Updated Traditional Chinese localization to use "畫布模式" (Canvas Mode).
 - Cancel Selection menu item (`menu.edit.cancel_selection`) is now visible only when an active selection mark or canvas block mark exists.
 
-## 1.1.0 - 2026-08-07
+## [1.1.0] - 2026-08-07
 
 MVC controller architecture refactoring, per-buffer undo isolation, and automated Debian (.deb) release packaging.
 
@@ -143,6 +177,8 @@ MVC controller architecture refactoring, per-buffer undo isolation, and automate
 ### Fixed
 
 - Moved `undoStack` from global `Editor` state into `TextBuffer`, ensuring each open buffer maintains its own isolated undo history without cross-buffer interference when switching tabs.
+
+## [1.0.5] - 2026-08-05
 
 Spell checker, text encoding auto-detection, and Canvas Mode line drawing release.
 
@@ -166,7 +202,7 @@ Spell checker, text encoding auto-detection, and Canvas Mode line drawing releas
 - Markdown syntax highlighting regexes for inline code and emphasis no longer match across table separators or backticks.
 - Line-wrapped text now preserves syntax highlighting across softwrapped segments.
 
-## 1.0.4 - 2026-08-04
+## [1.0.4] - 2026-08-04
 
 Windows terminal redraw fix release.
 
@@ -174,7 +210,7 @@ Windows terminal redraw fix release.
 
 - Windows terminal resize events now trigger an automatic full-screen redraw without waiting for the next keypress.
 
-## 1.0.3 - 2026-08-04
+## [1.0.3] - 2026-08-04
 
 Windows compatibility and installation documentation release.
 
@@ -194,7 +230,7 @@ Windows compatibility and installation documentation release.
 - LOGO drawing commands now accept expression-based distance and heading arguments.
 - Canvas Mode page navigation keeps visual-column behavior aligned with canvas movement.
 
-## 1.0.2 - 2026-08-02
+## [1.0.2] - 2026-08-02
 
 Markdown writer workflow and per-buffer mode release.
 
@@ -217,7 +253,7 @@ Markdown writer workflow and per-buffer mode release.
 - Markdown syntax highlighting no longer treats list items containing `|` as compact tables.
 - `FILL` status messages from delegate-driven fills are preserved after LOGO execution.
 
-## 1.0.1 - 2026-08-02
+## [1.0.1] - 2026-08-02
 
 Preview release update for Homebrew distribution and Canvas Mode safety.
 
@@ -235,7 +271,7 @@ Preview release update for Homebrew distribution and Canvas Mode safety.
 - Canvas Mode `goto row [col]` now auto-extends empty rows within the safety limits.
 - Text Mode `goto` keeps clamping to the existing buffer and never auto-extends rows.
 
-## 1.0.0 - 2026-08-02
+## [1.0.0] - 2026-08-02
 
 Preview release work for early testers.
 
