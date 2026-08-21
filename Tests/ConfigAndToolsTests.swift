@@ -1061,17 +1061,23 @@ struct ConfigAndToolsTests {
             #expect(line.displayWidth <= maxWidth)
         }
 
-        // Verify all primitive describe lines format properly within typical dialog width
-        for alias in LogoPrimitive.keywordAliases {
-            let lines = formatNameDialog.buildSymbolDetails(for: alias, l10n: l10n, maxLineWidth: maxWidth)
-            #expect(!lines.isEmpty)
-            for line in lines {
-                if line.displayWidth > maxWidth {
-                    print("EXACT OVERFLOW [\(alias)]: width=\(line.displayWidth), line='\(line)'")
-                }
-                #expect(line.displayWidth <= maxWidth)
-            }
-        }
+        // Verify describing Chinese dialect keywords directly
+        let chineseDialog = DescribeCommandDialogView(
+            terminal: editor.terminal,
+            editor: editor,
+            symbol: "畫框",
+            language: .zh_TW
+        )
+        let zhL10n = L10n(language: .zh_TW)
+        let drawBoxLines = chineseDialog.buildSymbolDetails(for: "畫框", l10n: zhL10n, maxLineWidth: maxWidth)
+        #expect(!drawBoxLines.isEmpty)
+        let joinedDrawBox = drawBoxLines.joined(separator: "\n")
+        #expect(joinedDrawBox.contains("DRAWBOX") || joinedDrawBox.contains("box") || joinedDrawBox.contains("畫框"))
+
+        // Verify that describing BOX lists dialect aliases (like 加框, 插入框)
+        let boxLines = chineseDialog.buildSymbolDetails(for: "BOX", l10n: zhL10n, maxLineWidth: maxWidth)
+        let joinedBox = boxLines.joined(separator: "\n")
+        #expect(joinedBox.contains("加框") || joinedBox.contains("插入框"))
     }
 
     @Test

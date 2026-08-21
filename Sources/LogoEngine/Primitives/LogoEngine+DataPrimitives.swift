@@ -768,16 +768,17 @@ extension LogoEngine {
         case .arity:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             guard let nextToken = reader.peekToken() else { return "1" }
-            let upper = unquote(nextToken).uppercased()
+            let raw = unquote(nextToken)
+            let upper = raw.uppercased()
             let name: String
-            if customProcedures[upper] != nil {
+            if customProcedures[upper] != nil || parsePrimitive(raw) != nil || LogoPrimitive.from(upper) != nil {
                 _ = reader.nextRawToken()
-                name = upper
+                name = raw
             } else {
-                name = unquote(reader.nextExpression()).uppercased()
+                name = unquote(reader.nextExpression())
             }
             reader.commit(to: &index)
-            if let proc = customProcedures[name] {
+            if let proc = customProcedures[name.uppercased()] {
                 return "\(proc.parameters.count)"
             }
             return "1"
@@ -785,19 +786,20 @@ extension LogoEngine {
         case .doc:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             guard let nextToken = reader.peekToken() else { return "" }
-            let upper = unquote(nextToken).uppercased()
+            let raw = unquote(nextToken)
+            let upper = raw.uppercased()
             let name: String
-            if customProcedures[upper] != nil || LogoPrimitive.from(upper) != nil {
+            if customProcedures[upper] != nil || parsePrimitive(raw) != nil || LogoPrimitive.from(upper) != nil {
                 _ = reader.nextRawToken()
-                name = upper
+                name = raw
             } else {
-                name = unquote(reader.nextExpression()).uppercased()
+                name = unquote(reader.nextExpression())
             }
             reader.commit(to: &index)
-            if let proc = customProcedures[name] {
+            if let proc = customProcedures[name.uppercased()] {
                 return proc.docstring ?? ""
             }
-            if let prim = LogoPrimitive.from(name) {
+            if let prim = parsePrimitive(name) ?? LogoPrimitive.from(name.uppercased()) {
                 return prim.meta.description
             }
             return ""
@@ -956,16 +958,19 @@ extension LogoEngine {
 
         case .isProcedure:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            let name = normalizeProcedureName(reader.nextExpression())
+            let raw = reader.nextExpression()
+            let name = normalizeProcedureName(raw)
             reader.commit(to: &index)
-            let exists = LogoPrimitive.from(name) != nil || customProcedures[name] != nil
+            let exists = parsePrimitive(unquote(raw)) != nil || LogoPrimitive.from(name) != nil || customProcedures[name] != nil
             return exists.logoString
 
         case .isPrimitive:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            let name = normalizeProcedureName(reader.nextExpression())
+            let raw = reader.nextExpression()
+            let name = normalizeProcedureName(raw)
             reader.commit(to: &index)
-            return (LogoPrimitive.from(name) != nil).logoString
+            let isPrim = parsePrimitive(unquote(raw)) != nil || LogoPrimitive.from(name) != nil
+            return isPrim.logoString
 
         case .isDefined:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)

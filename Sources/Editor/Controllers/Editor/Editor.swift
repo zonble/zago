@@ -419,6 +419,7 @@ public final class Editor: @unchecked Sendable {
         if language == .zh_TW && !logoEngine.pluginRegistry.contains(id: "zh-TW") {
             logoEngine.register(plugin: LogoTraditionalChinesePlugin())
         }
+        syntaxHighlighter.updateLogoDialects(logoEngine.pluginRegistry.registeredPlugins)
 
         let prelude = config.logoPrelude.trimmingCharacters(in: .whitespacesAndNewlines)
         if !prelude.isEmpty {

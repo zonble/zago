@@ -15,4 +15,29 @@ public enum LogoLocalizationRegistry {
             $0.id.lowercased() == cleanId || $0.aliases.contains { $0.lowercased() == cleanId }
         }
     }
+
+    /// Parses a token into a `LogoPrimitive` using all registered built-in dialects.
+    public static func parsePrimitive(_ token: String) -> LogoPrimitive? {
+        for dialect in allDialects {
+            if let prim = dialect.parsePrimitive(token) {
+                return prim
+            }
+        }
+        return nil
+    }
+
+    /// Returns all localized aliases for the given primitive across all built-in dialects.
+    public static func aliases(for primitive: LogoPrimitive) -> [String] {
+        allDialects.flatMap { $0.aliases(for: primitive) }
+    }
+
+    /// All keyword aliases from all built-in dialects.
+    public static var allKeywordAliases: [String] {
+        allDialects.flatMap(\.keywordAliases)
+    }
+
+    /// All filler tokens from all built-in dialects.
+    public static var allFillerTokens: Set<String> {
+        allDialects.reduce(into: Set<String>()) { $0.formUnion($1.fillerTokens) }
+    }
 }

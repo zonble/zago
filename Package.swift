@@ -84,7 +84,7 @@ let package = Package(
         ),
         .target(
             name: "Syntax",
-            dependencies: ["ANSIStyle", "DocumentOutline", "LogoEngine"]
+            dependencies: ["ANSIStyle", "DocumentOutline", "LogoEngine", "LogoLocalization"]
         ),
         .target(
             name: "Diagram"

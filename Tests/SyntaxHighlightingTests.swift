@@ -138,6 +138,34 @@ import Testing
         #expect(semicolonStringHighlighted.contains("\u{1B}[32m\"a;b\""))
         #expect(semicolonStringHighlighted.contains("\u{1B}[90m ; SHOW :x"))
         #expect(!semicolonStringHighlighted.contains("\u{1B}[90m;b\""))
+
+        // Chinese dialect keywords, filler tokens, and variables
+        let chineseHighlighted = highlighter.highlight(
+            line: "如果 :體重 > 50 則 [ 前進 10 步 畫框 \"完成 ] 否則 [ 後退 5 步 ]", syntax: lang)
+        // Keywords: 如果, 前進, 畫框, 後退 (boldCyan: \u{1B}[1;36m)
+        #expect(chineseHighlighted.contains("\u{1B}[1;36m如果"))
+        #expect(chineseHighlighted.contains("\u{1B}[1;36m前進"))
+        #expect(chineseHighlighted.contains("\u{1B}[1;36m畫框"))
+        #expect(chineseHighlighted.contains("\u{1B}[1;36m後退"))
+        // Filler tokens: 則, 步, 否則 (brightBlue: \u{1B}[94m)
+        #expect(chineseHighlighted.contains("\u{1B}[94m則"))
+        #expect(chineseHighlighted.contains("\u{1B}[94m步"))
+        #expect(chineseHighlighted.contains("\u{1B}[94m否則"))
+        // Chinese Variable: :體重 (brightBlue: \u{1B}[94m)
+        #expect(chineseHighlighted.contains("\u{1B}[94m:體重"))
+        // Quoted string: "完成 (green: \u{1B}[32m)
+        #expect(chineseHighlighted.contains("\u{1B}[32m\"完成"))
+
+        // Chinese FizzBuzz snippet testing ":數字" and "都成立"
+        let condLine = highlighter.highlight(
+            line: "[[都成立 整除 :數字 3 整除 :數字 5 ] 則 [回報 \"肥滋巴滋\"]]", syntax: lang)
+        #expect(condLine.contains("\u{1B}[1;36m都成立"))
+        #expect(!condLine.contains("都\u{1B}[94m成\u{1B}[0m立"))
+        #expect(condLine.contains("\u{1B}[94m:數字"))
+        #expect(!condLine.contains(":數\u{1B}[1;36m字"))
+        #expect(condLine.contains("\u{1B}[94m則"))
+        #expect(condLine.contains("\u{1B}[1;36m回報"))
+        #expect(condLine.contains("\u{1B}[32m\"肥滋巴滋"))
     }
 
     if let lang = vhsLang {

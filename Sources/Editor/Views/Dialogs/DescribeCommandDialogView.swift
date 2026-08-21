@@ -1,6 +1,7 @@
 import ANSIStyle
 import Foundation
 import LogoEngine
+import LogoLocalization
 import TextMetrics
 
 /// Interactive modal dialog for querying and describing Editor commands and LOGO procedures.
@@ -193,6 +194,19 @@ final class DescribeCommandDialogView {
         if let editor = editor {
             for procName in editor.logoEngine.customProcedures.keys {
                 set.insert(procName)
+            }
+        }
+
+        // 4. Localized Dialect Keywords
+        if let editor = editor {
+            for plugin in editor.logoEngine.pluginRegistry.registeredPlugins {
+                for alias in plugin.keywordAliases {
+                    set.insert(alias)
+                }
+            }
+        } else {
+            for alias in LogoLocalizationRegistry.allKeywordAliases {
+                set.insert(alias)
             }
         }
 
@@ -413,7 +427,16 @@ final class DescribeCommandDialogView {
         }
 
         // 3. Built-in LOGO Primitive
-        if let prim = LogoPrimitive.from(sym) {
+        let resolvedPrim: LogoPrimitive?
+        if let prim = editor?.logoEngine.parsePrimitive(sym) {
+            resolvedPrim = prim
+        } else if let prim = LogoLocalizationRegistry.parsePrimitive(sym) ?? LogoPrimitive.from(sym) {
+            resolvedPrim = prim
+        } else {
+            resolvedPrim = nil
+        }
+
+        if let prim = resolvedPrim {
             var primSection: [String] = []
             let meta = prim.meta
             let sourceStr =
@@ -448,9 +471,19 @@ final class DescribeCommandDialogView {
                 }
             }
 
-            let aliases = LogoPrimitive.keywordAliases.filter {
+            var aliases = LogoPrimitive.keywordAliases.filter {
                 $0 != meta.name && LogoPrimitive.from($0) == prim
             }
+            let dialectAliases: [String]
+            if let editor = editor, !editor.logoEngine.pluginRegistry.aliases(for: prim).isEmpty {
+                dialectAliases = editor.logoEngine.pluginRegistry.aliases(for: prim)
+            } else {
+                dialectAliases = LogoLocalizationRegistry.aliases(for: prim)
+            }
+            for da in dialectAliases where !aliases.contains(da) && da != meta.name {
+                aliases.append(da)
+            }
+
             if !aliases.isEmpty {
                 primSection.append("")
                 primSection.append("• " + l10n["describe_command.aliases"].ansiStyled(style: ANSIStyle.boldCyan))

@@ -1,6 +1,7 @@
 import ANSIStyle
 @_exported import DocumentOutline
 import Foundation
+import LogoEngine
 
 /// TokenType categories for syntax highlighting colors.
 public enum SyntaxTokenType {
@@ -169,6 +170,18 @@ public final class SyntaxHighlighter {
     public func loadNanoRCContent(_ content: String) {
         guard !content.isEmpty else { return }
         NanoRCParser().parseNanoRCContent(content, into: &languages)
+    }
+
+    /// Re-registers the LOGO language syntax definition with the specified active dialect plugins.
+    public func updateLogoDialects(_ plugins: [any LogoParserPlugin]) {
+        let logoDef = LogoSyntaxDefinition(plugins: plugins)
+        let newLogoSyntax = logoDef.buildLanguageSyntax()
+        if let idx = languages.firstIndex(where: { $0.name == "LOGO" }) {
+            languages[idx] = newLogoSyntax
+        } else {
+            languages.append(newLogoSyntax)
+        }
+        clearCache()
     }
 
     /// Auto-detects matching LanguageSyntax based on file path or extension.

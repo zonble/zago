@@ -125,16 +125,12 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         // Turtle Graphics
         "前進": .forward,
         "往前": .forward,
-        "前": .forward,
         "後退": .back,
         "往後": .back,
-        "後": .back,
         "右轉": .turnRight,
         "往右": .turnRight,
-        "右": .turnRight,
         "左轉": .turnLeft,
         "往左": .turnLeft,
-        "左": .turnLeft,
         "落筆": .penDown,
         "下筆": .penDown,
         "提筆": .penUp,
@@ -756,5 +752,9 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
                 "簡短", "標準", "完整", "全部",
                 "為", "成", "次", "到", "至", "則", "否則", "不然",
             ]
+    }
+
+    public func aliases(for primitive: LogoPrimitive) -> [String] {
+        Self.primitiveMap.compactMap { $0.value == primitive ? $0.key : nil }.sorted()
     }
 }
