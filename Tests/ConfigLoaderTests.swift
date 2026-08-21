@@ -336,6 +336,18 @@ struct ConfigLoaderTests {
         let codeTokens = highlighter.tokenTypes(for: "MAKE \"i\" 80", syntax: syntax)
         #expect(codeTokens.contains(.keyword))
         #expect(codeTokens.contains(.number))
+
+        let loadDialectTokens = highlighter.tokenTypes(for: "load dialect zh-TW", syntax: syntax)
+        #expect(loadDialectTokens.contains(.keyword))
+        #expect(loadDialectTokens.contains(.typeOrAttribute))
+
+        let setBackupTokens = highlighter.tokenTypes(for: "set backup on", syntax: syntax)
+        #expect(setBackupTokens.contains(.keyword))
+        #expect(setBackupTokens.contains(.typeOrAttribute))
+
+        let setMaxFileSizeTokens = highlighter.tokenTypes(for: "set max-file-size 50MB", syntax: syntax)
+        #expect(setMaxFileSizeTokens.contains(.keyword))
+        #expect(setMaxFileSizeTokens.contains(.number))
     }
 
     @Test func testConfigLoaderParsesCanonicalSettingsAndUnset() throws {
