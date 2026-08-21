@@ -10,3 +10,5 @@ DerivedData/
 node_modules
 web/node_modules
 web/dist
+*.wasm
+web/public/*.wasm
