@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up QEMU (for cross-arch emulation)
         if: matrix.arch == 'aarch64'
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Swift Toolchain
         shell: pwsh
@@ -181,7 +181,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4

@@ -114,7 +114,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Swift with Wasm SDK
         uses: bytecodealliance/actions/setup-wasmtime@v1

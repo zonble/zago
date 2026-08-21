@@ -14,7 +14,14 @@ if command -v docker >/dev/null 2>&1 && docker image inspect zago-wasm-builder >
         swift build --configuration release --swift-sdk wasm32-unknown-wasi --product zagoweb
 elif swift sdk list 2>/dev/null | grep -q "wasm"; then
     echo "==> Using local Swift Wasm SDK..."
-    WASM_SDK=$(swift sdk list | grep "wasm" | head -n 1)
+    # Keep the SDK selection deterministic on CI machines that may have more
+    # than one WebAssembly SDK installed.
+    WASM_SDK="6.3-RELEASE-wasm32-unknown-wasip1"
+    if ! swift sdk list | grep -Fxq "$WASM_SDK"; then
+        echo "==> Error: Expected Swift Wasm SDK '$WASM_SDK' is not installed."
+        swift sdk list
+        exit 1
+    fi
     swift build --configuration release --swift-sdk "$WASM_SDK" --product zagoweb
 else
     echo "==> Error: No Swift Wasm SDK found locally and 'zago-wasm-builder' image not built."

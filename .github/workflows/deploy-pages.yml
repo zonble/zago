@@ -22,17 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Install Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.0"
-
-      - name: Install Swift Wasm SDK
+      - name: Build Swift Wasm Docker Image
         run: |
-          swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.3-RELEASE/swift-wasm-6.3-RELEASE-wasm32-unknown-wasip1.artifactbundle.zip --checksum 6704d137e532f1ac31eafedd80658f9ee61239f2b6291216a02da32361ea9dcb || true
-          swift sdk list
+          docker build -t zago-wasm-builder -f Dockerfile.wasm .
 
       - name: Build WebAssembly Binary
         run: |
