@@ -468,6 +468,7 @@ struct EnglishStrings {
         "status.word_kept": "Word kept",
         "status.no_misspelled": "[ No misspelled words found ]",
         "status.file_reloaded": "[ File reloaded from disk ]",
+        "status.large_file_mode": "[ Large file mode active (%@): Syntax highlighting and git diff disabled ]",
         "status.saved_as_utf8": "[ Saved as UTF-8 ]",
         "status.save_cancelled": "[ Save cancelled ]",
         "status.kept_local": "[ Kept local modifications ]",

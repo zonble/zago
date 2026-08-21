@@ -318,7 +318,52 @@ public final class ConfigLoader {
             } else {
                 recordSyntaxError(in: &config)
             }
+        case .maxFileSize:
+            guard let bytes = Self.parseByteSize(value), bytes >= 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.maxFileSizeBytes = bytes
+        case .largeFileThreshold:
+            guard let bytes = Self.parseByteSize(value), bytes >= 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.largeFileThresholdBytes = bytes
+        case .maxLineHighlightLength:
+            guard let len = Int(value), len > 0 else {
+                recordSyntaxError(in: &config)
+                return
+            }
+            config.maxLineHighlightLength = len
         }
+    }
+
+    /// Parses string byte size expressions like "50MB", "5mb", "1024KB", "1024", "none", "off", "0".
+    public static func parseByteSize(_ value: String) -> Int64? {
+        let clean = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if clean == "none" || clean == "off" || clean == "0" {
+            return 0
+        }
+        if clean.hasSuffix("gb") {
+            guard let num = Double(clean.dropLast(2).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024 * 1024 * 1024)
+        }
+        if clean.hasSuffix("mb") {
+            guard let num = Double(clean.dropLast(2).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024 * 1024)
+        }
+        if clean.hasSuffix("kb") || clean.hasSuffix("k") {
+            let suffix = clean.hasSuffix("kb") ? 2 : 1
+            guard let num = Double(clean.dropLast(suffix).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return Int64(num * 1024)
+        }
+        if clean.hasSuffix("b") {
+            guard let num = Int64(clean.dropLast(1).trimmingCharacters(in: .whitespaces)) else { return nil }
+            return num
+        }
+        guard let num = Int64(clean) else { return nil }
+        return num
     }
 
     private func applyUnset(_ name: String, into config: inout EditorConfig) {

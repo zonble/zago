@@ -51,7 +51,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             isDirectory: isDir.boolValue,
             isBinary: isDir.boolValue ? false : isBinaryFile(at: normalized),
             isExecutable: isDir.boolValue ? false : fileManager.isExecutableFile(atPath: normalized),
-            modificationDate: attrs?[.modificationDate] as? Date
+            modificationDate: attrs?[.modificationDate] as? Date,
+            size: isDir.boolValue ? 0 : EditorFileInfo.fileSize(from: attrs)
         )
     }
 

@@ -95,7 +95,8 @@ extension TextBuffer {
     private func append(_ snapshot: UndoSnapshot, to stack: inout [UndoSnapshot]) {
         guard stack.last != snapshot else { return }
         stack.append(snapshot)
-        if stack.count > maxUndoStackSize {
+        let effectiveMax = isLargeFileMode ? min(10, maxUndoStackSize) : maxUndoStackSize
+        if stack.count > effectiveMax {
             stack.removeFirst()
         }
     }

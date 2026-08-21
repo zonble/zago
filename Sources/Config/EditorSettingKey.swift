@@ -27,6 +27,9 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case modernbindings
     case noNewlines = "nonewlines"
     case fill
+    case maxFileSize = "max-file-size"
+    case largeFileThreshold = "large-file-threshold"
+    case maxLineHighlightLength = "max-line-highlight-length"
 
     public var suggestedValues: [String] {
         switch self {
@@ -42,6 +45,9 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .arrow: return ArrowStyle.allCases.map(\.rawValue)
         case .keymap: return ["classic", "modern"]
         case .modernbindings: return ["on", "off"]
+        case .maxFileSize: return ["50MB", "100MB", "off"]
+        case .largeFileThreshold: return ["5MB", "10MB", "off"]
+        case .maxLineHighlightLength: return ["10000", "5000"]
         }
     }
 
@@ -50,7 +56,8 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
         case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
             .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines:
             return true
-        case .listIndentSize, .tab, .fill, .language, .spellLanguage, .border, .arrow, .regex, .keymap:
+        case .listIndentSize, .tab, .fill, .language, .spellLanguage, .border, .arrow, .regex, .keymap,
+            .maxFileSize, .largeFileThreshold, .maxLineHighlightLength:
             return false
         }
     }

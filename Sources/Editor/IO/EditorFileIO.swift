@@ -7,6 +7,20 @@ public enum EncodingError: Error {
     case unsupportedCharacters
 }
 
+/// Errors thrown during file reading or size validation.
+public enum EditorFileError: LocalizedError, Equatable, Sendable {
+    case fileTooLarge(size: Int64, limit: Int64)
+
+    public var errorDescription: String? {
+        switch self {
+        case .fileTooLarge(let size, let limit):
+            let sizeFormatted = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+            let limitFormatted = ByteCountFormatter.string(fromByteCount: limit, countStyle: .file)
+            return "File too large: \(sizeFormatted) (limit: \(limitFormatted)). Use 'less' or 'head' instead."
+        }
+    }
+}
+
 /// Metadata information about a file or directory.
 public struct EditorFileInfo: Sendable, Equatable {
     /// Whether the file or directory exists on disk.
@@ -19,19 +33,41 @@ public struct EditorFileInfo: Sendable, Equatable {
     public let isExecutable: Bool
     /// Last modification timestamp, if available.
     public let modificationDate: Date?
+    /// File size in bytes.
+    public let size: Int64
 
     public init(
         exists: Bool,
         isDirectory: Bool,
         isBinary: Bool = false,
         isExecutable: Bool = false,
-        modificationDate: Date? = nil
+        modificationDate: Date? = nil,
+        size: Int64 = 0
     ) {
         self.exists = exists
         self.isDirectory = isDirectory
         self.isBinary = isBinary
         self.isExecutable = isExecutable
         self.modificationDate = modificationDate
+        self.size = size
+    }
+
+    /// Safely extracts file size in bytes as `Int64` across macOS, Linux, and Windows from FileManager attributes.
+    public static func fileSize(from attributes: [FileAttributeKey: Any]?) -> Int64 {
+        guard let rawSize = attributes?[.size] else { return 0 }
+        if let u64 = rawSize as? UInt64 {
+            return Int64(u64)
+        }
+        if let num = rawSize as? NSNumber {
+            return num.int64Value
+        }
+        if let i64 = rawSize as? Int64 {
+            return i64
+        }
+        if let intVal = rawSize as? Int {
+            return Int64(intVal)
+        }
+        return 0
     }
 }
 

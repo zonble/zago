@@ -458,6 +458,7 @@ struct TraditionalChineseStrings {
         "status.word_kept": "保留原字詞",
         "status.no_misspelled": "[ 未發現拼錯字詞 ]",
         "status.file_reloaded": "[ 已從磁碟重新載入檔案 ]",
+        "status.large_file_mode": "[ 已啟用大檔案降級模式 (%@)：已停用語法突顯與 Git Diff ]",
         "status.saved_as_utf8": "[ 已改用 UTF-8 儲存 ]",
         "status.save_cancelled": "[ 存檔已取消 ]",
         "status.kept_local": "[ 已保留本地修改 ]",
