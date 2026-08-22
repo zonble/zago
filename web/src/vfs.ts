@@ -13,37 +13,154 @@ export interface VFSNode {
 
 const VFS_PREFIX = "zago_vfs:";
 
-const DEFAULT_WELCOME_MD = `# Welcome to zago Web Virtual OS! 🐢
+const DEFAULT_WELCOME_MD = `# zago Interactive Tutorial
 
-zago is running inside WebAssembly with a full POSIX-compatible Virtual File System (VFS) backed by IndexedDB.
+## Canvas Mode
 
-## Features
-- **Hierarchical VFS**: Supports subdirectories (\`/workspace/examples/\`, \`/workspace/src/\`).
-- **Terminal File Navigation**: Type \`:dir\` or \`:ls\` to open the interactive Directory Browser.
-- **Canvas Mode**: Press \`ESC ESC\` to draw boxes, lines, tables, and flowcharts.
-- **Editor LOGO**: Built-in macro interpreter for programmable document generation.
-- **Persistence**: All changes are automatically persisted to IndexedDB across reloads.
-- **ZIP Import / Export**: Use the top toolbar to import project archives or export the workspace.
+\`\`\`
+┌────────┐          ┌────────┐
+│        │          │        │
+│ Begin  x          │  End   │
+│        │          │        │
+└────────┘          └────────┘
+\`\`\`
 
-## Sample ASCII Diagram
-┌──────────────────────────────────────────────────────────┐
-│                   Browser Main Thread                    │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │ Web UI Toolbar [Import/Export ZIP]                 │  │
-│  └────────────────────────────────────────────────────┘  │
-│                           │                              │
-│                           ▼ (SharedArrayBuffer Stdin)    │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │ Web Worker (WASI Runtime + zago.wasm)              │  │
-│  │  - Hierarchical Inode Tree (/workspace)            │  │
-│  │  - Directory Navigation (:dir / :ls)               │  │
-│  └────────────────────────────────────────────────────┘  │
-│                           │                              │
-│                           ▼ (Debounced Flush)            │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │ IndexedDB Virtual OS VFS Store                     │  │
-│  └────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────┘
+- Move the cursor to "x".
+- Press F8 to enter the canvas mode.
+- Press Shift + Right to draw a line.
+- Continue to extend the line.
+- Press Ctrl + Any arrow key, or Crtl + Shift + Arrow for arrows.
+- Press F1 to show the menu and select another style in "borders".
+- Press F8 again to exit the canvas mode.
+
+## Table Mode
+
+\`\`\`
+┌────────────────┬────────────────┬────────────────┐
+│ Press F7 Here  │                │                │
+├────────────────┼────────────────┼────────────────┤
+│                │                │                │
+└────────────────┴────────────────┴────────────────┘
+\`\`\`
+
+- Press F7 in any cell to enter table mode
+- You will edit the context in the cell.
+
+## LINE command
+
+\`\`\`
+┌────────┐          ┌────────┐
+│        │          │        │
+│ Begin  │          │  End   │
+│        ├──────────┤        │
+└────────┘          └────────┘
+┌────────┐          ┌────────┐
+│        │          │        │
+│ Begin  x          │  End   │
+│        │          │        │
+└────────┘          └────────┘
+\`\`\`
+
+- ESC shows the command prompt.
+- ESC again to exit the command prompt.
+- Move cursor to "x".
+- ESC, then input "LINE". Case does not matter.
+- A connecting line will be there.
+
+\`\`\`
+┌────────┐   ┌────────┐ 
+│        │   │        │ 
+│ Begin  │   │  End   │ 
+│        │   │        │        
+└───x────┘   └────┬───┘ 
+                  │
+                  │
+                  │
+┌────────┐   ┌────┴───┐ 
+│        │   │        │ 
+│ Begin  │   │  End   │ 
+│        │   │        │ 
+└────────┘   └────────┘ 
+\`\`\`
+
+- Move cursor to "x".
+- ESC, then input "VLINE".
+- A vertical line will be there.
+
+## Additioan Border and Arrow Styles
+
+Try these commands for creating lines with specific styles:
+
+- LINE ->>
+- LINE =~>
+- VLINE <|+|>
+
+The syntax is [begin arrow][border][end aarrow]
+
+### Border Styles
+
+- Single: -
+- Double: =
+- Heavy: +
+- ASCII: A
+- Double Dash: --
+- Heavy Double Dash: ++
+- Triple Dash: ---
+- Heavy Triple Dash: +++
+- Quadruple Dash: ----
+- Heavy Quadruple Dash: +++
+
+### Arrow Styles
+
+- ASCII: < or >
+- Solid: << or >>
+- Stemmed: <~ or ~>
+- Hollow: <| or |>
+
+## BOX and DRAWBOX Commanads
+
+\`\`\`
+Fill                 Inset
+┌──────────────────┐ ┌──────────────────┐
+│f                 │ │i                 │
+│                  │ │                  │
+│                  │ │                  │
+│                  │ │                  │
+└──────────────────┘ └──────────────────┘
+\`\`\`
+
+- Move cursor to "f".
+- ESC, input "FILL <any text>". Enter. 
+  The box your be filled with your text.
+- Move to "i".
+- ESC, input "INSET <any text>". Enter.
+  The text will be placed in the center of the box.
+
+
+
+
+Try the commands to create boxes above
+
+- BOX "Hi"        ; Inserts a box with "Hi" inside.
+- DRAWBOX "There" ; Overlays a box over current content.
+- BOX 20 5 "Hi"   ; Inserts a box with the given size.
+- BOX "Hi" =      ; Inserts a box with a specific border style.
+- BOX "Hi" =)     ; ")" indicates round corner.
+
+You can use border styles including - = + A -- ++ --- +++ ---- ++++
+
+## FILL and INSET Commands
+
+
+
+
+
+   
+
+
+
+
+
 
 Happy Editing!
 `;

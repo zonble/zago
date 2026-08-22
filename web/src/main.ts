@@ -16,11 +16,13 @@ async function main() {
   // Initialize VFS storage with defaults
   await VirtualOSStorage.initializeDefaults();
 
+  const isMobileInitial = window.innerWidth < 600;
+
   // Create and configure xterm.js instance
   const term = new Terminal({
     cursorBlink: true,
     fontFamily: 'Menlo, Monaco, "Courier New", "Noto Sans Mono CJK TC", monospace',
-    fontSize: 14,
+    fontSize: isMobileInitial ? 12 : 14,
     lineHeight: 1.2,
     theme: {
       background: "#0d1117",
@@ -60,6 +62,79 @@ async function main() {
   let currentWorker: Worker | null = null;
   let mode: "editor" | "shell" = "editor";
   let shellInput = "";
+  let cachedWasmBytes: ArrayBuffer | null = null;
+
+  // Progress UI elements
+  const loadingOverlay = document.getElementById("wasm-loading-overlay");
+  const progressBar = document.getElementById("loading-progress-bar");
+  const statusText = document.getElementById("loading-status");
+  const detailText = document.getElementById("loading-detail");
+
+  function showLoading(status: string, detail: string = "", percent: number = 0) {
+    if (loadingOverlay) loadingOverlay.classList.remove("hidden");
+    if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    if (statusText) statusText.textContent = status;
+    if (detailText) detailText.textContent = detail;
+  }
+
+  function hideLoading() {
+    if (loadingOverlay) loadingOverlay.classList.add("hidden");
+  }
+
+  async function fetchWasmWithProgress(url: string): Promise<ArrayBuffer> {
+    if (cachedWasmBytes) {
+      return cachedWasmBytes;
+    }
+
+    showLoading("Downloading zago.wasm...", "Connecting to server...", 5);
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}: HTTP ${response.status}`);
+    }
+
+    const contentLength = +(response.headers.get("Content-Length") || 0);
+    const totalMB = contentLength ? (contentLength / (1024 * 1024)).toFixed(1) : "?";
+
+    if (!response.body) {
+      const buffer = await response.arrayBuffer();
+      cachedWasmBytes = buffer;
+      return buffer;
+    }
+
+    const reader = response.body.getReader();
+    let receivedBytes = 0;
+    const chunks: Uint8Array[] = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        chunks.push(value);
+        receivedBytes += value.length;
+        const currentMB = (receivedBytes / (1024 * 1024)).toFixed(1);
+        const percent = contentLength ? Math.round((receivedBytes / contentLength) * 100) : 50;
+        showLoading(
+          `Downloading zago.wasm (${currentMB} MB / ${totalMB} MB)`,
+          `${percent}% completed`,
+          percent
+        );
+      }
+    }
+
+    showLoading("Preparing WebAssembly instance...", "Compiling WASM bytecode...", 95);
+
+    // Combine chunks into single ArrayBuffer
+    const combined = new Uint8Array(receivedBytes);
+    let position = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, position);
+      position += chunk.length;
+    }
+
+    cachedWasmBytes = combined.buffer;
+    return cachedWasmBytes;
+  }
 
   async function launchEditor(targetFile: string = "/workspace/welcome.md") {
     if (currentWorker) {
@@ -71,63 +146,76 @@ async function main() {
     shellInput = "";
     sharedStdin.clear();
 
-    const nodes = await VirtualOSStorage.getAllNodes();
-    const worker = new Worker(new URL("./worker.ts", import.meta.url), {
-      type: "module",
-    });
-    currentWorker = worker;
+    try {
+      const wasmUrl = new URL("zago.wasm", window.location.href).href;
+      const wasmBytes = await fetchWasmWithProgress(wasmUrl);
 
-    worker.onmessage = async (event: MessageEvent) => {
-      const { type, data, status, message } = event.data;
+      showLoading("Starting Virtual OS...", "Instantiating WASI runtime", 98);
 
-      switch (type) {
-        case "stdout":
-          if (mode === "editor" && data) term.write(data);
-          break;
+      const nodes = await VirtualOSStorage.getAllNodes();
+      const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+        type: "module",
+      });
+      currentWorker = worker;
 
-        case "status":
-          if (mode === "editor") term.write(`\r\n\x1b[36m[zago]\x1b[0m ${status}\r\n`);
-          break;
+      worker.onmessage = async (event: MessageEvent) => {
+        const { type, data, status, message } = event.data;
 
-        case "ready":
-          term.focus();
-          // Initial resize sync
-          const dims = fitAddon.proposeDimensions();
-          if (dims) {
-            sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-          }
-          break;
+        switch (type) {
+          case "stdout":
+            if (mode === "editor" && data) term.write(data);
+            break;
 
-        case "exit":
-          if (currentWorker === worker) {
-            currentWorker.terminate();
-            currentWorker = null;
-          }
-          mode = "shell";
-          shellInput = "";
-          term.write('\r\n\x1b[90m[zago exited. Type "zago" to start]\x1b[0m\r\nzago $ ');
-          break;
+          case "status":
+            if (statusText) statusText.textContent = status;
+            break;
 
-        case "error":
-          term.write(`\r\n\x1b[31;1m[zago error]\x1b[0m ${message}\r\n`);
-          if (currentWorker === worker) {
-            currentWorker.terminate();
-            currentWorker = null;
-          }
-          mode = "shell";
-          shellInput = "";
-          term.write("zago $ ");
-          break;
-      }
-    };
+          case "ready":
+            hideLoading();
+            term.focus();
+            fitAddon.fit();
+            const dims = fitAddon.proposeDimensions();
+            if (dims) {
+              sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+            }
+            break;
 
-    const wasmUrl = new URL("zago.wasm", window.location.href).href;
-    worker.postMessage({
-      type: "init",
-      data: { wasmUrl, targetFile },
-      nodes,
-      sharedBuffer: sharedStdin.sharedBuffer,
-    });
+          case "exit":
+            hideLoading();
+            if (currentWorker === worker) {
+              currentWorker.terminate();
+              currentWorker = null;
+            }
+            mode = "shell";
+            shellInput = "";
+            term.write('\r\n\x1b[90m[zago exited. Type "zago" to start]\x1b[0m\r\nzago $ ');
+            break;
+
+          case "error":
+            hideLoading();
+            term.write(`\r\n\x1b[31;1m[zago error]\x1b[0m ${message}\r\n`);
+            if (currentWorker === worker) {
+              currentWorker.terminate();
+              currentWorker = null;
+            }
+            mode = "shell";
+            shellInput = "";
+            term.write("zago $ ");
+            break;
+        }
+      };
+
+      // Transfer wasm buffer copy to worker
+      worker.postMessage({
+        type: "init",
+        data: { wasmBytes: wasmBytes.slice(0), targetFile },
+        nodes,
+        sharedBuffer: sharedStdin.sharedBuffer,
+      });
+    } catch (err: any) {
+      hideLoading();
+      term.write(`\r\n\x1b[31;1m[Failed to start]\x1b[0m ${err?.message || err}\r\n`);
+    }
   }
 
   // Keyboard input handler
@@ -184,11 +272,98 @@ async function main() {
     }
   });
 
-  // Launch initial editor session
-  await launchEditor("/workspace/welcome.md");
+  // Mobile Virtual Key Bar Bindings
+  const keyButtons = document.querySelectorAll<HTMLButtonElement>(".key-btn");
+  keyButtons.forEach((btn) => {
+    const keyAction = btn.dataset.key;
+    const sendKey = (e: Event) => {
+      e.preventDefault();
+      if (!keyAction) return;
+
+      switch (keyAction) {
+        case "esc":
+          if (mode === "editor") sharedStdin.write("\x1b");
+          break;
+        case "f8":
+          // F8 toggles 2D Canvas mode in zago
+          if (mode === "editor") sharedStdin.write("\x1b[19~");
+          break;
+        case "f7":
+          // F7 toggles Table mode in zago
+          if (mode === "editor") sharedStdin.write("\x1b[18~");
+          break;
+        case "tab":
+          if (mode === "editor") sharedStdin.write("\t");
+          break;
+        case "arrow-left":
+          if (mode === "editor") sharedStdin.write("\x1b[D");
+          break;
+        case "arrow-up":
+          if (mode === "editor") sharedStdin.write("\x1b[A");
+          break;
+        case "arrow-down":
+          if (mode === "editor") sharedStdin.write("\x1b[B");
+          break;
+        case "arrow-right":
+          if (mode === "editor") sharedStdin.write("\x1b[C");
+          break;
+        case "save":
+          // Ctrl+O
+          if (mode === "editor") sharedStdin.write("\x0f");
+          break;
+        case "quit":
+          // Ctrl+Q
+          if (mode === "editor") sharedStdin.write("\x11");
+          break;
+        case "help":
+          // Ctrl+G
+          if (mode === "editor") sharedStdin.write("\x07");
+          break;
+      }
+      term.focus();
+    };
+
+    btn.addEventListener("touchstart", sendKey, { passive: false });
+    btn.addEventListener("click", sendKey);
+  });
+
+  // Mobile Navigation Tabs
+  const tabDocs = document.getElementById("tab-docs");
+  const tabDemo = document.getElementById("tab-demo");
+  const docsPanel = document.getElementById("docs-panel");
+  const demoPanel = document.getElementById("demo-panel");
+  const btnJumpDemo = document.getElementById("btn-jump-demo");
+
+  const switchToDocs = () => {
+    tabDocs?.classList.add("active");
+    tabDemo?.classList.remove("active");
+    docsPanel?.classList.add("active");
+    demoPanel?.classList.remove("active");
+  };
+
+  const switchToDemo = () => {
+    tabDemo?.classList.add("active");
+    tabDocs?.classList.remove("active");
+    demoPanel?.classList.add("active");
+    docsPanel?.classList.remove("active");
+    setTimeout(() => {
+      fitAddon.fit();
+      term.focus();
+    }, 50);
+  };
+
+  if (tabDocs) tabDocs.addEventListener("click", switchToDocs);
+  if (tabDemo) tabDemo.addEventListener("click", switchToDemo);
+  if (btnJumpDemo) btnJumpDemo.addEventListener("click", switchToDemo);
 
   // Resize handling
   const handleResize = () => {
+    if (window.innerWidth < 600) {
+      term.options.fontSize = 12;
+    } else {
+      term.options.fontSize = 14;
+    }
+
     fitAddon.fit();
     const dims = fitAddon.proposeDimensions();
     if (dims && mode === "editor") {
@@ -197,6 +372,9 @@ async function main() {
   };
 
   window.addEventListener("resize", handleResize);
+
+  // Launch initial editor session
+  await launchEditor("/workspace/welcome.md");
 
   // UI Button Bindings
   const btnImport = document.getElementById("btn-import");

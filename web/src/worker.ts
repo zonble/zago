@@ -49,7 +49,7 @@ self.onmessage = async (event: MessageEvent) => {
         sharedStdin = new SharedStdin(sharedBuffer);
       }
       await startWasm(
-        data?.wasmUrl || "./zago.wasm",
+        data?.wasmBytes || data?.wasmUrl || "./zago.wasm",
         nodes || [],
         data?.targetFile || "/workspace/welcome.md"
       );
@@ -73,7 +73,7 @@ async function flushVFSToIndexedDB() {
 }
 
 async function startWasm(
-  wasmUrl: string,
+  wasmSource: string | ArrayBuffer,
   initialNodes: VFSNode[],
   targetFile: string = "/workspace/welcome.md"
 ) {
@@ -116,13 +116,18 @@ async function startWasm(
   );
 
   try {
-    self.postMessage({ type: "status", status: "Loading WebAssembly binary..." });
-    const response = await fetch(wasmUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${wasmUrl}: HTTP ${response.status}`);
+    let wasmBytes: ArrayBuffer;
+    if (wasmSource instanceof ArrayBuffer) {
+      wasmBytes = wasmSource;
+    } else {
+      self.postMessage({ type: "status", status: "Loading WebAssembly binary..." });
+      const response = await fetch(wasmSource);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${wasmSource}: HTTP ${response.status}`);
+      }
+      wasmBytes = await response.arrayBuffer();
     }
 
-    const wasmBytes = await response.arrayBuffer();
     self.postMessage({ type: "status", status: "Instantiating zago.wasm Virtual OS..." });
 
     const { instance } = await WebAssembly.instantiate(wasmBytes, {

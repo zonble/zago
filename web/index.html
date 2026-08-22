@@ -2,41 +2,147 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>zago — Web Virtual OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>zago — Terminal Text & Diagram Editor for AI Workflows</title>
     <link rel="stylesheet" href="./src/styles.css" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐢</text></svg>" />
   </head>
   <body>
     <div id="app">
-      <header class="top-bar">
-        <div class="brand">
-          <span class="brand-icon">🐢</span>
-          <span class="brand-title">zago</span>
-          <span class="brand-badge">Virtual OS</span>
-        </div>
-        <div class="actions">
-          <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
-            <span class="btn-icon">📁</span> Import File/ZIP
-          </button>
-          <input type="file" id="file-input" style="display: none" accept=".zip,.md,.txt,.logo,.conf,.json,.swift,.c,.h,.py,.js,.ts" />
-          <button id="btn-export-zip" class="action-btn" title="Export entire /workspace as a ZIP archive">
-            <span class="btn-icon">📦</span> Export Workspace (ZIP)
-          </button>
-          <button id="btn-clear-storage" class="action-btn secondary" title="Reset VFS & IndexedDB storage">
-            <span class="btn-icon">🧹</span> Reset VFS
-          </button>
-          <button id="btn-help" class="action-btn secondary" title="View Documentation">
-            <span class="btn-icon">❓</span> Docs
-          </button>
-        </div>
-      </header>
+      <!-- Mobile Navigation Tabs (visible only on < 900px screens) -->
+      <nav class="mobile-tabs" aria-label="Mobile Navigation">
+        <button id="tab-docs" class="tab-btn active">
+          <span class="tab-icon">📖</span> About zago
+        </button>
+        <button id="tab-demo" class="tab-btn">
+          <span class="tab-icon">💻</span> Live Demo
+        </button>
+      </nav>
 
-      <main id="terminal-container"></main>
+      <!-- Main Two-Column Layout -->
+      <div class="content-container">
+        <!-- Left Panel: Documentation & Introduction -->
+        <aside id="docs-panel" class="docs-panel active">
+          <div class="docs-content">
+            <div class="hero-section">
+              <div class="hero-header">
+                <h1 class="hero-title">🐢 zago</h1>
+                <a href="https://github.com/zonble/zago" target="_blank" rel="noopener noreferrer" class="action-btn secondary github-link" title="GitHub Repository">
+                  <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+                  <span>GitHub</span>
+                </a>
+              </div>
+              <p class="hero-tagline">
+                Terminal editor to work with AI-generated text diagrams, using purely keyboard.
+              </p>
+            </div>
 
-      <footer class="bottom-bar">
-        <span class="hint">:dir Directory Browser &bull; ^X Exit &bull; ^O Save &bull; ESC ESC Canvas &bull; ^G Help</span>
-        <span class="version">zago Virtual OS (Wasm + IndexedDB VFS)</span>
+            <div class="doc-card">
+              <h2>Why zago?</h2>
+              <ul>
+                <li><strong>AI brings text diagrams to you</strong> for planning, system design, and architecture, but they are hard to edit again in standard editors.</li>
+                <li><strong>Text diagrams in Markdown files</strong> are already an integral part of AI prompts and documentation workflows.</li>
+              </ul>
+            </div>
+
+            <div class="doc-card">
+              <h2>How?</h2>
+              <ul>
+                <li><strong>Canvas mode editing:</strong> Move the cursor freely anywhere in the 2D text canvas without inserting empty lines or spaces manually.</li>
+                <li><strong>Table mode:</strong> Edit text inside ASCII/Unicode tables and boxes seamlessly without breaking or shifting surrounding frames.</li>
+                <li><strong>Quick drawing commands:</strong> Commands like <code>BOX</code>, <code>LINE</code>, and <code>VLINE</code> let you draft complete architecture diagrams in seconds.</li>
+                <li><strong>CJK characters aware:</strong> Fullwidth CJK characters and emojis are measured with precise display widths and laid out perfectly in boxes.</li>
+                <li><strong>Editor LOGO Engine:</strong> Built-in turtle graphics, macros, and scriptable text transformations.</li>
+              </ul>
+            </div>
+
+            <div class="doc-card">
+              <h2>Supported Platforms</h2>
+              <ul class="support-list">
+                <li><span class="badge">macOS</span> <span class="badge">Linux</span> <span class="badge">Windows</span></li>
+                <li><span class="badge">UTF-8 Terminals</span> <span class="badge">WebAssembly</span></li>
+              </ul>
+            </div>
+
+            <div class="doc-card install-card">
+              <h2>Quick Install</h2>
+              <div class="code-box">
+                <code>curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | bash</code>
+              </div>
+            </div>
+
+            <!-- Mobile CTA to switch to Demo -->
+            <div class="mobile-cta">
+              <button id="btn-jump-demo" class="cta-btn">
+                <span>💻 Launch Live Demo in Browser</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Panel: Interactive WASM Terminal Area -->
+        <main id="demo-panel" class="demo-panel">
+          <!-- Terminal Toolbar -->
+          <div class="toolbar">
+            <div class="toolbar-title">
+              <span class="status-dot"></span>
+              <span>Interactive Workspace (<code>/workspace</code>)</span>
+            </div>
+            <div class="toolbar-actions">
+              <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
+                <span class="btn-icon">📁</span> <span class="btn-text">Import</span>
+              </button>
+              <input type="file" id="file-input" style="display: none" accept=".zip,.md,.txt,.logo,.conf,.json,.swift,.c,.h,.py,.js,.ts" />
+              <button id="btn-export-zip" class="action-btn" title="Export entire /workspace as a ZIP archive">
+                <span class="btn-icon">📦</span> <span class="btn-text">Export ZIP</span>
+              </button>
+              <button id="btn-clear-storage" class="action-btn secondary" title="Reset VFS & IndexedDB storage">
+                <span class="btn-icon">🧹</span> <span class="btn-text">Reset VFS</span>
+              </button>
+              <button id="btn-help" class="action-btn secondary" title="View Documentation">
+                <span class="btn-icon">❓</span> <span class="btn-text">Help</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Terminal Workspace Container -->
+          <div id="terminal-wrapper" class="terminal-wrapper">
+            <div id="terminal-container"></div>
+
+            <!-- WASM Loading Progress Overlay -->
+            <div id="wasm-loading-overlay" class="loading-overlay">
+              <div class="loading-card">
+                <div class="spinner"></div>
+                <h3 id="loading-title">Starting zago Virtual OS</h3>
+                <div class="progress-bar-container">
+                  <div id="loading-progress-bar" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <p id="loading-status">Downloading zago.wasm...</p>
+                <p id="loading-detail" class="loading-detail">Preparing WebAssembly runtime</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile Virtual Key Bar (for touch / phones) -->
+          <div id="mobile-keybar" class="mobile-keybar" aria-label="Terminal Touch Controls">
+            <button class="key-btn" data-key="esc" title="ESC">ESC</button>
+            <button class="key-btn accent" data-key="f8" title="Canvas Mode (F8)">F8</button>
+            <button class="key-btn accent" data-key="f7" title="Table Mode (F7)">F7</button>
+            <button class="key-btn" data-key="tab" title="Tab">Tab</button>
+            <button class="key-btn" data-key="arrow-left" title="Left">◀</button>
+            <button class="key-btn" data-key="arrow-up" title="Up">▲</button>
+            <button class="key-btn" data-key="arrow-down" title="Down">▼</button>
+            <button class="key-btn" data-key="arrow-right" title="Right">▶</button>
+            <button class="key-btn" data-key="save" title="Save (^O)">^O</button>
+            <button class="key-btn" data-key="quit" title="Quit (^Q)">^Q</button>
+            <button class="key-btn" data-key="help" title="Help (^G)">^G</button>
+          </div>
+        </main>
+      </div>
+
+      <!-- Footer -->
+      <footer class="site-footer">
+        <span>&copy; 2026 Weizhong Yang a.k.a zonble</span>
       </footer>
     </div>
 
@@ -44,13 +150,14 @@
     <dialog id="help-dialog" class="help-dialog">
       <div class="dialog-content">
         <h2>zago Web Virtual OS</h2>
-        <p><strong>zago</strong> is running with a full POSIX-compatible Virtual File System (VFS) in WebAssembly.</p>
+        <p><strong>zago</strong> runs with a POSIX-compatible Virtual File System (VFS) in WebAssembly.</p>
         <h3>Useful Commands & Shortcuts:</h3>
         <ul>
           <li><code>:dir</code> or <code>:ls</code> : Open interactive Directory Browser for subfolders</li>
           <li><code>Ctrl + O</code> : Save current buffer to IndexedDB VFS</li>
-          <li><code>Ctrl + X</code> : Exit editor / buffer</li>
-          <li><code>ESC ESC</code> : Toggle Canvas Mode (draw boxes, arrows, and tables)</li>
+          <li><code>Ctrl + Q</code> or <code>Ctrl + X</code> : Exit editor to mini-shell (type <code>zago</code> to return)</li>
+          <li><code>F8</code> : Toggle 2D Canvas Mode (draw boxes, arrows, and lines)</li>
+          <li><code>F7</code> : Toggle Table Mode</li>
           <li><code>Ctrl + G</code> : Open help / command list</li>
         </ul>
         <div class="dialog-actions">
