@@ -48,7 +48,11 @@ self.onmessage = async (event: MessageEvent) => {
       if (sharedBuffer) {
         sharedStdin = new SharedStdin(sharedBuffer);
       }
-      await startWasm(data?.wasmUrl || "./zago.wasm", nodes || []);
+      await startWasm(
+        data?.wasmUrl || "./zago.wasm",
+        nodes || [],
+        data?.targetFile || "/workspace/welcome.md"
+      );
       break;
 
     case "flush_vfs":
@@ -68,7 +72,11 @@ async function flushVFSToIndexedDB() {
   }
 }
 
-async function startWasm(wasmUrl: string, initialNodes: VFSNode[]) {
+async function startWasm(
+  wasmUrl: string,
+  initialNodes: VFSNode[],
+  targetFile: string = "/workspace/welcome.md"
+) {
   if (!sharedStdin) {
     sharedStdin = new SharedStdin();
   }
@@ -94,7 +102,7 @@ async function startWasm(wasmUrl: string, initialNodes: VFSNode[]) {
   ];
 
   const wasiInstance = new WASI(
-    ["zago", "/workspace/welcome.md"],
+    ["zago", targetFile],
     [
       "LINES=24",
       "COLUMNS=80",
@@ -125,13 +133,46 @@ async function startWasm(wasmUrl: string, initialNodes: VFSNode[]) {
     isRunning = true;
 
     // Debounced automatic background sync (every 1000ms)
-    setInterval(flushVFSToIndexedDB, 1000);
+    const syncInterval = setInterval(flushVFSToIndexedDB, 1000);
 
-    wasiInstance.start(instance as any);
+    let exitCode = 0;
+    try {
+      exitCode = wasiInstance.start(instance as any) ?? 0;
+    } catch (startErr: any) {
+      if (
+        startErr &&
+        (startErr.name === "WASIProcExit" ||
+          startErr.code !== undefined ||
+          String(startErr.message || startErr).includes("exit"))
+      ) {
+        exitCode = startErr.code ?? 0;
+      } else {
+        throw startErr;
+      }
+    } finally {
+      clearInterval(syncInterval);
+    }
+
+    await flushVFSToIndexedDB();
+    isRunning = false;
+    self.postMessage({ type: "exit", code: exitCode });
   } catch (error: any) {
-    self.postMessage({
-      type: "error",
-      message: error?.message || String(error),
-    });
+    if (
+      error &&
+      (error.name === "WASIProcExit" ||
+        error.code !== undefined ||
+        String(error.message || error).includes("exit"))
+    ) {
+      await flushVFSToIndexedDB();
+      isRunning = false;
+      self.postMessage({ type: "exit", code: error.code ?? 0 });
+    } else {
+      self.postMessage({
+        type: "error",
+        message: error?.message || String(error),
+      });
+      isRunning = false;
+      self.postMessage({ type: "exit", code: 1 });
+    }
   }
 }

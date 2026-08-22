@@ -63,6 +63,20 @@ export class SharedStdin {
   }
 
   /**
+   * Reset ring buffer positions and byte count to 0.
+   */
+  public clear() {
+    this.lock();
+    try {
+      this.control[0] = 0;
+      this.control[1] = 0;
+      this.control[2] = 0;
+    } finally {
+      this.unlock();
+    }
+  }
+
+  /**
    * Worker thread: read stdin bytes with 50ms timeout to distinguish standalone ESC from escape sequences.
    */
   public read(maxBytes: number): Uint8Array {

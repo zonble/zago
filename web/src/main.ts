@@ -54,28 +54,39 @@ async function main() {
   term.open(container);
   fitAddon.fit();
 
-  // Load all VFS nodes from IndexedDB
-  const nodes = await VirtualOSStorage.getAllNodes();
-
   // Shared Stdin ring buffer between UI thread and Worker
   const sharedStdin = new SharedStdin();
 
-  // Spawn Web Worker
-  const worker = new Worker(new URL("./worker.ts", import.meta.url), {
-    type: "module",
-  });
+  let currentWorker: Worker | null = null;
+  let mode: "editor" | "shell" = "editor";
+  let shellInput = "";
 
-  function setupWorker(w: Worker) {
-    w.onmessage = async (event: MessageEvent) => {
+  async function launchEditor(targetFile: string = "/workspace/welcome.md") {
+    if (currentWorker) {
+      currentWorker.terminate();
+      currentWorker = null;
+    }
+
+    mode = "editor";
+    shellInput = "";
+    sharedStdin.clear();
+
+    const nodes = await VirtualOSStorage.getAllNodes();
+    const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+      type: "module",
+    });
+    currentWorker = worker;
+
+    worker.onmessage = async (event: MessageEvent) => {
       const { type, data, status, message } = event.data;
 
       switch (type) {
         case "stdout":
-          if (data) term.write(data);
+          if (mode === "editor" && data) term.write(data);
           break;
 
         case "status":
-          term.write(`\r\n\x1b[36m[zago]\x1b[0m ${status}\r\n`);
+          if (mode === "editor") term.write(`\r\n\x1b[36m[zago]\x1b[0m ${status}\r\n`);
           break;
 
         case "ready":
@@ -87,32 +98,100 @@ async function main() {
           }
           break;
 
+        case "exit":
+          if (currentWorker === worker) {
+            currentWorker.terminate();
+            currentWorker = null;
+          }
+          mode = "shell";
+          shellInput = "";
+          term.write('\r\n\x1b[90m[zago exited. Type "zago" to start]\x1b[0m\r\nzago $ ');
+          break;
+
         case "error":
           term.write(`\r\n\x1b[31;1m[zago error]\x1b[0m ${message}\r\n`);
+          if (currentWorker === worker) {
+            currentWorker.terminate();
+            currentWorker = null;
+          }
+          mode = "shell";
+          shellInput = "";
+          term.write("zago $ ");
           break;
       }
     };
 
-    term.onData((inputData) => {
-      sharedStdin.write(inputData);
-    });
-
     const wasmUrl = new URL("zago.wasm", window.location.href).href;
-    w.postMessage({
+    worker.postMessage({
       type: "init",
-      data: { wasmUrl },
+      data: { wasmUrl, targetFile },
       nodes,
       sharedBuffer: sharedStdin.sharedBuffer,
     });
   }
 
-  setupWorker(worker);
+  // Keyboard input handler
+  term.onData((inputData) => {
+    if (mode === "editor") {
+      sharedStdin.write(inputData);
+      return;
+    }
+
+    // Mini-Shell mode
+    for (let i = 0; i < inputData.length; i++) {
+      const char = inputData[i];
+
+      if (char === "\r") {
+        term.write("\r\n");
+        const trimmed = shellInput.trim();
+        shellInput = "";
+
+        if (trimmed.length === 0) {
+          term.write("zago $ ");
+        } else if (trimmed === "clear") {
+          term.clear();
+          term.write("zago $ ");
+        } else if (trimmed === "zago" || trimmed.startsWith("zago ")) {
+          const parts = trimmed.split(/\s+/).slice(1);
+          let targetFile = "/workspace/welcome.md";
+          if (parts.length > 0 && parts[0].length > 0) {
+            targetFile = parts[0].startsWith("/") ? parts[0] : `/workspace/${parts[0]}`;
+          }
+          launchEditor(targetFile);
+          return;
+        } else {
+          term.write(
+            `zago: command not found: ${trimmed}. Type "zago [filename]" to start or "clear" to clear screen.\r\nzago $ `
+          );
+        }
+      } else if (char === "\x7f" || char === "\b") {
+        if (shellInput.length > 0) {
+          shellInput = shellInput.slice(0, -1);
+          term.write("\b \b");
+        }
+      } else if (char === "\x03") {
+        // Ctrl+C
+        shellInput = "";
+        term.write("^C\r\nzago $ ");
+      } else if (char === "\x0c") {
+        // Ctrl+L
+        term.clear();
+        term.write(`zago $ ${shellInput}`);
+      } else if (char >= " ") {
+        shellInput += char;
+        term.write(char);
+      }
+    }
+  });
+
+  // Launch initial editor session
+  await launchEditor("/workspace/welcome.md");
 
   // Resize handling
   const handleResize = () => {
     fitAddon.fit();
     const dims = fitAddon.proposeDimensions();
-    if (dims) {
+    if (dims && mode === "editor") {
       sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
     }
   };
@@ -154,8 +233,10 @@ async function main() {
 
   if (btnExportZip) {
     btnExportZip.addEventListener("click", async () => {
-      // First ask worker to flush latest Inode state
-      worker.postMessage({ type: "flush_vfs" });
+      // First ask worker to flush latest Inode state if running
+      if (currentWorker) {
+        currentWorker.postMessage({ type: "flush_vfs" });
+      }
       setTimeout(async () => {
         const blob = await VirtualOSStorage.exportWorkspaceZip();
         const url = URL.createObjectURL(blob);
