@@ -25,7 +25,7 @@ TO MASTERMIND_1A2B
     MAKE "playing true
 
     DO.WHILE [
-        ERASEALL
+        CLEARBUFFER
         APPEND "+----------------------------+"
         APPEND |\|   zago 1A2B MASTERMIND     \||
         APPEND "+----------------------------+"
@@ -87,7 +87,7 @@ TO MASTERMIND_1A2B
                     MAKE "history LPUT :res :history
 
                     IF :countA = 4 [
-                        ERASEALL
+                        CLEARBUFFER
                         APPEND "BINGO! PERFECT CODE CRACKED!"
                         APPEND FORMAT "Secret: %s in %d attempts!" :code :attempts
                         MAKE "playing false

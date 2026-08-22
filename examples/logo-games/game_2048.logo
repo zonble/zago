@@ -155,7 +155,7 @@ TO CAN_MOVE
 END
 
 TO RENDER2048
-    ERASEALL
+    CLEARBUFFER
     APPEND "+----------------------------+"
     APPEND |\|         zago 2048          \||
     MAKE "line WORD |\|| FORMAT | Score: %-20d| :score

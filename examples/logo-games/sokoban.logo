@@ -53,7 +53,7 @@ TO SOKOBAN
 
     DO.WHILE [
         ; Clear and Render Grid
-        ERASEALL
+        CLEARBUFFER
         APPEND "+----------------------------+"
         APPEND |\|        zago SOKOBAN        \||
         APPEND "+----------------------------+"

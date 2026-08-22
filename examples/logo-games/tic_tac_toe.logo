@@ -15,7 +15,7 @@ TO TIC_TAC_TOE
     MAKE "moves 0
 
     DO.WHILE [
-        ERASEALL
+        CLEARBUFFER
         APPEND "+----------------------------+"
         APPEND |\|      zago TIC-TAC-TOE      \||
         APPEND "+----------------------------+"
