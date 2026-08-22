@@ -15,8 +15,8 @@ const VFS_PREFIX = "zago_vfs:";
 
 const DEFAULT_WELCOME_MD = `# zago Interactive Tutorial
 
-Note: Use your keybaord to have fun with the document here.
-Left/Right/Page Up/Page Down to move the cursor.
+Note: Use your keyboard to interact with the document.
+Arrow keys / Page Up / Page Down move the cursor.
 
 ## Canvas Mode
 
@@ -29,12 +29,12 @@ Left/Right/Page Up/Page Down to move the cursor.
 \`\`\`
 
 - Move the cursor to "x".
-- Press F8 to enter the canvas mode.
-- Press Shift + Right to draw a line.
-- Continue to extend the line.
-- Press Ctrl + Any arrow key, or Crtl + Shift + Arrow for arrows.
-- Press F1 to show the menu and select another style in "borders".
-- Press F8 again to exit the canvas mode.
+- Press F8 to enter Canvas Mode.
+- Press Shift + Right Arrow to draw a line.
+- Continue pressing to extend the line.
+- Press Ctrl + Arrow or Ctrl + Shift + Arrow to draw arrows.
+- Press F1 to show the menu and select another style under "Borders".
+- Press F8 again to exit Canvas Mode.
 
 ## Table Mode
 
@@ -46,10 +46,11 @@ Left/Right/Page Up/Page Down to move the cursor.
 └────────────────┴────────────────┴────────────────┘
 \`\`\`
 
-- Press F7 in any cell to enter table mode
-- You will edit the context in the cell.
+- Press F7 in any cell to enter Table Mode.
+- You can edit the text content inside the cell without breaking table borders.
+- Press F7 again to exit Table Mode.
 
-## LINE command
+## LINE Command
 
 \`\`\`
 ┌────────┐          ┌────────┐
@@ -64,11 +65,11 @@ Left/Right/Page Up/Page Down to move the cursor.
 └────────┘          └────────┘
 \`\`\`
 
-- ESC shows the command prompt.
-- ESC again to exit the command prompt.
+- ESC opens the command prompt.
+- ESC again dismisses the prompt.
 - Move cursor to "x".
-- ESC, then input "LINE". Case does not matter.
-- A connecting line will be there.
+- Press ESC, type "LINE", and press Enter (case-insensitive).
+- A connecting line will automatically bridge to the next box!
 
 \`\`\`
 ┌────────┐   ┌────────┐ 
@@ -87,10 +88,10 @@ Left/Right/Page Up/Page Down to move the cursor.
 \`\`\`
 
 - Move cursor to "x".
-- ESC, then input "VLINE".
-- A vertical line will be there.
+- Press ESC, type "VLINE", and press Enter.
+- A vertical line will automatically bridge downwards!
 
-## Additioan Border and Arrow Styles
+## Additional Border and Arrow Styles
 
 Try these commands for creating lines with specific styles:
 
@@ -98,7 +99,7 @@ Try these commands for creating lines with specific styles:
 - LINE =~>
 - VLINE <|+|>
 
-The syntax is [begin arrow][border][end aarrow]
+Syntax: [begin arrow][border][end arrow]
 
 ### Border Styles
 
@@ -111,7 +112,7 @@ The syntax is [begin arrow][border][end aarrow]
 - Triple Dash: ---
 - Heavy Triple Dash: +++
 - Quadruple Dash: ----
-- Heavy Quadruple Dash: +++
+- Heavy Quadruple Dash: ++++
 
 ### Arrow Styles
 
@@ -119,25 +120,19 @@ The syntax is [begin arrow][border][end aarrow]
 - Solid: << or >>
 - Stemmed: <~ or ~>
 - Hollow: <| or |>
+- Small: <. or .>
 
-## BOX and DRAWBOX Commanads
+## BOX and DRAWBOX Commands
 
-
-
-
-
-
-
-
-Try the commands to create boxes above
+Try these commands to create boxes:
 
 - BOX "Hi"        ; Inserts a box with "Hi" inside.
-- DRAWBOX "There" ; Overlays a box over current content.
-- BOX 20 5 "Hi"   ; Inserts a box with the given size.
-- BOX "Hi" =      ; Inserts a box with a specific border style.
-- BOX "Hi" =)     ; ")" indicates round corner.
+- DRAWBOX "There" ; Overlays a box over current content without shifting lines.
+- BOX 20 5 "Hi"   ; Inserts a box with specific width and height.
+- BOX "Hi" =      ; Inserts a box with double border.
+- BOX "Hi" =)     ; ")" indicates rounded corners.
 
-You can use border styles including - = + A -- ++ --- +++ ---- ++++
+Border styles available: - = + A -- ++ --- +++ ---- ++++
 
 ## FILL and INSET Commands
 
@@ -152,30 +147,26 @@ Fill                 Inset
 \`\`\`
 
 - Move cursor to "f".
-- ESC, input "FILL <any text>". Enter. 
-  The box your be filled with your text.
-- Move to "i".
-- ESC, input "INSET <any text>". Enter.
-  The text will be placed in the center of the box.
+- Press ESC, type "FILL <text>", and press Enter.
+  The box will be filled with your text.
+- Move cursor to "i".
+- Press ESC, type "INSET <text>", and press Enter.
+  The text will be centered inside the box.
 
-## Combined Commands
+## Combined Commands & Procedures
 
-You can combine the commands with other commands in the ES command
-prompt
+You can combine commands inside the ESC command prompt:
 
-- BOX DATE             ; Put the date into a box.
-- BOX DATE =)          ; Put it into a box with double line.
-- REPEAT 3 [BOX "hi"]  ; Draw 3 boxes
-
-Date formats for various locales are available on macOS/Linux/Windows.
+- BOX DATE             ; Place the current date inside a box.
+- BOX DATE =)          ; Place date in a rounded double-line box.
+- REPEAT 3 [BOX "hi"]  ; Draw 3 sequential boxes.
 
 ## Run Commands Inline
 
 Besides using the ESC command prompt, you can run any line in your text
-as commands by pressing ^Q.
+as commands by pressing ^Q (or F2 to run macro).
 
-You can simply use commands in follwing example to convert text inline
-when you are working on a multi-lingua document.
+Try running these text transformation commands:
 
 move end newline type tohiragana Sakura      ; Press ^Q
 move end newline type tokatakana Ramen       ; Press ^Q
@@ -186,13 +177,10 @@ move end newline box "Zago rocks" se newline ; Press ^Q
 
 ## And More!
 
-Zago has a rich command set and a syntax to help you to work with text
-diagrams and writing. and make your text file as a playground. By the
-default, the reference is hidden. You can input "set debug on" ESC
-prompt to enable the reference in the menu.
+zago has a rich command set and Editor LOGO syntax to turn your text files into
+an interactive plain-text design canvas.
 
-For advanced usage, you can always use "help-cmd" and "help-key"
-commands to leran zago better.
+For advanced usage, run "help-cmd" or "help-key" in the ESC prompt to explore more.
 
 Happy Editing!
 `;

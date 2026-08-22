@@ -443,6 +443,25 @@ async function main() {
   if (btnCloseHelp && helpDialog) {
     btnCloseHelp.addEventListener("click", () => helpDialog.close());
   }
+
+  // Copy Buttons for Quick Install
+  const copyButtons = document.querySelectorAll<HTMLButtonElement>(".copy-btn");
+  copyButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const textToCopy = btn.dataset.copy;
+      if (!textToCopy) return;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.classList.remove("copied");
+        }, 1500);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+      }
+    });
+  });
 }
 
 main().catch(console.error);
