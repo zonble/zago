@@ -54,6 +54,13 @@ async function main() {
   term.open(container);
   fitAddon.fit();
 
+  // Check for Cross-Origin Isolation (required for SharedArrayBuffer / multi-threading)
+  if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
+    term.write("\r\n\x1b[36m[zago]\x1b[0m Initializing cross-origin isolation environment...\r\n");
+    term.write("\x1b[90mReloading automatically once ServiceWorker is ready...\x1b[0m\r\n");
+    return;
+  }
+
   // Load all VFS nodes from IndexedDB
   const nodes = await VirtualOSStorage.getAllNodes();
 
@@ -97,7 +104,8 @@ async function main() {
       sharedStdin.write(inputData);
     });
 
-    const wasmUrl = new URL("zago.wasm", window.location.href).href;
+    const basePath = window.location.pathname.replace(/\/[^/]*$/, "/");
+    const wasmUrl = new URL(basePath + "zago.wasm", window.location.origin).href;
     w.postMessage({
       type: "init",
       data: { wasmUrl },
