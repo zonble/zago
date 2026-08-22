@@ -9,12 +9,12 @@ SIGN="${SIGN:-1}"
 
 if [ "$(uname)" = "Darwin" ]; then
     echo "Building universal binary for macOS (arm64 + x86_64)..."
-    swift build -c release -Xswiftc -Osize --arch arm64 --arch x86_64
-    BINARY_PATH=".build/apple/Products/Release/zago"
+    swift build -c debug -Xswiftc -Osize --arch arm64 --arch x86_64
+    BINARY_PATH=".build/apple/Products/Debug/zago"
 else
-    echo "Building release binary..."
-    swift build -c release -Xswiftc -Osize
-    BINARY_PATH=".build/release/zago"
+    echo "Building debug binary..."
+    swift build -c debug -Xswiftc -Osize
+    BINARY_PATH=".build/debug/zago"
 fi
 
 if [ -f "$BINARY_PATH" ]; then

@@ -188,7 +188,7 @@ Happy Editing!
 const DEFAULT_DEMO_LOGO = `; Editor LOGO Demo Script
 ; Draw a styled double-line box and type text
 
-CLEAR
+CLEARBUFFER
 GOTO 2 2
 BOX 42 8 DOUBLE
 GOTO 4 4
