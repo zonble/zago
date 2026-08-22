@@ -101,7 +101,13 @@ async function main() {
     }
 
     const contentLength = +(response.headers.get("Content-Length") || 0);
-    const totalMB = contentLength ? (contentLength / (1024 * 1024)).toFixed(1) : "?";
+    // Note: If server serves gzip/br compressed data, Content-Length is the compressed size (~15-18MB),
+    // but the browser stream yields uncompressed bytes (~47MB).
+    // Adjust estimatedTotalBytes accordingly so percentage stays accurate.
+    let estimatedTotalBytes = contentLength;
+    if (estimatedTotalBytes <= 0 || estimatedTotalBytes < 30 * 1024 * 1024) {
+      estimatedTotalBytes = 47 * 1024 * 1024;
+    }
 
     if (!response.body) {
       const buffer = await response.arrayBuffer();
@@ -119,8 +125,12 @@ async function main() {
       if (value) {
         chunks.push(value);
         receivedBytes += value.length;
+        if (receivedBytes > estimatedTotalBytes) {
+          estimatedTotalBytes = Math.ceil(receivedBytes * 1.05);
+        }
         const currentMB = (receivedBytes / (1024 * 1024)).toFixed(1);
-        const percent = contentLength ? Math.round((receivedBytes / contentLength) * 100) : 50;
+        const totalMB = (estimatedTotalBytes / (1024 * 1024)).toFixed(1);
+        const percent = Math.min(95, Math.max(1, Math.round((receivedBytes / estimatedTotalBytes) * 95)));
         showLoading(
           `Downloading zago.wasm (${currentMB} MB / ${totalMB} MB)`,
           `${percent}% completed`,
@@ -129,7 +139,8 @@ async function main() {
       }
     }
 
-    showLoading("Preparing WebAssembly instance...", "Compiling WASM bytecode...", 95);
+    const finalMB = (receivedBytes / (1024 * 1024)).toFixed(1);
+    showLoading(`Downloaded zago.wasm (${finalMB} MB)`, "Compiling WebAssembly bytecode...", 98);
 
     // Combine chunks into single ArrayBuffer
     const combined = new Uint8Array(receivedBytes);
@@ -178,13 +189,16 @@ async function main() {
             break;
 
           case "ready":
-            hideLoading();
-            term.focus();
-            fitAddon.fit();
-            const dims = fitAddon.proposeDimensions();
-            if (dims) {
-              sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-            }
+            showLoading("Ready!", "Starting editor...", 100);
+            setTimeout(() => {
+              hideLoading();
+              term.focus();
+              fitAddon.fit();
+              const dims = fitAddon.proposeDimensions();
+              if (dims) {
+                sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+              }
+            }, 150);
             break;
 
           case "exit":

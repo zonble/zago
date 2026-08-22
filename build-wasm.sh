@@ -34,7 +34,18 @@ WASM_OUT=$(find .build -name "zagoweb.wasm" -o -name "zago.wasm" 2>/dev/null | g
 if [ -n "$WASM_OUT" ] && [ -f "$WASM_OUT" ]; then
     echo "==> Copying $WASM_OUT to web/public/zago.wasm"
     cp "$WASM_OUT" web/public/zago.wasm
-    echo "==> Wasm build complete: web/public/zago.wasm ($(du -h web/public/zago.wasm | cut -f1))"
+    echo "==> Raw Wasm build size: $(du -h web/public/zago.wasm | cut -f1)"
+
+    # Optimize Wasm binary size using wasm-opt
+    if command -v wasm-opt >/dev/null 2>&1; then
+        echo "==> Optimizing with wasm-opt..."
+        wasm-opt -O3 --strip-debug --strip-producers web/public/zago.wasm -o web/public/zago.wasm
+    elif command -v npx >/dev/null 2>&1; then
+        echo "==> Optimizing with npx wasm-opt..."
+        npx -y wasm-opt -O3 --strip-debug --strip-producers web/public/zago.wasm -o web/public/zago.wasm || true
+    fi
+
+    echo "==> Optimized Wasm complete: web/public/zago.wasm ($(du -h web/public/zago.wasm | cut -f1))"
 else
     echo "==> Error: Could not find compiled wasm binary."
     exit 1
