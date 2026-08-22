@@ -39,6 +39,26 @@
             "target": "zago",
             "configuration": "release",
             "preLaunchTask": "swift: Build Release zago"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:zago}",
+            "name": "Debug zagoweb",
+            "target": "zagoweb",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug zagoweb"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:zago}",
+            "name": "Release zagoweb",
+            "target": "zagoweb",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release zagoweb"
         }
     ]
 }
