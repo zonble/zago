@@ -40,6 +40,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Terminal rendering performance](architecture/rendering_performance.md): double buffering, line diffing, layout caching, and rendering performance.
 - [Cross-platform architecture](architecture/cross_platform.md): terminal input, pipe handling, file I/O locks, encoding gotchas, and display width calculations.
 - [Windows console I/O & encoding](architecture/windows_console.md): Windows Console Subsystem, code page handling, and Win32 `ReadConsoleW` API integration.
+- [WebAssembly & Web Terminal architecture](architecture/wasm_web_architecture.md): Web Worker execution model, WASI shim, xterm.js integration, and MEMFS/IndexedDB persistence.
 - [Editor wakeup and external request dispatch](architecture/editor_wakeup.md): how IPC worker threads wake the editor loop without mutating editor state directly.
 - [Threading model & concurrency architecture](architecture/threading_model.md): single-writer editor loop, IPC worker threads, wakeup bridges, and shutdown safety.
 
@@ -56,6 +57,7 @@ This directory holds the detailed user, language, architecture, and development 
 
 - [Testing Guidelines & Best Practices](development/test.md): Windows file locking rules, unique temporary paths, and unit test teardown guidelines.
 - [Windows Swift debugging](development/windows_swift_debugging.md): VS Code Swift debugging, Visual Studio/WinDbg attach, dump analysis, and trace-based hang diagnosis.
+- [WebAssembly build & deployment](development/wasm_build.md): Swift SDK for WebAssembly, local Vite dev server, and GitHub Pages deployment.
 - [Release & preview builds](development/release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.
 - [Homebrew tap](development/homebrew_tap.md): tap layout, Formula template, release checksum workflow, and user install commands.
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>zago — Web Virtual OS</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐢</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-icon">🐢</span>
+          <span class="brand-title">zago</span>
+          <span class="brand-badge">Virtual OS</span>
+        </div>
+        <div class="actions">
+          <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
+            <span class="btn-icon">📁</span> Import File/ZIP
+          </button>
+          <input type="file" id="file-input" style="display: none" accept=".zip,.md,.txt,.logo,.conf,.json,.swift,.c,.h,.py,.js,.ts" />
+          <button id="btn-export-zip" class="action-btn" title="Export entire /workspace as a ZIP archive">
+            <span class="btn-icon">📦</span> Export Workspace (ZIP)
+          </button>
+          <button id="btn-clear-storage" class="action-btn secondary" title="Reset VFS & IndexedDB storage">
+            <span class="btn-icon">🧹</span> Reset VFS
+          </button>
+          <button id="btn-help" class="action-btn secondary" title="View Documentation">
+            <span class="btn-icon">❓</span> Docs
+          </button>
+        </div>
+      </header>
+
+      <main id="terminal-container"></main>
+
+      <footer class="bottom-bar">
+        <span class="hint">:dir Directory Browser &bull; ^X Exit &bull; ^O Save &bull; ESC ESC Canvas &bull; ^G Help</span>
+        <span class="version">zago Virtual OS (Wasm + IndexedDB VFS)</span>
+      </footer>
+    </div>
+
+    <!-- Modal for Help / Docs -->
+    <dialog id="help-dialog" class="help-dialog">
+      <div class="dialog-content">
+        <h2>zago Web Virtual OS</h2>
+        <p><strong>zago</strong> is running with a full POSIX-compatible Virtual File System (VFS) in WebAssembly.</p>
+        <h3>Useful Commands & Shortcuts:</h3>
+        <ul>
+          <li><code>:dir</code> or <code>:ls</code> : Open interactive Directory Browser for subfolders</li>
+          <li><code>Ctrl + O</code> : Save current buffer to IndexedDB VFS</li>
+          <li><code>Ctrl + X</code> : Exit editor / buffer</li>
+          <li><code>ESC ESC</code> : Toggle Canvas Mode (draw boxes, arrows, and tables)</li>
+          <li><code>Ctrl + G</code> : Open help / command list</li>
+        </ul>
+        <div class="dialog-actions">
+          <button id="btn-close-help" class="action-btn">Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

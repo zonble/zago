@@ -151,19 +151,27 @@ public final class LogoEngine: @unchecked Sendable {
 
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
     public func execute(_ script: String) {
-        debuggerCondition.lock()
-        abortRequested = false
-        byeFlag = false
-        executionState = .running
-        let thread = Thread { [weak self] in
-            self?.executeScript(script)
-        }
-        thread.stackSize = 8 * 1024 * 1024
-        thread.start()
-        while executionState == .running {
-            debuggerCondition.wait()
-        }
-        debuggerCondition.unlock()
+        #if os(WASI)
+            abortRequested = false
+            byeFlag = false
+            executionState = .running
+            executeScript(script)
+            executionState = .completed
+        #else
+            debuggerCondition.lock()
+            abortRequested = false
+            byeFlag = false
+            executionState = .running
+            let thread = Thread { [weak self] in
+                self?.executeScript(script)
+            }
+            thread.stackSize = 8 * 1024 * 1024
+            thread.start()
+            while executionState == .running {
+                debuggerCondition.wait()
+            }
+            debuggerCondition.unlock()
+        #endif
     }
 
     private func executeScript(_ script: String) {

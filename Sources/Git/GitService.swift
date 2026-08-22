@@ -7,9 +7,20 @@ public protocol GitServiceProtocol: Sendable {
     func repositoryStateChanged(for filePath: String?) -> Bool
 }
 
-/// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
-public final class GitService: GitServiceProtocol, @unchecked Sendable {
-    private let queue = DispatchQueue(label: "org.zago.gitservice", qos: .userInitiated)
+#if os(WASI)
+    public final class GitService: GitServiceProtocol, @unchecked Sendable {
+        public init() {}
+        public func detectRepository(for filePath: String?) -> GitRepositoryInfo? { nil }
+        public func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo { GitDiffInfo() }
+        public func fetchDirectoryGitStatus(repoRoot: String) -> [String: String] { [:] }
+        public func repositoryStateChanged(for filePath: String?) -> Bool { false }
+    }
+#else
+    import Dispatch
+
+    /// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
+    public final class GitService: GitServiceProtocol, @unchecked Sendable {
+        private let queue = DispatchQueue(label: "org.zago.gitservice", qos: .userInitiated)
     private var repoRootCache: [String: String] = [:]
     private var branchCache: [String: String] = [:]
     private var headCache: [String: [String]] = [:]
@@ -335,3 +346,4 @@ public final class GitService: GitServiceProtocol, @unchecked Sendable {
         }
     }
 }
+#endif

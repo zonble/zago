@@ -20,6 +20,8 @@ public final class SpellChecker {
             self.engine = AppleSpellCheckerEngine(language: language)
         #elseif os(Windows)
             self.engine = WindowsSpellCheckerEngine(language: language)
+        #elseif os(WASI)
+            self.engine = FallbackCheckerEngine(language: language)
         #else
             self.engine = UnixSpellCheckerEngine(language: language)
         #endif

@@ -1,9 +1,37 @@
+# macOS
 .DS_Store
-/.build
-/Packages
-xcuserdata/
-DerivedData/
+
+# Swift Package Manager
+/.build/
+/Packages/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+
+# Xcode and Visual Studio user/build state
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.vs/
+
+# Local application/user data and credentials
+userdata/
 .netrc
-.vs
+
+# Node.js and frontend build output
+node_modules/
+web/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# WebAssembly build output — zago.wasm is generated and must never be committed.
+*.wasm
+/web/public/zago.wasm
+/web/dist/zago.wasm
+
+# Test and code coverage output
+.test-artifacts/
+coverage/
+*.profraw
+*.profdata

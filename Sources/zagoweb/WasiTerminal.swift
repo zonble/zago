@@ -1,0 +1,194 @@
+import Config
+import Editor
+import Foundation
+
+#if canImport(WASILibc)
+    import WASILibc
+#endif
+
+/// WebAssembly (WASI) Terminal driver connecting standard I/O streams with xterm.js.
+public final class WasiTerminal: EditorTerminal {
+    private var currentRows: Int = 24
+    private var currentCols: Int = 80
+    private var pendingResize = false
+    private(set) public var rawModeEnabled = false
+
+    public init() {
+        if let envRows = ProcessInfo.processInfo.environment["LINES"], let r = Int(envRows), r > 0 {
+            currentRows = r
+        }
+        if let envCols = ProcessInfo.processInfo.environment["COLUMNS"], let c = Int(envCols), c > 0 {
+            currentCols = c
+        }
+    }
+
+    public func enableRawMode() throws {
+        rawModeEnabled = true
+    }
+
+    public func disableRawMode() {
+        rawModeEnabled = false
+    }
+
+    public func getWindowSize() -> (rows: Int, cols: Int) {
+        return (rows: currentRows, cols: currentCols)
+    }
+
+    private func readByte() -> UInt8? {
+        var byte: UInt8 = 0
+        #if os(WASI) && canImport(WASILibc)
+            let n = WASILibc.read(0, &byte, 1)
+        #else
+            let n = read(0, &byte, 1)
+        #endif
+        return n == 1 ? byte : nil
+    }
+
+    public func readKey() -> Key {
+        var firstByte: UInt8? = nil
+        while firstByte == nil {
+            if pendingResize {
+                pendingResize = false
+                return .resize
+            }
+            firstByte = readByte()
+        }
+
+        guard let first = firstByte else {
+            return .unknown
+        }
+
+        if first == 8 {
+            return .ctrlBackspace
+        }
+
+        if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(first)) {
+            return controlKey
+        }
+
+        if first == 27 {
+            guard let secondByte = readByte() else {
+                return .esc
+            }
+
+            if secondByte == 8 || secondByte == 127 { return .altBackspace }
+            if secondByte == 13 || secondByte == 10 { return .altEnter }
+            if secondByte == 9 { return .altTab }
+
+            switch secondByte {
+            case UInt8(ascii: "["):
+                return parseCSI()
+            case UInt8(ascii: "O"):
+                guard let third = readByte() else { return .esc }
+                return ANSIKeyMapping.resolveSS3Code(third) ?? .esc
+            default:
+                let scalar = UnicodeScalar(secondByte)
+                if scalar.value >= 32 && scalar.value < 127 {
+                    let char = Character(scalar)
+                    if char.isLetter {
+                        return .alt(Character(char.lowercased()))
+                    }
+                    return .alt(char)
+                }
+                return .esc
+            }
+        }
+
+        return decodeUTF8Key(firstByte: first)
+    }
+
+    private func parseCSI() -> Key {
+        guard let first = readByte() else { return .esc }
+
+        if let single = ANSIKeyMapping.resolveCSISingleChar(first) {
+            return single
+        }
+
+        var sequence = String(UnicodeScalar(first))
+        while sequence.count < 32 {
+            guard let next = readByte() else { break }
+            let char = Character(UnicodeScalar(next))
+            sequence.append(char)
+
+            if sequence.hasPrefix("8;") && char == "t" {
+                let params = sequence.dropFirst(2).dropLast(1).split(separator: ";")
+                if params.count == 2,
+                   let r = Int(params[0]),
+                   let c = Int(params[1]),
+                   r > 0, c > 0 {
+                    currentRows = r
+                    currentCols = c
+                    return .resize
+                }
+            }
+
+            if (next >= 0x40 && next <= 0x7E) || next == UInt8(ascii: "~") || next == UInt8(ascii: "u") {
+                break
+            }
+        }
+
+        return ANSIKeyMapping.resolve(sequence)
+    }
+
+    private func resolveControlCode(_ code: UInt32) -> Key? {
+        switch code {
+        case 13: return .enter
+        case 9: return .tab
+        case 127: return .backspace
+        case 30: return .mark
+        case 31: return .ctrl("/")
+        case 1...26:
+            if let scalar = UnicodeScalar(code + 64) {
+                return .ctrl(Character(scalar))
+            }
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    private func decodeUTF8Key(firstByte: UInt8) -> Key {
+        var bytes = [firstByte]
+        let expectedLength: Int
+        if firstByte & 0x80 == 0 { expectedLength = 1 }
+        else if firstByte & 0xE0 == 0xC0 { expectedLength = 2 }
+        else if firstByte & 0xF0 == 0xE0 { expectedLength = 3 }
+        else if firstByte & 0xF8 == 0xF0 { expectedLength = 4 }
+        else { return .unknown }
+
+        while bytes.count < expectedLength {
+            guard let nextByte = readByte() else { return .unknown }
+            bytes.append(nextByte)
+        }
+
+        var generator = bytes.makeIterator()
+        var utf8Decoder = UTF8()
+        switch utf8Decoder.decode(&generator) {
+        case .scalarValue(let scalar):
+            return .char(Character(scalar))
+        default:
+            return .unknown
+        }
+    }
+
+    public func readPendingText(firstChar: Character) -> String {
+        String(firstChar)
+    }
+
+    public func write(_ text: String) {
+        guard let data = text.data(using: .utf8) else { return }
+        data.withUnsafeBytes { ptr in
+            if let base = ptr.baseAddress {
+                #if os(WASI) && canImport(WASILibc)
+                    _ = WASILibc.write(1, base, ptr.count)
+                #else
+                    Foundation.FileHandle.standardOutput.write(data)
+                #endif
+            }
+        }
+    }
+
+    public func hideCursor() { write("\u{001B}[?25l") }
+    public func showCursor() { write("\u{001B}[?25h") }
+    public func clearScreen() { write("\u{001B}[2J\u{001B}[H") }
+}

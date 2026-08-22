@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, master, dev ]
+    branches: [ dev, wasm ]
   pull_request:
-    branches: [ main, master, dev ]
+    branches: [ main, dev, wasm ]
 
 jobs:
   build-and-test:
@@ -170,3 +170,35 @@ jobs:
           name: zago-${{ matrix.os }}
           path: artifacts/*
           if-no-files-found: error
+
+  wasm:
+    name: WebAssembly Build & Test
+    if: github.ref == 'refs/heads/wasm' || github.base_ref == 'wasm'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Build Swift Wasm Docker Image
+        run: |
+          docker build -t zago-wasm-builder -f Dockerfile.wasm .
+
+      - name: Build WebAssembly Binary
+        run: |
+          chmod +x build-wasm.sh
+          ./build-wasm.sh
+          test -s web/public/zago.wasm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build Web Frontend
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
