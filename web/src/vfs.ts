@@ -15,6 +15,9 @@ const VFS_PREFIX = "zago_vfs:";
 
 const DEFAULT_WELCOME_MD = `# zago Interactive Tutorial
 
+Note: Use your keybaord to have fun with the document here.
+Left/Right/Page Up/Page Down to move the cursor.
+
 ## Canvas Mode
 
 \`\`\`
@@ -119,6 +122,25 @@ The syntax is [begin arrow][border][end aarrow]
 
 ## BOX and DRAWBOX Commanads
 
+
+
+
+
+
+
+
+Try the commands to create boxes above
+
+- BOX "Hi"        ; Inserts a box with "Hi" inside.
+- DRAWBOX "There" ; Overlays a box over current content.
+- BOX 20 5 "Hi"   ; Inserts a box with the given size.
+- BOX "Hi" =      ; Inserts a box with a specific border style.
+- BOX "Hi" =)     ; ")" indicates round corner.
+
+You can use border styles including - = + A -- ++ --- +++ ---- ++++
+
+## FILL and INSET Commands
+
 \`\`\`
 Fill                 Inset
 ┌──────────────────┐ ┌──────────────────┐
@@ -136,31 +158,41 @@ Fill                 Inset
 - ESC, input "INSET <any text>". Enter.
   The text will be placed in the center of the box.
 
+## Combined Commands
 
+You can combine the commands with other commands in the ES command
+prompt
 
+- BOX DATE             ; Put the date into a box.
+- BOX DATE =)          ; Put it into a box with double line.
+- REPEAT 3 [BOX "hi"]  ; Draw 3 boxes
 
-Try the commands to create boxes above
+Date formats for various locales are available on macOS/Linux/Windows.
 
-- BOX "Hi"        ; Inserts a box with "Hi" inside.
-- DRAWBOX "There" ; Overlays a box over current content.
-- BOX 20 5 "Hi"   ; Inserts a box with the given size.
-- BOX "Hi" =      ; Inserts a box with a specific border style.
-- BOX "Hi" =)     ; ")" indicates round corner.
+## Run Commands Inline
 
-You can use border styles including - = + A -- ++ --- +++ ---- ++++
+Besides using the ESC command prompt, you can run any line in your text
+as commands by pressing ^Q.
 
-## FILL and INSET Commands
+You can simply use commands in follwing example to convert text inline
+when you are working on a multi-lingua document.
 
+move end newline type tohiragana Sakura      ; Press ^Q
+move end newline type tokatakana Ramen       ; Press ^Q
+move end newline type toromaji ラメン        ; Press ^Q
+move end newline type tohant 简体中文转繁体  ; Press ^Q
+move end newline type tohans 繁體中文轉簡體  ; Press ^Q
+move end newline box "Zago rocks" se newline ; Press ^Q
 
+## And More!
 
+Zago has a rich command set and a syntax to help you to work with text
+diagrams and writing. and make your text file as a playground. By the
+default, the reference is hidden. You can input "set debug on" ESC
+prompt to enable the reference in the menu.
 
-
-   
-
-
-
-
-
+For advanced usage, you can always use "help-cmd" and "help-key"
+commands to leran zago better.
 
 Happy Editing!
 `;
