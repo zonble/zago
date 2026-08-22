@@ -182,7 +182,7 @@ jobs:
 
       - name: Build Swift Wasm Docker Image
         run: |
-          docker build -t zago-wasm-builder -f Dockerfile.wasm .
+          docker build -t zago-wasm-builder -f Dockerfile_wasm .
 
       - name: Build WebAssembly Binary
         run: |

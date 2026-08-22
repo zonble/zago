@@ -25,7 +25,7 @@ elif swift sdk list 2>/dev/null | grep -q "wasm"; then
     swift build --configuration release --swift-sdk "$WASM_SDK" --product zagoweb
 else
     echo "==> Error: No Swift Wasm SDK found locally and 'zago-wasm-builder' image not built."
-    echo "    Run: docker build -t zago-wasm-builder -f Dockerfile.wasm ."
+    echo "    Run: docker build -t zago-wasm-builder -f Dockerfile_wasm ."
     exit 1
 fi
 
