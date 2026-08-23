@@ -6,6 +6,20 @@ import { VirtualOSStorage } from "./vfs";
 import { SharedStdin } from "./shared-stdin";
 
 async function main() {
+  const viewport = window.visualViewport;
+  let resizeFrame = 0;
+
+  const updateAppHeight = () => {
+    const visibleHeight = viewport?.height ?? window.innerHeight;
+    document.documentElement.style.setProperty("--app-height", `${Math.round(visibleHeight)}px`);
+    document.documentElement.style.setProperty(
+      "--viewport-offset-top",
+      `${Math.round(viewport?.offsetTop ?? 0)}px`
+    );
+  };
+
+  updateAppHeight();
+
   const container = document.getElementById("terminal-container");
   if (!container) return;
 
@@ -379,20 +393,26 @@ async function main() {
 
   // Resize handling
   const handleResize = () => {
-    if (window.innerWidth < 600) {
-      term.options.fontSize = 12;
-    } else {
-      term.options.fontSize = 14;
-    }
+    updateAppHeight();
+    window.cancelAnimationFrame(resizeFrame);
+    resizeFrame = window.requestAnimationFrame(() => {
+      if (window.innerWidth < 600) {
+        term.options.fontSize = 12;
+      } else {
+        term.options.fontSize = 14;
+      }
 
-    fitAddon.fit();
-    const dims = fitAddon.proposeDimensions();
-    if (dims && mode === "editor") {
-      sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-    }
+      fitAddon.fit();
+      const dims = fitAddon.proposeDimensions();
+      if (dims && mode === "editor") {
+        sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+      }
+    });
   };
 
   window.addEventListener("resize", handleResize);
+  viewport?.addEventListener("resize", handleResize);
+  viewport?.addEventListener("scroll", handleResize);
 
   // Launch initial editor session
   await launchEditor("/workspace/welcome.md");

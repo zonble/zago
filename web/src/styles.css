@@ -1,4 +1,6 @@
 :root {
+  --app-height: 100dvh;
+  --viewport-offset-top: 0px;
   --bg-color: #0d1117;
   --panel-bg: #161b22;
   --header-bg: #161b22;
@@ -31,12 +33,18 @@ html, body {
   color: var(--text-main);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 #app {
+  position: fixed;
+  top: var(--viewport-offset-top, 0px);
+  left: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: var(--app-height, 100dvh);
+  max-height: var(--app-height, 100dvh);
   width: 100vw;
 }
 
@@ -115,7 +123,7 @@ html, body {
   display: flex;
   flex: 1;
   width: 100%;
-  height: calc(100vh - 26px);
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -131,6 +139,9 @@ html, body {
   flex-shrink: 0;
   display: block;
   color: #1f2328;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .docs-content {
@@ -368,6 +379,7 @@ html, body {
   overflow: hidden;
   background-color: #0d1117;
   position: relative;
+  min-height: 0;
 }
 
 .toolbar {
@@ -413,7 +425,7 @@ html, body {
   flex: 1;
   position: relative;
   width: 100%;
-  height: 100%;
+  min-height: 0;
   overflow: hidden;
   background-color: #0d1117;
 }
@@ -666,7 +678,7 @@ html, body {
 
   .content-container {
     flex-direction: column;
-    height: calc(100vh - 42px - 26px);
+    min-height: 0;
   }
 
   .docs-panel {
@@ -679,6 +691,7 @@ html, body {
   .docs-panel.active {
     display: block;
     flex: 1;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
   }
 
   .demo-panel {
@@ -697,6 +710,7 @@ html, body {
 
   .mobile-keybar {
     display: flex;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
   }
 
   .toolbar .toolbar-title {
@@ -710,5 +724,9 @@ html, body {
   .bottom-bar .hint {
     display: none;
   }
-}
 
+  .site-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(26px + env(safe-area-inset-bottom));
+  }
+}
