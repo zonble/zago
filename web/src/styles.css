@@ -1,6 +1,4 @@
 :root {
-  --app-height: 100dvh;
-  --viewport-offset-top: 0px;
   --bg-color: #0d1117;
   --panel-bg: #161b22;
   --header-bg: #161b22;
@@ -37,14 +35,10 @@ html, body {
 }
 
 #app {
-  position: fixed;
-  top: var(--viewport-offset-top, 0px);
-  left: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: var(--app-height, 100dvh);
-  max-height: var(--app-height, 100dvh);
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -577,6 +571,12 @@ html, body {
 
 .key-btn.accent:active {
   background-color: #79c0ff;
+  color: #0d1117;
+}
+
+.key-btn.modifier.active {
+  background-color: #d29922;
+  border-color: #e3b341;
   color: #0d1117;
 }
 

@@ -6,20 +6,6 @@ import { VirtualOSStorage } from "./vfs";
 import { SharedStdin } from "./shared-stdin";
 
 async function main() {
-  const viewport = window.visualViewport;
-  let resizeFrame = 0;
-
-  const updateAppHeight = () => {
-    const visibleHeight = viewport?.height ?? window.innerHeight;
-    document.documentElement.style.setProperty("--app-height", `${Math.round(visibleHeight)}px`);
-    document.documentElement.style.setProperty(
-      "--viewport-offset-top",
-      `${Math.round(viewport?.offsetTop ?? 0)}px`
-    );
-  };
-
-  updateAppHeight();
-
   const container = document.getElementById("terminal-container");
   if (!container) return;
 
@@ -309,6 +295,15 @@ async function main() {
 
   // Mobile Virtual Key Bar Bindings
   const keyButtons = document.querySelectorAll<HTMLButtonElement>(".key-btn");
+  const shiftButton = document.querySelector<HTMLButtonElement>('.key-btn[data-key="shift"]');
+  let shiftActive = false;
+
+  const setShiftActive = (active: boolean) => {
+    shiftActive = active;
+    shiftButton?.classList.toggle("active", active);
+    shiftButton?.setAttribute("aria-pressed", String(active));
+  };
+
   keyButtons.forEach((btn) => {
     const keyAction = btn.dataset.key;
     const sendKey = (e: Event) => {
@@ -327,20 +322,20 @@ async function main() {
           // F7 toggles Table mode in zago
           if (mode === "editor") sharedStdin.write("\x1b[18~");
           break;
-        case "tab":
-          if (mode === "editor") sharedStdin.write("\t");
+        case "shift":
+          setShiftActive(!shiftActive);
           break;
         case "arrow-left":
-          if (mode === "editor") sharedStdin.write("\x1b[D");
+          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2D" : "\x1b[D");
           break;
         case "arrow-up":
-          if (mode === "editor") sharedStdin.write("\x1b[A");
+          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2A" : "\x1b[A");
           break;
         case "arrow-down":
-          if (mode === "editor") sharedStdin.write("\x1b[B");
+          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2B" : "\x1b[B");
           break;
         case "arrow-right":
-          if (mode === "editor") sharedStdin.write("\x1b[C");
+          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2C" : "\x1b[C");
           break;
         case "save":
           // Ctrl+O
@@ -393,26 +388,20 @@ async function main() {
 
   // Resize handling
   const handleResize = () => {
-    updateAppHeight();
-    window.cancelAnimationFrame(resizeFrame);
-    resizeFrame = window.requestAnimationFrame(() => {
-      if (window.innerWidth < 600) {
-        term.options.fontSize = 12;
-      } else {
-        term.options.fontSize = 14;
-      }
+    if (window.innerWidth < 600) {
+      term.options.fontSize = 12;
+    } else {
+      term.options.fontSize = 14;
+    }
 
-      fitAddon.fit();
-      const dims = fitAddon.proposeDimensions();
-      if (dims && mode === "editor") {
-        sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-      }
-    });
+    fitAddon.fit();
+    const dims = fitAddon.proposeDimensions();
+    if (dims && mode === "editor") {
+      sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+    }
   };
 
   window.addEventListener("resize", handleResize);
-  viewport?.addEventListener("resize", handleResize);
-  viewport?.addEventListener("scroll", handleResize);
 
   // Launch initial editor session
   await launchEditor("/workspace/welcome.md");
