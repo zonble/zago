@@ -5,7 +5,8 @@ import LogoEngine
 public enum LogoLocalizationRegistry {
     /// List of all built-in dialect plugins.
     public static let allDialects: [any LogoParserPlugin] = [
-        LogoTraditionalChinesePlugin()
+        LogoTraditionalChinesePlugin(),
+        LogoEmojiPlugin(),
     ]
 
     /// Finds a built-in dialect plugin matching the given ID or alias (case-insensitive).

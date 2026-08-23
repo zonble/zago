@@ -14,6 +14,38 @@ struct LogoLocalizationTests {
     }
 
     @Test
+    func testEmojiDialectDrawingControlFlowAndVariationSelectors() {
+        let lines = LogoExecutionService.render(
+            script: """
+            🖼️ 10 4 🟰
+            📍 2 1
+            🔁 3 [ ✍️ "😀 ]
+            ❓ ✅ [ ✍ "! ]
+            """,
+            plugins: [LogoEmojiPlugin()]
+        )
+        let joined = lines.joined(separator: "\n")
+        #expect(joined.contains("╔"))
+        #expect(joined.contains("😀😀😀!"))
+    }
+
+    @Test
+    func testEmojiDialectMathDirectionsAndRegistryAliases() {
+        let engine = LogoEngine(pluginRegistry: LogoPluginRegistry(plugins: [LogoEmojiPlugin()]))
+        engine.execute("📦 \"answer ➕ 20 22")
+        #expect(engine.variables["answer"] == "42")
+
+        let plugin = LogoEmojiPlugin()
+        #expect(plugin.parseHeading("⬆️") == .up)
+        #expect(plugin.parseBoolean("✅") == true)
+        #expect(plugin.parsePrimitive("\"🖼️") == nil)
+        #expect(LogoLocalizationRegistry.dialect(for: "emoji-logo")?.id == "emoji")
+
+        let coveredPrimitives = LogoPrimitive.allCases.filter { !plugin.aliases(for: $0).isEmpty }
+        #expect(coveredPrimitives.count == LogoPrimitive.allCases.count)
+    }
+
+    @Test
     func testTraditionalChineseDrawingAndTyping() {
         let lines = LogoExecutionService.render(
             script: """
