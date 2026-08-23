@@ -168,11 +168,13 @@ public final class ConfigLoader {
                         continue
                     }
                     if tokens.count >= 3 && tokens[1].lowercased() == "dialect" {
-                        config.loadedDialects.append(tokens[2].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
+                        config.loadedDialects.append(
+                            tokens[2].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
                     } else if tokens[1].lowercased() == "dialect" {
                         recordSyntaxError(in: &config)
                     } else {
-                        config.loadedDialects.append(tokens[1].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
+                        config.loadedDialects.append(
+                            tokens[1].trimmingCharacters(in: CharacterSet(charactersIn: "\" '")))
                     }
                 }
             } else {
@@ -498,8 +500,9 @@ public final class ConfigLoader {
             # bind alt-t logo:insert-title
 
             ## Load LOGO Dialects
-            
+
             # load dialect zh-TW
+            # load dialect emoji
 
             ## On macOS, you can install `nanorc` and include its syntax definitions 
             ## for additional highlighting.

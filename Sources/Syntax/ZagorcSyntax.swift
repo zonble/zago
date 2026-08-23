@@ -1,5 +1,6 @@
 import Foundation
 import LogoEngine
+import LogoLocalization
 
 /// Syntax definition for zago configuration files.
 ///
@@ -28,6 +29,15 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
     private static let settingPattern =
         #"(?i)\b(wrap|fill|ruler|linenumbers|sublinenumbers|canvas-mode|syntax|smarttab|list-indent-size|list-wrap-indent|autoreload|ipc|trim-trailing-whitespace|nonewlines|git-diff|debug|regex|tab|tabsize|tabstospaces|lang|language|spell-language|spell-lang|border|arrow|keymap|modernbindings|max-file-size|large-file-threshold|max-line-highlight-length|backup|backupdir|launch-to-journal|journal-folder|dialect)\b"#
 
+    private static let dialectPattern: String = {
+        let names = LogoLocalizationRegistry.allDialects.flatMap { [$0.id] + $0.aliases }
+        let alternatives = names
+            .sorted { $0.count > $1.count }
+            .map(NSRegularExpression.escapedPattern(for:))
+            .joined(separator: "|")
+        return "(?i)(?<![\\p{L}\\p{N}_-])(\(alternatives))(?![\\p{L}\\p{N}_-])"
+    }()
+
     public var rules: [SyntaxRule] {
         [
             makeRule(#"^\s*(#|;|//).*$"#, .comment),
@@ -35,6 +45,7 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
             makeRule(#"(?<!:)#.*$|;.*$|//.*$"#, .comment),
             makeRule(Self.directivePattern, .keyword),
             makeRule(Self.settingPattern, .typeOrAttribute),
+            makeRule(Self.dialectPattern, .typeOrAttribute),
             makeRule(LogoSyntaxDefinition.keywordPattern, .keyword),
             makeRule(#":(#|[a-zA-Z0-9_]+)"#, .typeOrAttribute),
             makeRule(

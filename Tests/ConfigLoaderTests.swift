@@ -341,6 +341,13 @@ struct ConfigLoaderTests {
         #expect(loadDialectTokens.contains(.keyword))
         #expect(loadDialectTokens.contains(.typeOrAttribute))
 
+        let emojiDialectTokens = highlighter.tokenTypes(for: "load dialect emoji", syntax: syntax)
+        #expect(emojiDialectTokens.contains(.keyword))
+        #expect(emojiDialectTokens.filter { $0 == .typeOrAttribute }.count >= 2)
+
+        let emojiAliasTokens = highlighter.tokenTypes(for: "load dialect 😀", syntax: syntax)
+        #expect(emojiAliasTokens.contains(.typeOrAttribute))
+
         let setBackupTokens = highlighter.tokenTypes(for: "set backup on", syntax: syntax)
         #expect(setBackupTokens.contains(.keyword))
         #expect(setBackupTokens.contains(.typeOrAttribute))
