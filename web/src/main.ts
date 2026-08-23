@@ -71,6 +71,19 @@ async function main() {
   let shellInput = "";
   let cachedWasmBytes: ArrayBuffer | null = null;
 
+  const fitAndNotifyEditor = () => {
+    // The mobile demo panel starts as display:none. Fitting while hidden gives
+    // xterm a tiny fallback geometry (often about five rows), which must never
+    // be sent to the Wasm editor.
+    if (container.clientWidth <= 0 || container.clientHeight <= 0) return;
+
+    fitAddon.fit();
+    const dims = fitAddon.proposeDimensions();
+    if (dims && mode === "editor") {
+      sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+    }
+  };
+
   // Progress UI elements
   const loadingOverlay = document.getElementById("wasm-loading-overlay");
   const progressBar = document.getElementById("loading-progress-bar");
@@ -193,11 +206,7 @@ async function main() {
             setTimeout(() => {
               hideLoading();
               term.focus();
-              fitAddon.fit();
-              const dims = fitAddon.proposeDimensions();
-              if (dims) {
-                sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-              }
+              fitAndNotifyEditor();
             }, 150);
             break;
 
@@ -360,11 +369,13 @@ async function main() {
   // Mobile Navigation Tabs
   const tabDocs = document.getElementById("tab-docs");
   const tabDemo = document.getElementById("tab-demo");
+  const app = document.getElementById("app");
   const docsPanel = document.getElementById("docs-panel");
   const demoPanel = document.getElementById("demo-panel");
   const btnJumpDemo = document.getElementById("btn-jump-demo");
 
   const switchToDocs = () => {
+    app?.classList.remove("demo-active");
     tabDocs?.classList.add("active");
     tabDemo?.classList.remove("active");
     docsPanel?.classList.add("active");
@@ -372,12 +383,13 @@ async function main() {
   };
 
   const switchToDemo = () => {
+    app?.classList.add("demo-active");
     tabDemo?.classList.add("active");
     tabDocs?.classList.remove("active");
     demoPanel?.classList.add("active");
     docsPanel?.classList.remove("active");
     setTimeout(() => {
-      fitAddon.fit();
+      fitAndNotifyEditor();
       term.focus();
     }, 50);
   };
@@ -394,11 +406,7 @@ async function main() {
       term.options.fontSize = 14;
     }
 
-    fitAddon.fit();
-    const dims = fitAddon.proposeDimensions();
-    if (dims && mode === "editor") {
-      sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
-    }
+    fitAndNotifyEditor();
   };
 
   window.addEventListener("resize", handleResize);

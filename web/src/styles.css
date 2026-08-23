@@ -672,6 +672,10 @@ html, body {
    Responsive Breakpoint (< 900px)
    ========================================================================== */
 @media (max-width: 900px) {
+  #app.demo-active {
+    height: 100vh;
+  }
+
   .mobile-tabs {
     display: flex;
   }
