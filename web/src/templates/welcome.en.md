@@ -146,6 +146,12 @@ You can combine commands inside the ESC command prompt:
 - BOX DATE =)          ; Place date in a rounded double-line box.
 - REPEAT 3 [BOX "hi"]  ; Draw 3 sequential boxes.
 
+## Text Transformations
+
+- Select any range of text.
+- Press F1 for the menu.
+- Select features in the "Selection" menu.
+
 ## Run Commands Inline
 
 Besides using the ESC command prompt, you can run any line in your text
