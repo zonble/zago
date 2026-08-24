@@ -41,25 +41,33 @@ export class SharedStdin {
   /**
    * Main thread: push text or raw bytes into the stdin ring buffer and wake worker.
    */
-  public write(input: string | Uint8Array) {
+  public write(input: string | Uint8Array): number {
     const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
-    if (bytes.length === 0) return;
+    if (bytes.length === 0) return 0;
+
+    let written = 0;
 
     this.lock();
     try {
+      const available = Math.max(0, Math.min(BUFFER_SIZE, this.control[2]));
+      const capacity = BUFFER_SIZE - available;
+      written = Math.min(bytes.length, capacity);
+      if (written === 0) return 0;
+
       let writePos = this.control[0];
-      for (let i = 0; i < bytes.length; i++) {
+      for (let i = 0; i < written; i++) {
         this.data[writePos] = bytes[i];
         writePos = (writePos + 1) % BUFFER_SIZE;
       }
       this.control[0] = writePos;
-      this.control[2] += bytes.length;
+      this.control[2] = available + written;
     } finally {
       this.unlock();
     }
 
     // Wake up Worker
     Atomics.notify(this.control, 2);
+    return written;
   }
 
   /**

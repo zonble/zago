@@ -38,6 +38,18 @@ export const zhTW: TranslationSchema = {
   loadingDetailInit: "正在準備 WebAssembly 執行環境",
   loadingStatusCached: "正在從快取載入 zago.wasm...",
   loadingDetailCached: "快取秒開啟動中",
+  startingStatus: "正在啟動 zago 虛擬系統...",
+  startingDetail: "正在建立 WASI 執行環境",
+  readyStatus: "準備完成！",
+  readyDetail: "正在啟動編輯器...",
+  wasmLoadingStatus: "正在載入 WebAssembly 二進位檔...",
+  wasmInstantiatingStatus: "正在建立 zago.wasm 虛擬系統...",
+  editorExited: 'zago 已退出。輸入「zago」重新啟動',
+  failedToStart: "啟動失敗",
+  shellPrompt: "zago $ ",
+  shellCommandNotFound: (command: string) =>
+    `找不到指令：${command}。請輸入「zago [檔名]」啟動，或輸入「clear」清除畫面。`,
+  copied: "已複製！",
   unsupportedTitle: "瀏覽器環境不支援",
   unsupportedMsg:
     "社群 App 內建瀏覽器（如 X/Twitter、LINE、Facebook）或受限環境不支援 WebAssembly 跨來源隔離（SharedArrayBuffer）。",

@@ -89,13 +89,29 @@ async function main() {
     if (loadingCardUnsupported) loadingCardUnsupported.classList.remove("hidden");
   }
 
-  // Shared Stdin ring buffer between UI thread and Worker
-  const sharedStdin = new SharedStdin();
+  // Shared Stdin is created only after the browser capability check below.
+  let sharedStdin: SharedStdin | null = null;
 
   let currentWorker: Worker | null = null;
   let mode: "editor" | "shell" = "editor";
   let shellInput = "";
   let cachedWasmBytes: ArrayBuffer | null = null;
+  let pendingFlush: { worker: Worker; resolve: () => void } | null = null;
+  let stdinGeneration = 0;
+
+  const writeStdin = (input: string) => {
+    const bytes = new TextEncoder().encode(input);
+    const generation = stdinGeneration;
+    let offset = 0;
+
+    const pump = () => {
+      if (!sharedStdin || generation !== stdinGeneration || offset >= bytes.length) return;
+      offset += sharedStdin.write(bytes.subarray(offset));
+      if (offset < bytes.length) window.setTimeout(pump, 0);
+    };
+
+    pump();
+  };
 
   const fitAndNotifyEditor = () => {
     // The mobile demo panel starts as display:none. Fitting while hidden gives
@@ -106,7 +122,7 @@ async function main() {
     fitAddon.fit();
     const dims = fitAddon.proposeDimensions();
     if (dims && mode === "editor") {
-      sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
+      writeStdin(`\x1b[8;${dims.rows};${dims.cols}t`);
     }
   };
 
@@ -130,6 +146,14 @@ async function main() {
           const cachedLength = cachedResponse.headers.get("Content-Length");
           const serverLength = headResponse.headers.get("Content-Length");
 
+          if (
+            (cachedEtag && !serverEtag) ||
+            (cachedLastMod && !serverLastMod) ||
+            (cachedLength && !serverLength)
+          ) {
+            return null;
+          }
+
           // If ETag exists and differs -> cache is stale
           if (cachedEtag && serverEtag && cachedEtag !== serverEtag) {
             return null;
@@ -142,6 +166,13 @@ async function main() {
           if (cachedLength && serverLength && cachedLength !== serverLength) {
             return null;
           }
+          // Without validators there is no safe way to know whether the
+          // cached binary is current, so fall back to a normal GET.
+          if (!cachedEtag && !cachedLastMod && !cachedLength) {
+            return null;
+          }
+        } else {
+          return null;
         }
       } catch {
         // Offline / network failure: fallback to using cached copy directly
@@ -259,13 +290,14 @@ async function main() {
 
     mode = "editor";
     shellInput = "";
-    sharedStdin.clear();
+    stdinGeneration++;
+    sharedStdin?.clear();
 
     try {
       const wasmUrl = new URL("zago.wasm", window.location.href).href;
       const wasmBytes = await fetchWasmWithProgress(wasmUrl);
 
-      showLoading("Starting Virtual OS...", "Instantiating WASI runtime", 98);
+            showLoading(t.startingStatus, t.startingDetail, 98);
 
       const nodes = await VirtualOSStorage.getAllNodes();
       const worker = new Worker(new URL("./worker.ts", import.meta.url), {
@@ -282,11 +314,24 @@ async function main() {
             break;
 
           case "status":
-            if (statusText) statusText.textContent = status;
+            if (statusText) {
+              statusText.textContent =
+                status === "Loading WebAssembly binary..." ? t.wasmLoadingStatus :
+                status === "Instantiating zago.wasm Virtual OS..." ? t.wasmInstantiatingStatus :
+                status;
+            }
+            break;
+
+          case "vfs_synced":
+            if (pendingFlush?.worker === worker) {
+              const resolve = pendingFlush.resolve;
+              pendingFlush = null;
+              resolve();
+            }
             break;
 
           case "ready":
-            showLoading("Ready!", "Starting editor...", 100);
+            showLoading(t.readyStatus, t.readyDetail, 100);
             setTimeout(() => {
               hideLoading();
               term.focus();
@@ -302,19 +347,19 @@ async function main() {
             }
             mode = "shell";
             shellInput = "";
-            term.write('\r\n\x1b[90m[zago exited. Type "zago" to start]\x1b[0m\r\nzago $ ');
+            term.write(`\r\n\x1b[90m[${t.editorExited}]\x1b[0m\r\n${t.shellPrompt}`);
             break;
 
           case "error":
             hideLoading();
-            term.write(`\r\n\x1b[31;1m[zago error]\x1b[0m ${message}\r\n`);
+            term.write(`\r\n\x1b[31;1m[${t.failedToStart}]\x1b[0m ${message}\r\n`);
             if (currentWorker === worker) {
               currentWorker.terminate();
               currentWorker = null;
             }
             mode = "shell";
             shellInput = "";
-            term.write("zago $ ");
+            term.write(t.shellPrompt);
             break;
         }
       };
@@ -324,18 +369,18 @@ async function main() {
         type: "init",
         data: { wasmBytes: wasmBytes.slice(0), targetFile, lang: currentLang },
         nodes,
-        sharedBuffer: sharedStdin.sharedBuffer,
+        sharedBuffer: sharedStdin!.sharedBuffer,
       });
     } catch (err: any) {
       hideLoading();
-      term.write(`\r\n\x1b[31;1m[Failed to start]\x1b[0m ${err?.message || err}\r\n`);
+      term.write(`\r\n\x1b[31;1m[${t.failedToStart}]\x1b[0m ${err?.message || err}\r\n`);
     }
   }
 
   // Keyboard input handler
   term.onData((inputData) => {
     if (mode === "editor") {
-      sharedStdin.write(inputData);
+      writeStdin(inputData);
       return;
     }
 
@@ -349,10 +394,10 @@ async function main() {
         shellInput = "";
 
         if (trimmed.length === 0) {
-          term.write("zago $ ");
+          term.write(t.shellPrompt);
         } else if (trimmed === "clear") {
           term.clear();
-          term.write("zago $ ");
+          term.write(t.shellPrompt);
         } else if (trimmed === "zago" || trimmed.startsWith("zago ")) {
           const parts = trimmed.split(/\s+/).slice(1);
           let targetFile = defaultWelcomeFile;
@@ -362,9 +407,7 @@ async function main() {
           launchEditor(targetFile);
           return;
         } else {
-          term.write(
-            `zago: command not found: ${trimmed}. Type "zago [filename]" to start or "clear" to clear screen.\r\nzago $ `
-          );
+          term.write(`${t.shellCommandNotFound(trimmed)}\r\n${t.shellPrompt}`);
         }
       } else if (char === "\x7f" || char === "\b") {
         if (shellInput.length > 0) {
@@ -374,11 +417,11 @@ async function main() {
       } else if (char === "\x03") {
         // Ctrl+C
         shellInput = "";
-        term.write("^C\r\nzago $ ");
+        term.write(`^C\r\n${t.shellPrompt}`);
       } else if (char === "\x0c") {
         // Ctrl+L
         term.clear();
-        term.write(`zago $ ${shellInput}`);
+        term.write(`${t.shellPrompt}${shellInput}`);
       } else if (char >= " ") {
         shellInput += char;
         term.write(char);
@@ -405,48 +448,47 @@ async function main() {
 
       switch (keyAction) {
         case "esc":
-          if (mode === "editor") sharedStdin.write("\x1b");
+          if (mode === "editor") writeStdin("\x1b");
           break;
         case "f8":
           // F8 toggles 2D Canvas mode in zago
-          if (mode === "editor") sharedStdin.write("\x1b[19~");
+          if (mode === "editor") writeStdin("\x1b[19~");
           break;
         case "f7":
           // F7 toggles Table mode in zago
-          if (mode === "editor") sharedStdin.write("\x1b[18~");
+          if (mode === "editor") writeStdin("\x1b[18~");
           break;
         case "shift":
           setShiftActive(!shiftActive);
           break;
         case "arrow-left":
-          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2D" : "\x1b[D");
+          if (mode === "editor") writeStdin(shiftActive ? "\x1b[1;2D" : "\x1b[D");
           break;
         case "arrow-up":
-          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2A" : "\x1b[A");
+          if (mode === "editor") writeStdin(shiftActive ? "\x1b[1;2A" : "\x1b[A");
           break;
         case "arrow-down":
-          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2B" : "\x1b[B");
+          if (mode === "editor") writeStdin(shiftActive ? "\x1b[1;2B" : "\x1b[B");
           break;
         case "arrow-right":
-          if (mode === "editor") sharedStdin.write(shiftActive ? "\x1b[1;2C" : "\x1b[C");
+          if (mode === "editor") writeStdin(shiftActive ? "\x1b[1;2C" : "\x1b[C");
           break;
         case "save":
           // Ctrl+O
-          if (mode === "editor") sharedStdin.write("\x0f");
+          if (mode === "editor") writeStdin("\x0f");
           break;
         case "quit":
           // Ctrl+Q
-          if (mode === "editor") sharedStdin.write("\x11");
+          if (mode === "editor") writeStdin("\x11");
           break;
         case "help":
           // Ctrl+G
-          if (mode === "editor") sharedStdin.write("\x07");
+          if (mode === "editor") writeStdin("\x07");
           break;
       }
       term.focus();
     };
 
-    btn.addEventListener("touchstart", sendKey, { passive: false });
     btn.addEventListener("click", sendKey);
   });
 
@@ -502,10 +544,10 @@ async function main() {
     btnCopyUnsupported.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        if (copyUnsupportedText) copyUnsupportedText.textContent = "Copied!";
+        if (copyUnsupportedText) copyUnsupportedText.textContent = t.copied;
         btnCopyUnsupported.classList.add("copied");
         setTimeout(() => {
-          if (copyUnsupportedText) copyUnsupportedText.textContent = "Copy Page Link";
+          if (copyUnsupportedText) copyUnsupportedText.textContent = t.btnCopyLink;
           btnCopyUnsupported.classList.remove("copied");
         }, 1500);
       } catch {
@@ -524,13 +566,14 @@ async function main() {
   // Check for Cross-Origin Isolation (required for SharedArrayBuffer / multi-threading)
   const isIsolated = typeof SharedArrayBuffer !== "undefined" && Boolean(window.crossOriginIsolated);
   if (!isIsolated) {
-    showLoading("Starting zago Virtual OS", "Preparing WebAssembly runtime...", 5);
+    showLoading(t.loadingTitle, t.loadingDetailInit, 5);
     setTimeout(() => {
       if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
         showUnsupportedBrowserUI();
       }
     }, 2500);
   } else {
+    sharedStdin = new SharedStdin();
     // Launch initial editor session
     await launchEditor(defaultWelcomeFile);
   }
@@ -570,11 +613,25 @@ async function main() {
 
   if (btnExportZip) {
     btnExportZip.addEventListener("click", async () => {
-      // First ask worker to flush latest Inode state if running
-      if (currentWorker) {
-        currentWorker.postMessage({ type: "flush_vfs" });
+      const worker = currentWorker;
+      if (worker) {
+        await new Promise<void>((resolve) => {
+          const timeout = window.setTimeout(() => {
+            if (pendingFlush?.worker === worker) pendingFlush = null;
+            resolve();
+          }, 2000);
+          pendingFlush = {
+            worker,
+            resolve: () => {
+              window.clearTimeout(timeout);
+              resolve();
+            },
+          };
+          worker.postMessage({ type: "flush_vfs" });
+        });
       }
-      setTimeout(async () => {
+
+      try {
         const blob = await VirtualOSStorage.exportWorkspaceZip();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -582,7 +639,9 @@ async function main() {
         a.download = `zago-workspace-${new Date().toISOString().slice(0, 10)}.zip`;
         a.click();
         URL.revokeObjectURL(url);
-      }, 200);
+      } catch (err: any) {
+        alert(t.importFailed(err?.message || err));
+      }
     });
   }
 

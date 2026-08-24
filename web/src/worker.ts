@@ -63,7 +63,10 @@ self.onmessage = async (event: MessageEvent) => {
 };
 
 async function flushVFSToIndexedDB() {
-  if (!isRunning) return;
+  if (!isRunning) {
+    self.postMessage({ type: "vfs_synced", count: 0 });
+    return;
+  }
   try {
     const nodes = dumpInodeTree(workspaceDir, "/workspace");
     await VirtualOSStorage.saveNodes(nodes);
@@ -183,7 +186,6 @@ async function startWasm(
         message: error?.message || String(error),
       });
       isRunning = false;
-      self.postMessage({ type: "exit", code: 1 });
     }
   }
 }

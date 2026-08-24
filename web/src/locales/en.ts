@@ -36,6 +36,18 @@ export const en = {
   loadingDetailInit: "Preparing WebAssembly runtime",
   loadingStatusCached: "Loading zago.wasm from browser cache...",
   loadingDetailCached: "Instant startup from cache",
+  startingStatus: "Starting zago Virtual OS...",
+  startingDetail: "Instantiating WASI runtime",
+  readyStatus: "Ready!",
+  readyDetail: "Starting editor...",
+  wasmLoadingStatus: "Loading WebAssembly binary...",
+  wasmInstantiatingStatus: "Instantiating zago.wasm Virtual OS...",
+  editorExited: 'zago exited. Type "zago" to start',
+  failedToStart: "Failed to start",
+  shellPrompt: "zago $ ",
+  shellCommandNotFound: (command: string) =>
+    `zago: command not found: ${command}. Type "zago [filename]" to start or "clear" to clear screen.`,
+  copied: "Copied!",
   unsupportedTitle: "Browser Not Supported",
   unsupportedMsg:
     "In-app browsers (such as X/Twitter, LINE, or Facebook) or restricted browsers do not support WebAssembly cross-origin isolation (SharedArrayBuffer).",

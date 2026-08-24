@@ -93,6 +93,20 @@ export class VirtualOSStorage {
    * Saves a batch of VFS nodes to IndexedDB.
    */
   static async saveNodes(nodes: VFSNode[]): Promise<void> {
+    const nextPaths = new Set(nodes.map((node) => node.path));
+    const allKeys = await keys();
+
+    // The worker sends a complete workspace snapshot. Remove entries that no
+    // longer exist in the in-memory inode tree before saving the snapshot.
+    for (const key of allKeys) {
+      const keyString = String(key);
+      if (!keyString.startsWith(VFS_PREFIX)) continue;
+      const nodePath = keyString.slice(VFS_PREFIX.length);
+      if ((nodePath === "/workspace" || nodePath.startsWith("/workspace/")) && !nextPaths.has(nodePath)) {
+        await del(key);
+      }
+    }
+
     for (const node of nodes) {
       await set(VFS_PREFIX + node.path, node);
     }
@@ -162,7 +176,8 @@ export class VirtualOSStorage {
     for (const [relPath, zipEntry] of Object.entries(zip.files)) {
       if (zipEntry.dir) continue;
 
-      const normRelPath = relPath.replace(/^\//, "");
+      const normRelPath = normalizeWorkspaceRelativePath(relPath);
+      if (!normRelPath) continue;
       if (normRelPath.startsWith("__MACOSX") || normRelPath.includes(".DS_Store")) {
         continue;
       }
@@ -191,11 +206,16 @@ export class VirtualOSStorage {
    * Imports a single file into `/workspace`.
    */
   static async importSingleFile(name: string, content: string | Uint8Array): Promise<void> {
+    const normName = normalizeWorkspaceRelativePath(name);
+    if (!normName) {
+      throw new Error("Invalid file name");
+    }
+
     const bytes = typeof content === "string" ? new TextEncoder().encode(content) : content;
-    const fullPath = `/workspace/${name}`;
+    const fullPath = `/workspace/${normName}`;
     const node: VFSNode = {
       path: fullPath,
-      name,
+      name: normName.split("/").pop() || normName,
       isDirectory: false,
       content: bytes,
       mtime: Date.now(),
@@ -203,6 +223,16 @@ export class VirtualOSStorage {
     };
     await set(VFS_PREFIX + fullPath, node);
   }
+}
+
+function normalizeWorkspaceRelativePath(path: string): string | null {
+  const segments = path.replaceAll("\\", "/").split("/");
+  if (segments.some((segment) => segment === "." || segment === "..")) {
+    return null;
+  }
+
+  const normalized = segments.filter(Boolean).join("/");
+  return normalized && !normalized.startsWith("/") ? normalized : null;
 }
 
 /**
