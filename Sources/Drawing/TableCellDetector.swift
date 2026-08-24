@@ -114,15 +114,25 @@ public final class TableCellDetector: Sendable {
                 break
             }
             if !hasLeftVerticalBorder(lStr, vCol: leftVCol) || !hasRightVerticalBorder(lStr, vCol: rightVCol) {
-                maxLine = lDown
                 break
             }
             lDown += 1
         }
         if maxLine == nil {
-            maxLine = lines.count
+            // In Markdown pipe tables, data rows typically do not have a bottom horizontal border line.
+            // If the top line is a markdown header separator, allow bottomLine to be the end of consecutive pipe rows.
+            if isMarkdownPipeHeader(lines[topLine], leftVCol: leftVCol) ||
+               (topLine > 0 && isMarkdownPipeHeader(lines[topLine - 1], leftVCol: leftVCol)) {
+                var endLine = cursorLine + 1
+                while endLine < lines.count && hasLeftVerticalBorder(lines[endLine], vCol: leftVCol) && hasRightVerticalBorder(lines[endLine], vCol: rightVCol) {
+                    endLine += 1
+                }
+                maxLine = endLine
+            }
         }
         guard let bottomLine = maxLine, bottomLine > topLine + 1 else { return nil }
+
+
 
         // The border rows themselves are drawing structure, not editable cell
         // content. This also handles a cursor rendered over a border glyph.

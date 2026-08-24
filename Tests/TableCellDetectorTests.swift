@@ -165,7 +165,12 @@ import Testing
     // Cursor at line 2 on '點' (character col 4, visual col 5..6)
     let cell = detector.detectCell(in: lines, line: 2, col: 4)
     #expect(cell == nil)
+
+    // Cursor at line 1 at 'a' (col 5)
+    let cellAtA = detector.detectCell(in: lines, line: 1, col: 5)
+    #expect(cellAtA == nil)
 }
+
 
 
 
