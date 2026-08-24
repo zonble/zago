@@ -214,6 +214,24 @@ public final class Editor: @unchecked Sendable {
         private var editorLoopThread: Thread?
     #endif
 
+    public struct BoundaryDragScrollState: Equatable, Sendable {
+        public var lastEvent: MouseEvent
+        public var intervalMs: Int
+
+        public init(lastEvent: MouseEvent, intervalMs: Int) {
+            self.lastEvent = lastEvent
+            self.intervalMs = intervalMs
+        }
+    }
+
+    public var activeBoundaryDragState: BoundaryDragScrollState?
+
+    /// Executes one continuous auto-scroll step when holding the mouse at or beyond boundaries.
+    public func performBoundaryDragAutoScrollTick() {
+        guard let state = activeBoundaryDragState else { return }
+        handleMouseEvent(state.lastEvent)
+    }
+
     private struct ResolvedConfig {
         let wrapColumn: Int?
         let display: RuntimeConfig
@@ -566,7 +584,6 @@ public final class Editor: @unchecked Sendable {
             }
             return
         }
-        terminal.hideCursor()
 
         if displayConfig.enableMouse {
             terminal.setMouseTracking(enabled: true)
@@ -579,12 +596,18 @@ public final class Editor: @unchecked Sendable {
         while isRunning {
             drainExternalRequests()
             refreshScreen()
-            let inputEvent = terminal.readInputEvent()
+            let timeout = activeBoundaryDragState?.intervalMs
+            let inputEvent = terminal.readInputEvent(timeoutMs: timeout)
             drainExternalRequests()
+
+            guard let event = inputEvent else {
+                performBoundaryDragAutoScrollTick()
+                continue
+            }
 
             // Event coalescing for mouse drag: if additional mouse drag events are queued in the terminal input stream,
             // process them in memory and coalesce to the latest position before triggering a full screen redraw.
-            if case .mouse(let mouseEvent) = inputEvent, case .drag = mouseEvent.action {
+            if case .mouse(let mouseEvent) = event, case .drag = mouseEvent.action {
                 handleMouseEvent(mouseEvent)
                 while terminal.hasPendingInput() {
                     let nextEvent = terminal.readInputEvent()
@@ -593,6 +616,7 @@ public final class Editor: @unchecked Sendable {
                     } else {
                         switch nextEvent {
                         case .key(let key):
+                            activeBoundaryDragState = nil
                             if key == .resize {
                                 renderer.invalidateScreenCache()
                                 terminal.clearScreen()
@@ -608,8 +632,9 @@ public final class Editor: @unchecked Sendable {
                 continue
             }
 
-            switch inputEvent {
+            switch event {
             case .key(let key):
+                activeBoundaryDragState = nil
                 if key == .resize {
                     renderer.invalidateScreenCache()
                     terminal.clearScreen()

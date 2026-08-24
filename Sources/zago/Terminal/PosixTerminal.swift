@@ -159,14 +159,27 @@ import Foundation
 
         /// Reads and parses the next input event (key press or SGR mouse event).
         public func readInputEvent() -> InputEvent {
+            readInputEvent(timeoutMs: nil) ?? .key(.unknown)
+        }
+
+        /// Reads and parses the next input event with an optional timeout in milliseconds.
+        public func readInputEvent(timeoutMs: Int?) -> InputEvent? {
             let firstByte: UInt8
+            let pollChunk = timeoutMs.map { min($0, 250) } ?? 250
+            let start = Date()
             while true {
                 if consumeWindowResizeEvent() {
                     return .key(.resize)
                 }
-                guard let byte = readByte(timeoutMs: 250) else {
+                guard let byte = readByte(timeoutMs: pollChunk) else {
                     if consumeWindowResizeEvent() {
                         return .key(.resize)
+                    }
+                    if let t = timeoutMs {
+                        let elapsedMs = Int(Date().timeIntervalSince(start) * 1000)
+                        if elapsedMs >= t {
+                            return nil
+                        }
                     }
                     continue
                 }

@@ -17,6 +17,20 @@ extension Editor {
             let topMargin = 1 + (geometry.showRuler ? 1 : 0)
             let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
 
+            // Determine if at or beyond boundary and compute two-tier interval
+            let isOutsideWindow = mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
+                || mouseEvent.col <= 0 || mouseEvent.col > geometry.cols
+            let isAtBoundaryRow = mouseEvent.row <= topMargin || mouseEvent.row > topMargin + geometry.mainAreaHeight
+            let isAtBoundaryCol = isCanvasModeActive && (mouseEvent.col <= 1 + geometry.gutterWidth || mouseEvent.col > geometry.cols)
+
+            if isOutsideWindow {
+                activeBoundaryDragState = BoundaryDragScrollState(lastEvent: mouseEvent, intervalMs: 30)
+            } else if isAtBoundaryRow || isAtBoundaryCol {
+                activeBoundaryDragState = BoundaryDragScrollState(lastEvent: mouseEvent, intervalMs: 60)
+            } else {
+                activeBoundaryDragState = nil
+            }
+
             // Vertical Auto-Scroll & Coordinate Clamping
             let vLineIndex: Int
             if mouseEvent.row <= topMargin {
@@ -83,6 +97,8 @@ extension Editor {
             }
             return
         }
+
+        activeBoundaryDragState = nil
 
         // 2. Help Bar Hit-Testing (Lines geometry.rows - 1 and geometry.rows)
         if mouseEvent.row >= geometry.rows - 1 {

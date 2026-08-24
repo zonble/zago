@@ -220,4 +220,44 @@ import Testing
         #expect(editor.buffer.canvasBlockMarkEnd != nil)
         #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn ?? 0 > 75)
     }
+
+    @Test func testContinuousAutoScrollStateAndTicks() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0) text content for continuous scroll test" }
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+
+        // Click at row 5 (line 3)
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: 5))
+        #expect(editor.activeBoundaryDragState == nil)
+
+        // Drag to edge boundary row 23 (Help Bar, inside window) -> Tier 1 (60ms)
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 5, row: 23))
+        #expect(editor.activeBoundaryDragState != nil)
+        #expect(editor.activeBoundaryDragState?.intervalMs == 60)
+
+        let initialTop = editor.topVLineIndex
+
+        // Simulate continuous scroll ticks triggered by timer poll timeouts
+        editor.performBoundaryDragAutoScrollTick()
+        #expect(editor.topVLineIndex == initialTop + 1)
+
+        editor.performBoundaryDragAutoScrollTick()
+        #expect(editor.topVLineIndex == initialTop + 2)
+
+        // Drag outside window (row 30, when window is 24 rows) -> Tier 2 (30ms)
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 5, row: 30))
+        #expect(editor.activeBoundaryDragState?.intervalMs == 30)
+
+        // Drag back to normal viewport area (row 10) -> Clears state
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 5, row: 10))
+        #expect(editor.activeBoundaryDragState == nil)
+
+        // Drag outside again, then release button -> Clears state
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 5, row: 0))
+        #expect(editor.activeBoundaryDragState != nil)
+
+        editor.handleMouseEvent(MouseEvent(action: .release(.left), col: 5, row: 0))
+        #expect(editor.activeBoundaryDragState == nil)
+    }
 }

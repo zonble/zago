@@ -29,6 +29,9 @@ public protocol EditorTerminal: AnyObject {
     /// Reads and parses the next input event (key press or mouse interaction).
     func readInputEvent() -> InputEvent
 
+    /// Reads and parses the next input event with optional timeout in milliseconds.
+    func readInputEvent(timeoutMs: Int?) -> InputEvent?
+
     /// Enables or disables terminal mouse reporting (SGR 1006 mode).
     func setMouseTracking(enabled: Bool)
 
@@ -74,6 +77,10 @@ extension EditorTerminal {
 extension EditorTerminal {
     public func readInputEvent() -> InputEvent {
         .key(readKey())
+    }
+
+    public func readInputEvent(timeoutMs: Int?) -> InputEvent? {
+        readInputEvent()
     }
 
     public func setMouseTracking(enabled: Bool) {

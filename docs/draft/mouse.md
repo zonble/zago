@@ -162,6 +162,17 @@ public struct MouseEvent: Equatable, Hashable, Sendable {
         self.ctrl = ctrl
     }
 }
+
+/// Active continuous drag auto-scroll state managed by Editor
+public struct BoundaryDragScrollState: Equatable, Sendable {
+    public var lastEvent: MouseEvent
+    public var intervalMs: Int
+
+    public init(lastEvent: MouseEvent, intervalMs: Int) {
+        self.lastEvent = lastEvent
+        self.intervalMs = intervalMs
+    }
+}
 ```
 
 ---
@@ -241,3 +252,31 @@ When dragging to select text or 2D canvas blocks beyond the visible viewport bou
 - The selection anchor (`selectionMark` or `canvasBlockMark`) remains fixed at the initial click origin.
 - The active cursor (`lineIndex`, `columnIndex` or `canvasBlockMarkEnd`) advances continuously with every scroll tick.
 - In **Text Mode** and **Table Mode**, scrolling and selection are strictly clamped to existing buffer lines and cell bounds without auto-inserting extra lines.
+
+### 7.3 Continuous Edge-Holding Auto-Scroll
+
+When holding the mouse button down at or beyond the screen boundaries without moving the physical mouse, the terminal emulator stops sending motion events. `zago` uses a non-blocking event-loop poll timeout (`readInputEvent(timeoutMs:)`) to maintain smooth, continuous scrolling:
+
+```text
+       ┌────────────────────────────────────────────────────────┐
+       │   Tier 2: Outside Window Top (row <= 0) → 30ms/tick    │
+       ├────────────────────────────────────────────────────────┤
+       │   Tier 1: Top Margin / Title Bar (row 1..2) → 60ms     │
+       ├────────────────────────────────────────────────────────┤
+       │                                                        │
+       │                   Normal Editing Area                  │
+       │              (Drag selects without scroll)             │
+       │                                                        │
+       ├────────────────────────────────────────────────────────┤
+       │   Tier 1: Bottom Margin / Help Bar (row 23..24) → 60ms │
+       ├────────────────────────────────────────────────────────┤
+       │   Tier 2: Outside Window Bottom (row > 24) → 30ms/tick │
+       └────────────────────────────────────────────────────────┘
+```
+
+1. **Two-Tier Dynamic Speed**:
+   - **Boundary Rows (Tier 1)**: When hovering on the edge UI rows (Title Bar `row <= topMargin` or Help Bar `row > topMargin + mainAreaHeight`, or Canvas Gutter / Right margin), scrolls at **60 ms per tick** (1 line or 2 columns) for steady, precise positioning.
+   - **Outside Window (Tier 2)**: When dragging outside the terminal bounds (`row <= 0`, `row > rows`, `col <= 0`, `col > cols`), automatically accelerates to **30 ms per tick** for rapid scrolling through long documents.
+2. **State Lifecycle**:
+   - **Activated**: Entering boundary zones during `.drag(.left)`.
+   - **Deactivated**: Releasing the button (`.release(.left)`), dragging back inside the normal text area, or pressing any key. Returns to zero-overhead blocking I/O immediately.

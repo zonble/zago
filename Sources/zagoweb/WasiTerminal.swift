@@ -72,13 +72,23 @@ public final class WasiTerminal: EditorTerminal {
     }
 
     public func readInputEvent() -> InputEvent {
+        readInputEvent(timeoutMs: nil) ?? .key(.unknown)
+    }
+
+    public func readInputEvent(timeoutMs: Int?) -> InputEvent? {
         var firstByte: UInt8? = nil
         while firstByte == nil {
             if pendingResize {
                 pendingResize = false
                 return .key(.resize)
             }
-            firstByte = readByte()
+            if let byte = readByte() {
+                firstByte = byte
+                break
+            }
+            if timeoutMs != nil {
+                return nil
+            }
         }
 
         guard let first = firstByte else {
