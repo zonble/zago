@@ -57,6 +57,7 @@ This directory holds the detailed user, language, architecture, and development 
 ## Development
 
 - [Testing Guidelines & Best Practices](development/test.md): Windows file locking rules, unique temporary paths, and unit test teardown guidelines.
+- [Web integration tests](development/web_integration_tests.md): Playwright browser tests for the WebAssembly editor, terminal input, IndexedDB persistence, and workspace reset.
 - [Windows Swift debugging](development/windows_swift_debugging.md): VS Code Swift debugging, Visual Studio/WinDbg attach, dump analysis, and trace-based hang diagnosis.
 - [WebAssembly build & deployment](development/wasm_build.md): Swift SDK for WebAssembly, local Vite dev server, and GitHub Pages deployment.
 - [Release & preview builds](development/release.md): source install, smoke tests, release checklist, tester bug report template, and known preview limitations.

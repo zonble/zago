@@ -589,6 +589,13 @@ async function main() {
   if (btnReset) {
     btnReset.addEventListener("click", async () => {
       if (confirm(t.resetConfirm)) {
+        // Stop the background VFS flusher before deleting storage. Otherwise
+        // an in-flight worker sync can recreate files immediately after the
+        // reset completes.
+        if (currentWorker) {
+          currentWorker.terminate();
+          currentWorker = null;
+        }
         await VirtualOSStorage.clearAll();
         location.reload();
       }
