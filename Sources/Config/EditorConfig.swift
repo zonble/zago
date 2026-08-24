@@ -53,6 +53,9 @@ public struct EditorConfig {
     /// Destination directory path for storing daily journals. If nil, defaults to ~/Documents/zago_journal or ~/zago_journal.
     public var journalFolder: String? = nil
 
+    /// Whether terminal mouse tracking (clicks, drags, scrolls) is enabled. Defaults to true.
+    public var enableMouse: Bool = true
+
     public init() {}
 
     public static func normalizedWrapColumn(_ column: Int?) -> Int? {

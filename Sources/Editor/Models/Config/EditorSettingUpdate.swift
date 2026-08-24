@@ -73,6 +73,8 @@ extension EditorSettingKey {
                 return .journalFolder(nil)
             }
             return .journalFolder(clean)
+        case .mouse:
+            return .mouse(SettingBoolean.parse(value))
         }
     }
 }
@@ -109,6 +111,7 @@ public enum EditorSettingUpdate {
     case backupDir(String?)
     case launchToJournal(Bool?)
     case journalFolder(String?)
+    case mouse(Bool?)
 }
 
 public enum EditorEffect: Equatable {

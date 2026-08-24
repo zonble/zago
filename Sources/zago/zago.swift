@@ -137,6 +137,16 @@ struct Zago: ParsableCommand {
         help: "Force disable IPC socket server.")
     var noIpc: Bool = false
 
+    @Flag(
+        name: [.customLong("mouse")],
+        help: "Enable terminal mouse reporting (clicks, drags, and scrolling).")
+    var mouse: Bool = false
+
+    @Flag(
+        name: [.customLong("no-mouse")],
+        help: "Disable terminal mouse reporting (allows native terminal selection).")
+    var noMouse: Bool = false
+
     @Option(
         name: [.customShort("e"), .customLong("eval")],
         help: "Execute inline LOGO code string in headless mode and print output to stdout.")
@@ -313,7 +323,8 @@ struct Zago: ParsableCommand {
             defaultLineEnding: platformDefaultLineEnding,
             backup: backup ? true : nil,
             backupDir: backupDir,
-            launchToJournal: journal ? true : nil
+            launchToJournal: journal ? true : nil,
+            enableMouse: mouse ? true : (noMouse ? false : nil)
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false

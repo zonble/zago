@@ -56,7 +56,7 @@ extension Key {
         switch self {
         case .ctrl(let ch): return "^\(ch.uppercased())"
         case .alt(let ch): return "M+\(ch.uppercased())"
-        case .ctrlShift(let ch): return "C+⇧+\(ch.uppercased())"
+        case .ctrlShift(let ch): return "^⇧\(ch.uppercased())"
         case .f1: return "F1"
         case .f2: return "F2"
         case .f3: return "F3"

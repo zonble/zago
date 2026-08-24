@@ -149,59 +149,69 @@ import Foundation
             return nil
         }
 
-        /// Reads the next input key on POSIX systems (macOS/Linux), including
-        /// ANSI escape sequences.
-        ///
-        /// Technical Details:
-        ///
-        /// 1. Polls `STDIN_FILENO` using POSIX `poll(2)` with a 250ms polling
-        ///    loop to detect window resize events (`SIGWINCH`/`TIOCGWINSZ`).
-        /// 2. Normalizes ASCII control codes (1...31, 127) using
-        ///    `ANSIKeyMapping.resolveControlCode`.
-        /// 3. Parses ANSI CSI (`ESC [`) and SS3 (`ESC O`) sequences with a 50ms
-        ///    escape sequence byte timeout.
-        /// 4. Decodes multi-byte UTF-8 character sequences based on leading
-        ///    byte headers (`0x80`, `0xC0`, `0xE0`, `0xF0`).
+        /// Reads and returns the next key event.
         public func readKey() -> Key {
+            switch readInputEvent() {
+            case .key(let key): return key
+            case .mouse: return .unknown
+            }
+        }
+
+        /// Reads and parses the next input event (key press or SGR mouse event).
+        public func readInputEvent() -> InputEvent {
             let firstByte: UInt8
             while true {
                 if consumeWindowResizeEvent() {
-                    return .resize
+                    return .key(.resize)
                 }
                 guard let byte = readByte(timeoutMs: 250) else {
                     if consumeWindowResizeEvent() {
-                        return .resize
+                        return .key(.resize)
                     }
-                    return .unknown
+                    return .key(.unknown)
                 }
                 firstByte = byte
                 break
             }
 
             if firstByte == 8 {
-                return .ctrlBackspace
+                return .key(.ctrlBackspace)
             }
 
             if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(firstByte)) {
-                return controlKey
+                return .key(controlKey)
             }
 
             if firstByte == 27 {
-                guard let secondByte = readByte(timeoutMs: 50) else { return .esc }
+                guard let secondByte = readByte(timeoutMs: 50) else { return .key(.esc) }
                 if secondByte == 8 || secondByte == 127 {
-                    return .altBackspace
+                    return .key(.altBackspace)
                 }
                 if secondByte == 13 || secondByte == 10 {
-                    return .altEnter
+                    return .key(.altEnter)
                 }
                 if secondByte == 9 {
-                    return .altTab
+                    return .key(.altTab)
                 }
                 switch secondByte {
                 case UInt8(ascii: "["):
-                    guard let thirdByte = readByte(timeoutMs: 50) else { return .alt("[") }
+                    guard let thirdByte = readByte(timeoutMs: 50) else { return .key(.alt("[")) }
+                    if thirdByte == UInt8(ascii: "<") {
+                        var seqString = "<"
+                        while let nextByte = readByte(timeoutMs: 50) {
+                            seqString.append(Character(UnicodeScalar(nextByte)))
+                            if nextByte == UInt8(ascii: "M") || nextByte == UInt8(ascii: "m") {
+                                break
+                            }
+                        }
+                        if let mouseEvent = ANSIKeyMapping.parseSGRMouseEvent(seqString) {
+                            return .mouse(mouseEvent)
+                        }
+                        return .key(.unknown)
+                    }
+
                     if let csiKey = ANSIKeyMapping.resolveCSISingleChar(thirdByte) {
-                        return csiKey
+                        return .key(csiKey)
                     }
                     if thirdByte >= UInt8(ascii: "1") && thirdByte <= UInt8(ascii: "9") {
                         var seqString = String(UnicodeScalar(thirdByte))
@@ -215,20 +225,20 @@ import Foundation
                             }
                             seqString.append(Character(UnicodeScalar(nextByte)))
                         }
-                        return ANSIKeyMapping.resolve(seqString)
+                        return .key(ANSIKeyMapping.resolve(seqString))
                     }
-                    return .unknown
+                    return .key(.unknown)
 
                 case UInt8(ascii: "O"):
-                    guard let thirdByte = readByte(timeoutMs: 50) else { return .unknown }
-                    return ANSIKeyMapping.resolveSS3Code(thirdByte) ?? .unknown
+                    guard let thirdByte = readByte(timeoutMs: 50) else { return .key(.unknown) }
+                    return .key(ANSIKeyMapping.resolveSS3Code(thirdByte) ?? .unknown)
 
                 case 32...126:
                     let ch = Character(UnicodeScalar(secondByte))
-                    return .alt(ch)
+                    return .key(.alt(ch))
 
                 default:
-                    return .unknown
+                    return .key(.unknown)
                 }
             }
 
@@ -256,10 +266,10 @@ import Foundation
             }
 
             if let str = String(bytes: bytes, encoding: .utf8), let ch = str.first {
-                return .char(ch)
+                return .key(.char(ch))
             }
 
-            return .unknown
+            return .key(.unknown)
         }
 
         /// Reads all currently queued pending text bytes from stdin without

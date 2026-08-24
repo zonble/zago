@@ -21,148 +21,157 @@ public protocol GitServiceProtocol: Sendable {
     /// Service for detecting Git repositories, fetching `HEAD` baselines, and maintaining diff status.
     public final class GitService: GitServiceProtocol, @unchecked Sendable {
         private let queue = DispatchQueue(label: "org.zago.gitservice", qos: .userInitiated)
-    private var repoRootCache: [String: String] = [:]
-    private var branchCache: [String: String] = [:]
-    private var headCache: [String: [String]] = [:]
-    private var repositoryStateCache: [String: RepositoryState] = [:]
+        private let lock = NSRecursiveLock()
+        private var repoRootCache: [String: String] = [:]
+        private var branchCache: [String: String] = [:]
+        private var headCache: [String: [String]] = [:]
+        private var repositoryStateCache: [String: RepositoryState] = [:]
 
-    private struct RepositoryState: Equatable {
-        let headModificationDate: Date?
-        let headFileSize: UInt64?
-        let refModificationDate: Date?
-        let refFileSize: UInt64?
-        let packedRefsModificationDate: Date?
-        let packedRefsFileSize: UInt64?
-    }
-
-    public init() {}
-
-    /// Detects commits, branch switches, and other changes to the repository HEAD
-    /// without relying on the edited file's watcher notification.
-    public func repositoryStateChanged(for filePath: String?) -> Bool {
-        guard let repoInfo = detectRepository(for: filePath) else { return false }
-        let repoRoot = repoInfo.repoRootPath
-        let currentState = repositoryState(repoRoot: repoRoot)
-
-        guard let previousState = repositoryStateCache[repoRoot] else {
-            repositoryStateCache[repoRoot] = currentState
-            return false
+        private struct RepositoryState: Equatable {
+            let headModificationDate: Date?
+            let headFileSize: UInt64?
+            let refModificationDate: Date?
+            let refFileSize: UInt64?
+            let packedRefsModificationDate: Date?
+            let packedRefsFileSize: UInt64?
         }
 
-        guard previousState != currentState else { return false }
-        repositoryStateCache[repoRoot] = currentState
-        headCache.removeAll()
-        return true
-    }
+        public init() {}
 
-    /// Detects if a file path or current working directory lives inside a Git repository and returns its metadata.
-    public func detectRepository(for filePath: String?) -> GitRepositoryInfo? {
-        let absFilePath: String?
-        let pathToInspect: String
+        /// Detects commits, branch switches, and other changes to the repository HEAD
+        /// without relying on the edited file's watcher notification.
+        public func repositoryStateChanged(for filePath: String?) -> Bool {
+            lock.withLock {
+                guard let repoInfo = detectRepository(for: filePath) else { return false }
+                let repoRoot = repoInfo.repoRootPath
+                let currentState = repositoryState(repoRoot: repoRoot)
 
-        if let filePath = filePath, !filePath.isEmpty, filePath != "Untitled" {
-            let expanded =
-                (filePath as NSString).isAbsolutePath
-                ? filePath
-                : (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent(filePath)
-            absFilePath = expanded
-            pathToInspect = (expanded as NSString).deletingLastPathComponent
-        } else {
-            absFilePath = nil
-            pathToInspect = FileManager.default.currentDirectoryPath
-        }
-        guard !pathToInspect.isEmpty else { return nil }
-
-        let repoRoot: String
-        if let cachedRoot = repoRootCache[pathToInspect] {
-            repoRoot = cachedRoot
-        } else {
-            var currentDir = pathToInspect
-            var foundRepoRoot: String? = nil
-
-            while !currentDir.isEmpty && currentDir != "/" {
-                let gitPath = (currentDir as NSString).appendingPathComponent(".git")
-                if FileManager.default.fileExists(atPath: gitPath) {
-                    foundRepoRoot = currentDir
-                    break
+                guard let previousState = repositoryStateCache[repoRoot] else {
+                    repositoryStateCache[repoRoot] = currentState
+                    return false
                 }
-                let parent = (currentDir as NSString).deletingLastPathComponent
-                if parent == currentDir { break }
-                currentDir = parent
-            }
 
-            guard let root = foundRepoRoot else { return nil }
-            repoRootCache[pathToInspect] = root
-            repoRoot = root
-        }
-
-        let relativePath: String
-        if let absFilePath = absFilePath, absFilePath.hasPrefix(repoRoot) {
-            var rel = String(absFilePath.dropFirst(repoRoot.count))
-            while rel.hasPrefix("/") || rel.hasPrefix("\\") { rel.removeFirst() }
-            // NOTE (Windows Path Normalization): Git commands require forward slashes '/' for repository object paths.
-            relativePath = rel.replacingOccurrences(of: "\\", with: "/")
-        } else {
-            relativePath = absFilePath.map { ($0 as NSString).lastPathComponent } ?? ""
-        }
-
-        let branch = readBranchName(repoRoot: repoRoot)
-        return GitRepositoryInfo(repoRootPath: repoRoot, branchName: branch, relativeFilePath: relativePath)
-    }
-
-    /// Synchronously computes Git diff status for immediate render passes.
-    public func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo {
-        guard let repoInfo = detectRepository(for: filePath) else {
-            return GitDiffInfo.empty
-        }
-
-        guard !repoInfo.relativeFilePath.isEmpty else {
-            return GitDiffInfo(repoInfo: repoInfo, branchName: repoInfo.branchName)
-        }
-
-        let cacheKey = "\(repoInfo.repoRootPath):\(repoInfo.relativeFilePath)"
-        let baseLines: [String]?
-
-        if let cached = headCache[cacheKey] {
-            baseLines = cached
-        } else {
-            baseLines = fetchHEADLinesSync(repoInfo: repoInfo)
-            if let baseLines {
-                headCache[cacheKey] = baseLines
+                guard previousState != currentState else { return false }
+                repositoryStateCache[repoRoot] = currentState
+                headCache.removeAll()
+                return true
             }
         }
 
-        return GitDiffEngine.computeDiff(
-            repoInfo: repoInfo,
-            baseLines: baseLines,
-            currentLines: currentLines
-        )
-    }
+        /// Detects if a file path or current working directory lives inside a Git repository and returns its metadata.
+        public func detectRepository(for filePath: String?) -> GitRepositoryInfo? {
+            lock.withLock {
+                let absFilePath: String?
+                let pathToInspect: String
 
-    /// Asynchronously fetches `HEAD` version lines of a file and computes diff against current buffer.
-    public func computeDiffAsync(
-        filePath: String?,
-        currentLines: [String],
-        completion: @escaping @MainActor (GitDiffInfo) -> Void
-    ) {
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            let info = self.computeDiffSync(filePath: filePath, currentLines: currentLines)
-            DispatchQueue.main.async {
-                completion(info)
+                if let filePath = filePath, !filePath.isEmpty, filePath != "Untitled" {
+                    let expanded =
+                        (filePath as NSString).isAbsolutePath
+                        ? filePath
+                        : (FileManager.default.currentDirectoryPath as NSString).appendingPathComponent(filePath)
+                    absFilePath = expanded
+                    pathToInspect = (expanded as NSString).deletingLastPathComponent
+                } else {
+                    absFilePath = nil
+                    pathToInspect = FileManager.default.currentDirectoryPath
+                }
+                guard !pathToInspect.isEmpty else { return nil }
+
+                let repoRoot: String
+                if let cachedRoot = repoRootCache[pathToInspect] {
+                    repoRoot = cachedRoot
+                } else {
+                    var currentDir = pathToInspect
+                    var foundRepoRoot: String? = nil
+
+                    while !currentDir.isEmpty && currentDir != "/" {
+                        let gitPath = (currentDir as NSString).appendingPathComponent(".git")
+                        if FileManager.default.fileExists(atPath: gitPath) {
+                            foundRepoRoot = currentDir
+                            break
+                        }
+                        let parent = (currentDir as NSString).deletingLastPathComponent
+                        if parent == currentDir { break }
+                        currentDir = parent
+                    }
+
+                    guard let root = foundRepoRoot else { return nil }
+                    repoRootCache[pathToInspect] = root
+                    repoRoot = root
+                }
+
+                let relativePath: String
+                if let absFilePath = absFilePath, absFilePath.hasPrefix(repoRoot) {
+                    var rel = String(absFilePath.dropFirst(repoRoot.count))
+                    while rel.hasPrefix("/") || rel.hasPrefix("\\") { rel.removeFirst() }
+                    // NOTE (Windows Path Normalization): Git commands require forward slashes '/' for repository object paths.
+                    relativePath = rel.replacingOccurrences(of: "\\", with: "/")
+                } else {
+                    relativePath = absFilePath.map { ($0 as NSString).lastPathComponent } ?? ""
+                }
+
+                let branch = readBranchName(repoRoot: repoRoot)
+                return GitRepositoryInfo(repoRootPath: repoRoot, branchName: branch, relativeFilePath: relativePath)
             }
         }
-    }
 
-    /// Invalidates cached `HEAD` content for a file (e.g. after save or external git action).
-    public func invalidateCache(for filePath: String?) {
-        let targetPath = filePath ?? FileManager.default.currentDirectoryPath
-        let dirPath = (targetPath as NSString).deletingLastPathComponent
-        repoRootCache.removeValue(forKey: dirPath)
-        branchCache.removeAll()
-        headCache.removeAll()
-        repositoryStateCache.removeAll()
-    }
+        /// Synchronously computes Git diff status for immediate render passes.
+        public func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo {
+            lock.withLock {
+                guard let repoInfo = detectRepository(for: filePath) else {
+                    return GitDiffInfo.empty
+                }
+
+                guard !repoInfo.relativeFilePath.isEmpty else {
+                    return GitDiffInfo(repoInfo: repoInfo, branchName: repoInfo.branchName)
+                }
+
+                let cacheKey = "\(repoInfo.repoRootPath):\(repoInfo.relativeFilePath)"
+                let baseLines: [String]?
+
+                if let cached = headCache[cacheKey] {
+                    baseLines = cached
+                } else {
+                    baseLines = fetchHEADLinesSync(repoInfo: repoInfo)
+                    if let baseLines {
+                        headCache[cacheKey] = baseLines
+                    }
+                }
+
+                return GitDiffEngine.computeDiff(
+                    repoInfo: repoInfo,
+                    baseLines: baseLines,
+                    currentLines: currentLines
+                )
+            }
+        }
+
+        /// Asynchronously fetches `HEAD` version lines of a file and computes diff against current buffer.
+        public func computeDiffAsync(
+            filePath: String?,
+            currentLines: [String],
+            completion: @escaping @MainActor (GitDiffInfo) -> Void
+        ) {
+            queue.async { [weak self] in
+                guard let self = self else { return }
+                let info = self.computeDiffSync(filePath: filePath, currentLines: currentLines)
+                DispatchQueue.main.async {
+                    completion(info)
+                }
+            }
+        }
+
+        /// Invalidates cached `HEAD` content for a file (e.g. after save or external git action).
+        public func invalidateCache(for filePath: String?) {
+            lock.withLock {
+                let targetPath = filePath ?? FileManager.default.currentDirectoryPath
+                let dirPath = (targetPath as NSString).deletingLastPathComponent
+                repoRootCache.removeValue(forKey: dirPath)
+                branchCache.removeAll()
+                headCache.removeAll()
+                repositoryStateCache.removeAll()
+            }
+        }
 
     // MARK: - Private Helpers
 

@@ -23,6 +23,7 @@ public struct EditorOptions {
     public var backupDir: String?
     public var launchToJournal: Bool?
     public var journalFolder: String?
+    public var enableMouse: Bool?
 
     public init(
         filePaths: [String] = [],
@@ -45,7 +46,8 @@ public struct EditorOptions {
         backup: Bool? = nil,
         backupDir: String? = nil,
         launchToJournal: Bool? = nil,
-        journalFolder: String? = nil
+        journalFolder: String? = nil,
+        enableMouse: Bool? = nil
     ) {
         self.filePaths = filePaths
         self.wrapColumn = wrapColumn
@@ -68,5 +70,6 @@ public struct EditorOptions {
         self.backupDir = backupDir
         self.launchToJournal = launchToJournal
         self.journalFolder = journalFolder
+        self.enableMouse = enableMouse
     }
 }

@@ -119,4 +119,58 @@ public enum ANSIKeyMapping {
     public static func resolve(_ sequence: String) -> Key {
         sequenceTable[sequence] ?? .unknown
     }
+
+    /// Parses SGR 1006 mouse tracking sequences (e.g. `<0;20;10M`, `<32;25;12M`, `<64;15;5M`, `<0;20;10m`).
+    public static func parseSGRMouseEvent(_ sequence: String) -> MouseEvent? {
+        guard sequence.hasPrefix("<") else { return nil }
+        guard let isReleaseIndicator = sequence.last, isReleaseIndicator == "M" || isReleaseIndicator == "m" else {
+            return nil
+        }
+        let body = sequence.dropFirst().dropLast()
+        let parts = body.split(separator: ";")
+        guard parts.count == 3,
+            let buttonCode = Int(parts[0]),
+            let col = Int(parts[1]),
+            let row = Int(parts[2])
+        else {
+            return nil
+        }
+
+        let shift = (buttonCode & 4) != 0
+        let alt = (buttonCode & 8) != 0
+        let ctrl = (buttonCode & 16) != 0
+        let clean = buttonCode & ~28
+
+        let action: MouseEvent.Action
+        if clean == 64 {
+            action = .scrollUp
+        } else if clean == 65 {
+            action = .scrollDown
+        } else {
+            let button: MouseEvent.Button
+            switch clean & 3 {
+            case 0: button = .left
+            case 1: button = .middle
+            case 2: button = .right
+            default: button = .left
+            }
+
+            if clean & 32 != 0 {
+                action = .drag(button)
+            } else if isReleaseIndicator == "m" {
+                action = .release(button)
+            } else {
+                action = .press(button)
+            }
+        }
+
+        return MouseEvent(
+            action: action,
+            col: col,
+            row: row,
+            shift: shift,
+            alt: alt,
+            ctrl: ctrl
+        )
+    }
 }

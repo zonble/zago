@@ -380,6 +380,11 @@ extension Editor {
             } else {
                 reportOperationResult(.succeeded(message: "Journal folder reset to default"))
             }
+        case .mouse(let value):
+            let enabled = resolve(value, current: displayConfig.enableMouse)
+            displayConfig.enableMouse = enabled
+            terminal.setMouseTracking(enabled: enabled)
+            reportOperationResult(.succeeded(message: "Mouse \(enabled ? "enabled" : "disabled")"))
         }
     }
 
