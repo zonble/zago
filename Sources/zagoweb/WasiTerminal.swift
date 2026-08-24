@@ -48,11 +48,11 @@ public final class WasiTerminal: EditorTerminal {
         }
         var buf = [UInt8](repeating: 0, count: 512)
         #if os(WASI) && canImport(WASILibc)
-            let n = WASILibc.read(0, &buf, buf.count)
+            let n = Int(WASILibc.read(0, &buf, buf.count))
         #elseif os(Windows)
-            let n = _read(0, &buf, UInt32(buf.count))
+            let n = Int(_read(0, &buf, UInt32(buf.count)))
         #else
-            let n = read(0, &buf, buf.count)
+            let n = Int(read(0, &buf, buf.count))
         #endif
         if n > 0 {
             let first = buf[0]
