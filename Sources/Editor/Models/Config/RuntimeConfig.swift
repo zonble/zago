@@ -41,6 +41,9 @@ struct RuntimeConfig: Sendable, Equatable {
     /// Whether cross-platform IPC socket server is enabled.
     var ipcEnabled: Bool
 
+    /// Whether terminal mouse tracking is enabled.
+    var enableMouse: Bool
+
     init(
         showRuler: Bool = false,
         showLineNumbers: Bool = true,
@@ -54,7 +57,8 @@ struct RuntimeConfig: Sendable, Equatable {
         trimTrailingWhitespaceOnSave: Bool = false,
         noNewlines: Bool = false,
         showGitDiff: Bool = true,
-        ipcEnabled: Bool = false
+        ipcEnabled: Bool = false,
+        enableMouse: Bool = true
     ) {
         self.showRuler = showRuler
         self.showLineNumbers = showLineNumbers
@@ -69,5 +73,6 @@ struct RuntimeConfig: Sendable, Equatable {
         self.noNewlines = noNewlines
         self.showGitDiff = showGitDiff
         self.ipcEnabled = ipcEnabled
+        self.enableMouse = enableMouse
     }
 }

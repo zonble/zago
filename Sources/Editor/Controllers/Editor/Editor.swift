@@ -242,7 +242,8 @@ public final class Editor: @unchecked Sendable {
             trimTrailingWhitespaceOnSave: config.trimTrailingWhitespaceOnSave,
             noNewlines: config.noNewlines,
             showGitDiff: config.showGitDiff,
-            ipcEnabled: options.ipcEnabled ?? config.ipcEnabled
+            ipcEnabled: options.ipcEnabled ?? config.ipcEnabled,
+            enableMouse: options.enableMouse ?? config.enableMouse
         )
 
         return ResolvedConfig(
@@ -540,6 +541,7 @@ public final class Editor: @unchecked Sendable {
                 editorLoopThread = nil
                 isInteractiveMode = false
                 effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
+                terminal.setMouseTracking(enabled: false)
                 terminal.clearScreen()
                 terminal.showCursor()
                 terminal.disableRawMode()
@@ -548,6 +550,7 @@ public final class Editor: @unchecked Sendable {
             defer {
                 isInteractiveMode = false
                 effectDelegate?.editor(self, didEmit: .ipcEnabled(false))
+                terminal.setMouseTracking(enabled: false)
                 terminal.clearScreen()
                 terminal.showCursor()
                 terminal.disableRawMode()
@@ -565,6 +568,10 @@ public final class Editor: @unchecked Sendable {
         }
         terminal.hideCursor()
 
+        if displayConfig.enableMouse {
+            terminal.setMouseTracking(enabled: true)
+        }
+
         if displayConfig.ipcEnabled {
             effectDelegate?.editor(self, didEmit: .ipcEnabled(true))
         }
@@ -572,14 +579,19 @@ public final class Editor: @unchecked Sendable {
         while isRunning {
             drainExternalRequests()
             refreshScreen()
-            let key = terminal.readKey()
+            let inputEvent = terminal.readInputEvent()
             drainExternalRequests()
-            if key == .resize {
-                renderer.invalidateScreenCache()
-                terminal.clearScreen()
-                continue
+            switch inputEvent {
+            case .key(let key):
+                if key == .resize {
+                    renderer.invalidateScreenCache()
+                    terminal.clearScreen()
+                    continue
+                }
+                processKey(key)
+            case .mouse(let mouseEvent):
+                handleMouseEvent(mouseEvent)
             }
-            processKey(key)
         }
     }
 

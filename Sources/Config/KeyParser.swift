@@ -41,7 +41,7 @@ public enum KeyParser {
             }
         }
 
-        if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-") {
+        if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-") || normalized.hasPrefix("m+") {
             let prefixLen: Int
             if normalized.hasPrefix("alt-") {
                 prefixLen = 4

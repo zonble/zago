@@ -214,59 +214,58 @@ extension Renderer {
 
     // MARK: - Dynamic Contextual Help Bar
 
-    /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
-    func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
+    struct HelpBarLayoutItem {
+        let key: String
+        let label: String
+        let startCol: Int // 1-based inclusive
+        let endCol: Int   // 1-based inclusive
+    }
+
+    /// Computes Help Bar 2D item layout and character bounding intervals.
+    func computeHelpBarLayout(
+        cols: Int,
+        promptMode: Editor.PromptMode,
+        editor: Editor? = nil
+    ) -> (items1: [HelpBarLayoutItem], items2: [HelpBarLayoutItem]) {
         let helpWidth = max(1, cols - 1)
         let language = editor?.language ?? .detectSystemLanguage()
         func tr(_ key: String) -> String {
             L10n.string(key, language: language)
         }
 
-        let helpItems1: [(key: String, label: String)]
-        let helpItems2: [(key: String, label: String)]
+        let rawItems1: [(key: String, label: String)]
+        let rawItems2: [(key: String, label: String)]
 
         switch promptMode {
         case .logoMacro:
-            if let completionText = editor?.promptCompletionText, !completionText.isEmpty {
-                let line1 = formatCompletionLineText(completionText, width: helpWidth)
-                let grid = renderHelpItemsGrid(
-                    cols: cols,
-                    helpWidth: helpWidth,
-                    items1: [],
-                    items2: [("Tab", tr("help.complete")), ("Enter", tr("help.confirm")), ("^C", tr("help.cancel"))]
-                )
-                let line2 = grid.components(separatedBy: "\r\n").last ?? grid
-                return line1 + "\r\n" + line2
-            } else {
-                helpItems1 = [
-                    ("Esc", tr("help.go_back")),
-                    ("BOX", "[TEXT][W H][BORDER]"),
-                    ("LINE", "[LEN][ARROW]"),
-                    ("FILL", "TEXT"),
-                    ("TABLE", "[ROWS][COLS][W]"),
-                ]
-                helpItems2 = [
-                    ("Tab", tr("help.complete")),
-                    ("DRAWBOX", "[TEXT][W H][BORDER]"),
-                    ("VLINE", "[LEN][ARROW]"),
-                    ("INSET", "TEXT"),
-                    ("REPEAT", "TIMES ACTION"),
-                ]
-            }
+            rawItems1 = [
+                ("Esc", tr("help.go_back")),
+                ("BOX", "[TEXT][W H][BORDER]"),
+                ("LINE", "[LEN][ARROW]"),
+                ("FILL", "TEXT"),
+                ("TABLE", "[ROWS][COLS][W]"),
+            ]
+            rawItems2 = [
+                ("Tab", tr("help.complete")),
+                ("DRAWBOX", "[TEXT][W H][BORDER]"),
+                ("VLINE", "[LEN][ARROW]"),
+                ("INSET", "TEXT"),
+                ("REPEAT", "TIMES ACTION"),
+            ]
 
         case .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure:
-            helpItems1 = [
+            rawItems1 = [
                 ("Y", tr("help.yes")), ("^C", tr("help.cancel")),
             ]
-            helpItems2 = [
+            rawItems2 = [
                 ("N", tr("help.no"))
             ]
 
         case .confirmReplace:
-            helpItems1 = [
+            rawItems1 = [
                 ("Y", tr("help.yes")), ("A", tr("help.all")),
             ]
-            helpItems2 = [
+            rawItems2 = [
                 ("N", tr("help.no")), ("^C", tr("help.cancel")),
             ]
 
@@ -274,26 +273,26 @@ extension Renderer {
             .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
             if editor?.keymapManager.activePreset == .modern {
-                helpItems1 = [
+                rawItems1 = [
                     ("Enter", tr("help.confirm")), ("^G", tr("help.cancel")), ("^X", tr("help.cut_text")),
                 ]
-                helpItems2 = [
+                rawItems2 = [
                     ("^C", tr("help.copy_text")), ("^V", tr("help.uncut_text")), ("←/→", tr("help.move")),
                     ("Home/End", tr("help.jump")),
                 ]
             } else {
-                helpItems1 = [
+                rawItems1 = [
                     ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^K", tr("help.cut_text")),
                 ]
-                helpItems2 = [
+                rawItems2 = [
                     ("^U", tr("help.uncut_text")), ("M+W", tr("help.copy_text")), ("←/→", tr("help.move")),
                     ("Home/End", tr("help.jump")),
                 ]
             }
 
         case .describeKey:
-            helpItems1 = []
-            helpItems2 = []
+            rawItems1 = []
+            rawItems2 = []
 
         case .none:
             func keyLabel(for cmd: CommandID, fallback: String) -> String {
@@ -302,7 +301,7 @@ extension Renderer {
             }
 
             if editor?.isTableModeActive == true {
-                helpItems1 = [
+                rawItems1 = [
                     (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                     ("Esc", tr("help.commands")),
                     (keyLabel(for: .tableNextCell, fallback: "Tab"), tr("help.next_cell")),
@@ -310,7 +309,7 @@ extension Renderer {
                     ("Arrow", tr("help.move")),
                     (keyLabel(for: .tableCenterText, fallback: "^J"), tr("help.center_text")),
                 ]
-                helpItems2 = [
+                rawItems2 = [
                     (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
                     (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_exit")),
                     (keyLabel(for: .tablePrevCell, fallback: "⇧+Tab"), tr("help.prev_cell")),
@@ -319,7 +318,7 @@ extension Renderer {
                     (keyLabel(for: .tableClearCell, fallback: "^K"), tr("help.clear_cell")),
                 ]
             } else if editor?.isCanvasModeActive == true {
-                helpItems1 = [
+                rawItems1 = [
                     (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                     (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.text_mode")),
                     ("ESC", tr("help.commands")),
@@ -329,7 +328,7 @@ extension Renderer {
                     (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_block")),
                     (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_block")),
                 ]
-                helpItems2 = [
+                rawItems2 = [
                     (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
                     (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
                     (keyLabel(for: .editUndo, fallback: "^Z"), tr("help.undo")),
@@ -341,7 +340,7 @@ extension Renderer {
                 ]
             } else {
                 if editor?.proposalQueue.isEmpty == false {
-                    helpItems1 = [
+                    rawItems1 = [
                         (keyLabel(for: .proposalAccept, fallback: "M+A"), tr("help.ai_accept")),
                         (keyLabel(for: .proposalNext, fallback: "M+P"), tr("help.ai_next_proposal")),
                         (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
@@ -349,7 +348,7 @@ extension Renderer {
                         (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
                         (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
                     ]
-                    helpItems2 = [
+                    rawItems2 = [
                         (keyLabel(for: .proposalReject, fallback: "M+R"), tr("help.ai_reject")),
                         (keyLabel(for: .proposalPrev, fallback: "M+P"), tr("help.ai_previous_proposal")),
                         (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
@@ -358,7 +357,7 @@ extension Renderer {
                         (keyLabel(for: .movePgdn, fallback: "PgDn"), tr("help.next_pg")),
                     ]
                 } else if editor?.keymapManager.activePreset == .modern {
-                    helpItems1 = [
+                    rawItems1 = [
                         (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                         (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
                         (keyLabel(for: .fileSave, fallback: "^S"), tr("help.save")),
@@ -369,7 +368,7 @@ extension Renderer {
                         (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
                         (keyLabel(for: .editEvalLogo, fallback: "^E"), tr("help.run_logo")),
                     ]
-                    helpItems2 = [
+                    rawItems2 = [
                         (keyLabel(for: .fileExit, fallback: "^Q"), tr("help.exit")),
                         (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
                         (keyLabel(for: .editJustify, fallback: "^J"), tr("help.justify")),
@@ -381,7 +380,7 @@ extension Renderer {
                         (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                     ]
                 } else {
-                    helpItems1 = [
+                    rawItems1 = [
                         (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                         (keyLabel(for: .canvasToggle, fallback: "F8"), tr("help.canvas_mode")),
                         ("ESC", tr("help.commands")),
@@ -392,7 +391,7 @@ extension Renderer {
                         (keyLabel(for: .movePgup, fallback: "^Y"), tr("help.prev_pg")),
                         (keyLabel(for: .editEvalLogo, fallback: "^Q"), tr("help.run_logo")),
                     ]
-                    helpItems2 = [
+                    rawItems2 = [
                         (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
                         (keyLabel(for: .tableToggle, fallback: "F7"), tr("help.table_mode")),
                         (keyLabel(for: .editJustify, fallback: "^J"), tr("help.justify")),
@@ -407,7 +406,97 @@ extension Renderer {
             }
         }
 
-        return renderHelpItemsGrid(cols: cols, helpWidth: helpWidth, items1: helpItems1, items2: helpItems2)
+        let numCols = max(rawItems1.count, rawItems2.count)
+        var maxColWidths: [Int] = []
+
+        for i in 0..<numCols {
+            let item1Width = (i < rawItems1.count)
+                ? (rawItems1[i].key.count + (rawItems1[i].label.isEmpty ? 0 : 1) + rawItems1[i].label.displayWidth)
+                : 0
+            let item2Width = (i < rawItems2.count)
+                ? (rawItems2[i].key.count + (rawItems2[i].label.isEmpty ? 0 : 1) + rawItems2[i].label.displayWidth)
+                : 0
+            maxColWidths.append(max(item1Width, item2Width))
+        }
+
+        let totalItemsWidth = maxColWidths.reduce(0, +)
+        let gapCount = max(1, numCols - 1)
+        let availableGapSpace = helpWidth - totalItemsWidth
+        let gapSize = max(1, min(4, availableGapSpace / gapCount))
+
+        var layout1: [HelpBarLayoutItem] = []
+        var layout2: [HelpBarLayoutItem] = []
+
+        var curCol = 1 // 1-based start column
+        for i in 0..<numCols {
+            let colWidth = maxColWidths[i]
+            if curCol + colWidth - 1 > helpWidth { break }
+
+            if i < rawItems1.count {
+                layout1.append(HelpBarLayoutItem(
+                    key: rawItems1[i].key,
+                    label: rawItems1[i].label,
+                    startCol: curCol,
+                    endCol: curCol + colWidth - 1
+                ))
+            }
+
+            if i < rawItems2.count {
+                layout2.append(HelpBarLayoutItem(
+                    key: rawItems2[i].key,
+                    label: rawItems2[i].label,
+                    startCol: curCol,
+                    endCol: curCol + colWidth - 1
+                ))
+            }
+
+            curCol += colWidth + gapSize
+        }
+
+        return (items1: layout1, items2: layout2)
+    }
+
+    /// Hit tests a screen coordinate against the bottom Help Bar items.
+    func hitTestHelpBar(
+        col: Int,
+        row: Int,
+        geometry: ScreenGeometry,
+        promptMode: Editor.PromptMode,
+        editor: Editor? = nil
+    ) -> String? {
+        let (items1, items2) = computeHelpBarLayout(cols: geometry.cols, promptMode: promptMode, editor: editor)
+        if row == geometry.rows - 1 {
+            return items1.first(where: { col >= $0.startCol && col <= $0.endCol })?.key
+        } else if row == geometry.rows {
+            return items2.first(where: { col >= $0.startCol && col <= $0.endCol })?.key
+        }
+        return nil
+    }
+
+    /// Renders dynamic Help Bar customized for current PromptMode (2 lines, 2D aligned).
+    func renderHelpBar(cols: Int, promptMode: Editor.PromptMode, editor: Editor? = nil) -> String {
+        let helpWidth = max(1, cols - 1)
+        let language = editor?.language ?? .detectSystemLanguage()
+        func tr(_ key: String) -> String {
+            L10n.string(key, language: language)
+        }
+
+        if case .logoMacro = promptMode, let completionText = editor?.promptCompletionText, !completionText.isEmpty {
+            let line1 = formatCompletionLineText(completionText, width: helpWidth)
+            let grid = renderHelpItemsGrid(
+                cols: cols,
+                helpWidth: helpWidth,
+                items1: [],
+                items2: [("Tab", tr("help.complete")), ("Enter", tr("help.confirm")), ("^C", tr("help.cancel"))]
+            )
+            let line2 = grid.components(separatedBy: "\r\n").last ?? grid
+            return line1 + "\r\n" + line2
+        }
+
+        let (items1, items2) = computeHelpBarLayout(cols: cols, promptMode: promptMode, editor: editor)
+        let rawItems1 = items1.map { (key: $0.key, label: $0.label) }
+        let rawItems2 = items2.map { (key: $0.key, label: $0.label) }
+        return renderHelpItemsGrid(cols: cols, helpWidth: helpWidth, items1: rawItems1, items2: rawItems2)
     }
 
     /// Formats single-line completion candidates text for Help Bar line 1.

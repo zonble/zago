@@ -45,63 +45,86 @@ public final class WasiTerminal: EditorTerminal {
     }
 
     public func readKey() -> Key {
+        switch readInputEvent() {
+        case .key(let key): return key
+        case .mouse: return .unknown
+        }
+    }
+
+    public func readInputEvent() -> InputEvent {
         var firstByte: UInt8? = nil
         while firstByte == nil {
             if pendingResize {
                 pendingResize = false
-                return .resize
+                return .key(.resize)
             }
             firstByte = readByte()
         }
 
         guard let first = firstByte else {
-            return .unknown
+            return .key(.unknown)
         }
 
         if first == 8 {
-            return .ctrlBackspace
+            return .key(.ctrlBackspace)
         }
 
         if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(first)) {
-            return controlKey
+            return .key(controlKey)
         }
 
         if first == 27 {
             guard let secondByte = readByte() else {
-                return .esc
+                return .key(.esc)
             }
 
-            if secondByte == 8 || secondByte == 127 { return .altBackspace }
-            if secondByte == 13 || secondByte == 10 { return .altEnter }
-            if secondByte == 9 { return .altTab }
+            if secondByte == 8 || secondByte == 127 { return .key(.altBackspace) }
+            if secondByte == 13 || secondByte == 10 { return .key(.altEnter) }
+            if secondByte == 9 { return .key(.altTab) }
 
             switch secondByte {
             case UInt8(ascii: "["):
-                return parseCSI()
+                return parseCSIInputEvent()
             case UInt8(ascii: "O"):
-                guard let third = readByte() else { return .esc }
-                return ANSIKeyMapping.resolveSS3Code(third) ?? .esc
+                guard let third = readByte() else { return .key(.esc) }
+                return .key(ANSIKeyMapping.resolveSS3Code(third) ?? .esc)
             default:
                 let scalar = UnicodeScalar(secondByte)
                 if scalar.value >= 32 && scalar.value < 127 {
                     let char = Character(scalar)
                     if char.isLetter {
-                        return .alt(Character(char.lowercased()))
+                        return .key(.alt(Character(char.lowercased())))
                     }
-                    return .alt(char)
+                    return .key(.alt(char))
                 }
-                return .esc
+                return .key(.esc)
             }
         }
 
-        return decodeUTF8Key(firstByte: first)
+        return .key(decodeUTF8Key(firstByte: first))
     }
 
-    private func parseCSI() -> Key {
-        guard let first = readByte() else { return .esc }
+    private func parseCSIInputEvent() -> InputEvent {
+        guard let first = readByte() else { return .key(.esc) }
+
+        if first == UInt8(ascii: "<") {
+            var sequence = "<"
+            while sequence.count < 32 {
+                guard let next = readByte() else { break }
+                let char = Character(UnicodeScalar(next))
+                sequence.append(char)
+                if next == UInt8(ascii: "M") || next == UInt8(ascii: "m") {
+                    break
+                }
+            }
+            if let mouseEvent = ANSIKeyMapping.parseSGRMouseEvent(sequence) {
+                return .mouse(mouseEvent)
+            }
+            return .key(.unknown)
+        }
 
         if let single = ANSIKeyMapping.resolveCSISingleChar(first) {
-            return single
+            return .key(single)
         }
 
         var sequence = String(UnicodeScalar(first))
@@ -118,7 +141,7 @@ public final class WasiTerminal: EditorTerminal {
                    r > 0, c > 0 {
                     currentRows = r
                     currentCols = c
-                    return .resize
+                    return .key(.resize)
                 }
             }
 
@@ -127,7 +150,7 @@ public final class WasiTerminal: EditorTerminal {
             }
         }
 
-        return ANSIKeyMapping.resolve(sequence)
+        return .key(ANSIKeyMapping.resolve(sequence))
     }
 
     private func resolveControlCode(_ code: UInt32) -> Key? {

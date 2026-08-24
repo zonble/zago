@@ -26,6 +26,12 @@ public protocol EditorTerminal: AnyObject {
     /// - Returns: The parsed `Key` enum value representing key presses, control sequences, or function keys.
     func readKey() -> Key
 
+    /// Reads and parses the next input event (key press or mouse interaction).
+    func readInputEvent() -> InputEvent
+
+    /// Enables or disables terminal mouse reporting (SGR 1006 mode).
+    func setMouseTracking(enabled: Bool)
+
     /// Reads remaining buffered characters when paste detection or rapid text input occurs.
     ///
     /// - Parameter firstChar: The initial character that triggered rapid reading.
@@ -54,6 +60,20 @@ public protocol EditorTerminal: AnyObject {
 
     /// Wakes up any blocked readKey call from another thread (e.g. IPC server thread).
     func wakeup()
+}
+
+extension EditorTerminal {
+    public func readInputEvent() -> InputEvent {
+        .key(readKey())
+    }
+
+    public func setMouseTracking(enabled: Bool) {
+        if enabled {
+            write("\u{1B}[?1000h\u{1B}[?1002h\u{1B}[?1006h")
+        } else {
+            write("\u{1B}[?1006l\u{1B}[?1002l\u{1B}[?1000l")
+        }
+    }
 }
 
 extension EditorTerminal {
