@@ -1063,5 +1063,25 @@ import Testing
     #expect(editor.currentTableCell == nil)
 }
 
+@Test func testTableModeRejectsF7OnBrokenBoxWithX() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  x          │  終點  │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+    // Cursor at line 2 on '點' (character col 4)
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 4
+
+    // Press F7 - should NOT enter Table Mode
+    editor.processKey(.f7)
+    #expect(editor.isTableModeActive == false)
+    #expect(editor.currentTableCell == nil)
+}
+
+
 
 

@@ -143,15 +143,31 @@ import Testing
         "└────────┘          └────────┘",
         "┌────────┐          ┌────────┐",
         "│        │          │        │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+    // Cursor at line 5 at col 17 (the 'z' position, space between boxes on row 5)
+    let cell = detector.detectCell(in: lines, line: 5, col: 17)
+    #expect(cell == nil)
+}
+
+
+@Test func testTableCellDetectorOnBrokenBoxWithX() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
         "│  起點  x          │  終點  │",
         "│        │          │        │",
         "└────────┘          └────────┘",
     ]
 
-    // Cursor at line 5 at col 17 (the 'z' position, space between boxes on row 5)
-    let cell = detector.detectCell(in: lines, line: 5, col: 17)
+    // Cursor at line 2 on '點' (character col 4, visual col 5..6)
+    let cell = detector.detectCell(in: lines, line: 2, col: 4)
     #expect(cell == nil)
 }
+
+
 
 
 

@@ -151,14 +151,16 @@ public final class TableCellDetector: Sendable {
         let checkEnd = min(max(0, rightCharIdx - 1), chars.count - 1)
         if checkStart > checkEnd { return false }
 
-        var countBorder = 0
+        // A continuous border segment cannot contain blank space gaps
         for col in checkStart...checkEnd {
-            if BorderCharacterSet.horizontalBoundaryChars.contains(chars[col]) {
-                countBorder += 1
+            let ch = chars[col]
+            if ch == " " || (!BorderCharacterSet.horizontalBoundaryChars.contains(ch) && ch != ":") {
+                return false
             }
         }
-        return countBorder >= max(1, (checkEnd - checkStart + 1) / 2)
+        return true
     }
+
 
     private func isTopBorderLine(_ line: String, leftVCol: Int, rightVCol: Int) -> Bool {
         guard !line.isEmpty else { return false }
