@@ -56,11 +56,31 @@ async function main() {
   term.open(container);
   fitAddon.fit();
 
-  // Check for Cross-Origin Isolation (required for SharedArrayBuffer / multi-threading)
-  if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
-    term.write("\r\n\x1b[36m[zago]\x1b[0m Initializing cross-origin isolation environment...\r\n");
-    term.write("\x1b[90mReloading automatically once ServiceWorker is ready...\x1b[0m\r\n");
-    return;
+  // Progress UI elements
+  const loadingOverlay = document.getElementById("wasm-loading-overlay");
+  const loadingCardNormal = document.getElementById("loading-card-normal");
+  const loadingCardUnsupported = document.getElementById("loading-card-unsupported");
+  const progressBar = document.getElementById("loading-progress-bar");
+  const statusText = document.getElementById("loading-status");
+  const detailText = document.getElementById("loading-detail");
+
+  function showLoading(status: string, detail: string = "", percent: number = 0) {
+    if (loadingOverlay) loadingOverlay.classList.remove("hidden");
+    if (loadingCardNormal) loadingCardNormal.classList.remove("hidden");
+    if (loadingCardUnsupported) loadingCardUnsupported.classList.add("hidden");
+    if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    if (statusText) statusText.textContent = status;
+    if (detailText) detailText.textContent = detail;
+  }
+
+  function hideLoading() {
+    if (loadingOverlay) loadingOverlay.classList.add("hidden");
+  }
+
+  function showUnsupportedBrowserUI() {
+    if (loadingOverlay) loadingOverlay.classList.remove("hidden");
+    if (loadingCardNormal) loadingCardNormal.classList.add("hidden");
+    if (loadingCardUnsupported) loadingCardUnsupported.classList.remove("hidden");
   }
 
   // Shared Stdin ring buffer between UI thread and Worker
@@ -83,23 +103,6 @@ async function main() {
       sharedStdin.write(`\x1b[8;${dims.rows};${dims.cols}t`);
     }
   };
-
-  // Progress UI elements
-  const loadingOverlay = document.getElementById("wasm-loading-overlay");
-  const progressBar = document.getElementById("loading-progress-bar");
-  const statusText = document.getElementById("loading-status");
-  const detailText = document.getElementById("loading-detail");
-
-  function showLoading(status: string, detail: string = "", percent: number = 0) {
-    if (loadingOverlay) loadingOverlay.classList.remove("hidden");
-    if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-    if (statusText) statusText.textContent = status;
-    if (detailText) detailText.textContent = detail;
-  }
-
-  function hideLoading() {
-    if (loadingOverlay) loadingOverlay.classList.add("hidden");
-  }
 
   async function fetchWasmWithProgress(url: string): Promise<ArrayBuffer> {
     if (cachedWasmBytes) {
@@ -411,8 +414,45 @@ async function main() {
 
   window.addEventListener("resize", handleResize);
 
-  // Launch initial editor session
-  await launchEditor("/workspace/welcome.md");
+  // Bind Unsupported Browser Fallback Actions
+  const btnCopyUnsupported = document.getElementById("btn-copy-unsupported-link");
+  const copyUnsupportedText = document.getElementById("copy-unsupported-text");
+  if (btnCopyUnsupported) {
+    btnCopyUnsupported.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        if (copyUnsupportedText) copyUnsupportedText.textContent = "Copied!";
+        btnCopyUnsupported.classList.add("copied");
+        setTimeout(() => {
+          if (copyUnsupportedText) copyUnsupportedText.textContent = "Copy Page Link";
+          btnCopyUnsupported.classList.remove("copied");
+        }, 1500);
+      } catch {
+        prompt("Copy this link to open in Safari / Chrome:", window.location.href);
+      }
+    });
+  }
+
+  const btnViewDocsFallback = document.getElementById("btn-view-docs-fallback");
+  if (btnViewDocsFallback) {
+    btnViewDocsFallback.addEventListener("click", () => {
+      switchToDocs();
+    });
+  }
+
+  // Check for Cross-Origin Isolation (required for SharedArrayBuffer / multi-threading)
+  const isIsolated = typeof SharedArrayBuffer !== "undefined" && Boolean(window.crossOriginIsolated);
+  if (!isIsolated) {
+    showLoading("Starting zago Virtual OS", "Preparing WebAssembly runtime...", 5);
+    setTimeout(() => {
+      if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
+        showUnsupportedBrowserUI();
+      }
+    }, 2500);
+  } else {
+    // Launch initial editor session
+    await launchEditor("/workspace/welcome.md");
+  }
 
   // UI Button Bindings
   const btnImport = document.getElementById("btn-import");

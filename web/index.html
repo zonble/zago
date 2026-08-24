@@ -249,7 +249,7 @@
 
           <!-- WASM Loading Progress Overlay -->
           <div id="wasm-loading-overlay" class="loading-overlay">
-            <div class="loading-card">
+            <div class="loading-card" id="loading-card-normal">
               <div class="spinner"></div>
               <h3 id="loading-title">Starting zago Virtual OS</h3>
               <div class="progress-bar-container">
@@ -257,6 +257,26 @@
               </div>
               <p id="loading-status">Downloading zago.wasm...</p>
               <p id="loading-detail" class="loading-detail">Preparing WebAssembly runtime</p>
+            </div>
+
+            <!-- Unsupported / In-App Browser Warning Card -->
+            <div class="loading-card unsupported-card hidden" id="loading-card-unsupported">
+              <div class="unsupported-icon">⚠️</div>
+              <h3>Browser Not Supported</h3>
+              <p class="unsupported-msg">
+                In-app browsers (such as X/Twitter, LINE, or Facebook) or restricted browsers do not support WebAssembly cross-origin isolation (SharedArrayBuffer).
+              </p>
+              <p class="unsupported-hint">
+                Please open this page in <strong>Safari</strong>, <strong>Chrome</strong>, or your default browser to run the live terminal.
+              </p>
+              <div class="unsupported-actions">
+                <button id="btn-copy-unsupported-link" class="action-btn" type="button">
+                  <span class="btn-icon">📋</span> <span id="copy-unsupported-text">Copy Page Link</span>
+                </button>
+                <button id="btn-view-docs-fallback" class="action-btn secondary" type="button">
+                  <span class="btn-icon">📖</span> <span>View Documentation</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

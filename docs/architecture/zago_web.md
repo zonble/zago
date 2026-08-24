@@ -191,7 +191,51 @@ Because mobile software keyboards lack essential modifier and function keys, a t
 
 ---
 
-## 6. Mini-Shell & Editor Lifecycle
+## 6. Restricted In-App Browsers & Cross-Origin Isolation Fallback
+
+### Problem in Mobile In-App WebViews
+When users open `zago-web` links from within social media apps on iOS or Android (such as **X / Twitter**, **LINE**, **Facebook**, or **Instagram**), the embedded `WKWebView` or In-App Browser typically disables or strictly limits:
+1. `navigator.serviceWorker` registration.
+2. Cross-Origin Opener Policy (`COOP`) and Cross-Origin Embedder Policy (`COEP`) header manipulation via Service Workers (`coi-serviceworker.js`).
+3. `SharedArrayBuffer` memory allocation.
+
+As a result, `window.crossOriginIsolated` remains `false`, preventing the background Web Worker and `SharedStdin` ring buffer from initializing.
+
+---
+
+### Detection & Fallback Strategy
+
+Rather than hanging indefinitely or cycling page reloads, `zago-web` employs a feature-detection timeout mechanism:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│              ⚠️ Browser Not Supported                   │
+│                                                          │
+│  In-app browsers (such as X/Twitter, LINE, or Facebook) │
+│  do not support WebAssembly cross-origin isolation       │
+│  (SharedArrayBuffer).                                    │
+│                                                          │
+│  Please open this page in Safari, Chrome, or your        │
+│  default browser to run the live terminal.               │
+│                                                          │
+│     [ 📋 Copy Page Link ]    [ 📖 View Documentation ]   │
+└──────────────────────────────────────────────────────────┘
+```
+
+1. **Feature Detection Timer (2.5 Seconds)**:
+   - If `typeof SharedArrayBuffer === "undefined"` or `!window.crossOriginIsolated`, a 2.5-second fallback timer starts.
+   - If `coi-serviceworker.js` successfully activates and reloads the page within 2.5 seconds, the normal loading workflow proceeds.
+   - If the timer expires without isolation, the UI transitions the `#wasm-loading-overlay` into an unsupported browser card.
+2. **Fallback Card Elements**:
+   - **Warning Icon & Title**: `⚠️ Browser Not Supported`.
+   - **Guidance Text**: Explains that in-app WebViews lack `SharedArrayBuffer` support and instructs the user to switch to Safari or Chrome.
+   - **Action Buttons**:
+     - `📋 Copy Page Link`: Copies `window.location.href` to the clipboard with immediate visual feedback (`Copied!`).
+     - `📖 View Documentation`: Switches mobile users back to the `About zago` documentation tab (`switchToDocs()`).
+
+---
+
+## 7. Mini-Shell & Editor Lifecycle
 
 ```
 [zago exited. Type "zago" to start]
@@ -210,7 +254,7 @@ When exiting the editor session (`Ctrl+Q` or `Ctrl+X`):
 
 ---
 
-## 7. Related Documents
+## 8. Related Documents
 
 - [WebAssembly & Web Terminal Architecture](wasm_web_architecture.md)
 - [WebAssembly Build & Deployment](../development/wasm_build.md)
