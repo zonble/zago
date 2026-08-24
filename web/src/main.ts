@@ -4,8 +4,14 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
 import { VirtualOSStorage } from "./vfs";
 import { SharedStdin } from "./shared-stdin";
+import { detectLanguage, applyI18n, translations } from "./i18n";
 
 async function main() {
+  const currentLang = detectLanguage();
+  applyI18n(currentLang);
+  const t = translations[currentLang];
+  const defaultWelcomeFile = `/workspace/welcome.${currentLang === "zh-TW" ? "zh-TW" : "en"}.md`;
+
   const container = document.getElementById("terminal-container");
   if (!container) return;
 
@@ -170,7 +176,7 @@ async function main() {
     return cachedWasmBytes;
   }
 
-  async function launchEditor(targetFile: string = "/workspace/welcome.md") {
+  async function launchEditor(targetFile: string = defaultWelcomeFile) {
     if (currentWorker) {
       currentWorker.terminate();
       currentWorker = null;
@@ -274,7 +280,7 @@ async function main() {
           term.write("zago $ ");
         } else if (trimmed === "zago" || trimmed.startsWith("zago ")) {
           const parts = trimmed.split(/\s+/).slice(1);
-          let targetFile = "/workspace/welcome.md";
+          let targetFile = defaultWelcomeFile;
           if (parts.length > 0 && parts[0].length > 0) {
             targetFile = parts[0].startsWith("/") ? parts[0] : `/workspace/${parts[0]}`;
           }
@@ -451,7 +457,7 @@ async function main() {
     }, 2500);
   } else {
     // Launch initial editor session
-    await launchEditor("/workspace/welcome.md");
+    await launchEditor(defaultWelcomeFile);
   }
 
   // UI Button Bindings
@@ -473,16 +479,16 @@ async function main() {
         if (file.name.endsWith(".zip")) {
           const zipData = await file.arrayBuffer();
           const count = await VirtualOSStorage.importWorkspaceZip(zipData);
-          alert(`Successfully imported ${count} files from "${file.name}" into /workspace.\nReloading to mount new filesystem...`);
+          alert(t.importZipSuccess(count, file.name));
           location.reload();
         } else {
           const buffer = await file.arrayBuffer();
           await VirtualOSStorage.importSingleFile(file.name, new Uint8Array(buffer));
-          alert(`Imported "${file.name}" to /workspace.\nReloading to open...`);
+          alert(t.importFileSuccess(file.name));
           location.reload();
         }
       } catch (err: any) {
-        alert(`Failed to import file: ${err?.message || err}`);
+        alert(t.importFailed(err?.message || err));
       }
     });
   }
@@ -507,7 +513,7 @@ async function main() {
 
   if (btnReset) {
     btnReset.addEventListener("click", async () => {
-      if (confirm("Reset Virtual OS and IndexedDB filesystem to default state?")) {
+      if (confirm(t.resetConfirm)) {
         await VirtualOSStorage.clearAll();
         location.reload();
       }

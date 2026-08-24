@@ -235,7 +235,67 @@ Rather than hanging indefinitely or cycling page reloads, `zago-web` employs a f
 
 ---
 
-## 7. Mini-Shell & Editor Lifecycle
+## 7. Localization (l10n) Architecture & Language-Aware Templates
+
+### Supported Locales & Language Detection
+`zago-web` supports dual language interfaces for both documentation and interactive tutorial templates:
+- **`en`**: English (default fallback).
+- **`zh-TW`**: Traditional Chinese (繁體中文).
+
+#### Detection Precedence Pipeline
+```
+[User Visits Page]
+       │
+       ▼
+[URL Query Parameter `?lang=` present?] ── Yes ──► Match prefix: `zh` -> `zh-TW` / else -> `en`
+       │ No
+       ▼
+[Browser Languages (`navigator.languages`)] ──► Match `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`, `zh` -> `zh-TW`
+       │ No match
+       ▼
+[Default Fallback: `en`]
+```
+
+1. **URL Override**: Checks `new URLSearchParams(window.location.search).get("lang")`. If `zh`, `zh-tw`, `zh-hk`, or `zh-hant` is passed, `zh-TW` is chosen; otherwise defaults to `en`.
+2. **Browser Preference**: Checks `navigator.languages` array followed by `navigator.language`. If Traditional Chinese locales are detected, resolves to `zh-TW`.
+3. **Fallback**: All other locales fallback cleanly to `en`.
+
+---
+
+### Frontend l10n Module (`web/src/i18n.ts`)
+- Centralized translation dictionary mapping keys to localized text and HTML strings:
+  - Header, Hero tagline, and GitHub links.
+  - Quick Install cards, labels, and platform copy snippets.
+  - "Why zago?" and "How?" capability descriptions.
+  - Toolbar buttons (`Import`, `Export ZIP`, `Reset VFS`, `Help`).
+  - Progress overlays and unsupported in-app browser warnings.
+  - Help modal dialog command listings.
+  - Mobile tabs (`About zago` / `Live Demo`) and CTA buttons.
+- `applyTranslations(lang)` walks DOM elements with `data-i18n` attributes and updates textContent or innerHTML accordingly.
+
+---
+
+### Template File Separation & VFS Seeding (`web/src/templates/`)
+Stock workspace files are extracted from inline source code into standalone template files under `web/src/templates/` and bundled at build time via Vite's `?raw` import:
+
+```
+web/src/templates/
+├── welcome.en.md       # English interactive tutorial (Canvas, Table, LINE, BOX, LOGO)
+├── welcome.zh-TW.md    # Traditional Chinese tutorial with localized instructions & examples
+├── demo.logo           # Sample Editor LOGO drawing script
+└── diagram.txt         # Plain-text ASCII component diagram example
+```
+
+#### VFS Initialization & Entry Point
+- When `/workspace` is initialized (or reset), both `welcome.en.md` and `welcome.zh-TW.md` (along with `demo.logo` and `diagram.txt`) are written to IndexedDB VFS.
+- The editor session automatically selects the entry file matching the active locale:
+  - **`zh-TW`**: `launchEditor("/workspace/welcome.zh-TW.md")`
+  - **`en`**: `launchEditor("/workspace/welcome.en.md")`
+- Users can switch or browse between tutorials at any time using `:open` or `:dir`.
+
+---
+
+## 8. Mini-Shell & Editor Lifecycle
 
 ```
 [zago exited. Type "zago" to start]
@@ -246,7 +306,7 @@ When exiting the editor session (`Ctrl+Q` or `Ctrl+X`):
 1. The Web Worker terminates cleanly, flushing changes to IndexedDB.
 2. The UI enters a browser mini-shell mode (`zago $ `).
 3. The mini-shell supports:
-   - `zago`: Reopens `/workspace/welcome.md`.
+   - `zago`: Reopens current language welcome tutorial (`welcome.zh-TW.md` or `welcome.en.md`).
    - `zago <filename>`: Opens specified file in `/workspace/`.
    - `clear`: Clears the terminal screen.
    - `Ctrl+C`: Clears the current input line.
@@ -254,7 +314,7 @@ When exiting the editor session (`Ctrl+Q` or `Ctrl+X`):
 
 ---
 
-## 8. Related Documents
+## 9. Related Documents
 
 - [WebAssembly & Web Terminal Architecture](wasm_web_architecture.md)
 - [WebAssembly Build & Deployment](../development/wasm_build.md)

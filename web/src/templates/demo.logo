@@ -1,0 +1,9 @@
+; Editor LOGO Demo Script
+; Draw a styled double-line box and type text
+
+CLEARBUFFER
+GOTO 2 2
+BOX 42 8 DOUBLE
+GOTO 4 4
+GOTO 5 4
+TYPE "Full VFS + Directory Navigation Enabled"

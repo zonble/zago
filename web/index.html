@@ -70,10 +70,10 @@
     <!-- Mobile Navigation Tabs (visible only on < 900px screens) -->
     <nav class="mobile-tabs" aria-label="Mobile Navigation">
       <button id="tab-docs" class="tab-btn active">
-        <span class="tab-icon">📖</span> About zago
+        <span class="tab-icon">📖</span> <span data-i18n="tabDocs">About zago</span>
       </button>
       <button id="tab-demo" class="tab-btn">
-        <span class="tab-icon">💻</span> Live Demo
+        <span class="tab-icon">💻</span> <span data-i18n="tabDemo">Live Demo</span>
       </button>
     </nav>
 
@@ -95,15 +95,15 @@
                 <span>GitHub</span>
               </a>
             </div>
-            <p class="hero-tagline">
+            <p class="hero-tagline" data-i18n="heroTagline">
               A terminal editor built for AI prompts.
             </p>
           </div>
 
           <div class="doc-card install-card">
-            <h2>Quick Install</h2>
+            <h2 data-i18n="quickInstallTitle">Quick Install</h2>
             <div class="install-platform">
-              <span class="platform-label">macOS (Homebrew)</span>
+              <span class="platform-label" data-i18n="platformMac">macOS (Homebrew)</span>
               <div class="code-box-wrapper">
                 <div class="code-box">
                   <code>brew tap zonble/zago &amp;&amp; brew install zago</code>
@@ -128,7 +128,7 @@
             </div>
 
             <div class="install-platform">
-              <span class="platform-label">Linux (x86_64 / arm64)</span>
+              <span class="platform-label" data-i18n="platformLinux">Linux (x86_64 / arm64)</span>
               <div class="code-box-wrapper">
                 <div class="code-box">
                   <code>curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh</code>
@@ -154,7 +154,7 @@
             </div>
 
             <div class="install-platform">
-              <span class="platform-label">Windows (PowerShell)</span>
+              <span class="platform-label" data-i18n="platformWin">Windows (PowerShell)</span>
               <div class="code-box-wrapper">
                 <div class="code-box">
                   <code>irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex</code>
@@ -181,29 +181,29 @@
           </div>
 
           <div class="doc-card">
-            <h2>Why zago?</h2>
+            <h2 data-i18n="whyTitle">Why zago?</h2>
             <ul>
-              <li><strong>LLMs & AI agents</strong> frequently generate plain-text ASCII/Unicode diagrams for
+              <li data-i18n="whyItem1" data-i18n-html="true"><strong>LLMs & AI agents</strong> frequently generate plain-text ASCII/Unicode diagrams for
                 architecture and planning, but editing them by hand in traditional editors quickly breaks alignment and
                 borders.</li>
-              <li><strong>Plain-text diagrams in Markdown</strong> are natively prompt-friendly, version-controllable,
+              <li data-i18n="whyItem2" data-i18n-html="true"><strong>Plain-text diagrams in Markdown</strong> are natively prompt-friendly, version-controllable,
                 and zero-dependency across all terminals.</li>
             </ul>
           </div>
 
           <div class="doc-card">
-            <h2>How?</h2>
+            <h2 data-i18n="howTitle">How?</h2>
             <ul>
-              <li><strong>Canvas mode editing:</strong> Move the cursor freely anywhere in the 2D text canvas without
+              <li data-i18n="howItem1" data-i18n-html="true"><strong>Canvas mode editing:</strong> Move the cursor freely anywhere in the 2D text canvas without
                 inserting empty lines or spaces manually.</li>
-              <li><strong>Table mode:</strong> Edit text inside ASCII/Unicode tables and boxes seamlessly without
+              <li data-i18n="howItem2" data-i18n-html="true"><strong>Table mode:</strong> Edit text inside ASCII/Unicode tables and boxes seamlessly without
                 breaking or shifting surrounding frames.</li>
-              <li><strong>Quick drawing commands:</strong> Commands like <code>BOX</code>, <code>LINE</code>, and
+              <li data-i18n="howItem3" data-i18n-html="true"><strong>Quick drawing commands:</strong> Commands like <code>BOX</code>, <code>LINE</code>, and
                 <code>VLINE</code> let you draft complete architecture diagrams in seconds.
               </li>
-              <li><strong>CJK & Emoji Aware:</strong> Fullwidth CJK characters and emojis are rendered with exact
+              <li data-i18n="howItem4" data-i18n-html="true"><strong>CJK & Emoji Aware:</strong> Fullwidth CJK characters and emojis are rendered with exact
                 display widths, keeping box boundaries perfectly aligned.</li>
-              <li><strong>Editor LOGO Engine:</strong> Built-in turtle graphics, macros, and scriptable text
+              <li data-i18n="howItem5" data-i18n-html="true"><strong>Editor LOGO Engine:</strong> Built-in turtle graphics, macros, and scriptable text
                 transformations.</li>
             </ul>
           </div>
@@ -211,7 +211,7 @@
           <!-- Mobile CTA to switch to Demo -->
           <div class="mobile-cta">
             <button id="btn-jump-demo" class="cta-btn">
-              <span>💻 Launch Live Demo in Browser</span>
+              <span data-i18n="jumpDemoBtn">💻 Launch Live Demo in Browser</span>
             </button>
           </div>
         </div>
@@ -223,22 +223,22 @@
         <div class="toolbar">
           <div class="toolbar-title">
             <span class="status-dot"></span>
-            <span>Interactive Workspace (<code>/workspace</code>)</span>
+            <span data-i18n="toolbarTitle" data-i18n-html="true">Interactive Workspace (<code>/workspace</code>)</span>
           </div>
           <div class="toolbar-actions">
             <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
-              <span class="btn-icon">📁</span> <span class="btn-text">Import</span>
+              <span class="btn-icon">📁</span> <span class="btn-text" data-i18n="btnImport">Import</span>
             </button>
             <input type="file" id="file-input" style="display: none"
               accept=".zip,.md,.txt,.logo,.conf,.json,.swift,.c,.h,.py,.js,.ts" />
             <button id="btn-export-zip" class="action-btn" title="Export entire /workspace as a ZIP archive">
-              <span class="btn-icon">📦</span> <span class="btn-text">Export ZIP</span>
+              <span class="btn-icon">📦</span> <span class="btn-text" data-i18n="btnExportZip">Export ZIP</span>
             </button>
             <button id="btn-clear-storage" class="action-btn secondary" title="Reset VFS & IndexedDB storage">
-              <span class="btn-icon">🧹</span> <span class="btn-text">Reset VFS</span>
+              <span class="btn-icon">🧹</span> <span class="btn-text" data-i18n="btnResetVFS">Reset VFS</span>
             </button>
             <button id="btn-help" class="action-btn secondary" title="View Documentation">
-              <span class="btn-icon">❓</span> <span class="btn-text">Help</span>
+              <span class="btn-icon">❓</span> <span class="btn-text" data-i18n="btnHelp">Help</span>
             </button>
           </div>
         </div>
@@ -251,30 +251,30 @@
           <div id="wasm-loading-overlay" class="loading-overlay">
             <div class="loading-card" id="loading-card-normal">
               <div class="spinner"></div>
-              <h3 id="loading-title">Starting zago Virtual OS</h3>
+              <h3 id="loading-title" data-i18n="loadingTitle">Starting zago Virtual OS</h3>
               <div class="progress-bar-container">
                 <div id="loading-progress-bar" class="progress-bar" style="width: 0%"></div>
               </div>
-              <p id="loading-status">Downloading zago.wasm...</p>
-              <p id="loading-detail" class="loading-detail">Preparing WebAssembly runtime</p>
+              <p id="loading-status" data-i18n="loadingStatusInit">Downloading zago.wasm...</p>
+              <p id="loading-detail" class="loading-detail" data-i18n="loadingDetailInit">Preparing WebAssembly runtime</p>
             </div>
 
             <!-- Unsupported / In-App Browser Warning Card -->
             <div class="loading-card unsupported-card hidden" id="loading-card-unsupported">
               <div class="unsupported-icon">⚠️</div>
-              <h3>Browser Not Supported</h3>
-              <p class="unsupported-msg">
+              <h3 data-i18n="unsupportedTitle">Browser Not Supported</h3>
+              <p class="unsupported-msg" data-i18n="unsupportedMsg">
                 In-app browsers (such as X/Twitter, LINE, or Facebook) or restricted browsers do not support WebAssembly cross-origin isolation (SharedArrayBuffer).
               </p>
-              <p class="unsupported-hint">
+              <p class="unsupported-hint" data-i18n="unsupportedHint" data-i18n-html="true">
                 Please open this page in <strong>Safari</strong>, <strong>Chrome</strong>, or your default browser to run the live terminal.
               </p>
               <div class="unsupported-actions">
                 <button id="btn-copy-unsupported-link" class="action-btn" type="button">
-                  <span class="btn-icon">📋</span> <span id="copy-unsupported-text">Copy Page Link</span>
+                  <span class="btn-icon">📋</span> <span id="copy-unsupported-text" data-i18n="btnCopyLink">Copy Page Link</span>
                 </button>
                 <button id="btn-view-docs-fallback" class="action-btn secondary" type="button">
-                  <span class="btn-icon">📖</span> <span>View Documentation</span>
+                  <span class="btn-icon">📖</span> <span data-i18n="btnViewDocs">View Documentation</span>
                 </button>
               </div>
             </div>
@@ -307,20 +307,20 @@
   <!-- Modal for Help / Docs -->
   <dialog id="help-dialog" class="help-dialog">
     <div class="dialog-content">
-      <h2>zago Web Virtual OS</h2>
-      <p><strong>zago</strong> runs with a POSIX-compatible Virtual File System (VFS) in WebAssembly.</p>
-      <h3>Useful Commands & Shortcuts:</h3>
+      <h2 data-i18n="helpDialogTitle">zago Web Virtual OS</h2>
+      <p data-i18n="helpDialogIntro" data-i18n-html="true"><strong>zago</strong> runs with a POSIX-compatible Virtual File System (VFS) in WebAssembly.</p>
+      <h3 data-i18n="helpDialogSubtitle">Useful Commands & Shortcuts:</h3>
       <ul>
-        <li><code>:dir</code> or <code>:ls</code> : Open interactive Directory Browser for subfolders</li>
-        <li><code>Ctrl + O</code> : Save current buffer to IndexedDB VFS</li>
-        <li><code>Ctrl + Q</code> or <code>Ctrl + X</code> : Exit editor to mini-shell (type <code>zago</code> to
+        <li data-i18n="helpItemDir" data-i18n-html="true"><code>:dir</code> or <code>:ls</code> : Open interactive Directory Browser for subfolders</li>
+        <li data-i18n="helpItemSave" data-i18n-html="true"><code>Ctrl + O</code> : Save current buffer to IndexedDB VFS</li>
+        <li data-i18n="helpItemQuit" data-i18n-html="true"><code>Ctrl + Q</code> or <code>Ctrl + X</code> : Exit editor to mini-shell (type <code>zago</code> to
           return)</li>
-        <li><code>F8</code> : Toggle 2D Canvas Mode (draw boxes, arrows, and lines)</li>
-        <li><code>F7</code> : Toggle Table Mode</li>
-        <li><code>Ctrl + G</code> : Open help / command list</li>
+        <li data-i18n="helpItemCanvas" data-i18n-html="true"><code>F8</code> : Toggle 2D Canvas Mode (draw boxes, arrows, and lines)</li>
+        <li data-i18n="helpItemTable" data-i18n-html="true"><code>F7</code> : Toggle Table Mode</li>
+        <li data-i18n="helpItemHelp" data-i18n-html="true"><code>Ctrl + G</code> : Open help / command list</li>
       </ul>
       <div class="dialog-actions">
-        <button id="btn-close-help" class="action-btn">Close</button>
+        <button id="btn-close-help" class="action-btn" data-i18n="btnCloseHelp">Close</button>
       </div>
     </div>
   </dialog>
