@@ -36,6 +36,8 @@ export const zhTW: TranslationSchema = {
   loadingTitle: "正在啟動 zago 虛擬系統",
   loadingStatusInit: "正在下載 zago.wasm...",
   loadingDetailInit: "正在準備 WebAssembly 執行環境",
+  loadingStatusCached: "正在從快取載入 zago.wasm...",
+  loadingDetailCached: "快取秒開啟動中",
   unsupportedTitle: "瀏覽器環境不支援",
   unsupportedMsg:
     "社群 App 內建瀏覽器（如 X/Twitter、LINE、Facebook）或受限環境不支援 WebAssembly 跨來源隔離（SharedArrayBuffer）。",
