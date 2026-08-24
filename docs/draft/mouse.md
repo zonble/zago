@@ -216,3 +216,28 @@ Given a click at screen coordinate $(col, row)$ (1-based):
 
 - When rendering the Help Bar, compute the exact `[startCol, endCol]` character range for each shortcut item.
 - Clicking inside an item's bounding box executes that item's key action immediately.
+
+---
+
+## 7. Drag Selection Auto-Scrolling
+
+When dragging to select text or 2D canvas blocks beyond the visible viewport boundaries, `zago` automatically scrolls the viewport and extends the selection:
+
+### 7.1 Trigger Zones & Boundary Detection
+
+1. **Top Overflow (`row <= topMargin`)**:
+   - When the drag position reaches or moves above the top margin (e.g. Title Bar, Ruler, or above screen), the viewport automatically scrolls up by 1 line (`topVLineIndex = max(0, topVLineIndex - 1)`).
+   - The selection cursor extends upward to the newly visible top line.
+2. **Bottom Overflow (`row > topMargin + mainAreaHeight`)**:
+   - When the drag position reaches or moves below the bottom margin (e.g. Status line, Help bar, or below screen), the viewport automatically scrolls down by 1 line (`topVLineIndex += 1` if within buffer bounds).
+   - The selection cursor extends downward to the newly visible bottom line.
+3. **Canvas Horizontal Overflow (Canvas Mode <kbd>F8</kbd>)**:
+   - Left overflow (`col <= 1 + gutterWidth`): scrolls horizontally left (`canvasHorizontalOffset = max(0, canvasHorizontalOffset - 2)`).
+   - Right overflow (`col > cols`): scrolls horizontally right (`canvasHorizontalOffset += 2`).
+   - The 2D selection rectangle (`canvasBlockMarkEnd`) updates to the newly scrolled coordinate.
+
+### 7.2 Selection Anchor & Clamping
+
+- The selection anchor (`selectionMark` or `canvasBlockMark`) remains fixed at the initial click origin.
+- The active cursor (`lineIndex`, `columnIndex` or `canvasBlockMarkEnd`) advances continuously with every scroll tick.
+- In **Text Mode** and **Table Mode**, scrolling and selection are strictly clamped to existing buffer lines and cell bounds without auto-inserting extra lines.

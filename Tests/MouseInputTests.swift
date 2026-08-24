@@ -165,4 +165,59 @@ import Testing
         let configOn = loaderOn.loadConfig()
         #expect(configOn.enableMouse == true)
     }
+
+    @Test func testTextModeDragAutoScrollDownAndUp() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...60).map { "Line \($0) text content for scrolling test" }
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+
+        // Click at row 2 (line 0)
+        let clickEvent = MouseEvent(action: .press(.left), col: 5, row: 2)
+        editor.handleMouseEvent(clickEvent)
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.topVLineIndex == 0)
+
+        // Drag below viewport bottom (row 25, when window size is 24 rows)
+        let dragDown = MouseEvent(action: .drag(.left), col: 5, row: 25)
+        editor.handleMouseEvent(dragDown)
+
+        #expect(editor.topVLineIndex > 0)
+        #expect(editor.buffer.selectionMark != nil)
+        #expect(editor.buffer.selectionMark?.line == 0)
+        #expect(editor.buffer.lineIndex > 0)
+
+        let scrolledTop = editor.topVLineIndex
+
+        // Drag above viewport top (row 1)
+        let dragUp = MouseEvent(action: .drag(.left), col: 5, row: 1)
+        editor.handleMouseEvent(dragUp)
+
+        #expect(editor.topVLineIndex == scrolledTop - 1)
+        #expect(editor.buffer.selectionMark?.line == 0)
+    }
+
+    @Test func testCanvasModeDragAutoScrollHorizontal() throws {
+        let editor = Editor()
+        editor.buffer.lines = Array(repeating: String(repeating: " ", count: 120), count: 30)
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.toggleCanvasMode()
+        #expect(editor.isCanvasModeActive == true)
+
+        // Click at col 10, row 5
+        let clickEvent = MouseEvent(action: .press(.left), col: 10, row: 5)
+        editor.handleMouseEvent(clickEvent)
+        #expect(editor.canvasHorizontalOffset == 0)
+
+        // Drag past right edge of window (col 85 with default 80 cols)
+        let dragRight = MouseEvent(action: .drag(.left), col: 85, row: 5)
+        editor.handleMouseEvent(dragRight)
+
+        #expect(editor.canvasHorizontalOffset == 2)
+        #expect(editor.buffer.canvasBlockMark != nil)
+        #expect(editor.buffer.canvasBlockMark?.visualColumn == 9)
+        #expect(editor.buffer.canvasBlockMarkEnd != nil)
+        #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn ?? 0 > 75)
+    }
 }

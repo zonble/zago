@@ -10,7 +10,81 @@ extension Editor {
         let (rows, cols) = terminal.getWindowSize()
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
-        // 1. Help Bar Hit-Testing (Lines geometry.rows - 1 and geometry.rows)
+        // 1. Drag Selection Auto-Scroll (takes priority when dragging across or beyond bars)
+        if case .drag(.left) = mouseEvent.action {
+            if buffer.isReadOnly { return }
+
+            let topMargin = 1 + (geometry.showRuler ? 1 : 0)
+            let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+
+            // Vertical Auto-Scroll & Coordinate Clamping
+            let vLineIndex: Int
+            if mouseEvent.row <= topMargin {
+                if topVLineIndex > 0 {
+                    topVLineIndex -= 1
+                }
+                vLineIndex = topVLineIndex
+            } else if mouseEvent.row > topMargin + geometry.mainAreaHeight {
+                let maxTop = max(0, virtualLines.count - 1)
+                if topVLineIndex < maxTop {
+                    topVLineIndex += 1
+                }
+                let screenOffset = max(0, min(geometry.mainAreaHeight - 1, (virtualLines.count - 1) - topVLineIndex))
+                vLineIndex = topVLineIndex + screenOffset
+            } else {
+                let screenOffset = mouseEvent.row - topMargin - 1
+                vLineIndex = topVLineIndex + screenOffset
+            }
+
+            // Horizontal Auto-Scroll & Coordinate Clamping for Canvas Mode
+            if isCanvasModeActive {
+                if mouseEvent.col <= 1 + geometry.gutterWidth {
+                    canvasHorizontalOffset = max(0, canvasHorizontalOffset - 2)
+                } else if mouseEvent.col > cols {
+                    canvasHorizontalOffset += 2
+                }
+            }
+
+            let rawVisualCol = mouseEvent.col - 1 - geometry.gutterWidth
+            let visualCol = max(0, min(rawVisualCol, geometry.textWidth - 1))
+
+            if isCanvasModeActive {
+                let canvasY = vLineIndex
+                let canvasX = visualCol + canvasHorizontalOffset
+                guard isCanvasLineAllowed(canvasY) else { return }
+
+                if buffer.canvasBlockMark == nil {
+                    buffer.canvasBlockMark = (line: buffer.lineIndex, visualColumn: canvasVisualColumn)
+                }
+                buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: canvasX)
+                if canvasY < buffer.lines.count {
+                    buffer.lineIndex = canvasY
+                } else {
+                    guard ensureCanvasLineExists(canvasY) else { return }
+                    buffer.lineIndex = canvasY
+                }
+                canvasVisualColumn = canvasX
+                syncCanvasCursorToBuffer()
+            } else if isTableModeActive {
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                if buffer.selectionMark == nil {
+                    buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                }
+                buffer.lineIndex = targetLine
+                buffer.columnIndex = targetCol
+                tableModeController.clampTableModeCursor()
+            } else {
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                if buffer.selectionMark == nil {
+                    buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
+                }
+                buffer.lineIndex = targetLine
+                buffer.columnIndex = targetCol
+            }
+            return
+        }
+
+        // 2. Help Bar Hit-Testing (Lines geometry.rows - 1 and geometry.rows)
         if mouseEvent.row >= geometry.rows - 1 {
             if case .press(.left) = mouseEvent.action {
                 if let keyStr = renderer.hitTestHelpBar(
@@ -29,7 +103,7 @@ extension Editor {
             return
         }
 
-        // 2. Menu Bar & Dropdown Overlay
+        // 3. Menu Bar & Dropdown Overlay
         if menuBarController.isActive {
             if mouseEvent.row == 1 {
                 if case .press(.left) = mouseEvent.action {
@@ -89,7 +163,7 @@ extension Editor {
             return
         }
 
-        // Main Viewport Area
+        // Main Viewport Area for clicks and other non-drag events
         let topMargin = 1 + (geometry.showRuler ? 1 : 0)
         guard mouseEvent.row > topMargin && mouseEvent.row <= topMargin + geometry.mainAreaHeight else {
             return
@@ -162,42 +236,6 @@ extension Editor {
             } else {
                 let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
                 buffer.selectionMark = nil
-                buffer.lineIndex = targetLine
-                buffer.columnIndex = targetCol
-            }
-
-        case .drag(.left):
-            if buffer.isReadOnly { return }
-            if isCanvasModeActive {
-                let canvasY = vLineIndex
-                let canvasX = visualCol + canvasHorizontalOffset
-                guard isCanvasLineAllowed(canvasY) else { return }
-
-                if buffer.canvasBlockMark == nil {
-                    buffer.canvasBlockMark = (line: buffer.lineIndex, visualColumn: canvasVisualColumn)
-                }
-                buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: canvasX)
-                if canvasY < buffer.lines.count {
-                    buffer.lineIndex = canvasY
-                } else {
-                    guard ensureCanvasLineExists(canvasY) else { return }
-                    buffer.lineIndex = canvasY
-                }
-                canvasVisualColumn = canvasX
-                syncCanvasCursorToBuffer()
-            } else if isTableModeActive {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
-                if buffer.selectionMark == nil {
-                    buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                }
-                buffer.lineIndex = targetLine
-                buffer.columnIndex = targetCol
-                tableModeController.clampTableModeCursor()
-            } else {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
-                if buffer.selectionMark == nil {
-                    buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
-                }
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol
             }

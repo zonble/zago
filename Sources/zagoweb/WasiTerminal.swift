@@ -4,6 +4,8 @@ import Foundation
 
 #if canImport(WASILibc)
     import WASILibc
+#elseif os(Windows)
+    import WinSDK
 #endif
 
 /// WebAssembly (WASI) Terminal driver connecting standard I/O streams with xterm.js.
@@ -47,6 +49,8 @@ public final class WasiTerminal: EditorTerminal {
         var buf = [UInt8](repeating: 0, count: 512)
         #if os(WASI) && canImport(WASILibc)
             let n = WASILibc.read(0, &buf, buf.count)
+        #elseif os(Windows)
+            let n = _read(0, &buf, UInt32(buf.count))
         #else
             let n = read(0, &buf, buf.count)
         #endif
