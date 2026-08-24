@@ -34,14 +34,30 @@ public final class WasiTerminal: EditorTerminal {
         return (rows: currentRows, cols: currentCols)
     }
 
+    private var pendingBytes: [UInt8] = []
+
+    public func hasPendingInput() -> Bool {
+        !pendingBytes.isEmpty
+    }
+
     private func readByte() -> UInt8? {
-        var byte: UInt8 = 0
+        if !pendingBytes.isEmpty {
+            return pendingBytes.removeFirst()
+        }
+        var buf = [UInt8](repeating: 0, count: 512)
         #if os(WASI) && canImport(WASILibc)
-            let n = WASILibc.read(0, &byte, 1)
+            let n = WASILibc.read(0, &buf, buf.count)
         #else
-            let n = read(0, &byte, 1)
+            let n = read(0, &buf, buf.count)
         #endif
-        return n == 1 ? byte : nil
+        if n > 0 {
+            let first = buf[0]
+            if n > 1 {
+                pendingBytes.append(contentsOf: buf[1..<n])
+            }
+            return first
+        }
+        return nil
     }
 
     public func readKey() -> Key {

@@ -60,6 +60,15 @@ public protocol EditorTerminal: AnyObject {
 
     /// Wakes up any blocked readKey call from another thread (e.g. IPC server thread).
     func wakeup()
+
+    /// Checks if there is additional pending input immediately available in the input stream.
+    func hasPendingInput() -> Bool
+}
+
+extension EditorTerminal {
+    public func hasPendingInput() -> Bool {
+        false
+    }
 }
 
 extension EditorTerminal {

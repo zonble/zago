@@ -102,7 +102,7 @@ import Testing
         editor.handleMouseEvent(clickEvent)
 
         #expect(editor.buffer.lineIndex == 3)
-        #expect(editor.buffer.columnIndex == 14)
+        #expect(editor.canvasVisualColumn == 14)
 
         // Drag to col 25, row 8
         let dragEvent = MouseEvent(action: .drag(.left), col: 25, row: 8)
@@ -113,6 +113,8 @@ import Testing
         #expect(editor.buffer.canvasBlockMark?.visualColumn == 14)
         #expect(editor.buffer.canvasBlockMarkEnd?.line == 6)
         #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 24)
+        #expect(editor.buffer.lineIndex == 6)
+        #expect(editor.canvasVisualColumn == 24)
 
         // Right click clears 2D mark area
         let rightClick = MouseEvent(action: .press(.right), col: 5, row: 5)

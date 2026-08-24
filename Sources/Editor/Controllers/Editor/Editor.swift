@@ -581,6 +581,33 @@ public final class Editor: @unchecked Sendable {
             refreshScreen()
             let inputEvent = terminal.readInputEvent()
             drainExternalRequests()
+
+            // Event coalescing for mouse drag: if additional mouse drag events are queued in the terminal input stream,
+            // process them in memory and coalesce to the latest position before triggering a full screen redraw.
+            if case .mouse(let mouseEvent) = inputEvent, case .drag = mouseEvent.action {
+                handleMouseEvent(mouseEvent)
+                while terminal.hasPendingInput() {
+                    let nextEvent = terminal.readInputEvent()
+                    if case .mouse(let nextMouse) = nextEvent, case .drag = nextMouse.action {
+                        handleMouseEvent(nextMouse)
+                    } else {
+                        switch nextEvent {
+                        case .key(let key):
+                            if key == .resize {
+                                renderer.invalidateScreenCache()
+                                terminal.clearScreen()
+                            } else {
+                                processKey(key)
+                            }
+                        case .mouse(let m):
+                            handleMouseEvent(m)
+                        }
+                        break
+                    }
+                }
+                continue
+            }
+
             switch inputEvent {
             case .key(let key):
                 if key == .resize {

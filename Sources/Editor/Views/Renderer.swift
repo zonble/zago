@@ -211,6 +211,7 @@ final class Renderer {
         let subLineCounts = makeSubLineCounts(from: virtualLines)
         var tokenTypesCache: [Int: [SyntaxTokenType]] = [:]
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
+        let canvasBlockRect = editor.isCanvasModeActive ? editor.currentCanvasBlockRectangle() : nil
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -299,6 +300,9 @@ final class Renderer {
 
                 let isDirBufferSelectedLine =
                     editor.buffer.isDirectoryBuffer && vLine.bufferLineIndex == editor.buffer.lineIndex
+                let isLineInCanvasBlock =
+                    canvasBlockRect != nil && vLine.bufferLineIndex >= canvasBlockRect!.topLine
+                    && vLine.bufferLineIndex <= canvasBlockRect!.bottomLine
                 let baseChars = Array(renderedLineText)
                 if vLine.isProposalOverlay {
                     lineOutput += vLine.text.ansiStyled(style: ANSIStyle.aiGhostOverlay)
@@ -322,9 +326,12 @@ final class Renderer {
                             atDisplayColumn: renderedDisplayWidth,
                             tabSize: editor.displayConfig.tabSize)
 
-                        if editor.isCanvasModeActive
-                            && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
-                        {
+                        let isCanvasSelected =
+                            isLineInCanvasBlock
+                            && charVisualColumn >= canvasBlockRect!.leftColumn
+                            && charVisualColumn < canvasBlockRect!.rightColumnExclusive
+
+                        if editor.isCanvasModeActive && isCanvasSelected {
                             lineOutput += renderedText.ansiStyled(
                                 style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                         } else if !editor.isCanvasModeActive
@@ -354,33 +361,24 @@ final class Renderer {
                 }
 
                 if editor.isCanvasModeActive && !vLine.isProposalOverlay {
-                    let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
-                    var selectedPad = ""
-                    var normalPad = ""
-                    for screenOffset in renderedDisplayWidth..<visibleTextWidth {
-                        let visualCol = editor.canvasHorizontalOffset + screenOffset
-                        if editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: visualCol) {
-                            if !normalPad.isEmpty {
-                                lineOutput += normalPad
-                                normalPad = ""
-                            }
-                            selectedPad.append(" ")
-                        } else {
-                            if !selectedPad.isEmpty {
-                                lineOutput += selectedPad.ansiStyled(
+                    if isLineInCanvasBlock, let rect = canvasBlockRect {
+                        let selStart = max(renderedDisplayWidth, rect.leftColumn - editor.canvasHorizontalOffset)
+                        let selEnd = min(visibleTextWidth, rect.rightColumnExclusive - editor.canvasHorizontalOffset)
+                        if selStart < selEnd {
+                            let before = max(0, selStart - renderedDisplayWidth)
+                            let sel = max(0, selEnd - selStart)
+                            let after = max(0, visibleTextWidth - selEnd)
+                            if before > 0 { lineOutput += String(repeating: " ", count: before) }
+                            if sel > 0 {
+                                lineOutput += String(repeating: " ", count: sel).ansiStyled(
                                     style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                                selectedPad = ""
                             }
-                            normalPad.append(" ")
+                            if after > 0 { lineOutput += String(repeating: " ", count: after) }
+                        } else if renderedDisplayWidth < visibleTextWidth {
+                            lineOutput += String(repeating: " ", count: visibleTextWidth - renderedDisplayWidth)
                         }
-                    }
-                    if !selectedPad.isEmpty {
-                        lineOutput += selectedPad.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                    }
-                    if !normalPad.isEmpty
-                        && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart)
-                    {
-                        lineOutput += normalPad
+                    } else if renderedDisplayWidth < visibleTextWidth {
+                        lineOutput += String(repeating: " ", count: visibleTextWidth - renderedDisplayWidth)
                     }
                 } else if isDirBufferSelectedLine {
                     if renderedDisplayWidth < visibleTextWidth {

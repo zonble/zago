@@ -150,12 +150,10 @@ extension Editor {
                 buffer.canvasBlockMark = nil
                 buffer.canvasBlockMarkEnd = nil
 
-                while buffer.lines.count <= canvasY {
-                    buffer.lines.append("")
-                }
+                guard ensureCanvasLineExists(canvasY) else { return }
                 buffer.lineIndex = canvasY
-                buffer.columnIndex = canvasX
-                syncCanvasCursorFromBuffer()
+                canvasVisualColumn = canvasX
+                syncCanvasCursorToBuffer()
             } else if isTableModeActive {
                 let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
                 buffer.lineIndex = targetLine
@@ -173,17 +171,20 @@ extension Editor {
             if isCanvasModeActive {
                 let canvasY = vLineIndex
                 let canvasX = visualCol + canvasHorizontalOffset
-                while buffer.lines.count <= canvasY {
-                    buffer.lines.append("")
-                }
+                guard isCanvasLineAllowed(canvasY) else { return }
 
                 if buffer.canvasBlockMark == nil {
-                    buffer.canvasBlockMark = (line: buffer.lineIndex, visualColumn: buffer.columnIndex)
+                    buffer.canvasBlockMark = (line: buffer.lineIndex, visualColumn: canvasVisualColumn)
                 }
                 buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: canvasX)
-                buffer.lineIndex = canvasY
-                buffer.columnIndex = canvasX
-                syncCanvasCursorFromBuffer()
+                if canvasY < buffer.lines.count {
+                    buffer.lineIndex = canvasY
+                } else {
+                    guard ensureCanvasLineExists(canvasY) else { return }
+                    buffer.lineIndex = canvasY
+                }
+                canvasVisualColumn = canvasX
+                syncCanvasCursorToBuffer()
             } else if isTableModeActive {
                 let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
                 if buffer.selectionMark == nil {

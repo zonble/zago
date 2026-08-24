@@ -272,6 +272,11 @@ import Foundation
             return .key(.unknown)
         }
 
+        public func hasPendingInput() -> Bool {
+            var pfd = pollfd(fd: STDIN_FILENO, events: Int16(POLLIN), revents: 0)
+            return poll(&pfd, 1, 0) > 0 && (pfd.revents & Int16(POLLIN)) != 0
+        }
+
         /// Reads all currently queued pending text bytes from stdin without
         /// blocking (accelerates clipboard paste).
         public func readPendingText(firstChar: Character) -> String {
