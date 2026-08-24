@@ -52,4 +52,25 @@ import Testing
         coordinator.update(filePath: "/repo/file.txt", currentLines: ["line"], showGitDiff: true, isScratchBuffer: true)
         #expect(coordinator.currentDiffInfo == .empty)
     }
+
+    @Test func testGitCoordinatorDebounceThrottlesRapidUpdates() {
+        let mock = MockGitService()
+        let coordinator = GitCoordinator(gitService: mock)
+        coordinator.debounceInterval = 0.5
+
+        coordinator.update(filePath: "/repo/file.txt", currentLines: ["line 1"], showGitDiff: true, isScratchBuffer: false)
+        #expect(coordinator.currentDiffInfo.branchName == "main")
+
+        // Mark dirty and change mock return value
+        coordinator.markDirty()
+        mock.diffToReturn = GitDiffInfo(branchName: "dev", lineStatuses: [:], deletedLineIndices: [], hasDiffMarkers: false)
+
+        // Rapid call within debounceInterval is throttled
+        coordinator.updateIfNeeded(filePath: "/repo/file.txt", currentLines: ["line 1 updated"], showGitDiff: true, isScratchBuffer: false)
+        #expect(coordinator.currentDiffInfo.branchName == "main")
+
+        // Forced update bypasses debounce interval
+        coordinator.updateIfNeeded(filePath: "/repo/file.txt", currentLines: ["line 1 updated"], showGitDiff: true, isScratchBuffer: false, force: true)
+        #expect(coordinator.currentDiffInfo.branchName == "dev")
+    }
 }

@@ -39,8 +39,13 @@ final class Renderer {
     }
 
     /// Renders screen using Double Buffering / Screen Line Diffing for given ScreenGeometry.
-    func renderDiff(editor: Editor, geometry: ScreenGeometry) -> String {
-        let (screenLines, cursorPosStr) = renderScreenLines(editor: editor, geometry: geometry)
+    func renderDiff(
+        editor: Editor,
+        geometry: ScreenGeometry,
+        precomputedVirtualLines: [VirtualLine]? = nil
+    ) -> String {
+        let (screenLines, cursorPosStr) = renderScreenLines(
+            editor: editor, geometry: geometry, precomputedVirtualLines: precomputedVirtualLines)
         let isDiffable =
             (geometry.rows == lastRows && geometry.cols == lastCols && lastRenderedLines.count == screenLines.count)
 
@@ -79,7 +84,11 @@ final class Renderer {
         renderDiff(editor: editor, geometry: ScreenGeometry(rows: rows, cols: cols, editor: editor))
     }
 
-    private func renderScreenLines(editor: Editor, geometry: ScreenGeometry) -> (
+    private func renderScreenLines(
+        editor: Editor,
+        geometry: ScreenGeometry,
+        precomputedVirtualLines: [VirtualLine]? = nil
+    ) -> (
         screenLines: [String], cursorPosStr: String
     ) {
         let rows = geometry.rows
@@ -89,11 +98,20 @@ final class Renderer {
         let textWidth = geometry.textWidth
         let showSubLineInfo = shouldRenderSubLineInfo(editor: editor, textWidth: textWidth)
 
-        var virtualLines: [VirtualLine]
+        let virtualLines: [VirtualLine]
         let virtualLineStartIndex: Int
         let totalVirtualLineCount: Int
         let (cursorVLineIdx, cursorVColIdx): (Int, Int)
-        if editor.isCanvasModeActive {
+        if let precomputed = precomputedVirtualLines {
+            virtualLines = precomputed
+            virtualLineStartIndex = 0
+            totalVirtualLineCount = virtualLines.count
+            (cursorVLineIdx, cursorVColIdx) = editor.layoutEngine.getVirtualCursor(
+                lineIndex: editor.buffer.lineIndex,
+                columnIndex: editor.buffer.columnIndex,
+                virtualLines: virtualLines
+            )
+        } else if editor.isCanvasModeActive {
             let baseCanvasLines = editor.layoutEngine.computeCanvasLines(from: editor.buffer.lines)
             virtualLines = expandVirtualLinesWithProposal(
                 virtualLines: baseCanvasLines, editor: editor, textWidth: textWidth)

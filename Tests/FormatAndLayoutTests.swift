@@ -1060,4 +1060,43 @@ struct FormatAndLayoutTests {
         #expect(syntaxMultiSpaceRst?.name == "LOGO")
     }
 
+    @Test func testSinglePassVirtualLinesPreparationAndRendering() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "Line 1 with some text",
+            "Line 2 with enough content to wrap onto multiple lines if viewport is small",
+            "Line 3 standard line",
+        ]
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+
+        let (rows, cols) = (24, 80)
+        let geometry = ScreenGeometry(rows: rows, cols: cols, editor: editor)
+
+        let virtualLines = editor.prepareVirtualLines(textWidth: geometry.textWidth)
+        #expect(virtualLines.count >= 3)
+
+        editor.adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
+        let outputWithPrecomputed = editor.renderer.renderDiff(editor: editor, geometry: geometry, precomputedVirtualLines: virtualLines)
+        let outputStandard = editor.renderer.render(editor: editor, rows: rows, cols: cols)
+
+        #expect(!outputWithPrecomputed.isEmpty)
+        #expect(!outputStandard.isEmpty)
+    }
+
+    @Test func testCanvasModeSinglePassVirtualLinesPreparation() throws {
+        let editor = Editor()
+        editor.toggleCanvasMode()
+        #expect(editor.isCanvasModeActive == true)
+
+        editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]
+        let (rows, cols) = (24, 80)
+        let geometry = ScreenGeometry(rows: rows, cols: cols, editor: editor)
+
+        let virtualLines = editor.prepareVirtualLines(textWidth: geometry.textWidth)
+        #expect(virtualLines.count == 3)
+        editor.adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
+        let output = editor.renderer.renderDiff(editor: editor, geometry: geometry, precomputedVirtualLines: virtualLines)
+        #expect(!output.isEmpty)
+    }
 }

@@ -168,7 +168,7 @@ import Foundation
                     if consumeWindowResizeEvent() {
                         return .key(.resize)
                     }
-                    return .key(.unknown)
+                    continue
                 }
                 firstByte = byte
                 break
@@ -280,6 +280,9 @@ import Foundation
         /// Reads all currently queued pending text bytes from stdin without
         /// blocking (accelerates clipboard paste).
         public func readPendingText(firstChar: Character) -> String {
+            guard hasPendingInput() else {
+                return String(firstChar)
+            }
             let flags = fcntl(STDIN_FILENO, F_GETFL, 0)
             _ = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK)
             defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }

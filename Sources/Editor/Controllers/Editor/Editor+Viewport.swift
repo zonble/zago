@@ -2,44 +2,54 @@ import Foundation
 import TextMetrics
 
 extension Editor {
+    /// Computes virtual lines including AI proposal overlays once for viewport adjustment and rendering.
+    func prepareVirtualLines(textWidth: Int) -> [VirtualLine] {
+        if isCanvasModeActive {
+            let baseCanvasLines = layoutEngine.computeCanvasLines(from: buffer.lines)
+            return renderer.expandVirtualLinesWithProposal(
+                virtualLines: baseCanvasLines, editor: self, textWidth: textWidth)
+        } else {
+            let baseVLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
+            return renderer.expandVirtualLinesWithProposal(
+                virtualLines: baseVLines, editor: self, textWidth: textWidth)
+        }
+    }
+
     /// Refreshes screen rendering directly using centralized Renderer with Double Buffering / Screen Line Diffing.
     func refreshScreen() {
         let (rows, cols) = terminal.getWindowSize()
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
-        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth)
+        let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
 
-        let output = renderer.renderDiff(editor: self, geometry: geometry)
+        let output = renderer.renderDiff(editor: self, geometry: geometry, precomputedVirtualLines: virtualLines)
         terminal.write(output)
         fflush(nil)
     }
 
     /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.
-    func adjustViewport(mainAreaHeight: Int, textWidth: Int) {
+    func adjustViewport(mainAreaHeight: Int, textWidth: Int, virtualLines: [VirtualLine]? = nil) {
         updateGitDiffIfNeeded()
+
+        let vLines = virtualLines ?? prepareVirtualLines(textWidth: textWidth)
 
         if isCanvasModeActive {
             ensureCanvasViewport(textWidth: textWidth)
-            let baseCanvasLines = layoutEngine.computeCanvasLines(from: buffer.lines)
-            let virtualLines = renderer.expandVirtualLinesWithProposal(
-                virtualLines: baseCanvasLines, editor: self, textWidth: textWidth)
-            let cursorVLineIdx = max(0, min(buffer.lineIndex, max(0, virtualLines.count - 1)))
+            let cursorVLineIdx = max(0, min(buffer.lineIndex, max(0, vLines.count - 1)))
 
             if cursorVLineIdx < topVLineIndex {
                 topVLineIndex = cursorVLineIdx
             } else if cursorVLineIdx >= topVLineIndex + max(1, mainAreaHeight - 1) {
                 topVLineIndex = cursorVLineIdx - max(0, mainAreaHeight - 2)
             }
-            let maxCanvasTop = max(0, virtualLines.count - max(1, mainAreaHeight - 1))
+            let maxCanvasTop = max(0, vLines.count - max(1, mainAreaHeight - 1))
             topVLineIndex = max(0, min(topVLineIndex, maxCanvasTop))
         } else {
-            let baseVLines = layoutEngine.computeVirtualLines(from: buffer.lines, viewWidth: textWidth)
-            let virtualLines = renderer.expandVirtualLinesWithProposal(
-                virtualLines: baseVLines, editor: self, textWidth: textWidth)
             let (cursorVLineIdx, _) = layoutEngine.getVirtualCursor(
                 lineIndex: buffer.lineIndex,
                 columnIndex: buffer.columnIndex,
-                virtualLines: virtualLines
+                virtualLines: vLines
             )
 
             if cursorVLineIdx < topVLineIndex {
