@@ -188,7 +188,7 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
     let editor = Editor()
 
     editor.runLogoScript(
-        "MAKE \"a \"1 MAKE \"b \"2 MAKE \"c \"3 IFELSE AND (:a = :b) (:b = :c) [ APPEND \"bad ] [ APPEND \"ok ]")
+        "MAKE \"a \"1 MAKE \"b \"2 MAKE \"c \"3 IFELSE AND (:a = :b) (:b = :c) [ TYPE \"bad ] [ TYPE \"ok ]")
 
     #expect(editor.buffer.lines.joined(separator: "\n").contains("ok"))
 }
@@ -204,7 +204,7 @@ private final class NonInteractiveInputTerminal: EditorTerminal, @unchecked Send
     )
 
     editor.runLogoScript(
-        "APPEND \"before MAKE \"word READWORD \"Prompt: APPEND :word MAKE \"key READCHAR \"Key: APPEND :key")
+        "TYPE \"before MAKE \"word READWORD \"Prompt: TYPE :word MAKE \"key READCHAR \"Key: TYPE :key")
 
     #expect(terminal.writes.contains { $0.contains("before") })
     #expect(editor.logoEngine.hasUncaughtError == false)

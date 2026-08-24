@@ -91,34 +91,6 @@ extension LogoPrimitive {
                 examples: [LogoPrimitiveExample(input: "LINEEND")]
             )
 
-        case .appendText:
-            LogoPrimitiveMeta(
-                name: "APPEND",
-                description: "Appends text to the end of the current buffer.",
-                localizedDescriptionKey: "logo.doc.appendtext",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "text", required: true, description: "The text to insert. Used by APPEND.",
-                        example: "text")
-                ],
-                examples: [LogoPrimitiveExample(input: "APPEND \"Footer")]
-            )
-
-        case .prependText:
-            LogoPrimitiveMeta(
-                name: "PREPEND",
-                description: "Prepends text to the very beginning of the buffer.",
-                localizedDescriptionKey: "logo.doc.prependtext",
-                source: .zago,
-                parameters: [
-                    LogoPrimitiveParameter(
-                        name: "text", required: true, description: "The text to insert. Used by PREPEND.",
-                        example: "text")
-                ],
-                examples: [LogoPrimitiveExample(input: "PREPEND \"Header")]
-            )
-
         case .changeText:
             LogoPrimitiveMeta(
                 name: "CHANGE",

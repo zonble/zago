@@ -14,8 +14,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case bottom
     case lineStart
     case lineEnd
-    case appendText
-    case prependText
     case changeText
     case joinLine
     case splitLine
@@ -338,8 +336,6 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["BOTTOM"], .bottom),
         (["LINESTART"], .lineStart),
         (["LINEEND"], .lineEnd),
-        (["APPEND"], .appendText),
-        (["PREPEND"], .prependText),
         (["CHANGE"], .changeText),
         (["JOIN"], .joinLine),
         (["SPLITLINE"], .splitLine),
@@ -659,7 +655,7 @@ extension LogoPrimitive {
     /// Single source of truth for parser-facing primitive metadata.
     internal static let statementCommands: Set<Self> = [
         .make, .name, .type, .show, .delete, .backspace, .deleteLine, .top, .bottom, .lineStart, .lineEnd,
-        .appendText, .prependText, .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
+        .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
         .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .vline, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading, .setline, .gotoline,
         .gotocol, .clearBuffer, .ifCondition, .output, .run, .repeatLoop, .forLoop,

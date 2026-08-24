@@ -16,21 +16,21 @@ TO TIC_TAC_TOE
 
     DO.WHILE [
         CLEARBUFFER
-        APPEND "+----------------------------+"
-        APPEND |\|      zago TIC-TAC-TOE      \||
-        APPEND "+----------------------------+"
+        TYPE "+----------------------------+" NEWLINE
+        TYPE |\|      zago TIC-TAC-TOE      \|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
         MAKE "line WORD |\|| FORMAT |        %s \| %s \| %s           | (ITEM 1 :board) (ITEM 2 :board) (ITEM 3 :board)
-        APPEND WORD :line |\||
-        APPEND |\|       ---+---+---          \||
+        TYPE WORD :line |\|| NEWLINE
+        TYPE |\|       ---+---+---          \|| NEWLINE
         MAKE "line WORD |\|| FORMAT |        %s \| %s \| %s           | (ITEM 4 :board) (ITEM 5 :board) (ITEM 6 :board)
-        APPEND WORD :line |\||
-        APPEND |\|       ---+---+---          \||
+        TYPE WORD :line |\|| NEWLINE
+        TYPE |\|       ---+---+---          \|| NEWLINE
         MAKE "line WORD |\|| FORMAT |        %s \| %s \| %s           | (ITEM 7 :board) (ITEM 8 :board) (ITEM 9 :board)
-        APPEND WORD :line |\||
-        APPEND "+----------------------------+"
+        TYPE WORD :line |\|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
         MAKE "line WORD |\|| FORMAT | Player %s's Turn            | :turn
-        APPEND WORD :line |\||
-        APPEND "+----------------------------+"
+        TYPE WORD :line |\|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
 
         ; Check win conditions
         MAKE "wins [
@@ -51,20 +51,20 @@ TO TIC_TAC_TOE
         ]
 
         IFELSE :winner != "" [
-            APPEND ""
-            APPEND FORMAT "PLAYER %s WINS! CONGRATULATIONS!" :winner
+            NEWLINE
+            TYPE FORMAT "PLAYER %s WINS! CONGRATULATIONS!" :winner NEWLINE
             MAKE "playing false
         ] [
             IFELSE :moves = 9 [
-                APPEND ""
-                APPEND "IT'S A DRAW / TIE GAME!"
+                NEWLINE
+                TYPE "IT'S A DRAW / TIE GAME!" NEWLINE
                 MAKE "playing false
             ] [
                 MAKE "choice READWORD FORMAT "Player %s, enter position (1-9) or Q: " :turn
                 MAKE "choice TRIM :choice
 
                 IFELSE OR ((LOWERCASE :choice) = "q) (:choice = "") [
-                    APPEND "Game Quit."
+                    TYPE "Game Quit." NEWLINE
                     MAKE "playing false
                 ] [
                     MAKE "pos INT :choice
@@ -75,7 +75,7 @@ TO TIC_TAC_TOE
                             MAKE "moves (:moves + 1)
                             IFELSE :turn = "X [ MAKE "turn "O ] [ MAKE "turn "X ]
                         ] [
-                            APPEND "Cell already taken! Try again."
+                            TYPE "Cell already taken! Try again." NEWLINE
                         ]
                     ]
                 ]

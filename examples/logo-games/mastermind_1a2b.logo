@@ -26,25 +26,25 @@ TO MASTERMIND_1A2B
 
     DO.WHILE [
         CLEARBUFFER
-        APPEND "+----------------------------+"
-        APPEND |\|   zago 1A2B MASTERMIND     \||
-        APPEND "+----------------------------+"
+        TYPE "+----------------------------+" NEWLINE
+        TYPE |\|   zago 1A2B MASTERMIND     \|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
         
         FOREACH :history [
             MAKE "line WORD |\|| FORMAT | %-26s | ?
-            APPEND WORD :line |\||
+            TYPE WORD :line |\|| NEWLINE
         ]
 
-        APPEND "+----------------------------+"
+        TYPE "+----------------------------+" NEWLINE
         MAKE "line WORD |\|| FORMAT | Attempts: %-17d| :attempts
-        APPEND WORD :line |\||
-        APPEND "+----------------------------+"
+        TYPE WORD :line |\|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
 
         MAKE "guess READWORD "Enter 4 unique digits (or Q to quit): "
         MAKE "guess TRIM :guess
 
         IFELSE OR ((LOWERCASE :guess) = "q) (:guess = "") [
-            APPEND FORMAT "Game Quit. Secret code was: %s" :code
+            TYPE FORMAT "Game Quit. Secret code was: %s" :code NEWLINE
             MAKE "playing false
         ] [
             IFELSE (COUNT :guess) = 4 [
@@ -88,15 +88,15 @@ TO MASTERMIND_1A2B
 
                     IF :countA = 4 [
                         CLEARBUFFER
-                        APPEND "BINGO! PERFECT CODE CRACKED!"
-                        APPEND FORMAT "Secret: %s in %d attempts!" :code :attempts
+                        TYPE "BINGO! PERFECT CODE CRACKED!" NEWLINE
+                        TYPE FORMAT "Secret: %s in %d attempts!" :code :attempts NEWLINE
                         MAKE "playing false
                     ]
                 ] [
-                    APPEND "Invalid input! Use 4 unique digits."
+                    TYPE "Invalid input! Use 4 unique digits." NEWLINE
                 ]
             ] [
-                APPEND "Invalid input! Please enter exactly 4 digits."
+                TYPE "Invalid input! Please enter exactly 4 digits." NEWLINE
             ]
         ]
     ][ :playing = true ]

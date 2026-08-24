@@ -156,11 +156,11 @@ END
 
 TO RENDER2048
     CLEARBUFFER
-    APPEND "+----------------------------+"
-    APPEND |\|         zago 2048          \||
+    TYPE "+----------------------------+" NEWLINE
+    TYPE |\|         zago 2048          \|| NEWLINE
     MAKE "line WORD |\|| FORMAT | Score: %-20d| :score
-    APPEND WORD :line |\||
-    APPEND "+----------------------------+"
+    TYPE WORD :line |\|| NEWLINE
+    TYPE "+----------------------------+" NEWLINE
 
     MAKE "r 1
     WHILE [ :r <= 4 ] [
@@ -173,13 +173,13 @@ TO RENDER2048
             MAKE "c (:c + 1)
         ]
         MAKE "line WORD :line |   \||
-        APPEND :line
+        TYPE :line NEWLINE
         MAKE "r (:r + 1)
     ]
 
-    APPEND "+----------------------------+"
-    APPEND |\| W:Up A:Left S:Down D:Right \||
-    APPEND "+----------------------------+"
+    TYPE "+----------------------------+" NEWLINE
+    TYPE |\| W:Up A:Left S:Down D:Right \|| NEWLINE
+    TYPE "+----------------------------+" NEWLINE
 END
 
 TO GAME2048
@@ -203,14 +203,14 @@ TO GAME2048
 
     DO.WHILE [
         RENDER2048
-        IF :message != "" [ APPEND :message ]
+        IF :message != "" [ TYPE :message NEWLINE ]
         MAKE "message ""
 
         MAKE "k READCHAR "Slide (W/A/S/D) or Q: "
         MAKE "k LOWERCASE :k
 
         IFELSE OR (:k = "q) (:k = "") [
-            APPEND "Game Over. Thank you for playing!"
+            TYPE "Game Over. Thank you for playing!" NEWLINE
             MAKE "playing false
         ] [
             MAKE "moved false
@@ -223,7 +223,7 @@ TO GAME2048
                 SPAWN_TILE
                 IF NOT CAN_MOVE [
                     RENDER2048
-                    APPEND "No moves left. Game Over!"
+                    TYPE "No moves left. Game Over!" NEWLINE
                     MAKE "playing false
                 ]
             ] [

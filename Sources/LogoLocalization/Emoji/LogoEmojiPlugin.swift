@@ -71,8 +71,6 @@ public struct LogoEmojiPlugin: LogoParserPlugin {
         "⤓": .bottom,
         "⏮": .lineStart,
         "⏭": .lineEnd,
-        "➕➡": .appendText,
-        "⬅➕": .prependText,
         "🔄🔤": .changeText,
         "🔗📄": .joinLine,
         "✂️📄": .splitLine,

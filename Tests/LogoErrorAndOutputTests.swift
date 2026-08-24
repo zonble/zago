@@ -571,4 +571,21 @@ import Testing
         #expect(editor.logoEngine.hasUncaughtError == false)
         #expect(editor.logoEngine.variables["result"] == "20")
     }
+
+    @Test func testHeadlessOutputMatchesBufferText() {
+        let editor = Editor()
+        editor.runLogoScript("TYPE \"Hello_World NEWLINE TYPE \"Line_2\"")
+        #expect(editor.headlessOutput() == "Hello_World\nLine_2")
+    }
+
+    @Test func testHeadlessOutputWithDrawingAndText() {
+        let editor = Editor()
+        editor.runLogoScript("BOX 6 3")
+        let output = editor.headlessOutput()
+        #expect(output.contains("┌────┐"))
+        #expect(output.contains("│    │"))
+        #expect(output.contains("└────┘"))
+    }
 }
+
+

@@ -691,12 +691,9 @@ public final class Editor: @unchecked Sendable {
         buffer.lines.joined(separator: "\n")
     }
 
-    /// Returns headless LOGO output without exposing the mutable output history.
+    /// Returns headless LOGO output directly from current buffer text.
     public func headlessOutput() -> String {
-        let output = logoOutputHistory.filter { line in
-            !(line.hasPrefix("--- [") && line.contains("] Run: "))
-        }
-        return output.isEmpty ? currentBufferText() : output.joined(separator: "\n")
+        currentBufferText()
     }
 
     func clearActiveMark() {

@@ -102,36 +102,6 @@ extension LogoEngine {
             delegate.logoEngine(self, performAction: .moveEnd)
             return true
 
-        case .appendText:
-            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            guard reader.hasArgumentToken else {
-                let errorMessage = "[LOGO Error: Not enough inputs to APPENDTEXT]"
-                reportError(LogoError(code: 1, message: errorMessage), token: "APPENDTEXT")
-                return true
-            }
-            delegate.logoEngine(self, performAction: .moveEnd)
-            while let nextToken = reader.peekToken(), !isArgumentBoundary(nextToken) {
-                let text = reader.nextExpression()
-                delegate.logoEngine(self, performAction: .insertText(text))
-            }
-            reader.commit(to: &index)
-            return true
-
-        case .prependText:
-            var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
-            guard reader.hasArgumentToken else {
-                let errorMessage = "[LOGO Error: Not enough inputs to PREPENDTEXT]"
-                reportError(LogoError(code: 1, message: errorMessage), token: "PREPENDTEXT")
-                return true
-            }
-            delegate.logoEngine(self, performAction: .moveHome)
-            while let nextToken = reader.peekToken(), !isArgumentBoundary(nextToken) {
-                let text = reader.nextExpression()
-                delegate.logoEngine(self, performAction: .insertText(text))
-            }
-            reader.commit(to: &index)
-            return true
-
         case .changeText:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
             if reader.peekToken() != nil {

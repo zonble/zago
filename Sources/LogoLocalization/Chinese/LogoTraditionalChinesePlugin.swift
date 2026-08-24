@@ -69,8 +69,6 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "刪除整行": .deleteLine,
         "刪整行": .deleteLine,
         "刪行": .deleteLine,
-        "後方加字": .appendText,
-        "前方加字": .prependText,
         "變更文字": .changeText,
         "接行": .joinLine,
         "合併行": .joinLine,

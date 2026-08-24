@@ -69,10 +69,10 @@ import Testing
         editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]
         let engine = LogoEngine(delegate: editor)
 
-        engine.execute("APPEND \"_tail")
+        engine.execute("LINEEND TYPE \"_tail")
         #expect(editor.buffer.lines[0].contains("tail"))
 
-        engine.execute("PREPEND \"head_")
+        engine.execute("LINESTART TYPE \"head_")
         #expect(editor.buffer.lines[0].contains("head"))
 
         engine.execute("JOIN")

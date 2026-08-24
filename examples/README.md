@@ -43,7 +43,7 @@ This directory contains standalone **Editor LOGO (.logo)** scripts showcasing th
 | [`cjk_text_demo.logo`](logo/cjk_text_demo.logo) | CJK Linguistics | **CJK Text Transformation & Transliteration** (Simplified/Traditional, Kana, Emoji) | `TOHANS`, `TOHANT`, `SPACING.CJK`, `TOKATAKANA`, `CHARCOUNT.EMOJI` |
 | [`turtle_demo.logo`](logo/turtle_demo.logo) | Turtle Graphics | **Classic LOGO Turtle Graphics** (Heading, pen up/down, move) | `PENDOWN`, `PENUP`, `FORWARD`, `BACK`, `TURNRIGHT`, `SETHEADING` |
 | [`matrix_demo.logo`](logo/matrix_demo.logo) | Multidimensional & Reflection | **Multidimensional Arrays, Stacks & Reflection** | `MDARRAY`, `MDITEM`, `MDSETITEM`, `PUSH`, `POP`, `GENSYM`, `DEFINED?` |
-| [`buffer_editor_demo.logo`](logo/buffer_editor_demo.logo) | Buffer Automation | **Editor Buffer Control** (Line append, read/write, counts) | `APPEND`, `PREPEND`, `SETLINE`, `GETLINE`, `LINECOUNT`, `ROW`, `COL` |
+| [`buffer_editor_demo.logo`](logo/buffer_editor_demo.logo) | Buffer Automation | **Editor Buffer Control** (Line editing, read/write, counts) | `TYPE`, `NEWLINE`, `SETLINE`, `GETLINE`, `LINECOUNT`, `ROW`, `COL` |
 | [`caesar_cipher.logo`](logo/caesar_cipher.logo) | Cryptography | **Caesar Cipher** encryption/decryption | `ORD`, `CHAR`, modulo arithmetic, `WORD` |
 | [`leetcode_001_two_sum.logo`](logo/leetcode_001_two_sum.logo) | LeetCode #1 | Two Sum problem | Nested `WHILE` loops, `ITEM`, `LIST` construction |
 | [`leetcode_014_longest_common_prefix.logo`](logo/leetcode_014_longest_common_prefix.logo) | LeetCode #14 | Longest Common Prefix | `STARTSWITH?`, `SUBSTRING`, `COUNT`, `WHILE` |

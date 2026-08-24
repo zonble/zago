@@ -54,9 +54,9 @@ TO SOKOBAN
     DO.WHILE [
         ; Clear and Render Grid
         CLEARBUFFER
-        APPEND "+----------------------------+"
-        APPEND |\|        zago SOKOBAN        \||
-        APPEND "+----------------------------+"
+        TYPE "+----------------------------+" NEWLINE
+        TYPE |\|        zago SOKOBAN        \|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
         
         MAKE "r 1
         WHILE [ :r <= :height ] [
@@ -68,13 +68,13 @@ TO SOKOBAN
                 MAKE "c (:c + 1)
             ]
             MAKE "line WORD :line |       \||
-            APPEND :line
+            TYPE :line NEWLINE
             MAKE "r (:r + 1)
         ]
 
-        APPEND "+----------------------------+"
-        APPEND |\| Controls: W/A/S/D \| Q:Quit \||
-        APPEND "+----------------------------+"
+        TYPE "+----------------------------+" NEWLINE
+        TYPE |\| Controls: W/A/S/D \| Q:Quit \|| NEWLINE
+        TYPE "+----------------------------+" NEWLINE
 
         ; Check Win Condition
         MAKE "solved 0
@@ -90,15 +90,15 @@ TO SOKOBAN
         ]
 
         IFELSE :solved = :targets [
-            APPEND ""
-            APPEND "CONGRATULATIONS! You solved the puzzle!"
+            NEWLINE
+            TYPE "CONGRATULATIONS! You solved the puzzle!" NEWLINE
             MAKE "playing false
         ] [
             MAKE "k READCHAR "Move (W/A/S/D) or Q to Quit: "
             MAKE "k LOWERCASE :k
 
             IFELSE OR (:k = "q) (:k = "") [
-                APPEND "Game Quit."
+                TYPE "Game Quit." NEWLINE
                 MAKE "playing false
             ] [
                 MAKE "dy 0

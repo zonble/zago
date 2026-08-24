@@ -627,9 +627,7 @@ TYPE "hello;world"
 
 | Command | Aliases | Syntax | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `TYPE` | `PRINT`, `INSERT` | `TYPE "text"` or `INSERT "text"` | Inserts string or calculated expression at cursor | `INSERT "Hello World"` |
-| `APPEND` | - | `APPEND "text"` | Moves to current line end, then inserts text | `APPEND "."` |
-| `PREPEND` | - | `PREPEND "text"` | Moves to current line start, then inserts text | `PREPEND "# "` |
+| `TYPE` | `PRINT`, `INSERT` | `TYPE "text"` or `INSERT "text"` | Inserts string or calculated expression at cursor (no newline) | `INSERT "Hello World"` |
 | `SHOW` | `MSG`, `MESSAGE` | `SHOW expr` | Displays status bar message | `SHOW "Saved successfully"` |
 | `READWORD` | `RW`, `READLINE`, `READ` | `READWORD [prompt]` | Reads a line of text input from user or stdin | `MAKE "name READWORD "Enter name: "` |
 | `UUID` | `GUID` | `UUID [version] [uppercase]` | Generates a UUID string (v4 random or v7 time-ordered) | `UUID`, `UUID "v7`, `UUID "v4 "true` |

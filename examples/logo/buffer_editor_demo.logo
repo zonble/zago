@@ -2,16 +2,15 @@
 ; Editor Buffer Automation Demo (in zago Editor LOGO)
 ; ==============================================================================
 ; Demonstrates LOGO primitives for controlling `zago` editor buffer:
-; `APPEND`, `PREPEND`, `SETLINE`, `GETLINE`, `LINECOUNT`, `ROW`, `COL`.
+; `TYPE`, `NEWLINE`, `SETLINE`, `GETLINE`, `LINECOUNT`, `ROW`, `COL`.
 ; ==============================================================================
 
-TYPE "===_Editor_Buffer_Automation_Demo_==="
-TYPE CHAR 10
+TYPE "===_Editor_Buffer_Automation_Demo_===" NEWLINE
 
-; 1. Append lines to current editor buffer
-APPEND "Hello_World_Header"
-APPEND "Line_2:_Data_Row"
-APPEND "Line_3:_Footer"
+; 1. Add lines to current editor buffer
+TYPE "Hello_World_Header" NEWLINE
+TYPE "Line_2:_Data_Row" NEWLINE
+TYPE "Line_3:_Footer" NEWLINE
 
 ; 2. Query total line count in editor
 MAKE "total LINECOUNT
