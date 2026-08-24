@@ -107,3 +107,112 @@ When the interactive `ESC` command prompt is visible:
 
 - Clicking a Bottom Help Bar item executes the corresponding key shortcut (e.g., `Y`, `N`, `Enter`, `ESC`).
 - Clicking outside prompt controls is ignored to prevent unintended dismissals.
+
+---
+
+## 4. Architecture & Data Structures
+
+### 4.1 Type System Hierarchy (`Config` Module)
+
+To provide strict type safety across the input pipeline, `zago` separates input events into a top-level `InputEvent` enum:
+
+```swift
+/// Top-level terminal input event
+public enum InputEvent: Equatable, Hashable, Sendable {
+    case key(Key)
+    case mouse(MouseEvent)
+}
+
+/// Represents mouse interactions captured by the terminal driver
+public struct MouseEvent: Equatable, Hashable, Sendable {
+    public enum Action: Equatable, Hashable, Sendable {
+        case press(Button)
+        case release(Button)
+        case drag(Button)
+        case scrollUp
+        case scrollDown
+    }
+
+    public enum Button: Equatable, Hashable, Sendable {
+        case left
+        case middle
+        case right
+    }
+
+    public let action: Action
+    public let col: Int      // Native 1-based column (1..cols) matching SGR 1006
+    public let row: Int      // Native 1-based row (1..rows) matching SGR 1006
+    public let shift: Bool
+    public let alt: Bool
+    public let ctrl: Bool
+
+    public init(
+        action: Action,
+        col: Int,
+        row: Int,
+        shift: Bool = false,
+        alt: Bool = false,
+        ctrl: Bool = false
+    ) {
+        self.action = action
+        self.col = col
+        self.row = row
+        self.shift = shift
+        self.alt = alt
+        self.ctrl = ctrl
+    }
+}
+```
+
+---
+
+## 5. Terminal Driver & Protocol Implementation
+
+### 5.1 POSIX (macOS & Linux) & WebAssembly (xterm.js)
+
+1. **Enablement Sequences**:
+   - `\e[?1000h` : Enable standard X10 mouse tracking (button press).
+   - `\e[?1002h` : Enable button event tracking (button press, release, and drag motion).
+   - `\e[?1006h` : Enable SGR 1006 extended mode (allows coordinates beyond 223 columns/rows without ASCII wrapping).
+2. **Disabling Sequences**:
+   - `\e[?1006l\e[?1002l\e[?1000l` : Sent on terminal teardown or when mouse is disabled.
+3. **Sequence Decoding**:
+   - Pattern: `\e[<` `button` `;` `col` `;` `row` (`M` | `m`)
+   - `button` flags:
+     - `0`: Left button
+     - `1`: Middle button
+     - `2`: Right button
+     - `32`: Drag motion with button down
+     - `64`: Scroll wheel Up
+     - `65`: Scroll wheel Down
+     - Modifier bits: `+4` (Shift), `+8` (Alt/Meta), `+16` (Ctrl)
+   - Final character: `M` indicates press / drag / scroll; `m` indicates release.
+
+### 5.2 Windows Terminal (Win32 Console)
+
+- Enables `ENABLE_MOUSE_INPUT` via `SetConsoleMode`.
+- Intercepts `MOUSE_EVENT_RECORD` inside `ReadConsoleInputW`.
+- Translates `FROM_LEFT_1ST_BUTTON_PRESSED`, `RIGHTMOST_BUTTON_PRESSED`, `MOUSE_MOVED`, and `MOUSE_WHEELED` to `MouseEvent`.
+
+---
+
+## 6. Hit-Testing & Coordinate Mapping
+
+### 6.1 Text Mode Mapping
+
+Given a click at screen coordinate $(col, row)$ (1-based):
+
+1. **Vertical Offset**: `targetVLineIndex = (row - 1 - topMargin) + topVLineIndex`.
+2. **Horizontal Gutter Subtraction**: If line numbers are enabled, subtract `gutterWidth = lineNumWidth + 2`.
+3. **Virtual Line Resolution**: Map `(targetVLineIndex, adjustedCol)` to buffer `(lineIndex, columnIndex)` using `LayoutEngine.getBufferPosition(fromVirtualLineIndex:column:)` with CJK fullwidth character awareness.
+
+### 6.2 Canvas Mode 2D Coordinate Mapping
+
+1. `canvasY = (row - 1 - topMargin) + topVLineIndex`.
+2. `canvasX = (col - 1 - gutterWidth) + canvasHorizontalOffset`.
+3. Cursor or mark boundary is updated directly to $(canvasX, canvasY)$.
+
+### 6.3 Bottom Help Bar Hit-Testing
+
+- When rendering the Help Bar, compute the exact `[startCol, endCol]` character range for each shortcut item.
+- Clicking inside an item's bounding box executes that item's key action immediately.
