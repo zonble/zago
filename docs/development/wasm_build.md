@@ -1,22 +1,35 @@
 # WebAssembly Build & Web Deployment (`wasm_build.md`)
 
-This guide covers building `zago` for WebAssembly (`wasm32-unknown-wasi`), running the local web terminal development server, and deploying to GitHub Pages.
+This guide covers building `zago` for WebAssembly, running the local web terminal development server, and deploying to GitHub Pages.
+
+The WebAssembly executable target is `zagoweb` (defined in `Package.swift`). The
+build script copies the resulting binary to `web/public/zago.wasm`, which is the
+filename loaded by the browser application.
 
 ---
 
 ## 1. Prerequisites & Toolchain Setup
 
-### Swift 6.3+ WebAssembly SDK
-Swift 6.3 includes official support for Swift SDKs targeting WebAssembly (`wasm32-unknown-wasip1`).
+### Local Swift WebAssembly SDK
+The local build path currently requires the exact Swift SDK identifier
+`6.3-RELEASE-wasm32-unknown-wasip1`. The version is pinned in
+`build-wasm.sh` so that machines with multiple Wasm SDKs do not build with
+different toolchains.
 
 To install the official Swift Wasm 6.3 SDK:
 ```bash
 # Check installed SDKs
 swift sdk list
 
-# Install Swift SDK for WebAssembly (Swift 6.3)
+# Install the pinned Swift 6.3 WebAssembly SDK
 swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.3-RELEASE/swift-wasm-6.3-RELEASE-wasm32-unknown-wasip1.artifactbundle.zip --checksum 6704d137e532f1ac31eafedd80658f9ee61239f2b6291216a02da32361ea9dcb
 ```
+
+The repository also provides a Docker fallback for CI and environments where
+the local SDK is unavailable. The Docker image currently uses Swift 6.0 and
+the `wasm32-unknown-wasi` SDK; it is a separate, legacy toolchain and should
+not be mixed with the local Swift 6.3 SDK in the same build environment. See
+`Dockerfile_wasm` for the pinned image and SDK checksum.
 
 ### Node.js & Package Manager
 Ensure Node.js (>= 18.0.0) is installed for the `web/` frontend tooling.
@@ -39,17 +52,23 @@ chmod +x build-wasm.sh
 ./build-wasm.sh
 ```
 
-### Manual Build Command
-Under the hood, `build-wasm.sh` runs:
+### Manual Build Command (local SDK)
+For the local SDK path, the equivalent command is:
 ```bash
 swift build \
   --configuration release \
-  --swift-sdk wasm32-unknown-wasip1 \
-  --product zago-wasm
+  --swift-sdk 6.3-RELEASE-wasm32-unknown-wasip1 \
+  --product zagoweb
 
 # Output binary location:
-# .build/wasm32-unknown-wasip1/release/zago-wasm.wasm -> web/public/zago.wasm
+# .build/6.3-RELEASE-wasm32-unknown-wasip1/release/zagoweb.wasm
 ```
+
+In normal development, prefer `./build-wasm.sh`. It first uses an already
+built `zago-wasm-builder` Docker image when available; otherwise it uses the
+pinned local SDK. It then copies the release binary to
+`web/public/zago.wasm` and optionally runs `wasm-opt -O3` (or the npm fallback)
+to reduce its size.
 
 ---
 
@@ -80,7 +99,9 @@ web/
 └── src/
     ├── main.ts             # Initializes xterm.js, UI toolbar, and Worker bridge
     ├── worker.ts           # Web Worker running WASI shim and zago.wasm
-    ├── storage.ts          # IndexedDB / LocalStorage workspace manager
+    ├── vfs.ts              # IndexedDB-backed WASI virtual file system
+    ├── shared-stdin.ts     # SharedArrayBuffer stdin ring buffer
+    ├── i18n.ts             # Browser locale detection and translations
     └── styles.css          # Modern dark-mode styling for terminal & UI
 ```
 
@@ -88,7 +109,11 @@ web/
 
 ## 5. Automated CI/CD (GitHub Pages)
 
-The GitHub Actions workflow at `.github/workflows/deploy-pages.yml` automatically builds and publishes the web version on push to `main`:
+The GitHub Actions workflow at `.github/workflows/deploy-pages.yml` builds and
+publishes the web version on push to `main`. CI deliberately builds the
+`zago-wasm-builder` image first, so the GitHub runner follows the Docker Swift
+6.0/WASI path from `Dockerfile_wasm` rather than relying on a preinstalled
+local SDK:
 
 ```yaml
 name: Deploy Web Edition to GitHub Pages
@@ -116,13 +141,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up Swift with Wasm SDK
-        uses: bytecodealliance/actions/setup-wasmtime@v1
-        with:
-          version: "v24.0.0"
-
-      - name: Install Swift & Wasm SDK
+      - name: Build Swift Wasm Docker Image
         run: |
+          docker build -t zago-wasm-builder -f Dockerfile_wasm .
+
+      - name: Build WebAssembly Binary
+        run: |
+          chmod +x build-wasm.sh
           ./build-wasm.sh
 
       - name: Setup Node.js
@@ -135,7 +160,7 @@ jobs:
       - name: Build Web App
         run: |
           cd web
-          npm ci
+          npm install
           npm run build
 
       - name: Setup Pages
