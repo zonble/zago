@@ -1,4 +1,5 @@
 import Foundation
+import TextMetrics
 
 /// Represents a detected rectangular cell boundary within a table.
 public struct TableCell: Equatable, Codable, Sendable {
@@ -68,9 +69,12 @@ public final class TableCellDetector: Sendable {
             return nil
         }
 
+        let leftVCol = currentLine.visualColumn(forCharacterOffset: leftCol)
+        let rightVCol = currentLine.visualColumn(forCharacterOffset: rightCol)
+
         // The current row can itself be the top or bottom frame. It must not
         // be treated as a cell just because the scan below finds another row.
-        if isHorizontalBorderLine(chars, leftCol: leftCol, rightCol: rightCol) {
+        if isHorizontalBorderLine(currentLine, leftVCol: leftVCol, rightVCol: rightVCol) {
             return nil
         }
 
@@ -78,23 +82,23 @@ public final class TableCellDetector: Sendable {
         var minLine: Int? = nil
         var lUp = cursorLine - 1
         while lUp >= 0 {
-            let lChars = Array(lines[lUp])
-            if isHorizontalBorderLine(lChars, leftCol: leftCol, rightCol: rightCol) {
+            let lStr = lines[lUp]
+            if isHorizontalBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 minLine = lUp
                 break
             }
-            if lUp == cursorLine - 1 && leftCol < lChars.count && lChars[leftCol] == "|" {
+            if lUp == cursorLine - 1 && isMarkdownPipeHeader(lStr, leftVCol: leftVCol) {
                 // Markdown table header row above
-            } else if !hasVerticalBorder(lChars, col: leftCol) {
+            } else if !hasVerticalBorder(lStr, vCol: leftVCol) {
                 break
             }
             lUp -= 1
         }
         if minLine == nil && cursorLine > 0 {
-            let prevChars = Array(lines[cursorLine - 1])
-            if isHorizontalBorderLine(prevChars, leftCol: leftCol, rightCol: rightCol) {
+            let prevStr = lines[cursorLine - 1]
+            if isHorizontalBorderLine(prevStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 minLine = cursorLine - 1
-            } else if leftCol < prevChars.count && prevChars[leftCol] == "|" {
+            } else if isMarkdownPipeHeader(prevStr, leftVCol: leftVCol) {
                 minLine = cursorLine - 1
             }
         }
@@ -104,12 +108,12 @@ public final class TableCellDetector: Sendable {
         var maxLine: Int? = nil
         var lDown = cursorLine + 1
         while lDown < lines.count {
-            let lChars = Array(lines[lDown])
-            if isHorizontalBorderLine(lChars, leftCol: leftCol, rightCol: rightCol) {
+            let lStr = lines[lDown]
+            if isHorizontalBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 maxLine = lDown
                 break
             }
-            if !hasVerticalBorder(lChars, col: leftCol) {
+            if !hasVerticalBorder(lStr, vCol: leftVCol) {
                 maxLine = lDown
                 break
             }
@@ -124,14 +128,18 @@ public final class TableCellDetector: Sendable {
         // content. This also handles a cursor rendered over a border glyph.
         guard cursorLine > topLine && cursorLine < bottomLine else { return nil }
 
-        let detectedStyle = detectStyle(lines: lines, topLine: topLine, leftCol: leftCol)
-        return TableCell(minLine: topLine, maxLine: bottomLine, minCol: leftCol, maxCol: rightCol, style: detectedStyle)
+        let detectedStyle = detectStyle(lines: lines, topLine: topLine, leftVCol: leftVCol)
+        return TableCell(minLine: topLine, maxLine: bottomLine, minCol: leftVCol, maxCol: rightVCol, style: detectedStyle)
     }
 
-    private func isHorizontalBorderLine(_ chars: [Character], leftCol: Int, rightCol: Int) -> Bool {
-        guard !chars.isEmpty else { return false }
-        let checkStart = min(max(0, leftCol + 1), chars.count - 1)
-        let checkEnd = min(max(0, rightCol - 1), chars.count - 1)
+    private func isHorizontalBorderLine(_ line: String, leftVCol: Int, rightVCol: Int) -> Bool {
+        guard !line.isEmpty else { return false }
+        let chars = Array(line)
+        let leftCharIdx = line.characterOffset(forVisualColumn: leftVCol)
+        let rightCharIdx = line.characterOffset(forVisualColumn: rightVCol)
+
+        let checkStart = min(max(0, leftCharIdx + 1), chars.count - 1)
+        let checkEnd = min(max(0, rightCharIdx - 1), chars.count - 1)
         if checkStart > checkEnd { return false }
 
         var countBorder = 0
@@ -143,16 +151,28 @@ public final class TableCellDetector: Sendable {
         return countBorder >= max(1, (checkEnd - checkStart + 1) / 2)
     }
 
-    private func hasVerticalBorder(_ chars: [Character], col: Int) -> Bool {
-        guard col >= 0 && col < chars.count else { return false }
-        return BorderCharacterSet.verticalBoundaryChars.contains(chars[col])
+    private func hasVerticalBorder(_ line: String, vCol: Int) -> Bool {
+        let charIdx = line.characterOffset(forVisualColumn: vCol)
+        let chars = Array(line)
+        guard charIdx >= 0 && charIdx < chars.count else { return false }
+        guard line.visualColumn(forCharacterOffset: charIdx) == vCol else { return false }
+        return BorderCharacterSet.verticalBoundaryChars.contains(chars[charIdx])
     }
 
-    private func detectStyle(lines: [String], topLine: Int, leftCol: Int) -> BorderStyle {
+    private func isMarkdownPipeHeader(_ line: String, leftVCol: Int) -> Bool {
+        let charIdx = line.characterOffset(forVisualColumn: leftVCol)
+        let chars = Array(line)
+        guard charIdx >= 0 && charIdx < chars.count else { return false }
+        return chars[charIdx] == "|"
+    }
+
+    private func detectStyle(lines: [String], topLine: Int, leftVCol: Int) -> BorderStyle {
         guard topLine < lines.count else { return .single }
-        let chars = Array(lines[topLine])
-        guard leftCol < chars.count else { return .single }
-        let ch = chars[leftCol]
+        let line = lines[topLine]
+        let chars = Array(line)
+        let leftIdx = line.characterOffset(forVisualColumn: leftVCol)
+        guard leftIdx < chars.count else { return .single }
+        let ch = chars[leftIdx]
         if ch == "┏" || ch == "━" || ch == "┳" || ch == "┃" {
             return .heavy
         } else if ch == "║" || ch == "═" || ch == "╔" || ch == "╦" {
@@ -175,3 +195,4 @@ public final class TableCellDetector: Sendable {
         return .single
     }
 }
+

@@ -985,3 +985,58 @@ import Testing
     editor.processKey(.ctrl("u"))
     #expect(editor.buffer.lines[1].contains("Alias"))
 }
+
+@Test func testTableModeToggleWithCJKInDiagram() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  x          │  終點  │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 23
+
+    // Press F7 to toggle Table Mode
+    editor.processKey(.f7)
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell != nil)
+    #expect(editor.currentTableCell?.minLine == 0)
+    #expect(editor.currentTableCell?.maxLine == 4)
+    #expect(editor.currentTableCell?.minCol == 20)
+    #expect(editor.currentTableCell?.maxCol == 29)
+}
+
+@Test func testTableModeConnectedBoxesWithCJK() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  │          │  終點  │",
+        "│        ├──────────┤        │",
+        "└────────┘          └────────┘",
+    ]
+    // Cursor at line 2 on '點' of '終點' (col 22)
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 22
+
+    // Press F7 to toggle Table Mode
+    editor.processKey(.f7)
+    #expect(editor.isTableModeActive == true)
+    #expect(editor.currentTableCell != nil)
+    #expect(editor.currentTableCell?.minLine == 0)
+    #expect(editor.currentTableCell?.maxLine == 4)
+    #expect(editor.currentTableCell?.minCol == 20)
+    #expect(editor.currentTableCell?.maxCol == 29)
+
+    // Move Up to line 1
+    editor.processKey(.arrowUp)
+    #expect(editor.buffer.lineIndex == 1)
+    let (left1, right1) = TableModeController.findCellHorizontalBorders(
+        in: editor.buffer.lines[1], nearCol: editor.buffer.columnIndex, cell: editor.currentTableCell!)
+    #expect(left1 == 20)
+    #expect(right1 == 29)
+}
+
+

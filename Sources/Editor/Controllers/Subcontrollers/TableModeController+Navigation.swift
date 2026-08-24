@@ -250,15 +250,19 @@ extension TableModeController {
     ) {
         let chars = Array(line)
         guard !chars.isEmpty else { return (0, 0) }
-        if cell.minCol >= 0, cell.maxCol > cell.minCol, cell.maxCol < chars.count,
-            BorderCharacterSet.verticalBoundaryChars.contains(chars[cell.minCol]),
-            BorderCharacterSet.verticalBoundaryChars.contains(chars[cell.maxCol])
+
+        let leftOffset = line.characterOffset(forVisualColumn: cell.minCol)
+        let rightOffset = line.characterOffset(forVisualColumn: cell.maxCol)
+
+        if leftOffset < chars.count, rightOffset < chars.count,
+            BorderCharacterSet.verticalBoundaryChars.contains(chars[leftOffset]),
+            BorderCharacterSet.verticalBoundaryChars.contains(chars[rightOffset])
         {
-            return (cell.minCol, cell.maxCol)
+            return (leftOffset, rightOffset)
         }
 
-        let targetCol = max(cell.minCol, min(nearCol, cell.maxCol))
-        var startSearch = max(0, min(targetCol, chars.count - 1))
+        let targetCol = max(0, min(nearCol, chars.count - 1))
+        var startSearch = targetCol
         if startSearch > 0 && BorderCharacterSet.verticalBoundaryChars.contains(chars[startSearch]) {
             startSearch -= 1
         }
@@ -302,8 +306,11 @@ extension TableModeController {
         guard lineIndex >= cell.innerMinLine && lineIndex <= cell.innerMaxLine else { return nil }
         guard lineIndex >= 0 && lineIndex < editor.buffer.lines.count else { return nil }
         let line = editor.buffer.lines[lineIndex]
-        let start = max(0, min(cell.minCol + 1, line.count))
-        let end = max(start, min(cell.maxCol, line.count))
+        let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+            in: line, nearCol: 0, cell: cell)
+        let start = leftBorder + 1
+        let end = rightBorder
+        guard start <= end else { return nil }
         return (start: start, end: end)
     }
 
@@ -345,10 +352,12 @@ extension TableModeController {
         guard let editor else { return nil }
         guard targetLine >= 0 && targetLine < editor.buffer.lines.count else { return nil }
 
-        let chars = Array(editor.buffer.lines[targetLine])
-        guard cell.maxCol + 1 < chars.count else { return nil }
+        let line = editor.buffer.lines[targetLine]
+        let chars = Array(line)
+        let startCol = line.characterOffset(forVisualColumn: cell.maxCol + 1)
+        guard startCol < chars.count else { return nil }
 
-        for col in (cell.maxCol + 1)..<chars.count {
+        for col in startCol..<chars.count {
             guard let candidate = detector.detectCell(in: editor.buffer.lines, line: targetLine, col: col) else {
                 continue
             }
@@ -363,9 +372,11 @@ extension TableModeController {
     func navigateRightAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
         let detector = TableCellDetector()
+        let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
+        let targetCol = currentLine.characterOffset(forVisualColumn: cell.maxCol + 1)
         guard
             let rightCell = detector.detectCell(
-                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.maxCol + 1),
+                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: targetCol),
             rightCell.minLine == cell.minLine,
             rightCell.maxLine == cell.maxLine,
             rightCell.minCol == cell.maxCol
@@ -377,9 +388,11 @@ extension TableModeController {
     func navigateLeftAdjacentTableCell() {
         guard let editor, let cell = editor.currentTableCell, cell.minCol > 0 else { return }
         let detector = TableCellDetector()
+        let currentLine = editor.buffer.lines[editor.buffer.lineIndex]
+        let targetCol = currentLine.characterOffset(forVisualColumn: max(0, cell.minCol - 1))
         guard
             let leftCell = detector.detectCell(
-                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: cell.minCol - 1),
+                in: editor.buffer.lines, line: editor.buffer.lineIndex, col: targetCol),
             leftCell.minLine == cell.minLine,
             leftCell.maxLine == cell.maxLine,
             leftCell.maxCol == cell.minCol
@@ -494,9 +507,11 @@ extension TableModeController {
         let detector = TableCellDetector()
 
         while start > 0 {
-            if detector.detectCell(in: lines, line: start - 1, col: cell.innerMinCol) != nil {
+            let lineStr = lines[start - 1]
+            let col = lineStr.characterOffset(forVisualColumn: cell.minCol + 1)
+            if detector.detectCell(in: lines, line: start - 1, col: col) != nil {
                 start -= 1
-            } else if isAnyBorderLine(lines[start - 1], colLeft: cell.minCol) {
+            } else if isAnyBorderLine(lineStr, colLeft: cell.minCol) {
                 start -= 1
             } else {
                 break
@@ -504,9 +519,11 @@ extension TableModeController {
         }
 
         while end < lines.count - 1 {
-            if detector.detectCell(in: lines, line: end + 1, col: cell.innerMinCol) != nil {
+            let lineStr = lines[end + 1]
+            let col = lineStr.characterOffset(forVisualColumn: cell.minCol + 1)
+            if detector.detectCell(in: lines, line: end + 1, col: col) != nil {
                 end += 1
-            } else if isAnyBorderLine(lines[end + 1], colLeft: cell.minCol) {
+            } else if isAnyBorderLine(lineStr, colLeft: cell.minCol) {
                 end += 1
             } else {
                 break
@@ -529,7 +546,9 @@ extension TableModeController {
 
     func isAnyBorderLine(_ line: String, colLeft: Int) -> Bool {
         let chars = Array(line)
-        guard colLeft < chars.count else { return false }
-        return BorderCharacterSet.verticalBoundaryChars.contains(chars[colLeft])
+        let idx = line.characterOffset(forVisualColumn: colLeft)
+        guard idx < chars.count && line.visualColumn(forCharacterOffset: idx) == colLeft else { return false }
+        return BorderCharacterSet.verticalBoundaryChars.contains(chars[idx])
     }
 }
+

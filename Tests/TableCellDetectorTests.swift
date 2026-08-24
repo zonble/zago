@@ -86,3 +86,51 @@ import Testing
     #expect(cell?.maxLine == 3)
     #expect(cell?.style == .single)
 }
+
+@Test func testTableCellDetectorWithCJKInDiagram() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  x          │  終點  │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+
+    // Cursor at line 1, where 'z' was (col 23)
+    let cell1 = detector.detectCell(in: lines, line: 1, col: 23)
+    #expect(cell1 != nil)
+    #expect(cell1?.minLine == 0)
+    #expect(cell1?.maxLine == 4)
+    #expect(cell1?.minCol == 20)
+    #expect(cell1?.maxCol == 29)
+
+    // Cursor at line 2 inside right box (col 21, '終')
+    let cell2 = detector.detectCell(in: lines, line: 2, col: 21)
+    #expect(cell2 != nil)
+    #expect(cell2?.minLine == 0)
+    #expect(cell2?.maxLine == 4)
+    #expect(cell2?.minCol == 20)
+    #expect(cell2?.maxCol == 29)
+}
+
+@Test func testTableCellDetectorConnectedBoxWithCJK() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  │          │  終點  │",
+        "│        ├──────────┤        │",
+        "└────────┘          └────────┘",
+    ]
+
+    // Cursor at line 2 on '點' of '終點' (character col 22)
+    let cell = detector.detectCell(in: lines, line: 2, col: 22)
+    #expect(cell != nil)
+    #expect(cell?.minLine == 0)
+    #expect(cell?.maxLine == 4)
+    #expect(cell?.minCol == 20)
+    #expect(cell?.maxCol == 29)
+}
+
+
