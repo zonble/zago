@@ -191,24 +191,12 @@ extension Editor {
 
         switch mouseEvent.action {
         case .scrollUp:
-            if isCanvasModeActive {
-                topVLineIndex = max(0, topVLineIndex - 3)
-            } else {
-                for _ in 0..<3 {
-                    if topVLineIndex > 0 {
-                        topVLineIndex -= 1
-                    }
-                }
-            }
+            topVLineIndex = max(0, topVLineIndex - 3)
 
         case .scrollDown:
-            if isCanvasModeActive {
-                topVLineIndex += 3
-            } else {
-                for _ in 0..<3 {
-                    topVLineIndex += 1
-                }
-            }
+            let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+            let maxTop = max(0, virtualLines.count - 1)
+            topVLineIndex = min(maxTop, topVLineIndex + 3)
 
         case .press(.right):
             if isCanvasModeActive {

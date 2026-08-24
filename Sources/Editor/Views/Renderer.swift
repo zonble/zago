@@ -624,9 +624,26 @@ final class Renderer {
                         tabSize: editor.displayConfig.tabSize)
             }
 
-            let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
-            let screenCol = gutterWidth + cursorDisplayWidth + 1
-            output += "\u{1B}[\(screenRow);\(screenCol)H"
+            let topMargin = 1 + (showRuler ? 1 : 0)
+            let mainAreaHeight = max(1, rows - topMargin - 2)
+            let isCursorOffScreen: Bool
+            if editor.isCanvasModeActive {
+                let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
+                let cursorColInViewport = editor.canvasVisualColumn - editor.canvasHorizontalOffset
+                isCursorOffScreen = cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
+                    || cursorColInViewport < 0 || cursorColInViewport >= max(0, cols - gutterWidth)
+            } else {
+                let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
+                isCursorOffScreen = cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
+            }
+
+            if isCursorOffScreen {
+                output += "\u{1B}[\(rows);\(cols)H"
+            } else {
+                let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
+                let screenCol = gutterWidth + cursorDisplayWidth + 1
+                output += "\u{1B}[\(screenRow);\(screenCol)H"
+            }
         } else {
             let promptRow = rows - 2
             let promptCol = max(1, min(cols, renderedPrompt.cursorCol))

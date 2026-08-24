@@ -4,6 +4,9 @@ extension Editor {
     /// Central key input processing entrypoint for the Editor event loop.
     func processKey(_ key: Key) {
         defer {
+            if !menuBarController.isActive && !promptController.isActive {
+                ensureCursorVisible()
+            }
             if !proposalQueue.isEmpty {
                 renderer.invalidateScreenCache()
             }

@@ -21,11 +21,22 @@ extension Editor {
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
         let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
-        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
+        clampViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
 
         let output = renderer.renderDiff(editor: self, geometry: geometry, precomputedVirtualLines: virtualLines)
         terminal.write(output)
         fflush(nil)
+    }
+
+    /// Clamps topVLineIndex and canvasHorizontalOffset within valid buffer bounds without forcibly moving to cursor.
+    func clampViewport(mainAreaHeight: Int, textWidth: Int, virtualLines: [VirtualLine]? = nil) {
+        updateGitDiffIfNeeded()
+        let vLines = virtualLines ?? prepareVirtualLines(textWidth: textWidth)
+        let maxTop = max(0, vLines.count - 1)
+        topVLineIndex = max(0, min(topVLineIndex, maxTop))
+        if isCanvasModeActive {
+            canvasHorizontalOffset = max(0, canvasHorizontalOffset)
+        }
     }
 
     /// Adjusts topVLineIndex and canvasHorizontalOffset viewport scrolling bounds based on terminal dimensions.
@@ -58,6 +69,14 @@ extension Editor {
                 topVLineIndex = cursorVLineIdx - mainAreaHeight + 1
             }
         }
+    }
+
+    /// Snaps viewport back to encompass the active cursor.
+    func ensureCursorVisible() {
+        let (rows, cols) = terminal.getWindowSize()
+        let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
+        let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
     }
 
     /// Returns the VirtualLine structure containing current cursor.

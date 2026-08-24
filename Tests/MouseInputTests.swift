@@ -260,4 +260,63 @@ import Testing
         editor.handleMouseEvent(MouseEvent(action: .release(.left), col: 5, row: 0))
         #expect(editor.activeBoundaryDragState == nil)
     }
+
+    @Test func testMouseWheelScrollingDecoupledFromCursor() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0) content" }
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.topVLineIndex = 0
+
+        // Scroll down 4 times (12 lines)
+        for _ in 0..<4 {
+            editor.handleMouseEvent(MouseEvent(action: .scrollDown, col: 10, row: 10))
+        }
+
+        #expect(editor.topVLineIndex == 12)
+        #expect(editor.buffer.lineIndex == 0)  // Cursor remains at line 0!
+
+        // Typing a character immediately snaps viewport back to cursor
+        editor.processKey(.char("a"))
+        #expect(editor.topVLineIndex == 0)
+        #expect(editor.buffer.lines[0].starts(with: "aLine 1"))
+    }
+
+    @Test func testArrowKeysRestoreCursorFocusAfterScroll() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0) content" }
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.buffer.lineIndex = 50
+        editor.buffer.columnIndex = 0
+        editor.topVLineIndex = 45
+
+        // Scroll up to top
+        for _ in 0..<20 {
+            editor.handleMouseEvent(MouseEvent(action: .scrollUp, col: 10, row: 10))
+        }
+        #expect(editor.topVLineIndex == 0)
+        #expect(editor.buffer.lineIndex == 50)  // Cursor is off-screen
+
+        // Press down arrow -> moves cursor to 51 and restores viewport
+        editor.processKey(.arrowDown)
+        #expect(editor.buffer.lineIndex == 51)
+        #expect(editor.topVLineIndex > 20)  // Snapped back into view
+    }
+
+    @Test func testOffScreenCursorRendersAtBottomRight() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0) content" }
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.buffer.lineIndex = 0
+        editor.topVLineIndex = 40  // Cursor is far above visible viewport
+
+        let renderer = Renderer()
+        let output = renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(output.contains("\u{1B}[24;80H"))  // Hardware cursor parked at bottom-right
+    }
 }
+

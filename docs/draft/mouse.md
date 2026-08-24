@@ -280,3 +280,27 @@ When holding the mouse button down at or beyond the screen boundaries without mo
 2. **State Lifecycle**:
    - **Activated**: Entering boundary zones during `.drag(.left)`.
    - **Deactivated**: Releasing the button (`.release(.left)`), dragging back inside the normal text area, or pressing any key. Returns to zero-overhead blocking I/O immediately.
+
+---
+
+## 8. Decoupled Mouse Wheel Scrolling & Cursor Focus Restoral
+
+### 8.1 Decoupled Viewport Scrolling
+- **Independent Scrolling**: Using the mouse scroll wheel (`scrollUp` / `scrollDown`) scrolls the viewport independently from the editing cursor without moving or dragging the cursor position.
+- **Scroll Limits**:
+  - **Top Limit**: `topVLineIndex = 0` (line 1 at the top of the viewport).
+  - **Bottom Limit**: `topVLineIndex = max(0, virtualLines.count - 1)` (the bottom-most line appears at the top of the viewport).
+- **Step Size**: Each scroll tick moves the viewport by 3 virtual lines (or 3 canvas rows in Canvas Mode).
+
+### 8.2 Off-Screen Cursor Hardware Positioning
+- When the logical cursor is outside the visible viewport lines (`cursorVLineIdx < topVLineIndex` or `cursorVLineIdx >= topVLineIndex + mainAreaHeight`, or off-screen horizontally in Canvas Mode):
+  - The terminal hardware cursor is parked at the bottom-right corner of the terminal screen `\e[{rows};{cols}H`.
+  - The status bar continues to display the true logical cursor line and column coordinates (`L:150 C:10`) without artificial messages.
+- When the cursor is scrolled back into the visible viewport, the hardware cursor is rendered at its exact character position in the text flow.
+
+### 8.3 Auto-Focus & Viewport Snapback Triggers
+The viewport automatically snaps back to encompass the cursor whenever the user performs any keyboard interaction:
+1. **Arrow Navigation Keys**: <kbd>Up</kbd>, <kbd>Down</kbd>, <kbd>Left</kbd>, <kbd>Right</kbd>, <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>PageUp</kbd>, <kbd>PageDown</kbd>, <kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Ctrl</kbd>+<kbd>E</kbd>, etc.
+2. **Text Input & Editing**: Typing printable characters, <kbd>Backspace</kbd>, <kbd>Delete</kbd>, <kbd>Enter</kbd>, <kbd>Tab</kbd>, indentation, paste clipboard text, undo/redo.
+3. **Commands & Search**: Go to line, find next, replace, format.
+4. **Mouse Clicks**: Clicking anywhere in the text area immediately moves the cursor to the clicked location, bringing the cursor into view.
