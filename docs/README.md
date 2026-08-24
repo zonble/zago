@@ -41,6 +41,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Cross-platform architecture](architecture/cross_platform.md): terminal input, pipe handling, file I/O locks, encoding gotchas, and display width calculations.
 - [Windows console I/O & encoding](architecture/windows_console.md): Windows Console Subsystem, code page handling, and Win32 `ReadConsoleW` API integration.
 - [WebAssembly & Web Terminal architecture](architecture/wasm_web_architecture.md): Web Worker execution model, WASI shim, xterm.js integration, and MEMFS/IndexedDB persistence.
+- [Web Interface & Mobile Responsive Architecture](architecture/zago_web.md): Two-column desktop split, mobile responsive tabs, virtual key bar, WASM streaming progress loader, and viewport adaptation.
 - [Editor wakeup and external request dispatch](architecture/editor_wakeup.md): how IPC worker threads wake the editor loop without mutating editor state directly.
 - [Threading model & concurrency architecture](architecture/threading_model.md): single-writer editor loop, IPC worker threads, wakeup bridges, and shutdown safety.
 
