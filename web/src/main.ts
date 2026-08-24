@@ -1,6 +1,9 @@
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
+import { Unicode11Addon } from "@xterm/addon-unicode11";
+import { WebglAddon } from "@xterm/addon-webgl";
+import { CanvasAddon } from "@xterm/addon-canvas";
 import "@xterm/xterm/css/xterm.css";
 import { VirtualOSStorage } from "./vfs";
 import { SharedStdin } from "./shared-stdin";
@@ -59,8 +62,28 @@ async function main() {
   term.loadAddon(fitAddon);
   term.loadAddon(new WebLinksAddon());
 
+  const unicode11Addon = new Unicode11Addon();
+  term.loadAddon(unicode11Addon);
+  term.unicode.activeVersion = "11";
+
   term.open(container);
   fitAddon.fit();
+
+  // Try WebGL renderer first for pixel-grid clipped glyphs, fallback to Canvas, then DOM
+  try {
+    const webglAddon = new WebglAddon();
+    webglAddon.onContextLoss(() => {
+      webglAddon.dispose();
+      try {
+        term.loadAddon(new CanvasAddon());
+      } catch (_) {}
+    });
+    term.loadAddon(webglAddon);
+  } catch (_) {
+    try {
+      term.loadAddon(new CanvasAddon());
+    } catch (_) {}
+  }
 
   // Progress UI elements
   const loadingOverlay = document.getElementById("wasm-loading-overlay");
