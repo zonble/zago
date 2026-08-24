@@ -110,12 +110,85 @@ async function main() {
     }
   };
 
+  const WASM_CACHE_NAME = "zago-wasm-cache-v1";
+
+  async function getCachedWasm(url: string): Promise<ArrayBuffer | null> {
+    if (typeof caches === "undefined") return null;
+    try {
+      const cache = await caches.open(WASM_CACHE_NAME);
+      const cachedResponse = await cache.match(url);
+      if (!cachedResponse) return null;
+
+      // Perform a lightweight HEAD check to verify if the server's binary has changed
+      try {
+        const headResponse = await fetch(url, { method: "HEAD" });
+        if (headResponse.ok) {
+          const cachedEtag = cachedResponse.headers.get("ETag");
+          const serverEtag = headResponse.headers.get("ETag");
+          const cachedLastMod = cachedResponse.headers.get("Last-Modified");
+          const serverLastMod = headResponse.headers.get("Last-Modified");
+          const cachedLength = cachedResponse.headers.get("Content-Length");
+          const serverLength = headResponse.headers.get("Content-Length");
+
+          // If ETag exists and differs -> cache is stale
+          if (cachedEtag && serverEtag && cachedEtag !== serverEtag) {
+            return null;
+          }
+          // If Last-Modified exists and differs -> cache is stale
+          if (cachedLastMod && serverLastMod && cachedLastMod !== serverLastMod) {
+            return null;
+          }
+          // If Content-Length exists and differs -> cache is stale
+          if (cachedLength && serverLength && cachedLength !== serverLength) {
+            return null;
+          }
+        }
+      } catch {
+        // Offline / network failure: fallback to using cached copy directly
+      }
+
+      return await cachedResponse.arrayBuffer();
+    } catch (err) {
+      console.warn("[WASM Cache Check Failed]", err);
+      return null;
+    }
+  }
+
+  async function saveWasmToCache(url: string, response: Response, buffer: ArrayBuffer): Promise<void> {
+    if (typeof caches === "undefined") return;
+    try {
+      const cache = await caches.open(WASM_CACHE_NAME);
+      const headers = new Headers(response.headers);
+      if (!headers.has("Content-Length")) {
+        headers.set("Content-Length", String(buffer.byteLength));
+      }
+      const responseToCache = new Response(buffer, {
+        status: 200,
+        statusText: "OK",
+        headers,
+      });
+      await cache.put(url, responseToCache);
+    } catch (err) {
+      console.warn("[WASM Cache Store Failed]", err);
+    }
+  }
+
   async function fetchWasmWithProgress(url: string): Promise<ArrayBuffer> {
     if (cachedWasmBytes) {
       return cachedWasmBytes;
     }
 
-    showLoading("Downloading zago.wasm...", "Connecting to server...", 5);
+    // 1. Try retrieving from persistent browser CacheStorage
+    showLoading(t.loadingStatusInit, "Checking browser cache...", 5);
+    const cachedBuffer = await getCachedWasm(url);
+    if (cachedBuffer) {
+      showLoading(t.loadingStatusCached, t.loadingDetailCached, 100);
+      cachedWasmBytes = cachedBuffer;
+      return cachedBuffer;
+    }
+
+    // 2. Fetch from network with download progress
+    showLoading(t.loadingStatusInit, "Connecting to server...", 10);
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -134,6 +207,7 @@ async function main() {
     if (!response.body) {
       const buffer = await response.arrayBuffer();
       cachedWasmBytes = buffer;
+      await saveWasmToCache(url, response, buffer);
       return buffer;
     }
 
@@ -173,6 +247,7 @@ async function main() {
     }
 
     cachedWasmBytes = combined.buffer;
+    await saveWasmToCache(url, response, cachedWasmBytes);
     return cachedWasmBytes;
   }
 

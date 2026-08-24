@@ -34,6 +34,8 @@ export const en = {
   loadingTitle: "Starting zago Virtual OS",
   loadingStatusInit: "Downloading zago.wasm...",
   loadingDetailInit: "Preparing WebAssembly runtime",
+  loadingStatusCached: "Loading zago.wasm from browser cache...",
+  loadingDetailCached: "Instant startup from cache",
   unsupportedTitle: "Browser Not Supported",
   unsupportedMsg:
     "In-app browsers (such as X/Twitter, LINE, or Facebook) or restricted browsers do not support WebAssembly cross-origin isolation (SharedArrayBuffer).",
