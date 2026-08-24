@@ -24,7 +24,7 @@ let options = EditorOptions(
     showLineNumbers: true,
     showSubLineNumbers: false,
     ipcEnabled: false,
-    language: .en,
+    language: Language.detectSystemLanguage(),
     spellLanguage: nil,
     initialLine: 1,
     initialColumn: 1,

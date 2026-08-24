@@ -247,7 +247,7 @@ async function main() {
       // Transfer wasm buffer copy to worker
       worker.postMessage({
         type: "init",
-        data: { wasmBytes: wasmBytes.slice(0), targetFile },
+        data: { wasmBytes: wasmBytes.slice(0), targetFile, lang: currentLang },
         nodes,
         sharedBuffer: sharedStdin.sharedBuffer,
       });

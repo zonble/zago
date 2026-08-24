@@ -51,7 +51,8 @@ self.onmessage = async (event: MessageEvent) => {
       await startWasm(
         data?.wasmBytes || data?.wasmUrl || "./zago.wasm",
         nodes || [],
-        data?.targetFile || "/workspace/welcome.md"
+        data?.targetFile || "/workspace/welcome.md",
+        data?.lang || "en"
       );
       break;
 
@@ -75,7 +76,8 @@ async function flushVFSToIndexedDB() {
 async function startWasm(
   wasmSource: string | ArrayBuffer,
   initialNodes: VFSNode[],
-  targetFile: string = "/workspace/welcome.md"
+  targetFile: string = "/workspace/welcome.md",
+  lang: string = "en"
 ) {
   if (!sharedStdin) {
     sharedStdin = new SharedStdin();
@@ -101,6 +103,8 @@ async function startWasm(
     new PreopenDirectory(".", workspaceDir),
   ];
 
+  const lcAll = lang === "zh-TW" ? "zh_TW.UTF-8" : "en_US.UTF-8";
+
   const wasiInstance = new WASI(
     ["zago", targetFile],
     [
@@ -108,7 +112,9 @@ async function startWasm(
       "COLUMNS=80",
       "TERM=xterm-256color",
       "COLORTERM=truecolor",
-      "LC_ALL=en_US.UTF-8",
+      `LC_ALL=${lcAll}`,
+      `LANG=${lcAll}`,
+      `LANGUAGE=${lcAll}`,
       "HOME=/workspace",
     ],
     fds,
