@@ -39,11 +39,11 @@ public final class TableCellDetector: Sendable {
         let currentLine = lines[cursorLine]
         let chars = Array(currentLine)
 
-        // Scan Left for vertical border
+        // Scan Left for vertical border (must face right / open cell)
         var minCol: Int? = nil
         var c = cursorCol - 1
         while c >= 0 {
-            if c < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[c]) {
+            if c < chars.count && BorderCharacterSet.leftBoundaryChars.contains(chars[c]) {
                 minCol = c
                 break
             }
@@ -51,11 +51,11 @@ public final class TableCellDetector: Sendable {
         }
         guard let leftCol = minCol else { return nil }
 
-        // Scan Right for vertical border
+        // Scan Right for vertical border (must face left / close cell)
         var maxCol: Int? = nil
         var cRight = max(0, cursorCol)
         while cRight < chars.count {
-            if BorderCharacterSet.verticalBoundaryChars.contains(chars[cRight]) {
+            if BorderCharacterSet.rightBoundaryChars.contains(chars[cRight]) {
                 maxCol = cRight
                 break
             }
@@ -83,20 +83,20 @@ public final class TableCellDetector: Sendable {
         var lUp = cursorLine - 1
         while lUp >= 0 {
             let lStr = lines[lUp]
-            if isHorizontalBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
+            if isTopBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 minLine = lUp
                 break
             }
             if lUp == cursorLine - 1 && isMarkdownPipeHeader(lStr, leftVCol: leftVCol) {
                 // Markdown table header row above
-            } else if !hasVerticalBorder(lStr, vCol: leftVCol) {
+            } else if !hasLeftVerticalBorder(lStr, vCol: leftVCol) || !hasRightVerticalBorder(lStr, vCol: rightVCol) {
                 break
             }
             lUp -= 1
         }
         if minLine == nil && cursorLine > 0 {
             let prevStr = lines[cursorLine - 1]
-            if isHorizontalBorderLine(prevStr, leftVCol: leftVCol, rightVCol: rightVCol) {
+            if isTopBorderLine(prevStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 minLine = cursorLine - 1
             } else if isMarkdownPipeHeader(prevStr, leftVCol: leftVCol) {
                 minLine = cursorLine - 1
@@ -109,11 +109,11 @@ public final class TableCellDetector: Sendable {
         var lDown = cursorLine + 1
         while lDown < lines.count {
             let lStr = lines[lDown]
-            if isHorizontalBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
+            if isBottomBorderLine(lStr, leftVCol: leftVCol, rightVCol: rightVCol) {
                 maxLine = lDown
                 break
             }
-            if !hasVerticalBorder(lStr, vCol: leftVCol) {
+            if !hasLeftVerticalBorder(lStr, vCol: leftVCol) || !hasRightVerticalBorder(lStr, vCol: rightVCol) {
                 maxLine = lDown
                 break
             }
@@ -127,6 +127,15 @@ public final class TableCellDetector: Sendable {
         // The border rows themselves are drawing structure, not editable cell
         // content. This also handles a cursor rendered over a border glyph.
         guard cursorLine > topLine && cursorLine < bottomLine else { return nil }
+
+        // Validate that all intermediate rows have intact left and right vertical boundaries
+        for l in (topLine + 1)..<bottomLine {
+            let lStr = lines[l]
+            guard hasLeftVerticalBorder(lStr, vCol: leftVCol),
+                  hasRightVerticalBorder(lStr, vCol: rightVCol) else {
+                return nil
+            }
+        }
 
         let detectedStyle = detectStyle(lines: lines, topLine: topLine, leftVCol: leftVCol)
         return TableCell(minLine: topLine, maxLine: bottomLine, minCol: leftVCol, maxCol: rightVCol, style: detectedStyle)
@@ -151,13 +160,44 @@ public final class TableCellDetector: Sendable {
         return countBorder >= max(1, (checkEnd - checkStart + 1) / 2)
     }
 
-    private func hasVerticalBorder(_ line: String, vCol: Int) -> Bool {
+    private func isTopBorderLine(_ line: String, leftVCol: Int, rightVCol: Int) -> Bool {
+        guard !line.isEmpty else { return false }
+        let chars = Array(line)
+        let leftCharIdx = line.characterOffset(forVisualColumn: leftVCol)
+        let rightCharIdx = line.characterOffset(forVisualColumn: rightVCol)
+        guard leftCharIdx < chars.count && rightCharIdx < chars.count else { return false }
+        guard BorderCharacterSet.topBoundaryChars.contains(chars[leftCharIdx]) &&
+              BorderCharacterSet.topBoundaryChars.contains(chars[rightCharIdx]) else { return false }
+        return isHorizontalBorderLine(line, leftVCol: leftVCol, rightVCol: rightVCol)
+    }
+
+    private func isBottomBorderLine(_ line: String, leftVCol: Int, rightVCol: Int) -> Bool {
+        guard !line.isEmpty else { return false }
+        let chars = Array(line)
+        let leftCharIdx = line.characterOffset(forVisualColumn: leftVCol)
+        let rightCharIdx = line.characterOffset(forVisualColumn: rightVCol)
+        guard leftCharIdx < chars.count && rightCharIdx < chars.count else { return false }
+        guard BorderCharacterSet.bottomBoundaryChars.contains(chars[leftCharIdx]) &&
+              BorderCharacterSet.bottomBoundaryChars.contains(chars[rightCharIdx]) else { return false }
+        return isHorizontalBorderLine(line, leftVCol: leftVCol, rightVCol: rightVCol)
+    }
+
+    private func hasLeftVerticalBorder(_ line: String, vCol: Int) -> Bool {
         let charIdx = line.characterOffset(forVisualColumn: vCol)
         let chars = Array(line)
         guard charIdx >= 0 && charIdx < chars.count else { return false }
         guard line.visualColumn(forCharacterOffset: charIdx) == vCol else { return false }
-        return BorderCharacterSet.verticalBoundaryChars.contains(chars[charIdx])
+        return BorderCharacterSet.leftBoundaryChars.contains(chars[charIdx])
     }
+
+    private func hasRightVerticalBorder(_ line: String, vCol: Int) -> Bool {
+        let charIdx = line.characterOffset(forVisualColumn: vCol)
+        let chars = Array(line)
+        guard charIdx >= 0 && charIdx < chars.count else { return false }
+        guard line.visualColumn(forCharacterOffset: charIdx) == vCol else { return false }
+        return BorderCharacterSet.rightBoundaryChars.contains(chars[charIdx])
+    }
+
 
     private func isMarkdownPipeHeader(_ line: String, leftVCol: Int) -> Bool {
         let charIdx = line.characterOffset(forVisualColumn: leftVCol)

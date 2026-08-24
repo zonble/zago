@@ -1039,4 +1039,29 @@ import Testing
     #expect(right1 == 29)
 }
 
+@Test func testTableModeRejectsF7InGapBetweenBoxes() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  │          │  終點  │",
+        "│        ├──────────┤        │",
+        "└────────┘          └────────┘",
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  x          │  終點  │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+    // Cursor at line 5 at col 17 ('z' gap position)
+    editor.buffer.lineIndex = 5
+    editor.buffer.columnIndex = 17
+
+    // Press F7 - should NOT enter Table Mode
+    editor.processKey(.f7)
+    #expect(editor.isTableModeActive == false)
+    #expect(editor.currentTableCell == nil)
+}
+
+
 

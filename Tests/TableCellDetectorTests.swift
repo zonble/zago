@@ -133,4 +133,25 @@ import Testing
     #expect(cell?.maxCol == 29)
 }
 
+@Test func testTableCellDetectorRejectsGapBetweenConnectedAndDisconnectedBoxes() throws {
+    let detector = TableCellDetector()
+    let lines = [
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  │          │  終點  │",
+        "│        ├──────────┤        │",
+        "└────────┘          └────────┘",
+        "┌────────┐          ┌────────┐",
+        "│        │          │        │",
+        "│  起點  x          │  終點  │",
+        "│        │          │        │",
+        "└────────┘          └────────┘",
+    ]
+
+    // Cursor at line 5 at col 17 (the 'z' position, space between boxes on row 5)
+    let cell = detector.detectCell(in: lines, line: 5, col: 17)
+    #expect(cell == nil)
+}
+
+
 

@@ -60,10 +60,10 @@ flowchart TD
     DetectStyle --> ReturnCell["Return TableCell(minLine, maxLine, minCol, maxCol, style)"]
 ```
 
-### 1. Horizontal Boundary Scan (Scan Left & Right)
+### 1. Directional Boundary Scan (Scan Left & Right)
 On the `cursorLine`:
-* Scan leftwards for the nearest vertical boundary character (`BorderCharacterSet.verticalBoundaryChars`), yielding `leftCol`.
-* Scan rightwards for the nearest vertical boundary character, yielding `rightCol`.
+* Scan leftwards for a valid **left boundary character** (`BorderCharacterSet.leftBoundaryChars`, excluding right-facing corners `┐`, `┘`, etc.), yielding `leftCol`.
+* Scan rightwards for a valid **right boundary character** (`BorderCharacterSet.rightBoundaryChars`, excluding left-facing corners `┌`, `└`, etc.), yielding `rightCol`.
 * Reject if cursor is resting directly on the border frame (`cursorCol == leftCol || cursorCol == rightCol`).
 
 ### 2. Visual Column Calculation
@@ -75,14 +75,17 @@ let rightVCol = currentLine.visualColumn(forCharacterOffset: rightCol)
 
 ### 3. Vertical Upward Scan (Scan Up)
 Iterate upwards from `cursorLine - 1`:
-* If the line segment across `[leftVCol, rightVCol]` is a horizontal border (`isHorizontalBorderLine`), record `topLine` and finish the upward scan.
+* If the line across `[leftVCol, rightVCol]` is a valid top horizontal border (`isTopBorderLine`), record `topLine` and finish the upward scan.
 * If it is a Markdown table header separator (`| Header |`), handle Markdown table header semantics.
-* If the line does **not** have a vertical border character aligned at `leftVCol` (`!hasVerticalBorder(lStr, vCol: leftVCol)`), the cell boundary is broken; stop scanning.
+* If intermediate rows lack valid left or right vertical boundaries (`!hasLeftVerticalBorder` or `!hasRightVerticalBorder`), the cell boundary is broken; stop scanning.
 
 ### 4. Vertical Downward Scan (Scan Down)
 Iterate downwards from `cursorLine + 1`:
-* If the line segment across `[leftVCol, rightVCol]` is a horizontal border, record `bottomLine` and finish the downward scan.
-* If the line does **not** have a vertical border character aligned at `leftVCol`, stop scanning.
+* If the line across `[leftVCol, rightVCol]` is a valid bottom horizontal border (`isBottomBorderLine`), record `bottomLine` and finish the downward scan.
+* If intermediate rows lack valid left or right vertical boundaries, stop scanning.
+
+### 5. Intermediate Row Validation
+Validate that every row between `(topLine + 1)..<bottomLine` continuously contains intact left and right vertical borders.
 
 ### 5. Style Detection
 Inspect corner and junction glyphs on `topLine` at `leftVCol` to determine the active `BorderStyle`:

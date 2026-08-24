@@ -85,6 +85,39 @@ public struct BorderCharacterSet: Sendable {
         horizontalBorderChars.union(allJunctionChars)
     }()
 
+    /// Characters that can serve as the left boundary of a cell (opening to the right or going vertical).
+    /// All vertical boundaries and junctions EXCEPT right corners (┐, ┘, ┓, ┛, ╗, ╝, ╮, ╯).
+    public static let leftBoundaryChars: Set<Character> = {
+        var set = verticalBoundaryChars
+        let rightCorners: Set<Character> = ["┐", "┘", "┓", "┛", "╗", "╝", "╮", "╯"]
+        return set.subtracting(rightCorners)
+    }()
+
+    /// Characters that can serve as the right boundary of a cell (opening to the left or going vertical).
+    /// All vertical boundaries and junctions EXCEPT left corners (┌, └, ┏, ┗, ╔, ╚, ╭, ╰).
+    public static let rightBoundaryChars: Set<Character> = {
+        var set = verticalBoundaryChars
+        let leftCorners: Set<Character> = ["┌", "└", "┏", "┗", "╔", "╚", "╭", "╰"]
+        return set.subtracting(leftCorners)
+    }()
+
+    /// Characters that can serve as the top boundary of a cell (opening downwards or going horizontal).
+    /// All horizontal boundaries and junctions EXCEPT bottom corners and bottom T-junctions.
+    public static let topBoundaryChars: Set<Character> = {
+        var set = horizontalBoundaryChars
+        let bottomOnly: Set<Character> = ["└", "┘", "┴", "┗", "┛", "┻", "╚", "╝", "╩", "╰", "╯"]
+        return set.subtracting(bottomOnly)
+    }()
+
+    /// Characters that can serve as the bottom boundary of a cell (opening upwards or going horizontal).
+    /// All horizontal boundaries and junctions EXCEPT top corners and top T-junctions.
+    public static let bottomBoundaryChars: Set<Character> = {
+        var set = horizontalBoundaryChars
+        let topOnly: Set<Character> = ["┌", "┐", "┬", "┏", "┓", "┳", "╔", "╗", "╦", "╭", "╮"]
+        return set.subtracting(topOnly)
+    }()
+
+
     /// Returns true if character is any recognized border, junction, or corner character.
     public static func isBorderOrJunction(_ ch: Character) -> Bool {
         allBorderChars.contains(ch)
