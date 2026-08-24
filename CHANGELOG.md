@@ -2,7 +2,49 @@
 
 ## Unreleased
 
+## [1.4.1] - 2026-08-24
+
+Usability, rendering, and interaction release introducing full ANSI SGR 1006 terminal mouse support, directional topology overhaul for Table Cell Detection with CJK wide-character awareness, unified Editor LOGO headless execution, and WebAssembly frontend rendering upgrades.
+
+### Added
+
+- **Full Terminal Mouse Interaction (ANSI SGR 1006)**:
+  - Added native mouse interaction across Text Mode, Canvas Mode, Table Mode, Directory Mode, Dialogs, Top Menu Bar, and WebAssembly.
+  - Implemented continuous edge auto-scrolling with a two-tier edge-holding acceleration system (60ms boundary rows, 30ms outside window).
+  - Implemented decoupled mouse wheel scrolling with terminal hardware cursor off-screen parking and keyboard snapback.
+  - Added `set mouse on/off` configuration in `.zagorc` and `--mouse` / `--no-mouse` CLI arguments.
+  - Added official [Mouse Interaction Specification](docs/features/mouse.md).
+- **WebAssembly & Web Terminal Frontend Upgrades (`zago-web`)**:
+  - Integrated `@xterm/addon-unicode11` to standardize CJK and punctuation character widths.
+  - Integrated hardware-accelerated `@xterm/addon-webgl` with fallback to `@xterm/addon-canvas` to enforce cell grid clipping and prevent glyph overflow.
+  - Added persistent `CacheStorage` caching with HTTP ETag validation for instant WASM streaming loads.
+  - Made virtual key bar always visible across all viewport sizes for tablet and mobile touch support.
+  - Added full English / Traditional Chinese UI localization and automated Playwright integration smoke tests.
+
+### Changed
+
+- **Editor LOGO & Headless Mode Alignment**:
+  - Removed deprecated `APPEND` and `PREPEND` primitives in favor of standard `TYPE`, `PRINT`, `NEWLINE`, and line formatting.
+  - Unified headless CLI output (`zago -s` and `zago -e`) with the live editor buffer (`Editor.headlessOutput()`), ensuring box drawings and canvas marks match final buffer state.
+- **Table Cell Detection & Topological Directionality**:
+  - Added directional boundary character sets (`leftBoundaryChars`, `rightBoundaryChars`, `topBoundaryChars`, `bottomBoundaryChars`) with strict corner exclusion rules.
+  - Required strictly continuous horizontal borders without space gaps to prevent false-positive spanning across separated boxes.
+  - Required genuine bottom boundaries in downward scanning, preventing broken intermediate rows from being substituted as cell frames.
+  - Calculated boundaries using visual terminal columns (`TextMetrics.visualColumn`) rather than logical character offsets to correctly handle 2-column wide CJK characters.
+  - Updated [Table Cell Detector Architecture](docs/architecture/table_detector.md).
+
+### Fixed
+
+- **Table Mode & Detection**:
+  - Fixed false-positive cell detection when the cursor is placed in whitespace gaps between disconnected boxes.
+  - Fixed Table Mode cursor navigation and border alignment when editing cells with CJK full-width characters.
+- **Web Terminal**:
+  - Fixed CJK corner bracket width rendering in the web terminal by adopting Unicode 11 and WebGL rendering.
+- **Keymap Hints**:
+  - Prioritized `Ctrl+Z` and `Ctrl+Shift+Z` in menu bar shortcut hints.
+
 ## [1.4.0] - 2026-08-21
+
 
 Major feature release introducing Foundation Measurement conversions and formatters, extensible dialect localization architecture (Traditional Chinese), data detection and codec primitives, procedural docstring introspection, enhanced keymaps, dashed box drawing styles, and CJK-aware syntax highlighting.
 
