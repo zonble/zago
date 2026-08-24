@@ -592,10 +592,10 @@ body {
 }
 
 /* ==========================================================================
-   Mobile Virtual Key Bar
+   Virtual Key Bar (for touch / tablets / desktop shortcuts)
    ========================================================================== */
 .mobile-keybar {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 4px;
   padding: 6px 8px;
