@@ -32,6 +32,7 @@ This directory holds the detailed user, language, architecture, and development 
 - [Spell Checker Architecture & Specification](features/spell_checker.md): platform engines, Markdown context filtering, and `.zagorc` language directives.
 - [File Encoding & Auto-Detection Architecture](features/encoding.md): multi-encoding auto-detection, buffer encoding state preservation, and UTF-8 fallback workflow.
 - [File System Watcher & External Modification Architecture](features/file_watcher.md): cross-platform watcher design, atomic save recovery, and UI reload pipeline.
+- [Mouse Interaction & Terminal Tracking Specification](features/mouse.md): ANSI SGR 1006 tracking, mode-specific click/drag rules, continuous auto-scrolling, decoupled wheel scrolling, and hardware cursor parking.
 
 ## Architecture
 
