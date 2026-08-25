@@ -153,7 +153,7 @@ import Foundation
         public func readKey() -> Key {
             switch readInputEvent() {
             case .key(let key): return key
-            case .mouse: return .unknown
+            case .mouse, .openFile: return .unknown
             }
         }
 

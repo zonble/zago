@@ -5,8 +5,8 @@ import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { CanvasAddon } from "@xterm/addon-canvas";
 import "@xterm/xterm/css/xterm.css";
-import { VirtualOSStorage } from "./vfs";
-import { SharedStdin } from "./shared-stdin";
+import { VirtualOSStorage, isBinaryData, resolveAvailableFilename } from "./vfs";
+import { SharedStdin, SharedFileChannel } from "./shared-stdin";
 import { detectLanguage, applyI18n, translations } from "./i18n";
 
 async function main() {
@@ -17,13 +17,6 @@ async function main() {
 
   const container = document.getElementById("terminal-container");
   if (!container) return;
-
-  container.addEventListener("click", () => {
-    term.focus();
-  });
-
-  // Initialize VFS storage with defaults
-  await VirtualOSStorage.initializeDefaults();
 
   const isMobileInitial = window.innerWidth < 600;
 
@@ -68,6 +61,14 @@ async function main() {
 
   term.open(container);
   fitAddon.fit();
+  (window as any).term = term;
+
+  container.addEventListener("click", () => {
+    term.focus();
+  });
+
+  // Initialize VFS storage with defaults
+  await VirtualOSStorage.initializeDefaults();
 
   // Try WebGL renderer first for pixel-grid clipped glyphs, fallback to Canvas, then DOM
   try {
@@ -112,8 +113,9 @@ async function main() {
     if (loadingCardUnsupported) loadingCardUnsupported.classList.remove("hidden");
   }
 
-  // Shared Stdin is created only after the browser capability check below.
+  // Shared Stdin and File Channel are created only after the browser capability check below.
   let sharedStdin: SharedStdin | null = null;
+  let sharedFileChannel: SharedFileChannel | null = null;
 
   let currentWorker: Worker | null = null;
   let mode: "editor" | "shell" = "editor";
@@ -149,7 +151,16 @@ async function main() {
     }
   };
 
-  const WASM_CACHE_NAME = "zago-wasm-cache-v1";
+  const WASM_CACHE_NAME = "zago-wasm-cache-v2";
+  if (typeof caches !== "undefined") {
+    caches.keys().then((keys) => {
+      for (const k of keys) {
+        if (k.startsWith("zago-wasm-") && k !== WASM_CACHE_NAME) {
+          caches.delete(k);
+        }
+      }
+    }).catch(() => {});
+  }
 
   async function getCachedWasm(url: string): Promise<ArrayBuffer | null> {
     if (typeof caches === "undefined") return null;
@@ -305,7 +316,7 @@ async function main() {
     return cachedWasmBytes;
   }
 
-  async function launchEditor(targetFile: string = defaultWelcomeFile) {
+  async function launchEditor(targetFiles: string[] | string = defaultWelcomeFile) {
     if (currentWorker) {
       currentWorker.terminate();
       currentWorker = null;
@@ -316,11 +327,13 @@ async function main() {
     stdinGeneration++;
     sharedStdin?.clear();
 
+    const normalizedTargetFiles = Array.isArray(targetFiles) ? targetFiles : [targetFiles];
+
     try {
       const wasmUrl = new URL("zago.wasm", window.location.href).href;
       const wasmBytes = await fetchWasmWithProgress(wasmUrl);
 
-            showLoading(t.startingStatus, t.startingDetail, 98);
+      showLoading(t.startingStatus, t.startingDetail, 98);
 
       const nodes = await VirtualOSStorage.getAllNodes();
       const worker = new Worker(new URL("./worker.ts", import.meta.url), {
@@ -390,15 +403,99 @@ async function main() {
       // Transfer wasm buffer copy to worker
       worker.postMessage({
         type: "init",
-        data: { wasmBytes: wasmBytes.slice(0), targetFile, lang: currentLang },
+        data: { wasmBytes: wasmBytes.slice(0), targetFiles: normalizedTargetFiles, lang: currentLang },
         nodes,
         sharedBuffer: sharedStdin!.sharedBuffer,
+        sharedFileBuffer: sharedFileChannel?.sharedBuffer,
       });
     } catch (err: any) {
       hideLoading();
       term.write(`\r\n\x1b[31;1m[${t.failedToStart}]\x1b[0m ${err?.message || err}\r\n`);
     }
   }
+
+  // Drag and drop text files into terminal container to edit in VFS
+  container.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    container.classList.add("drag-over");
+  });
+
+  container.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = "copy";
+    }
+    container.classList.add("drag-over");
+  });
+
+  container.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!container.contains(e.relatedTarget as Node)) {
+      container.classList.remove("drag-over");
+    }
+  });
+
+  container.addEventListener("dragend", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    container.classList.remove("drag-over");
+  });
+
+  container.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    container.classList.remove("drag-over");
+
+    const droppedFiles = e.dataTransfer?.files;
+    if (!droppedFiles || droppedFiles.length === 0) return;
+
+    // 1. Read files and ensure all are valid text files
+    const fileEntries: { name: string; data: Uint8Array }[] = [];
+    for (let i = 0; i < droppedFiles.length; i++) {
+      const file = droppedFiles[i];
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+
+      if (isBinaryData(bytes)) {
+        alert(t.binaryFileNotSupported(file.name));
+        return;
+      }
+      fileEntries.push({ name: file.name, data: bytes });
+    }
+
+    if (fileEntries.length === 0) return;
+
+    // 2. Resolve filenames to avoid overwriting existing files
+    const existingNodes = await VirtualOSStorage.getAllNodes();
+    const existingPaths = new Set(existingNodes.map((n) => n.path));
+    const importedPaths: string[] = [];
+
+    for (const entry of fileEntries) {
+      const resolvedName = resolveAvailableFilename(entry.name, existingPaths);
+      await VirtualOSStorage.importSingleFile(resolvedName, entry.data);
+      const fullPath = `/workspace/${resolvedName}`;
+      existingPaths.add(fullPath);
+      importedPaths.push(fullPath);
+
+      // If editor is already running, seamlessly open a new buffer in the current editor process!
+      if (mode === "editor" && currentWorker) {
+        if (sharedFileChannel) {
+          sharedFileChannel.sendFile(fullPath, entry.data);
+        }
+        writeStdin(`\x1b]zago:open;${fullPath}\x07`);
+      }
+    }
+
+    // If editor was not running (e.g. mini-shell), start it with the dropped file(s)
+    if (mode !== "editor" || !currentWorker) {
+      if (importedPaths.length > 0) {
+        await launchEditor(importedPaths);
+      }
+    }
+  });
 
   // Keyboard input handler
   term.onData((inputData) => {
@@ -597,6 +694,7 @@ async function main() {
     }, 2500);
   } else {
     sharedStdin = new SharedStdin();
+    sharedFileChannel = new SharedFileChannel();
     // Launch initial editor session
     await launchEditor(defaultWelcomeFile);
   }

@@ -225,6 +225,83 @@ export class VirtualOSStorage {
   }
 }
 
+/**
+ * Detects whether a byte array is binary data based on the first 8192 bytes.
+ * Matches zago's Swift LocalEditorFileIOStrategy.isBinaryFile logic.
+ */
+export function isBinaryData(rawBytes: Uint8Array): boolean {
+  const prefix = rawBytes.subarray(0, 8192);
+  if (prefix.length === 0) return false;
+
+  const hasUTF16BOM =
+    prefix.length >= 2 &&
+    ((prefix[0] === 0xfe && prefix[1] === 0xff) || (prefix[0] === 0xff && prefix[1] === 0xfe));
+
+  if (!hasUTF16BOM) {
+    for (let i = 0; i < prefix.length; i++) {
+      if (prefix[i] === 0) {
+        return true;
+      }
+    }
+  }
+
+  // Check UTF-8 validity with boundary truncation trimming for up to 3 bytes
+  let checkBuffer = prefix;
+  while (checkBuffer.length > 0) {
+    try {
+      const safeBuffer = checkBuffer.buffer instanceof ArrayBuffer ? checkBuffer : new Uint8Array(checkBuffer);
+      new TextDecoder("utf-8", { fatal: true }).decode(safeBuffer);
+      return false;
+    } catch {
+      const last = checkBuffer[checkBuffer.length - 1];
+      if ((last & 0x80) !== 0) {
+        checkBuffer = checkBuffer.subarray(0, checkBuffer.length - 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Resolves an available non-conflicting filename within /workspace.
+ * If filename exists, auto-increments with `_1`, `_2`, etc.
+ */
+export function resolveAvailableFilename(
+  desiredName: string,
+  existingPathsOrNames: Iterable<string>
+): string {
+  const existingNames = new Set<string>();
+  for (const item of existingPathsOrNames) {
+    const name = item.startsWith("/workspace/")
+      ? item.slice("/workspace/".length)
+      : item.startsWith("/")
+      ? item.slice(1)
+      : item;
+    existingNames.add(name.toLowerCase());
+  }
+
+  const cleanName = desiredName.split("/").pop() || desiredName;
+  if (!existingNames.has(cleanName.toLowerCase())) {
+    return cleanName;
+  }
+
+  const lastDot = cleanName.lastIndexOf(".");
+  const base = lastDot > 0 ? cleanName.slice(0, lastDot) : cleanName;
+  const ext = lastDot > 0 ? cleanName.slice(lastDot) : "";
+
+  let counter = 1;
+  while (true) {
+    const candidate = `${base}_${counter}${ext}`;
+    if (!existingNames.has(candidate.toLowerCase())) {
+      return candidate;
+    }
+    counter++;
+  }
+}
+
 function normalizeWorkspaceRelativePath(path: string): string | null {
   const segments = path.replaceAll("\\", "/").split("/");
   if (segments.some((segment) => segment === "." || segment === "..")) {

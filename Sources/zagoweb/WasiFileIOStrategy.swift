@@ -53,13 +53,24 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
             )
         }
 
-        var isDir: ObjCBool = false
-        var exists = fileManager.fileExists(atPath: normalized, isDirectory: &isDir)
-        if !exists && normalized.hasPrefix("/workspace/") {
-            let rel = String(normalized.dropFirst("/workspace/".count))
-            exists = fileManager.fileExists(atPath: rel, isDirectory: &isDir)
-        }
+        let rel = normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized.hasPrefix("/") ? String(normalized.dropFirst()) : normalized)
 
+        #if canImport(WASILibc)
+        let fd = WASILibc.open(rel, O_RDONLY)
+        if fd >= 0 {
+            WASILibc.close(fd)
+            return EditorFileInfo(
+                exists: true,
+                isDirectory: false,
+                isBinary: false,
+                isExecutable: false,
+                modificationDate: Date()
+            )
+        }
+        #endif
+
+        var isDir: ObjCBool = false
+        let exists = fileManager.fileExists(atPath: rel, isDirectory: &isDir)
         return EditorFileInfo(
             exists: exists,
             isDirectory: isDir.boolValue,
@@ -71,42 +82,20 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
 
     public func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
         let normalized = normalizePath(path, isDirectory: true)
+        let candidates = [
+            normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized == "/workspace" ? "." : normalized),
+            normalized,
+            ".",
+        ]
 
-        #if canImport(WASILibc)
-            let candidates = [
-                normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized == "/workspace" ? "." : normalized),
-                normalized,
-                ".",
-            ]
-
-            for candidate in candidates {
-                if let dir = WASILibc.opendir(candidate) {
-                    defer { WASILibc.closedir(dir) }
-                    var entries: [EditorDirectoryEntry] = []
-                    while let entryPtr = WASILibc.readdir(dir) {
-                        let entry = entryPtr.pointee
-                        // In WASILibc __struct_dirent.h, d_ino is 8 bytes, d_type is 1 byte, d_name starts at offset 9
-                        let namePtr = UnsafeRawPointer(entryPtr).advanced(by: 9).assumingMemoryBound(to: CChar.self)
-                        let name = String(cString: namePtr)
-                        if name == "." || name == ".." || name.isEmpty { continue }
-
-                        let isDir = (entry.d_type == 3) // 3 = DT_DIR (wasi.FILETYPE_DIRECTORY)
-                        let fullPath = (normalized as NSString).appendingPathComponent(name)
-                        entries.append(EditorDirectoryEntry(
-                            name: name,
-                            path: fullPath,
-                            isDirectory: isDir,
-                            isExecutable: false
-                        ))
-                    }
-                    if !entries.isEmpty {
-                        return entries
-                    }
-                }
+        var items: [String] = []
+        for candidate in candidates {
+            if let list = try? fileManager.contentsOfDirectory(atPath: candidate), !list.isEmpty {
+                items = list
+                break
             }
-        #endif
+        }
 
-        let items = (try? fileManager.contentsOfDirectory(atPath: normalized)) ?? (try? fileManager.contentsOfDirectory(atPath: ".")) ?? []
         return items.map { name in
             let full = (normalized as NSString).appendingPathComponent(name)
             var isDir: ObjCBool = false
@@ -122,18 +111,27 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
 
     public func readTextFile(at path: String) throws -> TextReadResult {
         let normalized = normalizePath(path)
-        let url = URL(fileURLWithPath: normalized)
-        let data: Data
-        if let d = try? Data(contentsOf: url) {
-            data = d
-        } else {
-            let relUrl = URL(fileURLWithPath: String(normalized.dropFirst("/workspace/".count)))
-            data = try Data(contentsOf: relUrl)
-        }
+        let rel = normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized.hasPrefix("/") ? String(normalized.dropFirst()) : normalized)
 
-        if let detected = TextEncodingDetector.detectAndDecode(data) {
-            return detected
+        #if canImport(WASILibc)
+        let fd = WASILibc.open(rel, O_RDONLY)
+        if fd >= 0 {
+            defer { WASILibc.close(fd) }
+            var data = Data()
+            var buf = [UInt8](repeating: 0, count: 4096)
+            while true {
+                let n = WASILibc.read(fd, &buf, buf.count)
+                if n <= 0 { break }
+                data.append(buf, count: Int(n))
+            }
+            if let utf8 = String(data: data, encoding: .utf8) {
+                return TextReadResult(content: utf8, encoding: .utf8)
+            }
+            return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
         }
+        #endif
+
+        let data = try Data(contentsOf: URL(fileURLWithPath: rel))
         if let utf8 = String(data: data, encoding: .utf8) {
             return TextReadResult(content: utf8, encoding: .utf8)
         }
@@ -145,13 +143,24 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
             throw EncodingError.unsupportedCharacters
         }
         let normalized = normalizePath(path)
-        let url = URL(fileURLWithPath: normalized)
-        do {
-            try data.write(to: url)
-        } catch {
-            let relUrl = URL(fileURLWithPath: String(normalized.dropFirst("/workspace/".count)))
-            try data.write(to: relUrl)
+        let rel = normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized.hasPrefix("/") ? String(normalized.dropFirst()) : normalized)
+
+        #if canImport(WASILibc)
+        let oCreat: Int32 = 0x1000 // __WASI_OFLAGS_CREAT << 12
+        let oTrunc: Int32 = 0x8000 // __WASI_OFLAGS_TRUNC << 12
+        let fd = WASILibc.open(rel, O_WRONLY | oCreat | oTrunc, 0o644)
+        if fd >= 0 {
+            defer { WASILibc.close(fd) }
+            data.withUnsafeBytes { ptr in
+                if let base = ptr.baseAddress {
+                    _ = WASILibc.write(fd, base, ptr.count)
+                }
+            }
+            return
         }
+        #endif
+
+        try data.write(to: URL(fileURLWithPath: rel))
     }
 
     public func startWatchingFile(at path: String, onChange: @escaping () -> Void) {}

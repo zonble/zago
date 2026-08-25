@@ -625,6 +625,14 @@ public final class Editor: @unchecked Sendable {
                             }
                         case .mouse(let m):
                             handleMouseEvent(m)
+                        case .openFile(let path):
+                            activeBoundaryDragState = nil
+                            if let existingIndex = buffers.firstIndex(where: { $0.filePath == path }) {
+                                switchToBuffer(index: existingIndex)
+                            } else {
+                                openNewBuffer(filePath: path)
+                            }
+                            renderer.invalidateScreenCache()
                         }
                         break
                     }
@@ -643,6 +651,14 @@ public final class Editor: @unchecked Sendable {
                 processKey(key)
             case .mouse(let mouseEvent):
                 handleMouseEvent(mouseEvent)
+            case .openFile(let path):
+                activeBoundaryDragState = nil
+                if let existingIndex = buffers.firstIndex(where: { $0.filePath == path }) {
+                    switchToBuffer(index: existingIndex)
+                } else {
+                    openNewBuffer(filePath: path)
+                }
+                renderer.invalidateScreenCache()
             }
         }
     }

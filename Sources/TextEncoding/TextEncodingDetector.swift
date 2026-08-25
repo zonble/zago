@@ -30,6 +30,7 @@ public enum TextEncodingDetector {
             return TextReadResult(content: utf8String, encoding: .utf8)
         }
 
+        #if !os(WASI)
         // 3. Multi-byte candidate encodings
         let candidateEncodings: [String.Encoding] = [
             .big5,
@@ -54,8 +55,11 @@ public enum TextEncodingDetector {
                 String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
             return TextReadResult(content: fallbackString, encoding: actualEncoding)
         }
-
         return nil
+        #else
+        // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
+        return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
+        #endif
     }
 
     private static func detectBOM(_ data: Data) -> TextReadResult? {
