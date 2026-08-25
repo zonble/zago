@@ -17,6 +17,7 @@ import welcomeEn from "./templates/welcome.en.md?raw";
 import welcomeZhTw from "./templates/welcome.zh-TW.md?raw";
 import demoLogo from "./templates/demo.logo?raw";
 import exampleDiagram from "./templates/diagram.txt?raw";
+import game2048Logo from "./templates/game_2048.logo?raw";
 
 export class VirtualOSStorage {
   /**
@@ -63,11 +64,35 @@ export class VirtualOSStorage {
           mtime: now,
           size: exampleDiagram.length,
         },
+        {
+          path: "/workspace/examples/game_2048.logo",
+          name: "game_2048.logo",
+          isDirectory: false,
+          content: encoder.encode(game2048Logo),
+          mtime: now,
+          size: game2048Logo.length,
+        },
       ];
 
       for (const node of defaults) {
         await set(VFS_PREFIX + node.path, node);
       }
+    }
+
+    // Add newly shipped examples to existing workspaces without overwriting
+    // files the user may already have edited or removed intentionally.
+    const gamePath = "/workspace/examples/game_2048.logo";
+    if (!(await get<VFSNode>(VFS_PREFIX + gamePath))) {
+      const encoder = new TextEncoder();
+      const now = Date.now();
+      await set(VFS_PREFIX + gamePath, {
+        path: gamePath,
+        name: "game_2048.logo",
+        isDirectory: false,
+        content: encoder.encode(game2048Logo),
+        mtime: now,
+        size: game2048Logo.length,
+      } satisfies VFSNode);
     }
   }
 
