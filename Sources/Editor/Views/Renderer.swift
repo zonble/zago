@@ -408,9 +408,19 @@ final class Renderer {
                         renderedDisplayWidth = visibleTextWidth
                     }
                     lineOutput = lineOutput.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                } else if baseChars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
-                    lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(
-                        style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                } else if !editor.isCanvasModeActive && !editor.isTableModeActive && !vLine.isProposalOverlay {
+                    let isLastSubLineOfBufferLine = vLine.endCol >= fullLineText.count
+                    if isLastSubLineOfBufferLine, let mark = editor.buffer.selectionMark {
+                        let (start, end) = TextBuffer.getOrderedRange(
+                            mark1: mark,
+                            mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                        )
+                        let isNewlineSelected = vLine.bufferLineIndex >= start.line && vLine.bufferLineIndex < end.line
+                        if isNewlineSelected {
+                            lineOutput += " ".ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                            renderedDisplayWidth += 1
+                        }
+                    }
                 }
 
                 if let subLineInfo = renderSubLineInfo(

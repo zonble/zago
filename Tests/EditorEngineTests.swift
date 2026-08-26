@@ -583,7 +583,8 @@ import TextMetrics
     #expect(editor.buffer.columnIndex == 0)
 
     let rendered = editor.renderer.render(editor: editor, rows: 10, cols: 24)
-    #expect(rendered.contains("\u{1B}[7m                   \u{1B}[m"))
+    #expect(rendered.contains("\u{1B}[7m \u{1B}[m"))
+    #expect(!rendered.contains("\u{1B}[7m                   \u{1B}[m"))
 
     editor.processKey(.char("X"))
     #expect(editor.buffer.selectionMark == nil)
