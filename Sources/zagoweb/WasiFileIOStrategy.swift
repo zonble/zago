@@ -54,23 +54,25 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
         }
 
         let rel = normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized.hasPrefix("/") ? String(normalized.dropFirst()) : normalized)
+        let queryPath = rel.isEmpty ? "." : rel
 
         #if canImport(WASILibc)
-        let fd = WASILibc.open(rel, O_RDONLY)
-        if fd >= 0 {
-            WASILibc.close(fd)
+        var statBuf = stat()
+        if fstatat(AT_FDCWD, queryPath, &statBuf, 0) == 0 {
+            let isDir = (statBuf.st_mode & S_IFMT) == S_IFDIR
             return EditorFileInfo(
                 exists: true,
-                isDirectory: false,
+                isDirectory: isDir,
                 isBinary: false,
                 isExecutable: false,
-                modificationDate: Date()
+                modificationDate: Date(timeIntervalSince1970: TimeInterval(statBuf.st_mtim.tv_sec)),
+                size: isDir ? 0 : Int64(statBuf.st_size)
             )
         }
         #endif
 
         var isDir: ObjCBool = false
-        let exists = fileManager.fileExists(atPath: rel, isDirectory: &isDir)
+        let exists = fileManager.fileExists(atPath: queryPath, isDirectory: &isDir)
         return EditorFileInfo(
             exists: exists,
             isDirectory: isDir.boolValue,
@@ -82,8 +84,41 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
 
     public func listDirectory(at path: String) throws -> [EditorDirectoryEntry] {
         let normalized = normalizePath(path, isDirectory: true)
+        let rel = normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized == "/workspace" ? "." : (normalized.hasPrefix("/") ? String(normalized.dropFirst()) : normalized))
+        let dirPath = rel.isEmpty ? "." : rel
+
+        #if canImport(WASILibc)
+        if let dir = WASILibc.opendir(dirPath) {
+            defer { WASILibc.closedir(dir) }
+            var entries: [EditorDirectoryEntry] = []
+            let dNameOffset = (MemoryLayout<dirent>.offset(of: \dirent.d_type) ?? 8) + MemoryLayout<UInt8>.size
+            while let entry = WASILibc.readdir(dir) {
+                let namePtr = UnsafeRawPointer(entry).advanced(by: dNameOffset).assumingMemoryBound(to: CChar.self)
+                let name = String(cString: namePtr)
+                if name.isEmpty || name == "." || name == ".." {
+                    continue
+                }
+                let full = (normalized as NSString).appendingPathComponent(name)
+                // In WASI preview 1 dirent: FILETYPE_DIRECTORY = 3, FILETYPE_REGULAR_FILE = 4
+                var isDir = entry.pointee.d_type == 3
+                let childRel = dirPath == "." ? name : "\(dirPath)/\(name)"
+                var statBuf = stat()
+                if fstatat(AT_FDCWD, childRel, &statBuf, 0) == 0 {
+                    isDir = (statBuf.st_mode & S_IFMT) == S_IFDIR
+                }
+                entries.append(EditorDirectoryEntry(
+                    name: name,
+                    path: full,
+                    isDirectory: isDir,
+                    isExecutable: false
+                ))
+            }
+            return entries
+        }
+        #endif
+
         let candidates = [
-            normalized.hasPrefix("/workspace/") ? String(normalized.dropFirst("/workspace/".count)) : (normalized == "/workspace" ? "." : normalized),
+            dirPath,
             normalized,
             ".",
         ]

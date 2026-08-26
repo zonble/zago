@@ -42,6 +42,7 @@ final class DirectoryBuffer: TextBuffer {
             return
         }
 
+        let isSameDirectory = (expandedPath == self.directoryPath && !self.lines.isEmpty)
         self.directoryPath = expandedPath
         self.filePath = expandedPath
         self.isModified = false
@@ -111,7 +112,6 @@ final class DirectoryBuffer: TextBuffer {
             }
         }
 
-        let isSameDirectory = (expandedPath == self.directoryPath && !self.lines.isEmpty)
         self.lines = newLines
         if isSameDirectory {
             self.lineIndex = min(self.lineIndex, max(0, newLines.count - 1))
@@ -130,7 +130,21 @@ final class DirectoryBuffer: TextBuffer {
         case .backspace, .char("b"), .char("u"):
             _ = navigateUp(editor: editor)
             return true
-        case .arrowUp, .arrowDown, .arrowLeft, .arrowRight, .home, .end, .pageUp, .pageDown, .resize:
+        case .arrowDown, .char("j"), .char("J"):
+            if !self.lines.isEmpty {
+                self.lineIndex = min(self.lines.count - 1, self.lineIndex + 1)
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .arrowUp, .char("k"), .char("K"):
+            if !self.lines.isEmpty {
+                self.lineIndex = max(3, self.lineIndex - 1)
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .arrowLeft, .arrowRight, .home, .end, .pageUp, .pageDown, .resize:
             return false
         case .delete, .ctrlBackspace, .altBackspace:
             editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))
@@ -168,6 +182,7 @@ final class DirectoryBuffer: TextBuffer {
                 editor.topVLineIndex = 0
                 editor.clearActiveMark()
                 editor.startFileWatcherForCurrentBuffer()
+                editor.renderer.invalidateScreenCache()
                 return true
             }
         }
@@ -207,6 +222,7 @@ final class DirectoryBuffer: TextBuffer {
             editor.topVLineIndex = 0
             editor.clearActiveMark()
             editor.startFileWatcherForCurrentBuffer()
+            editor.renderer.invalidateScreenCache()
             return true
         }
         return false

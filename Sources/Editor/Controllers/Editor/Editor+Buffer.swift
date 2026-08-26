@@ -124,6 +124,7 @@ extension Editor {
         }
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
+        renderer.invalidateScreenCache()
     }
 
     func closeCurrentBuffer() {

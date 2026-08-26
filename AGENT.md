@@ -19,6 +19,7 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 6. **Protocol-Oriented Extensions**: Syntax definitions conform to `SyntaxDefinition`, allowing clean template inheritance for language rules alongside GNU Nano `.nanorc` parser support.
 7. **Swift 6 Concurrency Compliance**: State variables, enums, and static tables conform to `Sendable` and adhere to Swift 6 strict concurrency isolation rules.
 8. **Test-Driven Development (TDD)**: All bug fixes, rendering changes, table formatting, and new features MUST follow Test-Driven Development (TDD). Write unit tests first to verify expected behavior or reproduce failures before modifying implementation code.
+9. **Focus on Core Issue First Before Secondary Issues (先修正核心問題，才去看次要問題)**: When investigating bugs or user-reported problems, AI agents MUST prioritize isolating and resolving the core root cause of the active user request first. Do not get sidetracked or deep-dive into unrelated secondary systems or peripheral edge cases before the primary issue is solved and verified.
 
 ---
 
@@ -169,6 +170,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 13. **Grammatical Filler Tokens (Noise Words) Policy**: Grammatical filler tokens (such as `為`, `次`, `則`, `到`) MUST only be skipped during argument parsing when encountered as bare, unquoted tokens. They MUST NEVER be skipped or stripped when quoted (`"為`), in variable references (`:為`), or inside list literals (`[...]`).
 14. **Accurate Terminal Cursor Placement in Interactive Dialogs**: When an interactive dialog or modal window prompts the user for text input or waits for a keystroke (e.g. `DescribeKeyDialogView`, `DescribeCommandDialogView`), the terminal hardware cursor MUST be positioned directly at the active typing/prompt column. Never render fake block glyphs (such as `█`) while dumping the hardware cursor at the bottom-right corner. The bottom-right corner position (`\u{001B}[\(rows);\(cols)H`) is reserved STRICTLY for static, read-only plain-text viewer dialogs.
 15. **Full Test Coverage for All Protocol Methods & Edge Cases**: Every protocol method, protocol extension default, registry forwarder, and dialect parsing rule MUST have direct unit test coverage. Always write assertions for edge cases including prefix guards, filler tokens, and cursor ANSI escape sequences.
+16. **Prioritize Core Problems Before Secondary Issues (先修正核心問題，才去看次要問題)**: Always maintain strict focus on the user's primary reported problem. Isolate and fix the root cause first with TDD, and avoid premature exploration, refactoring, or rabbit-holing into unrelated code paths until the main issue is resolved and tested.
 
 ---
 

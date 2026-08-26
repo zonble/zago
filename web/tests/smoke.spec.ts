@@ -210,4 +210,45 @@ test.describe("web editor smoke tests", () => {
     const savedFont = await page.evaluate(() => localStorage.getItem("zago_editor_font"));
     expect(savedFont).toContain("JetBrains Mono");
   });
+
+  test("opens directory buffer, correctly distinguishes folders from files, and opens file", async ({ page }) => {
+    await page.locator("#terminal-container").click();
+    await page.keyboard.press("Escape");
+    await page.keyboard.type(":dir");
+    await page.keyboard.press("Enter");
+
+    // Verify directory buffer lists folders with ▸ and /
+    await expect
+      .poll(() => getTerminalText(page), { timeout: 10_000 })
+      .toContain("▸ examples/");
+
+    // Verify regular files are NOT treated as directories (do NOT have ▸ or trailing /)
+    const termText = await getTerminalText(page);
+    expect(termText).not.toContain("▸ welcome.en.md/");
+    expect(termText).not.toContain("▸ demo.logo/");
+    expect(termText).toContain("welcome.en.md");
+    expect(termText).toContain("demo.logo");
+
+    // In DirectoryBuffer:
+    // line 0: Directory: /workspace
+    // line 1: Instructions...
+    // line 2: (empty)
+    // line 3: .. (up a dir)
+    // line 4: ▸ examples/ (directories first)
+    // line 5: demo.logo
+    // line 6: welcome.en.md
+    // Cursor starts at line 3 (".. (up a dir)")
+    // Move down past 'examples/' to 'demo.logo' (ArrowDown x 2)
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+
+    // Verify demo.logo is opened and its content is rendered
+    await expect
+      .poll(() => getTerminalText(page), { timeout: 10_000 })
+      .toContain("logo");
+    await expect
+      .poll(() => getTerminalText(page), { timeout: 10_000 })
+      .not.toContain("Error opening file");
+  });
 });

@@ -353,4 +353,54 @@ struct DirectoryBufferTests {
         let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
         #expect(dirBuf.directoryPath == baseDir.path)
     }
+
+    @Test func testDirectoryBufferKeyNavigation() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_keys_\(UUID().uuidString)")
+        let subDir = workDir.appendingPathComponent("sub")
+        let file1 = workDir.appendingPathComponent("a.txt")
+        let file2 = workDir.appendingPathComponent("b.txt")
+
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try "a".write(to: file1, atomically: testAtomicallyOption, encoding: .utf8)
+        try "b".write(to: file2, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let fileIO = TestLocalEditorFileIOStrategy.shared
+        let dirBuf = DirectoryBuffer(directoryPath: workDir.path, fileIO: fileIO)
+        let editor = Editor(
+            options: EditorOptions(filePaths: [workDir.path], autoReload: false),
+            dependencies: EditorDependencies(
+                fileIOStrategy: fileIO,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        dirBuf.lineIndex = 3 // Set cursor to line 3 (".. (up a dir)")
+
+        // Down arrow moves to next entry
+        let handledDown = dirBuf.handleKey(.arrowDown, editor: editor)
+        #expect(handledDown == true)
+        #expect(dirBuf.lineIndex == 4)
+
+        // 'j' key also moves down
+        let handledJ = dirBuf.handleKey(.char("j"), editor: editor)
+        #expect(handledJ == true)
+        #expect(dirBuf.lineIndex == 5)
+
+        // 'k' key moves up
+        let handledK = dirBuf.handleKey(.char("k"), editor: editor)
+        #expect(handledK == true)
+        #expect(dirBuf.lineIndex == 4)
+
+        // Up arrow moves up, but not above line 3
+        _ = dirBuf.handleKey(.arrowUp, editor: editor)
+        #expect(dirBuf.lineIndex == 3)
+        _ = dirBuf.handleKey(.arrowUp, editor: editor)
+        #expect(dirBuf.lineIndex == 3)
+    }
 }
