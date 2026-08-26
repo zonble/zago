@@ -231,7 +231,8 @@ extension Editor {
                 return
             }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
-                if vLineIndex < buffer.lines.count {
+                let minSelectableLine = min(3, max(0, buffer.lines.count - 1))
+                if vLineIndex >= minSelectableLine && vLineIndex < buffer.lines.count {
                     let clicks = mouseClickTracker.registerClick(
                         row: mouseEvent.row,
                         col: mouseEvent.col,

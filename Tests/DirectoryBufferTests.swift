@@ -38,6 +38,7 @@ struct DirectoryBufferTests {
 
         let dirBuffer = try #require(buffer as? DirectoryBuffer)
         let l10n = L10n()
+        #expect(dirBuffer.lineIndex == 3)
         #expect(dirBuffer.lines.count >= 5)
         #expect(dirBuffer.lines[0].contains(l10n["dirbuf.header_directory"].replacingOccurrences(of: "%@", with: "")))
         #expect(dirBuffer.lines[3] == "  \(l10n.dirBufUpDir)")
@@ -535,4 +536,54 @@ struct DirectoryBufferTests {
         #expect(editor.buffer.isDirectoryBuffer == false)
         #expect(editor.layoutEngine.wrapColumn == 80)
     }
+
+    @Test func testDirectoryBufferCursorNeverLessThanLineThree() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_clamp_\(UUID().uuidString)")
+        let subDir = workDir.appendingPathComponent("folder1")
+        let fileURL = workDir.appendingPathComponent("file1.txt")
+
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try "Content".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let editor = Editor(filePath: workDir.path)
+        editor.displayConfig.enableMouse = true
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        #expect(editor.buffer is DirectoryBuffer)
+        // 1. Initial lineIndex must be 3 ('.. (up a dir)')
+        #expect(editor.buffer.lineIndex == 3)
+        #expect(editor.buffer.columnIndex == 0)
+
+        // 2. Pressing Up Arrow should not move cursor above line 3
+        editor.processKey(.arrowUp)
+        #expect(editor.buffer.lineIndex == 3)
+
+        // 3. Pressing Home or PageUp should remain at or above line 3
+        editor.processKey(.home)
+        #expect(editor.buffer.lineIndex == 3)
+        editor.processKey(.pageUp)
+        #expect(editor.buffer.lineIndex == 3)
+
+        // 4. Clicking on top header lines (rows 2, 3, 4 which correspond to lines 0, 1, 2) should NOT select them
+        let topHeaderMouseRow = 2 // line 0
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: topHeaderMouseRow))
+        #expect(editor.buffer.lineIndex == 3)
+
+        // 5. Down arrow moves down
+        editor.processKey(.arrowDown)
+        #expect(editor.buffer.lineIndex == 4)
+
+        // 6. Up arrow moves back to 3
+        editor.processKey(.arrowUp)
+        #expect(editor.buffer.lineIndex == 3)
+
+        // 7. Another up arrow is clamped to 3
+        editor.processKey(.arrowUp)
+        #expect(editor.buffer.lineIndex == 3)
+    }
 }
+
