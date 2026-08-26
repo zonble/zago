@@ -42,6 +42,10 @@ final class DirectoryBuffer: TextBuffer {
             return
         }
 
+        let previousDirectoryPath = self.directoryPath
+        let hadExistingListing = self.lines.count >= 4
+        let isSameDirectory = (expandedPath == previousDirectoryPath && hadExistingListing)
+
         self.directoryPath = expandedPath
         self.filePath = expandedPath
         self.isModified = false
@@ -111,15 +115,24 @@ final class DirectoryBuffer: TextBuffer {
             }
         }
 
-        let isSameDirectory = (expandedPath == self.directoryPath && !self.lines.isEmpty)
         self.lines = newLines
+        let minSelectableLine = min(3, max(0, newLines.count - 1))
         if isSameDirectory {
-            self.lineIndex = min(self.lineIndex, max(0, newLines.count - 1))
+            self.lineIndex = max(minSelectableLine, min(self.lineIndex, max(0, newLines.count - 1)))
         } else {
-            self.lineIndex = min(3, max(0, newLines.count - 1))
+            self.lineIndex = minSelectableLine
             self.topVLineIndex = 0
         }
         self.columnIndex = 0
+    }
+
+    override func clampCursor() {
+        if lines.isEmpty {
+            lines = [""]
+        }
+        let minSelectableLine = min(3, max(0, lines.count - 1))
+        lineIndex = max(minSelectableLine, min(lineIndex, lines.count - 1))
+        columnIndex = 0
     }
 
     override func handleKey(_ key: Key, editor: Editor) -> Bool {
