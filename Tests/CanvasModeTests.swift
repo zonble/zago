@@ -739,6 +739,41 @@ import TextMetrics
     #expect(editor.buffer.lineIndex < movedLine)
 }
 
+@Test func testCanvasPageUpDownPreservesCanvasBlockMark() throws {
+    let editor = Editor()
+    editor.buffer.lines = Array(repeating: "Canvas Row 1234567890", count: 60)
+    editor.switchToCanvasMode()
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 5)
+
+    // Page down via key and command
+    editor.processKey(.pageDown)
+    #expect(editor.buffer.lineIndex > 0)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMark?.visualColumn == 2)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+    #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 5)
+
+    _ = editor.commandRegistry.dispatch(id: .movePgdn, editor: editor)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+
+    // Page up via key and command
+    editor.processKey(.pageUp)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+
+    _ = editor.commandRegistry.dispatch(id: .movePgup, editor: editor)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+
+    // Go to EOF
+    _ = editor.commandRegistry.dispatch(id: .cursorGotoEOF, editor: editor)
+    #expect(editor.buffer.lineIndex == 59)
+    #expect(editor.buffer.canvasBlockMark?.line == 0)
+    #expect(editor.buffer.canvasBlockMarkEnd?.line == 2)
+}
+
 @Test func testCanvasModernSelectAll() throws {
     let editor = Editor()
     editor.apply(.keymap(.modern))

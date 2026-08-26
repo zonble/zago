@@ -179,7 +179,9 @@ struct GoToEndOfFileCommand: Command {
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
         guard !editor.buffer.lines.isEmpty else { return .noOp }
-        editor.clearActiveMark()
+        if !editor.isCanvasModeActive {
+            editor.clearActiveMark()
+        }
         editor.buffer.lineIndex = editor.buffer.lines.count - 1
         editor.buffer.columnIndex = editor.buffer.lines[editor.buffer.lineIndex].count
         editor.buffer.clampCursor()
@@ -210,7 +212,6 @@ struct MovePgdnCommand: Command {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
-            editor.clearActiveMark()
             let targetLine = min(
                 editor.buffer.lines.count - 1,
                 editor.buffer.lineIndex + mainAreaHeight
@@ -248,7 +249,6 @@ struct MovePgupCommand: Command {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
         if editor.isCanvasModeActive {
-            editor.clearActiveMark()
             editor.buffer.lineIndex = max(0, editor.buffer.lineIndex - mainAreaHeight)
             editor.syncCanvasCursorToBuffer()
             return .succeeded
