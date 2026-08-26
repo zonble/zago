@@ -67,7 +67,7 @@ public final class WasiTerminal: EditorTerminal {
     public func readKey() -> Key {
         switch readInputEvent() {
         case .key(let key): return key
-        case .mouse: return .unknown
+        case .mouse, .openFile: return .unknown
         }
     }
 
@@ -115,6 +115,8 @@ public final class WasiTerminal: EditorTerminal {
             switch secondByte {
             case UInt8(ascii: "["):
                 return parseCSIInputEvent()
+            case UInt8(ascii: "]"):
+                return parseOSCInputEvent()
             case UInt8(ascii: "O"):
                 guard let third = readByte() else { return .key(.esc) }
                 return .key(ANSIKeyMapping.resolveSS3Code(third) ?? .esc)
@@ -181,6 +183,27 @@ public final class WasiTerminal: EditorTerminal {
         }
 
         return .key(ANSIKeyMapping.resolve(sequence))
+    }
+
+    private func parseOSCInputEvent() -> InputEvent {
+        var bytes: [UInt8] = []
+        while bytes.count < 2048 {
+            guard let next = readByte() else { break }
+            // BEL (0x07) or ST (\x1b\\)
+            if next == 7 { break }
+            if next == 27 {
+                if let st = readByte(), st == UInt8(ascii: "\\") { break }
+            }
+            bytes.append(next)
+        }
+        guard let payload = String(bytes: bytes, encoding: .utf8) else {
+            return .key(.unknown)
+        }
+        if payload.hasPrefix("zago:open;") {
+            let path = String(payload.dropFirst("zago:open;".count))
+            return .openFile(path)
+        }
+        return .key(.unknown)
     }
 
     private func resolveControlCode(_ code: UInt32) -> Key? {

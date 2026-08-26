@@ -3,9 +3,11 @@ import {
   PreopenDirectory,
   ConsoleStdout,
   Fd,
+  File,
+  Directory,
   Inode,
 } from "@bjorn3/browser_wasi_shim";
-import { SharedStdin } from "./shared-stdin";
+import { SharedStdin, SharedFileChannel } from "./shared-stdin";
 import {
   VFSNode,
   VirtualOSStorage,
@@ -13,13 +15,59 @@ import {
   dumpInodeTree,
 } from "./vfs";
 
+let workspaceDir = new Map<string, Inode>();
+let isRunning = false;
+
+function insertFileIntoWorkspace(path: string, contentBytes: Uint8Array) {
+  let relPath = path;
+  if (relPath.startsWith("/workspace/")) {
+    relPath = relPath.slice("/workspace/".length);
+  } else if (relPath.startsWith("/")) {
+    relPath = relPath.slice(1);
+  }
+  const parts = relPath.split("/").filter(Boolean);
+  if (parts.length === 0) return;
+
+  const fileName = parts.pop()!;
+  let currentMap = workspaceDir;
+
+  for (const part of parts) {
+    let entry = currentMap.get(part);
+    if (!entry || !(entry instanceof Directory)) {
+      const newMap = new Map<string, Inode>();
+      entry = new Directory(newMap);
+      currentMap.set(part, entry);
+      currentMap = newMap;
+    } else {
+      currentMap = entry.contents as Map<string, Inode>;
+    }
+  }
+
+  currentMap.set(fileName, new File(contentBytes));
+}
+
 class SharedStdinFd extends Fd {
-  constructor(private stdin: SharedStdin) {
+  constructor(
+    private stdin: SharedStdin,
+    private fileChannel?: SharedFileChannel
+  ) {
     super();
   }
 
+  private drainPendingFiles() {
+    if (this.fileChannel) {
+      let pending = this.fileChannel.pullFile();
+      while (pending) {
+        insertFileIntoWorkspace(pending.path, pending.content);
+        pending = this.fileChannel.pullFile();
+      }
+    }
+  }
+
   override fd_read(size: number): { ret: number; data: Uint8Array } {
+    this.drainPendingFiles();
     const data = this.stdin.read(size);
+    this.drainPendingFiles();
     return { ret: 0, data };
   }
 
@@ -37,21 +85,25 @@ class SharedStdinFd extends Fd {
 }
 
 let sharedStdin: SharedStdin | null = null;
-let workspaceDir = new Map<string, Inode>();
-let isRunning = false;
+let sharedFileChannel: SharedFileChannel | null = null;
 
 self.onmessage = async (event: MessageEvent) => {
-  const { type, data, nodes, sharedBuffer } = event.data;
+  const { type, data, nodes, sharedBuffer, sharedFileBuffer } = event.data;
 
   switch (type) {
     case "init":
       if (sharedBuffer) {
         sharedStdin = new SharedStdin(sharedBuffer);
       }
+      if (sharedFileBuffer) {
+        sharedFileChannel = new SharedFileChannel(sharedFileBuffer);
+      }
+      const rawFiles = data?.targetFiles || (data?.targetFile ? [data.targetFile] : ["/workspace/welcome.md"]);
+      const targetFiles = Array.isArray(rawFiles) ? rawFiles : [rawFiles];
       await startWasm(
         data?.wasmBytes || data?.wasmUrl || "./zago.wasm",
         nodes || [],
-        data?.targetFile || "/workspace/welcome.md",
+        targetFiles,
         data?.lang || "en"
       );
       break;
@@ -79,20 +131,21 @@ async function flushVFSToIndexedDB() {
 async function startWasm(
   wasmSource: string | ArrayBuffer,
   initialNodes: VFSNode[],
-  targetFile: string = "/workspace/welcome.md",
+  targetFiles: string[] = ["/workspace/welcome.md"],
   lang: string = "en"
 ) {
   if (!sharedStdin) {
     sharedStdin = new SharedStdin();
   }
-  const stdinFd = new SharedStdinFd(sharedStdin);
+  const stdinFd = new SharedStdinFd(sharedStdin, sharedFileChannel || undefined);
 
   // Build hierarchical Inode tree from initial VFS nodes
   workspaceDir = buildInodeTree(initialNodes);
 
   const stdoutDecoder = new TextDecoder("utf-8");
   const stdoutFd = new ConsoleStdout((buffer: Uint8Array) => {
-    const text = stdoutDecoder.decode(buffer, { stream: true });
+    const unshared = buffer.buffer instanceof ArrayBuffer ? buffer : new Uint8Array(buffer);
+    const text = stdoutDecoder.decode(unshared, { stream: true });
     if (text.length > 0) {
       self.postMessage({ type: "stdout", data: text });
     }
@@ -106,23 +159,68 @@ async function startWasm(
     new PreopenDirectory(".", workspaceDir),
   ];
 
-  const lcAll = lang === "zh-TW" ? "zh_TW.UTF-8" : "en_US.UTF-8";
+const LOCALE_MAP: Record<string, string> = {
+  "zh-TW": "zh_TW.UTF-8",
+  "zh-CN": "zh_CN.UTF-8",
+  "zh-HK": "zh_HK.UTF-8",
+  "ja": "ja_JP.UTF-8",
+  "ko": "ko_KR.UTF-8",
+  "en": "en_US.UTF-8",
+};
+
+const DEFAULT_LOCALE = "en_US.UTF-8";
+
+function getLocaleString(lang: string): string {
+  return LOCALE_MAP[lang] ?? DEFAULT_LOCALE;
+}
+
+  const lcAll = getLocaleString(lang);
+  const rawArgs = ["zago", ...targetFiles];
+  const rawEnv = [
+    "LINES=24",
+    "COLUMNS=80",
+    "TERM=xterm-256color",
+    "COLORTERM=truecolor",
+    `LC_ALL=${lcAll}`,
+    `LANG=${lcAll}`,
+    `LANGUAGE=${lcAll}`,
+    "HOME=/workspace",
+  ];
 
   const wasiInstance = new WASI(
-    ["zago", targetFile],
-    [
-      "LINES=24",
-      "COLUMNS=80",
-      "TERM=xterm-256color",
-      "COLORTERM=truecolor",
-      `LC_ALL=${lcAll}`,
-      `LANG=${lcAll}`,
-      `LANGUAGE=${lcAll}`,
-      "HOME=/workspace",
-    ],
+    rawArgs,
+    rawEnv,
     fds,
     { debug: false }
   );
+
+  // Patch @bjorn3/browser_wasi_shim's bug where args_sizes_get and environ_sizes_get
+  // compute JS UTF-16 character length (arg.length) instead of UTF-8 byte length,
+  // causing heap buffer overflows / memory access out of bounds for CJK/Unicode filenames!
+  const textEncoder = new TextEncoder();
+  wasiInstance.wasiImport.args_sizes_get = (argc: number, argv_buf_size: number): number => {
+    const memory = (wasiInstance as any).inst.exports.memory;
+    const buffer = new DataView(memory.buffer);
+    buffer.setUint32(argc, rawArgs.length, true);
+    let buf_size = 0;
+    for (const arg of rawArgs) {
+      buf_size += textEncoder.encode(arg).length + 1;
+    }
+    buffer.setUint32(argv_buf_size, buf_size, true);
+    return 0;
+  };
+
+  wasiInstance.wasiImport.environ_sizes_get = (environ_count: number, environ_size: number): number => {
+    const memory = (wasiInstance as any).inst.exports.memory;
+    const buffer = new DataView(memory.buffer);
+    buffer.setUint32(environ_count, rawEnv.length, true);
+    let buf_size = 0;
+    for (const environ of rawEnv) {
+      buf_size += textEncoder.encode(environ).length + 1;
+    }
+    buffer.setUint32(environ_size, buf_size, true);
+    return 0;
+  };
 
   try {
     let wasmBytes: ArrayBuffer;
@@ -171,6 +269,7 @@ async function startWasm(
     isRunning = false;
     self.postMessage({ type: "exit", code: exitCode });
   } catch (error: any) {
+    console.error("[WORKER FATAL ERROR]", error, error?.stack);
     if (
       error &&
       (error.name === "WASIProcExit" ||
@@ -183,7 +282,7 @@ async function startWasm(
     } else {
       self.postMessage({
         type: "error",
-        message: error?.message || String(error),
+        message: `${error?.message || String(error)}${error?.stack ? "\n" + error.stack : ""}`,
       });
       isRunning = false;
     }

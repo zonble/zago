@@ -75,6 +75,8 @@ export const en = {
   importFileSuccess: (filename: string) =>
     `Imported "${filename}" to /workspace.\nReloading to open...`,
   importFailed: (err: string) => `Failed to import file: ${err}`,
+  binaryFileNotSupported: (filename: string) =>
+    `"${filename}" is a binary file and cannot be opened in zago.`,
 };
 
 export type TranslationSchema = typeof en;

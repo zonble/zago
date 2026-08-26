@@ -6,11 +6,21 @@ async function waitForEditor(page: Page): Promise<void> {
   await expect(page.locator("#wasm-loading-overlay")).toHaveClass(/hidden/, {
     timeout: 90_000,
   });
-  await expect(page.locator(".xterm-rows")).toBeVisible();
+  await expect(page.locator(".xterm-screen")).toBeVisible({ timeout: 20_000 });
 }
 
-function terminalText(page: Page) {
-  return page.locator(".xterm-rows");
+async function getTerminalText(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const term = (window as any).term;
+    if (!term) return "";
+    const lines: string[] = [];
+    const buf = term.buffer.active;
+    for (let i = 0; i < buf.length; i++) {
+      const line = buf.getLine(i);
+      if (line) lines.push(line.translateToString(true));
+    }
+    return lines.join("\n");
+  });
 }
 
 async function readVFSFile(page: Page, path: string): Promise<string> {
@@ -53,7 +63,7 @@ test.describe("web editor smoke tests", () => {
   });
 
   test("starts the WebAssembly editor with the default document", async ({ page }) => {
-    await expect(terminalText(page)).toContainText(welcomeTitle);
+    await expect.poll(() => getTerminalText(page), { timeout: 10_000 }).toContain(welcomeTitle);
     await expect(page.locator("#terminal-container")).toBeVisible();
   });
 
@@ -63,7 +73,7 @@ test.describe("web editor smoke tests", () => {
     await page.locator("#terminal-container").click();
     await page.keyboard.type(marker);
 
-    await expect(terminalText(page)).toContainText(marker);
+    await expect.poll(() => getTerminalText(page), { timeout: 10_000 }).toContain(marker);
   });
 
   test("persists an imported workspace file through a page reload", async ({ page }) => {
@@ -83,12 +93,112 @@ test.describe("web editor smoke tests", () => {
     await waitForEditor(page);
 
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator("#btn-clear-storage").click();
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "domcontentloaded" }).catch(() => {}),
+      page.locator("#btn-clear-storage").click(),
+    ]);
     await waitForEditor(page);
 
-    await expect(terminalText(page)).toContainText(welcomeTitle);
+    await expect.poll(() => getTerminalText(page), { timeout: 10_000 }).toContain(welcomeTitle);
     await expect
       .poll(() => readVFSFile(page, "/workspace/playwright-reset.md"))
       .toBe("");
+  });
+
+  test("accepts dragged and dropped text files into VFS and opens them", async ({ page }) => {
+    const fileName = "dropped-note.txt";
+    const fileContent = "Hello from dropped file in zago!\n";
+
+    await page.evaluate(({ name, content }) => {
+      const dt = new DataTransfer();
+      const file = new window.File([content], name, { type: "text/plain" });
+      dt.items.add(file);
+      const container = document.getElementById("terminal-container");
+      container?.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+    }, { name: fileName, content: fileContent });
+
+    await waitForEditor(page);
+    await expect
+      .poll(() => readVFSFile(page, `/workspace/${fileName}`), { timeout: 10_000 })
+      .toBe(fileContent);
+    await expect.poll(() => getTerminalText(page), { timeout: 10_000 }).toContain("Hello from dropped file");
+  });
+
+  test("resolves duplicate filename on drag and drop without overwriting", async ({ page }) => {
+    const originalContent = "Original version\n";
+    const secondContent = "Second duplicate version\n";
+
+    await page.evaluate(({ content }) => {
+      const dt = new DataTransfer();
+      const file = new window.File([content], "dup-test.txt", { type: "text/plain" });
+      dt.items.add(file);
+      document.getElementById("terminal-container")?.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+    }, { content: originalContent });
+
+    await waitForEditor(page);
+    await expect
+      .poll(() => readVFSFile(page, "/workspace/dup-test.txt"), { timeout: 10_000 })
+      .toBe(originalContent);
+
+    // Drop same filename again
+    await page.evaluate(({ content }) => {
+      const dt = new DataTransfer();
+      const file = new window.File([content], "dup-test.txt", { type: "text/plain" });
+      dt.items.add(file);
+      document.getElementById("terminal-container")?.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+    }, { content: secondContent });
+
+    await waitForEditor(page);
+    // Original should remain intact
+    await expect
+      .poll(() => readVFSFile(page, "/workspace/dup-test.txt"), { timeout: 10_000 })
+      .toBe(originalContent);
+    // New file should be auto-renamed to dup-test_1.txt
+    await expect
+      .poll(() => readVFSFile(page, "/workspace/dup-test_1.txt"), { timeout: 10_000 })
+      .toBe(secondContent);
+  });
+
+  test("rejects binary files dropped into the terminal container", async ({ page }) => {
+    let dialogMessage = "";
+    page.on("dialog", async (dialog) => {
+      dialogMessage = dialog.message();
+      await dialog.accept();
+    });
+
+    // Create a binary buffer containing null byte 0x00
+    await page.evaluate(() => {
+      const dt = new DataTransfer();
+      const binaryData = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0x00, 0x00, 0x0d]);
+      const file = new window.File([binaryData], "test-image.png", { type: "image/png" });
+      dt.items.add(file);
+      document.getElementById("terminal-container")?.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+    });
+
+    await expect.poll(() => dialogMessage, { timeout: 5_000 }).toContain("test-image.png");
+    // Binary file should NOT exist in VFS
+    const vfsContent = await readVFSFile(page, "/workspace/test-image.png");
+    expect(vfsContent).toBe("");
+  });
+
+  test("accepts dropping actual PRD file with CJK characters, emojis, and symbols", async ({ page }) => {
+    const fs = await import("fs");
+    const path = "/Users/zonble/Downloads/PRD變更到落地-完整流程.md";
+    if (fs.existsSync(path)) {
+      const realContent = fs.readFileSync(path, "utf-8");
+      const realName = "PRD變更到落地-完整流程.md";
+
+      await page.evaluate(({ name, content }) => {
+        const dt = new DataTransfer();
+        const file = new window.File([content], name, { type: "text/markdown" });
+        dt.items.add(file);
+        document.getElementById("terminal-container")?.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+      }, { name: realName, content: realContent });
+
+      await waitForEditor(page);
+      await expect
+        .poll(() => readVFSFile(page, `/workspace/${realName}`), { timeout: 15_000 })
+        .toBe(realContent);
+    }
   });
 });

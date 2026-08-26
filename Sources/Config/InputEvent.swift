@@ -1,9 +1,10 @@
 import Foundation
 
-/// Top-level terminal input event (key press or mouse interaction).
+/// Top-level terminal input event (key press, mouse interaction, or external file open command).
 public enum InputEvent: Equatable, Hashable, Sendable {
     case key(Key)
     case mouse(MouseEvent)
+    case openFile(String)
 }
 
 /// Represents mouse interactions captured by the terminal driver.

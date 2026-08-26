@@ -76,4 +76,6 @@ export const zhTW: TranslationSchema = {
   importFileSuccess: (filename: string) =>
     `已將「${filename}」匯入至 /workspace。\n即將重新載入以開啟...`,
   importFailed: (err: string) => `匯入檔案失敗：${err}`,
+  binaryFileNotSupported: (filename: string) =>
+    `「${filename}」為二進位檔案，無法在 zago 中開啟。`,
 };

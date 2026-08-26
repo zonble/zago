@@ -493,3 +493,116 @@ public init(logoLocaleSpec raw: String?) {
 }
 ```
 
+---
+
+## 13. WebAssembly (WASI / SwiftWasm) Legacy Text Encodings & Memory Traps
+
+### The Pitfall: `RuntimeError: memory access out of bounds` on Legacy Encodings
+
+In `zago`'s multi-encoding auto-detector ([`TextEncodingDetector.swift`](../../Sources/TextEncoding/TextEncodingDetector.swift)), non-UTF-8 byte streams are tested against candidate encodings (such as `.big5`, `.gb18030`, `.gbk`, `.shiftJISCustom`, `.eucJPCustom`, and `.windowsCP1252`).
+
+- **macOS / Linux / Windows**: CoreFoundation / ICU conversion tables are present in the host C runtime, and `String(data: data, encoding: .big5)` successfully decodes valid Big5 byte sequences or returns `nil` on invalid sequences.
+- **WebAssembly (`wasm32-unknown-wasi` / SwiftWasm)**: Embedded WASI libc and `swift-corelibs-foundation` for WebAssembly do **NOT** include legacy ICU codepage tables. Calling `String(data: data, encoding: .big5)` (or any custom `String.Encoding` raw value) on WASI hits an unmapped conversion routine or null pointer dereference in the WebAssembly linear memory runtime, triggering an immediate WebAssembly trap:
+  ```text
+  RuntimeError: memory access out of bounds
+  ```
+
+### Architectural Solution: Conditional WASI Encoding Fallback
+
+In [`TextEncodingDetector.swift`](../../Sources/TextEncoding/TextEncodingDetector.swift), legacy multi-byte and single-byte candidate checks are guarded by `#if !os(WASI)`:
+
+```swift
+// 1. Check Byte Order Mark (BOM)
+if let bomResult = detectBOM(data) {
+    return bomResult
+}
+
+// 2. Strict UTF-8 validation (without BOM)
+if let utf8String = String(data: data, encoding: .utf8) {
+    return TextReadResult(content: utf8String, encoding: .utf8)
+}
+
+#if !os(WASI)
+// 3. Multi-byte candidate encodings (Native platforms only)
+let candidateEncodings: [String.Encoding] = [
+    .big5,
+    .gb18030,
+    .gbk,
+    .shiftJISCustom,
+    .utf16,
+    .eucJPCustom,
+]
+
+for encoding in candidateEncodings {
+    if let decoded = String(data: data, encoding: encoding) {
+        return TextReadResult(content: decoded, encoding: encoding)
+    }
+}
+
+// 4. Single-byte 8-bit fallback (e.g. Windows-1252 / ISO-8859-1)
+if let fallbackString = String(data: data, encoding: .windowsCP1252)
+    ?? String(data: data, encoding: .isoLatin1)
+{
+    let actualEncoding: String.Encoding =
+        String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
+    return TextReadResult(content: fallbackString, encoding: actualEncoding)
+}
+return nil
+#else
+// WebAssembly (WASI) fallback: Lenient UTF-8 decoding with replacement characters
+return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
+#endif
+```
+
+This guarantees that on WebAssembly, files loaded or dragged into the virtual filesystem decode safely without crashing the WASI runtime instance.
+
+---
+
+## 14. WebAssembly (WASI / SwiftWasm) Directory Traversal & `struct dirent` Alignment
+
+### The Pitfall: Hard-Coded Byte Offsets in `WASILibc.readdir`
+
+In WASI libc (`__struct_dirent.h`), `struct dirent` memory layout differs between C compilers and WASI runtimes (`@bjorn3/browser_wasi_shim` vs native WASI runtimes):
+
+- Attempting raw pointer arithmetic (e.g. `entryPtr.advanced(by: 9).assumingMemoryBound(to: CChar.self)`) to read `d_name` offsets leads to out-of-bounds memory reads or reading non-null-terminated memory, causing WebAssembly linear memory traps (`RuntimeError: memory access out of bounds`) when listing `/workspace` directories.
+
+### Architectural Solution: Use `FileManager.contentsOfDirectory`
+
+In [`WasiFileIOStrategy.swift`](../../Sources/zagoweb/WasiFileIOStrategy.swift), directory listings avoid direct C struct pointer manipulation and instead delegate to `FileManager.default.contentsOfDirectory(atPath:)`, which is safely implemented and bounds-checked by `swift-corelibs-foundation` for WebAssembly.
+
+---
+
+## 15. Web WASI Shim UTF-16 Character Count vs UTF-8 Byte Length Heap Buffer Overflow
+
+### The Pitfall: `args_sizes_get` / `environ_sizes_get` Underestimating Buffer Size
+
+In `@bjorn3/browser_wasi_shim`'s implementation of WASI snapshot preview 1:
+
+- When calculating total argument and environment buffer sizes, the shim naively looped through strings using JavaScript's `arg.length` (`buf_size += arg.length + 1`).
+- In JavaScript, `arg.length` returns the **UTF-16 code unit count**, NOT the encoded **UTF-8 byte length**.
+- For pure ASCII strings (e.g. `welcome.md`), `arg.length == UTF-8 byte length`.
+- When passing command-line arguments containing CJK characters or emojis (e.g. `["zago", "/workspace/PRD變更到落地-完整流程.md"]`), `arg.length` was 28, whereas UTF-8 encoded bytes were 50!
+- WASI libc in Swift allocated a 29-byte buffer based on `args_sizes_get`. Then `args_get` wrote 50 bytes into the 29-byte buffer, overflowing the heap buffer, corrupting WebAssembly linear memory, and crashing the Swift runtime with `RuntimeError: memory access out of bounds`.
+
+### Architectural Solution: Monkey-Patching `args_sizes_get` & `environ_sizes_get`
+
+In [`web/src/worker.ts`](../../web/src/worker.ts), `wasiInstance.wasiImport.args_sizes_get` and `environ_sizes_get` are monkey-patched to compute exact byte lengths using `new TextEncoder().encode(arg).length`:
+
+```typescript
+const textEncoder = new TextEncoder();
+wasiInstance.wasiImport.args_sizes_get = (argc: number, argv_buf_size: number): number => {
+  const memory = (wasiInstance as any).inst.exports.memory;
+  const buffer = new DataView(memory.buffer);
+  buffer.setUint32(argc, rawArgs.length, true);
+  let buf_size = 0;
+  for (const arg of rawArgs) {
+    buf_size += textEncoder.encode(arg).length + 1;
+  }
+  buffer.setUint32(argv_buf_size, buf_size, true);
+  return 0;
+};
+```
+
+
+
+
