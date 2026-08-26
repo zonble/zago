@@ -229,6 +229,7 @@ final class Renderer {
         let subLineCounts = makeSubLineCounts(from: virtualLines)
         var tokenTypesCache: [Int: [SyntaxTokenType]] = [:]
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
+        let activeCanvasRect = editor.isCanvasModeActive ? editor.currentCanvasBlockRectangle() : nil
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -340,8 +341,9 @@ final class Renderer {
                             atDisplayColumn: renderedDisplayWidth,
                             tabSize: editor.displayConfig.tabSize)
 
-                        if editor.isCanvasModeActive
-                            && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: charVisualColumn)
+                        if let rect = activeCanvasRect,
+                            vLine.bufferLineIndex >= rect.topLine && vLine.bufferLineIndex <= rect.bottomLine,
+                            charVisualColumn >= rect.leftColumn && charVisualColumn < rect.rightColumnExclusive
                         {
                             lineOutput += renderedText.ansiStyled(
                                 style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)

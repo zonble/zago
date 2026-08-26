@@ -1,3 +1,4 @@
+import ANSIStyle
 import Foundation
 import Testing
 import TextMetrics
@@ -772,4 +773,142 @@ import TextMetrics
     #expect(editor.buffer.lines[0] == "─╮")
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.canvasVisualColumn == 1)
+}
+
+@Test func testCanvasDragSelectionPureEnglish() throws {
+    let editor = Editor()
+    editor.displayConfig.enableMouse = true
+    editor.buffer.lines = [
+        "Hello World",
+        "Canvas Drag",
+    ]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 0
+
+    let geometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+    let topMargin = 1 + (geometry.showRuler ? 1 : 0)
+
+    // Press at (0, 0)
+    let row0 = topMargin + 1
+    let col0 = 1 + geometry.gutterWidth
+    editor.handleMouseEvent(MouseEvent(action: .press(.left), col: col0, row: row0))
+
+    // Drag to (1, 4)
+    let row1 = topMargin + 2
+    let col4 = 1 + geometry.gutterWidth + 4
+    editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: col4, row: row1))
+
+    let rect = try #require(editor.currentCanvasBlockRectangle())
+    #expect(rect.topLine == 0)
+    #expect(rect.bottomLine == 1)
+    #expect(rect.leftColumn == 0)
+    #expect(rect.rightColumnExclusive == 5)
+    #expect(rect.width == 5)
+
+    // Verify rendered output contains inverted block
+    let rendered = editor.renderer.render(editor: editor, rows: 10, cols: 40)
+    #expect(rendered.contains(ANSIStyle.inverse))
+}
+
+@Test func testCanvasDragSelectionPureChinese() throws {
+    let editor = Editor()
+    editor.displayConfig.enableMouse = true
+    editor.buffer.lines = [
+        "你好世界",
+        "測試畫布",
+    ]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 0
+
+    let geometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+    let topMargin = 1 + (geometry.showRuler ? 1 : 0)
+
+    // Press at line 0, visualCol 0
+    let row0 = topMargin + 1
+    let col0 = 1 + geometry.gutterWidth
+    editor.handleMouseEvent(MouseEvent(action: .press(.left), col: col0, row: row0))
+
+    // Drag to line 1, visualCol 2 (which lands on the first half of '試' at visual col 2..3)
+    let row1 = topMargin + 2
+    let col2 = 1 + geometry.gutterWidth + 2
+    editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: col2, row: row1))
+
+    // CJK snapping should snap right boundary to include the full '試' character (visual col 4 exclusive)
+    let rect = try #require(editor.currentCanvasBlockRectangle())
+    #expect(rect.topLine == 0)
+    #expect(rect.bottomLine == 1)
+    #expect(rect.leftColumn == 0)
+    #expect(rect.rightColumnExclusive == 4)
+    #expect(rect.width == 4)
+
+    // Verify copying block extracts "你好" and "測試"
+    editor.copyCanvasBlock()
+    let clipboard = try #require(editor.canvasBlockClipboard)
+    #expect(clipboard.rows == ["你好", "測試"])
+}
+
+@Test func testCanvasDragSelectionMixedEnglishAndCJK() throws {
+    let editor = Editor()
+    editor.displayConfig.enableMouse = true
+    editor.buffer.lines = [
+        "Hi 你好 世界",
+        "OK 測試 畫布",
+    ]
+    editor.switchToCanvasMode()
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 0
+
+    let geometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+    let topMargin = 1 + (geometry.showRuler ? 1 : 0)
+
+    // "Hi 你好 世界"
+    // "H"(0) "i"(1) " "(2) "你"(3..4) "好"(5..6) " "(7) "世"(8..9) "界"(10..11)
+    // Press at line 0, visual col 3 (start of '你')
+    let row0 = topMargin + 1
+    let colStart = 1 + geometry.gutterWidth + 3
+    editor.handleMouseEvent(MouseEvent(action: .press(.left), col: colStart, row: row0))
+
+    // Drag to line 1, visual col 6 (end of '好' / '試')
+    let row1 = topMargin + 2
+    let colEnd = 1 + geometry.gutterWidth + 6
+    editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: colEnd, row: row1))
+
+    let rect = try #require(editor.currentCanvasBlockRectangle())
+    #expect(rect.topLine == 0)
+    #expect(rect.bottomLine == 1)
+    #expect(rect.leftColumn == 3)
+    #expect(rect.rightColumnExclusive == 7)
+    #expect(rect.width == 4)
+
+    editor.copyCanvasBlock()
+    let clipboard = try #require(editor.canvasBlockClipboard)
+    #expect(clipboard.rows == ["你好", "測試"])
+}
+
+@Test func testCanvasDragDeduplicationDoesNotCorruptState() throws {
+    let editor = Editor()
+    editor.displayConfig.enableMouse = true
+    editor.buffer.lines = ["Row 1", "Row 2"]
+    editor.switchToCanvasMode()
+
+    let geometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+    let topMargin = 1 + (geometry.showRuler ? 1 : 0)
+    let row = topMargin + 1
+    let col = 1 + geometry.gutterWidth + 3
+
+    editor.handleMouseEvent(MouseEvent(action: .press(.left), col: col, row: row))
+    #expect(editor.buffer.canvasBlockMark == nil) // Press alone clears block mark and sets cursor
+
+    // Drag to col + 2
+    for _ in 1...10 {
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: col + 2, row: row + 1))
+    }
+
+    let rect = try #require(editor.currentCanvasBlockRectangle())
+    #expect(rect.topLine == 0)
+    #expect(rect.bottomLine == 1)
+    #expect(rect.leftColumn == 3)
+    #expect(rect.rightColumnExclusive == 6)
 }

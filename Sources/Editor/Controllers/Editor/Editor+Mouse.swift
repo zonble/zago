@@ -15,7 +15,13 @@ extension Editor {
             if buffer.isReadOnly || promptController.isActive { return }
 
             let topMargin = 1 + (geometry.showRuler ? 1 : 0)
-            let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+            let totalLineCount: Int
+            if isCanvasModeActive {
+                totalLineCount = max(1, buffer.lines.count)
+            } else {
+                let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+                totalLineCount = max(1, virtualLines.count)
+            }
 
             // Determine if at or beyond boundary and compute two-tier interval
             let isOutsideWindow = mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
@@ -39,11 +45,11 @@ extension Editor {
                 }
                 vLineIndex = topVLineIndex
             } else if mouseEvent.row > topMargin + geometry.mainAreaHeight {
-                let maxTop = max(0, virtualLines.count - 1)
+                let maxTop = max(0, totalLineCount - 1)
                 if topVLineIndex < maxTop {
                     topVLineIndex += 1
                 }
-                let screenOffset = max(0, min(geometry.mainAreaHeight - 1, (virtualLines.count - 1) - topVLineIndex))
+                let screenOffset = max(0, min(geometry.mainAreaHeight - 1, (totalLineCount - 1) - topVLineIndex))
                 vLineIndex = topVLineIndex + screenOffset
             } else {
                 let screenOffset = mouseEvent.row - topMargin - 1
@@ -70,6 +76,14 @@ extension Editor {
                 if buffer.canvasBlockMark == nil {
                     buffer.canvasBlockMark = (line: buffer.lineIndex, visualColumn: canvasVisualColumn)
                 }
+
+                if let prevEnd = buffer.canvasBlockMarkEnd,
+                    prevEnd.line == canvasY && prevEnd.visualColumn == canvasX,
+                    buffer.lineIndex == canvasY, canvasVisualColumn == canvasX
+                {
+                    return
+                }
+
                 buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: canvasX)
                 if canvasY < buffer.lines.count {
                     buffer.lineIndex = canvasY
@@ -218,8 +232,19 @@ extension Editor {
             }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 if vLineIndex < buffer.lines.count {
+                    let clicks = mouseClickTracker.registerClick(
+                        row: mouseEvent.row,
+                        col: mouseEvent.col,
+                        vLineIndex: vLineIndex
+                    )
                     buffer.lineIndex = vLineIndex
                     buffer.columnIndex = 0
+                    if clicks >= 2 {
+                        mouseClickTracker.reset()
+                        if let dirBuffer = buffer as? DirectoryBuffer {
+                            dirBuffer.activateEntry(editor: self)
+                        }
+                    }
                 }
                 return
             }
