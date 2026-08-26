@@ -18,6 +18,7 @@ public struct LogoEmojiPlugin: LogoParserPlugin {
         // Drawing and editor output
         "🖼": .box,
         "🔲": .drawBox,
+        "🔳": .frame,
         "✍️": .type,
         "🎪": .show,
         "↩": .newline,

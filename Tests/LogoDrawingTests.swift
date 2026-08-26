@@ -724,3 +724,120 @@ import TextMetrics
     #expect(editor3.buffer.lines[0].contains("┬"))
 }
 
+@Test func testFramePreservesExistingContent() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "                 ",
+        "   Hello World   ",
+        "                 ",
+    ]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 1
+
+    editor.logoEngine.execute("FRAME 15 3")
+
+    #expect(editor.buffer.lines[0] == " ┌─────────────┐ ")
+    #expect(editor.buffer.lines[1] == " │ Hello World │ ")
+    #expect(editor.buffer.lines[2] == " └─────────────┘ ")
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.buffer.columnIndex == 16)
+}
+
+@Test func testFrameWithStylesAndRound() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "          ",
+        "  Status  ",
+        "          ",
+    ]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    editor.logoEngine.execute("FRAME 10 3 \"double\" \"round\"")
+
+    #expect(editor.buffer.lines[0] == "╭════════╮")
+    #expect(editor.buffer.lines[1] == "║ Status ║")
+    #expect(editor.buffer.lines[2] == "╰════════╯")
+
+    let asciiEditor = Editor()
+    asciiEditor.buffer.lines = [
+        "      ",
+        " ABCD ",
+        "      ",
+    ]
+    asciiEditor.logoEngine.execute("FRAME 6 3 \"ascii\"")
+    #expect(asciiEditor.buffer.lines[0] == "+----+")
+    #expect(asciiEditor.buffer.lines[1] == "|ABCD|")
+    #expect(asciiEditor.buffer.lines[2] == "+----+")
+
+    let dslEditor = Editor()
+    dslEditor.buffer.lines = [
+        "      ",
+        " Test ",
+        "      ",
+    ]
+    dslEditor.logoEngine.execute("FRAME 6 3 =)")
+    #expect(dslEditor.buffer.lines[0] == "╭════╮")
+    #expect(dslEditor.buffer.lines[1] == "║Test║")
+    #expect(dslEditor.buffer.lines[2] == "╰════╯")
+}
+
+@Test func testFramePreservesCJKContent() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "          ",
+        " 測試內容 ",
+        "          ",
+    ]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    editor.logoEngine.execute("FRAME 10 3")
+
+    #expect(editor.buffer.lines[0] == "┌────────┐")
+    #expect(editor.buffer.lines[1] == "│測試內容│")
+    #expect(editor.buffer.lines[2] == "└────────┘")
+}
+
+@Test func testFrameRequiresWidthAndHeight() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["Hello"]
+    editor.logoEngine.execute("FRAME")
+    #expect(editor.buffer.lines == ["Hello"])
+
+    editor.logoEngine.execute("FRAME 10")
+    #expect(editor.buffer.lines == ["Hello"])
+}
+
+@Test func testFrameExitPositions() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["", "", "", ""]
+    editor.buffer.lineIndex = 0
+    editor.buffer.columnIndex = 0
+
+    editor.logoEngine.execute("FRAME 6 3 DOWN")
+    #expect(editor.buffer.lineIndex == 3)
+    #expect(editor.buffer.columnIndex == 0)
+
+    let seEditor = Editor()
+    seEditor.buffer.lines = ["", "", "", ""]
+    seEditor.logoEngine.execute("FRAME 6 3 SE")
+    #expect(seEditor.buffer.lineIndex == 2)
+    #expect(seEditor.buffer.columnIndex == 6)
+
+    let nwEditor = Editor()
+    nwEditor.buffer.lines = ["", "", "", ""]
+    nwEditor.logoEngine.execute("FRAME 6 3 NW")
+    #expect(nwEditor.buffer.lineIndex == 0)
+    #expect(nwEditor.buffer.columnIndex == 0)
+}
+
+@Test func testFrameExpressionArguments() throws {
+    let editor = Editor()
+    editor.buffer.lines = ["", "", ""]
+    editor.logoEngine.execute("FRAME (4 + 4) (1 + 2)")
+    #expect(editor.buffer.lines[0] == "┌──────┐")
+    #expect(editor.buffer.lines[1] == "│      │")
+    #expect(editor.buffer.lines[2] == "└──────┘")
+}
+

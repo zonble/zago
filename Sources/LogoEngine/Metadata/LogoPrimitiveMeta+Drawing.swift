@@ -99,6 +99,33 @@ extension LogoPrimitive {
                 notes: boxStyleDSLNote
             )
 
+        case .frame:
+            LogoPrimitiveMeta(
+                name: "FRAME",
+                description: "Draws a perimeter border frame of specified dimensions around existing content.",
+                localizedDescriptionKey: "logo.doc.frame",
+                source: .zago,
+                parameters: [
+                    LogoPrimitiveParameter(
+                        name: "width", required: true, description: "The width of the frame.", example: "20"),
+                    LogoPrimitiveParameter(
+                        name: "height", required: true, description: "The height of the frame.", example: "5"),
+                    LogoPrimitiveParameter(
+                        name: "style", required: false, description: "The formatting or border style. Used by FRAME.",
+                        example: "single",
+                        allowedValues: borderStyleAllowedValues),
+                    LogoPrimitiveParameter(
+                        name: "exit", required: false, description: "The exit argument. Used by FRAME.",
+                        example: "ne", allowedValues: boxExitPositionAllowedValues),
+                ],
+                examples: [
+                    LogoPrimitiveExample(input: "FRAME 20 5"),
+                    LogoPrimitiveExample(input: "FRAME 20 5 \"double\" \"round\""),
+                    LogoPrimitiveExample(input: "FRAME 16 4 =)"),
+                ],
+                notes: boxStyleDSLNote
+            )
+
         case .inset:
             LogoPrimitiveMeta(
                 name: "INSET",

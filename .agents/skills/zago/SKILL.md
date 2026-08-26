@@ -110,6 +110,7 @@ When `zago` runs with `--ipc` or `set ipc.enabled true`, external AI agents can 
 - **`BOX "Status" "center" "round"`**: Draws a rounded-corner frame centered on text.
 - **`BOX 20 4 ROUND AT:DOWN`**: Draws a box and moves cursor to line below (`DOWN`).
 - **`DRAWBOX`**: Draws a canvas overlay frame without pushing surrounding text.
+- **`FRAME width height [style] [round] [exitPos]`**: Draws a perimeter frame around existing text without overwriting internal content.
 
 **Frame Styles**: `ROUND` (`╭───╮`), `DOUBLE` (`╔═══╗`), `HEAVY` (`┏━━━┓`), `LIGHT` (default `┌───┐`), `ASCII` (`+---+`), `SINGLE`, `DOUBLE-ROUND`
 

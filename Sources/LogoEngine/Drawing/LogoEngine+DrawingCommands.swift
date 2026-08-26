@@ -113,6 +113,11 @@ extension LogoEngine {
             executeBoxCommand(tokens, index: &index, mode: .overlay)
             return true
 
+        case .frame:
+            index += 1
+            executeFrameCommand(tokens, index: &index)
+            return true
+
         case .line:
             index += 1
             executeLineCommand(tokens, index: &index)

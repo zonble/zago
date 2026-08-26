@@ -27,6 +27,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
     case goto
     case box
     case drawBox
+    case frame
     case inset
     case line
     case vline
@@ -349,6 +350,7 @@ public enum LogoPrimitive: String, CaseIterable, Equatable, Sendable {
         (["GOTO"], .goto),
         (["BOX"], .box),
         (["DRAWBOX"], .drawBox),
+        (["FRAME"], .frame),
         (["LINE"], .line),
         (["VLINE"], .vline),
         (["TABLE"], .table),
@@ -656,7 +658,7 @@ extension LogoPrimitive {
     internal static let statementCommands: Set<Self> = [
         .make, .name, .type, .show, .delete, .backspace, .deleteLine, .top, .bottom, .lineStart, .lineEnd,
         .changeText, .joinLine, .splitLine, .indentLines, .outdentLines, .move,
-        .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .inset, .line, .vline, .table,
+        .mark, .cut, .uncut, .justify, .goto, .box, .drawBox, .frame, .inset, .line, .vline, .table,
         .newline, .penDown, .penUp, .forward, .back, .turnRight, .turnLeft, .setHeading, .setline, .gotoline,
         .gotocol, .clearBuffer, .ifCondition, .output, .run, .repeatLoop, .forLoop,
         .dotimesLoop, .whileLoop, .doWhileLoop, .untilLoop, .doUntilLoop, .caseSwitch, .condSwitch,

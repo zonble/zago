@@ -219,6 +219,16 @@ target frame when one is present.
 ╰────────────────────────────╯
 ```
 
+#### `FRAME` (Perimeter Frame around Existing Content)
+
+`FRAME width height [style] [round]` draws an outer border frame starting at the current cursor position $(startLine, startCol)$ without modifying or clearing the existing characters inside the frame rectangle.
+
+```logo
+FRAME 20 5
+FRAME 16 4 "double" "round"
+FRAME 12 3 =)
+```
+
 `BOX SELECTION` frames the current selected region:
 
 ```logo
@@ -719,6 +729,7 @@ their own syntax and are not treated as general expressions.
 | `DRAWBOX` | - | `DRAWBOX "text" [align] [style]` | Draws an overlay box around text | `DRAWBOX "Hello World" "center"` |
 | `DRAWBOX` | - | `DRAWBOX width height [style]` | Draws an empty overlay box frame; dimensions clamp like `BOX` | `DRAWBOX 20 (2 + 3) "round"` |
 | `DRAWBOX` | - | `DRAWBOX` | In Canvas Mode with a block mark, overlays a frame on the marked block; otherwise draws the default overlay frame | `DRAWBOX` |
+| `FRAME` | - | `FRAME width height [style] [round]` | Overlays a border frame of specified dimensions around existing content without overwriting internal text | `FRAME 20 5`, `FRAME 20 5 "double" "round"` |
 | `LINE` | - | `LINE [length] [style] [arrow] [arrowStyle]` | Draws a horizontal line; explicit lengths clamp to `1...200` | `LINE ARROW`, `LINE (10 * 2) ASCII BOTHARROW` |
 | `VLINE` | - | `VLINE [height] [style] [arrow] [arrowStyle]` | Draws a vertical line; explicit heights clamp to `1...100` | `VLINE ARROW`, `VLINE (2 + 3) BOTHARROW` |
 | `TABLE` | - | `TABLE [rows] [cols] [cellWidth] [style] [rounded]` | Inserts a plain-text grid table at cursor | `TABLE 3 3 12`, `TABLE 3 3 12 "double` |
