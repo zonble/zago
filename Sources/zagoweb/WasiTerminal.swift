@@ -38,6 +38,11 @@ public final class WasiTerminal: EditorTerminal {
 
     private var pendingBytes: [UInt8] = []
 
+    /// Injects mock bytes directly into pendingBytes for testing.
+    public func injectPendingBytes(_ bytes: [UInt8]) {
+        pendingBytes.append(contentsOf: bytes)
+    }
+
     public func hasPendingInput() -> Bool {
         !pendingBytes.isEmpty
     }

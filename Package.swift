@@ -136,7 +136,7 @@ let package = Package(
             dependencies: [
                 "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
                 "LogoLocalization", "NumberHelpers", "SpellChecker", "SystemClipboard",
-                "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago",
+                "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago", "zagoweb",
             ],
             path: "Tests"
         ),
