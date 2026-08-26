@@ -173,4 +173,6 @@ an interactive plain-text design canvas.
 
 For advanced usage, run "help-cmd" or "help-key" in the ESC prompt to explore more.
 
+Try `dir` to browse the workspace and discover more examples.
+
 Happy Editing!

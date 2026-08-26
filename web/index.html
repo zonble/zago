@@ -59,6 +59,12 @@
     }
     </script>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Mono:wght@400;600&family=Source+Code+Pro:wght@400;600&display=swap"
+    rel="stylesheet" />
+
   <script type="text/javascript" src="./coi-serviceworker.js"></script>
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="icon" type="image/svg+xml"
@@ -226,6 +232,21 @@
             <span data-i18n="toolbarTitle" data-i18n-html="true">Interactive Workspace (<code>/workspace</code>)</span>
           </div>
           <div class="toolbar-actions">
+            <div class="font-select-wrapper">
+              <label for="font-select" class="visually-hidden" data-i18n="fontSelectLabel">Font</label>
+              <select id="font-select" class="action-select" title="Change Terminal Font" data-i18n-title="fontSelectTitle">
+                <option value="Menlo, Monaco, 'Courier New', 'Noto Sans Mono CJK TC', monospace" data-i18n="fontOptionDefault">Default (System Mono)</option>
+                <option value="'JetBrains Mono', Menlo, Monaco, 'Noto Sans Mono CJK TC', monospace">JetBrains Mono</option>
+                <option value="'Fira Code', Menlo, Monaco, 'Noto Sans Mono CJK TC', monospace">Fira Code</option>
+                <option value="'Source Code Pro', Menlo, Monaco, 'Noto Sans Mono CJK TC', monospace">Source Code Pro</option>
+                <option value="'Noto Sans Mono', 'Noto Sans Mono CJK TC', monospace">Noto Sans Mono</option>
+                <option value="Menlo, 'Noto Sans Mono CJK TC', monospace">Menlo</option>
+                <option value="Monaco, 'Noto Sans Mono CJK TC', monospace">Monaco</option>
+                <option value="'Cascadia Code', Consolas, 'Noto Sans Mono CJK TC', monospace">Cascadia Code</option>
+                <option value="Consolas, 'Noto Sans Mono CJK TC', monospace">Consolas</option>
+                <option value="'Courier New', 'Noto Sans Mono CJK TC', monospace">Courier New</option>
+              </select>
+            </div>
             <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
               <span class="btn-icon">📁</span> <span class="btn-text" data-i18n="btnImport">Import</span>
             </button>
