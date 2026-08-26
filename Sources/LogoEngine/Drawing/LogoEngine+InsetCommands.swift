@@ -16,6 +16,25 @@ extension LogoEngine {
         let startCol = queryInteger(.currentColumnIndex) ?? 0
         let startLine = queryInteger(.currentLineIndex) ?? 0
 
+        // If no width/height arguments are given, check if there is an active Canvas Block Mark
+        if widthVal == nil && heightVal == nil {
+            if let frame = queryCanvasBlockFrame(.canvasBlockFrame) {
+                let layout = TextBoxRenderer().insetRows(text: insetText, width: frame.width, height: frame.height)
+                for (row, replacementText) in layout.rows.enumerated() {
+                    let lineIdx = frame.lineIndex + row
+                    editor.logoEngine(self, performAction: .ensureLineExists(index: lineIdx))
+                    let lineStr = queryString(.lineAt(lineIdx)) ?? ""
+                    let newText = DisplayText.replacingColumns(
+                        in: lineStr, startCol: frame.visualColumn, width: frame.width, with: replacementText)
+                    editor.logoEngine(self, performAction: .setLine(index: lineIdx, text: newText))
+                }
+
+                editor.logoEngine(self, performAction: .updateLineIndex(frame.lineIndex + layout.targetRow))
+                editor.logoEngine(self, performAction: .updateColumnIndex(frame.visualColumn + layout.targetColumn))
+                return
+            }
+        }
+
         if let width = widthVal, heightVal == nil {
             let lineStr = queryString(.lineAt(startLine)) ?? ""
             let textWidth = insetText.displayWidth

@@ -727,6 +727,25 @@ import TextMetrics
     let logoEngine3 = LogoEngine(delegate: editor3)
     logoEngine3.execute("INSET 10 \"Hi\"")
     #expect(editor3.buffer.lines[0] == "    Hi    ")
+
+    let editor4 = Editor()
+    editor4.switchToCanvasMode()
+    editor4.buffer.lines = [
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+    ]
+    editor4.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor4.buffer.canvasBlockMarkEnd = (line: 4, visualColumn: 9)
+
+    editor4.logoEngine.execute("INSET \"Title\"")
+    #expect(editor4.buffer.lines[0] == "          ")
+    #expect(editor4.buffer.lines[1] == "          ")
+    #expect(editor4.buffer.lines[2] == "  Title   ")
+    #expect(editor4.buffer.lines[3] == "          ")
+    #expect(editor4.buffer.lines[4] == "          ")
 }
 
 @Test func testFactorialProcedureWithReduceAndForeach() throws {
