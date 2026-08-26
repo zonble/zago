@@ -498,4 +498,41 @@ struct DirectoryBufferTests {
         let sameDirBuf = try #require(editor.buffer as? DirectoryBuffer)
         #expect(sameDirBuf.directoryPath == workDir.path)
     }
+
+    @Test func testDirectoryBufferDisablesSoftwrap() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_wrap_\(UUID().uuidString)")
+        let fileURL = workDir.appendingPathComponent("doc.txt")
+
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        try "Long content".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let fileIO = TestLocalEditorFileIOStrategy.shared
+        let editor = Editor(
+            options: EditorOptions(filePaths: [fileURL.path], wrapColumn: 80, autoReload: false),
+            dependencies: EditorDependencies(
+                fileIOStrategy: fileIO,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        // Initially in doc.txt with wrapColumn 80
+        #expect(editor.buffer.isDirectoryBuffer == false)
+        #expect(editor.layoutEngine.wrapColumn == 80)
+
+        // Open directory buffer
+        editor.openDirectoryBuffer(path: workDir.path)
+        #expect(editor.buffer.isDirectoryBuffer == true)
+        #expect(editor.buffer.viewWrapColumn == nil)
+        #expect(editor.layoutEngine.wrapColumn == nil)
+
+        // Switch back to doc.txt
+        editor.switchToBuffer(index: 0)
+        #expect(editor.buffer.isDirectoryBuffer == false)
+        #expect(editor.layoutEngine.wrapColumn == 80)
+    }
 }
