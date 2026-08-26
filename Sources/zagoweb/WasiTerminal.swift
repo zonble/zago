@@ -248,7 +248,53 @@ public final class WasiTerminal: EditorTerminal {
     }
 
     public func readPendingText(firstChar: Character) -> String {
-        String(firstChar)
+        guard !pendingBytes.isEmpty else {
+            return String(firstChar)
+        }
+
+        var result = String(firstChar)
+        var idx = 0
+        let bytes = pendingBytes
+
+        while idx < bytes.count {
+            let b = bytes[idx]
+            if b == 27 {
+                break
+            } else if b == 13 || b == 10 {
+                if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                    idx += 1
+                }
+                result.append("\n")
+                idx += 1
+            } else if b >= 32 || b == 9 {
+                let charLen: Int
+                switch b {
+                case 0..<0x80: charLen = 1
+                case 0xC0..<0xE0: charLen = 2
+                case 0xE0..<0xF0: charLen = 3
+                case 0xF0..<0xF8: charLen = 4
+                default: charLen = 1
+                }
+
+                if idx + charLen <= bytes.count {
+                    let charBytes = bytes[idx..<(idx + charLen)]
+                    if let str = String(bytes: charBytes, encoding: .utf8) {
+                        result.append(str)
+                    }
+                    idx += charLen
+                } else {
+                    break
+                }
+            } else {
+                break
+            }
+        }
+
+        if idx > 0 {
+            pendingBytes.removeFirst(idx)
+        }
+
+        return result
     }
 
     public func write(_ text: String) {

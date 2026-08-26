@@ -603,6 +603,85 @@ wasiInstance.wasiImport.args_sizes_get = (argc: number, argv_buf_size: number): 
 };
 ```
 
+---
+
+## 16. WebAssembly (WASI) CJK IME & Multi-Byte Input Batching (`readPendingText`)
+
+### The Pitfall: IME Burst Inputs, Double Dispatch, and Redraw Hitches
+
+In browser environments connecting `xterm.js` to `zagoweb` via WASI standard input:
+
+1. **IME Burst Commit**: When typing Chinese / CJK text using an Input Method Editor (such as Zhuyin, Pinyin, or Cangjie), confirming a long phrase or sentence commits multiple multi-byte UTF-8 characters simultaneously (e.g. 20 CJK characters = 60 UTF-8 bytes) into standard input.
+2. **Double Insertion in Frontend / Shim Integrations**:
+   - If the web frontend listens to `term.onData(...)` while simultaneously handling DOM `<textarea>` `compositionend` or `input` events and writing them to `wasi.stdin`, the text is sent twice.
+   - If `WasiTerminal` only returned `String(firstChar)` from `readPendingText`, the editor processed the input as 20 separate keystrokes with 20 consecutive full screen redrawing passes. In asynchronous Web Worker environments, this caused severe latency and race conditions.
+
+### Architectural Solution: Batch Draining in `WasiTerminal.readPendingText`
+
+In [`WasiTerminal.swift`](../../Sources/zagoweb/WasiTerminal.swift), `readPendingText(firstChar:)` drains all consecutive valid UTF-8 characters, printable text, and newlines from `pendingBytes` in a single pass:
+
+```swift
+public func readPendingText(firstChar: Character) -> String {
+    guard !pendingBytes.isEmpty else {
+        return String(firstChar)
+    }
+
+    var result = String(firstChar)
+    var idx = 0
+    let bytes = pendingBytes
+
+    while idx < bytes.count {
+        let b = bytes[idx]
+        if b == 27 { // Stop at ESC to preserve escape/arrow sequences
+            break
+        } else if b == 13 || b == 10 { // CR / LF
+            if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                idx += 1
+            }
+            result.append("\n")
+            idx += 1
+        } else if b >= 32 || b == 9 { // Printable character or Tab
+            let charLen: Int
+            switch b {
+            case 0..<0x80: charLen = 1
+            case 0xC0..<0xE0: charLen = 2
+            case 0xE0..<0xF0: charLen = 3
+            case 0xF0..<0xF8: charLen = 4
+            default: charLen = 1
+            }
+
+            if idx + charLen <= bytes.count {
+                let charBytes = bytes[idx..<(idx + charLen)]
+                if let str = String(bytes: charBytes, encoding: .utf8) {
+                    result.append(str)
+                }
+                idx += charLen
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    }
+
+    if idx > 0 {
+        pendingBytes.removeFirst(idx)
+    }
+    return result
+}
+```
+
+### Frontend Guidelines for Web Integrations
+
+1. Only pipe input from `term.onData((data) => wasiStdin.write(data))`. Do not add manual `stdin.write` calls inside `compositionend` or `oninput`.
+2. Guard any custom `keydown` listeners against active IME composition:
+   ```javascript
+   if (e.isComposing || e.keyCode === 229) {
+       return;
+   }
+   ```
+
+
 
 
 
