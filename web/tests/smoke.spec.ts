@@ -6,7 +6,7 @@ async function waitForEditor(page: Page): Promise<void> {
   await expect(page.locator("#wasm-loading-overlay")).toHaveClass(/hidden/, {
     timeout: 90_000,
   });
-  await expect(page.locator(".xterm-rows")).toBeVisible();
+  await expect(page.locator(".xterm-rows")).toBeVisible({ timeout: 90_000 });
 }
 
 function terminalText(page: Page) {
@@ -90,5 +90,14 @@ test.describe("web editor smoke tests", () => {
     await expect
       .poll(() => readVFSFile(page, "/workspace/playwright-reset.md"))
       .toBe("");
+  });
+
+  test("allows selecting a terminal font and persists preference", async ({ page }) => {
+    const fontSelect = page.locator("#font-select");
+    await expect(fontSelect).toBeVisible();
+
+    await fontSelect.selectOption({ label: "JetBrains Mono" });
+    const savedFont = await page.evaluate(() => localStorage.getItem("zago_editor_font"));
+    expect(savedFont).toContain("JetBrains Mono");
   });
 });

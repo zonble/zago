@@ -114,6 +114,51 @@ body {
   color: var(--text-main);
 }
 
+.action-select {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: var(--btn-bg);
+  border: 1px solid var(--btn-border);
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.action-select:hover,
+.action-select:focus {
+  background-color: var(--btn-hover);
+  border-color: #8b949e;
+}
+
+.action-select option {
+  background-color: var(--panel-bg);
+  color: var(--text-main);
+}
+
+.font-select-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ==========================================================================
    Content Layout (Two-column on desktop, Tabbed on mobile)
    ========================================================================== */
@@ -790,6 +835,12 @@ body {
 
   .toolbar .action-btn .btn-text {
     display: none;
+  }
+
+  .toolbar .action-select {
+    max-width: 105px;
+    font-size: 11px;
+    padding: 0 4px;
   }
 
   .bottom-bar .hint {
