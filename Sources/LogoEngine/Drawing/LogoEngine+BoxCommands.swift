@@ -117,7 +117,11 @@ extension LogoEngine {
         // Mode 2: BOX "text" [width] [align/style/exit/round]
         let textContent = evaluateExpression(tokens, index: &index)
         var targetWidth: Int? = nil
+        var targetHeight: Int? = nil
+        var startLine: Int? = nil
+        var startCol: Int? = nil
         var align: BoxAlignment = .left
+        var hasExplicitAlign = false
         var styleName = ""
         var isRound: Bool? = nil
         var exitPos: BoxExitPosition = .ne
@@ -127,6 +131,17 @@ extension LogoEngine {
             if let width = parseBoxDimensionArgument(tokens, index: &widthIndex) {
                 index = widthIndex
                 targetWidth = max(3, min(width, 200))
+                align = .center
+                hasExplicitAlign = true
+            }
+        }
+
+        if targetWidth == nil {
+            if let frame = queryCanvasBlockFrame(.canvasBlockFrame) {
+                startLine = frame.lineIndex
+                startCol = frame.visualColumn
+                targetWidth = max(3, min(frame.width, 200))
+                targetHeight = max(2, min(frame.height, 100))
                 align = .center
             }
         }
@@ -153,6 +168,7 @@ extension LogoEngine {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign
+                hasExplicitAlign = true
             } else if let parsedBool = parseBoxRoundArgument(val) {
                 isRound = parsedBool
             } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
@@ -161,8 +177,16 @@ extension LogoEngine {
         }
 
         drawBoxAroundText(
-            textContent, targetWidth: targetWidth, targetHeight: nil, align: align, style: boxStyle(named: styleName, isRound: isRound),
-            mode: mode, exitPos: exitPos)
+            textContent,
+            startLine: startLine,
+            startCol: startCol,
+            targetWidth: targetWidth,
+            targetHeight: targetHeight,
+            align: align,
+            style: boxStyle(named: styleName, isRound: isRound),
+            mode: mode,
+            exitPos: exitPos
+        )
     }
 
     private func parseBoxRoundArgument(_ token: String) -> Bool? {
@@ -218,7 +242,7 @@ extension LogoEngine {
     private func drawBoxFrame(
         width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne
     ) {
-        guard self.delegate != nil else { return }
+        guard let editor = self.delegate else { return }
         let startCol = queryInteger(.currentColumnIndex) ?? 0
         let startLine = queryInteger(.currentLineIndex) ?? 0
 
@@ -269,7 +293,14 @@ extension LogoEngine {
     }
 
     private func drawBoxAroundText(
-        _ text: String, targetWidth: Int?, targetHeight: Int?, align: BoxAlignment, style: BoxStyle, mode: BoxDrawMode,
+        _ text: String,
+        startLine: Int? = nil,
+        startCol: Int? = nil,
+        targetWidth: Int?,
+        targetHeight: Int?,
+        align: BoxAlignment,
+        style: BoxStyle,
+        mode: BoxDrawMode,
         exitPos: BoxExitPosition = .ne
     ) {
         guard let editor = self.delegate else { return }
@@ -289,11 +320,11 @@ extension LogoEngine {
         let calcWidth = rendered.width
         let calcHeight = rendered.height
 
-        let startCol = queryInteger(.currentColumnIndex) ?? 0
-        let startLine = queryInteger(.currentLineIndex) ?? 0
+        let effectiveStartCol = startCol ?? (queryInteger(.currentColumnIndex) ?? 0)
+        let effectiveStartLine = startLine ?? (queryInteger(.currentLineIndex) ?? 0)
 
         for (r, rowStr) in rendered.rows.enumerated() {
-            let currentLineIndex = startLine + r
+            let currentLineIndex = effectiveStartLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIndex))
 
             let isTop = (r == 0)
@@ -301,13 +332,13 @@ extension LogoEngine {
 
             let existingLine = queryString(.lineAt(currentLineIndex)) ?? ""
             let newLineText = renderer.mergeRow(
-                existingLine: existingLine, startCol: startCol, row: rowStr, isTop: isTop, isBottom: isBottom,
+                existingLine: existingLine, startCol: effectiveStartCol, row: rowStr, isTop: isTop, isBottom: isBottom,
                 mode: renderMode)
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
         updateCursorAfterBox(
-            startLine: startLine, startCol: startCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
+            startLine: effectiveStartLine, startCol: effectiveStartCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
     }
 
     private func updateCursorAfterBox(startLine: Int, startCol: Int, width: Int, height: Int, exitPos: BoxExitPosition)
