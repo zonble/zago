@@ -1,4 +1,5 @@
 import ANSIStyle
+import Config
 import Foundation
 import TextMetrics
 
@@ -8,7 +9,7 @@ final class TextDocumentView {
     private let title: String
     private let lines: [String]
     private let footer: String
-    private var topIndex: Int = 0
+    private(set) var topIndex: Int = 0
 
     init(terminal: EditorTerminal, title: String, lines: [String], footer: String) {
         self.terminal = terminal
@@ -21,38 +22,56 @@ final class TextDocumentView {
         terminal.clearScreen()
         render()
         while true {
-            let key = terminal.readKey()
+            let event = terminal.readInputEvent()
             let (rows, _) = terminal.getWindowSize()
             let availableHeight = max(1, rows - 2)
             let maxTop = max(0, lines.count - availableHeight)
 
-            switch key {
-            case .arrowDown, .char("j"), .char("J"):
-                topIndex = min(topIndex + 1, maxTop)
-                render()
-            case .arrowUp, .char("k"), .char("K"):
-                topIndex = max(0, topIndex - 1)
-                render()
-            case .pageDown, .ctrl("v"), .ctrl("V"), .char(" "):
-                topIndex = min(topIndex + availableHeight, maxTop)
-                render()
-            case .pageUp, .ctrl("y"), .ctrl("Y"):
-                topIndex = max(0, topIndex - availableHeight)
-                render()
-            case .home:
-                topIndex = 0
-                render()
-            case .end:
-                topIndex = maxTop
-                render()
-            case .resize:
-                terminal.clearScreen()
-                render()
-            case .unknown:
-                render()
-            default:
-                terminal.clearScreen()
-                return
+            switch event {
+            case .key(let key):
+                switch key {
+                case .arrowDown, .char("j"), .char("J"):
+                    topIndex = min(topIndex + 1, maxTop)
+                    render()
+                case .arrowUp, .char("k"), .char("K"):
+                    topIndex = max(0, topIndex - 1)
+                    render()
+                case .pageDown, .ctrl("v"), .ctrl("V"), .char(" "):
+                    topIndex = min(topIndex + availableHeight, maxTop)
+                    render()
+                case .pageUp, .ctrl("y"), .ctrl("Y"):
+                    topIndex = max(0, topIndex - availableHeight)
+                    render()
+                case .home:
+                    topIndex = 0
+                    render()
+                case .end:
+                    topIndex = maxTop
+                    render()
+                case .resize:
+                    terminal.clearScreen()
+                    render()
+                case .unknown:
+                    render()
+                default:
+                    terminal.clearScreen()
+                    return
+                }
+
+            case .mouse(let mouse):
+                switch mouse.action {
+                case .scrollUp:
+                    topIndex = max(0, topIndex - 3)
+                    render()
+                case .scrollDown:
+                    topIndex = min(topIndex + 3, maxTop)
+                    render()
+                default:
+                    break
+                }
+
+            case .openFile:
+                break
             }
         }
     }

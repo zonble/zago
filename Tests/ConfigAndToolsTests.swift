@@ -1171,4 +1171,94 @@ struct ConfigAndToolsTests {
         let lastCmdOutput = cmdTerminal.writtenOutputs.last!
         #expect(lastCmdOutput.hasSuffix("\u{001B}[24;80H"))
     }
+
+    @Test func testTextDocumentViewMouseScroll() throws {
+        final class EventQueueEditorTerminal: EditorTerminal, @unchecked Sendable {
+            var rows = 24
+            var cols = 80
+            var events: [InputEvent] = []
+
+            func enableRawMode() throws {}
+            func disableRawMode() {}
+            func getWindowSize() -> (rows: Int, cols: Int) { (rows, cols) }
+            func readKey() -> Key {
+                switch readInputEvent() {
+                case .key(let key): return key
+                default: return .unknown
+                }
+            }
+            func readInputEvent() -> InputEvent {
+                events.isEmpty ? .key(.esc) : events.removeFirst()
+            }
+            func readPendingText(firstChar: Character) -> String { String(firstChar) }
+            func write(_ text: String) {}
+            func hideCursor() {}
+            func showCursor() {}
+            func clearScreen() {}
+        }
+
+        let mockTerminal = EventQueueEditorTerminal()
+        mockTerminal.events = [
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)),
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)),
+            .mouse(MouseEvent(action: .scrollUp, col: 10, row: 10)),
+            .key(.esc),
+        ]
+        let sampleLines = (1...50).map { "Line \($0)" }
+        let view = TextDocumentView(
+            terminal: mockTerminal,
+            title: "Test Title",
+            lines: sampleLines,
+            footer: "Test Footer"
+        )
+        #expect(view.topIndex == 0)
+        view.show()
+        #expect(view.topIndex == 3)
+    }
+
+    @Test func testDocumentOutlineViewMouseScroll() throws {
+        final class EventQueueEditorTerminal: EditorTerminal, @unchecked Sendable {
+            var rows = 24
+            var cols = 80
+            var events: [InputEvent] = []
+
+            func enableRawMode() throws {}
+            func disableRawMode() {}
+            func getWindowSize() -> (rows: Int, cols: Int) { (rows, cols) }
+            func readKey() -> Key {
+                switch readInputEvent() {
+                case .key(let key): return key
+                default: return .unknown
+                }
+            }
+            func readInputEvent() -> InputEvent {
+                events.isEmpty ? .key(.esc) : events.removeFirst()
+            }
+            func readPendingText(firstChar: Character) -> String { String(firstChar) }
+            func write(_ text: String) {}
+            func hideCursor() {}
+            func showCursor() {}
+            func clearScreen() {}
+        }
+
+        let mockTerminal = EventQueueEditorTerminal()
+        mockTerminal.events = [
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)),
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)),
+            .mouse(MouseEvent(action: .scrollUp, col: 10, row: 10)),
+            .key(.enter),
+        ]
+        let sampleHeadings = (1...50).map {
+            DocumentHeading(lineIndex: $0, level: 1, title: "Heading \($0)", marker: "#")
+        }
+        let view = DocumentOutlineView(
+            terminal: mockTerminal,
+            title: "Outline",
+            headings: sampleHeadings,
+            footer: "Footer"
+        )
+        let selected = view.show()
+        #expect(selected?.title == "Heading 4")
+    }
 }
+
