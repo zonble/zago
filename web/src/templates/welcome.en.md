@@ -1,3 +1,4 @@
+
 # zago Interactive Tutorial
 
 Note: Use your keyboard to interact with the document.
@@ -109,6 +110,13 @@ Syntax: [begin arrow][border][end arrow]
 
 ## BOX and DRAWBOX Commands
 
+
+
+
+
+
+
+
 Try these commands to create boxes:
 
 - BOX "Hi"        ; Inserts a box with "Hi" inside.
@@ -118,6 +126,8 @@ Try these commands to create boxes:
 - BOX "Hi" =)     ; ")" indicates rounded corners.
 
 Border styles available: - = + A -- ++ --- +++ ---- ++++
+
+You can also use your mouse to drag an area, then input commands like BOX and DRAW box.
 
 ## FILL and INSET Commands
 
