@@ -144,7 +144,10 @@ final class TableModeController: KeyInputHandler {
 
         case .arrowLeft:
             editor.clearActiveMark()
-            if editor.buffer.columnIndex == cell.innerMinCol {
+            let line = editor.buffer.lines[editor.buffer.lineIndex]
+            let (leftBorder, _) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            if editor.buffer.columnIndex <= leftBorder + 1 {
                 navigateLeftAdjacentTableCell()
             } else {
                 editor.buffer.columnIndex -= 1
@@ -154,7 +157,10 @@ final class TableModeController: KeyInputHandler {
 
         case .arrowRight:
             editor.clearActiveMark()
-            if editor.buffer.columnIndex == cell.innerMaxCol {
+            let line = editor.buffer.lines[editor.buffer.lineIndex]
+            let (_, rightBorder) = TableModeController.findCellHorizontalBorders(
+                in: line, nearCol: editor.buffer.columnIndex, cell: cell)
+            if editor.buffer.columnIndex >= rightBorder - 1 {
                 navigateRightAdjacentTableCell()
             } else {
                 editor.buffer.columnIndex += 1

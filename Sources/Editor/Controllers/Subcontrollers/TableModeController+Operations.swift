@@ -477,7 +477,9 @@ extension TableModeController {
                 if isTableBorderLine(chars, colLeft: leftB, colRight: rightB) {
                     continue
                 }
-                if leftB == colLeft && rightB == colRight {
+                let leftVCol = line.visualColumn(forCharacterOffset: leftB)
+                let rightVCol = line.visualColumn(forCharacterOffset: rightB)
+                if leftVCol == colLeft && rightVCol == colRight {
                     if leftB + 1 < rightB {
                         let endIdx = min(rightB, chars.count)
                         let textInside = String(chars[(leftB + 1)..<endIdx]).trimmingTrailingWhitespace()
@@ -498,7 +500,9 @@ extension TableModeController {
                 let chars = Array(line)
                 let (leftB, rightB) = TableModeController.findCellHorizontalBorders(
                     in: line, nearCol: cell.innerMinCol, cell: cell)
-                if leftB == colLeft && rightB == colRight {
+                let leftVCol = line.visualColumn(forCharacterOffset: leftB)
+                let rightVCol = line.visualColumn(forCharacterOffset: rightB)
+                if leftVCol == colLeft && rightVCol == colRight {
                     let nextIdx = rightB + 1
                     if nextIdx < chars.count && BorderCharacterSet.verticalBoundaryChars.contains(chars[nextIdx]) {
                         if !isSameGridTable {
@@ -512,12 +516,12 @@ extension TableModeController {
         }
 
         for lineIdx in tableLines {
-            var chars = Array(editor.buffer.lines[lineIdx])
-            if chars.count <= colLeft { continue }
-
+            let line = editor.buffer.lines[lineIdx]
+            var chars = Array(line)
             let (leftB, rightB) = TableModeController.findCellHorizontalBorders(
-                in: editor.buffer.lines[lineIdx], nearCol: cell.innerMinCol, cell: cell)
-            if leftB != colLeft { continue }
+                in: line, nearCol: cell.innerMinCol, cell: cell)
+            let leftVCol = line.visualColumn(forCharacterOffset: leftB)
+            if leftVCol != colLeft { continue }
 
             if delta > 0 {
                 let isBorderLine = isTableBorderLine(chars, colLeft: leftB, colRight: rightB)
@@ -537,7 +541,7 @@ extension TableModeController {
                 }
             } else if delta < 0 {
                 let removeIndex = rightB - 1
-                if removeIndex > colLeft && removeIndex < chars.count {
+                if removeIndex > leftB && removeIndex < chars.count {
                     chars.remove(at: removeIndex)
                 }
             }
@@ -589,16 +593,17 @@ extension TableModeController {
         } else if delta > 0 {
             let templateLineIdx = minLine + 1
             let templateLine = (templateLineIdx < editor.buffer.lines.count) ? editor.buffer.lines[templateLineIdx] : ""
-            var newLineChars = Array(templateLine)
-
-            for c in 0..<newLineChars.count {
-                if !BorderCharacterSet.verticalBoundaryChars.contains(newLineChars[c]) {
-                    newLineChars[c] = " "
+            var newLine = ""
+            for ch in templateLine {
+                if BorderCharacterSet.verticalBoundaryChars.contains(ch) {
+                    newLine.append(ch)
+                } else {
+                    let w = ch.displayWidth
+                    newLine.append(String(repeating: " ", count: w))
                 }
             }
-            let newLineStr = String(newLineChars)
             let insertLineIdx = maxLine
-            editor.buffer.lines.insert(newLineStr, at: insertLineIdx)
+            editor.buffer.lines.insert(newLine, at: insertLineIdx)
         }
 
         editor.buffer.isModified = true

@@ -646,3 +646,65 @@ import TextMetrics
     editor.processKey(.pageDown)
     #expect(editor.buffer.lineIndex == 3)
 }
+
+@Test func testTableModeResizeHeightWithCJKTextPreservesVisualAlignment() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┬────────────────┐",
+        "│ 在此按下 F7    │                │                │",
+        "├────────────────┼────────────────┼────────────────┤",
+        "│                │                │                │",
+        "└────────────────┴────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.processKey(.ctrlShiftArrowDown)
+
+    #expect(editor.buffer.lines == [
+        "┌────────────────┬────────────────┬────────────────┐",
+        "│ 在此按下 F7    │                │                │",
+        "│                │                │                │",
+        "├────────────────┼────────────────┼────────────────┤",
+        "│                │                │                │",
+        "└────────────────┴────────────────┴────────────────┘",
+    ])
+}
+
+@Test func testTableModeResizeWidthWithCJKTextPreservesVisualAlignment() throws {
+    let editor = Editor()
+    editor.buffer.lines = [
+        "┌────────────────┬────────────────┬────────────────┐",
+        "│ 在此按下 F7    │                │                │",
+        "├────────────────┼────────────────┼────────────────┤",
+        "│                │                │                │",
+        "└────────────────┴────────────────┴────────────────┘",
+    ]
+    editor.buffer.lineIndex = 1
+    editor.buffer.columnIndex = 3
+    editor.tableModeController.toggleTableMode()
+    #expect(editor.isTableModeActive == true)
+
+    editor.processKey(.ctrlShiftArrowRight)
+
+    #expect(editor.buffer.lines == [
+        "┌─────────────────┬────────────────┬────────────────┐",
+        "│ 在此按下 F7     │                │                │",
+        "├─────────────────┼────────────────┼────────────────┤",
+        "│                 │                │                │",
+        "└─────────────────┴────────────────┴────────────────┘",
+    ])
+
+    editor.processKey(.ctrlShiftArrowLeft)
+
+    #expect(editor.buffer.lines == [
+        "┌────────────────┬────────────────┬────────────────┐",
+        "│ 在此按下 F7    │                │                │",
+        "├────────────────┼────────────────┼────────────────┤",
+        "│                │                │                │",
+        "└────────────────┴────────────────┴────────────────┘",
+    ])
+}
+

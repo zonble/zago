@@ -464,7 +464,8 @@ extension TableModeController {
     /// Navigates to previous table cell to the left or previous row (Shift+Tab).
     func navigatePrevTableCell() {
         guard let editor, let cell = editor.currentTableCell else { return }
-        let prevCol = max(0, cell.minCol - 2)
+        let line = editor.buffer.lines[cell.innerMinLine]
+        let prevCol = line.characterOffset(forVisualColumn: max(0, cell.minCol - 1))
         let detector = TableCellDetector()
         if let prevCell = detector.detectCell(in: editor.buffer.lines, line: cell.innerMinLine, col: prevCol) {
             enterTableMode(with: prevCell)
