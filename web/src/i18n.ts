@@ -69,4 +69,13 @@ export function applyI18n(lang: Locale) {
       }
     }
   });
+
+  // Translate all [data-i18n-title] elements
+  const titleElements = document.querySelectorAll<HTMLElement>("[data-i18n-title]");
+  titleElements.forEach((el) => {
+    const key = el.dataset.i18nTitle as keyof typeof t;
+    if (key && typeof t[key] === "string") {
+      el.title = t[key] as string;
+    }
+  });
 }

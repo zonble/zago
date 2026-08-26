@@ -19,11 +19,14 @@ async function main() {
   if (!container) return;
 
   const isMobileInitial = window.innerWidth < 600;
+  const FONT_STORAGE_KEY = "zago_editor_font";
+  const savedFont = typeof localStorage !== "undefined" ? localStorage.getItem(FONT_STORAGE_KEY) : null;
+  const initialFont = savedFont || 'Menlo, Monaco, "Courier New", "Noto Sans Mono CJK TC", monospace';
 
   // Create and configure xterm.js instance
   const term = new Terminal({
     cursorBlink: true,
-    fontFamily: 'Menlo, Monaco, "Courier New", "Noto Sans Mono CJK TC", monospace',
+    fontFamily: initialFont,
     fontSize: isMobileInitial ? 12 : 14,
     lineHeight: 1.2,
     theme: {
@@ -699,7 +702,24 @@ async function main() {
     await launchEditor(defaultWelcomeFile);
   }
 
-  // UI Button Bindings
+  // UI Controls Bindings
+  const fontSelect = document.getElementById("font-select") as HTMLSelectElement | null;
+
+  if (fontSelect) {
+    if (savedFont) {
+      fontSelect.value = savedFont;
+    }
+    fontSelect.addEventListener("change", () => {
+      const selectedFont = fontSelect.value;
+      term.options.fontFamily = selectedFont;
+      try {
+        localStorage.setItem(FONT_STORAGE_KEY, selectedFont);
+      } catch (_) {}
+      fitAndNotifyEditor();
+      term.focus();
+    });
+  }
+
   const btnImport = document.getElementById("btn-import");
   const fileInput = document.getElementById("file-input") as HTMLInputElement;
   const btnExportZip = document.getElementById("btn-export-zip");
