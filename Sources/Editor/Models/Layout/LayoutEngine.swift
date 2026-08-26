@@ -93,13 +93,15 @@ final class LayoutEngine {
     var wrapColumn: Int?  // nil means adapt dynamically to terminal view width
     var listWrapIndent: Bool = true
 
-    private struct LineCacheKey: Hashable {
-        let line: String
-        let effectiveWrap: Int
-        let listWrapIndent: Bool
+    private struct LineCacheEntry {
+        var line: String
+        var chunks: [CachedVirtualChunk]
     }
 
-    private var lineCache: [LineCacheKey: [CachedVirtualChunk]] = [:]
+    private var lineEntries: [LineCacheEntry?] = []
+    private var cachedEffectiveWrap: Int?
+    private var cachedListWrapIndent: Bool?
+    private(set) var lineOffsets: [Int] = []
     private let cacheLock = NSLock()
     private(set) var lineCacheHitCount: Int = 0
 
@@ -144,7 +146,10 @@ final class LayoutEngine {
     func invalidateCache() {
         cacheLock.lock()
         defer { cacheLock.unlock() }
-        lineCache.removeAll()
+        lineEntries.removeAll()
+        lineOffsets.removeAll()
+        cachedEffectiveWrap = nil
+        cachedListWrapIndent = nil
         lineCacheHitCount = 0
     }
 
@@ -154,13 +159,53 @@ final class LayoutEngine {
 
     /// Computes virtual display lines from raw buffer lines given available terminal view width, respecting word boundaries for Latin text.
     func computeVirtualLines(from lines: [String], viewWidth: Int) -> [VirtualLine] {
-        let effectiveWrap = effectiveWrap(for: viewWidth)
-        var virtualLines: [VirtualLine] = []
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
 
-        for (bIndex, line) in lines.enumerated() {
-            virtualLines.append(contentsOf: wrapLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap))
+        let wrap = effectiveWrap(for: viewWidth)
+        if cachedEffectiveWrap != wrap || cachedListWrapIndent != listWrapIndent || lineEntries.count != lines.count {
+            if cachedEffectiveWrap != wrap || cachedListWrapIndent != listWrapIndent {
+                lineEntries = Array(repeating: nil, count: lines.count)
+            } else if lineEntries.count < lines.count {
+                lineEntries.append(contentsOf: Array(repeating: nil, count: lines.count - lineEntries.count))
+            } else {
+                lineEntries.removeLast(lineEntries.count - lines.count)
+            }
+            cachedEffectiveWrap = wrap
+            cachedListWrapIndent = listWrapIndent
         }
 
+        var virtualLines: [VirtualLine] = []
+        var offsets: [Int] = []
+        offsets.reserveCapacity(lines.count)
+        var currentVIndex = 0
+
+        for (bIndex, line) in lines.enumerated() {
+            offsets.append(currentVIndex)
+            let chunks: [CachedVirtualChunk]
+            if let entry = lineEntries[bIndex], entry.line == line {
+                chunks = entry.chunks
+                lineCacheHitCount += 1
+            } else {
+                chunks = computeLineChunks(line, effectiveWrap: wrap)
+                lineEntries[bIndex] = LineCacheEntry(line: line, chunks: chunks)
+            }
+
+            for chunk in chunks {
+                virtualLines.append(
+                    VirtualLine(
+                        bufferLineIndex: bIndex,
+                        subLineIndex: chunk.subLineIndex,
+                        text: chunk.text,
+                        startCol: chunk.startCol,
+                        endCol: chunk.endCol
+                    )
+                )
+            }
+            currentVIndex += chunks.count
+        }
+
+        self.lineOffsets = offsets
         return virtualLines
     }
 
@@ -173,114 +218,34 @@ final class LayoutEngine {
         cursorColumnIndex: Int,
         computeTotalLineCount: Bool = true
     ) -> VirtualViewport {
-        let effectiveWrap = effectiveWrap(for: viewWidth)
-        let targetTop = max(0, topVirtualLineIndex)
-        let targetEnd = targetTop + max(0, height)
-        let cursorLineIndex = max(0, min(cursorLineIndex, max(0, lines.count - 1)))
+        let allVLines = computeVirtualLines(from: lines, viewWidth: viewWidth)
+        let targetTop = max(0, min(topVirtualLineIndex, max(0, allVLines.count - 1)))
+        let targetEnd = min(allVLines.count, targetTop + max(0, height))
+        let viewportLines = Array(allVLines[targetTop..<targetEnd])
 
-        var viewportLines: [VirtualLine] = []
-        var virtualIndex = 0
-        var cursorVirtualLineIndex = 0
-        var cursorVirtualColumnIndex = 0
-        var cursorResolved = false
-
-        for (bIndex, line) in lines.enumerated() {
-            var cursorFallback: (vLineIndex: Int, vColIndex: Int)?
-            let completedLine = visitWrappedLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap) { vLine in
-                if bIndex == cursorLineIndex {
-                    let isAtLineEnd = vLine.endCol == line.count
-                    let cursorIsInChunk =
-                        cursorColumnIndex >= vLine.startCol
-                        && (cursorColumnIndex < vLine.endCol || (isAtLineEnd && cursorColumnIndex <= vLine.endCol))
-                    cursorFallback = (virtualIndex, vLine.text.count)
-                    if cursorIsInChunk {
-                        cursorVirtualLineIndex = virtualIndex
-                        cursorVirtualColumnIndex = cursorColumnIndex - vLine.startCol
-                        cursorResolved = true
-                    }
-                }
-
-                if virtualIndex >= targetTop && virtualIndex < targetEnd {
-                    viewportLines.append(vLine)
-                }
-                virtualIndex += 1
-
-                let stillNeedsCursor =
-                    bIndex < cursorLineIndex || (bIndex == cursorLineIndex && !cursorResolved)
-                return computeTotalLineCount || virtualIndex < targetEnd || stillNeedsCursor
-            }
-
-            if bIndex == cursorLineIndex && !cursorResolved, let cursorFallback {
-                cursorVirtualLineIndex = cursorFallback.vLineIndex
-                cursorVirtualColumnIndex = cursorFallback.vColIndex
-                cursorResolved = true
-            }
-
-            if !completedLine || (!computeTotalLineCount && virtualIndex >= targetEnd && bIndex >= cursorLineIndex) {
-                break
-            }
-        }
+        let (cursorVLineIdx, cursorVColIdx) = getVirtualCursor(
+            lineIndex: cursorLineIndex,
+            columnIndex: cursorColumnIndex,
+            virtualLines: allVLines
+        )
 
         return VirtualViewport(
             lines: viewportLines,
             startVirtualIndex: targetTop,
-            totalVirtualLineCount: virtualIndex,
-            cursorVirtualLineIndex: cursorVirtualLineIndex,
-            cursorVirtualColumnIndex: cursorVirtualColumnIndex
+            totalVirtualLineCount: computeTotalLineCount ? allVLines.count : min(targetEnd, allVLines.count),
+            cursorVirtualLineIndex: cursorVLineIdx,
+            cursorVirtualColumnIndex: cursorVColIdx
         )
     }
 
     func computeVirtualLine(at virtualLineIndex: Int, from lines: [String], viewWidth: Int) -> VirtualLine? {
-        let effectiveWrap = effectiveWrap(for: viewWidth)
-        let targetIndex = max(0, virtualLineIndex)
-        var virtualIndex = 0
-        var result: VirtualLine?
-
-        for (bIndex, line) in lines.enumerated() {
-            let completedLine = visitWrappedLine(line, bufferLineIndex: bIndex, effectiveWrap: effectiveWrap) { vLine in
-                if virtualIndex == targetIndex {
-                    result = vLine
-                    return false
-                }
-                virtualIndex += 1
-                return true
-            }
-            if !completedLine {
-                break
-            }
-        }
-
-        return result
+        let allVLines = computeVirtualLines(from: lines, viewWidth: viewWidth)
+        guard virtualLineIndex >= 0 && virtualLineIndex < allVLines.count else { return nil }
+        return allVLines[virtualLineIndex]
     }
 
     private func wrapLine(_ line: String, bufferLineIndex: Int, effectiveWrap: Int) -> [VirtualLine] {
-        let key = LineCacheKey(line: line, effectiveWrap: effectiveWrap, listWrapIndent: listWrapIndent)
-
-        cacheLock.lock()
-        if let cachedChunks = lineCache[key] {
-            lineCacheHitCount += 1
-            cacheLock.unlock()
-            return cachedChunks.map { chunk in
-                VirtualLine(
-                    bufferLineIndex: bufferLineIndex,
-                    subLineIndex: chunk.subLineIndex,
-                    text: chunk.text,
-                    startCol: chunk.startCol,
-                    endCol: chunk.endCol
-                )
-            }
-        }
-        cacheLock.unlock()
-
         let chunks = computeLineChunks(line, effectiveWrap: effectiveWrap)
-
-        cacheLock.lock()
-        if lineCache.count > 2000 {
-            lineCache.removeAll()
-        }
-        lineCache[key] = chunks
-        cacheLock.unlock()
-
         return chunks.map { chunk in
             VirtualLine(
                 bufferLineIndex: bufferLineIndex,
@@ -453,14 +418,45 @@ final class LayoutEngine {
         columnIndex: Int,
         virtualLines: [VirtualLine]
     ) -> (vLineIndex: Int, vColIndex: Int) {
-        // Find all non-proposal virtual lines corresponding to bufferLineIndex
-        let matching = virtualLines.enumerated().filter {
-            !$0.element.isProposalOverlay && $0.element.bufferLineIndex == lineIndex
+        guard !virtualLines.isEmpty else { return (0, 0) }
+        let targetLine = max(0, lineIndex)
+
+        // Fast path: find starting index in virtualLines using cached lineOffsets
+        var startIdx = 0
+        cacheLock.lock()
+        if targetLine < lineOffsets.count {
+            startIdx = min(lineOffsets[targetLine], virtualLines.count - 1)
+        }
+        cacheLock.unlock()
+
+        // Adjust startIdx in case proposal overlays shifted the offsets or lineOffsets wasn't exact
+        if startIdx < virtualLines.count && virtualLines[startIdx].bufferLineIndex < targetLine {
+            while startIdx < virtualLines.count && virtualLines[startIdx].bufferLineIndex < targetLine {
+                startIdx += 1
+            }
+        } else if startIdx > 0 && startIdx < virtualLines.count && virtualLines[startIdx].bufferLineIndex > targetLine {
+            while startIdx > 0 && virtualLines[startIdx - 1].bufferLineIndex >= targetLine {
+                startIdx -= 1
+            }
+        }
+
+        var matching: [(offset: Int, element: VirtualLine)] = []
+        var idx = startIdx
+        while idx < virtualLines.count && virtualLines[idx].bufferLineIndex == targetLine {
+            if !virtualLines[idx].isProposalOverlay {
+                matching.append((idx, virtualLines[idx]))
+            }
+            idx += 1
         }
 
         if matching.isEmpty {
-            let fallback = virtualLines.enumerated().filter { $0.element.bufferLineIndex == lineIndex }
-            if let first = fallback.first {
+            // Fallback to searching without non-proposal filter if only proposal exists
+            idx = startIdx
+            while idx < virtualLines.count && virtualLines[idx].bufferLineIndex == targetLine {
+                matching.append((idx, virtualLines[idx]))
+                idx += 1
+            }
+            if let first = matching.first {
                 return (first.offset, 0)
             }
             return (0, 0)
