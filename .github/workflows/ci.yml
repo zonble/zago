@@ -118,6 +118,30 @@ jobs:
         if: runner.os != 'Windows'
         run: swift test --enable-code-coverage --filter Tests --no-parallel
 
+      - name: Generate and Display Code Coverage Report (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          BIN_PATH="$(swift build --show-bin-path)"
+          TEST_BIN="$(find "$BIN_PATH" -name "zagoPackageTests.xctest" -type d)/Contents/MacOS/zagoPackageTests"
+          PROFDATA="$(find "$BIN_PATH" -name "*.profdata" | head -n 1)"
+
+          if [ -f "$TEST_BIN" ] && [ -f "$PROFDATA" ]; then
+            echo "::group::📊 Code Coverage Report"
+            xcrun llvm-cov report "$TEST_BIN" -instr-profile="$PROFDATA" -ignore-filename-regex='(Tests/|\.build/)'
+            echo "::endgroup::"
+
+            echo "### 📊 Code Coverage Summary (macOS)" >> "$GITHUB_STEP_SUMMARY"
+            echo "<details open><summary><b>Detailed Coverage Table</b></summary>" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo '```text' >> "$GITHUB_STEP_SUMMARY"
+            xcrun llvm-cov report "$TEST_BIN" -instr-profile="$PROFDATA" -ignore-filename-regex='(Tests/|\.build/)' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "</details>" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ Coverage data or test bundle not found."
+          fi
+
       - name: Run Automated Tests & Code Coverage (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
