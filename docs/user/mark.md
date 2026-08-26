@@ -74,9 +74,16 @@ Canvas mode follows a PE2-style rectangular block mark model.
   position.
 - Pressing `^^` / `Ctrl+^` or `M+B` after both points are set starts a new block mark at
   the current cursor position.
-- Cursor movement does not change the active block mark. Only `^^` / `Ctrl+^` or `M+B`
+- Cursor movement does not change or clear the active block mark. Only `^^` / `Ctrl+^` or `M+B`
   changes the block start or end point.
+- **Persistence Across Scrolling & Paging**: Scrolling the viewport, paging
+  up/down (`PageUp`, `PageDown`, `^V`, `^Y`), navigating lines (`Home`, `End`,
+  `^Home`, `^End`), or jumping (`:goto`, `:eof`) preserves the active canvas
+  block mark at its absolute document coordinates `(startLine, startCol)` to
+  `(endLine, endCol)`. The block mark remains active and intact even when
+  scrolled completely out of view.
 - To cancel/unset an active mark, use `^G`, `M+U` (`Alt+U`), or command `:unmark`.
+- Switching editor modes (`M+V`, `M+T`) always clears the active mark.
 - The active block is the rectangle between the fixed start and end points.
 - Block bounds are visual-cell based and inclusive.
 - The block may include empty cells and trailing blank space.
