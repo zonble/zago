@@ -1,4 +1,5 @@
 import ANSIStyle
+import Config
 import Foundation
 import Syntax
 import TextMetrics
@@ -28,51 +29,71 @@ final class DocumentOutlineView {
     func show() -> DocumentHeading? {
         render()
         while true {
-            let key = terminal.readKey()
+            let event = terminal.readInputEvent()
             let (rows, _) = terminal.getWindowSize()
             let availableHeight = max(1, rows - 2)
             let maxTop = max(0, headings.count - availableHeight)
 
-            switch key {
-            case .arrowDown, .char("j"), .char("J"):
-                selectedIndex = min(selectedIndex + 1, max(0, headings.count - 1))
-                ensureSelectionVisible(availableHeight: availableHeight)
-                render()
-            case .arrowUp, .char("k"), .char("K"):
-                selectedIndex = max(0, selectedIndex - 1)
-                ensureSelectionVisible(availableHeight: availableHeight)
-                render()
-            case .pageDown, .char(" "):
-                selectedIndex = min(selectedIndex + availableHeight, max(0, headings.count - 1))
-                topIndex = min(topIndex + availableHeight, maxTop)
-                ensureSelectionVisible(availableHeight: availableHeight)
-                render()
-            case .pageUp:
-                selectedIndex = max(0, selectedIndex - availableHeight)
-                topIndex = max(0, topIndex - availableHeight)
-                ensureSelectionVisible(availableHeight: availableHeight)
-                render()
-            case .home:
-                selectedIndex = 0
-                topIndex = 0
-                render()
-            case .end:
-                selectedIndex = max(0, headings.count - 1)
-                topIndex = maxTop
-                render()
-            case .enter:
-                guard headings.indices.contains(selectedIndex) else { return nil }
-                return headings[selectedIndex]
-            case .resize:
-                terminal.clearScreen()
-                ensureSelectionVisible(availableHeight: availableHeight)
-                render()
-            case .esc, .ctrl("c"), .ctrl("C"), .ctrl("g"), .ctrl("G"), .char("q"), .char("Q"):
-                return nil
-            case .unknown:
-                render()
-            default:
-                return nil
+            switch event {
+            case .key(let key):
+                switch key {
+                case .arrowDown, .char("j"), .char("J"):
+                    selectedIndex = min(selectedIndex + 1, max(0, headings.count - 1))
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .arrowUp, .char("k"), .char("K"):
+                    selectedIndex = max(0, selectedIndex - 1)
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .pageDown, .char(" "):
+                    selectedIndex = min(selectedIndex + availableHeight, max(0, headings.count - 1))
+                    topIndex = min(topIndex + availableHeight, maxTop)
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .pageUp:
+                    selectedIndex = max(0, selectedIndex - availableHeight)
+                    topIndex = max(0, topIndex - availableHeight)
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .home:
+                    selectedIndex = 0
+                    topIndex = 0
+                    render()
+                case .end:
+                    selectedIndex = max(0, headings.count - 1)
+                    topIndex = maxTop
+                    render()
+                case .enter:
+                    guard headings.indices.contains(selectedIndex) else { return nil }
+                    return headings[selectedIndex]
+                case .resize:
+                    terminal.clearScreen()
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .esc, .ctrl("c"), .ctrl("C"), .ctrl("g"), .ctrl("G"), .char("q"), .char("Q"):
+                    return nil
+                case .unknown:
+                    render()
+                default:
+                    return nil
+                }
+
+            case .mouse(let mouse):
+                switch mouse.action {
+                case .scrollUp:
+                    selectedIndex = max(0, selectedIndex - 3)
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                case .scrollDown:
+                    selectedIndex = min(selectedIndex + 3, max(0, headings.count - 1))
+                    ensureSelectionVisible(availableHeight: availableHeight)
+                    render()
+                default:
+                    break
+                }
+
+            case .openFile:
+                break
             }
         }
     }

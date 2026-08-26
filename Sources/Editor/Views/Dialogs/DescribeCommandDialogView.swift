@@ -1,4 +1,5 @@
 import ANSIStyle
+import Config
 import Foundation
 import LogoEngine
 import LogoLocalization
@@ -41,88 +42,113 @@ final class DescribeCommandDialogView {
         scrollOffset = 0
         render()
         while true {
-            let key = terminal.readKey()
-            if key == .unknown {
-                continue
-            }
-            if key == .resize {
-                render()
-                continue
-            }
+            let event = terminal.readInputEvent()
+            switch event {
+            case .key(let key):
+                if key == .unknown {
+                    continue
+                }
+                if key == .resize {
+                    render()
+                    continue
+                }
 
-            if isInputMode {
-                switch key {
-                case .enter:
-                    let trimmed = inputText.trimmingCharacters(in: .whitespaces)
-                    if !trimmed.isEmpty {
-                        symbol = trimmed
-                        isInputMode = false
-                        scrollOffset = 0
+                if isInputMode {
+                    switch key {
+                    case .enter:
+                        let trimmed = inputText.trimmingCharacters(in: .whitespaces)
+                        if !trimmed.isEmpty {
+                            symbol = trimmed
+                            isInputMode = false
+                            scrollOffset = 0
+                            tabCandidates = []
+                            tabCandidateIndex = 0
+                            render()
+                        } else {
+                            return
+                        }
+                    case .esc, .ctrl("c"), .ctrl("g"):
+                        return
+                    case .tab:
+                        handleTabCompletion()
+                    case .backspace:
                         tabCandidates = []
                         tabCandidateIndex = 0
+                        if !inputText.isEmpty {
+                            inputText.removeLast()
+                            render()
+                        }
+                    case .char(let ch):
+                        tabCandidates = []
+                        tabCandidateIndex = 0
+                        inputText.append(ch)
                         render()
-                    } else {
+                    default:
+                        break
+                    }
+                } else {
+                    // Showing details with scroll support
+                    switch key {
+                    case .esc, .enter, .char("q"), .char("Q"), .ctrl("c"), .ctrl("g"):
                         return
-                    }
-                case .esc, .ctrl("c"), .ctrl("g"):
-                    return
-                case .tab:
-                    handleTabCompletion()
-                case .backspace:
-                    tabCandidates = []
-                    tabCandidateIndex = 0
-                    if !inputText.isEmpty {
-                        inputText.removeLast()
+
+                    case .arrowUp, .char("k"), .char("K"):
+                        if scrollOffset > 0 {
+                            scrollOffset -= 1
+                            render()
+                        }
+
+                    case .arrowDown, .char("j"), .char("J"):
+                        let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                        if scrollOffset < maxOffset {
+                            scrollOffset += 1
+                            render()
+                        }
+
+                    case .pageUp, .ctrl("u"):
+                        scrollOffset = max(0, scrollOffset - max(1, cachedBodyHeight - 1))
                         render()
+
+                    case .pageDown, .ctrl("d"), .char(" "):
+                        let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                        scrollOffset = min(maxOffset, scrollOffset + max(1, cachedBodyHeight - 1))
+                        render()
+
+                    case .home, .char("g"):
+                        scrollOffset = 0
+                        render()
+
+                    case .end, .char("G"):
+                        let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                        scrollOffset = maxOffset
+                        render()
+
+                    default:
+                        break
                     }
-                case .char(let ch):
-                    tabCandidates = []
-                    tabCandidateIndex = 0
-                    inputText.append(ch)
-                    render()
-                default:
-                    break
                 }
-            } else {
-                // Showing details with scroll support
-                switch key {
-                case .esc, .enter, .char("q"), .char("Q"), .ctrl("c"), .ctrl("g"):
-                    return
 
-                case .arrowUp, .char("k"), .char("K"):
-                    if scrollOffset > 0 {
-                        scrollOffset -= 1
-                        render()
+            case .mouse(let mouse):
+                if !isInputMode {
+                    switch mouse.action {
+                    case .scrollUp:
+                        if scrollOffset > 0 {
+                            scrollOffset = max(0, scrollOffset - 3)
+                            render()
+                        }
+                    case .scrollDown:
+                        let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
+                        if scrollOffset < maxOffset {
+                            scrollOffset = min(maxOffset, scrollOffset + 3)
+                            render()
+                        }
+                    default:
+                        break
                     }
-
-                case .arrowDown, .char("j"), .char("J"):
-                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
-                    if scrollOffset < maxOffset {
-                        scrollOffset += 1
-                        render()
-                    }
-
-                case .pageUp, .ctrl("u"):
-                    scrollOffset = max(0, scrollOffset - max(1, cachedBodyHeight - 1))
-                    render()
-
-                case .pageDown, .ctrl("d"), .char(" "):
-                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
-                    scrollOffset = min(maxOffset, scrollOffset + max(1, cachedBodyHeight - 1))
-                    render()
-
-                case .home, .char("g"):
-                    scrollOffset = 0
-                    render()
-
-                case .end, .char("G"):
-                    let maxOffset = max(0, cachedLines.count - cachedBodyHeight)
-                    scrollOffset = maxOffset
-                    render()
-
-                default:
-                    break
                 }
+
+            case .openFile:
+                break
             }
         }
     }

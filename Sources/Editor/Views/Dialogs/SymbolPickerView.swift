@@ -183,70 +183,88 @@ final class SymbolPickerView {
     func show() {
         render()
         while true {
-            let key = terminal.readKey()
-            switch key {
-            case .esc:
-                terminal.clearScreen()
-                return
+            let event = terminal.readInputEvent()
+            switch event {
+            case .key(let key):
+                switch key {
+                case .esc:
+                    terminal.clearScreen()
+                    return
 
-            case .char(let ch):
-                let lowerStr = String(ch).lowercased()
-                if lowerStr == "1" {
-                    setCategory(0)
-                    render()
-                } else if lowerStr == "2" {
-                    setCategory(1)
-                    render()
-                } else if lowerStr == "3" {
-                    setCategory(2)
-                    render()
-                } else if lowerStr == "4" {
-                    setCategory(3)
-                    render()
-                } else if let firstChar = lowerStr.first,
-                    let ascii = firstChar.asciiValue,
-                    let aVal = Character("a").asciiValue,
-                    ascii >= aVal && ascii <= Character("z").asciiValue!
-                {
-                    let idx = Int(ascii - aVal)
-                    let itemsCount = currentCategoryItems().count
-                    if idx >= 0 && idx < itemsCount {
-                        selectedIndex = idx
+                case .char(let ch):
+                    let lowerStr = String(ch).lowercased()
+                    if lowerStr == "1" {
+                        setCategory(0)
                         render()
+                    } else if lowerStr == "2" {
+                        setCategory(1)
+                        render()
+                    } else if lowerStr == "3" {
+                        setCategory(2)
+                        render()
+                    } else if lowerStr == "4" {
+                        setCategory(3)
+                        render()
+                    } else if let firstChar = lowerStr.first,
+                        let ascii = firstChar.asciiValue,
+                        let aVal = Character("a").asciiValue,
+                        ascii >= aVal && ascii <= Character("z").asciiValue!
+                    {
+                        let idx = Int(ascii - aVal)
+                        let itemsCount = currentCategoryItems().count
+                        if idx >= 0 && idx < itemsCount {
+                            selectedIndex = idx
+                            render()
+                        }
                     }
+
+                case .tab:
+                    setCategory((categoryIndex + 1) % SymbolCategories.categories.count)
+                    render()
+
+                case .arrowLeft:
+                    moveSelection(by: -1)
+                    render()
+                case .arrowRight:
+                    moveSelection(by: 1)
+                    render()
+                case .arrowUp:
+                    moveSelectionInGrid(rowDelta: -1, colsCount: gridColumnsCount())
+                    render()
+                case .arrowDown:
+                    moveSelectionInGrid(rowDelta: 1, colsCount: gridColumnsCount())
+                    render()
+
+                case .enter:
+                    let currentItems = currentCategoryItems()
+                    if selectedIndex >= 0 && selectedIndex < currentItems.count {
+                        let chosenSymbol = currentItems[selectedIndex].symbol
+                        onSelect(chosenSymbol)
+                    }
+                    terminal.clearScreen()
+                    return
+
+                case .resize:
+                    terminal.clearScreen()
+                    render()
+
+                default:
+                    break
                 }
 
-            case .tab:
-                setCategory((categoryIndex + 1) % SymbolCategories.categories.count)
-                render()
-
-            case .arrowLeft:
-                moveSelection(by: -1)
-                render()
-            case .arrowRight:
-                moveSelection(by: 1)
-                render()
-            case .arrowUp:
-                moveSelectionInGrid(rowDelta: -1, colsCount: gridColumnsCount())
-                render()
-            case .arrowDown:
-                moveSelectionInGrid(rowDelta: 1, colsCount: gridColumnsCount())
-                render()
-
-            case .enter:
-                let currentItems = currentCategoryItems()
-                if selectedIndex >= 0 && selectedIndex < currentItems.count {
-                    let chosenSymbol = currentItems[selectedIndex].symbol
-                    onSelect(chosenSymbol)
+            case .mouse(let mouse):
+                switch mouse.action {
+                case .scrollUp:
+                    moveSelectionInGrid(rowDelta: -1, colsCount: gridColumnsCount())
+                    render()
+                case .scrollDown:
+                    moveSelectionInGrid(rowDelta: 1, colsCount: gridColumnsCount())
+                    render()
+                default:
+                    break
                 }
-                terminal.clearScreen()
-                return
 
-            case .resize:
-                terminal.clearScreen()
-                render()
-
-            default:
+            case .openFile:
                 break
             }
         }
