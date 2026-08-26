@@ -507,6 +507,9 @@ public final class ConfigLoader {
             #   ;   TYPE "           ↓ " NL
             #   ; END
             #
+            #   ; TO YES type "✅ END
+            #   ; TO NO type "❌ END
+            #
             # endlogo
             #
             # logo-script insert-title
