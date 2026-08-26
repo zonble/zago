@@ -413,4 +413,39 @@ struct DirectoryBufferTests {
         #expect(editor.buffer.filePath == fileURL.path)
         #expect(editor.buffer.lines.joined(separator: "\n") == "Hello World")
     }
+
+    @Test func testDirectoryBufferClickIntervalExpiresDoesNotActivate() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_dblclick_timeout_\(UUID().uuidString)")
+        let subDir = workDir.appendingPathComponent("docs")
+
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+
+        let editor = Editor(filePath: workDir.path)
+        editor.displayConfig.enableMouse = true
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        guard let docsIdx = dirBuf.lines.firstIndex(where: { $0.contains("docs") }) else {
+            Issue.record("Expected docs folder in directory buffer")
+            return
+        }
+
+        let docsMouseRow = 2 + docsIdx
+        // First click
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
+        #expect(editor.buffer is DirectoryBuffer)
+
+        // Mock lastClickTime to simulate timeout (> 0.4s ago)
+        editor.mouseClickTracker.lastClickTime = Date().addingTimeInterval(-1.0)
+
+        // Second click after timeout: should register as a new single click, not activating the folder
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
+        #expect(editor.buffer is DirectoryBuffer)
+        let sameDirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(sameDirBuf.directoryPath == workDir.path)
+    }
 }
