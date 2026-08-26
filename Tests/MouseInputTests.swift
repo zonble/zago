@@ -403,6 +403,42 @@ import Testing
         #expect(editor.buffer.lineIndex == 0)
         #expect(editor.canvasVisualColumn == 2)
     }
+
+    @Test func testMouseDragDoesNotChangeSelectionWhenMenuBarIsActive() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "Hello World",
+            "Second Line",
+        ]
+        editor.displayConfig.enableMouse = true
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+
+        // 1. Text mode: with menu bar active, dragging does NOT change selection or cursor
+        editor.menuBarController.isActive = true
+        let textDrag = MouseEvent(action: .drag(.left), col: 10, row: 3)
+        editor.handleMouseEvent(textDrag)
+
+        #expect(editor.buffer.selectionMark == nil)
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 0)
+
+        // 2. Canvas mode: with menu bar active, dragging does NOT create canvasBlockMark
+        editor.switchToCanvasMode()
+        editor.buffer.lineIndex = 0
+        editor.canvasVisualColumn = 0
+        editor.menuBarController.isActive = true
+
+        let canvasDrag = MouseEvent(action: .drag(.left), col: 8, row: 3)
+        editor.handleMouseEvent(canvasDrag)
+
+        #expect(editor.buffer.canvasBlockMark == nil)
+        #expect(editor.buffer.canvasBlockMarkEnd == nil)
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.canvasVisualColumn == 0)
+    }
 }
 
 

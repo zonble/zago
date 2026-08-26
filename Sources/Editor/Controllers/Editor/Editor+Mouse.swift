@@ -12,7 +12,7 @@ extension Editor {
 
         // 1. Drag Selection Auto-Scroll (takes priority when dragging across or beyond bars)
         if case .drag(.left) = mouseEvent.action {
-            if buffer.isReadOnly || promptController.isActive { return }
+            if buffer.isReadOnly || promptController.isActive || menuBarController.isActive { return }
 
             let topMargin = 1 + (geometry.showRuler ? 1 : 0)
             let totalLineCount: Int
