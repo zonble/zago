@@ -251,6 +251,68 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 7)
 }
 
+@Test func testDrawBoxWithTextUsesCanvasBlockFrameAndCentersText() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor.buffer.canvasBlockMarkEnd = (line: 4, visualColumn: 9) // width 10, height 5
+
+    editor.logoEngine.execute("DRAWBOX \"Hello\"")
+
+    #expect(editor.buffer.lines[0] == "┌────────┐")
+    #expect(editor.buffer.lines[1] == "│        │")
+    #expect(editor.buffer.lines[2] == "│ Hello  │")
+    #expect(editor.buffer.lines[3] == "│        │")
+    #expect(editor.buffer.lines[4] == "└────────┘")
+}
+
+@Test func testDrawBoxWithTextAndStylesUsesCanvasBlockFrame() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor.buffer.canvasBlockMarkEnd = (line: 4, visualColumn: 9)
+
+    editor.logoEngine.execute("DRAWBOX \"Hi\" \"double\" \"round\" \"right\"")
+
+    #expect(editor.buffer.lines[0] == "╭════════╮")
+    #expect(editor.buffer.lines[1] == "║        ║")
+    #expect(editor.buffer.lines[2] == "║      Hi║")
+    #expect(editor.buffer.lines[3] == "║        ║")
+    #expect(editor.buffer.lines[4] == "╰════════╯")
+}
+
+@Test func testBoxWithTextUsesCanvasBlockFrameAndCentersText() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "..........",
+        "..........",
+        "..........",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 9) // width 10, height 3
+
+    editor.logoEngine.execute("BOX \"Hello\"")
+
+    #expect(editor.buffer.lines[0] == "┌────────┐..........")
+    #expect(editor.buffer.lines[1] == "│ Hello  │..........")
+    #expect(editor.buffer.lines[2] == "└────────┘..........")
+}
+
 @Test func testLogoEngineLineAndVLineVariants() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)

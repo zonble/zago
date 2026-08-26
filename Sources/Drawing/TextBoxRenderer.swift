@@ -74,7 +74,10 @@ public struct TextBoxRenderer: Sendable {
             textLines.append(contentsOf: wrapTextLine(rawLine, maxWidth: innerWidth))
         }
 
-        let height = max(targetHeight ?? 0, textLines.count + 2)
+        let height = targetHeight ?? max(3, textLines.count + 2)
+        let availableInnerHeight = max(1, height - 2)
+        let verticalOffset = max(0, (availableInnerHeight - textLines.count) / 2)
+
         let rows = (0..<height).map { row -> String in
             if row == 0 {
                 return String(style.topLeft)
@@ -87,7 +90,9 @@ public struct TextBoxRenderer: Sendable {
                     + String(style.bottomRight)
             }
 
-            let line = row - 1 < textLines.count ? textLines[row - 1] : ""
+            let innerRow = row - 1
+            let textLineIdx = innerRow - verticalOffset
+            let line = (textLineIdx >= 0 && textLineIdx < textLines.count) ? textLines[textLineIdx] : ""
             let textWidth = line.displayWidth
             let offset: Int
             switch alignment {
