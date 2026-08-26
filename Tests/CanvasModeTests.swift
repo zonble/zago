@@ -492,7 +492,7 @@ import TextMetrics
 
     editor.processKey(.ctrl("K"))
 
-    #expect(editor.buffer.lines == ["aef", "156"])
+    #expect(editor.buffer.lines == ["a   ef", "1   56"])
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 1)
@@ -535,7 +535,7 @@ import TextMetrics
     cjkEditor.processKey(.mark)
     cjkEditor.processKey(.ctrl("K"))
 
-    #expect(cjkEditor.buffer.lines == ["ABC"])
+    #expect(cjkEditor.buffer.lines == ["A  BC"])
     #expect(cjkEditor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["中"]))
 }
 
@@ -688,7 +688,7 @@ import TextMetrics
     editor.canvasVisualColumn = 3
     editor.processKey(.mark)
     editor.processKey(.ctrl("x"))
-    #expect(editor.buffer.lines == ["aef", "156"])
+    #expect(editor.buffer.lines == ["a   ef", "1   56"])
 
     // Test ^U (Paste; ^V pages in Canvas Mode)
     editor.buffer.lines = ["xxYY", "zzWW"]
@@ -717,7 +717,7 @@ import TextMetrics
 
     // Test ^K in Classic (Cuts block)
     editor.processKey(.ctrl("k"))
-    #expect(editor.buffer.lines == ["aef", "156"])
+    #expect(editor.buffer.lines == ["a   ef", "1   56"])
     #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 3, rows: ["bcd", "234"]))
 }
 
@@ -908,25 +908,47 @@ import TextMetrics
     #expect(rect.rightColumnExclusive == 6)
 }
 
-@Test func testCanvasDeleteClearsCanvasBlockContentAndClearsMark() throws {
+@Test func testCanvasCutBlockFillsWithSpacesAndPreservesPosition() throws {
     let editor = Editor()
     editor.switchToCanvasMode()
     editor.buffer.lines = [
-        "Hello World",
-        "12345 67890",
+        "ABCDEF",
+        "123456",
     ]
-    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 6)
-    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 10)
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 3)
 
-    // Execute Delete key command
-    editor.commandRegistry.dispatch(id: .editDelete, editor: editor)
+    // Execute Ctrl+K (Cut)
+    _ = editor.commandRegistry.dispatch(id: .editCut, editor: editor)
 
-    #expect(editor.buffer.lines[0] == "Hello")
-    #expect(editor.buffer.lines[1] == "12345")
+    #expect(editor.buffer.lines[0] == "AB  EF")
+    #expect(editor.buffer.lines[1] == "12  56")
+    #expect(editor.canvasBlockClipboard == Editor.CanvasBlockClipboard(width: 2, rows: ["CD", "34"]))
     #expect(editor.buffer.canvasBlockMark == nil)
     #expect(editor.buffer.canvasBlockMarkEnd == nil)
     #expect(editor.buffer.lineIndex == 0)
-    #expect(editor.canvasVisualColumn == 6)
+    #expect(editor.canvasVisualColumn == 2)
+}
+
+@Test func testCanvasDeleteShiftsCanvasBlockContentLeftAndClearsMark() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "ABCDEF",
+        "123456",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 3)
+
+    // Execute Delete key command (shifts left)
+    _ = editor.commandRegistry.dispatch(id: .editDelete, editor: editor)
+
+    #expect(editor.buffer.lines[0] == "ABEF")
+    #expect(editor.buffer.lines[1] == "1256")
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 2)
 }
 
 @Test func testCanvasBackspaceClearsCanvasBlockContentAndClearsMark() throws {
@@ -939,7 +961,7 @@ import TextMetrics
     editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
     editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 3)
 
-    // Execute Backspace key
+    // Execute Backspace key (replaces with spaces without shifting)
     editor.processKey(.backspace)
 
     #expect(editor.buffer.lines[0] == "AB  EF")

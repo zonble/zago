@@ -407,8 +407,13 @@ extension Editor {
             guard ensureCanvasLineExists(lineIndex) else { return }
             let line = buffer.lines[lineIndex]
             rows.append(line.visualSlice(startVisualColumn: rect.leftColumn, width: rect.width).text)
-            buffer.lines[lineIndex] = line.removingVisualColumns(start: rect.leftColumn, width: rect.width)
-                .trimmingTrailingSpaces()
+            let spaces = String(repeating: " ", count: rect.width)
+            buffer.lines[lineIndex] = DisplayText.replacingColumns(
+                in: line,
+                startCol: rect.leftColumn,
+                width: rect.width,
+                with: spaces
+            ).trimmingTrailingSpaces()
         }
 
         canvasBlockClipboard = CanvasBlockClipboard(width: rect.width, rows: rows)
@@ -445,6 +450,36 @@ extension Editor {
                 width: rect.width,
                 with: spaces
             ).trimmingTrailingSpaces()
+        }
+
+        buffer.lineIndex = rect.topLine
+        canvasVisualColumn = rect.leftColumn
+        syncCanvasCursorToBuffer()
+        clearActiveMark()
+        buffer.isModified = true
+        return true
+    }
+
+    @discardableResult
+    func deleteCanvasBlockIfNeeded(saveSnapshot: Bool = true) -> Bool {
+        guard isCanvasModeActive && !isTableModeActive else { return false }
+        guard let rect = currentCanvasBlockRectangle(), rect.width > 0 else {
+            if buffer.canvasBlockMark != nil {
+                clearActiveMark()
+                return true
+            }
+            return false
+        }
+
+        if saveSnapshot {
+            saveUndoSnapshot()
+        }
+
+        for lineIndex in rect.topLine...rect.bottomLine {
+            guard lineIndex >= 0 && lineIndex < buffer.lines.count else { continue }
+            let line = buffer.lines[lineIndex]
+            buffer.lines[lineIndex] = line.removingVisualColumns(start: rect.leftColumn, width: rect.width)
+                .trimmingTrailingSpaces()
         }
 
         buffer.lineIndex = rect.topLine

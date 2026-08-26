@@ -40,7 +40,7 @@ struct DeleteCharCommand: Command {
             return .succeeded
         }
         if editor.isCanvasModeActive {
-            if editor.clearCanvasBlockIfNeeded(saveSnapshot: false) {
+            if editor.deleteCanvasBlockIfNeeded(saveSnapshot: false) {
                 return .succeeded
             }
             editor.deleteCanvasCharacter()

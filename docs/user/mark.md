@@ -106,8 +106,8 @@ clipboard.
 
 For each affected row:
 
-- The cells inside the block are removed.
-- Cells to the right of the block shift left by the block width.
+- The cells inside the block are replaced with whitespace (spaces), preserving
+  surrounding fixed-position 2D layout without shifting text to the left.
 - The copied clipboard data preserves the rectangular shape, including spaces
   inside the block.
 - Trailing spaces are not preserved in the buffer after the row is rewritten.
@@ -128,12 +128,42 @@ abcdef
 Marked block: rows 1...2, columns 2...4
 
 After ^K:
-aef
-156
+a   ef
+1   56
 
 Canvas block clipboard:
 bcd
 234
+```
+
+### Delete and Backspace on Block Mark
+
+When a canvas block mark is active:
+
+- **`Backspace`**: Clears all content inside the marked rectangular block with
+  whitespace (spaces), keeping the 2D position intact without shifting the rest
+  of the line to the left (`保持空白，不內縮`). The canvas block mark is then
+  cleared.
+- **`Delete`**: Deletes the columns within the marked block and shifts cells to
+  the right of the block leftward by the block width (`往左內縮`). The canvas
+  block mark is then cleared.
+
+Example:
+
+```text
+Before:
+abcdef
+123456
+
+Marked block: rows 1...2, columns 2...4
+
+After Backspace:
+a   ef
+1   56
+
+After Delete:
+aef
+156
 ```
 
 ### Paste Block
