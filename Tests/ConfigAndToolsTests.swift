@@ -4,6 +4,7 @@ import Testing
 @testable import Config
 @testable import Editor
 @testable import LogoEngine
+@testable import LogoLocalization
 @testable import Syntax
 @testable import TextEncoding
 @testable import zago
@@ -1061,7 +1062,16 @@ struct ConfigAndToolsTests {
             #expect(line.displayWidth <= maxWidth)
         }
 
-        // Verify describing Chinese dialect keywords directly
+        // Verify that in English editor without dialect loaded, FORWARD has built-in alias FD but NOT Chinese dialect alias 前進
+        let forwardLinesEn = formatNameDialog.buildSymbolDetails(for: "FORWARD", l10n: l10n, maxLineWidth: maxWidth)
+        let joinedForwardEn = forwardLinesEn.joined(separator: "\n")
+        #expect(joinedForwardEn.contains("FD"))
+        #expect(!joinedForwardEn.contains("前進"))
+
+        // Register Chinese dialect plugin
+        editor.logoEngine.register(plugin: LogoTraditionalChinesePlugin())
+
+        // Verify describing Chinese dialect keywords directly after loading dialect
         let chineseDialog = DescribeCommandDialogView(
             terminal: editor.terminal,
             editor: editor,
@@ -1074,10 +1084,11 @@ struct ConfigAndToolsTests {
         let joinedDrawBox = drawBoxLines.joined(separator: "\n")
         #expect(joinedDrawBox.contains("DRAWBOX") || joinedDrawBox.contains("box") || joinedDrawBox.contains("畫框"))
 
-        // Verify that describing BOX lists dialect aliases (like 加框, 插入框)
-        let boxLines = chineseDialog.buildSymbolDetails(for: "BOX", l10n: zhL10n, maxLineWidth: maxWidth)
-        let joinedBox = boxLines.joined(separator: "\n")
-        #expect(joinedBox.contains("加框") || joinedBox.contains("插入框"))
+        // Verify that describing FORWARD now lists Chinese dialect alias 前進 after loading dialect
+        let forwardLinesZh = chineseDialog.buildSymbolDetails(for: "FORWARD", l10n: zhL10n, maxLineWidth: maxWidth)
+        let joinedForwardZh = forwardLinesZh.joined(separator: "\n")
+        #expect(joinedForwardZh.contains("FD"))
+        #expect(joinedForwardZh.contains("前進"))
     }
 
     @Test

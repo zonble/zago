@@ -223,16 +223,12 @@ final class DescribeCommandDialogView {
             }
         }
 
-        // 4. Localized Dialect Keywords
+        // 4. Localized Dialect Keywords (only from loaded dialects in editor)
         if let editor = editor {
             for plugin in editor.logoEngine.pluginRegistry.registeredPlugins {
                 for alias in plugin.keywordAliases {
                     set.insert(alias)
                 }
-            }
-        } else {
-            for alias in LogoLocalizationRegistry.allKeywordAliases {
-                set.insert(alias)
             }
         }
 
@@ -456,7 +452,7 @@ final class DescribeCommandDialogView {
         let resolvedPrim: LogoPrimitive?
         if let prim = editor?.logoEngine.parsePrimitive(sym) {
             resolvedPrim = prim
-        } else if let prim = LogoLocalizationRegistry.parsePrimitive(sym) ?? LogoPrimitive.from(sym) {
+        } else if let prim = LogoPrimitive.from(sym) {
             resolvedPrim = prim
         } else {
             resolvedPrim = nil
@@ -501,10 +497,10 @@ final class DescribeCommandDialogView {
                 $0 != meta.name && LogoPrimitive.from($0) == prim
             }
             let dialectAliases: [String]
-            if let editor = editor, !editor.logoEngine.pluginRegistry.aliases(for: prim).isEmpty {
+            if let editor = editor {
                 dialectAliases = editor.logoEngine.pluginRegistry.aliases(for: prim)
             } else {
-                dialectAliases = LogoLocalizationRegistry.aliases(for: prim)
+                dialectAliases = []
             }
             for da in dialectAliases where !aliases.contains(da) && da != meta.name {
                 aliases.append(da)
