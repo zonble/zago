@@ -799,7 +799,7 @@ import TextMetrics
     #expect(editor.buffer.lines[2] == "└────────┘")
 }
 
-@Test func testFrameRequiresWidthAndHeight() throws {
+@Test func testFrameRequiresWidthAndHeightWhenNoCanvasMark() throws {
     let editor = Editor()
     editor.buffer.lines = ["Hello"]
     editor.logoEngine.execute("FRAME")
@@ -807,6 +807,42 @@ import TextMetrics
 
     editor.logoEngine.execute("FRAME 10")
     #expect(editor.buffer.lines == ["Hello"])
+}
+
+@Test func testFrameWithCanvasBlockMark() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "  Inside A  ",
+        "  Inside B  ",
+        "  Inside C  ",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 11) // width 12, height 3
+
+    editor.logoEngine.execute("FRAME")
+
+    #expect(editor.buffer.lines[0] == "┌──────────┐")
+    #expect(editor.buffer.lines[1] == "│ Inside B │")
+    #expect(editor.buffer.lines[2] == "└──────────┘")
+}
+
+@Test func testFrameWithCanvasBlockMarkAndStyleArguments() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "  Inside A  ",
+        "  Inside B  ",
+        "  Inside C  ",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+    editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 11)
+
+    editor.logoEngine.execute("FRAME \"double\" \"round\"")
+
+    #expect(editor.buffer.lines[0] == "╭══════════╮")
+    #expect(editor.buffer.lines[1] == "║ Inside B ║")
+    #expect(editor.buffer.lines[2] == "╰══════════╯")
 }
 
 @Test func testFrameExitPositions() throws {

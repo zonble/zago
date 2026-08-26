@@ -107,9 +107,9 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(
-                        name: "width", required: true, description: "The width of the frame.", example: "20"),
+                        name: "width", required: false, description: "The width of the frame (optional if canvas mark is set).", example: "20"),
                     LogoPrimitiveParameter(
-                        name: "height", required: true, description: "The height of the frame.", example: "5"),
+                        name: "height", required: false, description: "The height of the frame (optional if canvas mark is set).", example: "5"),
                     LogoPrimitiveParameter(
                         name: "style", required: false, description: "The formatting or border style. Used by FRAME.",
                         example: "single",
@@ -119,8 +119,9 @@ extension LogoPrimitive {
                         example: "ne", allowedValues: boxExitPositionAllowedValues),
                 ],
                 examples: [
+                    LogoPrimitiveExample(input: "FRAME"),
                     LogoPrimitiveExample(input: "FRAME 20 5"),
-                    LogoPrimitiveExample(input: "FRAME 20 5 \"double\" \"round\""),
+                    LogoPrimitiveExample(input: "FRAME \"double\" \"round\""),
                     LogoPrimitiveExample(input: "FRAME 16 4 =)"),
                 ],
                 notes: boxStyleDSLNote

@@ -334,23 +334,49 @@ extension LogoEngine {
     }
 
     internal func executeFrameCommand(_ tokens: [String], index: inout Int) {
-        guard index < tokens.count else { return }
-        guard let w = parseBoxDimensionArgument(tokens, index: &index) else { return }
-        guard index + 1 < tokens.count else { return }
-        var heightIndex = index + 1
-        guard let h = parseBoxDimensionArgument(tokens, index: &heightIndex) else { return }
-        index = heightIndex
+        var width: Int? = nil
+        var height: Int? = nil
+        var startLine: Int? = nil
+        var startCol: Int? = nil
+        var scanIndex = index
 
-        let width = max(2, min(w, 200))
-        let height = max(2, min(h, 100))
+        if index < tokens.count {
+            var wIndex = index
+            if let w = parseBoxDimensionArgument(tokens, index: &wIndex) {
+                if wIndex + 1 < tokens.count {
+                    var hIndex = wIndex + 1
+                    if let h = parseBoxDimensionArgument(tokens, index: &hIndex) {
+                        index = hIndex
+                        scanIndex = hIndex + 1
+                        width = max(2, min(w, 200))
+                        height = max(2, min(h, 100))
+                    }
+                }
+            }
+        }
+
+        if width == nil || height == nil {
+            if let frame = queryCanvasBlockFrame(.canvasBlockFrame) {
+                startLine = frame.lineIndex
+                startCol = frame.visualColumn
+                width = max(2, min(frame.width, 200))
+                height = max(2, min(frame.height, 100))
+                scanIndex = index
+            } else {
+                return
+            }
+        }
+
+        guard let finalWidth = width, let finalHeight = height else { return }
+
         var styleName = ""
         var isRound: Bool? = nil
         var exitPos: BoxExitPosition = .ne
 
-        while index + 1 < tokens.count {
-            let nextToken = tokens[index + 1]
+        while scanIndex < tokens.count {
+            let nextToken = tokens[scanIndex]
             if shouldStopBoxArgumentScan(at: nextToken) { break }
-            var evalIndex = index + 1
+            var evalIndex = scanIndex
             let rawToken = tokens[evalIndex]
             let isQuoted = isQuotedWordToken(rawToken)
             let unquotedRaw = unquote(rawToken)
@@ -364,6 +390,7 @@ extension LogoEngine {
                 val = unquote(evaluateExpression(tokens, index: &evalIndex))
             }
             index = evalIndex
+            scanIndex = evalIndex + 1
 
             if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
                 exitPos = parsedExit
@@ -375,22 +402,26 @@ extension LogoEngine {
         }
 
         drawPerimeterFrame(
-            width: width,
-            height: height,
+            startLine: startLine,
+            startCol: startCol,
+            width: finalWidth,
+            height: finalHeight,
             style: boxStyle(named: styleName, isRound: isRound),
             exitPos: exitPos
         )
     }
 
     private func drawPerimeterFrame(
+        startLine: Int? = nil,
+        startCol: Int? = nil,
         width: Int,
         height: Int,
         style: BoxStyle,
         exitPos: BoxExitPosition = .ne
     ) {
         guard let editor = self.delegate else { return }
-        let startCol = queryInteger(.currentColumnIndex) ?? 0
-        let startLine = queryInteger(.currentLineIndex) ?? 0
+        let effectiveStartCol = startCol ?? (queryInteger(.currentColumnIndex) ?? 0)
+        let effectiveStartLine = startLine ?? (queryInteger(.currentLineIndex) ?? 0)
         let renderer = TextBoxRenderer()
 
         let topRowStr: String
@@ -404,31 +435,31 @@ extension LogoEngine {
         }
 
         for r in 0..<height {
-            let currentLineIndex = startLine + r
+            let currentLineIndex = effectiveStartLine + r
             editor.logoEngine(self, performAction: .ensureLineExists(index: currentLineIndex))
             let lineStr = queryString(.lineAt(currentLineIndex)) ?? ""
 
             let newLineText: String
             if r == 0 {
                 newLineText = renderer.mergeRow(
-                    existingLine: lineStr, startCol: startCol, row: topRowStr, isTop: true, isBottom: false,
+                    existingLine: lineStr, startCol: effectiveStartCol, row: topRowStr, isTop: true, isBottom: false,
                     mode: .overlay)
             } else if r == height - 1 {
                 newLineText = renderer.mergeRow(
-                    existingLine: lineStr, startCol: startCol, row: bottomRowStr, isTop: false, isBottom: true,
+                    existingLine: lineStr, startCol: effectiveStartCol, row: bottomRowStr, isTop: false, isBottom: true,
                     mode: .overlay)
             } else {
                 var updatedLine = DisplayText.replacingColumns(
-                    in: lineStr, startCol: startCol, width: 1, with: String(style.sideChar))
+                    in: lineStr, startCol: effectiveStartCol, width: 1, with: String(style.sideChar))
                 if width >= 2 {
                     updatedLine = DisplayText.replacingColumns(
-                        in: updatedLine, startCol: startCol + width - 1, width: 1, with: String(style.sideChar))
+                        in: updatedLine, startCol: effectiveStartCol + width - 1, width: 1, with: String(style.sideChar))
                 }
                 newLineText = updatedLine
             }
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        updateCursorAfterBox(startLine: startLine, startCol: startCol, width: width, height: height, exitPos: exitPos)
+        updateCursorAfterBox(startLine: effectiveStartLine, startCol: effectiveStartCol, width: width, height: height, exitPos: exitPos)
     }
 }
