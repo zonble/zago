@@ -12,6 +12,10 @@ final class DirectoryBuffer: TextBuffer {
     }
     override var allowsLogoExecution: Bool { false }
     override var isDirectoryBuffer: Bool { true }
+    override var viewWrapColumn: Int? {
+        get { nil }
+        set {}
+    }
 
     var currentLanguage: Language
 
@@ -116,10 +120,28 @@ final class DirectoryBuffer: TextBuffer {
         if isSameDirectory {
             self.lineIndex = min(self.lineIndex, max(0, newLines.count - 1))
         } else {
-            self.lineIndex = min(3, max(0, newLines.count - 1))
+            self.lineIndex = min(firstEntryLineIndex, max(0, newLines.count - 1))
             self.topVLineIndex = 0
         }
         self.columnIndex = 0
+    }
+
+    /// Number of fixed header lines preceding the first actionable entry (`.. (up a dir)`).
+    static let headerLineCount: Int = 3
+
+    /// Index of the first actionable entry line (`.. (up a dir)`).
+    var firstEntryLineIndex: Int {
+        lines.count > Self.headerLineCount ? Self.headerLineCount : 0
+    }
+
+    override func clampCursor() {
+        if lines.isEmpty {
+            lineIndex = 0
+            columnIndex = 0
+            return
+        }
+        lineIndex = max(firstEntryLineIndex, min(lineIndex, lines.count - 1))
+        columnIndex = 0
     }
 
     override func handleKey(_ key: Key, editor: Editor) -> Bool {
@@ -139,12 +161,40 @@ final class DirectoryBuffer: TextBuffer {
             return true
         case .arrowUp, .char("k"), .char("K"):
             if !self.lines.isEmpty {
-                self.lineIndex = max(3, self.lineIndex - 1)
+                self.lineIndex = max(firstEntryLineIndex, self.lineIndex - 1)
                 self.columnIndex = 0
                 editor.renderer.invalidateScreenCache()
             }
             return true
-        case .arrowLeft, .arrowRight, .home, .end, .pageUp, .pageDown, .resize:
+        case .home:
+            if !self.lines.isEmpty {
+                self.lineIndex = firstEntryLineIndex
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .end:
+            if !self.lines.isEmpty {
+                self.lineIndex = self.lines.count - 1
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .pageDown, .ctrl("V"):
+            if !self.lines.isEmpty {
+                self.lineIndex = min(self.lines.count - 1, self.lineIndex + 10)
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .pageUp, .ctrl("Y"):
+            if !self.lines.isEmpty {
+                self.lineIndex = max(firstEntryLineIndex, self.lineIndex - 10)
+                self.columnIndex = 0
+                editor.renderer.invalidateScreenCache()
+            }
+            return true
+        case .arrowLeft, .arrowRight, .resize:
             return false
         case .delete, .ctrlBackspace, .altBackspace:
             editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))

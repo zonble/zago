@@ -363,6 +363,7 @@ public final class Editor: @unchecked Sendable {
                 }
             }
         }
+        loadCurrentViewSettingsFromBuffer()
 
         self.promptController.editor = self
         self.searchController.editor = self
