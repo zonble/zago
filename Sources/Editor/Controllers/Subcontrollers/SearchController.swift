@@ -84,7 +84,7 @@ final class SearchController: KeyInputHandler {
             useRegex: activeRegex,
             direction: direction,
             anchor: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex),
-            includeAnchor: true
+            includeAnchor: false
         )
     }
 

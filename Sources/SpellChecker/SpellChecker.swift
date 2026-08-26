@@ -84,9 +84,9 @@ public final class SpellChecker {
 
         let normalizedSyntax = (syntaxName ?? detectFormatFromFilePath(filePath)).lowercased()
         var inCodeBlock = false
+        var allMatches: [MisspelledMatch] = []
 
-        for lIdx in 0..<lines.count {
-            let line = lines[lIdx]
+        for (lIdx, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             let lowerTrimmed = trimmed.lowercased()
 
@@ -121,16 +121,11 @@ public final class SpellChecker {
             // Skip lines inside code blocks
             if inCodeBlock { continue }
 
-            // Skip lines before startingLine
-            if lIdx < startingLine { continue }
-
             var currentWord = ""
             var wordStartCol = 0
             var inInlineCode = false
 
             for (cIdx, ch) in line.enumerated() {
-                if lIdx == startingLine && cIdx < startingCol { continue }
-
                 // Format-specific inline code delimiter matching
                 let isInlineCodeChar: Bool
                 if normalizedSyntax.contains("org") {
@@ -144,7 +139,7 @@ public final class SpellChecker {
                 if isInlineCodeChar {
                     if !currentWord.isEmpty {
                         if !isCorrect(currentWord) {
-                            return MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord)
+                            allMatches.append(MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord))
                         }
                         currentWord = ""
                     }
@@ -161,7 +156,7 @@ public final class SpellChecker {
                 } else {
                     if !currentWord.isEmpty {
                         if !isCorrect(currentWord) {
-                            return MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord)
+                            allMatches.append(MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord))
                         }
                         currentWord = ""
                     }
@@ -169,11 +164,21 @@ public final class SpellChecker {
             }
 
             if !currentWord.isEmpty && !isCorrect(currentWord) {
-                return MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord)
+                allMatches.append(MisspelledMatch(line: lIdx, col: wordStartCol, word: currentWord))
             }
         }
 
-        return nil
+        guard !allMatches.isEmpty else { return nil }
+
+        // 1. First find the first match strictly after (startingLine, startingCol)
+        if let matchAfter = allMatches.first(where: {
+            $0.line > startingLine || ($0.line == startingLine && $0.col > startingCol)
+        }) {
+            return matchAfter
+        }
+
+        // 2. If not found, wrap around to the first match from the beginning of the file
+        return allMatches[0]
     }
 
     private func detectFormatFromFilePath(_ filePath: String?) -> String {

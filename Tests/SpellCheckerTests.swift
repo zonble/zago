@@ -170,4 +170,35 @@ struct SpellCheckerTests {
         loader.parseConfigFile(at: tmpPath, into: &config)
         #expect(config.spellLanguage.lowercased() == "de_de")
     }
+
+    @Test func testSpellCheckerJumpsAfterCursorAndWrapsAround() throws {
+        let checker = SpellChecker()
+        let buffer = TextBuffer()
+        buffer.lines = [
+            "first qxzywkwk here",
+            "middle line is okay",
+            "second qxzywkwk here",
+        ]
+
+        // 1. Starting at (0, 0) -> finds first typo on line 0 (col 6)
+        let firstMatch = checker.findNextMisspelled(in: buffer, startingAt: 0, startingCol: 0)
+        #expect(firstMatch != nil)
+        #expect(firstMatch?.line == 0)
+        #expect(firstMatch?.col == 6)
+        #expect(firstMatch?.word == "qxzywkwk")
+
+        // 2. Starting at (0, 6) -> finds second typo on line 2 (col 7)
+        let secondMatch = checker.findNextMisspelled(in: buffer, startingAt: 0, startingCol: 6)
+        #expect(secondMatch != nil)
+        #expect(secondMatch?.line == 2)
+        #expect(secondMatch?.col == 7)
+        #expect(secondMatch?.word == "qxzywkwk")
+
+        // 3. Starting at (2, 7) -> wraps around to first typo on line 0 (col 6)
+        let wrappedMatch = checker.findNextMisspelled(in: buffer, startingAt: 2, startingCol: 7)
+        #expect(wrappedMatch != nil)
+        #expect(wrappedMatch?.line == 0)
+        #expect(wrappedMatch?.col == 6)
+        #expect(wrappedMatch?.word == "qxzywkwk")
+    }
 }

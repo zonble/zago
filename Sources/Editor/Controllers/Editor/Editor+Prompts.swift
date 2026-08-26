@@ -121,7 +121,11 @@ extension Editor {
                     startingCol: buffer.columnIndex,
                     syntaxName: syntaxName)
             } else {
-                spellChecker.findNextMisspelled(in: buffer, syntaxName: syntaxName)
+                spellChecker.findNextMisspelled(
+                    in: buffer,
+                    startingAt: buffer.lineIndex,
+                    startingCol: buffer.columnIndex,
+                    syntaxName: syntaxName)
             }
         if let target {
             buffer.lineIndex = target.line

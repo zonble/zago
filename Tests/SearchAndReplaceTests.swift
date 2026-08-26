@@ -40,14 +40,11 @@ import Testing
         editor.buffer.lineIndex = 0
         editor.buffer.columnIndex = 0
 
+        // When at (0, 0), searching jumps to the first match strictly after cursor -> (0, 11)
         editor.searchController.performSearch(query: "alpha")
         #expect(editor.buffer.lineIndex == 0)
-        #expect(editor.buffer.columnIndex == 0)
-        #expect(editor.buffer.activeSearchMatch?.length == 5)
-
-        editor.processKey(.alt("n"))
-        #expect(editor.buffer.lineIndex == 0)
         #expect(editor.buffer.columnIndex == 11)
+        #expect(editor.buffer.activeSearchMatch?.length == 5)
 
         editor.processKey(.alt("n"))
         #expect(editor.buffer.lineIndex == 1)
@@ -62,6 +59,37 @@ import Testing
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.buffer.columnIndex == 5)
         #expect(editor.statusMessage == editor.l10n.searchWrappedFound(query: "alpha", line: 2))
+    }
+
+    @Test func testSearchJumpsAfterCursorAndWrapsAround() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "first target here",
+            "middle line without match",
+            "second target here",
+        ]
+
+        // 1. Cursor at line 0, before first target -> jumps to first target (line 0, col 6)
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 0
+        editor.searchController.performSearch(query: "target")
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 6)
+
+        // 2. Cursor at line 0, col 6 (on first target) -> jumps to second target (line 2, col 7)
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 6
+        editor.searchController.performSearch(query: "target")
+        #expect(editor.buffer.lineIndex == 2)
+        #expect(editor.buffer.columnIndex == 7)
+
+        // 3. Cursor at line 2, col 7 (on second target) -> wraps around to first target (line 0, col 6)
+        editor.buffer.lineIndex = 2
+        editor.buffer.columnIndex = 7
+        editor.searchController.performSearch(query: "target")
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.columnIndex == 6)
+        #expect(editor.statusMessage == editor.l10n.searchWrappedFound(query: "target", line: 1))
     }
 
     @Test func testSearchHighlightAndClear() throws {
