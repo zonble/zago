@@ -93,3 +93,56 @@ import Testing
     let output = renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
     #expect(output.contains("[main]") == true)
 }
+
+@Test func testUndoAndRedoUpdatesGitStatus() {
+    final class MockGitService: GitServiceProtocol, @unchecked Sendable {
+        var baseLines = ["Original line"]
+
+        func detectRepository(for filePath: String?) -> GitRepositoryInfo? {
+            GitRepositoryInfo(repoRootPath: "/test", branchName: "main", relativeFilePath: "file.txt")
+        }
+        func fetchDirectoryGitStatus(repoRoot: String) -> [String: String] { [:] }
+        func computeDiffSync(filePath: String?, currentLines: [String]) -> GitDiffInfo {
+            let isModified = currentLines != baseLines
+            let lineStatuses = isModified ? [0: GitLineStatus.modified] : [0: GitLineStatus.unmodified]
+            return GitDiffInfo(branchName: "main", lineStatuses: lineStatuses, deletedLineIndices: [], hasDiffMarkers: isModified)
+        }
+        func repositoryStateChanged(for filePath: String?) -> Bool { false }
+    }
+
+    let mockGit = MockGitService()
+    let fileIO = MemoryEditorFileIOStrategy(files: ["/test/file.txt": "Original line"])
+    let editor = Editor(
+        options: EditorOptions(filePaths: ["/test/file.txt"]),
+        dependencies: EditorDependencies(fileIOStrategy: fileIO, terminal: TestEditorTerminal.shared, gitService: mockGit),
+        initialVariables: [:]
+    )
+    editor.displayConfig.showGitDiff = true
+    editor.updateGitDiff()
+
+    #expect(editor.gitDiffInfo.hasDiffMarkers == false)
+    #expect(editor.gitDiffInfo.lineStatuses[0] == .unmodified)
+
+    // 1. Mutate buffer
+    editor.saveUndoSnapshot()
+    editor.buffer.lines[0] = "Modified line"
+    editor.buffer.isModified = true
+    editor.updateGitDiff()
+
+    #expect(editor.gitDiffInfo.hasDiffMarkers == true)
+    #expect(editor.gitDiffInfo.lineStatuses[0] == .modified)
+
+    // 2. Undo (^Z) restores clean state and updates git diff immediately
+    editor.performUndo()
+
+    #expect(editor.buffer.lines[0] == "Original line")
+    #expect(editor.gitDiffInfo.hasDiffMarkers == false)
+    #expect(editor.gitDiffInfo.lineStatuses[0] == .unmodified)
+
+    // 3. Redo (Ctrl+Shift+Z) restores modified state and updates git diff immediately
+    editor.performRedo()
+
+    #expect(editor.buffer.lines[0] == "Modified line")
+    #expect(editor.gitDiffInfo.hasDiffMarkers == true)
+    #expect(editor.gitDiffInfo.lineStatuses[0] == .modified)
+}

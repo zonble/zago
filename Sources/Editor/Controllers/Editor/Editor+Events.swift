@@ -10,9 +10,7 @@ extension Editor {
             if !proposalQueue.isEmpty {
                 renderer.invalidateScreenCache()
             }
-            if buffer.isModified {
-                markGitDiffDirty()
-            }
+            markGitDiffDirty()
         }
 
         if key == .resize {

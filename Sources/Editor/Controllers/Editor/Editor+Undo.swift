@@ -35,6 +35,7 @@ extension Editor {
                 syncCanvasCursorFromBuffer()
             }
         }
+        updateGitDiff()
         reportOperationResult(.succeeded(message: l10n["status.undo_performed"]))
     }
 
@@ -56,6 +57,7 @@ extension Editor {
                 syncCanvasCursorFromBuffer()
             }
         }
+        updateGitDiff()
         reportOperationResult(.succeeded(message: l10n["status.redo_performed"]))
     }
 }
