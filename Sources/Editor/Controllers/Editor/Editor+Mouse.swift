@@ -218,8 +218,19 @@ extension Editor {
             }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 if vLineIndex < buffer.lines.count {
+                    let clicks = mouseClickTracker.registerClick(
+                        row: mouseEvent.row,
+                        col: mouseEvent.col,
+                        vLineIndex: vLineIndex
+                    )
                     buffer.lineIndex = vLineIndex
                     buffer.columnIndex = 0
+                    if clicks >= 2 {
+                        mouseClickTracker.reset()
+                        if let dirBuffer = buffer as? DirectoryBuffer {
+                            dirBuffer.activateEntry(editor: self)
+                        }
+                    }
                 }
                 return
             }

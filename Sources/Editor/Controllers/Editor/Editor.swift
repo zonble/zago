@@ -226,6 +226,43 @@ public final class Editor: @unchecked Sendable {
 
     public var activeBoundaryDragState: BoundaryDragScrollState?
 
+    public struct MouseClickTracker: Sendable {
+        public var lastClickTime: Date?
+        public var lastClickRow: Int?
+        public var lastClickCol: Int?
+        public var lastClickVLineIndex: Int?
+        public var clickCount: Int = 0
+
+        public init() {}
+
+        public mutating func registerClick(row: Int, col: Int, vLineIndex: Int, maxInterval: TimeInterval = 0.4) -> Int {
+            let now = Date()
+            if let lastTime = lastClickTime,
+               let lastVLine = lastClickVLineIndex,
+               lastVLine == vLineIndex,
+               now.timeIntervalSince(lastTime) <= maxInterval {
+                clickCount += 1
+            } else {
+                clickCount = 1
+            }
+            lastClickTime = now
+            lastClickRow = row
+            lastClickCol = col
+            lastClickVLineIndex = vLineIndex
+            return clickCount
+        }
+
+        public mutating func reset() {
+            lastClickTime = nil
+            lastClickRow = nil
+            lastClickCol = nil
+            lastClickVLineIndex = nil
+            clickCount = 0
+        }
+    }
+
+    public var mouseClickTracker = MouseClickTracker()
+
     /// Executes one continuous auto-scroll step when holding the mouse at or beyond boundaries.
     public func performBoundaryDragAutoScrollTick() {
         guard let state = activeBoundaryDragState else { return }

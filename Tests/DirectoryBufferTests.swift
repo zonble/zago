@@ -353,4 +353,64 @@ struct DirectoryBufferTests {
         let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
         #expect(dirBuf.directoryPath == baseDir.path)
     }
+
+    @Test func testDirectoryBufferDoubleClickOpensFolderAndFile() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_dblclick_\(UUID().uuidString)")
+        let subDir = workDir.appendingPathComponent("docs")
+        let fileURL = workDir.appendingPathComponent("hello.txt")
+
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try "Hello World".write(to: fileURL, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let editor = Editor(filePath: workDir.path)
+        editor.displayConfig.enableMouse = true
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        #expect(editor.buffer is DirectoryBuffer)
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+
+        // Find docs folder row
+        guard let docsIdx = dirBuf.lines.firstIndex(where: { $0.contains("docs") }) else {
+            Issue.record("Expected docs folder in directory buffer")
+            return
+        }
+
+        // 1. Single click on docs row: updates lineIndex
+        let docsMouseRow = 2 + docsIdx // topMargin (1) + 1 + docsIdx
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
+        #expect(editor.buffer.lineIndex == docsIdx)
+        #expect(editor.buffer is DirectoryBuffer)
+
+        // 2. Second click immediately (double click): enters docs folder
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
+        #expect(editor.buffer is DirectoryBuffer)
+        let newDirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(newDirBuf.directoryPath == subDir.path)
+
+        // 3. Double click on '.. (up a dir)' at index 3 (row 5)
+        let upDirMouseRow = 2 + 3
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: upDirMouseRow))
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: upDirMouseRow))
+        #expect(editor.buffer is DirectoryBuffer)
+        let rootDirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(rootDirBuf.directoryPath == workDir.path)
+
+        // 4. Double click on hello.txt to open file
+        guard let fileIdx = rootDirBuf.lines.firstIndex(where: { $0.contains("hello.txt") }) else {
+            Issue.record("Expected hello.txt in root directory buffer")
+            return
+        }
+        let fileMouseRow = 2 + fileIdx
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: fileMouseRow))
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: fileMouseRow))
+
+        // Buffer should now be the opened file
+        #expect(editor.buffer.isDirectoryBuffer == false)
+        #expect(editor.buffer.filePath == fileURL.path)
+        #expect(editor.buffer.lines.joined(separator: "\n") == "Hello World")
+    }
 }
