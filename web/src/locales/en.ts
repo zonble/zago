@@ -11,9 +11,9 @@ export const en = {
   platformWin: "Windows (PowerShell)",
   whyTitle: "Why zago?",
   whyItem1:
-    "<strong>LLMs & AI agents</strong> frequently generate plain-text ASCII/Unicode diagrams for architecture and planning, but editing them by hand in traditional editors quickly breaks alignment and borders.",
+    "<strong>LLMs & AI agents frequently generate ASCII/Unicode diagrams</strong>, but editing them by hand in traditional editors quickly breaks alignment and borders.",
   whyItem2:
-    "<strong>Plain-text diagrams in Markdown</strong> are natively prompt-friendly, version-controllable, and zero-dependency across all terminals.",
+    "<strong>Text diagrams are already a part of AI prompts</strong>, and we need a more efficient method. ",
   howTitle: "How?",
   howItem1:
     "<strong>Canvas mode editing:</strong> Move the cursor freely anywhere in the 2D text canvas without inserting empty lines or spaces manually.",
