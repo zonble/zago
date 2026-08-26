@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ dev, wasm ]
+    branches: [ main, dev, web ]
   pull_request:
-    branches: [ main, dev, wasm ]
+    branches: [ main, dev, web ]
 
 jobs:
   build-and-test:
@@ -172,8 +172,7 @@ jobs:
           if-no-files-found: error
 
   wasm:
-    name: WebAssembly Build & Test
-    if: github.ref == 'refs/heads/wasm' || github.base_ref == 'wasm'
+    name: WebAssembly Build & Web E2E Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -197,8 +196,28 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Build Web Frontend
+      - name: Install Frontend Dependencies & Build
         working-directory: web
         run: |
           npm ci
           npm run build
+
+      - name: Install Playwright Browsers
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Smoke Tests
+        working-directory: web
+        run: |
+          npm test
+
+      - name: Upload Playwright Test Report / Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 7
