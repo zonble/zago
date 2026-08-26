@@ -483,12 +483,6 @@ public final class ConfigLoader {
             ## Named scripts can be triggered with bind <key> logo:<script-name>.
             #
             # logo-prelude
-            #   MAKE "boxWidth 30
-            #   TO FILLBOX :text
-            #     BOX :boxWidth 4
-            #     MOVE LEFT (:boxWidth - 1) MOVE UP 2
-            #     FILL :text
-            #   END
             #
             #   ; TO TOHANGUL :str op TRANSLIT "Any-Hangul" :str END
             #   ; TO TOTHAI :str op TRANSLIT "Any-Thai" :str END
@@ -501,6 +495,17 @@ public final class ConfigLoader {
             #   ; TO TOTELUGU :str op TRANSLIT "Any-Telugu" :str END
             #   ; TO TOBENGALI :str op TRANSLIT "Any-Bengali" :str END
             #   ; TO TOGEOGIAN :str op TRANSLIT "Any-Georgian" :str END
+            #
+            #   ; TO CDATE DATE roc zh_TW END
+            #   ; TO CNUMBER :amount FORMAT.NUMBER :amount "spellout zh_TW" END
+            #   ; TO CMONEY :amount FORMAT.NUMBER :amount "bank zh-TW" END
+            #
+            #   ; TO SLUG :title  OP LOWERCASE REGEX.REPLACE "\\s+" "-" (TRIM :title) END
+            #
+            #   ; TO STEPCARD :text
+            #   ;   NL BOX 24 3 :text "center "Single round SE NL
+            #   ;   TYPE "           ↓ " NL
+            #   ; END
             #
             # endlogo
             #
