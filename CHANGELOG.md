@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+## [1.4.2] - 2026-08-27
+
+Performance, spatial canvas editing, and text selection release introducing incremental per-line layout caching, 2D canvas block spatial editing semantics, WebAssembly CJK IME batch draining, text selection newline highlighting, and daily journal workflows.
+
+### Added
+
+- **Canvas Mode 2D Spatial Editing & Mark Persistence**:
+  - `Ctrl+K` (Cut Canvas Block): Copies the 2D block into `canvasBlockClipboard` and fills the cut area with whitespace (`保持空白，不內縮`), preserving fixed-position diagrams, borders, and connectors without shifting surrounding content leftward.
+  - `Backspace`: Replaces all characters in the active canvas block mark with spaces in-place without shifting columns leftward.
+  - `Delete`: Deletes the marked block columns and shifts content to the right of the block leftward (`往左內縮`).
+  - Preserved canvas block marks across `PageUp`, `PageDown`, `^V`, `^Y`, `:goto`, `:eof`, and mouse wheel scrolling at absolute document 2D coordinates `(startLine, startCol)` to `(endLine, endCol)`.
+- **WebAssembly (WASI) CJK IME & Multi-Byte Batch Draining**:
+  - Implemented multi-byte UTF-8 batch draining in `WasiTerminal.readPendingText(firstChar:)` to consume queued input in a single pass, eliminating duplicate insertions and full-screen redraw hitches when confirming long CJK sentences in browser environments.
+  - Added comprehensive unit test suite `WasiTerminalTests` and documented WASI IME burst I/O guidelines in `docs/architecture/cross_platform.md`.
+- **Daily Journal Mode**:
+  - Added automated daily journal path resolution (`journal/YYYY-MM-DD.md`) and pre-population with customizable header templates.
+
+### Changed
+
+- **Incremental Per-Line Layout Caching & Keystroke Optimization**:
+  - Implemented an incremental layout cache (`lineEntries: [LineCacheEntry?]`, `lineOffsets: [Int]`) using Swift copy-on-write pointer equality in `LayoutEngine`, reducing keystroke latency in large 5,000+ line documents from 129.2 ms down to sub-1.5 ms.
+  - Accelerated virtual cursor coordinate lookups from $O(N)$ scanning to $O(1)$ binary/indexed lookups.
+  - Debounced git repository state disk checks in `GitCoordinator` to eliminate filesystem I/O jitter on rapid typing.
+- **Text Selection & Newline Highlight Refinement**:
+  - Extended multi-line selections across line breaks to display an extra inverse space cell representing the selected newline (`\n`).
+  - Replaced full-width inverse background highlighting on empty lines with a single inverse space cell for clean, focused visual feedback.
+
+### Fixed
+
+- **Git & Undo Synchronization**:
+  - Immediately refreshed git diff status and gutter markers upon executing Undo (`Ctrl+Z`) and Redo (`Ctrl+Shift+Z`).
+- **Mouse & Menu Interaction**:
+  - Disabled drag selection and background auto-scroll gestures while the top menu bar overlay is active.
+- **Search & Spell Checker Navigation**:
+  - Ensured search match jumps start after current cursor position and wrap around smoothly to document beginning.
+
 ## [1.4.1] - 2026-08-24
 
 Usability, rendering, and interaction release introducing full ANSI SGR 1006 terminal mouse support, directional topology overhaul for Table Cell Detection with CJK wide-character awareness, unified Editor LOGO headless execution, and WebAssembly frontend rendering upgrades.
