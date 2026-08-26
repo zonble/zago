@@ -751,4 +751,315 @@ private func makeEditor(
             }
         }
     }
+
+    @Test func testDescribeCommandDialogViewComprehensive() {
+        let editor = Editor(language: .en)
+
+        // 1. Direct symbol view and scroll navigation
+        final class MockEventTerminal: EditorTerminal, @unchecked Sendable {
+            var rows: Int = 24
+            var cols: Int = 80
+            var events: [InputEvent] = []
+
+            init(events: [InputEvent], rows: Int = 24, cols: Int = 80) {
+                self.events = events
+                self.rows = rows
+                self.cols = cols
+            }
+
+            func enableRawMode() throws {}
+            func disableRawMode() {}
+            func getWindowSize() -> (rows: Int, cols: Int) { (rows, cols) }
+            func readKey() -> Key { .esc }
+            func readInputEvent() -> InputEvent { events.isEmpty ? .key(.esc) : events.removeFirst() }
+            func readPendingText(firstChar: Character) -> String { String(firstChar) }
+            func write(_ text: String) {}
+            func hideCursor() {}
+            func showCursor() {}
+            func clearScreen() {}
+        }
+
+        let scrollEvents: [InputEvent] = [
+            .key(.arrowDown),
+            .key(.char("j")),
+            .key(.pageDown),
+            .key(.ctrl("d")),
+            .key(.char(" ")),
+            .key(.end),
+            .key(.char("G")),
+            .key(.arrowUp),
+            .key(.char("k")),
+            .key(.pageUp),
+            .key(.ctrl("u")),
+            .key(.home),
+            .key(.char("g")),
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)),
+            .mouse(MouseEvent(action: .scrollUp, col: 10, row: 10)),
+            .key(.resize),
+            .key(.esc),
+        ]
+        let directDialog = DescribeCommandDialogView(
+            terminal: MockEventTerminal(events: scrollEvents),
+            editor: editor,
+            symbol: "box",
+            language: .en
+        )
+        directDialog.show()
+
+        // 2. Input mode with typing, backspace, tab completion, enter, and cancellation
+        let inputEvents: [InputEvent] = [
+            .key(.char("b")),
+            .key(.char("o")),
+            .key(.char("x")),
+            .key(.tab),             // Tab completion
+            .key(.backspace),
+            .key(.char("x")),
+            .key(.enter),           // Switches to detail mode
+            .key(.esc),             // Exits detail mode
+        ]
+        let interactiveDialog = DescribeCommandDialogView(
+            terminal: MockEventTerminal(events: inputEvents),
+            editor: editor,
+            symbol: nil,
+            language: .en
+        )
+        interactiveDialog.show()
+
+        // 3. Tab completion with empty input and multiple candidates
+        let tabEvents: [InputEvent] = [
+            .key(.tab),             // Cycle all
+            .key(.tab),             // Next candidate
+            .key(.esc),
+        ]
+        let tabDialog = DescribeCommandDialogView(
+            terminal: MockEventTerminal(events: tabEvents),
+            editor: editor,
+            symbol: nil,
+            language: .en
+        )
+        tabDialog.show()
+
+        // 4. Unknown symbol fallback
+        let unknownDialog = DescribeCommandDialogView(
+            terminal: MockEventTerminal(events: [.key(.esc)]),
+            editor: editor,
+            symbol: "nonexistent_command_xyz",
+            language: .en
+        )
+        unknownDialog.show()
+    }
+
+    @Test func testEditorPromptsAndConfirmations() {
+        let editor = Editor(language: .en)
+        editor.buffer.lines = ["Test content"]
+
+        // 1. Confirm exit save
+        var exitResult: Bool?
+        editor.currentPromptMode = .confirmExitSave { exitResult = $0 }
+        editor.processKey(.char("y"))
+        #expect(exitResult == true)
+
+        editor.currentPromptMode = .confirmExitSave { exitResult = $0 }
+        editor.processKey(.char("n"))
+        #expect(exitResult == false)
+
+        editor.currentPromptMode = .confirmExitSave { exitResult = $0 }
+        editor.processKey(.esc)
+        #expect(exitResult == nil)
+
+        // 2. Confirm external reload
+        var reloadResult: Bool?
+        editor.currentPromptMode = .confirmExternalReload { reloadResult = $0 }
+        editor.processKey(.char("y"))
+        #expect(reloadResult == true)
+
+        editor.currentPromptMode = .confirmExternalReload { reloadResult = $0 }
+        editor.processKey(.char("n"))
+        #expect(reloadResult == false)
+
+        // 3. Confirm encoding fallback
+        var encodingResult: Bool?
+        editor.currentPromptMode = .confirmEncodingFallback(originalEncoding: .utf8) { encodingResult = $0 }
+        editor.processKey(.char("y"))
+        #expect(encodingResult == true)
+
+        // 4. Confirm backup failure
+        var backupResult: Bool?
+        editor.currentPromptMode = .confirmBackupFailure(error: "Disk full") { backupResult = $0 }
+        editor.processKey(.char("y"))
+        #expect(backupResult == true)
+
+        // 5. Confirm replace prompt
+        var replaceChoice: PromptController.ReplaceChoice?
+        editor.currentPromptMode = .confirmReplace(query: "foo", replacement: "bar") { replaceChoice = $0 }
+        editor.processKey(.char("y"))
+        #expect(replaceChoice == .yes)
+
+        editor.currentPromptMode = .confirmReplace(query: "foo", replacement: "bar") { replaceChoice = $0 }
+        editor.processKey(.char("n"))
+        #expect(replaceChoice == .no)
+
+        editor.currentPromptMode = .confirmReplace(query: "foo", replacement: "bar") { replaceChoice = $0 }
+        editor.processKey(.char("a"))
+        #expect(replaceChoice == .all)
+
+        editor.currentPromptMode = .confirmReplace(query: "foo", replacement: "bar") { replaceChoice = $0 }
+        editor.processKey(.esc)
+        #expect(replaceChoice == .cancel)
+
+        // 6. Spell check prompt
+        var spellChoice: String?
+        editor.promptInputText = ""
+        editor.currentPromptMode = .spellCheck(word: "misspeld", line: 1, col: 1) { spellChoice = $0 }
+        editor.processKey(.char("1"))
+        editor.processKey(.enter)
+        #expect(spellChoice != nil)
+
+        // 7. Table dimensions prompt
+        var tableDim: String?
+        editor.promptInputText = ""
+        editor.currentPromptMode = .tableDimensions { tableDim = $0 }
+        typePrompt("3 4", in: editor)
+        editor.processKey(.enter)
+        #expect(tableDim == "3 4")
+
+        // 8. Goto line prompt
+        var gotoVal: String?
+        editor.promptInputText = ""
+        editor.currentPromptMode = .gotoLine { gotoVal = $0 }
+        typePrompt("10", in: editor)
+        editor.processKey(.enter)
+        #expect(gotoVal == "10")
+
+        // 9. Fill text prompt
+        var fillVal: String?
+        editor.promptInputText = ""
+        editor.currentPromptMode = .fillText { fillVal = $0 }
+        typePrompt("#", in: editor)
+        editor.processKey(.enter)
+        #expect(fillVal == "#")
+    }
+
+    @Test func testTextBufferLogoDelegateDrawingCoverage() {
+        let buffer = TextBuffer()
+        buffer.lines = ["Hello", "World", "Test"]
+        let delegate = TextBufferLogoDelegate(buffer: buffer)
+        let engine = LogoEngine(delegate: delegate)
+
+        // Basic actions
+        engine.execute("REPEAT 2 [ FORWARD 2 RIGHT 90 ]")
+        engine.execute("TABLE 2 2 4")
+        engine.execute("INDENT 1")
+        engine.execute("OUTDENT 1")
+        engine.execute("GOTO 1 1")
+        engine.execute("SETBORDER \"double")
+        engine.execute("SETARROW \"hollow")
+        engine.execute("SETXY 5 5")
+        engine.execute("CLEAN")
+        engine.execute("HOME")
+        engine.execute("PENUP")
+        engine.execute("PENDOWN")
+
+        #expect(buffer.isModified == true)
+    }
+
+    @Test func testAIProposalCommandsCoverage() {
+        let editor = Editor(language: .en)
+        editor.buffer.lines = ["Line 1", "Line 2"]
+
+        // 1. Accept / Reject with no pending proposal
+        let acceptCmd = AcceptProposalCommand()
+        #expect(acceptCmd.execute(on: editor).kind == .noOp)
+
+        let rejectCmd = RejectProposalCommand()
+        #expect(rejectCmd.execute(on: editor).kind == .noOp)
+
+        let nextCmd = NextProposalCommand()
+        #expect(nextCmd.execute(on: editor).kind == .noOp)
+
+        let prevCmd = PreviousProposalCommand()
+        #expect(prevCmd.execute(on: editor).kind == .noOp)
+
+        // 2. Generate a mock proposal
+        let mockCmd = MockAISuggestionCommand()
+        #expect(mockCmd.execute(on: editor).kind == .succeeded)
+        #expect(editor.proposalQueue.currentProposal != nil)
+
+        // 3. Queue another proposal and navigate
+        let proposal2 = AIProposal(
+            id: "prop-2",
+            clientId: "test-client",
+            clientName: "AI Assistant",
+            reason: "Another change",
+            affectedFiles: []
+        )
+        editor.proposalQueue.pushProposal(proposal2)
+
+        #expect(nextCmd.execute(on: editor).kind == .succeeded)
+        #expect(prevCmd.execute(on: editor).kind == .succeeded)
+
+        // 4. Accept
+        #expect(acceptCmd.execute(on: editor).kind == .succeeded)
+
+        // 5. Reject remaining
+        #expect(rejectCmd.execute(on: editor).kind == .succeeded)
+        #expect(editor.proposalQueue.currentProposal == nil)
+    }
+
+    @Test func testTableModeCommandsCoverage() {
+        let editor = Editor(language: .en)
+        editor.buffer.lines = ["Hello"]
+
+        let nextCellCmd = TableNextCellCommand()
+        #expect(nextCellCmd.execute(on: editor).kind == .succeeded)
+
+        let prevCellCmd = TablePrevCellCommand()
+        #expect(prevCellCmd.execute(on: editor).kind == .succeeded)
+
+        let toggleTableCmd = ToggleTableModeCommand()
+        _ = toggleTableCmd.execute(on: editor)
+
+        // Create table and navigate
+        editor.tableModeController.createTable(
+            rows: 2, cols: 2, cellWidth: 4, enterMode: true, saveSnapshot: false)
+        #expect(editor.isTableModeActive == true)
+
+        #expect(nextCellCmd.execute(on: editor).kind == .succeeded)
+        #expect(prevCellCmd.execute(on: editor).kind == .succeeded)
+
+        let widthIncCmd = TableAdjustWidthIncCommand()
+        _ = widthIncCmd.execute(on: editor)
+
+        let cycleBorderCmd = CycleBorderStyleCommand()
+        _ = cycleBorderCmd.execute(on: editor)
+    }
+
+    @Test func testUICommandsCoverage() {
+        let editor = Editor(language: .en)
+
+        let symbolPickerCmd = SymbolPickerCommand()
+        #expect(symbolPickerCmd.id == .symbolPicker)
+
+        let outlineCmd = DocumentOutlineCommand()
+        #expect(outlineCmd.id == .documentOutline)
+
+        let helpCmd = ShowHelpCommand()
+        #expect(helpCmd.id == .helpShow)
+
+        let logoRefCmd = LogoReferenceCommand()
+        #expect(logoRefCmd.id == .logoReference)
+
+        let styleRefCmd = StyleDSLReferenceCommand()
+        #expect(styleRefCmd.id == .styleDSLReference)
+
+        let logoWsCmd = LogoWorkspaceCommand()
+        #expect(logoWsCmd.id == .logoWorkspace)
+
+        let toggleMenuCmd = ToggleMenuBarCommand()
+        #expect(toggleMenuCmd.id == .menuShow)
+        #expect(toggleMenuCmd.execute(on: editor).kind == .succeeded)
+    }
 }
+
+
+
