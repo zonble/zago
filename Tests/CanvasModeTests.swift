@@ -298,15 +298,10 @@ import TextMetrics
     #expect(editor.buffer.canvasBlockMark != nil)
     #expect(editor.buffer.canvasBlockMarkEnd != nil)
 
-    // Backspace should NOT clear the canvas block mark
+    // Backspace clears the canvas block content and mark
     editor.processKey(.backspace)
-    #expect(editor.buffer.canvasBlockMark != nil)
-    #expect(editor.buffer.canvasBlockMarkEnd != nil)
-
-    // Delete should NOT clear the canvas block mark
-    editor.processKey(.delete)
-    #expect(editor.buffer.canvasBlockMark != nil)
-    #expect(editor.buffer.canvasBlockMarkEnd != nil)
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
 }
 
 @Test func testCanvasModeReplaceAndClearPreserveDisplayWidth() throws {
@@ -911,4 +906,67 @@ import TextMetrics
     #expect(rect.bottomLine == 1)
     #expect(rect.leftColumn == 3)
     #expect(rect.rightColumnExclusive == 6)
+}
+
+@Test func testCanvasDeleteClearsCanvasBlockContentAndClearsMark() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "Hello World",
+        "12345 67890",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 6)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 10)
+
+    // Execute Delete key command
+    editor.commandRegistry.dispatch(id: .editDelete, editor: editor)
+
+    #expect(editor.buffer.lines[0] == "Hello")
+    #expect(editor.buffer.lines[1] == "12345")
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 6)
+}
+
+@Test func testCanvasBackspaceClearsCanvasBlockContentAndClearsMark() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "ABCDEF",
+        "123456",
+    ]
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 3)
+
+    // Execute Backspace key
+    editor.processKey(.backspace)
+
+    #expect(editor.buffer.lines[0] == "AB  EF")
+    #expect(editor.buffer.lines[1] == "12  56")
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 2)
+}
+
+@Test func testCanvasBackspaceClearsCJKCanvasBlockContent() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "你好世界",
+        "測試畫布",
+    ]
+    // "你"(0..1) "好"(2..3) "世"(4..5) "界"(6..7)
+    editor.buffer.canvasBlockMark = (line: 0, visualColumn: 2)
+    editor.buffer.canvasBlockMarkEnd = (line: 1, visualColumn: 5)
+
+    editor.processKey(.backspace)
+
+    #expect(editor.buffer.lines[0] == "你    界")
+    #expect(editor.buffer.lines[1] == "測    布")
+    #expect(editor.buffer.canvasBlockMark == nil)
+    #expect(editor.buffer.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 2)
 }

@@ -78,6 +78,9 @@ extension Editor {
             }
             saveUndoSnapshot()
             if isCanvasModeActive {
+                if clearCanvasBlockIfNeeded(saveSnapshot: false) {
+                    break
+                }
                 backspaceCanvasCharacter()
             } else {
                 buffer.backspace()
