@@ -318,5 +318,91 @@ import Testing
         let output = renderer.renderDiff(editor: editor, rows: 24, cols: 80)
         #expect(output.contains("\u{1B}[24;80H"))  // Hardware cursor parked at bottom-right
     }
+
+    @Test func testMouseInputDoesNotChangeSelectionOrCursorWhenPromptIsActive() throws {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "Line 1 text content",
+            "Line 2 text content",
+            "Line 3 text content",
+        ]
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.buffer.lineIndex = 1
+        editor.buffer.columnIndex = 5
+        editor.buffer.selectionMark = (line: 1, column: 0)
+
+        // Activate command bar / search prompt
+        editor.promptSearch()
+        #expect(editor.promptController.isActive == true)
+
+        // Left click in viewport area
+        let clickEvent = MouseEvent(action: .press(.left), col: 10, row: 2)
+        editor.handleMouseEvent(clickEvent)
+
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 5)
+        #expect(editor.buffer.selectionMark?.line == 1)
+        #expect(editor.buffer.selectionMark?.column == 0)
+
+        // Drag in viewport area
+        let dragEvent = MouseEvent(action: .drag(.left), col: 15, row: 3)
+        editor.handleMouseEvent(dragEvent)
+
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.buffer.columnIndex == 5)
+        #expect(editor.buffer.selectionMark?.line == 1)
+        #expect(editor.buffer.selectionMark?.column == 0)
+        #expect(editor.activeBoundaryDragState == nil)
+
+        // Release in viewport area
+        let releaseEvent = MouseEvent(action: .release(.left), col: 15, row: 3)
+        editor.handleMouseEvent(releaseEvent)
+
+        #expect(editor.buffer.selectionMark?.line == 1)
+        #expect(editor.buffer.selectionMark?.column == 0)
+
+        // Right click in viewport area
+        let rightClick = MouseEvent(action: .press(.right), col: 10, row: 2)
+        editor.handleMouseEvent(rightClick)
+        #expect(editor.isMenuBarActive == false)
+
+        // Top bar click
+        let topBarClick = MouseEvent(action: .press(.left), col: 5, row: 1)
+        editor.handleMouseEvent(topBarClick)
+        #expect(editor.isMenuBarActive == false)
+    }
+
+    @Test func testCanvasModeMouseInputDoesNotChangeBlockMarkWhenPromptIsActive() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["Hello Canvas"]
+        editor.displayConfig.showLineNumbers = false
+        editor.displayConfig.showRuler = false
+        editor.toggleCanvasMode()
+        editor.buffer.lineIndex = 0
+        editor.canvasVisualColumn = 2
+        editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+        editor.buffer.canvasBlockMarkEnd = (line: 0, visualColumn: 5)
+
+        editor.promptLogoMacro()
+        #expect(editor.promptController.isActive == true)
+
+        let clickEvent = MouseEvent(action: .press(.left), col: 10, row: 5)
+        editor.handleMouseEvent(clickEvent)
+
+        #expect(editor.buffer.canvasBlockMark?.visualColumn == 0)
+        #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 5)
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.canvasVisualColumn == 2)
+
+        let dragEvent = MouseEvent(action: .drag(.left), col: 15, row: 6)
+        editor.handleMouseEvent(dragEvent)
+
+        #expect(editor.buffer.canvasBlockMark?.visualColumn == 0)
+        #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 5)
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.canvasVisualColumn == 2)
+    }
 }
+
 

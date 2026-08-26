@@ -12,7 +12,7 @@ extension Editor {
 
         // 1. Drag Selection Auto-Scroll (takes priority when dragging across or beyond bars)
         if case .drag(.left) = mouseEvent.action {
-            if buffer.isReadOnly { return }
+            if buffer.isReadOnly || promptController.isActive { return }
 
             let topMargin = 1 + (geometry.showRuler ? 1 : 0)
             let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
@@ -168,6 +168,7 @@ extension Editor {
 
         // Top Row (Title Bar / Menu Header when inactive)
         if mouseEvent.row == 1 {
+            if promptController.isActive { return }
             if case .press(.left) = mouseEvent.action {
                 menuBarController.toggle()
             }
@@ -199,6 +200,7 @@ extension Editor {
             topVLineIndex = min(maxTop, topVLineIndex + 3)
 
         case .press(.right):
+            if promptController.isActive { return }
             if isCanvasModeActive {
                 if buffer.canvasBlockMark != nil {
                     buffer.canvasBlockMark = nil
@@ -211,6 +213,9 @@ extension Editor {
             }
 
         case .press(.left):
+            if promptController.isActive {
+                return
+            }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 if vLineIndex < buffer.lines.count {
                     buffer.lineIndex = vLineIndex
@@ -245,6 +250,9 @@ extension Editor {
             }
 
         case .release(.left):
+            if promptController.isActive {
+                return
+            }
             if !isCanvasModeActive && !isTableModeActive {
                 if let mark = buffer.selectionMark, mark.line == buffer.lineIndex && mark.column == buffer.columnIndex {
                     buffer.selectionMark = nil
