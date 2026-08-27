@@ -121,7 +121,6 @@ extension LogoEngine {
         var startLine: Int? = nil
         var startCol: Int? = nil
         var align: BoxAlignment = .left
-        var hasExplicitAlign = false
         var styleName = ""
         var isRound: Bool? = nil
         var exitPos: BoxExitPosition = .ne
@@ -132,7 +131,6 @@ extension LogoEngine {
                 index = widthIndex
                 targetWidth = max(3, min(width, 200))
                 align = .center
-                hasExplicitAlign = true
             }
         }
 
@@ -168,7 +166,6 @@ extension LogoEngine {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign
-                hasExplicitAlign = true
             } else if let parsedBool = parseBoxRoundArgument(val) {
                 isRound = parsedBool
             } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
@@ -242,7 +239,7 @@ extension LogoEngine {
     private func drawBoxFrame(
         width: Int, height: Int, style: BoxStyle, mode: BoxDrawMode, exitPos: BoxExitPosition = .ne
     ) {
-        guard let editor = self.delegate else { return }
+        guard self.delegate != nil else { return }
         let startCol = queryInteger(.currentColumnIndex) ?? 0
         let startLine = queryInteger(.currentLineIndex) ?? 0
 
