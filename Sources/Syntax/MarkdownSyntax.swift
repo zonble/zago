@@ -29,17 +29,20 @@ public struct MarkdownSyntaxDefinition: SyntaxDefinition {
             makeRule("^\\s*\\[[^\\]]+\\]:\\s+\\S+.*$", .typeOrAttribute),
             makeRule("^\\s*\\[\\^[^\\]]+\\]:.*$", .typeOrAttribute),
 
+            // Escaped punctuation characters (e.g. \*, \_, \~, \`, \[, \], etc.)
+            makeRule("\\\\[\\\\`*_{}\\[\\]()#+\\-.!|~>]", .typeOrAttribute),
+
             // Inline code, links, images, and automatic URLs
-            makeRule("`[^`]+`", .string),
-            makeRule("!?\\[[^\\]]+\\]\\([^\\)]+\\)", .typeOrAttribute),
+            makeRule("(?<!\\\\)`[^`]+`", .string),
+            makeRule("(?<!\\\\)!?\\[[^\\]]+\\]\\([^\\)]+\\)", .typeOrAttribute),
             makeRule(
                 "\\[\\^[^\\]]+\\]|https?://[^\\s<>\\)\\]\\}：；，。、！？（）【】「」『』《》〈〉“”‘’—…]+|<https?://[^>]+>",
                 .typeOrAttribute),
 
-            // Emphasis and strikethrough
-            makeRule("(\\*\\*|__)[^*`|\\n_]+(\\*\\*|__)", .string),
-            makeRule("\\*[^*`|\\n]+\\*|_[^_`|\\n]+_", .string),
-            makeRule("~~[^~`|\\n]+~~", .string),
+            // Emphasis and strikethrough (bold, italic, strikethrough with escape support)
+            makeRule("(?<!\\\\)(\\*\\*|__)(?:\\\\.|[^*`|\\n_])+(?<!\\\\)(\\*\\*|__)", .string),
+            makeRule("(?<!\\\\)\\*(?:\\\\.|[^*`|\\n])+(?<!\\\\)\\*|(?<!\\\\)_(?:\\\\.|[^_`|\\n])+(?<!\\\\)_", .string),
+            makeRule("(?<!\\\\)~~(?:\\\\.|[^~`|\\n])+(?<!\\\\)~~", .string),
 
             // Blockquotes, task lists, ordered/unordered lists, and tables
             makeRule("^\\s*>.*$", .number),

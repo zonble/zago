@@ -279,6 +279,28 @@ import Testing
         #expect(emphasisHighlighted.contains("\u{1B}[0m and "))
         #expect(emphasisHighlighted.contains("\u{1B}[32m_cool_"))
         #expect(!emphasisHighlighted.contains("\u{1B}[32m**good** and _"))
+
+        // Escaped delimiters should not trigger formatting
+        let escapedItalic = highlighter.highlight(line: "this is \\*not italic\\* and \\_not italic\\_", syntax: lang)
+        #expect(!escapedItalic.contains("\u{1B}[32m*not italic*"))
+        #expect(!escapedItalic.contains("\u{1B}[32m_not italic_"))
+        #expect(escapedItalic.contains("\u{1B}[94m\\*"))
+        #expect(escapedItalic.contains("\u{1B}[94m\\_"))
+
+        let escapedBold = highlighter.highlight(line: "this is \\*\\*not bold\\*\\* and \\_\\_not bold\\_\\_", syntax: lang)
+        #expect(!escapedBold.contains("\u{1B}[32m**not bold**"))
+        #expect(!escapedBold.contains("\u{1B}[32m__not bold__"))
+
+        let escapedStrike = highlighter.highlight(line: "this is \\~\\~not strike\\~\\~", syntax: lang)
+        #expect(!escapedStrike.contains("\u{1B}[32m~~not strike~~"))
+
+        let escapedCode = highlighter.highlight(line: "this is \\`not code\\`", syntax: lang)
+        #expect(!escapedCode.contains("\u{1B}[32m`not code`"))
+
+        // Escaped delimiter inside bold/italic text
+        let boldWithEscaped = highlighter.highlight(line: "**bold \\* with asterisk**", syntax: lang)
+        #expect(boldWithEscaped.contains("\u{1B}[32m**bold "))
+        #expect(boldWithEscaped.contains(" with asterisk**"))
     }
 }
 
