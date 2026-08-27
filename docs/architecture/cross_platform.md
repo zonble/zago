@@ -29,8 +29,16 @@ Terminal input behavior varies drastically between UNIX-like systems (POSIX `ter
   `Key.ctrl("s")`, etc.).
 - **Windows**: Handled by
   [`WindowsTerminal`](../../Sources/zago/Terminal/WindowsTerminal.swift). Maps
-  Win32 console input and handles UTF-16 surrogate pairs directly into unified
-  `Key` structs.
+  Win32 console input, handles UTF-16 surrogate pairs, and decodes SGR 1006 ANSI mouse
+  sequences (`\x1b[<...M/m`) directly into unified `InputEvent` structs.
+
+### C. Windows Terminal SGR Mouse Tracking & QuickEdit Mode Interception
+
+- **The Problem**: In Windows Terminal, when mouse tracking mode is enabled (`\x1b[?1000h\x1b[?1006h`), mouse clicks, drags, and scrolling events send SGR 1006 escape sequences (e.g. `\x1b[<0;20;10M`). If the terminal input reader only handles keystrokes and treats `\x1b` as a standalone `.esc` key, the remaining sequence characters (e.g. `0;20;10M`) are mistakenly treated as keyboard text input and inserted as garbled text into the editor buffer. Additionally, legacy Windows Console QuickEdit Mode (`ENABLE_QUICK_EDIT_MODE`) intercepts mouse clicks for text selection rather than passing them to the application.
+- **Solution**:
+  - `WindowsTerminal.enableRawMode()` clears `ENABLE_QUICK_EDIT_MODE` and sets `ENABLE_EXTENDED_FLAGS` along with `ENABLE_WINDOW_INPUT` and `ENABLE_MOUSE_INPUT`.
+  - `WindowsTerminal.readInputEvent()` buffers incoming characters and parses SGR 1006 mouse sequences into structured `InputEvent.mouse(MouseEvent)` instances (supporting left/middle/right click, release, drag, and wheel up/down).
+  - Keystroke-only readers (`readKey()`) discard orphaned mouse sequence units to prevent text buffer pollution.
 
 ---
 
@@ -186,6 +194,23 @@ line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
   long-running background loop; using `queue.sync` from the editor thread would
   deadlock while that loop is active.
 
+### Gotcha E: Swift Foundation Relative Path URL Resolution on Windows (`file:///filename` Root Fallback)
+
+- **Pitfall**: In Swift Foundation on Windows, calling `URL(fileURLWithPath: "filename")` does **NOT** resolve against the current working directory (`FileManager.default.currentDirectoryPath`). Instead, Foundation treats `"filename"` as a relative URL whose absolute path component is `/filename`, mapping directly to the **root of the drive** (e.g. `C:\filename`).
+  - When a user ran `zago filename`, the editor searched for `C:\filename` and failed to find the file in the current terminal directory.
+  - When creating a new file (`zago newfile.txt`), saving attempted to write to `C:\newfile.txt`. Since drive roots require Administrator privileges, the write failed and triggered the safe fallback prompt, redirecting the save to the user's home directory (`~\`).
+- **Solution**: In [`LocalEditorFileIOStrategy`](../../Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift), `normalizePath` verifies if a path is absolute (checking for Windows drive letters `C:\`, UNC `\\`, rooted `/` or `\`, and POSIX `/`). All relative paths are explicitly joined with `currentDirectoryPath()` before passing to `URL(fileURLWithPath:).standardizedFileURL.path`.
+
+### Gotcha F: Cloud Sync & Virtual Drives (Google Drive, OneDrive) Atomic Write Failure
+
+- **Pitfall**: Foundation's `data.write(to: url, options: .atomic)` writes to a temporary file and uses Win32 `ReplaceFileW` / `MoveFileExW` to atomically replace the destination file. Cloud storage virtual file systems (such as Google Drive for Desktop `G:\My Drive` using Dokany / WinFsp, OneDrive Files On-Demand, and SMB network shares) do **NOT** support atomic file replacement semantics, returning `ERROR_ACCESS_DENIED` (5) or `ERROR_INVALID_FUNCTION` (1). This caused saving any file in `G:\My Drive\...` to fail and prompt the user to save to `~\`.
+- **Solution**: On Windows (`#if os(Windows)`), `LocalEditorFileIOStrategy.writeTextFile` uses direct file writing (`options: []`). If direct writing encounters temporary handle constraints, it safely attempts direct stream writes without auxiliary atomic swaps.
+
+### Gotcha G: `WindowsFileWatcher` Synchronous Directory Handle Release (`queue.sync`)
+
+- **Pitfall**: When saving a file, `LocalEditorFileIOStrategy` invokes `fileWatcher.stop()` followed by `writeTextFile(...)`. On Windows, `WindowsFileWatcher` monitors directories using `FindFirstChangeNotificationW`. If `stop()` only signals the cancel event asynchronously without waiting for the background queue to exit, the directory handle remains open momentarily, causing subsequent file write or rename operations to fail with `ERROR_SHARING_VIOLATION` (32).
+- **Solution**: `WindowsFileWatcher.stop()` performs `queue.sync {}` after signaling `stopEventHandle`, ensuring that `FindCloseChangeNotification` and `CloseHandle` have completed synchronously before any subsequent file write begins.
+
 ---
 
 ## 5. Line Endings & Path Normalization
@@ -203,12 +228,10 @@ line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
 ### B. Path Separators (`/` POSIX vs `\` Windows)
 
 - **macOS / Linux**: Uses `/`.
-- **Windows**: Uses `\` (e.g., `C:\Users\foo\bar.txt`) or `\\?\` UNC long paths.
+- **Windows**: Uses `\` (e.g., `C:\Users\foo\bar.txt`, `G:\My Drive\Blog\test.md`) or `\\?\` UNC long paths.
 - **Solution**:
-    - All internal buffer paths and prompt completions standardize on `/`.
-    - Disk operations normalize paths using `(path as
-      NSString).standardizingPath`, supporting both `/` and `\` seamlessly on
-      Windows.
+    - Swift Foundation's `URL.path` normalizes paths with forward slashes `/` across platforms.
+    - On Windows, `LocalEditorFileIOStrategy` normalizes paths to native backslashes (`\`) for all buffer file paths (`buffer.filePath`), title bars, status bars, and directory helpers (`childPath`, `parentDirectory`). Disk operations normalize paths seamlessly regardless of separator format.
 
 ---
 
