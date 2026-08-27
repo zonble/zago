@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## [1.4.4] - 2026-08-28
+
+Maintenance and test suite stabilization release standardizing cross-platform path assertions and eliminating LogoEngine compiler warnings.
+
+### Fixed
+
+- **Cross-Platform Test Path Normalization**:
+  - Normalized path assertions across Windows and POSIX environments in `DirectoryBufferTests`, `EditorEngineTests`, and `CommandBarTests` using `FileIOStrategy.normalizePath`.
+- **LogoEngine Compiler Warnings**:
+  - Cleaned up unused variable tracking and redundant guard unwrapping in `LogoEngine+BoxCommands`.
+
 ## [1.4.3] - 2026-08-28
 
 Cross-platform stability and syntax highlight refinement release introducing backslash escape parsing for Markdown text styling, Windows SGR mouse event processing, Windows path resolution against CWD with atomic write handling for virtual drives, and WebAssembly configuration file loading.
@@ -20,6 +31,8 @@ Cross-platform stability and syntax highlight refinement release introducing bac
   - Documented Windows SGR mouse input, path resolution, and virtual drive file handling in `docs/architecture/cross_platform.md`.
 - **WebAssembly (zagoweb) Configuration**:
   - Supported initial load and reload of `.zagorc` configuration in WASI browser environments.
+
+## [1.4.2] - 2026-08-27
 
 Performance, spatial canvas editing, and text selection release introducing incremental per-line layout caching, 2D canvas block spatial editing semantics, WebAssembly CJK IME batch draining, text selection newline highlighting, and daily journal workflows.
 
