@@ -64,4 +64,21 @@ import Testing
         #expect(result == "X")
         #expect(terminal.hasPendingInput())
     }
+
+    @Test func testWasiConfigLoaderLoadsZagorc() throws {
+        let zagorcContent = """
+        set tabsize 4
+        set linenumbers
+        set keymap modern
+        """
+        let provider = InMemoryConfigFileProvider(
+            homePath: "/workspace",
+            currentPath: "/workspace",
+            files: ["/workspace/.zagorc": zagorcContent]
+        )
+        let config = ConfigLoader(provider: provider).loadConfig()
+        #expect(config.tabSize == 4)
+        #expect(config.showLineNumbers == true)
+        #expect(config.keymapPreset == "modern")
+    }
 }
