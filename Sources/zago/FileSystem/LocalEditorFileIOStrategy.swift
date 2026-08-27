@@ -15,10 +15,35 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
         let expanded = expandTilde(path)
-        guard isDirectory else {
-            return expanded
+        let absolutePath: String
+        if isAbsolutePath(expanded) {
+            absolutePath = expanded
+        } else {
+            let cwd = currentDirectoryPath()
+            absolutePath = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent(expanded).path
         }
-        return URL(fileURLWithPath: expanded, isDirectory: true).standardizedFileURL.path
+        return URL(fileURLWithPath: absolutePath, isDirectory: isDirectory).standardizedFileURL.path
+    }
+
+    private func isAbsolutePath(_ path: String) -> Bool {
+        #if os(Windows)
+            if path.count >= 2 {
+                let first = path[path.startIndex]
+                let second = path[path.index(after: path.startIndex)]
+                if first.isLetter && second == ":" {
+                    return true
+                }
+            }
+            if path.hasPrefix("\\\\") || path.hasPrefix("//") {
+                return true
+            }
+            if path.hasPrefix("/") || path.hasPrefix("\\") {
+                return true
+            }
+            return false
+        #else
+            return path.hasPrefix("/")
+        #endif
     }
 
     public func homeDirectoryPath() -> String {
@@ -30,11 +55,13 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
     }
 
     public func parentDirectory(of path: String) -> String {
-        URL(fileURLWithPath: path, isDirectory: true).deletingLastPathComponent().path
+        let normalized = normalizePath(path, isDirectory: true)
+        return URL(fileURLWithPath: normalized, isDirectory: true).deletingLastPathComponent().path
     }
 
     public func childPath(_ name: String, in directory: String) -> String {
-        URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(name).path
+        let normalizedDir = normalizePath(directory, isDirectory: true)
+        return URL(fileURLWithPath: normalizedDir, isDirectory: true).appendingPathComponent(name).path
     }
 
     public func fileInfo(at path: String) -> EditorFileInfo {

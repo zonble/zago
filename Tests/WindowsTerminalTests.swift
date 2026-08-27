@@ -111,5 +111,14 @@ import Testing
         let text = terminal.readPendingText(firstChar: "a")
         #expect(text == "abcdef")
     }
+
+    @Test func testLocalFileIONormalizeRelativePath() {
+        let strategy = LocalEditorFileIOStrategy.shared
+        let cwd = strategy.currentDirectoryPath()
+        let normalizedRelative = strategy.normalizePath("sample.txt", isDirectory: false)
+        let expected = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent("sample.txt").path
+        #expect(normalizedRelative == expected)
+        #expect(strategy.parentDirectory(of: "sample.txt") == URL(fileURLWithPath: cwd, isDirectory: true).standardizedFileURL.path)
+    }
 }
 #endif
