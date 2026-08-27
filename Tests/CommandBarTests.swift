@@ -190,7 +190,7 @@ import Testing
     submitCommandBar("write \(path)", editor: editor)
 
     #expect(try String(contentsOfFile: path, encoding: .utf8) == "command bar write")
-    #expect(editor.buffer.filePath == path)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(path, isDirectory: false))
     #expect(editor.buffer.isModified == false)
 }
 
