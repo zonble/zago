@@ -184,7 +184,7 @@ import TextMetrics
     let handled = editor.commandRegistry.dispatch(key: .alt("o"), editor: editor)
 
     #expect(handled == true)
-    #expect(editor.buffer.filePath == targetPath)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(targetPath, isDirectory: false))
     #expect(editor.buffer.lines.first == "target")
 }
 
@@ -213,7 +213,7 @@ import TextMetrics
     #expect(handled == true)
     #expect(editor.buffers.count == 1)
     #expect(editor.currentBufferIndex == 0)
-    #expect(editor.buffer.filePath == indexPath)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(indexPath, isDirectory: false))
     #expect(editor.buffer.lines == ["See [this](./index.md#section)", "unchanged"])
     #expect(editor.statusMessage == String(format: editor.l10n["status.jumped_to_anchor"], "section"))
 }

@@ -179,7 +179,7 @@ struct DirectoryBufferTests {
 
         #expect(res == .handled)
         #expect(editor.buffer is DirectoryBuffer)
-        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == workDir.standardizedFileURL.path)
+        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == editor.fileIOStrategy.normalizePath(workDir.path, isDirectory: true))
     }
 
     @Test func testDirCommandExpandsHomeDirectory() throws {
@@ -190,7 +190,7 @@ struct DirectoryBufferTests {
 
         #expect(res == .handled)
         #expect(editor.buffer is DirectoryBuffer)
-        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == home.path)
+        #expect((editor.buffer as? DirectoryBuffer)?.directoryPath == editor.fileIOStrategy.normalizePath(home.path, isDirectory: true))
     }
 
     @Test func testDirectoryBufferReadOnlyAndLogoBlock() throws {
@@ -344,7 +344,7 @@ struct DirectoryBufferTests {
         )
         defer { editor.stopFileWatcherForCurrentBuffer() }
 
-        #expect(editor.buffer.filePath == nonExistentFile.path)
+        #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(nonExistentFile.path, isDirectory: false))
 
         // Invoke :dir
         editor.openDirectoryBuffer(path: nil)
@@ -352,7 +352,7 @@ struct DirectoryBufferTests {
         #expect(editor.buffer is DirectoryBuffer)
         #expect(editor.buffer.isDirectoryBuffer == true)
         let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
-        #expect(dirBuf.directoryPath == baseDir.path)
+        #expect(dirBuf.directoryPath == editor.fileIOStrategy.normalizePath(baseDir.path, isDirectory: true))
     }
 
     @Test func testDirectoryBufferKeyNavigation() throws {
@@ -440,7 +440,7 @@ struct DirectoryBufferTests {
         editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
         #expect(editor.buffer is DirectoryBuffer)
         let newDirBuf = try #require(editor.buffer as? DirectoryBuffer)
-        #expect(newDirBuf.directoryPath == subDir.path)
+        #expect(newDirBuf.directoryPath == editor.fileIOStrategy.normalizePath(subDir.path, isDirectory: true))
 
         // 3. Double click on '.. (up a dir)' at index 3 (row 5)
         let upDirMouseRow = 2 + 3
@@ -448,7 +448,7 @@ struct DirectoryBufferTests {
         editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: upDirMouseRow))
         #expect(editor.buffer is DirectoryBuffer)
         let rootDirBuf = try #require(editor.buffer as? DirectoryBuffer)
-        #expect(rootDirBuf.directoryPath == workDir.path)
+        #expect(rootDirBuf.directoryPath == editor.fileIOStrategy.normalizePath(workDir.path, isDirectory: true))
 
         // 4. Double click on hello.txt to open file
         guard let fileIdx = rootDirBuf.lines.firstIndex(where: { $0.contains("hello.txt") }) else {
@@ -461,7 +461,7 @@ struct DirectoryBufferTests {
 
         // Buffer should now be the opened file
         #expect(editor.buffer.isDirectoryBuffer == false)
-        #expect(editor.buffer.filePath == fileURL.path)
+        #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(fileURL.path, isDirectory: false))
         #expect(editor.buffer.lines.joined(separator: "\n") == "Hello World")
     }
 
@@ -497,7 +497,7 @@ struct DirectoryBufferTests {
         editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: docsMouseRow))
         #expect(editor.buffer is DirectoryBuffer)
         let sameDirBuf = try #require(editor.buffer as? DirectoryBuffer)
-        #expect(sameDirBuf.directoryPath == workDir.path)
+        #expect(sameDirBuf.directoryPath == editor.fileIOStrategy.normalizePath(workDir.path, isDirectory: true))
     }
 
     @Test func testDirectoryBufferDisablesSoftwrap() throws {
