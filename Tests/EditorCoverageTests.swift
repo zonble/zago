@@ -642,14 +642,14 @@ private func makeEditor(
         let delegate: LogoEngineDelegate = editor
 
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex)?.integerValue == 5)
-        #expect(
-            delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue == [
-                "first.txt", "second.txt",
-            ])
+        let bufferList = delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue ?? []
+        #expect(bufferList.count == 2)
+        #expect(bufferList[0].hasSuffix("first.txt"))
+        #expect(bufferList[1].hasSuffix("second.txt"))
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex)?.integerValue == 0)
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText)?.stringValue == "A中B\ntail")
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified)?.boolValue == true)
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName)?.stringValue == "first.txt")
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName)?.stringValue?.hasSuffix("first.txt") == true)
 
         editor.buffer.selectionMark = (line: 0, column: 1)
         editor.buffer.lineIndex = 0

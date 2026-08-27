@@ -31,7 +31,7 @@ struct ConfigAndToolsTests {
     }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
         #expect(!ZagoVersion.current.isEmpty)
-        #expect(ZagoVersion.current == "1.4.2")
+        #expect(ZagoVersion.current == "1.4.3")
 
         let editor = Editor()
         let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
@@ -297,7 +297,7 @@ struct ConfigAndToolsTests {
         editor.layoutEngine.setWrapColumn(80)
 
         editor.prevBuffer()
-        #expect(editor.buffer.filePath == "first.md")
+        #expect(editor.buffer.filePath?.hasSuffix("first.md") == true)
         #expect(editor.displayConfig.showRuler == false)
         #expect(editor.displayConfig.showLineNumbers == true)
         #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -309,14 +309,14 @@ struct ConfigAndToolsTests {
         editor.layoutEngine.setWrapColumn(40)
 
         editor.nextBuffer()
-        #expect(editor.buffer.filePath == "second.md")
+        #expect(editor.buffer.filePath?.hasSuffix("second.md") == true)
         #expect(editor.displayConfig.showRuler == true)
         #expect(editor.displayConfig.showLineNumbers == false)
         #expect(editor.displayConfig.showSubLineNumbers == true)
         #expect(editor.layoutEngine.wrapColumn == 80)
 
         editor.prevBuffer()
-        #expect(editor.buffer.filePath == "first.md")
+        #expect(editor.buffer.filePath?.hasSuffix("first.md") == true)
         #expect(editor.displayConfig.showRuler == false)
         #expect(editor.displayConfig.showLineNumbers == true)
         #expect(editor.displayConfig.showSubLineNumbers == false)

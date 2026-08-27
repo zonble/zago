@@ -2,7 +2,24 @@
 
 ## Unreleased
 
-## [1.4.2] - 2026-08-27
+## [1.4.3] - 2026-08-28
+
+Cross-platform stability and syntax highlight refinement release introducing backslash escape parsing for Markdown text styling, Windows SGR mouse event processing, Windows path resolution against CWD with atomic write handling for virtual drives, and WebAssembly configuration file loading.
+
+### Added
+
+- **Markdown Backslash Escaping**:
+  - Added support for backslash escaping formatting characters (`\*`, `\_`, `\~`, `\``) to prevent unwanted bold, italic, strikethrough, and inline code formatting triggers.
+
+### Fixed
+
+- **Windows Platform Enhancements**:
+  - Enabled 1006 SGR extended mouse tracking and disabled console `ENABLE_QUICK_EDIT_MODE` to ensure seamless mouse click and scroll tracking on Windows Terminal and PowerShell.
+  - Resolved relative file paths accurately against current working directory.
+  - Supported Windows path backslash delimiters and direct file writing for virtual and cloud drives (OneDrive / Google Drive) where temporary atomic file renames may fail.
+  - Documented Windows SGR mouse input, path resolution, and virtual drive file handling in `docs/architecture/cross_platform.md`.
+- **WebAssembly (zagoweb) Configuration**:
+  - Supported initial load and reload of `.zagorc` configuration in WASI browser environments.
 
 Performance, spatial canvas editing, and text selection release introducing incremental per-line layout caching, 2D canvas block spatial editing semantics, WebAssembly CJK IME batch draining, text selection newline highlighting, and daily journal workflows.
 

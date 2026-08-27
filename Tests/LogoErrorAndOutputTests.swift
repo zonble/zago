@@ -248,7 +248,7 @@ import Testing
         editor.toggleLogoOutputBuffer()
         #expect(editor.buffers.count == 1)
         #expect(editor.findLogoOutputBufferIndex() == nil)
-        #expect(editor.buffer.filePath == "document.md")
+        #expect(editor.buffer.filePath?.hasSuffix("document.md") == true)
     }
 
     @Test func testErrorHandlingDemoExampleScript() {
@@ -277,7 +277,7 @@ import Testing
         #expect(ok)
 
         let sourceBuf = editor.buffers[0]
-        #expect(sourceBuf.filePath == "demo.logo")
+        #expect(sourceBuf.filePath?.hasSuffix("demo.logo") == true)
         #expect(sourceBuf.lines == ["BOX 4 4"])
 
         let canvasIdx = editor.findLogoCanvasBufferIndex()
@@ -298,7 +298,7 @@ import Testing
 
         editor.evalLogoCode()
 
-        #expect(editor.buffer.filePath == "document.md")
+        #expect(editor.buffer.filePath?.hasSuffix("document.md") == true)
         #expect(editor.findLogoCanvasBufferIndex() == nil)
         #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
     }

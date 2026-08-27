@@ -148,7 +148,7 @@ import Testing
 
     #expect(editor.buffers.count == 2)
     #expect(editor.currentBufferIndex == 1)
-    #expect(editor.buffer.filePath == "second.txt")
+    #expect(editor.buffer.filePath?.hasSuffix("second.txt") == true)
 
     submitCommandBar("new", editor: editor)
 
