@@ -116,9 +116,33 @@ import Testing
         let strategy = LocalEditorFileIOStrategy.shared
         let cwd = strategy.currentDirectoryPath()
         let normalizedRelative = strategy.normalizePath("sample.txt", isDirectory: false)
-        let expected = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent("sample.txt").path
+        let expected = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent("sample.txt").path.replacingOccurrences(of: "/", with: "\\")
         #expect(normalizedRelative == expected)
-        #expect(strategy.parentDirectory(of: "sample.txt") == URL(fileURLWithPath: cwd, isDirectory: true).standardizedFileURL.path)
+        #expect(strategy.parentDirectory(of: "sample.txt") == URL(fileURLWithPath: cwd, isDirectory: true).standardizedFileURL.path.replacingOccurrences(of: "/", with: "\\"))
+    }
+
+    @Test func testLocalFileIONormalizeDrivePathWithSpaces() {
+        let strategy = LocalEditorFileIOStrategy.shared
+        let inputPath = "G:\\My Drive\\Blog\\test.md"
+        let normalized = strategy.normalizePath(inputPath, isDirectory: false)
+        #expect(normalized == "G:\\My Drive\\Blog\\test.md" || normalized == "g:\\My Drive\\Blog\\test.md")
+        #expect(strategy.parentDirectory(of: inputPath) == "G:\\My Drive\\Blog" || strategy.parentDirectory(of: inputPath) == "g:\\My Drive\\Blog")
+    }
+
+    @Test func testLocalFileIOWriteAndReadInTempDirWithSpaces() throws {
+        let strategy = LocalEditorFileIOStrategy.shared
+        let tempDir = strategy.temporaryDirectoryPath()
+        let testSubdir = strategy.childPath("zago test dir", in: tempDir)
+        let testFilePath = strategy.childPath("my blog post.md", in: testSubdir)
+
+        let content = "# Hello World\nTesting direct write on Windows."
+        try strategy.writeTextFile(content, to: testFilePath, encoding: .utf8)
+
+        let readResult = try strategy.readTextFile(at: testFilePath)
+        #expect(readResult.content == content)
+
+        try? FileManager.default.removeItem(atPath: testFilePath)
+        try? FileManager.default.removeItem(atPath: testSubdir)
     }
 }
 #endif

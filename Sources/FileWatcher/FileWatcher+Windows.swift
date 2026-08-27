@@ -111,6 +111,7 @@ import Foundation
             if let h = stopEventHandle, h != INVALID_HANDLE_VALUE {
                 SetEvent(h)
             }
+            queue.sync {}
             changeHandle = nil
             stopEventHandle = nil
             stateLock.withLock {

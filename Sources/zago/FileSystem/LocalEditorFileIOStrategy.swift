@@ -22,7 +22,12 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             let cwd = currentDirectoryPath()
             absolutePath = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent(expanded).path
         }
-        return URL(fileURLWithPath: absolutePath, isDirectory: isDirectory).standardizedFileURL.path
+        let standardized = URL(fileURLWithPath: absolutePath, isDirectory: isDirectory).standardizedFileURL.path
+        #if os(Windows)
+            return standardized.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return standardized
+        #endif
     }
 
     private func isAbsolutePath(_ path: String) -> Bool {
@@ -47,21 +52,41 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
     }
 
     public func homeDirectoryPath() -> String {
-        fileManager.homeDirectoryForCurrentUser.path
+        let home = fileManager.homeDirectoryForCurrentUser.path
+        #if os(Windows)
+            return home.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return home
+        #endif
     }
 
     public func currentDirectoryPath() -> String {
-        fileManager.currentDirectoryPath
+        let cwd = fileManager.currentDirectoryPath
+        #if os(Windows)
+            return cwd.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return cwd
+        #endif
     }
 
     public func parentDirectory(of path: String) -> String {
         let normalized = normalizePath(path, isDirectory: true)
-        return URL(fileURLWithPath: normalized, isDirectory: true).deletingLastPathComponent().path
+        let parent = URL(fileURLWithPath: normalized, isDirectory: true).deletingLastPathComponent().path
+        #if os(Windows)
+            return parent.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return parent
+        #endif
     }
 
     public func childPath(_ name: String, in directory: String) -> String {
         let normalizedDir = normalizePath(directory, isDirectory: true)
-        return URL(fileURLWithPath: normalizedDir, isDirectory: true).appendingPathComponent(name).path
+        let child = URL(fileURLWithPath: normalizedDir, isDirectory: true).appendingPathComponent(name).path
+        #if os(Windows)
+            return child.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return child
+        #endif
     }
 
     public func fileInfo(at path: String) -> EditorFileInfo {
@@ -110,7 +135,21 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             try fileManager.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
         }
         fileWatcher.stop()
-        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+        #if os(Windows)
+            // On Windows, virtual/cloud file systems (e.g. Google Drive, OneDrive) and locked directories
+            // fail when using atomic file replacement. Write directly to the destination file.
+            do {
+                try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            } catch {
+                try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            }
+        #else
+            do {
+                try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+            } catch {
+                try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            }
+        #endif
         fileWatcher.start(path: normalized)
         fileWatcher.recordCurrentModificationDate()
     }
