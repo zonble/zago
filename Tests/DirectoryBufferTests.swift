@@ -96,7 +96,7 @@ struct DirectoryBufferTests {
         // Navigate up
         let upHandled = dirBuffer.navigateUp(editor: editor)
         #expect(upHandled == true)
-        #expect(dirBuffer.directoryPath == workDir.path)
+        #expect(dirBuffer.directoryPath == editor.fileIOStrategy.normalizePath(workDir.path, isDirectory: true))
 
         // Open target.txt
         if let fileIdx = dirBuffer.lines.firstIndex(where: { $0.hasSuffix("target.txt") }) {
