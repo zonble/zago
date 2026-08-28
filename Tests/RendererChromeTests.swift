@@ -457,4 +457,40 @@ struct RendererChromeTests {
         #expect(editor.buffer.lines[4] == "he  llo world")
         #expect(editor.buffer.columnIndex == 4)
     }
+
+    @Test func testInactiveCursorHighlightWhenPromptIsActive() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["hello world"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 5 // on space after hello
+
+        let virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: 20)
+
+        // 1. Without prompt: no inactive cursor highlight
+        let renderedNormal = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: virtualLines,
+            cols: 20,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(!renderedNormal.contains(ANSIStyle.inactiveCursor))
+
+        // 2. With prompt: inactive cursor highlight rendered at editor cursor position
+        editor.currentPromptMode = .logoMacro(completion: { _ in })
+        let renderedPrompt = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: virtualLines,
+            cols: 20,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(renderedPrompt.contains(ANSIStyle.inactiveCursor))
+    }
 }

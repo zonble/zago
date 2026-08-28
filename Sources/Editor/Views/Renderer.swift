@@ -231,6 +231,28 @@ final class Renderer {
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
         let activeCanvasRect = editor.isCanvasModeActive ? editor.currentCanvasBlockRectangle() : nil
 
+        let isPromptActive: Bool
+        if case .none = editor.currentPromptMode {
+            isPromptActive = false
+        } else {
+            isPromptActive = true
+        }
+
+        let inactiveCursorVLineIdx: Int?
+        let inactiveCursorVColIdx: Int?
+        if isPromptActive && !editor.isCanvasModeActive {
+            let (vLine, vCol) = editor.layoutEngine.getVirtualCursor(
+                lineIndex: editor.buffer.lineIndex,
+                columnIndex: editor.buffer.columnIndex,
+                virtualLines: virtualLines
+            )
+            inactiveCursorVLineIdx = vLine
+            inactiveCursorVColIdx = vCol
+        } else {
+            inactiveCursorVLineIdx = nil
+            inactiveCursorVColIdx = nil
+        }
+
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
             let localVIndex = vIndex - virtualLineStartIndex
@@ -341,6 +363,22 @@ final class Renderer {
                             atDisplayColumn: renderedDisplayWidth,
                             tabSize: editor.displayConfig.tabSize)
 
+                        let isInactiveCursorPos: Bool
+                        if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
+                            if editor.isTableModeActive, let cell = editor.currentTableCell,
+                                editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine
+                            {
+                                let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                                    in: vLine.text, nearCol: targetVCol, cell: cell)
+                                let effectiveCol = (targetVCol >= rightBorder) ? max(leftBorder + 1, rightBorder - 1) : targetVCol
+                                isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == effectiveCol)
+                            } else {
+                                isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == targetVCol)
+                            }
+                        } else {
+                            isInactiveCursorPos = false
+                        }
+
                         if let rect = activeCanvasRect,
                             vLine.bufferLineIndex >= rect.topLine && vLine.bufferLineIndex <= rect.bottomLine,
                             charVisualColumn >= rect.leftColumn && charVisualColumn < rect.rightColumnExclusive
@@ -352,6 +390,9 @@ final class Renderer {
                         {
                             lineOutput += renderedText.ansiStyled(
                                 style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if isInactiveCursorPos {
+                            lineOutput += renderedText.ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
                         } else if isDirBufferSelectedLine {
                             lineOutput += renderedText
                         } else if !editor.isCanvasModeActive
@@ -377,14 +418,28 @@ final class Renderer {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
                     var selectedPad = ""
                     var normalPad = ""
+                    let isInactiveCursorLine = isPromptActive && vIndex == editor.buffer.lineIndex
                     for screenOffset in renderedDisplayWidth..<visibleTextWidth {
                         let visualCol = editor.canvasHorizontalOffset + screenOffset
+                        let isInactiveCursorCell = isInactiveCursorLine && visualCol == editor.canvasVisualColumn
                         if editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: visualCol) {
                             if !normalPad.isEmpty {
                                 lineOutput += normalPad
                                 normalPad = ""
                             }
                             selectedPad.append(" ")
+                        } else if isInactiveCursorCell {
+                            if !normalPad.isEmpty {
+                                lineOutput += normalPad
+                                normalPad = ""
+                            }
+                            if !selectedPad.isEmpty {
+                                lineOutput += selectedPad.ansiStyled(
+                                    style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                                selectedPad = ""
+                            }
+                            lineOutput += " ".ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
                         } else {
                             if !selectedPad.isEmpty {
                                 lineOutput += selectedPad.ansiStyled(
@@ -410,6 +465,13 @@ final class Renderer {
                     lineOutput = lineOutput.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                 } else if !editor.isCanvasModeActive && !editor.isTableModeActive && !vLine.isProposalOverlay {
                     let isLastSubLineOfBufferLine = vLine.endCol >= fullLineText.count
+                    let isInactiveCursorAtEnd: Bool
+                    if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
+                        isInactiveCursorAtEnd = (vIndex == targetVLine && targetVCol >= baseChars.count)
+                    } else {
+                        isInactiveCursorAtEnd = false
+                    }
+
                     if isLastSubLineOfBufferLine, let mark = editor.buffer.selectionMark {
                         let (start, end) = TextBuffer.getOrderedRange(
                             mark1: mark,
@@ -419,7 +481,13 @@ final class Renderer {
                         if isNewlineSelected {
                             lineOutput += " ".ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                             renderedDisplayWidth += 1
+                        } else if isInactiveCursorAtEnd {
+                            lineOutput += " ".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
+                            renderedDisplayWidth += 1
                         }
+                    } else if isInactiveCursorAtEnd {
+                        lineOutput += " ".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
+                        renderedDisplayWidth += 1
                     }
                 }
 
