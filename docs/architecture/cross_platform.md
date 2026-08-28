@@ -755,7 +755,45 @@ However, on WebAssembly (`wasm32-unknown-wasi` in browsers):
    ```
    This provides clear discoverability and prevents confusion when running `zago` in WebAssembly environments.
 
+---
 
+## 18. WebAssembly (WASI) Swift Compiler Type-Checking Complexity Limits
 
+### The Pitfall: Compiler Timeout on Deep Nil-Coalescing Expressions
 
+In WebAssembly / WASI builds using `swift-wasm` toolchains (e.g., `swift-wasm-6.0.3-RELEASE-wasm32-unknown-wasi`), the compiler type-checker runs with constrained memory and time budgets in containerized CI environments.
 
+Deeply chained nil-coalescing expressions (such as chaining 8+ optional returns with `??`):
+```swift
+// ❌ May fail on swift-wasm CI with: "the compiler is unable to type-check this expression in reasonable time"
+let result = evaluateDataStructurePrimitives(tokens, index: &index)
+    ?? evaluateMathPrimitives(tokens, index: &index)
+    ?? evaluateBufferPrimitives(tokens, index: &index)
+    ?? evaluateTemplatePrimitives(tokens, index: &index)
+    ?? evaluateDatePrimitives(tokens, index: &index)
+    ?? evaluateMeasurementPrimitives(tokens, index: &index)
+    ?? evaluateFormattingPrimitives(tokens, index: &index)
+    ?? evaluateCodecAndDetectorPrimitives(tokens, index: &index)
+    ?? evaluateSystemPrimitives(tokens, index: &index)
+```
+can trigger:
+```
+error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+```
+
+### Architectural Solution: Sequential Evaluation Steps
+
+Break long fallback chains into explicit sequential sub-evaluations:
+```swift
+// ✅ Clean, fast type-checking across all toolchains
+var result: String? = evaluateDataStructurePrimitives(tokens, index: &index)
+if result == nil { result = evaluateMathPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateBufferPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateTemplatePrimitives(tokens, index: &index) }
+if result == nil { result = evaluateDatePrimitives(tokens, index: &index) }
+if result == nil { result = evaluateMeasurementPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateFormattingPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateCodecAndDetectorPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateSystemPrimitives(tokens, index: &index) }
+```
+This ensures zero compilation bottlenecks across macOS, Linux, Windows, and WASM platforms.
