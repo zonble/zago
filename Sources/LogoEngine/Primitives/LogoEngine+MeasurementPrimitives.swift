@@ -350,7 +350,7 @@ extension LogoEngine {
                 let tolerance = targetUnit.flatMap(Double.init) ?? 1e-6
                 let res = abs(v1 - v2) <= tolerance
                 setLastExpressionBoolean(res)
-                return res ? "true" : "false"
+                return res.logoString
 
             case .measureLess:
                 guard
@@ -362,7 +362,7 @@ extension LogoEngine {
                 }
                 let res = v1 < v2
                 setLastExpressionBoolean(res)
-                return res ? "true" : "false"
+                return res.logoString
 
             case .measureGreater:
                 guard
@@ -374,7 +374,7 @@ extension LogoEngine {
                 }
                 let res = v1 > v2
                 setLastExpressionBoolean(res)
-                return res ? "true" : "false"
+                return res.logoString
 
             case .measureMin:
                 guard

@@ -23,7 +23,7 @@ extension LogoEngine {
             reader.commit(to: &index)
             let valid = LogoUUIDGenerator.isValidUUID(input)
             setLastExpressionBoolean(valid)
-            return valid ? "true" : "false"
+            return valid.logoString
 
         case .uuidTime:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
@@ -66,7 +66,7 @@ extension LogoEngine {
             reader.commit(to: &index)
             let valid = LogoDataCodec.isValidBase64(input)
             setLastExpressionBoolean(valid)
-            return valid ? "true" : "false"
+            return valid.logoString
 
         case .urlEncode:
             var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)

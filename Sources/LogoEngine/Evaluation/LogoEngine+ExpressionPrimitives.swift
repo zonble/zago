@@ -32,16 +32,15 @@ extension LogoEngine {
     internal func evaluateExpressionPrimitive(_ tokens: [String], index: inout Int) -> String? {
         guard index < tokens.count, let primitive = parsePrimitive(tokens[index]) else { return nil }
 
-        var result: String? = nil
-        if result == nil { result = evaluateDataStructurePrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateMathPrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateBufferPrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateTemplatePrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateDatePrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateMeasurementPrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateFormattingPrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateCodecAndDetectorPrimitives(tokens, index: &index) }
-        if result == nil { result = evaluateSystemPrimitives(tokens, index: &index) }
+        let result = evaluateDataStructurePrimitives(tokens, index: &index)
+            ?? evaluateMathPrimitives(tokens, index: &index)
+            ?? evaluateBufferPrimitives(tokens, index: &index)
+            ?? evaluateTemplatePrimitives(tokens, index: &index)
+            ?? evaluateDatePrimitives(tokens, index: &index)
+            ?? evaluateMeasurementPrimitives(tokens, index: &index)
+            ?? evaluateFormattingPrimitives(tokens, index: &index)
+            ?? evaluateCodecAndDetectorPrimitives(tokens, index: &index)
+            ?? evaluateSystemPrimitives(tokens, index: &index)
 
         if let result, primitive != .date, primitive != .time {
             setLastExpressionString(result)
