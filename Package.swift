@@ -98,6 +98,10 @@ let package = Package(
             ]
         ),
         .target(
+            name: "ANSITerminal",
+            dependencies: ["Config"]
+        ),
+        .target(
             name: "SystemClipboard",
             dependencies: ["Editor"],
             linkerSettings: [
@@ -108,6 +112,7 @@ let package = Package(
         .executableTarget(
             name: "zago",
             dependencies: [
+                "ANSITerminal",
                 "Config",
                 "DocumentOutline",
                 "Drawing",
@@ -124,6 +129,7 @@ let package = Package(
         .executableTarget(
             name: "zagoweb",
             dependencies: [
+                "ANSITerminal",
                 "Config",
                 "Editor",
                 "Git",
@@ -134,7 +140,7 @@ let package = Package(
         .testTarget(
             name: "zagoTests",
             dependencies: [
-                "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
+                "ANSITerminal", "Config", "Diagram", "DocumentOutline", "Drawing", "Editor", "FileWatcher", "Git", "IPCServer", "LogoEngine",
                 "LogoLocalization", "NumberHelpers", "SpellChecker", "SystemClipboard",
                 "Syntax", "TextEncoding", "TextMetrics", "TextTransform", "zago", "zagoweb",
             ],

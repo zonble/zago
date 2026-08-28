@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 
+@testable import ANSITerminal
 @testable import Config
 @testable import Editor
 @testable import zago
