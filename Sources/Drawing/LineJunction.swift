@@ -256,6 +256,55 @@ public func arrowHead(
         case .left: "⬅"
         case .right: "➡"
         }
+    case .diamond:
+        switch direction {
+        case .up: "◇"
+        case .down: "◇"
+        case .left: "◇"
+        case .right: "◇"
+        }
+    case .solidDiamond:
+        switch direction {
+        case .up: "◆"
+        case .down: "◆"
+        case .left: "◆"
+        case .right: "◆"
+        }
+    case .circle:
+        switch direction {
+        case .up: "●"
+        case .down: "●"
+        case .left: "●"
+        case .right: "●"
+        }
+    case .openCircle:
+        switch direction {
+        case .up: "○"
+        case .down: "○"
+        case .left: "○"
+        case .right: "○"
+        }
+    case .cross:
+        switch direction {
+        case .up: "✕"
+        case .down: "✕"
+        case .left: "✕"
+        case .right: "✕"
+        }
+    case .crow:
+        switch direction {
+        case .up: "⤘"
+        case .down: "⤛"
+        case .left: "⤙"
+        case .right: "⤚"
+        }
+    case .harpoon:
+        switch direction {
+        case .up: "↿"
+        case .down: "⇂"
+        case .left: "↼"
+        case .right: "⇀"
+        }
     }
 }
 

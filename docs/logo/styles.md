@@ -102,11 +102,18 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **ASCII / Default** | `<` | `>` | `<` | `>` | `←` / `→` or `<` / `>` | `^` / `v` |
 | **Solid** | `◀` / `▲` | `▶` / `▼` | `<<` | `>>` | `◀` `▶` | `▲` `▼` |
-| **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
 | **Hollow** | `◁` / `△` | `▷` / `▽` | `<\|` | `\|>` | `◁` `▷` | `△` `▽` |
 | **Small** | `◂` / `▴` | `▸` / `▾` | `<.` | `.>` | `◂` `▸` | `▴` `▾` |
-| **Double** | `⇐` / `⇑` | `⇒` / `⇓` | `<=|` | `|=>` | `⇐` `⇒` | `⇑` `⇓` |
+| **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
 | **Heavy** | `⬅` / `⬆` | `➡` / `⬇` | `<+|` | `|+>` | `⬅` `➡` | `⬆` `⬇` |
+| **Double** | `⇐` / `⇑` | `⇒` / `⇓` | `<=|` | `|=>` | `⇐` `⇒` | `⇑` `⇓` |
+| **Solid Diamond** | `◆` | `◆` | `<*>` | `<*>` | `◆` | `◆` |
+| **Hollow Diamond** | `◇` | `◇` | `<>` | `<>` | `◇` | `◇` |
+| **Solid Circle** | `●` | `●` | `*` | `*` | `●` | `●` |
+| **Open Circle** | `○` | `○` | `o` / `O` | `o` / `O` | `○` | `○` |
+| **Cross** | `✕` | `✕` | `x` / `X` | `x` / `X` | `✕` | `✕` |
+| **Crow's Foot** | `⤙` / `⤘` | `⤚` / `⤛` | `<:` | `:>` | `⤙` `⤚` | `⤘` `⤛` |
+| **Harpoon (Half-Arrow)** | `↼` / `↿` | `⇀` / `⇂` | `<^` | `^>` | `↼` `⇀` | `↿` `⇂` |
 
 ### Common Line DSL Combinations
 
@@ -122,6 +129,12 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | `<.++.>` | `◂╍╍╍╍▸` | `▴` `╏` `╏` `▾` | Heavy double-dash line with small arrows |
 | `<=|==|=>` | `⇐════⇒` | `⇑` `║` `║` `⇓` | Double line with double arrows |
 | `<+|++|+>` | `⬅━━━━➡` | `⬆` `┃` `┃` `⬇` | Heavy line with heavy arrows |
+| `<>--->` | `◇────>` | `◇` `│` `│` `v` | Hollow diamond line with arrow |
+| `<*>--->` | `◆────>` | `◆` `│` `│` `v` | Solid diamond line with arrow |
+| `*---*` | `●────●` | `●` `│` `│` `●` | Line with solid circle endpoints |
+| `o---o` | `○────○` | `○` `│` `│` `○` | Line with open circle endpoints |
+| `x---x` | `✕────✕` | `✕` `│` `│` `✕` | Line with cross endpoints |
+| `<:---:>` | `⤙────⤚` | `⤘` `│` `│` `⤛` | Crow's foot line |
 | `<~+\|>` | `←━━━━▷` | `↑` `┃` `┃` `▽` | Asymmetric: stemmed start, hollow end |
 
 ---

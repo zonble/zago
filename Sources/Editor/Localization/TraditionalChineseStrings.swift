@@ -131,12 +131,19 @@ struct TraditionalChineseStrings {
           3. 箭頭形狀符號（用於 LINE 與 VLINE）
           ----------------------------------------------------------------
             <    >    標準 / ASCII 箭頭（← / → / ↑ / ↓）
-            <<   >>   實心三角箭頭（◀ / ▶ / ▲ / ▼）
-            <|   |>   空心三角箭頭（◁ / ▷ / △ / ▽）
-            <~   ~>   帶柄箭頭（◄ / ► / ↑ / ↓）
-            <.   .>   小型三角箭頭（◂ / ▸ / ▴ / ▾）
-            <=|  |=>  雙線箭頭（⇐ / ⇒ / ⇑ / ⇓）
+            <<   >>   實心三角（◀ / ▶ / ▲ / ▼）
+            <|   |>   空心三角（◁ / ▷ / △ / ▽）
+            <.   .>   微型三角（◂ / ▸ / ▴ / ▾）
+            <~   ~>   細線箭頭（◄ / ► / ↑ / ↓）
             <+|  |+>  粗線箭頭（⬅ / ➡ / ⬆ / ⬇）
+            <=|  |=>  雙線箭頭（⇐ / ⇒ / ⇑ / ⇓）
+            <*>  <*>  實心菱（◆）
+            <>   <>   空心菱（◇）
+            *    *    實心圓（●）
+            o    o    空心圓（○，亦可用 O）
+            x    x    叉叉（✕，亦可用 X）
+            <:   :>   烏鴉腳（⤙ / ⤚ / ⤘ / ⤛）
+            <^   ^>   單側魚鉤（↼ / ⇀ / ↿ / ⇂）
 
           4. 繪圖指令使用範例
           ----------------------------------------------------------------
@@ -158,13 +165,19 @@ struct TraditionalChineseStrings {
                 LINE 15 "->"           繪製長度 15、向右標準箭頭的單線
                 LINE 12 "<=>"          繪製長度 12、雙向標準箭頭的雙線
                 LINE 20 "<<=>>"        繪製長度 20、雙向實心箭頭的雙線
-                LINE 10 "<~+"          繪製長度 10、向左帶柄箭頭的粗線
+                LINE 10 "<~+"          繪製長度 10、向左細線箭頭的粗線
                 LINE 16 "-->>"         繪製長度 16、向右實心箭頭的雙段虛線
                 LINE 18 "<|+++|>"      繪製長度 18、雙向空心箭頭的三段粗虛線
                 LINE 14 "<=|==|=>"     繪製長度 14、雙向雙線箭頭的雙線
                 LINE 16 "<+|++|+>"     繪製長度 16、雙向粗線箭頭的粗線
+                LINE 15 "<>--->"       繪製長度 15、空心菱與右箭頭的單線
+                LINE 15 "<*>--->"      繪製長度 15、實心菱與右箭頭的單線
+                LINE 12 "*---*"        繪製長度 12、兩端為實心圓的單線
+                LINE 12 "o---o"        繪製長度 12、兩端為空心圓的單線
+                LINE 12 "x---x"        繪製長度 12、兩端為叉叉的單線
+                LINE 14 "<:---:>"      繪製長度 14、雙向烏鴉腳的關聯線
                 VLINE 6 "++|>"         繪製高度 6、向下空心箭頭的雙段粗虛線
-                VLINE 8 "<.---.>"      繪製高度 8、雙向小型箭頭的三段虛線
+                VLINE 8 "<.---.>"      繪製高度 8、雙向微型箭頭的三段虛線
         """,
         "logoref.content": """
           Editor LOGO 指令參考
@@ -928,12 +941,19 @@ struct TraditionalChineseStrings {
         "menu.borders.double_dash": "二段虛線   ┌╌╌┐",
         "menu.borders.heavy_double": "粗二段虛線 ┏╍╍┓",
         "menu.borders.next_style": "下一種框線\tM+S",
-        "menu.arrows.solid": "實心 ▲▼◀▶",
-        "menu.arrows.stemmed": "細線 ↑↓←→",
-        "menu.arrows.hollow": "空心 △▽◁▷",
-        "menu.arrows.small": "微型 ▴▾◂▸",
-        "menu.arrows.double": "雙線 ⇑⇓⇐⇒",
-        "menu.arrows.heavy": "粗線 ⬆⬇⬅➡",
+        "menu.arrows.solid": "實心         ▲▼◀▶",
+        "menu.arrows.hollow": "空心         △▽◁▷",
+        "menu.arrows.small": "微型         ▴▾◂▸",
+        "menu.arrows.stemmed": "細線         ↑↓←→",
+        "menu.arrows.heavy": "粗線         ⬆⬇⬅➡",
+        "menu.arrows.double": "雙線         ⇑⇓⇐⇒",
+        "menu.arrows.solid_diamond": "實心菱       ◆",
+        "menu.arrows.diamond": "空心菱       ◇",
+        "menu.arrows.circle": "實心圓       ●",
+        "menu.arrows.open_circle": "空心圓       ○",
+        "menu.arrows.cross": "叉叉         ✕",
+        "menu.arrows.crow": "烏鴉腳       ⤘⤛⤙⤚",
+        "menu.arrows.harpoon": "單側魚鉤     ↿⇂↼⇀",
         "menu.borders.arrow_solid": "箭頭：實心 ▲▼◀▶",
         "menu.borders.arrow_stemmed": "箭頭：細線 ↑↓←→",
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
