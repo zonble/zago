@@ -114,4 +114,18 @@ public enum TextAnalyzer {
         }
         return 0
     }
+
+    /// Computes the longest common prefix of a collection of strings (case-insensitive).
+    public static func longestCommonPrefix<S: Sequence>(of strings: S) -> String where S.Element == String {
+        var iterator = strings.makeIterator()
+        guard let first = iterator.next(), !first.isEmpty else { return "" }
+        var prefix = first
+        while let s = iterator.next() {
+            while !s.lowercased().hasPrefix(prefix.lowercased()) {
+                prefix.removeLast()
+                if prefix.isEmpty { return "" }
+            }
+        }
+        return prefix
+    }
 }

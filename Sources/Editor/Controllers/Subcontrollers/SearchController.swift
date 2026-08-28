@@ -33,14 +33,15 @@ final class SearchController: KeyInputHandler {
 
     /// KeyInputHandler protocol implementation.
     func handleKey(_ key: Key) -> Bool {
-        switch key {
-        case .ctrl("W"), .f6:
+        let cmd = editor?.keymapManager.resolve(key: key, in: .text)
+        switch cmd {
+        case .searchWhereIs:
             editor?.promptSearch()
             return true
-        case .alt("n"), .alt("N"):
+        case .searchNext:
             findNextSearchMatch()
             return true
-        case .alt("p"), .alt("P"):
+        case .searchPrevious:
             findPreviousSearchMatch()
             return true
         default:

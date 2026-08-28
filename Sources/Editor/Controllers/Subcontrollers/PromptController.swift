@@ -475,7 +475,7 @@ extension PromptController {
             if matches.count == 1 && !valuePrefix.isEmpty {
                 replacePromptPrefix("\(command) \(setting) \(matches[0])")
             } else if !matches.isEmpty && !valuePrefix.isEmpty {
-                let lcp = longestCommonPrefix(of: matches)
+                let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
                 if lcp.count > valuePrefix.count {
                     replacePromptPrefix("\(command) \(setting) \(lcp)")
                 }
@@ -491,7 +491,7 @@ extension PromptController {
         if matches.count == 1 && !settingPrefix.isEmpty {
             replacePromptPrefix("\(command) \(matches[0]) ")
         } else if !matches.isEmpty && !settingPrefix.isEmpty {
-            let lcp = longestCommonPrefix(of: matches)
+            let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
             if lcp.count > settingPrefix.count {
                 replacePromptPrefix("\(command) \(lcp)")
             }
@@ -537,7 +537,7 @@ extension PromptController {
         if matches.count == 1 {
             replacePromptPrefix(leadingContext + matches[0] + " ")
         } else if !matches.isEmpty {
-            let lcp = longestCommonPrefix(of: matches)
+            let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
             if lcp.count > token.count {
                 replacePromptPrefix(leadingContext + lcp)
             }
@@ -555,18 +555,6 @@ extension PromptController {
         let splitIndex = inputText.index(inputText.startIndex, offsetBy: clamped)
         inputText = replacement + inputText[splitIndex...]
         cursorIndex = replacement.count
-    }
-
-    private func longestCommonPrefix(of strings: [String]) -> String {
-        guard let first = strings.first, !first.isEmpty else { return "" }
-        var prefix = first
-        for s in strings.dropFirst() {
-            while !s.lowercased().hasPrefix(prefix.lowercased()) {
-                prefix.removeLast()
-                if prefix.isEmpty { return "" }
-            }
-        }
-        return prefix
     }
 
     private func completionCandidate(_ candidate: String, matching typed: String) -> String {

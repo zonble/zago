@@ -4,6 +4,7 @@ import Foundation
 import LogoEngine
 import LogoLocalization
 import TextMetrics
+import TextTransform
 
 /// Interactive modal dialog for querying and describing Editor commands and LOGO procedures.
 final class DescribeCommandDialogView {
@@ -180,25 +181,13 @@ final class DescribeCommandDialogView {
             tabCandidates = []
             tabCandidateIndex = 0
         } else {
-            let commonPrefix = longestCommonPrefix(strings: tabCandidates)
+            let commonPrefix = TextAnalyzer.longestCommonPrefix(of: tabCandidates)
             if !query.isEmpty && commonPrefix.count > query.count {
                 inputText = commonPrefix
                 inputEditor.cursorIndex = inputText.count
             }
         }
         render()
-    }
-
-    private func longestCommonPrefix(strings: [String]) -> String {
-        guard let first = strings.first, !strings.isEmpty else { return "" }
-        var prefix = first
-        for str in strings.dropFirst() {
-            while !str.lowercased().hasPrefix(prefix.lowercased()) && !prefix.isEmpty {
-                prefix = String(prefix.dropLast())
-            }
-            if prefix.isEmpty { break }
-        }
-        return prefix
     }
 
     private func allCandidates() -> [String] {
