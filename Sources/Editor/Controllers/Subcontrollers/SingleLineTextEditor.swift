@@ -133,6 +133,14 @@ struct SingleLineTextEditor: Equatable, Sendable {
         extendSelection(to: min(text.count, cursorIndex + 1))
     }
 
+    public mutating func selectHome() {
+        extendSelection(to: 0)
+    }
+
+    public mutating func selectEnd() {
+        extendSelection(to: text.count)
+    }
+
     public mutating func selectAll() {
         guard !text.isEmpty else { return }
         selectionAnchorIndex = 0
@@ -233,6 +241,12 @@ struct SingleLineTextEditor: Equatable, Sendable {
             return .handled
         case .selectRight:
             selectRight()
+            return .handled
+        case .selectHome:
+            selectHome()
+            return .handled
+        case .selectEnd:
+            selectEnd()
             return .handled
         case .selectAll:
             selectAll()

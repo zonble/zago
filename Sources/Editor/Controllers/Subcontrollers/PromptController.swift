@@ -228,6 +228,16 @@ extension PromptController {
             singleLineEditor.selectRight()
             return true
 
+        case .selectHome:
+            completionText = nil
+            singleLineEditor.selectHome()
+            return true
+
+        case .selectEnd:
+            completionText = nil
+            singleLineEditor.selectEnd()
+            return true
+
         case .selectWordBackward:
             completionText = nil
             singleLineEditor.selectLeft()

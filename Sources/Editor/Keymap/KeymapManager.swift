@@ -280,6 +280,8 @@ final class KeymapManager {
         register(.promptClearLine, .ctrlBackspace, .altBackspace, mode: .prompt)
         register(.selectLeft, .shiftArrowLeft, .ctrlShiftArrowLeft, .ctrlShift("B"), .ctrlShift("b"), mode: .prompt)
         register(.selectRight, .shiftArrowRight, .ctrlShiftArrowRight, .ctrlShift("F"), .ctrlShift("f"), mode: .prompt)
+        register(.selectHome, .shiftHome, mode: .prompt)
+        register(.selectEnd, .shiftEnd, mode: .prompt)
 
         switch preset {
         case .classic:

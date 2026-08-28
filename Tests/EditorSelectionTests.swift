@@ -481,3 +481,25 @@ import Testing
     #expect(rendered.contains(expectedLine2))
 }
 
+@Test func testSingleLineTextEditorShiftHomeAndEndSelection() {
+    var editor = SingleLineTextEditor(text: "Hello World", cursorIndex: 5)
+    
+    // Shift + Home -> selection from index 5 to 0
+    editor.selectHome()
+    #expect(editor.cursorIndex == 0)
+    #expect(editor.selectionAnchorIndex == 5)
+    #expect(editor.selectionRange == 0..<5)
+    #expect(editor.selectedText == "Hello")
+    
+    // Reset selection anchor and move cursor to index 5
+    editor.selectionAnchorIndex = nil
+    editor.cursorIndex = 5
+    
+    // Shift + End -> selection from index 5 to 11
+    editor.selectEnd()
+    #expect(editor.cursorIndex == 11)
+    #expect(editor.selectionAnchorIndex == 5)
+    #expect(editor.selectionRange == 5..<11)
+    #expect(editor.selectedText == " World")
+}
+
