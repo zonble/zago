@@ -20,7 +20,7 @@ extension LogoEngine {
             if index < tokens.count && tokens[index] == "[" {
                 trueBlock = extractBlockTokens(tokens: tokens, index: &index)
             }
-            while index + 1 < tokens.count && isFillerToken(tokens[index + 1]) && !tokens[index + 1].hasPrefix("\"") && !tokens[index + 1].hasPrefix(":") && !tokens[index + 1].hasPrefix("[") {
+            while index + 1 < tokens.count && isFillerToken(tokens[index + 1]) {
                 index += 1
             }
             if index + 1 < tokens.count && tokens[index + 1] == "[" {

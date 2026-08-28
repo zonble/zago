@@ -102,7 +102,14 @@ struct LogoDebugCommand: Command {
 
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
-        switch input.tokens.dropFirst().first?.lowercased() {
+        let subcmd = input.tokens.dropFirst().first?.lowercased()
+        #if os(WASI)
+        if subcmd == "break" || subcmd == "continue" || subcmd == "step" || subcmd == "abort" {
+            return .noOp(message: editor.l10n["status.logo_debug_unsupported_wasi"])
+        }
+        #endif
+
+        switch subcmd {
         case "break":
             let enabled = editor.debuggerController.toggleBreakpoint(in: editor.buffer)
             let key = enabled ? "status.logo_debug_breakpoint_set" : "status.logo_debug_breakpoint_cleared"

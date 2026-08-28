@@ -340,7 +340,9 @@ extension LogoEngine {
                     if !bodyTokens.isEmpty {
                         if bodyTokens[0] == "[" {
                             var bIdx = 0
-                            let stmtBlock = extractBlockTokens(tokens: bodyTokens, index: &bIdx)
+                            let stmtBlock = extractBlockTokens(tokens: bodyTokens, index: &bIdx).map {
+                                LogoToken(text: $0, sourceRange: 0..<0)
+                            }
                             var subReturn: String? = nil
                             var sIdx = 0
                             executeTokens(stmtBlock, index: &sIdx, frameReturn: &subReturn)
@@ -348,7 +350,8 @@ extension LogoEngine {
                         } else if self.isStatementCommand(bodyTokens[0]) {
                             var subReturn: String? = nil
                             var sIdx = 0
-                            executeTokens(bodyTokens, index: &sIdx, frameReturn: &subReturn)
+                            let stmtTokens = bodyTokens.map { LogoToken(text: $0, sourceRange: 0..<0) }
+                            executeTokens(stmtTokens, index: &sIdx, frameReturn: &subReturn)
                             return subReturn ?? lastResult ?? ""
                         } else {
                             var bIdx = 0
@@ -364,7 +367,8 @@ extension LogoEngine {
                         if self.isStatementCommand(inner[0]) {
                             var subReturn: String? = nil
                             var sIdx = 0
-                            executeTokens(inner, index: &sIdx, frameReturn: &subReturn)
+                            let innerTokens = inner.map { LogoToken(text: $0, sourceRange: 0..<0) }
+                            executeTokens(innerTokens, index: &sIdx, frameReturn: &subReturn)
                             return subReturn ?? lastResult ?? ""
                         } else {
                             let hasComparison = inner.contains {

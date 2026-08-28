@@ -19,7 +19,7 @@ internal struct LogoArgumentReader {
     mutating func skipFillerTokens() {
         while index + 1 < tokens.count {
             let nextTok = tokens[index + 1]
-            if !nextTok.hasPrefix("\"") && !nextTok.hasPrefix(":") && !nextTok.hasPrefix("[") && !nextTok.hasPrefix("(") && engine.isFillerToken(nextTok) {
+            if engine.isFillerToken(nextTok) {
                 index += 1
             } else {
                 break
@@ -70,7 +70,7 @@ internal struct LogoArgumentReader {
         var skipped = 0
         while position < tokens.count && skipped < offset - 1 {
             let t = tokens[position]
-            if !t.hasPrefix("\"") && !t.hasPrefix(":") && !t.hasPrefix("[") && !t.hasPrefix("(") && engine.isFillerToken(t) {
+            if engine.isFillerToken(t) {
                 position += 1
             } else {
                 skipped += 1
@@ -79,7 +79,7 @@ internal struct LogoArgumentReader {
         }
         while position < tokens.count {
             let t = tokens[position]
-            if !t.hasPrefix("\"") && !t.hasPrefix(":") && !t.hasPrefix("[") && !t.hasPrefix("(") && engine.isFillerToken(t) {
+            if engine.isFillerToken(t) {
                 position += 1
             } else {
                 return t

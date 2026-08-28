@@ -152,12 +152,34 @@ public final class LogoEngine: @unchecked Sendable {
     /// Executes LOGO macro script on the delegate context, creating a single atomic Undo snapshot.
     public func execute(_ script: String) {
         #if os(WASI)
+            // WebAssembly is single-threaded; execute synchronously directly on
+            // the main loop.
             abortRequested = false
             byeFlag = false
             executionState = .running
             executeScript(script)
             executionState = .completed
         #else
+            // Spawn a dedicated worker thread with an expanded 8MB stack size
+            // to allow deep recursion in LOGO procedures and expressions
+            // without risking stack overflow.
+            //
+            // Threading & Synchronization Rationale (Why `Thread` instead of
+            // GCD / DispatchQueue):
+            // 1. Stack Size Control: GCD / DispatchQueue manage a shared worker
+            //    thread pool with fixed default stack size (~512KB) and do NOT
+            //    expose API to customize stack size. LOGO scripts often use
+            //    deep recursion (e.g., fractals, recursive procedures), which
+            //    would immediately cause fatal stack overflows on GCD threads.
+            //    `Thread` allows explicitly allocating 8MB+ stack space.
+            // 2. Bidirectional Debugger Synchronization: The interpreter
+            //    supports interactive breakpoints, stepping, pause/resume, and
+            //    evaluating expressions while paused. `NSCondition` provides
+            //    exact monitor-style condition waiting/signaling across threads
+            //    without deadlock risk or polling.
+            // 3. Thread Pool Starvation Prevention: A paused or long-running
+            //    LOGO script would block a thread in GCD's global pool. A
+            //    dedicated standalone thread is cleanly isolated.
             debuggerCondition.lock()
             abortRequested = false
             byeFlag = false
@@ -183,8 +205,7 @@ public final class LogoEngine: @unchecked Sendable {
         expressionCallDepth = 0
 
         let sourceTokens = LogoTokenizer.tokenizeTokens(script)
-        let tokens = sourceTokens.map(\.text)
-        guard !tokens.isEmpty else {
+        guard !sourceTokens.isEmpty else {
             finishExecution()
             return
         }
@@ -201,7 +222,7 @@ public final class LogoEngine: @unchecked Sendable {
         }
         var index = 0
         var frameReturn: String? = nil
-        executeTokens(tokens, sourceTokens: sourceTokens, index: &index, frameReturn: &frameReturn)
+        executeTokens(sourceTokens, index: &index, frameReturn: &frameReturn)
         if let ret = frameReturn, !ret.isEmpty {
             lastResult = ret
         }
@@ -210,38 +231,36 @@ public final class LogoEngine: @unchecked Sendable {
 
     /// Step-by-step 3-stage statement execution loop for tokenized scripts.
     internal func executeTokens(
-        _ tokens: [String],
-        sourceTokens: [LogoToken]? = nil,
+        _ sourceTokens: [LogoToken],
         index: inout Int,
         frameReturn: inout String?
     ) {
-        while index < tokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
-            if let sourceTokens, index < sourceTokens.count {
-                if !executionFrames.isEmpty {
-                    executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
-                        procedureName: executionFrames.last?.procedureName,
-                        token: sourceTokens[index],
-                        scopeDepth: variables.scopeDepth
-                    )
-                }
-                if let token = executionFrames.last?.token,
-                    pauseOnNextToken || shouldPauseBeforeToken?(token) == true
-                {
-                    if !executionFrames.isEmpty && !pauseExecution(at: executionFrames[executionFrames.count - 1]) {
-                        return
-                    }
+        while index < sourceTokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
+            if !executionFrames.isEmpty {
+                executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
+                    procedureName: executionFrames.last?.procedureName,
+                    token: sourceTokens[index],
+                    scopeDepth: variables.scopeDepth
+                )
+            }
+            let tokenObj = sourceTokens[index]
+            if pauseOnNextToken || shouldPauseBeforeToken?(tokenObj) == true {
+                if !executionFrames.isEmpty && !pauseExecution(at: executionFrames[executionFrames.count - 1]) {
+                    return
                 }
             }
-            let token = tokens[index]
+            let token = tokenObj.text
 
             if token == "]" {
                 return
             }
 
-            if isFillerToken(token) && !token.hasPrefix("\"") && !token.hasPrefix(":") && !token.hasPrefix("[") && !token.hasPrefix("(") {
+            if isFillerToken(token) {
                 index += 1
                 continue
             }
+
+            let tokens = sourceTokens.map(\.text)
 
             // Step 1: Built-in Statement Command
             if let prim = parsePrimitive(token),
@@ -279,24 +298,30 @@ public final class LogoEngine: @unchecked Sendable {
     }
 
     private func pauseExecution(at frame: LogoExecutionFrame) -> Bool {
-        debuggerCondition.lock()
-        pauseOnNextToken = false
-        executionState = .paused(frame)
-        debuggerCondition.broadcast()
-        while case .paused = executionState {
-            if let expression = debuggerEvaluationRequest {
-                let tokens = LogoTokenizer.tokenize(expression)
-                var index = 0
-                debuggerEvaluationResult = tokens.isEmpty ? "" : evaluateExpression(tokens, index: &index)
-                debuggerEvaluationRequest = nil
-                debuggerCondition.broadcast()
-                continue
+        #if os(WASI)
+            // WebAssembly runs on a single thread without background event handling;
+            // ignore interactive pause/breakpoints to prevent deadlocking the main event loop.
+            return true
+        #else
+            debuggerCondition.lock()
+            pauseOnNextToken = false
+            executionState = .paused(frame)
+            debuggerCondition.broadcast()
+            while case .paused = executionState {
+                if let expression = debuggerEvaluationRequest {
+                    let tokens = LogoTokenizer.tokenize(expression)
+                    var index = 0
+                    debuggerEvaluationResult = tokens.isEmpty ? "" : evaluateExpression(tokens, index: &index)
+                    debuggerEvaluationRequest = nil
+                    debuggerCondition.broadcast()
+                    continue
+                }
+                debuggerCondition.wait()
             }
-            debuggerCondition.wait()
-        }
-        let shouldContinue = !abortRequested
-        debuggerCondition.unlock()
-        return shouldContinue
+            let shouldContinue = !abortRequested
+            debuggerCondition.unlock()
+            return shouldContinue
+        #endif
     }
 
     private func finishExecution() {

@@ -74,9 +74,11 @@ extension LogoEngine {
     }
 
     public static let standardFillerTokens: Set<String> = ["THEN"]
+    public static let nonFillerPrefixes: [String] = ["\"", ":", "[", "("]
 
     public func isFillerToken(_ token: String) -> Bool {
-        Self.standardFillerTokens.contains(token.uppercased()) || pluginRegistry.isFillerToken(token)
+        guard !Self.nonFillerPrefixes.contains(where: { token.hasPrefix($0) }) else { return false }
+        return Self.standardFillerTokens.contains(token.uppercased()) || pluginRegistry.isFillerToken(token)
     }
 
     public func isKeyword(_ token: String) -> Bool {

@@ -534,6 +534,8 @@ struct EnglishStrings {
         "status.logo_debug_not_paused": "[LOGO Debug] Execution is not paused",
         "status.logo_debug_breakpoint_set": "[LOGO Debug] Breakpoint set at line %d",
         "status.logo_debug_breakpoint_cleared": "[LOGO Debug] Breakpoint cleared at line %d",
+        "status.logo_debug_unsupported_wasi":
+            "[LOGO Debug] Interactive debugger is disabled in WebAssembly single-threaded runtime.",
         "status.logo_debug_usage":
             "[LOGO Debug] Usage: :logo break | breaks | eval [expression] | debug | continue | step | abort",
         "status.logo_debug_result": "[LOGO Debug] %@",

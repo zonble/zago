@@ -704,6 +704,57 @@ public func readPendingText(firstChar: Character) -> String {
    }
    ```
 
+---
+
+## 17. WebAssembly (WASI) Single-Threaded Execution & LOGO Debugger Synchronization Safety
+
+### The Pitfall: `NSCondition.wait()` Deadlock on Single-Threaded Event Loops
+
+On native operating systems (macOS, Linux, Windows), `LogoEngine` executes scripts on a dedicated background `Thread` with an expanded 8MB stack size. The main editor thread communicates with the interpreter thread via `NSCondition` (Monitor pattern):
+- When a breakpoint is hit or step execution is enabled, the worker thread enters `pauseExecution()` and calls `debuggerCondition.wait()`.
+- The main thread continues running the editor event loop, allowing the user to press stepping keys (`F8`), evaluate expressions in the prompt (`:logo eval ...`), or resume execution (`:logo continue`), which signals `debuggerCondition.broadcast()`.
+
+However, on WebAssembly (`wasm32-unknown-wasi` in browsers):
+- **WebAssembly runtime is strictly single-threaded**: The entire editor event loop and `LogoEngine` execute on the main JavaScript execution context.
+- **Calling `NSCondition.wait()` on WASI blocks the entire browser tab / Web Worker synchronously**.
+- Because no secondary thread exists to process user keystrokes or broadcast the condition, calling `wait()` results in an **immediate, unrecoverable deadlock (UI freeze)**.
+
+### Architectural Solution: Conditional WASI Execution & UI Feedback
+
+1. **Synchronous Execution Model on WASI**:
+   In [`LogoEngine.swift`](../../Sources/LogoEngine/Core/LogoEngine.swift), `execute(_:)` runs directly and synchronously without spawning worker threads:
+   ```swift
+   #if os(WASI)
+       abortRequested = false
+       byeFlag = false
+       executionState = .running
+       executeScript(script)
+       executionState = .completed
+   #endif
+   ```
+
+2. **Non-Blocking Breakpoint Pass-Through**:
+   In `LogoEngine.pauseExecution()`, interactive breakpoints and pausing are completely bypassed under `#if os(WASI)` by immediately returning `true`, preventing `debuggerCondition.wait()` from ever blocking the runtime:
+   ```swift
+   private func pauseExecution(at frame: LogoExecutionFrame) -> Bool {
+       #if os(WASI)
+           // WebAssembly runs on a single thread without background event handling;
+           // bypass interactive pause/breakpoints to prevent deadlocking the event loop.
+           return true
+       #else
+           debuggerCondition.lock()
+           // ... interactive wait/broadcast loop ...
+       #endif
+   }
+   ```
+
+3. **User-Facing UI Guard in Command Bar**:
+   In [`LogoOutputCommands.swift`](../../Sources/Editor/Commands/LogoOutputCommands.swift), interactive debugging commands (`:logo break`, `:logo step`, `:logo continue`, `:logo abort`) notify the user directly with a localized warning:
+   ```
+   [LOGO Debug] Interactive debugger is disabled in WebAssembly single-threaded runtime.
+   ```
+   This provides clear discoverability and prevents confusion when running `zago` in WebAssembly environments.
+
 
 
 
