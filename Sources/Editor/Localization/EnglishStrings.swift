@@ -130,11 +130,13 @@ struct EnglishStrings {
 
           3. Arrow Shapes (for LINE and VLINE)
           ----------------------------------------------------------------
-            <   >   Standard / ASCII arrow (← / → / ↑ / ↓)
-            <<  >>  Solid filled arrow (◀ / ▶ / ▲ / ▼)
-            <|  |>  Hollow triangular arrow (◁ / ▷ / △ / ▽)
-            <~  ~>  Stemmed arrow (◄ / ► / ↑ / ↓)
-            <.  .>  Small triangular arrow (◂ / ▸ / ▴ / ▾)
+            <    >    Standard / ASCII arrow (← / → / ↑ / ↓)
+            <<   >>   Solid filled arrow (◀ / ▶ / ▲ / ▼)
+            <|   |>   Hollow triangular arrow (◁ / ▷ / △ / ▽)
+            <~   ~>   Stemmed arrow (◄ / ► / ↑ / ↓)
+            <.   .>   Small triangular arrow (◂ / ▸ / ▴ / ▾)
+            <=|  |=>  Double arrow (⇐ / ⇒ / ⇑ / ⇓)
+            <+|  |+>  Heavy arrow (⬅ / ➡ / ⬆ / ⬇)
 
           4. Command Usage Examples
           ----------------------------------------------------------------
@@ -159,6 +161,8 @@ struct EnglishStrings {
                 LINE 10 "<~+"          10-char heavy line with left stemmed arrow
                 LINE 16 "-->>"         16-char double-dash line with right solid arrow
                 LINE 18 "<|+++|>"      18-char heavy triple-dash with bidirectional hollow arrows
+                LINE 14 "<=|==|=>"     14-char double line with bidirectional double arrows
+                LINE 16 "<+|++|+>"     16-char heavy line with bidirectional heavy arrows
                 VLINE 6 "++|>"         6-line vertical heavy double-dash with downward hollow arrow
                 VLINE 8 "<.---.>"      8-line vertical triple-dash with bidirectional small arrows
         """,
@@ -937,6 +941,8 @@ struct EnglishStrings {
         "menu.borders.arrow_stemmed": "Arrow: Stemmed ↑↓←→",
         "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
         "menu.borders.arrow_small": "Arrow: Small   ▴▾◂▸",
+        "menu.borders.arrow_double": "Arrow: Double  ⇑⇓⇐⇒",
+        "menu.borders.arrow_heavy": "Arrow: Heavy   ⬆⬇⬅➡",
 
         "menu.tools.journal": "Today's Journal",
         "menu.tools.logo": "Command Prompt...\tEsc",

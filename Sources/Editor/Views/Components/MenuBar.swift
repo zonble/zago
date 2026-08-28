@@ -266,6 +266,8 @@ final class MenuBar {
                     arrowStyleItem(.stemmed, titleKey: "menu.borders.arrow_stemmed", hotkeyChar: "2"),
                     arrowStyleItem(.hollow, titleKey: "menu.borders.arrow_hollow", hotkeyChar: "3"),
                     arrowStyleItem(.small, titleKey: "menu.borders.arrow_small", hotkeyChar: "4"),
+                    arrowStyleItem(.double, titleKey: "menu.borders.arrow_double", hotkeyChar: "5"),
+                    arrowStyleItem(.heavy, titleKey: "menu.borders.arrow_heavy", hotkeyChar: "6"),
                 ]),
             MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",

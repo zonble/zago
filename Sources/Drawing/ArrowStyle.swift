@@ -7,6 +7,8 @@ public enum ArrowStyle: String, CaseIterable, Sendable {
     case stemmed = "stemmed"  // ↑ ↓ ← → (Stemmed line arrows)
     case hollow = "hollow"  // △ ▽ ◁ ▷ (Outline triangle arrows)
     case small = "small"  // ▴ ▾ ◂ ▸ (Small triangle pointers)
+    case double = "double"  // ⇑ ⇓ ⇐ ⇒ (Double line arrows)
+    case heavy = "heavy"  // ⬆ ⬇ ⬅ ➡ (Heavy line arrows)
 
     public init?(_ token: String) {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
@@ -21,6 +23,10 @@ public enum ArrowStyle: String, CaseIterable, Sendable {
             self = .hollow
         case "small":
             self = .small
+        case "double":
+            self = .double
+        case "heavy":
+            self = .heavy
         default:
             return nil
         }

@@ -242,6 +242,20 @@ public func arrowHead(
         case .left: "◂"
         case .right: "▸"
         }
+    case .double:
+        switch direction {
+        case .up: "⇑"
+        case .down: "⇓"
+        case .left: "⇐"
+        case .right: "⇒"
+        }
+    case .heavy:
+        switch direction {
+        case .up: "⬆"
+        case .down: "⬇"
+        case .left: "⬅"
+        case .right: "➡"
+        }
     }
 }
 

@@ -27,6 +27,12 @@ public enum StyleDSL {
         case "++++":
             return .heavyQuadrupleDash
         default:
+            if !clean.isEmpty && clean.allSatisfy({ $0 == "=" }) {
+                return .double
+            }
+            if !clean.isEmpty && clean.allSatisfy({ $0 == "-" }) {
+                return .single
+            }
             return nil
         }
     }
@@ -99,6 +105,8 @@ public enum StyleDSL {
         var endArrow: ArrowStyle? = nil
 
         let startPrefixes: [(String, ArrowStyle)] = [
+            ("<=|", .double),
+            ("<+|", .heavy),
             ("<~", .stemmed),
             ("<|", .hollow),
             ("<.", .small),
@@ -115,6 +123,8 @@ public enum StyleDSL {
         }
 
         let endSuffixes: [(String, ArrowStyle)] = [
+            ("|=>", .double),
+            ("|+>", .heavy),
             ("~>", .stemmed),
             ("|>", .hollow),
             (".>", .small),

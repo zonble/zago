@@ -105,6 +105,8 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
 | **Hollow** | `◁` / `△` | `▷` / `▽` | `<\|` | `\|>` | `◁` `▷` | `△` `▽` |
 | **Small** | `◂` / `▴` | `▸` / `▾` | `<.` | `.>` | `◂` `▸` | `▴` `▾` |
+| **Double** | `⇐` / `⇑` | `⇒` / `⇓` | `<=|` | `|=>` | `⇐` `⇒` | `⇑` `⇓` |
+| **Heavy** | `⬅` / `⬆` | `➡` / `⬇` | `<+|` | `|+>` | `⬅` `➡` | `⬆` `⬇` |
 
 ### Common Line DSL Combinations
 
@@ -118,6 +120,8 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | `<~+~>` | `←━━━━→` | `↑` `┃` `┃` `↓` | Heavy line with stemmed arrows |
 | `<\|---\|>` | `◁┄┄┄┄▷` | `△` `┆` `┆` `▽` | Triple-dash line with hollow arrows |
 | `<.++.>` | `◂╍╍╍╍▸` | `▴` `╏` `╏` `▾` | Heavy double-dash line with small arrows |
+| `<=|==|=>` | `⇐════⇒` | `⇑` `║` `║` `⇓` | Double line with double arrows |
+| `<+|++|+>` | `⬅━━━━➡` | `⬆` `┃` `┃` `⬇` | Heavy line with heavy arrows |
 | `<~+\|>` | `←━━━━▷` | `↑` `┃` `┃` `▽` | Asymmetric: stemmed start, hollow end |
 
 ---

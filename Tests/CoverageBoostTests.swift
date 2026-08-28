@@ -25,11 +25,17 @@ import Testing
         #expect(ArrowStyle("stemmed") == .stemmed)
         #expect(ArrowStyle("hollow") == .hollow)
         #expect(ArrowStyle("small") == .small)
+        #expect(ArrowStyle("double") == .double)
+        #expect(ArrowStyle("heavy") == .heavy)
         #expect(ArrowStyle("unknown") == nil)
 
         #expect(ArrowStyle.from("hollow") == .hollow)
+        #expect(ArrowStyle.from("double") == .double)
+        #expect(ArrowStyle.from("heavy") == .heavy)
         #expect(ArrowStyle.from("invalid") == .solid)
         #expect(ArrowStyle.isStyleToken("small") == true)
+        #expect(ArrowStyle.isStyleToken("double") == true)
+        #expect(ArrowStyle.isStyleToken("heavy") == true)
         #expect(ArrowStyle.isStyleToken("bogus") == false)
     }
 

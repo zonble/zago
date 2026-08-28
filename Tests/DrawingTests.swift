@@ -129,6 +129,43 @@ import Testing
         #expect(buffer.getCharacter(line: 3, visualColumn: 0) == "╏")
     }
 
+    @Test func testDoubleAndHeavyArrowsAndDSL() {
+        #expect(arrowHead(for: .right, arrowStyle: .double) == "⇒")
+        #expect(arrowHead(for: .left, arrowStyle: .double) == "⇐")
+        #expect(arrowHead(for: .up, arrowStyle: .double) == "⇑")
+        #expect(arrowHead(for: .down, arrowStyle: .double) == "⇓")
+
+        #expect(arrowHead(for: .right, arrowStyle: .heavy) == "➡")
+        #expect(arrowHead(for: .left, arrowStyle: .heavy) == "⬅")
+        #expect(arrowHead(for: .up, arrowStyle: .heavy) == "⬆")
+        #expect(arrowHead(for: .down, arrowStyle: .heavy) == "⬇")
+
+        let doubleDsl = StyleDSL.parseLineStyle("<=|==|=>")
+        #expect(doubleDsl?.border == .double)
+        #expect(doubleDsl?.arrowMode == .both)
+        #expect(doubleDsl?.startArrowStyle == .double)
+        #expect(doubleDsl?.endArrowStyle == .double)
+
+        let heavyDsl = StyleDSL.parseLineStyle("<+|+|+>")
+        #expect(heavyDsl?.border == .heavy)
+        #expect(heavyDsl?.arrowMode == .both)
+        #expect(heavyDsl?.startArrowStyle == .heavy)
+        #expect(heavyDsl?.endArrowStyle == .heavy)
+
+        let drawer = ArrowDrawer()
+        let dblBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: dblBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .double,
+            arrowStyle: .double)
+        #expect(dblBuffer.lineString(at: 0) == "═══⇒")
+
+        let hvyBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: hvyBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .heavy,
+            arrowStyle: .heavy)
+        #expect(hvyBuffer.lineString(at: 0) == "━━━➡")
+    }
+
     @Test func testTableCellDetectorInDrawingTarget() {
         let lines = [
             "┌───┬───┐",
