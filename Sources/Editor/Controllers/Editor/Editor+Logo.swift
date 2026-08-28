@@ -207,6 +207,7 @@ extension Editor: LogoEngineDelegate {
         currentPromptMode = .logoReadWord(prompt: prompt)
         refreshScreen()
 
+        var resultText: String? = nil
         defer {
             currentPromptMode = .none
             promptInputText = ""
@@ -216,51 +217,17 @@ extension Editor: LogoEngineDelegate {
 
         while true {
             let key = terminal.readKey()
-            switch key {
-            case .enter:
-                return promptInputText
-            case .esc, .ctrl("c"):
+            let cmd = keymapManager.resolve(key: key, in: .prompt)
+            if cmd == .promptConfirm {
+                resultText = promptInputText
+                return resultText
+            }
+            if cmd == .promptCancel {
+                resultText = nil
                 return nil
-            case .backspace:
-                if promptCursorIndex > 0 {
-                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex - 1)
-                    promptInputText.remove(at: idx)
-                    promptCursorIndex -= 1
-                    refreshScreen()
-                }
-            case .delete:
-                if promptCursorIndex < promptInputText.count {
-                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
-                    promptInputText.remove(at: idx)
-                    refreshScreen()
-                }
-            case .arrowLeft:
-                if promptCursorIndex > 0 {
-                    promptCursorIndex -= 1
-                    refreshScreen()
-                }
-            case .arrowRight:
-                if promptCursorIndex < promptInputText.count {
-                    promptCursorIndex += 1
-                    refreshScreen()
-                }
-            case .home, .ctrl("a"):
-                promptCursorIndex = 0
+            }
+            if promptController.handleKey(key) {
                 refreshScreen()
-            case .end, .ctrl("e"):
-                promptCursorIndex = promptInputText.count
-                refreshScreen()
-            case .ctrl("u"):
-                promptInputText = ""
-                promptCursorIndex = 0
-                refreshScreen()
-            case .char(let ch):
-                let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
-                promptInputText.insert(ch, at: idx)
-                promptCursorIndex += 1
-                refreshScreen()
-            default:
-                break
             }
         }
     }

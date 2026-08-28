@@ -12,7 +12,11 @@ final class DescribeCommandDialogView {
     private let language: Language
     private var symbol: String
     private var isInputMode: Bool
-    private var inputText: String = ""
+    private var inputEditor = SingleLineTextEditor()
+    private var inputText: String {
+        get { inputEditor.text }
+        set { inputEditor.text = newValue }
+    }
     private var scrollOffset: Int = 0
     private var cachedLines: [String] = []
     private var cachedBodyHeight: Int = 10
@@ -41,6 +45,7 @@ final class DescribeCommandDialogView {
     func show() {
         scrollOffset = 0
         render()
+        let keymapManager = editor?.keymapManager ?? KeymapManager()
         while true {
             let event = terminal.readInputEvent()
             switch event {
@@ -54,9 +59,15 @@ final class DescribeCommandDialogView {
                 }
 
                 if isInputMode {
-                    switch key {
-                    case .enter:
-                        let trimmed = inputText.trimmingCharacters(in: .whitespaces)
+                    var clip: String? = editor?.clipboardText
+                    let result = inputEditor.handleKey(key, keymapManager: keymapManager, clipboard: &clip)
+                    if let clip, let editor {
+                        editor.clipboardText = clip
+                    }
+
+                    switch result {
+                    case .confirmed(let text):
+                        let trimmed = text.trimmingCharacters(in: .whitespaces)
                         if !trimmed.isEmpty {
                             symbol = trimmed
                             isInputMode = false
@@ -67,23 +78,15 @@ final class DescribeCommandDialogView {
                         } else {
                             return
                         }
-                    case .esc, .ctrl("c"), .ctrl("g"):
+                    case .cancelled:
                         return
-                    case .tab:
+                    case .tabCompleted:
                         handleTabCompletion()
-                    case .backspace:
+                    case .handled:
                         tabCandidates = []
                         tabCandidateIndex = 0
-                        if !inputText.isEmpty {
-                            inputText.removeLast()
-                            render()
-                        }
-                    case .char(let ch):
-                        tabCandidates = []
-                        tabCandidateIndex = 0
-                        inputText.append(ch)
                         render()
-                    default:
+                    case .historyPrev, .historyNext, .unhandled:
                         break
                     }
                 } else {
@@ -157,30 +160,30 @@ final class DescribeCommandDialogView {
         let candidates = allCandidates()
         let query = inputText.trimmingCharacters(in: .whitespaces)
 
-        if tabCandidates.isEmpty {
-            if query.isEmpty {
-                tabCandidates = candidates
-                tabCandidateIndex = 0
-            } else {
-                let queryLower = query.lowercased()
-                tabCandidates = candidates.filter { $0.lowercased().hasPrefix(queryLower) }
-                tabCandidateIndex = 0
-            }
+        if query.isEmpty {
+            tabCandidates = candidates
+            tabCandidateIndex = 0
+        } else {
+            let queryLower = query.lowercased()
+            tabCandidates = candidates.filter { $0.lowercased().hasPrefix(queryLower) }
+            tabCandidateIndex = 0
         }
 
-        guard !tabCandidates.isEmpty else { return }
+        guard !tabCandidates.isEmpty else {
+            render()
+            return
+        }
 
         if tabCandidates.count == 1 {
             inputText = tabCandidates[0]
+            inputEditor.cursorIndex = inputText.count
             tabCandidates = []
             tabCandidateIndex = 0
         } else {
             let commonPrefix = longestCommonPrefix(strings: tabCandidates)
-            if !query.isEmpty && commonPrefix.count > query.count && tabCandidateIndex == 0 {
+            if !query.isEmpty && commonPrefix.count > query.count {
                 inputText = commonPrefix
-            } else {
-                inputText = tabCandidates[tabCandidateIndex % tabCandidates.count]
-                tabCandidateIndex += 1
+                inputEditor.cursorIndex = inputText.count
             }
         }
         render()
@@ -351,7 +354,8 @@ final class DescribeCommandDialogView {
         // Position cursor: at typing position in input mode, or bottom-right corner when displaying details
         if isInputMode {
             let inputRow = startRow + 3
-            let inputCol = startCol + 3 + ("> " + inputText).displayWidth
+            let prefix = "> " + String(inputEditor.text.prefix(inputEditor.cursorIndex))
+            let inputCol = startCol + 3 + prefix.displayWidth
             output += "\u{001B}[\(inputRow);\(inputCol)H"
         } else {
             output += "\u{001B}[\(rows);\(cols)H"

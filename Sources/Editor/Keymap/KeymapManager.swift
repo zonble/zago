@@ -289,6 +289,9 @@ final class KeymapManager {
             register(.editUncut, .ctrl("U"), .ctrl("u"), mode: .prompt)
             register(.moveHome, .ctrl("A"), .ctrl("a"), .home, mode: .prompt)
             register(.moveEnd, .ctrl("E"), .ctrl("e"), .end, mode: .prompt)
+            register(.moveLeft, .ctrl("B"), .ctrl("b"), .arrowLeft, mode: .prompt)
+            register(.moveRight, .ctrl("F"), .ctrl("f"), .arrowRight, mode: .prompt)
+            register(.editDelete, .ctrl("D"), .ctrl("d"), .delete, mode: .prompt)
 
         case .modern:
             register(.promptCancel, .esc, .ctrl("G"), .ctrl("g"), mode: .prompt)
@@ -298,6 +301,9 @@ final class KeymapManager {
             register(.selectAll, .ctrl("A"), .ctrl("a"), mode: .prompt)
             register(.moveHome, .home, mode: .prompt)
             register(.moveEnd, .end, mode: .prompt)
+            register(.moveLeft, .arrowLeft, mode: .prompt)
+            register(.moveRight, .arrowRight, mode: .prompt)
+            register(.editDelete, .delete, mode: .prompt)
         }
     }
 }
