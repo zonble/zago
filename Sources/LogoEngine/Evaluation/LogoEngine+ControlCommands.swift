@@ -457,7 +457,7 @@ extension LogoEngine {
         let condTokens =
             reader.nextBlock()
             ?? reader.tokensUntil { token in
-                token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
+                token == "[" || token.isQuotedLogoWord || token == "]" || token == ")"
                     || self.isStatementCommand(token)
             }
 
@@ -466,7 +466,7 @@ extension LogoEngine {
 
         if let msgBlock = reader.nextBlock() {
             customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
-        } else if let token = reader.peekToken(), isQuotedWordToken(token) || token.hasPrefix(":") {
+        } else if let token = reader.peekToken(), token.isQuotedLogoWord || token.hasPrefix(":") {
             let msgTokens = reader.tokensUntil {
                 self.isStatementCommand($0) || $0 == "]" || $0 == ")"
             }

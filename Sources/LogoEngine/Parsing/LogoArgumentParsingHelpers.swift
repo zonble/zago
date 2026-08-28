@@ -1,43 +1,12 @@
 import Foundation
 
 extension LogoEngine {
-    /// Removes surrounding quotes from string literal tokens if present.
-    internal func unquote(_ str: String) -> String {
-        var result = str
-        if result.hasPrefix("\"") {
-            result.removeFirst()
-        }
-        if result.hasSuffix("\"") {
-            result.removeLast()
-        }
-        if result.hasPrefix("|"), result.hasSuffix("|"), result.count >= 2 {
-            result.removeFirst()
-            result.removeLast()
-            result = result.replacingOccurrences(of: "\\|", with: "|").replacingOccurrences(of: "\\\\", with: "\\")
-        }
-        return result
-    }
-
-    internal func isQuotedWordToken(_ token: String) -> Bool {
-        token.hasPrefix("\"")
-    }
-
-    internal func intValue(fromExpressionResult value: String) -> Int? {
-        if let intValue = Int(value) {
-            return intValue
-        }
-        if let doubleValue = Double(value) {
-            return Int(doubleValue)
-        }
-        return nil
-    }
-
     internal func isIntExpressionArgumentStart(_ token: String) -> Bool {
-        let unquoted = unquote(token)
+        let unquoted = token.unquotedLogoWord
         if BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil || BoxExitPosition(unquoted) != nil {
             return false
         }
-        guard !isQuotedWordToken(token) else { return false }
+        guard !token.isQuotedLogoWord else { return false }
         if token == "(" { return true }
         if Double(token) != nil { return true }
         if token.hasPrefix(":") || token.hasPrefix("?") || token == "#" { return true }
@@ -62,7 +31,7 @@ extension LogoEngine {
 
         var expressionIndex = index
         let value = evaluateExpression(tokens, index: &expressionIndex)
-        guard expressionIndex >= originalIndex, let intValue = intValue(fromExpressionResult: value) else {
+        guard expressionIndex >= originalIndex, let intValue = value.logoIntValue else {
             index = originalIndex
             return nil
         }

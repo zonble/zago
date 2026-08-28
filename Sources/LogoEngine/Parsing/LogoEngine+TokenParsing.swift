@@ -73,6 +73,16 @@ extension LogoEngine {
         pluginRegistry.parseExitPosition(token) ?? BoxExitPosition(token)
     }
 
+    @inline(__always)
+    internal func unquote(_ str: String) -> String {
+        str.unquotedLogoWord
+    }
+
+    @inline(__always)
+    internal func isQuotedWordToken(_ str: String) -> Bool {
+        str.isQuotedLogoWord
+    }
+
     public static let standardFillerTokens: Set<String> = ["THEN"]
     public static let nonFillerPrefixes: [String] = ["\"", ":", "[", "("]
 
