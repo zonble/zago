@@ -32,6 +32,9 @@ extension LogoEngine {
     internal func evaluateExpressionPrimitive(_ tokens: [String], index: inout Int) -> String? {
         guard index < tokens.count, let primitive = parsePrimitive(tokens[index]) else { return nil }
 
+        // Note: Evaluated sequentially with explicit early-fallback checks rather than deeply chained `??`
+        // to prevent swift-wasm / WebAssembly compiler type-checking timeouts in constrained CI environments.
+        // See docs/architecture/cross_platform.md §18.
         var result: String? = evaluateDataStructurePrimitives(tokens, index: &index)
         if result == nil { result = evaluateMathPrimitives(tokens, index: &index) }
         if result == nil { result = evaluateBufferPrimitives(tokens, index: &index) }
