@@ -625,8 +625,8 @@ import TextMetrics
     editor.runLogoScript("FILL \"x")
 
     #expect(editor.buffer.lines == ["axxxef", "1xxx56", "uvwxyz"])
-    #expect(editor.buffer.canvasBlockMark == nil)
-    #expect(editor.buffer.canvasBlockMarkEnd == nil)
+    #expect(editor.buffer.canvasBlockMark != nil)
+    #expect(editor.buffer.canvasBlockMarkEnd != nil)
     #expect(editor.buffer.lineIndex == 1)
     #expect(editor.canvasVisualColumn == 3)
 }

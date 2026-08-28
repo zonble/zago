@@ -492,5 +492,20 @@ struct RendererChromeTests {
             dropdownBoxLines: []
         )
         #expect(renderedPrompt.contains(ANSIStyle.inactiveCursor))
+
+        // 3. In canvas mode with prompt: inactive cursor highlight rendered at canvas visual cursor
+        editor.switchToCanvasMode()
+        editor.canvasVisualColumn = 5
+        let renderedCanvasPrompt = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: virtualLines,
+            cols: 20,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(renderedCanvasPrompt.contains(ANSIStyle.inactiveCursor))
     }
 }

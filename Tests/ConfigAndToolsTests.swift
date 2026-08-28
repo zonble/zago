@@ -550,6 +550,20 @@ struct ConfigAndToolsTests {
         #expect(editor.buffer.lines[3] == "│...│")
     }
 
+    @Test func testCanvasBlockMarkPreservedAfterFill() throws {
+        let editor = Editor()
+        editor.switchToCanvasMode()
+        editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+        editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 4)
+
+        _ = editor.fillCanvasBlock(with: "*")
+        #expect(editor.buffer.canvasBlockMark != nil)
+        #expect(editor.buffer.canvasBlockMarkEnd != nil)
+        #expect(editor.buffer.lines[0] == "*****")
+        #expect(editor.buffer.lines[1] == "*****")
+        #expect(editor.buffer.lines[2] == "*****")
+    }
+
     @Test func testShapeTableMenuPromptsForDimensions() throws {
         let editor = Editor()
 

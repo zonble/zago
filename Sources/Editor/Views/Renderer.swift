@@ -240,14 +240,19 @@ final class Renderer {
 
         let inactiveCursorVLineIdx: Int?
         let inactiveCursorVColIdx: Int?
-        if isPromptActive && !editor.isCanvasModeActive {
-            let (vLine, vCol) = editor.layoutEngine.getVirtualCursor(
-                lineIndex: editor.buffer.lineIndex,
-                columnIndex: editor.buffer.columnIndex,
-                virtualLines: virtualLines
-            )
-            inactiveCursorVLineIdx = vLine
-            inactiveCursorVColIdx = vCol
+        if isPromptActive {
+            if editor.isCanvasModeActive {
+                inactiveCursorVLineIdx = editor.buffer.lineIndex
+                inactiveCursorVColIdx = editor.canvasVisualColumn
+            } else {
+                let (vLine, vCol) = editor.layoutEngine.getVirtualCursor(
+                    lineIndex: editor.buffer.lineIndex,
+                    columnIndex: editor.buffer.columnIndex,
+                    virtualLines: virtualLines
+                )
+                inactiveCursorVLineIdx = vLine
+                inactiveCursorVColIdx = vCol
+            }
         } else {
             inactiveCursorVLineIdx = nil
             inactiveCursorVColIdx = nil

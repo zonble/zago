@@ -545,7 +545,6 @@ extension Editor {
             line = line.insertingAtVisualColumn(rect.leftColumn, text: replacement)
             buffer.lines[lineIndex] = line.trimmingTrailingSpaces()
         }
-        clearActiveMark()
         buffer.isModified = true
         reportOperationResult(.succeeded(message: l10n["status.filled_block"]))
         syncCanvasCursorToBuffer()
