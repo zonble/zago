@@ -262,12 +262,16 @@ final class MenuBar {
                             editor.isBorderRounded.toggle()
                         },
                         isChecked: { $0.isBorderRounded }),
-                    arrowStyleItem(.solid, titleKey: "menu.borders.arrow_solid", hotkeyChar: "1"),
-                    arrowStyleItem(.stemmed, titleKey: "menu.borders.arrow_stemmed", hotkeyChar: "2"),
-                    arrowStyleItem(.hollow, titleKey: "menu.borders.arrow_hollow", hotkeyChar: "3"),
-                    arrowStyleItem(.small, titleKey: "menu.borders.arrow_small", hotkeyChar: "4"),
-                    arrowStyleItem(.double, titleKey: "menu.borders.arrow_double", hotkeyChar: "5"),
-                    arrowStyleItem(.heavy, titleKey: "menu.borders.arrow_heavy", hotkeyChar: "6"),
+                ]),
+            MenuCategory(
+                titleKey: "menu.arrows", hotkeyChar: "a",
+                items: [
+                    arrowStyleItem(.solid, titleKey: "menu.arrows.solid", hotkeyChar: "1"),
+                    arrowStyleItem(.stemmed, titleKey: "menu.arrows.stemmed", hotkeyChar: "2"),
+                    arrowStyleItem(.hollow, titleKey: "menu.arrows.hollow", hotkeyChar: "3"),
+                    arrowStyleItem(.small, titleKey: "menu.arrows.small", hotkeyChar: "4"),
+                    arrowStyleItem(.double, titleKey: "menu.arrows.double", hotkeyChar: "5"),
+                    arrowStyleItem(.heavy, titleKey: "menu.arrows.heavy", hotkeyChar: "6"),
                 ]),
             MenuCategory(
                 titleKey: "menu.tools", hotkeyChar: "t",
