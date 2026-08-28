@@ -220,7 +220,7 @@ struct RendererChromeTests {
         #expect(shortcuts != nil)
         #expect(shortcuts?.count == 3)
 
-        controller.reset()
+        controller.dismissPrompt()
         #expect(controller.isActive == false)
         #expect(controller.inputText.isEmpty)
         #expect(controller.cursorIndex == 0)
