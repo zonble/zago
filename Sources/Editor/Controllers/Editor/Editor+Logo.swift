@@ -1,6 +1,7 @@
 import Diagram
 import Foundation
 import LogoEngine
+import Syntax
 
 extension Editor: LogoEngineDelegate {
     public func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {
@@ -625,10 +626,10 @@ extension Editor {
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             startLine = start.line
         }
-        // Priority 2: Markdown ```logo ... ``` code fence
-        else if let fence = extractMarkdownLogoFence() {
-            script = fence.script
-            startLine = fence.startLine
+        // Priority 2: Embedded markup code block (Markdown ```logo / ~~~logo or Org-mode #+BEGIN_SRC logo ... #+END_SRC)
+        else if let block = extractEmbeddedLogoBlock() {
+            script = block.script
+            startLine = block.startLine
         }
         // Priority 3: Current line or multi-line block (balanced [ ... ] or TO ... END)
         else {
@@ -654,38 +655,11 @@ extension Editor {
         )
     }
 
-    private func extractMarkdownLogoFence() -> (script: String, startLine: Int)? {
-        let currentLine = buffer.lineIndex
-        var fenceStart: Int? = nil
-
-        // Scan upwards to find ```logo
-        for r in (0...currentLine).reversed() {
-            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
-            if line.lowercased().hasPrefix("```logo") {
-                fenceStart = r
-                break
-            }
-            if line.hasPrefix("```") && r < currentLine && r != currentLine - 1 {
-                break
-            }
+    private func extractEmbeddedLogoBlock() -> (script: String, startLine: Int)? {
+        guard let res = EmbeddedCodeBlockExtractor.extractBlock(targetLanguage: "logo", in: buffer.lines, lineIndex: buffer.lineIndex) else {
+            return nil
         }
-
-        guard let start = fenceStart else { return nil }
-
-        // Scan downwards to find closing ```
-        var fenceEnd: Int? = nil
-        for r in (start + 1)..<buffer.lines.count {
-            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
-            if line.hasPrefix("```") {
-                fenceEnd = r
-                break
-            }
-        }
-
-        guard let end = fenceEnd, currentLine >= start && currentLine <= end + 1 else { return nil }
-        guard start + 1 < end else { return ("", start + 1) }
-
-        return (buffer.lines[(start + 1)..<end].joined(separator: "\n"), start + 1)
+        return (script: res.script, startLine: res.startLine)
     }
 
     private func extractCurrentLineOrBlock() -> (script: String, startLine: Int) {

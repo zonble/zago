@@ -482,6 +482,55 @@ import Testing
         #expect(editor.logoEngine.variables["e"] == "10")
     }
 
+    @Test func testEvalLogoInOrgModeSourceBlocks() {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "* Org Mode Heading",
+            "MAKE \"a 1",
+            "#+BEGIN_SRC logo",
+            "MAKE \"org_b 20",
+            "MAKE \"org_c 30",
+            "#+END_SRC",
+            "MAKE \"d 4",
+        ]
+
+        // 1. Cursor on #+BEGIN_SRC logo (line 2) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 2
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 2. Cursor inside Org block (line 3) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 3
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 3. Cursor on #+END_SRC (line 5) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 5
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 4. Cursor on line right below #+END_SRC (line 6) -> Org block evaluated
+        editor.buffer.lineIndex = 6
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+    }
+
     @Test func testEvalLogoDoesNotBleedAcrossSingleLineProcedures() {
         let editor = Editor()
         editor.buffer.lines = [
