@@ -438,13 +438,12 @@ struct NumericGotoCommand: Command {
     let id: CommandID = .cursorGotoLine
     let name = "Goto Line"
     let description = "Jump to line or line/column"
-    let commandBarAliases: [String] = ["goto"]
+    let commandBarAliases: [String] = []
 
     init() {}
 
     func match(_ input: CommandBarInput) -> Bool {
-        input.text.range(of: #"^-?\d+([:,]-?\d+)?$|^:-?\d+$"#, options: .regularExpression) != nil
-            || input.lowerFirstToken == "goto"
+        input.text.range(of: #"^-?\d+([:,]-?\d+)?$|^:-?\d+([:,]-?\d+)?$"#, options: .regularExpression) != nil
     }
 
     @discardableResult
@@ -455,14 +454,7 @@ struct NumericGotoCommand: Command {
 
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
-        let locationText: String
-        if input.lowerFirstToken == "goto" {
-            locationText = input.rest
-        } else if input.text.hasPrefix(":") {
-            locationText = String(input.text.dropFirst())
-        } else {
-            locationText = input.text
-        }
+        let locationText = input.text.hasPrefix(":") ? String(input.text.dropFirst()) : input.text
         let parts = locationText.split(whereSeparator: { $0.isWhitespace || $0 == ":" || $0 == "," }).map(String.init)
         guard let first = parts.first, let line = Int(first), line > 0 else {
             return .succeeded(message: editor.l10n["status.invalid_line"])

@@ -17,6 +17,16 @@ import TextMetrics
     #expect(editor.buffer.lines[3] == "└──┘")
 }
 
+@Test func testGotoCanExceedCurrentLineCountAndExpandBuffer() throws {
+    let editor = Editor()
+    let logoEngine = LogoEngine(delegate: editor)
+
+    logoEngine.execute("GOTO 10 5 BOX \"hi\"")
+    #expect(editor.buffer.lines.count >= 12)
+    #expect(editor.buffer.lineIndex >= 9)
+    #expect(editor.buffer.lines[10].contains("hi"))
+}
+
 @Test func testTurtleLeftTurnAndBackward() throws {
     let editor = Editor()
     let logoEngine = LogoEngine(delegate: editor)
@@ -692,7 +702,7 @@ import TextMetrics
     let logoEngine2 = LogoEngine(delegate: editor2)
     logoEngine2.execute("FOREACH [\"double \"round] [ GOTO ( ( # - 1 ) * 4 + 1 ) 1 BOX 6 3 \"A\" ? ]")
     #expect(editor2.buffer.lines[0] == "╔════╗")
-    #expect(editor2.buffer.lines[4] == "╰────╯")
+    #expect(editor2.buffer.lines[4] == "╭────╮")
 }
 
 @Test func testTableAndFillEvaluateTemplateAndVariableArguments() throws {

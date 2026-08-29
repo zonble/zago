@@ -16,6 +16,7 @@ const VFS_PREFIX = "zago_vfs:";
 import welcomeEn from "./templates/welcome.en.md?raw";
 import welcomeZhTw from "./templates/welcome.zh-TW.md?raw";
 import demoLogo from "./templates/demo.logo?raw";
+import architectureLogo from "./templates/architecture.logo?raw";
 import exampleDiagram from "./templates/diagram.txt?raw";
 import game2048Logo from "./templates/game_2048.logo?raw";
 
@@ -49,12 +50,20 @@ export class VirtualOSStorage {
           size: welcomeZhTw.length,
         },
         {
-          path: "/workspace/demo.logo",
+          path: "/workspace/examples/demo.logo",
           name: "demo.logo",
           isDirectory: false,
           content: encoder.encode(demoLogo),
           mtime: now,
           size: demoLogo.length,
+        },
+        {
+          path: "/workspace/examples/architecture.logo",
+          name: "architecture.logo",
+          isDirectory: false,
+          content: encoder.encode(architectureLogo),
+          mtime: now,
+          size: architectureLogo.length,
         },
         {
           path: "/workspace/examples/diagram.txt",
@@ -81,18 +90,23 @@ export class VirtualOSStorage {
 
     // Add newly shipped examples to existing workspaces without overwriting
     // files the user may already have edited or removed intentionally.
-    const gamePath = "/workspace/examples/game_2048.logo";
-    if (!(await get<VFSNode>(VFS_PREFIX + gamePath))) {
-      const encoder = new TextEncoder();
-      const now = Date.now();
-      await set(VFS_PREFIX + gamePath, {
-        path: gamePath,
-        name: "game_2048.logo",
-        isDirectory: false,
-        content: encoder.encode(game2048Logo),
-        mtime: now,
-        size: game2048Logo.length,
-      } satisfies VFSNode);
+    const newExamples = [
+      { path: "/workspace/examples/game_2048.logo", name: "game_2048.logo", content: game2048Logo },
+      { path: "/workspace/examples/architecture.logo", name: "architecture.logo", content: architectureLogo },
+    ];
+    for (const ex of newExamples) {
+      if (!(await get<VFSNode>(VFS_PREFIX + ex.path))) {
+        const encoder = new TextEncoder();
+        const now = Date.now();
+        await set(VFS_PREFIX + ex.path, {
+          path: ex.path,
+          name: ex.name,
+          isDirectory: false,
+          content: encoder.encode(ex.content),
+          mtime: now,
+          size: ex.content.length,
+        } satisfies VFSNode);
+      }
     }
   }
 
@@ -127,7 +141,10 @@ export class VirtualOSStorage {
       const keyString = String(key);
       if (!keyString.startsWith(VFS_PREFIX)) continue;
       const nodePath = keyString.slice(VFS_PREFIX.length);
-      if ((nodePath === "/workspace" || nodePath.startsWith("/workspace/")) && !nextPaths.has(nodePath)) {
+      if (
+        (nodePath === "/workspace" || nodePath.startsWith("/workspace/")) &&
+        !nextPaths.has(nodePath)
+      ) {
         await del(key);
       }
     }
@@ -159,7 +176,10 @@ export class VirtualOSStorage {
   static async clearAll(): Promise<void> {
     const allKeys = await keys();
     for (const key of allKeys) {
-      if (String(key).startsWith(VFS_PREFIX) || String(key).startsWith("zago_file:")) {
+      if (
+        String(key).startsWith(VFS_PREFIX) ||
+        String(key).startsWith("zago_file:")
+      ) {
         await del(key);
       }
     }
@@ -193,7 +213,9 @@ export class VirtualOSStorage {
   /**
    * Imports a ZIP archive into `/workspace`.
    */
-  static async importWorkspaceZip(zipData: ArrayBuffer | Blob): Promise<number> {
+  static async importWorkspaceZip(
+    zipData: ArrayBuffer | Blob,
+  ): Promise<number> {
     const zip = await JSZip.loadAsync(zipData);
     const now = Date.now();
     let fileCount = 0;
@@ -203,7 +225,10 @@ export class VirtualOSStorage {
 
       const normRelPath = normalizeWorkspaceRelativePath(relPath);
       if (!normRelPath) continue;
-      if (normRelPath.startsWith("__MACOSX") || normRelPath.includes(".DS_Store")) {
+      if (
+        normRelPath.startsWith("__MACOSX") ||
+        normRelPath.includes(".DS_Store")
+      ) {
         continue;
       }
 
@@ -230,13 +255,17 @@ export class VirtualOSStorage {
   /**
    * Imports a single file into `/workspace`.
    */
-  static async importSingleFile(name: string, content: string | Uint8Array): Promise<void> {
+  static async importSingleFile(
+    name: string,
+    content: string | Uint8Array,
+  ): Promise<void> {
     const normName = normalizeWorkspaceRelativePath(name);
     if (!normName) {
       throw new Error("Invalid file name");
     }
 
-    const bytes = typeof content === "string" ? new TextEncoder().encode(content) : content;
+    const bytes =
+      typeof content === "string" ? new TextEncoder().encode(content) : content;
     const fullPath = `/workspace/${normName}`;
     const node: VFSNode = {
       path: fullPath,
@@ -260,7 +289,8 @@ export function isBinaryData(rawBytes: Uint8Array): boolean {
 
   const hasUTF16BOM =
     prefix.length >= 2 &&
-    ((prefix[0] === 0xfe && prefix[1] === 0xff) || (prefix[0] === 0xff && prefix[1] === 0xfe));
+    ((prefix[0] === 0xfe && prefix[1] === 0xff) ||
+      (prefix[0] === 0xff && prefix[1] === 0xfe));
 
   if (!hasUTF16BOM) {
     for (let i = 0; i < prefix.length; i++) {
@@ -274,7 +304,10 @@ export function isBinaryData(rawBytes: Uint8Array): boolean {
   let checkBuffer = prefix;
   while (checkBuffer.length > 0) {
     try {
-      const safeBuffer = checkBuffer.buffer instanceof ArrayBuffer ? checkBuffer : new Uint8Array(checkBuffer);
+      const safeBuffer =
+        checkBuffer.buffer instanceof ArrayBuffer
+          ? checkBuffer
+          : new Uint8Array(checkBuffer);
       new TextDecoder("utf-8", { fatal: true }).decode(safeBuffer);
       return false;
     } catch {
@@ -296,15 +329,15 @@ export function isBinaryData(rawBytes: Uint8Array): boolean {
  */
 export function resolveAvailableFilename(
   desiredName: string,
-  existingPathsOrNames: Iterable<string>
+  existingPathsOrNames: Iterable<string>,
 ): string {
   const existingNames = new Set<string>();
   for (const item of existingPathsOrNames) {
     const name = item.startsWith("/workspace/")
       ? item.slice("/workspace/".length)
       : item.startsWith("/")
-      ? item.slice(1)
-      : item;
+        ? item.slice(1)
+        : item;
     existingNames.add(name.toLowerCase());
   }
 
@@ -344,7 +377,10 @@ export function buildInodeTree(nodes: VFSNode[]): Map<string, Inode> {
   const rootContents = new Map<string, Inode>();
 
   // Helper to ensure directory path exists in Inode hierarchy
-  function getOrCreateDirMap(parentMap: Map<string, Inode>, dirName: string): Map<string, Inode> {
+  function getOrCreateDirMap(
+    parentMap: Map<string, Inode>,
+    dirName: string,
+  ): Map<string, Inode> {
     let entry = parentMap.get(dirName);
     if (!entry || !(entry instanceof Directory)) {
       const newContents = new Map<string, Inode>();
@@ -388,7 +424,7 @@ export function buildInodeTree(nodes: VFSNode[]): Map<string, Inode> {
 export function dumpInodeTree(
   currentMap: Map<string, Inode>,
   basePath: string = "/workspace",
-  now: number = Date.now()
+  now: number = Date.now(),
 ): VFSNode[] {
   const results: VFSNode[] = [];
 
@@ -403,7 +439,11 @@ export function dumpInodeTree(
         mtime: now,
         size: 0,
       });
-      const subNodes = dumpInodeTree(inode.contents as Map<string, Inode>, fullPath, now);
+      const subNodes = dumpInodeTree(
+        inode.contents as Map<string, Inode>,
+        fullPath,
+        now,
+      );
       results.push(...subNodes);
     } else if (inode instanceof File) {
       results.push({
