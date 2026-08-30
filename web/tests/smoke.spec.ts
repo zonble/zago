@@ -225,9 +225,9 @@ test.describe("web editor smoke tests", () => {
     // Verify regular files are NOT treated as directories (do NOT have ▸ or trailing /)
     const termText = await getTerminalText(page);
     expect(termText).not.toContain("▸ welcome.en.md/");
-    expect(termText).not.toContain("▸ demo.logo/");
+    expect(termText).not.toContain("▸ welcome.zh-TW.md/");
     expect(termText).toContain("welcome.en.md");
-    expect(termText).toContain("demo.logo");
+    expect(termText).toContain("welcome.zh-TW.md");
 
     // In DirectoryBuffer:
     // line 0: Directory: /workspace
@@ -235,18 +235,18 @@ test.describe("web editor smoke tests", () => {
     // line 2: (empty)
     // line 3: .. (up a dir)
     // line 4: ▸ examples/ (directories first)
-    // line 5: demo.logo
-    // line 6: welcome.en.md
+    // line 5: welcome.en.md
+    // line 6: welcome.zh-TW.md
     // Cursor starts at line 3 (".. (up a dir)")
-    // Move down past 'examples/' to 'demo.logo' (ArrowDown x 2)
+    // Move down past 'examples/' to 'welcome.en.md' (ArrowDown x 2)
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
 
-    // Verify demo.logo is opened and its content is rendered
+    // Verify welcome.en.md is opened and its content is rendered
     await expect
       .poll(() => getTerminalText(page), { timeout: 10_000 })
-      .toContain("logo");
+      .toContain("Interactive Tutorial");
     await expect
       .poll(() => getTerminalText(page), { timeout: 10_000 })
       .not.toContain("Error opening file");

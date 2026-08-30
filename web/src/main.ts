@@ -418,39 +418,62 @@ async function main() {
   }
 
   // Drag and drop text files into terminal container to edit in VFS
-  container.addEventListener("dragenter", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    container.classList.add("drag-over");
-  });
+  container.addEventListener(
+    "dragenter",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      container.classList.add("drag-over");
+    },
+    true,
+  );
 
-  container.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer) {
-      e.dataTransfer.dropEffect = "copy";
-    }
-    container.classList.add("drag-over");
-  });
+  container.addEventListener(
+    "dragover",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "copy";
+      }
+      container.classList.add("drag-over");
+    },
+    true,
+  );
 
-  container.addEventListener("dragleave", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!container.contains(e.relatedTarget as Node)) {
+  container.addEventListener(
+    "dragleave",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (!container.contains(e.relatedTarget as Node)) {
+        container.classList.remove("drag-over");
+      }
+    },
+    true,
+  );
+
+  container.addEventListener(
+    "dragend",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       container.classList.remove("drag-over");
-    }
-  });
+    },
+    true,
+  );
 
-  container.addEventListener("dragend", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    container.classList.remove("drag-over");
-  });
-
-  container.addEventListener("drop", async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    container.classList.remove("drag-over");
+  container.addEventListener(
+    "drop",
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      container.classList.remove("drag-over");
 
     const droppedFiles = e.dataTransfer?.files;
     if (!droppedFiles || droppedFiles.length === 0) return;
@@ -498,7 +521,7 @@ async function main() {
         await launchEditor(importedPaths);
       }
     }
-  });
+  }, true);
 
   // Keyboard input handler
   term.onData((inputData) => {
