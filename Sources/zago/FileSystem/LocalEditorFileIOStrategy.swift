@@ -138,11 +138,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
         #if os(Windows)
             // On Windows, virtual/cloud file systems (e.g. Google Drive, OneDrive) and locked directories
             // fail when using atomic file replacement. Write directly to the destination file.
-            do {
-                try data.write(to: URL(fileURLWithPath: normalized), options: [])
-            } catch {
-                try data.write(to: URL(fileURLWithPath: normalized), options: [])
-            }
+            try data.write(to: URL(fileURLWithPath: normalized), options: [])
         #else
             do {
                 try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
