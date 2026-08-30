@@ -130,11 +130,11 @@ struct EnglishStrings {
 
           3. Arrow Shapes (for LINE and VLINE)
           ----------------------------------------------------------------
-            <    >    Standard / ASCII arrow (← / → / ↑ / ↓)
+            <    >    Standard / ASCII arrow (< / > / ^ / v)
             <<   >>   Solid filled arrow (◀ / ▶ / ▲ / ▼)
             <|   |>   Hollow triangular arrow (◁ / ▷ / △ / ▽)
             <.   .>   Small triangular arrow (◂ / ▸ / ▴ / ▾)
-            <~   ~>   Stemmed arrow (◄ / ► / ↑ / ↓)
+            <~   ~>   Stemmed arrow (← / → / ↑ / ↓)
             <+|  |+>  Heavy arrow (⬅ / ➡ / ⬆ / ⬇)
             <=|  |=>  Double arrow (⇐ / ⇒ / ⇑ / ⇓)
             <*>  <*>  Solid diamond (◆)
