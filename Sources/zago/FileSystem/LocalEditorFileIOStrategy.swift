@@ -253,26 +253,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             return true
         }
 
-        // NOTE (Cross-Platform Pitfall & UTF-8 Truncation):
-        // When checking a file prefix (e.g. 8192 bytes), a 3-byte CJK or 4-byte CJK Extension (CJK Ext-B~I) / Emoji UTF-8 character
-        // may be sliced in half at byte 8192. String(data:encoding:.utf8) fails on incomplete
-        // trailing UTF-8 sequences and returns nil, which would falsely mark valid UTF-8 text
-        // files as binary. We iteratively trim trailing non-ASCII bytes (0x80+) cut off at the
-        // 8192-byte boundary (up to 3 trailing bytes for 4-byte UTF-8 sequences) until valid UTF-8
-        // decoding succeeds or all boundary bytes are checked.
-        var checkBuffer = data
-        while !checkBuffer.isEmpty {
-            if String(data: checkBuffer, encoding: .utf8) != nil {
-                return false
-            }
-            let last = checkBuffer.last!
-            if (last & 0x80) != 0 {
-                checkBuffer.removeLast()
-            } else {
-                break
-            }
-        }
-
+        // Delegate multi-encoding detection with sample boundary truncation trimming (1..3 bytes) to TextEncodingDetector
         return TextEncodingDetector.detectAndDecode(data) == nil
     }
 }

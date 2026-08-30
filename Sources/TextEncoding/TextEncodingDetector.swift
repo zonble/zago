@@ -26,8 +26,8 @@ public enum TextEncodingDetector {
         }
 
         // 2. Strict UTF-8 validation (without BOM)
-        if let utf8String = String(data: data, encoding: .utf8) {
-            return TextReadResult(content: utf8String, encoding: .utf8)
+        if let utf8Result = tryDecode(data, encoding: .utf8) {
+            return utf8Result
         }
 
         #if !os(WASI)
@@ -42,8 +42,8 @@ public enum TextEncodingDetector {
         ]
 
         for encoding in candidateEncodings {
-            if let decoded = String(data: data, encoding: encoding) {
-                return TextReadResult(content: decoded, encoding: encoding)
+            if let decodedResult = tryDecode(data, encoding: encoding) {
+                return decodedResult
             }
         }
 
@@ -60,6 +60,22 @@ public enum TextEncodingDetector {
         // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
         return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
         #endif
+    }
+
+    private static func tryDecode(_ data: Data, encoding: String.Encoding) -> TextReadResult? {
+        if let decoded = String(data: data, encoding: encoding) {
+            return TextReadResult(content: decoded, encoding: encoding)
+        }
+        // If data is truncated at a sample boundary (e.g. 8192 bytes), try trimming 1..3 trailing bytes
+        if data.count >= 4 {
+            for trim in 1...3 {
+                let trimmedData = data.dropLast(trim)
+                if let decoded = String(data: trimmedData, encoding: encoding) {
+                    return TextReadResult(content: decoded, encoding: encoding)
+                }
+            }
+        }
+        return nil
     }
 
     private static func detectBOM(_ data: Data) -> TextReadResult? {

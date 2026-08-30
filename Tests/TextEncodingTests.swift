@@ -175,3 +175,28 @@ import Testing
     let readResult = try fileIO.readTextFile(at: tmpPath)
     #expect(readResult.encoding == .utf8)
 }
+
+@Test func testBig5CutOffAt8192ByteBoundaryIsNotDetectedAsBinary() throws {
+    let text = String(repeating: "繁體中文測試Big5雙位元組字元切半測試。", count: 400)
+    guard let big5Data = text.data(using: .big5) else {
+        Issue.record("Failed to create Big5 test data")
+        return
+    }
+    #expect(big5Data.count > 8192)
+
+    let fileIO = TestLocalEditorFileIOStrategy.shared
+    let tmpPath = fileIO.normalizePath(
+        FileManager.default.temporaryDirectory.appendingPathComponent("test_big5_boundary_\(UUID().uuidString).txt").path,
+        isDirectory: false
+    )
+    defer { try? FileManager.default.removeItem(atPath: tmpPath) }
+
+    try big5Data.write(to: URL(fileURLWithPath: tmpPath))
+
+    let info = fileIO.fileInfo(at: tmpPath)
+    #expect(info.exists == true)
+    #expect(info.isBinary == false)
+
+    let readResult = try fileIO.readTextFile(at: tmpPath)
+    #expect(readResult.encoding == .big5)
+}
