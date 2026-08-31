@@ -19,13 +19,22 @@ final class MemoryEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendabl
     }
 
     func normalizePath(_ path: String, isDirectory: Bool) -> String {
-        if path == "~" {
-            return homeDirectoryPath()
+        var clean = path.replacingOccurrences(of: "\\", with: "/")
+        if clean == "~" {
+            clean = homeDirectoryPath()
+        } else if clean.hasPrefix("~/") {
+            clean = homeDirectoryPath() + "/" + String(clean.dropFirst(2))
+        } else if clean == "." {
+            clean = currentDirectoryPath()
+        } else if clean.hasPrefix("./") {
+            clean = currentDirectoryPath() + "/" + String(clean.dropFirst(2))
+        } else if !clean.hasPrefix("/") {
+            clean = currentDirectoryPath() + "/" + clean
         }
-        if path.hasPrefix("~/") {
-            return homeDirectoryPath() + "/" + String(path.dropFirst(2))
+        while clean.count > 1 && clean.hasSuffix("/") {
+            clean.removeLast()
         }
-        return path.replacingOccurrences(of: "\\", with: "/")
+        return clean
     }
 
     func homeDirectoryPath() -> String {

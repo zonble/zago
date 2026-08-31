@@ -156,6 +156,18 @@ extension PromptController {
             cancel()
             return true
 
+        case .promptComplete:
+            switch mode {
+            case .saveFilePath, .insertFilePath, .openFilePath:
+                _ = completeFilePathPrompt()
+                return true
+            case .logoMacro:
+                _ = completeCommandBarPrompt()
+                return true
+            default:
+                return true
+            }
+
         case .fileExit:
             if isTextEditingPromptMode {
                 dismissPrompt()
@@ -397,6 +409,17 @@ extension PromptController {
             return
         }
 
+        if cmd == .promptComplete || key == .tab {
+            switch mode {
+            case .saveFilePath, .insertFilePath, .openFilePath:
+                if completeFilePathPrompt() {
+                    return
+                }
+            default:
+                break
+            }
+        }
+
         switch key {
         case .backspace:
             completionText = nil
@@ -526,6 +549,20 @@ extension PromptController {
             return true
         }
 
+        let commandParts = prefix.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
+        if commandParts.count >= 1, prefix.contains(where: \.isWhitespace) {
+            let cmdName = commandParts[0].lowercased()
+            let fileCommands: Set<String> = ["open", "edit", "e", ":e", "insert", "read", "r", "write", "w", ":w", "dir"]
+            if fileCommands.contains(cmdName) {
+                let commandEnd = prefix.firstIndex(where: \.isWhitespace) ?? prefix.endIndex
+                let restStart = prefix[commandEnd...].firstIndex(where: { !$0.isWhitespace }) ?? prefix.endIndex
+                let rest = String(prefix[restStart...])
+                if completeFilePath(pathPrefix: rest, leadingText: String(prefix[..<restStart])) {
+                    return true
+                }
+            }
+        }
+
         let tokenStartIndex =
             prefix.lastIndex(where: { !isCompletionTokenChar($0) })
             .map { prefix.index(after: $0) } ?? prefix.startIndex
@@ -568,6 +605,67 @@ extension PromptController {
         let splitIndex = inputText.index(inputText.startIndex, offsetBy: clamped)
         inputText = replacement + inputText[splitIndex...]
         cursorIndex = replacement.count
+    }
+
+    private func completeFilePath(pathPrefix: String, leadingText: String) -> Bool {
+        guard let editor else { return false }
+
+        let dirPart: String
+        let filePart: String
+        if let lastSlash = pathPrefix.lastIndex(of: "/") {
+            dirPart = String(pathPrefix[...lastSlash])
+            filePart = String(pathPrefix[pathPrefix.index(after: lastSlash)...])
+        } else {
+            dirPart = ""
+            filePart = pathPrefix
+        }
+
+        let searchDir = dirPart.isEmpty ? "." : dirPart
+        let normalizedDir = editor.fileIOStrategy.normalizePath(searchDir, isDirectory: true)
+
+        guard let entries = try? editor.fileIOStrategy.listDirectory(at: normalizedDir) else {
+            showCommandBarCompletions([], label: "Tab")
+            return true
+        }
+
+        let lowerFilePart = filePart.lowercased()
+        let candidateEntries = entries.filter { entry in
+            let name = entry.name
+            if !filePart.hasPrefix(".") && name.hasPrefix(".") {
+                return false
+            }
+            return name.lowercased().hasPrefix(lowerFilePart)
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+
+        if candidateEntries.isEmpty {
+            showCommandBarCompletions([], label: "Tab")
+            return true
+        }
+
+        if candidateEntries.count == 1 {
+            let entry = candidateEntries[0]
+            let suffix = entry.isDirectory ? "/" : ""
+            replacePromptPrefix(leadingText + dirPart + entry.name + suffix)
+            completionText = nil
+            return true
+        }
+
+        let matchNames = candidateEntries.map { $0.name }
+        let lcp = TextAnalyzer.longestCommonPrefix(of: matchNames)
+        if lcp.count > filePart.count {
+            replacePromptPrefix(leadingText + dirPart + lcp)
+        }
+
+        let displayItems = candidateEntries.map { $0.isDirectory ? $0.name + "/" : $0.name }
+        showCommandBarCompletions(displayItems, label: "Tab")
+        return true
+    }
+
+    private func completeFilePathPrompt() -> Bool {
+        let clamped = max(0, min(cursorIndex, inputText.count))
+        let splitIdx = inputText.index(inputText.startIndex, offsetBy: clamped)
+        let typed = String(inputText[..<splitIdx])
+        return completeFilePath(pathPrefix: typed, leadingText: "")
     }
 
     private func completionCandidate(_ candidate: String, matching typed: String) -> String {

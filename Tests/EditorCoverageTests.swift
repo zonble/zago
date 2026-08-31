@@ -219,6 +219,49 @@ private func makeEditor(
         #expect(editor.statusMessage == editor.l10n["status.cancelled_open"])
     }
 
+    @Test func testOpenFileAndInsertFilePathAutocompletion() {
+        let fileIO = MemoryEditorFileIOStrategy(
+            files: [
+                "/workspace/document.txt": "Line 1\nLine 2",
+                "/workspace/data.json": "{}",
+                "/workspace/snippet.txt": "Snippet"
+            ],
+            directories: ["/workspace/subfolder"]
+        )
+        let editor = makeEditor(fileIO: fileIO)
+
+        // 1. Tab completion in Open File prompt with multiple matches (common prefix "d")
+        editor.promptOpenFilePath()
+        typePrompt("/workspace/d", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/d")
+        #expect(editor.promptController.completionText?.contains("data.json") == true)
+        #expect(editor.promptController.completionText?.contains("document.txt") == true)
+
+        // 2. Tab completion with single match
+        typePrompt("oc", in: editor) // "/workspace/doc"
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/document.txt")
+
+        editor.processKey(.enter)
+        #expect(editor.buffer.filePath == "/workspace/document.txt")
+
+        // 3. Tab completion in Insert File prompt
+        editor.promptInsertFilePath()
+        typePrompt("/workspace/sn", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/snippet.txt")
+        editor.processKey(.enter)
+        #expect(editor.buffer.lines.first?.contains("Snippet") == true)
+
+        // 4. Tab completion in CommandBar :open
+        editor.promptLogoMacro()
+        typePrompt("open /workspace/sub", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "open /workspace/subfolder/")
+        editor.processKey(.esc)
+    }
+
     @Test func testFillTextPromptAndGotoLineInCanvasMode() {
         let editor = Editor(language: .en)
         editor.buffer.lines = ["abcdef", "uvwxyz"]
