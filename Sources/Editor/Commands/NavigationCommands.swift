@@ -208,9 +208,8 @@ struct MovePgdnCommand: Command {
             editor.tableModeController.clampTableModeCursor()
             return .succeeded
         }
-        let (rows, _) = editor.terminal.getWindowSize()
-        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        let (rows, cols) = editor.terminal.getWindowSize()
+        let mainAreaHeight = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
         if editor.isCanvasModeActive {
             let targetLine = min(
                 editor.buffer.lines.count - 1,
@@ -245,9 +244,8 @@ struct MovePgupCommand: Command {
             editor.tableModeController.clampTableModeCursor()
             return .succeeded
         }
-        let (rows, _) = editor.terminal.getWindowSize()
-        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        let (rows, cols) = editor.terminal.getWindowSize()
+        let mainAreaHeight = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
         if editor.isCanvasModeActive {
             editor.buffer.lineIndex = max(0, editor.buffer.lineIndex - mainAreaHeight)
             editor.syncCanvasCursorToBuffer()

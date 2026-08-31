@@ -143,6 +143,7 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowRuler = false
     var defaultViewShowLineNumbers = true
     var defaultViewShowSubLineNumbers = false
+    var defaultViewIsZeroMode = false
     var defaultViewWrapColumn: Int? = nil
     var defaultLineEnding: LineEnding = .lf
     var fillColumn: Int = 72
@@ -300,7 +301,8 @@ public final class Editor: @unchecked Sendable {
             noNewlines: config.noNewlines,
             showGitDiff: config.showGitDiff,
             ipcEnabled: options.ipcEnabled ?? config.ipcEnabled,
-            enableMouse: options.enableMouse ?? config.enableMouse
+            enableMouse: options.enableMouse ?? config.enableMouse,
+            isZeroMode: options.isZeroMode ?? config.isZeroMode
         )
 
         return ResolvedConfig(
@@ -378,6 +380,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
+        self.defaultViewIsZeroMode = resolved.display.isZeroMode
         self.defaultViewWrapColumn = layoutEngine.wrapColumn
         self.defaultLineEnding = options.defaultLineEnding ?? .lf
         self.fillColumn = options.fillColumn ?? configSource.initial.fillColumn
@@ -387,6 +390,7 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowRuler = defaultViewShowRuler
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
+            buffer.viewIsZeroMode = defaultViewIsZeroMode
             buffer.viewWrapColumn = defaultViewWrapColumn
             buffer.borderStyle = configSource.initial.defaultBorderStyle
             buffer.arrowStyle = configSource.initial.defaultArrowStyle
@@ -483,6 +487,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
+        self.defaultViewIsZeroMode = resolved.display.isZeroMode
         self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
         self.displayConfig = resolved.display
         self.debugMode = loadedConfig.debugMode
@@ -494,6 +499,14 @@ public final class Editor: @unchecked Sendable {
             self.usesExplicitLanguage = true
         }
         applyCustomConfig(loadedConfig)
+    }
+
+    /// Toggles Zero Mode (zero-chrome distraction-free interface).
+    public func toggleZeroMode() {
+        displayConfig.isZeroMode.toggle()
+        saveCurrentViewSettingsToBuffer()
+        let state = displayConfig.isZeroMode ? "enabled" : "disabled"
+        reportOperationResult(.succeeded(message: l10n.zeroModeState(state)))
     }
 
     /// Deletes current line with Undo snapshot tracking.

@@ -143,6 +143,10 @@ struct L10n: Sendable {
         String(format: self["status.line_numbers_state"], state)
     }
 
+    func zeroModeState(_ state: String) -> String {
+        String(format: self["status.zero_mode_state"], state)
+    }
+
     func wrapColumnSet(_ col: Int) -> String {
         String(format: self["status.wrap_column_set"], col)
     }

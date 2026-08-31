@@ -22,7 +22,8 @@ final class CanvasModeController: KeyInputHandler {
         switch key {
         case .pageUp:
             editor.saveUndoSnapshot()
-            let pageStep = max(1, editor.terminal.getWindowSize().rows - (editor.displayConfig.showRuler ? 5 : 4))
+            let (rows, cols) = editor.terminal.getWindowSize()
+            let pageStep = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
             let originalCanvasColumn = editor.canvasVisualColumn
             editor.buffer.lineIndex = max(0, editor.buffer.lineIndex - pageStep)
             editor.canvasVisualColumn = originalCanvasColumn
@@ -30,7 +31,8 @@ final class CanvasModeController: KeyInputHandler {
             return true
         case .pageDown:
             editor.saveUndoSnapshot()
-            let pageStep = max(1, editor.terminal.getWindowSize().rows - (editor.displayConfig.showRuler ? 5 : 4))
+            let (rows, cols) = editor.terminal.getWindowSize()
+            let pageStep = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
             let targetLine = min(editor.buffer.lines.count - 1, editor.buffer.lineIndex + pageStep)
             let originalCanvasColumn = editor.canvasVisualColumn
             editor.buffer.lineIndex = max(0, targetLine)

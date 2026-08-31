@@ -45,6 +45,21 @@ struct ToggleTableModeCommand: Command {
     }
 }
 
+struct ToggleZeroModeCommand: Command {
+    let id: CommandID = .zeroToggle
+    let name = "Zero Interface Mode"
+    let description = "Toggle Zero Mode (distraction-free interface without bars)"
+    let commandBarAliases = ["zero-mode", "zero", "zen"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.toggleZeroMode()
+        return .succeeded
+    }
+}
+
 struct CycleBorderStyleCommand: Command {
     let id: CommandID = .borderStyle
     let name = "Cycle Border Style"

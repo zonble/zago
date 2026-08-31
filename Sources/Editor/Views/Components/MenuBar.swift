@@ -317,6 +317,12 @@ final class MenuBar {
                             editor.displayConfig.showRuler.toggle()
                         },
                         isChecked: { $0.displayConfig.showRuler }),
+                    MenuItem(
+                        titleKey: "menu.tools.zero_mode", hotkeyChar: "z",
+                        action: { editor in
+                            editor.toggleZeroMode()
+                        },
+                        isChecked: { $0.displayConfig.isZeroMode }),
                     wrapColumnItem(80, titleKey: "menu.tools.wrap_80", hotkeyChar: "8"),
                     wrapColumnItem(60, titleKey: "menu.tools.wrap_60", hotkeyChar: "6"),
                     wrapColumnItem(40, titleKey: "menu.tools.wrap_40", hotkeyChar: "4"),

@@ -239,7 +239,7 @@ public final class ConfigLoader {
                 recordSyntaxError(in: &config)
             }
         case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
-            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .noNewlines, .mouse:
+            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .noNewlines, .mouse, .zero:
             guard let boolean = SettingBoolean.parse(value, emptyValue: true) else {
                 recordSyntaxError(in: &config)
                 return
@@ -259,6 +259,7 @@ public final class ConfigLoader {
             case .debug: config.debugMode = boolean
             case .noNewlines: config.noNewlines = boolean
             case .mouse: config.enableMouse = boolean
+            case .zero: config.isZeroMode = boolean
             default: break
             }
         case .listIndentSize:

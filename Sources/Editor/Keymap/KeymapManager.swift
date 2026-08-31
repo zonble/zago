@@ -124,6 +124,7 @@ final class KeymapManager {
         register(.editBacktab, .backtab)
         register(.tableToggle, .f7, .alt("T"), .alt("t"))
         register(.canvasToggle, .f8, .alt("V"), .alt("v"))
+        register(.zeroToggle, .alt("Z"), .alt("z"))
         register(.borderStyle, .alt("S"), .alt("s"))
         register(.editMark, .ctrl("^"), .mark)
         register(.logoOutput, .alt("L"), .alt("l"))

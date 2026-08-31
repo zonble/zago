@@ -153,6 +153,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case textMode = "mode.text"
     case canvasToggle = "mode.canvas.toggle"
     case tableToggle = "table.toggle"
+    case zeroToggle = "view.zero.toggle"
     case borderStyle = "border.style"
     case diagramInsert = "diagram.insert"
     case diagramMenu = "diagram.menu"

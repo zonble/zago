@@ -11,10 +11,12 @@ extension Editor {
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
         // 1. Drag Selection Auto-Scroll (takes priority when dragging across or beyond bars)
+        let showTitle = !geometry.isZeroMode || menuBarController.isActive
+        let topMargin = (showTitle ? 1 : 0) + (geometry.showRuler ? 1 : 0)
+
         if case .drag(.left) = mouseEvent.action {
             if buffer.isReadOnly || promptController.isActive || menuBarController.isActive { return }
 
-            let topMargin = 1 + (geometry.showRuler ? 1 : 0)
             let totalLineCount: Int
             if isCanvasModeActive {
                 totalLineCount = max(1, buffer.lines.count)
@@ -119,7 +121,7 @@ extension Editor {
         activeBoundaryDragState = nil
 
         // 2. Help Bar Hit-Testing (Lines geometry.rows - 1 and geometry.rows)
-        if mouseEvent.row >= geometry.rows - 1 {
+        if !geometry.isZeroMode && mouseEvent.row >= geometry.rows - 1 {
             if case .press(.left) = mouseEvent.action {
                 if let keyStr = renderer.hitTestHelpBar(
                     col: mouseEvent.col,
@@ -186,7 +188,7 @@ extension Editor {
         }
 
         // Top Row (Title Bar / Menu Header when inactive)
-        if mouseEvent.row == 1 {
+        if showTitle && mouseEvent.row == 1 {
             if promptController.isActive { return }
             if case .press(.left) = mouseEvent.action {
                 menuBarController.toggle()
@@ -195,12 +197,11 @@ extension Editor {
         }
 
         // Status Line / Prompt Area (geometry.rows - 2)
-        if mouseEvent.row == geometry.rows - 2 {
+        if !geometry.isZeroMode && mouseEvent.row == geometry.rows - 2 {
             return
         }
 
         // Main Viewport Area for clicks and other non-drag events
-        let topMargin = 1 + (geometry.showRuler ? 1 : 0)
         guard mouseEvent.row > topMargin && mouseEvent.row <= topMargin + geometry.mainAreaHeight else {
             return
         }

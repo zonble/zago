@@ -507,6 +507,7 @@ struct TraditionalChineseStrings {
         "status.justify_disabled_in_canvas_mode": "[ 畫布模式下停用文字重排 ]",
         "status.inserted_diagram_snippet": "[ 已插入 %@ 圖表範本 ]",
         "status.line_numbers_state": "[ 行號顯示 %@ ]",
+        "status.zero_mode_state": "[ 極簡模式 %@ ]",
         "status.wrap_column_set": "[ 自動折行欄數設為 %d ]",
         "status.wrap_column_reset": "[ 自動折行欄數重設為動態 ]",
         "status.deleted_selection": "[ 已刪除選取範圍 ]",
@@ -689,6 +690,7 @@ struct TraditionalChineseStrings {
         "helpview.set_21": "    lang <en|zh_TW>          設定介面語言",
         "helpview.set_22": "    spell-language <lang>    設定拼字檢查字典語言（例如 en_US）",
         "helpview.set_23": "    debug <on|off>           開啟/關閉除錯資訊面板",
+        "helpview.set_24": "    zero <on|off>            極簡模式（隱藏標題列、狀態列與快捷鍵列）",
 
         "helpview.sec_logo": "  Editor LOGO 巨集語言與海龜繪圖指令：",
         "helpview.logo_1": "    Esc / M+:          移動到指令列",
@@ -975,6 +977,7 @@ struct TraditionalChineseStrings {
         "menu.tools.line_numbers": "顯示/隱藏行號",
         "menu.tools.sub_line_numbers": "顯示/隱藏子行號",
         "menu.tools.ruler": "顯示/隱藏尺標",
+        "menu.tools.zero_mode": "極簡模式",
         "menu.tools.wrap_80": "換行: 80",
         "menu.tools.wrap_60": "換行: 60",
         "menu.tools.wrap_40": "換行: 40",

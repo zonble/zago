@@ -517,6 +517,7 @@ struct EnglishStrings {
         "status.justify_disabled_in_canvas_mode": "[ Justify disabled in Canvas Mode ]",
         "status.inserted_diagram_snippet": "[ Inserted %@ Snippet ]",
         "status.line_numbers_state": "[ Line Numbers %@ ]",
+        "status.zero_mode_state": "[ Zero Mode %@ ]",
         "status.wrap_column_set": "[ Wrap Column set to %d ]",
         "status.wrap_column_reset": "[ Wrap Column reset to dynamic ]",
         "status.deleted_selection": "[ Deleted selection ]",
@@ -699,6 +700,7 @@ struct EnglishStrings {
         "helpview.set_21": "    lang <en|zh_TW>          Set UI language",
         "helpview.set_22": "    spell-language <lang>    Set spell checker language (e.g. en_US)",
         "helpview.set_23": "    debug <on|off>           Toggle debug overlay logging",
+        "helpview.set_24": "    zero <on|off>            Zero interface mode (hide title, status, and help bars)",
 
         "helpview.sec_logo": "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Esc / M+:          Command prompt",
@@ -985,6 +987,7 @@ struct EnglishStrings {
         "menu.tools.line_numbers": "Toggle Line Numbers",
         "menu.tools.sub_line_numbers": "Toggle Sub Line Numbers",
         "menu.tools.ruler": "Toggle Ruler Bar",
+        "menu.tools.zero_mode": "Zero Mode",
         "menu.tools.wrap_80": "Wrap Column: 80",
         "menu.tools.wrap_60": "Wrap Column: 60",
         "menu.tools.wrap_40": "Wrap Column: 40",

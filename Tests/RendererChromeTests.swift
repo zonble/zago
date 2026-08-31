@@ -508,4 +508,79 @@ struct RendererChromeTests {
         )
         #expect(renderedCanvasPrompt.contains(ANSIStyle.inactiveCursor))
     }
+
+    @Test func testZeroModeScreenGeometryAndRendering() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]
+
+        // Normal geometry
+        let normalGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(normalGeometry.mainAreaHeight == 20) // 24 - 4 (1 title + 1 status + 2 help)
+
+        // Zero mode geometry
+        editor.displayConfig.isZeroMode = true
+        let zeroGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroGeometry.isZeroMode == true)
+        #expect(zeroGeometry.mainAreaHeight == 24) // 0 chrome
+
+        // Zero mode with ruler
+        editor.displayConfig.showRuler = true
+        let zeroRulerGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroRulerGeometry.mainAreaHeight == 23) // 24 - 1 ruler
+
+        // Zero mode with prompt
+        editor.displayConfig.showRuler = false
+        editor.promptController.mode = .search(completion: { _ in })
+        let zeroPromptGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroPromptGeometry.mainAreaHeight == 23) // 24 - 1 prompt
+        editor.promptController.mode = .none
+
+        // Rendering output in zero mode
+        let renderedZero = editor.renderer.render(editor: editor, geometry: zeroGeometry)
+        #expect(!renderedZero.contains("nano"))
+        #expect(!renderedZero.contains("^G Get Help"))
+
+        // Cursor positioning in zero mode (starts at row 1)
+        let virtualLines = editor.prepareVirtualLines(textWidth: zeroGeometry.textWidth)
+        let cursorPos = editor.renderer.positionCursor(
+            editor: editor,
+            rows: 24,
+            cols: 80,
+            geometry: zeroGeometry,
+            cursorVLineIdx: 0,
+            cursorVColIdx: 0,
+            gutterWidth: zeroGeometry.gutterWidth,
+            virtualLines: virtualLines,
+            renderedPrompt: Renderer.RenderedPrompt(text: "", cursorCol: 1)
+        )
+        #expect(cursorPos.contains("\u{1B}[1;"))
+    }
+
+    @Test func testZeroModeTogglingKeybindingAndCommand() throws {
+        let editor = Editor()
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        // 1. Toggle via method
+        editor.toggleZeroMode()
+        #expect(editor.displayConfig.isZeroMode == true)
+        #expect(editor.statusMessage.contains("Zero Mode") || editor.statusMessage.contains("零介面模式"))
+
+        // 2. Toggle via Alt+Z shortcut
+        editor.processKey(.alt("z"))
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        editor.processKey(.alt("Z"))
+        #expect(editor.displayConfig.isZeroMode == true)
+
+        // 3. Toggle via Command Dispatch
+        _ = editor.commandRegistry.dispatch(id: .zeroToggle, editor: editor)
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        // 4. Setting command via Command Bar
+        _ = editor.commandRegistry.dispatch("set zero on", editor: editor)
+        #expect(editor.displayConfig.isZeroMode == true)
+
+        _ = editor.commandRegistry.dispatch("set zero off", editor: editor)
+        #expect(editor.displayConfig.isZeroMode == false)
+    }
 }

@@ -138,9 +138,11 @@ final class Renderer {
         var screenLines: [String] = []
 
         // 1. Title Bar or Top Menu Bar Component
-        let titleLineStr = renderTitleOrMenuBar(editor: editor, cols: cols)
-        let titleLines = titleLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: titleLines)
+        if !geometry.isZeroMode || editor.isMenuBarActive {
+            let titleLineStr = renderTitleOrMenuBar(editor: editor, cols: cols)
+            let titleLines = titleLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: titleLines)
+        }
 
         let (dropdownStartCol, dropdownBoxWidth, dropdownBoxLines) = generateDropdownOverlayLines(
             editor: editor, cols: cols)
@@ -179,22 +181,36 @@ final class Renderer {
         screenLines.append(contentsOf: mainLines)
 
         // 4. Status & Prompt Line Component
-        var statusStr = ""
-        let renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &statusStr)
-        let statusLines = statusStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: statusLines)
+        let isPromptActive: Bool
+        if case .none = editor.currentPromptMode {
+            isPromptActive = false
+        } else {
+            isPromptActive = true
+        }
+
+        let renderedPrompt: RenderedPrompt
+        if !geometry.isZeroMode || isPromptActive {
+            var statusStr = ""
+            renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &statusStr)
+            let statusLines = statusStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: statusLines)
+        } else {
+            renderedPrompt = RenderedPrompt(text: "", cursorCol: 1)
+        }
 
         // 5. Dynamic Contextual Help Bar Component
-        let helpStr = renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
-        let helpLines = helpStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: helpLines)
+        if !geometry.isZeroMode {
+            let helpStr = renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
+            let helpLines = helpStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: helpLines)
+        }
 
         // 6. Terminal Cursor Positioning Component
         let cursorPosStr = positionCursor(
             editor: editor,
             rows: rows,
             cols: cols,
-            showRuler: geometry.showRuler,
+            geometry: geometry,
             cursorVLineIdx: cursorVLineIdx,
             cursorVColIdx: cursorVColIdx,
             gutterWidth: gutterWidth,
@@ -658,6 +674,7 @@ final class Renderer {
         editor: Editor,
         rows: Int,
         cols: Int,
+        geometry: ScreenGeometry? = nil,
         showRuler: Bool = false,
         cursorVLineIdx: Int,
         cursorVColIdx: Int,
@@ -666,6 +683,17 @@ final class Renderer {
         virtualLineStartIndex: Int = 0,
         renderedPrompt: RenderedPrompt
     ) -> String {
+        let geo =
+            geometry
+            ?? ScreenGeometry(
+                rows: rows,
+                cols: cols,
+                showRuler: showRuler,
+                showGutter: gutterWidth > 0,
+                isZeroMode: editor.displayConfig.isZeroMode,
+                isMenuBarActive: editor.isMenuBarActive,
+                isPromptActive: editor.promptController.isActive
+            )
         var output = ""
         if editor.isMenuBarActive {
             output += "\u{1B}[\(rows);\(cols)H"
@@ -712,8 +740,9 @@ final class Renderer {
                         tabSize: editor.displayConfig.tabSize)
             }
 
-            let topMargin = 1 + (showRuler ? 1 : 0)
-            let mainAreaHeight = max(1, rows - topMargin - 2)
+            let showTitle = !geo.isZeroMode || editor.isMenuBarActive
+            let topMargin = (showTitle ? 1 : 0) + (geo.showRuler ? 1 : 0)
+            let mainAreaHeight = geo.mainAreaHeight
             let isCursorOffScreen: Bool
             if editor.isCanvasModeActive {
                 let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
@@ -729,12 +758,13 @@ final class Renderer {
             if isCursorOffScreen {
                 output += "\u{1B}[\(rows);\(cols)H"
             } else {
-                let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
+                let screenRow = (cursorVLineIdx - editor.topVLineIndex) + topMargin + 1
                 let screenCol = gutterWidth + cursorDisplayWidth + 1
                 output += "\u{1B}[\(screenRow);\(screenCol)H"
             }
         } else {
-            let promptRow = rows - 2
+            let showHelp = !geo.isZeroMode
+            let promptRow = rows - (showHelp ? 2 : 0)
             let promptCol = max(1, min(cols, renderedPrompt.cursorCol))
             output += "\u{1B}[\(promptRow);\(promptCol)H"
         }

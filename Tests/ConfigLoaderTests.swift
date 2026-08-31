@@ -388,6 +388,8 @@ struct ConfigLoaderTests {
             set lang zh_TW
             set spell-language en_GB
             set border heavy
+            set zero on
+            unset zero
             """
         try content.write(to: URL(fileURLWithPath: configPath), atomically: testAtomicallyOption, encoding: .utf8)
 
@@ -402,6 +404,7 @@ struct ConfigLoaderTests {
         #expect(config.showSubLineNumbers == false)
         #expect(config.startInCanvasMode == false)
         #expect(config.showGitDiff == false)
+        #expect(config.isZeroMode == false)
         #expect(config.tabSize == 8)
         #expect(config.enableSyntaxHighlight == true)
         #expect(config.autoReload == false)

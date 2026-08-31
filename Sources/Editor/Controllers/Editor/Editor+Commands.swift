@@ -118,6 +118,7 @@ extension Editor {
         commandRegistry.register(SwitchTextModeCommand())
         commandRegistry.register(ToggleCanvasModeCommand())
         commandRegistry.register(ToggleTableModeCommand())
+        commandRegistry.register(ToggleZeroModeCommand())
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(DiagramMenuCommand())
         commandRegistry.register(ToggleCommentCommand())
