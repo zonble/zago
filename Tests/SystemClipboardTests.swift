@@ -115,8 +115,8 @@ import Testing
         targetEditor.canvasVisualColumn = 0
 
         targetEditor.pasteCanvasBlock()
-        #expect(targetEditor.buffer.lines[0] == "234......")
-        #expect(targetEditor.buffer.lines[1] == "bcd......")
-        #expect(targetEditor.buffer.lines[2] == "BCD......")
+        #expect(targetEditor.buffer.lines[0] == "234...")
+        #expect(targetEditor.buffer.lines[1] == "bcd...")
+        #expect(targetEditor.buffer.lines[2] == "BCD...")
     }
 }

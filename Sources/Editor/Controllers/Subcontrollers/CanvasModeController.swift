@@ -511,7 +511,13 @@ extension Editor {
         for (rowOffset, rowText) in clipboard.rows.enumerated() {
             let targetLine = startLine + rowOffset
             guard ensureCanvasLineExists(targetLine) else { return }
-            buffer.lines[targetLine] = buffer.lines[targetLine].insertingAtVisualColumn(startColumn, text: rowText)
+            let line = buffer.lines[targetLine]
+            buffer.lines[targetLine] = DisplayText.replacingColumns(
+                in: line,
+                startCol: startColumn,
+                width: clipboard.width,
+                with: rowText
+            ).trimmingTrailingSpaces()
         }
 
         buffer.lineIndex = startLine

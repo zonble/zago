@@ -180,8 +180,7 @@ aef
 For each pasted row:
 
 - The row receives the corresponding clipboard row.
-- Existing cells at and to the right of the cursor shift right by the block
-  width.
+- Existing cells within the pasted rectangular area are overwritten.
 - Missing target rows are created as needed.
 - The cursor stays at the paste top-left corner.
 
@@ -198,8 +197,8 @@ bcd
 234
 
 After ^U:
-xxbcdYY
-zz234WW
+xxbcd
+zz234
 ```
 
 ### Fill Marked Block

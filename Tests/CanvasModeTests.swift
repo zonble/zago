@@ -504,7 +504,7 @@ import TextMetrics
     editor.canvasVisualColumn = 2
     editor.processKey(.ctrl("U"))
 
-    #expect(editor.buffer.lines == ["xxbcdYY", "zz234WW"])
+    #expect(editor.buffer.lines == ["xxbcd", "zz234"])
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 2)
 
@@ -514,6 +514,30 @@ import TextMetrics
     editor.processKey(.ctrl("G"))
     #expect(editor.buffer.canvasBlockMark == nil)
     #expect(editor.buffer.canvasBlockMarkEnd == nil)
+}
+
+@Test func testCanvasBlockPasteOverwritesExistingText() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.canvasBlockClipboard = Editor.CanvasBlockClipboard(width: 3, rows: ["123", "456"])
+
+    // Overwrite middle of longer lines
+    editor.buffer.lines = ["ABCDEFGHI", "JKLMNOPQR"]
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 3
+    editor.pasteCanvasBlock()
+
+    #expect(editor.buffer.lines == ["ABC123GHI", "JKL456PQR"])
+    #expect(editor.buffer.lineIndex == 0)
+    #expect(editor.canvasVisualColumn == 3)
+
+    // Overwrite past the end of existing line (should pad prefix with spaces)
+    editor.buffer.lines = ["AB"]
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 4
+    editor.pasteCanvasBlock()
+
+    #expect(editor.buffer.lines == ["AB  123", "    456"])
 }
 
 @Test func testCanvasBlockCutWithoutMarkAndCJKBoundarySnap() throws {
@@ -695,7 +719,7 @@ import TextMetrics
     editor.buffer.lineIndex = 0
     editor.canvasVisualColumn = 2
     editor.processKey(.ctrl("u"))
-    #expect(editor.buffer.lines == ["xxbcdYY", "zz234WW"])
+    #expect(editor.buffer.lines == ["xxbcd", "zz234"])
 }
 
 @Test func testCanvasClassicKeymapPreservesCtrlCAndCtrlX() throws {
