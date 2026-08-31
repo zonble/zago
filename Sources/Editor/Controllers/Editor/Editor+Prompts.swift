@@ -93,6 +93,18 @@ extension Editor {
         })
     }
 
+    /// Prompts user to input file path to open in a new buffer.
+    func promptOpenFilePath() {
+        promptInputText = ""
+        currentPromptMode = .openFilePath(completion: { [weak self] path in
+            guard let self = self, let path = path, !path.isEmpty else {
+                self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled_open"] ?? ""))
+                return
+            }
+            self.applyOperationResult(self.openBuffer(path: path))
+        })
+    }
+
     /// Prompts user to input file path to insert into buffer (^R / F5).
     func promptInsertFilePath() {
         if buffer.isReadOnly {

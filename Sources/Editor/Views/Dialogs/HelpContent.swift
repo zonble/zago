@@ -86,6 +86,7 @@ enum HelpContent {
         Section(
             titleKey: "helpview.sec_file",
             items: [
+                HelpItem(commandID: .fileOpen),
                 HelpItem(commandID: .fileSave),
                 HelpItem(commandID: .fileInsert),
                 HelpItem(commandID: .bufferNew),

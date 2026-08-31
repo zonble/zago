@@ -201,6 +201,24 @@ private func makeEditor(
         #expect(editor.statusMessage == editor.l10n["status.cancelled_insert"])
     }
 
+    @Test func testOpenFilePromptSuccessErrorAndCancellation() {
+        let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "Hello\nWorld"])
+        let editor = makeEditor(fileIO: fileIO)
+
+        // 1. Open file prompt and submit valid path -> creates / switches to new buffer
+        editor.promptOpenFilePath()
+        typePrompt("/doc.txt", in: editor)
+        editor.processKey(.enter)
+
+        #expect(editor.buffer.lines == ["Hello", "World"])
+        #expect(editor.buffer.filePath == "/doc.txt")
+
+        // 2. Cancellation
+        editor.promptOpenFilePath()
+        editor.processKey(.esc)
+        #expect(editor.statusMessage == editor.l10n["status.cancelled_open"])
+    }
+
     @Test func testFillTextPromptAndGotoLineInCanvasMode() {
         let editor = Editor(language: .en)
         editor.buffer.lines = ["abcdef", "uvwxyz"]

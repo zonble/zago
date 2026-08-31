@@ -74,6 +74,7 @@ struct TraditionalChineseStrings {
         "prompt.replace_search": "搜尋並取代",
         "prompt.replace_with": "取代為：",
         "prompt.confirm_replace": "是否取代此處？[Y]是 / [N]否 / [A]全部 / [^C]取消：",
+        "prompt.open_file": "欲開啟之檔案：",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
         "prompt.logo": "❯ ",
@@ -472,6 +473,7 @@ struct TraditionalChineseStrings {
         "status.search_cleared": "已清除搜尋",
         "status.no_active_search": "沒有作用中的搜尋",
         "status.invalid_regex": "無效的 regex：%@",
+        "status.cancelled_open": "已取消開啟檔案",
         "status.cancelled_insert": "已取消插入檔案",
         "status.spell_check_skipped": "跳過拼字檢查",
         "status.word_kept": "保留原字詞",
@@ -634,6 +636,7 @@ struct TraditionalChineseStrings {
         "command.cursor.pos.description": "顯示當前游標與行列位置資訊",
         "command.cursor.goto_line.description": "跳至指定行號與欄號",
 
+        "command.file.open.description": "在新的分頁（Buffer）中開啟檔案",
         "command.file.save.description": "儲存目前文件；^O / F3 可選擇路徑",
         "command.file.write_out.description": "寫入檔案（指定路徑存檔）",
         "command.file.insert.description": "插入外部檔案內容至當前文件中",
@@ -750,7 +753,8 @@ struct TraditionalChineseStrings {
 
         // Menu Bar Items
         "menu.file.new": "新建空白頁\t^N",
-        "menu.file.open": "插入檔案…\t^R",
+        "menu.file.open": "開啟檔案…",
+        "menu.file.insert": "插入檔案…\t^R",
         "menu.file.directory": "瀏覽目錄\tDIR",
         "menu.file.save": "儲存檔案\t^S",
         "menu.file.write_out": "另存檔案\t^O",

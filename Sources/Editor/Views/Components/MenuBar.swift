@@ -132,7 +132,8 @@ final class MenuBar {
                 titleKey: "menu.file", hotkeyChar: "f",
                 items: [
                     MenuItem(titleKey: "menu.file.new", hotkeyChar: "n", commandId: .bufferNew),
-                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "i", commandId: .fileInsert),
+                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileOpen),
+                    MenuItem(titleKey: "menu.file.insert", hotkeyChar: "i", commandId: .fileInsert),
                     MenuItem(titleKey: "menu.file.directory", hotkeyChar: "d", commandId: .fileDirectory),
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
                     MenuItem(titleKey: "menu.file.write_out", hotkeyChar: "w", commandId: .fileWriteOut),

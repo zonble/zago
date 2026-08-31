@@ -98,6 +98,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case bufferNew = "buffer.new"
 
     // File Operations
+    case fileOpen = "file.open"
     case fileSave = "file.save"
     case fileWriteOut = "file.write_out"
     case fileInsert = "file.insert"

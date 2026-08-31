@@ -74,6 +74,7 @@ struct EnglishStrings {
         "prompt.replace_search": "Search (to replace)",
         "prompt.replace_with": "Replace with: ",
         "prompt.confirm_replace": "Replace this instance? [Y]es / [N]o / [A]ll / [^C]ancel: ",
+        "prompt.open_file": "File to open: ",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
         "prompt.logo": "❯ ",
@@ -482,6 +483,7 @@ struct EnglishStrings {
         "status.search_cleared": "Search cleared",
         "status.no_active_search": "No active search",
         "status.invalid_regex": "Invalid regex: %@",
+        "status.cancelled_open": "Cancelled open file",
         "status.cancelled_insert": "Cancelled insert",
         "status.spell_check_skipped": "Spell check skipped",
         "status.word_kept": "Word kept",
@@ -644,6 +646,7 @@ struct EnglishStrings {
         "command.cursor.pos.description": "Display current cursor position info",
         "command.cursor.goto_line.description": "Jump to line and column number",
 
+        "command.file.open.description": "Open file in a new buffer",
         "command.file.save.description": "Save current file; ^O / F3 WriteOut (choose path)",
         "command.file.write_out.description": "Write buffer to file (choose path)",
         "command.file.insert.description": "Read file (insert external file into buffer)",
@@ -760,7 +763,8 @@ struct EnglishStrings {
 
         // Menu Bar Items
         "menu.file.new": "New Buffer\t^N",
-        "menu.file.open": "Insert File…\t^R",
+        "menu.file.open": "Open File…",
+        "menu.file.insert": "Insert File…\t^R",
         "menu.file.directory": "Directory Buffer\tDIR",
         "menu.file.save": "Save File\t^S",
         "menu.file.write_out": "Write Out…\t^O",

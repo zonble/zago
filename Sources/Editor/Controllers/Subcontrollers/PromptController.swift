@@ -26,6 +26,7 @@ final class PromptController: KeyInputHandler {
         case replaceWith(searchQuery: String, completion: (String?) -> Void)
         case confirmReplace(query: String, replacement: String, completion: (ReplaceChoice) -> Void)
         case insertFilePath(completion: (String?) -> Void)
+        case openFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
         case logoMacro(completion: (String?) -> Void)
         case fillText(completion: (String?) -> Void)
@@ -50,6 +51,7 @@ final class PromptController: KeyInputHandler {
                 .replaceSearch(let completion),
                 .replaceWith(_, let completion),
                 .insertFilePath(let completion),
+                .openFilePath(let completion),
                 .spellCheck(_, _, _, let completion),
                 .logoMacro(let completion),
                 .fillText(let completion),
@@ -307,7 +309,7 @@ extension PromptController {
                 break
             }
 
-        case .insertFilePath(let completion):
+        case .insertFilePath(let completion), .openFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
         case .spellCheck(_, _, _, let completion):
@@ -420,7 +422,7 @@ extension PromptController {
 
     private var isTextEditingPromptMode: Bool {
         switch mode {
-        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText,
+        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .openFilePath, .spellCheck, .logoMacro, .fillText,
             .tableDimensions,
             .gotoLine,
             .logoReadWord:
@@ -604,7 +606,7 @@ extension PromptController {
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("A", tr("help.all")), ("^C", tr("help.cancel"))]
         case .search, .replaceSearch, .replaceWith:
             return [("^C", tr("help.cancel")), ("^M", tr("help.set_search")), ("^R", tr("help.replace"))]
-        case .saveFilePath, .insertFilePath:
+        case .saveFilePath, .insertFilePath, .openFilePath:
             return [("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.confirm"))]
         case .gotoLine, .tableDimensions, .fillText, .spellCheck:
             return [("^C", tr("help.cancel")), ("^M", tr("help.confirm"))]

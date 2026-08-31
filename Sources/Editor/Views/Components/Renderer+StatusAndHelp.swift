@@ -269,7 +269,7 @@ extension Renderer {
                 ("N", tr("help.no")), ("^C", tr("help.cancel")),
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
+        case .saveFilePath, .insertFilePath, .openFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
             .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
             if editor?.keymapManager.activePreset == .modern {
@@ -637,6 +637,9 @@ extension Renderer {
         case .confirmReplace:
             promptPrefix = editor.l10n["prompt.confirm_replace"]
             isConfirmation = true
+        case .openFilePath:
+            promptPrefix = editor.l10n["prompt.open_file"]
+            isConfirmation = false
         case .insertFilePath:
             promptPrefix = editor.l10n["prompt.insert_file"]
             isConfirmation = false
