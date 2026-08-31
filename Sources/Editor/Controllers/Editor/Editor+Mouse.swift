@@ -171,9 +171,12 @@ extension Editor {
                     if case .press(.left) = mouseEvent.action {
                         let clickedItemIdx = mouseEvent.row - itemRowStart
                         if clickedItemIdx >= 0 && clickedItemIdx < items.count {
-                            menuBar.itemIndex = clickedItemIdx
-                            menuBarController.executeCurrentMenuItem()
-                            return
+                            let item = items[clickedItemIdx]
+                            if !item.isDivider {
+                                menuBar.itemIndex = clickedItemIdx
+                                menuBarController.executeCurrentMenuItem()
+                                return
+                            }
                         }
                     }
                 }
