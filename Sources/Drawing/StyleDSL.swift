@@ -121,7 +121,7 @@ public enum StyleDSL {
             ("<|", .hollow),
             ("<.", .small),
             ("<<", .solid),
-            ("<", .ascii)
+            ("<", .ascii),
         ]
 
         for (prefix, style) in startPrefixes {
@@ -149,7 +149,7 @@ public enum StyleDSL {
             ("|>", .hollow),
             (".>", .small),
             (">>", .solid),
-            (">", .ascii)
+            (">", .ascii),
         ]
 
         for (suffix, style) in endSuffixes {

@@ -92,7 +92,8 @@ extension LogoEngine {
             }
 
             if !positional.isEmpty {
-                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(positional, mode: mode, registry: pluginRegistry)
+                let (f, l, tz, cal) = LogoDateTimeFormatter.resolveArguments(
+                    positional, mode: mode, registry: pluginRegistry)
                 formatSpec = f
                 localeSpec = l
                 timeZoneSpec = tz
@@ -217,7 +218,9 @@ extension LogoEngine {
 
         while let nextTok = reader.nextOptionalExpression() {
             let clean = unquote(nextTok)
-            if let parsedCal = pluginRegistry.parseCalendarIdentifier(clean) ?? Calendar.Identifier(logoCalendarName: clean) {
+            if let parsedCal = pluginRegistry.parseCalendarIdentifier(clean)
+                ?? Calendar.Identifier(logoCalendarName: clean)
+            {
                 if sourceCalToken == nil {
                     sourceCalToken = parsedCal.logoCalendarName
                 }
@@ -228,8 +231,12 @@ extension LogoEngine {
         reader.commit(to: &index)
 
         let rawTargetCalName = unquote(targetCalToken)
-        let targetCalId = pluginRegistry.parseCalendarIdentifier(rawTargetCalName) ?? Calendar.Identifier(logoCalendarName: rawTargetCalName) ?? .gregorian
-        let sourceCal = sourceCalToken.map { Calendar(identifier: Calendar.Identifier(logoCalendarName: $0) ?? .gregorian) } ?? Calendar(identifier: .gregorian)
+        let targetCalId =
+            pluginRegistry.parseCalendarIdentifier(rawTargetCalName) ?? Calendar.Identifier(
+                logoCalendarName: rawTargetCalName) ?? .gregorian
+        let sourceCal =
+            sourceCalToken.map { Calendar(identifier: Calendar.Identifier(logoCalendarName: $0) ?? .gregorian) }
+            ?? Calendar(identifier: .gregorian)
 
         let parsedDate: Date
         let parsedVal = LogoValue.parse(dateToken)

@@ -28,14 +28,14 @@ public enum LogoPersonNameStyle: Sendable, Equatable {
     }
 
     #if canImport(Darwin)
-    public var formatterStyle: PersonNameComponentsFormatter.Style {
-        switch self {
-        case .default, .medium: return .medium
-        case .short: return .short
-        case .long: return .long
-        case .abbreviated: return .abbreviated
+        public var formatterStyle: PersonNameComponentsFormatter.Style {
+            switch self {
+            case .default, .medium: return .medium
+            case .short: return .short
+            case .long: return .long
+            case .abbreviated: return .abbreviated
+            }
         }
-    }
     #endif
 
     public static func parse(_ raw: String) -> LogoPersonNameStyle {

@@ -72,7 +72,9 @@ extension LogoEngine {
         token.uppercased() == "ELSE" || isFillerToken(token)
     }
 
-    private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?) -> String? {
+    private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?)
+        -> String?
+    {
         if let bodyBlock = reader.nextSourceBlock() {
             var bIdx = 0
             executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
@@ -85,7 +87,8 @@ extension LogoEngine {
         }
     }
 
-    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String? {
+    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String?
+    {
         var reader = LogoControlTokenReader(engine: self, tokens: clausesBlock, index: -1)
         while let clause = reader.nextBlock() {
             guard !clause.isEmpty else { continue }

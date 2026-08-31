@@ -151,7 +151,9 @@ extension LogoEngine {
                     }
                     if !isDict {
                         let strings = optItems.map { $0.stringValue }
-                        LogoFormatters.disambiguateListOptions(strings, type: &type, locale: &localeSpec, parseType: { [weak self] in self?.parseListType($0) })
+                        LogoFormatters.disambiguateListOptions(
+                            strings, type: &type, locale: &localeSpec,
+                            parseType: { [weak self] in self?.parseListType($0) })
                     }
                 }
             } else {
@@ -161,7 +163,8 @@ extension LogoEngine {
                 {
                     positional.append(unquote(val))
                 }
-                LogoFormatters.disambiguateListOptions(positional, type: &type, locale: &localeSpec, parseType: { [weak self] in self?.parseListType($0) })
+                LogoFormatters.disambiguateListOptions(
+                    positional, type: &type, locale: &localeSpec, parseType: { [weak self] in self?.parseListType($0) })
             }
 
             reader.commit(to: &index)
@@ -244,7 +247,9 @@ extension LogoEngine {
                 }
                 if !isDict {
                     let strings = optItems.map { $0.stringValue }
-                    LogoFormatters.disambiguateBytesOptions(strings, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
+                    LogoFormatters.disambiguateBytesOptions(
+                        strings, style: &style, locale: &localeSpec,
+                        parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
                 }
             }
         } else {
@@ -254,7 +259,9 @@ extension LogoEngine {
             {
                 positional.append(unquote(val))
             }
-            LogoFormatters.disambiguateBytesOptions(positional, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
+            LogoFormatters.disambiguateBytesOptions(
+                positional, style: &style, locale: &localeSpec,
+                parseStyle: { [weak self] in self?.parseByteCountStyle($0) })
         }
 
         reader.commit(to: &index)
@@ -323,13 +330,17 @@ extension LogoEngine {
                         family = itemStrings[2]
                         if itemStrings.count > 3 {
                             let extra = Array(itemStrings.dropFirst(3))
-                            LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
+                            LogoFormatters.disambiguatePersonNameOptions(
+                                extra, style: &style, locale: &localeSpec,
+                                parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                         }
                     } else {
                         given = itemStrings[0]
                         family = itemStrings[1]
                         let extra = Array(itemStrings.dropFirst(2))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
+                        LogoFormatters.disambiguatePersonNameOptions(
+                            extra, style: &style, locale: &localeSpec,
+                            parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 }
             } else {
@@ -352,7 +363,9 @@ extension LogoEngine {
                     family = positional[2]
                     if positional.count > 3 {
                         let extra = Array(positional.dropFirst(3))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
+                        LogoFormatters.disambiguatePersonNameOptions(
+                            extra, style: &style, locale: &localeSpec,
+                            parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 } else if positional.count >= 2
                     && parsePersonNameStyle(positional[1]) == nil
@@ -363,13 +376,17 @@ extension LogoEngine {
                     family = positional[1]
                     if positional.count > 2 {
                         let extra = Array(positional.dropFirst(2))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
+                        LogoFormatters.disambiguatePersonNameOptions(
+                            extra, style: &style, locale: &localeSpec,
+                            parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 } else {
                     fullName = positional[0]
                     if positional.count > 1 {
                         let extra = Array(positional.dropFirst(1))
-                        LogoFormatters.disambiguatePersonNameOptions(extra, style: &style, locale: &localeSpec, parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
+                        LogoFormatters.disambiguatePersonNameOptions(
+                            extra, style: &style, locale: &localeSpec,
+                            parseStyle: { [weak self] in self?.parsePersonNameStyle($0) })
                     }
                 }
             }

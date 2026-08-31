@@ -41,12 +41,16 @@ extension LogoEngine {
         pluginRegistry.parseCalendarIdentifier(token) ?? Calendar.Identifier(logoCalendarName: token)
     }
 
-    public func parseDateTimeStylePreset(_ token: String, mode: LogoDateTimeMode = .dateTime) -> LogoDateTimeStylePreset? {
-        pluginRegistry.parseDateTimeStylePreset(token) ?? (LogoDateTimeStylePreset.isPresetName(token) ? LogoDateTimeStylePreset(raw: token, mode: mode) : nil)
+    public func parseDateTimeStylePreset(_ token: String, mode: LogoDateTimeMode = .dateTime)
+        -> LogoDateTimeStylePreset?
+    {
+        pluginRegistry.parseDateTimeStylePreset(token)
+            ?? (LogoDateTimeStylePreset.isPresetName(token) ? LogoDateTimeStylePreset(raw: token, mode: mode) : nil)
     }
 
     public func parseNumberStyle(_ token: String) -> LogoNumberStyle? {
-        pluginRegistry.parseNumberStyle(token) ?? (LogoNumberStyle.isStyleKeyword(token) ? LogoNumberStyle.parse(token) : nil)
+        pluginRegistry.parseNumberStyle(token)
+            ?? (LogoNumberStyle.isStyleKeyword(token) ? LogoNumberStyle.parse(token) : nil)
     }
 
     public func parseListType(_ token: String) -> LogoListType? {
@@ -54,11 +58,13 @@ extension LogoEngine {
     }
 
     public func parseByteCountStyle(_ token: String) -> LogoByteCountStyle? {
-        pluginRegistry.parseByteCountStyle(token) ?? (LogoByteCountStyle.isStyleKeyword(token) ? LogoByteCountStyle.parse(token) : nil)
+        pluginRegistry.parseByteCountStyle(token)
+            ?? (LogoByteCountStyle.isStyleKeyword(token) ? LogoByteCountStyle.parse(token) : nil)
     }
 
     public func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle? {
-        pluginRegistry.parsePersonNameStyle(token) ?? (LogoPersonNameStyle.isStyleKeyword(token) ? LogoPersonNameStyle.parse(token) : nil)
+        pluginRegistry.parsePersonNameStyle(token)
+            ?? (LogoPersonNameStyle.isStyleKeyword(token) ? LogoPersonNameStyle.parse(token) : nil)
     }
 
     public func parsePersonNameField(_ token: String) -> LogoPersonNameField? {
@@ -119,7 +125,8 @@ extension LogoEngine {
         var reader = LogoArgumentReader(engine: self, tokens: tokens, index: index)
         guard
             let value = reader.nextOptionalExpression(isBoundary: { [weak self] token in
-                (self?.isStatementCommand(token) ?? LogoEngine.isStatementCommand(token)) || token == "]" || token == ")"
+                (self?.isStatementCommand(token) ?? LogoEngine.isStatementCommand(token)) || token == "]"
+                    || token == ")"
             })
         else { return nil }
         reader.commit(to: &index)

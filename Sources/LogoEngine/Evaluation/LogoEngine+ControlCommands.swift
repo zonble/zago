@@ -356,7 +356,8 @@ extension LogoEngine {
             }
             let targetVal = unquote(rawTarget)
             reader.commit(to: &index)
-            let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &frameReturn)
+            let result = evaluateCaseClauses(
+                targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &frameReturn)
             if let res = result {
                 lastResult = res
             }

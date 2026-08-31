@@ -193,163 +193,164 @@ public final class FallbackCheckerEngine: SpellCheckerEngine {
 #if !os(WASI)
     public final class UnixSpellCheckerEngine: SpellCheckerEngine {
         public var language: String {
-        didSet {
-            commandLineChecker = CommandLineSpellChecker(language: language)
-            loadDictionary()
-        }
-    }
-
-    private var dictionary: Set<String> = []
-    private var ignoredWords: Set<String> = []
-    private var userDictionary: Set<String> = []
-    private var commandLineChecker: CommandLineSpellChecker?
-
-    public init(language: String = "en_US") {
-        self.language = language
-        self.commandLineChecker = CommandLineSpellChecker(language: language)
-        loadDictionary()
-    }
-
-    private func loadDictionary() {
-        dictionary.removeAll()
-        let normalizedLang = language.replacingOccurrences(of: "-", with: "_")
-
-        let candidatePaths = [
-            "/usr/share/hunspell/\(normalizedLang).dic",
-            "/usr/share/myspell/\(normalizedLang).dic",
-            "/usr/share/myspell/dicts/\(normalizedLang).dic",
-            "\(NSHomeDirectory())/.hunspell/\(normalizedLang).dic",
-            "/usr/share/dict/words",
-            "/usr/dict/words",
-        ]
-
-        for path in candidatePaths {
-            if FileManager.default.fileExists(atPath: path),
-                let content = try? String(contentsOfFile: path, encoding: .utf8)
-            {
-                let lines = content.components(separatedBy: .newlines)
-                for line in lines {
-                    let trimmed = line.trimmingCharacters(in: .whitespaces)
-                    if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
-                    // Strip Hunspell flags (e.g. word/FLAGS)
-                    let wordPart = trimmed.components(separatedBy: "/").first ?? trimmed
-                    dictionary.insert(wordPart.lowercased())
-                }
-                if !dictionary.isEmpty { return }
+            didSet {
+                commandLineChecker = CommandLineSpellChecker(language: language)
+                loadDictionary()
             }
         }
 
-        // Fallback to basic word list if no Hunspell or system dictionary file was found
-        let fallback = FallbackCheckerEngine(language: language)
-        self.dictionary = fallback.dictionary
-    }
+        private var dictionary: Set<String> = []
+        private var ignoredWords: Set<String> = []
+        private var userDictionary: Set<String> = []
+        private var commandLineChecker: CommandLineSpellChecker?
 
-    public func isCorrect(_ word: String) -> Bool {
-        let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
-        if clean.isEmpty || clean.count <= 1 { return true }
-        if ignoredWords.contains(clean) || userDictionary.contains(clean) { return true }
-        if let commandLineResult = commandLineChecker?.isCorrect(clean) {
-            return commandLineResult
-        }
-        return dictionary.contains(clean)
-    }
-
-    public func suggestions(for word: String) -> [String] {
-        let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
-        guard !clean.isEmpty else { return [] }
-        return Array(dictionary.filter { $0.hasPrefix(clean.prefix(2)) && abs($0.count - clean.count) <= 2 }.prefix(5))
-    }
-
-    public func ignoreWord(_ word: String) {
-        let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
-        ignoredWords.insert(clean)
-    }
-
-    public func addWordToDictionary(_ word: String) {
-        let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
-        userDictionary.insert(clean)
-    }
-}
-
-private final class CommandLineSpellChecker {
-    private let candidates: [(executable: URL, arguments: [String])]
-    private var cache: [String: Bool] = [:]
-
-    init?(language: String) {
-        let normalized = language.replacingOccurrences(of: "-", with: "_")
-        var found: [(URL, [String])] = []
-
-        if let hunspell = Self.findExecutable("hunspell") {
-            found.append((hunspell, ["-d", normalized, "-l"]))
-            found.append((hunspell, ["-l"]))
-        }
-        if let aspell = Self.findExecutable("aspell") {
-            found.append((aspell, ["--lang=\(normalized)", "list"]))
-            found.append((aspell, ["list"]))
+        public init(language: String = "en_US") {
+            self.language = language
+            self.commandLineChecker = CommandLineSpellChecker(language: language)
+            loadDictionary()
         }
 
-        guard !found.isEmpty else { return nil }
-        self.candidates = found
-    }
+        private func loadDictionary() {
+            dictionary.removeAll()
+            let normalizedLang = language.replacingOccurrences(of: "-", with: "_")
 
-    func isCorrect(_ word: String) -> Bool? {
-        if let cached = cache[word] { return cached }
+            let candidatePaths = [
+                "/usr/share/hunspell/\(normalizedLang).dic",
+                "/usr/share/myspell/\(normalizedLang).dic",
+                "/usr/share/myspell/dicts/\(normalizedLang).dic",
+                "\(NSHomeDirectory())/.hunspell/\(normalizedLang).dic",
+                "/usr/share/dict/words",
+                "/usr/dict/words",
+            ]
 
-        for candidate in candidates {
-            guard let result = run(candidate: candidate, word: word) else { continue }
-            cache[word] = result
-            return result
+            for path in candidatePaths {
+                if FileManager.default.fileExists(atPath: path),
+                    let content = try? String(contentsOfFile: path, encoding: .utf8)
+                {
+                    let lines = content.components(separatedBy: .newlines)
+                    for line in lines {
+                        let trimmed = line.trimmingCharacters(in: .whitespaces)
+                        if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
+                        // Strip Hunspell flags (e.g. word/FLAGS)
+                        let wordPart = trimmed.components(separatedBy: "/").first ?? trimmed
+                        dictionary.insert(wordPart.lowercased())
+                    }
+                    if !dictionary.isEmpty { return }
+                }
+            }
+
+            // Fallback to basic word list if no Hunspell or system dictionary file was found
+            let fallback = FallbackCheckerEngine(language: language)
+            self.dictionary = fallback.dictionary
         }
-        return nil
+
+        public func isCorrect(_ word: String) -> Bool {
+            let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            if clean.isEmpty || clean.count <= 1 { return true }
+            if ignoredWords.contains(clean) || userDictionary.contains(clean) { return true }
+            if let commandLineResult = commandLineChecker?.isCorrect(clean) {
+                return commandLineResult
+            }
+            return dictionary.contains(clean)
+        }
+
+        public func suggestions(for word: String) -> [String] {
+            let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            guard !clean.isEmpty else { return [] }
+            return Array(
+                dictionary.filter { $0.hasPrefix(clean.prefix(2)) && abs($0.count - clean.count) <= 2 }.prefix(5))
+        }
+
+        public func ignoreWord(_ word: String) {
+            let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            ignoredWords.insert(clean)
+        }
+
+        public func addWordToDictionary(_ word: String) {
+            let clean = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            userDictionary.insert(clean)
+        }
     }
 
-    private func run(candidate: (executable: URL, arguments: [String]), word: String) -> Bool? {
-        let process = Process()
-        process.executableURL = candidate.executable
-        process.arguments = candidate.arguments
+    private final class CommandLineSpellChecker {
+        private let candidates: [(executable: URL, arguments: [String])]
+        private var cache: [String: Bool] = [:]
 
-        let input = Pipe()
-        let output = Pipe()
-        let error = Pipe()
-        process.standardInput = input
-        process.standardOutput = output
-        process.standardError = error
+        init?(language: String) {
+            let normalized = language.replacingOccurrences(of: "-", with: "_")
+            var found: [(URL, [String])] = []
 
-        do {
-            try process.run()
-            input.fileHandleForWriting.write(Data((word + "\n").utf8))
-            input.fileHandleForWriting.closeFile()
-            process.waitUntilExit()
-        } catch {
+            if let hunspell = Self.findExecutable("hunspell") {
+                found.append((hunspell, ["-d", normalized, "-l"]))
+                found.append((hunspell, ["-l"]))
+            }
+            if let aspell = Self.findExecutable("aspell") {
+                found.append((aspell, ["--lang=\(normalized)", "list"]))
+                found.append((aspell, ["list"]))
+            }
+
+            guard !found.isEmpty else { return nil }
+            self.candidates = found
+        }
+
+        func isCorrect(_ word: String) -> Bool? {
+            if let cached = cache[word] { return cached }
+
+            for candidate in candidates {
+                guard let result = run(candidate: candidate, word: word) else { continue }
+                cache[word] = result
+                return result
+            }
             return nil
         }
 
-        guard process.terminationStatus == 0 else { return nil }
-        let data = output.fileHandleForReading.readDataToEndOfFile()
-        let misspellings =
-            String(data: data, encoding: .utf8)?
-            .components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-            .filter { !$0.isEmpty } ?? []
+        private func run(candidate: (executable: URL, arguments: [String]), word: String) -> Bool? {
+            let process = Process()
+            process.executableURL = candidate.executable
+            process.arguments = candidate.arguments
 
-        return !misspellings.contains(word.lowercased())
-    }
+            let input = Pipe()
+            let output = Pipe()
+            let error = Pipe()
+            process.standardInput = input
+            process.standardOutput = output
+            process.standardError = error
 
-    private static func findExecutable(_ name: String) -> URL? {
-        let pathEntries = (ProcessInfo.processInfo.environment["PATH"] ?? "")
-            .split(separator: ":")
-            .map(String.init)
-        let candidates = pathEntries + ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"]
-
-        for directory in candidates {
-            let path = URL(fileURLWithPath: directory).appendingPathComponent(name).path
-            if FileManager.default.isExecutableFile(atPath: path) {
-                return URL(fileURLWithPath: path)
+            do {
+                try process.run()
+                input.fileHandleForWriting.write(Data((word + "\n").utf8))
+                input.fileHandleForWriting.closeFile()
+                process.waitUntilExit()
+            } catch {
+                return nil
             }
+
+            guard process.terminationStatus == 0 else { return nil }
+            let data = output.fileHandleForReading.readDataToEndOfFile()
+            let misspellings =
+                String(data: data, encoding: .utf8)?
+                .components(separatedBy: .newlines)
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                .filter { !$0.isEmpty } ?? []
+
+            return !misspellings.contains(word.lowercased())
         }
-        return nil
+
+        private static func findExecutable(_ name: String) -> URL? {
+            let pathEntries = (ProcessInfo.processInfo.environment["PATH"] ?? "")
+                .split(separator: ":")
+                .map(String.init)
+            let candidates = pathEntries + ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"]
+
+            for directory in candidates {
+                let path = URL(fileURLWithPath: directory).appendingPathComponent(name).path
+                if FileManager.default.isExecutableFile(atPath: path) {
+                    return URL(fileURLWithPath: path)
+                }
+            }
+            return nil
+        }
     }
-}
 #endif
 
 // MARK: - Windows Engine

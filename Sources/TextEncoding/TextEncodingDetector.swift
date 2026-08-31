@@ -31,34 +31,34 @@ public enum TextEncodingDetector {
         }
 
         #if !os(WASI)
-        // 3. Multi-byte candidate encodings
-        let candidateEncodings: [String.Encoding] = [
-            .big5,
-            .gb18030,
-            .gbk,
-            .shiftJISCustom,
-            .utf16,
-            .eucJPCustom,
-        ]
+            // 3. Multi-byte candidate encodings
+            let candidateEncodings: [String.Encoding] = [
+                .big5,
+                .gb18030,
+                .gbk,
+                .shiftJISCustom,
+                .utf16,
+                .eucJPCustom,
+            ]
 
-        for encoding in candidateEncodings {
-            if let decodedResult = tryDecode(data, encoding: encoding) {
-                return decodedResult
+            for encoding in candidateEncodings {
+                if let decodedResult = tryDecode(data, encoding: encoding) {
+                    return decodedResult
+                }
             }
-        }
 
-        // 4. Single-byte 8-bit fallback (e.g. Windows-1252 / ISO-8859-1)
-        if let fallbackString = String(data: data, encoding: .windowsCP1252)
-            ?? String(data: data, encoding: .isoLatin1)
-        {
-            let actualEncoding: String.Encoding =
-                String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
-            return TextReadResult(content: fallbackString, encoding: actualEncoding)
-        }
-        return nil
+            // 4. Single-byte 8-bit fallback (e.g. Windows-1252 / ISO-8859-1)
+            if let fallbackString = String(data: data, encoding: .windowsCP1252)
+                ?? String(data: data, encoding: .isoLatin1)
+            {
+                let actualEncoding: String.Encoding =
+                    String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
+                return TextReadResult(content: fallbackString, encoding: actualEncoding)
+            }
+            return nil
         #else
-        // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
-        return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
+            // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
+            return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
         #endif
     }
 

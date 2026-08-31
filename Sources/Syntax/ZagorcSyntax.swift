@@ -31,7 +31,8 @@ public struct ZagorcSyntaxDefinition: SyntaxDefinition {
 
     private static let dialectPattern: String = {
         let names = LogoLocalizationRegistry.allDialects.flatMap { [$0.id] + $0.aliases }
-        let alternatives = names
+        let alternatives =
+            names
             .sorted { $0.count > $1.count }
             .map(NSRegularExpression.escapedPattern(for:))
             .joined(separator: "|")

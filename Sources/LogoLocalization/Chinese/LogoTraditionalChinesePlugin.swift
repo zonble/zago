@@ -150,7 +150,7 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "要是": .ifCondition,
         "如果": .ifCondition,
         "若": .ifCondition,
-        "計數迴圈": .forLoop,   
+        "計數迴圈": .forLoop,
         "當": .whileLoop,
         "只要": .whileLoop,
         "凡是": .whileLoop,
@@ -267,7 +267,6 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "邏輯右移": .rshift,
         "左移": .lshift,
         "右移": .rshift,
-
 
         // Logic & Comparisons
         "真": .trueVal,
@@ -477,7 +476,6 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
         "正規取代": .regexReplace,
         "正規尋找": .regexFind,
 
-
         // Formatting & Date
         "日期": .date,
         "時間": .time,
@@ -672,7 +670,8 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     }
 
     public func parsePersonNameField(_ token: String) -> LogoPersonNameField? {
-        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(
+            in: .whitespacesAndNewlines)
         switch clean {
         case "名", "名字", "名氏": return .givenName
         case "姓", "姓氏": return .familyName
@@ -688,7 +687,8 @@ public struct LogoTraditionalChinesePlugin: LogoParserPlugin {
     }
 
     public func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? {
-        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        let clean = token.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(
+            in: .whitespacesAndNewlines)
         switch clean {
         case "類型", "種類": return .type
         case "風格", "樣式", "格式": return .style

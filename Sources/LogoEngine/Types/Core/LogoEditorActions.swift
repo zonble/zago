@@ -1,5 +1,5 @@
-import Foundation
 import Drawing
+import Foundation
 
 public struct LogoCanvasBlockFrame: Sendable, Equatable {
     public let lineIndex: Int

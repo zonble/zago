@@ -961,7 +961,8 @@ extension LogoEngine {
             let raw = reader.nextExpression()
             let name = normalizeProcedureName(raw)
             reader.commit(to: &index)
-            let exists = parsePrimitive(unquote(raw)) != nil || LogoPrimitive.from(name) != nil || customProcedures[name] != nil
+            let exists =
+                parsePrimitive(unquote(raw)) != nil || LogoPrimitive.from(name) != nil || customProcedures[name] != nil
             return exists.logoString
 
         case .isPrimitive:

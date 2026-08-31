@@ -117,7 +117,6 @@ public struct BorderCharacterSet: Sendable {
         return set.subtracting(topOnly)
     }()
 
-
     /// Returns true if character is any recognized border, junction, or corner character.
     public static func isBorderOrJunction(_ ch: Character) -> Bool {
         allBorderChars.contains(ch)
@@ -336,44 +335,84 @@ public struct BoxStyle: Sendable {
         switch border {
         case .single:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─", bottomRight: "╯")
-                : BoxStyle(topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─", bottomRight: "┘")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "─", topRight: "╮", sideChar: "│", bottomLeft: "╰", bottomChar: "─",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┌", topChar: "─", topRight: "┐", sideChar: "│", bottomLeft: "└", bottomChar: "─",
+                    bottomRight: "┘")
         case .heavy:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "━", topRight: "╮", sideChar: "┃", bottomLeft: "╰", bottomChar: "━", bottomRight: "╯")
-                : BoxStyle(topLeft: "┏", topChar: "━", topRight: "┓", sideChar: "┃", bottomLeft: "┗", bottomChar: "━", bottomRight: "┛")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "━", topRight: "╮", sideChar: "┃", bottomLeft: "╰", bottomChar: "━",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┏", topChar: "━", topRight: "┓", sideChar: "┃", bottomLeft: "┗", bottomChar: "━",
+                    bottomRight: "┛")
         case .double:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═", bottomRight: "╯")
-                : BoxStyle(topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═", bottomRight: "╝")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "═", topRight: "╮", sideChar: "║", bottomLeft: "╰", bottomChar: "═",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "╔", topChar: "═", topRight: "╗", sideChar: "║", bottomLeft: "╚", bottomChar: "═",
+                    bottomRight: "╝")
         case .ascii:
             return rounded
-                ? BoxStyle(topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-", bottomRight: "/")
-                : BoxStyle(topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-", bottomRight: "+")
+                ? BoxStyle(
+                    topLeft: "/", topChar: "-", topRight: "\\", sideChar: "|", bottomLeft: "\\", bottomChar: "-",
+                    bottomRight: "/")
+                : BoxStyle(
+                    topLeft: "+", topChar: "-", topRight: "+", sideChar: "|", bottomLeft: "+", bottomChar: "-",
+                    bottomRight: "+")
         case .tripleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "┄", topRight: "╮", sideChar: "┆", bottomLeft: "╰", bottomChar: "┄", bottomRight: "╯")
-                : BoxStyle(topLeft: "┌", topChar: "┄", topRight: "┐", sideChar: "┆", bottomLeft: "└", bottomChar: "┄", bottomRight: "┘")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "┄", topRight: "╮", sideChar: "┆", bottomLeft: "╰", bottomChar: "┄",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┌", topChar: "┄", topRight: "┐", sideChar: "┆", bottomLeft: "└", bottomChar: "┄",
+                    bottomRight: "┘")
         case .heavyTripleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "┅", topRight: "╮", sideChar: "┇", bottomLeft: "╰", bottomChar: "┅", bottomRight: "╯")
-                : BoxStyle(topLeft: "┏", topChar: "┅", topRight: "┓", sideChar: "┇", bottomLeft: "┗", bottomChar: "┅", bottomRight: "┛")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "┅", topRight: "╮", sideChar: "┇", bottomLeft: "╰", bottomChar: "┅",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┏", topChar: "┅", topRight: "┓", sideChar: "┇", bottomLeft: "┗", bottomChar: "┅",
+                    bottomRight: "┛")
         case .quadrupleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "┈", topRight: "╮", sideChar: "┊", bottomLeft: "╰", bottomChar: "┈", bottomRight: "╯")
-                : BoxStyle(topLeft: "┌", topChar: "┈", topRight: "┐", sideChar: "┊", bottomLeft: "└", bottomChar: "┈", bottomRight: "┘")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "┈", topRight: "╮", sideChar: "┊", bottomLeft: "╰", bottomChar: "┈",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┌", topChar: "┈", topRight: "┐", sideChar: "┊", bottomLeft: "└", bottomChar: "┈",
+                    bottomRight: "┘")
         case .heavyQuadrupleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "┉", topRight: "╮", sideChar: "┋", bottomLeft: "╰", bottomChar: "┉", bottomRight: "╯")
-                : BoxStyle(topLeft: "┏", topChar: "┉", topRight: "┓", sideChar: "┋", bottomLeft: "┗", bottomChar: "┉", bottomRight: "┛")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "┉", topRight: "╮", sideChar: "┋", bottomLeft: "╰", bottomChar: "┉",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┏", topChar: "┉", topRight: "┓", sideChar: "┋", bottomLeft: "┗", bottomChar: "┉",
+                    bottomRight: "┛")
         case .doubleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "╌", topRight: "╮", sideChar: "╎", bottomLeft: "╰", bottomChar: "╌", bottomRight: "╯")
-                : BoxStyle(topLeft: "┌", topChar: "╌", topRight: "┐", sideChar: "╎", bottomLeft: "└", bottomChar: "╌", bottomRight: "┘")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "╌", topRight: "╮", sideChar: "╎", bottomLeft: "╰", bottomChar: "╌",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┌", topChar: "╌", topRight: "┐", sideChar: "╎", bottomLeft: "└", bottomChar: "╌",
+                    bottomRight: "┘")
         case .heavyDoubleDash:
             return rounded
-                ? BoxStyle(topLeft: "╭", topChar: "╍", topRight: "╮", sideChar: "╏", bottomLeft: "╰", bottomChar: "╍", bottomRight: "╯")
-                : BoxStyle(topLeft: "┏", topChar: "╍", topRight: "┓", sideChar: "╏", bottomLeft: "┗", bottomChar: "╍", bottomRight: "┛")
+                ? BoxStyle(
+                    topLeft: "╭", topChar: "╍", topRight: "╮", sideChar: "╏", bottomLeft: "╰", bottomChar: "╍",
+                    bottomRight: "╯")
+                : BoxStyle(
+                    topLeft: "┏", topChar: "╍", topRight: "┓", sideChar: "╏", bottomLeft: "┗", bottomChar: "╍",
+                    bottomRight: "┛")
         }
     }
 

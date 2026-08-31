@@ -371,11 +371,13 @@ final class Renderer {
                         let isInactiveCursorPos: Bool
                         if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
                             if editor.isTableModeActive, let cell = editor.currentTableCell,
-                                editor.buffer.lineIndex >= cell.innerMinLine && editor.buffer.lineIndex <= cell.innerMaxLine
+                                editor.buffer.lineIndex >= cell.innerMinLine
+                                    && editor.buffer.lineIndex <= cell.innerMaxLine
                             {
                                 let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
                                     in: vLine.text, nearCol: targetVCol, cell: cell)
-                                let effectiveCol = (targetVCol >= rightBorder) ? max(leftBorder + 1, rightBorder - 1) : targetVCol
+                                let effectiveCol =
+                                    (targetVCol >= rightBorder) ? max(leftBorder + 1, rightBorder - 1) : targetVCol
                                 isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == effectiveCol)
                             } else {
                                 isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == targetVCol)
@@ -487,7 +489,8 @@ final class Renderer {
                             lineOutput += " ".ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
                             renderedDisplayWidth += 1
                         } else if isInactiveCursorAtEnd {
-                            lineOutput += " ".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
+                            lineOutput += " ".ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
                             renderedDisplayWidth += 1
                         }
                     } else if isInactiveCursorAtEnd {
@@ -715,7 +718,8 @@ final class Renderer {
             if editor.isCanvasModeActive {
                 let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
                 let cursorColInViewport = editor.canvasVisualColumn - editor.canvasHorizontalOffset
-                isCursorOffScreen = cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
+                isCursorOffScreen =
+                    cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
                     || cursorColInViewport < 0 || cursorColInViewport >= max(0, cols - gutterWidth)
             } else {
                 let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex

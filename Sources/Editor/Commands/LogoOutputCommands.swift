@@ -104,9 +104,9 @@ struct LogoDebugCommand: Command {
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         let subcmd = input.tokens.dropFirst().first?.lowercased()
         #if os(WASI)
-        if subcmd == "break" || subcmd == "continue" || subcmd == "step" || subcmd == "abort" {
-            return .noOp(message: editor.l10n["status.logo_debug_unsupported_wasi"])
-        }
+            if subcmd == "break" || subcmd == "continue" || subcmd == "step" || subcmd == "abort" {
+                return .noOp(message: editor.l10n["status.logo_debug_unsupported_wasi"])
+            }
         #endif
 
         switch subcmd {

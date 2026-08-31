@@ -16,7 +16,8 @@ public enum LogoFormatOptionField: String, CaseIterable, Sendable, Equatable {
     case time
 
     public static func parse(_ raw: String) -> LogoFormatOptionField? {
-        let clean = raw.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        let clean = raw.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(
+            in: .whitespacesAndNewlines)
         switch clean {
         case "type", "kind": return .type
         case "style": return .style

@@ -235,12 +235,14 @@ public final class Editor: @unchecked Sendable {
 
         public init() {}
 
-        public mutating func registerClick(row: Int, col: Int, vLineIndex: Int, maxInterval: TimeInterval = 0.4) -> Int {
+        public mutating func registerClick(row: Int, col: Int, vLineIndex: Int, maxInterval: TimeInterval = 0.4) -> Int
+        {
             let now = Date()
             if let lastTime = lastClickTime,
-               let lastVLine = lastClickVLineIndex,
-               lastVLine == vLineIndex,
-               now.timeIntervalSince(lastTime) <= maxInterval {
+                let lastVLine = lastClickVLineIndex,
+                lastVLine == vLineIndex,
+                now.timeIntervalSince(lastTime) <= maxInterval
+            {
                 clickCount += 1
             } else {
                 clickCount = 1
@@ -395,7 +397,11 @@ public final class Editor: @unchecked Sendable {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
             } else if let path = buffer.filePath {
                 _ = loadFileContent(into: buffer, path: path, reportStatus: false)
-                if shouldLaunchJournal && path == Self.resolveTodayJournalPath(configuredFolder: resolved.journalFolder, fileIO: dependencies.fileIOStrategy) {
+                if shouldLaunchJournal
+                    && path
+                        == Self.resolveTodayJournalPath(
+                            configuredFolder: resolved.journalFolder, fileIO: dependencies.fileIOStrategy)
+                {
                     Self.populateNewJournalBufferIfNeeded(buffer, fileIO: dependencies.fileIOStrategy)
                 }
             }

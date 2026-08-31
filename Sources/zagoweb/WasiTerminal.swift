@@ -174,9 +174,10 @@ public final class WasiTerminal: EditorTerminal {
             if sequence.hasPrefix("8;") && char == "t" {
                 let params = sequence.dropFirst(2).dropLast(1).split(separator: ";")
                 if params.count == 2,
-                   let r = Int(params[0]),
-                   let c = Int(params[1]),
-                   r > 0, c > 0 {
+                    let r = Int(params[0]),
+                    let c = Int(params[1]),
+                    r > 0, c > 0
+                {
                     currentRows = r
                     currentCols = c
                     return .key(.resize)
@@ -232,11 +233,17 @@ public final class WasiTerminal: EditorTerminal {
     private func decodeUTF8Key(firstByte: UInt8) -> Key {
         var bytes = [firstByte]
         let expectedLength: Int
-        if firstByte & 0x80 == 0 { expectedLength = 1 }
-        else if firstByte & 0xE0 == 0xC0 { expectedLength = 2 }
-        else if firstByte & 0xF0 == 0xE0 { expectedLength = 3 }
-        else if firstByte & 0xF8 == 0xF0 { expectedLength = 4 }
-        else { return .unknown }
+        if firstByte & 0x80 == 0 {
+            expectedLength = 1
+        } else if firstByte & 0xE0 == 0xC0 {
+            expectedLength = 2
+        } else if firstByte & 0xF0 == 0xE0 {
+            expectedLength = 3
+        } else if firstByte & 0xF8 == 0xF0 {
+            expectedLength = 4
+        } else {
+            return .unknown
+        }
 
         while bytes.count < expectedLength {
             guard let nextByte = readByte() else { return .unknown }

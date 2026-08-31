@@ -24,8 +24,8 @@ public struct MouseEvent: Equatable, Hashable, Sendable {
     }
 
     public let action: Action
-    public let col: Int      // Native 1-based column (1..cols) matching SGR 1006
-    public let row: Int      // Native 1-based row (1..rows) matching SGR 1006
+    public let col: Int  // Native 1-based column (1..cols) matching SGR 1006
+    public let row: Int  // Native 1-based row (1..rows) matching SGR 1006
     public let shift: Bool
     public let alt: Bool
     public let ctrl: Bool

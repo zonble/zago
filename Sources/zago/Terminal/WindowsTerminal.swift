@@ -98,7 +98,8 @@ import Foundation
                     throw StartupError.consoleModeUnavailable
                 }
                 var rawInput = originalInputMode
-                rawInput &= ~DWORD(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_QUICK_EDIT_MODE)
+                rawInput &= ~DWORD(
+                    ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_QUICK_EDIT_MODE)
                 rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_WINDOW_INPUT | ENABLE_EXTENDED_FLAGS)
                 guard SetConsoleMode(hInput, rawInput) else {
                     throw StartupError.consoleModeUnavailable

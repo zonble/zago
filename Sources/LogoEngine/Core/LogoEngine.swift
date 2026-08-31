@@ -235,7 +235,9 @@ public final class LogoEngine: @unchecked Sendable {
         index: inout Int,
         frameReturn: inout String?
     ) {
-        while index < sourceTokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError && currentThrowTag == nil {
+        while index < sourceTokens.count && frameReturn == nil && !byeFlag && !hasUncaughtError
+            && currentThrowTag == nil
+        {
             if !executionFrames.isEmpty {
                 executionFrames[executionFrames.count - 1] = LogoExecutionFrame(
                     procedureName: executionFrames.last?.procedureName,

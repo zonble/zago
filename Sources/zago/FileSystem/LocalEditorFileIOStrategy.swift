@@ -188,7 +188,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func documentDirectoryPath() -> String {
         if let docsUrl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
-            fileManager.fileExists(atPath: docsUrl.path) {
+            fileManager.fileExists(atPath: docsUrl.path)
+        {
             return docsUrl.path
         }
         let home = homeDirectoryPath()

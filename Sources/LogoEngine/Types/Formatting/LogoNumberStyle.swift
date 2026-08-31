@@ -17,7 +17,8 @@ public enum LogoNumberStyle: String, CaseIterable, Sendable, Equatable {
         switch clean {
         case "spellout", "words", "word", "text", "chinese", "cjk", "spoken":
             self = .spellout
-        case "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional", "daxie":
+        case "financial", "capital", "caps", "cap", "upper", "check", "cheque", "bank", "invoice", "traditional",
+            "daxie":
             self = .financial
         case "suzhou", "suzhounumeral", "suzhoucode", "huama":
             self = .suzhou

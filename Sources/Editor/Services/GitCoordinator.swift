@@ -47,10 +47,14 @@ public final class GitCoordinator: @unchecked Sendable {
             }
             guard _isDirty else { return }
             let now = Date()
-            if !force && !stateChanged && debounceInterval > 0 && now.timeIntervalSince(_lastUpdateTime) < debounceInterval {
+            if !force && !stateChanged && debounceInterval > 0
+                && now.timeIntervalSince(_lastUpdateTime) < debounceInterval
+            {
                 return
             }
-            update(filePath: filePath, currentLines: currentLines, showGitDiff: showGitDiff, isScratchBuffer: isScratchBuffer)
+            update(
+                filePath: filePath, currentLines: currentLines, showGitDiff: showGitDiff,
+                isScratchBuffer: isScratchBuffer)
         }
     }
 

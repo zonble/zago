@@ -6,7 +6,8 @@ extension LogoPrimitive {
         case .ifCondition:
             LogoPrimitiveMeta(
                 name: "IF",
-                description: "Conditionally executes instructions if predicate is true, with optional else-branch (alias: IFELSE).",
+                description:
+                    "Conditionally executes instructions if predicate is true, with optional else-branch (alias: IFELSE).",
                 localizedDescriptionKey: "logo.doc.if",
                 source: .ucbLogo,
                 parameters: [

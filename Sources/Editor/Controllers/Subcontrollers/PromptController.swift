@@ -43,18 +43,18 @@ final class PromptController: KeyInputHandler {
             case .confirmExitSave(let completion):
                 completion(nil)
             case .confirmExternalReload(let completion),
-                 .confirmEncodingFallback(_, let completion),
-                 .confirmBackupFailure(_, let completion):
+                .confirmEncodingFallback(_, let completion),
+                .confirmBackupFailure(_, let completion):
                 completion(false)
             case .search(let completion),
-                 .replaceSearch(let completion),
-                 .replaceWith(_, let completion),
-                 .insertFilePath(let completion),
-                 .spellCheck(_, _, _, let completion),
-                 .logoMacro(let completion),
-                 .fillText(let completion),
-                 .tableDimensions(let completion),
-                 .gotoLine(let completion):
+                .replaceSearch(let completion),
+                .replaceWith(_, let completion),
+                .insertFilePath(let completion),
+                .spellCheck(_, _, _, let completion),
+                .logoMacro(let completion),
+                .fillText(let completion),
+                .tableDimensions(let completion),
+                .gotoLine(let completion):
                 completion(nil)
             case .confirmReplace(_, _, let completion):
                 completion(.cancel)
@@ -425,7 +425,8 @@ extension PromptController {
             .gotoLine,
             .logoReadWord:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure, .confirmReplace, .describeKey,
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure,
+            .confirmReplace, .describeKey,
             .logoReadChar:
             return false
         }

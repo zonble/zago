@@ -31,29 +31,29 @@ public enum LogoByteCountFormatter {
         locale: String? = nil
     ) -> String {
         #if canImport(Darwin)
-        guard let countStyle = style.countStyle else {
-            let numFormatter = NumberFormatter()
-            numFormatter.locale = Locale(logoLocaleSpec: locale)
-            numFormatter.numberStyle = .decimal
-            let numStr = numFormatter.string(from: NSNumber(value: bytes)) ?? "\(bytes)"
-            return "\(numStr) bytes"
-        }
+            guard let countStyle = style.countStyle else {
+                let numFormatter = NumberFormatter()
+                numFormatter.locale = Locale(logoLocaleSpec: locale)
+                numFormatter.numberStyle = .decimal
+                let numStr = numFormatter.string(from: NSNumber(value: bytes)) ?? "\(bytes)"
+                return "\(numStr) bytes"
+            }
 
-        let formatter = ByteCountFormatter()
-        formatter.includesUnit = true
-        formatter.isAdaptive = true
-        formatter.countStyle = countStyle
-        return formatter.string(fromByteCount: bytes)
+            let formatter = ByteCountFormatter()
+            formatter.includesUnit = true
+            formatter.isAdaptive = true
+            formatter.countStyle = countStyle
+            return formatter.string(fromByteCount: bytes)
         #else
-        switch style {
-        case .bytes:
-            let numStr = NumberFormatHelper.formatWithGrouping(Double(bytes))
-            return "\(numStr) bytes"
-        case .binary, .memory:
-            return NumberFormatHelper.formatBytes(bytes, isBinary: true)
-        case .decimal, .file:
-            return NumberFormatHelper.formatBytes(bytes, isBinary: false)
-        }
+            switch style {
+            case .bytes:
+                let numStr = NumberFormatHelper.formatWithGrouping(Double(bytes))
+                return "\(numStr) bytes"
+            case .binary, .memory:
+                return NumberFormatHelper.formatBytes(bytes, isBinary: true)
+            case .decimal, .file:
+                return NumberFormatHelper.formatBytes(bytes, isBinary: false)
+            }
         #endif
     }
 }

@@ -24,10 +24,12 @@ extension Editor {
             }
 
             // Determine if at or beyond boundary and compute two-tier interval
-            let isOutsideWindow = mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
+            let isOutsideWindow =
+                mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
                 || mouseEvent.col <= 0 || mouseEvent.col > geometry.cols
             let isAtBoundaryRow = mouseEvent.row <= topMargin || mouseEvent.row > topMargin + geometry.mainAreaHeight
-            let isAtBoundaryCol = isCanvasModeActive && (mouseEvent.col <= 1 + geometry.gutterWidth || mouseEvent.col > geometry.cols)
+            let isAtBoundaryCol =
+                isCanvasModeActive && (mouseEvent.col <= 1 + geometry.gutterWidth || mouseEvent.col > geometry.cols)
 
             if isOutsideWindow {
                 activeBoundaryDragState = BoundaryDragScrollState(lastEvent: mouseEvent, intervalMs: 30)
@@ -94,7 +96,8 @@ extension Editor {
                 canvasVisualColumn = canvasX
                 syncCanvasCursorToBuffer()
             } else if isTableModeActive {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 if buffer.selectionMark == nil {
                     buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
                 }
@@ -102,7 +105,8 @@ extension Editor {
                 buffer.columnIndex = targetCol
                 tableModeController.clampTableModeCursor()
             } else {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 if buffer.selectionMark == nil {
                     buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
                 }
@@ -155,8 +159,9 @@ extension Editor {
 
             let (startCol, boxWidth, boxLines) = renderer.generateDropdownOverlayLines(editor: self, cols: cols)
             let boxEndRow = 2 + boxLines.count - 1
-            if mouseEvent.row >= 2 && mouseEvent.row <= boxEndRow &&
-               mouseEvent.col >= startCol + 1 && mouseEvent.col <= startCol + boxWidth {
+            if mouseEvent.row >= 2 && mouseEvent.row <= boxEndRow && mouseEvent.col >= startCol + 1
+                && mouseEvent.col <= startCol + boxWidth
+            {
                 let items = menuBar.currentCategory.items
                 let itemRowStart = 3
                 let itemRowEnd = 2 + items.count
@@ -264,12 +269,14 @@ extension Editor {
                 canvasVisualColumn = canvasX
                 syncCanvasCursorToBuffer()
             } else if isTableModeActive {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol
                 tableModeController.clampTableModeCursor()
             } else {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 buffer.selectionMark = nil
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol

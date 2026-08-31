@@ -2,15 +2,15 @@ import Foundation
 
 extension Locale {
     private static let commonLanguageCodes: Set<String> = [
-        "zh", "en", "ja", "fr", "de", "es", "it", "ko", "th", "ru", "pt"
+        "zh", "en", "ja", "fr", "de", "es", "it", "ko", "th", "ru", "pt",
     ]
 
     public init(logoLocaleSpec raw: String?) {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
             #if canImport(Darwin)
-            self = .current
+                self = .current
             #else
-            self = NSLocale.current as Locale
+                self = NSLocale.current as Locale
             #endif
             return
         }
@@ -18,9 +18,9 @@ extension Locale {
         let lower = clean.lowercased()
         if lower == "system" || lower == "current" {
             #if canImport(Darwin)
-            self = .current
+                self = .current
             #else
-            self = NSLocale.current as Locale
+                self = NSLocale.current as Locale
             #endif
             return
         }
@@ -33,9 +33,9 @@ extension Locale {
             identifier = clean
         }
         #if canImport(Darwin)
-        self = Locale(identifier: identifier)
+            self = Locale(identifier: identifier)
         #else
-        self = NSLocale(localeIdentifier: identifier) as Locale
+            self = NSLocale(localeIdentifier: identifier) as Locale
         #endif
     }
 
@@ -129,7 +129,7 @@ extension TimeZone {
 
 extension Calendar.Component {
     public static let supportedLogoUnitNames: [String] = [
-        "days", "weeks", "months", "years", "hours", "minutes", "seconds"
+        "days", "weeks", "months", "years", "hours", "minutes", "seconds",
     ]
 
     public init(_ rawUnit: String) {
@@ -149,11 +149,12 @@ extension Calendar.Component {
 
 extension Calendar.Identifier {
     public static let supportedLogoCalendarNames: [String] = [
-        "gregorian", "japanese", "buddhist", "roc", "islamic", "hebrew", "chinese"
+        "gregorian", "japanese", "buddhist", "roc", "islamic", "hebrew", "chinese",
     ]
 
     public init?(logoCalendarName: String?) {
-        guard let raw = logoCalendarName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !raw.isEmpty else {
+        guard let raw = logoCalendarName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !raw.isEmpty
+        else {
             return nil
         }
         let clean = raw.hasPrefix(":") ? String(raw.dropFirst()) : raw

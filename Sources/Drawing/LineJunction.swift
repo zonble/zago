@@ -66,10 +66,10 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle, rounded: Bool
         if rounded {
             switch normalizedMask {
             case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask,
-                 CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
+                CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
                 return "/"
             case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask,
-                 CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
+                CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
                 return "\\"
             case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
                 CanvasDrawDirection.left.mask,

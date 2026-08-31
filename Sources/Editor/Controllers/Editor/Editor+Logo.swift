@@ -39,7 +39,8 @@ extension Editor: LogoEngineDelegate {
             outdentSelectedOrCurrentLines(levels: levels)
         case .createTable(let rows, let cols, let cellWidth, let borderStyle, let rounded):
             tableModeController.createTable(
-                rows: rows, cols: cols, cellWidth: cellWidth, borderStyle: borderStyle, rounded: rounded, enterMode: false, saveSnapshot: false)
+                rows: rows, cols: cols, cellWidth: cellWidth, borderStyle: borderStyle, rounded: rounded,
+                enterMode: false, saveSnapshot: false)
         case .setBorderStyle(let style):
             setBorderStyle(style)
         case .setArrowStyle(let style):
@@ -532,11 +533,11 @@ extension Editor {
 
         let errorLine: String
         switch (pos, err.procedureName) {
-        case let (pos?, proc?) where !proc.isEmpty:
+        case (let pos?, let proc?) where !proc.isEmpty:
             errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col) in procedure '\(proc)': \(innerMsg)]"
-        case let (pos?, _):
+        case (let pos?, _):
             errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col): \(innerMsg)]"
-        case let (nil, proc?) where !proc.isEmpty:
+        case (nil, let proc?) where !proc.isEmpty:
             errorLine = "[\(prefixTag) in procedure '\(proc)': \(innerMsg)]"
         case (nil, _):
             errorLine = "[\(prefixTag): \(innerMsg)]"
@@ -656,7 +657,10 @@ extension Editor {
     }
 
     private func extractEmbeddedLogoBlock() -> (script: String, startLine: Int)? {
-        guard let res = EmbeddedCodeBlockExtractor.extractBlock(targetLanguage: "logo", in: buffer.lines, lineIndex: buffer.lineIndex) else {
+        guard
+            let res = EmbeddedCodeBlockExtractor.extractBlock(
+                targetLanguage: "logo", in: buffer.lines, lineIndex: buffer.lineIndex)
+        else {
             return nil
         }
         return (script: res.script, startLine: res.startLine)

@@ -217,8 +217,8 @@ extension Renderer {
     struct HelpBarLayoutItem {
         let key: String
         let label: String
-        let startCol: Int // 1-based inclusive
-        let endCol: Int   // 1-based inclusive
+        let startCol: Int  // 1-based inclusive
+        let endCol: Int  // 1-based inclusive
     }
 
     /// Computes Help Bar 2D item layout and character bounding intervals.
@@ -410,10 +410,12 @@ extension Renderer {
         var maxColWidths: [Int] = []
 
         for i in 0..<numCols {
-            let item1Width = (i < rawItems1.count)
+            let item1Width =
+                (i < rawItems1.count)
                 ? (rawItems1[i].key.count + (rawItems1[i].label.isEmpty ? 0 : 1) + rawItems1[i].label.displayWidth)
                 : 0
-            let item2Width = (i < rawItems2.count)
+            let item2Width =
+                (i < rawItems2.count)
                 ? (rawItems2[i].key.count + (rawItems2[i].label.isEmpty ? 0 : 1) + rawItems2[i].label.displayWidth)
                 : 0
             maxColWidths.append(max(item1Width, item2Width))
@@ -427,27 +429,29 @@ extension Renderer {
         var layout1: [HelpBarLayoutItem] = []
         var layout2: [HelpBarLayoutItem] = []
 
-        var curCol = 1 // 1-based start column
+        var curCol = 1  // 1-based start column
         for i in 0..<numCols {
             let colWidth = maxColWidths[i]
             if curCol + colWidth - 1 > helpWidth { break }
 
             if i < rawItems1.count {
-                layout1.append(HelpBarLayoutItem(
-                    key: rawItems1[i].key,
-                    label: rawItems1[i].label,
-                    startCol: curCol,
-                    endCol: curCol + colWidth - 1
-                ))
+                layout1.append(
+                    HelpBarLayoutItem(
+                        key: rawItems1[i].key,
+                        label: rawItems1[i].label,
+                        startCol: curCol,
+                        endCol: curCol + colWidth - 1
+                    ))
             }
 
             if i < rawItems2.count {
-                layout2.append(HelpBarLayoutItem(
-                    key: rawItems2[i].key,
-                    label: rawItems2[i].label,
-                    startCol: curCol,
-                    endCol: curCol + colWidth - 1
-                ))
+                layout2.append(
+                    HelpBarLayoutItem(
+                        key: rawItems2[i].key,
+                        label: rawItems2[i].label,
+                        startCol: curCol,
+                        endCol: curCol + colWidth - 1
+                    ))
             }
 
             curCol += colWidth + gapSize

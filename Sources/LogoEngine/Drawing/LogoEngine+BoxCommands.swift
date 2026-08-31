@@ -74,7 +74,8 @@ extension LogoEngine {
                 let isQuoted = isQuotedWordToken(rawToken)
                 let unquotedRaw = unquote(rawToken)
                 let val: String
-                if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
+                if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw)
+                    || BoxAlignment(unquotedRaw) != nil
                     || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
                     || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoxRoundArgument(unquotedRaw) != nil
                 {
@@ -84,7 +85,9 @@ extension LogoEngine {
                 }
                 index = evalIndex
 
-                if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
+                if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:"))
+                    ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil
+                {
                     exitPos = parsedExit
                 } else if let parsedAlign = BoxAlignment(val) {
                     align = parsedAlign
@@ -93,7 +96,9 @@ extension LogoEngine {
                     textContent = val
                 } else if let parsedBool = parseBoxRoundArgument(val) {
                     isRound = parsedBool
-                } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
+                } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val)
+                    || StyleDSL.parseBoxStyle(val) != nil
+                {
                     styleName = val
                 } else if textContent == nil {
                     textContent = val
@@ -105,11 +110,13 @@ extension LogoEngine {
                     align = .center
                 }
                 drawBoxAroundText(
-                    text, targetWidth: width, targetHeight: height, align: align, style: boxStyle(named: styleName, isRound: isRound),
+                    text, targetWidth: width, targetHeight: height, align: align,
+                    style: boxStyle(named: styleName, isRound: isRound),
                     mode: mode, exitPos: exitPos)
             } else {
                 drawBoxFrame(
-                    width: width, height: height ?? 5, style: boxStyle(named: styleName, isRound: isRound), mode: mode, exitPos: exitPos)
+                    width: width, height: height ?? 5, style: boxStyle(named: styleName, isRound: isRound), mode: mode,
+                    exitPos: exitPos)
             }
             return
         }
@@ -152,7 +159,8 @@ extension LogoEngine {
             let isQuoted = isQuotedWordToken(rawToken)
             let unquotedRaw = unquote(rawToken)
             let val: String
-            if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
+            if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw)
+                || BoxAlignment(unquotedRaw) != nil
                 || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
                 || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoxRoundArgument(unquotedRaw) != nil
             {
@@ -162,13 +170,17 @@ extension LogoEngine {
             }
             index = evalIndex
 
-            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
+            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:"))
+                ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil
+            {
                 exitPos = parsedExit
             } else if let parsedAlign = BoxAlignment(val) {
                 align = parsedAlign
             } else if let parsedBool = parseBoxRoundArgument(val) {
                 isRound = parsedBool
-            } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
+            } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val)
+                || StyleDSL.parseBoxStyle(val) != nil
+            {
                 styleName = val
             }
         }
@@ -211,7 +223,8 @@ extension LogoEngine {
         return parseIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
             return self.isStatementCommand(token) || token == "]" || token == ")"
-                || self.parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
+                || self.parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted)
+                || BoxAlignment(unquoted) != nil
                 || self.pluginRegistry.parseExitPosition(unquoted) != nil || BoxExitPosition(unquoted) != nil
         }
     }
@@ -220,7 +233,8 @@ extension LogoEngine {
         consumeNextIntExpressionArgument(tokens, index: &index) { token in
             let unquoted = unquote(token)
             return self.isStatementCommand(token) || token == "]" || token == ")"
-                || self.parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || BoxAlignment(unquoted) != nil
+                || self.parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted)
+                || BoxAlignment(unquoted) != nil
                 || self.pluginRegistry.parseExitPosition(unquoted) != nil || BoxExitPosition(unquoted) != nil
         }
     }
@@ -335,7 +349,8 @@ extension LogoEngine {
         }
 
         updateCursorAfterBox(
-            startLine: effectiveStartLine, startCol: effectiveStartCol, width: calcWidth, height: calcHeight, exitPos: exitPos)
+            startLine: effectiveStartLine, startCol: effectiveStartCol, width: calcWidth, height: calcHeight,
+            exitPos: exitPos)
     }
 
     private func updateCursorAfterBox(startLine: Int, startCol: Int, width: Int, height: Int, exitPos: BoxExitPosition)
@@ -409,7 +424,8 @@ extension LogoEngine {
             let isQuoted = isQuotedWordToken(rawToken)
             let unquotedRaw = unquote(rawToken)
             let val: String
-            if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw) || BoxAlignment(unquotedRaw) != nil
+            if parseBorderStyle(unquotedRaw) != nil || BorderStyle.isStyleToken(unquotedRaw)
+                || BoxAlignment(unquotedRaw) != nil
                 || pluginRegistry.parseExitPosition(unquotedRaw) != nil || BoxExitPosition(unquotedRaw) != nil
                 || StyleDSL.parseBoxStyle(unquotedRaw) != nil || parseBoxRoundArgument(unquotedRaw) != nil
             {
@@ -420,11 +436,15 @@ extension LogoEngine {
             index = evalIndex
             scanIndex = evalIndex + 1
 
-            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:")) ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil {
+            if let parsedExit = (!isQuoted || val.lowercased().hasPrefix("at:"))
+                ? (pluginRegistry.parseExitPosition(val) ?? BoxExitPosition(val)) : nil
+            {
                 exitPos = parsedExit
             } else if let parsedBool = parseBoxRoundArgument(val) {
                 isRound = parsedBool
-            } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val) || StyleDSL.parseBoxStyle(val) != nil {
+            } else if parseBorderStyle(val) != nil || BorderStyle.isStyleToken(val)
+                || StyleDSL.parseBoxStyle(val) != nil
+            {
                 styleName = val
             }
         }
@@ -458,8 +478,11 @@ extension LogoEngine {
             topRowStr = String(style.topLeft) + (width == 2 ? String(style.topRight) : "")
             bottomRowStr = String(style.bottomLeft) + (width == 2 ? String(style.bottomRight) : "")
         } else {
-            topRowStr = String(style.topLeft) + String(repeating: style.topChar, count: width - 2) + String(style.topRight)
-            bottomRowStr = String(style.bottomLeft) + String(repeating: style.bottomChar, count: width - 2) + String(style.bottomRight)
+            topRowStr =
+                String(style.topLeft) + String(repeating: style.topChar, count: width - 2) + String(style.topRight)
+            bottomRowStr =
+                String(style.bottomLeft) + String(repeating: style.bottomChar, count: width - 2)
+                + String(style.bottomRight)
         }
 
         for r in 0..<height {
@@ -481,13 +504,15 @@ extension LogoEngine {
                     in: lineStr, startCol: effectiveStartCol, width: 1, with: String(style.sideChar))
                 if width >= 2 {
                     updatedLine = DisplayText.replacingColumns(
-                        in: updatedLine, startCol: effectiveStartCol + width - 1, width: 1, with: String(style.sideChar))
+                        in: updatedLine, startCol: effectiveStartCol + width - 1, width: 1, with: String(style.sideChar)
+                    )
                 }
                 newLineText = updatedLine
             }
             editor.logoEngine(self, performAction: .setLine(index: currentLineIndex, text: newLineText))
         }
 
-        updateCursorAfterBox(startLine: effectiveStartLine, startCol: effectiveStartCol, width: width, height: height, exitPos: exitPos)
+        updateCursorAfterBox(
+            startLine: effectiveStartLine, startCol: effectiveStartCol, width: width, height: height, exitPos: exitPos)
     }
 }

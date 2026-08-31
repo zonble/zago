@@ -20,7 +20,9 @@ public struct LogoDateTimeFormatter {
             guard !clean.isEmpty else { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if let parsedCal = registry?.parseCalendarIdentifier(clean) ?? registry?.parseCalendarIdentifier(lower) ?? Calendar.Identifier(logoCalendarName: lower) {
+            if let parsedCal = registry?.parseCalendarIdentifier(clean) ?? registry?.parseCalendarIdentifier(lower)
+                ?? Calendar.Identifier(logoCalendarName: lower)
+            {
                 if cal == nil {
                     cal = parsedCal.logoCalendarName
                 }
@@ -28,7 +30,9 @@ public struct LogoDateTimeFormatter {
                 locale = clean
             } else if TimeZone.isLogoTimeZoneSpec(clean) && tz == nil {
                 tz = clean
-            } else if (registry?.parseDateTimeStylePreset(clean) != nil || registry?.parseDateTimeStylePreset(lower) != nil || StylePreset.isPresetName(lower)) && format == nil {
+            } else if (registry?.parseDateTimeStylePreset(clean) != nil
+                || registry?.parseDateTimeStylePreset(lower) != nil || StylePreset.isPresetName(lower)) && format == nil
+            {
                 format = clean
             } else if format == nil {
                 format = clean
@@ -47,7 +51,8 @@ public struct LogoDateTimeFormatter {
         }
 
         // If non-gregorian calendar is specified without explicit format, default to long localized date
-        if format == nil, let cal, let identifier = Calendar.Identifier(logoCalendarName: cal), identifier != .gregorian {
+        if format == nil, let cal, let identifier = Calendar.Identifier(logoCalendarName: cal), identifier != .gregorian
+        {
             format = "long"
         }
 
@@ -106,12 +111,18 @@ public struct LogoDateTimeFormatter {
             let cal = Calendar(identifier: .gregorian)
             let comps = cal.dateComponents(in: timeZone, from: date)
             if (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0 || (comps.second ?? 0) != 0 {
-                return format(date: date, mode: .dateTime, formatSpec: "yyyy-MM-dd HH:mm:ss", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+                return format(
+                    date: date, mode: .dateTime, formatSpec: "yyyy-MM-dd HH:mm:ss", localeSpec: locale,
+                    timeZoneSpec: timeZone.identifier, calendarSpec: calName)
             } else {
-                return format(date: date, mode: .date, formatSpec: "yyyy-MM-dd", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+                return format(
+                    date: date, mode: .date, formatSpec: "yyyy-MM-dd", localeSpec: locale,
+                    timeZoneSpec: timeZone.identifier, calendarSpec: calName)
             }
         }
-        return format(date: date, mode: .date, formatSpec: "long", localeSpec: locale, timeZoneSpec: timeZone.identifier, calendarSpec: calName)
+        return format(
+            date: date, mode: .date, formatSpec: "long", localeSpec: locale, timeZoneSpec: timeZone.identifier,
+            calendarSpec: calName)
     }
 
     public static func parseDate(

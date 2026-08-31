@@ -13,7 +13,8 @@ public enum LogoPersonNameField: String, CaseIterable, Sendable, Equatable {
     case locale
 
     public static func parse(_ raw: String) -> LogoPersonNameField? {
-        let clean = raw.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(in: .whitespacesAndNewlines)
+        let clean = raw.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\"' ")).trimmingCharacters(
+            in: .whitespacesAndNewlines)
         switch clean {
         case "given", "first", "firstname", "givenname": return .givenName
         case "family", "last", "lastname", "familyname", "surname": return .familyName
