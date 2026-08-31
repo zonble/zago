@@ -336,10 +336,9 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.help.describe_key", hotkeyChar: "k", commandId: .helpDescribeKey),
                     MenuItem(titleKey: "menu.help.describe_command", hotkeyChar: "c", commandId: .helpDescribeCommand),
                     MenuItem(
-                        titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
-                        isVisible: { $0.isLogoUIEnabled }),
+                        titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference),
                     MenuItem(
-                        titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference,
+                        titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
                         isVisible: { $0.isLogoUIEnabled }),
                     MenuItem(
                         titleKey: "menu.help.logo_workspace", hotkeyChar: "w", commandId: .logoWorkspace,
