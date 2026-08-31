@@ -2,6 +2,44 @@
 
 ## Unreleased
 
+## [1.4.5] - 2026-08-31
+
+Feature and UX enhancement release introducing Zero Interface Mode, vertical scrollbar indicator, expanded arrow and connector styles in Style DSL, canvas block overwrite pasting, Org-mode LOGO code block evaluation, and multi-byte boundary detection improvements.
+
+### Added
+
+- **Zero Interface Mode (`-0` / `--zero` / `Alt+Z`)**:
+  - Added distraction-free mode hiding chrome elements (menu, status, and hint bars) for maximum editor viewport space.
+  - Added toggle shortcut `Alt+Z` and command `:set zero` / `:set nozero`.
+- **Vertical Scrollbar Indicator (`-q` / `--indicator`)**:
+  - Added vertical scrollbar position indicator to visualize relative document viewport position.
+  - Added CLI flag `-q` / `--indicator` and `:set indicator` / `:set noindicator` setting.
+- **Extended Arrow Shapes & Style DSL**:
+  - Added new connector and arrow styles: diamond (`◆`), circle (`●`), cross (`✚`), crow foot (`⤙`), and harpoon (`⇁`/`↼`).
+  - Added double arrows (`<=|` / `|=>`) and heavy arrows (`<+|` / `|+>`) with Style DSL support.
+  - Reorganized menu bar with a dedicated **Arrows** category and made Style DSL reference menu always accessible.
+- **Org-Mode LOGO Block Evaluation**:
+  - Added support for Org-mode `#+begin_src logo` ... `#+end_src` code block extraction and execution.
+- **Text Selection & Navigation**:
+  - Added `Shift+Home` and `Shift+End` range selection support in `SingleLineTextEditor` and interactive prompt bars.
+  - Added distinct inactive cursor styling in the editor when focus is in the command bar or during prompt entry in canvas mode.
+
+### Changed
+
+- **Canvas Mode Block Paste Overwrite**:
+  - Changed block pasting in canvas mode to overwrite existing cells rather than shifting following content rightward, preserving diagram layouts.
+  - Preserved canvas block marks after fill operations.
+- **Modular ANSI and Terminal Target Refactoring**:
+  - Extracted shared ANSI key mappings to dedicated `ANSITerminal` target shared across CLI and WebAssembly (`zagoweb`).
+  - Refactored single-line prompts into `SingleLineTextEditor` and modular `PromptController` extensions.
+
+### Fixed
+
+- **Multi-Byte Encoding Truncation**:
+  - Added boundary truncation trimming for all multi-byte encodings in `TextEncodingDetector`.
+- **Windows Release Packaging**:
+  - Excluded unnecessary Swift toolchain DLLs from Windows release packages.
+
 ## [1.4.4] - 2026-08-28
 
 Maintenance and test suite stabilization release standardizing cross-platform path assertions and eliminating LogoEngine compiler warnings.
