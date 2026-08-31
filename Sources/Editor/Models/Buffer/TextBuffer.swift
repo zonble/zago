@@ -33,6 +33,7 @@ class TextBuffer: SpellCheckableBuffer {
     var viewShowLineNumbers: Bool = true
     var viewShowSubLineNumbers: Bool = false
     var viewIsZeroMode: Bool = false
+    var viewShowIndicator: Bool = false
     var viewWrapColumn: Int? = nil
     var borderStyle: BorderStyle = .single
     var isBorderRounded: Bool = false

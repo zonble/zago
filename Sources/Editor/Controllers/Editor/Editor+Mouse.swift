@@ -236,6 +236,14 @@ extension Editor {
             if promptController.isActive {
                 return
             }
+            if geometry.showIndicator && mouseEvent.col == geometry.cols {
+                let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+                let totalLines = max(1, virtualLines.count)
+                let targetRatio = Double(screenVLineOffset) / Double(max(1, geometry.mainAreaHeight - 1))
+                let maxTop = max(0, totalLines - geometry.mainAreaHeight)
+                topVLineIndex = max(0, min(maxTop, Int(round(targetRatio * Double(maxTop)))))
+                return
+            }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 let minSelectableLine = min(3, max(0, buffer.lines.count - 1))
                 if vLineIndex >= minSelectableLine && vLineIndex < buffer.lines.count {

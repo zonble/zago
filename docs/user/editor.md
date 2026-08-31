@@ -135,6 +135,7 @@ lines.
 | `ruler` command | Toggle WordStar-style column ruler bar (`----!----1----!----2...`) |
 | `linenumbers` command | Toggle line numbers gutter |
 | `sublinenumbers` command | Toggle soft-wrap sub-line indicator numbers |
+| `indicator` command | Toggle vertical scrollbar indicator on right edge (`set indicator on/off`) |
 | `zero` command | Toggle Zero Mode (`set zero on/off`) |
 
 ---

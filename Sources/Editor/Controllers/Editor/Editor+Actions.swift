@@ -388,6 +388,10 @@ extension Editor {
             let enabled = resolve(value, current: displayConfig.isZeroMode)
             displayConfig.isZeroMode = enabled
             reportOperationResult(.succeeded(message: l10n.zeroModeState(enabled ? "enabled" : "disabled")))
+        case .indicator(let value):
+            let enabled = resolve(value, current: displayConfig.showIndicator)
+            displayConfig.showIndicator = enabled
+            reportOperationResult(.succeeded(message: l10n.indicatorState(enabled ? "enabled" : "disabled")))
         }
     }
 

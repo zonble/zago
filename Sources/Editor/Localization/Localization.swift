@@ -147,6 +147,10 @@ struct L10n: Sendable {
         String(format: self["status.zero_mode_state"], state)
     }
 
+    func indicatorState(_ state: String) -> String {
+        String(format: self["status.indicator_state"], state)
+    }
+
     func wrapColumnSet(_ col: Int) -> String {
         String(format: self["status.wrap_column_set"], col)
     }

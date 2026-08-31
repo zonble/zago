@@ -76,6 +76,7 @@ extension Editor {
         current.viewShowLineNumbers = displayConfig.showLineNumbers
         current.viewShowSubLineNumbers = displayConfig.showSubLineNumbers
         current.viewIsZeroMode = displayConfig.isZeroMode
+        current.viewShowIndicator = displayConfig.showIndicator
         current.viewWrapColumn = layoutEngine.wrapColumn
     }
 
@@ -85,6 +86,7 @@ extension Editor {
         displayConfig.showLineNumbers = current.viewShowLineNumbers
         displayConfig.showSubLineNumbers = current.viewShowSubLineNumbers
         displayConfig.isZeroMode = current.viewIsZeroMode
+        displayConfig.showIndicator = current.viewShowIndicator
         layoutEngine.setWrapColumn(current.viewWrapColumn)
     }
 

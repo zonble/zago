@@ -42,6 +42,9 @@ struct ScreenGeometry: Equatable {
     /// Whether zero interface mode (zero chrome) is active.
     let isZeroMode: Bool
 
+    /// Whether vertical scrollbar indicator is visible.
+    let showIndicator: Bool
+
     /// Calculated main text area height in rows.
     let mainAreaHeight: Int
 
@@ -60,7 +63,8 @@ struct ScreenGeometry: Equatable {
         showBreakpointGutter: Bool = false,
         isZeroMode: Bool = false,
         isMenuBarActive: Bool = false,
-        isPromptActive: Bool = false
+        isPromptActive: Bool = false,
+        showIndicator: Bool = false
     ) {
         self.rows = rows
         self.cols = cols
@@ -68,6 +72,7 @@ struct ScreenGeometry: Equatable {
         self.showGutter = showGutter
         self.showBreakpointGutter = showBreakpointGutter
         self.isZeroMode = isZeroMode
+        self.showIndicator = showIndicator
 
         let titleHeight = (isZeroMode && !isMenuBarActive) ? 0 : Self.titleBarHeight
         let statusHeight = (isZeroMode && !isPromptActive) ? 0 : Self.statusLineHeight
@@ -78,7 +83,8 @@ struct ScreenGeometry: Equatable {
 
         self.mainAreaHeight = max(1, rows - chrome)
         self.gutterWidth = (showGutter ? Self.defaultGutterWidth : 0) + (showBreakpointGutter ? 1 : 0)
-        self.textWidth = max(Self.minimumTextWidth, cols - self.gutterWidth)
+        let indicatorWidth = showIndicator ? 1 : 0
+        self.textWidth = max(Self.minimumTextWidth, cols - self.gutterWidth - indicatorWidth)
     }
 
     /// Convenience initializer deriving ruler, gutter, and zero mode visibility from an Editor instance.
@@ -89,6 +95,7 @@ struct ScreenGeometry: Equatable {
         let isZeroMode = editor.displayConfig.isZeroMode
         let isMenuBarActive = editor.isMenuBarActive
         let isPromptActive = editor.promptController.isActive
+        let showIndicator = editor.displayConfig.showIndicator && !editor.buffer.isDirectoryBuffer
         self.init(
             rows: rows,
             cols: cols,
@@ -97,7 +104,8 @@ struct ScreenGeometry: Equatable {
             showBreakpointGutter: showBreakpointGutter,
             isZeroMode: isZeroMode,
             isMenuBarActive: isMenuBarActive,
-            isPromptActive: isPromptActive
+            isPromptActive: isPromptActive,
+            showIndicator: showIndicator
         )
     }
 }

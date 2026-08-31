@@ -36,12 +36,13 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case journalFolder = "journal-folder"
     case mouse
     case zero
+    case indicator
 
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
         case .fill: return ["72", "80"]
-        case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab, .listWrapIndent,
+        case .ruler, .lineNumbers, .subLineNumbers, .indicator, .canvasMode, .syntax, .smartTab, .listWrapIndent,
             .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines, .backup,
             .launchToJournal, .mouse, .zero:
             return ["on", "off"]
@@ -62,7 +63,7 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
 
     var supportsConfigUnset: Bool {
         switch self {
-        case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
+        case .wrap, .ruler, .lineNumbers, .subLineNumbers, .indicator, .canvasMode, .syntax, .smartTab,
             .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines,
             .backup, .launchToJournal, .mouse, .zero:
             return true

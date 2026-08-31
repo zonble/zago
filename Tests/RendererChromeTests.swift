@@ -583,4 +583,63 @@ struct RendererChromeTests {
         _ = editor.commandRegistry.dispatch("set zero off", editor: editor)
         #expect(editor.displayConfig.isZeroMode == false)
     }
+
+    @Test func testScrollbarIndicatorGeometryAndRendering() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0)" }
+
+        // Normal geometry without indicator
+        let noIndicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(noIndicatorGeometry.showIndicator == false)
+        #expect(noIndicatorGeometry.textWidth == 75) // 80 - 5 gutter
+
+        // With indicator enabled
+        editor.displayConfig.showIndicator = true
+        let indicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(indicatorGeometry.showIndicator == true)
+        #expect(indicatorGeometry.textWidth == 74) // 80 - 5 gutter - 1 indicator
+
+        // Long document > viewport (contains thumb █ and track │)
+        editor.buffer.lines = (1...100).map { "Line \($0)" }
+        let longOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(longOutput.contains("█"))
+        #expect(longOutput.contains("│"))
+
+        // Test with softwrapped long lines
+        editor.buffer.lines = [
+            "Short line",
+            "A very long line that exceeds seventy four characters and wraps across multiple virtual lines in the editor buffer layout.",
+            "End line"
+        ]
+
+        let fullOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(fullOutput.contains("█"))
+
+        // Test in Canvas Mode
+        editor.switchToCanvasMode()
+        #expect(editor.isCanvasModeActive == true)
+        let canvasOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(canvasOutput.contains("█"))
+    }
+
+    @Test func testIndicatorTogglingAndCommandBar() throws {
+        let editor = Editor()
+        #expect(editor.displayConfig.showIndicator == false)
+
+        // 1. Toggle via method
+        editor.toggleIndicator()
+        #expect(editor.displayConfig.showIndicator == true)
+        #expect(editor.statusMessage.contains("Indicator") || editor.statusMessage.contains("指示條"))
+
+        // 2. Toggle via command dispatch
+        _ = editor.commandRegistry.dispatch(id: .indicatorToggle, editor: editor)
+        #expect(editor.displayConfig.showIndicator == false)
+
+        // 3. Command Bar
+        _ = editor.commandRegistry.dispatch("set indicator on", editor: editor)
+        #expect(editor.displayConfig.showIndicator == true)
+
+        _ = editor.commandRegistry.dispatch("set indicator off", editor: editor)
+        #expect(editor.displayConfig.showIndicator == false)
+    }
 }

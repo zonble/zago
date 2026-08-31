@@ -144,6 +144,7 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowLineNumbers = true
     var defaultViewShowSubLineNumbers = false
     var defaultViewIsZeroMode = false
+    var defaultViewShowIndicator = false
     var defaultViewWrapColumn: Int? = nil
     var defaultLineEnding: LineEnding = .lf
     var fillColumn: Int = 72
@@ -302,7 +303,8 @@ public final class Editor: @unchecked Sendable {
             showGitDiff: config.showGitDiff,
             ipcEnabled: options.ipcEnabled ?? config.ipcEnabled,
             enableMouse: options.enableMouse ?? config.enableMouse,
-            isZeroMode: options.isZeroMode ?? config.isZeroMode
+            isZeroMode: options.isZeroMode ?? config.isZeroMode,
+            showIndicator: options.showIndicator ?? config.showIndicator
         )
 
         return ResolvedConfig(
@@ -381,6 +383,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.defaultViewIsZeroMode = resolved.display.isZeroMode
+        self.defaultViewShowIndicator = resolved.display.showIndicator
         self.defaultViewWrapColumn = layoutEngine.wrapColumn
         self.defaultLineEnding = options.defaultLineEnding ?? .lf
         self.fillColumn = options.fillColumn ?? configSource.initial.fillColumn
@@ -391,6 +394,7 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
             buffer.viewIsZeroMode = defaultViewIsZeroMode
+            buffer.viewShowIndicator = defaultViewShowIndicator
             buffer.viewWrapColumn = defaultViewWrapColumn
             buffer.borderStyle = configSource.initial.defaultBorderStyle
             buffer.arrowStyle = configSource.initial.defaultArrowStyle
@@ -488,6 +492,7 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
         self.defaultViewIsZeroMode = resolved.display.isZeroMode
+        self.defaultViewShowIndicator = resolved.display.showIndicator
         self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
         self.displayConfig = resolved.display
         self.debugMode = loadedConfig.debugMode
@@ -507,6 +512,14 @@ public final class Editor: @unchecked Sendable {
         saveCurrentViewSettingsToBuffer()
         let state = displayConfig.isZeroMode ? "enabled" : "disabled"
         reportOperationResult(.succeeded(message: l10n.zeroModeState(state)))
+    }
+
+    /// Toggles Scrollbar Indicator.
+    public func toggleIndicator() {
+        displayConfig.showIndicator.toggle()
+        saveCurrentViewSettingsToBuffer()
+        let state = displayConfig.showIndicator ? "enabled" : "disabled"
+        reportOperationResult(.succeeded(message: l10n.indicatorState(state)))
     }
 
     /// Deletes current line with Undo snapshot tracking.

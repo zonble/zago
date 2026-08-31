@@ -518,6 +518,7 @@ struct EnglishStrings {
         "status.inserted_diagram_snippet": "[ Inserted %@ Snippet ]",
         "status.line_numbers_state": "[ Line Numbers %@ ]",
         "status.zero_mode_state": "[ Zero Mode %@ ]",
+        "status.indicator_state": "[ Scrollbar Indicator %@ ]",
         "status.wrap_column_set": "[ Wrap Column set to %d ]",
         "status.wrap_column_reset": "[ Wrap Column reset to dynamic ]",
         "status.deleted_selection": "[ Deleted selection ]",
@@ -701,6 +702,7 @@ struct EnglishStrings {
         "helpview.set_22": "    spell-language <lang>    Set spell checker language (e.g. en_US)",
         "helpview.set_23": "    debug <on|off>           Toggle debug overlay logging",
         "helpview.set_24": "    zero <on|off>            Zero interface mode (hide title, status, and help bars)",
+        "helpview.set_25": "    indicator <on|off>       Display a scroll bar on the righthand side of the edit window",
 
         "helpview.sec_logo": "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
         "helpview.logo_1": "    Esc / M+:          Command prompt",
@@ -988,6 +990,7 @@ struct EnglishStrings {
         "menu.tools.sub_line_numbers": "Toggle Sub Line Numbers",
         "menu.tools.ruler": "Toggle Ruler Bar",
         "menu.tools.zero_mode": "Zero Mode",
+        "menu.tools.indicator": "Toggle Scrollbar Indicator",
         "menu.tools.wrap_80": "Wrap Column: 80",
         "menu.tools.wrap_60": "Wrap Column: 60",
         "menu.tools.wrap_40": "Wrap Column: 40",

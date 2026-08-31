@@ -77,6 +77,8 @@ extension EditorSettingKey {
             return .mouse(SettingBoolean.parse(value))
         case .zero:
             return .zero(SettingBoolean.parse(value))
+        case .indicator:
+            return .indicator(SettingBoolean.parse(value))
         }
     }
 }
@@ -87,6 +89,7 @@ public enum EditorSettingUpdate {
     case ruler(Bool?)
     case lineNumbers(Bool?)
     case subLineNumbers(Bool?)
+    case indicator(Bool?)
     case canvasMode(Bool?)
     case syntaxHighlighting(Bool?)
     case autoReload(Bool?)

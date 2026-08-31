@@ -238,7 +238,7 @@ public final class ConfigLoader {
             } else {
                 recordSyntaxError(in: &config)
             }
-        case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
+        case .ruler, .lineNumbers, .subLineNumbers, .indicator, .canvasMode, .syntax, .smartTab,
             .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .noNewlines, .mouse, .zero:
             guard let boolean = SettingBoolean.parse(value, emptyValue: true) else {
                 recordSyntaxError(in: &config)
@@ -248,6 +248,7 @@ public final class ConfigLoader {
             case .ruler: config.showRuler = boolean
             case .lineNumbers: config.showLineNumbers = boolean
             case .subLineNumbers: config.showSubLineNumbers = boolean
+            case .indicator: config.showIndicator = boolean
             case .canvasMode: config.startInCanvasMode = boolean
             case .syntax: config.enableSyntaxHighlight = boolean
             case .smartTab: config.smartTab = boolean
