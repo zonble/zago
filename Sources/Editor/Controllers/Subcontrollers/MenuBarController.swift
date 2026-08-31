@@ -97,19 +97,24 @@ final class MenuBarController: KeyInputHandler {
         case .enter:
             executeCurrentMenuItem()
 
-        case .char(let ch):
+        case .alt(let ch):
             let lowerCh = Character(String(ch).lowercased())
-            // Check if letter matches any category hotkey (f, e, s, b, t, h)
             if let catIdx = menuBar.categories.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
                 menuBar.categoryIndex = catIdx
                 menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
-            } else {
-                // Check if letter matches any item hotkey within active category (skipping dividers)
-                let items = menuBar.currentCategory.items
-                if let itemIdx = items.firstIndex(where: { !$0.isDivider && $0.hotkeyChar == lowerCh }) {
-                    menuBar.itemIndex = itemIdx
-                    executeCurrentMenuItem()
-                }
+            }
+
+        case .char(let ch):
+            let lowerCh = Character(String(ch).lowercased())
+            let items = menuBar.currentCategory.items
+            // 1. Prioritize items within current active dropdown menu
+            if let itemIdx = items.firstIndex(where: { !$0.isDivider && $0.hotkeyChar == lowerCh }) {
+                menuBar.itemIndex = itemIdx
+                executeCurrentMenuItem()
+            } else if let catIdx = menuBar.categories.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
+                // 2. Fallback: switch to matching category if no item in active dropdown matched
+                menuBar.categoryIndex = catIdx
+                menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
             }
 
         default:

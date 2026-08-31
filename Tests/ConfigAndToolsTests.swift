@@ -163,6 +163,32 @@ struct ConfigAndToolsTests {
         #expect(editor.isMenuBarActive) // Still active, click on divider was ignored
     }
 
+    @Test func testMenuDropdownHotkeyPriorityOverCategories() throws {
+        let editor = Editor()
+        editor.menuBarController.toggle()
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.categoryIndex == 0) // File category
+
+        // 1. 's' is in File menu (Save) AND is the category hotkey for 'Shapes'
+        // Pressing 's' should execute Save in current menu (closing menuBar) rather than jumping to Shapes
+        editor.menuBarController.processKey(.char("s"))
+        #expect(!editor.isMenuBarActive) // Menu executed and closed
+
+        // 2. Re-open File menu and press a key not in File menu, but is a category hotkey (e.g., 't' for Tools)
+        editor.menuBarController.toggle()
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.categoryIndex == 0)
+
+        editor.menuBarController.processKey(.char("t"))
+        #expect(editor.isMenuBarActive) // Switched category
+        #expect(editor.menuBar.currentCategory.titleKey == "menu.tools")
+
+        // 3. Alt+<char> directly switches categories
+        editor.menuBarController.processKey(.alt("e"))
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.currentCategory.titleKey == "menu.edit")
+    }
+
     @Test func testLogoUIVisibilityRequiresLogoFileOrDebugSetting() {
         let editor = Editor(filePath: "notes.md")
         let menuBar = MenuBar()
