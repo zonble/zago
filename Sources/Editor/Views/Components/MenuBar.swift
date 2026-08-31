@@ -132,7 +132,7 @@ final class MenuBar {
                 titleKey: "menu.file", hotkeyChar: "f",
                 items: [
                     MenuItem(titleKey: "menu.file.new", hotkeyChar: "n", commandId: .bufferNew),
-                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileInsert),
+                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "i", commandId: .fileInsert),
                     MenuItem(titleKey: "menu.file.directory", hotkeyChar: "d", commandId: .fileDirectory),
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
                     MenuItem(titleKey: "menu.file.write_out", hotkeyChar: "w", commandId: .fileWriteOut),
@@ -179,16 +179,16 @@ final class MenuBar {
                         isChecked: { $0.isTableModeActive }, isVisible: { !$0.buffer.isDirectoryBuffer }),
                 ]),
             MenuCategory(
-                titleKey: "menu.outline", hotkeyChar: "b",
+                titleKey: "menu.outline", hotkeyChar: "l",
                 items: [
                     MenuItem(
-                        titleKey: "menu.edit.outline", hotkeyChar: "i", commandId: .documentOutline,
+                        titleKey: "menu.edit.outline", hotkeyChar: "o", commandId: .documentOutline,
                         isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(
-                        titleKey: "menu.edit.next_heading", hotkeyChar: "]", commandId: .documentHeadingNext,
+                        titleKey: "menu.edit.next_heading", hotkeyChar: "n", commandId: .documentHeadingNext,
                         isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(
-                        titleKey: "menu.edit.previous_heading", hotkeyChar: "[", commandId: .documentHeadingPrevious,
+                        titleKey: "menu.edit.previous_heading", hotkeyChar: "p", commandId: .documentHeadingPrevious,
                         isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() })
                 ],
                 isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }
@@ -291,6 +291,7 @@ final class MenuBar {
                     borderStyleItem(.heavyQuadrupleDash, titleKey: "menu.borders.heavy_quad", hotkeyChar: "w"),
                     .divider,
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
@@ -354,17 +355,17 @@ final class MenuBar {
                         },
                         isChecked: { $0.displayConfig.showRuler }),
                     MenuItem(
-                        titleKey: "menu.tools.zero_mode", hotkeyChar: "z",
-                        action: { editor in
-                            editor.toggleZeroMode()
-                        },
-                        isChecked: { $0.displayConfig.isZeroMode }),
-                    MenuItem(
                         titleKey: "menu.tools.indicator", hotkeyChar: "i",
                         action: { editor in
                             editor.toggleIndicator()
                         },
                         isChecked: { $0.displayConfig.showIndicator }),
+                    MenuItem(
+                        titleKey: "menu.tools.zero_mode", hotkeyChar: "z",
+                        action: { editor in
+                            editor.toggleZeroMode()
+                        },
+                        isChecked: { $0.displayConfig.isZeroMode }),
                     .divider,
                     wrapColumnItem(80, titleKey: "menu.tools.wrap_80", hotkeyChar: "8"),
                     wrapColumnItem(60, titleKey: "menu.tools.wrap_60", hotkeyChar: "6"),

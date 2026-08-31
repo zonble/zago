@@ -876,7 +876,7 @@ struct ConfigAndToolsTests {
         #expect(L10n.string("command.document.outline.description", language: .en).contains("outline"))
         #expect(L10n.string("menu.edit.outline", language: .en) == "Outline\t⌥\\")
         #expect(L10n.string("menu.edit.next_heading", language: .en) == "Next Heading\t⌥]")
-        #expect(L10n.string("menu.edit.previous_heading", language: .en) == "Previous Heading\t⌥[")
+        #expect(L10n.string("menu.edit.previous_heading", language: .en) == "Prev Heading\t⌥[")
         #expect(L10n.string("status.no_headings", language: .en) == "[ No headings ]")
         #expect(
             L10n.string("status.heading_nav_unsupported_format", language: .en)
