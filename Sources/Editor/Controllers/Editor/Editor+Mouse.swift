@@ -1,6 +1,7 @@
 import Config
 import Foundation
 import TextMetrics
+import TextTransform
 
 extension Editor {
     /// Central mouse event processing entrypoint for the Editor event loop.
@@ -171,9 +172,12 @@ extension Editor {
                     if case .press(.left) = mouseEvent.action {
                         let clickedItemIdx = mouseEvent.row - itemRowStart
                         if clickedItemIdx >= 0 && clickedItemIdx < items.count {
-                            menuBar.itemIndex = clickedItemIdx
-                            menuBarController.executeCurrentMenuItem()
-                            return
+                            let item = items[clickedItemIdx]
+                            if !item.isDivider {
+                                menuBar.itemIndex = clickedItemIdx
+                                menuBarController.executeCurrentMenuItem()
+                                return
+                            }
                         }
                     }
                 }
@@ -267,25 +271,67 @@ extension Editor {
                 return
             }
 
+            let clicks = mouseClickTracker.registerClick(
+                row: mouseEvent.row,
+                col: mouseEvent.col,
+                vLineIndex: vLineIndex
+            )
+
             if isCanvasModeActive {
                 let canvasY = vLineIndex
                 let canvasX = visualCol + canvasHorizontalOffset
+                guard ensureCanvasLineExists(canvasY) else { return }
+
+                if clicks >= 2 && canvasY < buffer.lines.count {
+                    let lineText = buffer.lines[canvasY]
+                    let (_, targetCol) = getBufferCursorForVisualColumn(
+                        vLineIndex: vLineIndex, visualCol: visualCol)
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        let startVisual = lineText.visualColumn(forCharacterOffset: range.lowerBound)
+                        let endVisual = lineText.visualColumn(forCharacterOffset: range.upperBound)
+                        buffer.canvasBlockMark = (line: canvasY, visualColumn: startVisual)
+                        buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: max(startVisual, endVisual - 1))
+                        buffer.lineIndex = canvasY
+                        canvasVisualColumn = endVisual
+                        syncCanvasCursorToBuffer()
+                        return
+                    }
+                }
+
                 buffer.canvasBlockMark = nil
                 buffer.canvasBlockMarkEnd = nil
-
-                guard ensureCanvasLineExists(canvasY) else { return }
                 buffer.lineIndex = canvasY
                 canvasVisualColumn = canvasX
                 syncCanvasCursorToBuffer()
             } else if isTableModeActive {
                 let (targetLine, targetCol) = getBufferCursorForVisualColumn(
                     vLineIndex: vLineIndex, visualCol: visualCol)
+                if clicks >= 2 && targetLine < buffer.lines.count {
+                    let lineText = buffer.lines[targetLine]
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        buffer.selectionMark = (line: targetLine, column: range.lowerBound)
+                        buffer.lineIndex = targetLine
+                        buffer.columnIndex = range.upperBound
+                        tableModeController.clampTableModeCursor()
+                        return
+                    }
+                }
+                buffer.selectionMark = nil
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol
                 tableModeController.clampTableModeCursor()
             } else {
                 let (targetLine, targetCol) = getBufferCursorForVisualColumn(
                     vLineIndex: vLineIndex, visualCol: visualCol)
+                if clicks >= 2 && targetLine < buffer.lines.count {
+                    let lineText = buffer.lines[targetLine]
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        buffer.selectionMark = (line: targetLine, column: range.lowerBound)
+                        buffer.lineIndex = targetLine
+                        buffer.columnIndex = range.upperBound
+                        return
+                    }
+                }
                 buffer.selectionMark = nil
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol

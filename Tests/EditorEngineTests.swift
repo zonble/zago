@@ -655,8 +655,8 @@ import TextMetrics
     editor.processKey(.arrowDown)
     #expect(editor.menuBar.itemIndex == 1)
 
-    // 4. Press letter 's' to jump to Shapes menu
-    editor.processKey(.char("s"))
+    // 4. Press Alt+S to jump to Shapes menu
+    editor.processKey(.alt("s"))
     #expect(editor.menuBar.currentCategory.titleKey == "menu.shapes")
 
     // 4b. PageUp/PageDown jump within menu items (vertical dropdown list); Home/End jump across menu categories (horizontal bar)

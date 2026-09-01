@@ -128,4 +128,87 @@ public enum TextAnalyzer {
         }
         return prefix
     }
+
+    /// Finds the range of the token/word enclosing `index` (for double-click word selection).
+    public static func enclosingWordRange(in text: String, at index: Int) -> Range<Int>? {
+        guard !text.isEmpty else { return nil }
+        let clamped = max(0, min(text.count - 1, index))
+        let charIndex = text.index(text.startIndex, offsetBy: clamped)
+        let ch = text[charIndex]
+
+        // 1. Natural language / word character
+        if TextUnicodeClassifier.isUnicodeWordCharacter(ch) || TextUnicodeClassifier.isCJKScriptCharacter(ch) {
+            let ranges = wordRanges(in: text)
+            if let matched = ranges.first(where: { $0.contains(clamped) }) {
+                return matched
+            }
+            var start = clamped
+            while start > 0 {
+                let prevIdx = text.index(text.startIndex, offsetBy: start - 1)
+                let prevChar = text[prevIdx]
+                if TextUnicodeClassifier.isUnicodeWordCharacter(prevChar) || TextUnicodeClassifier.isCJKScriptCharacter(prevChar) {
+                    start -= 1
+                } else {
+                    break
+                }
+            }
+            var end = clamped + 1
+            while end < text.count {
+                let nextIdx = text.index(text.startIndex, offsetBy: end)
+                let nextChar = text[nextIdx]
+                if TextUnicodeClassifier.isUnicodeWordCharacter(nextChar) || TextUnicodeClassifier.isCJKScriptCharacter(nextChar) {
+                    end += 1
+                } else {
+                    break
+                }
+            }
+            return start..<end
+        }
+
+        // 2. Whitespace
+        if ch.isWhitespace {
+            var start = clamped
+            while start > 0 {
+                let prevIdx = text.index(text.startIndex, offsetBy: start - 1)
+                if text[prevIdx].isWhitespace {
+                    start -= 1
+                } else {
+                    break
+                }
+            }
+            var end = clamped + 1
+            while end < text.count {
+                let nextIdx = text.index(text.startIndex, offsetBy: end)
+                if text[nextIdx].isWhitespace {
+                    end += 1
+                } else {
+                    break
+                }
+            }
+            return start..<end
+        }
+
+        // 3. Punctuation / symbol
+        var start = clamped
+        while start > 0 {
+            let prevIdx = text.index(text.startIndex, offsetBy: start - 1)
+            let prevChar = text[prevIdx]
+            if !prevChar.isWhitespace && !TextUnicodeClassifier.isUnicodeWordCharacter(prevChar) && !TextUnicodeClassifier.isCJKScriptCharacter(prevChar) {
+                start -= 1
+            } else {
+                break
+            }
+        }
+        var end = clamped + 1
+        while end < text.count {
+            let nextIdx = text.index(text.startIndex, offsetBy: end)
+            let nextChar = text[nextIdx]
+            if !nextChar.isWhitespace && !TextUnicodeClassifier.isUnicodeWordCharacter(nextChar) && !TextUnicodeClassifier.isCJKScriptCharacter(nextChar) {
+                end += 1
+            } else {
+                break
+            }
+        }
+        return start..<end
+    }
 }

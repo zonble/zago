@@ -53,23 +53,9 @@ struct WriteCommand: Command {
 
 struct ReadFileCommand: Command {
     let id: CommandID = .fileInsert
-    let name = "Read File"
-    let description = "Insert external file"
-
-    init() {}
-
-    @discardableResult
-    func execute(on editor: Editor) -> EditorOperationResult {
-        editor.promptInsertFilePath()
-        return .prompting
-    }
-}
-
-struct OpenCommand: Command {
-    let id: CommandID = .fileInsert
-    let name = "Open File"
-    let description = "Open file in a new buffer"
-    let commandBarAliases: [String] = ["open", "edit", "e", ":e"]
+    let name = "Insert File"
+    let description = "Insert external file content into buffer"
+    let commandBarAliases = ["insert", "read", "r"]
 
     init() {}
 
@@ -81,9 +67,31 @@ struct OpenCommand: Command {
 
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        if input.rest.isEmpty {
+            return execute(on: editor)
+        }
+        return editor.insertFileContent(from: input.rest)
+    }
+}
+
+struct OpenCommand: Command {
+    let id: CommandID = .fileOpen
+    let name = "Open File"
+    let description = "Open file in a new buffer"
+    let commandBarAliases: [String] = ["open", "edit", "e", ":e"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptOpenFilePath()
+        return .prompting
+    }
+
+    @discardableResult
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
         guard !input.rest.isEmpty else {
-            let message = editor.l10n["status.path_required"]
-            return .failed(message, message: message)
+            return execute(on: editor)
         }
 
         return editor.openBuffer(path: input.rest)

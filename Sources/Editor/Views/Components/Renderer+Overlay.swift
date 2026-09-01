@@ -121,6 +121,7 @@ extension Renderer {
 
         var formattedItems: [String] = []
         for item in items {
+            if item.isDivider { continue }
             let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "
@@ -146,9 +147,15 @@ extension Renderer {
         let topBorder = "\(ANSIStyle.menuDefault)┌" + String(repeating: "─", count: innerWidth) + "┐\(ANSIStyle.reset)"
         let bottomBorder =
             "\(ANSIStyle.menuDefault)└" + String(repeating: "─", count: innerWidth) + "┘\(ANSIStyle.reset)"
+        let dividerLine =
+            "\(ANSIStyle.menuDefault)├" + String(repeating: "─", count: innerWidth) + "┤\(ANSIStyle.reset)"
 
         var boxLines: [String] = [topBorder]
         for (iIdx, item) in items.enumerated() {
+            if item.isDivider {
+                boxLines.append(dividerLine)
+                continue
+            }
             let rawStr = editor.l10n[item.titleKey]
             let parts = rawStr.components(separatedBy: "\t")
             let labelPrefix = (item.isChecked?(editor) ?? false) ? "✓ " : "  "

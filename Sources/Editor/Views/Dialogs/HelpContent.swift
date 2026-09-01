@@ -86,6 +86,7 @@ enum HelpContent {
         Section(
             titleKey: "helpview.sec_file",
             items: [
+                HelpItem(commandID: .fileOpen),
                 HelpItem(commandID: .fileSave),
                 HelpItem(commandID: .fileInsert),
                 HelpItem(commandID: .bufferNew),
@@ -133,7 +134,7 @@ enum HelpContent {
         case .enter: return L10n.string("key.enter", language: language)
         case .esc: return L10n.string("key.esc", language: language)
         case .ctrl(let ch): return "^\(ch.uppercased())"
-        case .alt(let ch): return "M+\(ch.uppercased())"
+        case .alt(let ch): return "⌥\(ch.uppercased())"
         case .ctrlShift(let ch): return "C+⇧+\(ch.uppercased())"
         case .f1: return "F1"
         case .f2: return "F2"

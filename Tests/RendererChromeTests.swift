@@ -71,8 +71,8 @@ struct RendererChromeTests {
         let standardHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
         let wideHelp = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: editor)
 
-        #expect(!standardHelp.contains("M+W"))
-        #expect(wideHelp.contains("M+W"))
+        #expect(!standardHelp.contains("⌥W"))
+        #expect(wideHelp.contains("⌥W"))
         #expect(wideHelp.contains("Copy Text"))
 
         let zhEditor = Editor(language: .zh_TW)
@@ -110,7 +110,7 @@ struct RendererChromeTests {
         editor.switchToCanvasMode()
         let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
         #expect(canvasStatus.contains("CANVAS"))
-        #expect(canvasStatus.contains("(F8 / M+V to exit)"))
+        #expect(canvasStatus.contains("(F8 / ⌥V to exit)"))
         #expect(!canvasStatus.contains("[ Canvas Mode ]"))
 
         editor.overlayMode = .none
@@ -121,7 +121,7 @@ struct RendererChromeTests {
         editor.language = .zh_TW
         let localizedStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
         #expect(localizedStatus.contains("畫布 | 表格"))
-        #expect(localizedStatus.contains("(F8 / M+V 退出)"))
+        #expect(localizedStatus.contains("(F8 / ⌥V 退出)"))
         #expect(!localizedStatus.contains("CANVAS | TABLE"))
     }
 

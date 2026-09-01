@@ -9,14 +9,16 @@ struct MenuItem {
     let action: ((Editor) -> Void)?
     let isChecked: ((Editor) -> Bool)?
     let isVisible: ((Editor) -> Bool)?
+    let isDivider: Bool
 
     init(
-        titleKey: String,
-        hotkeyChar: Character,
+        titleKey: String = "",
+        hotkeyChar: Character = " ",
         commandId: CommandID? = nil,
         action: ((Editor) -> Void)? = nil,
         isChecked: ((Editor) -> Bool)? = nil,
-        isVisible: ((Editor) -> Bool)? = nil
+        isVisible: ((Editor) -> Bool)? = nil,
+        isDivider: Bool = false
     ) {
         self.titleKey = titleKey
         self.hotkeyChar = hotkeyChar
@@ -24,6 +26,11 @@ struct MenuItem {
         self.action = action
         self.isChecked = isChecked
         self.isVisible = isVisible
+        self.isDivider = isDivider
+    }
+
+    static var divider: MenuItem {
+        MenuItem(isDivider: true)
     }
 }
 
@@ -59,6 +66,18 @@ final class MenuBar {
 
     func setupCategories() {
         updateCategories(for: nil)
+    }
+
+    func firstSelectableItemIndex(in items: [MenuItem], startingAt startIndex: Int = 0) -> Int {
+        guard !items.isEmpty else { return 0 }
+        let clampedStart = max(0, min(startIndex, items.count - 1))
+        for i in clampedStart..<items.count {
+            if !items[i].isDivider { return i }
+        }
+        for i in (0..<clampedStart).reversed() {
+            if !items[i].isDivider { return i }
+        }
+        return 0
     }
 
     func updateCategories(for editor: Editor? = nil) {
@@ -113,12 +132,15 @@ final class MenuBar {
                 titleKey: "menu.file", hotkeyChar: "f",
                 items: [
                     MenuItem(titleKey: "menu.file.new", hotkeyChar: "n", commandId: .bufferNew),
-                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileInsert),
+                    MenuItem(titleKey: "menu.file.open", hotkeyChar: "o", commandId: .fileOpen),
+                    MenuItem(titleKey: "menu.file.insert", hotkeyChar: "i", commandId: .fileInsert),
                     MenuItem(titleKey: "menu.file.directory", hotkeyChar: "d", commandId: .fileDirectory),
                     MenuItem(titleKey: "menu.file.save", hotkeyChar: "s", commandId: .fileSave),
                     MenuItem(titleKey: "menu.file.write_out", hotkeyChar: "w", commandId: .fileWriteOut),
+                    .divider,
                     MenuItem(titleKey: "menu.file.save_exit", hotkeyChar: "e", commandId: .fileSaveExit),
                     MenuItem(titleKey: "menu.file.exit", hotkeyChar: "x", commandId: .fileExit),
+                    .divider,
                     MenuItem(titleKey: "menu.file.edit_config", hotkeyChar: "c", commandId: .fileEditConfig),
                     MenuItem(titleKey: "menu.file.reload_config", hotkeyChar: "r", commandId: .fileReloadConfig),
                 ]),
@@ -127,6 +149,7 @@ final class MenuBar {
                 items: [
                     MenuItem(titleKey: "menu.edit.undo", hotkeyChar: "u", commandId: .editUndo),
                     MenuItem(titleKey: "menu.edit.redo", hotkeyChar: "r", commandId: .editRedo),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.edit.mark", hotkeyChar: "m", commandId: .editMark,
                         isVisible: { $0.baseMode == .canvas }),
@@ -137,21 +160,15 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.edit.cut", hotkeyChar: "c", commandId: .editCut),
                     MenuItem(titleKey: "menu.edit.paste", hotkeyChar: "p", commandId: .editUncut),
                     MenuItem(titleKey: "menu.edit.delete_line", hotkeyChar: "d", commandId: .editDeleteLine),
+                    .divider,
                     MenuItem(titleKey: "menu.edit.search", hotkeyChar: "s", commandId: .searchWhereIs),
-                    MenuItem(titleKey: "menu.edit.open_link", hotkeyChar: "l", commandId: .documentOpenLink),
-                    MenuItem(
-                        titleKey: "menu.edit.outline", hotkeyChar: "i", commandId: .documentOutline,
-                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
-                    MenuItem(
-                        titleKey: "menu.edit.next_heading", hotkeyChar: "]", commandId: .documentHeadingNext,
-                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
-                    MenuItem(
-                        titleKey: "menu.edit.previous_heading", hotkeyChar: "[", commandId: .documentHeadingPrevious,
-                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
                     MenuItem(titleKey: "menu.edit.goto_line", hotkeyChar: "g", commandId: .cursorGotoLine),
+                    MenuItem(titleKey: "menu.edit.open_link", hotkeyChar: "l", commandId: .documentOpenLink),
+                    .divider,
                     MenuItem(titleKey: "menu.edit.toggle_comment", hotkeyChar: "c", commandId: .editToggleComment),
                     MenuItem(titleKey: "menu.edit.spell", hotkeyChar: "t", commandId: .editSpell),
                     MenuItem(titleKey: "menu.edit.justify", hotkeyChar: "j", commandId: .editJustify),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.edit.text_editing_mode", hotkeyChar: "x", commandId: .textMode,
                         isChecked: { $0.baseMode == .text }, isVisible: { !$0.buffer.isDirectoryBuffer }),
@@ -163,10 +180,26 @@ final class MenuBar {
                         isChecked: { $0.isTableModeActive }, isVisible: { !$0.buffer.isDirectoryBuffer }),
                 ]),
             MenuCategory(
+                titleKey: "menu.outline", hotkeyChar: "l",
+                items: [
+                    MenuItem(
+                        titleKey: "menu.edit.outline", hotkeyChar: "o", commandId: .documentOutline,
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
+                    MenuItem(
+                        titleKey: "menu.edit.next_heading", hotkeyChar: "n", commandId: .documentHeadingNext,
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }),
+                    MenuItem(
+                        titleKey: "menu.edit.previous_heading", hotkeyChar: "p", commandId: .documentHeadingPrevious,
+                        isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() })
+                ],
+                isVisible: { $0.documentOutlineController.supportsDocumentOutlineForCurrentBuffer() }
+                ),
+            MenuCategory(
                 titleKey: "menu.buffer", hotkeyChar: "b",
                 items: [
                     MenuItem(titleKey: "menu.buffer.next", hotkeyChar: "n", commandId: .bufferNext),
                     MenuItem(titleKey: "menu.buffer.prev", hotkeyChar: "p", commandId: .bufferPrev),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug,
                         isVisible: {
@@ -196,6 +229,7 @@ final class MenuBar {
                 titleKey: "menu.run", hotkeyChar: "r",
                 items: [
                     MenuItem(titleKey: "menu.run.script", hotkeyChar: "r", commandId: .fileRunLogo),
+                    .divider,
                     MenuItem(titleKey: "menu.buffer.logo_debugger", hotkeyChar: "d", commandId: .logoDebug),
                     MenuItem(titleKey: "menu.run.canvas", hotkeyChar: "c", commandId: .logoCanvas),
                     MenuItem(titleKey: "menu.run.output", hotkeyChar: "o", commandId: .logoOutput),
@@ -239,6 +273,7 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.shapes.vline", hotkeyChar: "v", action: { $0.runLogoScript("VLINE") }),
                     MenuItem(titleKey: "menu.shapes.table", hotkeyChar: "t", action: { $0.promptTableDimensions() }),
                     MenuItem(titleKey: "menu.shapes.fill", hotkeyChar: "f", action: { $0.promptFillText() }),
+                    .divider,
                     MenuItem(titleKey: "menu.shapes.symbols", hotkeyChar: "s", commandId: .symbolPicker),
                 ],
                 isVisible: { $0.buffer.allowsLogoExecution }),
@@ -255,7 +290,9 @@ final class MenuBar {
                     borderStyleItem(.heavyTripleDash, titleKey: "menu.borders.heavy_triple", hotkeyChar: "g"),
                     borderStyleItem(.quadrupleDash, titleKey: "menu.borders.quad_dash", hotkeyChar: "q"),
                     borderStyleItem(.heavyQuadrupleDash, titleKey: "menu.borders.heavy_quad", hotkeyChar: "w"),
+                    .divider,
                     MenuItem(titleKey: "menu.borders.next_style", hotkeyChar: "n", commandId: .borderStyle),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.borders.round", hotkeyChar: "r",
                         action: { editor in
@@ -289,6 +326,7 @@ final class MenuBar {
                     MenuItem(
                         titleKey: "menu.tools.eval_logo", hotkeyChar: "q", commandId: .editEvalLogo,
                         isVisible: { $0.buffer.allowsLogoExecution }),
+                    .divider,
                     MenuItem(titleKey: "menu.tools.journal", hotkeyChar: "j", commandId: .openJournal),
                     MenuItem(
                         titleKey: "menu.tools.word_count", hotkeyChar: "w",
@@ -296,7 +334,7 @@ final class MenuBar {
                             editor.showTextCounts()
                         },
                         isVisible: { !$0.buffer.isDirectoryBuffer }),
-
+                    .divider,
                     MenuItem(
                         titleKey: "menu.tools.line_numbers", hotkeyChar: "n",
                         action: { editor in
@@ -318,17 +356,18 @@ final class MenuBar {
                         },
                         isChecked: { $0.displayConfig.showRuler }),
                     MenuItem(
-                        titleKey: "menu.tools.zero_mode", hotkeyChar: "z",
-                        action: { editor in
-                            editor.toggleZeroMode()
-                        },
-                        isChecked: { $0.displayConfig.isZeroMode }),
-                    MenuItem(
                         titleKey: "menu.tools.indicator", hotkeyChar: "i",
                         action: { editor in
                             editor.toggleIndicator()
                         },
                         isChecked: { $0.displayConfig.showIndicator }),
+                    MenuItem(
+                        titleKey: "menu.tools.zero_mode", hotkeyChar: "z",
+                        action: { editor in
+                            editor.toggleZeroMode()
+                        },
+                        isChecked: { $0.displayConfig.isZeroMode }),
+                    .divider,
                     wrapColumnItem(80, titleKey: "menu.tools.wrap_80", hotkeyChar: "8"),
                     wrapColumnItem(60, titleKey: "menu.tools.wrap_60", hotkeyChar: "6"),
                     wrapColumnItem(40, titleKey: "menu.tools.wrap_40", hotkeyChar: "4"),
@@ -349,6 +388,7 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.help.describe_command", hotkeyChar: "c", commandId: .helpDescribeCommand),
                     MenuItem(
                         titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference),
+                    .divider,
                     MenuItem(
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,
                         isVisible: { $0.isLogoUIEnabled }),
@@ -361,10 +401,25 @@ final class MenuBar {
         if let editor {
             self.categories = baseCategories.compactMap { category in
                 guard category.isVisible?(editor) ?? true else { return nil }
-                let visibleItems = category.items.filter { $0.isVisible?(editor) ?? true }
-                guard !visibleItems.isEmpty else { return nil }
+                let visibleItems = category.items.filter { item in
+                    if item.isDivider { return true }
+                    return item.isVisible?(editor) ?? true
+                }
+                var cleanedItems: [MenuItem] = []
+                for item in visibleItems {
+                    if item.isDivider {
+                        if cleanedItems.isEmpty || cleanedItems.last?.isDivider == true {
+                            continue
+                        }
+                    }
+                    cleanedItems.append(item)
+                }
+                while cleanedItems.last?.isDivider == true {
+                    cleanedItems.removeLast()
+                }
+                guard !cleanedItems.isEmpty, !cleanedItems.allSatisfy({ $0.isDivider }) else { return nil }
                 return MenuCategory(
-                    titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: visibleItems,
+                    titleKey: category.titleKey, hotkeyChar: category.hotkeyChar, items: cleanedItems,
                     isVisible: category.isVisible)
             }
         } else {
@@ -373,7 +428,11 @@ final class MenuBar {
         if categoryIndex >= categories.count {
             categoryIndex = max(0, categories.count - 1)
         }
-        itemIndex = min(itemIndex, max(0, currentCategory.items.count - 1))
+        if !categories.isEmpty {
+            itemIndex = firstSelectableItemIndex(in: currentCategory.items, startingAt: itemIndex)
+        } else {
+            itemIndex = 0
+        }
     }
 
     var currentCategory: MenuCategory {
