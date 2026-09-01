@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## [1.4.6] - 2026-09-01
+
+Feature and bugfix release featuring enhanced path autocompletion, multi-mode double-click word selection, refined Canvas Mode editing behaviors, dotted arrow styles, menu organization improvements, and rendering accuracy fixes.
+
+### Added
+
+- **Tab Path Autocompletion**:
+  - Added tab completion for file paths in command prompt, `:open`, `:edit`, and `:write` commands.
+- **Double-Click Word Selection**:
+  - Added mouse double-click word selection across Text, Table, and Canvas modes.
+- **Canvas Mode Enter Alignment**:
+  - Added in-place `Enter` key behavior in Canvas Mode with smart start column alignment to the preceding content.
+- **Dotted Arrow Style (`dotted`)**:
+  - Added dotted arrow style in Canvas Mode and Style DSL (`┄┄►`, `┆▼`).
+- **Open File Command (`file.open_file`)**:
+  - Added dedicated open file command to open files in new buffers.
+- **Menu Dividers and Key Display Symbols**:
+  - Added visual menu dividers and standardized key symbol displays.
+
+### Changed
+
+- **Dropdown Menu Priority**:
+  - Prioritized active dropdown menu items over top-level category hotkeys during keyboard navigation.
+- **Documentation & FAQ**:
+  - Updated project FAQ to detail the rationale behind choosing Swift for `zago`.
+
+### Fixed
+
+- **Canvas Inactive Cursor Rendering**:
+  - Fixed visual column rendering for inactive cursor in Canvas Mode when focus is in the prompt bar.
+- **Shift+Arrow Line Segment Replacement**:
+  - Fixed line drawing to seamlessly overwrite and replace existing arrow heads with continuous line segments.
+- **Scrollbar Indicator Terminal Line Clearing**:
+  - Fixed rightmost column terminal clear-line sequence (`\u{1B}[K`) from erasing scrollbar thumb/track characters on full-width lines.
+
 ## [1.4.5] - 2026-08-31
 
 Feature and UX enhancement release introducing Zero Interface Mode, vertical scrollbar indicator, expanded arrow and connector styles in Style DSL, canvas block overwrite pasting, Org-mode LOGO code block evaluation, and multi-byte boundary detection improvements.
