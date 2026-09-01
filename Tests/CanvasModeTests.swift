@@ -361,18 +361,123 @@ import TextMetrics
     #expect(editor.canvasVisualColumn == 0)
 }
 
-@Test func testCanvasModeEnterInsertsBlankLine() throws {
-    let editor = Editor()
-    editor.buffer.lines = ["one", "two"]
-    editor.buffer.lineIndex = 0
-    editor.buffer.columnIndex = 3
-    editor.switchToCanvasMode()
+@Test func testCanvasModeEnterMovesCursorDownAndAlignsStartColumn() throws {
+    // 1. In-place cursor move without pushing existing lines
+    do {
+        let editor = Editor()
+        editor.buffer.lines = ["one", "two"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 3
+        editor.switchToCanvasMode()
 
-    editor.processKey(.enter)
+        editor.processKey(.enter)
 
-    #expect(editor.buffer.lines == ["one", "", "two"])
-    #expect(editor.buffer.lineIndex == 1)
-    #expect(editor.canvasVisualColumn == 0)
+        #expect(editor.buffer.lines == ["one", "two"])
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.canvasVisualColumn == 0)
+
+        // 2. Extending canvas at EOF
+        editor.processKey(.enter)
+        #expect(editor.buffer.lines == ["one", "two", ""])
+        #expect(editor.buffer.lineIndex == 2)
+        #expect(editor.canvasVisualColumn == 0)
+    }
+
+    // 3. Continuous typing remembers start column across multiple Enters
+    do {
+        let editor = Editor()
+        editor.buffer.lines = [""]
+        editor.switchToCanvasMode()
+        editor.canvasVisualColumn = 6
+
+        editor.processKey(.char("A"))
+        editor.processKey(.char("B"))
+        editor.processKey(.char("C"))
+        #expect(editor.canvasVisualColumn == 9)
+
+        // 1st Enter: moves to line 1, aligns to col 6
+        editor.processKey(.enter)
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.canvasVisualColumn == 6)
+
+        editor.processKey(.char("D"))
+        editor.processKey(.char("E"))
+        #expect(editor.canvasVisualColumn == 8)
+
+        // 2nd Enter: moves to line 2, aligns to col 6
+        editor.processKey(.enter)
+        #expect(editor.buffer.lineIndex == 2)
+        #expect(editor.canvasVisualColumn == 6)
+
+        #expect(editor.buffer.lines[0] == "      ABC")
+        #expect(editor.buffer.lines[1] == "      DE")
+    }
+
+    // 4. Box interior start column detection
+    do {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "      │ Hello World │",
+            "      │             │",
+        ]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 10
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        editor.processKey(.enter)
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.canvasVisualColumn == 8) // start of "Hello World" inside box
+    }
+
+    // 5. Leading spaces do not lock start column, first non-space locks it
+    do {
+        let editor = Editor()
+        editor.buffer.lines = [""]
+        editor.switchToCanvasMode()
+        editor.canvasVisualColumn = 0
+
+        // Type 4 spaces to indent from col 0 to col 4
+        editor.processKey(.char(" "))
+        editor.processKey(.char(" "))
+        editor.processKey(.char(" "))
+        editor.processKey(.char(" "))
+        #expect(editor.canvasVisualColumn == 4)
+
+        // Type "Hi"
+        editor.processKey(.char("H"))
+        editor.processKey(.char("i"))
+        #expect(editor.canvasVisualColumn == 6)
+
+        // Enter aligns to col 4 (where "Hi" starts, ignoring leading spaces)
+        editor.processKey(.enter)
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.canvasVisualColumn == 4)
+    }
+
+    // 6. Tab key advances visual column without locking start column; first non-space locks it
+    do {
+        let editor = Editor()
+        editor.buffer.lines = [""]
+        editor.switchToCanvasMode()
+        editor.canvasVisualColumn = 0
+
+        // Press Tab (advances by tabSize = 4)
+        editor.processKey(.tab)
+        #expect(editor.canvasVisualColumn == 4)
+
+        // Type "Text"
+        editor.processKey(.char("T"))
+        editor.processKey(.char("e"))
+        editor.processKey(.char("x"))
+        editor.processKey(.char("t"))
+        #expect(editor.canvasVisualColumn == 8)
+
+        // Enter aligns to col 4 (where "Text" starts, ignoring Tab indentation)
+        editor.processKey(.enter)
+        #expect(editor.buffer.lineIndex == 1)
+        #expect(editor.canvasVisualColumn == 4)
+    }
 }
 
 @Test func testCanvasModePageDownDoesNotCreateBlankLines() throws {

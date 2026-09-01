@@ -21,6 +21,7 @@ class TextBuffer: SpellCheckableBuffer {
     var baseMode: EditorBaseMode = .text
     var overlayMode: EditorOverlayMode = .none
     var canvasVisualColumn: Int = 0
+    var canvasTypingStartVisualColumn: Int? = nil
     var canvasHorizontalOffset: Int = 0
     var topVLineIndex: Int = 0
     var isTableModeActive: Bool = false

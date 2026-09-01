@@ -148,6 +148,7 @@ extension Editor {
     }
 
     func syncCanvasCursorFromBuffer() {
+        buffer.canvasTypingStartVisualColumn = nil
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else {
             canvasVisualColumn = 0
             return
@@ -172,6 +173,7 @@ extension Editor {
     }
 
     func moveCanvasCursor(deltaLine: Int, deltaColumn: Int, extendDownward: Bool = true) {
+        buffer.canvasTypingStartVisualColumn = nil
         let targetLine = buffer.lineIndex + deltaLine
         let targetColumn = canvasVisualColumn + deltaColumn
         guard targetLine >= 0, targetColumn >= 0 else { return }
@@ -192,11 +194,13 @@ extension Editor {
     }
 
     func moveCanvasCursorToLineStart() {
+        buffer.canvasTypingStartVisualColumn = nil
         canvasVisualColumn = 0
         syncCanvasCursorToBuffer()
     }
 
     func moveCanvasCursorToLineEnd() {
+        buffer.canvasTypingStartVisualColumn = nil
         guard ensureCanvasLineExists(buffer.lineIndex) else { return }
         let lineEnd = buffer.lines[buffer.lineIndex].displayWidth
         if lineEnd >= EditorLimits.maxCanvasAutoExtendColumns {
@@ -216,6 +220,9 @@ extension Editor {
                 reportOperationResult(.noOp(message: l10n["status.canvas_column_limit_exceeded"]))
             }
             return
+        }
+        if buffer.canvasTypingStartVisualColumn == nil && ch != " " && ch != "\t" {
+            buffer.canvasTypingStartVisualColumn = canvasVisualColumn
         }
         let result = buffer.lines[buffer.lineIndex].writingAtVisualColumn(canvasVisualColumn, character: ch)
         buffer.lines[buffer.lineIndex] = result.text
@@ -243,16 +250,70 @@ extension Editor {
     }
 
     func insertCanvasNewline() {
-        let insertIndex = min(buffer.lineIndex + 1, buffer.lines.count)
-        guard isCanvasLineAllowed(insertIndex) else {
+        let targetLine = buffer.lineIndex + 1
+        guard isCanvasLineAllowed(targetLine) else {
             reportOperationResult(.noOp(message: l10n["status.canvas_row_limit_exceeded"]))
             return
         }
-        buffer.lines.insert("", at: insertIndex)
-        buffer.lineIndex = insertIndex
-        canvasVisualColumn = 0
-        buffer.isModified = true
+
+        let targetCol: Int
+        if let typingStart = buffer.canvasTypingStartVisualColumn {
+            targetCol = typingStart
+        } else {
+            targetCol = detectSmartCanvasStartColumn(lineIndex: buffer.lineIndex, visualColumn: canvasVisualColumn)
+            buffer.canvasTypingStartVisualColumn = targetCol
+        }
+
+        if targetLine >= buffer.lines.count {
+            guard ensureCanvasLineExists(targetLine) else { return }
+        }
+
+        buffer.lineIndex = targetLine
+        canvasVisualColumn = targetCol
         syncCanvasCursorToBuffer()
+        buffer.isModified = true
+    }
+
+    private func detectSmartCanvasStartColumn(lineIndex: Int, visualColumn: Int) -> Int {
+        guard lineIndex >= 0 && lineIndex < buffer.lines.count else {
+            return visualColumn
+        }
+        let line = buffer.lines[lineIndex]
+        if line.isEmpty {
+            return visualColumn
+        }
+
+        var boxBorderCol: Int? = nil
+        var firstNonSpaceCol: Int? = nil
+
+        var currentVCol = 0
+        for ch in line {
+            let width = ch.displayWidth
+            let charStartCol = currentVCol
+            let charEndCol = currentVCol + width
+            currentVCol = charEndCol
+
+            if charStartCol > visualColumn {
+                break
+            }
+
+            if ch == "│" || ch == "║" || ch == "┃" || ch == "┆" || ch == "┇" || ch == "┊" || ch == "┋" || ch == "|" {
+                boxBorderCol = charStartCol
+                firstNonSpaceCol = nil
+            } else if ch != " " && ch != "\t" {
+                if firstNonSpaceCol == nil {
+                    firstNonSpaceCol = charStartCol
+                }
+            }
+        }
+
+        if let firstNonSpaceCol {
+            return firstNonSpaceCol
+        }
+        if let boxBorderCol {
+            return min(boxBorderCol + 2, visualColumn)
+        }
+        return visualColumn
     }
 
     func deleteCanvasCharacter() {
