@@ -412,7 +412,10 @@ final class Renderer {
 
                         let isInactiveCursorPos: Bool
                         if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
-                            if editor.isTableModeActive, let cell = editor.currentTableCell,
+                            if editor.isCanvasModeActive {
+                                let chWidth = max(1, ch.displayWidth)
+                                isInactiveCursorPos = (vLine.bufferLineIndex == targetVLine && targetVCol >= charVisualColumn && targetVCol < charVisualColumn + chWidth)
+                            } else if editor.isTableModeActive, let cell = editor.currentTableCell,
                                 editor.buffer.lineIndex >= cell.innerMinLine
                                     && editor.buffer.lineIndex <= cell.innerMaxLine
                             {
@@ -467,7 +470,7 @@ final class Renderer {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
                     var selectedPad = ""
                     var normalPad = ""
-                    let isInactiveCursorLine = isPromptActive && vIndex == editor.buffer.lineIndex
+                    let isInactiveCursorLine = isPromptActive && vLine.bufferLineIndex == editor.buffer.lineIndex
                     for screenOffset in renderedDisplayWidth..<visibleTextWidth {
                         let visualCol = editor.canvasHorizontalOffset + screenOffset
                         let isInactiveCursorCell = isInactiveCursorLine && visualCol == editor.canvasVisualColumn

@@ -495,18 +495,20 @@ struct RendererChromeTests {
 
         // 3. In canvas mode with prompt: inactive cursor highlight rendered at canvas visual cursor
         editor.switchToCanvasMode()
-        editor.canvasVisualColumn = 5
+        editor.buffer.lines = ["測試 Hello"]
+        editor.canvasVisualColumn = 5 // Visual col 5 is 'H' ('測'=0..1, '試'=2..3, ' '=4, 'H'=5)
+        let canvasVLines = editor.prepareVirtualLines(textWidth: 40)
         let renderedCanvasPrompt = editor.renderer.renderMainTextArea(
             editor: editor,
             mainAreaHeight: 1,
             gutterWidth: 0,
-            virtualLines: virtualLines,
-            cols: 20,
+            virtualLines: canvasVLines,
+            cols: 40,
             dropdownStartCol: 0,
             dropdownBoxWidth: 0,
             dropdownBoxLines: []
         )
-        #expect(renderedCanvasPrompt.contains(ANSIStyle.inactiveCursor))
+        #expect(renderedCanvasPrompt.contains("H".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)))
     }
 
     @Test func testZeroModeScreenGeometryAndRendering() throws {
