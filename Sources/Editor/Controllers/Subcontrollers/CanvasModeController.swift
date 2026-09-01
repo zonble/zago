@@ -108,7 +108,7 @@ final class CanvasModeController: KeyInputHandler {
 
         if editor.ensureCanvasLineExists(targetLine) {
             let targetChar = editor.canvasCharacter(atLine: targetLine, visualColumn: targetColumn)
-            if let targetChar, canvasMask(for: targetChar, style: style) != 0 {
+            if let targetChar, (canvasMask(for: targetChar, style: style) != 0 || isArrowCharacter(targetChar)) {
                 editor.writeCanvasLineSegment(
                     lineIndex: targetLine,
                     visualColumn: targetColumn,

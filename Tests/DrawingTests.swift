@@ -135,7 +135,7 @@ import Testing
         #expect(arrowHead(for: .up, arrowStyle: .double) == "⇑")
         #expect(arrowHead(for: .down, arrowStyle: .double) == "⇓")
 
-        #expect(arrowHead(for: .right, arrowStyle: .heavy) == "➡")
+        #expect(arrowHead(for: .right, arrowStyle: .heavy) == "⮕")
         #expect(arrowHead(for: .left, arrowStyle: .heavy) == "⬅")
         #expect(arrowHead(for: .up, arrowStyle: .heavy) == "⬆")
         #expect(arrowHead(for: .down, arrowStyle: .heavy) == "⬇")

@@ -136,7 +136,7 @@ struct TraditionalChineseStrings {
             <|   |>   空心三角（◁ / ▷ / △ / ▽）
             <.   .>   微型三角（◂ / ▸ / ▴ / ▾）
             <~   ~>   細線箭頭（← / →  / ↑ / ↓）
-            <+|  |+>  粗線箭頭（⬅ / ➡ / ⬆ / ⬇）
+            <+|  |+>  粗線箭頭（⬅ / ⮕ / ⬆ / ⬇）
             <=|  |=>  雙線箭頭（⇐ / ⇒ / ⇑ / ⇓）
             <*>  <*>  實心菱（◆）
             <>   <>   空心菱（◇）
@@ -954,7 +954,7 @@ struct TraditionalChineseStrings {
         "menu.arrows.hollow": "空心         △▽◁▷",
         "menu.arrows.small": "微型         ▴▾◂▸",
         "menu.arrows.stemmed": "細線         ↑↓←→",
-        "menu.arrows.heavy": "粗線         ⬆⬇⬅➡",
+        "menu.arrows.heavy": "粗線         ⬆⬇⬅⮕",
         "menu.arrows.double": "雙線         ⇑⇓⇐⇒",
         "menu.arrows.solid_diamond": "實心菱       ◆",
         "menu.arrows.diamond": "空心菱       ◇",
@@ -968,7 +968,7 @@ struct TraditionalChineseStrings {
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
         "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
         "menu.borders.arrow_double": "箭頭：雙線 ⇑⇓⇐⇒",
-        "menu.borders.arrow_heavy": "箭頭：粗線 ⬆⬇⬅➡",
+        "menu.borders.arrow_heavy": "箭頭：粗線 ⬆⬇⬅⮕",
 
         "menu.tools.journal": "今天日記",
         "menu.tools.logo": "指令列\tEsc",

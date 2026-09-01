@@ -8,7 +8,7 @@ public enum ArrowStyle: String, CaseIterable, Sendable {
     case hollow = "hollow"  // △ ▽ ◁ ▷ (Outline triangle arrows)
     case small = "small"  // ▴ ▾ ◂ ▸ (Small triangle pointers)
     case double = "double"  // ⇑ ⇓ ⇐ ⇒ (Double line arrows)
-    case heavy = "heavy"  // ⬆ ⬇ ⬅ ➡ (Heavy line arrows)
+    case heavy = "heavy"  // ⬆ ⬇ ⬅ ⮕ (Heavy line arrows)
     case diamond = "diamond"  // ◇ ◇ ◇ ◇ (Hollow diamond / UML aggregation)
     case solidDiamond = "solid-diamond"  // ◆ ◆ ◆ ◆ (Solid diamond / UML composition)
     case circle = "circle"  // ● ● ● ● (Solid circle / State start)

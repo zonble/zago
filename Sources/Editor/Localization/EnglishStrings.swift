@@ -964,7 +964,7 @@ struct EnglishStrings {
         "menu.arrows.hollow": "Hollow        △▽◁▷",
         "menu.arrows.small": "Small         ▴▾◂▸",
         "menu.arrows.stemmed": "Stemmed       ↑↓←→",
-        "menu.arrows.heavy": "Heavy         ⬆⬇⬅➡",
+        "menu.arrows.heavy": "Heavy         ⬆⬇⬅⮕",
         "menu.arrows.double": "Double        ⇑⇓⇐⇒",
         "menu.arrows.solid_diamond": "Solid Diamond ◆",
         "menu.arrows.diamond": "Diamond       ◇",
@@ -978,7 +978,7 @@ struct EnglishStrings {
         "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
         "menu.borders.arrow_small": "Arrow: Small   ▴▾◂▸",
         "menu.borders.arrow_double": "Arrow: Double  ⇑⇓⇐⇒",
-        "menu.borders.arrow_heavy": "Arrow: Heavy   ⬆⬇⬅➡",
+        "menu.borders.arrow_heavy": "Arrow: Heavy   ⬆⬇⬅⮕",
 
         "menu.tools.journal": "Today's Journal",
         "menu.tools.logo": "Command Prompt…\tEsc",

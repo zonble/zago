@@ -50,10 +50,10 @@ public func canvasMask(for character: Character?, style _: BorderStyle = .single
     case "┬", "╦", "┳": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
     case "┴", "╩", "┻": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
     case "┼", "╬", "╋", "+": 15
-    case "→", ">", "▶", "►", "▷", "▸": CanvasDrawDirection.left.mask
-    case "←", "<", "◀", "◄", "◁", "◂": CanvasDrawDirection.right.mask
-    case "↑", "^", "▲", "△", "▴": CanvasDrawDirection.down.mask
-    case "↓", "v", "▼", "▽", "▾": CanvasDrawDirection.up.mask
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⤚", "⇀": CanvasDrawDirection.left.mask
+    case "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼": CanvasDrawDirection.right.mask
+    case "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿": CanvasDrawDirection.down.mask
+    case "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂": CanvasDrawDirection.up.mask
     default: 0
     }
 }
@@ -254,7 +254,7 @@ public func arrowHead(
         case .up: "⬆"
         case .down: "⬇"
         case .left: "⬅"
-        case .right: "➡"
+        case .right: "⮕"
         }
     case .diamond:
         switch direction {
@@ -308,9 +308,22 @@ public func arrowHead(
     }
 }
 
+public func isArrowCharacter(_ character: Character) -> Bool {
+    switch character {
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "⮕", "⤚", "⇀",
+        "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼",
+        "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿",
+        "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂",
+        "◇", "◆", "●", "○", "✕":
+        return true
+    default:
+        return false
+    }
+}
+
 public func isCanvasDrawableCharacter(_ character: Character?, style: BorderStyle) -> Bool {
     guard let character else { return true }
-    return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0
+    return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0 || isArrowCharacter(character)
 }
 
 public func oppositeMask(for direction: CanvasDrawDirection) -> UInt8 {

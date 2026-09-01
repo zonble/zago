@@ -146,6 +146,26 @@ import TextMetrics
     }
 }
 
+@Test func testCanvasModeShiftArrowOverVariousArrowTypes() throws {
+    let arrows = ["⇒", "➡", "→", "▶", "▷", "▸", "◇", "◆", "●", "○", "✕", "⤚", "⇀"]
+    for arrow in arrows {
+        let editor = Editor()
+        editor.defaultBorderStyle = .single
+        editor.buffer.lines = ["──" + arrow]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 2
+        editor.switchToCanvasMode()
+        editor.syncCanvasCursorFromBuffer()
+
+        #expect(editor.canvasVisualColumn == 2)
+
+        // Press Shift + Right on arrow: replaces arrow with '─' and continues right
+        editor.processKey(.shiftArrowRight)
+        #expect(editor.buffer.lines[0] == "───", "Failed for arrow: \(arrow)")
+        #expect(editor.canvasVisualColumn == 3)
+    }
+}
+
 @Test func testCanvasModeCtrlShiftArrowDrawsArrows() throws {
     let editor = Editor()
     editor.defaultBorderStyle = .ascii
