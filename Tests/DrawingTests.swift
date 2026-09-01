@@ -153,12 +153,22 @@ import Testing
         #expect(arrowHead(for: .right, arrowStyle: .harpoon) == "⇀")
         #expect(arrowHead(for: .up, arrowStyle: .harpoon) == "↿")
         #expect(arrowHead(for: .down, arrowStyle: .harpoon) == "⇂")
+        #expect(arrowHead(for: .left, arrowStyle: .dotted) == "⇠")
+        #expect(arrowHead(for: .right, arrowStyle: .dotted) == "⇢")
+        #expect(arrowHead(for: .up, arrowStyle: .dotted) == "⇡")
+        #expect(arrowHead(for: .down, arrowStyle: .dotted) == "⇣")
 
         let doubleDsl = StyleDSL.parseLineStyle("<=|==|=>")
         #expect(doubleDsl?.border == .double)
         #expect(doubleDsl?.arrowMode == .both)
         #expect(doubleDsl?.startArrowStyle == .double)
         #expect(doubleDsl?.endArrowStyle == .double)
+
+        let dottedDsl = StyleDSL.parseLineStyle("<..--..>")
+        #expect(dottedDsl?.border == .doubleDash)
+        #expect(dottedDsl?.arrowMode == .both)
+        #expect(dottedDsl?.startArrowStyle == .dotted)
+        #expect(dottedDsl?.endArrowStyle == .dotted)
 
         let heavyDsl = StyleDSL.parseLineStyle("<+|+|+>")
         #expect(heavyDsl?.border == .heavy)
@@ -223,7 +233,7 @@ import Testing
         drawer.drawLine(
             buffer: hvyBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .heavy,
             arrowStyle: .heavy)
-        #expect(hvyBuffer.lineString(at: 0) == "━━━➡")
+        #expect(hvyBuffer.lineString(at: 0) == "━━━⮕")
 
         let diamondBuffer = StringArrayDrawingBuffer()
         drawer.drawLine(

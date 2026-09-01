@@ -22,8 +22,8 @@ private let tableStyleDSLNote = """
 private let lineStyleDSLNote = """
     Supports Style DSL with concise format [startArrow][border][endArrow]:
     • Borders: - (single), + (heavy), = (double), a (ascii), --, ++, ---, +++, ----, ++++
-    • Arrows: < > (standard), << >> (solid), <| |> (hollow), <~ ~> (stemmed), <. .> (small), <=| |=> (double), <+| |+> (heavy), <> (diamond), <*> (solid diamond), * (circle), o / O (open circle), x / X (cross), <: :> (crow), <^ ^> (harpoon)
-    • Examples: "->", "<=>", "<<=>>", "<~+", "*---*", "o---o", "x---x", "<>--->", "<:---:>"
+    • Arrows: < > (standard), << >> (solid), <| |> (hollow), <~ ~> (stemmed), <. .> (small), <=| |=> (double), <+| |+> (heavy), <> (diamond), <*> (solid diamond), * (circle), o / O (open circle), x / X (cross), <: :> (crow), <^ ^> (harpoon), <.. ..> (dotted)
+    • Examples: "->", "<=>", "<<=>>", "<~+", "*---*", "o---o", "x---x", "<>--->", "<:---:>", "<..--..>"
     """
 
 private func boxParameters(for commandName: String) -> [LogoPrimitiveParameter] {

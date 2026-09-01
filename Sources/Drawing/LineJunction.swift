@@ -50,10 +50,10 @@ public func canvasMask(for character: Character?, style _: BorderStyle = .single
     case "┬", "╦", "┳": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
     case "┴", "╩", "┻": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
     case "┼", "╬", "╋", "+": 15
-    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⤚", "⇀": CanvasDrawDirection.left.mask
-    case "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼": CanvasDrawDirection.right.mask
-    case "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿": CanvasDrawDirection.down.mask
-    case "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂": CanvasDrawDirection.up.mask
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⮕", "⤚", "⇀", "⇢": CanvasDrawDirection.left.mask
+    case "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼", "⇠": CanvasDrawDirection.right.mask
+    case "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿", "⇡": CanvasDrawDirection.down.mask
+    case "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂", "⇣": CanvasDrawDirection.up.mask
     default: 0
     }
 }
@@ -305,15 +305,22 @@ public func arrowHead(
         case .left: "↼"
         case .right: "⇀"
         }
+    case .dotted:
+        switch direction {
+        case .up: "⇡"
+        case .down: "⇣"
+        case .left: "⇠"
+        case .right: "⇢"
+        }
     }
 }
 
 public func isArrowCharacter(_ character: Character) -> Bool {
     switch character {
-    case "→", ">", "▶", "►", "▷", "▸", "⇒", "⮕", "⤚", "⇀",
-        "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼",
-        "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿",
-        "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂",
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⮕", "⤚", "⇀", "⇢",
+        "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼", "⇠",
+        "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿", "⇡",
+        "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂", "⇣",
         "◇", "◆", "●", "○", "✕":
         return true
     default:

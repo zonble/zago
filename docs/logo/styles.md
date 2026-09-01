@@ -105,15 +105,16 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | **Hollow** | `◁` / `△` | `▷` / `▽` | `<\|` | `\|>` | `◁` `▷` | `△` `▽` |
 | **Small** | `◂` / `▴` | `▸` / `▾` | `<.` | `.>` | `◂` `▸` | `▴` `▾` |
 | **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
-| **Heavy** | `⬅` / `⬆` | `➡` / `⬇` | `<+|` | `|+>` | `⬅` `➡` | `⬆` `⬇` |
+| **Heavy** | `⬅` / `⬆` | `⮕` / `⬇` | `<+|` | `|+>` | `⬅` `⮕` | `⬆` `⬇` |
 | **Double** | `⇐` / `⇑` | `⇒` / `⇓` | `<=|` | `|=>` | `⇐` `⇒` | `⇑` `⇓` |
+| **Dotted / Dashed** | `⇠` / `⇡` | `⇢` / `⇣` | `<..` | `..>` | `⇠` `⇢` | `⇡` `⇣` |
+| **Harpoon (Half-Arrow)** | `↼` / `↿` | `⇀` / `⇂` | `<^` | `^>` | `↼` `⇀` | `↿` `⇂` |
+| **Crow's Foot** | `⤙` / `⤘` | `⤚` / `⤛` | `<:` | `:>` | `⤙` `⤚` | `⤘` `⤛` |
 | **Solid Diamond** | `◆` | `◆` | `<*>` | `<*>` | `◆` | `◆` |
 | **Hollow Diamond** | `◇` | `◇` | `<>` | `<>` | `◇` | `◇` |
 | **Solid Circle** | `●` | `●` | `*` | `*` | `●` | `●` |
 | **Open Circle** | `○` | `○` | `o` / `O` | `o` / `O` | `○` | `○` |
 | **Cross** | `✕` | `✕` | `x` / `X` | `x` / `X` | `✕` | `✕` |
-| **Crow's Foot** | `⤙` / `⤘` | `⤚` / `⤛` | `<:` | `:>` | `⤙` `⤚` | `⤘` `⤛` |
-| **Harpoon (Half-Arrow)** | `↼` / `↿` | `⇀` / `⇂` | `<^` | `^>` | `↼` `⇀` | `↿` `⇂` |
 
 ### Common Line DSL Combinations
 
@@ -128,7 +129,8 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | `<\|---\|>` | `◁┄┄┄┄▷` | `△` `┆` `┆` `▽` | Triple-dash line with hollow arrows |
 | `<.++.>` | `◂╍╍╍╍▸` | `▴` `╏` `╏` `▾` | Heavy double-dash line with small arrows |
 | `<=|==|=>` | `⇐════⇒` | `⇑` `║` `║` `⇓` | Double line with double arrows |
-| `<+|++|+>` | `⬅━━━━➡` | `⬆` `┃` `┃` `⬇` | Heavy line with heavy arrows |
+| `<+|++|+>` | `⬅━━━━⮕` | `⬆` `┃` `┃` `⬇` | Heavy line with heavy arrows |
+| `<..--..>` | `⇠╌╌╌╌⇢` | `⇡` `╎` `╎` `⇣` | Double-dash line with dotted arrows |
 | `<>--->` | `◇────>` | `◇` `│` `│` `v` | Hollow diamond line with arrow |
 | `<*>--->` | `◆────>` | `◆` `│` `│` `v` | Solid diamond line with arrow |
 | `*---*` | `●────●` | `●` `│` `│` `●` | Line with solid circle endpoints |

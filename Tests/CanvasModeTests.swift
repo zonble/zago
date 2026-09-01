@@ -147,7 +147,7 @@ import TextMetrics
 }
 
 @Test func testCanvasModeShiftArrowOverVariousArrowTypes() throws {
-    let arrows = ["⇒", "➡", "→", "▶", "▷", "▸", "◇", "◆", "●", "○", "✕", "⤚", "⇀"]
+    let arrows = ["⇒", "➡", "→", "▶", "▷", "▸", "◇", "◆", "●", "○", "✕", "⤚", "⇀", "⇢"]
     for arrow in arrows {
         let editor = Editor()
         editor.defaultBorderStyle = .single

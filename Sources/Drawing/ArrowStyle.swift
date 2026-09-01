@@ -16,6 +16,7 @@ public enum ArrowStyle: String, CaseIterable, Sendable {
     case cross = "cross"  // ✕ ✕ ✕ ✕ (Cross / Inactive / Cancel)
     case crow = "crow"  // ⤘ ⤛ ⤙ ⤚ (Crow's foot / ERD many)
     case harpoon = "harpoon"  // ↿ ⇂ ↼ ⇀ (Harpoon half-arrows)
+    case dotted = "dotted"  // ⇡ ⇣ ⇠ ⇢ (Dotted / dashed line arrows)
 
     public init?(_ token: String) {
         let clean = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"")).lowercased()
@@ -48,6 +49,8 @@ public enum ArrowStyle: String, CaseIterable, Sendable {
             self = .crow
         case "harpoon":
             self = .harpoon
+        case "dotted", "dashed", "dot-arrow", "dash-arrow":
+            self = .dotted
         default:
             return nil
         }

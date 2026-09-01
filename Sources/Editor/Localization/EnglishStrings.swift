@@ -136,15 +136,18 @@ struct EnglishStrings {
             <|   |>   Hollow triangular arrow (◁ / ▷ / △ / ▽)
             <.   .>   Small triangular arrow (◂ / ▸ / ▴ / ▾)
             <~   ~>   Stemmed arrow (← / → / ↑ / ↓)
-            <+|  |+>  Heavy arrow (⬅ / ➡ / ⬆ / ⬇)
+            <+|  |+>  Heavy arrow (⬅ / ⮕ / ⬆ / ⬇)
             <=|  |=>  Double arrow (⇐ / ⇒ / ⇑ / ⇓)
+            <..  ..>  Dotted / dashed arrow (⇠ / ⇢ / ⇡ / ⇣)
+            <^   ^>   Harpoon (↼ / ⇀ / ↿ / ⇂)
+            <:   :>   Crow's foot (⤙ / ⤚ / ⤘ / ⤛)
+
+            -- Endpoint Markers --
             <*>  <*>  Solid diamond (◆)
             <>   <>   Hollow diamond (◇)
             *    *    Solid circle (●)
             o    o    Open circle (○, also O)
             x    x    Cross (✕, also X)
-            <:   :>   Crow's foot (⤙ / ⤚ / ⤘ / ⤛)
-            <^   ^>   Harpoon (↼ / ⇀ / ↿ / ⇂)
 
           4. Command Usage Examples
           ----------------------------------------------------------------
@@ -171,6 +174,7 @@ struct EnglishStrings {
                 LINE 18 "<|+++|>"      18-char heavy triple-dash with bidirectional hollow arrows
                 LINE 14 "<=|==|=>"     14-char double line with bidirectional double arrows
                 LINE 16 "<+|++|+>"     16-char heavy line with bidirectional heavy arrows
+                LINE 16 "<..--..>"     16-char double-dash line with bidirectional dotted arrows
                 LINE 15 "<>--->"       15-char single line with UML aggregation diamond & arrow
                 LINE 15 "<*>--->"      15-char single line with UML composition diamond & arrow
                 LINE 12 "*---*"        12-char single line with solid circle endpoints
@@ -973,6 +977,7 @@ struct EnglishStrings {
         "menu.arrows.cross": "Cross         ✕",
         "menu.arrows.crow": "Crow's Foot   ⤘⤛⤙⤚",
         "menu.arrows.harpoon": "Harpoon       ↿⇂↼⇀",
+        "menu.arrows.dotted": "Dotted        ⇡⇣⇠⇢",
         "menu.borders.arrow_solid": "Arrow: Solid   ▲▼◀▶",
         "menu.borders.arrow_stemmed": "Arrow: Stemmed ↑↓←→",
         "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
