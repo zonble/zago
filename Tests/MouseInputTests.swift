@@ -440,6 +440,49 @@ import Testing
         #expect(editor.buffer.lineIndex == 0)
         #expect(editor.canvasVisualColumn == 0)
     }
+
+    @Test func testDoubleClickWordSelectionInTextTableAndCanvasModes() {
+        let editor = Editor(language: .en)
+        editor.displayConfig.enableMouse = true
+        editor.displayConfig.isZeroMode = false
+        editor.displayConfig.showRuler = false
+        editor.displayConfig.showLineNumbers = false
+        editor.buffer.lines = [
+            "Hello World, welcome!",
+            "| name | age |",
+            "| Alice | 30 |"
+        ]
+
+        // 1. Double click in Text Mode on "World" (row 2: line 0 in text viewport)
+        // col 1: 0-indexed gutter/margin
+        let colOnWorld = 8 // "Hello World"
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: colOnWorld, row: 2))
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: colOnWorld, row: 2))
+
+        #expect(editor.buffer.lineIndex == 0)
+        #expect(editor.buffer.selectionMark?.line == 0)
+        #expect(editor.buffer.selectionMark?.column == 6)
+        #expect(editor.buffer.columnIndex == 11) // "World" is 6..<11
+
+        // 2. Double click on whitespace
+        let colOnSpace = 6 // space after "Hello"
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: colOnSpace, row: 2))
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: colOnSpace, row: 2))
+        #expect(editor.buffer.selectionMark?.line == 0)
+        #expect(editor.buffer.selectionMark?.column == 5)
+        #expect(editor.buffer.columnIndex == 6) // " " is 5..<6
+
+        // 3. Double click in Canvas Mode
+        editor.switchToCanvasMode()
+        editor.buffer.lines = ["Hello Canvas"]
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 8, row: 2))
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 8, row: 2))
+
+        #expect(editor.buffer.canvasBlockMark?.line == 0)
+        #expect(editor.buffer.canvasBlockMark?.visualColumn == 6)
+        #expect(editor.buffer.canvasBlockMarkEnd?.line == 0)
+        #expect(editor.buffer.canvasBlockMarkEnd?.visualColumn == 11)
+    }
 }
 
 
