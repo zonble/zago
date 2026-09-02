@@ -15,6 +15,11 @@
   - Added line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.
   - Added Tab autocompletion support for `file://` URL prefixes in the interactive prompt bar.
 
+### Fixed
+
+- **Canvas Mode Line Drawing Adjacent Line Isolation**:
+  - Fixed an issue where drawing a horizontal line across empty space adjacent to vertical box borders on neighboring rows would erroneously convert straight line segments into `┬` (top-join) junctions.
+
 ## [1.4.6] - 2026-09-01
 
 Feature and bugfix release featuring enhanced path autocompletion, multi-mode double-click word selection, refined Canvas Mode editing behaviors, dotted arrow styles, menu organization improvements, and rendering accuracy fixes.

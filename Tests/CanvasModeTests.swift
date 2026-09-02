@@ -1176,3 +1176,29 @@ import TextMetrics
     #expect(editor.buffer.lineIndex == 0)
     #expect(editor.canvasVisualColumn == 2)
 }
+
+@Test func testCanvasHorizontalLineDrawingDoesNotCorruptIntoTopJoinsWithAdjacentLines() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "│",
+        "    ┌───────────────────▼────────────────────┐◀──────────       ────────────────┐",
+        "    │          Discovering Devices           │ Scanning device via Bluetooth.   │",
+        "    └───────────────────┬────────────────────┘ The device list might be empty.  │",
+    ]
+    // Cursor at line 1, visual column 56 (at the last '─' of ◀──────────)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 56
+
+    let controller = CanvasModeController(editor: editor)
+
+    // Press Shift + Right 8 times to draw horizontal line across the gap to the right box
+    for _ in 0..<8 {
+        #expect(controller.handleKey(.shiftArrowRight) == true)
+    }
+
+    // Must draw continuous horizontal line '──────' without converting to '┬'
+    #expect(editor.buffer.lines[1].contains("◀─────────────────────────────────┐"))
+    #expect(!editor.buffer.lines[1].contains("┬"))
+}
+

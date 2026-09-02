@@ -634,21 +634,30 @@ extension Editor {
             style: style)
         mask |= direction.mask
 
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .up, style: style) {
-            mask |= CanvasDrawDirection.up.mask
+        // Connect along the axis of movement (predecessor)
+        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: direction.opposite, style: style) {
+            mask |= direction.opposite.mask
         }
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .down, style: style)
-        {
-            mask |= CanvasDrawDirection.down.mask
-        }
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .left, style: style)
-        {
-            mask |= CanvasDrawDirection.left.mask
-        }
-        if adjacentCanvasLineContinues(
-            lineIndex: lineIndex, visualColumn: visualColumn, direction: .right, style: style)
-        {
-            mask |= CanvasDrawDirection.right.mask
+
+        // When turning into a vertical direction (.up/.down), connect to the horizontal predecessor if any
+        if direction == .up || direction == .down {
+            if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .left, style: style) {
+                mask |= CanvasDrawDirection.left.mask
+            }
+            if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .right, style: style) {
+                mask |= CanvasDrawDirection.right.mask
+            }
+        } else {
+            // When moving horizontally (.left/.right), only connect vertically if this cell already has vertical lines/arrows
+            let hasVertical = (canvasMask(for: existingCharacter, style: style) & (CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask)) != 0
+            if hasVertical {
+                if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .up, style: style) {
+                    mask |= CanvasDrawDirection.up.mask
+                }
+                if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .down, style: style) {
+                    mask |= CanvasDrawDirection.down.mask
+                }
+            }
         }
 
         writeCanvasCharacter(
