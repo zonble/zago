@@ -134,9 +134,7 @@ final class DirectoryBuffer: TextBuffer {
 
         let l10n = L10n(language: currentLanguage)
         var newLines: [String] = []
-        let sortLabel = l10n["dirbuf.sort_label"]
-        let sortBadge = " [\(sortLabel): \(sortOption.displayName(language: currentLanguage))]"
-        newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr) + sortBadge)
+        newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr))
         newLines.append(l10n.dirBufHeaderInstructions)
         newLines.append("")
         newLines.append("  \(l10n.dirBufUpDir)")
