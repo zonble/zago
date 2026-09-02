@@ -1,6 +1,7 @@
 import Diagram
 import Foundation
 import LogoEngine
+import Syntax
 
 extension Editor: LogoEngineDelegate {
     public func logoEngine(_ engine: LogoEngine, performAction action: LogoEditorAction) {
@@ -38,7 +39,8 @@ extension Editor: LogoEngineDelegate {
             outdentSelectedOrCurrentLines(levels: levels)
         case .createTable(let rows, let cols, let cellWidth, let borderStyle, let rounded):
             tableModeController.createTable(
-                rows: rows, cols: cols, cellWidth: cellWidth, borderStyle: borderStyle, rounded: rounded, enterMode: false, saveSnapshot: false)
+                rows: rows, cols: cols, cellWidth: cellWidth, borderStyle: borderStyle, rounded: rounded,
+                enterMode: false, saveSnapshot: false)
         case .setBorderStyle(let style):
             setBorderStyle(style)
         case .setArrowStyle(let style):
@@ -207,6 +209,7 @@ extension Editor: LogoEngineDelegate {
         currentPromptMode = .logoReadWord(prompt: prompt)
         refreshScreen()
 
+        var resultText: String? = nil
         defer {
             currentPromptMode = .none
             promptInputText = ""
@@ -216,51 +219,17 @@ extension Editor: LogoEngineDelegate {
 
         while true {
             let key = terminal.readKey()
-            switch key {
-            case .enter:
-                return promptInputText
-            case .esc, .ctrl("c"):
+            let cmd = keymapManager.resolve(key: key, in: .prompt)
+            if cmd == .promptConfirm {
+                resultText = promptInputText
+                return resultText
+            }
+            if cmd == .promptCancel {
+                resultText = nil
                 return nil
-            case .backspace:
-                if promptCursorIndex > 0 {
-                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex - 1)
-                    promptInputText.remove(at: idx)
-                    promptCursorIndex -= 1
-                    refreshScreen()
-                }
-            case .delete:
-                if promptCursorIndex < promptInputText.count {
-                    let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
-                    promptInputText.remove(at: idx)
-                    refreshScreen()
-                }
-            case .arrowLeft:
-                if promptCursorIndex > 0 {
-                    promptCursorIndex -= 1
-                    refreshScreen()
-                }
-            case .arrowRight:
-                if promptCursorIndex < promptInputText.count {
-                    promptCursorIndex += 1
-                    refreshScreen()
-                }
-            case .home, .ctrl("a"):
-                promptCursorIndex = 0
+            }
+            if promptController.handleKey(key) {
                 refreshScreen()
-            case .end, .ctrl("e"):
-                promptCursorIndex = promptInputText.count
-                refreshScreen()
-            case .ctrl("u"):
-                promptInputText = ""
-                promptCursorIndex = 0
-                refreshScreen()
-            case .char(let ch):
-                let idx = promptInputText.index(promptInputText.startIndex, offsetBy: promptCursorIndex)
-                promptInputText.insert(ch, at: idx)
-                promptCursorIndex += 1
-                refreshScreen()
-            default:
-                break
             }
         }
     }
@@ -564,11 +533,11 @@ extension Editor {
 
         let errorLine: String
         switch (pos, err.procedureName) {
-        case let (pos?, proc?) where !proc.isEmpty:
+        case (let pos?, let proc?) where !proc.isEmpty:
             errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col) in procedure '\(proc)': \(innerMsg)]"
-        case let (pos?, _):
+        case (let pos?, _):
             errorLine = "[\(prefixTag) at line \(pos.line), col \(pos.col): \(innerMsg)]"
-        case let (nil, proc?) where !proc.isEmpty:
+        case (nil, let proc?) where !proc.isEmpty:
             errorLine = "[\(prefixTag) in procedure '\(proc)': \(innerMsg)]"
         case (nil, _):
             errorLine = "[\(prefixTag): \(innerMsg)]"
@@ -658,10 +627,10 @@ extension Editor {
                 start: (line: start.line, col: start.column), end: (line: end.line, col: end.column))
             startLine = start.line
         }
-        // Priority 2: Markdown ```logo ... ``` code fence
-        else if let fence = extractMarkdownLogoFence() {
-            script = fence.script
-            startLine = fence.startLine
+        // Priority 2: Embedded markup code block (Markdown ```logo / ~~~logo or Org-mode #+BEGIN_SRC logo ... #+END_SRC)
+        else if let block = extractEmbeddedLogoBlock() {
+            script = block.script
+            startLine = block.startLine
         }
         // Priority 3: Current line or multi-line block (balanced [ ... ] or TO ... END)
         else {
@@ -687,38 +656,14 @@ extension Editor {
         )
     }
 
-    private func extractMarkdownLogoFence() -> (script: String, startLine: Int)? {
-        let currentLine = buffer.lineIndex
-        var fenceStart: Int? = nil
-
-        // Scan upwards to find ```logo
-        for r in (0...currentLine).reversed() {
-            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
-            if line.lowercased().hasPrefix("```logo") {
-                fenceStart = r
-                break
-            }
-            if line.hasPrefix("```") && r < currentLine && r != currentLine - 1 {
-                break
-            }
+    private func extractEmbeddedLogoBlock() -> (script: String, startLine: Int)? {
+        guard
+            let res = EmbeddedCodeBlockExtractor.extractBlock(
+                targetLanguage: "logo", in: buffer.lines, lineIndex: buffer.lineIndex)
+        else {
+            return nil
         }
-
-        guard let start = fenceStart else { return nil }
-
-        // Scan downwards to find closing ```
-        var fenceEnd: Int? = nil
-        for r in (start + 1)..<buffer.lines.count {
-            let line = buffer.lines[r].trimmingCharacters(in: .whitespaces)
-            if line.hasPrefix("```") {
-                fenceEnd = r
-                break
-            }
-        }
-
-        guard let end = fenceEnd, currentLine >= start && currentLine <= end + 1 else { return nil }
-        guard start + 1 < end else { return ("", start + 1) }
-
-        return (buffer.lines[(start + 1)..<end].joined(separator: "\n"), start + 1)
+        return (script: res.script, startLine: res.startLine)
     }
 
     private func extractCurrentLineOrBlock() -> (script: String, startLine: Int) {

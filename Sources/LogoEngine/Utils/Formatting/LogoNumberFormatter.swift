@@ -25,7 +25,9 @@ public enum LogoNumberFormatter {
             if clean.isEmpty { continue }
             let lower = clean.hasPrefix(":") ? String(clean.dropFirst()).lowercased() : clean.lowercased()
 
-            if let parsedStyle = parseStyle?(clean) ?? parseStyle?(lower) ?? (LogoNumberStyle.isStyleKeyword(lower) ? LogoNumberStyle.parse(lower) : nil) {
+            if let parsedStyle = parseStyle?(clean) ?? parseStyle?(lower)
+                ?? (LogoNumberStyle.isStyleKeyword(lower) ? LogoNumberStyle.parse(lower) : nil)
+            {
                 style = parsedStyle
             } else if let intVal = Int(lower), precision == nil {
                 precision = intVal
@@ -49,77 +51,77 @@ public enum LogoNumberFormatter {
         precision: Int? = nil
     ) -> String {
         #if canImport(Darwin)
-        let loc = Locale(logoLocaleSpec: locale)
+            let loc = Locale(logoLocaleSpec: locale)
 
-        if let numStyle = style.numberFormatterStyle {
-            let formatter = NumberFormatter()
-            formatter.locale = loc
-            formatter.numberStyle = numStyle
-            if style == .currency, let code = currencyCode, !code.isEmpty {
-                formatter.currencyCode = code.uppercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
-            }
-            if let precision = precision {
-                formatter.minimumFractionDigits = precision
-                formatter.maximumFractionDigits = precision
-            }
-            if let str = formatter.string(from: NSNumber(value: number)) {
-                return str
-            }
-            return style == .percent ? "\(number * 100)%" : "\(number)"
-        }
-
-        switch style {
-        case .roman:
-            return formatRoman(Int(number))
-        case .financial:
-            return formatFinancialChinese(Int(number))
-        case .suzhou:
-            return formatSuzhou(number)
-        default:
-            return "\(number)"
-        }
-        #else
-        // Non-Darwin (Linux & Windows) portable pure-Swift implementation backed by NumberHelpers
-        switch style {
-        case .roman:
-            return formatRoman(Int(number))
-        case .financial:
-            return formatFinancialChinese(Int(number))
-        case .suzhou:
-            return formatSuzhou(number)
-        case .percent:
-            let pct = number * 100
-            if let precision = precision {
-                return String(format: "%.\(precision)f%%", pct)
-            }
-            return "\(pct)%"
-        case .currency:
-            let sym = currencyCode ?? "$"
-            let numStr = formatWithGrouping(number, precision: precision ?? 2)
-            return "\(sym)\(numStr)"
-        case .decimal:
-            return formatWithGrouping(number, precision: precision)
-        case .ordinal:
-            let intVal = Int(number)
-            let suffix: String
-            switch intVal % 100 {
-            case 11, 12, 13: suffix = "th"
-            default:
-                switch intVal % 10 {
-                case 1: suffix = "st"
-                case 2: suffix = "nd"
-                case 3: suffix = "rd"
-                default: suffix = "th"
+            if let numStyle = style.numberFormatterStyle {
+                let formatter = NumberFormatter()
+                formatter.locale = loc
+                formatter.numberStyle = numStyle
+                if style == .currency, let code = currencyCode, !code.isEmpty {
+                    formatter.currencyCode = code.uppercased().trimmingCharacters(in: CharacterSet(charactersIn: ":\""))
                 }
+                if let precision = precision {
+                    formatter.minimumFractionDigits = precision
+                    formatter.maximumFractionDigits = precision
+                }
+                if let str = formatter.string(from: NSNumber(value: number)) {
+                    return str
+                }
+                return style == .percent ? "\(number * 100)%" : "\(number)"
             }
-            return "\(intVal)\(suffix)"
-        case .spellout:
-            let isChinese = locale?.lowercased().contains("zh") == true
-            if isChinese {
-                return formatChineseNumber(Int(number), uppercase: false)
+
+            switch style {
+            case .roman:
+                return formatRoman(Int(number))
+            case .financial:
+                return formatFinancialChinese(Int(number))
+            case .suzhou:
+                return formatSuzhou(number)
+            default:
+                return "\(number)"
             }
-            return "\(Int(number))"
-        }
+        #else
+            // Non-Darwin (Linux & Windows) portable pure-Swift implementation backed by NumberHelpers
+            switch style {
+            case .roman:
+                return formatRoman(Int(number))
+            case .financial:
+                return formatFinancialChinese(Int(number))
+            case .suzhou:
+                return formatSuzhou(number)
+            case .percent:
+                let pct = number * 100
+                if let precision = precision {
+                    return String(format: "%.\(precision)f%%", pct)
+                }
+                return "\(pct)%"
+            case .currency:
+                let sym = currencyCode ?? "$"
+                let numStr = formatWithGrouping(number, precision: precision ?? 2)
+                return "\(sym)\(numStr)"
+            case .decimal:
+                return formatWithGrouping(number, precision: precision)
+            case .ordinal:
+                let intVal = Int(number)
+                let suffix: String
+                switch intVal % 100 {
+                case 11, 12, 13: suffix = "th"
+                default:
+                    switch intVal % 10 {
+                    case 1: suffix = "st"
+                    case 2: suffix = "nd"
+                    case 3: suffix = "rd"
+                    default: suffix = "th"
+                    }
+                }
+                return "\(intVal)\(suffix)"
+            case .spellout:
+                let isChinese = locale?.lowercased().contains("zh") == true
+                if isChinese {
+                    return formatChineseNumber(Int(number), uppercase: false)
+                }
+                return "\(Int(number))"
+            }
         #endif
     }
 

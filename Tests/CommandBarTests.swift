@@ -62,33 +62,15 @@ import Testing
     #expect(editor.buffer.columnIndex == 2)
 }
 
-@Test func testCommandBarGotoCommandAcceptsLineAndColumn() throws {
+@Test func testCommandBarGotoLogoScriptNotIntercepted() throws {
     let editor = Editor()
-    editor.buffer.lines = ["one", "two", "three"]
+    editor.buffer.lines = [""]
 
-    submitCommandBar("goto 3 2", editor: editor)
+    submitCommandBar("goto 1 10 box \"hi\"", editor: editor)
 
-    #expect(editor.buffer.lineIndex == 2)
-    #expect(editor.buffer.columnIndex == 1)
     #expect(editor.logoEngine.lastResult == nil)
-
-    submitCommandBar("GOTO 1,3", editor: editor)
-
-    #expect(editor.buffer.lineIndex == 0)
-    #expect(editor.buffer.columnIndex == 2)
-    #expect(editor.logoEngine.lastResult == nil)
-
-    submitCommandBar("goto 2:2", editor: editor)
-
-    #expect(editor.buffer.lineIndex == 1)
-    #expect(editor.buffer.columnIndex == 1)
-    #expect(editor.logoEngine.lastResult == nil)
-
-    submitCommandBar("goto 1 50", editor: editor)
-
-    #expect(editor.buffer.lineIndex == 0)
-    #expect(editor.buffer.columnIndex == 3)
-    #expect(editor.logoEngine.lastResult == nil)
+    #expect(editor.buffer.lines.count >= 3)
+    #expect(editor.buffer.lines.joined(separator: "\n").contains("hi"))
 }
 
 @Test func testCommandBarLogoExpressionFallback() throws {
@@ -148,7 +130,7 @@ import Testing
 
     #expect(editor.buffers.count == 2)
     #expect(editor.currentBufferIndex == 1)
-    #expect(editor.buffer.filePath == "second.txt")
+    #expect(editor.buffer.filePath?.hasSuffix("second.txt") == true)
 
     submitCommandBar("new", editor: editor)
 
@@ -190,7 +172,7 @@ import Testing
     submitCommandBar("write \(path)", editor: editor)
 
     #expect(try String(contentsOfFile: path, encoding: .utf8) == "command bar write")
-    #expect(editor.buffer.filePath == path)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(path, isDirectory: false))
     #expect(editor.buffer.isModified == false)
 }
 

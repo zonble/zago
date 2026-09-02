@@ -149,12 +149,54 @@ jobs:
               "cmark*.dll"
           )
 
+          $excludeNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+          $excludedList = @(
+              "FoundationMacros",
+              "FoundationNetworking",
+              "SwiftBasicFormat",
+              "SwiftBuild",
+              "SwiftCompilerPluginMessageHandling",
+              "swiftDemangle",
+              "SwiftDiagnostics",
+              "swiftDistributed",
+              "SwiftDocC",
+              "SwiftDriver",
+              "SwiftFormat",
+              "SwiftIDEUtils",
+              "SwiftIfConfig",
+              "SwiftInProcPluginServer",
+              "SwiftLibraryPluginProvider",
+              "SwiftMacros",
+              "swiftObservation",
+              "SwiftOperators",
+              "SwiftOptions",
+              "SwiftParser",
+              "SwiftParserDiagnostics",
+              "SwiftRefactor",
+              "swiftRegexBuilder",
+              "swiftRemoteMirror",
+              "SwiftSDKCommand",
+              "SwiftSourceKitClientPlugin",
+              "SwiftSourceKitPlugin",
+              "swiftSwiftOnoneSupport",
+              "swiftSynchronization",
+              "SwiftSyntax",
+              "SwiftSyntaxBuilder",
+              "SwiftSyntaxMacroExpansion",
+              "SwiftSyntaxMacros",
+              "swift_Differentiation"
+          )
+          foreach ($item in $excludedList) {
+              [void]$excludeNames.Add($item)
+              [void]$excludeNames.Add("$item.dll")
+          }
+
           $copiedDlls = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
           foreach ($src in $dllSources) {
               if (Test-Path $src) {
                   foreach ($pattern in $runtimePatterns) {
                       Get-ChildItem -Path $src -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                          if (-not $copiedDlls.Contains($_.Name)) {
+                          if (-not $excludeNames.Contains($_.BaseName) -and -not $excludeNames.Contains($_.Name) -and -not $copiedDlls.Contains($_.Name)) {
                               Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
                               [void]$copiedDlls.Add($_.Name)
                           }

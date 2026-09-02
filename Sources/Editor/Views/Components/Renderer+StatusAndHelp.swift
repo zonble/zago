@@ -217,8 +217,8 @@ extension Renderer {
     struct HelpBarLayoutItem {
         let key: String
         let label: String
-        let startCol: Int // 1-based inclusive
-        let endCol: Int   // 1-based inclusive
+        let startCol: Int  // 1-based inclusive
+        let endCol: Int  // 1-based inclusive
     }
 
     /// Computes Help Bar 2D item layout and character bounding intervals.
@@ -269,7 +269,7 @@ extension Renderer {
                 ("N", tr("help.no")), ("^C", tr("help.cancel")),
             ]
 
-        case .saveFilePath, .insertFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
+        case .saveFilePath, .insertFilePath, .openFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
             .gotoLine, .spellCheck,
             .logoReadWord, .logoReadChar:
             if editor?.keymapManager.activePreset == .modern {
@@ -285,7 +285,7 @@ extension Renderer {
                     ("Enter", tr("help.confirm")), ("^C", tr("help.cancel")), ("^K", tr("help.cut_text")),
                 ]
                 rawItems2 = [
-                    ("^U", tr("help.uncut_text")), ("M+W", tr("help.copy_text")), ("←/→", tr("help.move")),
+                    ("^U", tr("help.uncut_text")), ("⌥W", tr("help.copy_text")), ("←/→", tr("help.move")),
                     ("Home/End", tr("help.jump")),
                 ]
             }
@@ -326,7 +326,7 @@ extension Renderer {
                     (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                     ("^^/M+B", tr("help.mark_block")),
                     (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_block")),
-                    (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_block")),
+                    (keyLabel(for: .editCopy, fallback: "⌥W"), tr("help.copy_block")),
                 ]
                 rawItems2 = [
                     (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
@@ -336,21 +336,21 @@ extension Renderer {
                     (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
                     ("^G", tr("help.clear_mark")),
                     (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_block")),
-                    ("M+S", tr("help.border_style")),
+                    ("⌥S", tr("help.border_style")),
                 ]
             } else {
                 if editor?.proposalQueue.isEmpty == false {
                     rawItems1 = [
-                        (keyLabel(for: .proposalAccept, fallback: "M+A"), tr("help.ai_accept")),
-                        (keyLabel(for: .proposalNext, fallback: "M+P"), tr("help.ai_next_proposal")),
+                        (keyLabel(for: .proposalAccept, fallback: "⌥A"), tr("help.ai_accept")),
+                        (keyLabel(for: .proposalNext, fallback: "⌥P"), tr("help.ai_next_proposal")),
                         (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                         (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                         (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
                         (keyLabel(for: .movePgup, fallback: "PgUp"), tr("help.prev_pg")),
                     ]
                     rawItems2 = [
-                        (keyLabel(for: .proposalReject, fallback: "M+R"), tr("help.ai_reject")),
-                        (keyLabel(for: .proposalPrev, fallback: "M+P"), tr("help.ai_previous_proposal")),
+                        (keyLabel(for: .proposalReject, fallback: "⌥R"), tr("help.ai_reject")),
+                        (keyLabel(for: .proposalPrev, fallback: "⌥P"), tr("help.ai_previous_proposal")),
                         (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
                         (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
                         (keyLabel(for: .editUncut, fallback: "^U"), tr("help.uncut_text")),
@@ -387,7 +387,7 @@ extension Renderer {
                         (keyLabel(for: .fileWriteOut, fallback: "^O"), tr("help.write_out")),
                         (keyLabel(for: .searchWhereIs, fallback: "^W"), tr("help.where_is")),
                         (keyLabel(for: .editCut, fallback: "^K"), tr("help.cut_text")),
-                        (keyLabel(for: .editCopy, fallback: "M+W"), tr("help.copy_text")),
+                        (keyLabel(for: .editCopy, fallback: "⌥W"), tr("help.copy_text")),
                         (keyLabel(for: .movePgup, fallback: "^Y"), tr("help.prev_pg")),
                         (keyLabel(for: .editEvalLogo, fallback: "^Q"), tr("help.run_logo")),
                     ]
@@ -410,10 +410,12 @@ extension Renderer {
         var maxColWidths: [Int] = []
 
         for i in 0..<numCols {
-            let item1Width = (i < rawItems1.count)
+            let item1Width =
+                (i < rawItems1.count)
                 ? (rawItems1[i].key.count + (rawItems1[i].label.isEmpty ? 0 : 1) + rawItems1[i].label.displayWidth)
                 : 0
-            let item2Width = (i < rawItems2.count)
+            let item2Width =
+                (i < rawItems2.count)
                 ? (rawItems2[i].key.count + (rawItems2[i].label.isEmpty ? 0 : 1) + rawItems2[i].label.displayWidth)
                 : 0
             maxColWidths.append(max(item1Width, item2Width))
@@ -427,27 +429,29 @@ extension Renderer {
         var layout1: [HelpBarLayoutItem] = []
         var layout2: [HelpBarLayoutItem] = []
 
-        var curCol = 1 // 1-based start column
+        var curCol = 1  // 1-based start column
         for i in 0..<numCols {
             let colWidth = maxColWidths[i]
             if curCol + colWidth - 1 > helpWidth { break }
 
             if i < rawItems1.count {
-                layout1.append(HelpBarLayoutItem(
-                    key: rawItems1[i].key,
-                    label: rawItems1[i].label,
-                    startCol: curCol,
-                    endCol: curCol + colWidth - 1
-                ))
+                layout1.append(
+                    HelpBarLayoutItem(
+                        key: rawItems1[i].key,
+                        label: rawItems1[i].label,
+                        startCol: curCol,
+                        endCol: curCol + colWidth - 1
+                    ))
             }
 
             if i < rawItems2.count {
-                layout2.append(HelpBarLayoutItem(
-                    key: rawItems2[i].key,
-                    label: rawItems2[i].label,
-                    startCol: curCol,
-                    endCol: curCol + colWidth - 1
-                ))
+                layout2.append(
+                    HelpBarLayoutItem(
+                        key: rawItems2[i].key,
+                        label: rawItems2[i].label,
+                        startCol: curCol,
+                        endCol: curCol + colWidth - 1
+                    ))
             }
 
             curCol += colWidth + gapSize
@@ -633,6 +637,9 @@ extension Renderer {
         case .confirmReplace:
             promptPrefix = editor.l10n["prompt.confirm_replace"]
             isConfirmation = true
+        case .openFilePath:
+            promptPrefix = editor.l10n["prompt.open_file"]
+            isConfirmation = false
         case .insertFilePath:
             promptPrefix = editor.l10n["prompt.insert_file"]
             isConfirmation = false

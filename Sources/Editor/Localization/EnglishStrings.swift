@@ -9,7 +9,7 @@ struct EnglishStrings {
         "help.cancel": "Cancel",
         "help.write_out": "WriteOut",
         "help.save": "Save",
-        "help.read_file": "Read File",
+        "help.read_file": "Insert File",
         "help.prev_pg": "Prev Pg",
         "help.cut_text": "Cut Text",
         "help.cur_pos": "Cur Pos",
@@ -74,6 +74,7 @@ struct EnglishStrings {
         "prompt.replace_search": "Search (to replace)",
         "prompt.replace_with": "Replace with: ",
         "prompt.confirm_replace": "Replace this instance? [Y]es / [N]o / [A]ll / [^C]ancel: ",
+        "prompt.open_file": "File to open: ",
         "prompt.insert_file": "File to insert: ",
         "prompt.edit_spelled_word": "Edit misspelled word \"%@\": ",
         "prompt.logo": "❯ ",
@@ -130,11 +131,23 @@ struct EnglishStrings {
 
           3. Arrow Shapes (for LINE and VLINE)
           ----------------------------------------------------------------
-            <   >   Standard / ASCII arrow (← / → / ↑ / ↓)
-            <<  >>  Solid filled arrow (◀ / ▶ / ▲ / ▼)
-            <|  |>  Hollow triangular arrow (◁ / ▷ / △ / ▽)
-            <~  ~>  Stemmed arrow (◄ / ► / ↑ / ↓)
-            <.  .>  Small triangular arrow (◂ / ▸ / ▴ / ▾)
+            <    >    Standard / ASCII arrow (< / > / ^ / v)
+            <<   >>   Solid filled arrow (◀ / ▶ / ▲ / ▼)
+            <|   |>   Hollow triangular arrow (◁ / ▷ / △ / ▽)
+            <.   .>   Small triangular arrow (◂ / ▸ / ▴ / ▾)
+            <~   ~>   Stemmed arrow (← / → / ↑ / ↓)
+            <+|  |+>  Heavy arrow (⬅ / ⮕ / ⬆ / ⬇)
+            <=|  |=>  Double arrow (⇐ / ⇒ / ⇑ / ⇓)
+            <..  ..>  Dotted / dashed arrow (⇠ / ⇢ / ⇡ / ⇣)
+            <^   ^>   Harpoon (↼ / ⇀ / ↿ / ⇂)
+            <:   :>   Crow's foot (⤙ / ⤚ / ⤘ / ⤛)
+
+            -- Endpoint Markers --
+            <*>  <*>  Solid diamond (◆)
+            <>   <>   Hollow diamond (◇)
+            *    *    Solid circle (●)
+            o    o    Open circle (○, also O)
+            x    x    Cross (✕, also X)
 
           4. Command Usage Examples
           ----------------------------------------------------------------
@@ -159,6 +172,15 @@ struct EnglishStrings {
                 LINE 10 "<~+"          10-char heavy line with left stemmed arrow
                 LINE 16 "-->>"         16-char double-dash line with right solid arrow
                 LINE 18 "<|+++|>"      18-char heavy triple-dash with bidirectional hollow arrows
+                LINE 14 "<=|==|=>"     14-char double line with bidirectional double arrows
+                LINE 16 "<+|++|+>"     16-char heavy line with bidirectional heavy arrows
+                LINE 16 "<..--..>"     16-char double-dash line with bidirectional dotted arrows
+                LINE 15 "<>--->"       15-char single line with UML aggregation diamond & arrow
+                LINE 15 "<*>--->"      15-char single line with UML composition diamond & arrow
+                LINE 12 "*---*"        12-char single line with solid circle endpoints
+                LINE 12 "o---o"        12-char single line with open circle endpoints
+                LINE 12 "x---x"        12-char single line with cross endpoints
+                LINE 14 "<:---:>"      14-char single line with bidirectional crow's foot
                 VLINE 6 "++|>"         6-line vertical heavy double-dash with downward hollow arrow
                 VLINE 8 "<.---.>"      8-line vertical triple-dash with bidirectional small arrows
         """,
@@ -465,6 +487,7 @@ struct EnglishStrings {
         "status.search_cleared": "Search cleared",
         "status.no_active_search": "No active search",
         "status.invalid_regex": "Invalid regex: %@",
+        "status.cancelled_open": "Cancelled open file",
         "status.cancelled_insert": "Cancelled insert",
         "status.spell_check_skipped": "Spell check skipped",
         "status.word_kept": "Word kept",
@@ -485,8 +508,8 @@ struct EnglishStrings {
         "status.disabled_in_table_mode": "[ %@ disabled in Table Mode ]",
         "status.table_mode_exited": "[ Table Mode Exited ]",
         "status.markdown_table_text_mode": "[ Markdown/Org tables are edited in Text Mode (Tab / ^J) ]",
-        "status.table_mode_hint": "(F7 / M+T to exit | Tab to navigate)",
-        "status.canvas_mode_hint": "(F8 / M+V to exit)",
+        "status.table_mode_hint": "(F7 / ⌥T to exit | Tab to navigate)",
+        "status.canvas_mode_hint": "(F8 / ⌥V to exit)",
         "status.canvas_row_limit_exceeded": "[ Canvas row limit exceeded ]",
         "status.canvas_column_limit_exceeded": "[ Canvas column limit exceeded ]",
         "mode.canvas": "CANVAS",
@@ -500,6 +523,8 @@ struct EnglishStrings {
         "status.justify_disabled_in_canvas_mode": "[ Justify disabled in Canvas Mode ]",
         "status.inserted_diagram_snippet": "[ Inserted %@ Snippet ]",
         "status.line_numbers_state": "[ Line Numbers %@ ]",
+        "status.zero_mode_state": "[ Zero Mode %@ ]",
+        "status.indicator_state": "[ Scrollbar Indicator %@ ]",
         "status.wrap_column_set": "[ Wrap Column set to %d ]",
         "status.wrap_column_reset": "[ Wrap Column reset to dynamic ]",
         "status.deleted_selection": "[ Deleted selection ]",
@@ -525,7 +550,7 @@ struct EnglishStrings {
         "status.word_count_selection": "[ Selection: %@ ]",
         "status.word_count_document": "[ Document: %@ ]",
         "status.logo_debug_paused": "[LOGO Debug] Paused. Use :logo continue",
-        "status.logo_execution_error": "Error in LOGO execution. Press M+L or type :output to view.",
+        "status.logo_execution_error": "Error in LOGO execution. Press ⌥L or type :output to view.",
         "status.logo_output_cleared": "Cleared *LOGO Output* buffer.",
         "status.logo_canvas_cleared": "Cleared *LOGO Canvas* buffer.",
         "status.logo_output_canvas_cleared": "Cleared LOGO Output & Canvas buffers.",
@@ -534,6 +559,8 @@ struct EnglishStrings {
         "status.logo_debug_not_paused": "[LOGO Debug] Execution is not paused",
         "status.logo_debug_breakpoint_set": "[LOGO Debug] Breakpoint set at line %d",
         "status.logo_debug_breakpoint_cleared": "[LOGO Debug] Breakpoint cleared at line %d",
+        "status.logo_debug_unsupported_wasi":
+            "[LOGO Debug] Interactive debugger is disabled in WebAssembly single-threaded runtime.",
         "status.logo_debug_usage":
             "[LOGO Debug] Usage: :logo break | breaks | eval [expression] | debug | continue | step | abort",
         "status.logo_debug_result": "[LOGO Debug] %@",
@@ -562,9 +589,9 @@ struct EnglishStrings {
         "key.home": "Home",
         "key.end": "End",
         "key.delete": "Delete",
-        "key.tab": "Tab",
-        "key.enter": "Enter",
-        "key.esc": "Esc",
+        "key.tab": "⭾",
+        "key.enter": "⏎",
+        "key.esc": "⎋",
 
         // Command Descriptions
         "command.select.extend.description": "Extend text/table selection",
@@ -623,6 +650,7 @@ struct EnglishStrings {
         "command.cursor.pos.description": "Display current cursor position info",
         "command.cursor.goto_line.description": "Jump to line and column number",
 
+        "command.file.open.description": "Open file in a new buffer",
         "command.file.save.description": "Save current file; ^O / F3 WriteOut (choose path)",
         "command.file.write_out.description": "Write buffer to file (choose path)",
         "command.file.insert.description": "Read file (insert external file into buffer)",
@@ -680,9 +708,11 @@ struct EnglishStrings {
         "helpview.set_21": "    lang <en|zh_TW>          Set UI language",
         "helpview.set_22": "    spell-language <lang>    Set spell checker language (e.g. en_US)",
         "helpview.set_23": "    debug <on|off>           Toggle debug overlay logging",
+        "helpview.set_24": "    zero <on|off>            Zero interface mode (hide title, status, and help bars)",
+        "helpview.set_25": "    indicator <on|off>       Display a scroll bar on the righthand side of the edit window",
 
         "helpview.sec_logo": "  EDITOR LOGO MACRO & TURTLE GRAPHICS REFERENCE:",
-        "helpview.logo_1": "    Esc / M+:          Command prompt",
+        "helpview.logo_1": "    Esc / ⌥:          Command prompt",
         "helpview.logo_2": "    TYPE / PRINT       Insert text into buffer at cursor",
         "helpview.logo_3": "    BOX / DRAWBOX / LINE / VLINE Draw box frames and separator lines",
         "helpview.logo_4": "    MAKE / VAR / :var  Declare variables and arithmetic expressions",
@@ -729,6 +759,7 @@ struct EnglishStrings {
         "menu.run": "Run",
         "menu.shapes": "Shapes",
         "menu.borders": "Borders",
+        "menu.arrows": "Arrows",
         "menu.tools": "Tools",
         "menu.diagrams": "Diagrams",
         "menu.help": "Help",
@@ -736,10 +767,11 @@ struct EnglishStrings {
 
         // Menu Bar Items
         "menu.file.new": "New Buffer\t^N",
-        "menu.file.open": "Read File...\t^R",
+        "menu.file.open": "Open File…",
+        "menu.file.insert": "Insert File…\t^R",
         "menu.file.directory": "Directory Buffer\tDIR",
         "menu.file.save": "Save File\t^S",
-        "menu.file.write_out": "Write Out...\t^O",
+        "menu.file.write_out": "Write Out…\t^O",
         "menu.file.save_exit": "Save & Exit\tF4",
         "menu.file.exit": "Exit Buffer / Editor\t^X",
         "menu.file.edit_config": "Edit Config",
@@ -747,34 +779,35 @@ struct EnglishStrings {
 
         "menu.edit.undo": "Undo\t^Z",
         "menu.edit.redo": "Redo\t^⇧Z",
-        "menu.edit.mark": "Toggle Mark\t^^ / M+B",
-        "menu.edit.cancel_selection": "Cancel Mark / Selection\t^G / M+U",
-        "menu.edit.copy": "Copy\tM+W",
+        "menu.edit.mark": "Toggle Mark\t^^ / ⌥B",
+        "menu.edit.cancel_selection": "Cancel Mark / Selection\t^G / ⌥U",
+        "menu.edit.copy": "Copy\t⌥W",
         "menu.edit.cut": "Cut Text\t^K",
-        "menu.edit.paste": "UnCut (Paste)\t^U",
+        "menu.edit.paste": "UnCut\t^U",
         "menu.edit.delete_line": "Delete Line\t^⌫",
-        "menu.edit.search": "WhereIs (Search)...\t^W",
-        "menu.edit.open_link": "Open Link\tM+O",
-        "menu.edit.outline": "Outline\tM+\\",
-        "menu.edit.next_heading": "Next Heading\tM+]",
-        "menu.edit.previous_heading": "Previous Heading\tM+[",
-        "menu.edit.spell": "Spell Checker...\t^T",
-        "menu.edit.goto_line": "Goto Line...\tM+/",
-        "menu.edit.toggle_comment": "Toggle Comment...\t^/",
+        "menu.edit.search": "WhereIs…\t^W",
+        "menu.edit.open_link": "Open Link\t⌥O",
+        "menu.outline": "Outline",
+        "menu.edit.outline": "Outline\t⌥\\",
+        "menu.edit.next_heading": "Next Heading\t⌥]",
+        "menu.edit.previous_heading": "Prev Heading\t⌥[",
+        "menu.edit.spell": "Spell Checker…\t^T",
+        "menu.edit.goto_line": "Goto Line…\t⌥/",
+        "menu.edit.toggle_comment": "Toggle Comment…\t^/",
         "menu.edit.justify": "Justify Paragraph\t^J",
         "menu.edit.text_editing_mode": "Text Editing Mode",
         "menu.edit.canvas_mode": "Canvas Mode\tF8",
         "menu.edit.table_editing_mode": "Table Editing Mode\tF7",
 
-        "menu.buffer.next": "Next Buffer\tM+.",
-        "menu.buffer.prev": "Previous Buffer\tM+,",
-        "menu.buffer.output": "LOGO Output\tM+L",
+        "menu.buffer.next": "Next Buffer\t⌥.",
+        "menu.buffer.prev": "Previous Buffer\t⌥,",
+        "menu.buffer.output": "LOGO Output\t⌥L",
         "menu.buffer.logo_debugger": "LOGO Debugger",
         "menu.buffer.clear_output": "Clear LOGO Output",
 
         "menu.run.script": "Run Script\tF5",
-        "menu.run.output": "LOGO Output\tM+L",
-        "menu.run.canvas": "LOGO Canvas\tM+C",
+        "menu.run.output": "LOGO Output\t⌥L",
+        "menu.run.canvas": "LOGO Canvas\t⌥C",
         "menu.run.clear": "Clear Canvas & Output",
 
         "menu.shapes.box": "Box (Insert)",
@@ -783,7 +816,7 @@ struct EnglishStrings {
         "menu.shapes.vline": "Vertical Line",
         "menu.shapes.table": "Table",
         "menu.shapes.fill": "Fill Region/Cell",
-        "menu.shapes.symbols": "Insert Symbol...",
+        "menu.shapes.symbols": "Insert Symbol…",
 
         "dialog.symbol_picker.title": " Insert Symbol ",
         "dialog.symbol_picker.footer": " Enter: Insert | Tab/1-4: Switch Tab | a-z: Quick Select | Esc: Cancel ",
@@ -930,14 +963,30 @@ struct EnglishStrings {
         "menu.borders.heavy_quad": "Heavy Quad     ┏┉┉┓",
         "menu.borders.double_dash": "Double Dash    ┌╌╌┐",
         "menu.borders.heavy_double": "Heavy Double   ┏╍╍┓",
-        "menu.borders.next_style": "Next Style\tM+S",
+        "menu.borders.next_style": "Next Style\t⌥S",
+        "menu.arrows.solid": "Solid         ▲▼◀▶",
+        "menu.arrows.hollow": "Hollow        △▽◁▷",
+        "menu.arrows.small": "Small         ▴▾◂▸",
+        "menu.arrows.stemmed": "Stemmed       ↑↓←→",
+        "menu.arrows.heavy": "Heavy         ⬆⬇⬅⮕",
+        "menu.arrows.double": "Double        ⇑⇓⇐⇒",
+        "menu.arrows.solid_diamond": "Solid Diamond ◆",
+        "menu.arrows.diamond": "Diamond       ◇",
+        "menu.arrows.circle": "Circle        ●",
+        "menu.arrows.open_circle": "Open Circle   ○",
+        "menu.arrows.cross": "Cross         ✕",
+        "menu.arrows.crow": "Crow's Foot   ⤘⤛⤙⤚",
+        "menu.arrows.harpoon": "Harpoon       ↿⇂↼⇀",
+        "menu.arrows.dotted": "Dotted        ⇡⇣⇠⇢",
         "menu.borders.arrow_solid": "Arrow: Solid   ▲▼◀▶",
         "menu.borders.arrow_stemmed": "Arrow: Stemmed ↑↓←→",
         "menu.borders.arrow_hollow": "Arrow: Hollow  △▽◁▷",
         "menu.borders.arrow_small": "Arrow: Small   ▴▾◂▸",
+        "menu.borders.arrow_double": "Arrow: Double  ⇑⇓⇐⇒",
+        "menu.borders.arrow_heavy": "Arrow: Heavy   ⬆⬇⬅⮕",
 
         "menu.tools.journal": "Today's Journal",
-        "menu.tools.logo": "Command Prompt...\tEsc",
+        "menu.tools.logo": "Command Prompt…\tEsc",
         "menu.tools.eval_logo": "Eval LOGO Code\t^Q",
         "menu.tools.word_count": "Word Count",
         "menu.tools.transform_tohant": "Transform: To Traditional Chinese",
@@ -947,9 +996,11 @@ struct EnglishStrings {
         "menu.tools.transform_katakana": "Transform: To Katakana",
         "menu.tools.transform_romaji": "Transform: To Romaji",
         "menu.tools.transform_cjk_spacing": "Transform: CJK Spacing",
-        "menu.tools.line_numbers": "Toggle Line Numbers",
-        "menu.tools.sub_line_numbers": "Toggle Sub Line Numbers",
-        "menu.tools.ruler": "Toggle Ruler Bar",
+        "menu.tools.line_numbers": "Line Numbers",
+        "menu.tools.sub_line_numbers": "Sub Line Numbers",
+        "menu.tools.ruler": "Ruler Bar",
+        "menu.tools.indicator": "Scrollbar Indicator",
+        "menu.tools.zero_mode": "Zero Mode",
         "menu.tools.wrap_80": "Wrap Column: 80",
         "menu.tools.wrap_60": "Wrap Column: 60",
         "menu.tools.wrap_40": "Wrap Column: 40",
@@ -988,7 +1039,7 @@ struct EnglishStrings {
         "transform.cjk_spacing": "CJK Spacing",
 
         // AI Proposal UI & Status Strings
-        "ai.proposal.action_hint": "[M+A Accept | M+R Reject]",
+        "ai.proposal.action_hint": "[⌥A Accept | ⌥R Reject]",
         "ai.proposal.readonly_cannot_modify": "[AI Proposal] Cannot modify read-only buffer",
         "ai.proposal.readonly_cannot_generate": "[AI Proposal] Cannot generate proposal in read-only buffer",
         "ai.proposal.no_pending_accept": "[AI Proposal] No pending proposal to accept",
@@ -1000,8 +1051,8 @@ struct EnglishStrings {
         "ai.proposal.queue_empty": "[AI Proposal] Queue is empty",
         "ai.proposal.preview_item": "[AI Proposal] (%d/%d) '%@'",
         "ai.proposal.mock_generated":
-            "🤖 [Mock AI Proposal] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
-        "ai.proposal.received": "🤖 [AI Proposal from %@] \"%@\" (Press M+A to Accept, M+R to Reject, M+P to Preview)",
+            "🤖 [Mock AI Proposal] \"%@\" (Press ⌥A to Accept, ⌥R to Reject, ⌥P to Preview)",
+        "ai.proposal.received": "🤖 [AI Proposal from %@] \"%@\" (Press ⌥A to Accept, ⌥R to Reject, ⌥P to Preview)",
         "ai.proposal.queue_indicator": "[AI Queue %d/%d]",
 
         // Describe Command & Procedure Dialog Strings

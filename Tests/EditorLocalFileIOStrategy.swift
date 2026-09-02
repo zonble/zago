@@ -19,26 +19,78 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
 
     func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
         let expanded = expandTilde(path)
-        guard isDirectory else {
-            return expanded
+        let absolutePath: String
+        if isAbsolutePath(expanded) {
+            absolutePath = expanded
+        } else {
+            let cwd = currentDirectoryPath()
+            absolutePath = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent(expanded).path
         }
-        return URL(fileURLWithPath: expanded, isDirectory: true).standardizedFileURL.path
+        let standardized = URL(fileURLWithPath: absolutePath, isDirectory: isDirectory).standardizedFileURL.path
+        #if os(Windows)
+            return standardized.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return standardized
+        #endif
+    }
+
+    private func isAbsolutePath(_ path: String) -> Bool {
+        #if os(Windows)
+            if path.count >= 2 {
+                let first = path[path.startIndex]
+                let second = path[path.index(after: path.startIndex)]
+                if first.isLetter && second == ":" {
+                    return true
+                }
+            }
+            if path.hasPrefix("\\\\") || path.hasPrefix("//") {
+                return true
+            }
+            if path.hasPrefix("/") || path.hasPrefix("\\") {
+                return true
+            }
+            return false
+        #else
+            return path.hasPrefix("/")
+        #endif
     }
 
     func homeDirectoryPath() -> String {
-        fileManager.homeDirectoryForCurrentUser.path
+        let home = fileManager.homeDirectoryForCurrentUser.path
+        #if os(Windows)
+            return home.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return home
+        #endif
     }
 
     func currentDirectoryPath() -> String {
-        fileManager.currentDirectoryPath
+        let cwd = fileManager.currentDirectoryPath
+        #if os(Windows)
+            return cwd.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return cwd
+        #endif
     }
 
     func parentDirectory(of path: String) -> String {
-        URL(fileURLWithPath: path, isDirectory: true).deletingLastPathComponent().path
+        let normalized = normalizePath(path, isDirectory: true)
+        let parent = URL(fileURLWithPath: normalized, isDirectory: true).deletingLastPathComponent().path
+        #if os(Windows)
+            return parent.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return parent
+        #endif
     }
 
     func childPath(_ name: String, in directory: String) -> String {
-        URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(name).path
+        let normalizedDir = normalizePath(directory, isDirectory: true)
+        let child = URL(fileURLWithPath: normalizedDir, isDirectory: true).appendingPathComponent(name).path
+        #if os(Windows)
+            return child.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return child
+        #endif
     }
 
     func fileInfo(at path: String) -> EditorFileInfo {
@@ -260,26 +312,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             return true
         }
 
-        // NOTE (Cross-Platform Pitfall & UTF-8 Truncation):
-        // When checking a file prefix (e.g. 8192 bytes), a 3-byte CJK or 4-byte CJK Extension (CJK Ext-B~I) / Emoji UTF-8 character
-        // may be sliced in half at byte 8192. String(data:encoding:.utf8) fails on incomplete
-        // trailing UTF-8 sequences and returns nil, which would falsely mark valid UTF-8 text
-        // files as binary. We iteratively trim trailing non-ASCII bytes (0x80+) cut off at the
-        // 8192-byte boundary (up to 3 trailing bytes for 4-byte UTF-8 sequences) until valid UTF-8
-        // decoding succeeds or all boundary bytes are checked.
-        var checkBuffer = data
-        while !checkBuffer.isEmpty {
-            if String(data: checkBuffer, encoding: .utf8) != nil {
-                return false
-            }
-            let last = checkBuffer.last!
-            if (last & 0x80) != 0 {
-                checkBuffer.removeLast()
-            } else {
-                break
-            }
-        }
-
+        // Delegate multi-encoding detection with sample boundary truncation trimming (1..3 bytes) to TextEncodingDetector
         return TextEncodingDetector.detectAndDecode(data) == nil
     }
 }

@@ -9,7 +9,7 @@ struct TraditionalChineseStrings {
         "help.cancel": "取消",
         "help.write_out": "存檔",
         "help.save": "存檔",
-        "help.read_file": "讀檔",
+        "help.read_file": "插入檔案",
         "help.prev_pg": "前往上頁",
         "help.cut_text": "剪下文字",
         "help.cur_pos": "游標位置",
@@ -74,6 +74,7 @@ struct TraditionalChineseStrings {
         "prompt.replace_search": "搜尋並取代",
         "prompt.replace_with": "取代為：",
         "prompt.confirm_replace": "是否取代此處？[Y]是 / [N]否 / [A]全部 / [^C]取消：",
+        "prompt.open_file": "欲開啟之檔案：",
         "prompt.insert_file": "欲插入之檔案：",
         "prompt.edit_spelled_word": "修改拼錯字詞 \"%@\"：",
         "prompt.logo": "❯ ",
@@ -130,11 +131,23 @@ struct TraditionalChineseStrings {
 
           3. 箭頭形狀符號（用於 LINE 與 VLINE）
           ----------------------------------------------------------------
-            <   >   標準 / ASCII 箭頭（← / → / ↑ / ↓）
-            <<  >>  實心三角箭頭（◀ / ▶ / ▲ / ▼）
-            <|  |>  空心三角箭頭（◁ / ▷ / △ / ▽）
-            <~  ~>  帶柄箭頭（◄ / ► / ↑ / ↓）
-            <.  .>  小型三角箭頭（◂ / ▸ / ▴ / ▾）
+            <    >    標準 / ASCII 箭頭（< / > / ^ / v）
+            <<   >>   實心三角（◀ / ▶ / ▲ / ▼）
+            <|   |>   空心三角（◁ / ▷ / △ / ▽）
+            <.   .>   微型三角（◂ / ▸ / ▴ / ▾）
+            <~   ~>   細線箭頭（← / → / ↑ / ↓）
+            <+|  |+>  粗線箭頭（⬅ / ⮕ / ⬆ / ⬇）
+            <=|  |=>  雙線箭頭（⇐ / ⇒ / ⇑ / ⇓）
+            <..  ..>  點狀虛線（⇠ / ⇢ / ⇡ / ⇣）
+            <^   ^>   單側魚鉤（↼ / ⇀ / ↿ / ⇂）
+            <:   :>   烏鴉腳（⤙ / ⤚ / ⤘ / ⤛）
+
+            -- 端點節點標記 --
+            <*>  <*>  實心菱（◆）
+            <>   <>   空心菱（◇）
+            *    *    實心圓（●）
+            o    o    空心圓（○，亦可用 O）
+            x    x    叉叉（✕，亦可用 X）
 
           4. 繪圖指令使用範例
           ----------------------------------------------------------------
@@ -156,11 +169,20 @@ struct TraditionalChineseStrings {
                 LINE 15 "->"           繪製長度 15、向右標準箭頭的單線
                 LINE 12 "<=>"          繪製長度 12、雙向標準箭頭的雙線
                 LINE 20 "<<=>>"        繪製長度 20、雙向實心箭頭的雙線
-                LINE 10 "<~+"          繪製長度 10、向左帶柄箭頭的粗線
+                LINE 10 "<~+"          繪製長度 10、向左細線箭頭的粗線
                 LINE 16 "-->>"         繪製長度 16、向右實心箭頭的雙段虛線
                 LINE 18 "<|+++|>"      繪製長度 18、雙向空心箭頭的三段粗虛線
+                LINE 14 "<=|==|=>"     繪製長度 14、雙向雙線箭頭的雙線
+                LINE 16 "<+|++|+>"     繪製長度 16、雙向粗線箭頭的粗線
+                LINE 16 "<..--..>"     繪製長度 16、雙向點狀虛線箭頭的雙段虛線
+                LINE 15 "<>--->"       繪製長度 15、空心菱與右箭頭的單線
+                LINE 15 "<*>--->"      繪製長度 15、實心菱與右箭頭的單線
+                LINE 12 "*---*"        繪製長度 12、兩端為實心圓的單線
+                LINE 12 "o---o"        繪製長度 12、兩端為空心圓的單線
+                LINE 12 "x---x"        繪製長度 12、兩端為叉叉的單線
+                LINE 14 "<:---:>"      繪製長度 14、雙向烏鴉腳的關聯線
                 VLINE 6 "++|>"         繪製高度 6、向下空心箭頭的雙段粗虛線
-                VLINE 8 "<.---.>"      繪製高度 8、雙向小型箭頭的三段虛線
+                VLINE 8 "<.---.>"      繪製高度 8、雙向微型三角的三段虛線
         """,
         "logoref.content": """
           Editor LOGO 指令參考
@@ -455,6 +477,7 @@ struct TraditionalChineseStrings {
         "status.search_cleared": "已清除搜尋",
         "status.no_active_search": "沒有作用中的搜尋",
         "status.invalid_regex": "無效的 regex：%@",
+        "status.cancelled_open": "已取消開啟檔案",
         "status.cancelled_insert": "已取消插入檔案",
         "status.spell_check_skipped": "跳過拼字檢查",
         "status.word_kept": "保留原字詞",
@@ -475,8 +498,8 @@ struct TraditionalChineseStrings {
         "status.disabled_in_table_mode": "[ 表格模式下停用 %@ ]",
         "status.table_mode_exited": "[ 已退出表格模式 ]",
         "status.markdown_table_text_mode": "[ Markdown/Org 表格請在文字模式編輯 (Tab / ^J) ]",
-        "status.table_mode_hint": "(F7 / M+T 退出 | Tab 移動)",
-        "status.canvas_mode_hint": "(F8 / M+V 退出)",
+        "status.table_mode_hint": "(F7 / ⌥T 退出 | Tab 移動)",
+        "status.canvas_mode_hint": "(F8 / ⌥V 退出)",
         "status.canvas_row_limit_exceeded": "[ 已超過畫布列數上限 ]",
         "status.canvas_column_limit_exceeded": "[ 已超過畫布欄數上限 ]",
         "mode.canvas": "畫布",
@@ -490,6 +513,8 @@ struct TraditionalChineseStrings {
         "status.justify_disabled_in_canvas_mode": "[ 畫布模式下停用文字重排 ]",
         "status.inserted_diagram_snippet": "[ 已插入 %@ 圖表範本 ]",
         "status.line_numbers_state": "[ 行號顯示 %@ ]",
+        "status.zero_mode_state": "[ 極簡模式 %@ ]",
+        "status.indicator_state": "[ 捲軸指示條 %@ ]",
         "status.wrap_column_set": "[ 自動折行欄數設為 %d ]",
         "status.wrap_column_reset": "[ 自動折行欄數重設為動態 ]",
         "status.deleted_selection": "[ 已刪除選取範圍 ]",
@@ -515,7 +540,7 @@ struct TraditionalChineseStrings {
         "status.word_count_selection": "[ 選取範圍：%@ ]",
         "status.word_count_document": "[ 文件：%@ ]",
         "status.logo_debug_paused": "[LOGO 除錯] 已暫停。使用 :logo continue 繼續",
-        "status.logo_execution_error": "LOGO 執行錯誤。按 M+L 或輸入 :output 查看。",
+        "status.logo_execution_error": "LOGO 執行錯誤。按 ⌥L 或輸入 :output 查看。",
         "status.logo_output_cleared": "已清除 *LOGO Output* buffer。",
         "status.logo_canvas_cleared": "已清除 *LOGO Canvas* buffer。",
         "status.logo_output_canvas_cleared": "已清除 LOGO Output 與 Canvas buffer。",
@@ -524,6 +549,8 @@ struct TraditionalChineseStrings {
         "status.logo_debug_not_paused": "[LOGO 除錯] 執行未暫停",
         "status.logo_debug_breakpoint_set": "[LOGO 除錯] 已在第 %d 行設定中斷點",
         "status.logo_debug_breakpoint_cleared": "[LOGO 除錯] 已清除第 %d 行中斷點",
+        "status.logo_debug_unsupported_wasi":
+            "[LOGO 除錯] WebAssembly 單執行緒環境下不支援互動式除錯功能。",
         "status.logo_debug_usage":
             "[LOGO 除錯] 用法：:logo break | breaks | eval [expression] | debug | continue | step | abort",
         "status.logo_debug_result": "[LOGO 除錯] %@",
@@ -552,9 +579,9 @@ struct TraditionalChineseStrings {
         "key.home": "Home",
         "key.end": "End",
         "key.delete": "Delete",
-        "key.tab": "Tab",
-        "key.enter": "Enter",
-        "key.esc": "Esc",
+        "key.tab": "⭾",
+        "key.enter": "⏎",
+        "key.esc": "⎋",
 
         // Command Descriptions
         "command.select.extend.description": "延伸選取文字範圍",
@@ -613,6 +640,7 @@ struct TraditionalChineseStrings {
         "command.cursor.pos.description": "顯示當前游標與行列位置資訊",
         "command.cursor.goto_line.description": "跳至指定行號與欄號",
 
+        "command.file.open.description": "在新的分頁（Buffer）中開啟檔案",
         "command.file.save.description": "儲存目前文件；^O / F3 可選擇路徑",
         "command.file.write_out.description": "寫入檔案（指定路徑存檔）",
         "command.file.insert.description": "插入外部檔案內容至當前文件中",
@@ -670,9 +698,11 @@ struct TraditionalChineseStrings {
         "helpview.set_21": "    lang <en|zh_TW>          設定介面語言",
         "helpview.set_22": "    spell-language <lang>    設定拼字檢查字典語言（例如 en_US）",
         "helpview.set_23": "    debug <on|off>           開啟/關閉除錯資訊面板",
+        "helpview.set_24": "    zero <on|off>            零介面模式（隱藏標題列、狀態列與快捷鍵列）",
+        "helpview.set_25": "    indicator <on|off>       顯示/隱藏右側垂直捲軸指示條",
 
         "helpview.sec_logo": "  Editor LOGO 巨集語言與海龜繪圖指令：",
-        "helpview.logo_1": "    Esc / M+:          移動到指令列",
+        "helpview.logo_1": "    Esc / ⌥:          移動到指令列",
         "helpview.logo_2": "    TYPE / PRINT       於游標位置輸出/插入指定文字",
         "helpview.logo_3": "    BOX / DRAWBOX / LINE / VLINE 畫框與橫豎分隔線（支援自動交點融合）",
         "helpview.logo_4": "    MAKE / VAR / :var  宣告變數與進行四則運算求值",
@@ -719,6 +749,7 @@ struct TraditionalChineseStrings {
         "menu.run": "執行(R)",
         "menu.shapes": "圖形(S)",
         "menu.borders": "框線(O)",
+        "menu.arrows": "箭頭(A)",
         "menu.tools": "工具(T)",
         "menu.diagrams": "圖表(D)",
         "menu.help": "說明(H)",
@@ -726,45 +757,47 @@ struct TraditionalChineseStrings {
 
         // Menu Bar Items
         "menu.file.new": "新建空白頁\t^N",
-        "menu.file.open": "讀取外部檔案…\t^R",
+        "menu.file.open": "開啟檔案…",
+        "menu.file.insert": "插入檔案…\t^R",
         "menu.file.directory": "瀏覽目錄\tDIR",
         "menu.file.save": "儲存檔案\t^S",
-        "menu.file.write_out": "另存寫出…\t^O",
+        "menu.file.write_out": "另存檔案\t^O",
         "menu.file.save_exit": "儲存並關閉\tF4",
-        "menu.file.exit": "關閉頁面 / 退出\t^X",
+        "menu.file.exit": "關閉/退出\t^X",
         "menu.file.edit_config": "編輯設定檔(C)",
         "menu.file.reload_config": "重新載入設定檔(R)",
 
         "menu.edit.undo": "復原\t^Z",
         "menu.edit.redo": "重做\t^⇧Z",
-        "menu.edit.mark": "標記區塊\t^^ / M+B",
-        "menu.edit.cancel_selection": "取消標記\t^G / M+U",
-        "menu.edit.copy": "複製\tM+W",
+        "menu.edit.mark": "標記區塊\t^^ / ⌥B",
+        "menu.edit.cancel_selection": "取消標記\t^G / ⌥U",
+        "menu.edit.copy": "複製\t⌥W",
         "menu.edit.cut": "剪下\t^K",
         "menu.edit.paste": "貼上\t^U",
         "menu.edit.delete_line": "刪除整行\t^⌫",
         "menu.edit.search": "搜尋文字…\t^W",
-        "menu.edit.open_link": "開啟連結\tM+O",
-        "menu.edit.outline": "文件大綱\tM+\\",
-        "menu.edit.next_heading": "下一個標題\tM+]",
-        "menu.edit.previous_heading": "上一個標題\tM+[",
+        "menu.edit.open_link": "開啟連結\t⌥O",
+        "menu.outline": "大綱",
+        "menu.edit.outline": "大綱\t⌥\\",
+        "menu.edit.next_heading": "下一個標題\t⌥]",
+        "menu.edit.previous_heading": "上一個標題\t⌥[",
         "menu.edit.spell": "拼字檢查…\t^T",
-        "menu.edit.goto_line": "跳轉至指定行…\tM+/",
+        "menu.edit.goto_line": "跳轉至指定行…\t⌥/",
         "menu.edit.toggle_comment": "註解/取消註解…\t^/",
         "menu.edit.justify": "重排與對齊段落\t^J",
         "menu.edit.text_editing_mode": "一般模式",
         "menu.edit.canvas_mode": "畫布模式\tF8",
         "menu.edit.table_editing_mode": "表格模式\tF7",
 
-        "menu.buffer.next": "下一份文件\tM+.",
-        "menu.buffer.prev": "上一份文件\tM+,",
-        "menu.buffer.output": "LOGO 輸出紀錄\tM+L",
+        "menu.buffer.next": "下一份文件\t⌥.",
+        "menu.buffer.prev": "上一份文件\t⌥,",
+        "menu.buffer.output": "LOGO 輸出紀錄\t⌥L",
         "menu.buffer.logo_debugger": "LOGO 除錯器",
         "menu.buffer.clear_output": "清除 LOGO 輸出內容",
 
         "menu.run.script": "執行腳本\tF5",
-        "menu.run.output": "LOGO 輸出紀錄\tM+L",
-        "menu.run.canvas": "LOGO 繪圖畫布\tM+C",
+        "menu.run.output": "LOGO 輸出紀錄\t⌥L",
+        "menu.run.canvas": "LOGO 繪圖畫布\t⌥C",
         "menu.run.clear": "清除畫布與輸出",
 
         "menu.shapes.box": "方框 (插入)",
@@ -780,7 +813,7 @@ struct TraditionalChineseStrings {
         "dialog.symbol_picker.selected": " 選擇: ",
 
         "dialog.describe_key.title": " 查詢按鍵功能 ",
-        "dialog.describe_key.prompt": "請按下任意按鍵以查詢其指令與模式功能...",
+        "dialog.describe_key.prompt": "請按下任意按鍵以查詢其指令與模式功能…",
         "dialog.describe_key.footer_close": " 按任意鍵關閉 ",
         "dialog.describe_key.key_label": " 按鍵：%@ ",
         "dialog.describe_key.section_text": "文字編輯模式（預設）：",
@@ -920,13 +953,29 @@ struct TraditionalChineseStrings {
         "menu.borders.heavy_quad": "粗四段虛線 ┏┉┉┓",
         "menu.borders.double_dash": "二段虛線   ┌╌╌┐",
         "menu.borders.heavy_double": "粗二段虛線 ┏╍╍┓",
-        "menu.borders.next_style": "下一種框線\tM+S",
+        "menu.borders.next_style": "下一種框線\t⌥S",
+        "menu.arrows.solid": "實心         ▲▼◀▶",
+        "menu.arrows.hollow": "空心         △▽◁▷",
+        "menu.arrows.small": "微型         ▴▾◂▸",
+        "menu.arrows.stemmed": "細線         ↑↓←→",
+        "menu.arrows.heavy": "粗線         ⬆⬇⬅⮕",
+        "menu.arrows.double": "雙線         ⇑⇓⇐⇒",
+        "menu.arrows.solid_diamond": "實心菱       ◆",
+        "menu.arrows.diamond": "空心菱       ◇",
+        "menu.arrows.circle": "實心圓       ●",
+        "menu.arrows.open_circle": "空心圓       ○",
+        "menu.arrows.cross": "叉叉         ✕",
+        "menu.arrows.crow": "烏鴉腳       ⤘⤛⤙⤚",
+        "menu.arrows.harpoon": "單側魚鉤     ↿⇂↼⇀",
+        "menu.arrows.dotted": "點狀虛線     ⇡⇣⇠⇢",
         "menu.borders.arrow_solid": "箭頭：實心 ▲▼◀▶",
         "menu.borders.arrow_stemmed": "箭頭：細線 ↑↓←→",
         "menu.borders.arrow_hollow": "箭頭：空心 △▽◁▷",
         "menu.borders.arrow_small": "箭頭：微型 ▴▾◂▸",
+        "menu.borders.arrow_double": "箭頭：雙線 ⇑⇓⇐⇒",
+        "menu.borders.arrow_heavy": "箭頭：粗線 ⬆⬇⬅⮕",
 
-        "menu.tools.journal": "今日日記",
+        "menu.tools.journal": "今天日記",
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.tools.word_count": "字數統計",
@@ -937,9 +986,11 @@ struct TraditionalChineseStrings {
         "menu.tools.transform_katakana": "轉換：片假名",
         "menu.tools.transform_romaji": "轉換：羅馬字",
         "menu.tools.transform_cjk_spacing": "轉換：CJK 空格",
-        "menu.tools.line_numbers": "顯示/隱藏行號",
-        "menu.tools.sub_line_numbers": "顯示/隱藏子行號",
-        "menu.tools.ruler": "顯示/隱藏尺標",
+        "menu.tools.line_numbers": "顯示行號",
+        "menu.tools.sub_line_numbers": "顯示子行號",
+        "menu.tools.ruler": "顯示尺標",
+        "menu.tools.indicator": "顯示捲軸",
+        "menu.tools.zero_mode": "極簡模式",
         "menu.tools.wrap_80": "換行: 80",
         "menu.tools.wrap_60": "換行: 60",
         "menu.tools.wrap_40": "換行: 40",
@@ -978,7 +1029,7 @@ struct TraditionalChineseStrings {
         "transform.cjk_spacing": "CJK 空格",
 
         // AI Proposal UI & Status Strings
-        "ai.proposal.action_hint": "[M+A 接受提案 | M+R 拒絕提案]",
+        "ai.proposal.action_hint": "[⌥A 接受提案 | ⌥R 拒絕提案]",
         "ai.proposal.readonly_cannot_modify": "[AI 提案] 無法修改唯讀 Buffer",
         "ai.proposal.readonly_cannot_generate": "[AI 提案] 無法在唯讀 Buffer 產生提案",
         "ai.proposal.no_pending_accept": "[AI 提案] 無可接受的提案",
@@ -988,8 +1039,8 @@ struct TraditionalChineseStrings {
         "ai.proposal.rejected": "[AI 提案] 已拒絕 %@ 的提案",
         "ai.proposal.queue_empty": "[AI 提案] 佇列為空",
         "ai.proposal.preview_item": "[AI 提案] (%d/%d) '%@'",
-        "ai.proposal.mock_generated": "🤖 [Mock AI 提案] \"%@\" (按 M+A 接受，M+R 拒絕，M+P 預覽)",
-        "ai.proposal.received": "🤖 [來自 %@ 的 AI 提案] \"%@\" (按 M+A 接受，M+R 拒絕，M+P 預覽)",
+        "ai.proposal.mock_generated": "🤖 [Mock AI 提案] \"%@\" (按 ⌥A 接受，⌥R 拒絕，⌥P 預覽)",
+        "ai.proposal.received": "🤖 [來自 %@ 的 AI 提案] \"%@\" (按 ⌥A 接受，⌥R 拒絕，⌥P 預覽)",
         "ai.proposal.queue_indicator": "[AI 佇列 %d/%d]",
 
         // Describe Command & Procedure Dialog Strings

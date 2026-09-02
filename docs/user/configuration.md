@@ -55,6 +55,10 @@ set wrap 80
 unset wrap
 set canvas-mode on
 set canvas-mode off
+set zero on
+set zero off
+set indicator on
+set indicator off
 set trim-trailing-whitespace on
 set trim-trailing-whitespace off
 set lang zh_TW
@@ -209,6 +213,8 @@ All shortcut representations across the editor, menu bar, help displays, and doc
 | `mode.text` | Switch to text editing mode | Menu |
 | `mode.canvas.toggle` | Toggle canvas mode | `F8`, `M+V` |
 | `mode.frame.toggle` | Toggle frame mode | Menu |
+| `view.zero.toggle` | Toggle zero interface mode | `M+Z` |
+| `view.indicator.toggle` | Toggle scrollbar indicator | Menu |
 | `table.toggle` | Toggle table mode | `F7`, `M+T` |
 | `border.style` | Cycle border style | `M+S` |
 

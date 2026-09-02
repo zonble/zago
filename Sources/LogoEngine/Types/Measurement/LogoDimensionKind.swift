@@ -55,11 +55,20 @@ public enum LogoDimensionKind: String, CaseIterable, Sendable {
     public var supportedUnits: [String] {
         switch self {
         case .area:
-            ["sqm", "m2", "sqkm", "km2", "sqcm", "cm2", "sqmm", "mm2", "squm", "sqnm", "sqin", "in2", "sqft", "ft2", "sqyd", "yd2", "sqmi", "mi2", "acre", "are", "ha"]
+            [
+                "sqm", "m2", "sqkm", "km2", "sqcm", "cm2", "sqmm", "mm2", "squm", "sqnm", "sqin", "in2", "sqft", "ft2",
+                "sqyd", "yd2", "sqmi", "mi2", "acre", "are", "ha",
+            ]
         case .length:
-            ["m", "km", "cm", "mm", "um", "nm", "pm", "dm", "dam", "hm", "in", "ft", "yd", "mi", "nmi", "furlong", "fathom", "ly", "pc", "au"]
+            [
+                "m", "km", "cm", "mm", "um", "nm", "pm", "dm", "dam", "hm", "in", "ft", "yd", "mi", "nmi", "furlong",
+                "fathom", "ly", "pc", "au",
+            ]
         case .volume:
-            ["l", "ml", "cl", "dl", "kl", "m3", "km3", "cm3", "mm3", "in3", "ft3", "yd3", "mi3", "acrefeet", "bushel", "tsp", "tbsp", "floz", "cup", "pt", "qt", "gal"]
+            [
+                "l", "ml", "cl", "dl", "kl", "m3", "km3", "cm3", "mm3", "in3", "ft3", "yd3", "mi3", "acrefeet",
+                "bushel", "tsp", "tbsp", "floz", "cup", "pt", "qt", "gal",
+            ]
         case .angle:
             ["deg", "rad", "grad", "rev", "arcmin", "arcsec"]
         case .mass:

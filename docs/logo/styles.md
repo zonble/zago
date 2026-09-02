@@ -102,9 +102,19 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **ASCII / Default** | `<` | `>` | `<` | `>` | `←` / `→` or `<` / `>` | `^` / `v` |
 | **Solid** | `◀` / `▲` | `▶` / `▼` | `<<` | `>>` | `◀` `▶` | `▲` `▼` |
-| **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
 | **Hollow** | `◁` / `△` | `▷` / `▽` | `<\|` | `\|>` | `◁` `▷` | `△` `▽` |
 | **Small** | `◂` / `▴` | `▸` / `▾` | `<.` | `.>` | `◂` `▸` | `▴` `▾` |
+| **Stemmed** | `←` / `↑` | `→` / `↓` | `<~` | `~>` | `←` `→` | `↑` `↓` |
+| **Heavy** | `⬅` / `⬆` | `⮕` / `⬇` | `<+|` | `|+>` | `⬅` `⮕` | `⬆` `⬇` |
+| **Double** | `⇐` / `⇑` | `⇒` / `⇓` | `<=|` | `|=>` | `⇐` `⇒` | `⇑` `⇓` |
+| **Dotted / Dashed** | `⇠` / `⇡` | `⇢` / `⇣` | `<..` | `..>` | `⇠` `⇢` | `⇡` `⇣` |
+| **Harpoon (Half-Arrow)** | `↼` / `↿` | `⇀` / `⇂` | `<^` | `^>` | `↼` `⇀` | `↿` `⇂` |
+| **Crow's Foot** | `⤙` / `⤘` | `⤚` / `⤛` | `<:` | `:>` | `⤙` `⤚` | `⤘` `⤛` |
+| **Solid Diamond** | `◆` | `◆` | `<*>` | `<*>` | `◆` | `◆` |
+| **Hollow Diamond** | `◇` | `◇` | `<>` | `<>` | `◇` | `◇` |
+| **Solid Circle** | `●` | `●` | `*` | `*` | `●` | `●` |
+| **Open Circle** | `○` | `○` | `o` / `O` | `o` / `O` | `○` | `○` |
+| **Cross** | `✕` | `✕` | `x` / `X` | `x` / `X` | `✕` | `✕` |
 
 ### Common Line DSL Combinations
 
@@ -118,6 +128,15 @@ Heavy Double (++))  Heavy Triple (+++)) Heavy Quad (++++))
 | `<~+~>` | `←━━━━→` | `↑` `┃` `┃` `↓` | Heavy line with stemmed arrows |
 | `<\|---\|>` | `◁┄┄┄┄▷` | `△` `┆` `┆` `▽` | Triple-dash line with hollow arrows |
 | `<.++.>` | `◂╍╍╍╍▸` | `▴` `╏` `╏` `▾` | Heavy double-dash line with small arrows |
+| `<=|==|=>` | `⇐════⇒` | `⇑` `║` `║` `⇓` | Double line with double arrows |
+| `<+|++|+>` | `⬅━━━━⮕` | `⬆` `┃` `┃` `⬇` | Heavy line with heavy arrows |
+| `<..--..>` | `⇠╌╌╌╌⇢` | `⇡` `╎` `╎` `⇣` | Double-dash line with dotted arrows |
+| `<>--->` | `◇────>` | `◇` `│` `│` `v` | Hollow diamond line with arrow |
+| `<*>--->` | `◆────>` | `◆` `│` `│` `v` | Solid diamond line with arrow |
+| `*---*` | `●────●` | `●` `│` `│` `●` | Line with solid circle endpoints |
+| `o---o` | `○────○` | `○` `│` `│` `○` | Line with open circle endpoints |
+| `x---x` | `✕────✕` | `✕` `│` `│` `✕` | Line with cross endpoints |
+| `<:---:>` | `⤙────⤚` | `⤘` `│` `│` `⤛` | Crow's foot line |
 | `<~+\|>` | `←━━━━▷` | `↑` `┃` `┃` `▽` | Asymmetric: stemmed start, hollow end |
 
 ---

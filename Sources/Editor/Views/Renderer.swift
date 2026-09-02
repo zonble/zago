@@ -53,7 +53,7 @@ final class Renderer {
         if !isDiffable {
             output += ANSIStyle.disableLineWrap + ANSIStyle.cursorHome
             for i in 0..<screenLines.count {
-                output += screenLines[i] + ANSIStyle.clearLine
+                output += screenLines[i] + (geometry.showIndicator ? "" : ANSIStyle.clearLine)
                 if i < screenLines.count - 1 {
                     output += "\r\n"
                 }
@@ -62,7 +62,7 @@ final class Renderer {
         } else {
             for i in 0..<screenLines.count {
                 if screenLines[i] != lastRenderedLines[i] {
-                    output += "\(ANSIStyle.disableLineWrap)\u{1B}[\(i + 1);1H" + screenLines[i] + ANSIStyle.clearLine
+                    output += "\(ANSIStyle.disableLineWrap)\u{1B}[\(i + 1);1H" + screenLines[i] + (geometry.showIndicator ? "" : ANSIStyle.clearLine)
                 }
             }
             output += cursorPosStr
@@ -138,9 +138,11 @@ final class Renderer {
         var screenLines: [String] = []
 
         // 1. Title Bar or Top Menu Bar Component
-        let titleLineStr = renderTitleOrMenuBar(editor: editor, cols: cols)
-        let titleLines = titleLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: titleLines)
+        if !geometry.isZeroMode || editor.isMenuBarActive {
+            let titleLineStr = renderTitleOrMenuBar(editor: editor, cols: cols)
+            let titleLines = titleLineStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: titleLines)
+        }
 
         let (dropdownStartCol, dropdownBoxWidth, dropdownBoxLines) = generateDropdownOverlayLines(
             editor: editor, cols: cols)
@@ -165,6 +167,7 @@ final class Renderer {
             editor: editor,
             mainAreaHeight: mainAreaHeight,
             showRuler: geometry.showRuler,
+            showIndicator: geometry.showIndicator,
             gutterWidth: gutterWidth,
             showSubLineInfo: showSubLineInfo,
             virtualLines: virtualLines,
@@ -179,22 +182,36 @@ final class Renderer {
         screenLines.append(contentsOf: mainLines)
 
         // 4. Status & Prompt Line Component
-        var statusStr = ""
-        let renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &statusStr)
-        let statusLines = statusStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: statusLines)
+        let isPromptActive: Bool
+        if case .none = editor.currentPromptMode {
+            isPromptActive = false
+        } else {
+            isPromptActive = true
+        }
+
+        let renderedPrompt: RenderedPrompt
+        if !geometry.isZeroMode || isPromptActive {
+            var statusStr = ""
+            renderedPrompt = renderStatusAndPromptLine(editor: editor, cols: cols, output: &statusStr)
+            let statusLines = statusStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: statusLines)
+        } else {
+            renderedPrompt = RenderedPrompt(text: "", cursorCol: 1)
+        }
 
         // 5. Dynamic Contextual Help Bar Component
-        let helpStr = renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
-        let helpLines = helpStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
-        screenLines.append(contentsOf: helpLines)
+        if !geometry.isZeroMode {
+            let helpStr = renderHelpBar(cols: cols, promptMode: editor.currentPromptMode, editor: editor)
+            let helpLines = helpStr.components(separatedBy: "\r\n").filter { !$0.isEmpty }
+            screenLines.append(contentsOf: helpLines)
+        }
 
         // 6. Terminal Cursor Positioning Component
         let cursorPosStr = positionCursor(
             editor: editor,
             rows: rows,
             cols: cols,
-            showRuler: geometry.showRuler,
+            geometry: geometry,
             cursorVLineIdx: cursorVLineIdx,
             cursorVColIdx: cursorVColIdx,
             gutterWidth: gutterWidth,
@@ -213,6 +230,7 @@ final class Renderer {
         editor: Editor,
         mainAreaHeight: Int,
         showRuler: Bool = false,
+        showIndicator: Bool = false,
         gutterWidth: Int,
         showSubLineInfo: Bool? = nil,
         virtualLines: [VirtualLine],
@@ -224,12 +242,62 @@ final class Renderer {
         dropdownBoxLines: [String]
     ) -> String {
         var output = ""
+        let indicatorWidth = showIndicator ? 1 : 0
         let resolvedShowSubLineInfo =
-            showSubLineInfo ?? shouldRenderSubLineInfo(editor: editor, textWidth: max(0, cols - gutterWidth))
+            showSubLineInfo
+            ?? shouldRenderSubLineInfo(editor: editor, textWidth: max(0, cols - gutterWidth - indicatorWidth))
         let subLineCounts = makeSubLineCounts(from: virtualLines)
         var tokenTypesCache: [Int: [SyntaxTokenType]] = [:]
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
         let activeCanvasRect = editor.isCanvasModeActive ? editor.currentCanvasBlockRectangle() : nil
+
+        let totalCount = max(1, totalVirtualLineCount ?? virtualLines.count)
+        let thumbStart: Int
+        let thumbEnd: Int
+        if showIndicator {
+            let viewportHeight = mainAreaHeight
+            if totalCount <= viewportHeight {
+                thumbStart = 0
+                thumbEnd = viewportHeight
+            } else {
+                let thumbHeight = max(1, Int(round(Double(viewportHeight * viewportHeight) / Double(totalCount))))
+                let maxScroll = max(1, totalCount - viewportHeight)
+                let maxTrack = max(0, viewportHeight - thumbHeight)
+                let currentScroll = max(0, min(editor.topVLineIndex, maxScroll))
+                thumbStart = Int(round(Double(currentScroll) / Double(maxScroll) * Double(maxTrack)))
+                thumbEnd = min(viewportHeight, thumbStart + thumbHeight)
+            }
+        } else {
+            thumbStart = 0
+            thumbEnd = 0
+        }
+
+        let isPromptActive: Bool
+        if case .none = editor.currentPromptMode {
+            isPromptActive = false
+        } else {
+            isPromptActive = true
+        }
+
+        let inactiveCursorVLineIdx: Int?
+        let inactiveCursorVColIdx: Int?
+        if isPromptActive {
+            if editor.isCanvasModeActive {
+                inactiveCursorVLineIdx = editor.buffer.lineIndex
+                inactiveCursorVColIdx = editor.canvasVisualColumn
+            } else {
+                let (vLine, vCol) = editor.layoutEngine.getVirtualCursor(
+                    lineIndex: editor.buffer.lineIndex,
+                    columnIndex: editor.buffer.columnIndex,
+                    virtualLines: virtualLines
+                )
+                inactiveCursorVLineIdx = vLine
+                inactiveCursorVColIdx = vCol
+            }
+        } else {
+            inactiveCursorVLineIdx = nil
+            inactiveCursorVColIdx = nil
+        }
 
         for i in 0..<mainAreaHeight {
             let vIndex = editor.topVLineIndex + i
@@ -239,6 +307,7 @@ final class Renderer {
             let boxIdx = showRuler ? (i + 1) : i
 
             var lineOutput = ""
+            var currentLineWidth = 0
             if localVIndex >= 0 && localVIndex < virtualLines.count {
                 let vLine = virtualLines[localVIndex]
                 let isFirstSubLine = (vLine.subLineIndex == 0)
@@ -267,7 +336,7 @@ final class Renderer {
                 if editor.isCanvasModeActive {
                     let slice = vLine.text.visualSlice(
                         startVisualColumn: editor.canvasHorizontalOffset,
-                        width: max(0, cols - gutterWidth))
+                        width: max(0, cols - gutterWidth - indicatorWidth))
                     renderedLineText = slice.text
                     renderedStartCol = slice.startCharacterOffset
                 } else {
@@ -306,7 +375,7 @@ final class Renderer {
                 }
 
                 var renderedDisplayWidth = 0
-                let visibleTextWidth = max(0, cols - gutterWidth)
+                let visibleTextWidth = max(0, cols - gutterWidth - indicatorWidth)
 
                 let hangingIndent =
                     (vLine.subLineIndex > 0 && editor.displayConfig.listWrapIndent)
@@ -341,6 +410,27 @@ final class Renderer {
                             atDisplayColumn: renderedDisplayWidth,
                             tabSize: editor.displayConfig.tabSize)
 
+                        let isInactiveCursorPos: Bool
+                        if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
+                            if editor.isCanvasModeActive {
+                                let chWidth = max(1, ch.displayWidth)
+                                isInactiveCursorPos = (vLine.bufferLineIndex == targetVLine && targetVCol >= charVisualColumn && targetVCol < charVisualColumn + chWidth)
+                            } else if editor.isTableModeActive, let cell = editor.currentTableCell,
+                                editor.buffer.lineIndex >= cell.innerMinLine
+                                    && editor.buffer.lineIndex <= cell.innerMaxLine
+                            {
+                                let (leftBorder, rightBorder) = TableModeController.findCellHorizontalBorders(
+                                    in: vLine.text, nearCol: targetVCol, cell: cell)
+                                let effectiveCol =
+                                    (targetVCol >= rightBorder) ? max(leftBorder + 1, rightBorder - 1) : targetVCol
+                                isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == effectiveCol)
+                            } else {
+                                isInactiveCursorPos = (vIndex == targetVLine && cIdxInVLine == targetVCol)
+                            }
+                        } else {
+                            isInactiveCursorPos = false
+                        }
+
                         if let rect = activeCanvasRect,
                             vLine.bufferLineIndex >= rect.topLine && vLine.bufferLineIndex <= rect.bottomLine,
                             charVisualColumn >= rect.leftColumn && charVisualColumn < rect.rightColumnExclusive
@@ -352,6 +442,9 @@ final class Renderer {
                         {
                             lineOutput += renderedText.ansiStyled(
                                 style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        } else if isInactiveCursorPos {
+                            lineOutput += renderedText.ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
                         } else if isDirBufferSelectedLine {
                             lineOutput += renderedText
                         } else if !editor.isCanvasModeActive
@@ -377,14 +470,28 @@ final class Renderer {
                     let padStart = editor.canvasHorizontalOffset + renderedDisplayWidth
                     var selectedPad = ""
                     var normalPad = ""
+                    let isInactiveCursorLine = isPromptActive && vLine.bufferLineIndex == editor.buffer.lineIndex
                     for screenOffset in renderedDisplayWidth..<visibleTextWidth {
                         let visualCol = editor.canvasHorizontalOffset + screenOffset
+                        let isInactiveCursorCell = isInactiveCursorLine && visualCol == editor.canvasVisualColumn
                         if editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: visualCol) {
                             if !normalPad.isEmpty {
                                 lineOutput += normalPad
                                 normalPad = ""
                             }
                             selectedPad.append(" ")
+                        } else if isInactiveCursorCell {
+                            if !normalPad.isEmpty {
+                                lineOutput += normalPad
+                                normalPad = ""
+                            }
+                            if !selectedPad.isEmpty {
+                                lineOutput += selectedPad.ansiStyled(
+                                    style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                                selectedPad = ""
+                            }
+                            lineOutput += " ".ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
                         } else {
                             if !selectedPad.isEmpty {
                                 lineOutput += selectedPad.ansiStyled(
@@ -396,6 +503,7 @@ final class Renderer {
                     }
                     if !selectedPad.isEmpty {
                         lineOutput += selectedPad.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                        renderedDisplayWidth = visibleTextWidth
                     }
                     if !normalPad.isEmpty
                         && editor.isCanvasCellSelected(line: vLine.bufferLineIndex, visualColumn: padStart)
@@ -408,9 +516,33 @@ final class Renderer {
                         renderedDisplayWidth = visibleTextWidth
                     }
                     lineOutput = lineOutput.ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
-                } else if baseChars.isEmpty && editor.buffer.isLineSelected(line: vLine.bufferLineIndex) {
-                    lineOutput += String(repeating: " ", count: visibleTextWidth).ansiStyled(
-                        style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                } else if !editor.isCanvasModeActive && !editor.isTableModeActive && !vLine.isProposalOverlay {
+                    let isLastSubLineOfBufferLine = vLine.endCol >= fullLineText.count
+                    let isInactiveCursorAtEnd: Bool
+                    if let targetVLine = inactiveCursorVLineIdx, let targetVCol = inactiveCursorVColIdx {
+                        isInactiveCursorAtEnd = (vIndex == targetVLine && targetVCol >= baseChars.count)
+                    } else {
+                        isInactiveCursorAtEnd = false
+                    }
+
+                    if isLastSubLineOfBufferLine, let mark = editor.buffer.selectionMark {
+                        let (start, end) = TextBuffer.getOrderedRange(
+                            mark1: mark,
+                            mark2: (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
+                        )
+                        let isNewlineSelected = vLine.bufferLineIndex >= start.line && vLine.bufferLineIndex < end.line
+                        if isNewlineSelected {
+                            lineOutput += " ".ansiStyled(style: ANSIStyle.inverse, endStyle: ANSIStyle.resetShort)
+                            renderedDisplayWidth += 1
+                        } else if isInactiveCursorAtEnd {
+                            lineOutput += " ".ansiStyled(
+                                style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
+                            renderedDisplayWidth += 1
+                        }
+                    } else if isInactiveCursorAtEnd {
+                        lineOutput += " ".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)
+                        renderedDisplayWidth += 1
+                    }
                 }
 
                 if let subLineInfo = renderSubLineInfo(
@@ -422,6 +554,9 @@ final class Renderer {
                     let targetWidth = editor.layoutEngine.wrapColumn ?? renderedDisplayWidth
                     lineOutput += String(repeating: " ", count: max(0, targetWidth - renderedDisplayWidth))
                     lineOutput += subLineInfo
+                    currentLineWidth = gutterWidth + max(renderedDisplayWidth, targetWidth) + subLineInfo.displayWidth
+                } else {
+                    currentLineWidth = gutterWidth + renderedDisplayWidth
                 }
             } else if let ghostInfo = ghostOverlayLine(
                 proposal: editor.proposalQueue.currentProposal,
@@ -445,11 +580,26 @@ final class Renderer {
                 }
                 let indent = String(repeating: " ", count: max(0, ghostInfo.startCol))
                 lineOutput += (indent + ghostInfo.line).ansiStyled(style: ANSIStyle.aiGhostOverlay)
+                currentLineWidth = gutterWidth + ghostInfo.startCol + ghostInfo.line.displayWidth
             } else if editor.isCanvasModeActive && vIndex == (totalVirtualLineCount ?? virtualLines.count) {
                 let gutter = gutterWidth > 0 ? String(repeating: " ", count: gutterWidth) : ""
                 lineOutput += "\(gutter)~ \(editor.l10n["chrome.end_of_file"])".ansiStyled(style: ANSIStyle.dimGray)
+                currentLineWidth = gutterWidth + 2 + editor.l10n["chrome.end_of_file"].displayWidth
             } else if showBreakpointGutter {
                 lineOutput += " "
+                currentLineWidth = 1
+            } else {
+                currentLineWidth = 0
+            }
+
+            if showIndicator {
+                let isThumb = (i >= thumbStart && i < thumbEnd)
+                let indicatorChar = isThumb ? "█".ansiStyled(color: .white) : "│".ansiStyled(color: .brightBlack)
+                let targetWidth = max(0, cols - 1)
+                if currentLineWidth < targetWidth {
+                    lineOutput += String(repeating: " ", count: targetWidth - currentLineWidth)
+                }
+                lineOutput += indicatorChar
             }
 
             if editor.isMenuBarActive && boxIdx < dropdownBoxLines.count {
@@ -572,6 +722,7 @@ final class Renderer {
         editor: Editor,
         rows: Int,
         cols: Int,
+        geometry: ScreenGeometry? = nil,
         showRuler: Bool = false,
         cursorVLineIdx: Int,
         cursorVColIdx: Int,
@@ -580,6 +731,17 @@ final class Renderer {
         virtualLineStartIndex: Int = 0,
         renderedPrompt: RenderedPrompt
     ) -> String {
+        let geo =
+            geometry
+            ?? ScreenGeometry(
+                rows: rows,
+                cols: cols,
+                showRuler: showRuler,
+                showGutter: gutterWidth > 0,
+                isZeroMode: editor.displayConfig.isZeroMode,
+                isMenuBarActive: editor.isMenuBarActive,
+                isPromptActive: editor.promptController.isActive
+            )
         var output = ""
         if editor.isMenuBarActive {
             output += "\u{1B}[\(rows);\(cols)H"
@@ -626,14 +788,17 @@ final class Renderer {
                         tabSize: editor.displayConfig.tabSize)
             }
 
-            let topMargin = 1 + (showRuler ? 1 : 0)
-            let mainAreaHeight = max(1, rows - topMargin - 2)
+            let showTitle = !geo.isZeroMode || editor.isMenuBarActive
+            let topMargin = (showTitle ? 1 : 0) + (geo.showRuler ? 1 : 0)
+            let mainAreaHeight = geo.mainAreaHeight
             let isCursorOffScreen: Bool
             if editor.isCanvasModeActive {
                 let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
                 let cursorColInViewport = editor.canvasVisualColumn - editor.canvasHorizontalOffset
-                isCursorOffScreen = cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
-                    || cursorColInViewport < 0 || cursorColInViewport >= max(0, cols - gutterWidth)
+                isCursorOffScreen =
+                    cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
+                    || cursorColInViewport < 0
+                    || cursorColInViewport >= max(0, cols - gutterWidth - (geo.showIndicator ? 1 : 0))
             } else {
                 let cursorRowInViewport = cursorVLineIdx - editor.topVLineIndex
                 isCursorOffScreen = cursorRowInViewport < 0 || cursorRowInViewport >= mainAreaHeight
@@ -642,12 +807,13 @@ final class Renderer {
             if isCursorOffScreen {
                 output += "\u{1B}[\(rows);\(cols)H"
             } else {
-                let screenRow = (cursorVLineIdx - editor.topVLineIndex) + (showRuler ? 3 : 2)  // +3 if ruler, +2 for title bar
+                let screenRow = (cursorVLineIdx - editor.topVLineIndex) + topMargin + 1
                 let screenCol = gutterWidth + cursorDisplayWidth + 1
                 output += "\u{1B}[\(screenRow);\(screenCol)H"
             }
         } else {
-            let promptRow = rows - 2
+            let showHelp = !geo.isZeroMode
+            let promptRow = rows - (showHelp ? 2 : 0)
             let promptCol = max(1, min(cols, renderedPrompt.cursorCol))
             output += "\u{1B}[\(promptRow);\(promptCol)H"
         }

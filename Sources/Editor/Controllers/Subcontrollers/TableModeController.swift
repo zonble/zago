@@ -36,66 +36,73 @@ final class TableModeController: KeyInputHandler {
             }
         }
 
-        switch key {
-        case .alt("t"), .alt("T"), .f7:
+        let cmd = editor.keymapManager.resolve(key: key, in: .table)
+
+        switch cmd {
+        case .tableToggle:
             editor.clearActiveMark()
             toggleTableMode()
             return true
 
-        case .tab:
+        case .tableNextCell:
             editor.clearActiveMark()
             navigateNextTableCell()
             return true
 
-        case .backtab:
+        case .tablePrevCell:
             editor.clearActiveMark()
             navigatePrevTableCell()
             return true
 
-        case .shiftArrowLeft:
-            extendTableSelectionLeft(cell: cell)
-            return true
-
-        case .shiftArrowRight:
-            extendTableSelectionRight(cell: cell)
-            return true
-
-        case .shiftHome:
-            extendTableSelectionHome(cell: cell)
-            return true
-
-        case .shiftEnd:
-            extendTableSelectionEnd(cell: cell)
-            return true
-
-        case .shiftPageUp:
-            extendTableSelectionPageUp(cell: cell)
-            return true
-
-        case .shiftPageDown:
-            extendTableSelectionPageDown(cell: cell)
-            return true
-
-        case .ctrlShiftArrowRight:
+        case .tableAdjustWidthInc:
             editor.saveUndoSnapshot()
             resizeCurrentTableCellWidth(delta: 1)
             return true
 
-        case .ctrlShiftArrowLeft:
+        case .tableAdjustWidthDec:
             editor.saveUndoSnapshot()
             resizeCurrentTableCellWidth(delta: -1)
             return true
 
-        case .ctrlShiftArrowDown:
+        case .tableAdjustHeightInc:
             editor.saveUndoSnapshot()
             resizeCurrentTableCellHeight(delta: 1)
             return true
 
-        case .ctrlShiftArrowUp:
+        case .tableAdjustHeightDec:
             editor.saveUndoSnapshot()
             resizeCurrentTableCellHeight(delta: -1)
             return true
 
+        case .selectLeft:
+            extendTableSelectionLeft(cell: cell)
+            return true
+
+        case .selectRight:
+            extendTableSelectionRight(cell: cell)
+            return true
+
+        case .selectHome:
+            extendTableSelectionHome(cell: cell)
+            return true
+
+        case .selectEnd:
+            extendTableSelectionEnd(cell: cell)
+            return true
+
+        case .selectPgup:
+            extendTableSelectionPageUp(cell: cell)
+            return true
+
+        case .selectPgdn:
+            extendTableSelectionPageDown(cell: cell)
+            return true
+
+        default:
+            break
+        }
+
+        switch key {
         case .arrowUp:
             editor.clearActiveMark()
             if editor.buffer.lineIndex == cell.innerMinLine {

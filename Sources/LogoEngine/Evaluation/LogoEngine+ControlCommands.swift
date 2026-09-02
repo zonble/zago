@@ -28,8 +28,8 @@ extension LogoEngine {
 
             let isTrue = evaluateCondition(condTokens)
 
-            if let trueBlock = reader.nextBlock() {
-                let falseBlock = reader.nextBlock()
+            if let trueBlock = reader.nextSourceBlock() {
+                let falseBlock = reader.nextSourceBlock()
                 var bIdx = 0
                 if isTrue {
                     executeTokens(trueBlock, index: &bIdx, frameReturn: &frameReturn)
@@ -47,14 +47,14 @@ extension LogoEngine {
                 reportError(LogoError(code: 1, message: errorMessage), token: "RUN")
                 return true
             }
-            if let block = reader.nextBlock() {
+            if let block = reader.nextSourceBlock() {
                 reader.commit(to: &index)
                 var bIdx = 0
                 executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
             } else {
                 let scriptStr = reader.nextExpression() ?? ""
                 reader.commit(to: &index)
-                let block = LogoTokenizer.tokenize(scriptStr)
+                let block = LogoTokenizer.tokenizeTokens(scriptStr)
                 var bIdx = 0
                 executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
             }
@@ -67,12 +67,12 @@ extension LogoEngine {
                 reportError(LogoError(code: 1, message: errorMessage), token: "RUNRESULT")
                 return true
             }
-            var block: [String] = []
-            if let rawBlock = reader.nextBlock() {
+            var block: [LogoToken] = []
+            if let rawBlock = reader.nextSourceBlock() {
                 block = rawBlock
             } else {
                 let scriptStr = reader.nextExpression() ?? ""
-                block = LogoTokenizer.tokenize(scriptStr)
+                block = LogoTokenizer.tokenizeTokens(scriptStr)
             }
             reader.commit(to: &index)
             var bIdx = 0
@@ -102,7 +102,7 @@ extension LogoEngine {
                 reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
                 return true
             }
-            guard let block = reader.nextBlock() else {
+            guard let block = reader.nextSourceBlock() else {
                 let errorMessage = "[LOGO Error: Not enough inputs to REPEAT]"
                 reportError(LogoError(code: 1, message: errorMessage), token: "REPEAT")
                 return true
@@ -167,7 +167,7 @@ extension LogoEngine {
 
         case .ifTrue:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let block = reader.nextBlock() {
+            if let block = reader.nextSourceBlock() {
                 if testResult == true {
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
@@ -178,7 +178,7 @@ extension LogoEngine {
 
         case .ifFalse:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let block = reader.nextBlock() {
+            if let block = reader.nextSourceBlock() {
                 if testResult == false {
                     var bIdx = 0
                     executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
@@ -197,7 +197,7 @@ extension LogoEngine {
 
         case .catchTag:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let rawTag = reader.nextExpression(), let block = reader.nextBlock() {
+            if let rawTag = reader.nextExpression(), let block = reader.nextSourceBlock() {
                 let tag = unquote(rawTag).lowercased()
                 var bIdx = 0
                 executeTokens(block, index: &bIdx, frameReturn: &frameReturn)
@@ -228,7 +228,7 @@ extension LogoEngine {
 
         case .forLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextBlock() {
+            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextSourceBlock() {
                 reader.commit(to: &index)
                 if !ctrlBlock.isEmpty {
                     let varName = ctrlBlock[0].lowercased()
@@ -260,7 +260,7 @@ extension LogoEngine {
 
         case .dotimesLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextBlock() {
+            if let ctrlBlock = reader.nextBlock(), let bodyBlock = reader.nextSourceBlock() {
                 reader.commit(to: &index)
                 if ctrlBlock.count >= 2 {
                     let varName = ctrlBlock[0].lowercased()
@@ -281,7 +281,7 @@ extension LogoEngine {
         case .whileLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
             let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
-            if let bodyBlock = reader.nextBlock() {
+            if let bodyBlock = reader.nextSourceBlock() {
                 reader.commit(to: &index)
                 var iteration = 0
                 while evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
@@ -299,7 +299,7 @@ extension LogoEngine {
         case .untilLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
             let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "[" }
-            if let bodyBlock = reader.nextBlock() {
+            if let bodyBlock = reader.nextSourceBlock() {
                 reader.commit(to: &index)
                 var iteration = 0
                 while !evaluateCondition(condTokens) && !byeFlag && frameReturn == nil && currentThrowTag == nil
@@ -316,7 +316,7 @@ extension LogoEngine {
 
         case .doWhileLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let bodyBlock = reader.nextBlock() {
+            if let bodyBlock = reader.nextSourceBlock() {
                 let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "]" }
                 reader.commit(to: &index)
                 var iteration = 0
@@ -333,7 +333,7 @@ extension LogoEngine {
 
         case .doUntilLoop:
             var reader = LogoControlTokenReader(engine: self, tokens: tokens, index: index)
-            if let bodyBlock = reader.nextBlock() {
+            if let bodyBlock = reader.nextSourceBlock() {
                 let condTokens = reader.nextBlock() ?? reader.tokensUntil { $0 == "]" }
                 reader.commit(to: &index)
                 var iteration = 0
@@ -356,7 +356,8 @@ extension LogoEngine {
             }
             let targetVal = unquote(rawTarget)
             reader.commit(to: &index)
-            let result = evaluateCaseClauses(targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &frameReturn)
+            let result = evaluateCaseClauses(
+                targetVal: targetVal, clausesBlock: clausesBlock, frameReturn: &frameReturn)
             if let res = result {
                 lastResult = res
             }
@@ -457,7 +458,7 @@ extension LogoEngine {
         let condTokens =
             reader.nextBlock()
             ?? reader.tokensUntil { token in
-                token == "[" || isQuotedWordToken(token) || token == "]" || token == ")"
+                token == "[" || token.isQuotedLogoWord || token == "]" || token == ")"
                     || self.isStatementCommand(token)
             }
 
@@ -466,7 +467,7 @@ extension LogoEngine {
 
         if let msgBlock = reader.nextBlock() {
             customMsg = msgBlock.map { unquote($0) }.joined(separator: " ")
-        } else if let token = reader.peekToken(), isQuotedWordToken(token) || token.hasPrefix(":") {
+        } else if let token = reader.peekToken(), token.isQuotedLogoWord || token.hasPrefix(":") {
             let msgTokens = reader.tokensUntil {
                 self.isStatementCommand($0) || $0 == "]" || $0 == ")"
             }

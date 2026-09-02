@@ -43,7 +43,9 @@ extension LogoEngine {
             let rawToken = tokens[evalIndex]
             let unquoted = unquote(rawToken)
             let val: String
-            if parseRoundModifier(unquoted) != nil || parseBorderStyle(unquoted) != nil || BorderStyle.isStyleToken(unquoted) || StyleDSL.parseBoxStyle(unquoted) != nil {
+            if parseRoundModifier(unquoted) != nil || parseBorderStyle(unquoted) != nil
+                || BorderStyle.isStyleToken(unquoted) || StyleDSL.parseBoxStyle(unquoted) != nil
+            {
                 val = unquoted
             } else {
                 val = unquote(evaluateExpression(tokens, index: &evalIndex))

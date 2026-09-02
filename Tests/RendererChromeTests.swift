@@ -71,8 +71,8 @@ struct RendererChromeTests {
         let standardHelp = renderer.renderHelpBar(cols: 80, promptMode: .none, editor: editor)
         let wideHelp = renderer.renderHelpBar(cols: 120, promptMode: .none, editor: editor)
 
-        #expect(!standardHelp.contains("M+W"))
-        #expect(wideHelp.contains("M+W"))
+        #expect(!standardHelp.contains("⌥W"))
+        #expect(wideHelp.contains("⌥W"))
         #expect(wideHelp.contains("Copy Text"))
 
         let zhEditor = Editor(language: .zh_TW)
@@ -110,7 +110,7 @@ struct RendererChromeTests {
         editor.switchToCanvasMode()
         let canvasStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
         #expect(canvasStatus.contains("CANVAS"))
-        #expect(canvasStatus.contains("(F8 / M+V to exit)"))
+        #expect(canvasStatus.contains("(F8 / ⌥V to exit)"))
         #expect(!canvasStatus.contains("[ Canvas Mode ]"))
 
         editor.overlayMode = .none
@@ -121,7 +121,7 @@ struct RendererChromeTests {
         editor.language = .zh_TW
         let localizedStatus = renderer.renderIdleStatusLine(editor: editor, cols: 80)
         #expect(localizedStatus.contains("畫布 | 表格"))
-        #expect(localizedStatus.contains("(F8 / M+V 退出)"))
+        #expect(localizedStatus.contains("(F8 / ⌥V 退出)"))
         #expect(!localizedStatus.contains("CANVAS | TABLE"))
     }
 
@@ -220,7 +220,7 @@ struct RendererChromeTests {
         #expect(shortcuts != nil)
         #expect(shortcuts?.count == 3)
 
-        controller.reset()
+        controller.dismissPrompt()
         #expect(controller.isActive == false)
         #expect(controller.inputText.isEmpty)
         #expect(controller.cursorIndex == 0)
@@ -456,5 +456,192 @@ struct RendererChromeTests {
         editor.processKey(.tab)
         #expect(editor.buffer.lines[4] == "he  llo world")
         #expect(editor.buffer.columnIndex == 4)
+    }
+
+    @Test func testInactiveCursorHighlightWhenPromptIsActive() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["hello world"]
+        editor.buffer.lineIndex = 0
+        editor.buffer.columnIndex = 5 // on space after hello
+
+        let virtualLines = editor.layoutEngine.computeVirtualLines(from: editor.buffer.lines, viewWidth: 20)
+
+        // 1. Without prompt: no inactive cursor highlight
+        let renderedNormal = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: virtualLines,
+            cols: 20,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(!renderedNormal.contains(ANSIStyle.inactiveCursor))
+
+        // 2. With prompt: inactive cursor highlight rendered at editor cursor position
+        editor.currentPromptMode = .logoMacro(completion: { _ in })
+        let renderedPrompt = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: virtualLines,
+            cols: 20,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(renderedPrompt.contains(ANSIStyle.inactiveCursor))
+
+        // 3. In canvas mode with prompt: inactive cursor highlight rendered at canvas visual cursor
+        editor.switchToCanvasMode()
+        editor.buffer.lines = ["測試 Hello"]
+        editor.canvasVisualColumn = 5 // Visual col 5 is 'H' ('測'=0..1, '試'=2..3, ' '=4, 'H'=5)
+        let canvasVLines = editor.prepareVirtualLines(textWidth: 40)
+        let renderedCanvasPrompt = editor.renderer.renderMainTextArea(
+            editor: editor,
+            mainAreaHeight: 1,
+            gutterWidth: 0,
+            virtualLines: canvasVLines,
+            cols: 40,
+            dropdownStartCol: 0,
+            dropdownBoxWidth: 0,
+            dropdownBoxLines: []
+        )
+        #expect(renderedCanvasPrompt.contains("H".ansiStyled(style: ANSIStyle.inactiveCursor, endStyle: ANSIStyle.resetShort)))
+    }
+
+    @Test func testZeroModeScreenGeometryAndRendering() throws {
+        let editor = Editor()
+        editor.buffer.lines = ["Line 1", "Line 2", "Line 3"]
+
+        // Normal geometry
+        let normalGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(normalGeometry.mainAreaHeight == 20) // 24 - 4 (1 title + 1 status + 2 help)
+
+        // Zero mode geometry
+        editor.displayConfig.isZeroMode = true
+        let zeroGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroGeometry.isZeroMode == true)
+        #expect(zeroGeometry.mainAreaHeight == 24) // 0 chrome
+
+        // Zero mode with ruler
+        editor.displayConfig.showRuler = true
+        let zeroRulerGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroRulerGeometry.mainAreaHeight == 23) // 24 - 1 ruler
+
+        // Zero mode with prompt
+        editor.displayConfig.showRuler = false
+        editor.promptController.mode = .search(completion: { _ in })
+        let zeroPromptGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(zeroPromptGeometry.mainAreaHeight == 23) // 24 - 1 prompt
+        editor.promptController.mode = .none
+
+        // Rendering output in zero mode
+        let renderedZero = editor.renderer.render(editor: editor, geometry: zeroGeometry)
+        #expect(!renderedZero.contains("nano"))
+        #expect(!renderedZero.contains("^G Get Help"))
+
+        // Cursor positioning in zero mode (starts at row 1)
+        let virtualLines = editor.prepareVirtualLines(textWidth: zeroGeometry.textWidth)
+        let cursorPos = editor.renderer.positionCursor(
+            editor: editor,
+            rows: 24,
+            cols: 80,
+            geometry: zeroGeometry,
+            cursorVLineIdx: 0,
+            cursorVColIdx: 0,
+            gutterWidth: zeroGeometry.gutterWidth,
+            virtualLines: virtualLines,
+            renderedPrompt: Renderer.RenderedPrompt(text: "", cursorCol: 1)
+        )
+        #expect(cursorPos.contains("\u{1B}[1;"))
+    }
+
+    @Test func testZeroModeTogglingKeybindingAndCommand() throws {
+        let editor = Editor()
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        // 1. Toggle via method
+        editor.toggleZeroMode()
+        #expect(editor.displayConfig.isZeroMode == true)
+        #expect(editor.statusMessage.contains("Zero Mode") || editor.statusMessage.contains("零介面模式"))
+
+        // 2. Toggle via Alt+Z shortcut
+        editor.processKey(.alt("z"))
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        editor.processKey(.alt("Z"))
+        #expect(editor.displayConfig.isZeroMode == true)
+
+        // 3. Toggle via Command Dispatch
+        _ = editor.commandRegistry.dispatch(id: .zeroToggle, editor: editor)
+        #expect(editor.displayConfig.isZeroMode == false)
+
+        // 4. Setting command via Command Bar
+        _ = editor.commandRegistry.dispatch("set zero on", editor: editor)
+        #expect(editor.displayConfig.isZeroMode == true)
+
+        _ = editor.commandRegistry.dispatch("set zero off", editor: editor)
+        #expect(editor.displayConfig.isZeroMode == false)
+    }
+
+    @Test func testScrollbarIndicatorGeometryAndRendering() throws {
+        let editor = Editor()
+        editor.buffer.lines = (1...100).map { "Line \($0)" }
+
+        // Normal geometry without indicator
+        let noIndicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(noIndicatorGeometry.showIndicator == false)
+        #expect(noIndicatorGeometry.textWidth == 75) // 80 - 5 gutter
+
+        // With indicator enabled
+        editor.displayConfig.showIndicator = true
+        let indicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(indicatorGeometry.showIndicator == true)
+        #expect(indicatorGeometry.textWidth == 74) // 80 - 5 gutter - 1 indicator
+
+        // Long document > viewport (contains thumb █ and track │)
+        editor.buffer.lines = (1...100).map { "Line \($0)" }
+        let longOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(longOutput.contains("█"))
+        #expect(longOutput.contains("│"))
+
+        // Test with softwrapped long lines
+        editor.buffer.lines = [
+            "Short line",
+            "A very long line that exceeds seventy four characters and wraps across multiple virtual lines in the editor buffer layout.",
+            "End line"
+        ]
+
+        let fullOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(fullOutput.contains("█"))
+
+        // Test in Canvas Mode
+        editor.switchToCanvasMode()
+        #expect(editor.isCanvasModeActive == true)
+        let canvasOutput = editor.renderer.renderDiff(editor: editor, rows: 24, cols: 80)
+        #expect(canvasOutput.contains("█"))
+    }
+
+    @Test func testIndicatorTogglingAndCommandBar() throws {
+        let editor = Editor()
+        #expect(editor.displayConfig.showIndicator == false)
+
+        // 1. Toggle via method
+        editor.toggleIndicator()
+        #expect(editor.displayConfig.showIndicator == true)
+        #expect(editor.statusMessage.contains("Indicator") || editor.statusMessage.contains("指示條"))
+
+        // 2. Toggle via command dispatch
+        _ = editor.commandRegistry.dispatch(id: .indicatorToggle, editor: editor)
+        #expect(editor.displayConfig.showIndicator == false)
+
+        // 3. Command Bar
+        _ = editor.commandRegistry.dispatch("set indicator on", editor: editor)
+        #expect(editor.displayConfig.showIndicator == true)
+
+        _ = editor.commandRegistry.dispatch("set indicator off", editor: editor)
+        #expect(editor.displayConfig.showIndicator == false)
     }
 }

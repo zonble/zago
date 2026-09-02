@@ -1,5 +1,3 @@
-
-
 /// Clean abstract delegate protocol for host editor interaction.
 public protocol LogoEngineDelegate: AnyObject {
     /// Perform an action or mutation on the host editor.

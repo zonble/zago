@@ -1,3 +1,4 @@
+import ANSITerminal
 import Config
 import Editor
 import Foundation
@@ -97,8 +98,9 @@ import Foundation
                     throw StartupError.consoleModeUnavailable
                 }
                 var rawInput = originalInputMode
-                rawInput &= ~DWORD(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT)
-                rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_WINDOW_INPUT)
+                rawInput &= ~DWORD(
+                    ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_QUICK_EDIT_MODE)
+                rawInput |= DWORD(ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_WINDOW_INPUT | ENABLE_EXTENDED_FLAGS)
                 guard SetConsoleMode(hInput, rawInput) else {
                     throw StartupError.consoleModeUnavailable
                 }
@@ -137,7 +139,7 @@ import Foundation
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
             let hOutput = GetStdHandle(DWORD(bitPattern: -11))
             if hInput != INVALID_HANDLE_VALUE {
-                SetConsoleMode(hInput, originalInputMode)
+                SetConsoleMode(hInput, originalInputMode | DWORD(ENABLE_EXTENDED_FLAGS))
             }
             if hOutput != INVALID_HANDLE_VALUE {
                 SetConsoleMode(hOutput, originalOutputMode)
@@ -302,8 +304,40 @@ import Foundation
             return Self.characterFromConsoleUTF16Units([firstUnit])
         }
 
-        /// Reads the next input key on Windows, including ANSI escape sequences
-        /// and console resize events.
+        /// Injects pending UTF-16 units into the input queue for testing.
+        public func injectPendingUnitsForTesting(_ units: [UInt16]) {
+            pendingConsoleUTF16Units.append(contentsOf: units)
+        }
+
+        /// Checks if there is additional pending input immediately available in the input stream.
+        public func hasPendingInput() -> Bool {
+            if !pendingConsoleUTF16Units.isEmpty {
+                return true
+            }
+            let hInput = GetStdHandle(DWORD(bitPattern: -10))
+            guard hInput != INVALID_HANDLE_VALUE, hInput != nil else { return false }
+            var eventCount: DWORD = 0
+            if GetNumberOfConsoleInputEvents(hInput, &eventCount), eventCount > 0 {
+                return true
+            }
+            return false
+        }
+
+        /// Reads and returns the next key event.
+        public func readKey() -> Key {
+            switch readInputEvent() {
+            case .key(let key): return key
+            case .mouse, .openFile: return .unknown
+            }
+        }
+
+        /// Reads and parses the next input event (key press or SGR mouse event).
+        public func readInputEvent() -> InputEvent {
+            readInputEvent(timeoutMs: nil) ?? .key(.unknown)
+        }
+
+        /// Reads and parses the next input event on Windows, including ANSI escape sequences,
+        /// SGR 1006 mouse events, and console resize events.
         ///
         /// Technical Details:
         /// 1. Polls `CONIN$` for console events using `WaitForSingleObject` and
@@ -313,57 +347,80 @@ import Foundation
         /// 3. Normalizes ASCII control codes (1...31, 127) using
         ///    `ANSIKeyMapping.resolveControlCode`.
         /// 4. Parses ANSI CSI (`ESC [`) and SS3 (`ESC O`) sequences with a 50ms
-        ///    character timeout.
+        ///    character timeout, including SGR 1006 mouse tracking (`ESC [ < ... M/m`).
         /// 5. Decodes UTF-16 surrogate pairs (high/low surrogates) into
         ///    complete Swift `Character` instances.
-        private func readWindowsKey() -> Key {
+        public func readInputEvent(timeoutMs: Int?) -> InputEvent? {
             let firstUnit: UInt16
+            let pollChunk = timeoutMs.map { min($0, 250) } ?? 250
+            let start = Date()
             while true {
                 if consumePendingWindowsResizeInput() || consumeWindowResizeEvent() {
-                    return .resize
+                    return .key(.resize)
                 }
-                guard let readUnit = readConsoleUTF16Unit(timeoutMs: 250) else {
+                guard let readUnit = readConsoleUTF16Unit(timeoutMs: pollChunk) else {
                     if pendingResizeEvent {
                         pendingResizeEvent = false
-                        return .resize
+                        return .key(.resize)
                     }
                     if consumeWindowResizeEvent() {
-                        return .resize
+                        return .key(.resize)
+                    }
+                    if let t = timeoutMs {
+                        let elapsedMs = Int(Date().timeIntervalSince(start) * 1000)
+                        if elapsedMs >= t {
+                            return nil
+                        }
                     }
                     if lastReadTimedOut {
                         continue
                     }
-                    return .unknown
+                    return .key(.unknown)
                 }
                 firstUnit = readUnit
                 break
             }
 
             if firstUnit == 8 {
-                return .ctrlBackspace
+                return .key(.ctrlBackspace)
             }
 
             if let controlKey = ANSIKeyMapping.resolveControlCode(UInt32(firstUnit)) {
-                return controlKey
+                return .key(controlKey)
             }
 
             if firstUnit == 27 {
-                guard let secondUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .esc }
+                guard let secondUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .key(.esc) }
                 if secondUnit == 8 || secondUnit == 127 {
-                    return .altBackspace
+                    return .key(.altBackspace)
                 }
                 if secondUnit == 13 || secondUnit == 10 {
-                    return .altEnter
+                    return .key(.altEnter)
                 }
                 if secondUnit == 9 {
-                    return .altTab
+                    return .key(.altTab)
                 }
                 switch secondUnit {
                 case UInt16(UInt8(ascii: "[")):
-                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .alt("[") }
+                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .key(.alt("[")) }
                     let thirdByte = UInt8(truncatingIfNeeded: thirdUnit)
+                    if thirdByte == UInt8(ascii: "<") {
+                        var seqString = "<"
+                        while let nextUnit = readConsoleUTF16Unit(timeoutMs: 50) {
+                            guard let scalar = UnicodeScalar(UInt32(nextUnit)) else { break }
+                            seqString.append(Character(scalar))
+                            if nextUnit == UInt16(UInt8(ascii: "M")) || nextUnit == UInt16(UInt8(ascii: "m")) {
+                                break
+                            }
+                        }
+                        if let mouseEvent = ANSIKeyMapping.parseSGRMouseEvent(seqString) {
+                            return .mouse(mouseEvent)
+                        }
+                        return .key(.unknown)
+                    }
+
                     if let csiKey = ANSIKeyMapping.resolveCSISingleChar(thirdByte) {
-                        return csiKey
+                        return .key(csiKey)
                     }
                     if thirdByte >= UInt8(ascii: "1") && thirdByte <= UInt8(ascii: "9") {
                         var seqString = String(UnicodeScalar(UInt32(thirdUnit))!)
@@ -372,42 +429,46 @@ import Foundation
                                 || (nextUnit >= UInt16(UInt8(ascii: "A")) && nextUnit <= UInt16(UInt8(ascii: "Z")))
                                 || (nextUnit >= UInt16(UInt8(ascii: "a")) && nextUnit <= UInt16(UInt8(ascii: "z")))
                             {
-                                seqString.append(Character(UnicodeScalar(UInt32(nextUnit))!))
+                                if let scalar = UnicodeScalar(UInt32(nextUnit)) {
+                                    seqString.append(Character(scalar))
+                                }
                                 break
                             }
-                            seqString.append(Character(UnicodeScalar(UInt32(nextUnit))!))
+                            if let scalar = UnicodeScalar(UInt32(nextUnit)) {
+                                seqString.append(Character(scalar))
+                            }
                         }
-                        return ANSIKeyMapping.resolve(seqString)
+                        return .key(ANSIKeyMapping.resolve(seqString))
                     }
-                    return .unknown
+                    return .key(.unknown)
 
                 case UInt16(UInt8(ascii: "O")):
-                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .unknown }
-                    return ANSIKeyMapping.resolveSS3Code(UInt8(truncatingIfNeeded: thirdUnit)) ?? .unknown
+                    guard let thirdUnit = readConsoleUTF16Unit(timeoutMs: 50) else { return .key(.unknown) }
+                    return .key(ANSIKeyMapping.resolveSS3Code(UInt8(truncatingIfNeeded: thirdUnit)) ?? .unknown)
 
                 case 32...126:
-                    return .alt(Character(UnicodeScalar(UInt32(secondUnit))!))
+                    guard let scalar = UnicodeScalar(UInt32(secondUnit)) else { return .key(.unknown) }
+                    return .key(.alt(Character(scalar)))
 
                 default:
-                    return .unknown
+                    return .key(.unknown)
                 }
             }
 
             if let ch = readWindowsCharacter(firstUnit: firstUnit) {
-                return .char(ch)
+                return .key(.char(ch))
             }
-            return .unknown
-        }
-
-        /// Reads the next input key on Windows.
-        public func readKey() -> Key {
-            return readWindowsKey()
+            return .key(.unknown)
         }
 
         /// Reads all currently queued pending text bytes from stdin without blocking (accelerates clipboard paste).
         public func readPendingText(firstChar: Character) -> String {
             var result = String(firstChar)
             var units: [UInt16] = []
+            if !pendingConsoleUTF16Units.isEmpty {
+                units.append(contentsOf: pendingConsoleUTF16Units)
+                pendingConsoleUTF16Units.removeAll()
+            }
             let hInput = GetStdHandle(DWORD(bitPattern: -10))
 
             while WaitForSingleObject(hInput, 0) == WAIT_OBJECT_0 {

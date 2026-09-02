@@ -21,7 +21,8 @@ extension Editor {
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
         let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
-        clampViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
+        clampViewport(
+            mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
 
         let output = renderer.renderDiff(editor: self, geometry: geometry, precomputedVirtualLines: virtualLines)
         terminal.write(output)
@@ -76,7 +77,8 @@ extension Editor {
         let (rows, cols) = terminal.getWindowSize()
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
         let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
-        adjustViewport(mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
+        adjustViewport(
+            mainAreaHeight: geometry.mainAreaHeight, textWidth: geometry.textWidth, virtualLines: virtualLines)
     }
 
     /// Returns the VirtualLine structure containing current cursor.

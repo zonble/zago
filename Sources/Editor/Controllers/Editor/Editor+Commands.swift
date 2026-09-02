@@ -65,6 +65,7 @@ extension Editor {
         commandRegistry.register(NewBufferCommand())
 
         // File Commands
+        commandRegistry.register(OpenCommand())
         commandRegistry.register(SaveFileCommand())
         commandRegistry.register(WriteOutCommand())
         commandRegistry.register(ReadFileCommand())
@@ -118,6 +119,8 @@ extension Editor {
         commandRegistry.register(SwitchTextModeCommand())
         commandRegistry.register(ToggleCanvasModeCommand())
         commandRegistry.register(ToggleTableModeCommand())
+        commandRegistry.register(ToggleZeroModeCommand())
+        commandRegistry.register(ToggleIndicatorCommand())
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(DiagramMenuCommand())
         commandRegistry.register(ToggleCommentCommand())

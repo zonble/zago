@@ -129,6 +129,119 @@ import Testing
         #expect(buffer.getCharacter(line: 3, visualColumn: 0) == "╏")
     }
 
+    @Test func testDoubleAndHeavyArrowsAndDSL() {
+        #expect(arrowHead(for: .right, arrowStyle: .double) == "⇒")
+        #expect(arrowHead(for: .left, arrowStyle: .double) == "⇐")
+        #expect(arrowHead(for: .up, arrowStyle: .double) == "⇑")
+        #expect(arrowHead(for: .down, arrowStyle: .double) == "⇓")
+
+        #expect(arrowHead(for: .right, arrowStyle: .heavy) == "⮕")
+        #expect(arrowHead(for: .left, arrowStyle: .heavy) == "⬅")
+        #expect(arrowHead(for: .up, arrowStyle: .heavy) == "⬆")
+        #expect(arrowHead(for: .down, arrowStyle: .heavy) == "⬇")
+
+        #expect(arrowHead(for: .right, arrowStyle: .diamond) == "◇")
+        #expect(arrowHead(for: .right, arrowStyle: .solidDiamond) == "◆")
+        #expect(arrowHead(for: .right, arrowStyle: .circle) == "●")
+        #expect(arrowHead(for: .right, arrowStyle: .openCircle) == "○")
+        #expect(arrowHead(for: .right, arrowStyle: .cross) == "✕")
+        #expect(arrowHead(for: .left, arrowStyle: .crow) == "⤙")
+        #expect(arrowHead(for: .right, arrowStyle: .crow) == "⤚")
+        #expect(arrowHead(for: .up, arrowStyle: .crow) == "⤘")
+        #expect(arrowHead(for: .down, arrowStyle: .crow) == "⤛")
+        #expect(arrowHead(for: .left, arrowStyle: .harpoon) == "↼")
+        #expect(arrowHead(for: .right, arrowStyle: .harpoon) == "⇀")
+        #expect(arrowHead(for: .up, arrowStyle: .harpoon) == "↿")
+        #expect(arrowHead(for: .down, arrowStyle: .harpoon) == "⇂")
+        #expect(arrowHead(for: .left, arrowStyle: .dotted) == "⇠")
+        #expect(arrowHead(for: .right, arrowStyle: .dotted) == "⇢")
+        #expect(arrowHead(for: .up, arrowStyle: .dotted) == "⇡")
+        #expect(arrowHead(for: .down, arrowStyle: .dotted) == "⇣")
+
+        let doubleDsl = StyleDSL.parseLineStyle("<=|==|=>")
+        #expect(doubleDsl?.border == .double)
+        #expect(doubleDsl?.arrowMode == .both)
+        #expect(doubleDsl?.startArrowStyle == .double)
+        #expect(doubleDsl?.endArrowStyle == .double)
+
+        let dottedDsl = StyleDSL.parseLineStyle("<..--..>")
+        #expect(dottedDsl?.border == .doubleDash)
+        #expect(dottedDsl?.arrowMode == .both)
+        #expect(dottedDsl?.startArrowStyle == .dotted)
+        #expect(dottedDsl?.endArrowStyle == .dotted)
+
+        let heavyDsl = StyleDSL.parseLineStyle("<+|+|+>")
+        #expect(heavyDsl?.border == .heavy)
+        #expect(heavyDsl?.arrowMode == .both)
+        #expect(heavyDsl?.startArrowStyle == .heavy)
+        #expect(heavyDsl?.endArrowStyle == .heavy)
+
+        let diamondDsl = StyleDSL.parseLineStyle("<>->")
+        #expect(diamondDsl?.border == .single)
+        #expect(diamondDsl?.arrowMode == .both)
+        #expect(diamondDsl?.startArrowStyle == .diamond)
+        #expect(diamondDsl?.endArrowStyle == .ascii)
+
+        let solidDiamondDsl = StyleDSL.parseLineStyle("<*>->")
+        #expect(solidDiamondDsl?.border == .single)
+        #expect(solidDiamondDsl?.arrowMode == .both)
+        #expect(solidDiamondDsl?.startArrowStyle == .solidDiamond)
+        #expect(solidDiamondDsl?.endArrowStyle == .ascii)
+
+        let solidCircleDsl = StyleDSL.parseLineStyle("*---*")
+        #expect(solidCircleDsl?.border == .tripleDash)
+        #expect(solidCircleDsl?.arrowMode == .both)
+        #expect(solidCircleDsl?.startArrowStyle == .circle)
+        #expect(solidCircleDsl?.endArrowStyle == .circle)
+
+        let openCircleDsl = StyleDSL.parseLineStyle("o---o")
+        #expect(openCircleDsl?.border == .tripleDash)
+        #expect(openCircleDsl?.arrowMode == .both)
+        #expect(openCircleDsl?.startArrowStyle == .openCircle)
+        #expect(openCircleDsl?.endArrowStyle == .openCircle)
+
+        let openCircleUpperDsl = StyleDSL.parseLineStyle("O-O")
+        #expect(openCircleUpperDsl?.border == .single)
+        #expect(openCircleUpperDsl?.startArrowStyle == .openCircle)
+        #expect(openCircleUpperDsl?.endArrowStyle == .openCircle)
+
+        let crossDsl = StyleDSL.parseLineStyle("x---x")
+        #expect(crossDsl?.border == .tripleDash)
+        #expect(crossDsl?.arrowMode == .both)
+        #expect(crossDsl?.startArrowStyle == .cross)
+        #expect(crossDsl?.endArrowStyle == .cross)
+
+        let crossUpperDsl = StyleDSL.parseLineStyle("X-X")
+        #expect(crossUpperDsl?.border == .single)
+        #expect(crossUpperDsl?.startArrowStyle == .cross)
+        #expect(crossUpperDsl?.endArrowStyle == .cross)
+
+        let harpoonDsl = StyleDSL.parseLineStyle("<^-^>")
+        #expect(harpoonDsl?.border == .single)
+        #expect(harpoonDsl?.arrowMode == .both)
+        #expect(harpoonDsl?.startArrowStyle == .harpoon)
+        #expect(harpoonDsl?.endArrowStyle == .harpoon)
+
+        let drawer = ArrowDrawer()
+        let dblBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: dblBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .double,
+            arrowStyle: .double)
+        #expect(dblBuffer.lineString(at: 0) == "═══⇒")
+
+        let hvyBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: hvyBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .heavy,
+            arrowStyle: .heavy)
+        #expect(hvyBuffer.lineString(at: 0) == "━━━⮕")
+
+        let diamondBuffer = StringArrayDrawingBuffer()
+        drawer.drawLine(
+            buffer: diamondBuffer, startLine: 0, startCol: 0, direction: .right, length: 4, hasArrow: true, style: .single,
+            arrowStyle: .diamond)
+        #expect(diamondBuffer.lineString(at: 0) == "───◇")
+    }
+
     @Test func testTableCellDetectorInDrawingTarget() {
         let lines = [
             "┌───┬───┐",

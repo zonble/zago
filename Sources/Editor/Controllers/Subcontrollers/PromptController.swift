@@ -26,6 +26,7 @@ final class PromptController: KeyInputHandler {
         case replaceWith(searchQuery: String, completion: (String?) -> Void)
         case confirmReplace(query: String, replacement: String, completion: (ReplaceChoice) -> Void)
         case insertFilePath(completion: (String?) -> Void)
+        case openFilePath(completion: (String?) -> Void)
         case spellCheck(word: String, line: Int, col: Int, completion: (String?) -> Void)
         case logoMacro(completion: (String?) -> Void)
         case fillText(completion: (String?) -> Void)
@@ -34,19 +35,60 @@ final class PromptController: KeyInputHandler {
         case describeKey(completion: (Key) -> Void)
         case logoReadWord(prompt: String)
         case logoReadChar(prompt: String)
+
+        func cancel(in editor: Editor?) {
+            switch self {
+            case .saveFilePath(let completion):
+                completion(nil)
+                editor?.reportOperationResult(.cancelled(message: editor?.l10n["status.cancelled"] ?? ""))
+            case .confirmExitSave(let completion):
+                completion(nil)
+            case .confirmExternalReload(let completion),
+                .confirmEncodingFallback(_, let completion),
+                .confirmBackupFailure(_, let completion):
+                completion(false)
+            case .search(let completion),
+                .replaceSearch(let completion),
+                .replaceWith(_, let completion),
+                .insertFilePath(let completion),
+                .openFilePath(let completion),
+                .spellCheck(_, _, _, let completion),
+                .logoMacro(let completion),
+                .fillText(let completion),
+                .tableDimensions(let completion),
+                .gotoLine(let completion):
+                completion(nil)
+            case .confirmReplace(_, _, let completion):
+                completion(.cancel)
+            case .describeKey, .logoReadWord, .logoReadChar, .none:
+                break
+            }
+        }
     }
 
     /// Active prompt mode state.
     var mode: Mode = .none
 
+    /// Internal reusable single line text editor buffer.
+    var singleLineEditor = SingleLineTextEditor()
+
     /// Current text buffer entered in prompt bar.
-    var inputText: String = ""
+    var inputText: String {
+        get { singleLineEditor.text }
+        set { singleLineEditor.text = newValue }
+    }
 
     /// Cursor position in prompt input text.
-    var cursorIndex: Int = 0
+    var cursorIndex: Int {
+        get { singleLineEditor.cursorIndex }
+        set { singleLineEditor.cursorIndex = newValue }
+    }
 
     /// Selection anchor in prompt input text, or nil when no prompt text is selected.
-    var selectionAnchorIndex: Int? = nil
+    var selectionAnchorIndex: Int? {
+        get { singleLineEditor.selectionAnchorIndex }
+        set { singleLineEditor.selectionAnchorIndex = newValue }
+    }
 
     /// Autocompletion ghost text.
     var completionText: String? = nil
@@ -63,21 +105,37 @@ final class PromptController: KeyInputHandler {
         self.editor = editor
     }
 
-    /// Resets all transient prompt input states.
-    func reset() {
-        mode = .none
-        inputText = ""
-        cursorIndex = 0
-        selectionAnchorIndex = nil
-        completionText = nil
-    }
-
     /// Returns whether a prompt is currently active.
     var isActive: Bool {
         if case .none = mode { return false }
         return true
     }
 
+    /// Exits the active prompt mode without notifying completion handler and resets input state.
+    func dismissPrompt() {
+        mode = .none
+        singleLineEditor.reset()
+        completionText = nil
+    }
+
+    /// Exits the prompt mode, resets input state, and executes the completion action.
+    private func completePrompt(with action: () -> Void) {
+        mode = .none
+        singleLineEditor.selectionAnchorIndex = nil
+        completionText = nil
+        action()
+    }
+
+    /// Cancels active prompt mode, triggers appropriate cancellation callbacks, and resets state.
+    func cancel() {
+        mode.cancel(in: editor)
+        dismissPrompt()
+    }
+}
+
+// MARK: - Key Dispatch & Handlers
+
+extension PromptController {
     /// KeyInputHandler protocol implementation.
     func handleKey(_ key: Key) -> Bool {
         guard isActive else { return false }
@@ -86,9 +144,7 @@ final class PromptController: KeyInputHandler {
             if key == .unknown || key == .resize {
                 return false
             }
-            mode = .none
-            inputText = ""
-            cursorIndex = 0
+            dismissPrompt()
             completion(key)
             return true
         }
@@ -100,88 +156,120 @@ final class PromptController: KeyInputHandler {
             cancel()
             return true
 
+        case .promptComplete:
+            switch mode {
+            case .saveFilePath, .insertFilePath, .openFilePath:
+                _ = completeFilePathPrompt()
+                return true
+            case .logoMacro:
+                _ = completeCommandBarPrompt()
+                return true
+            default:
+                return true
+            }
+
         case .fileExit:
             if isTextEditingPromptMode {
-                exitEditorFromPrompt()
+                dismissPrompt()
+                if let editor {
+                    _ = editor.commandRegistry.dispatch(id: .fileExit, editor: editor)
+                }
                 return true
             }
 
         case .editCut:
             if isTextEditingPromptMode {
-                cutPromptSelectionOrSuffix()
+                completionText = nil
+                var clip = editor?.clipboardText
+                singleLineEditor.cut(to: &clip)
+                editor?.clipboardText = clip
                 return true
             }
 
         case .editCopy:
             if isTextEditingPromptMode {
-                copyPromptSelection()
+                var clip = editor?.clipboardText
+                singleLineEditor.copy(to: &clip)
+                editor?.clipboardText = clip
+                completionText = nil
                 return true
             }
 
         case .editUncut:
             if isTextEditingPromptMode {
-                pastePromptClipboard()
+                completionText = nil
+                singleLineEditor.paste(from: editor?.clipboardText)
                 return true
             }
 
         case .selectAll:
             if isTextEditingPromptMode {
-                selectAllPromptText()
+                singleLineEditor.selectAll()
                 return true
             }
 
         case .moveHome:
-            cursorIndex = 0
-            selectionAnchorIndex = nil
+            singleLineEditor.moveHome()
             return true
 
         case .moveEnd:
-            cursorIndex = inputText.count
-            selectionAnchorIndex = nil
+            singleLineEditor.moveEnd()
             return true
 
         case .moveLeft:
-            cursorIndex = max(0, cursorIndex - 1)
-            selectionAnchorIndex = nil
+            singleLineEditor.moveLeft()
             return true
 
         case .moveRight:
-            cursorIndex = min(inputText.count, cursorIndex + 1)
-            selectionAnchorIndex = nil
+            singleLineEditor.moveRight()
             return true
 
         case .moveWordBackward:
-            movePromptWordBackward()
-            selectionAnchorIndex = nil
+            singleLineEditor.moveWordBackward()
             return true
 
         case .moveWordForward:
-            movePromptWordForward()
-            selectionAnchorIndex = nil
+            singleLineEditor.moveWordForward()
             return true
 
         case .selectLeft:
-            extendPromptSelection(to: max(0, cursorIndex - 1))
+            completionText = nil
+            singleLineEditor.selectLeft()
             return true
 
         case .selectRight:
-            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
+            completionText = nil
+            singleLineEditor.selectRight()
+            return true
+
+        case .selectHome:
+            completionText = nil
+            singleLineEditor.selectHome()
+            return true
+
+        case .selectEnd:
+            completionText = nil
+            singleLineEditor.selectEnd()
             return true
 
         case .selectWordBackward:
-            extendPromptSelection(to: max(0, cursorIndex - 1))
+            completionText = nil
+            singleLineEditor.selectLeft()
             return true
 
         case .selectWordForward:
-            extendPromptSelection(to: min(inputText.count, cursorIndex + 1))
+            completionText = nil
+            singleLineEditor.selectRight()
             return true
 
         case .promptClearLine:
-            clearPromptLine()
+            completionText = nil
+            singleLineEditor.clearLine()
             return true
 
         case .editDelete:
-            deletePromptDelete()
+            completionText = nil
+            singleLineEditor.deleteForward()
             return true
 
         default:
@@ -192,121 +280,25 @@ final class PromptController: KeyInputHandler {
         return true
     }
 
-    /// Cancels active prompt mode.
-    func cancel() {
-        switch mode {
-        case .saveFilePath(let completion):
-            mode = .none
-            completion(nil)
-            editor?.reportOperationResult(.cancelled(message: editor?.l10n["status.cancelled"] ?? ""))
-        case .confirmExitSave(let completion):
-            mode = .none
-            completion(nil)
-        case .confirmExternalReload(let completion):
-            mode = .none
-            completion(false)
-        case .confirmEncodingFallback(_, let completion):
-            mode = .none
-            completion(false)
-        case .confirmBackupFailure(_, let completion):
-            mode = .none
-            completion(false)
-        case .search(let completion):
-            mode = .none
-            completion(nil)
-        case .replaceSearch(let completion), .replaceWith(_, let completion):
-            mode = .none
-            completion(nil)
-        case .confirmReplace(_, _, let completion):
-            mode = .none
-            completion(.cancel)
-        case .insertFilePath(let completion):
-            mode = .none
-            completion(nil)
-        case .spellCheck(_, _, _, let completion):
-            mode = .none
-            completion(nil)
-        case .logoMacro(let completion):
-            mode = .none
-            completion(nil)
-        case .fillText(let completion):
-            mode = .none
-            completion(nil)
-        case .tableDimensions(let completion):
-            mode = .none
-            completion(nil)
-        case .gotoLine(let completion):
-            mode = .none
-            completion(nil)
-        case .describeKey:
-            mode = .none
-        case .logoReadWord, .logoReadChar:
-            mode = .none
-        case .none:
-            break
-        }
-        mode = .none
-        inputText = ""
-        completionText = nil
-        cursorIndex = 0
-        selectionAnchorIndex = nil
-    }
-
     /// Processes keyboard input when in prompt mode.
-    func processPromptKey(_ key: Key) {
+    private func processPromptKey(_ key: Key) {
         switch mode {
-        case .logoReadWord, .logoReadChar, .describeKey:
+        case .logoReadChar, .describeKey:
             break
         case .saveFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
         case .confirmExitSave(let completion):
-            switch key {
-            case .char("y"), .char("Y"), .enter:
-                mode = .none
-                completion(true)
-            case .char("n"), .char("N"):
-                mode = .none
-                completion(false)
-            default:
-                break
-            }
+            processConfirmationPromptKey(key, completion: completion)
 
         case .confirmExternalReload(let completion):
-            switch key {
-            case .char("y"), .char("Y"), .enter:
-                mode = .none
-                completion(true)
-            case .char("n"), .char("N"):
-                mode = .none
-                completion(false)
-            default:
-                break
-            }
+            processConfirmationPromptKey(key, completion: completion)
 
         case .confirmEncodingFallback(_, let completion):
-            switch key {
-            case .char("y"), .char("Y"):
-                mode = .none
-                completion(true)
-            case .char("n"), .char("N"):
-                mode = .none
-                completion(false)
-            default:
-                break
-            }
+            processConfirmationPromptKey(key, completion: completion)
 
         case .confirmBackupFailure(_, let completion):
-            switch key {
-            case .char("y"), .char("Y"), .enter:
-                mode = .none
-                completion(true)
-            case .char("n"), .char("N"):
-                mode = .none
-                completion(false)
-            default:
-                break
-            }
+            processConfirmationPromptKey(key, completion: completion)
 
         case .search(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
@@ -320,19 +312,16 @@ final class PromptController: KeyInputHandler {
         case .confirmReplace(_, _, let completion):
             switch key {
             case .char("y"), .char("Y"), .enter:
-                mode = .none
-                completion(.yes)
+                completePrompt { completion(.yes) }
             case .char("n"), .char("N"):
-                mode = .none
-                completion(.no)
+                completePrompt { completion(.no) }
             case .char("a"), .char("A"):
-                mode = .none
-                completion(.all)
+                completePrompt { completion(.all) }
             default:
                 break
             }
 
-        case .insertFilePath(let completion):
+        case .insertFilePath(let completion), .openFilePath(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
 
         case .spellCheck(_, _, _, let completion):
@@ -374,9 +363,11 @@ final class PromptController: KeyInputHandler {
             default:
                 switch key {
                 case .backspace:
-                    deletePromptBackspace()
+                    completionText = nil
+                    singleLineEditor.deleteBackspace()
                 case .char(let ch):
-                    insertPromptChar(ch)
+                    completionText = nil
+                    singleLineEditor.insertChar(ch)
                 default:
                     break
                 }
@@ -384,6 +375,18 @@ final class PromptController: KeyInputHandler {
 
         case .fillText(let completion), .tableDimensions(let completion), .gotoLine(let completion):
             processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
+
+        case .logoReadWord:
+            switch key {
+            case .backspace:
+                completionText = nil
+                singleLineEditor.deleteBackspace()
+            case .char(let ch):
+                completionText = nil
+                singleLineEditor.insertChar(ch)
+            default:
+                break
+            }
 
         case .none:
             break
@@ -400,202 +403,68 @@ final class PromptController: KeyInputHandler {
         if cmd == .promptConfirm {
             let raw = inputText
             let result = trimWhitespace ? raw.trimmingCharacters(in: .whitespacesAndNewlines) : raw
-            mode = .none
-            selectionAnchorIndex = nil
-            completion(trimWhitespace && result.isEmpty ? nil : result)
+            completePrompt {
+                completion(trimWhitespace && result.isEmpty ? nil : result)
+            }
             return
+        }
+
+        if cmd == .promptComplete || key == .tab {
+            switch mode {
+            case .saveFilePath, .insertFilePath, .openFilePath:
+                if completeFilePathPrompt() {
+                    return
+                }
+            default:
+                break
+            }
         }
 
         switch key {
         case .backspace:
-            deletePromptBackspace()
+            completionText = nil
+            singleLineEditor.deleteBackspace()
         case .char(let ch):
-            insertPromptChar(ch)
+            completionText = nil
+            singleLineEditor.insertChar(ch)
         default:
             break
         }
     }
 
-    /// Helper for prompt inline character insertion at cursorIndex.
-    func insertPromptChar(_ ch: Character) {
-        completionText = nil
-        _ = deletePromptSelectionIfNeeded()
-        let clamped = max(0, min(cursorIndex, inputText.count))
-        let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
-        inputText.insert(ch, at: idx)
-        cursorIndex = clamped + 1
-        selectionAnchorIndex = nil
-    }
-
-    /// Helper to clear the entire prompt input line.
-    func clearPromptLine() {
-        completionText = nil
-        inputText = ""
-        cursorIndex = 0
-        selectionAnchorIndex = nil
-    }
-
-    /// Helper for prompt inline backspace deletion.
-    func deletePromptBackspace() {
-        completionText = nil
-        if deletePromptSelectionIfNeeded() {
-            return
-        }
-        if cursorIndex > 0 && !inputText.isEmpty {
-            let clamped = max(1, min(cursorIndex, inputText.count))
-            let idx = inputText.index(inputText.startIndex, offsetBy: clamped - 1)
-            inputText.remove(at: idx)
-            cursorIndex = clamped - 1
-        }
-    }
-
-    /// Helper for prompt inline delete key deletion.
-    func deletePromptDelete() {
-        completionText = nil
-        if deletePromptSelectionIfNeeded() {
-            return
-        }
-        if cursorIndex < inputText.count && !inputText.isEmpty {
-            let clamped = max(0, min(cursorIndex, inputText.count - 1))
-            let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
-            inputText.remove(at: idx)
+    private func processConfirmationPromptKey(_ key: Key, completion: (Bool) -> Void) {
+        switch key {
+        case .char("y"), .char("Y"), .enter:
+            completePrompt { completion(true) }
+        case .char("n"), .char("N"):
+            completePrompt { completion(false) }
+        default:
+            break
         }
     }
 
     private var isTextEditingPromptMode: Bool {
         switch mode {
-        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .spellCheck, .logoMacro, .fillText,
+        case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .openFilePath, .spellCheck, .logoMacro, .fillText,
             .tableDimensions,
-            .gotoLine:
+            .gotoLine,
+            .logoReadWord:
             return true
-        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure, .confirmReplace, .describeKey,
-            .logoReadWord, .logoReadChar:
+        case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure,
+            .confirmReplace, .describeKey,
+            .logoReadChar:
             return false
-        }
-    }
-
-    private func movePromptWordForward() {
-        guard cursorIndex < inputText.count else { return }
-        cursorIndex = TextAnalyzer.nextWordIndex(in: inputText, from: cursorIndex)
-    }
-
-    private func selectAllPromptText() {
-        guard !inputText.isEmpty else { return }
-        selectionAnchorIndex = 0
-        cursorIndex = inputText.count
-    }
-
-    private func exitEditorFromPrompt() {
-        mode = .none
-        inputText = ""
-        cursorIndex = 0
-        completionText = nil
-        selectionAnchorIndex = nil
-        guard let editor else { return }
-        _ = editor.commandRegistry.dispatch(id: .fileExit, editor: editor)
-    }
-
-    private func extendPromptSelection(to newCursorIndex: Int) {
-        completionText = nil
-        let clamped = max(0, min(newCursorIndex, inputText.count))
-        if selectionAnchorIndex == nil {
-            selectionAnchorIndex = cursorIndex
-        }
-        cursorIndex = clamped
-        if selectionRange() == nil {
-            selectionAnchorIndex = nil
         }
     }
 
     func selectionRange() -> Range<Int>? {
-        guard let anchor = selectionAnchorIndex else { return nil }
-        let start = max(0, min(anchor, cursorIndex, inputText.count))
-        let end = min(inputText.count, max(anchor, cursorIndex, 0))
-        guard start < end else { return nil }
-        return start..<end
+        singleLineEditor.selectionRange
     }
+}
 
-    private func selectedPromptText() -> String? {
-        guard let range = selectionRange() else { return nil }
-        let chars = Array(inputText)
-        return String(chars[range])
-    }
+// MARK: - Autocompletion & Command Help
 
-    @discardableResult
-    private func deletePromptSelectionIfNeeded() -> Bool {
-        guard let range = selectionRange() else {
-            selectionAnchorIndex = nil
-            return false
-        }
-        var chars = Array(inputText)
-        chars.removeSubrange(range)
-        inputText = String(chars)
-        cursorIndex = range.lowerBound
-        selectionAnchorIndex = nil
-        completionText = nil
-        return true
-    }
-
-    private func copyPromptSelection() {
-        guard let text = selectedPromptText(), !text.isEmpty else { return }
-        editor?.clipboardText = text
-        completionText = nil
-    }
-
-    private func cutPromptSelectionOrSuffix() {
-        completionText = nil
-        if let text = selectedPromptText(), !text.isEmpty {
-            editor?.clipboardText = text
-            _ = deletePromptSelectionIfNeeded()
-            return
-        }
-        guard !inputText.isEmpty else { return }
-        let clamped = max(0, min(cursorIndex, inputText.count))
-        let chars = Array(inputText)
-        if clamped == 0 {
-            // Cut entire line
-            editor?.clipboardText = inputText
-            inputText = ""
-            cursorIndex = 0
-        } else if clamped < chars.count {
-            // Cut suffix from cursor
-            editor?.clipboardText = String(chars[clamped...])
-            inputText = String(chars[..<clamped])
-            cursorIndex = clamped
-        } else {
-            // Cursor is at the end, cut entire line
-            editor?.clipboardText = inputText
-            inputText = ""
-            cursorIndex = 0
-        }
-        selectionAnchorIndex = nil
-    }
-
-    private func pastePromptClipboard() {
-        guard let text = editor?.clipboardText, !text.isEmpty else { return }
-        completionText = nil
-        _ = deletePromptSelectionIfNeeded()
-        let clamped = max(0, min(cursorIndex, inputText.count))
-        let idx = inputText.index(inputText.startIndex, offsetBy: clamped)
-        inputText.insert(contentsOf: text, at: idx)
-        cursorIndex = clamped + text.count
-        selectionAnchorIndex = nil
-    }
-
-    private func movePromptWordBackward() {
-        guard cursorIndex > 0 else { return }
-        cursorIndex = TextAnalyzer.previousWordIndex(in: inputText, from: cursorIndex)
-    }
-
-    private func replacePromptPrefix(_ replacement: String) {
-        completionText = nil
-        selectionAnchorIndex = nil
-        let clamped = max(0, min(cursorIndex, inputText.count))
-        let splitIndex = inputText.index(inputText.startIndex, offsetBy: clamped)
-        inputText = replacement + inputText[splitIndex...]
-        cursorIndex = replacement.count
-    }
-
+extension PromptController {
     private func showCommandBarCompletions(_ items: [String], label: String) {
         guard let editor else { return }
         if items.isEmpty {
@@ -642,7 +511,7 @@ final class PromptController: KeyInputHandler {
             if matches.count == 1 && !valuePrefix.isEmpty {
                 replacePromptPrefix("\(command) \(setting) \(matches[0])")
             } else if !matches.isEmpty && !valuePrefix.isEmpty {
-                let lcp = longestCommonPrefix(of: matches)
+                let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
                 if lcp.count > valuePrefix.count {
                     replacePromptPrefix("\(command) \(setting) \(lcp)")
                 }
@@ -658,7 +527,7 @@ final class PromptController: KeyInputHandler {
         if matches.count == 1 && !settingPrefix.isEmpty {
             replacePromptPrefix("\(command) \(matches[0]) ")
         } else if !matches.isEmpty && !settingPrefix.isEmpty {
-            let lcp = longestCommonPrefix(of: matches)
+            let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
             if lcp.count > settingPrefix.count {
                 replacePromptPrefix("\(command) \(lcp)")
             }
@@ -680,13 +549,27 @@ final class PromptController: KeyInputHandler {
             return true
         }
 
+        let commandParts = prefix.split(maxSplits: 1, whereSeparator: \.isWhitespace).map(String.init)
+        if commandParts.count >= 1, prefix.contains(where: \.isWhitespace) {
+            let cmdName = commandParts[0].lowercased()
+            let fileCommands: Set<String> = ["open", "edit", "e", ":e", "insert", "read", "r", "write", "w", ":w", "dir"]
+            if fileCommands.contains(cmdName) {
+                let commandEnd = prefix.firstIndex(where: \.isWhitespace) ?? prefix.endIndex
+                let restStart = prefix[commandEnd...].firstIndex(where: { !$0.isWhitespace }) ?? prefix.endIndex
+                let rest = String(prefix[restStart...])
+                if completeFilePath(pathPrefix: rest, leadingText: String(prefix[..<restStart])) {
+                    return true
+                }
+            }
+        }
+
         let tokenStartIndex =
             prefix.lastIndex(where: { !isCompletionTokenChar($0) })
             .map { prefix.index(after: $0) } ?? prefix.startIndex
         let leadingContext = String(prefix[..<tokenStartIndex])
         let token = String(prefix[tokenStartIndex...])
 
-        guard !token.isEmpty, isCommandBarCompletionToken(token) else {
+        guard !token.isEmpty, token.allSatisfy(isCompletionTokenChar) else {
             return false
         }
 
@@ -704,7 +587,7 @@ final class PromptController: KeyInputHandler {
         if matches.count == 1 {
             replacePromptPrefix(leadingContext + matches[0] + " ")
         } else if !matches.isEmpty {
-            let lcp = longestCommonPrefix(of: matches)
+            let lcp = TextAnalyzer.longestCommonPrefix(of: matches)
             if lcp.count > token.count {
                 replacePromptPrefix(leadingContext + lcp)
             }
@@ -715,16 +598,74 @@ final class PromptController: KeyInputHandler {
         return true
     }
 
-    private func longestCommonPrefix(of strings: [String]) -> String {
-        guard let first = strings.first, !first.isEmpty else { return "" }
-        var prefix = first
-        for s in strings.dropFirst() {
-            while !s.lowercased().hasPrefix(prefix.lowercased()) {
-                prefix.removeLast()
-                if prefix.isEmpty { return "" }
-            }
+    private func replacePromptPrefix(_ replacement: String) {
+        completionText = nil
+        singleLineEditor.selectionAnchorIndex = nil
+        let clamped = max(0, min(cursorIndex, inputText.count))
+        let splitIndex = inputText.index(inputText.startIndex, offsetBy: clamped)
+        inputText = replacement + inputText[splitIndex...]
+        cursorIndex = replacement.count
+    }
+
+    private func completeFilePath(pathPrefix: String, leadingText: String) -> Bool {
+        guard let editor else { return false }
+
+        let dirPart: String
+        let filePart: String
+        if let lastSlash = pathPrefix.lastIndex(of: "/") {
+            dirPart = String(pathPrefix[...lastSlash])
+            filePart = String(pathPrefix[pathPrefix.index(after: lastSlash)...])
+        } else {
+            dirPart = ""
+            filePart = pathPrefix
         }
-        return prefix
+
+        let searchDir = dirPart.isEmpty ? "." : dirPart
+        let normalizedDir = editor.fileIOStrategy.normalizePath(searchDir, isDirectory: true)
+
+        guard let entries = try? editor.fileIOStrategy.listDirectory(at: normalizedDir) else {
+            showCommandBarCompletions([], label: "Tab")
+            return true
+        }
+
+        let lowerFilePart = filePart.lowercased()
+        let candidateEntries = entries.filter { entry in
+            let name = entry.name
+            if !filePart.hasPrefix(".") && name.hasPrefix(".") {
+                return false
+            }
+            return name.lowercased().hasPrefix(lowerFilePart)
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+
+        if candidateEntries.isEmpty {
+            showCommandBarCompletions([], label: "Tab")
+            return true
+        }
+
+        if candidateEntries.count == 1 {
+            let entry = candidateEntries[0]
+            let suffix = entry.isDirectory ? "/" : ""
+            replacePromptPrefix(leadingText + dirPart + entry.name + suffix)
+            completionText = nil
+            return true
+        }
+
+        let matchNames = candidateEntries.map { $0.name }
+        let lcp = TextAnalyzer.longestCommonPrefix(of: matchNames)
+        if lcp.count > filePart.count {
+            replacePromptPrefix(leadingText + dirPart + lcp)
+        }
+
+        let displayItems = candidateEntries.map { $0.isDirectory ? $0.name + "/" : $0.name }
+        showCommandBarCompletions(displayItems, label: "Tab")
+        return true
+    }
+
+    private func completeFilePathPrompt() -> Bool {
+        let clamped = max(0, min(cursorIndex, inputText.count))
+        let splitIdx = inputText.index(inputText.startIndex, offsetBy: clamped)
+        let typed = String(inputText[..<splitIdx])
+        return completeFilePath(pathPrefix: typed, leadingText: "")
     }
 
     private func completionCandidate(_ candidate: String, matching typed: String) -> String {
@@ -739,10 +680,6 @@ final class PromptController: KeyInputHandler {
 
     private func isCompletionTokenChar(_ ch: Character) -> Bool {
         ch.isLetter || ch == "-" || ch == "_" || ch == "." || ch == "?"
-    }
-
-    private func isCommandBarCompletionToken(_ token: String) -> Bool {
-        !token.isEmpty && token.allSatisfy(isCompletionTokenChar)
     }
 
     /// Provides shortcut hints for the active prompt mode.
@@ -767,7 +704,7 @@ final class PromptController: KeyInputHandler {
             return [("Y", tr("help.yes")), ("N", tr("help.no")), ("A", tr("help.all")), ("^C", tr("help.cancel"))]
         case .search, .replaceSearch, .replaceWith:
             return [("^C", tr("help.cancel")), ("^M", tr("help.set_search")), ("^R", tr("help.replace"))]
-        case .saveFilePath, .insertFilePath:
+        case .saveFilePath, .insertFilePath, .openFilePath:
             return [("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.confirm"))]
         case .gotoLine, .tableDimensions, .fillText, .spellCheck:
             return [("^C", tr("help.cancel")), ("^M", tr("help.confirm"))]

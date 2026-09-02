@@ -59,13 +59,17 @@ enum LogoDateTimeParser {
 
         // Check if string contains ROC era characters ("民國")
         if trimmed.contains("民國"),
-           let d = parseEraDate(trimmed, calendarIdentifier: .republicOfChina, localeIdentifier: "zh_TW", timeZone: defaultTimeZone) {
+            let d = parseEraDate(
+                trimmed, calendarIdentifier: .republicOfChina, localeIdentifier: "zh_TW", timeZone: defaultTimeZone)
+        {
             return d
         }
 
         // Check if string contains Japanese era names
         if japaneseEraNames.contains(where: { trimmed.contains($0) }),
-           let d = parseEraDate(trimmed, calendarIdentifier: .japanese, localeIdentifier: "ja_JP", timeZone: defaultTimeZone) {
+            let d = parseEraDate(
+                trimmed, calendarIdentifier: .japanese, localeIdentifier: "ja_JP", timeZone: defaultTimeZone)
+        {
             return d
         }
 
@@ -80,7 +84,8 @@ enum LogoDateTimeParser {
         // If year looks like a 4-digit Gregorian year (> 1000), use Gregorian calendar
         let calToUse: Calendar
         if let firstToken = trimmed.split(whereSeparator: { !$0.isNumber }).first,
-           let num = Int(firstToken), num > 1000 {
+            let num = Int(firstToken), num > 1000
+        {
             calToUse = Calendar(identifier: .gregorian)
         } else {
             calToUse = defaultCalendar
@@ -149,7 +154,8 @@ enum LogoDateTimeParser {
                 case "minute", "min": minute = Int(valStr)
                 case "second", "sec", "s": second = Int(valStr)
                 case "tz", "timezone": tz = TimeZone(logoTimeZoneSpec: valStr)
-                case "cal", "calendar": cal = Calendar(identifier: Calendar.Identifier(logoCalendarName: valStr) ?? .gregorian)
+                case "cal", "calendar":
+                    cal = Calendar(identifier: Calendar.Identifier(logoCalendarName: valStr) ?? .gregorian)
                 default: break
                 }
                 i += 2
@@ -204,8 +210,8 @@ enum LogoDateTimeParser {
     private static func isComponentKey(_ key: String) -> Bool {
         switch key {
         case "year", "y", "month", "m", "day", "d",
-             "hour", "h", "min", "minute", "sec", "second", "s",
-             "tz", "timezone", "cal", "calendar":
+            "hour", "h", "min", "minute", "sec", "second", "s",
+            "tz", "timezone", "cal", "calendar":
             return true
         default:
             return false

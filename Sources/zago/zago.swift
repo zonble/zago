@@ -34,6 +34,16 @@ struct Zago: ParsableCommand {
             "Display a classic WordStar-style ruler bar (----!----1----!----2) above the text viewport.")
     var ruler: Bool = false
 
+    @Flag(
+        name: [.customShort("0"), .customLong("zero")],
+        help: "Hide title bar, status bar, and help lines for a zero-chrome editing interface.")
+    var zero: Bool = false
+
+    @Flag(
+        name: [.customShort("q"), .customLong("indicator")],
+        help: "Display a scroll bar on the righthand side of the edit window.")
+    var indicator: Bool = false
+
     @Option(
         name: [.customLong("linenumbers"), .customLong("line-numbers"), .customShort("l")],
         help: "Enable or disable line numbers (true/false).")
@@ -324,7 +334,9 @@ struct Zago: ParsableCommand {
             backup: backup ? true : nil,
             backupDir: backupDir,
             launchToJournal: journal ? true : nil,
-            enableMouse: mouse ? true : (noMouse ? false : nil)
+            enableMouse: mouse ? true : (noMouse ? false : nil),
+            isZeroMode: zero ? true : nil,
+            showIndicator: indicator ? true : nil
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false

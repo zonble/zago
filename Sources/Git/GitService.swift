@@ -173,186 +173,187 @@ public protocol GitServiceProtocol: Sendable {
             }
         }
 
-    // MARK: - Private Helpers
+        // MARK: - Private Helpers
 
-    private func readBranchName(repoRoot: String) -> String? {
-        let headFile = (repoRoot as NSString).appendingPathComponent(".git/HEAD")
-        if let content = try? String(contentsOfFile: headFile, encoding: .utf8) {
-            let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.hasPrefix("ref: refs/heads/") {
-                return String(trimmed.dropFirst("ref: refs/heads/".count))
+        private func readBranchName(repoRoot: String) -> String? {
+            let headFile = (repoRoot as NSString).appendingPathComponent(".git/HEAD")
+            if let content = try? String(contentsOfFile: headFile, encoding: .utf8) {
+                let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.hasPrefix("ref: refs/heads/") {
+                    return String(trimmed.dropFirst("ref: refs/heads/".count))
+                }
+                if trimmed.count >= 7 {
+                    return String(trimmed.prefix(7))
+                }
             }
-            if trimmed.count >= 7 {
-                return String(trimmed.prefix(7))
+            return runGitCommand(args: ["branch", "--show-current"], cwd: repoRoot)?.trimmingCharacters(
+                in: .whitespacesAndNewlines)
+        }
+
+        /// Fetches Git status badges for files in a repository directory via `git status --porcelain`.
+        public func fetchDirectoryGitStatus(repoRoot: String) -> [String: String] {
+            guard let output = runGitCommand(args: ["status", "--porcelain", "-u"], cwd: repoRoot) else {
+                return [:]
+            }
+            var statusMap: [String: String] = [:]
+            let lines = output.components(separatedBy: .newlines)
+            for line in lines {
+                guard line.count >= 4 else { continue }
+                let indexCode = line.prefix(1)
+                let workCode = line.dropFirst().prefix(1)
+                let path = String(line.dropFirst(3)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                let normalizedPath = path.replacingOccurrences(of: "\\", with: "/")
+
+                let badge: String
+                if indexCode == "?" || workCode == "?" {
+                    badge = "[?]"
+                } else if indexCode == "A" || workCode == "A" {
+                    badge = "[A]"
+                } else if indexCode == "M" || workCode == "M" {
+                    badge = "[M]"
+                } else if indexCode == "D" || workCode == "D" {
+                    badge = "[D]"
+                } else if indexCode == "R" || workCode == "R" {
+                    badge = "[R]"
+                } else {
+                    badge = "[M]"
+                }
+                statusMap[normalizedPath] = badge
+            }
+            return statusMap
+        }
+
+        private func fetchHEADLinesSync(repoInfo: GitRepositoryInfo) -> [String]? {
+            guard !repoInfo.relativeFilePath.isEmpty else { return nil }
+            guard
+                let output = runGitCommand(
+                    args: ["show", "HEAD:\(repoInfo.relativeFilePath)"], cwd: repoInfo.repoRootPath)
+            else {
+                return nil
+            }
+            return Self.splitGitOutputLines(output)
+        }
+
+        private func repositoryState(repoRoot: String) -> RepositoryState {
+            let gitRoot = (repoRoot as NSString).appendingPathComponent(".git")
+            let headPath = (gitRoot as NSString).appendingPathComponent("HEAD")
+            let packedRefsPath = (gitRoot as NSString).appendingPathComponent("packed-refs")
+
+            var refPath: String?
+            if let headContent = try? String(contentsOfFile: headPath, encoding: .utf8) {
+                let head = headContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                if head.hasPrefix("ref: ") {
+                    let ref = String(head.dropFirst("ref: ".count))
+                    refPath = (gitRoot as NSString).appendingPathComponent(ref)
+                }
+            }
+
+            let headAttributes = fileAttributes(at: headPath)
+            let refAttributes = refPath.flatMap(fileAttributes(at:))
+            let packedRefsAttributes = fileAttributes(at: packedRefsPath)
+            return RepositoryState(
+                headModificationDate: headAttributes.modificationDate,
+                headFileSize: headAttributes.fileSize,
+                refModificationDate: refAttributes?.modificationDate,
+                refFileSize: refAttributes?.fileSize,
+                packedRefsModificationDate: packedRefsAttributes.modificationDate,
+                packedRefsFileSize: packedRefsAttributes.fileSize
+            )
+        }
+
+        private func fileAttributes(at path: String) -> (modificationDate: Date?, fileSize: UInt64?) {
+            let attributes = try? FileManager.default.attributesOfItem(atPath: path)
+            return (
+                attributes?[.modificationDate] as? Date,
+                (attributes?[.size] as? NSNumber)?.uint64Value
+            )
+        }
+
+        /// Splits `git show` output the same way the editor buffer splits file contents.
+        /// The final empty component produced by a trailing newline is a separator
+        /// sentinel, not an additional editor line.
+        static func splitGitOutputLines(_ output: String) -> [String] {
+            let normalized =
+                output
+                .replacingOccurrences(of: "\r\n", with: "\n")
+                .replacingOccurrences(of: "\r", with: "\n")
+            var lines = normalized.components(separatedBy: "\n")
+            if normalized.hasSuffix("\n"), lines.count > 1 {
+                lines.removeLast()
+            }
+            return lines.isEmpty ? [""] : lines
+        }
+
+        private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
+            #if os(Windows)
+                let gitNames = ["git.exe", "git", "git.cmd"]
+                let pathSeparator = ";"
+            #else
+                let gitNames = ["git"]
+                let pathSeparator = ":"
+            #endif
+
+            let envPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
+            var searchDirs = envPath.components(separatedBy: pathSeparator)
+            #if os(Windows)
+                searchDirs.append(contentsOf: [
+                    "C:\\Program Files\\Git\\cmd",
+                    "C:\\Program Files\\Git\\bin",
+                    "C:\\Program Files (x86)\\Git\\cmd",
+                ])
+            #else
+                searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
+            #endif
+
+            for dir in searchDirs where !dir.isEmpty {
+                for name in gitNames {
+                    let candidate = (dir as NSString).appendingPathComponent(name)
+                    #if os(Windows)
+                        if FileManager.default.fileExists(atPath: candidate) {
+                            return (URL(fileURLWithPath: candidate), [])
+                        }
+                    #else
+                        if FileManager.default.isExecutableFile(atPath: candidate) {
+                            return (URL(fileURLWithPath: candidate), [])
+                        }
+                    #endif
+                }
+            }
+
+            #if os(Windows)
+                return (URL(fileURLWithPath: "C:\\Program Files\\Git\\cmd\\git.exe"), [])
+            #else
+                return (URL(fileURLWithPath: "/usr/bin/env"), ["git"])
+            #endif
+        }
+
+        private func runGitCommand(args: [String], cwd: String) -> String? {
+            let (gitURL, prefixArgs) = findGitBinary()
+            let process = Process()
+            let pipe = Pipe()
+            process.executableURL = gitURL
+            process.arguments = prefixArgs + args
+            process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+            process.standardOutput = pipe
+            process.standardError = FileHandle.nullDevice
+
+            var env = ProcessInfo.processInfo.environment
+            env["GIT_TERMINAL_PROMPT"] = "0"
+            env["GIT_OPTIONAL_LOCKS"] = "0"
+            process.environment = env
+
+            do {
+                try process.run()
+                // NOTE (Process Pipe Deadlock Pitfall): Calling waitUntilExit() BEFORE readDataToEndOfFile()
+                // will cause a deadlock if stdout output exceeds OS pipe buffer (64KB). Git blocks writing,
+                // while Swift blocks waiting for process exit. Read pipe BEFORE waitUntilExit().
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                process.waitUntilExit()
+                guard process.terminationStatus == 0 else { return nil }
+                return String(data: data, encoding: .utf8)
+            } catch {
+                return nil
             }
         }
-        return runGitCommand(args: ["branch", "--show-current"], cwd: repoRoot)?.trimmingCharacters(
-            in: .whitespacesAndNewlines)
     }
-
-    /// Fetches Git status badges for files in a repository directory via `git status --porcelain`.
-    public func fetchDirectoryGitStatus(repoRoot: String) -> [String: String] {
-        guard let output = runGitCommand(args: ["status", "--porcelain", "-u"], cwd: repoRoot) else {
-            return [:]
-        }
-        var statusMap: [String: String] = [:]
-        let lines = output.components(separatedBy: .newlines)
-        for line in lines {
-            guard line.count >= 4 else { continue }
-            let indexCode = line.prefix(1)
-            let workCode = line.dropFirst().prefix(1)
-            let path = String(line.dropFirst(3)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-            let normalizedPath = path.replacingOccurrences(of: "\\", with: "/")
-
-            let badge: String
-            if indexCode == "?" || workCode == "?" {
-                badge = "[?]"
-            } else if indexCode == "A" || workCode == "A" {
-                badge = "[A]"
-            } else if indexCode == "M" || workCode == "M" {
-                badge = "[M]"
-            } else if indexCode == "D" || workCode == "D" {
-                badge = "[D]"
-            } else if indexCode == "R" || workCode == "R" {
-                badge = "[R]"
-            } else {
-                badge = "[M]"
-            }
-            statusMap[normalizedPath] = badge
-        }
-        return statusMap
-    }
-
-    private func fetchHEADLinesSync(repoInfo: GitRepositoryInfo) -> [String]? {
-        guard !repoInfo.relativeFilePath.isEmpty else { return nil }
-        guard
-            let output = runGitCommand(args: ["show", "HEAD:\(repoInfo.relativeFilePath)"], cwd: repoInfo.repoRootPath)
-        else {
-            return nil
-        }
-        return Self.splitGitOutputLines(output)
-    }
-
-    private func repositoryState(repoRoot: String) -> RepositoryState {
-        let gitRoot = (repoRoot as NSString).appendingPathComponent(".git")
-        let headPath = (gitRoot as NSString).appendingPathComponent("HEAD")
-        let packedRefsPath = (gitRoot as NSString).appendingPathComponent("packed-refs")
-
-        var refPath: String?
-        if let headContent = try? String(contentsOfFile: headPath, encoding: .utf8) {
-            let head = headContent.trimmingCharacters(in: .whitespacesAndNewlines)
-            if head.hasPrefix("ref: ") {
-                let ref = String(head.dropFirst("ref: ".count))
-                refPath = (gitRoot as NSString).appendingPathComponent(ref)
-            }
-        }
-
-        let headAttributes = fileAttributes(at: headPath)
-        let refAttributes = refPath.flatMap(fileAttributes(at:))
-        let packedRefsAttributes = fileAttributes(at: packedRefsPath)
-        return RepositoryState(
-            headModificationDate: headAttributes.modificationDate,
-            headFileSize: headAttributes.fileSize,
-            refModificationDate: refAttributes?.modificationDate,
-            refFileSize: refAttributes?.fileSize,
-            packedRefsModificationDate: packedRefsAttributes.modificationDate,
-            packedRefsFileSize: packedRefsAttributes.fileSize
-        )
-    }
-
-    private func fileAttributes(at path: String) -> (modificationDate: Date?, fileSize: UInt64?) {
-        let attributes = try? FileManager.default.attributesOfItem(atPath: path)
-        return (
-            attributes?[.modificationDate] as? Date,
-            (attributes?[.size] as? NSNumber)?.uint64Value
-        )
-    }
-
-    /// Splits `git show` output the same way the editor buffer splits file contents.
-    /// The final empty component produced by a trailing newline is a separator
-    /// sentinel, not an additional editor line.
-    static func splitGitOutputLines(_ output: String) -> [String] {
-        let normalized =
-            output
-            .replacingOccurrences(of: "\r\n", with: "\n")
-            .replacingOccurrences(of: "\r", with: "\n")
-        var lines = normalized.components(separatedBy: "\n")
-        if normalized.hasSuffix("\n"), lines.count > 1 {
-            lines.removeLast()
-        }
-        return lines.isEmpty ? [""] : lines
-    }
-
-    private func findGitBinary() -> (url: URL, prefixArgs: [String]) {
-        #if os(Windows)
-            let gitNames = ["git.exe", "git", "git.cmd"]
-            let pathSeparator = ";"
-        #else
-            let gitNames = ["git"]
-            let pathSeparator = ":"
-        #endif
-
-        let envPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
-        var searchDirs = envPath.components(separatedBy: pathSeparator)
-        #if os(Windows)
-            searchDirs.append(contentsOf: [
-                "C:\\Program Files\\Git\\cmd",
-                "C:\\Program Files\\Git\\bin",
-                "C:\\Program Files (x86)\\Git\\cmd",
-            ])
-        #else
-            searchDirs.append(contentsOf: ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"])
-        #endif
-
-        for dir in searchDirs where !dir.isEmpty {
-            for name in gitNames {
-                let candidate = (dir as NSString).appendingPathComponent(name)
-                #if os(Windows)
-                    if FileManager.default.fileExists(atPath: candidate) {
-                        return (URL(fileURLWithPath: candidate), [])
-                    }
-                #else
-                    if FileManager.default.isExecutableFile(atPath: candidate) {
-                        return (URL(fileURLWithPath: candidate), [])
-                    }
-                #endif
-            }
-        }
-
-        #if os(Windows)
-            return (URL(fileURLWithPath: "C:\\Program Files\\Git\\cmd\\git.exe"), [])
-        #else
-            return (URL(fileURLWithPath: "/usr/bin/env"), ["git"])
-        #endif
-    }
-
-    private func runGitCommand(args: [String], cwd: String) -> String? {
-        let (gitURL, prefixArgs) = findGitBinary()
-        let process = Process()
-        let pipe = Pipe()
-        process.executableURL = gitURL
-        process.arguments = prefixArgs + args
-        process.currentDirectoryURL = URL(fileURLWithPath: cwd)
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
-        var env = ProcessInfo.processInfo.environment
-        env["GIT_TERMINAL_PROMPT"] = "0"
-        env["GIT_OPTIONAL_LOCKS"] = "0"
-        process.environment = env
-
-        do {
-            try process.run()
-            // NOTE (Process Pipe Deadlock Pitfall): Calling waitUntilExit() BEFORE readDataToEndOfFile()
-            // will cause a deadlock if stdout output exceeds OS pipe buffer (64KB). Git blocks writing,
-            // while Swift blocks waiting for process exit. Read pipe BEFORE waitUntilExit().
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            process.waitUntilExit()
-            guard process.terminationStatus == 0 else { return nil }
-            return String(data: data, encoding: .utf8)
-        } catch {
-            return nil
-        }
-    }
-}
 #endif

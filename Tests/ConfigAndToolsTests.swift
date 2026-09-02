@@ -31,7 +31,7 @@ struct ConfigAndToolsTests {
     }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
         #expect(!ZagoVersion.current.isEmpty)
-        #expect(ZagoVersion.current == "1.4.1")
+        #expect(ZagoVersion.current == "1.4.6")
 
         let editor = Editor()
         let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
@@ -116,6 +116,79 @@ struct ConfigAndToolsTests {
         #expect(debugToolsCategory?.items.contains(where: { $0.commandId == .logoClearOutput }) == false)
     }
 
+    @Test func testMenuBarDividersAndNavigation() throws {
+        let editor = Editor()
+        editor.menuBarController.toggle()
+        #expect(editor.isMenuBarActive)
+
+        let fileCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.file" })
+        #expect(fileCategory != nil)
+        let dividers = fileCategory?.items.filter { $0.isDivider } ?? []
+        #expect(dividers.count >= 2)
+
+        // Verify initial index is on first selectable item (not divider)
+        #expect(editor.menuBar.currentItem?.isDivider == false)
+        #expect(editor.menuBar.itemIndex == 0)
+
+        // Navigate down to item before divider and move down over divider
+        let fileItems = fileCategory!.items
+        let firstDividerIdx = fileItems.firstIndex(where: { $0.isDivider })!
+        editor.menuBar.itemIndex = firstDividerIdx - 1
+        editor.menuBarController.processKey(.arrowDown)
+        #expect(editor.menuBar.itemIndex == firstDividerIdx + 1)
+        #expect(editor.menuBar.currentItem?.isDivider == false)
+
+        // Navigate up over divider
+        editor.menuBarController.processKey(.arrowUp)
+        #expect(editor.menuBar.itemIndex == firstDividerIdx - 1)
+        #expect(editor.menuBar.currentItem?.isDivider == false)
+
+        // PageDown should land on last non-divider item
+        editor.menuBarController.processKey(.pageDown)
+        #expect(editor.menuBar.currentItem?.isDivider == false)
+        #expect(editor.menuBar.itemIndex == fileItems.count - 1)
+
+        // PageUp should land on first non-divider item
+        editor.menuBarController.processKey(.pageUp)
+        #expect(editor.menuBar.itemIndex == 0)
+        #expect(editor.menuBar.currentItem?.isDivider == false)
+
+        // Render overlay lines and verify divider ├─┤ character is present
+        let (_, _, boxLines) = editor.renderer.generateDropdownOverlayLines(editor: editor, cols: 80)
+        #expect(boxLines.contains(where: { $0.contains("├") && $0.contains("┤") }))
+
+        // Mouse click on divider row should not execute anything or error
+        let dividerRow = 3 + firstDividerIdx
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 5, row: dividerRow))
+        #expect(editor.isMenuBarActive) // Still active, click on divider was ignored
+    }
+
+    @Test func testMenuDropdownHotkeyPriorityOverCategories() throws {
+        let editor = Editor()
+        editor.menuBarController.toggle()
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.categoryIndex == 0) // File category
+
+        // 1. 's' is in File menu (Save) AND is the category hotkey for 'Shapes'
+        // Pressing 's' should execute Save in current menu (closing menuBar) rather than jumping to Shapes
+        editor.menuBarController.processKey(.char("s"))
+        #expect(!editor.isMenuBarActive) // Menu executed and closed
+
+        // 2. Re-open File menu and press a key not in File menu, but is a category hotkey (e.g., 't' for Tools)
+        editor.menuBarController.toggle()
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.categoryIndex == 0)
+
+        editor.menuBarController.processKey(.char("t"))
+        #expect(editor.isMenuBarActive) // Switched category
+        #expect(editor.menuBar.currentCategory.titleKey == "menu.tools")
+
+        // 3. Alt+<char> directly switches categories
+        editor.menuBarController.processKey(.alt("e"))
+        #expect(editor.isMenuBarActive)
+        #expect(editor.menuBar.currentCategory.titleKey == "menu.edit")
+    }
+
     @Test func testLogoUIVisibilityRequiresLogoFileOrDebugSetting() {
         let editor = Editor(filePath: "notes.md")
         let menuBar = MenuBar()
@@ -174,9 +247,10 @@ struct ConfigAndToolsTests {
         let cutIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.cut" })
         let searchIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.search" })
         let openLinkItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.open_link" })
-        let outlineItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.outline" })
-        let nextHeadingItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.next_heading" })
-        let previousHeadingItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.previous_heading" })
+        let outlineCategory = menuBar.categories.first(where: { $0.titleKey == "menu.outline" })
+        let outlineItem = outlineCategory?.items.first(where: { $0.titleKey == "menu.edit.outline" })
+        let nextHeadingItem = outlineCategory?.items.first(where: { $0.titleKey == "menu.edit.next_heading" })
+        let previousHeadingItem = outlineCategory?.items.first(where: { $0.titleKey == "menu.edit.previous_heading" })
         let justifyIndex = editCategory?.items.firstIndex(where: { $0.titleKey == "menu.edit.justify" })
         let textModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.text_editing_mode" })
         let canvasModeItem = editCategory?.items.first(where: { $0.titleKey == "menu.edit.canvas_mode" })
@@ -297,7 +371,7 @@ struct ConfigAndToolsTests {
         editor.layoutEngine.setWrapColumn(80)
 
         editor.prevBuffer()
-        #expect(editor.buffer.filePath == "first.md")
+        #expect(editor.buffer.filePath?.hasSuffix("first.md") == true)
         #expect(editor.displayConfig.showRuler == false)
         #expect(editor.displayConfig.showLineNumbers == true)
         #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -309,14 +383,14 @@ struct ConfigAndToolsTests {
         editor.layoutEngine.setWrapColumn(40)
 
         editor.nextBuffer()
-        #expect(editor.buffer.filePath == "second.md")
+        #expect(editor.buffer.filePath?.hasSuffix("second.md") == true)
         #expect(editor.displayConfig.showRuler == true)
         #expect(editor.displayConfig.showLineNumbers == false)
         #expect(editor.displayConfig.showSubLineNumbers == true)
         #expect(editor.layoutEngine.wrapColumn == 80)
 
         editor.prevBuffer()
-        #expect(editor.buffer.filePath == "first.md")
+        #expect(editor.buffer.filePath?.hasSuffix("first.md") == true)
         #expect(editor.displayConfig.showRuler == false)
         #expect(editor.displayConfig.showLineNumbers == true)
         #expect(editor.displayConfig.showSubLineNumbers == false)
@@ -327,17 +401,16 @@ struct ConfigAndToolsTests {
         let editor = Editor()
         editor.buffer.filePath = "notes.md"
         editor.menuBar.updateCategories(for: editor)
-        var editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.outline" }) == true)
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.next_heading" }) == true)
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.previous_heading" }) == true)
+        var outlineCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.outline" })
+        #expect(outlineCategory != nil)
+        #expect(outlineCategory?.items.contains(where: { $0.titleKey == "menu.edit.outline" }) == true)
+        #expect(outlineCategory?.items.contains(where: { $0.titleKey == "menu.edit.next_heading" }) == true)
+        #expect(outlineCategory?.items.contains(where: { $0.titleKey == "menu.edit.previous_heading" }) == true)
 
         editor.buffer.filePath = "notes.txt"
         editor.menuBar.updateCategories(for: editor)
-        editCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.edit" })
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.outline" }) == false)
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.next_heading" }) == false)
-        #expect(editCategory?.items.contains(where: { $0.titleKey == "menu.edit.previous_heading" }) == false)
+        outlineCategory = editor.menuBar.categories.first(where: { $0.titleKey == "menu.outline" })
+        #expect(outlineCategory == nil)
     }
 
     @Test func testTextTransformMenuItemsOnlyShowWithTextSelection() throws {
@@ -548,6 +621,20 @@ struct ConfigAndToolsTests {
         #expect(editor.buffer.lines[1] == "│...│")
         #expect(editor.buffer.lines[2] == "│...│")
         #expect(editor.buffer.lines[3] == "│...│")
+    }
+
+    @Test func testCanvasBlockMarkPreservedAfterFill() throws {
+        let editor = Editor()
+        editor.switchToCanvasMode()
+        editor.buffer.canvasBlockMark = (line: 0, visualColumn: 0)
+        editor.buffer.canvasBlockMarkEnd = (line: 2, visualColumn: 4)
+
+        _ = editor.fillCanvasBlock(with: "*")
+        #expect(editor.buffer.canvasBlockMark != nil)
+        #expect(editor.buffer.canvasBlockMarkEnd != nil)
+        #expect(editor.buffer.lines[0] == "*****")
+        #expect(editor.buffer.lines[1] == "*****")
+        #expect(editor.buffer.lines[2] == "*****")
     }
 
     @Test func testShapeTableMenuPromptsForDimensions() throws {
@@ -813,9 +900,9 @@ struct ConfigAndToolsTests {
         #expect(L10n.string("help.open_link", language: .en) == "Open Link")
         #expect(L10n.string("command.document.open_link.description", language: .en).contains("AsciiDoc"))
         #expect(L10n.string("command.document.outline.description", language: .en).contains("outline"))
-        #expect(L10n.string("menu.edit.outline", language: .en) == "Outline\tM+\\")
-        #expect(L10n.string("menu.edit.next_heading", language: .en) == "Next Heading\tM+]")
-        #expect(L10n.string("menu.edit.previous_heading", language: .en) == "Previous Heading\tM+[")
+        #expect(L10n.string("menu.edit.outline", language: .en) == "Outline\t⌥\\")
+        #expect(L10n.string("menu.edit.next_heading", language: .en) == "Next Heading\t⌥]")
+        #expect(L10n.string("menu.edit.previous_heading", language: .en) == "Prev Heading\t⌥[")
         #expect(L10n.string("status.no_headings", language: .en) == "[ No headings ]")
         #expect(
             L10n.string("status.heading_nav_unsupported_format", language: .en)
@@ -836,7 +923,7 @@ struct ConfigAndToolsTests {
         #expect(l10nEN.defaultBorder("Round") == "[ Default Border: Round ]")
         #expect(l10nEN.disabledInTableMode("GOTO") == "[ GOTO disabled in Table Mode ]")
         #expect(L10n.string("status.table_mode_exited", language: .en) == "[ Table Mode Exited ]")
-        #expect(L10n.string("status.canvas_mode_hint", language: .en) == "(F8 / M+V to exit)")
+        #expect(L10n.string("status.canvas_mode_hint", language: .en) == "(F8 / ⌥V to exit)")
         #expect(L10n.string("mode.canvas", language: .en) == "CANVAS")
         #expect(L10n.string("mode.table", language: .en) == "TABLE")
 
@@ -860,7 +947,7 @@ struct ConfigAndToolsTests {
         #expect(l10nZH.defaultBorder("Round") == "[ 預設框線：Round ]")
         #expect(l10nZH.disabledInTableMode("GOTO") == "[ 表格模式下停用 GOTO ]")
         #expect(L10n.string("status.table_mode_exited", language: .zh_TW) == "[ 已退出表格模式 ]")
-        #expect(L10n.string("status.canvas_mode_hint", language: .zh_TW) == "(F8 / M+V 退出)")
+        #expect(L10n.string("status.canvas_mode_hint", language: .zh_TW) == "(F8 / ⌥V 退出)")
         #expect(L10n.string("mode.canvas", language: .zh_TW) == "畫布")
         #expect(L10n.string("mode.table", language: .zh_TW) == "表格")
         #expect(L10n.string("helpview.sec_logo", language: .zh_TW) == "  Editor LOGO 巨集語言與海龜繪圖指令：")
@@ -874,15 +961,15 @@ struct ConfigAndToolsTests {
         #expect(L10n.string("help.open_link", language: .zh_TW) == "開啟連結")
         #expect(l10nZH["command.document.open_link.description"].contains("AsciiDoc"))
         #expect(l10nZH["command.document.outline.description"].contains("文件大綱"))
-        #expect(l10nZH["menu.edit.outline"] == "文件大綱\tM+\\")
-        #expect(l10nZH["menu.edit.next_heading"] == "下一個標題\tM+]")
-        #expect(l10nZH["menu.edit.previous_heading"] == "上一個標題\tM+[")
+        #expect(l10nZH["menu.edit.outline"] == "大綱\t⌥\\")
+        #expect(l10nZH["menu.edit.next_heading"] == "下一個標題\t⌥]")
+        #expect(l10nZH["menu.edit.previous_heading"] == "上一個標題\t⌥[")
         #expect(l10nZH["status.no_headings"] == "[ 沒有標題 ]")
         #expect(l10nZH["status.heading_nav_unsupported_format"] == "[ 目前檔案格式不支援文件大綱 ]")
         #expect(String(format: l10nZH["status.heading_position"], 3, 18, "## Search") == "[ 標題 3/18：## Search ]")
-        #expect(l10nZH["menu.edit.copy"] == "複製\tM+W")
+        #expect(l10nZH["menu.edit.copy"] == "複製\t⌥W")
         #expect(l10nZH["menu.tools.eval_logo"] == "Eval LOGO 腳本\t^Q")
-        #expect(L10n.string("menu.edit.copy", language: .en) == "Copy\tM+W")
+        #expect(L10n.string("menu.edit.copy", language: .en) == "Copy\t⌥W")
         #expect(L10n.string("menu.tools.eval_logo", language: .en) == "Eval LOGO Code\t^Q")
         #expect(l10nZH["menu.tools.word_count"] == "字數統計")
         #expect(

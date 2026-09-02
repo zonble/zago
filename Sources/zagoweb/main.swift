@@ -6,7 +6,8 @@ import LogoEngine
 
 let terminal = WasiTerminal()
 let fileIO = WasiFileIOStrategy()
-let configSource = EditorConfigSource()
+let configProvider = { ConfigLoader(provider: StrategyConfigFileProvider(strategy: fileIO)).loadConfig() }
+let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
 
 let args = ProcessInfo.processInfo.arguments
 let targetFiles = args.count > 1 ? Array(args.dropFirst()) : ["/workspace/welcome.md"]
@@ -20,17 +21,9 @@ final class StubGitService: GitServiceProtocol, @unchecked Sendable {
 
 let options = EditorOptions(
     filePaths: targetFiles,
-    wrapColumn: nil,
-    showLineNumbers: true,
-    showSubLineNumbers: false,
-    ipcEnabled: false,
-    language: Language.detectSystemLanguage(),
-    spellLanguage: nil,
     initialLine: 1,
     initialColumn: 1,
     readOnly: false,
-    pipedInput: nil,
-    keymapPreset: .classic,
     defaultLineEnding: .lf
 )
 

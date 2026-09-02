@@ -85,7 +85,7 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
             moveCursorVirtual(deltaRow: delta)
 
         case .moveLeft, .moveRight, .moveHome, .moveEnd,
-             .editMark, .editCut, .editUncut, .editJustify:
+            .editMark, .editCut, .editUncut, .editJustify:
             hooks.onDispatchCommand?(action)
 
         case .markModified:
@@ -98,7 +98,8 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
             buffer.lineIndex = max(0, lineIndex)
 
         case .updateColumnIndex(let columnIndex):
-            let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
+            let lineStr =
+                (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
                 ? buffer.lines[buffer.lineIndex] : ""
             let maxDisplayWidth = lineStr.displayWidth
             if columnIndex <= maxDisplayWidth {
@@ -150,7 +151,8 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
             return .integer(buffer.lineIndex)
 
         case .currentColumnIndex:
-            let lineStr = (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
+            let lineStr =
+                (buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count)
                 ? buffer.lines[buffer.lineIndex] : ""
             let charCount = lineStr.count
             if buffer.columnIndex <= charCount {
@@ -198,7 +200,9 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
                     let eCol = max(sCol, min(end.column, line.count))
                     return .string(
                         String(
-                            line[line.index(line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)]
+                            line[
+                                line.index(
+                                    line.startIndex, offsetBy: sCol)..<line.index(line.startIndex, offsetBy: eCol)]
                         ))
                 } else if start.line < lines.count && end.line < lines.count {
                     return .string(lines[start.line...end.line].joined(separator: "\n"))
@@ -355,10 +359,11 @@ final class TextBufferLogoDelegate: LogoEngineDelegate, @unchecked Sendable {
                 tableLines.append(
                     chars.midLeft + Array(repeating: h, count: colCount).joined(separator: chars.midJoin)
                         + chars.midRight)
-                }
             }
+        }
         tableLines.append(
-            chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin) + chars.bottomRight)
+            chars.bottomLeft + Array(repeating: h, count: colCount).joined(separator: chars.bottomJoin)
+                + chars.bottomRight)
 
         let insertIdx = buffer.lineIndex
         for (i, line) in tableLines.enumerated() {

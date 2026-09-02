@@ -143,6 +143,8 @@ public final class Editor: @unchecked Sendable {
     var defaultViewShowRuler = false
     var defaultViewShowLineNumbers = true
     var defaultViewShowSubLineNumbers = false
+    var defaultViewIsZeroMode = false
+    var defaultViewShowIndicator = false
     var defaultViewWrapColumn: Int? = nil
     var defaultLineEnding: LineEnding = .lf
     var fillColumn: Int = 72
@@ -235,12 +237,14 @@ public final class Editor: @unchecked Sendable {
 
         public init() {}
 
-        public mutating func registerClick(row: Int, col: Int, vLineIndex: Int, maxInterval: TimeInterval = 0.4) -> Int {
+        public mutating func registerClick(row: Int, col: Int, vLineIndex: Int, maxInterval: TimeInterval = 0.4) -> Int
+        {
             let now = Date()
             if let lastTime = lastClickTime,
-               let lastVLine = lastClickVLineIndex,
-               lastVLine == vLineIndex,
-               now.timeIntervalSince(lastTime) <= maxInterval {
+                let lastVLine = lastClickVLineIndex,
+                lastVLine == vLineIndex,
+                now.timeIntervalSince(lastTime) <= maxInterval
+            {
                 clickCount += 1
             } else {
                 clickCount = 1
@@ -298,7 +302,9 @@ public final class Editor: @unchecked Sendable {
             noNewlines: config.noNewlines,
             showGitDiff: config.showGitDiff,
             ipcEnabled: options.ipcEnabled ?? config.ipcEnabled,
-            enableMouse: options.enableMouse ?? config.enableMouse
+            enableMouse: options.enableMouse ?? config.enableMouse,
+            isZeroMode: options.isZeroMode ?? config.isZeroMode,
+            showIndicator: options.showIndicator ?? config.showIndicator
         )
 
         return ResolvedConfig(
@@ -376,6 +382,8 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
+        self.defaultViewIsZeroMode = resolved.display.isZeroMode
+        self.defaultViewShowIndicator = resolved.display.showIndicator
         self.defaultViewWrapColumn = layoutEngine.wrapColumn
         self.defaultLineEnding = options.defaultLineEnding ?? .lf
         self.fillColumn = options.fillColumn ?? configSource.initial.fillColumn
@@ -385,6 +393,8 @@ public final class Editor: @unchecked Sendable {
             buffer.viewShowRuler = defaultViewShowRuler
             buffer.viewShowLineNumbers = defaultViewShowLineNumbers
             buffer.viewShowSubLineNumbers = defaultViewShowSubLineNumbers
+            buffer.viewIsZeroMode = defaultViewIsZeroMode
+            buffer.viewShowIndicator = defaultViewShowIndicator
             buffer.viewWrapColumn = defaultViewWrapColumn
             buffer.borderStyle = configSource.initial.defaultBorderStyle
             buffer.arrowStyle = configSource.initial.defaultArrowStyle
@@ -395,7 +405,11 @@ public final class Editor: @unchecked Sendable {
                 dirBuf.loadDirectory(at: dirBuf.directoryPath, language: self.language)
             } else if let path = buffer.filePath {
                 _ = loadFileContent(into: buffer, path: path, reportStatus: false)
-                if shouldLaunchJournal && path == Self.resolveTodayJournalPath(configuredFolder: resolved.journalFolder, fileIO: dependencies.fileIOStrategy) {
+                if shouldLaunchJournal
+                    && path
+                        == Self.resolveTodayJournalPath(
+                            configuredFolder: resolved.journalFolder, fileIO: dependencies.fileIOStrategy)
+                {
                     Self.populateNewJournalBufferIfNeeded(buffer, fileIO: dependencies.fileIOStrategy)
                 }
             }
@@ -477,6 +491,8 @@ public final class Editor: @unchecked Sendable {
         self.defaultViewShowRuler = resolved.display.showRuler
         self.defaultViewShowLineNumbers = resolved.display.showLineNumbers
         self.defaultViewShowSubLineNumbers = resolved.display.showSubLineNumbers
+        self.defaultViewIsZeroMode = resolved.display.isZeroMode
+        self.defaultViewShowIndicator = resolved.display.showIndicator
         self.layoutEngine.setWrapColumn(defaultViewWrapColumn)
         self.displayConfig = resolved.display
         self.debugMode = loadedConfig.debugMode
@@ -488,6 +504,22 @@ public final class Editor: @unchecked Sendable {
             self.usesExplicitLanguage = true
         }
         applyCustomConfig(loadedConfig)
+    }
+
+    /// Toggles Zero Mode (zero-chrome distraction-free interface).
+    public func toggleZeroMode() {
+        displayConfig.isZeroMode.toggle()
+        saveCurrentViewSettingsToBuffer()
+        let state = displayConfig.isZeroMode ? "enabled" : "disabled"
+        reportOperationResult(.succeeded(message: l10n.zeroModeState(state)))
+    }
+
+    /// Toggles Scrollbar Indicator.
+    public func toggleIndicator() {
+        displayConfig.showIndicator.toggle()
+        saveCurrentViewSettingsToBuffer()
+        let state = displayConfig.showIndicator ? "enabled" : "disabled"
+        reportOperationResult(.succeeded(message: l10n.indicatorState(state)))
     }
 
     /// Deletes current line with Undo snapshot tracking.

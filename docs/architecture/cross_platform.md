@@ -29,8 +29,16 @@ Terminal input behavior varies drastically between UNIX-like systems (POSIX `ter
   `Key.ctrl("s")`, etc.).
 - **Windows**: Handled by
   [`WindowsTerminal`](../../Sources/zago/Terminal/WindowsTerminal.swift). Maps
-  Win32 console input and handles UTF-16 surrogate pairs directly into unified
-  `Key` structs.
+  Win32 console input, handles UTF-16 surrogate pairs, and decodes SGR 1006 ANSI mouse
+  sequences (`\x1b[<...M/m`) directly into unified `InputEvent` structs.
+
+### C. Windows Terminal SGR Mouse Tracking & QuickEdit Mode Interception
+
+- **The Problem**: In Windows Terminal, when mouse tracking mode is enabled (`\x1b[?1000h\x1b[?1006h`), mouse clicks, drags, and scrolling events send SGR 1006 escape sequences (e.g. `\x1b[<0;20;10M`). If the terminal input reader only handles keystrokes and treats `\x1b` as a standalone `.esc` key, the remaining sequence characters (e.g. `0;20;10M`) are mistakenly treated as keyboard text input and inserted as garbled text into the editor buffer. Additionally, legacy Windows Console QuickEdit Mode (`ENABLE_QUICK_EDIT_MODE`) intercepts mouse clicks for text selection rather than passing them to the application.
+- **Solution**:
+  - `WindowsTerminal.enableRawMode()` clears `ENABLE_QUICK_EDIT_MODE` and sets `ENABLE_EXTENDED_FLAGS` along with `ENABLE_WINDOW_INPUT` and `ENABLE_MOUSE_INPUT`.
+  - `WindowsTerminal.readInputEvent()` buffers incoming characters and parses SGR 1006 mouse sequences into structured `InputEvent.mouse(MouseEvent)` instances (supporting left/middle/right click, release, drag, and wheel up/down).
+  - Keystroke-only readers (`readKey()`) discard orphaned mouse sequence units to prevent text buffer pollution.
 
 ---
 
@@ -186,6 +194,23 @@ line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
   long-running background loop; using `queue.sync` from the editor thread would
   deadlock while that loop is active.
 
+### Gotcha E: Swift Foundation Relative Path URL Resolution on Windows (`file:///filename` Root Fallback)
+
+- **Pitfall**: In Swift Foundation on Windows, calling `URL(fileURLWithPath: "filename")` does **NOT** resolve against the current working directory (`FileManager.default.currentDirectoryPath`). Instead, Foundation treats `"filename"` as a relative URL whose absolute path component is `/filename`, mapping directly to the **root of the drive** (e.g. `C:\filename`).
+  - When a user ran `zago filename`, the editor searched for `C:\filename` and failed to find the file in the current terminal directory.
+  - When creating a new file (`zago newfile.txt`), saving attempted to write to `C:\newfile.txt`. Since drive roots require Administrator privileges, the write failed and triggered the safe fallback prompt, redirecting the save to the user's home directory (`~\`).
+- **Solution**: In [`LocalEditorFileIOStrategy`](../../Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift), `normalizePath` verifies if a path is absolute (checking for Windows drive letters `C:\`, UNC `\\`, rooted `/` or `\`, and POSIX `/`). All relative paths are explicitly joined with `currentDirectoryPath()` before passing to `URL(fileURLWithPath:).standardizedFileURL.path`.
+
+### Gotcha F: Cloud Sync & Virtual Drives (Google Drive, OneDrive) Atomic Write Failure
+
+- **Pitfall**: Foundation's `data.write(to: url, options: .atomic)` writes to a temporary file and uses Win32 `ReplaceFileW` / `MoveFileExW` to atomically replace the destination file. Cloud storage virtual file systems (such as Google Drive for Desktop `G:\My Drive` using Dokany / WinFsp, OneDrive Files On-Demand, and SMB network shares) do **NOT** support atomic file replacement semantics, returning `ERROR_ACCESS_DENIED` (5) or `ERROR_INVALID_FUNCTION` (1). This caused saving any file in `G:\My Drive\...` to fail and prompt the user to save to `~\`.
+- **Solution**: On Windows (`#if os(Windows)`), `LocalEditorFileIOStrategy.writeTextFile` uses direct file writing (`options: []`). If direct writing encounters temporary handle constraints, it safely attempts direct stream writes without auxiliary atomic swaps.
+
+### Gotcha G: `WindowsFileWatcher` Synchronous Directory Handle Release (`queue.sync`)
+
+- **Pitfall**: When saving a file, `LocalEditorFileIOStrategy` invokes `fileWatcher.stop()` followed by `writeTextFile(...)`. On Windows, `WindowsFileWatcher` monitors directories using `FindFirstChangeNotificationW`. If `stop()` only signals the cancel event asynchronously without waiting for the background queue to exit, the directory handle remains open momentarily, causing subsequent file write or rename operations to fail with `ERROR_SHARING_VIOLATION` (32).
+- **Solution**: `WindowsFileWatcher.stop()` performs `queue.sync {}` after signaling `stopEventHandle`, ensuring that `FindCloseChangeNotification` and `CloseHandle` have completed synchronously before any subsequent file write begins.
+
 ---
 
 ## 5. Line Endings & Path Normalization
@@ -203,12 +228,10 @@ line endings to text files and LOGO example scripts (`examples/logo/*.logo`).
 ### B. Path Separators (`/` POSIX vs `\` Windows)
 
 - **macOS / Linux**: Uses `/`.
-- **Windows**: Uses `\` (e.g., `C:\Users\foo\bar.txt`) or `\\?\` UNC long paths.
+- **Windows**: Uses `\` (e.g., `C:\Users\foo\bar.txt`, `G:\My Drive\Blog\test.md`) or `\\?\` UNC long paths.
 - **Solution**:
-    - All internal buffer paths and prompt completions standardize on `/`.
-    - Disk operations normalize paths using `(path as
-      NSString).standardizingPath`, supporting both `/` and `\` seamlessly on
-      Windows.
+    - Swift Foundation's `URL.path` normalizes paths with forward slashes `/` across platforms.
+    - On Windows, `LocalEditorFileIOStrategy` normalizes paths to native backslashes (`\`) for all buffer file paths (`buffer.filePath`), title bars, status bars, and directory helpers (`childPath`, `parentDirectory`). Disk operations normalize paths seamlessly regardless of separator format.
 
 ---
 
@@ -603,6 +626,174 @@ wasiInstance.wasiImport.args_sizes_get = (argc: number, argv_buf_size: number): 
 };
 ```
 
+---
 
+## 16. WebAssembly (WASI) CJK IME & Multi-Byte Input Batching (`readPendingText`)
 
+### The Pitfall: IME Burst Inputs, Double Dispatch, and Redraw Hitches
 
+In browser environments connecting `xterm.js` to `zagoweb` via WASI standard input:
+
+1. **IME Burst Commit**: When typing Chinese / CJK text using an Input Method Editor (such as Zhuyin, Pinyin, or Cangjie), confirming a long phrase or sentence commits multiple multi-byte UTF-8 characters simultaneously (e.g. 20 CJK characters = 60 UTF-8 bytes) into standard input.
+2. **Double Insertion in Frontend / Shim Integrations**:
+   - If the web frontend listens to `term.onData(...)` while simultaneously handling DOM `<textarea>` `compositionend` or `input` events and writing them to `wasi.stdin`, the text is sent twice.
+   - If `WasiTerminal` only returned `String(firstChar)` from `readPendingText`, the editor processed the input as 20 separate keystrokes with 20 consecutive full screen redrawing passes. In asynchronous Web Worker environments, this caused severe latency and race conditions.
+
+### Architectural Solution: Batch Draining in `WasiTerminal.readPendingText`
+
+In [`WasiTerminal.swift`](../../Sources/zagoweb/WasiTerminal.swift), `readPendingText(firstChar:)` drains all consecutive valid UTF-8 characters, printable text, and newlines from `pendingBytes` in a single pass:
+
+```swift
+public func readPendingText(firstChar: Character) -> String {
+    guard !pendingBytes.isEmpty else {
+        return String(firstChar)
+    }
+
+    var result = String(firstChar)
+    var idx = 0
+    let bytes = pendingBytes
+
+    while idx < bytes.count {
+        let b = bytes[idx]
+        if b == 27 { // Stop at ESC to preserve escape/arrow sequences
+            break
+        } else if b == 13 || b == 10 { // CR / LF
+            if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                idx += 1
+            }
+            result.append("\n")
+            idx += 1
+        } else if b >= 32 || b == 9 { // Printable character or Tab
+            let charLen: Int
+            switch b {
+            case 0..<0x80: charLen = 1
+            case 0xC0..<0xE0: charLen = 2
+            case 0xE0..<0xF0: charLen = 3
+            case 0xF0..<0xF8: charLen = 4
+            default: charLen = 1
+            }
+
+            if idx + charLen <= bytes.count {
+                let charBytes = bytes[idx..<(idx + charLen)]
+                if let str = String(bytes: charBytes, encoding: .utf8) {
+                    result.append(str)
+                }
+                idx += charLen
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    }
+
+    if idx > 0 {
+        pendingBytes.removeFirst(idx)
+    }
+    return result
+}
+```
+
+### Frontend Guidelines for Web Integrations
+
+1. Only pipe input from `term.onData((data) => wasiStdin.write(data))`. Do not add manual `stdin.write` calls inside `compositionend` or `oninput`.
+2. Guard any custom `keydown` listeners against active IME composition:
+   ```javascript
+   if (e.isComposing || e.keyCode === 229) {
+       return;
+   }
+   ```
+
+---
+
+## 17. WebAssembly (WASI) Single-Threaded Execution & LOGO Debugger Synchronization Safety
+
+### The Pitfall: `NSCondition.wait()` Deadlock on Single-Threaded Event Loops
+
+On native operating systems (macOS, Linux, Windows), `LogoEngine` executes scripts on a dedicated background `Thread` with an expanded 8MB stack size. The main editor thread communicates with the interpreter thread via `NSCondition` (Monitor pattern):
+- When a breakpoint is hit or step execution is enabled, the worker thread enters `pauseExecution()` and calls `debuggerCondition.wait()`.
+- The main thread continues running the editor event loop, allowing the user to press stepping keys (`F8`), evaluate expressions in the prompt (`:logo eval ...`), or resume execution (`:logo continue`), which signals `debuggerCondition.broadcast()`.
+
+However, on WebAssembly (`wasm32-unknown-wasi` in browsers):
+- **WebAssembly runtime is strictly single-threaded**: The entire editor event loop and `LogoEngine` execute on the main JavaScript execution context.
+- **Calling `NSCondition.wait()` on WASI blocks the entire browser tab / Web Worker synchronously**.
+- Because no secondary thread exists to process user keystrokes or broadcast the condition, calling `wait()` results in an **immediate, unrecoverable deadlock (UI freeze)**.
+
+### Architectural Solution: Conditional WASI Execution & UI Feedback
+
+1. **Synchronous Execution Model on WASI**:
+   In [`LogoEngine.swift`](../../Sources/LogoEngine/Core/LogoEngine.swift), `execute(_:)` runs directly and synchronously without spawning worker threads:
+   ```swift
+   #if os(WASI)
+       abortRequested = false
+       byeFlag = false
+       executionState = .running
+       executeScript(script)
+       executionState = .completed
+   #endif
+   ```
+
+2. **Non-Blocking Breakpoint Pass-Through**:
+   In `LogoEngine.pauseExecution()`, interactive breakpoints and pausing are completely bypassed under `#if os(WASI)` by immediately returning `true`, preventing `debuggerCondition.wait()` from ever blocking the runtime:
+   ```swift
+   private func pauseExecution(at frame: LogoExecutionFrame) -> Bool {
+       #if os(WASI)
+           // WebAssembly runs on a single thread without background event handling;
+           // bypass interactive pause/breakpoints to prevent deadlocking the event loop.
+           return true
+       #else
+           debuggerCondition.lock()
+           // ... interactive wait/broadcast loop ...
+       #endif
+   }
+   ```
+
+3. **User-Facing UI Guard in Command Bar**:
+   In [`LogoOutputCommands.swift`](../../Sources/Editor/Commands/LogoOutputCommands.swift), interactive debugging commands (`:logo break`, `:logo step`, `:logo continue`, `:logo abort`) notify the user directly with a localized warning:
+   ```
+   [LOGO Debug] Interactive debugger is disabled in WebAssembly single-threaded runtime.
+   ```
+   This provides clear discoverability and prevents confusion when running `zago` in WebAssembly environments.
+
+---
+
+## 18. WebAssembly (WASI) Swift Compiler Type-Checking Complexity Limits
+
+### The Pitfall: Compiler Timeout on Deep Nil-Coalescing Expressions
+
+In WebAssembly / WASI builds using `swift-wasm` toolchains (e.g., `swift-wasm-6.0.3-RELEASE-wasm32-unknown-wasi`), the compiler type-checker runs with constrained memory and time budgets in containerized CI environments.
+
+Deeply chained nil-coalescing expressions (such as chaining 8+ optional returns with `??`):
+```swift
+// ❌ May fail on swift-wasm CI with: "the compiler is unable to type-check this expression in reasonable time"
+let result = evaluateDataStructurePrimitives(tokens, index: &index)
+    ?? evaluateMathPrimitives(tokens, index: &index)
+    ?? evaluateBufferPrimitives(tokens, index: &index)
+    ?? evaluateTemplatePrimitives(tokens, index: &index)
+    ?? evaluateDatePrimitives(tokens, index: &index)
+    ?? evaluateMeasurementPrimitives(tokens, index: &index)
+    ?? evaluateFormattingPrimitives(tokens, index: &index)
+    ?? evaluateCodecAndDetectorPrimitives(tokens, index: &index)
+    ?? evaluateSystemPrimitives(tokens, index: &index)
+```
+can trigger:
+```
+error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+```
+
+### Architectural Solution: Sequential Evaluation Steps
+
+Break long fallback chains into explicit sequential sub-evaluations:
+```swift
+// ✅ Clean, fast type-checking across all toolchains
+var result: String? = evaluateDataStructurePrimitives(tokens, index: &index)
+if result == nil { result = evaluateMathPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateBufferPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateTemplatePrimitives(tokens, index: &index) }
+if result == nil { result = evaluateDatePrimitives(tokens, index: &index) }
+if result == nil { result = evaluateMeasurementPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateFormattingPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateCodecAndDetectorPrimitives(tokens, index: &index) }
+if result == nil { result = evaluateSystemPrimitives(tokens, index: &index) }
+```
+This ensures zero compilation bottlenecks across macOS, Linux, Windows, and WASM platforms.

@@ -15,26 +15,78 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
         let expanded = expandTilde(path)
-        guard isDirectory else {
-            return expanded
+        let absolutePath: String
+        if isAbsolutePath(expanded) {
+            absolutePath = expanded
+        } else {
+            let cwd = currentDirectoryPath()
+            absolutePath = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent(expanded).path
         }
-        return URL(fileURLWithPath: expanded, isDirectory: true).standardizedFileURL.path
+        let standardized = URL(fileURLWithPath: absolutePath, isDirectory: isDirectory).standardizedFileURL.path
+        #if os(Windows)
+            return standardized.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return standardized
+        #endif
+    }
+
+    private func isAbsolutePath(_ path: String) -> Bool {
+        #if os(Windows)
+            if path.count >= 2 {
+                let first = path[path.startIndex]
+                let second = path[path.index(after: path.startIndex)]
+                if first.isLetter && second == ":" {
+                    return true
+                }
+            }
+            if path.hasPrefix("\\\\") || path.hasPrefix("//") {
+                return true
+            }
+            if path.hasPrefix("/") || path.hasPrefix("\\") {
+                return true
+            }
+            return false
+        #else
+            return path.hasPrefix("/")
+        #endif
     }
 
     public func homeDirectoryPath() -> String {
-        fileManager.homeDirectoryForCurrentUser.path
+        let home = fileManager.homeDirectoryForCurrentUser.path
+        #if os(Windows)
+            return home.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return home
+        #endif
     }
 
     public func currentDirectoryPath() -> String {
-        fileManager.currentDirectoryPath
+        let cwd = fileManager.currentDirectoryPath
+        #if os(Windows)
+            return cwd.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return cwd
+        #endif
     }
 
     public func parentDirectory(of path: String) -> String {
-        URL(fileURLWithPath: path, isDirectory: true).deletingLastPathComponent().path
+        let normalized = normalizePath(path, isDirectory: true)
+        let parent = URL(fileURLWithPath: normalized, isDirectory: true).deletingLastPathComponent().path
+        #if os(Windows)
+            return parent.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return parent
+        #endif
     }
 
     public func childPath(_ name: String, in directory: String) -> String {
-        URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(name).path
+        let normalizedDir = normalizePath(directory, isDirectory: true)
+        let child = URL(fileURLWithPath: normalizedDir, isDirectory: true).appendingPathComponent(name).path
+        #if os(Windows)
+            return child.replacingOccurrences(of: "/", with: "\\")
+        #else
+            return child
+        #endif
     }
 
     public func fileInfo(at path: String) -> EditorFileInfo {
@@ -83,7 +135,17 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             try fileManager.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
         }
         fileWatcher.stop()
-        try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+        #if os(Windows)
+            // On Windows, virtual/cloud file systems (e.g. Google Drive, OneDrive) and locked directories
+            // fail when using atomic file replacement. Write directly to the destination file.
+            try data.write(to: URL(fileURLWithPath: normalized), options: [])
+        #else
+            do {
+                try data.write(to: URL(fileURLWithPath: normalized), options: .atomic)
+            } catch {
+                try data.write(to: URL(fileURLWithPath: normalized), options: [])
+            }
+        #endif
         fileWatcher.start(path: normalized)
         fileWatcher.recordCurrentModificationDate()
     }
@@ -126,7 +188,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
 
     public func documentDirectoryPath() -> String {
         if let docsUrl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
-            fileManager.fileExists(atPath: docsUrl.path) {
+            fileManager.fileExists(atPath: docsUrl.path)
+        {
             return docsUrl.path
         }
         let home = homeDirectoryPath()
@@ -187,26 +250,7 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
             return true
         }
 
-        // NOTE (Cross-Platform Pitfall & UTF-8 Truncation):
-        // When checking a file prefix (e.g. 8192 bytes), a 3-byte CJK or 4-byte CJK Extension (CJK Ext-B~I) / Emoji UTF-8 character
-        // may be sliced in half at byte 8192. String(data:encoding:.utf8) fails on incomplete
-        // trailing UTF-8 sequences and returns nil, which would falsely mark valid UTF-8 text
-        // files as binary. We iteratively trim trailing non-ASCII bytes (0x80+) cut off at the
-        // 8192-byte boundary (up to 3 trailing bytes for 4-byte UTF-8 sequences) until valid UTF-8
-        // decoding succeeds or all boundary bytes are checked.
-        var checkBuffer = data
-        while !checkBuffer.isEmpty {
-            if String(data: checkBuffer, encoding: .utf8) != nil {
-                return false
-            }
-            let last = checkBuffer.last!
-            if (last & 0x80) != 0 {
-                checkBuffer.removeLast()
-            } else {
-                break
-            }
-        }
-
+        // Delegate multi-encoding detection with sample boundary truncation trimming (1..3 bytes) to TextEncodingDetector
         return TextEncodingDetector.detectAndDecode(data) == nil
     }
 }

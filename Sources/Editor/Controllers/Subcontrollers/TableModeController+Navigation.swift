@@ -552,4 +552,3 @@ extension TableModeController {
         return BorderCharacterSet.verticalBoundaryChars.contains(chars[idx])
     }
 }
-

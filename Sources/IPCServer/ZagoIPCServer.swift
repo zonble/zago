@@ -720,10 +720,10 @@ extension ZagoIPCServer {
                 setsockopt(clientFD, SOL_SOCKET, SO_SNDTIMEO, $0, socklen_t(MemoryLayout<timeval>.size))
             }
             #if canImport(Darwin)
-            var noSigpipe: Int32 = 1
-            _ = withUnsafePointer(to: &noSigpipe) {
-                setsockopt(clientFD, SOL_SOCKET, SO_NOSIGPIPE, $0, socklen_t(MemoryLayout<Int32>.size))
-            }
+                var noSigpipe: Int32 = 1
+                _ = withUnsafePointer(to: &noSigpipe) {
+                    setsockopt(clientFD, SOL_SOCKET, SO_NOSIGPIPE, $0, socklen_t(MemoryLayout<Int32>.size))
+                }
             #endif
         }
     }

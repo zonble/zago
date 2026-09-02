@@ -163,14 +163,16 @@ extension LogoPrimitive {
                 parameters: [
                     LogoPrimitiveParameter(
                         name: "date", required: true,
-                        description: "The date string, date value, or date components list to convert.", example: "2026-08-19"),
+                        description: "The date string, date value, or date components list to convert.",
+                        example: "2026-08-19"),
                     LogoPrimitiveParameter(
                         name: "targetCalendar", required: true,
                         description: "The target calendar system.", example: "roc",
                         allowedValues: calendarAllowedValues),
                     LogoPrimitiveParameter(
                         name: "sourceCalendar", required: false,
-                        description: "The source calendar system if input date is not in Gregorian calendar.", example: "roc",
+                        description: "The source calendar system if input date is not in Gregorian calendar.",
+                        example: "roc",
                         allowedValues: calendarAllowedValues),
                     LogoPrimitiveParameter(
                         name: "format", required: false,

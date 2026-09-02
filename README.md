@@ -86,7 +86,7 @@ documents.
     - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
     - [Why a TUI app when Electron apps exist?](#why-a-tui-app-when-electron-apps-exist)
     - [Why not Vim or Emacs?](#why-not-vim-or-emacs)
-    - [Why not Rust?](#why-not-rust)
+    - [Why Swift?](#why-swift)
     - [Isn't LOGO for 80s kids?](#isnt-logo-for-80s-kids)
     - [How do I erase a wrong line or box in Canvas Mode?](#how-do-i-erase-a-wrong-line-or-box-in-canvas-mode)
   - [Documentation](#documentation)
@@ -525,9 +525,19 @@ easily fight the host editor, existing user habits, and other plugins.
 `zago` keeps the surface smaller so these pieces can be designed as one
 coherent Markdown writing flow.
 
-### Why not Rust?
+### Why Swift?
 
-因為我不會。
+`zago` is built for writing, not for coding. Swift and Apple's
+Foundation framework provide rich, high-level, and expressive APIs for
+text transformations, Unicode scalar handling, linguistic analysis, ICU
+word boundaries, and CJK text processing. This makes Swift a natural fit
+for crafting an editor dedicated to prose, structure, and plain-text
+drawing.
+
+On a personal note, my past development experience is deeply rooted in
+the Apple ecosystem. Writing `zago` in Swift allows me to build and
+iterate on these text and terminal abstractions with maximum fluency and
+joy.
 
 ### Isn't LOGO for 80s kids?
 

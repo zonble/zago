@@ -53,6 +53,9 @@ public enum ANSIStyle {
     /// Highlight for Canvas mode active edit cell: bold white text on green background (`\u{1B}[42;97;1m`).
     public static let canvasActiveCell = "\u{1B}[42;97;1m"
 
+    /// Highlight for inactive editor cursor when focus is on the Command Bar / prompt: black text on yellow background (`\u{1B}[43;30m`).
+    public static let inactiveCursor = "\u{1B}[43;30m"
+
     /// Moves physical cursor to top-left home position (1,1) (`\u{1B}[H`).
     public static let cursorHome = "\u{1B}[H"
 

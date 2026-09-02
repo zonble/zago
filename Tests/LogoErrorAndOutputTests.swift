@@ -248,7 +248,7 @@ import Testing
         editor.toggleLogoOutputBuffer()
         #expect(editor.buffers.count == 1)
         #expect(editor.findLogoOutputBufferIndex() == nil)
-        #expect(editor.buffer.filePath == "document.md")
+        #expect(editor.buffer.filePath?.hasSuffix("document.md") == true)
     }
 
     @Test func testErrorHandlingDemoExampleScript() {
@@ -277,7 +277,7 @@ import Testing
         #expect(ok)
 
         let sourceBuf = editor.buffers[0]
-        #expect(sourceBuf.filePath == "demo.logo")
+        #expect(sourceBuf.filePath?.hasSuffix("demo.logo") == true)
         #expect(sourceBuf.lines == ["BOX 4 4"])
 
         let canvasIdx = editor.findLogoCanvasBufferIndex()
@@ -298,7 +298,7 @@ import Testing
 
         editor.evalLogoCode()
 
-        #expect(editor.buffer.filePath == "document.md")
+        #expect(editor.buffer.filePath?.hasSuffix("document.md") == true)
         #expect(editor.findLogoCanvasBufferIndex() == nil)
         #expect(editor.buffer.lines.contains { $0.contains("┌") || $0.contains("┐") || $0.contains("─") })
     }
@@ -480,6 +480,55 @@ import Testing
         editor.buffer.lineIndex = 7
         editor.evalLogoCode()
         #expect(editor.logoEngine.variables["e"] == "10")
+    }
+
+    @Test func testEvalLogoInOrgModeSourceBlocks() {
+        let editor = Editor()
+        editor.buffer.lines = [
+            "* Org Mode Heading",
+            "MAKE \"a 1",
+            "#+BEGIN_SRC logo",
+            "MAKE \"org_b 20",
+            "MAKE \"org_c 30",
+            "#+END_SRC",
+            "MAKE \"d 4",
+        ]
+
+        // 1. Cursor on #+BEGIN_SRC logo (line 2) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 2
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 2. Cursor inside Org block (line 3) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 3
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 3. Cursor on #+END_SRC (line 5) -> lines 3 & 4 evaluated
+        editor.buffer.lineIndex = 5
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
+
+        // Reset variables
+        editor.logoEngine.variables["org_b"] = nil
+        editor.logoEngine.variables["org_c"] = nil
+
+        // 4. Cursor on line right below #+END_SRC (line 6) -> Org block evaluated
+        editor.buffer.lineIndex = 6
+        editor.evalLogoCode()
+        #expect(editor.logoEngine.variables["org_b"] == "20")
+        #expect(editor.logoEngine.variables["org_c"] == "30")
     }
 
     @Test func testEvalLogoDoesNotBleedAcrossSingleLineProcedures() {

@@ -1,3 +1,4 @@
+import ANSITerminal
 import Config
 import Editor
 import Foundation
@@ -37,6 +38,11 @@ public final class WasiTerminal: EditorTerminal {
     }
 
     private var pendingBytes: [UInt8] = []
+
+    /// Injects mock bytes directly into pendingBytes for testing.
+    public func injectPendingBytes(_ bytes: [UInt8]) {
+        pendingBytes.append(contentsOf: bytes)
+    }
 
     public func hasPendingInput() -> Bool {
         !pendingBytes.isEmpty
@@ -168,9 +174,10 @@ public final class WasiTerminal: EditorTerminal {
             if sequence.hasPrefix("8;") && char == "t" {
                 let params = sequence.dropFirst(2).dropLast(1).split(separator: ";")
                 if params.count == 2,
-                   let r = Int(params[0]),
-                   let c = Int(params[1]),
-                   r > 0, c > 0 {
+                    let r = Int(params[0]),
+                    let c = Int(params[1]),
+                    r > 0, c > 0
+                {
                     currentRows = r
                     currentCols = c
                     return .key(.resize)
@@ -226,11 +233,17 @@ public final class WasiTerminal: EditorTerminal {
     private func decodeUTF8Key(firstByte: UInt8) -> Key {
         var bytes = [firstByte]
         let expectedLength: Int
-        if firstByte & 0x80 == 0 { expectedLength = 1 }
-        else if firstByte & 0xE0 == 0xC0 { expectedLength = 2 }
-        else if firstByte & 0xF0 == 0xE0 { expectedLength = 3 }
-        else if firstByte & 0xF8 == 0xF0 { expectedLength = 4 }
-        else { return .unknown }
+        if firstByte & 0x80 == 0 {
+            expectedLength = 1
+        } else if firstByte & 0xE0 == 0xC0 {
+            expectedLength = 2
+        } else if firstByte & 0xF0 == 0xE0 {
+            expectedLength = 3
+        } else if firstByte & 0xF8 == 0xF0 {
+            expectedLength = 4
+        } else {
+            return .unknown
+        }
 
         while bytes.count < expectedLength {
             guard let nextByte = readByte() else { return .unknown }
@@ -248,7 +261,53 @@ public final class WasiTerminal: EditorTerminal {
     }
 
     public func readPendingText(firstChar: Character) -> String {
-        String(firstChar)
+        guard !pendingBytes.isEmpty else {
+            return String(firstChar)
+        }
+
+        var result = String(firstChar)
+        var idx = 0
+        let bytes = pendingBytes
+
+        while idx < bytes.count {
+            let b = bytes[idx]
+            if b == 27 {
+                break
+            } else if b == 13 || b == 10 {
+                if b == 13 && idx + 1 < bytes.count && bytes[idx + 1] == 10 {
+                    idx += 1
+                }
+                result.append("\n")
+                idx += 1
+            } else if b >= 32 || b == 9 {
+                let charLen: Int
+                switch b {
+                case 0..<0x80: charLen = 1
+                case 0xC0..<0xE0: charLen = 2
+                case 0xE0..<0xF0: charLen = 3
+                case 0xF0..<0xF8: charLen = 4
+                default: charLen = 1
+                }
+
+                if idx + charLen <= bytes.count {
+                    let charBytes = bytes[idx..<(idx + charLen)]
+                    if let str = String(bytes: charBytes, encoding: .utf8) {
+                        result.append(str)
+                    }
+                    idx += charLen
+                } else {
+                    break
+                }
+            } else {
+                break
+            }
+        }
+
+        if idx > 0 {
+            pendingBytes.removeFirst(idx)
+        }
+
+        return result
     }
 
     public func write(_ text: String) {

@@ -28,7 +28,9 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
         ]) ?? []
     }
 
-    public static func fillerPattern(with plugins: [any LogoParserPlugin] = LogoLocalizationRegistry.allDialects) -> String {
+    public static func fillerPattern(with plugins: [any LogoParserPlugin] = LogoLocalizationRegistry.allDialects)
+        -> String
+    {
         var fillerSet = LogoEngine.standardFillerTokens
         for plugin in plugins {
             fillerSet.formUnion(plugin.fillerTokens)
@@ -38,7 +40,9 @@ public struct LogoSyntaxDefinition: SyntaxDefinition {
         return "(?i)(?<![\\p{L}\\p{N}_.?])(\(escaped))(?![\\p{L}\\p{N}_.?])"
     }
 
-    public static func keywordPattern(with plugins: [any LogoParserPlugin] = LogoLocalizationRegistry.allDialects) -> String {
+    public static func keywordPattern(with plugins: [any LogoParserPlugin] = LogoLocalizationRegistry.allDialects)
+        -> String
+    {
         var allKeywords = Set(LogoPrimitive.keywordAliases + LineArrowMode.allKeywords)
         for plugin in plugins {
             allKeywords.formUnion(plugin.keywordAliases)

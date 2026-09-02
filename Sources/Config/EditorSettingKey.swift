@@ -1,5 +1,5 @@
-import Foundation
 import Drawing
+import Foundation
 
 /// Canonical setting keys shared by `.zagorc` and the editor command bar.
 public enum EditorSettingKey: String, CaseIterable, Sendable {
@@ -35,13 +35,16 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
     case launchToJournal = "launch-to-journal"
     case journalFolder = "journal-folder"
     case mouse
+    case zero
+    case indicator
 
     public var suggestedValues: [String] {
         switch self {
         case .wrap: return ["80", "off"]
         case .fill: return ["72", "80"]
-        case .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab, .listWrapIndent,
-            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines, .backup, .launchToJournal, .mouse:
+        case .ruler, .lineNumbers, .subLineNumbers, .indicator, .canvasMode, .syntax, .smartTab, .listWrapIndent,
+            .autoReload, .ipc, .regex, .debug, .gitDiff, .trimTrailingWhitespace, .noNewlines, .backup,
+            .launchToJournal, .mouse, .zero:
             return ["on", "off"]
         case .tab, .listIndentSize: return ["2", "4", "8"]
         case .language: return Language.allCases.map(\.rawValue)
@@ -60,8 +63,9 @@ public enum EditorSettingKey: String, CaseIterable, Sendable {
 
     var supportsConfigUnset: Bool {
         switch self {
-        case .wrap, .ruler, .lineNumbers, .subLineNumbers, .canvasMode, .syntax, .smartTab,
-            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines, .backup, .launchToJournal, .mouse:
+        case .wrap, .ruler, .lineNumbers, .subLineNumbers, .indicator, .canvasMode, .syntax, .smartTab,
+            .listWrapIndent, .autoReload, .ipc, .trimTrailingWhitespace, .gitDiff, .debug, .modernbindings, .noNewlines,
+            .backup, .launchToJournal, .mouse, .zero:
             return true
         case .listIndentSize, .tab, .fill, .language, .spellLanguage, .border, .arrow, .regex, .keymap,
             .maxFileSize, .largeFileThreshold, .maxLineHighlightLength, .backupDir, .journalFolder:

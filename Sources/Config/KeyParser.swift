@@ -25,7 +25,9 @@ public enum KeyParser {
             break
         }
 
-        if normalized.hasPrefix("ctrl-shift-") || normalized.hasPrefix("c-s-") || normalized.hasPrefix("c+⇧+") || normalized.hasPrefix("^⇧") {
+        if normalized.hasPrefix("ctrl-shift-") || normalized.hasPrefix("c-s-") || normalized.hasPrefix("c+⇧+")
+            || normalized.hasPrefix("^⇧")
+        {
             let prefixLen: Int
             if normalized.hasPrefix("ctrl-shift-") {
                 prefixLen = 11
@@ -50,7 +52,9 @@ public enum KeyParser {
             }
         }
 
-        if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-") || normalized.hasPrefix("m+") {
+        if normalized.hasPrefix("alt-") || normalized.hasPrefix("meta-") || normalized.hasPrefix("m-")
+            || normalized.hasPrefix("m+")
+        {
             let prefixLen: Int
             if normalized.hasPrefix("alt-") {
                 prefixLen = 4

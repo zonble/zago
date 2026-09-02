@@ -222,7 +222,8 @@ extension EditorFileIOStrategy {
 
     public func documentDirectoryPath() -> String {
         if let docsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
-            FileManager.default.fileExists(atPath: docsUrl.path) {
+            FileManager.default.fileExists(atPath: docsUrl.path)
+        {
             return docsUrl.path
         }
         let home = homeDirectoryPath()

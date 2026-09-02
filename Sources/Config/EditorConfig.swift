@@ -8,6 +8,8 @@ public struct EditorConfig {
     public var showRuler: Bool = false
     public var showLineNumbers: Bool = true
     public var showSubLineNumbers: Bool = false
+    public var showIndicator: Bool = false
+    public var isZeroMode: Bool = false
     public var startInCanvasMode: Bool = false
     public var tabSize: Int = 4
     public var smartTab: Bool = true

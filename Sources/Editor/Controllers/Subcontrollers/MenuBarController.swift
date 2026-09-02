@@ -21,7 +21,7 @@ final class MenuBarController: KeyInputHandler {
         if isActive {
             menuBar.updateCategories(for: editor)
             menuBar.categoryIndex = 0
-            menuBar.itemIndex = 0
+            menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
         }
     }
 
@@ -40,54 +40,81 @@ final class MenuBarController: KeyInputHandler {
 
         case .arrowLeft:
             menuBar.categoryIndex = (menuBar.categoryIndex - 1 + menuBar.categories.count) % menuBar.categories.count
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
+            menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
 
         case .arrowRight:
             menuBar.categoryIndex = (menuBar.categoryIndex + 1) % menuBar.categories.count
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
+            menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
 
         case .arrowUp:
-            let count = menuBar.currentCategory.items.count
+            let items = menuBar.currentCategory.items
+            let count = items.count
             if count > 0 {
-                menuBar.itemIndex = (menuBar.itemIndex - 1 + count) % count
+                var nextIdx = menuBar.itemIndex
+                for _ in 0..<count {
+                    nextIdx = (nextIdx - 1 + count) % count
+                    if !items[nextIdx].isDivider {
+                        menuBar.itemIndex = nextIdx
+                        break
+                    }
+                }
             }
 
         case .arrowDown:
-            let count = menuBar.currentCategory.items.count
+            let items = menuBar.currentCategory.items
+            let count = items.count
             if count > 0 {
-                menuBar.itemIndex = (menuBar.itemIndex + 1) % count
+                var nextIdx = menuBar.itemIndex
+                for _ in 0..<count {
+                    nextIdx = (nextIdx + 1) % count
+                    if !items[nextIdx].isDivider {
+                        menuBar.itemIndex = nextIdx
+                        break
+                    }
+                }
             }
 
         case .home:
             menuBar.categoryIndex = 0
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
+            menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
 
         case .end:
             menuBar.categoryIndex = max(0, menuBar.categories.count - 1)
-            menuBar.itemIndex = min(menuBar.itemIndex, max(0, menuBar.currentCategory.items.count - 1))
+            menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
 
         case .pageUp:
-            menuBar.itemIndex = 0
+            let items = menuBar.currentCategory.items
+            if let firstIdx = items.firstIndex(where: { !$0.isDivider }) {
+                menuBar.itemIndex = firstIdx
+            }
 
         case .pageDown:
-            menuBar.itemIndex = max(0, menuBar.currentCategory.items.count - 1)
+            let items = menuBar.currentCategory.items
+            if let lastIdx = items.lastIndex(where: { !$0.isDivider }) {
+                menuBar.itemIndex = lastIdx
+            }
 
         case .enter:
             executeCurrentMenuItem()
 
-        case .char(let ch):
+        case .alt(let ch):
             let lowerCh = Character(String(ch).lowercased())
-            // Check if letter matches any category hotkey (f, e, s, b, t, h)
             if let catIdx = menuBar.categories.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
                 menuBar.categoryIndex = catIdx
-                menuBar.itemIndex = 0
-            } else {
-                // Check if letter matches any item hotkey within active category
-                let items = menuBar.currentCategory.items
-                if let itemIdx = items.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
-                    menuBar.itemIndex = itemIdx
-                    executeCurrentMenuItem()
-                }
+                menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
+            }
+
+        case .char(let ch):
+            let lowerCh = Character(String(ch).lowercased())
+            let items = menuBar.currentCategory.items
+            // 1. Prioritize items within current active dropdown menu
+            if let itemIdx = items.firstIndex(where: { !$0.isDivider && $0.hotkeyChar == lowerCh }) {
+                menuBar.itemIndex = itemIdx
+                executeCurrentMenuItem()
+            } else if let catIdx = menuBar.categories.firstIndex(where: { $0.hotkeyChar == lowerCh }) {
+                // 2. Fallback: switch to matching category if no item in active dropdown matched
+                menuBar.categoryIndex = catIdx
+                menuBar.itemIndex = menuBar.firstSelectableItemIndex(in: menuBar.currentCategory.items)
             }
 
         default:
@@ -97,7 +124,7 @@ final class MenuBarController: KeyInputHandler {
 
     /// Executes current selected menu item action.
     func executeCurrentMenuItem() {
-        guard let editor, let item = menuBar.currentItem else { return }
+        guard let editor, let item = menuBar.currentItem, !item.isDivider else { return }
         isActive = false
 
         if let cmdId = item.commandId {

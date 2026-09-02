@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 
+@testable import ANSITerminal
 @testable import Config
 @testable import Editor
 @testable import zago
@@ -603,7 +604,7 @@ import Testing
         term1.keysToReturn = [.esc, .enter]
         let dialog1 = DescribeKeyDialogView(terminal: term1, editor: editor, language: .en)
         dialog1.show()
-        #expect(term1.writtenOutput.contains("Key: Esc"))
+        #expect(term1.writtenOutput.contains("Key: ⎋"))
 
         // Test 2: Inspect ^K (has Table mode override)
         let term2 = ScriptedKeyTerminal()
@@ -644,7 +645,7 @@ import Testing
         term4.keysToReturn = [.alt("t"), .enter]
         let dialog4 = DescribeKeyDialogView(terminal: term4, editor: macroEditor, language: .en)
         dialog4.show()
-        #expect(term4.writtenOutput.contains("Key: M+T"))
+        #expect(term4.writtenOutput.contains("Key: ⌥T"))
         #expect(term4.writtenOutput.contains("Execute LOGO script 'insert-title'"))
 
         // Test 5: Long inline LOGO script wraps cleanly
@@ -652,7 +653,7 @@ import Testing
         term5.keysToReturn = [.alt("h"), .enter]
         let dialog5 = DescribeKeyDialogView(terminal: term5, editor: macroEditor, language: .en)
         dialog5.show()
-        #expect(term5.writtenOutput.contains("Key: M+H"))
+        #expect(term5.writtenOutput.contains("Key: ⌥H"))
         #expect(term5.writtenOutput.contains("MOVE HOME TYPE"))
 
         // Test 6: Verify MenuBar item placement in Help menu

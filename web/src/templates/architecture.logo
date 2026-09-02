@@ -1,0 +1,40 @@
+; zago System Architecture - Editor LOGO Diagram Script
+
+CLEARBUFFER
+
+TYPE "                        "
+BOX "         zago System Architecture           " "center" "double" AT:DOWN
+TYPE "" NEWLINE
+
+GOTO 6 1
+BOX "     Web UI (xterm.js)      \n  - Mobile Touch Key Bar    \n  - Split Doc / Demo Layout " "center" "round" AT:NE
+
+GOTO 6 36
+BOX "     Terminal TTY (CLI)     \n  - GNU Nano Compatibility  \n  - Color ANSI Terminal UI  " "center" "round" AT:NE
+
+GOTO 6 71
+BOX "   AI Agent (IPC Socket)    \n  - JSON-RPC 2.0 Protocol   \n  - Unix Sock / Named Pipe  " "center" "round" AT:DOWN
+
+TYPE "               │                                   │                                  │" NEWLINE
+TYPE "               v                                   v                                  v" NEWLINE
+
+GOTO 13 1
+BOX " 1. Client & Interface Layer                                                                        \n    • Web UI: xterm.js terminal integration, responsive split layout & mobile virtual keybar         \n    • Terminal TTY: Interactive CLI session with full GNU Nano keybinding compatibility             \n    • AI IPC Server: JSON-RPC 2.0 protocol over Unix domain socket (/tmp/zago-*.sock)              " "left" "light" AT:DOWN
+
+TYPE "                                                   │" NEWLINE
+TYPE "                                                   v" NEWLINE
+
+GOTO 21 1
+BOX " 2. Editor Core & Layout Engine                                                                     \n    • Canvas Mode (F8): 2D free cursor matrix editing without line length constraints               \n    • Table Mode (F7): Cell-boundary protected editing preventing frame corruption                  \n    • Ghost Text Overlay: Dim Gray proposal preview, 4-quadrant insert & 2D corner fusing           " "left" "double" AT:DOWN
+
+TYPE "                                                   │" NEWLINE
+TYPE "                                                   v" NEWLINE
+
+GOTO 29 1
+BOX " 3. Editor LOGO Engine & Text Processing                                                            \n    • Drawing Primitives: BOX, DRAWBOX, FRAME, LINE, VLINE, ARROW, TABLE, FILL, INSET               \n    • Turtle Mode: Pen Down (PD), Pen Up (PU), Forward (FD), Turn (RT/LT), Heading                  \n    • Text Processing: TRANSLIT (CJK punctuation), SPACING-CJK, HANS/HANT script converter          " "left" "round" AT:DOWN
+
+TYPE "                                                   │" NEWLINE
+TYPE "                                                   v" NEWLINE
+
+GOTO 37 1
+BOX " 4. WebAssembly & Storage Runtime                                                                   \n    • WASI MEMFS: POSIX-compatible /workspace virtual filesystem                                    \n    • Storage & Bundling: Browser IndexedDB persistence & JSZip workspace export/import             \n    • Web Worker Execution: Lock-free SharedStdin RingBuffer (zero main-thread blocking)             " "left" "heavy" AT:DOWN

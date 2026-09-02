@@ -1,6 +1,7 @@
 import Config
 import Foundation
 import TextMetrics
+import TextTransform
 
 extension Editor {
     /// Central mouse event processing entrypoint for the Editor event loop.
@@ -11,10 +12,12 @@ extension Editor {
         let geometry = ScreenGeometry(rows: rows, cols: cols, editor: self)
 
         // 1. Drag Selection Auto-Scroll (takes priority when dragging across or beyond bars)
+        let showTitle = !geometry.isZeroMode || menuBarController.isActive
+        let topMargin = (showTitle ? 1 : 0) + (geometry.showRuler ? 1 : 0)
+
         if case .drag(.left) = mouseEvent.action {
             if buffer.isReadOnly || promptController.isActive || menuBarController.isActive { return }
 
-            let topMargin = 1 + (geometry.showRuler ? 1 : 0)
             let totalLineCount: Int
             if isCanvasModeActive {
                 totalLineCount = max(1, buffer.lines.count)
@@ -24,10 +27,12 @@ extension Editor {
             }
 
             // Determine if at or beyond boundary and compute two-tier interval
-            let isOutsideWindow = mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
+            let isOutsideWindow =
+                mouseEvent.row <= 0 || mouseEvent.row > geometry.rows
                 || mouseEvent.col <= 0 || mouseEvent.col > geometry.cols
             let isAtBoundaryRow = mouseEvent.row <= topMargin || mouseEvent.row > topMargin + geometry.mainAreaHeight
-            let isAtBoundaryCol = isCanvasModeActive && (mouseEvent.col <= 1 + geometry.gutterWidth || mouseEvent.col > geometry.cols)
+            let isAtBoundaryCol =
+                isCanvasModeActive && (mouseEvent.col <= 1 + geometry.gutterWidth || mouseEvent.col > geometry.cols)
 
             if isOutsideWindow {
                 activeBoundaryDragState = BoundaryDragScrollState(lastEvent: mouseEvent, intervalMs: 30)
@@ -94,7 +99,8 @@ extension Editor {
                 canvasVisualColumn = canvasX
                 syncCanvasCursorToBuffer()
             } else if isTableModeActive {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 if buffer.selectionMark == nil {
                     buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
                 }
@@ -102,7 +108,8 @@ extension Editor {
                 buffer.columnIndex = targetCol
                 tableModeController.clampTableModeCursor()
             } else {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
                 if buffer.selectionMark == nil {
                     buffer.selectionMark = (line: buffer.lineIndex, column: buffer.columnIndex)
                 }
@@ -115,7 +122,7 @@ extension Editor {
         activeBoundaryDragState = nil
 
         // 2. Help Bar Hit-Testing (Lines geometry.rows - 1 and geometry.rows)
-        if mouseEvent.row >= geometry.rows - 1 {
+        if !geometry.isZeroMode && mouseEvent.row >= geometry.rows - 1 {
             if case .press(.left) = mouseEvent.action {
                 if let keyStr = renderer.hitTestHelpBar(
                     col: mouseEvent.col,
@@ -155,8 +162,9 @@ extension Editor {
 
             let (startCol, boxWidth, boxLines) = renderer.generateDropdownOverlayLines(editor: self, cols: cols)
             let boxEndRow = 2 + boxLines.count - 1
-            if mouseEvent.row >= 2 && mouseEvent.row <= boxEndRow &&
-               mouseEvent.col >= startCol + 1 && mouseEvent.col <= startCol + boxWidth {
+            if mouseEvent.row >= 2 && mouseEvent.row <= boxEndRow && mouseEvent.col >= startCol + 1
+                && mouseEvent.col <= startCol + boxWidth
+            {
                 let items = menuBar.currentCategory.items
                 let itemRowStart = 3
                 let itemRowEnd = 2 + items.count
@@ -164,9 +172,12 @@ extension Editor {
                     if case .press(.left) = mouseEvent.action {
                         let clickedItemIdx = mouseEvent.row - itemRowStart
                         if clickedItemIdx >= 0 && clickedItemIdx < items.count {
-                            menuBar.itemIndex = clickedItemIdx
-                            menuBarController.executeCurrentMenuItem()
-                            return
+                            let item = items[clickedItemIdx]
+                            if !item.isDivider {
+                                menuBar.itemIndex = clickedItemIdx
+                                menuBarController.executeCurrentMenuItem()
+                                return
+                            }
                         }
                     }
                 }
@@ -181,7 +192,7 @@ extension Editor {
         }
 
         // Top Row (Title Bar / Menu Header when inactive)
-        if mouseEvent.row == 1 {
+        if showTitle && mouseEvent.row == 1 {
             if promptController.isActive { return }
             if case .press(.left) = mouseEvent.action {
                 menuBarController.toggle()
@@ -190,12 +201,11 @@ extension Editor {
         }
 
         // Status Line / Prompt Area (geometry.rows - 2)
-        if mouseEvent.row == geometry.rows - 2 {
+        if !geometry.isZeroMode && mouseEvent.row == geometry.rows - 2 {
             return
         }
 
         // Main Viewport Area for clicks and other non-drag events
-        let topMargin = 1 + (geometry.showRuler ? 1 : 0)
         guard mouseEvent.row > topMargin && mouseEvent.row <= topMargin + geometry.mainAreaHeight else {
             return
         }
@@ -230,6 +240,14 @@ extension Editor {
             if promptController.isActive {
                 return
             }
+            if geometry.showIndicator && mouseEvent.col == geometry.cols {
+                let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+                let totalLines = max(1, virtualLines.count)
+                let targetRatio = Double(screenVLineOffset) / Double(max(1, geometry.mainAreaHeight - 1))
+                let maxTop = max(0, totalLines - geometry.mainAreaHeight)
+                topVLineIndex = max(0, min(maxTop, Int(round(targetRatio * Double(maxTop)))))
+                return
+            }
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 let minSelectableLine = min(3, max(0, buffer.lines.count - 1))
                 if vLineIndex >= minSelectableLine && vLineIndex < buffer.lines.count {
@@ -253,23 +271,67 @@ extension Editor {
                 return
             }
 
+            let clicks = mouseClickTracker.registerClick(
+                row: mouseEvent.row,
+                col: mouseEvent.col,
+                vLineIndex: vLineIndex
+            )
+
             if isCanvasModeActive {
                 let canvasY = vLineIndex
                 let canvasX = visualCol + canvasHorizontalOffset
+                guard ensureCanvasLineExists(canvasY) else { return }
+
+                if clicks >= 2 && canvasY < buffer.lines.count {
+                    let lineText = buffer.lines[canvasY]
+                    let (_, targetCol) = getBufferCursorForVisualColumn(
+                        vLineIndex: vLineIndex, visualCol: visualCol)
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        let startVisual = lineText.visualColumn(forCharacterOffset: range.lowerBound)
+                        let endVisual = lineText.visualColumn(forCharacterOffset: range.upperBound)
+                        buffer.canvasBlockMark = (line: canvasY, visualColumn: startVisual)
+                        buffer.canvasBlockMarkEnd = (line: canvasY, visualColumn: max(startVisual, endVisual - 1))
+                        buffer.lineIndex = canvasY
+                        canvasVisualColumn = endVisual
+                        syncCanvasCursorToBuffer()
+                        return
+                    }
+                }
+
                 buffer.canvasBlockMark = nil
                 buffer.canvasBlockMarkEnd = nil
-
-                guard ensureCanvasLineExists(canvasY) else { return }
                 buffer.lineIndex = canvasY
                 canvasVisualColumn = canvasX
                 syncCanvasCursorToBuffer()
             } else if isTableModeActive {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
+                if clicks >= 2 && targetLine < buffer.lines.count {
+                    let lineText = buffer.lines[targetLine]
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        buffer.selectionMark = (line: targetLine, column: range.lowerBound)
+                        buffer.lineIndex = targetLine
+                        buffer.columnIndex = range.upperBound
+                        tableModeController.clampTableModeCursor()
+                        return
+                    }
+                }
+                buffer.selectionMark = nil
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol
                 tableModeController.clampTableModeCursor()
             } else {
-                let (targetLine, targetCol) = getBufferCursorForVisualColumn(vLineIndex: vLineIndex, visualCol: visualCol)
+                let (targetLine, targetCol) = getBufferCursorForVisualColumn(
+                    vLineIndex: vLineIndex, visualCol: visualCol)
+                if clicks >= 2 && targetLine < buffer.lines.count {
+                    let lineText = buffer.lines[targetLine]
+                    if let range = TextAnalyzer.enclosingWordRange(in: lineText, at: targetCol) {
+                        buffer.selectionMark = (line: targetLine, column: range.lowerBound)
+                        buffer.lineIndex = targetLine
+                        buffer.columnIndex = range.upperBound
+                        return
+                    }
+                }
                 buffer.selectionMark = nil
                 buffer.lineIndex = targetLine
                 buffer.columnIndex = targetCol

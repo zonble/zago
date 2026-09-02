@@ -39,6 +39,12 @@ struct ScreenGeometry: Equatable {
     /// Whether the independent breakpoint marker gutter is visible.
     let showBreakpointGutter: Bool
 
+    /// Whether zero interface mode (zero chrome) is active.
+    let isZeroMode: Bool
+
+    /// Whether vertical scrollbar indicator is visible.
+    let showIndicator: Bool
+
     /// Calculated main text area height in rows.
     let mainAreaHeight: Int
 
@@ -49,34 +55,57 @@ struct ScreenGeometry: Equatable {
     let textWidth: Int
 
     /// Initializes a ScreenGeometry by computing frame layout metrics for given terminal dimensions and display options.
-    init(rows: Int, cols: Int, showRuler: Bool, showGutter: Bool, showBreakpointGutter: Bool = false) {
+    init(
+        rows: Int,
+        cols: Int,
+        showRuler: Bool,
+        showGutter: Bool,
+        showBreakpointGutter: Bool = false,
+        isZeroMode: Bool = false,
+        isMenuBarActive: Bool = false,
+        isPromptActive: Bool = false,
+        showIndicator: Bool = false
+    ) {
         self.rows = rows
         self.cols = cols
         self.showRuler = showRuler
         self.showGutter = showGutter
         self.showBreakpointGutter = showBreakpointGutter
+        self.isZeroMode = isZeroMode
+        self.showIndicator = showIndicator
 
-        let chrome =
-            showRuler
-            ? (Self.titleBarHeight + Self.statusLineHeight + Self.helpBarHeight + Self.rulerBarHeight)
-            : (Self.titleBarHeight + Self.statusLineHeight + Self.helpBarHeight)
+        let titleHeight = (isZeroMode && !isMenuBarActive) ? 0 : Self.titleBarHeight
+        let statusHeight = (isZeroMode && !isPromptActive) ? 0 : Self.statusLineHeight
+        let helpHeight = isZeroMode ? 0 : Self.helpBarHeight
+        let rulerHeight = showRuler ? Self.rulerBarHeight : 0
+
+        let chrome = titleHeight + statusHeight + helpHeight + rulerHeight
 
         self.mainAreaHeight = max(1, rows - chrome)
         self.gutterWidth = (showGutter ? Self.defaultGutterWidth : 0) + (showBreakpointGutter ? 1 : 0)
-        self.textWidth = max(Self.minimumTextWidth, cols - self.gutterWidth)
+        let indicatorWidth = showIndicator ? 1 : 0
+        self.textWidth = max(Self.minimumTextWidth, cols - self.gutterWidth - indicatorWidth)
     }
 
-    /// Convenience initializer deriving ruler and gutter visibility from an Editor instance.
+    /// Convenience initializer deriving ruler, gutter, and zero mode visibility from an Editor instance.
     init(rows: Int, cols: Int, editor: Editor) {
         let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
         let showGutter = editor.displayConfig.showLineNumbers && !editor.buffer.isDirectoryBuffer
         let showBreakpointGutter = !editor.debuggerController.breakpoints(in: editor.buffer).isEmpty
+        let isZeroMode = editor.displayConfig.isZeroMode
+        let isMenuBarActive = editor.isMenuBarActive
+        let isPromptActive = editor.promptController.isActive
+        let showIndicator = editor.displayConfig.showIndicator && !editor.buffer.isDirectoryBuffer
         self.init(
             rows: rows,
             cols: cols,
             showRuler: showRuler,
             showGutter: showGutter,
-            showBreakpointGutter: showBreakpointGutter
+            showBreakpointGutter: showBreakpointGutter,
+            isZeroMode: isZeroMode,
+            isMenuBarActive: isMenuBarActive,
+            isPromptActive: isPromptActive,
+            showIndicator: showIndicator
         )
     }
 }

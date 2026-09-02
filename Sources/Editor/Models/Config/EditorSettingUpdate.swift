@@ -75,6 +75,10 @@ extension EditorSettingKey {
             return .journalFolder(clean)
         case .mouse:
             return .mouse(SettingBoolean.parse(value))
+        case .zero:
+            return .zero(SettingBoolean.parse(value))
+        case .indicator:
+            return .indicator(SettingBoolean.parse(value))
         }
     }
 }
@@ -85,6 +89,7 @@ public enum EditorSettingUpdate {
     case ruler(Bool?)
     case lineNumbers(Bool?)
     case subLineNumbers(Bool?)
+    case indicator(Bool?)
     case canvasMode(Bool?)
     case syntaxHighlighting(Bool?)
     case autoReload(Bool?)
@@ -112,6 +117,7 @@ public enum EditorSettingUpdate {
     case launchToJournal(Bool?)
     case journalFolder(String?)
     case mouse(Bool?)
+    case zero(Bool?)
 }
 
 public enum EditorEffect: Equatable {

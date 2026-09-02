@@ -40,8 +40,7 @@ extension LogoEngine {
         var procReturn: String? = nil
         let savedLastResult = lastResult
         lastResult = nil
-        executeTokens(
-            proc.bodyTokens.map(\.text), sourceTokens: proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
+        executeTokens(proc.bodyTokens, index: &procIndex, frameReturn: &procReturn)
         if currentThrowTag != nil {
             return currentThrowValue ?? ""
         }
@@ -73,19 +72,23 @@ extension LogoEngine {
         token.uppercased() == "ELSE" || isFillerToken(token)
     }
 
-    private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?) -> String? {
-        if let bodyBlock = reader.nextBlock() {
+    private func executeClauseBody(_ clause: [String], reader: inout LogoControlTokenReader, frameReturn: inout String?)
+        -> String?
+    {
+        if let bodyBlock = reader.nextSourceBlock() {
             var bIdx = 0
             executeTokens(bodyBlock, index: &bIdx, frameReturn: &frameReturn)
             return frameReturn ?? lastResult ?? ""
         } else {
             var bIdx = reader.position + 1
-            executeTokens(clause, index: &bIdx, frameReturn: &frameReturn)
+            let clauseTokens = clause.map { LogoToken(text: $0, sourceRange: 0..<0) }
+            executeTokens(clauseTokens, index: &bIdx, frameReturn: &frameReturn)
             return frameReturn ?? lastResult ?? ""
         }
     }
 
-    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String? {
+    internal func evaluateCaseClauses(targetVal: String, clausesBlock: [String], frameReturn: inout String?) -> String?
+    {
         var reader = LogoControlTokenReader(engine: self, tokens: clausesBlock, index: -1)
         while let clause = reader.nextBlock() {
             guard !clause.isEmpty else { continue }

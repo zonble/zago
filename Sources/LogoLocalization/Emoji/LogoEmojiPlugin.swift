@@ -340,7 +340,7 @@ public struct LogoEmojiPlugin: LogoParserPlugin {
 
     private static let headingMap: [String: LogoHeading] = [
         "⬆": .up,
-        "➡": .right,
+        "⮕": .right,
         "⬇": .down,
         "⬅": .left,
     ]

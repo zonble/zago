@@ -184,7 +184,7 @@ import TextMetrics
     let handled = editor.commandRegistry.dispatch(key: .alt("o"), editor: editor)
 
     #expect(handled == true)
-    #expect(editor.buffer.filePath == targetPath)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(targetPath, isDirectory: false))
     #expect(editor.buffer.lines.first == "target")
 }
 
@@ -213,7 +213,7 @@ import TextMetrics
     #expect(handled == true)
     #expect(editor.buffers.count == 1)
     #expect(editor.currentBufferIndex == 0)
-    #expect(editor.buffer.filePath == indexPath)
+    #expect(editor.buffer.filePath == editor.fileIOStrategy.normalizePath(indexPath, isDirectory: false))
     #expect(editor.buffer.lines == ["See [this](./index.md#section)", "unchanged"])
     #expect(editor.statusMessage == String(format: editor.l10n["status.jumped_to_anchor"], "section"))
 }
@@ -583,7 +583,8 @@ import TextMetrics
     #expect(editor.buffer.columnIndex == 0)
 
     let rendered = editor.renderer.render(editor: editor, rows: 10, cols: 24)
-    #expect(rendered.contains("\u{1B}[7m                   \u{1B}[m"))
+    #expect(rendered.contains("\u{1B}[7m \u{1B}[m"))
+    #expect(!rendered.contains("\u{1B}[7m                   \u{1B}[m"))
 
     editor.processKey(.char("X"))
     #expect(editor.buffer.selectionMark == nil)
@@ -654,8 +655,8 @@ import TextMetrics
     editor.processKey(.arrowDown)
     #expect(editor.menuBar.itemIndex == 1)
 
-    // 4. Press letter 's' to jump to Shapes menu
-    editor.processKey(.char("s"))
+    // 4. Press Alt+S to jump to Shapes menu
+    editor.processKey(.alt("s"))
     #expect(editor.menuBar.currentCategory.titleKey == "menu.shapes")
 
     // 4b. PageUp/PageDown jump within menu items (vertical dropdown list); Home/End jump across menu categories (horizontal bar)

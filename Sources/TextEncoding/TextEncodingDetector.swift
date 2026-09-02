@@ -26,40 +26,56 @@ public enum TextEncodingDetector {
         }
 
         // 2. Strict UTF-8 validation (without BOM)
-        if let utf8String = String(data: data, encoding: .utf8) {
-            return TextReadResult(content: utf8String, encoding: .utf8)
+        if let utf8Result = tryDecode(data, encoding: .utf8) {
+            return utf8Result
         }
 
         #if !os(WASI)
-        // 3. Multi-byte candidate encodings
-        let candidateEncodings: [String.Encoding] = [
-            .big5,
-            .gb18030,
-            .gbk,
-            .shiftJISCustom,
-            .utf16,
-            .eucJPCustom,
-        ]
+            // 3. Multi-byte candidate encodings
+            let candidateEncodings: [String.Encoding] = [
+                .big5,
+                .gb18030,
+                .gbk,
+                .shiftJISCustom,
+                .utf16,
+                .eucJPCustom,
+            ]
 
-        for encoding in candidateEncodings {
-            if let decoded = String(data: data, encoding: encoding) {
-                return TextReadResult(content: decoded, encoding: encoding)
+            for encoding in candidateEncodings {
+                if let decodedResult = tryDecode(data, encoding: encoding) {
+                    return decodedResult
+                }
+            }
+
+            // 4. Single-byte 8-bit fallback (e.g. Windows-1252 / ISO-8859-1)
+            if let fallbackString = String(data: data, encoding: .windowsCP1252)
+                ?? String(data: data, encoding: .isoLatin1)
+            {
+                let actualEncoding: String.Encoding =
+                    String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
+                return TextReadResult(content: fallbackString, encoding: actualEncoding)
+            }
+            return nil
+        #else
+            // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
+            return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
+        #endif
+    }
+
+    private static func tryDecode(_ data: Data, encoding: String.Encoding) -> TextReadResult? {
+        if let decoded = String(data: data, encoding: encoding) {
+            return TextReadResult(content: decoded, encoding: encoding)
+        }
+        // If data is truncated at a sample boundary (e.g. 8192 bytes), try trimming 1..3 trailing bytes
+        if data.count >= 4 {
+            for trim in 1...3 {
+                let trimmedData = data.dropLast(trim)
+                if let decoded = String(data: trimmedData, encoding: encoding) {
+                    return TextReadResult(content: decoded, encoding: encoding)
+                }
             }
         }
-
-        // 4. Single-byte 8-bit fallback (e.g. Windows-1252 / ISO-8859-1)
-        if let fallbackString = String(data: data, encoding: .windowsCP1252)
-            ?? String(data: data, encoding: .isoLatin1)
-        {
-            let actualEncoding: String.Encoding =
-                String(data: data, encoding: .windowsCP1252) != nil ? .windowsCP1252 : .isoLatin1
-            return TextReadResult(content: fallbackString, encoding: actualEncoding)
-        }
         return nil
-        #else
-        // Safe fallback for WebAssembly / WASI runtime without legacy encoding tables
-        return TextReadResult(content: String(decoding: data, as: UTF8.self), encoding: .utf8)
-        #endif
     }
 
     private static func detectBOM(_ data: Data) -> TextReadResult? {

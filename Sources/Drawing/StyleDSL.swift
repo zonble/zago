@@ -27,6 +27,12 @@ public enum StyleDSL {
         case "++++":
             return .heavyQuadrupleDash
         default:
+            if !clean.isEmpty && clean.allSatisfy({ $0 == "=" }) {
+                return .double
+            }
+            if !clean.isEmpty && clean.allSatisfy({ $0 == "-" }) {
+                return .single
+            }
             return nil
         }
     }
@@ -99,11 +105,24 @@ public enum StyleDSL {
         var endArrow: ArrowStyle? = nil
 
         let startPrefixes: [(String, ArrowStyle)] = [
+            ("<=|", .double),
+            ("<+|", .heavy),
+            ("<*>", .solidDiamond),
+            ("<>", .diamond),
+            ("o", .openCircle),
+            ("O", .openCircle),
+            ("*", .circle),
+            ("x", .cross),
+            ("X", .cross),
+            ("<:", .crow),
+            ("<^", .harpoon),
+            ("<_", .harpoon),
+            ("<..", .dotted),
             ("<~", .stemmed),
             ("<|", .hollow),
             ("<.", .small),
             ("<<", .solid),
-            ("<", .ascii)
+            ("<", .ascii),
         ]
 
         for (prefix, style) in startPrefixes {
@@ -115,11 +134,24 @@ public enum StyleDSL {
         }
 
         let endSuffixes: [(String, ArrowStyle)] = [
+            ("|=>", .double),
+            ("|+>", .heavy),
+            ("<*>", .solidDiamond),
+            ("<>", .diamond),
+            ("o", .openCircle),
+            ("O", .openCircle),
+            ("*", .circle),
+            ("x", .cross),
+            ("X", .cross),
+            (":>", .crow),
+            ("^>", .harpoon),
+            ("_>", .harpoon),
+            ("..>", .dotted),
             ("~>", .stemmed),
             ("|>", .hollow),
             (".>", .small),
             (">>", .solid),
-            (">", .ascii)
+            (">", .ascii),
         ]
 
         for (suffix, style) in endSuffixes {

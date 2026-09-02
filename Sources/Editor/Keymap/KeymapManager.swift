@@ -124,6 +124,7 @@ final class KeymapManager {
         register(.editBacktab, .backtab)
         register(.tableToggle, .f7, .alt("T"), .alt("t"))
         register(.canvasToggle, .f8, .alt("V"), .alt("v"))
+        register(.zeroToggle, .alt("Z"), .alt("z"))
         register(.borderStyle, .alt("S"), .alt("s"))
         register(.editMark, .ctrl("^"), .mark)
         register(.logoOutput, .alt("L"), .alt("l"))
@@ -280,6 +281,8 @@ final class KeymapManager {
         register(.promptClearLine, .ctrlBackspace, .altBackspace, mode: .prompt)
         register(.selectLeft, .shiftArrowLeft, .ctrlShiftArrowLeft, .ctrlShift("B"), .ctrlShift("b"), mode: .prompt)
         register(.selectRight, .shiftArrowRight, .ctrlShiftArrowRight, .ctrlShift("F"), .ctrlShift("f"), mode: .prompt)
+        register(.selectHome, .shiftHome, mode: .prompt)
+        register(.selectEnd, .shiftEnd, mode: .prompt)
 
         switch preset {
         case .classic:
@@ -289,6 +292,9 @@ final class KeymapManager {
             register(.editUncut, .ctrl("U"), .ctrl("u"), mode: .prompt)
             register(.moveHome, .ctrl("A"), .ctrl("a"), .home, mode: .prompt)
             register(.moveEnd, .ctrl("E"), .ctrl("e"), .end, mode: .prompt)
+            register(.moveLeft, .ctrl("B"), .ctrl("b"), .arrowLeft, mode: .prompt)
+            register(.moveRight, .ctrl("F"), .ctrl("f"), .arrowRight, mode: .prompt)
+            register(.editDelete, .ctrl("D"), .ctrl("d"), .delete, mode: .prompt)
 
         case .modern:
             register(.promptCancel, .esc, .ctrl("G"), .ctrl("g"), mode: .prompt)
@@ -298,6 +304,9 @@ final class KeymapManager {
             register(.selectAll, .ctrl("A"), .ctrl("a"), mode: .prompt)
             register(.moveHome, .home, mode: .prompt)
             register(.moveEnd, .end, mode: .prompt)
+            register(.moveLeft, .arrowLeft, mode: .prompt)
+            register(.moveRight, .arrowRight, mode: .prompt)
+            register(.editDelete, .delete, mode: .prompt)
         }
     }
 }

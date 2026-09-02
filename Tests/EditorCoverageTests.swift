@@ -201,6 +201,67 @@ private func makeEditor(
         #expect(editor.statusMessage == editor.l10n["status.cancelled_insert"])
     }
 
+    @Test func testOpenFilePromptSuccessErrorAndCancellation() {
+        let fileIO = MemoryEditorFileIOStrategy(files: ["/doc.txt": "Hello\nWorld"])
+        let editor = makeEditor(fileIO: fileIO)
+
+        // 1. Open file prompt and submit valid path -> creates / switches to new buffer
+        editor.promptOpenFilePath()
+        typePrompt("/doc.txt", in: editor)
+        editor.processKey(.enter)
+
+        #expect(editor.buffer.lines == ["Hello", "World"])
+        #expect(editor.buffer.filePath == "/doc.txt")
+
+        // 2. Cancellation
+        editor.promptOpenFilePath()
+        editor.processKey(.esc)
+        #expect(editor.statusMessage == editor.l10n["status.cancelled_open"])
+    }
+
+    @Test func testOpenFileAndInsertFilePathAutocompletion() {
+        let fileIO = MemoryEditorFileIOStrategy(
+            files: [
+                "/workspace/document.txt": "Line 1\nLine 2",
+                "/workspace/data.json": "{}",
+                "/workspace/snippet.txt": "Snippet"
+            ],
+            directories: ["/workspace/subfolder"]
+        )
+        let editor = makeEditor(fileIO: fileIO)
+
+        // 1. Tab completion in Open File prompt with multiple matches (common prefix "d")
+        editor.promptOpenFilePath()
+        typePrompt("/workspace/d", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/d")
+        #expect(editor.promptController.completionText?.contains("data.json") == true)
+        #expect(editor.promptController.completionText?.contains("document.txt") == true)
+
+        // 2. Tab completion with single match
+        typePrompt("oc", in: editor) // "/workspace/doc"
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/document.txt")
+
+        editor.processKey(.enter)
+        #expect(editor.buffer.filePath == "/workspace/document.txt")
+
+        // 3. Tab completion in Insert File prompt
+        editor.promptInsertFilePath()
+        typePrompt("/workspace/sn", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "/workspace/snippet.txt")
+        editor.processKey(.enter)
+        #expect(editor.buffer.lines.first?.contains("Snippet") == true)
+
+        // 4. Tab completion in CommandBar :open
+        editor.promptLogoMacro()
+        typePrompt("open /workspace/sub", in: editor)
+        editor.processKey(.tab)
+        #expect(editor.promptController.inputText == "open /workspace/subfolder/")
+        editor.processKey(.esc)
+    }
+
     @Test func testFillTextPromptAndGotoLineInCanvasMode() {
         let editor = Editor(language: .en)
         editor.buffer.lines = ["abcdef", "uvwxyz"]
@@ -563,8 +624,8 @@ private func makeEditor(
         let l10nEN = L10n(language: .en)
         let l10nZH = L10n(language: .zh_TW)
 
-        #expect(l10nEN["ai.proposal.action_hint"] == "[M+A Accept | M+R Reject]")
-        #expect(l10nZH["ai.proposal.action_hint"] == "[M+A 接受提案 | M+R 拒絕提案]")
+        #expect(l10nEN["ai.proposal.action_hint"] == "[⌥A Accept | ⌥R Reject]")
+        #expect(l10nZH["ai.proposal.action_hint"] == "[⌥A 接受提案 | ⌥R 拒絕提案]")
 
         #expect(l10nEN["ai.proposal.readonly_cannot_modify"] == "[AI Proposal] Cannot modify read-only buffer")
         #expect(l10nZH["ai.proposal.readonly_cannot_modify"] == "[AI 提案] 無法修改唯讀 Buffer")
@@ -642,14 +703,14 @@ private func makeEditor(
         let delegate: LogoEngineDelegate = editor
 
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentColumnIndex)?.integerValue == 5)
-        #expect(
-            delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue == [
-                "first.txt", "second.txt",
-            ])
+        let bufferList = delegate.logoEngine(editor.logoEngine, queryState: .bufferList)?.stringsValue ?? []
+        #expect(bufferList.count == 2)
+        #expect(bufferList[0].hasSuffix("first.txt"))
+        #expect(bufferList[1].hasSuffix("second.txt"))
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .currentBufferIndex)?.integerValue == 0)
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .bufferText)?.stringValue == "A中B\ntail")
         #expect(delegate.logoEngine(editor.logoEngine, queryState: .isModified)?.boolValue == true)
-        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName)?.stringValue == "first.txt")
+        #expect(delegate.logoEngine(editor.logoEngine, queryState: .fileName)?.stringValue?.hasSuffix("first.txt") == true)
 
         editor.buffer.selectionMark = (line: 0, column: 1)
         editor.buffer.lineIndex = 0

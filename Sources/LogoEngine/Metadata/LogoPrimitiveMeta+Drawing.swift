@@ -1,5 +1,5 @@
-import Foundation
 import Drawing
+import Foundation
 
 private let borderStyleAllowedValues = BorderStyle.allCases.map(\.rawValue)
 private let arrowStyleAllowedValues = ArrowStyle.allCases.map(\.rawValue)
@@ -22,8 +22,8 @@ private let tableStyleDSLNote = """
 private let lineStyleDSLNote = """
     Supports Style DSL with concise format [startArrow][border][endArrow]:
     • Borders: - (single), + (heavy), = (double), a (ascii), --, ++, ---, +++, ----, ++++
-    • Arrows: < > (standard), << >> (solid), <| |> (hollow), <~ ~> (stemmed), <. .> (small)
-    • Examples: "->", "<=>", "<<=>>", "<~+", "-->>", "<|+++|>"
+    • Arrows: < > (standard), << >> (solid), <| |> (hollow), <~ ~> (stemmed), <. .> (small), <=| |=> (double), <+| |+> (heavy), <> (diamond), <*> (solid diamond), * (circle), o / O (open circle), x / X (cross), <: :> (crow), <^ ^> (harpoon), <.. ..> (dotted)
+    • Examples: "->", "<=>", "<<=>>", "<~+", "*---*", "o---o", "x---x", "<>--->", "<:---:>", "<..--..>"
     """
 
 private func boxParameters(for commandName: String) -> [LogoPrimitiveParameter] {
@@ -51,7 +51,8 @@ private func lineParameters(for commandName: String, lengthOrHeight: String) -> 
     [
         LogoPrimitiveParameter(
             name: lengthOrHeight, required: false,
-            description: "The \(lengthOrHeight)\(lengthOrHeight == "length" ? " argument" : ""). Used by \(commandName).",
+            description:
+                "The \(lengthOrHeight)\(lengthOrHeight == "length" ? " argument" : ""). Used by \(commandName).",
             example: "3"
         ),
         LogoPrimitiveParameter(
@@ -107,9 +108,11 @@ extension LogoPrimitive {
                 source: .zago,
                 parameters: [
                     LogoPrimitiveParameter(
-                        name: "width", required: false, description: "The width of the frame (optional if canvas mark is set).", example: "20"),
+                        name: "width", required: false,
+                        description: "The width of the frame (optional if canvas mark is set).", example: "20"),
                     LogoPrimitiveParameter(
-                        name: "height", required: false, description: "The height of the frame (optional if canvas mark is set).", example: "5"),
+                        name: "height", required: false,
+                        description: "The height of the frame (optional if canvas mark is set).", example: "5"),
                     LogoPrimitiveParameter(
                         name: "style", required: false, description: "The formatting or border style. Used by FRAME.",
                         example: "single",

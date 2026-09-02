@@ -10,7 +10,7 @@ extension LogoEngine {
     }
 
     internal func setLastExpressionBoolean(_ value: Bool) {
-        lastExpressionValue = .string(value ? "true" : "false")
+        lastExpressionValue = .string(value.logoString)
     }
 
     internal func setLastExpressionMeasurement(

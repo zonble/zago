@@ -142,9 +142,8 @@ struct SelectPgupCommand: Command {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
             message = editor.l10n["status.mark_set"]
         }
-        let (rows, _) = editor.terminal.getWindowSize()
-        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        let (rows, cols) = editor.terminal.getWindowSize()
+        let mainAreaHeight = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
         editor.moveCursorVirtual(deltaRow: -mainAreaHeight)
         return .succeeded(message: message)
     }
@@ -165,9 +164,8 @@ struct SelectPgdnCommand: Command {
             editor.buffer.selectionMark = (line: editor.buffer.lineIndex, column: editor.buffer.columnIndex)
             message = editor.l10n["status.mark_set"]
         }
-        let (rows, _) = editor.terminal.getWindowSize()
-        let showRuler = editor.displayConfig.showRuler && !editor.buffer.isDirectoryBuffer
-        let mainAreaHeight = max(1, rows - (showRuler ? 5 : 4))
+        let (rows, cols) = editor.terminal.getWindowSize()
+        let mainAreaHeight = ScreenGeometry(rows: rows, cols: cols, editor: editor).mainAreaHeight
         editor.moveCursorVirtual(deltaRow: mainAreaHeight)
         return .succeeded(message: message)
     }

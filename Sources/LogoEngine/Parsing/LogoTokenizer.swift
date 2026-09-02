@@ -1,5 +1,5 @@
-import Foundation
 import Drawing
+import Foundation
 
 public struct LogoToken: Equatable, Sendable {
     public let text: String
@@ -173,7 +173,9 @@ public enum LogoTokenizer {
         return tokenizeInfixOperators(tokens)
     }
 
-    private static func extractStyleDSLToken(from script: String, startingAt index: String.Index) -> (text: String, endIndex: String.Index)? {
+    private static func extractStyleDSLToken(from script: String, startingAt index: String.Index) -> (
+        text: String, endIndex: String.Index
+    )? {
         var peek = index
         while peek < script.endIndex {
             let ch = script[peek]
@@ -192,7 +194,9 @@ public enum LogoTokenizer {
 
     static func tokenizeInfixOperators(_ rawTokens: [String]) -> [String] {
         rawTokens.flatMap { word in
-            guard !(word.hasPrefix("\"") || word.hasPrefix("|") || StyleDSL.parseLineStyle(word) != nil || StyleDSL.parseBoxStyle(word) != nil)
+            guard
+                !(word.hasPrefix("\"") || word.hasPrefix("|") || StyleDSL.parseLineStyle(word) != nil
+                    || StyleDSL.parseBoxStyle(word) != nil)
             else { return [word] }
             var parts: [String] = []
             var current = ""

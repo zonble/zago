@@ -455,3 +455,51 @@ import Testing
     #expect(editor.buffer.canvasBlockMark == nil)
     #expect(cancelResult.statusMessage == editor.l10n["status.mark_unset"])
 }
+
+@Test func testNewlineAndEmptyLineSelectionRendering() throws {
+    let editor = Editor()
+    editor.displayConfig.enableSyntaxHighlight = false
+    editor.displayConfig.showLineNumbers = false
+    editor.buffer.lines = ["Hello", "", "World"]
+    
+    // Set selection from line 0, col 0 to line 2, col 3 ("Wor")
+    editor.buffer.selectionMark = (line: 0, column: 0)
+    editor.buffer.lineIndex = 2
+    editor.buffer.columnIndex = 3
+    
+    let rendered = editor.renderer.renderDiff(editor: editor, rows: 10, cols: 20)
+    
+    // Line 0: "Hello" (all 5 chars inverted) + 1 extra inverted space for \n
+    let expectedLine0 = "Hello".map { "\u{1B}[7m\($0)\u{1B}[m" }.joined() + "\u{1B}[7m \u{1B}[m"
+    #expect(rendered.contains(expectedLine0))
+    
+    // Line 1: empty line "" -> exactly 1 inverted space for \n
+    #expect(rendered.contains("\u{1B}[7m \u{1B}[m"))
+    
+    // Line 2: "Wor" inverted, "ld" normal (no trailing inverted space for \n)
+    let expectedLine2 = "Wor".map { "\u{1B}[7m\($0)\u{1B}[m" }.joined() + "ld"
+    #expect(rendered.contains(expectedLine2))
+}
+
+@Test func testSingleLineTextEditorShiftHomeAndEndSelection() {
+    var editor = SingleLineTextEditor(text: "Hello World", cursorIndex: 5)
+    
+    // Shift + Home -> selection from index 5 to 0
+    editor.selectHome()
+    #expect(editor.cursorIndex == 0)
+    #expect(editor.selectionAnchorIndex == 5)
+    #expect(editor.selectionRange == 0..<5)
+    #expect(editor.selectedText == "Hello")
+    
+    // Reset selection anchor and move cursor to index 5
+    editor.selectionAnchorIndex = nil
+    editor.cursorIndex = 5
+    
+    // Shift + End -> selection from index 5 to 11
+    editor.selectEnd()
+    #expect(editor.cursorIndex == 11)
+    #expect(editor.selectionAnchorIndex == 5)
+    #expect(editor.selectionRange == 5..<11)
+    #expect(editor.selectedText == " World")
+}
+

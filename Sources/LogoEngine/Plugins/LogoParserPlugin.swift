@@ -74,27 +74,27 @@ public protocol LogoParserPlugin: Sendable {
     func aliases(for primitive: LogoPrimitive) -> [String]
 }
 
-public extension LogoParserPlugin {
-    var displayName: String { id }
-    var aliases: [String] { [] }
-    func parsePrimitive(_ token: String) -> LogoPrimitive? { nil }
-    func parseOperator(_ token: String) -> LogoOperator? { nil }
-    func parseHeading(_ token: String) -> LogoHeading? { nil }
-    func parseBoolean(_ token: String) -> Bool? { nil }
-    func parseExitPosition(_ token: String) -> BoxExitPosition? { nil }
-    func parseBorderStyle(_ token: String) -> BorderStyle? { nil }
-    func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? { nil }
-    func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset? { nil }
-    func parseNumberStyle(_ token: String) -> LogoNumberStyle? { nil }
-    func parseListType(_ token: String) -> LogoListType? { nil }
-    func parseByteCountStyle(_ token: String) -> LogoByteCountStyle? { nil }
-    func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle? { nil }
-    func parsePersonNameField(_ token: String) -> LogoPersonNameField? { nil }
-    func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? { nil }
-    var fillerTokens: Set<String> { [] }
-    func isFillerToken(_ token: String) -> Bool {
+extension LogoParserPlugin {
+    public var displayName: String { id }
+    public var aliases: [String] { [] }
+    public func parsePrimitive(_ token: String) -> LogoPrimitive? { nil }
+    public func parseOperator(_ token: String) -> LogoOperator? { nil }
+    public func parseHeading(_ token: String) -> LogoHeading? { nil }
+    public func parseBoolean(_ token: String) -> Bool? { nil }
+    public func parseExitPosition(_ token: String) -> BoxExitPosition? { nil }
+    public func parseBorderStyle(_ token: String) -> BorderStyle? { nil }
+    public func parseCalendarIdentifier(_ token: String) -> Calendar.Identifier? { nil }
+    public func parseDateTimeStylePreset(_ token: String) -> LogoDateTimeStylePreset? { nil }
+    public func parseNumberStyle(_ token: String) -> LogoNumberStyle? { nil }
+    public func parseListType(_ token: String) -> LogoListType? { nil }
+    public func parseByteCountStyle(_ token: String) -> LogoByteCountStyle? { nil }
+    public func parsePersonNameStyle(_ token: String) -> LogoPersonNameStyle? { nil }
+    public func parsePersonNameField(_ token: String) -> LogoPersonNameField? { nil }
+    public func parseFormatOptionField(_ token: String) -> LogoFormatOptionField? { nil }
+    public var fillerTokens: Set<String> { [] }
+    public func isFillerToken(_ token: String) -> Bool {
         fillerTokens.contains(token.lowercased())
     }
-    var keywordAliases: [String] { [] }
-    func aliases(for primitive: LogoPrimitive) -> [String] { [] }
+    public var keywordAliases: [String] { [] }
+    public func aliases(for primitive: LogoPrimitive) -> [String] { [] }
 }

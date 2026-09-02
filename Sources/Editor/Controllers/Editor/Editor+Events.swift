@@ -44,7 +44,9 @@ extension Editor {
             return
         }
 
-        if (key == .shiftHome || key == .shiftEnd || key == .shiftPageUp || key == .shiftPageDown) && isCanvasModeActive && !isTableModeActive {
+        if (key == .shiftHome || key == .shiftEnd || key == .shiftPageUp || key == .shiftPageDown) && isCanvasModeActive
+            && !isTableModeActive
+        {
             return
         }
 

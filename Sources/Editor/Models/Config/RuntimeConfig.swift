@@ -44,6 +44,12 @@ struct RuntimeConfig: Sendable, Equatable {
     /// Whether terminal mouse tracking is enabled.
     var enableMouse: Bool
 
+    /// Whether zero interface mode (hide title, status, and help bars) is enabled.
+    var isZeroMode: Bool
+
+    /// Whether vertical scrollbar indicator is enabled.
+    var showIndicator: Bool
+
     init(
         showRuler: Bool = false,
         showLineNumbers: Bool = true,
@@ -58,7 +64,9 @@ struct RuntimeConfig: Sendable, Equatable {
         noNewlines: Bool = false,
         showGitDiff: Bool = true,
         ipcEnabled: Bool = false,
-        enableMouse: Bool = true
+        enableMouse: Bool = true,
+        isZeroMode: Bool = false,
+        showIndicator: Bool = false
     ) {
         self.showRuler = showRuler
         self.showLineNumbers = showLineNumbers
@@ -74,5 +82,7 @@ struct RuntimeConfig: Sendable, Equatable {
         self.showGitDiff = showGitDiff
         self.ipcEnabled = ipcEnabled
         self.enableMouse = enableMouse
+        self.isZeroMode = isZeroMode
+        self.showIndicator = showIndicator
     }
 }

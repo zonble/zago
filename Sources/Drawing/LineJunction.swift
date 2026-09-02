@@ -50,10 +50,10 @@ public func canvasMask(for character: Character?, style _: BorderStyle = .single
     case "┬", "╦", "┳": CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask
     case "┴", "╩", "┻": CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask
     case "┼", "╬", "╋", "+": 15
-    case "→", ">", "▶", "►", "▷", "▸": CanvasDrawDirection.left.mask
-    case "←", "<", "◀", "◄", "◁", "◂": CanvasDrawDirection.right.mask
-    case "↑", "^", "▲", "△", "▴": CanvasDrawDirection.down.mask
-    case "↓", "v", "▼", "▽", "▾": CanvasDrawDirection.up.mask
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⮕", "⤚", "⇀", "⇢": CanvasDrawDirection.left.mask
+    case "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼", "⇠": CanvasDrawDirection.right.mask
+    case "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿", "⇡": CanvasDrawDirection.down.mask
+    case "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂", "⇣": CanvasDrawDirection.up.mask
     default: 0
     }
 }
@@ -66,10 +66,10 @@ public func lineCharacter(forMask mask: UInt8, style: BorderStyle, rounded: Bool
         if rounded {
             switch normalizedMask {
             case CanvasDrawDirection.right.mask | CanvasDrawDirection.down.mask,
-                 CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
+                CanvasDrawDirection.up.mask | CanvasDrawDirection.left.mask:
                 return "/"
             case CanvasDrawDirection.left.mask | CanvasDrawDirection.down.mask,
-                 CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
+                CanvasDrawDirection.up.mask | CanvasDrawDirection.right.mask:
                 return "\\"
             case CanvasDrawDirection.left.mask | CanvasDrawDirection.right.mask,
                 CanvasDrawDirection.left.mask,
@@ -242,12 +242,95 @@ public func arrowHead(
         case .left: "◂"
         case .right: "▸"
         }
+    case .double:
+        switch direction {
+        case .up: "⇑"
+        case .down: "⇓"
+        case .left: "⇐"
+        case .right: "⇒"
+        }
+    case .heavy:
+        switch direction {
+        case .up: "⬆"
+        case .down: "⬇"
+        case .left: "⬅"
+        case .right: "⮕"
+        }
+    case .diamond:
+        switch direction {
+        case .up: "◇"
+        case .down: "◇"
+        case .left: "◇"
+        case .right: "◇"
+        }
+    case .solidDiamond:
+        switch direction {
+        case .up: "◆"
+        case .down: "◆"
+        case .left: "◆"
+        case .right: "◆"
+        }
+    case .circle:
+        switch direction {
+        case .up: "●"
+        case .down: "●"
+        case .left: "●"
+        case .right: "●"
+        }
+    case .openCircle:
+        switch direction {
+        case .up: "○"
+        case .down: "○"
+        case .left: "○"
+        case .right: "○"
+        }
+    case .cross:
+        switch direction {
+        case .up: "✕"
+        case .down: "✕"
+        case .left: "✕"
+        case .right: "✕"
+        }
+    case .crow:
+        switch direction {
+        case .up: "⤘"
+        case .down: "⤛"
+        case .left: "⤙"
+        case .right: "⤚"
+        }
+    case .harpoon:
+        switch direction {
+        case .up: "↿"
+        case .down: "⇂"
+        case .left: "↼"
+        case .right: "⇀"
+        }
+    case .dotted:
+        switch direction {
+        case .up: "⇡"
+        case .down: "⇣"
+        case .left: "⇠"
+        case .right: "⇢"
+        }
+    }
+}
+
+public func isArrowCharacter(_ character: Character) -> Bool {
+    switch character {
+    case "→", ">", "▶", "►", "▷", "▸", "⇒", "➡", "⮕", "⤚", "⇀", "⇢",
+        "←", "<", "◀", "◄", "◁", "◂", "⇐", "⬅", "⤙", "↼", "⇠",
+        "↑", "^", "▲", "△", "▴", "⇑", "⬆", "⤘", "↿", "⇡",
+        "↓", "v", "▼", "▽", "▾", "⇓", "⬇", "⤛", "⇂", "⇣",
+        "◇", "◆", "●", "○", "✕":
+        return true
+    default:
+        return false
     }
 }
 
 public func isCanvasDrawableCharacter(_ character: Character?, style: BorderStyle) -> Bool {
     guard let character else { return true }
-    return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0
+    return character == " " || character == "\t" || canvasMask(for: character, style: style) != 0 || isArrowCharacter(character)
 }
 
 public func oppositeMask(for direction: CanvasDrawDirection) -> UInt8 {

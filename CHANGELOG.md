@@ -2,6 +2,145 @@
 
 ## Unreleased
 
+## [1.4.6] - 2026-09-01
+
+Feature and bugfix release featuring enhanced path autocompletion, multi-mode double-click word selection, refined Canvas Mode editing behaviors, dotted arrow styles, menu organization improvements, and rendering accuracy fixes.
+
+### Added
+
+- **Tab Path Autocompletion**:
+  - Added tab completion for file paths in command prompt, `:open`, `:edit`, and `:write` commands.
+- **Double-Click Word Selection**:
+  - Added mouse double-click word selection across Text, Table, and Canvas modes.
+- **Canvas Mode Enter Alignment**:
+  - Added in-place `Enter` key behavior in Canvas Mode with smart start column alignment to the preceding content.
+- **Dotted Arrow Style (`dotted`)**:
+  - Added dotted arrow style in Canvas Mode and Style DSL (`┄┄►`, `┆▼`).
+- **Open File Command (`file.open_file`)**:
+  - Added dedicated open file command to open files in new buffers.
+- **Menu Dividers and Key Display Symbols**:
+  - Added visual menu dividers and standardized key symbol displays.
+
+### Changed
+
+- **Dropdown Menu Priority**:
+  - Prioritized active dropdown menu items over top-level category hotkeys during keyboard navigation.
+- **Documentation & FAQ**:
+  - Updated project FAQ to detail the rationale behind choosing Swift for `zago`.
+
+### Fixed
+
+- **Canvas Inactive Cursor Rendering**:
+  - Fixed visual column rendering for inactive cursor in Canvas Mode when focus is in the prompt bar.
+- **Shift+Arrow Line Segment Replacement**:
+  - Fixed line drawing to seamlessly overwrite and replace existing arrow heads with continuous line segments.
+- **Scrollbar Indicator Terminal Line Clearing**:
+  - Fixed rightmost column terminal clear-line sequence (`\u{1B}[K`) from erasing scrollbar thumb/track characters on full-width lines.
+
+## [1.4.5] - 2026-08-31
+
+Feature and UX enhancement release introducing Zero Interface Mode, vertical scrollbar indicator, expanded arrow and connector styles in Style DSL, canvas block overwrite pasting, Org-mode LOGO code block evaluation, and multi-byte boundary detection improvements.
+
+### Added
+
+- **Zero Interface Mode (`-0` / `--zero` / `Alt+Z`)**:
+  - Added distraction-free mode hiding chrome elements (menu, status, and hint bars) for maximum editor viewport space.
+  - Added toggle shortcut `Alt+Z` and command `:set zero` / `:set nozero`.
+- **Vertical Scrollbar Indicator (`-q` / `--indicator`)**:
+  - Added vertical scrollbar position indicator to visualize relative document viewport position.
+  - Added CLI flag `-q` / `--indicator` and `:set indicator` / `:set noindicator` setting.
+- **Extended Arrow Shapes & Style DSL**:
+  - Added new connector and arrow styles: diamond (`◆`), circle (`●`), cross (`✚`), crow foot (`⤙`), and harpoon (`⇁`/`↼`).
+  - Added double arrows (`<=|` / `|=>`) and heavy arrows (`<+|` / `|+>`) with Style DSL support.
+  - Reorganized menu bar with a dedicated **Arrows** category and made Style DSL reference menu always accessible.
+- **Org-Mode LOGO Block Evaluation**:
+  - Added support for Org-mode `#+begin_src logo` ... `#+end_src` code block extraction and execution.
+- **Text Selection & Navigation**:
+  - Added `Shift+Home` and `Shift+End` range selection support in `SingleLineTextEditor` and interactive prompt bars.
+  - Added distinct inactive cursor styling in the editor when focus is in the command bar or during prompt entry in canvas mode.
+
+### Changed
+
+- **Canvas Mode Block Paste Overwrite**:
+  - Changed block pasting in canvas mode to overwrite existing cells rather than shifting following content rightward, preserving diagram layouts.
+  - Preserved canvas block marks after fill operations.
+- **Modular ANSI and Terminal Target Refactoring**:
+  - Extracted shared ANSI key mappings to dedicated `ANSITerminal` target shared across CLI and WebAssembly (`zagoweb`).
+  - Refactored single-line prompts into `SingleLineTextEditor` and modular `PromptController` extensions.
+
+### Fixed
+
+- **Multi-Byte Encoding Truncation**:
+  - Added boundary truncation trimming for all multi-byte encodings in `TextEncodingDetector`.
+- **Windows Release Packaging**:
+  - Excluded unnecessary Swift toolchain DLLs from Windows release packages.
+
+## [1.4.4] - 2026-08-28
+
+Maintenance and test suite stabilization release standardizing cross-platform path assertions and eliminating LogoEngine compiler warnings.
+
+### Fixed
+
+- **Cross-Platform Test Path Normalization**:
+  - Normalized path assertions across Windows and POSIX environments in `DirectoryBufferTests`, `EditorEngineTests`, and `CommandBarTests` using `FileIOStrategy.normalizePath`.
+- **LogoEngine Compiler Warnings**:
+  - Cleaned up unused variable tracking and redundant guard unwrapping in `LogoEngine+BoxCommands`.
+
+## [1.4.3] - 2026-08-28
+
+Cross-platform stability and syntax highlight refinement release introducing backslash escape parsing for Markdown text styling, Windows SGR mouse event processing, Windows path resolution against CWD with atomic write handling for virtual drives, and WebAssembly configuration file loading.
+
+### Added
+
+- **Markdown Backslash Escaping**:
+  - Added support for backslash escaping formatting characters (`\*`, `\_`, `\~`, `\``) to prevent unwanted bold, italic, strikethrough, and inline code formatting triggers.
+
+### Fixed
+
+- **Windows Platform Enhancements**:
+  - Enabled 1006 SGR extended mouse tracking and disabled console `ENABLE_QUICK_EDIT_MODE` to ensure seamless mouse click and scroll tracking on Windows Terminal and PowerShell.
+  - Resolved relative file paths accurately against current working directory.
+  - Supported Windows path backslash delimiters and direct file writing for virtual and cloud drives (OneDrive / Google Drive) where temporary atomic file renames may fail.
+  - Documented Windows SGR mouse input, path resolution, and virtual drive file handling in `docs/architecture/cross_platform.md`.
+- **WebAssembly (zagoweb) Configuration**:
+  - Supported initial load and reload of `.zagorc` configuration in WASI browser environments.
+
+## [1.4.2] - 2026-08-27
+
+Performance, spatial canvas editing, and text selection release introducing incremental per-line layout caching, 2D canvas block spatial editing semantics, WebAssembly CJK IME batch draining, text selection newline highlighting, and daily journal workflows.
+
+### Added
+
+- **Canvas Mode 2D Spatial Editing & Mark Persistence**:
+  - `Ctrl+K` (Cut Canvas Block): Copies the 2D block into `canvasBlockClipboard` and fills the cut area with whitespace (`保持空白，不內縮`), preserving fixed-position diagrams, borders, and connectors without shifting surrounding content leftward.
+  - `Backspace`: Replaces all characters in the active canvas block mark with spaces in-place without shifting columns leftward.
+  - `Delete`: Deletes the marked block columns and shifts content to the right of the block leftward (`往左內縮`).
+  - Preserved canvas block marks across `PageUp`, `PageDown`, `^V`, `^Y`, `:goto`, `:eof`, and mouse wheel scrolling at absolute document 2D coordinates `(startLine, startCol)` to `(endLine, endCol)`.
+- **WebAssembly (WASI) CJK IME & Multi-Byte Batch Draining**:
+  - Implemented multi-byte UTF-8 batch draining in `WasiTerminal.readPendingText(firstChar:)` to consume queued input in a single pass, eliminating duplicate insertions and full-screen redraw hitches when confirming long CJK sentences in browser environments.
+  - Added comprehensive unit test suite `WasiTerminalTests` and documented WASI IME burst I/O guidelines in `docs/architecture/cross_platform.md`.
+- **Daily Journal Mode**:
+  - Added automated daily journal path resolution (`journal/YYYY-MM-DD.md`) and pre-population with customizable header templates.
+
+### Changed
+
+- **Incremental Per-Line Layout Caching & Keystroke Optimization**:
+  - Implemented an incremental layout cache (`lineEntries: [LineCacheEntry?]`, `lineOffsets: [Int]`) using Swift copy-on-write pointer equality in `LayoutEngine`, reducing keystroke latency in large 5,000+ line documents from 129.2 ms down to sub-1.5 ms.
+  - Accelerated virtual cursor coordinate lookups from $O(N)$ scanning to $O(1)$ binary/indexed lookups.
+  - Debounced git repository state disk checks in `GitCoordinator` to eliminate filesystem I/O jitter on rapid typing.
+- **Text Selection & Newline Highlight Refinement**:
+  - Extended multi-line selections across line breaks to display an extra inverse space cell representing the selected newline (`\n`).
+  - Replaced full-width inverse background highlighting on empty lines with a single inverse space cell for clean, focused visual feedback.
+
+### Fixed
+
+- **Git & Undo Synchronization**:
+  - Immediately refreshed git diff status and gutter markers upon executing Undo (`Ctrl+Z`) and Redo (`Ctrl+Shift+Z`).
+- **Mouse & Menu Interaction**:
+  - Disabled drag selection and background auto-scroll gestures while the top menu bar overlay is active.
+- **Search & Spell Checker Navigation**:
+  - Ensured search match jumps start after current cursor position and wrap around smoothly to document beginning.
+
 ## [1.4.1] - 2026-08-24
 
 Usability, rendering, and interaction release introducing full ANSI SGR 1006 terminal mouse support, directional topology overhaul for Table Cell Detection with CJK wide-character awareness, unified Editor LOGO headless execution, and WebAssembly frontend rendering upgrades.

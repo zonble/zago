@@ -24,52 +24,52 @@ final class EditorLoopRequestQueue {
 }
 
 #if !os(WASI)
-import Dispatch
+    import Dispatch
 
-final class EditorLoopRequest<Result> {
-    private enum State: Equatable { case pending, executing, completed, cancelled }
+    final class EditorLoopRequest<Result> {
+        private enum State: Equatable { case pending, executing, completed, cancelled }
 
-    private let lock = NSLock()
-    private let semaphore = DispatchSemaphore(value: 0)
-    private let operation: () -> Result
-    private var state: State = .pending
-    private var result: Result?
+        private let lock = NSLock()
+        private let semaphore = DispatchSemaphore(value: 0)
+        private let operation: () -> Result
+        private var state: State = .pending
+        private var result: Result?
 
-    init(operation: @escaping () -> Result) {
-        self.operation = operation
-    }
-
-    func execute() {
-        lock.lock()
-        guard state == .pending else {
-            lock.unlock()
-            return
+        init(operation: @escaping () -> Result) {
+            self.operation = operation
         }
-        state = .executing
-        lock.unlock()
 
-        let value = operation()
-
-        lock.lock()
-        result = value
-        state = .completed
-        lock.unlock()
-        semaphore.signal()
-    }
-
-    func wait(timeout: TimeInterval) throws -> Result {
-        if semaphore.wait(timeout: .now() + timeout) == .success {
+        func execute() {
             lock.lock()
-            defer { lock.unlock() }
-            return result!
+            guard state == .pending else {
+                lock.unlock()
+                return
+            }
+            state = .executing
+            lock.unlock()
+
+            let value = operation()
+
+            lock.lock()
+            result = value
+            state = .completed
+            lock.unlock()
+            semaphore.signal()
         }
 
-        lock.lock()
-        if state == .pending {
-            state = .cancelled
+        func wait(timeout: TimeInterval) throws -> Result {
+            if semaphore.wait(timeout: .now() + timeout) == .success {
+                lock.lock()
+                defer { lock.unlock() }
+                return result!
+            }
+
+            lock.lock()
+            if state == .pending {
+                state = .cancelled
+            }
+            lock.unlock()
+            throw EditorLoopRequestError.timedOut
         }
-        lock.unlock()
-        throw EditorLoopRequestError.timedOut
     }
-}
 #endif

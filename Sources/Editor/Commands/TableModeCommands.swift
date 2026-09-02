@@ -45,6 +45,36 @@ struct ToggleTableModeCommand: Command {
     }
 }
 
+struct ToggleZeroModeCommand: Command {
+    let id: CommandID = .zeroToggle
+    let name = "Zero Interface Mode"
+    let description = "Toggle Zero Mode (distraction-free interface without bars)"
+    let commandBarAliases = ["zero-mode", "zero", "zen"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.toggleZeroMode()
+        return .succeeded
+    }
+}
+
+struct ToggleIndicatorCommand: Command {
+    let id: CommandID = .indicatorToggle
+    let name = "Toggle Scrollbar Indicator"
+    let description = "Toggle vertical scrollbar indicator on the right edge"
+    let commandBarAliases = ["indicator", "scrollbar"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.toggleIndicator()
+        return .succeeded
+    }
+}
+
 struct CycleBorderStyleCommand: Command {
     let id: CommandID = .borderStyle
     let name = "Cycle Border Style"
