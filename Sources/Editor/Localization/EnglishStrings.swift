@@ -840,6 +840,7 @@ struct EnglishStrings {
         "symbol_category.math_keys": "4. Math/Keys",
         "symbol_category.gfm": "5. Callouts",
 
+        // 1-4: Cycles & Rings
         "symbol.arrow.loop_ccw": "Counter-clockwise cycle",
         "symbol.arrow.loop_cw": "Clockwise cycle",
         "symbol.arrow.open_circle_ccw": "Open circle cycle (CCW)",
@@ -860,6 +861,7 @@ struct EnglishStrings {
         "symbol.arrow.arc_bottom_left": "Semicircle arc arrow bottom-left",
         "symbol.arrow.arc_bottom_right": "Semicircle arc arrow bottom-right",
 
+        // 5-8: Corners & Turns
         "symbol.arrow.corner_down_right": "Downwards arrow with corner right",
         "symbol.arrow.corner_down_left": "Downwards arrow with corner left",
         "symbol.arrow.corner_up_right": "Upwards arrow with corner right",
@@ -875,6 +877,12 @@ struct EnglishStrings {
         "symbol.arrow.turn_down_left": "Turn down-left arrow",
         "symbol.arrow.turn_down_right": "Turn down-right arrow",
 
+        "symbol.arrow.curved_corner_left": "Curved arrow with corner left",
+        "symbol.arrow.curved_corner_right": "Curved arrow with corner right",
+        "symbol.arrow.bent_elbow_left": "Sharp bent elbow arrow left",
+        "symbol.arrow.bent_elbow_right": "Sharp bent elbow arrow right",
+
+        // 9-12: Lightning, Waves & Long Arrows
         "symbol.arrow.lightning": "Downwards zigzag / lightning",
         "symbol.arrow.wave_left": "Left wave arrow",
         "symbol.arrow.wave_right": "Right wave arrow",
@@ -885,6 +893,17 @@ struct EnglishStrings {
         "symbol.arrow.squiggle_right": "Rightwards squiggle arrow",
         "symbol.arrow.long_squiggle_right": "Long rightwards squiggle arrow",
 
+        "symbol.arrow.long_left": "Long leftwards arrow",
+        "symbol.arrow.long_right": "Long rightwards arrow",
+        "symbol.arrow.long_bidi": "Long bidirectional arrow",
+        "symbol.arrow.long_harpoon_left": "Long leftwards harpoon",
+
+        "symbol.arrow.long_double_left": "Long double leftwards arrow",
+        "symbol.arrow.long_double_right": "Long double rightwards arrow",
+        "symbol.arrow.long_double_bidi": "Long double bidirectional arrow",
+        "symbol.arrow.long_harpoon_right": "Long rightwards harpoon",
+
+        // 13-16: Negated & Struck
         "symbol.arrow.negated_left": "Left arrow with stroke (Not permitted)",
         "symbol.arrow.negated_right": "Right arrow with stroke (Not permitted)",
         "symbol.arrow.negated_bidi": "Bidirectional arrow with stroke",
@@ -895,6 +914,17 @@ struct EnglishStrings {
         "symbol.arrow.negated_double_bidi": "Double bidirectional with stroke (Not equivalent)",
         "symbol.arrow.stroke_right": "Right arrow with stroke / slash",
 
+        "symbol.arrow.stroke_bidi": "Bidirectional arrow with stroke",
+        "symbol.arrow.double_stroke_left": "Left arrow with double stroke",
+        "symbol.arrow.double_stroke_right": "Right arrow with double stroke",
+        "symbol.arrow.double_stroke_bidi": "Bidirectional with double stroke",
+
+        "symbol.arrow.stroke_tail_left": "Left arrow with stroke tail",
+        "symbol.arrow.stroke_tail_right": "Right arrow with stroke tail",
+        "symbol.arrow.stroke_tail_bidi": "Bidirectional with stroke tail",
+        "symbol.arrow.diagonal_stroke": "Diagonal double-ended stroke arrow",
+
+        // 17-20: Triple Shaft & Barbed
         "symbol.arrow.triple_left": "Left triple-line bus arrow",
         "symbol.arrow.triple_right": "Right triple-line bus arrow",
         "symbol.arrow.triple_up": "Up triple-line arrow",
@@ -910,6 +940,12 @@ struct EnglishStrings {
         "symbol.arrow.fishtail_bidi": "Fish-tail bidirectional arrow",
         "symbol.arrow.feathered_right": "Feathered / triple-barb arrow",
 
+        "symbol.arrow.feathered_left": "Feathered / triple-barb arrow (Left)",
+        "symbol.arrow.crow_up": "Crow's foot up (ERD)",
+        "symbol.arrow.crow_left": "Crow's foot left (ERD)",
+        "symbol.arrow.crow_right": "Crow's foot right (ERD)",
+
+        // 21-24: White Block & 3D
         "symbol.arrow.block_up": "Upwards white block arrow",
         "symbol.arrow.block_down": "Downwards white block arrow",
         "symbol.arrow.block_left": "Leftwards white block arrow",
@@ -920,6 +956,17 @@ struct EnglishStrings {
         "symbol.arrow.block_diag_up_right": "North-east white block arrow",
         "symbol.arrow.block_diag_up_left": "North-west white block arrow",
 
+        "symbol.arrow.block_diag_down_right": "South-east white block arrow",
+        "symbol.arrow.block_diag_down_left": "South-west white block arrow",
+        "symbol.arrow.block_ne_white": "White block north-east",
+        "symbol.arrow.block_nw_white": "White block north-west",
+
+        "symbol.arrow.block_se_white": "White block south-east",
+        "symbol.arrow.block_sw_white": "White block south-west",
+        "symbol.arrow.caps_lock": "Caps lock arrow",
+        "symbol.arrow.caps_lock_bar": "Caps lock arrow with bar",
+
+        // 25-28: Diagonal Stemmed & Crossing
         "symbol.arrow.diag_up_left": "Up-left stemmed arrow",
         "symbol.arrow.diag_up_right": "Up-right stemmed arrow",
         "symbol.arrow.diag_down_right": "Down-right stemmed arrow",
@@ -935,10 +982,21 @@ struct EnglishStrings {
         "symbol.arrow.tri_diag_down_right": "Down-right triangle arrow",
         "symbol.arrow.tri_diag_down_left": "Down-left triangle arrow",
 
+        "symbol.arrow.diagonal_double_ended": "North-east south-west double arrow",
+        "symbol.arrow.diagonal_cross_1": "Crossing diagonal arrows 1",
+        "symbol.arrow.diagonal_cross_2": "Crossing diagonal arrows 2",
+        "symbol.arrow.diagonal_cross_3": "Crossing diagonal arrows 3",
+
+        // 29-32: Maps-to, Injection, Surjection
         "symbol.arrow.maps_up": "Up maps to",
         "symbol.arrow.maps_down": "Down maps to",
         "symbol.arrow.maps_left": "Left maps to",
         "symbol.arrow.maps_right": "Right maps to",
+
+        "symbol.arrow.long_maps_left": "Long leftwards maps to",
+        "symbol.arrow.long_maps_right": "Long rightwards maps to",
+        "symbol.arrow.from_bar_up": "Upwards arrow from bar",
+        "symbol.arrow.from_bar_down": "Downwards arrow from bar",
 
         "symbol.arrow.two_headed_up": "Up two-headed arrow (Surjection)",
         "symbol.arrow.two_headed_down": "Down two-headed arrow (Surjection)",
@@ -950,11 +1008,28 @@ struct EnglishStrings {
         "symbol.arrow.multimap": "Multimap lollipop arrow",
         "symbol.arrow.double_bar_right_heavy": "Heavy double arrow with bar",
 
+        // 33-36: Stops, Bars & Loops
         "symbol.arrow.bar_left": "Left arrow to bar (Tab stop)",
         "symbol.arrow.bar_right": "Right arrow to bar (Tab stop)",
         "symbol.arrow.bar_up": "Up arrow to bar",
         "symbol.arrow.bar_down": "Down arrow to bar",
 
+        "symbol.arrow.double_from_bar_left": "Left double arrow from bar",
+        "symbol.arrow.arrow_crossbar_left": "Left arrow with horizontal bar",
+        "symbol.arrow.arrow_crossbar_right": "Right arrow with horizontal bar",
+        "symbol.arrow.arrow_wave_shaft_right": "Right arrow with wave shaft",
+
+        "symbol.arrow.arrow_wave_shaft_left": "Left arrow with wave shaft",
+        "symbol.arrow.loop_down": "Arrow with loop down",
+        "symbol.arrow.loop_up": "Arrow with loop up",
+        "symbol.arrow.loop_left": "Arrow with loop left",
+
+        "symbol.arrow.loop_right": "Arrow with loop right",
+        "symbol.arrow.ribbon_turn_left": "Ribbon arrow turn left",
+        "symbol.arrow.ribbon_turn_right": "Ribbon arrow turn right",
+        "symbol.arrow.ribbon_turn_up": "Ribbon arrow turn up",
+
+        // 37-40: Paired & Parallels
         "symbol.arrow.pair_left_right": "Left-right paired arrows",
         "symbol.arrow.pair_right_left": "Right-left paired arrows",
         "symbol.arrow.pair_up_down": "Up-down paired arrows",
@@ -970,25 +1045,115 @@ struct EnglishStrings {
         "symbol.arrow.harpoon_pair_up_down": "Up-down harpoon pair",
         "symbol.arrow.harpoon_pair_down_up": "Down-up harpoon pair",
 
+        "symbol.arrow.paired_harpoon_left": "Paired double harpoons left",
+        "symbol.arrow.paired_harpoon_right": "Paired double harpoons right",
+        "symbol.arrow.paired_harpoon_up": "Paired double harpoons up",
+        "symbol.arrow.paired_harpoon_down": "Paired double harpoons down",
+
+        // 41-44: Harpoons Special
+        "symbol.arrow.harpoon_barb_up_left": "Harpoon with barb up (Left)",
+        "symbol.arrow.harpoon_barb_down_left": "Harpoon with barb down (Left)",
+        "symbol.arrow.harpoon_barb_up_right": "Harpoon with barb up (Right)",
+        "symbol.arrow.harpoon_barb_down_right": "Harpoon with barb down (Right)",
+
+        "symbol.arrow.harpoon_barb_left_up": "Harpoon with barb left (Up)",
+        "symbol.arrow.harpoon_barb_right_up": "Harpoon with barb right (Up)",
+        "symbol.arrow.harpoon_barb_left_down": "Harpoon with barb left (Down)",
+        "symbol.arrow.harpoon_barb_right_down": "Harpoon with barb right (Down)",
+
+        "symbol.arrow.harpoon_stacked_left_1": "Stacked harpoon pair left 1",
+        "symbol.arrow.harpoon_stacked_left_2": "Stacked harpoon pair left 2",
+        "symbol.arrow.harpoon_stacked_right_1": "Stacked harpoon pair right 1",
+        "symbol.arrow.harpoon_stacked_right_2": "Stacked harpoon pair right 2",
+
+        "symbol.arrow.harpoon_long_bar_left": "Harpoon over long bar left",
+        "symbol.arrow.harpoon_long_bar_right": "Harpoon over long bar right",
+        "symbol.arrow.harpoon_bidi_barb_up": "Harpoon bidirectional with barb up",
+        "symbol.arrow.harpoon_bidi_barb_down": "Harpoon bidirectional with barb down",
+
+        // 45-48: Dingbats Heavy & Circled
         "symbol.arrow.dingbat_heavy_right": "Heavy right arrow",
         "symbol.arrow.dingbat_triangle_right": "Triangle right arrow",
         "symbol.arrow.dingbat_circled_right": "Circled right arrow",
         "symbol.arrow.dingbat_open_double": "Open-ended double dart arrow",
 
+        "symbol.arrow.dingbat_dart_small": "Small dart right arrow",
+        "symbol.arrow.dingbat_heavy_dart": "Heavy dart right arrow",
+        "symbol.arrow.dingbat_dashed_dart": "Dashed shaft dart right arrow",
+        "symbol.arrow.dingbat_heavy_dashed": "Heavy dashed dart right arrow",
+
+        "symbol.arrow.dingbat_bold_right": "Black right arrow",
         "symbol.arrow.dingbat_notched": "Notched right arrow",
         "symbol.arrow.dingbat_notched_shadowed": "Notched right shadowed arrow",
         "symbol.arrow.dingbat_curved_stem": "Curved stem right pointer",
-        "symbol.arrow.dingbat_heavy_bottom_hook": "Heavy bottom-hook right arrow",
 
+        "symbol.arrow.dingbat_heavy_bottom_hook": "Heavy bottom-hook right arrow",
+        "symbol.arrow.dingbat_heavy_top_hook": "Heavy top-hook right arrow",
+        "symbol.arrow.dingbat_heavy_wedge": "Heavy wedge right pointer",
+        "symbol.arrow.dingbat_heavy_wedge_large": "Heavy large wedge right pointer",
+
+        // 49-52: Shaded & Outlined Dingbats
+        "symbol.arrow.dingbat_open_white": "White open outlined right arrow",
+        "symbol.arrow.dingbat_shaded_white": "White shaded outlined right arrow",
+        "symbol.arrow.dingbat_shaded_left_fat": "Fat shaded left right arrow",
+        "symbol.arrow.dingbat_shaded_right_fat": "Fat shaded right arrow",
+
+        "symbol.arrow.dingbat_shaded_notched": "Notched white shaded arrow",
+        "symbol.arrow.dingbat_shaded_pointed": "Pointed white shaded arrow",
+        "symbol.arrow.dingbat_shaded_wedge": "Wedge white shaded arrow",
+        "symbol.arrow.black_wedge_up": "Black wedge pointer up",
+
+        "symbol.arrow.black_wedge_down": "Black wedge pointer down",
+        "symbol.arrow.black_wedge_left": "Black wedge pointer left",
+        "symbol.arrow.black_wedge_right": "Black wedge pointer right",
+        "symbol.arrow.black_ribbon_left": "Black ribbon arrow left",
+
+        "symbol.arrow.black_ribbon_up": "Black ribbon arrow up",
+        "symbol.arrow.black_ribbon_right": "Black ribbon arrow right",
+        "symbol.arrow.black_ribbon_down": "Black ribbon arrow down",
+        "symbol.arrow.ribbon_diag_ne": "Ribbon arrow diagonal NE",
+
+        // 53-56: Feathers, Darts & Fancy
         "symbol.arrow.dart_feathered_left": "Feathered dart arrow (Left)",
         "symbol.arrow.dart_feathered_center": "Feathered dart arrow (Center)",
         "symbol.arrow.dart_feathered_right": "Feathered dart arrow (Right)",
         "symbol.arrow.ribbon_arrow": "Ribbon arrow",
 
+        "symbol.arrow.teardrop_feather": "Teardrop barbed arrow",
+        "symbol.arrow.heavy_feather_right": "Heavy feathered right arrow",
+        "symbol.arrow.heavy_dart_right": "Heavy feathered dart right",
+        "symbol.arrow.circled_tri_up": "Circled triangle arrow up",
+
+        "symbol.arrow.circled_tri_down": "Circled triangle arrow down",
+        "symbol.arrow.circled_tri_left": "Circled triangle arrow left",
+        "symbol.arrow.circled_tri_right": "Circled triangle arrow right",
+        "symbol.arrow.ribbon_diag_se": "Ribbon arrow diagonal SE",
+
+        "symbol.arrow.ribbon_diag_sw": "Ribbon arrow diagonal SW",
+        "symbol.arrow.ribbon_curve_left": "Curved ribbon arrow left",
+        "symbol.arrow.ribbon_curve_right": "Curved ribbon arrow right",
+        "symbol.arrow.conical_wedge": "Conical wedge pointer",
+
+        // 57-60: Relations & Chevrons
         "symbol.arrow.angle_double_left": "Double left angle quote",
         "symbol.arrow.angle_double_right": "Double right angle quote",
         "symbol.arrow.angle_single_left": "Single left angle quote",
         "symbol.arrow.angle_single_right": "Single right angle quote",
+
+        "symbol.arrow.precedes": "Precedes",
+        "symbol.arrow.succeeds": "Succeeds",
+        "symbol.arrow.precedes_equal": "Precedes or equal",
+        "symbol.arrow.succeeds_equal": "Succeeds or equal",
+
+        "symbol.arrow.open_triangle_left": "Open triangle arrow left",
+        "symbol.arrow.open_triangle_right": "Open triangle arrow right",
+        "symbol.arrow.open_triangle_underbar_left": "Open triangle underbar left",
+        "symbol.arrow.open_triangle_underbar_right": "Open triangle underbar right",
+
+        "symbol.arrow.square_subset_left": "Square subset / left socket",
+        "symbol.arrow.square_subset_right": "Square superset / right socket",
+        "symbol.arrow.square_subset_equal_left": "Square subset or equal",
+        "symbol.arrow.square_subset_equal_right": "Square superset or equal",
 
         "symbol.callout.note": "Note callout block",
         "symbol.callout.tip": "Tip callout block",
