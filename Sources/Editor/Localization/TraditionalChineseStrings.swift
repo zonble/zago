@@ -930,10 +930,10 @@ struct TraditionalChineseStrings {
         "symbol.arrow.fishtail_bidi": "雙向魚尾箭頭",
         "symbol.arrow.feathered_right": "向右羽毛三叉箭頭",
 
+        "symbol.arrow.corner_down_stem": "向右折下柄箭頭",
+        "symbol.arrow.corner_up_stem": "向右折上柄箭頭",
         "symbol.arrow.feathered_left": "向左羽毛三叉箭頭",
-        "symbol.arrow.crow_up": "向上烏鴉腳 (ERD)",
-        "symbol.arrow.crow_left": "向左烏鴉腳 (ERD)",
-        "symbol.arrow.crow_right": "向右烏鴉腳 (ERD)",
+        "symbol.arrow.arrow_tail_left": "向左帶尾端點箭頭",
 
         // 21-24: 空心立體與帶框
         "symbol.arrow.block_up": "向上空心立體箭頭",
@@ -948,11 +948,11 @@ struct TraditionalChineseStrings {
 
         "symbol.arrow.block_diag_down_right": "東南向空心立體箭頭",
         "symbol.arrow.block_diag_down_left": "西南向空心立體箭頭",
-        "symbol.arrow.block_ne_white": "東北向白底方塊箭頭",
-        "symbol.arrow.block_nw_white": "西北向白底方塊箭頭",
+        "symbol.arrow.bent_black_down_right": "向右折下黑體直角箭頭",
+        "symbol.arrow.bent_black_up_right": "向右折上黑體直角箭頭",
 
-        "symbol.arrow.block_se_white": "東南向白底方塊箭頭",
-        "symbol.arrow.block_sw_white": "西南向白底方塊箭頭",
+        "symbol.arrow.bent_black_down_left": "向左折下黑體直角箭頭",
+        "symbol.arrow.bent_black_up_left": "向左折上黑體直角箭頭",
         "symbol.arrow.caps_lock": "大寫鎖定鍵箭頭符號",
         "symbol.arrow.caps_lock_bar": "帶橫條大寫鎖定箭頭",
 
@@ -1072,7 +1072,7 @@ struct TraditionalChineseStrings {
         "symbol.arrow.dingbat_dashed_dart": "虛線柄向右飛鏢箭頭",
         "symbol.arrow.dingbat_heavy_dashed": "粗虛線柄向右飛鏢箭頭",
 
-        "symbol.arrow.dingbat_bold_right": "黑體向右箭頭",
+        "symbol.arrow.dingbat_black_triangle_left": "向左黑體三角指標",
         "symbol.arrow.dingbat_notched": "帶凹槽向右箭頭",
         "symbol.arrow.dingbat_notched_shadowed": "帶凹槽陰影向右箭頭",
         "symbol.arrow.dingbat_curved_stem": "弧柄向右指標箭頭",

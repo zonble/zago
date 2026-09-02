@@ -1,4 +1,5 @@
 import Config
+import Drawing
 import Foundation
 import Testing
 
@@ -138,6 +139,32 @@ private final class MockInputEventTerminal: EditorTerminal, @unchecked Sendable 
         }
         picker.show()
         #expect(chosen == "> [!IMPORTANT]")
+    }
+
+    @Test func testArrowSymbolsDoNotOverlapWithDrawingArrowsAndAreUnique() {
+        let arrowCategory = SymbolCategories.categories[0]
+        let symbols = arrowCategory.items.map(\.symbol)
+
+        // 1. Verify all symbols in the Arrows tab are unique
+        let uniqueSymbols = Set(symbols)
+        #expect(uniqueSymbols.count == symbols.count)
+
+        // 2. Verify no symbol in the Arrows tab can be produced by Canvas drawing arrowheads
+        let directions: [CanvasDrawDirection] = [.up, .down, .left, .right]
+        var allDrawingArrows = Set<Character>()
+        for style in ArrowStyle.allCases {
+            for dir in directions {
+                allDrawingArrows.insert(arrowHead(for: dir, style: .single, arrowStyle: style))
+            }
+        }
+        allDrawingArrows.formUnion(["▲", "▼", "◀", "▶", "►", "◄", "↑", "↓", "←", "→", "△", "▽", "◁", "▷", "▴", "▾", "◂", "▸", "⇑", "⇓", "⇐", "⇒", "⬆", "⬇", "⬅", "⮕", "➡", "◇", "◆", "●", "○", "✕", "⤘", "⤛", "⤙", "⤚", "↿", "⇂", "↼", "⇀", "⇡", "⇣", "⇠", "⇢", "^", "v", "<", ">"])
+
+        for symbol in symbols {
+            if symbol.count == 1, let char = symbol.first {
+                #expect(!allDrawingArrows.contains(char), "Symbol '\(symbol)' overlaps with Canvas drawing arrowheads!")
+                #expect(!isArrowCharacter(char), "Symbol '\(symbol)' overlaps with isArrowCharacter!")
+            }
+        }
     }
 }
 

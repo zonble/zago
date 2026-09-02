@@ -150,11 +150,11 @@ enum SymbolCategories {
                 SymbolItem(symbol: "⥇", descriptionKey: "symbol.arrow.fishtail_bidi"),
                 SymbolItem(symbol: "⤖", descriptionKey: "symbol.arrow.feathered_right"),
 
-                // 20. Feathered Left & Crow's Foot (左羽毛與烏鴉腳)
+                // 20. Stems, Barbs & Tail (折角柄、羽尾與帶尾端點)
+                SymbolItem(symbol: "⤔", descriptionKey: "symbol.arrow.corner_down_stem"),
+                SymbolItem(symbol: "⤕", descriptionKey: "symbol.arrow.corner_up_stem"),
                 SymbolItem(symbol: "⤗", descriptionKey: "symbol.arrow.feathered_left"),
-                SymbolItem(symbol: "⤘", descriptionKey: "symbol.arrow.crow_up"),
-                SymbolItem(symbol: "⤙", descriptionKey: "symbol.arrow.crow_left"),
-                SymbolItem(symbol: "⤚", descriptionKey: "symbol.arrow.crow_right"),
+                SymbolItem(symbol: "⤝", descriptionKey: "symbol.arrow.arrow_tail_left"),
 
                 // 21. White Block Arrows (空心立體箭頭)
                 SymbolItem(symbol: "⇧", descriptionKey: "symbol.arrow.block_up"),
@@ -168,15 +168,15 @@ enum SymbolCategories {
                 SymbolItem(symbol: "⬀", descriptionKey: "symbol.arrow.block_diag_up_right"),
                 SymbolItem(symbol: "⬁", descriptionKey: "symbol.arrow.block_diag_up_left"),
 
-                // 23. South Diagonals & Blocks (南向對角與白底方塊)
+                // 23. South Diagonals & Bent Black (南向對角與黑體直角)
                 SymbolItem(symbol: "⬂", descriptionKey: "symbol.arrow.block_diag_down_right"),
                 SymbolItem(symbol: "⬃", descriptionKey: "symbol.arrow.block_diag_down_left"),
-                SymbolItem(symbol: "⬈", descriptionKey: "symbol.arrow.block_ne_white"),
-                SymbolItem(symbol: "⬉", descriptionKey: "symbol.arrow.block_nw_white"),
+                SymbolItem(symbol: "⬎", descriptionKey: "symbol.arrow.bent_black_down_right"),
+                SymbolItem(symbol: "⬏", descriptionKey: "symbol.arrow.bent_black_up_right"),
 
-                // 24. SE/SW Blocks & Caps Lock (東南/西南方塊與大寫鎖定)
-                SymbolItem(symbol: "⬊", descriptionKey: "symbol.arrow.block_se_white"),
-                SymbolItem(symbol: "⬋", descriptionKey: "symbol.arrow.block_sw_white"),
+                // 24. Bent Black & Caps Lock (黑體直角與大寫鎖定)
+                SymbolItem(symbol: "⬐", descriptionKey: "symbol.arrow.bent_black_down_left"),
+                SymbolItem(symbol: "⬑", descriptionKey: "symbol.arrow.bent_black_up_left"),
                 SymbolItem(symbol: "⇪", descriptionKey: "symbol.arrow.caps_lock"),
                 SymbolItem(symbol: "⇫", descriptionKey: "symbol.arrow.caps_lock_bar"),
 
@@ -312,8 +312,8 @@ enum SymbolCategories {
                 SymbolItem(symbol: "➟", descriptionKey: "symbol.arrow.dingbat_dashed_dart"),
                 SymbolItem(symbol: "➠", descriptionKey: "symbol.arrow.dingbat_heavy_dashed"),
 
-                // 47. Dingbat Notched & 3D (黑體、凹槽與立體陰影)
-                SymbolItem(symbol: "➡", descriptionKey: "symbol.arrow.dingbat_bold_right"),
+                // 47. Dingbat Notched & 3D (凹槽與立體陰影)
+                SymbolItem(symbol: "⮂", descriptionKey: "symbol.arrow.dingbat_black_triangle_left"),
                 SymbolItem(symbol: "➢", descriptionKey: "symbol.arrow.dingbat_notched"),
                 SymbolItem(symbol: "➣", descriptionKey: "symbol.arrow.dingbat_notched_shadowed"),
                 SymbolItem(symbol: "➤", descriptionKey: "symbol.arrow.dingbat_curved_stem"),

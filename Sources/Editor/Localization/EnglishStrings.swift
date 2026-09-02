@@ -940,10 +940,10 @@ struct EnglishStrings {
         "symbol.arrow.fishtail_bidi": "Fish-tail bidirectional arrow",
         "symbol.arrow.feathered_right": "Feathered / triple-barb arrow",
 
+        "symbol.arrow.corner_down_stem": "Rightwards arrow with corner downwards",
+        "symbol.arrow.corner_up_stem": "Rightwards arrow with corner upwards",
         "symbol.arrow.feathered_left": "Feathered / triple-barb arrow (Left)",
-        "symbol.arrow.crow_up": "Crow's foot up (ERD)",
-        "symbol.arrow.crow_left": "Crow's foot left (ERD)",
-        "symbol.arrow.crow_right": "Crow's foot right (ERD)",
+        "symbol.arrow.arrow_tail_left": "Leftwards arrow with tail",
 
         // 21-24: White Block & 3D
         "symbol.arrow.block_up": "Upwards white block arrow",
@@ -958,11 +958,11 @@ struct EnglishStrings {
 
         "symbol.arrow.block_diag_down_right": "South-east white block arrow",
         "symbol.arrow.block_diag_down_left": "South-west white block arrow",
-        "symbol.arrow.block_ne_white": "White block north-east",
-        "symbol.arrow.block_nw_white": "White block north-west",
+        "symbol.arrow.bent_black_down_right": "Black bent arrow down-right",
+        "symbol.arrow.bent_black_up_right": "Black bent arrow up-right",
 
-        "symbol.arrow.block_se_white": "White block south-east",
-        "symbol.arrow.block_sw_white": "White block south-west",
+        "symbol.arrow.bent_black_down_left": "Black bent arrow down-left",
+        "symbol.arrow.bent_black_up_left": "Black bent arrow up-left",
         "symbol.arrow.caps_lock": "Caps lock arrow",
         "symbol.arrow.caps_lock_bar": "Caps lock arrow with bar",
 
@@ -1082,7 +1082,7 @@ struct EnglishStrings {
         "symbol.arrow.dingbat_dashed_dart": "Dashed shaft dart right arrow",
         "symbol.arrow.dingbat_heavy_dashed": "Heavy dashed dart right arrow",
 
-        "symbol.arrow.dingbat_bold_right": "Black right arrow",
+        "symbol.arrow.dingbat_black_triangle_left": "Black triangle left pointer",
         "symbol.arrow.dingbat_notched": "Notched right arrow",
         "symbol.arrow.dingbat_notched_shadowed": "Notched right shadowed arrow",
         "symbol.arrow.dingbat_curved_stem": "Curved stem right pointer",
