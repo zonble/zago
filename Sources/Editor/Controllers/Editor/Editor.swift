@@ -340,8 +340,21 @@ public final class Editor: @unchecked Sendable {
         let resolved = Self.resolveConfig(options: options, config: configSource.initial)
 
         let initialBuffers: [TextBuffer]
+        let shouldLaunchJournalDir = options.filePaths.isEmpty && (options.launchToJournalDir == true) && options.pipedInput == nil
         let shouldLaunchJournal = options.filePaths.isEmpty && resolved.launchToJournal && options.pipedInput == nil
-        if shouldLaunchJournal {
+        if shouldLaunchJournalDir {
+            let journalFolder = Self.resolveJournalFolderPath(
+                configuredFolder: resolved.journalFolder,
+                fileIO: dependencies.fileIOStrategy
+            )
+            let dirBuffer = DirectoryBuffer(
+                directoryPath: journalFolder,
+                fileIO: dependencies.fileIOStrategy,
+                gitService: dependencies.gitService,
+                language: options.language ?? configSource.initial.language ?? .detectSystemLanguage()
+            )
+            initialBuffers = [dirBuffer]
+        } else if shouldLaunchJournal {
             let journalPath = Self.resolveTodayJournalPath(
                 configuredFolder: resolved.journalFolder,
                 fileIO: dependencies.fileIOStrategy
@@ -441,6 +454,18 @@ public final class Editor: @unchecked Sendable {
             syncCanvasCursorFromBuffer()
         }
         applyCustomConfig(configSource.initial)
+        if let explicitJournal = resolved.journalFolder {
+            self.journalFolder = explicitJournal
+        }
+        if options.backup != nil {
+            self.backup = resolved.backup
+        }
+        if options.backupDir != nil {
+            self.backupDir = resolved.backupDir
+        }
+        if options.launchToJournal != nil {
+            self.launchToJournal = resolved.launchToJournal
+        }
         if let explicitPreset = options.keymapPreset {
             keymapManager.loadPreset(explicitPreset)
         }

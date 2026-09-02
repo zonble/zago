@@ -96,6 +96,11 @@ struct Zago: ParsableCommand {
     var journal: Bool = false
 
     @Flag(
+        name: [.customLong("journal-dir"), .customLong("journal-folder")],
+        help: "Open the daily journal directory.")
+    var journalDir: Bool = false
+
+    @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
@@ -334,6 +339,7 @@ struct Zago: ParsableCommand {
             backup: backup ? true : nil,
             backupDir: backupDir,
             launchToJournal: journal ? true : nil,
+            launchToJournalDir: journalDir ? true : nil,
             enableMouse: mouse ? true : (noMouse ? false : nil),
             isZeroMode: zero ? true : nil,
             showIndicator: indicator ? true : nil

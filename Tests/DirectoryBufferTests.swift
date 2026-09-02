@@ -585,5 +585,141 @@ struct DirectoryBufferTests {
         editor.processKey(.arrowUp)
         #expect(editor.buffer.lineIndex == 3)
     }
+
+    @Test func testJournalDirectoryBufferOpening() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let journalDir = tempDir.appendingPathComponent("test_journal_dir_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: journalDir, withIntermediateDirectories: true)
+        let note1 = journalDir.appendingPathComponent("2026_09_01.md")
+        let note2 = journalDir.appendingPathComponent("2026_09_02.md")
+        try "# 2026/09/01".write(to: note1, atomically: testAtomicallyOption, encoding: .utf8)
+        try "# 2026/09/02".write(to: note2, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let editor = Editor(
+            options: EditorOptions(journalFolder: journalDir.path),
+            dependencies: EditorDependencies(
+                fileIOStrategy: TestLocalEditorFileIOStrategy.shared,
+                terminal: TestEditorTerminal.shared
+            )
+        )
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: journalDir)
+        }
+
+        let normalizedJournalPath = TestLocalEditorFileIOStrategy.shared.normalizePath(journalDir.path, isDirectory: true)
+
+        // 1. Direct API call
+        editor.openJournalDirectory()
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffer.filePath == normalizedJournalPath)
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(dirBuf.lines.contains("  2026_09_01.md"))
+        #expect(dirBuf.lines.contains("  2026_09_02.md"))
+
+        // 2. CommandBar: :journal dir
+        editor.closeCurrentBuffer()
+        submitCommandBar("journal dir", editor: editor)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffer.filePath == normalizedJournalPath)
+
+        // 3. CommandBar: :dir journal
+        editor.closeCurrentBuffer()
+        submitCommandBar("dir journal", editor: editor)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffer.filePath == normalizedJournalPath)
+
+        // 4. CommandBar: :journals
+        editor.closeCurrentBuffer()
+        submitCommandBar("journals", editor: editor)
+        #expect(editor.buffer is DirectoryBuffer)
+        #expect(editor.buffer.filePath == normalizedJournalPath)
+    }
+
+    @Test func testDirectoryBufferSortingByNameAndDates() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_sort_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+
+        let fileA = workDir.appendingPathComponent("a_first.txt")
+        let fileB = workDir.appendingPathComponent("b_middle.txt")
+        let fileC = workDir.appendingPathComponent("c_last.txt")
+
+        try "A".write(to: fileA, atomically: testAtomicallyOption, encoding: .utf8)
+        Thread.sleep(forTimeInterval: 0.05)
+        try "B".write(to: fileB, atomically: testAtomicallyOption, encoding: .utf8)
+        Thread.sleep(forTimeInterval: 0.05)
+        try "C".write(to: fileC, atomically: testAtomicallyOption, encoding: .utf8)
+
+        let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+
+        // Default: Name ASC
+        #expect(dirBuf.sortOption.field == .name)
+        #expect(dirBuf.sortOption.order == .ascending)
+        let entriesNameAsc = dirBuf.lines.filter { $0.hasSuffix(".txt") }
+        #expect(entriesNameAsc == ["  a_first.txt", "  b_middle.txt", "  c_last.txt"])
+
+        // Set Name DESC
+        dirBuf.setSortOption(DirectorySortOption(field: .name, order: .descending), editor: editor)
+        let entriesNameDesc = dirBuf.lines.filter { $0.hasSuffix(".txt") }
+        #expect(entriesNameDesc == ["  c_last.txt", "  b_middle.txt", "  a_first.txt"])
+
+        // Set Modified DESC
+        dirBuf.setSortOption(DirectorySortOption(field: .modificationDate, order: .descending), editor: editor)
+        let entriesModDesc = dirBuf.lines.filter { $0.hasSuffix(".txt") }
+        #expect(entriesModDesc == ["  c_last.txt", "  b_middle.txt", "  a_first.txt"])
+
+        // Set Modified ASC
+        dirBuf.setSortOption(DirectorySortOption(field: .modificationDate, order: .ascending), editor: editor)
+        let entriesModAsc = dirBuf.lines.filter { $0.hasSuffix(".txt") }
+        #expect(entriesModAsc == ["  a_first.txt", "  b_middle.txt", "  c_last.txt"])
+    }
+
+    @Test func testDirectoryBufferInteractiveSortKeysAndCommandBar() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let workDir = tempDir.appendingPathComponent("test_dir_sort_keys_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        try "1".write(to: workDir.appendingPathComponent("apple.txt"), atomically: testAtomicallyOption, encoding: .utf8)
+        try "2".write(to: workDir.appendingPathComponent("banana.txt"), atomically: testAtomicallyOption, encoding: .utf8)
+
+        let editor = Editor(filePath: workDir.path)
+        defer {
+            editor.stopFileWatcherForCurrentBuffer()
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        let dirBuf = try #require(editor.buffer as? DirectoryBuffer)
+        #expect(dirBuf.sortOption.field == .name && dirBuf.sortOption.order == .ascending)
+
+        // Press 's' to cycle sort
+        editor.processKey(.char("s"))
+        #expect(dirBuf.sortOption.field == .name && dirBuf.sortOption.order == .descending)
+
+        // Press 'o' to toggle order
+        editor.processKey(.char("o"))
+        #expect(dirBuf.sortOption.field == .name && dirBuf.sortOption.order == .ascending)
+
+        // Command bar :sort modified desc
+        submitCommandBar("sort modified desc", editor: editor)
+        #expect(dirBuf.sortOption.field == .modificationDate && dirBuf.sortOption.order == .descending)
+
+        // Command bar :sort created asc
+        submitCommandBar("sort created asc", editor: editor)
+        #expect(dirBuf.sortOption.field == .creationDate && dirBuf.sortOption.order == .ascending)
+    }
+
+    private func submitCommandBar(_ text: String, editor: Editor) {
+        editor.promptLogoMacro()
+        for ch in text {
+            editor.processKey(.char(ch))
+        }
+        editor.processKey(.enter)
+    }
 }
 

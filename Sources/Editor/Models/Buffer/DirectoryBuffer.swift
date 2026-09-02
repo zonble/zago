@@ -1,10 +1,68 @@
 import Foundation
 import Git
 
+public enum DirectorySortField: String, Sendable, CaseIterable {
+    case name
+    case creationDate = "created"
+    case modificationDate = "modified"
+}
+
+public enum DirectorySortOrder: String, Sendable, CaseIterable {
+    case ascending = "asc"
+    case descending = "desc"
+}
+
+public struct DirectorySortOption: Sendable, Equatable {
+    public var field: DirectorySortField
+    public var order: DirectorySortOrder
+
+    public init(field: DirectorySortField = .name, order: DirectorySortOrder = .ascending) {
+        self.field = field
+        self.order = order
+    }
+
+    public mutating func toggleOrder() {
+        order = (order == .ascending) ? .descending : .ascending
+    }
+
+    public mutating func cycle() {
+        switch (field, order) {
+        case (.name, .ascending):
+            order = .descending
+        case (.name, .descending):
+            field = .creationDate
+            order = .ascending
+        case (.creationDate, .ascending):
+            order = .descending
+        case (.creationDate, .descending):
+            field = .modificationDate
+            order = .ascending
+        case (.modificationDate, .ascending):
+            order = .descending
+        case (.modificationDate, .descending):
+            field = .name
+            order = .ascending
+        }
+    }
+
+    public func displayName(language: Language) -> String {
+        let isZh = language == .zh_TW
+        let fieldName: String
+        switch field {
+        case .name: fieldName = isZh ? "名稱" : "Name"
+        case .creationDate: fieldName = isZh ? "建立日期" : "Created"
+        case .modificationDate: fieldName = isZh ? "修改時間" : "Modified"
+        }
+        let orderName = (order == .ascending) ? "ASC ▲" : "DESC ▼"
+        return "\(fieldName) \(orderName)"
+    }
+}
+
 final class DirectoryBuffer: TextBuffer {
     var directoryPath: String
     let fileIO: EditorFileIOStrategy
     let gitService: GitServiceProtocol
+    var sortOption: DirectorySortOption = DirectorySortOption()
 
     override var isReadOnly: Bool {
         get { true }
@@ -23,16 +81,28 @@ final class DirectoryBuffer: TextBuffer {
         directoryPath: String,
         fileIO: EditorFileIOStrategy,
         gitService: GitServiceProtocol = GitService(),
-        language: Language = .detectSystemLanguage()
+        language: Language = .detectSystemLanguage(),
+        sortOption: DirectorySortOption = DirectorySortOption()
     ) {
         let expandedPath = fileIO.normalizePath(directoryPath, isDirectory: true)
         self.directoryPath = expandedPath
         self.fileIO = fileIO
         self.gitService = gitService
         self.currentLanguage = language
+        self.sortOption = sortOption
         super.init()
         self.filePath = expandedPath
         loadDirectory(at: expandedPath, language: language)
+    }
+
+    func setSortOption(_ option: DirectorySortOption, editor: Editor? = nil) {
+        self.sortOption = option
+        loadDirectory(at: directoryPath, language: currentLanguage)
+        editor?.renderer.invalidateScreenCache()
+        if let editor {
+            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
+            editor.reportOperationResult(.succeeded(message: msg))
+        }
     }
 
     func loadDirectory(at path: String, language: Language? = nil) {
@@ -64,7 +134,9 @@ final class DirectoryBuffer: TextBuffer {
 
         let l10n = L10n(language: currentLanguage)
         var newLines: [String] = []
-        newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr))
+        let sortLabel = l10n["dirbuf.sort_label"]
+        let sortBadge = " [\(sortLabel): \(sortOption.displayName(language: currentLanguage))]"
+        newLines.append(l10n.dirBufHeaderDirectory(expandedPath, branchStr) + sortBadge)
         newLines.append(l10n.dirBufHeaderInstructions)
         newLines.append("")
         newLines.append("  \(l10n.dirBufUpDir)")
@@ -74,7 +146,25 @@ final class DirectoryBuffer: TextBuffer {
                 if lhs.isDirectory != rhs.isDirectory {
                     return lhs.isDirectory
                 }
-                return lhs.name.lowercased() < rhs.name.lowercased()
+                switch self.sortOption.field {
+                case .name:
+                    let cmp = lhs.name.localizedStandardCompare(rhs.name)
+                    return self.sortOption.order == .ascending ? (cmp == .orderedAscending) : (cmp == .orderedDescending)
+                case .creationDate:
+                    let d1 = lhs.creationDate ?? .distantPast
+                    let d2 = rhs.creationDate ?? .distantPast
+                    if d1 != d2 {
+                        return self.sortOption.order == .ascending ? (d1 < d2) : (d1 > d2)
+                    }
+                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+                case .modificationDate:
+                    let d1 = lhs.modificationDate ?? .distantPast
+                    let d2 = rhs.modificationDate ?? .distantPast
+                    if d1 != d2 {
+                        return self.sortOption.order == .ascending ? (d1 < d2) : (d1 > d2)
+                    }
+                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+                }
             }
 
             for entry in sorted {
@@ -199,6 +289,20 @@ final class DirectoryBuffer: TextBuffer {
             return true
         case .arrowLeft, .arrowRight, .resize:
             return false
+        case .char("s"), .char("S"):
+            sortOption.cycle()
+            loadDirectory(at: directoryPath, language: currentLanguage)
+            editor.renderer.invalidateScreenCache()
+            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
+            editor.reportOperationResult(.succeeded(message: msg))
+            return true
+        case .char("o"), .char("O"):
+            sortOption.toggleOrder()
+            loadDirectory(at: directoryPath, language: currentLanguage)
+            editor.renderer.invalidateScreenCache()
+            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
+            editor.reportOperationResult(.succeeded(message: msg))
+            return true
         case .delete, .ctrlBackspace, .altBackspace:
             editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))
             return true

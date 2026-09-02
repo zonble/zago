@@ -75,6 +75,8 @@ extension Editor {
         commandRegistry.register(EditConfigCommand())
         commandRegistry.register(ReloadConfigCommand())
         commandRegistry.register(OpenJournalCommand())
+        commandRegistry.register(OpenJournalDirectoryCommand())
+        commandRegistry.register(SortDirCommand())
 
         // Table Mode Commands
         commandRegistry.register(TableNextCellCommand())
@@ -91,7 +93,6 @@ extension Editor {
         // CommandBar Specialized Commands
         commandRegistry.register(QuitCommand())
         commandRegistry.register(SaveExitCommand())
-        commandRegistry.register(OpenCommand())
         commandRegistry.register(DirCommand())
         commandRegistry.register(WriteCommand())
         commandRegistry.register(SettingCommand())

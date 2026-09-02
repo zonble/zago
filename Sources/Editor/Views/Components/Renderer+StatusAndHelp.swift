@@ -300,7 +300,22 @@ extension Renderer {
                 return editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) ?? fallback
             }
 
-            if editor?.isTableModeActive == true {
+            if editor?.buffer.isDirectoryBuffer == true {
+                rawItems1 = [
+                    (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                    ("Enter", tr("help.dir_open")),
+                    ("s", tr("help.dir_sort")),
+                    ("u", tr("help.dir_up")),
+                    ("Esc", tr("help.commands")),
+                ]
+                rawItems2 = [
+                    (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                    ("o", tr("help.dir_order")),
+                    ("b", tr("help.dir_up")),
+                    ("↑/↓", tr("help.move")),
+                    (keyLabel(for: .bufferNext, fallback: "^]"), tr("help.next_buffer")),
+                ]
+            } else if editor?.isTableModeActive == true {
                 rawItems1 = [
                     (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                     ("Esc", tr("help.commands")),

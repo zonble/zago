@@ -116,7 +116,7 @@ struct DirCommand: Command {
     let id: CommandID = .fileDirectory
     let name = "Directory"
     let description = "Open directory browser buffer"
-    let commandBarAliases: [String] = ["dir", "ls"]
+    let commandBarAliases: [String] = ["dir", "ls", ":dir", ":ls"]
 
     init() {}
 
@@ -128,7 +128,11 @@ struct DirCommand: Command {
 
     @discardableResult
     func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
-        editor.openDirectoryBuffer(path: input.rest.isEmpty ? nil : input.rest)
+        let arg = input.rest.trimmingCharacters(in: .whitespacesAndNewlines)
+        if arg.lowercased() == "journal" || arg.lowercased() == "journals" {
+            return editor.openJournalDirectory()
+        }
+        editor.openDirectoryBuffer(path: arg.isEmpty ? nil : arg)
         return .succeeded
     }
 }
@@ -183,7 +187,7 @@ struct SaveExitCommand: Command {
 struct ExitEditorCommand: Command {
     let id: CommandID = .fileExit
     let name = "Exit"
-    let description = "Exit editor or close current buffer"
+    let description = "Close buffer or exit editor"
 
     init() {}
 
@@ -193,11 +197,7 @@ struct ExitEditorCommand: Command {
             editor.promptExitSaveConfirm()
             return .prompting
         } else {
-            if editor.buffers.count <= 1 {
-                editor.isRunning = false
-            } else {
-                editor.closeCurrentBuffer()
-            }
+            editor.closeCurrentBuffer()
             return .succeeded
         }
     }
@@ -275,5 +275,80 @@ struct OpenJournalCommand: Command {
     @discardableResult
     func execute(on editor: Editor) -> EditorOperationResult {
         editor.openTodayJournal()
+    }
+
+    @discardableResult
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        let arg = input.rest.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if arg == "dir" || arg == "folder" || arg == "list" || arg == "browse" {
+            return editor.openJournalDirectory()
+        }
+        return editor.openTodayJournal()
+    }
+}
+
+struct OpenJournalDirectoryCommand: Command {
+    let id: CommandID = .openJournalDirectory
+    let name = "Journal Directory"
+    let description = "Open daily journals folder in directory browser"
+    let commandBarAliases = ["journals", ":journals", "journal-dir", "journaldir", ":journal-dir"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.openJournalDirectory()
+    }
+}
+
+struct SortDirCommand: Command {
+    let id: CommandID = .fileSortDirectory
+    let name = "Sort Directory"
+    let description = "Sort directory buffer by name, created, or modified (asc/desc)"
+    let commandBarAliases: [String] = ["sort", ":sort", "dirsort", ":dirsort"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        guard let dirBuffer = editor.buffer as? DirectoryBuffer else {
+            return editor.reportOperationResult(.noOp(message: editor.l10n["status.not_in_directory_buffer"]))
+        }
+        dirBuffer.sortOption.cycle()
+        dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: dirBuffer.currentLanguage)
+        editor.renderer.invalidateScreenCache()
+        let msg = String(format: editor.l10n["status.dir_sorted"], dirBuffer.sortOption.displayName(language: dirBuffer.currentLanguage))
+        return editor.reportOperationResult(.succeeded(message: msg))
+    }
+
+    @discardableResult
+    func execute(with input: CommandBarInput, on editor: Editor) -> EditorOperationResult {
+        guard let dirBuffer = editor.buffer as? DirectoryBuffer else {
+            return editor.reportOperationResult(.noOp(message: editor.l10n["status.not_in_directory_buffer"]))
+        }
+        let rawArgs = input.rest.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if rawArgs.isEmpty {
+            return execute(on: editor)
+        }
+
+        var field: DirectorySortField = dirBuffer.sortOption.field
+        var order: DirectorySortOrder = dirBuffer.sortOption.order
+
+        if rawArgs.contains("name") {
+            field = .name
+        } else if rawArgs.contains("create") || rawArgs.contains("ctime") || rawArgs.contains("birth") || rawArgs.contains("date") {
+            field = .creationDate
+        } else if rawArgs.contains("mod") || rawArgs.contains("mtime") || rawArgs.contains("time") || rawArgs.contains("update") {
+            field = .modificationDate
+        }
+
+        if rawArgs.contains("desc") || rawArgs.contains("down") || rawArgs.contains("reverse") {
+            order = .descending
+        } else if rawArgs.contains("asc") || rawArgs.contains("up") {
+            order = .ascending
+        }
+
+        dirBuffer.setSortOption(DirectorySortOption(field: field, order: order), editor: editor)
+        return .succeeded
     }
 }

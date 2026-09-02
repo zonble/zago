@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Directory Browser Multi-Criteria Sorting & Dedicated Help Bar**:
+  - Added multi-criteria sorting for Directory Buffer (`name`, `created`, `modified` with ASC / DESC ordering).
+  - Added interactive hotkeys (`s`/`S` to cycle sort criteria, `o`/`O` to toggle ASC/DESC order) and `:sort` command bar interface.
+  - Added dedicated 2D-aligned Help Bar layout and visual sort badges for Directory Buffer.
+- **Journal Directory Browser Support**:
+  - Added support for opening the daily journals folder directly in Directory Buffer via `:journal dir`, `:journals`, `:dir journal`, Tools menu item, and `--journal-dir` CLI flag.
 - **Cross-Platform `file://` URL & Anchor Support**:
   - Added support for opening and resolving `file://` URLs (POSIX, Windows drive letters, and percent-encoded paths) from CLI arguments, command prompts (`:open`, `:edit`, `:write`, `Ctrl+O`), and IPC.
   - Added line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.

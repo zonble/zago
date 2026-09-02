@@ -328,20 +328,26 @@ extension Editor {
         }
     }
 
+    /// Resolves the canonical folder path for daily journals.
+    static func resolveJournalFolderPath(
+        configuredFolder: String?,
+        fileIO: EditorFileIOStrategy
+    ) -> String {
+        if let configured = configuredFolder?.trimmingCharacters(in: .whitespacesAndNewlines), !configured.isEmpty {
+            return fileIO.normalizePath(configured, isDirectory: true)
+        } else {
+            let docDir = fileIO.documentDirectoryPath()
+            return fileIO.childPath("zago_journal", in: docDir)
+        }
+    }
+
     /// Resolves the canonical file path for today's daily journal.
     static func resolveTodayJournalPath(
         configuredFolder: String?,
         fileIO: EditorFileIOStrategy,
         date: Date = Date()
     ) -> String {
-        let folder: String
-        if let configured = configuredFolder?.trimmingCharacters(in: .whitespacesAndNewlines), !configured.isEmpty {
-            folder = fileIO.normalizePath(configured, isDirectory: true)
-        } else {
-            let docDir = fileIO.documentDirectoryPath()
-            folder = fileIO.childPath("zago_journal", in: docDir)
-        }
-
+        let folder = resolveJournalFolderPath(configuredFolder: configuredFolder, fileIO: fileIO)
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy_MM_dd"
@@ -376,6 +382,14 @@ extension Editor {
         }
     }
 
+    /// Returns the target directory path for daily journals in the current editor environment.
+    func journalFolderPath() -> String {
+        Self.resolveJournalFolderPath(
+            configuredFolder: journalFolder,
+            fileIO: fileIOStrategy
+        )
+    }
+
     /// Returns the target file path for today's journal in the current editor environment.
     func todayJournalFilePath() -> String {
         Self.resolveTodayJournalPath(
@@ -391,5 +405,19 @@ extension Editor {
         let result = openBuffer(path: targetPath)
         Self.populateNewJournalBufferIfNeeded(buffer, fileIO: fileIOStrategy)
         return result
+    }
+
+    /// Opens the daily journal directory in a DirectoryBuffer.
+    @discardableResult
+    func openJournalDirectory() -> EditorOperationResult {
+        let folder = journalFolderPath()
+        let info = fileIOStrategy.fileInfo(at: folder)
+        if !info.exists {
+            // Ensure folder exists
+            let keepPath = fileIOStrategy.childPath(".keep", in: folder)
+            _ = try? fileIOStrategy.writeTextFile("", to: keepPath, encoding: .utf8)
+        }
+        openDirectoryBuffer(path: folder)
+        return .succeeded
     }
 }

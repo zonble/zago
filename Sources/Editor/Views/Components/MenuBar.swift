@@ -330,6 +330,7 @@ final class MenuBar {
                         isVisible: { $0.buffer.allowsLogoExecution }),
                     .divider,
                     MenuItem(titleKey: "menu.tools.journal", hotkeyChar: "j", commandId: .openJournal),
+                    MenuItem(titleKey: "menu.tools.journal_dir", hotkeyChar: "d", commandId: .openJournalDirectory),
                     MenuItem(
                         titleKey: "menu.tools.word_count", hotkeyChar: "w",
                         action: { editor in
