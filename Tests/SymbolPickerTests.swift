@@ -39,41 +39,43 @@ private final class MockInputEventTerminal: EditorTerminal, @unchecked Sendable 
     @Test func calloutsAreTheLastSymbolCategory() {
         #expect(
             SymbolCategories.categories.map(\.nameKey) == [
+                "symbol_category.arrows",
                 "symbol_category.steps",
                 "symbol_category.badges",
                 "symbol_category.math_keys",
                 "symbol_category.gfm",
             ])
         #expect(SymbolCategories.categories.last?.items.first?.symbol == "> [!NOTE]")
-        #expect(SymbolCategories.categories[0].layout == .grid(columns: 5))
-        #expect(SymbolCategories.categories[3].layout == .list)
+        #expect(SymbolCategories.categories[0].layout == .grid(columns: 4))
+        #expect(SymbolCategories.categories[4].layout == .list)
     }
 
     @Test func testSymbolPickerCategorySwitchingAndSelection() {
         var chosen: String? = nil
         let terminal = MockInputEventTerminal(events: [
-            .key(.char("2")),          // Switch to category 1 (Badges)
-            .key(.char("3")),          // Switch to category 2 (Math)
-            .key(.char("4")),          // Switch to category 3 (GFM Callouts)
-            .key(.tab),                // Wrap to category 0 (Steps)
-            .key(.char("b")),          // Direct letter shortcut for index 1 ('②')
+            .key(.char("2")),          // Switch to category 1 (Steps)
+            .key(.char("3")),          // Switch to category 2 (Badges)
+            .key(.char("4")),          // Switch to category 3 (Math)
+            .key(.char("5")),          // Switch to category 4 (GFM Callouts)
+            .key(.tab),                // Wrap to category 0 (Arrows)
+            .key(.char("b")),          // Direct letter shortcut for index 1 in Arrows ('↻')
             .key(.enter),
         ])
         let picker = SymbolPickerView(terminal: terminal, language: .en) { symbol in
             chosen = symbol
         }
         picker.show()
-        #expect(chosen == "②")
+        #expect(chosen == "↻")
     }
 
     @Test func testSymbolPickerGridAndArrowNavigation() {
         var chosen: String? = nil
         let terminal = MockInputEventTerminal(events: [
-            .key(.char("1")),          // Steps category (5 columns grid)
-            .key(.arrowRight),         // index 1
-            .key(.arrowDown),          // index 1 + 5 = 6
-            .key(.arrowLeft),          // index 5
-            .key(.arrowUp),            // index 0
+            .key(.char("1")),          // Arrows category (4 columns grid)
+            .key(.arrowRight),         // index 1 ('↻')
+            .key(.arrowDown),          // index 1 + 4 = 5 ('⥁')
+            .key(.arrowLeft),          // index 4 ('⥀')
+            .key(.arrowUp),            // index 0 ('↺')
             .key(.resize),             // resize event re-renders
             .key(.enter),
         ])
@@ -81,23 +83,23 @@ private final class MockInputEventTerminal: EditorTerminal, @unchecked Sendable 
             chosen = symbol
         }
         picker.show()
-        #expect(chosen == "①")
+        #expect(chosen == "↺")
     }
 
     @Test func testSymbolPickerMouseScrollNavigation() {
         var chosen: String? = nil
         let terminal = MockInputEventTerminal(events: [
-            .key(.char("1")),
-            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)), // + 5 -> index 5
-            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)), // + 5 -> index 10
-            .mouse(MouseEvent(action: .scrollUp, col: 10, row: 10)),   // - 5 -> index 5
+            .key(.char("1")),          // Arrows category (4 columns grid)
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)), // + 4 -> index 4 ('⥀')
+            .mouse(MouseEvent(action: .scrollDown, col: 10, row: 10)), // + 4 -> index 8 ('⤾')
+            .mouse(MouseEvent(action: .scrollUp, col: 10, row: 10)),   // - 4 -> index 4 ('⥀')
             .key(.enter),
         ])
         let picker = SymbolPickerView(terminal: terminal, language: .en) { symbol in
             chosen = symbol
         }
         picker.show()
-        #expect(chosen == "⑥") // Index 5 in Steps category is '⑥'
+        #expect(chosen == "⥀")
     }
 
     @Test func testSymbolPickerEscapeCancelsSelection() {
@@ -126,7 +128,7 @@ private final class MockInputEventTerminal: EditorTerminal, @unchecked Sendable 
     @Test func testSymbolPickerListLayoutCategory() {
         var chosen: String? = nil
         let terminal = MockInputEventTerminal(events: [
-            .key(.char("4")),          // Category 3 (GFM list)
+            .key(.char("5")),          // Category 4 (GFM list)
             .key(.arrowDown),          // Next row in list -> index 1
             .key(.arrowDown),          // Next row in list -> index 2
             .key(.enter),

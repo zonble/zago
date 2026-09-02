@@ -824,10 +824,161 @@ struct TraditionalChineseStrings {
         "dialog.describe_key.insert_char": "輸入字元「%@」",
         "dialog.describe_key.unbound": "未綁定任何指令",
 
-        "symbol_category.steps": "1. 步驟標記",
-        "symbol_category.badges": "2. 狀態圖示",
-        "symbol_category.math_keys": "3. 數學按鍵",
-        "symbol_category.gfm": "4. GFM 區塊",
+        "symbol_category.arrows": "1. 箭頭符號",
+        "symbol_category.steps": "2. 步驟標記",
+        "symbol_category.badges": "3. 狀態圖示",
+        "symbol_category.math_keys": "4. 數學按鍵",
+        "symbol_category.gfm": "5. GFM 區塊",
+
+        "symbol.arrow.loop_ccw": "逆時針循環箭頭",
+        "symbol.arrow.loop_cw": "順時針循環箭頭",
+        "symbol.arrow.open_circle_ccw": "開口圓逆時針循環",
+        "symbol.arrow.open_circle_cw": "開口圓順時針循環",
+
+        "symbol.arrow.closed_circle_ccw": "閉合圓逆時針箭頭",
+        "symbol.arrow.closed_circle_cw": "閉合圓順時針箭頭",
+        "symbol.arrow.top_arc_cw": "上方圓弧順時針箭頭",
+        "symbol.arrow.top_arc_ccw": "上方圓弧逆時針箭頭",
+
+        "symbol.arrow.curve_up_left": "向上左彎弧形箭頭",
+        "symbol.arrow.curve_up_right": "向上右彎弧形箭頭",
+        "symbol.arrow.curve_down_left": "向下左彎弧形箭頭",
+        "symbol.arrow.curve_down_right": "向下右彎弧形箭頭",
+
+        "symbol.arrow.arc_top_left": "左上半圓弧形箭頭",
+        "symbol.arrow.arc_top_right": "右上半圓弧形箭頭",
+        "symbol.arrow.arc_bottom_left": "左下半圓弧形箭頭",
+        "symbol.arrow.arc_bottom_right": "右下半圓弧形箭頭",
+
+        "symbol.arrow.corner_down_right": "向下折右直角箭頭",
+        "symbol.arrow.corner_down_left": "向下折左直角箭頭",
+        "symbol.arrow.corner_up_right": "向上折右直角箭頭",
+        "symbol.arrow.corner_up_left": "向上折左直角箭頭",
+
+        "symbol.arrow.corner_right_down": "向右折下直角箭頭",
+        "symbol.arrow.return_symbol": "換行回車符號",
+        "symbol.arrow.hook_left": "向左鉤形回傳箭頭",
+        "symbol.arrow.hook_right": "向右鉤形轉發箭頭",
+
+        "symbol.arrow.curve_up": "向上弧形跳轉箭頭",
+        "symbol.arrow.curve_down": "向下弧形跳轉箭頭",
+        "symbol.arrow.turn_down_left": "向下轉左拐彎箭頭",
+        "symbol.arrow.turn_down_right": "向下轉右拐彎箭頭",
+
+        "symbol.arrow.lightning": "向下閃電鋸齒箭頭",
+        "symbol.arrow.wave_left": "向左波浪震盪箭頭",
+        "symbol.arrow.wave_right": "向右波浪震盪箭頭",
+        "symbol.arrow.wave_bidi": "水平雙向波浪箭頭",
+
+        "symbol.arrow.wave_tail_left": "向左波浪尾翼箭頭",
+        "symbol.arrow.wave_tail_right": "向右波浪尾翼箭頭",
+        "symbol.arrow.squiggle_right": "向右波浪曲折箭頭",
+        "symbol.arrow.long_squiggle_right": "向右長波浪曲折箭頭",
+
+        "symbol.arrow.negated_left": "向左劃線禁止箭頭",
+        "symbol.arrow.negated_right": "向右劃線禁止箭頭",
+        "symbol.arrow.negated_bidi": "雙向劃線禁止箭頭",
+        "symbol.arrow.crossed_bidi": "交叉穿越雙向箭頭",
+
+        "symbol.arrow.negated_double_left": "向左劃線雙線否定",
+        "symbol.arrow.negated_double_right": "向右劃線雙線否定",
+        "symbol.arrow.negated_double_bidi": "雙向劃線雙線否定",
+        "symbol.arrow.stroke_right": "向右帶斜線修飾箭頭",
+
+        "symbol.arrow.triple_left": "向左三線總線箭頭",
+        "symbol.arrow.triple_right": "向右三線總線箭頭",
+        "symbol.arrow.triple_up": "向上三線箭頭",
+        "symbol.arrow.triple_down": "向下三線箭頭",
+
+        "symbol.arrow.barb_left": "向左帶橫槓倒鉤箭頭",
+        "symbol.arrow.barb_right": "向右帶橫槓倒鉤箭頭",
+        "symbol.arrow.double_bar_right": "向右雙豎線箭頭",
+        "symbol.arrow.stacked_three_right": "三重堆疊向右箭頭",
+
+        "symbol.arrow.fishtail_right": "向右魚尾箭頭",
+        "symbol.arrow.fishtail_left": "向左魚尾箭頭",
+        "symbol.arrow.fishtail_bidi": "雙向魚尾箭頭",
+        "symbol.arrow.feathered_right": "向右羽毛三叉箭頭",
+
+        "symbol.arrow.block_up": "向上空心立體箭頭",
+        "symbol.arrow.block_down": "向下空心立體箭頭",
+        "symbol.arrow.block_left": "向左空心立體箭頭",
+        "symbol.arrow.block_right": "向右空心立體箭頭",
+
+        "symbol.arrow.block_bidi_horizontal": "水平雙向空心立體箭頭",
+        "symbol.arrow.block_bidi_vertical": "垂直雙向空心立體箭頭",
+        "symbol.arrow.block_diag_up_right": "東北向空心立體箭頭",
+        "symbol.arrow.block_diag_up_left": "西北向空心立體箭頭",
+
+        "symbol.arrow.diag_up_left": "左上斜向細線箭頭",
+        "symbol.arrow.diag_up_right": "右上斜向細線箭頭",
+        "symbol.arrow.diag_down_right": "右下斜向細線箭頭",
+        "symbol.arrow.diag_down_left": "左下斜向細線箭頭",
+
+        "symbol.arrow.double_diag_up_left": "左上斜向雙線箭頭",
+        "symbol.arrow.double_diag_up_right": "右上斜向雙線箭頭",
+        "symbol.arrow.double_diag_down_right": "右下斜向雙線箭頭",
+        "symbol.arrow.double_diag_down_left": "左下斜向雙線箭頭",
+
+        "symbol.arrow.tri_diag_up_left": "左上斜向三角箭頭",
+        "symbol.arrow.tri_diag_up_right": "右上斜向三角箭頭",
+        "symbol.arrow.tri_diag_down_right": "右下斜向三角箭頭",
+        "symbol.arrow.tri_diag_down_left": "左下斜向三角箭頭",
+
+        "symbol.arrow.maps_up": "向上映射箭頭",
+        "symbol.arrow.maps_down": "向下映射箭頭",
+        "symbol.arrow.maps_left": "向左映射箭頭",
+        "symbol.arrow.maps_right": "向右映射箭頭",
+
+        "symbol.arrow.two_headed_up": "向上雙頭滿射箭頭",
+        "symbol.arrow.two_headed_down": "向下雙頭滿射箭頭",
+        "symbol.arrow.two_headed_left": "向左雙頭滿射箭頭",
+        "symbol.arrow.two_headed_right": "向右雙頭滿射箭頭",
+
+        "symbol.arrow.tailed_left": "向左帶尾單射箭頭",
+        "symbol.arrow.tailed_right": "向右帶尾單射箭頭",
+        "symbol.arrow.multimap": "多重映射棒棒糖箭頭",
+        "symbol.arrow.double_bar_right_heavy": "向右帶底座粗雙線箭頭",
+
+        "symbol.arrow.bar_left": "向左邊界停駐箭頭",
+        "symbol.arrow.bar_right": "向右邊界停駐箭頭",
+        "symbol.arrow.bar_up": "向上邊界停駐箭頭",
+        "symbol.arrow.bar_down": "向下邊界停駐箭頭",
+
+        "symbol.arrow.pair_left_right": "左右對向箭頭",
+        "symbol.arrow.pair_right_left": "右左對向箭頭",
+        "symbol.arrow.pair_up_down": "上下對向箭頭",
+        "symbol.arrow.pair_down_up": "下上對向箭頭",
+
+        "symbol.arrow.paired_right": "雙並行向右箭頭",
+        "symbol.arrow.paired_left": "雙並行向左箭頭",
+        "symbol.arrow.paired_up": "雙並行向上箭頭",
+        "symbol.arrow.paired_down": "雙並行向下箭頭",
+
+        "symbol.arrow.equilibrium_left_right": "左右魚鉤化學平衡箭頭",
+        "symbol.arrow.equilibrium_right_left": "右左魚鉤化學平衡箭頭",
+        "symbol.arrow.harpoon_pair_up_down": "上下魚鉤配對箭頭",
+        "symbol.arrow.harpoon_pair_down_up": "下上魚鉤配對箭頭",
+
+        "symbol.arrow.dingbat_heavy_right": "粗體向右箭頭",
+        "symbol.arrow.dingbat_triangle_right": "粗三角向右箭頭",
+        "symbol.arrow.dingbat_circled_right": "帶圈向右箭頭",
+        "symbol.arrow.dingbat_open_double": "開口雙標向右箭頭",
+
+        "symbol.arrow.dingbat_notched": "帶凹槽向右箭頭",
+        "symbol.arrow.dingbat_notched_shadowed": "帶凹槽陰影向右箭頭",
+        "symbol.arrow.dingbat_curved_stem": "弧柄向右指標箭頭",
+        "symbol.arrow.dingbat_heavy_bottom_hook": "粗體底部鉤向右箭頭",
+
+        "symbol.arrow.dart_feathered_left": "向左羽毛飛鏢箭頭",
+        "symbol.arrow.dart_feathered_center": "居中羽毛飛鏢箭頭",
+        "symbol.arrow.dart_feathered_right": "向右羽毛飛鏢箭頭",
+        "symbol.arrow.ribbon_arrow": "緞帶向右花式箭頭",
+
+        "symbol.arrow.angle_double_left": "雙左角括號",
+        "symbol.arrow.angle_double_right": "雙右角括號",
+        "symbol.arrow.angle_single_left": "單左角括號",
+        "symbol.arrow.angle_single_right": "單右角括號",
 
         "symbol.callout.note": "Note 說明提示區塊",
         "symbol.callout.tip": "Tip 秘訣提示區塊",

@@ -834,10 +834,161 @@ struct EnglishStrings {
         "dialog.describe_key.insert_char": "Insert character '%@'",
         "dialog.describe_key.unbound": "Unbound key",
 
-        "symbol_category.steps": "1. Steps",
-        "symbol_category.badges": "2. Badges",
-        "symbol_category.math_keys": "3. Math/Keys",
-        "symbol_category.gfm": "4. Callouts",
+        "symbol_category.arrows": "1. Arrows",
+        "symbol_category.steps": "2. Steps",
+        "symbol_category.badges": "3. Badges",
+        "symbol_category.math_keys": "4. Math/Keys",
+        "symbol_category.gfm": "5. Callouts",
+
+        "symbol.arrow.loop_ccw": "Counter-clockwise cycle",
+        "symbol.arrow.loop_cw": "Clockwise cycle",
+        "symbol.arrow.open_circle_ccw": "Open circle cycle (CCW)",
+        "symbol.arrow.open_circle_cw": "Open circle cycle (CW)",
+
+        "symbol.arrow.closed_circle_ccw": "Closed circle arrow (CCW)",
+        "symbol.arrow.closed_circle_cw": "Closed circle arrow (CW)",
+        "symbol.arrow.top_arc_cw": "Top arc clockwise arrow",
+        "symbol.arrow.top_arc_ccw": "Top arc counter-clockwise arrow",
+
+        "symbol.arrow.curve_up_left": "Curved arrow pointing up-left",
+        "symbol.arrow.curve_up_right": "Curved arrow pointing up-right",
+        "symbol.arrow.curve_down_left": "Curved arrow pointing down-left",
+        "symbol.arrow.curve_down_right": "Curved arrow pointing down-right",
+
+        "symbol.arrow.arc_top_left": "Semicircle arc arrow top-left",
+        "symbol.arrow.arc_top_right": "Semicircle arc arrow top-right",
+        "symbol.arrow.arc_bottom_left": "Semicircle arc arrow bottom-left",
+        "symbol.arrow.arc_bottom_right": "Semicircle arc arrow bottom-right",
+
+        "symbol.arrow.corner_down_right": "Downwards arrow with corner right",
+        "symbol.arrow.corner_down_left": "Downwards arrow with corner left",
+        "symbol.arrow.corner_up_right": "Upwards arrow with corner right",
+        "symbol.arrow.corner_up_left": "Upwards arrow with corner left",
+
+        "symbol.arrow.corner_right_down": "Rightwards arrow with corner down",
+        "symbol.arrow.return_symbol": "Carriage return symbol",
+        "symbol.arrow.hook_left": "Left hook return",
+        "symbol.arrow.hook_right": "Right hook forward",
+
+        "symbol.arrow.curve_up": "Curve up arrow",
+        "symbol.arrow.curve_down": "Curve down arrow",
+        "symbol.arrow.turn_down_left": "Turn down-left arrow",
+        "symbol.arrow.turn_down_right": "Turn down-right arrow",
+
+        "symbol.arrow.lightning": "Downwards zigzag / lightning",
+        "symbol.arrow.wave_left": "Left wave arrow",
+        "symbol.arrow.wave_right": "Right wave arrow",
+        "symbol.arrow.wave_bidi": "Horizontal wave bidirectional arrow",
+
+        "symbol.arrow.wave_tail_left": "Leftwards wave tail arrow",
+        "symbol.arrow.wave_tail_right": "Rightwards wave tail arrow",
+        "symbol.arrow.squiggle_right": "Rightwards squiggle arrow",
+        "symbol.arrow.long_squiggle_right": "Long rightwards squiggle arrow",
+
+        "symbol.arrow.negated_left": "Left arrow with stroke (Not permitted)",
+        "symbol.arrow.negated_right": "Right arrow with stroke (Not permitted)",
+        "symbol.arrow.negated_bidi": "Bidirectional arrow with stroke",
+        "symbol.arrow.crossed_bidi": "Crossed bidirectional arrow",
+
+        "symbol.arrow.negated_double_left": "Left double arrow with stroke (Does not imply)",
+        "symbol.arrow.negated_double_right": "Right double arrow with stroke (Does not imply)",
+        "symbol.arrow.negated_double_bidi": "Double bidirectional with stroke (Not equivalent)",
+        "symbol.arrow.stroke_right": "Right arrow with stroke / slash",
+
+        "symbol.arrow.triple_left": "Left triple-line bus arrow",
+        "symbol.arrow.triple_right": "Right triple-line bus arrow",
+        "symbol.arrow.triple_up": "Up triple-line arrow",
+        "symbol.arrow.triple_down": "Down triple-line arrow",
+
+        "symbol.arrow.barb_left": "Left arrow with crossbar / barb",
+        "symbol.arrow.barb_right": "Right arrow with crossbar / barb",
+        "symbol.arrow.double_bar_right": "Right arrow with double bar",
+        "symbol.arrow.stacked_three_right": "Three rightwards arrows stacked",
+
+        "symbol.arrow.fishtail_right": "Fish-tail rightwards arrow",
+        "symbol.arrow.fishtail_left": "Fish-tail leftwards arrow",
+        "symbol.arrow.fishtail_bidi": "Fish-tail bidirectional arrow",
+        "symbol.arrow.feathered_right": "Feathered / triple-barb arrow",
+
+        "symbol.arrow.block_up": "Upwards white block arrow",
+        "symbol.arrow.block_down": "Downwards white block arrow",
+        "symbol.arrow.block_left": "Leftwards white block arrow",
+        "symbol.arrow.block_right": "Rightwards white block arrow",
+
+        "symbol.arrow.block_bidi_horizontal": "Horizontal white block bidirectional",
+        "symbol.arrow.block_bidi_vertical": "Vertical white block bidirectional",
+        "symbol.arrow.block_diag_up_right": "North-east white block arrow",
+        "symbol.arrow.block_diag_up_left": "North-west white block arrow",
+
+        "symbol.arrow.diag_up_left": "Up-left stemmed arrow",
+        "symbol.arrow.diag_up_right": "Up-right stemmed arrow",
+        "symbol.arrow.diag_down_right": "Down-right stemmed arrow",
+        "symbol.arrow.diag_down_left": "Down-left stemmed arrow",
+
+        "symbol.arrow.double_diag_up_left": "Up-left double arrow",
+        "symbol.arrow.double_diag_up_right": "Up-right double arrow",
+        "symbol.arrow.double_diag_down_right": "Down-right double arrow",
+        "symbol.arrow.double_diag_down_left": "Down-left double arrow",
+
+        "symbol.arrow.tri_diag_up_left": "Up-left triangle arrow",
+        "symbol.arrow.tri_diag_up_right": "Up-right triangle arrow",
+        "symbol.arrow.tri_diag_down_right": "Down-right triangle arrow",
+        "symbol.arrow.tri_diag_down_left": "Down-left triangle arrow",
+
+        "symbol.arrow.maps_up": "Up maps to",
+        "symbol.arrow.maps_down": "Down maps to",
+        "symbol.arrow.maps_left": "Left maps to",
+        "symbol.arrow.maps_right": "Right maps to",
+
+        "symbol.arrow.two_headed_up": "Up two-headed arrow (Surjection)",
+        "symbol.arrow.two_headed_down": "Down two-headed arrow (Surjection)",
+        "symbol.arrow.two_headed_left": "Left two-headed arrow (Surjection)",
+        "symbol.arrow.two_headed_right": "Right two-headed arrow (Surjection)",
+
+        "symbol.arrow.tailed_left": "Leftwards arrow with tail (Injection)",
+        "symbol.arrow.tailed_right": "Rightwards arrow with tail (Injection)",
+        "symbol.arrow.multimap": "Multimap lollipop arrow",
+        "symbol.arrow.double_bar_right_heavy": "Heavy double arrow with bar",
+
+        "symbol.arrow.bar_left": "Left arrow to bar (Tab stop)",
+        "symbol.arrow.bar_right": "Right arrow to bar (Tab stop)",
+        "symbol.arrow.bar_up": "Up arrow to bar",
+        "symbol.arrow.bar_down": "Down arrow to bar",
+
+        "symbol.arrow.pair_left_right": "Left-right paired arrows",
+        "symbol.arrow.pair_right_left": "Right-left paired arrows",
+        "symbol.arrow.pair_up_down": "Up-down paired arrows",
+        "symbol.arrow.pair_down_up": "Down-up paired arrows",
+
+        "symbol.arrow.paired_right": "Paired parallel right arrows",
+        "symbol.arrow.paired_left": "Paired parallel left arrows",
+        "symbol.arrow.paired_up": "Paired parallel up arrows",
+        "symbol.arrow.paired_down": "Paired parallel down arrows",
+
+        "symbol.arrow.equilibrium_left_right": "Left-right harpoon pair (Equilibrium)",
+        "symbol.arrow.equilibrium_right_left": "Right-left harpoon pair (Equilibrium)",
+        "symbol.arrow.harpoon_pair_up_down": "Up-down harpoon pair",
+        "symbol.arrow.harpoon_pair_down_up": "Down-up harpoon pair",
+
+        "symbol.arrow.dingbat_heavy_right": "Heavy right arrow",
+        "symbol.arrow.dingbat_triangle_right": "Triangle right arrow",
+        "symbol.arrow.dingbat_circled_right": "Circled right arrow",
+        "symbol.arrow.dingbat_open_double": "Open-ended double dart arrow",
+
+        "symbol.arrow.dingbat_notched": "Notched right arrow",
+        "symbol.arrow.dingbat_notched_shadowed": "Notched right shadowed arrow",
+        "symbol.arrow.dingbat_curved_stem": "Curved stem right pointer",
+        "symbol.arrow.dingbat_heavy_bottom_hook": "Heavy bottom-hook right arrow",
+
+        "symbol.arrow.dart_feathered_left": "Feathered dart arrow (Left)",
+        "symbol.arrow.dart_feathered_center": "Feathered dart arrow (Center)",
+        "symbol.arrow.dart_feathered_right": "Feathered dart arrow (Right)",
+        "symbol.arrow.ribbon_arrow": "Ribbon arrow",
+
+        "symbol.arrow.angle_double_left": "Double left angle quote",
+        "symbol.arrow.angle_double_right": "Double right angle quote",
+        "symbol.arrow.angle_single_left": "Single left angle quote",
+        "symbol.arrow.angle_single_right": "Single right angle quote",
 
         "symbol.callout.note": "Note callout block",
         "symbol.callout.tip": "Tip callout block",

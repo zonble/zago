@@ -33,6 +33,191 @@ struct SymbolCategory: Sendable {
 enum SymbolCategories {
     static let categories: [SymbolCategory] = [
         SymbolCategory(
+            nameKey: "symbol_category.arrows",
+            layout: .grid(columns: 4),
+            items: [
+                // 1. Cycles & Open Loops (循環與環狀)
+                SymbolItem(symbol: "↺", descriptionKey: "symbol.arrow.loop_ccw"),
+                SymbolItem(symbol: "↻", descriptionKey: "symbol.arrow.loop_cw"),
+                SymbolItem(symbol: "⟲", descriptionKey: "symbol.arrow.open_circle_ccw"),
+                SymbolItem(symbol: "⟳", descriptionKey: "symbol.arrow.open_circle_cw"),
+
+                // 2. Closed Circle & Top Arcs (圓弧與封閉圓)
+                SymbolItem(symbol: "⥀", descriptionKey: "symbol.arrow.closed_circle_ccw"),
+                SymbolItem(symbol: "⥁", descriptionKey: "symbol.arrow.closed_circle_cw"),
+                SymbolItem(symbol: "↷", descriptionKey: "symbol.arrow.top_arc_cw"),
+                SymbolItem(symbol: "↶", descriptionKey: "symbol.arrow.top_arc_ccw"),
+
+                // 3. Curved Tips (弧形轉角)
+                SymbolItem(symbol: "⤾", descriptionKey: "symbol.arrow.curve_up_left"),
+                SymbolItem(symbol: "⤿", descriptionKey: "symbol.arrow.curve_up_right"),
+                SymbolItem(symbol: "⤼", descriptionKey: "symbol.arrow.curve_down_left"),
+                SymbolItem(symbol: "⤽", descriptionKey: "symbol.arrow.curve_down_right"),
+
+                // 4. Semicircle Segments (圓弧分段)
+                SymbolItem(symbol: "⮌", descriptionKey: "symbol.arrow.arc_top_left"),
+                SymbolItem(symbol: "⮎", descriptionKey: "symbol.arrow.arc_top_right"),
+                SymbolItem(symbol: "⮍", descriptionKey: "symbol.arrow.arc_bottom_left"),
+                SymbolItem(symbol: "⮏", descriptionKey: "symbol.arrow.arc_bottom_right"),
+
+                // 5. Corner Arrows (直角轉彎)
+                SymbolItem(symbol: "↳", descriptionKey: "symbol.arrow.corner_down_right"),
+                SymbolItem(symbol: "↲", descriptionKey: "symbol.arrow.corner_down_left"),
+                SymbolItem(symbol: "↱", descriptionKey: "symbol.arrow.corner_up_right"),
+                SymbolItem(symbol: "↰", descriptionKey: "symbol.arrow.corner_up_left"),
+
+                // 6. Turn & Hook (折角與鉤形)
+                SymbolItem(symbol: "↴", descriptionKey: "symbol.arrow.corner_right_down"),
+                SymbolItem(symbol: "↵", descriptionKey: "symbol.arrow.return_symbol"),
+                SymbolItem(symbol: "↩", descriptionKey: "symbol.arrow.hook_left"),
+                SymbolItem(symbol: "↪", descriptionKey: "symbol.arrow.hook_right"),
+
+                // 7. Curve & Branch (弧形跳轉與分支)
+                SymbolItem(symbol: "⤴", descriptionKey: "symbol.arrow.curve_up"),
+                SymbolItem(symbol: "⤵", descriptionKey: "symbol.arrow.curve_down"),
+                SymbolItem(symbol: "⤶", descriptionKey: "symbol.arrow.turn_down_left"),
+                SymbolItem(symbol: "⤷", descriptionKey: "symbol.arrow.turn_down_right"),
+
+                // 8. Lightning & Waves (閃電與波浪)
+                SymbolItem(symbol: "↯", descriptionKey: "symbol.arrow.lightning"),
+                SymbolItem(symbol: "⇜", descriptionKey: "symbol.arrow.wave_left"),
+                SymbolItem(symbol: "⇝", descriptionKey: "symbol.arrow.wave_right"),
+                SymbolItem(symbol: "↭", descriptionKey: "symbol.arrow.wave_bidi"),
+
+                // 9. Squiggle & Wave Tail (波浪尾翼與曲折)
+                SymbolItem(symbol: "↜", descriptionKey: "symbol.arrow.wave_tail_left"),
+                SymbolItem(symbol: "↝", descriptionKey: "symbol.arrow.wave_tail_right"),
+                SymbolItem(symbol: "⤳", descriptionKey: "symbol.arrow.squiggle_right"),
+                SymbolItem(symbol: "⟿", descriptionKey: "symbol.arrow.long_squiggle_right"),
+
+                // 10. Negated & Crossed (禁止與劃線)
+                SymbolItem(symbol: "↚", descriptionKey: "symbol.arrow.negated_left"),
+                SymbolItem(symbol: "↛", descriptionKey: "symbol.arrow.negated_right"),
+                SymbolItem(symbol: "↮", descriptionKey: "symbol.arrow.negated_bidi"),
+                SymbolItem(symbol: "⤄", descriptionKey: "symbol.arrow.crossed_bidi"),
+
+                // 11. Negated Double (雙線否定)
+                SymbolItem(symbol: "⇍", descriptionKey: "symbol.arrow.negated_double_left"),
+                SymbolItem(symbol: "⇏", descriptionKey: "symbol.arrow.negated_double_right"),
+                SymbolItem(symbol: "⇎", descriptionKey: "symbol.arrow.negated_double_bidi"),
+                SymbolItem(symbol: "⇸", descriptionKey: "symbol.arrow.stroke_right"),
+
+                // 12. Triple Shaft Bus (三線總線)
+                SymbolItem(symbol: "⇚", descriptionKey: "symbol.arrow.triple_left"),
+                SymbolItem(symbol: "⇛", descriptionKey: "symbol.arrow.triple_right"),
+                SymbolItem(symbol: "⤊", descriptionKey: "symbol.arrow.triple_up"),
+                SymbolItem(symbol: "⤋", descriptionKey: "symbol.arrow.triple_down"),
+
+                // 13. Barbed & Multi-head (帶橫槓與倒鉤)
+                SymbolItem(symbol: "⤂", descriptionKey: "symbol.arrow.barb_left"),
+                SymbolItem(symbol: "⤃", descriptionKey: "symbol.arrow.barb_right"),
+                SymbolItem(symbol: "⤅", descriptionKey: "symbol.arrow.double_bar_right"),
+                SymbolItem(symbol: "⇶", descriptionKey: "symbol.arrow.stacked_three_right"),
+
+                // 14. Fish-tail & Feathered (魚尾與羽毛)
+                SymbolItem(symbol: "⥅", descriptionKey: "symbol.arrow.fishtail_right"),
+                SymbolItem(symbol: "⥆", descriptionKey: "symbol.arrow.fishtail_left"),
+                SymbolItem(symbol: "⥇", descriptionKey: "symbol.arrow.fishtail_bidi"),
+                SymbolItem(symbol: "⤖", descriptionKey: "symbol.arrow.feathered_right"),
+
+                // 15. White Block Arrows (空心立體箭頭)
+                SymbolItem(symbol: "⇧", descriptionKey: "symbol.arrow.block_up"),
+                SymbolItem(symbol: "⇩", descriptionKey: "symbol.arrow.block_down"),
+                SymbolItem(symbol: "⇦", descriptionKey: "symbol.arrow.block_left"),
+                SymbolItem(symbol: "⇨", descriptionKey: "symbol.arrow.block_right"),
+
+                // 16. Block Bidi & Diagonal (立體雙向與斜向)
+                SymbolItem(symbol: "⬄", descriptionKey: "symbol.arrow.block_bidi_horizontal"),
+                SymbolItem(symbol: "⇳", descriptionKey: "symbol.arrow.block_bidi_vertical"),
+                SymbolItem(symbol: "⬀", descriptionKey: "symbol.arrow.block_diag_up_right"),
+                SymbolItem(symbol: "⬁", descriptionKey: "symbol.arrow.block_diag_up_left"),
+
+                // 17. Diagonal Stemmed (斜向細線)
+                SymbolItem(symbol: "↖", descriptionKey: "symbol.arrow.diag_up_left"),
+                SymbolItem(symbol: "↗", descriptionKey: "symbol.arrow.diag_up_right"),
+                SymbolItem(symbol: "↘", descriptionKey: "symbol.arrow.diag_down_right"),
+                SymbolItem(symbol: "↙", descriptionKey: "symbol.arrow.diag_down_left"),
+
+                // 18. Double Diagonal (斜向雙線)
+                SymbolItem(symbol: "⇖", descriptionKey: "symbol.arrow.double_diag_up_left"),
+                SymbolItem(symbol: "⇗", descriptionKey: "symbol.arrow.double_diag_up_right"),
+                SymbolItem(symbol: "⇘", descriptionKey: "symbol.arrow.double_diag_down_right"),
+                SymbolItem(symbol: "⇙", descriptionKey: "symbol.arrow.double_diag_down_left"),
+
+                // 19. Diagonal Triangle (斜向三角)
+                SymbolItem(symbol: "⬉", descriptionKey: "symbol.arrow.tri_diag_up_left"),
+                SymbolItem(symbol: "⬈", descriptionKey: "symbol.arrow.tri_diag_up_right"),
+                SymbolItem(symbol: "⬊", descriptionKey: "symbol.arrow.tri_diag_down_right"),
+                SymbolItem(symbol: "⬋", descriptionKey: "symbol.arrow.tri_diag_down_left"),
+
+                // 20. Maps-to (映射)
+                SymbolItem(symbol: "↥", descriptionKey: "symbol.arrow.maps_up"),
+                SymbolItem(symbol: "↧", descriptionKey: "symbol.arrow.maps_down"),
+                SymbolItem(symbol: "↤", descriptionKey: "symbol.arrow.maps_left"),
+                SymbolItem(symbol: "↦", descriptionKey: "symbol.arrow.maps_right"),
+
+                // 21. Two-headed Surjection (雙頭滿射)
+                SymbolItem(symbol: "↟", descriptionKey: "symbol.arrow.two_headed_up"),
+                SymbolItem(symbol: "↡", descriptionKey: "symbol.arrow.two_headed_down"),
+                SymbolItem(symbol: "↞", descriptionKey: "symbol.arrow.two_headed_left"),
+                SymbolItem(symbol: "↠", descriptionKey: "symbol.arrow.two_headed_right"),
+
+                // 22. Tailed Injection & Multimap (帶尾單射與棒棒糖)
+                SymbolItem(symbol: "↢", descriptionKey: "symbol.arrow.tailed_left"),
+                SymbolItem(symbol: "↣", descriptionKey: "symbol.arrow.tailed_right"),
+                SymbolItem(symbol: "⊸", descriptionKey: "symbol.arrow.multimap"),
+                SymbolItem(symbol: "⤇", descriptionKey: "symbol.arrow.double_bar_right_heavy"),
+
+                // 23. Bar Tab Stop (邊界停駐端點)
+                SymbolItem(symbol: "⇤", descriptionKey: "symbol.arrow.bar_left"),
+                SymbolItem(symbol: "⇥", descriptionKey: "symbol.arrow.bar_right"),
+                SymbolItem(symbol: "⤒", descriptionKey: "symbol.arrow.bar_up"),
+                SymbolItem(symbol: "⤓", descriptionKey: "symbol.arrow.bar_down"),
+
+                // 24. Paired Opposite (對向配對箭頭)
+                SymbolItem(symbol: "⇆", descriptionKey: "symbol.arrow.pair_left_right"),
+                SymbolItem(symbol: "⇄", descriptionKey: "symbol.arrow.pair_right_left"),
+                SymbolItem(symbol: "⇅", descriptionKey: "symbol.arrow.pair_up_down"),
+                SymbolItem(symbol: "⇵", descriptionKey: "symbol.arrow.pair_down_up"),
+
+                // 25. Paired Parallel (並行配對箭頭)
+                SymbolItem(symbol: "⇉", descriptionKey: "symbol.arrow.paired_right"),
+                SymbolItem(symbol: "⇇", descriptionKey: "symbol.arrow.paired_left"),
+                SymbolItem(symbol: "⇈", descriptionKey: "symbol.arrow.paired_up"),
+                SymbolItem(symbol: "⇊", descriptionKey: "symbol.arrow.paired_down"),
+
+                // 26. Equilibrium & Harpoon Pairs (化學平衡與魚鉤對)
+                SymbolItem(symbol: "⇋", descriptionKey: "symbol.arrow.equilibrium_left_right"),
+                SymbolItem(symbol: "⇌", descriptionKey: "symbol.arrow.equilibrium_right_left"),
+                SymbolItem(symbol: "⥮", descriptionKey: "symbol.arrow.harpoon_pair_up_down"),
+                SymbolItem(symbol: "⥯", descriptionKey: "symbol.arrow.harpoon_pair_down_up"),
+
+                // 27. Dingbat Sans & Circled (粗體與帶圈)
+                SymbolItem(symbol: "➔", descriptionKey: "symbol.arrow.dingbat_heavy_right"),
+                SymbolItem(symbol: "➜", descriptionKey: "symbol.arrow.dingbat_triangle_right"),
+                SymbolItem(symbol: "➲", descriptionKey: "symbol.arrow.dingbat_circled_right"),
+                SymbolItem(symbol: "➾", descriptionKey: "symbol.arrow.dingbat_open_double"),
+
+                // 28. Dingbat Notched & 3D (凹槽與立體陰影)
+                SymbolItem(symbol: "➢", descriptionKey: "symbol.arrow.dingbat_notched"),
+                SymbolItem(symbol: "➣", descriptionKey: "symbol.arrow.dingbat_notched_shadowed"),
+                SymbolItem(symbol: "➤", descriptionKey: "symbol.arrow.dingbat_curved_stem"),
+                SymbolItem(symbol: "➥", descriptionKey: "symbol.arrow.dingbat_heavy_bottom_hook"),
+
+                // 29. Feathered Darts & Ribbon (羽箭與緞帶花式)
+                SymbolItem(symbol: "➳", descriptionKey: "symbol.arrow.dart_feathered_left"),
+                SymbolItem(symbol: "➵", descriptionKey: "symbol.arrow.dart_feathered_center"),
+                SymbolItem(symbol: "➸", descriptionKey: "symbol.arrow.dart_feathered_right"),
+                SymbolItem(symbol: "➺", descriptionKey: "symbol.arrow.ribbon_arrow"),
+
+                // 30. Angle Chevrons (角括號)
+                SymbolItem(symbol: "«", descriptionKey: "symbol.arrow.angle_double_left"),
+                SymbolItem(symbol: "»", descriptionKey: "symbol.arrow.angle_double_right"),
+                SymbolItem(symbol: "‹", descriptionKey: "symbol.arrow.angle_single_left"),
+                SymbolItem(symbol: "›", descriptionKey: "symbol.arrow.angle_single_right"),
+            ]
+        ),
+        SymbolCategory(
             nameKey: "symbol_category.steps",
             layout: .grid(columns: 5),
             items: [
@@ -167,6 +352,7 @@ final class SymbolPickerView {
 
     var categoryIndex: Int = 0
     var selectedIndex: Int = 0
+    var scrollRowOffset: Int = 0
 
     init(
         terminal: EditorTerminal,
@@ -193,17 +379,8 @@ final class SymbolPickerView {
 
                 case .char(let ch):
                     let lowerStr = String(ch).lowercased()
-                    if lowerStr == "1" {
-                        setCategory(0)
-                        render()
-                    } else if lowerStr == "2" {
-                        setCategory(1)
-                        render()
-                    } else if lowerStr == "3" {
-                        setCategory(2)
-                        render()
-                    } else if lowerStr == "4" {
-                        setCategory(3)
+                    if let num = Int(lowerStr), num >= 1 && num <= SymbolCategories.categories.count {
+                        setCategory(num - 1)
                         render()
                     } else if let firstChar = lowerStr.first,
                         let ascii = firstChar.asciiValue,
@@ -233,6 +410,18 @@ final class SymbolPickerView {
                     render()
                 case .arrowDown:
                     moveSelectionInGrid(rowDelta: 1, colsCount: gridColumnsCount())
+                    render()
+                case .pageUp:
+                    moveSelectionInGrid(rowDelta: -10, colsCount: gridColumnsCount())
+                    render()
+                case .pageDown:
+                    moveSelectionInGrid(rowDelta: 10, colsCount: gridColumnsCount())
+                    render()
+                case .home:
+                    selectedIndex = 0
+                    render()
+                case .end:
+                    selectedIndex = max(0, currentCategoryItems().count - 1)
                     render()
 
                 case .enter:
@@ -286,6 +475,7 @@ final class SymbolPickerView {
         if index >= 0 && index < SymbolCategories.categories.count {
             categoryIndex = index
             selectedIndex = 0
+            scrollRowOffset = 0
         }
     }
 
@@ -311,6 +501,16 @@ final class SymbolPickerView {
         let newIndex = selectedIndex + (rowDelta * colsCount)
         if newIndex >= 0 && newIndex < count {
             selectedIndex = newIndex
+        }
+    }
+
+    private func ensureVisible(contentRows: Int) {
+        let colsCount = gridColumnsCount()
+        let selectedRow = selectedIndex / colsCount
+        if selectedRow < scrollRowOffset {
+            scrollRowOffset = selectedRow
+        } else if selectedRow >= scrollRowOffset + contentRows {
+            scrollRowOffset = selectedRow - contentRows + 1
         }
     }
 
@@ -369,6 +569,7 @@ final class SymbolPickerView {
         let items = currentCategoryItems()
         let contentRows = dialogHeight - 6
         let contentStartRow = startRow + 3
+        ensureVisible(contentRows: contentRows)
 
         for r in 0..<contentRows {
             let currentRow = contentStartRow + r
@@ -382,8 +583,9 @@ final class SymbolPickerView {
             // GFM Callout List Mode - uniform full row selection bar
             let maxListWidth = max(10, dialogWidth - 6)
             for (idx, item) in items.enumerated() {
-                if idx < contentRows {
-                    let r = contentStartRow + idx
+                let rowInView = idx - scrollRowOffset
+                if rowInView >= 0 && rowInView < contentRows {
+                    let r = contentStartRow + rowInView
                     output += "\u{001B}[\(r);\(startCol + 3)H"
                     let hint = letterIndicator(for: idx).map { "[\($0)] " } ?? "    "
                     let rawStr = "\(hint)\(item.symbol)"
@@ -398,13 +600,15 @@ final class SymbolPickerView {
         } else {
             // Grid Mode - uniform cell width selection bar
             let colsCount = gridColumnsCount()
-            let cellWidth = 13
+            let colWidth = max(1, (dialogWidth - 6) / colsCount)
+            let cellWidth = max(1, colWidth - 1)
             for (idx, item) in items.enumerated() {
                 let rowOffset = idx / colsCount
                 let colOffset = idx % colsCount
-                if rowOffset < contentRows {
-                    let r = contentStartRow + rowOffset
-                    let c = startCol + 3 + (colOffset * 14)
+                let rowInView = rowOffset - scrollRowOffset
+                if rowInView >= 0 && rowInView < contentRows {
+                    let r = contentStartRow + rowInView
+                    let c = startCol + 3 + (colOffset * colWidth)
                     output += "\u{001B}[\(r);\(c)H"
                     let hint = letterIndicator(for: idx).map { "[\($0)]" } ?? "   "
                     let rawStr = " \(hint) \(item.symbol) "
@@ -415,6 +619,17 @@ final class SymbolPickerView {
                         output += paddedStr
                     }
                 }
+            }
+        }
+
+        // Scroll indicators on right edge if total rows exceed contentRows
+        let totalRows = (items.count + gridColumnsCount() - 1) / gridColumnsCount()
+        if totalRows > contentRows {
+            if scrollRowOffset > 0 {
+                output += "\u{001B}[\(contentStartRow);\(startCol + dialogWidth - 1)H▲".ansiStyled(style: ANSIStyle.boldCyan)
+            }
+            if scrollRowOffset + contentRows < totalRows {
+                output += "\u{001B}[\(contentStartRow + contentRows - 1);\(startCol + dialogWidth - 1)H▼".ansiStyled(style: ANSIStyle.boldCyan)
             }
         }
 
