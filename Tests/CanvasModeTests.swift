@@ -1202,3 +1202,194 @@ import TextMetrics
     #expect(!editor.buffer.lines[1].contains("┬"))
 }
 
+@Test func testCanvasVerticalLineDrawingDoesNotCorruptIntoSideJoinsWithAdjacentHorizontalBorders() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "┌──────────┐",
+        "│  Box 1   │",
+        "└──────────┘",
+        "",
+        "┌──────────┐",
+        "│  Box 2   │",
+        "└──────────┘",
+    ]
+    // Cursor at line 0, visual column 15 (in empty space to the right of Box 1 and Box 2)
+    editor.buffer.lineIndex = 0
+    editor.canvasVisualColumn = 15
+
+    let controller = CanvasModeController(editor: editor)
+
+    // Draw vertical line downward for 6 steps (from line 0 to line 6)
+    for _ in 0..<6 {
+        #expect(controller.handleKey(.shiftArrowDown) == true)
+    }
+
+    // Lines 0 to 5 at visual column 15 must be pure '│' without any '├' or '┤'
+    for lineIdx in 0...5 {
+        let char = editor.canvasCharacter(atLine: lineIdx, visualColumn: 15)
+        #expect(char == "│")
+        #expect(!editor.buffer.lines[lineIdx].contains("├"))
+        #expect(!editor.buffer.lines[lineIdx].contains("┤"))
+    }
+}
+
+@Test func testCanvasParallelLinesDrawingDoesNotBridgeAdjacentParallelSegments() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "────────────────────",
+        "",
+    ]
+    // Cursor at line 1, visual column 0 (directly below the horizontal line)
+    editor.buffer.lineIndex = 1
+    editor.canvasVisualColumn = 0
+
+    let controller = CanvasModeController(editor: editor)
+
+    // Draw a parallel horizontal line on line 1 for 10 steps
+    for _ in 0..<10 {
+        #expect(controller.handleKey(.shiftArrowRight) == true)
+    }
+
+    // Both lines must be clean '─' lines without '┬' or '┴'
+    #expect(editor.buffer.lines[0] == "────────────────────")
+    #expect(editor.buffer.lines[1] == "──────────")
+    #expect(!editor.buffer.lines[0].contains("┬") && !editor.buffer.lines[0].contains("┴"))
+    #expect(!editor.buffer.lines[1].contains("┬") && !editor.buffer.lines[1].contains("┴"))
+}
+
+@Test func testCanvasMultiCornerConnectorRoutingAroundObstacle() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "┌──────────┐",
+        "│ Source   │",
+        "└────┬─────┘",
+        "     │",
+        "     │  ┌──────────┐",
+        "     │  │ Obstacle │",
+        "     │  └──────────┘",
+        "     │",
+        "     │",
+        "┌────┴─────┐",
+        "│ Target   │",
+        "└──────────┘",
+    ]
+    // Start at bottom-right corner of Obstacle box: line 6, col 19 ('┘')
+    editor.buffer.lineIndex = 6
+    editor.canvasVisualColumn = 19
+
+    let controller = CanvasModeController(editor: editor)
+
+    // 1. Draw right 4 steps (line 6, cols 19..23)
+    for _ in 0..<4 {
+        #expect(controller.handleKey(.shiftArrowRight) == true)
+    }
+    // 2. Turn down 3 steps (cols 23, lines 6..9)
+    for _ in 0..<3 {
+        #expect(controller.handleKey(.shiftArrowDown) == true)
+    }
+    // 3. Turn left 7 steps (line 9, cols 23..16)
+    for _ in 0..<7 {
+        #expect(controller.handleKey(.shiftArrowLeft) == true)
+    }
+
+    // Corner at (line 6, col 23) must be '┐'
+    #expect(editor.canvasCharacter(atLine: 6, visualColumn: 23) == "┐")
+    // Corner at (line 9, col 23) must be '┘'
+    #expect(editor.canvasCharacter(atLine: 9, visualColumn: 23) == "┘")
+}
+
+@Test func testCanvasIntentionalCrossingThroughExistingLineFormsCrossIntersection() throws {
+    let editor = Editor()
+    editor.switchToCanvasMode()
+    editor.buffer.lines = [
+        "     │     ",
+        "     │     ",
+        "     │     ",
+        "     │     ",
+        "     │     ",
+    ]
+    // Start at line 2, col 0 (drawing horizontal line from left across the vertical line at col 5 to col 10)
+    editor.buffer.lineIndex = 2
+    editor.canvasVisualColumn = 0
+
+    let controller = CanvasModeController(editor: editor)
+
+    for _ in 0..<10 {
+        #expect(controller.handleKey(.shiftArrowRight) == true)
+    }
+
+    // Intersection at (line 2, col 5) must be '┼'
+    #expect(editor.canvasCharacter(atLine: 2, visualColumn: 5) == "┼")
+    // Left of intersection must be '─'
+    #expect(editor.canvasCharacter(atLine: 2, visualColumn: 4) == "─")
+    // Right of intersection must be '─'
+    #expect(editor.canvasCharacter(atLine: 2, visualColumn: 6) == "─")
+    // Above intersection must be '│'
+    #expect(editor.canvasCharacter(atLine: 1, visualColumn: 5) == "│")
+    // Below intersection must be '│'
+    #expect(editor.canvasCharacter(atLine: 3, visualColumn: 5) == "│")
+}
+
+@Test func testCanvasDoubleAndHeavyBorderStyleProximityDrawing() throws {
+    // 1. Double border proximity
+    do {
+        let editor = Editor()
+        editor.switchToCanvasMode()
+        editor.buffer.borderStyle = .double
+        editor.buffer.lines = [
+            "╔══════════╗",
+            "║  Box 1   ║",
+            "╚══════════╝",
+            "",
+            "╔══════════╗",
+            "║  Box 2   ║",
+            "╚══════════╝",
+        ]
+        editor.buffer.lineIndex = 0
+        editor.canvasVisualColumn = 15
+
+        let controller = CanvasModeController(editor: editor)
+
+        for _ in 0..<6 {
+            #expect(controller.handleKey(.shiftArrowDown) == true)
+        }
+
+        // Lines 0 to 5 must be clean double vertical line '║' without '╠' or '╣'
+        for lineIdx in 0...5 {
+            let char = editor.canvasCharacter(atLine: lineIdx, visualColumn: 15)
+            #expect(char == "║")
+            #expect(!editor.buffer.lines[lineIdx].contains("╠"))
+            #expect(!editor.buffer.lines[lineIdx].contains("╣"))
+        }
+    }
+
+    // 2. Heavy border crossing
+    do {
+        let editor = Editor()
+        editor.switchToCanvasMode()
+        editor.buffer.borderStyle = .heavy
+        editor.buffer.lines = [
+            "     ┃     ",
+            "     ┃     ",
+            "     ┃     ",
+        ]
+        editor.buffer.lineIndex = 1
+        editor.canvasVisualColumn = 2
+
+        let controller = CanvasModeController(editor: editor)
+
+        for _ in 0..<6 {
+            #expect(controller.handleKey(.shiftArrowRight) == true)
+        }
+
+        // Intersection at (line 1, col 5) must be '╋'
+        #expect(editor.canvasCharacter(atLine: 1, visualColumn: 5) == "╋")
+        #expect(editor.canvasCharacter(atLine: 1, visualColumn: 4) == "━")
+        #expect(editor.canvasCharacter(atLine: 1, visualColumn: 6) == "━")
+    }
+}
+
+

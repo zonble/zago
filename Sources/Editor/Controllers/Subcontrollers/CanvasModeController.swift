@@ -9,6 +9,14 @@ import TextMetrics
 final class CanvasModeController: KeyInputHandler {
     weak var editor: Editor?
 
+    struct CanvasDrawingStep: Equatable {
+        let line: Int
+        let column: Int
+        let incomingDirection: CanvasDrawDirection
+    }
+
+    var lastDrawingStep: CanvasDrawingStep?
+
     init(editor: Editor? = nil) {
         self.editor = editor
     }
@@ -100,10 +108,18 @@ final class CanvasModeController: KeyInputHandler {
         let currentColumn = editor.canvasVisualColumn
         let style = editor.defaultBorderStyle
 
+        let incoming: CanvasDrawDirection?
+        if let last = lastDrawingStep, last.line == currentLine, last.column == currentColumn {
+            incoming = last.incomingDirection
+        } else {
+            incoming = nil
+        }
+
         editor.writeCanvasLineSegment(
             lineIndex: currentLine,
             visualColumn: currentColumn,
             direction: direction,
+            incomingDirection: incoming,
             style: style)
 
         if editor.ensureCanvasLineExists(targetLine) {
@@ -113,6 +129,7 @@ final class CanvasModeController: KeyInputHandler {
                     lineIndex: targetLine,
                     visualColumn: targetColumn,
                     direction: direction.opposite,
+                    incomingDirection: nil,
                     style: style)
             }
         }
@@ -124,6 +141,12 @@ final class CanvasModeController: KeyInputHandler {
                 lineIndex: targetLine,
                 visualColumn: targetColumn,
                 style: style)
+            lastDrawingStep = nil
+        } else {
+            lastDrawingStep = CanvasDrawingStep(
+                line: targetLine,
+                column: targetColumn,
+                incomingDirection: direction.opposite)
         }
 
         editor.buffer.lineIndex = targetLine
@@ -149,6 +172,7 @@ extension Editor {
 
     func syncCanvasCursorFromBuffer() {
         buffer.canvasTypingStartVisualColumn = nil
+        canvasModeController.lastDrawingStep = nil
         guard buffer.lineIndex >= 0 && buffer.lineIndex < buffer.lines.count else {
             canvasVisualColumn = 0
             return
@@ -174,6 +198,7 @@ extension Editor {
 
     func moveCanvasCursor(deltaLine: Int, deltaColumn: Int, extendDownward: Bool = true) {
         buffer.canvasTypingStartVisualColumn = nil
+        canvasModeController.lastDrawingStep = nil
         let targetLine = buffer.lineIndex + deltaLine
         let targetColumn = canvasVisualColumn + deltaColumn
         guard targetLine >= 0, targetColumn >= 0 else { return }
@@ -624,6 +649,7 @@ extension Editor {
         lineIndex: Int,
         visualColumn: Int,
         direction: CanvasDrawDirection,
+        incomingDirection: CanvasDrawDirection? = nil,
         style: BorderStyle
     ) {
         let existingCharacter = canvasCharacter(atLine: lineIndex, visualColumn: visualColumn)
@@ -634,29 +660,12 @@ extension Editor {
             style: style)
         mask |= direction.mask
 
-        // Connect along the axis of movement (predecessor)
-        if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: direction.opposite, style: style) {
-            mask |= direction.opposite.mask
-        }
-
-        // When turning into a vertical direction (.up/.down), connect to the horizontal predecessor if any
-        if direction == .up || direction == .down {
-            if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .left, style: style) {
-                mask |= CanvasDrawDirection.left.mask
-            }
-            if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .right, style: style) {
-                mask |= CanvasDrawDirection.right.mask
-            }
+        if let incoming = incomingDirection {
+            mask |= incoming.mask
         } else {
-            // When moving horizontally (.left/.right), only connect vertically if this cell already has vertical lines/arrows
-            let hasVertical = (canvasMask(for: existingCharacter, style: style) & (CanvasDrawDirection.up.mask | CanvasDrawDirection.down.mask)) != 0
-            if hasVertical {
-                if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .up, style: style) {
-                    mask |= CanvasDrawDirection.up.mask
-                }
-                if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: .down, style: style) {
-                    mask |= CanvasDrawDirection.down.mask
-                }
+            // When starting a new stroke without explicit incoming state, connect along movement axis if predecessor connects
+            if adjacentCanvasLineContinues(lineIndex: lineIndex, visualColumn: visualColumn, direction: direction.opposite, style: style) {
+                mask |= direction.opposite.mask
             }
         }
 
