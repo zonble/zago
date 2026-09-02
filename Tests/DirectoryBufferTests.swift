@@ -720,9 +720,6 @@ struct DirectoryBufferTests {
         defer { editor.stopFileWatcherForCurrentBuffer() }
 
         #expect(editor.buffer.isDirectoryBuffer == true)
-        let modeIndicator = editor.modeIndicatorText()
-        #expect(modeIndicator == "Name ▲" || modeIndicator == "名稱 ▲")
-
         let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
         #expect(titleLine.contains("[Name ▲]") || titleLine.contains("[名稱 ▲]"))
     }

@@ -59,9 +59,6 @@ extension Editor {
 
     func modeIndicatorText() -> String {
         var labels: [String] = []
-        if let dirBuf = buffer as? DirectoryBuffer {
-            labels.append(dirBuf.sortOption.displayName(language: language))
-        }
         if baseMode == .canvas {
             labels.append(l10n["mode.canvas"])
         }

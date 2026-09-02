@@ -99,10 +99,6 @@ final class DirectoryBuffer: TextBuffer {
         self.sortOption = option
         loadDirectory(at: directoryPath, language: currentLanguage)
         editor?.renderer.invalidateScreenCache()
-        if let editor {
-            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
-            editor.reportOperationResult(.succeeded(message: msg))
-        }
     }
 
     func loadDirectory(at path: String, language: Language? = nil) {
@@ -291,15 +287,11 @@ final class DirectoryBuffer: TextBuffer {
             sortOption.cycle()
             loadDirectory(at: directoryPath, language: currentLanguage)
             editor.renderer.invalidateScreenCache()
-            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
-            editor.reportOperationResult(.succeeded(message: msg))
             return true
         case .char("o"), .char("O"):
             sortOption.toggleOrder()
             loadDirectory(at: directoryPath, language: currentLanguage)
             editor.renderer.invalidateScreenCache()
-            let msg = String(format: editor.l10n["status.dir_sorted"], sortOption.displayName(language: currentLanguage))
-            editor.reportOperationResult(.succeeded(message: msg))
             return true
         case .delete, .ctrlBackspace, .altBackspace:
             editor.reportOperationResult(.noOp(message: editor.l10n["status.directory_buffer_readonly"]))

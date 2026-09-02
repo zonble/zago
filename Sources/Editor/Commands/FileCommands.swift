@@ -317,8 +317,7 @@ struct SortDirCommand: Command {
         dirBuffer.sortOption.cycle()
         dirBuffer.loadDirectory(at: dirBuffer.directoryPath, language: dirBuffer.currentLanguage)
         editor.renderer.invalidateScreenCache()
-        let msg = String(format: editor.l10n["status.dir_sorted"], dirBuffer.sortOption.displayName(language: dirBuffer.currentLanguage))
-        return editor.reportOperationResult(.succeeded(message: msg))
+        return .succeeded
     }
 
     @discardableResult
