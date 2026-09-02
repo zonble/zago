@@ -1,3 +1,4 @@
+import Config
 import Foundation
 import LogoEngine
 import TextMetrics
@@ -610,14 +611,42 @@ extension PromptController {
     private func completeFilePath(pathPrefix: String, leadingText: String) -> Bool {
         guard let editor else { return false }
 
+        let isUrl = FilePathNormalizer.isFileURL(pathPrefix)
+        let rawPrefix: String
+        let urlPrefix: String
+        if isUrl {
+            let lower = pathPrefix.lowercased()
+            if lower.hasPrefix("file://localhost/") {
+                urlPrefix = "file://localhost/"
+                rawPrefix = "/" + String(pathPrefix.dropFirst(17))
+            } else if lower.hasPrefix("file:///") {
+                urlPrefix = "file:///"
+                rawPrefix = "/" + String(pathPrefix.dropFirst(8))
+            } else if lower.hasPrefix("file://") {
+                urlPrefix = "file://"
+                rawPrefix = String(pathPrefix.dropFirst(7))
+            } else if lower.hasPrefix("file:") {
+                urlPrefix = "file:"
+                rawPrefix = String(pathPrefix.dropFirst(5))
+            } else {
+                urlPrefix = ""
+                rawPrefix = pathPrefix
+            }
+        } else {
+            urlPrefix = ""
+            rawPrefix = pathPrefix
+        }
+
+        let decodedPrefix = rawPrefix.removingPercentEncoding ?? rawPrefix
+
         let dirPart: String
         let filePart: String
-        if let lastSlash = pathPrefix.lastIndex(of: "/") {
-            dirPart = String(pathPrefix[...lastSlash])
-            filePart = String(pathPrefix[pathPrefix.index(after: lastSlash)...])
+        if let lastSlash = decodedPrefix.lastIndex(of: "/") {
+            dirPart = String(decodedPrefix[...lastSlash])
+            filePart = String(decodedPrefix[decodedPrefix.index(after: lastSlash)...])
         } else {
             dirPart = ""
-            filePart = pathPrefix
+            filePart = decodedPrefix
         }
 
         let searchDir = dirPart.isEmpty ? "." : dirPart
@@ -642,10 +671,21 @@ extension PromptController {
             return true
         }
 
+        func formatPathPart(_ path: String) -> String {
+            if isUrl {
+                if urlPrefix.hasSuffix("/") && path.hasPrefix("/") {
+                    return urlPrefix + String(path.dropFirst())
+                }
+                return urlPrefix + path
+            }
+            return path
+        }
+
         if candidateEntries.count == 1 {
             let entry = candidateEntries[0]
             let suffix = entry.isDirectory ? "/" : ""
-            replacePromptPrefix(leadingText + dirPart + entry.name + suffix)
+            let fullCompleted = formatPathPart(dirPart + entry.name + suffix)
+            replacePromptPrefix(leadingText + fullCompleted)
             completionText = nil
             return true
         }
@@ -653,7 +693,8 @@ extension PromptController {
         let matchNames = candidateEntries.map { $0.name }
         let lcp = TextAnalyzer.longestCommonPrefix(of: matchNames)
         if lcp.count > filePart.count {
-            replacePromptPrefix(leadingText + dirPart + lcp)
+            let fullCompleted = formatPathPart(dirPart + lcp)
+            replacePromptPrefix(leadingText + fullCompleted)
         }
 
         let displayItems = candidateEntries.map { $0.isDirectory ? $0.name + "/" : $0.name }

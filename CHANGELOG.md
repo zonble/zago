@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- **Cross-Platform `file://` URL & Anchor Support**:
+  - Added support for opening and resolving `file://` URLs (POSIX, Windows drive letters, and percent-encoded paths) from CLI arguments, command prompts (`:open`, `:edit`, `:write`, `Ctrl+O`), and IPC.
+  - Added line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.
+  - Added Tab autocompletion support for `file://` URL prefixes in the interactive prompt bar.
+
 ## [1.4.6] - 2026-09-01
 
 Feature and bugfix release featuring enhanced path autocompletion, multi-mode double-click word selection, refined Canvas Mode editing behaviors, dotted arrow styles, menu organization improvements, and rendering accuracy fixes.

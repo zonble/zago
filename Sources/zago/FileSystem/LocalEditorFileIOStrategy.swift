@@ -1,3 +1,4 @@
+import Config
 import Editor
 import FileWatcher
 import Foundation
@@ -14,7 +15,8 @@ public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked S
     }
 
     public func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
-        let expanded = expandTilde(path)
+        let cleaned = FilePathNormalizer.fileURLToPath(path)
+        let expanded = expandTilde(cleaned)
         let absolutePath: String
         if isAbsolutePath(expanded) {
             absolutePath = expanded
